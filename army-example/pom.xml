@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>army</artifactId>
+        <groupId>org.qinarmy.army</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>army-example</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>army-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jooq</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-json</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq-meta</artifactId>
+            <version>${jooq.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq-meta-extensions</artifactId>
+            <version>${jooq.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq-codegen</artifactId>
+            <version>${jooq.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>${testng.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq-codegen-maven</artifactId>
+            <version>${jooq.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <compilerArguments>
+                        <!-- 自动生成 jpa Metamodel -->
+                        <processor>org.qinarmy.army.modelgen.ArmyMetaModelEntityProcessor</processor>
+                    </compilerArguments>
+                </configuration>
+            </plugin>
+            <!--   <plugin>
+                   <groupId>org.jooq</groupId>
+                   <artifactId>jooq-codegen-maven</artifactId>
+                   <version>${jooq.version}</version>
+                   <dependencies>
+                       <dependency>
+                           <groupId>mysql</groupId>
+                           <artifactId>mysql-connector-java</artifactId>
+                           <version>${mysql.version}</version>
+                       </dependency>
+                   </dependencies>
+                   <executions>
+                       <execution>
+                           <goals>
+                               <goal>generate</goal>
+                           </goals>
+                       </execution>
+                   </executions>
+
+                   <configuration>
+                       <jdbc>
+                           <driver>com.mysql.jdbc.Driver</driver>
+                           <url>${slaver.url}</url>
+                           <user>${slaver.username}</user>
+                           <password>${slaver.password}</password>
+                       </jdbc>
+                       <generator>
+                           <database>
+                               <name>org.jooq.meta.mysql.MySQLDatabase</name>
+
+                               <inputCatalog>public</inputCatalog>
+                               <inputSchema>army_example</inputSchema>
+                           </database>
+                           <target>
+                               <packageName>com.example.domain.jooq</packageName>
+                           </target>
+                       </generator>
+                   </configuration>
+               </plugin>-->
+        </plugins>
+    </build>
+
+</project>

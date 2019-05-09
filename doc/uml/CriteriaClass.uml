@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>org.qinarmy.army.criteria.QueryAble</OriginalElement>
+  <nodes>
+    <node x="292.0" y="79.0">org.qinarmy.army.criteria.SubQuery</node>
+    <node x="10.0" y="395.0">org.qinarmy.army.criteria.WhereAble</node>
+    <node x="74.25" y="0.0">org.qinarmy.army.criteria.QueryAble</node>
+    <node x="139.5" y="79.0">org.qinarmy.army.criteria.SelectList</node>
+    <node x="15.5" y="79.0">org.qinarmy.army.criteria.LimitAble</node>
+    <node x="0.0" y="474.0">org.qinarmy.army.criteria.JoinSubQuery</node>
+    <node x="0.0" y="548.0">org.qinarmy.army.criteria.Selection</node>
+    <node x="446.5" y="0.0">org.qinarmy.army.criteria.Predicate</node>
+    <node x="10.5" y="316.0">org.qinarmy.army.criteria.GroupAble</node>
+    <node x="12.5" y="158.0">org.qinarmy.army.criteria.OrderAble</node>
+    <node x="8.5" y="237.0">org.qinarmy.army.criteria.HavingAble</node>
+    <node x="291.5" y="0.0">org.qinarmy.army.criteria.SqlBuilder</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="org.qinarmy.army.criteria.HavingAble" target="org.qinarmy.army.criteria.OrderAble">
+      <point x="0.0" y="-14.5" />
+      <point x="0.0" y="14.5" />
+    </edge>
+    <edge source="org.qinarmy.army.criteria.LimitAble" target="org.qinarmy.army.criteria.QueryAble">
+      <point x="0.0" y="-14.5" />
+      <point x="67.5" y="54.0" />
+      <point x="102.25" y="54.0" />
+      <point x="-28.0" y="14.5" />
+    </edge>
+    <edge source="org.qinarmy.army.criteria.OrderAble" target="org.qinarmy.army.criteria.LimitAble">
+      <point x="0.0" y="-14.5" />
+      <point x="0.0" y="14.5" />
+    </edge>
+    <edge source="org.qinarmy.army.criteria.JoinSubQuery" target="org.qinarmy.army.criteria.WhereAble">
+      <point x="0.0" y="-14.5" />
+      <point x="0.0" y="14.5" />
+    </edge>
+    <edge source="org.qinarmy.army.criteria.SelectList" target="org.qinarmy.army.criteria.QueryAble">
+      <point x="0.0" y="-14.5" />
+      <point x="193.0" y="54.0" />
+      <point x="158.25" y="54.0" />
+      <point x="28.0" y="14.5" />
+    </edge>
+    <edge source="org.qinarmy.army.criteria.WhereAble" target="org.qinarmy.army.criteria.GroupAble">
+      <point x="0.0" y="-14.5" />
+      <point x="0.0" y="14.5" />
+    </edge>
+    <edge source="org.qinarmy.army.criteria.GroupAble" target="org.qinarmy.army.criteria.HavingAble">
+      <point x="0.0" y="-14.5" />
+      <point x="0.0" y="14.5" />
+    </edge>
+    <edge source="org.qinarmy.army.criteria.SubQuery" target="org.qinarmy.army.criteria.SqlBuilder">
+      <point x="0.0" y="-14.5" />
+      <point x="0.0" y="14.5" />
+    </edge>
+  </edges>
+  <settings layout="Tree" zoom="1.0" x="408.5" y="271.0" />
+  <SelectedNodes>
+    <node>org.qinarmy.army.criteria.Predicate</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Fields</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+

@@ -1,0 +1,20 @@
+# Created by .ignore support plugin (hsz.mobi)
+.idea/
+*.iml
+**/target/
+.svn/
+/local/
+**/application-local.yml
+**/my-local/
+/classes/
+.mvn
+
+/.project
+**/~$*.xlsx
+**/~$*.xls
+
+**/.DS_Store
+
+
+**/logs/
+/**/my/
