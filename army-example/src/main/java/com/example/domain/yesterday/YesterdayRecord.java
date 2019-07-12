@@ -2,7 +2,7 @@ package com.example.domain.yesterday;
 
 
 import com.example.domain.Domain;
-import org.qinarmy.army.annotation.*;
+import io.army.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

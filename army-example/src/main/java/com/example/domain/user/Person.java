@@ -1,9 +1,9 @@
 package com.example.domain.user;
 
-import org.qinarmy.army.annotation.Column;
-import org.qinarmy.army.annotation.DiscriminatorValue;
-import org.qinarmy.army.annotation.Table;
-import org.qinarmy.army.struct.enumeration.Gender;
+import io.army.annotation.Column;
+import io.army.annotation.DiscriminatorValue;
+import io.army.annotation.Table;
+import io.army.struct.enumeration.Gender;
 
 import java.time.LocalDate;
 

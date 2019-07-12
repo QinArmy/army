@@ -1,6 +1,6 @@
 package com.example.simple;
 
-import org.qinarmy.army.util.ElementUtils;
+import io.army.util.ElementUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;

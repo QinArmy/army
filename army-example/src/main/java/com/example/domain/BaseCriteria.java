@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 
-import static org.qinarmy.army.util.TimeUtils.DATE_TIME_FORMAT;
+import static io.army.util.TimeUtils.DATE_TIME_FORMAT;
 
 
 /**

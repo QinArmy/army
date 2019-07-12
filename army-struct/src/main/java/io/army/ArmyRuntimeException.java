@@ -1,0 +1,29 @@
+package io.army;
+
+/**
+ * created  on 2018/11/19.
+ */
+public class ArmyRuntimeException extends RuntimeException implements IArmyExpression {
+
+    private final ErrorCode errorCode;
+
+    public ArmyRuntimeException(ErrorCode errorCode) {
+        super(errorCode.display());
+        this.errorCode = errorCode;
+    }
+
+    public ArmyRuntimeException(ErrorCode errorCode, String format, Object... args) {
+        super(IArmyExpression.createMessage(format, args));
+        this.errorCode = errorCode;
+    }
+
+    public ArmyRuntimeException(ErrorCode errorCode, Throwable cause, String format, Object... args) {
+        super(IArmyExpression.createMessage(format, args), cause);
+        this.errorCode = errorCode;
+    }
+
+    @Override
+    public final ErrorCode getErrorCode() {
+        return errorCode;
+    }
+}

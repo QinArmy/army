@@ -1,7 +1,7 @@
 package com.example.domain.plan;
 
-import org.qinarmy.army.annotation.Column;
-import org.qinarmy.army.annotation.Table;
+import io.army.annotation.Column;
+import io.army.annotation.Table;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

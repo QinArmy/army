@@ -1,7 +1,7 @@
 package com.example.domain.account;
 
 import com.example.domain.VersionDomain;
-import org.qinarmy.army.annotation.*;
+import io.army.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

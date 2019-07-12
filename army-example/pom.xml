@@ -72,7 +72,7 @@
                 <configuration>
                     <compilerArguments>
                         <!-- 自动生成 jpa Metamodel -->
-                        <processor>org.qinarmy.army.modelgen.ArmyMetaModelEntityProcessor</processor>
+                        <processor>io.army.modelgen.ArmyMetaModelEntityProcessor</processor>
                     </compilerArguments>
                 </configuration>
             </plugin>

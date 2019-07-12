@@ -1,10 +1,10 @@
 package com.example.domain.product;
 
 import com.example.domain.VersionDomain;
-import org.qinarmy.army.annotation.Column;
-import org.qinarmy.army.annotation.DiscriminatorValue;
-import org.qinarmy.army.annotation.Inheritance;
-import org.qinarmy.army.annotation.Table;
+import io.army.annotation.Column;
+import io.army.annotation.DiscriminatorValue;
+import io.army.annotation.Inheritance;
+import io.army.annotation.Table;
 
 import java.time.LocalDateTime;
 

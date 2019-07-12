@@ -1,7 +1,7 @@
 package com.example.domain.user;
 
 import com.example.domain.VersionDomain;
-import org.qinarmy.army.annotation.*;
+import io.army.annotation.*;
 
 import java.time.LocalDateTime;
 

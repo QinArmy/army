@@ -1,7 +1,7 @@
 package com.example.domain.trade;
 
-import org.qinarmy.army.annotation.DiscriminatorValue;
-import org.qinarmy.army.annotation.Table;
+import io.army.annotation.DiscriminatorValue;
+import io.army.annotation.Table;
 
 import static com.example.domain.trade.BaseRecord.CREDIT_VALUE;
 

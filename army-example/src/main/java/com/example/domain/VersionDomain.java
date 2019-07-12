@@ -1,6 +1,6 @@
 package com.example.domain;
 
-import org.qinarmy.army.annotation.MappedSuperclass;
+import io.army.annotation.MappedSuperclass;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

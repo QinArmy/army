@@ -1,6 +1,6 @@
 package com.example.domain.yesterday;
 
-import org.qinarmy.army.struct.CodeEnum;
+import io.army.struct.CodeEnum;
 
 import java.util.Map;
 

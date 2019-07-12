@@ -1,8 +1,8 @@
 package com.example.domain.user;
 
-import org.qinarmy.army.annotation.Column;
-import org.qinarmy.army.annotation.DiscriminatorValue;
-import org.qinarmy.army.annotation.Table;
+import io.army.annotation.Column;
+import io.army.annotation.DiscriminatorValue;
+import io.army.annotation.Table;
 
 import static com.example.domain.user.User.FUNCTION_VALUE;
 

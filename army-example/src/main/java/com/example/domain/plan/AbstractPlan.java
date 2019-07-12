@@ -1,8 +1,8 @@
 package com.example.domain.plan;
 
 import com.example.domain.VersionDomain;
-import org.qinarmy.army.annotation.Column;
-import org.qinarmy.army.annotation.MappedSuperclass;
+import io.army.annotation.Column;
+import io.army.annotation.MappedSuperclass;
 
 /**
  * created  on 2018/11/19.

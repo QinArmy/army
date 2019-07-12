@@ -2,8 +2,8 @@ package com.example.criteria;
 
 import com.example.domain.DebitOrder;
 import com.example.domain.User;
-import org.qinarmy.army.criteria.LockMode;
-import org.qinarmy.army.criteria.impl.DLS;
+import io.army.criteria.LockMode;
+import io.army.criteria.impl.DLS;
 
 /**
  * created  on 2018/10/21.
