@@ -14,7 +14,7 @@ public class CriteriaExpressionTests {
     public void simpleCriteria() {
         DLS.select()
                 .from(User.class).as("u")
-                .join(DebitOrder.class).as("d")
+                .join(DebitOrder.class).as("d").on()
                 .where()
                 .group()
                 .having()

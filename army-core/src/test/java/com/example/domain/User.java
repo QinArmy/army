@@ -1,6 +1,7 @@
 package com.example.domain;
 
 import io.army.annotation.Column;
+import io.army.annotation.Table;
 import io.army.domain.IDomain;
 
 import java.time.LocalDateTime;
@@ -8,8 +9,10 @@ import java.time.LocalDateTime;
 /**
  * created  on 2018/10/21.
  */
+@Table(name = "")
 public class User implements IDomain {
 
+    @Column
     private Long id;
 
     private String name;
