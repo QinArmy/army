@@ -22,8 +22,6 @@ public class CriteriaExpressionTests {
                 .limit(9)
                 .setLockMode(LockMode.NONE)
                 .build()
-
-
         ;
 
     }

@@ -48,5 +48,14 @@ Army 吸收 Hibernate 和 Jooq 的优点去除其缺点加上新的设计和约�
 
 
 
+### 支持数据库
+
+* MySql
+* Oracle
+* OceanBase
+* Postgre
+* Sql Server
+* Db2
+
 
 
