@@ -27,6 +27,20 @@ Army 以下强制规则:
 * 所有表 更新时间必须命名为 update_time
 * 所有属性必须 not null,必须有 默认值 
 
+支持 Java 类型
+
+* java.lang.Boolean
+* java.lang.String
+* java.lang.Integer
+* java.lang.Long
+* java.math.BigDecimal
+* java.time.LocalTime
+* java.time.LocalDate
+* java.time.LocalDateTime
+* java.time.ZonedDateTime
+
+
+
 
 
 

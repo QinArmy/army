@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 /**
  * created  on 2018/11/20.
  */
-public interface IDomain {
+public interface IDomain extends MappingConstant {
 
 
     String CURRENT_TIMESTAMP = "CURRENT_TIMESTAMP";
