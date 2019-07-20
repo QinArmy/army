@@ -35,13 +35,9 @@ Army 以下强制规则:
 * java.lang.Long
 * java.math.BigDecimal
 * io.army.struct.CodeEnum
-* java.time.Year
-* java.time.YearMonth
-* java.time.MonthDay
 * java.time.LocalTime
 * java.time.LocalDate
 * java.time.LocalDateTime
-* java.time.ZonedDateTime
 
 
 #### MySQL 默认映射
