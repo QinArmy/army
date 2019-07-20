@@ -43,6 +43,22 @@ Army 以下强制规则:
 * java.time.LocalDateTime
 * java.time.ZonedDateTime
 
+
+#### MySQL 默认映射
+                                                                                                               
+| Java Type                 |                           JDBC Type          | MySQL Data Type                |   
+| :------------------------ | :--------------------------------------------|--------------------------------|   
+| java.lang.Boolean         | java.sql.JDBCType#CHAR                       |  CHAR(1), [Y,N]                |   
+| java.lang.String          | java.sql.JDBCType#VARCHAR                    |  VARCHAR                       |   
+| java.lang.Integer         | java.sql.JDBCType#INTEGER                    |  INT                           |   
+| java.lang.Long            | java.sql.JDBCType#BIGINT                     |  BIGINT                        |   
+| java.math.BigDecimal      | java.sql.JDBCType#DECIMAL                    |  DECIMAL(14,2)                 |   
+| io.army.struct.CodeEnum   | java.sql.JDBCType#INTEGER                    |  INT                           |      
+| java.time.LocalTime       | java.sql.JDBCType#TIME                       |  TIME                          |   
+| java.time.LocalDate       | java.sql.JDBCType#DATE                       |  DATE  (uuuu-MM-dd 00:00:00)   |   
+| java.time.LocalDateTime   | java.sql.JDBCType#TIMESTAMP                  |  DATETIME(uuuu-MM-dd HH:mm:ss) |   
+  
+
 #### Sql Server 对应 Java 和 JDBC 的数据类型
 | Java Type                 |                           JDBC Type          | Sql Server data type    |     
 | :------------------------ | :--------------------------------------------|-------------------------|     
@@ -51,10 +67,7 @@ Army 以下强制规则:
 | java.lang.Integer         | java.sql.JDBCType#INTEGER                    | INT(n)                  |     
 | java.lang.Long            | java.sql.JDBCType#BIGINT                     | BIGINT(n)               |     
 | java.math.BigDecimal      | java.sql.JDBCType#DECIMAL                    | DECIMAL(p,s)            | 
-| io.army.struct.CodeEnum   | java.sql.JDBCType#INTEGER                    | INT(n)                  |         
-| java.time.Year            | java.sql.JDBCType#DATE                       |                         |     
-| java.time.YearMonth       | java.sql.JDBCType#DATE                       |                         |     
-| java.time.MonthDay        | java.sql.JDBCType#DATE                       |                         |     
+| io.army.struct.CodeEnum   | java.sql.JDBCType#INTEGER                    | INT(n)                  |              
 | java.time.LocalTime       | java.sql.JDBCType#TIME                       | TIME                    |     
 | java.time.LocalDate       | java.sql.JDBCType#DATE                       | DATE                    |     
 | java.time.LocalDateTime   | java.sql.JDBCType#TIMESTAMP                  | DATETIME                |     
@@ -67,36 +80,10 @@ Army 以下强制规则:
 | java.lang.Integer         | java.sql.JDBCType#INTEGER                    | INT(n)                  |     
 | java.lang.Long            | java.sql.JDBCType#BIGINT                     | BIGINT(n)               |     
 | java.math.BigDecimal      | java.sql.JDBCType#DECIMAL                    | DECIMAL(p,s)            |
-| io.army.struct.CodeEnum   | java.sql.JDBCType#INTEGER                    | INT(n)                  |         
-| java.time.Year            | java.sql.JDBCType#DATE                       |                         |     
-| java.time.YearMonth       | java.sql.JDBCType#DATE                       |                         |     
-| java.time.MonthDay        | java.sql.JDBCType#DATE                       |                         |     
+| io.army.struct.CodeEnum   | java.sql.JDBCType#INTEGER                    | INT(n)                  |             
 | java.time.LocalTime       | java.sql.JDBCType#TIME                       | TIME                    |     
 | java.time.LocalDate       | java.sql.JDBCType#DATE                       | DATE                    |     
 | java.time.LocalDateTime   | java.sql.JDBCType#TIMESTAMP                  | TIMESTAMP               |     
-
-
-
-
-
-
-#### MySQL 默认映射
-                                                                                                               
-| Java Type                 |                           JDBC Type          | MySQL Data Type                |   
-| :------------------------ | :--------------------------------------------|--------------------------------|   
-| java.lang.Boolean         | java.sql.JDBCType#CHAR                       |  CHAR(1), [Y,N]                |   
-| java.lang.String          | java.sql.JDBCType#VARCHAR                    |  VARCHAR                       |   
-| java.lang.Integer         | java.sql.JDBCType#INTEGER                    |  INT                           |   
-| java.lang.Long            | java.sql.JDBCType#BIGINT                     |  BIGINT                        |   
-| java.math.BigDecimal      | java.sql.JDBCType#DECIMAL                    |  DECIMAL(14,2)                 |   
-| io.army.struct.CodeEnum   | java.sql.JDBCType#INTEGER                    |  INT                           |   
-| java.time.Year            | java.sql.JDBCType#DATE                       |  YEAR                          |   
-| java.time.YearMonth       | java.sql.JDBCType#DATE                       |  DATE  (uuuu-MM-00 00:00:00)   |   
-| java.time.MonthDay        | java.sql.JDBCType#DATE                       |  DATE  (1970-MM-dd 00:00:00)   |   
-| java.time.LocalTime       | java.sql.JDBCType#TIME                       |  TIME                          |   
-| java.time.LocalDate       | java.sql.JDBCType#DATE                       |  DATE  (uuuu-MM-dd 00:00:00)   |   
-| java.time.LocalDateTime   | java.sql.JDBCType#TIMESTAMP                  |  DATETIME(uuuu-MM-dd HH:mm:ss) |   
-  
 
 
 
@@ -109,10 +96,7 @@ Army 以下强制规则:
 | java.lang.Integer         | java.sql.JDBCType#INTEGER                    |  NUMBER(11)                   |
 | java.lang.Long            | java.sql.JDBCType#BIGINT                     |  NUMBER(20)                   |
 | java.math.BigDecimal      | java.sql.JDBCType#DECIMAL                    |  NUMBER(14,2)                 |
-| io.army.struct.CodeEnum   | java.sql.JDBCType#INTEGER                    |  NUMBER(11)                   |  
-| java.time.Year            | java.sql.JDBCType#DATE                       |  DATE  (uuuu-00-00 00:00:00)  |  
-| java.time.YearMonth       | java.sql.JDBCType#DATE                       |  DATE  (uuuu-MM-00 00:00:00)  |  
-| java.time.MonthDay        | java.sql.JDBCType#DATE                       |  DATE  (1970-MM-dd 00:00:00)  |  
+| io.army.struct.CodeEnum   | java.sql.JDBCType#INTEGER                    |  NUMBER(11)                   |    
 | java.time.LocalTime       | java.sql.JDBCType#TIME                       |  DATE  (1970-00-00 HH:mm:ss)  |  
 | java.time.LocalDate       | java.sql.JDBCType#DATE                       |  DATE  (uuuu-MM-dd 00:00:00)  |  
 | java.time.LocalDateTime   | java.sql.JDBCType#TIMESTAMP                  |  DATE  (uuuu-MM-dd HH:mm:ss)  |  
@@ -128,9 +112,6 @@ Army 以下强制规则:
 | java.lang.Long            | java.sql.JDBCType#BIGINT                     |  bigint                       |
 | java.math.BigDecimal      | java.sql.JDBCType#DECIMAL                    |  decimal(14,2)                |
 | io.army.struct.CodeEnum   | java.sql.JDBCType#INTEGER                    |  integer                      | 
-| java.time.Year            | java.sql.JDBCType#DATE                       |  date  (uuuu-00-00)           |
-| java.time.YearMonth       | java.sql.JDBCType#DATE                       |  date  (uuuu-MM-00)           |
-| java.time.MonthDay        | java.sql.JDBCType#DATE                       |  date  (1970-MM-dd)           |
 | java.time.LocalTime       | java.sql.JDBCType#TIME                       |  time                         |
 | java.time.LocalDate       | java.sql.JDBCType#DATE                       |  date                         |
 | java.time.LocalDateTime   | java.sql.JDBCType#TIMESTAMP                  |  timestamp  without time zone |
