@@ -20,7 +20,6 @@ class SelectedListImpl implements InnerSelectList {
 
     private final CriteriaContext criteriaContext = new MutableCriteriaContext(UUID.randomUUID().toString());
 
-    private static final Selection<?>[] EMPTY = new Selection<?>[0];
 
 
     private final List<?> selectionList;

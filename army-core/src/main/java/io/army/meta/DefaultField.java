@@ -6,7 +6,6 @@ import io.army.criteria.MetaException;
 import io.army.criteria.Selection;
 import io.army.domain.IDomain;
 import io.army.util.MetaUtils;
-import org.qinarmy.army.criteria.impl.AbstractExpression;
 import org.springframework.lang.NonNull;
 
 import java.sql.JDBCType;
@@ -14,7 +13,7 @@ import java.sql.JDBCType;
 /**
  * created  on 2018/11/18.
  */
-public final class DefaultField<T extends IDomain, F> extends AbstractExpression<F> implements Field<T, F> {
+public final class DefaultField<T extends IDomain, F> extends Abstaz<F> implements Field<T, F> {
 
     private static final String ID = "id";
 
