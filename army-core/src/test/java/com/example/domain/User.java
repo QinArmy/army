@@ -1,6 +1,7 @@
 package com.example.domain;
 
 import io.army.annotation.Column;
+import io.army.annotation.SqlType;
 import io.army.annotation.Table;
 import io.army.domain.IDomain;
 
@@ -13,8 +14,10 @@ import java.time.LocalDateTime;
 public class User implements IDomain {
 
     @Column
+
     private Long id;
 
+    @SqlType("io.army.annotation.StringType.fixed_char")
     private String name;
 
     @Column

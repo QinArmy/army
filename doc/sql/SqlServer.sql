@@ -35,7 +35,7 @@ select * from test.person order by id offset((2-1)*10) rows fetch next 10 rows o
 
 -- 删除数据
 delete from test.person where id = 1;
-
+bb
 
 -- data type
 
