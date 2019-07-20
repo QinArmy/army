@@ -43,6 +43,42 @@ Army 以下强制规则:
 * java.time.LocalDateTime
 * java.time.ZonedDateTime
 
+#### Sql Server 对应 Java 和 JDBC 的数据类型
+| Java Type                 |                           JDBC Type          | Sql Server data type    |     
+| :------------------------ | :--------------------------------------------|-------------------------|     
+| java.lang.Boolean         | java.sql.JDBCType#CHAR                       | BIT (0 or 1)            |     
+| java.lang.String          | java.sql.JDBCType#VARCHAR                    | VARCHAR(n)              |     
+| java.lang.Integer         | java.sql.JDBCType#INTEGER                    | INT(n)                  |     
+| java.lang.Long            | java.sql.JDBCType#BIGINT                     | BIGINT(n)               |     
+| java.math.BigDecimal      | java.sql.JDBCType#DECIMAL                    | DECIMAL(p,s)            | 
+| io.army.struct.CodeEnum   | java.sql.JDBCType#INTEGER                    | INT(n)                  |         
+| java.time.Year            | java.sql.JDBCType#DATE                       |                         |     
+| java.time.YearMonth       | java.sql.JDBCType#DATE                       |                         |     
+| java.time.MonthDay        | java.sql.JDBCType#DATE                       |                         |     
+| java.time.LocalTime       | java.sql.JDBCType#TIME                       | TIME                    |     
+| java.time.LocalDate       | java.sql.JDBCType#DATE                       | DATE                    |     
+| java.time.LocalDateTime   | java.sql.JDBCType#TIMESTAMP                  | DATETIME                |     
+
+#### DB2 对应 JAVA 和 JDBC 的数据类型
+| Java Type                 |                           JDBC Type          | DB2 data type           |     
+| :------------------------ | :--------------------------------------------|-------------------------|     
+| java.lang.Boolean         | java.sql.JDBCType#CHAR                       | CHAR(n)                 |     
+| java.lang.String          | java.sql.JDBCType#VARCHAR                    | VARCHAR(n)              |     
+| java.lang.Integer         | java.sql.JDBCType#INTEGER                    | INT(n)                  |     
+| java.lang.Long            | java.sql.JDBCType#BIGINT                     | BIGINT(n)               |     
+| java.math.BigDecimal      | java.sql.JDBCType#DECIMAL                    | DECIMAL(p,s)            |
+| io.army.struct.CodeEnum   | java.sql.JDBCType#INTEGER                    | INT(n)                  |         
+| java.time.Year            | java.sql.JDBCType#DATE                       |                         |     
+| java.time.YearMonth       | java.sql.JDBCType#DATE                       |                         |     
+| java.time.MonthDay        | java.sql.JDBCType#DATE                       |                         |     
+| java.time.LocalTime       | java.sql.JDBCType#TIME                       | TIME                    |     
+| java.time.LocalDate       | java.sql.JDBCType#DATE                       | DATE                    |     
+| java.time.LocalDateTime   | java.sql.JDBCType#TIMESTAMP                  | TIMESTAMP               |     
+
+
+
+
+
 
 #### MySQL 默认映射
                                                                                                                
