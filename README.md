@@ -34,17 +34,84 @@ Army 以下强制规则:
 * java.lang.Integer
 * java.lang.Long
 * java.math.BigDecimal
+* io.army.struct.CodeEnum
+* java.time.Year
+* java.time.YearMonth
+* java.time.MonthDay
 * java.time.LocalTime
 * java.time.LocalDate
 * java.time.LocalDateTime
 * java.time.ZonedDateTime
 
 
+#### MySQL 默认映射
+                                                                                                               
+| Java Type                 |                           JDBC Type          | MySQL Data Type                |   
+| :------------------------ | :--------------------------------------------|--------------------------------|   
+| java.lang.Boolean         | java.sql.JDBCType#CHAR                       |  CHAR(1), [Y,N]                |   
+| java.lang.String          | java.sql.JDBCType#VARCHAR                    |  VARCHAR                       |   
+| java.lang.Integer         | java.sql.JDBCType#INTEGER                    |  INT                           |   
+| java.lang.Long            | java.sql.JDBCType#BIGINT                     |  BIGINT                        |   
+| java.math.BigDecimal      | java.sql.JDBCType#DECIMAL                    |  DECIMAL(14,2)                 |   
+| io.army.struct.CodeEnum   | java.sql.JDBCType#INTEGER                    |  INT                           |   
+| java.time.Year            | java.sql.JDBCType#DATE                       |  YEAR                          |   
+| java.time.YearMonth       | java.sql.JDBCType#DATE                       |  DATE  (uuuu-MM-00 00:00:00)   |   
+| java.time.MonthDay        | java.sql.JDBCType#DATE                       |  DATE  (1970-MM-dd 00:00:00)   |   
+| java.time.LocalTime       | java.sql.JDBCType#TIME                       |  TIME                          |   
+| java.time.LocalDate       | java.sql.JDBCType#DATE                       |  DATE  (uuuu-MM-dd 00:00:00)   |   
+| java.time.LocalDateTime   | java.sql.JDBCType#TIMESTAMP                  |  DATETIME(uuuu-MM-dd HH:mm:ss) |   
+  
+
+
+
+#### Oracle 默认映射
+
+| Java Type                 |                           JDBC Type          | Oracle Data Type              |  
+| :------------------------ | :--------------------------------------------|-------------------------------|
+| java.lang.Boolean         | java.sql.JDBCType#CHAR                       |  CHAR(1), [Y,N]               |
+| java.lang.String          | java.sql.JDBCType#VARCHAR                    |  VARCHAR                      |
+| java.lang.Integer         | java.sql.JDBCType#INTEGER                    |  NUMBER(11)                   |
+| java.lang.Long            | java.sql.JDBCType#BIGINT                     |  NUMBER(20)                   |
+| java.math.BigDecimal      | java.sql.JDBCType#DECIMAL                    |  NUMBER(14,2)                 |
+| io.army.struct.CodeEnum   | java.sql.JDBCType#INTEGER                    |  NUMBER(11)                   |  
+| java.time.Year            | java.sql.JDBCType#DATE                       |  DATE  (uuuu-00-00 00:00:00)  |  
+| java.time.YearMonth       | java.sql.JDBCType#DATE                       |  DATE  (uuuu-MM-00 00:00:00)  |  
+| java.time.MonthDay        | java.sql.JDBCType#DATE                       |  DATE  (1970-MM-dd 00:00:00)  |  
+| java.time.LocalTime       | java.sql.JDBCType#TIME                       |  DATE  (1970-00-00 HH:mm:ss)  |  
+| java.time.LocalDate       | java.sql.JDBCType#DATE                       |  DATE  (uuuu-MM-dd 00:00:00)  |  
+| java.time.LocalDateTime   | java.sql.JDBCType#TIMESTAMP                  |  DATE  (uuuu-MM-dd HH:mm:ss)  |  
+
+
+#### Postgre 默认映射
+
+| Java Type                 |                           JDBC Type          | Postgre Data Type             |
+| :------------------------ | :--------------------------------------------|-------------------------------|
+| java.lang.Boolean         | java.sql.JDBCType#CHAR                       |  CHAR(1), [Y,N]               |
+| java.lang.String          | java.sql.JDBCType#VARCHAR                    |  VARCHAR                      |
+| java.lang.Integer         | java.sql.JDBCType#INTEGER                    |  integer                      |
+| java.lang.Long            | java.sql.JDBCType#BIGINT                     |  bigint                       |
+| java.math.BigDecimal      | java.sql.JDBCType#DECIMAL                    |  decimal(14,2)                |
+| io.army.struct.CodeEnum   | java.sql.JDBCType#INTEGER                    |  integer                      | 
+| java.time.Year            | java.sql.JDBCType#DATE                       |  date  (uuuu-00-00)           |
+| java.time.YearMonth       | java.sql.JDBCType#DATE                       |  date  (uuuu-MM-00)           |
+| java.time.MonthDay        | java.sql.JDBCType#DATE                       |  date  (1970-MM-dd)           |
+| java.time.LocalTime       | java.sql.JDBCType#TIME                       |  time                         |
+| java.time.LocalDate       | java.sql.JDBCType#DATE                       |  date                         |
+| java.time.LocalDateTime   | java.sql.JDBCType#TIMESTAMP                  |  timestamp  without time zone |
 
 
 
 
-Army 的起源
+
+
+
+
+
+
+               
+----
+
+ Army 的起源    
 ----
 Army 吸收 Hibernate 和 Jooq 的优点去除其缺点加上新的设计和约定而成.
 
