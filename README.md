@@ -58,7 +58,7 @@ Army 以下强制规则:
 #### Sql Server 对应 Java 和 JDBC 的数据类型
 | Java Type                 |                           JDBC Type          | Sql Server data type    |     
 | :------------------------ | :--------------------------------------------|-------------------------|     
-| java.lang.Boolean         | java.sql.JDBCType#CHAR                       | BIT (0 or 1)            |     
+| java.lang.Boolean         | java.sql.JDBCType#CHAR                       | CHAR(1), [Y,N]          |     
 | java.lang.String          | java.sql.JDBCType#VARCHAR                    | VARCHAR(n)              |     
 | java.lang.Integer         | java.sql.JDBCType#INTEGER                    | INT(n)                  |     
 | java.lang.Long            | java.sql.JDBCType#BIGINT                     | BIGINT(n)               |     
@@ -71,7 +71,7 @@ Army 以下强制规则:
 #### DB2 对应 JAVA 和 JDBC 的数据类型
 | Java Type                 |                           JDBC Type          | DB2 data type           |     
 | :------------------------ | :--------------------------------------------|-------------------------|     
-| java.lang.Boolean         | java.sql.JDBCType#CHAR                       | CHAR(n)                 |     
+| java.lang.Boolean         | java.sql.JDBCType#CHAR                       | CHAR(1), [Y,N]          |     
 | java.lang.String          | java.sql.JDBCType#VARCHAR                    | VARCHAR(n)              |     
 | java.lang.Integer         | java.sql.JDBCType#INTEGER                    | INT(n)                  |     
 | java.lang.Long            | java.sql.JDBCType#BIGINT                     | BIGINT(n)               |     
