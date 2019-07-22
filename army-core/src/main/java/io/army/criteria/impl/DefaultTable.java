@@ -1,4 +1,4 @@
-package io.army.meta;
+package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.annotation.Index;
@@ -6,6 +6,10 @@ import io.army.annotation.Table;
 import io.army.criteria.MetaException;
 import io.army.criteria.dialect.Dialect;
 import io.army.domain.IDomain;
+import io.army.meta.Field;
+import io.army.meta.MappingMode;
+import io.army.meta.MetaAssert;
+import io.army.meta.TableMeta;
 import io.army.util.MetaUtils;
 import io.army.util.Pair;
 
@@ -145,7 +149,11 @@ public final class DefaultTable<T extends IDomain> implements TableMeta<T> {
             );
         }
 
-        MetaAssert.assertMetaMatch(entityClass, this, field);
+        try {
+            MetaAssert.assertMetaMatch(entityClass, this, field);
+        } catch (MetaException e) {
+            e.printStackTrace();
+        }
 
         fieldList.add(field);
 
@@ -182,12 +190,21 @@ public final class DefaultTable<T extends IDomain> implements TableMeta<T> {
 
     }
 
+    @Override
+    public String schema() {
+        return null;
+    }
+
     private void fieldAddFinishEvent() {
         validIndex();
         fieldList = Collections.unmodifiableList(fieldList);
         this.usable = true;
     }
 
+    @Override
+    public <F> Field<T, F> getField(String propName, Class<F> propClass) {
+        return null;
+    }
 
     private void setPrimaryKey(Field<T, ?> primaryKey) throws MetaException {
         if (!primaryKeyReference.compareAndSet(null, primaryKey)) {

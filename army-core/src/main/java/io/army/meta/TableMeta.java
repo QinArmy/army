@@ -23,7 +23,6 @@ public interface TableMeta<T extends IDomain> {
 
     Field<T, ?> primaryKey();
 
-
     MappingMode mappingMode();
 
     List<String> indexPropList();
@@ -36,4 +35,7 @@ public interface TableMeta<T extends IDomain> {
 
     Charset charset();
 
+    String schema();
+
+    <F> Field<T, F> getField(String propName, Class<F> propClass);
 }

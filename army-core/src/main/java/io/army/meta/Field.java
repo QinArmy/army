@@ -12,9 +12,9 @@ import java.sql.JDBCType;
  * F 表示字段的 java 类型
  * T 表对应的 domain 类型
  */
-public interface Field<T extends IDomain, F> extends Expression<F>, Selection<F> {
+public interface Field<T extends IDomain, F> extends Expression<F>, Selection {
 
-    Selection<F> as(String tableAlias, String alias);
+    Selection as(String tableAlias, String alias);
 
 
     boolean isPrimary();
@@ -38,7 +38,8 @@ public interface Field<T extends IDomain, F> extends Expression<F>, Selection<F>
      */
     JDBCType jdbcType();
 
-    boolean isNullable();
+    SQLType sqlType();
+
 
     boolean isInsertalbe();
 

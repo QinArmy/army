@@ -36,7 +36,6 @@ public interface Expression<E> extends GroupElement<E>, OrderElement<E> {
 
     Predicate not();
 
-
     Predicate between(Expression<E> first, Expression<E> second);
 
     Predicate between(E first, E second);
@@ -49,9 +48,7 @@ public interface Expression<E> extends GroupElement<E>, OrderElement<E> {
 
     Predicate isNotNull();
 
-
     Predicate in(Collection<E> values);
-
 
     Predicate in(Expression<Collection<E>> values);
 
@@ -66,7 +63,6 @@ public interface Expression<E> extends GroupElement<E>, OrderElement<E> {
     Predicate any(SubQuery<E> subQuery);
 
     Predicate some(SubQuery<E> subQuery);
-
 
     @Override
     String toString();

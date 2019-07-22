@@ -11,15 +11,12 @@ import java.util.Collection;
 /**
  * created  on 2018/11/24.
  */
-abstract class AbstractExpression<E> implements Expression<E>, Selection {
+public abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
-    protected final InnerCriteriaContext criteriaContext;
+
 
     protected String alias;
 
-    protected AbstractExpression(InnerCriteriaContext criteriaContext) {
-        this.criteriaContext = criteriaContext;
-    }
 
     @Override
     public Selection as(String alias) {

@@ -24,8 +24,8 @@ import java.util.*;
  * created  on 2018/9/27.
  */
 @SupportedAnnotationTypes({
-        "org.qinarmy.army.annotation.Table",
-        "org.qinarmy.army.annotation.MappedSuperclass"
+        "io.army.annotation.Table",
+        "io.army.annotation.MappedSuperclass"
 })
 @SupportedOptions({
         ArmyMetaModelEntityProcessor.DEBUG_OPTION,
@@ -126,9 +126,14 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
 
     }
 
+    /**
+     * @return <ul>
+     * <li>key : className</li>
+     * <li>{@link TypeElement}</li>
+     * </ul>
+     */
     private Map<String, TypeElement> createMappedSuperclassMap(RoundEnvironment roundEnv,
-                                                               Class<? extends Annotation> annotationClass)
-            throws MetaException {
+                                                               Class<? extends Annotation> annotationClass) {
 
         Set<? extends Element> rootSet;
         final Map<String, TypeElement> mappedSuperMap = new HashMap<>();

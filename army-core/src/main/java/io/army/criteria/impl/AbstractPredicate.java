@@ -8,9 +8,6 @@ import io.army.criteria.SubQuery;
  */
 abstract class AbstractPredicate extends AbstractExpression<Boolean> implements Predicate {
 
-    public AbstractPredicate(MutableCriteriaContext criteriaContext) {
-        super(criteriaContext);
-    }
 
 
     @Override

@@ -1,14 +1,17 @@
-package io.army.meta;
+package io.army.criteria.impl;
 
 import io.army.criteria.Selection;
 import io.army.domain.IDomain;
+import io.army.meta.Field;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
+
+import java.sql.JDBCType;
 
 /**
  * created  on 2019-02-22.
  */
-final class FieldSelection<T extends IDomain, F> implements Selection<F> {
+final class FieldSelection<T extends IDomain, F> implements Selection {
 
     private final Field<T, F> field;
 
@@ -20,6 +23,16 @@ final class FieldSelection<T extends IDomain, F> implements Selection<F> {
         this.field = field;
         this.tableAlias = tableAlias;
         this.alias = alias;
+    }
+
+    @Override
+    public Class<?> javaType() {
+        return null;
+    }
+
+    @Override
+    public JDBCType jdbcType() {
+        return null;
     }
 
     public Field<T, F> getField() {

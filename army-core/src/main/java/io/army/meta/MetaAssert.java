@@ -16,8 +16,8 @@ import java.lang.reflect.Modifier;
 public abstract class MetaAssert {
 
 
-    static void assertMetaMatch(@NonNull Class<?> entityClass, @NonNull TableMeta<?> table,
-                                @NonNull io.army.meta.Field<?, ?> field)
+    public static void assertMetaMatch(@NonNull Class<?> entityClass, @NonNull TableMeta<?> table,
+                                       @NonNull io.army.meta.Field<?, ?> field)
             throws MetaException {
 
         if (field.table() != table) {

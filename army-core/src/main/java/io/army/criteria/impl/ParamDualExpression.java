@@ -38,6 +38,16 @@ class ParamDualExpression<E> extends AbstractExpression<E> implements ParamExpre
     }
 
     @Override
+    public Class<?> javaType() {
+        return null;
+    }
+
+    @Override
+    public JDBCType jdbcType() {
+        return null;
+    }
+
+    @Override
     public JDBCType getJdbcType() {
         return null;
     }

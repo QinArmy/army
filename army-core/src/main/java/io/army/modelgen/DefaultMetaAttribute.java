@@ -1,6 +1,5 @@
 package io.army.modelgen;
 
-import io.army.meta.DefaultField;
 import io.army.meta.Field;
 import io.army.util.ElementUtils;
 
@@ -25,8 +24,8 @@ class DefaultMetaAttribute implements MetaAttribute {
 
     @Override
     public String getDefinition() {
-        String format = "    public static final %s<%s,%s> %s = new %s<>(T,%s);";
-        String simpleName = ElementUtils.getSimpleName(variableElement.asType().toString());
+        String format = "    public static final %s<%s,%s> %s = T.getField(%s,%s.class);";
+        String propSimpleName = ElementUtils.getSimpleName(variableElement.asType().toString());
 
         String fieldName = getName();
 
@@ -34,14 +33,13 @@ class DefaultMetaAttribute implements MetaAttribute {
 
                 Field.class.getSimpleName(),
                 type.getSimpleName(),
-                simpleName,
+                propSimpleName,
                 fieldName,
 
-                DefaultField.class.getSimpleName(),
-                ElementUtils.camelToUpperCase(fieldName)
-
-
+                ElementUtils.camelToUpperCase(fieldName),
+                propSimpleName
         );
+
     }
 
     @Override

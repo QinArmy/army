@@ -1,10 +1,13 @@
-package io.army.meta;
+package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.annotation.Column;
 import io.army.criteria.MetaException;
 import io.army.criteria.Selection;
 import io.army.domain.IDomain;
+import io.army.meta.Field;
+import io.army.meta.SQLType;
+import io.army.meta.TableMeta;
 import io.army.util.MetaUtils;
 import org.springframework.lang.NonNull;
 
@@ -13,7 +16,7 @@ import java.sql.JDBCType;
 /**
  * created  on 2018/11/18.
  */
-public final class DefaultField<T extends IDomain, F> extends Abstaz<F> implements Field<T, F> {
+public final class DefaultField<T extends IDomain, F> extends AbstractExpression<F> implements Field<T, F> {
 
     private static final String ID = "id";
 
@@ -42,11 +45,11 @@ public final class DefaultField<T extends IDomain, F> extends Abstaz<F> implemen
 
     private final boolean updatable;
 
-    private final boolean nullable;
 
     private final int precision;
 
     private final int scale;
+
 
     @SuppressWarnings("unchecked")
     public DefaultField(final @NonNull TableMeta<T> table, final @NonNull String propertyName) throws MetaException {
@@ -68,7 +71,6 @@ public final class DefaultField<T extends IDomain, F> extends Abstaz<F> implemen
 
             insertable = column.insertable();
             updatable = column.updatable();
-            nullable = column.nullable();
 
             precision = column.precision();
             scale = column.scale();
@@ -83,12 +85,12 @@ public final class DefaultField<T extends IDomain, F> extends Abstaz<F> implemen
     }
 
     @Override
-    public Selection<F> as(String alias) {
+    public Selection as(String alias) {
         return new FieldSelection<>(this, "", alias);
     }
 
     @Override
-    public Selection<F> as(@NonNull String tableAlias, @NonNull String alias) {
+    public Selection as(@NonNull String tableAlias, @NonNull String alias) {
         return new FieldSelection<>(this, tableAlias, alias);
     }
 
@@ -122,10 +124,6 @@ public final class DefaultField<T extends IDomain, F> extends Abstaz<F> implemen
         return jdbcType;
     }
 
-    @Override
-    public boolean isNullable() {
-        return nullable;
-    }
 
     @Override
     public boolean isInsertalbe() {
@@ -170,6 +168,11 @@ public final class DefaultField<T extends IDomain, F> extends Abstaz<F> implemen
     @Override
     public String propertyName() {
         return propertyName;
+    }
+
+    @Override
+    public SQLType sqlType() {
+        return null;
     }
 
     @Override

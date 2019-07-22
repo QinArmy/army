@@ -1,7 +1,6 @@
 package com.example.domain;
 
 import io.army.annotation.Column;
-import io.army.annotation.SqlType;
 import io.army.annotation.Table;
 import io.army.domain.IDomain;
 
@@ -17,7 +16,6 @@ public class User implements IDomain {
 
     private Long id;
 
-    @SqlType("io.army.annotation.StringType.fixed_char")
     private String name;
 
     @Column

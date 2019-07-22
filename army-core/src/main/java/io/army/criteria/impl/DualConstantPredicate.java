@@ -2,6 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 
+import java.sql.JDBCType;
+
 /**
  * created  on 2018/11/27.
  */
@@ -14,7 +16,7 @@ class DualConstantPredicate extends AbstractPredicate {
 
     private final Object right;
 
-    DualConstantPredicate(Expression<?> left, DualOperator operator, Object right) {
+    public DualConstantPredicate(Expression<?> left, DualOperator operator, Object right) {
         this.left = left;
         this.operator = operator;
         this.right = right;
@@ -26,6 +28,16 @@ class DualConstantPredicate extends AbstractPredicate {
 
     public DualOperator getOperator() {
         return operator;
+    }
+
+    @Override
+    public Class<?> javaType() {
+        return null;
+    }
+
+    @Override
+    public JDBCType jdbcType() {
+        return null;
     }
 
     public Object getRight() {

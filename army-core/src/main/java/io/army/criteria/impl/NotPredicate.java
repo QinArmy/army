@@ -3,6 +3,8 @@ package io.army.criteria.impl;
 import io.army.criteria.Expression;
 import io.army.criteria.Predicate;
 
+import java.sql.JDBCType;
+
 /**
  * created  on 2018/11/25.
  */
@@ -23,6 +25,15 @@ final class NotPredicate extends AbstractPredicate {
                 : new NotPredicate(origin, true);
     }
 
+    @Override
+    public Class<?> javaType() {
+        return null;
+    }
+
+    @Override
+    public JDBCType jdbcType() {
+        return null;
+    }
 
     @Override
     public String toString() {
