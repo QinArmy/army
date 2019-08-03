@@ -1,5 +1,7 @@
 package io.army.util;
 
+import org.springframework.lang.Nullable;
+
 import java.util.Objects;
 import java.util.StringJoiner;
 
@@ -7,8 +9,15 @@ public final class Precision {
 
     public static final Precision EMPTY = new Precision(0, null);
 
+    public static final Precision DEFAULT_CHAR_PRECISION = new Precision(255, null);
+
+    public static final Precision DEFAULT_INT_PRECISION = new Precision(11, null);
+
+    public static final Precision DEFAULT_DECIMAL_PRECISION = new Precision(14, 2);
+
     private final int precision;
 
+    @Nullable
     private final Integer scale;
 
     public Precision(int precision, Integer scale) {
