@@ -12,3 +12,15 @@
 
 2019-07-20 11:00:00 开会确认调研结果
 
+2019-08-03 11:40:00 开会后确认的任务
+
+索隆 部分
+
+1. 实现 Oracle,Postgre 的 SqlType
+2. 实现 默认支持的 MappingType
+3. Oracle,Postgre 的 dialect
+4. 实现 TableMeta 和 Field
+
+安西教练
+1. 实现 MySQL,DB2,SQLServer 的 SqlType
+2. 实现 MySQL,DB2,SQLServer dialect

@@ -6,7 +6,7 @@ import io.army.criteria.MetaException;
 import io.army.criteria.Selection;
 import io.army.domain.IDomain;
 import io.army.meta.Field;
-import io.army.meta.SQLType;
+import io.army.meta.MappingType;
 import io.army.meta.TableMeta;
 import io.army.util.MetaUtils;
 import org.springframework.lang.NonNull;
@@ -124,6 +124,10 @@ public final class DefaultField<T extends IDomain, F> extends AbstractExpression
         return jdbcType;
     }
 
+    @Override
+    public MappingType mappingType() {
+        return null;
+    }
 
     @Override
     public boolean isInsertalbe() {
@@ -168,11 +172,6 @@ public final class DefaultField<T extends IDomain, F> extends AbstractExpression
     @Override
     public String propertyName() {
         return propertyName;
-    }
-
-    @Override
-    public SQLType sqlType() {
-        return null;
     }
 
     @Override

@@ -38,6 +38,8 @@ public interface Field<T extends IDomain, F> extends Expression<F>, Selection {
      */
     JDBCType jdbcType();
 
+    MappingType mappingType();
+
 
     boolean isInsertalbe();
 
