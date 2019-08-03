@@ -38,8 +38,6 @@ public interface Field<T extends IDomain, F> extends Expression<F>, Selection {
      */
     JDBCType jdbcType();
 
-    SQLType sqlType();
-
 
     boolean isInsertalbe();
 
