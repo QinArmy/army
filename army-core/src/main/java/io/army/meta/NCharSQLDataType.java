@@ -1,12 +1,13 @@
 package io.army.meta;
 
+
 import io.army.dialect.Dialect;
 import io.army.util.Precision;
 
 import java.util.List;
 
 /**
- * this class represent the {@code CHAR}  .
+ * this class represent the {@code NCHAR}  .
  * see support list
  * <ul>
  * <li><a href="https://docs.oracle.com/en/database/oracle/oracle-database/12.2/sqlrf/Data-Types.html#GUID-85E0A0DD-9E90-4AE1-9AD5-93C89FDCFC49">Oracle 12 g</a></li>
@@ -14,23 +15,23 @@ import java.util.List;
  * <li><a href="https://www.postgresql.org/docs/11/datatype-character.html">Postgre 11.x</a></li>
  * </ul>
  */
-public final class CharSQLDataType extends AbstractStandardSQLDataType {
+public class NCharSQLDataType extends AbstractStandardSQLDataType {
 
-    public static final CharSQLDataType INSTANCE = new CharSQLDataType();
+    public static final NCharSQLDataType INSTANCE = new NCharSQLDataType();
 
 
-    private CharSQLDataType() {
+    private NCharSQLDataType() {
 
     }
 
     @Override
     public String typeName() {
-        return "CHAR";
+        return "NCHAR";
     }
 
     @Override
     public String typeName(int precision) {
-        return "CHAR(" + precision + ")";
+        return "NCHAR(" + precision + ")";
     }
 
 

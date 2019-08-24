@@ -1,6 +1,6 @@
 package io.army.meta;
 
-import io.army.criteria.dialect.Dialect;
+import io.army.dialect.Dialect;
 import io.army.domain.IDomain;
 
 import java.nio.charset.Charset;

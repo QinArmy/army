@@ -4,7 +4,7 @@ import io.army.ErrorCode;
 import io.army.annotation.Index;
 import io.army.annotation.Table;
 import io.army.criteria.MetaException;
-import io.army.criteria.dialect.Dialect;
+import io.army.dialect.Dialect;
 import io.army.domain.IDomain;
 import io.army.meta.Field;
 import io.army.meta.MappingMode;

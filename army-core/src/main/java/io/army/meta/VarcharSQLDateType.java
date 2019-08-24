@@ -1,10 +1,6 @@
 package io.army.meta;
 
-import io.army.criteria.dialect.Dialect;
-import io.army.criteria.dialect.Mysql57Dialect;
-import io.army.criteria.dialect.Oracle12Dialect;
-import io.army.criteria.dialect.Postgre11Dialect;
-import io.army.util.ArrayUtils;
+import io.army.dialect.Dialect;
 import io.army.util.Precision;
 
 import java.util.List;
@@ -18,19 +14,13 @@ import java.util.List;
  * <li><a href="https://www.postgresql.org/docs/11/datatype-character.html">Postgre 11.x</a></li>
  * </ul>
  */
-public final class VarcharSQLDateType implements SQLType {
+public final class VarcharSQLDateType implements SQLDataType {
 
     private static final VarcharSQLDateType INSTANCE = new VarcharSQLDateType();
 
-    private static final Precision DEFAULT_PRECISION = new Precision(255, null);
-
-    private static final List<Dialect> SUPPORT_DIALECT_LIST = ArrayUtils.asUnmodifiableList(
-            Mysql57Dialect.INSTANCE,
-            Oracle12Dialect.INSTANCE,
-            Postgre11Dialect.INSTANCE
-    );
 
     private VarcharSQLDateType() {
+
     }
 
     @Override
@@ -43,18 +33,14 @@ public final class VarcharSQLDateType implements SQLType {
         return "VARCHAR(" + precision + ")";
     }
 
-    @Override
-    public String typeName(int precision, int scale) {
-        return typeName(precision);
-    }
 
     @Override
     public Precision defaultPrecision() {
-        return DEFAULT_PRECISION;
+        return Precision.DEFAULT_CHAR_PRECISION;
     }
 
     @Override
     public List<Dialect> dialectList() {
-        return SUPPORT_DIALECT_LIST;
+        return null;
     }
 }

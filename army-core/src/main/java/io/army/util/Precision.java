@@ -11,9 +11,8 @@ public final class Precision {
 
     public static final Precision DEFAULT_CHAR_PRECISION = new Precision(255, null);
 
-    public static final Precision DEFAULT_INT_PRECISION = new Precision(11, null);
-
     public static final Precision DEFAULT_DECIMAL_PRECISION = new Precision(14, 2);
+
 
     private final int precision;
 
@@ -38,12 +37,12 @@ public final class Precision {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof Precision)) {
             return false;
         }
         Precision precision1 = (Precision) o;
         return precision == precision1.precision &&
-                scale.equals(precision1.scale);
+                Objects.equals(scale, precision1.scale);
     }
 
     @Override

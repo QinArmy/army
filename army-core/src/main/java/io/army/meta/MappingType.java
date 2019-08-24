@@ -1,7 +1,7 @@
 package io.army.meta;
 
 import io.army.annotation.Column;
-import io.army.criteria.dialect.Dialect;
+import io.army.dialect.Dialect;
 import io.army.util.Precision;
 import org.springframework.lang.NonNull;
 
@@ -22,7 +22,7 @@ public interface MappingType<T> {
      */
     T toJava(Object databaseValue);
 
-    SQLType sqlType(Dialect dialect);
+    SQLDataType sqlType(Dialect dialect);
 
     /**
      * if return instance equals {@link Precision#EMPTY} , {@link Column#length()} effective .

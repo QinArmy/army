@@ -1,7 +1,7 @@
 package io.army.meta;
 
 import io.army.annotation.Column;
-import io.army.criteria.dialect.Dialect;
+import io.army.dialect.Dialect;
 import io.army.util.Precision;
 
 import java.util.List;
@@ -9,7 +9,8 @@ import java.util.List;
 /**
  * A common interface to all dialect-specific data types.
  */
-public interface SQLType {
+public interface SQLDataType {
+
 
     /**
      * return sql date type name (e.g {@code VARCHAR} , {@code INT})
@@ -37,15 +38,19 @@ public interface SQLType {
     /**
      * return sql data type default precision and scale,the precision and scale will be use creation statement.
      * <p>
-     *     if return {@link Precision#EMPTY} ,{@link Column#length()} will be ignored .
+     * if return {@link Precision#EMPTY} ,{@link Column#length()} will be ignored .
      * </p>
+     *
      * @return default precision and scale or {@link Precision#EMPTY}
      */
     Precision defaultPrecision();
 
     /**
-     * @return dialect list that this sql date type is supported
+     * dialect list that this sql date type is supported
+     *
+     * @return an unmodifiable list
      */
     List<Dialect> dialectList();
+
 
 }
