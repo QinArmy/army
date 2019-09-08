@@ -38,19 +38,19 @@ public class User extends VersionDomain {
     @Column(updatable = false, defaultValue = ZERO, comment = "证件记录id,标识一个自然人或合法组织")
     private Long certificateId;
 
-    @Column(defaultValue = EMPTY, length = 64, comment = "个人或组织的真实名称,此字段加密")
+    @Column(defaultValue = EMPTY, precision = 64, comment = "个人或组织的真实名称,此字段加密")
     private String name;
 
-    @Column(defaultValue = EMPTY, length = 20, comment = "昵称,此字段不加密")
+    @Column(defaultValue = EMPTY, precision = 20, comment = "昵称,此字段不加密")
     private String nickName;
 
-    @Column(defaultValue = EMPTY, length = 15, comment = "用户注册时,注册数据来源于哪个合作者")
+    @Column(defaultValue = EMPTY, precision = 15, comment = "用户注册时,注册数据来源于哪个合作者")
     private String partnerNo;
 
-    @Column(defaultValue = EMPTY, length = 64, comment = "用户在合作者平台用户的id,与 partner_no 联用")
+    @Column(defaultValue = EMPTY, precision = 64, comment = "用户在合作者平台用户的id,与 partner_no 联用")
     private String idFromPartner;
 
-    @Column(defaultValue = EMPTY, length = 30, comment = "用户在合作者平台用户的昵称,与 partner_no 联用")
+    @Column(defaultValue = EMPTY, precision = 30, comment = "用户在合作者平台用户的昵称,与 partner_no 联用")
     private String nickNameFromPartner;
 
     @Column(defaultValue = CURRENT_TIMESTAMP, comment = "用户在合作者平台用户的注册时间,与 partner_no 联用")

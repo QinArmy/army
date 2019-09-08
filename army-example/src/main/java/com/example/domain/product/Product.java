@@ -37,7 +37,6 @@ public class Product extends VersionDomain {
     private Integer version;
 
 
-    @Override
     public Long getId() {
         return id;
     }

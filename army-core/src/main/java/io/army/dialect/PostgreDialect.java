@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.meta.Field;
+import io.army.meta.FieldMeta;
 
 /**
  * this class is a  {@link Dialect} implementation and abstract base class of all Postgre Dialect
@@ -9,7 +9,7 @@ import io.army.meta.Field;
 public abstract class PostgreDialect extends AbstractDialect {
 
     @Override
-    public String fieldDefinition(Field<?, ?> field) {
+    public String fieldDefinition(FieldMeta<?, ?> field) {
         return null;
     }
 }

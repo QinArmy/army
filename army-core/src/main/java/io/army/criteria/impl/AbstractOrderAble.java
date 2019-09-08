@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.LimitAble;
 import io.army.criteria.OrderAble;
 import io.army.criteria.OrderElement;
-import io.army.util.ArrayUtils;
+import org.qinarmy.foundation.util.ArrayUtils;
 
 import java.util.Collections;
 import java.util.List;

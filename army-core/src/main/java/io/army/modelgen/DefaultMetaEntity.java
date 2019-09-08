@@ -1,7 +1,7 @@
 package io.army.modelgen;
 
-import io.army.util.CollectionUtils;
 import io.army.util.ElementUtils;
+import org.qinarmy.foundation.util.CollectionUtils;
 import org.springframework.lang.NonNull;
 
 import javax.lang.model.element.TypeElement;

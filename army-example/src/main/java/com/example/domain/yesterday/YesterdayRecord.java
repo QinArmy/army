@@ -2,7 +2,10 @@ package com.example.domain.yesterday;
 
 
 import com.example.domain.Domain;
-import io.army.annotation.*;
+import io.army.annotation.Column;
+import io.army.annotation.Index;
+import io.army.annotation.Inheritance;
+import io.army.annotation.Table;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -18,7 +21,6 @@ import java.time.LocalDateTime;
 },
         comment = "昨日收益/债务记录父表")
 @Inheritance("recordType")
-@Immutable
 public class YesterdayRecord extends Domain {
 
     @Column(defaultValue = ZERO, updatable = false, comment = "id")

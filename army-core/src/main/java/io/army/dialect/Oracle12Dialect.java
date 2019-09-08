@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.meta.Field;
+import io.army.meta.FieldMeta;
 
 /**
  * this class is a  {@link Dialect} implementation and represent Oracle 12g  Dialect
@@ -11,7 +11,7 @@ public class Oracle12Dialect extends AbstractDialect {
     public static final Oracle12Dialect INSTANCE = new Oracle12Dialect();
 
     @Override
-    public String fieldDefinition(Field<?, ?> field) {
+    public String fieldDefinition(FieldMeta<?, ?> field) {
         return null;
     }
 }

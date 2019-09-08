@@ -38,6 +38,8 @@ public @interface Table {
 
     String comment() default "";
 
+    boolean immutable() default false;
+
     String charset() default "UTF-8";
 
 }

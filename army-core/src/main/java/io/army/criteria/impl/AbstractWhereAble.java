@@ -3,8 +3,8 @@ package io.army.criteria.impl;
 import io.army.criteria.GroupAble;
 import io.army.criteria.Predicate;
 import io.army.criteria.WhereAble;
-import io.army.util.ArrayUtils;
 import io.army.util.Assert;
+import org.qinarmy.foundation.util.ArrayUtils;
 import org.springframework.lang.NonNull;
 
 import java.util.Collections;

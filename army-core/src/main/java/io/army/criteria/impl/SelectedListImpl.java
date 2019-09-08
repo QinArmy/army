@@ -2,10 +2,10 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.domain.IDomain;
-import io.army.util.ArrayUtils;
 import io.army.util.Assert;
 import io.army.util.Pair;
 import io.army.util.Triple;
+import org.qinarmy.foundation.util.ArrayUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 

@@ -4,12 +4,11 @@ import io.army.ErrorCode;
 import io.army.annotation.Column;
 import io.army.annotation.Table;
 import io.army.criteria.MetaException;
-import io.army.criteria.impl.DefaultField;
 import io.army.criteria.impl.DefaultTable;
-import io.army.meta.Field;
+import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.util.ArrayUtils;
-import io.army.util.CollectionUtils;
+import org.qinarmy.foundation.util.ArrayUtils;
+import org.qinarmy.foundation.util.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
@@ -147,11 +146,8 @@ public abstract class SourceCreateUtils {
         builder.append(getPackage(type))
                 .append(";\n\n")
                 .append("import ")
-                .append(Field.class.getName())
+                .append(FieldMeta.class.getName())
 
-                .append(";\n")
-                .append("import ")
-                .append(DefaultField.class.getName())
                 .append(";\n")
 
                 .append("import ")

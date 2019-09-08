@@ -5,6 +5,8 @@ package io.army;
  */
 public class ArmyRuntimeException extends RuntimeException implements IArmyExpression {
 
+    private static final long serialVersionUID = -3428509683218688609L;
+
     private final ErrorCode errorCode;
 
     public ArmyRuntimeException(ErrorCode errorCode) {

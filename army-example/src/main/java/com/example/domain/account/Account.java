@@ -55,7 +55,7 @@ public class Account extends VersionDomain {
     @Column(defaultValue = N, updatable = false, comment = "是否允许用户操作这个账户资金(balance),特指是否允许用户使用此账户的资金进行投资购买等")
     private Boolean manualUse;
 
-    @Column(defaultValue = ZERO, updatable = false, length = 64, comment = "用户请求流水号")
+    @Column(defaultValue = ZERO, updatable = false, comment = "用户请求流水号")
     private String requestNo;
 
     @Column(defaultValue = DECIMAL_ZERO, precision = 14, scale = 2, comment = "账户当前收益")

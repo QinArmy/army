@@ -78,7 +78,7 @@ public class BaseRecord extends VersionDomain {
     @Column(defaultValue = EMPTY, comment = "描述,给用户看的查询")
     private String desc;
 
-    @Column(defaultValue = EMPTY, length = 20, comment = "标签,对交易记录标识")
+    @Column(defaultValue = EMPTY, comment = "标签,对交易记录标识")
     private String label;
 
     @Column(defaultValue = DECIMAL_ZERO, updatable = false, precision = 14, scale = 2, comment = "交易金额,此字段不可更新")

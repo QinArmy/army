@@ -1,7 +1,7 @@
 package io.army.dialect;
 
 import io.army.criteria.impl.DLS;
-import io.army.meta.Field;
+import io.army.meta.FieldMeta;
 
 /**
  * this class is a  {@link Dialect} implementation and abstract base class of all Oracle Dialect
@@ -13,7 +13,7 @@ public abstract class OracleDialect extends DLS implements Dialect {
     }
 
     @Override
-    public String fieldDefinition(Field<?, ?> field) {
+    public String fieldDefinition(FieldMeta<?, ?> field) {
         return null;
     }
 }

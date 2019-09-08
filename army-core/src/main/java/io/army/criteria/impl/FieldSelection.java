@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Selection;
 import io.army.domain.IDomain;
-import io.army.meta.Field;
+import io.army.meta.FieldMeta;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
@@ -13,13 +13,13 @@ import java.sql.JDBCType;
  */
 final class FieldSelection<T extends IDomain, F> implements Selection {
 
-    private final Field<T, F> field;
+    private final FieldMeta<T, F> field;
 
     private final String tableAlias;
 
     private final String alias;
 
-    FieldSelection(@NonNull Field<T, F> field, @Nullable String tableAlias, @NonNull String alias) {
+    FieldSelection(@NonNull FieldMeta<T, F> field, @Nullable String tableAlias, @NonNull String alias) {
         this.field = field;
         this.tableAlias = tableAlias;
         this.alias = alias;
@@ -35,7 +35,7 @@ final class FieldSelection<T extends IDomain, F> implements Selection {
         return null;
     }
 
-    public Field<T, F> getField() {
+    public FieldMeta<T, F> getField() {
         return field;
     }
 

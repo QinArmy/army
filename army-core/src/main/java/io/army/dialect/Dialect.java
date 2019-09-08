@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.meta.Field;
+import io.army.meta.FieldMeta;
 
 /**
  *  A common interface to all dialect of database.
@@ -17,7 +17,7 @@ public interface Dialect {
      * @param field column meta
      * @return column definition clause
      */
-    String fieldDefinition(Field<?, ?> field);
+    String fieldDefinition(FieldMeta<?, ?> field);
 
 
 }

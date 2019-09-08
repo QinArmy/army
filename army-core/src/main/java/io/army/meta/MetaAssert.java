@@ -4,7 +4,7 @@ import io.army.ErrorCode;
 import io.army.criteria.MetaException;
 import io.army.modelgen.SourceCreateUtils;
 import io.army.util.ClassUtils;
-import io.army.util.ReflectionUtils;
+import org.qinarmy.foundation.util.ReflectionUtils;
 import org.springframework.lang.NonNull;
 
 import java.lang.reflect.Field;
@@ -17,7 +17,7 @@ public abstract class MetaAssert {
 
 
     public static void assertMetaMatch(@NonNull Class<?> entityClass, @NonNull TableMeta<?> table,
-                                       @NonNull io.army.meta.Field<?, ?> field)
+                                       @NonNull FieldMeta<?, ?> field)
             throws MetaException {
 
         if (field.table() != table) {

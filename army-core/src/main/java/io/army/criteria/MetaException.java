@@ -8,6 +8,8 @@ import io.army.ErrorCode;
  */
 public class MetaException extends ArmyRuntimeException {
 
+    private static final long serialVersionUID = -7919928531735229285L;
+
     public MetaException(ErrorCode errorCode) {
         super(errorCode);
     }

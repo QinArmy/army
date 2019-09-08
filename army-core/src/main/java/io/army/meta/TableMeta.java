@@ -2,8 +2,8 @@ package io.army.meta;
 
 import io.army.dialect.Dialect;
 import io.army.domain.IDomain;
+import javafx.scene.media.MediaException;
 
-import java.nio.charset.Charset;
 import java.util.List;
 
 /**
@@ -21,21 +21,21 @@ public interface TableMeta<T extends IDomain> {
 
     String comment();
 
-    Field<T, ?> primaryKey();
+    FieldMeta<? super T, ?> primaryKey();
 
     MappingMode mappingMode();
 
-    List<String> indexPropList();
+    List<FieldMeta<T, ?>> indexPropList();
 
-    List<String> uniquePropList();
+    List<FieldMeta<T, ?>> uniquePropList();
 
-    List<Field<T, ?>> fieldList();
+    List<FieldMeta<T, ?>> fieldList();
 
     String createSql(Dialect dialect);
 
-    Charset charset();
+    String charset();
 
     String schema();
 
-    <F> Field<T, F> getField(String propName, Class<F> propClass);
+    <F> FieldMeta<T, F> getField(String propName, Class<F> propClass) throws MediaException;
 }

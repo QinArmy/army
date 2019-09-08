@@ -99,45 +99,37 @@ public abstract class Domain extends BaseCriteria implements IDomain {
         return serialVersionUID;
     }
 
-    @Override
     public LocalDateTime getCreateTime() {
         return createTime;
     }
 
-    @Override
     public Domain setCreateTime(LocalDateTime createTime) {
         this.createTime = createTime;
         return this;
     }
 
-    @Override
     public LocalDateTime getUpdateTime() {
         return updateTime;
     }
 
-    @Override
     public Domain setUpdateTime(LocalDateTime updateTime) {
         this.updateTime = updateTime;
         return this;
     }
 
-    @Override
     public Boolean getVisible() {
         return visible;
     }
 
-    @Override
     public Domain setVisible(Boolean visible) {
         this.visible = visible;
         return this;
     }
 
-    @Override
     public Integer getVersion() {
         return version;
     }
 
-    @Override
     public Domain setVersion(Integer version) {
         this.version = version;
         return this;

@@ -17,6 +17,14 @@
             <artifactId>army-struct</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.qinarmy.foundation</groupId>
+            <artifactId>foundation-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.qinarmy.foundation</groupId>
+            <artifactId>foundation-orm</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
         </dependency>

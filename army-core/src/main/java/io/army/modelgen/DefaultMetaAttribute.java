@@ -1,6 +1,6 @@
 package io.army.modelgen;
 
-import io.army.meta.Field;
+import io.army.meta.FieldMeta;
 import io.army.util.ElementUtils;
 
 import javax.lang.model.element.TypeElement;
@@ -31,7 +31,7 @@ class DefaultMetaAttribute implements MetaAttribute {
 
         return String.format(format,
 
-                Field.class.getSimpleName(),
+                FieldMeta.class.getSimpleName(),
                 type.getSimpleName(),
                 propSimpleName,
                 fieldName,

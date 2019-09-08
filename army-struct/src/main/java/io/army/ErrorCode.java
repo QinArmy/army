@@ -15,12 +15,15 @@ public enum ErrorCode implements CodeEnum {
 
     META_ERROR(100, "meta config error", NONE),
     META_ILLEGALITY(101, "meta config illegality", META_ERROR),
+    MAPPING_NOT_FOUND(102, "mapping not found", META_ERROR),
 
     CRITERIA_ERROR(200, "criteria error", NONE),
     ILLEGAL_PREDICATE(201, "illegal predicate", CRITERIA_ERROR),
 
     TYPE_ERROR(500, "date type error", NONE),
     CODE_ENUM_ERROR(501, "CedeEnum definition error", TYPE_ERROR),
+
+    UNSUPPORT_DIALECT(100, "不支方言", NONE)
     ;
 
 
