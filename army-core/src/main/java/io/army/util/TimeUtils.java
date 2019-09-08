@@ -1,6 +1,5 @@
 package io.army.util;
 
-import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -73,7 +72,7 @@ public abstract class TimeUtils {
 
 
     /**
-     * 1970-01-01 08:00:00
+     * 1970-01-01 08:00:00 即东八区对应的时间
      */
     public static final LocalDateTime SOURCE_DATE_TIME = LocalDateTime.ofInstant(Instant.EPOCH, ZONE8);
 
@@ -135,7 +134,7 @@ public abstract class TimeUtils {
      * @see System#currentTimeMillis()
      */
     public static LocalDateTime toDateTime(long millis) {
-        return LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), TimeUtils.ZONE8);
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault());
     }
 
     /**
@@ -143,7 +142,7 @@ public abstract class TimeUtils {
      * @see System#currentTimeMillis()
      */
     public static ZonedDateTime toZoneDateTime(long millis) {
-        return ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis), TimeUtils.ZONE8);
+        return ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault());
     }
 
     /**
@@ -223,11 +222,4 @@ public abstract class TimeUtils {
                 || month == Month.DECEMBER;
 
     }
-
-
-    public static LocalDateTime toLocalDateTime(Timestamp timestamp) {
-        return timestamp.toLocalDateTime();
-    }
-
-
 }

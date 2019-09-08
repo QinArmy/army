@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * 国家代码
  *
- * @see <a href="https://www.iso.org/obp/ui/#search">ISO Country Codes</a>
+ * @see <a href="https://www.iso.org/obp/ui/#search/code/">ISO Country Codes</a>
  * created  on 2018/9/2.
  */
 public enum CountryCode implements CodeEnum {

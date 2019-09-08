@@ -38,13 +38,13 @@ public @interface Column {
      * Value must be set by developer if used when generating
      * the DDL for the column.
      */
-    int precision() default 0;
+    int precision() default -1;
 
     /**
      * (Optional) The scale for a decimal (exact numeric) column.
      * (Applies only if a decimal column is used.)
      */
-    int scale() default 0;
+    int scale() default -1;
 
 
     String defaultValue() default "";

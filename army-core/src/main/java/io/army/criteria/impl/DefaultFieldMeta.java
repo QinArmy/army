@@ -68,7 +68,6 @@ final class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F>
             fieldName = column.name();
 
             comment = column.comment();
-            defaultValue = column.defaultValue();
             mappingType = MetaUtils.mappingType(field);
 
             insertable = column.insertable();
@@ -76,6 +75,8 @@ final class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F>
 
             precision = MetaUtils.precision(column, this.mappingType.precision());
             scale = MetaUtils.scale(column, this.mappingType.precision());
+
+            defaultValue = column.defaultValue();
         } catch (RuntimeException e) {
             throw new MetaException(ErrorCode.META_ERROR, e, "Table[%s].%s error", table.tableName(), propertyName);
         }

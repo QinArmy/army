@@ -15,7 +15,7 @@ import static com.example.domain.user.User.ENTERPRISE_VALUE;
 @DiscriminatorValue(ENTERPRISE_VALUE)
 public class Enterprise extends User {
 
-    @Column(defaultValue = CURRENT_TIMESTAMP, updatable = false, comment = "公司注册时间")
+    @Column(defaultValue = NOW, updatable = false, comment = "公司注册时间")
     private LocalDateTime registerTime;
 
     @Column(defaultValue = EMPTY, precision = 64, comment = "公司法人代表")

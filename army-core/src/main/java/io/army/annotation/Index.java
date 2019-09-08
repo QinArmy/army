@@ -28,6 +28,8 @@ public @interface Index {
      */
     boolean unique() default false;
 
+    String type() default "";
+
 
     boolean asc() default true;
 }

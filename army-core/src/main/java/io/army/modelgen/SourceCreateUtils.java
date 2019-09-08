@@ -39,6 +39,8 @@ public abstract class SourceCreateUtils {
 
     public static final String TABLE_PROPERTY_NAME = "T";
 
+    private static final String PROP_PRE = "    public static final";
+
 
     /**
      * @return first:self's VariableElement,second:super's VariableElement
@@ -72,82 +74,16 @@ public abstract class SourceCreateUtils {
     }
 
 
-    private static void addNonOverride(Set<VariableElement> entityVariables,
-                                       Set<VariableElement> mappingSuperVariables) {
-
-        final Set<String> fieldNameSet = new HashSet<>();
-        for (VariableElement entityVariable : entityVariables) {
-            fieldNameSet.add(entityVariable.getSimpleName().toString());
-        }
-
-        for (VariableElement mv : mappingSuperVariables) {
-            if (!fieldNameSet.contains(mv.getSimpleName().toString())) {
-                entityVariables.add(mv);
-            }
-        }
-    }
-
-    private static void assertRequiredVariables(TypeElement type, Collection<VariableElement> variableElements)
-            throws MetaException {
-        Map<String, Boolean> handledVariableMap = new HashMap<>(10);
-
-        String variableName;
-        for (VariableElement variable : variableElements) {
-            variableName = variable.getSimpleName().toString();
-            LOG.trace(" type variable :{}", variableName);
-            if (DOMAIN_REQUIRED_ATTRIBUTES.contains(variableName)
-                    && !handledVariableMap.containsKey(variableName)) {
-                handledVariableMap.put(variableName, Boolean.TRUE);
-            }
-        }
-        if (DOMAIN_REQUIRED_ATTRIBUTES.size() != handledVariableMap.size()) {
-            throw new MetaException(ErrorCode.META_ERROR,
-                    String.format("\nDomain[%s] required fields : %s",
-                            type.getQualifiedName(), DOMAIN_REQUIRED_ATTRIBUTES));
-        }
-    }
-
-    private static Set<VariableElement> generateAttributes(List<TypeElement> typeList) {
-        Set<VariableElement> set = new HashSet<>();
-
-        for (TypeElement typeElement : typeList) {
-            set.addAll(generateAttributes(typeElement));
-        }
-        return Collections.unmodifiableSet(set);
-    }
-
-    private static Set<VariableElement> generateAttributes(@NonNull TypeElement type) {
-
-        Column column;
-        VariableElement variableElement;
-
-        Set<VariableElement> set = new HashSet<>();
-
-        for (Element element : type.getEnclosedElements()) {
-            if (!FIELD_KINDS.contains(element.getKind())) {
-                continue;
-            }
-            column = element.getAnnotation(Column.class);
-            if (column == null) {
-                continue;
-            }
-
-            variableElement = (VariableElement) element;
-            set.add(variableElement);
-        }
-        return Collections.unmodifiableSet(set);
-    }
-
 
     static String generateImport(@NonNull TypeElement type, @Nullable TypeElement superType,
                                  @NonNull Collection<VariableElement> variableElements) {
         StringBuilder builder = new StringBuilder("package ");
 
         builder.append(getPackage(type))
+
                 .append(";\n\n")
                 .append("import ")
                 .append(FieldMeta.class.getName())
-
                 .append(";\n")
 
                 .append("import ")
@@ -229,40 +165,79 @@ public abstract class SourceCreateUtils {
         return type.getEnclosingElement().equals(superType.getEnclosingElement());
     }
 
+    /**
+     * generate class body
+     */
     static String generateBody(@NonNull TypeElement type, @Nullable TypeElement superType,
                                @NonNull List<MetaAttribute> attributeList) {
         StringBuilder builder = new StringBuilder();
 
-        String format = "    public static final %s<%s> %s = new %s<>(%s.class);\n\n";
+        //1.  TableMeta part
+        appendTableMeta(type, builder, superType);
 
+        Table table = type.getAnnotation(Table.class);
+        //2.  meta count part
+        appendMetaCount(table, builder, superType, attributeList);
+
+        //3. prop names  definition
+        appendPropNames(builder, attributeList);
+
+        // new line
+        builder.append("\n\n");
+
+        //4. field meta definition
+        appendFieldMeta(builder, attributeList);
+
+        builder.append("\n\n}\n\n\n");
+        return builder.toString();
+    }
+
+
+    /*####################################### private method #################################################*/
+
+    private static void appendTableMeta(@NonNull TypeElement type, StringBuilder builder,
+                                        @Nullable TypeElement superType) {
+        String format = "%s %s<%s> %s = new %s<>(%s%s.class);\n\n";
+        String parentListText;
+        if (superType == null) {
+            parentListText = "";
+        } else {
+            parentListText = String.format("%s_.%s.tableList(%s.class),",
+                    superType.getSimpleName(), TABLE_PROPERTY_NAME, type.getSimpleName());
+        }
         builder.append(String.format(format,
+                PROP_PRE,
                 TableMeta.class.getSimpleName(),
                 type.getSimpleName(),
                 TABLE_PROPERTY_NAME,
                 DefaultTable.class.getSimpleName(),
+                parentListText,
                 type.getSimpleName()
 
         ));
+    }
 
-
-        Table table = type.getAnnotation(Table.class);
+    private static void appendMetaCount(Table table, StringBuilder builder, @Nullable TypeElement superType,
+                                        @NonNull List<MetaAttribute> attributeList) {
+        String format;
         if (table != null) {
-            format = "    public static final String META_TABLE_NAME = \"%s\";\n\n";
-            builder.append(String.format(format, table.name()));
+            format = "%s String META_TABLE_NAME = \"%s\";\n\n";
+            builder.append(String.format(format, PROP_PRE, table.name()));
         }
 
-        format = "    public static final int META_FIELD_SELF_COUNT = %s;\n\n";
-        builder.append(String.format(format, attributeList.size()));
+        format = "%s int META_FIELD_SELF_COUNT = %s;\n\n";
+        builder.append(String.format(format, PROP_PRE, attributeList.size()));
 
         if (superType == null) {
-            format = "    public static final int META_FIELD_COUNT = %s;\n\n";
-            builder.append(String.format(format, "META_FIELD_SELF_COUNT"));
+            format = "%s int META_FIELD_COUNT = %s;\n\n";
+            builder.append(String.format(format, PROP_PRE, "META_FIELD_SELF_COUNT"));
         } else {
-            format = "    public static final int META_FIELD_COUNT = META_FIELD_SELF_COUNT + %s_.META_FIELD_SELF_COUNT;\n\n";
-            builder.append(String.format(format, superType.getSimpleName()));
+            format = "%s int META_FIELD_COUNT = META_FIELD_SELF_COUNT + %s_.META_FIELD_SELF_COUNT;\n\n";
+            builder.append(String.format(format, PROP_PRE, superType.getSimpleName()));
         }
+    }
 
-        // fieldName define
+    private static void appendPropNames(StringBuilder builder, @NonNull List<MetaAttribute> attributeList) {
         int count = 0;
         for (MetaAttribute metaAttribute : attributeList) {
             builder.append(metaAttribute.getNameDefinition())
@@ -272,9 +247,10 @@ public abstract class SourceCreateUtils {
                 builder.append("\n");
             }
         }
-        // field define
-        builder.append("\n\n");
-        count = 0;
+    }
+
+    private static void appendFieldMeta(StringBuilder builder, @NonNull List<MetaAttribute> attributeList) {
+        int count = 0;
         for (MetaAttribute metaAttribute : attributeList) {
             builder.append(metaAttribute.getDefinition())
                     .append("\n");
@@ -283,10 +259,76 @@ public abstract class SourceCreateUtils {
                 builder.append("\n");
             }
         }
-
-        builder.append("\n\n}\n\n\n");
-        return builder.toString();
     }
+
+
+    private static void addNonOverride(Set<VariableElement> entityVariables,
+                                       Set<VariableElement> mappingSuperVariables) {
+
+        final Set<String> fieldNameSet = new HashSet<>();
+        for (VariableElement entityVariable : entityVariables) {
+            fieldNameSet.add(entityVariable.getSimpleName().toString());
+        }
+
+        for (VariableElement mv : mappingSuperVariables) {
+            if (!fieldNameSet.contains(mv.getSimpleName().toString())) {
+                entityVariables.add(mv);
+            }
+        }
+    }
+
+    private static void assertRequiredVariables(TypeElement type, Collection<VariableElement> variableElements)
+            throws MetaException {
+        Map<String, Boolean> handledVariableMap = new HashMap<>(10);
+
+        String variableName;
+        for (VariableElement variable : variableElements) {
+            variableName = variable.getSimpleName().toString();
+            LOG.trace(" type variable :{}", variableName);
+            if (DOMAIN_REQUIRED_ATTRIBUTES.contains(variableName)
+                    && !handledVariableMap.containsKey(variableName)) {
+                handledVariableMap.put(variableName, Boolean.TRUE);
+            }
+        }
+        if (DOMAIN_REQUIRED_ATTRIBUTES.size() != handledVariableMap.size()) {
+            throw new MetaException(ErrorCode.META_ERROR,
+                    String.format("\nDomain[%s] required fields : %s",
+                            type.getQualifiedName(), DOMAIN_REQUIRED_ATTRIBUTES));
+        }
+    }
+
+    private static Set<VariableElement> generateAttributes(List<TypeElement> typeList) {
+        Set<VariableElement> set = new HashSet<>();
+
+        for (TypeElement typeElement : typeList) {
+            set.addAll(generateAttributes(typeElement));
+        }
+        return Collections.unmodifiableSet(set);
+    }
+
+    private static Set<VariableElement> generateAttributes(@NonNull TypeElement type) {
+
+        Column column;
+        VariableElement variableElement;
+
+        Set<VariableElement> set = new HashSet<>();
+
+        for (Element element : type.getEnclosedElements()) {
+            if (!FIELD_KINDS.contains(element.getKind())) {
+                continue;
+            }
+            column = element.getAnnotation(Column.class);
+            if (column == null) {
+                continue;
+            }
+
+            variableElement = (VariableElement) element;
+            set.add(variableElement);
+        }
+        return Collections.unmodifiableSet(set);
+    }
+
+
 
     static String getQualifiedName(TypeElement typeElement) {
         return typeElement.getQualifiedName().toString() + META_CLASS_NAME_SUFFIX;

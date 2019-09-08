@@ -2,7 +2,7 @@ package io.army.meta.sqltype.oracle;
 
 import io.army.util.Precision;
 
-public class OracleTimestamp extends OracleSQLDataType {
+public final class OracleTimestamp extends OracleSQLDataType {
 
     static final Precision PRECISION = new Precision(6, 0);
 

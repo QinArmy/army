@@ -97,7 +97,7 @@ abstract class MetaUtils {
     }
 
 
-    public static int precision(@NonNull Column column, Precision precision) {
+    static int precision(@NonNull Column column, Precision precision) {
         Integer defaultPrecision = (Integer) AnnotationUtils.getDefaultValue(column, "precision");
         if (defaultPrecision == null) {
             // never this
@@ -106,7 +106,7 @@ abstract class MetaUtils {
         return column.precision() == defaultPrecision ? precision.getPrecision() : column.precision();
     }
 
-    public static int scale(@NonNull Column column, Precision precision) {
+    static int scale(@NonNull Column column, Precision precision) {
         Integer defaultScale = (Integer) AnnotationUtils.getDefaultValue(column, "scale");
         if (defaultScale == null) {
             // never this
@@ -115,9 +115,19 @@ abstract class MetaUtils {
         return column.scale() == defaultScale ? precision.getScale() : column.scale();
     }
 
+    static <F> String columnDefaultValue(@NonNull FieldMeta<?, F> fieldMeta, @NonNull Column column) {
+        String value;
+        if (fieldMeta.javaType() == String.class) {
+            value = '\'' + column.defaultValue() + '\'';
+        } else {
+            value = column.defaultValue();
+        }
+        return value;
+    }
+
 
     @NonNull
-    public static String tableName(@NonNull Class<? extends IDomain> entityClass) throws MetaException {
+    static String tableName(@NonNull Class<? extends IDomain> entityClass) throws MetaException {
         return tableMeta(entityClass).name();
     }
 

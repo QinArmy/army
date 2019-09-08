@@ -53,10 +53,10 @@ public class User extends VersionDomain {
     @Column(defaultValue = EMPTY, precision = 30, comment = "用户在合作者平台用户的昵称,与 partner_no 联用")
     private String nickNameFromPartner;
 
-    @Column(defaultValue = CURRENT_TIMESTAMP, comment = "用户在合作者平台用户的注册时间,与 partner_no 联用")
+    @Column(defaultValue = NOW, comment = "用户在合作者平台用户的注册时间,与 partner_no 联用")
     private LocalDateTime createTimeFromPartner;
 
-    @Column(defaultValue = CURRENT_TIMESTAMP, comment = "如果此字段是个未来值,那么用户不可登录,当 status 为 NORMAL 是有效")
+    @Column(defaultValue = NOW, comment = "如果此字段是个未来值,那么用户不可登录,当 status 为 NORMAL 是有效")
     private LocalDateTime unlockTime;
 
     @Column(defaultValue = ZERO, comment = "用户级别")
@@ -85,10 +85,10 @@ public class User extends VersionDomain {
     @Column(defaultValue = Y, comment = "可见性,用于逻辑删除")
     private Boolean visible;
 
-    @Column(defaultValue = CURRENT_TIMESTAMP)
+    @Column(defaultValue = NOW)
     private LocalDateTime createTime;
 
-    @Column(defaultValue = CURRENT_TIMESTAMP)
+    @Column(defaultValue = NOW)
     private LocalDateTime updateTime;
 
 

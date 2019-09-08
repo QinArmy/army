@@ -9,6 +9,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.MappingMode;
 import io.army.meta.TableMeta;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -39,8 +40,13 @@ public final class DefaultTable<T extends IDomain> implements TableMeta<T> {
 
     private final FieldMeta<? super T, ?> primaryField;
 
+    private final List<TableMeta<? super T>> parentList;
 
-    public DefaultTable(List<TableMeta<? super T>> supperList, Class<T> entityClass) {
+    private final boolean primaryDesc;
+
+
+    public DefaultTable(List<TableMeta<? super T>> parentList, Class<T> entityClass) {
+        this.parentList = Collections.unmodifiableList(parentList);
         this.entityClass = entityClass;
 
         try {
@@ -51,14 +57,15 @@ public final class DefaultTable<T extends IDomain> implements TableMeta<T> {
             this.immutable = tableMeta.immutable();
             this.schema = tableMeta.schema();
 
-            MetaUtils.FieldBean<T> fieldBean = MetaUtils.fieldMetaList(this, tableMeta, supperList);
+            MetaUtils.FieldBean<T> fieldBean = MetaUtils.fieldMetaList(this, tableMeta, parentList);
             this.fieldList = fieldBean.getFieldMetaList();
             this.indexList = fieldBean.getIndexList();
             this.uniqueList = fieldBean.getUniqueList();
 
             this.mappingMode = MetaUtils.mappingMode(entityClass);
             this.charset = tableMeta.charset();
-            this.primaryField = MetaUtils.primaryField(supperList, uniqueList, this);
+            this.primaryField = MetaUtils.primaryField(parentList, uniqueList, this);
+            this.primaryDesc = tableMeta.primaryDesc();
         } catch (RuntimeException e) {
             throw new MetaException(ErrorCode.META_ERROR, e, e.getMessage());
         }
@@ -105,6 +112,21 @@ public final class DefaultTable<T extends IDomain> implements TableMeta<T> {
     }
 
     @Override
+    public List<TableMeta<? super T>> parentList() {
+        return parentList;
+    }
+
+
+    @Override
+    public <S extends T> List<TableMeta<? super S>> tableList(Class<S> sunClass) {
+        List<TableMeta<? super S>> list = new ArrayList<>(parentList().size() + 1);
+        list.addAll(parentList());
+        list.add(this);
+        return list;
+    }
+
+
+    @Override
     public FieldMeta<? super T, ?> primaryKey() {
         return this.primaryField;
     }
@@ -137,6 +159,10 @@ public final class DefaultTable<T extends IDomain> implements TableMeta<T> {
         return this.schema;
     }
 
+    @Override
+    public boolean primaryDesc() {
+        return primaryDesc;
+    }
 
     @SuppressWarnings("unchecked")
     @Override

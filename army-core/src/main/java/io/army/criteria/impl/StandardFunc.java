@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Func;
+import io.army.dialect.Func;
 
 /**
  * created  on 2018/12/4.

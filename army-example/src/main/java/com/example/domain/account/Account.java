@@ -70,7 +70,7 @@ public class Account extends VersionDomain {
     @Column(defaultValue = DECIMAL_ZERO, precision = 14, scale = 2, comment = "账户累计债务")
     private BigDecimal accumulativeDebt;
 
-    @Column(defaultValue = CURRENT_TIMESTAMP, comment = "如果此字段是个未来值,那么账户不可用,当 status 为 NORMAL 是有效")
+    @Column(defaultValue = NOW, comment = "如果此字段是个未来值,那么账户不可用,当 status 为 NORMAL 是有效")
     private LocalDateTime unlockTime;
 
 
@@ -80,19 +80,19 @@ public class Account extends VersionDomain {
     @Column(defaultValue = Y, comment = "可见性,用于逻辑删除")
     private Boolean visible;
 
-    @Column(defaultValue = CURRENT_TIMESTAMP, comment = "向第三方请求开户的时间")
+    @Column(defaultValue = NOW, comment = "向第三方请求开户的时间")
     private LocalDateTime requestTime;
 
-    @Column(defaultValue = CURRENT_TIMESTAMP, comment = "第三方受理开户的时间")
+    @Column(defaultValue = NOW, comment = "第三方受理开户的时间")
     private LocalDateTime acceptTime;
 
-    @Column(defaultValue = CURRENT_TIMESTAMP, comment = "第三方开户成功的时间")
+    @Column(defaultValue = NOW, comment = "第三方开户成功的时间")
     private LocalDateTime finishTime;
 
-    @Column(defaultValue = CURRENT_TIMESTAMP)
+    @Column(defaultValue = NOW)
     private LocalDateTime createTime;
 
-    @Column(defaultValue = CURRENT_TIMESTAMP)
+    @Column(defaultValue = NOW)
     private LocalDateTime updateTime;
 
 

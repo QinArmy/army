@@ -2,7 +2,7 @@ package io.army.meta.sqltype.oracle;
 
 import io.army.util.Precision;
 
-public class OracleTimestampWithZone extends OracleSQLDataType {
+public final class OracleTimestampWithZone extends OracleSQLDataType {
 
     @Override
     public String typeName() {

@@ -13,15 +13,13 @@ import java.nio.charset.StandardCharsets;
 public interface IDomain extends MappingConstant {
 
 
-    String CURRENT_TIMESTAMP = "CURRENT_TIMESTAMP";
+    String NOW = "NOW";
 
-    /**
-     * 1970-01-01 00:00:00 ,{@link System#currentTimeMillis() == 0}
-     */
-    // @see Column#zoneId()
-    String SOURCE_TIMESTAMP = "SOURCE_TIMESTAMP";
+    String SOURCE_DATE = "SOURCE_DATE";
 
-    String SOURCE_DATE = "'1970-01-01'";
+    String MIDNIGHT = "MIDNIGHT";
+
+    String SOURCE_DATE_TIME = "SOURCE_DATE_TIME";
 
     String CURRENT_DATE = "CURRENT_DATE";
 
@@ -35,9 +33,9 @@ public interface IDomain extends MappingConstant {
 
     String DECIMAL_ZERO = "0.00";
 
-    String N = "'N'";
+    String N = "N";
 
-    String Y = "'Y'";
+    String Y = "Y";
 
     String UTF_8 = StandardCharsets.UTF_8.name();
 

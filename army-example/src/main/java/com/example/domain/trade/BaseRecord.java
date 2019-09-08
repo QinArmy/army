@@ -94,13 +94,13 @@ public class BaseRecord extends VersionDomain {
     @Column(defaultValue = ZERO, updatable = false, comment = "客户端类型")
     private ClientType clientType;
 
-    @Column(defaultValue = CURRENT_TIMESTAMP, comment = "交易请求时间")
+    @Column(defaultValue = NOW, comment = "交易请求时间")
     private LocalDateTime tradeRequestTime;
 
-    @Column(defaultValue = CURRENT_TIMESTAMP, comment = "交易受理时间")
+    @Column(defaultValue = NOW, comment = "交易受理时间")
     private LocalDateTime tradeAcceptTime;
 
-    @Column(defaultValue = CURRENT_TIMESTAMP, comment = "交易完成时间")
+    @Column(defaultValue = NOW, comment = "交易完成时间")
     private LocalDateTime tradeFinishTime;
 
     @Column(defaultValue = EMPTY, comment = "第三方返回的消息")
@@ -112,16 +112,16 @@ public class BaseRecord extends VersionDomain {
     @Column(defaultValue = EMPTY, comment = "请求第三方的序列号")
     private String requestNo;
 
-    @Column(defaultValue = CURRENT_TIMESTAMP, comment = "关闭时间,当用户超时未完成交易的时间")
+    @Column(defaultValue = NOW, comment = "关闭时间,当用户超时未完成交易的时间")
     private LocalDateTime closeTime;
 
-    @Column(defaultValue = CURRENT_TIMESTAMP, comment = "记录最近一次更新 status 的时间")
+    @Column(defaultValue = NOW, comment = "记录最近一次更新 status 的时间")
     private LocalDateTime handleTime;
 
-    @Column(defaultValue = CURRENT_TIMESTAMP, comment = "当记录被需要异步处理时的时间,为特别的记录预留")
+    @Column(defaultValue = NOW, comment = "当记录被需要异步处理时的时间,为特别的记录预留")
     private LocalDateTime startTime;
 
-    @Column(defaultValue = CURRENT_TIMESTAMP, comment = "定时任务能够扫瞄到的时间")
+    @Column(defaultValue = NOW, comment = "定时任务能够扫瞄到的时间")
     private LocalDateTime nextTime;
 
     @Column(defaultValue = N, comment = "记录是否已发送过mq")

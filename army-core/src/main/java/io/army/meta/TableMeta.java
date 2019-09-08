@@ -21,6 +21,10 @@ public interface TableMeta<T extends IDomain> {
 
     String comment();
 
+    List<TableMeta<? super T>> parentList();
+
+    <S extends T> List<TableMeta<? super S>> tableList(Class<S> sunClass);
+
     FieldMeta<? super T, ?> primaryKey();
 
     MappingMode mappingMode();
@@ -36,6 +40,8 @@ public interface TableMeta<T extends IDomain> {
     String charset();
 
     String schema();
+
+    boolean primaryDesc();
 
     <F> FieldMeta<T, F> getField(String propName, Class<F> propClass) throws MediaException;
 }
