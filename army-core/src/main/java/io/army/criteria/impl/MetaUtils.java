@@ -162,11 +162,13 @@ abstract class MetaUtils {
 
 
     static MappingMode mappingMode(@NonNull Class<? extends IDomain> entityClass) {
-        Class<?> clazz = entityClass;
+        ;
         int count = 0;
-        for (; clazz != null; clazz = clazz.getSuperclass()) {
-            if (AnnotationUtils.getAnnotation(clazz, Table.class) != null) {
+        for (Class<?> superClass = entityClass; superClass != null; superClass = superClass.getSuperclass()) {
+            if (AnnotationUtils.getAnnotation(superClass, Table.class) != null) {
                 count++;
+            } else if (AnnotationUtils.getAnnotation(superClass, MappedSuperclass.class) == null) {
+                break;
             }
         }
         MappingMode mappingMode;
@@ -174,7 +176,11 @@ abstract class MetaUtils {
         if (count == 0) {
             throw createNonAnnotationException(entityClass, Table.class);
         } else if (count == 1) {
-            mappingMode = MappingMode.SIMPLE;
+            if (AnnotationUtils.getAnnotation(entityClass, Inheritance.class) == null) {
+                mappingMode = MappingMode.SIMPLE;
+            } else {
+                mappingMode = MappingMode.PARENT;
+            }
         } else {
             if (AnnotationUtils.getAnnotation(entityClass, Inheritance.class) == null) {
                 mappingMode = MappingMode.CHILD;
