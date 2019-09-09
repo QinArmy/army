@@ -8,8 +8,8 @@ import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingType;
-import org.qinarmy.foundation.util.Assert;
 import org.springframework.lang.NonNull;
+import org.springframework.util.Assert;
 
 import java.lang.reflect.Field;
 import java.sql.JDBCType;
@@ -17,7 +17,7 @@ import java.sql.JDBCType;
 /**
  * created  on 2018/11/18.
  */
-final class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> implements FieldMeta<T, F> {
+class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> implements FieldMeta<T, F> {
 
     private static final String ID = "id";
 

@@ -15,7 +15,7 @@ public @interface Index {
     /**
      * (Optional) The name of the index; defaults to a provider-generated name.
      */
-    String name() default "";
+    String name();
 
     /**
      * (Required) The names of the columns to be included in the index,
@@ -30,6 +30,4 @@ public @interface Index {
 
     String type() default "";
 
-
-    boolean asc() default true;
 }

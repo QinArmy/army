@@ -40,8 +40,6 @@ public @interface Table {
 
     boolean immutable() default false;
 
-    boolean primaryDesc() default false;
-
     String charset() default "utf8mb4";
 
 }

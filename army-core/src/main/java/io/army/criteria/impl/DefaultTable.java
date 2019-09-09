@@ -1,13 +1,12 @@
 package io.army.criteria.impl;
 
+import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
 import io.army.annotation.Table;
 import io.army.criteria.MetaException;
-import io.army.dialect.Dialect;
 import io.army.domain.IDomain;
-import io.army.meta.FieldMeta;
-import io.army.meta.MappingMode;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
+import io.army.util.Assert;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,24 +31,23 @@ public final class DefaultTable<T extends IDomain> implements TableMeta<T> {
 
     private final String schema;
 
+    private final int discriminatorValue;
+
     private final List<FieldMeta<T, ?>> fieldList;
 
-    private final List<FieldMeta<T, ?>> indexList;
+    private final List<IndexMeta<T>> indexList;
 
-    private final List<FieldMeta<T, ?>> uniqueList;
-
-    private final FieldMeta<? super T, ?> primaryField;
+    private final IndexFieldMeta<? super T, ?> primaryField;
 
     private final List<TableMeta<? super T>> parentList;
 
-    private final boolean primaryDesc;
-
 
     public DefaultTable(List<TableMeta<? super T>> parentList, Class<T> entityClass) {
-        this.parentList = Collections.unmodifiableList(parentList);
         this.entityClass = entityClass;
-
+        this.parentList = Collections.unmodifiableList(parentList);
+        MetaUtils.assertParentList(this.parentList, entityClass);
         try {
+
             Table tableMeta = MetaUtils.tableMeta(entityClass);
 
             this.tableName = tableMeta.name();
@@ -57,15 +55,16 @@ public final class DefaultTable<T extends IDomain> implements TableMeta<T> {
             this.immutable = tableMeta.immutable();
             this.schema = tableMeta.schema();
 
-            MetaUtils.FieldBean<T> fieldBean = MetaUtils.fieldMetaList(this, tableMeta, parentList);
+            MetaUtils.FieldBean<T> fieldBean = MetaUtils.fieldMetaList(this, tableMeta);
             this.fieldList = fieldBean.getFieldMetaList();
-            this.indexList = fieldBean.getIndexList();
-            this.uniqueList = fieldBean.getUniqueList();
+            this.indexList = fieldBean.getIndexMetaList();
 
             this.mappingMode = MetaUtils.mappingMode(entityClass);
+            this.discriminatorValue = MetaUtils.discriminatorValue(this.mappingMode, this.entityClass);
             this.charset = tableMeta.charset();
-            this.primaryField = MetaUtils.primaryField(parentList, uniqueList, this);
-            this.primaryDesc = tableMeta.primaryDesc();
+            this.primaryField = MetaUtils.primaryField(indexList, this);
+        } catch (ArmyRuntimeException e) {
+            throw e;
         } catch (RuntimeException e) {
             throw new MetaException(ErrorCode.META_ERROR, e, e.getMessage());
         }
@@ -73,17 +72,6 @@ public final class DefaultTable<T extends IDomain> implements TableMeta<T> {
 
     public DefaultTable(Class<T> entityClass) throws MetaException {
         this(Collections.emptyList(), entityClass);
-    }
-
-
-    @Override
-    public List<FieldMeta<T, ?>> indexPropList() {
-        return this.indexList;
-    }
-
-    @Override
-    public List<FieldMeta<T, ?>> uniquePropList() {
-        return this.uniqueList;
     }
 
     @Override
@@ -119,6 +107,8 @@ public final class DefaultTable<T extends IDomain> implements TableMeta<T> {
 
     @Override
     public <S extends T> List<TableMeta<? super S>> tableList(Class<S> sunClass) {
+        Assert.isAssignable(javaType(), sunClass);
+
         List<TableMeta<? super S>> list = new ArrayList<>(parentList().size() + 1);
         list.addAll(parentList());
         list.add(this);
@@ -127,7 +117,7 @@ public final class DefaultTable<T extends IDomain> implements TableMeta<T> {
 
 
     @Override
-    public FieldMeta<? super T, ?> primaryKey() {
+    public IndexFieldMeta<? super T, ?> primaryKey() {
         return this.primaryField;
     }
 
@@ -138,15 +128,20 @@ public final class DefaultTable<T extends IDomain> implements TableMeta<T> {
     }
 
     @Override
+    public int discriminatorValue() {
+        return discriminatorValue;
+    }
+
+    @Override
+    public List<IndexMeta<T>> indexList() {
+        return this.indexList;
+    }
+
+    @Override
     public List<FieldMeta<T, ?>> fieldList() {
         return this.fieldList;
     }
 
-
-    @Override
-    public String createSql(Dialect dialect) {
-        return null;
-    }
 
     @Override
     public String charset() {
@@ -159,16 +154,12 @@ public final class DefaultTable<T extends IDomain> implements TableMeta<T> {
         return this.schema;
     }
 
-    @Override
-    public boolean primaryDesc() {
-        return primaryDesc;
-    }
 
     @SuppressWarnings("unchecked")
     @Override
     public <F> FieldMeta<T, F> getField(String propName, Class<F> propClass) {
-        for (FieldMeta<T, ?> fieldMeta : fieldList) {
-            if (fieldMeta.propertyName().equals(propName)) {
+        for (FieldMeta<T, ?> fieldMeta : fieldList()) {
+            if (fieldMeta.propertyName().equals(propName) && fieldMeta.javaType() == propClass) {
                 return (FieldMeta<T, F>) fieldMeta;
             }
         }

@@ -5,7 +5,7 @@ import java.util.Collection;
 /**
  * created  on 2018/11/18.
  */
-public abstract class Assert {
+public abstract class Assert extends org.springframework.util.Assert {
 
     public static void assertTrue(boolean expression, String format, Object... args) {
         if (!expression) {

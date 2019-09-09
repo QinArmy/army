@@ -1,6 +1,5 @@
 package io.army.meta;
 
-import io.army.dialect.Dialect;
 import io.army.domain.IDomain;
 import javafx.scene.media.MediaException;
 
@@ -25,23 +24,22 @@ public interface TableMeta<T extends IDomain> {
 
     <S extends T> List<TableMeta<? super S>> tableList(Class<S> sunClass);
 
-    FieldMeta<? super T, ?> primaryKey();
+    IndexFieldMeta<? super T, ?> primaryKey();
 
     MappingMode mappingMode();
 
-    List<FieldMeta<T, ?>> indexPropList();
+    int discriminatorValue();
 
-    List<FieldMeta<T, ?>> uniquePropList();
+    /**
+     * contain primary key
+     */
+    List<IndexMeta<T>> indexList();
 
     List<FieldMeta<T, ?>> fieldList();
-
-    String createSql(Dialect dialect);
 
     String charset();
 
     String schema();
-
-    boolean primaryDesc();
 
     <F> FieldMeta<T, F> getField(String propName, Class<F> propClass) throws MediaException;
 }
