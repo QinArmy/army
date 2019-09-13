@@ -49,10 +49,9 @@ abstract class MetaUtils {
         return table;
     }
 
-    static <T extends IDomain> void assertParentList(List<TableMeta<? super T>> parentList,
-                                                     Class<? extends IDomain> entityClass) {
-        for (TableMeta<? super T> tableMeta : parentList) {
-            Assert.isAssignable(tableMeta.javaType(), entityClass);
+    static <T extends IDomain> void assertParentTableMeta(TableMeta<? super T> parentTableMeta, Class<T> entityClass) {
+        if (parentTableMeta != null) {
+            Assert.isAssignable(parentTableMeta.javaType(), entityClass);
         }
     }
 
@@ -147,8 +146,8 @@ abstract class MetaUtils {
     }
 
 
-    static <T extends IDomain> IndexFieldMeta<? super T, ?> primaryField(List<IndexMeta<T>> indexList,
-                                                                         TableMeta<T> tableMeta) {
+    static <T extends IDomain> IndexFieldMeta<T, ?> primaryField(List<IndexMeta<T>> indexList,
+                                                                 TableMeta<T> tableMeta) {
         for (IndexMeta<T> indexMeta : indexList) {
             for (IndexFieldMeta<T, ?> fieldMeta : indexMeta.fieldList()) {
                 if (PRIMARY_FIELD.equals(fieldMeta.fieldName())) {
@@ -161,27 +160,36 @@ abstract class MetaUtils {
     }
 
 
-    static MappingMode mappingMode(@NonNull Class<? extends IDomain> entityClass) {
-        ;
-        int count = 0;
+    static MappingMode mappingMode(@NonNull Class<? extends IDomain> entityClass) throws MetaException {
+        int tableCount = 0, inheritCount = 0;
         for (Class<?> superClass = entityClass; superClass != null; superClass = superClass.getSuperclass()) {
             if (AnnotationUtils.getAnnotation(superClass, Table.class) != null) {
-                count++;
+                tableCount++;
+                if (AnnotationUtils.getAnnotation(superClass, Inheritance.class) != null) {
+                    inheritCount++;
+                }
             } else if (AnnotationUtils.getAnnotation(superClass, MappedSuperclass.class) == null) {
                 break;
             }
         }
+
+        if (inheritCount > 1) {
+            throw new MetaException(ErrorCode.META_ERROR, "%s duplication for extending relation of %s",
+                    Inheritance.class.getName(), entityClass.getName());
+        }
+
         MappingMode mappingMode;
 
-        if (count == 0) {
+        if (tableCount == 0) {
             throw createNonAnnotationException(entityClass, Table.class);
-        } else if (count == 1) {
+        } else if (tableCount == 1) {
             if (AnnotationUtils.getAnnotation(entityClass, Inheritance.class) == null) {
                 mappingMode = MappingMode.SIMPLE;
             } else {
                 mappingMode = MappingMode.PARENT;
             }
         } else {
+
             if (AnnotationUtils.getAnnotation(entityClass, Inheritance.class) == null) {
                 mappingMode = MappingMode.CHILD;
             } else {

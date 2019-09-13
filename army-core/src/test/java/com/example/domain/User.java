@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 public class User implements IDomain {
 
     @Column
-
     private Long id;
 
     private String name;

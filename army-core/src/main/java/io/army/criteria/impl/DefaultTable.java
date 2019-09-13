@@ -6,16 +6,20 @@ import io.army.annotation.Table;
 import io.army.criteria.MetaException;
 import io.army.domain.IDomain;
 import io.army.meta.*;
-import io.army.util.Assert;
+import io.army.struct.CodeEnum;
+import javafx.scene.media.MediaException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
  * created  on 2018/11/19.
  */
 public final class DefaultTable<T extends IDomain> implements TableMeta<T> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultTable.class);
 
     private final Class<T> entityClass;
 
@@ -37,15 +41,16 @@ public final class DefaultTable<T extends IDomain> implements TableMeta<T> {
 
     private final List<IndexMeta<T>> indexList;
 
-    private final IndexFieldMeta<? super T, ?> primaryField;
+    private final IndexFieldMeta<T, ?> primaryField;
 
-    private final List<TableMeta<? super T>> parentList;
+    private final TableMeta<? super T> parentTableMeta;
 
 
-    public DefaultTable(List<TableMeta<? super T>> parentList, Class<T> entityClass) {
+    public DefaultTable(@Nullable TableMeta<? super T> parentTableMeta, Class<T> entityClass) {
+        MetaUtils.assertParentTableMeta(parentTableMeta, entityClass);
+
         this.entityClass = entityClass;
-        this.parentList = Collections.unmodifiableList(parentList);
-        MetaUtils.assertParentList(this.parentList, entityClass);
+        this.parentTableMeta = parentTableMeta;
         try {
 
             Table tableMeta = MetaUtils.tableMeta(entityClass);
@@ -71,7 +76,7 @@ public final class DefaultTable<T extends IDomain> implements TableMeta<T> {
     }
 
     public DefaultTable(Class<T> entityClass) throws MetaException {
-        this(Collections.emptyList(), entityClass);
+        this(null, entityClass);
     }
 
     @Override
@@ -98,23 +103,6 @@ public final class DefaultTable<T extends IDomain> implements TableMeta<T> {
     public String comment() {
         return this.comment;
     }
-
-    @Override
-    public List<TableMeta<? super T>> parentList() {
-        return parentList;
-    }
-
-
-    @Override
-    public <S extends T> List<TableMeta<? super S>> tableList(Class<S> sunClass) {
-        Assert.isAssignable(javaType(), sunClass);
-
-        List<TableMeta<? super S>> list = new ArrayList<>(parentList().size() + 1);
-        list.addAll(parentList());
-        list.add(this);
-        return list;
-    }
-
 
     @Override
     public IndexFieldMeta<? super T, ?> primaryKey() {
@@ -154,6 +142,10 @@ public final class DefaultTable<T extends IDomain> implements TableMeta<T> {
         return this.schema;
     }
 
+    @Override
+    public <E extends Enum<E> & CodeEnum> FieldMeta<T, E> discriminator() {
+        return null;
+    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -166,5 +158,14 @@ public final class DefaultTable<T extends IDomain> implements TableMeta<T> {
         throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
     }
 
+    @Nullable
+    @Override
+    public TableMeta<? super T> parent() {
+        return null;
+    }
 
+    @Override
+    public <F> IndexFieldMeta<T, F> getIndexField(String propName, Class<F> propClass) throws MediaException {
+        return null;
+    }
 }

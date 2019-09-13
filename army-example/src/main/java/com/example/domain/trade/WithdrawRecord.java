@@ -8,7 +8,7 @@ import static com.example.domain.trade.BaseRecord.WITHDRAW_VALUE;
 /**
  * created  on 2018/9/27.
  */
-@Table(name = "td_charge_record", indexes = {
+@Table(name = "td_withdraw_record", indexes = {
 
 }, comment = "提现记录"
 )

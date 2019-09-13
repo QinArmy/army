@@ -54,8 +54,9 @@ public abstract class AbstractDialect implements Dialect {
     }
 
     protected String primaryDefinition(TableMeta<?> tableMeta) {
-        String direction = tableMeta.primaryDesc() ? "DESC" : "ASC";
-        return String.format(" PRIMARY KEY(%s %s)", tableMeta.primaryKey().fieldName(), direction);
+        // String direction = tableMeta.primaryDesc() ? "DESC" : "ASC";
+        //return String.format(" PRIMARY KEY(%s %s)", tableMeta.primaryKey().fieldName(), direction);
+        return "";
     }
 
     /**

@@ -17,7 +17,7 @@ import static com.example.domain.user.User.NONE_VALUE;
         @Index(name = "uniq_nick_name", columnList = "nick_name")
 }, comment = "用户父表"
 )
-@Inheritance("userType")
+@Inheritance("user_type")
 @DiscriminatorValue(NONE_VALUE)
 public class User extends VersionDomain {
 
@@ -78,18 +78,6 @@ public class User extends VersionDomain {
     @Column(defaultValue = EMPTY, comment = "风险评价")
     private String riskComment;
 
-
-    @Column(defaultValue = ZERO, comment = "乐观锁版本")
-    private Integer version;
-
-    @Column(defaultValue = Y, comment = "可见性,用于逻辑删除")
-    private Boolean visible;
-
-    @Column(defaultValue = NOW)
-    private LocalDateTime createTime;
-
-    @Column(defaultValue = NOW)
-    private LocalDateTime updateTime;
 
 
     public Long getId() {
@@ -191,41 +179,6 @@ public class User extends VersionDomain {
         return this;
     }
 
-    public Integer getVersion() {
-        return version;
-    }
-
-    public User setVersion(Integer version) {
-        this.version = version;
-        return this;
-    }
-
-    public Boolean getVisible() {
-        return visible;
-    }
-
-    public User setVisible(Boolean visible) {
-        this.visible = visible;
-        return this;
-    }
-
-    public LocalDateTime getCreateTime() {
-        return createTime;
-    }
-
-    public User setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
-        return this;
-    }
-
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
-    }
-
-    public User setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
-        return this;
-    }
 
     public RiskType getRiskType() {
         return riskType;

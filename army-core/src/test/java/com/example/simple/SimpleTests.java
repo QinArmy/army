@@ -1,6 +1,6 @@
 package com.example.simple;
 
-import io.army.util.ElementUtils;
+import io.army.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -17,7 +17,7 @@ public class SimpleTests {
 
     @Test
     public void test() {
-        LOG.info("out:{}", ElementUtils.camelToUpperCase("userName"));
+        LOG.info("out:{}", StringUtils.camelToUpperCase("userName"));
     }
 
 
@@ -35,5 +35,6 @@ public class SimpleTests {
     public void tem() {
 
     }
+
 
 }

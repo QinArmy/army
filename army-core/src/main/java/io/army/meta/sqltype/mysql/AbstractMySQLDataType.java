@@ -3,7 +3,7 @@ package io.army.meta.sqltype.mysql;
 import io.army.dialect.Dialect;
 import io.army.dialect.MySQLDialect;
 import io.army.meta.sqltype.SQLDataType;
-import org.qinarmy.foundation.util.ArrayUtils;
+import io.army.util.ArrayUtils;
 
 import java.util.List;
 

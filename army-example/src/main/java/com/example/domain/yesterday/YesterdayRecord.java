@@ -9,7 +9,6 @@ import io.army.annotation.Table;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 
 /**
@@ -20,7 +19,7 @@ import java.time.LocalDateTime;
         @Index(name = "idx_date", columnList = "date")
 },
         comment = "昨日收益/债务记录父表")
-@Inheritance("recordType")
+@Inheritance("record_type")
 public class YesterdayRecord extends Domain {
 
     @Column(defaultValue = ZERO, updatable = false, comment = "id")
@@ -49,18 +48,6 @@ public class YesterdayRecord extends Domain {
 
     @Column(defaultValue = DECIMAL_ZERO, precision = 14, scale = 2, comment = "昨日债务")
     private BigDecimal debt;
-
-    @Column
-    private LocalDateTime createTime;
-
-    @Column
-    private LocalDateTime updateTime;
-
-    @Column
-    private Boolean visible;
-
-    @Column
-    private Integer version;
 
 
     public Long getId() {
@@ -144,39 +131,4 @@ public class YesterdayRecord extends Domain {
         return this;
     }
 
-    public LocalDateTime getCreateTime() {
-        return createTime;
-    }
-
-    public YesterdayRecord setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
-        return this;
-    }
-
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
-    }
-
-    public YesterdayRecord setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
-        return this;
-    }
-
-    public Boolean getVisible() {
-        return visible;
-    }
-
-    public YesterdayRecord setVisible(Boolean visible) {
-        this.visible = visible;
-        return this;
-    }
-
-    public Integer getVersion() {
-        return version;
-    }
-
-    public YesterdayRecord setVersion(Integer version) {
-        this.version = version;
-        return this;
-    }
 }

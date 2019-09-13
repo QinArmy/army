@@ -16,6 +16,6 @@ import static com.example.domain.account.Account.INVEST_VALUE;
 @DiscriminatorValue(INVEST_VALUE)
 public class InvestAccount extends Account {
 
-    @Column
+    @Column(defaultValue = DECIMAL_ZERO, comment = "投资金额")
     private BigDecimal investAmount;
 }

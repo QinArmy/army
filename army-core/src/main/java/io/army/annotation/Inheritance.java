@@ -17,7 +17,8 @@ public @interface Inheritance {
 
 
     /**
-     * property must is  {@link Enum},and implements  {@link CodeEnum}
+     *
+     * table's column name ,the column mapping property must is {@link Enum} that implements {@link CodeEnum}.
      */
     String value();
 

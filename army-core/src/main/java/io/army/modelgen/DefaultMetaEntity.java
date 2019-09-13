@@ -1,22 +1,28 @@
 package io.army.modelgen;
 
-import io.army.util.ElementUtils;
-import org.qinarmy.foundation.util.CollectionUtils;
+import io.army.ErrorCode;
+import io.army.annotation.Column;
+import io.army.annotation.Index;
+import io.army.annotation.Table;
+import io.army.criteria.MetaException;
+import io.army.util.ClassUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
+ * this class is a implementation of  {@link MetaEntity}
  * created  on 2018/11/18.
  */
 class DefaultMetaEntity implements MetaEntity {
 
-    private final TypeElement type;
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultMetaEntity.class);
+
+    private final TypeElement entityElement;
 
     private final String importsBlock;
 
@@ -24,31 +30,43 @@ class DefaultMetaEntity implements MetaEntity {
 
     private final String body;
 
-    private final Set<VariableElement> fieldElements;
 
+    /**
+     * @param entityMappedElementList {@link io.army.annotation.MappedSuperclass} list ,order by  class extends
+     * @param parentMappedElementList {@link io.army.annotation.Inheritance}
+     */
+    DefaultMetaEntity(@NonNull List<TypeElement> entityMappedElementList,
+                      @NonNull List<TypeElement> parentMappedElementList) throws MetaException {
+        this.entityElement = SourceCreateUtils.entityElement(entityMappedElementList);
+        LOG.trace("entityElement : {}", entityMappedElementList);
 
-    DefaultMetaEntity(@NonNull TypeElement type, @NonNull List<TypeElement> mappedSuperList,
-                      @NonNull List<TypeElement> inheritanceList) {
-        this.type = type;
-        this.fieldElements = SourceCreateUtils.generateAttributes(this.type, mappedSuperList, inheritanceList);
+        if (this.entityElement == null) {
+            throw new MetaException(ErrorCode.META_ERROR, "entityMappedElementList error");
+        }
+        final Set<VariableElement> mappingPropSet = SourceCreateUtils.generateAttributes(
+                entityMappedElementList,
+                parentMappedElementList);
 
-        final TypeElement superType = CollectionUtils.isEmpty(inheritanceList) ? null : inheritanceList.get(0);
+        final TypeElement parentEntityElement = SourceCreateUtils.entityElement(parentMappedElementList);
 
-        this.importsBlock = SourceCreateUtils.generateImport(this.type, superType, fieldElements);
-        this.classDefinition = SourceCreateUtils.generateClassDefinition(type, superType);
+        this.importsBlock = SourceCreateUtils.generateImport(this.entityElement, parentEntityElement, mappingPropSet);
 
-        this.body = SourceCreateUtils.generateBody(this.type, superType, generateAttributes());
+        this.classDefinition = SourceCreateUtils.generateClassDefinition(this.entityElement, parentEntityElement);
+
+        Set<String> columnNameSet = createIndexColumnNameSet(this.entityElement);
+        this.body = SourceCreateUtils.generateBody(this.entityElement, parentEntityElement,
+                generateMappingPropList(mappingPropSet, columnNameSet));
     }
 
 
     @Override
     public String getPackageName() {
-        return SourceCreateUtils.getPackage(type);
+        return SourceCreateUtils.getPackage(entityElement);
     }
 
     @Override
     public String getQualifiedName() {
-        return SourceCreateUtils.getQualifiedName(type);
+        return SourceCreateUtils.getQualifiedName(entityElement);
     }
 
     @Override
@@ -58,7 +76,7 @@ class DefaultMetaEntity implements MetaEntity {
 
     @Override
     public String getSuperSimpleName() {
-        return ElementUtils.getSimpleName(type.getSimpleName().toString());
+        return ClassUtils.getShortName(entityElement.getSimpleName().toString());
     }
 
     @Override
@@ -73,14 +91,32 @@ class DefaultMetaEntity implements MetaEntity {
     }
 
 
-    private List<MetaAttribute> generateAttributes() {
+    private List<MetaAttribute> generateMappingPropList(Set<VariableElement> mappingPropSet,
+                                                        Set<String> columnNameSet) {
 
-        List<MetaAttribute> list = new ArrayList<>(this.fieldElements.size());
-        for (VariableElement fieldElement : fieldElements) {
-            list.add(new DefaultMetaAttribute(type, fieldElement));
+        List<MetaAttribute> list = new ArrayList<>(mappingPropSet.size());
+        Column column;
+        MetaAttribute attribute;
+        for (VariableElement mappingProp : mappingPropSet) {
+            column = mappingProp.getAnnotation(Column.class);
+            attribute = new DefaultMetaAttribute(this.entityElement, mappingProp, columnNameSet.contains(column.name()));
+            list.add(attribute);
         }
-
         return Collections.unmodifiableList(list);
+    }
+
+    private static Set<String> createIndexColumnNameSet(TypeElement entityElement) {
+        Table table = entityElement.getAnnotation(Table.class);
+        Index[] indexArray = table.indexes();
+        Set<String> columnNameSet = new HashSet<>();
+        StringTokenizer tokenizer;
+        for (Index index : indexArray) {
+            for (String columnName : index.columnList()) {
+                tokenizer = new StringTokenizer(columnName.trim(), " ", false);
+                columnNameSet.add(tokenizer.nextToken());
+            }
+        }
+        return Collections.unmodifiableSet(columnNameSet);
     }
 
 

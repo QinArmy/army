@@ -23,7 +23,7 @@ public enum ErrorCode implements CodeEnum {
     TYPE_ERROR(500, "date type error", NONE),
     CODE_ENUM_ERROR(501, "CedeEnum definition error", TYPE_ERROR),
 
-    UNSUPPORT_DIALECT(100, "不支方言", NONE)
+    UNSUPPORT_DIALECT(600, "不支方言", NONE)
     ;
 
 

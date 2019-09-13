@@ -8,17 +8,12 @@ import java.lang.annotation.*;
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
+@MappedSuperclass
 @Documented
 public @interface Table {
 
 
     String name();
-
-    /**
-     * (Optional) The catalog of the table.
-     * <p> Defaults to the default catalog.
-     */
-    String catalog() default "";
 
     /**
      * (Optional) The schema of the table.

@@ -16,4 +16,9 @@ public class MySQLDialect extends AbstractDialect implements Dialect {
     protected String columnFormat() {
         return " %s %s NOT NULL DEFAULT %s common '%s'";
     }
+
+    @Override
+    public Func func() {
+        return null;
+    }
 }

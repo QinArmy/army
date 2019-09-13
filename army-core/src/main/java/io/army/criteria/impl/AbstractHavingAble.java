@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.HavingAble;
 import io.army.criteria.OrderAble;
 import io.army.criteria.Predicate;
-import org.qinarmy.foundation.util.ArrayUtils;
+import io.army.util.ArrayUtils;
 import org.springframework.lang.NonNull;
 
 import java.util.Collections;

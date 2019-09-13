@@ -2,9 +2,9 @@ package io.army.meta;
 
 import io.army.ErrorCode;
 import io.army.criteria.MetaException;
-import io.army.modelgen.SourceCreateUtils;
+import io.army.modelgen.MetaConstant;
 import io.army.util.ClassUtils;
-import org.qinarmy.foundation.util.ReflectionUtils;
+import io.army.util.ReflectionUtils;
 import org.springframework.lang.NonNull;
 
 import java.lang.reflect.Field;
@@ -28,7 +28,7 @@ public abstract class MetaAssert {
             Class<?> metaClass = ClassUtils.loadEntityMetaClass(entityClass);
             Field propertyField;
             // table part
-            propertyField = ReflectionUtils.findField(metaClass, SourceCreateUtils.TABLE_PROPERTY_NAME);
+            propertyField = ReflectionUtils.findField(metaClass, MetaConstant.TABLE_PROP_NAME);
             assertMetaTable(propertyField, table);
 
             // field part

@@ -4,7 +4,7 @@ import io.army.dialect.Dialect;
 import io.army.dialect.MySQL57Dialect;
 import io.army.dialect.Oracle12Dialect;
 import io.army.dialect.Postgre11Dialect;
-import org.qinarmy.foundation.util.ArrayUtils;
+import io.army.util.ArrayUtils;
 
 import java.util.List;
 

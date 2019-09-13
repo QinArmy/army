@@ -2,6 +2,28 @@
 
 Army 是一个新型的持久层框架, Army 吸取了 Hibernate 和 Jooq 的优点并舍弃其缺点再加上独特的设计而成。
 
+----
+
+ Army 的起源    
+----
+Army 吸收 Hibernate 和 Jooq 的优点去除其缺点加上新的设计和约定而成.
+
+
+* 使命 : 解决Java 持久化方案不够易用,简单,易于维护,高效编码的问题.
+* 价值观: 简单易用,贴近 SQL ,易于阅读,高效,拥抱新技术.
+* 愿景: 成为 Java 持久化方案的更好选择.
+
+实现愿景的步骤:
+
+1. 发布一个可在生产环境使用的 Java 持久化方案.
+2. Army 成为 apache 顶级项目
+3. 致力于使 Army 成为 Java 持久化方案的更好选择.
+
+初始成员:马军玲(花名:索隆),刘彬(花名:安西教练)
+
+新成员加入准则: 所有已在成员一致同意。
+
+
 Army 拥有以下几个特性:
 
 * 不支持缓存.
@@ -115,36 +137,6 @@ Army 以下强制规则:
 
 
 
-
-
-
-
-
-
-               
-----
-
- Army 的起源    
-----
-Army 吸收 Hibernate 和 Jooq 的优点去除其缺点加上新的设计和约定而成.
-
-
-* 使命 : 解决Java 持久化方案不够易用,简单,易于维护,高效编码的问题.
-* 价值观: 简单易用,贴近 SQL ,易于阅读,高效,拥抱新技术.
-* 愿景: 成为 Java 持久化方案的更好选择.
-
-实现愿景的步骤:
-
-1. 发布一个可在生产环境使用的 Java 持久化方案.
-2. Army 成为 apache 顶级项目
-3. 致力于使 Army 成为 Java 持久化方案的更好选择.
-
-初始成员:马军玲(花名:索隆),刘彬(花名:安西教练)
-
-新成员加入准则: 所有已在成员一致同意。
-
-
-
 ### 支持数据库
 
 * MySql
@@ -153,6 +145,12 @@ Army 吸收 Hibernate 和 Jooq 的优点去除其缺点加上新的设计和约�
 * Postgre
 * Sql Server
 * Db2
+
+### terminology definition
+ corresponding
+* Entity : Class that annotated by io.army.annotation.Table .
+* Mapping Property : Entity property that annotated by io.army.annotation.Column
+* Mapped class : Class that annotated by io.army.annotation.Table or io.army.annotation.MappedSuperclass.
 
 
 

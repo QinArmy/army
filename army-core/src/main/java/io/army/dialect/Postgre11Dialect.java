@@ -9,5 +9,13 @@ public class Postgre11Dialect extends PostgreDialect {
 
     public static final Postgre11Dialect INSTANCE = new Postgre11Dialect();
 
+    @Override
+    protected String columnFormat() {
+        return null;
+    }
 
+    @Override
+    public Func func() {
+        return null;
+    }
 }

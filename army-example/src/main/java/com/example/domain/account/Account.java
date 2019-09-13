@@ -14,9 +14,9 @@ import static com.example.domain.account.Account.NONE_VALUE;
  */
 @Table(name = "a_account", indexes = {
         @Index(name = "idx_user_id_account_type", columnList = "user_id,account_type", unique = true)
-}, comment = "账户父表"
+}, comment = "account"
 )
-@Inheritance("accountType")
+@Inheritance("account_type")
 @DiscriminatorValue(NONE_VALUE)
 public class Account extends VersionDomain {
 
@@ -73,13 +73,6 @@ public class Account extends VersionDomain {
     @Column(defaultValue = NOW, comment = "如果此字段是个未来值,那么账户不可用,当 status 为 NORMAL 是有效")
     private LocalDateTime unlockTime;
 
-
-    @Column(defaultValue = ZERO, comment = "乐观锁版本")
-    private Integer version;
-
-    @Column(defaultValue = Y, comment = "可见性,用于逻辑删除")
-    private Boolean visible;
-
     @Column(defaultValue = NOW, comment = "向第三方请求开户的时间")
     private LocalDateTime requestTime;
 
@@ -89,11 +82,6 @@ public class Account extends VersionDomain {
     @Column(defaultValue = NOW, comment = "第三方开户成功的时间")
     private LocalDateTime finishTime;
 
-    @Column(defaultValue = NOW)
-    private LocalDateTime createTime;
-
-    @Column(defaultValue = NOW)
-    private LocalDateTime updateTime;
 
 
     public Long getId() {
@@ -213,24 +201,6 @@ public class Account extends VersionDomain {
         return this;
     }
 
-    public Integer getVersion() {
-        return version;
-    }
-
-    public Account setVersion(Integer version) {
-        this.version = version;
-        return this;
-    }
-
-    public Boolean getVisible() {
-        return visible;
-    }
-
-    public Account setVisible(Boolean visible) {
-        this.visible = visible;
-        return this;
-    }
-
     public LocalDateTime getRequestTime() {
         return requestTime;
     }
@@ -258,21 +228,4 @@ public class Account extends VersionDomain {
         return this;
     }
 
-    public LocalDateTime getCreateTime() {
-        return createTime;
-    }
-
-    public Account setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
-        return this;
-    }
-
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
-    }
-
-    public Account setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
-        return this;
-    }
 }

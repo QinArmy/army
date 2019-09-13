@@ -20,7 +20,7 @@ import static com.example.domain.trade.BaseRecord.NONE_VALUE;
         @Index(name = "uniq_request_no", columnList = "request_no", unique = true),
 }, comment = "交易记录父表"
 )
-@Inheritance("tradeType")
+@Inheritance("trade_type")
 @DiscriminatorValue(NONE_VALUE)
 public class BaseRecord extends VersionDomain {
 
@@ -139,17 +139,7 @@ public class BaseRecord extends VersionDomain {
     @Column(defaultValue = DECIMAL_ZERO, comment = "完成此记录应向第三方或用户收取的费用")
     private BigDecimal revenue;
 
-    @Column(defaultValue = ZERO, comment = "乐观锁")
-    private Integer version;
 
-    @Column(defaultValue = ZERO, comment = "乐观锁")
-    private Boolean visible;
-
-    @Column
-    private LocalDateTime createTime;
-
-    @Column
-    private LocalDateTime updateTime;
 
     public Long getId() {
         return id;
@@ -404,41 +394,6 @@ public class BaseRecord extends VersionDomain {
         return this;
     }
 
-    public Integer getVersion() {
-        return version;
-    }
-
-    public BaseRecord setVersion(Integer version) {
-        this.version = version;
-        return this;
-    }
-
-    public Boolean getVisible() {
-        return visible;
-    }
-
-    public BaseRecord setVisible(Boolean visible) {
-        this.visible = visible;
-        return this;
-    }
-
-    public LocalDateTime getCreateTime() {
-        return createTime;
-    }
-
-    public BaseRecord setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
-        return this;
-    }
-
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
-    }
-
-    public BaseRecord setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
-        return this;
-    }
 
     public String getFailureReason() {
         return failureReason;

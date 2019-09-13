@@ -3,7 +3,7 @@ package io.army.meta.sqltype.oracle;
 import io.army.dialect.Dialect;
 import io.army.dialect.Oracle12Dialect;
 import io.army.meta.sqltype.SQLDataType;
-import org.qinarmy.foundation.util.ArrayUtils;
+import io.army.util.ArrayUtils;
 
 import java.util.List;
 

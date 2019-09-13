@@ -14,4 +14,14 @@ public class Oracle12Dialect extends AbstractDialect {
     public String fieldDefinition(FieldMeta<?, ?> field) {
         return null;
     }
+
+    @Override
+    protected String columnFormat() {
+        return null;
+    }
+
+    @Override
+    public Func func() {
+        return null;
+    }
 }

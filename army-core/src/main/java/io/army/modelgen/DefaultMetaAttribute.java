@@ -1,56 +1,70 @@
 package io.army.modelgen;
 
 import io.army.meta.FieldMeta;
-import io.army.util.ElementUtils;
+import io.army.util.ClassUtils;
+import io.army.util.StringUtils;
 
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
 /**
+ * this class is a implement of {@link MetaAttribute}
  * created  on 2018/11/18.
  */
 class DefaultMetaAttribute implements MetaAttribute {
 
-    private final TypeElement type;
+    private final TypeElement entityElement;
 
-    private final VariableElement variableElement;
+    private final VariableElement mappingPropElement;
+
+    private final boolean indexColumn;
 
 
-    DefaultMetaAttribute(TypeElement type, VariableElement variableElement) {
-        this.type = type;
-        this.variableElement = variableElement;
+    DefaultMetaAttribute(TypeElement entityElement, VariableElement mappingPropElement, boolean indexColumn) {
+        this.entityElement = entityElement;
+        this.mappingPropElement = mappingPropElement;
+        this.indexColumn = indexColumn;
     }
 
 
     @Override
     public String getDefinition() {
-        String format = "    public static final %s<%s,%s> %s = T.getField(%s,%s.class);";
-        String propSimpleName = ElementUtils.getSimpleName(variableElement.asType().toString());
+        String format = "%s %s<%s,%s> %s = %s.%s(%s,%s.class);";
+        String typeSimpleName = ClassUtils.getShortName(mappingPropElement.asType().toString());
 
-        String fieldName = getName();
+        String propName = getName();
 
+        String methodName = indexColumn ? "getIndexField" : "getField";
         return String.format(format,
 
+                SourceCreateUtils.PROP_PRE,
                 FieldMeta.class.getSimpleName(),
-                type.getSimpleName(),
-                propSimpleName,
-                fieldName,
+                entityElement.getSimpleName(),
+                typeSimpleName,
 
-                ElementUtils.camelToUpperCase(fieldName),
-                propSimpleName
+                propName,
+                MetaConstant.TABLE_PROP_NAME,
+                methodName,
+                StringUtils.camelToUpperCase(propName),
+
+                typeSimpleName
         );
 
     }
 
     @Override
     public String getName() {
-        return variableElement.getSimpleName().toString();
+        return mappingPropElement.getSimpleName().toString();
     }
 
     @Override
     public String getNameDefinition() {
-        String name = variableElement.getSimpleName().toString();
-        String format = "    public static final String %s = \"%s\";";
-        return String.format(format, ElementUtils.camelToUpperCase(name), name);
+        String name = mappingPropElement.getSimpleName().toString();
+        String format = "%s String %s = \"%s\";";
+        return String.format(format,
+                SourceCreateUtils.PROP_PRE,
+                StringUtils.camelToUpperCase(name),
+                name
+        );
     }
 }

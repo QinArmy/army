@@ -3,8 +3,8 @@ package io.army.meta.sqltype;
 import io.army.dialect.Dialect;
 import io.army.dialect.MySQL57Dialect;
 import io.army.dialect.Oracle12Dialect;
+import io.army.util.ArrayUtils;
 import io.army.util.Precision;
-import org.qinarmy.foundation.util.ArrayUtils;
 
 import java.util.List;
 

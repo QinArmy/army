@@ -9,19 +9,19 @@ import java.util.Map;
  */
 public enum TradeProvider implements CodeEnum {
 
-    YEEPAY(0, "易宝支付"),
-    FUIOU(100, "富友支付"),
-    ALLINPAY(200, "通联支付"),
-    UCFPAY(300, "先锋支付"),
-    BAOFOO(400, "宝付"),
-    REAPAL(500, "融宝支付"),
-    BILL99(600, "快钱支付"),
-    LIANLIAN(700, "连连支付"),
-    SUMAPAY(8, "丰付"),
-    NEWPAY(900, "新生支付"),
-    BFBPAY(1000, "邦付宝"),
-    UMPAY(1100, "联动优势"),
-    XWBANK(1200, "新网银行");
+    YEXEPAY(0, "支付"),
+    FUXIOU(100, "支付"),
+    ALXLINPAY(200, "支付"),
+    UCXFPAY(300, "支付"),
+    BAXOFOO(400, "付"),
+    REXAPAL(500, "支付"),
+    BIXLL99(600, "支付"),
+    LIAXNLIAN(700, "支付"),
+    SUMXAPAY(8, "付"),
+    NEXWPAY(900, "支付"),
+    BFXBPAY(1000, "宝"),
+    UMXPAY(1100, "优势"),
+    XXWXBANK(1200, "银行");
 
 
     private final int code;
