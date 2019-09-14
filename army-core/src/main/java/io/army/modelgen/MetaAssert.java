@@ -11,6 +11,7 @@ import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 import io.army.util.StringUtils;
 
+import javax.annotation.Nullable;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import java.util.Collections;
@@ -20,11 +21,6 @@ import java.util.Set;
 
 abstract class MetaAssert {
 
-    static void assertInheritanceOnlyOne(TypeElement inheritance) throws MetaException {
-        if (inheritance != null) {
-            throwInheritanceDuplication(inheritance);
-        }
-    }
 
     static void throwInheritanceDuplication(TypeElement entityElement) throws MetaException {
         throw new MetaException(ErrorCode.META_ERROR,
@@ -97,6 +93,52 @@ abstract class MetaAssert {
                 mappedProp.getSimpleName(),
                 CodeEnum.class.getName()
         );
+    }
+
+    static void assertIndexColumnNameSet(@Nullable TypeElement entityElement, Set<String> columnNameSet,
+                                         Set<String> indexColumnNameSet)
+            throws MetaException {
+        if (entityElement == null) {
+            return;
+        }
+
+        Set<String> missingColumnNameSet = new HashSet<>();
+        for (String columnName : indexColumnNameSet) {
+            if (!columnNameSet.contains(columnName)) {
+                missingColumnNameSet.add(columnName);
+            }
+        }
+        if (!missingColumnNameSet.isEmpty()) {
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] index %s not exits.",
+                    entityElement.getQualifiedName(),
+                    missingColumnNameSet
+            );
+        }
+    }
+
+    static void assertInheritance(@Nullable TypeElement entityElement, List<String> discriminatorColumnList) {
+        if (entityElement != null && entityElement.getAnnotation(Inheritance.class) != null) {
+            Assert.notEmpty(discriminatorColumnList,
+                    () -> String.format("entity[%s] discriminator column not exists.",
+                            entityElement.getQualifiedName()));
+        }
+    }
+
+    static MetaException createColumnDuplication(TypeElement mappedElement, String columnName) {
+        return new MetaException(ErrorCode.META_ERROR, String.format(
+                "Mapped class[%s] mapping column[%s] duplication"
+                , mappedElement.getQualifiedName(), columnName));
+    }
+
+    static void assertRequiredColumnName(TypeElement entityElement, VariableElement mappedProp, Column column) {
+        if (TableMeta.VERSION_PROPS.contains(mappedProp.getSimpleName().toString())
+                && StringUtils.hasText(column.name())) {
+            throw new MetaException(ErrorCode.META_ERROR,
+                    "entity[%s] required prop[%s] column name must use default value .",
+                    entityElement.getQualifiedName(),
+                    mappedProp.getSimpleName()
+            );
+        }
     }
 
     /*################################## private method #########################################*/

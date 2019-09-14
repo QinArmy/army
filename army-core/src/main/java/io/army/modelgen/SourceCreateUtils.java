@@ -1,11 +1,10 @@
 package io.army.modelgen;
 
-import io.army.ErrorCode;
 import io.army.annotation.Column;
 import io.army.annotation.Inheritance;
 import io.army.annotation.Table;
 import io.army.criteria.MetaException;
-import io.army.criteria.impl.DefaultTable;
+import io.army.criteria.impl.DefaultTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexFieldMeta;
 import io.army.meta.TableMeta;
@@ -19,6 +18,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 import javax.annotation.Generated;
+import javax.annotation.Nonnull;
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -40,7 +40,11 @@ abstract class SourceCreateUtils {
 
     private static final String JAVA_LANG = "java.lang";
 
-    static final String PROP_PRE = "    public static final";
+    private static final String MEMBER_PRE = "    ";
+
+    static final String PROP_PRE = MEMBER_PRE + "public static final";
+
+    private static final String COMMENT_PRE = "                       ";
 
 
     /**
@@ -53,16 +57,18 @@ abstract class SourceCreateUtils {
      *
      * @return property element set of {@code tableElement} .
      */
-    @NonNull
-    static Set<VariableElement> generateAttributes(@NonNull List<TypeElement> entityMappedElementList,
-                                                   @NonNull List<TypeElement> parentMappedElementList) {
+    @Nonnull
+    static Set<VariableElement> generateAttributes(@Nonnull List<TypeElement> entityMappedElementList,
+                                                   @Nonnull List<TypeElement> parentMappedElementList,
+                                                   @Nonnull Set<String> indexColumnNameSet) {
 
         try {
             Set<String> entityPropName = new HashSet<>();
 
-            generateEntityAttributes(parentMappedElementList, entityPropName);
+            generateEntityAttributes(parentMappedElementList, entityPropName, indexColumnNameSet);
 
-            final Set<VariableElement> entityPropSet = generateEntityAttributes(entityMappedElementList, entityPropName);
+            final Set<VariableElement> entityPropSet = generateEntityAttributes(entityMappedElementList,
+                    entityPropName, indexColumnNameSet);
             // assert required props
             MetaAssert.assertRequiredMappingProps(entityMappedElementList, entityPropName);
             return entityPropSet;
@@ -164,17 +170,55 @@ abstract class SourceCreateUtils {
         //2.  meta count part
         appendMetaCount(table, builder, parentEntityElement, mappingPropList);
 
-        //3. prop names  definition
+        // 3. field count validate static method
+        appendFieldCountValidateMethod(entityElement, builder);
+
+        //4. prop names  definition
         appendMappingPropNames(builder, mappingPropList);
 
         // new line
         builder.append("\n\n");
 
-        //4. mapping prop meta definition
+        //5. mapping prop meta definition
         appendMappingPropMeta(builder, mappingPropList);
 
         builder.append("\n\n}\n\n\n");
         return builder.toString();
+    }
+
+    private static void appendFieldCountValidateMethod(TypeElement entityElement, StringBuilder builder) {
+        builder.append("\n")
+                .append(MEMBER_PRE)
+                .append("static {\n")
+                .append(MEMBER_PRE)
+                .append("\t")
+
+                .append(Assert.class.getSimpleName())
+                .append(".state(")
+                .append(MetaConstant.TABLE_META)
+                .append(".fieldCollection().size() == ")
+                .append(MetaConstant.FIELD_COUNT)
+
+                .append(",()->\n")
+                .append(MEMBER_PRE)
+                .append("\t\t")
+                .append("String.format(\"entity[%s] field count error.\",")
+                .append(entityElement.getSimpleName())
+                .append(".class.getName()));\n\t}\n\n")
+        ;
+    }
+
+
+    static String columnName(TypeElement entityElement, VariableElement mappedProp, Column column) {
+        MetaAssert.assertRequiredColumnName(entityElement, mappedProp, column);
+        return StringUtils.hasText(column.name())
+                ? column.name()
+                : StringUtils.camelToLowerCase(mappedProp.getSimpleName().toString());
+
+    }
+
+    static String getQualifiedName(TypeElement typeElement) {
+        return typeElement.getQualifiedName().toString() + META_CLASS_NAME_SUFFIX;
     }
 
 
@@ -190,15 +234,15 @@ abstract class SourceCreateUtils {
             parentTableMetaText = String.format("%s%s.%s,",
                     parentEntityElement.getSimpleName(),
                     META_CLASS_NAME_SUFFIX,
-                    MetaConstant.TABLE_PROP_NAME
+                    MetaConstant.TABLE_META
             );
         }
         builder.append(String.format(format,
                 PROP_PRE,
                 TableMeta.class.getSimpleName(),
                 entityElement.getSimpleName(),
-                MetaConstant.TABLE_PROP_NAME,
-                DefaultTable.class.getSimpleName(),
+                MetaConstant.TABLE_META,
+                DefaultTableMeta.class.getSimpleName(),
                 parentTableMetaText,
                 entityElement.getSimpleName()
         ));
@@ -207,25 +251,41 @@ abstract class SourceCreateUtils {
     private static void appendMetaCount(Table table, StringBuilder builder, @Nullable TypeElement parentEntityElement,
                                         @NonNull List<MetaAttribute> attributeList) {
         builder.append(PROP_PRE)
-                .append(" String TABLE_NAME = \"")
+                .append(" String ")
+                .append(MetaConstant.TABLE_NAME)
+                .append(" = \"")
                 .append(table.name())
-                .append("\";\n\n")
+                .append("\";\n\n");
 
-                .append(PROP_PRE)
-                .append(" int FIELD_COUNT = ")
-                .append(attributeList.size())
-                .append(";\n\n")
-
-                .append(PROP_PRE)
-                .append(" int FIELD_TOTAL = ")
-        ;
+        if (parentEntityElement != null) {
+            builder.append(COMMENT_PRE)
+                    .append("/** plus primary key column **/\n");
+        }
+        builder.append(PROP_PRE)
+                .append(" int ")
+                .append(MetaConstant.FIELD_COUNT)
+                .append(" = ");
 
         if (parentEntityElement == null) {
-            builder.append("FIELD_COUNT");
+            builder.append(attributeList.size());
         } else {
-            builder.append(parentEntityElement.getSimpleName())
+            // plus primary key column
+            builder.append(attributeList.size() + 1);
+        }
+        builder.append(";\n\n")
+                .append(PROP_PRE)
+                .append(" int ")
+                .append(MetaConstant.FIELD_TOTAL)
+                .append(" = ")
+                .append(MetaConstant.FIELD_COUNT)
+        ;
+
+        if (parentEntityElement != null) {
+            builder.append(" + ")
+                    .append(parentEntityElement.getSimpleName())
                     .append(META_CLASS_NAME_SUFFIX)
-                    .append(".FIELD_TOTAL")
+                    .append(".")
+                    .append(MetaConstant.FIELD_TOTAL)
             ;
         }
         builder.append(";\n\n");
@@ -268,7 +328,8 @@ abstract class SourceCreateUtils {
      * @return unmodifiable set
      */
     private static Set<VariableElement> generateEntityAttributes(List<TypeElement> mappedClassElementList,
-                                                                 Set<String> entityPropNameSet)
+                                                                 Set<String> entityPropNameSet,
+                                                                 Set<String> indexColumnNameSet)
             throws MetaException {
         Set<VariableElement> mappedPropSet = new HashSet<>();
         Set<String> columnNameSet = new HashSet<>();
@@ -295,9 +356,9 @@ abstract class SourceCreateUtils {
                 }
                 entityPropNameSet.add(mappedProp.getSimpleName().toString());
 
-                columnName = columnName(mappedProp, column);
+                columnName = columnName(entityElement, mappedProp, column);
                 if (columnNameSet.contains(columnName)) {
-                    throw createColumnDuplication(mappedElement, columnName);
+                    throw MetaAssert.createColumnDuplication(mappedElement, columnName);
                 }
                 // assert io.army.annotation.Column
                 MetaAssert.assertColumn(mappedElement, mappedProp, column, columnName);
@@ -309,17 +370,9 @@ abstract class SourceCreateUtils {
                 mappedPropSet.add(mappedProp);
             }
         }
-
-        assertInheritance(entityElement, discriminatorColumnList);
+        MetaAssert.assertIndexColumnNameSet(entityElement, columnNameSet, indexColumnNameSet);
+        MetaAssert.assertInheritance(entityElement, discriminatorColumnList);
         return Collections.unmodifiableSet(mappedPropSet);
-    }
-
-    private static void assertInheritance(TypeElement entityElement, List<String> discriminatorColumnList) {
-        if (entityElement != null && entityElement.getAnnotation(Inheritance.class) != null) {
-            Assert.notEmpty(discriminatorColumnList,
-                    () -> String.format("entity[%s] discriminator column not exists.",
-                            entityElement.getQualifiedName()));
-        }
     }
 
 
@@ -363,26 +416,6 @@ abstract class SourceCreateUtils {
 
     }
 
-
-    private static String columnName(VariableElement mappedProp, Column column) {
-        return StringUtils.hasText(column.name())
-                ? column.name()
-                : StringUtils.camelToLowerCase(mappedProp.getSimpleName().toString());
-
-    }
-
-
-    private static MetaException createColumnDuplication(TypeElement mappedElement, String columnName) {
-        return new MetaException(ErrorCode.META_ERROR, String.format(
-                "Mapped class[%s] mapping column[%s] duplication"
-                , mappedElement.getQualifiedName(), columnName));
-    }
-
-
-    static String getQualifiedName(TypeElement typeElement) {
-        return typeElement.getQualifiedName().toString() + META_CLASS_NAME_SUFFIX;
-    }
-
     private static void appendParentClassImport(StringBuilder builder, TypeElement entityElement,
                                                 TypeElement parentEntityElement) {
         if (parentEntityElement != null && !samePackage(entityElement, parentEntityElement)) {
@@ -414,11 +447,15 @@ abstract class SourceCreateUtils {
                 .append(";\n")
 
                 .append("import ")
-                .append(DefaultTable.class.getName())
+                .append(DefaultTableMeta.class.getName())
                 .append(";\n")
 
                 .append("import ")
                 .append(TableMeta.class.getName())
+                .append(";\n\n")
+
+                .append("import ")
+                .append(Assert.class.getName())
                 .append(";\n\n")
         ;
     }

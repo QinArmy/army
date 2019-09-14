@@ -1,6 +1,7 @@
 package com.example.simple;
 
 import com.example.domain.account.Account;
+import com.example.domain.trade.BaseRecord_;
 import io.army.annotation.MappedSuperclass;
 import io.army.util.AnnotationUtils;
 import org.slf4j.Logger;
@@ -19,5 +20,10 @@ public class SimpleTests {
 
         mappedSuperclass = AnnotationUtils.findAnnotation(Account.class, MappedSuperclass.class);
         LOG.info("mappedSuperclass:{}", mappedSuperclass);
+    }
+
+    @Test
+    public void domainMeta() {
+        LOG.info("load BaseRecord meta {}", BaseRecord_.T);
     }
 }

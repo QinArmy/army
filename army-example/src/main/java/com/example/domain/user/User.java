@@ -12,7 +12,7 @@ import static com.example.domain.user.User.NONE_VALUE;
  * created  on 2018/9/19.
  */
 @Table(name = "u_user", indexes = {
-        @Index(name = "uniq_partner_id", columnList = "partner_no,id_from_partner", unique = true),
+        @Index(name = "uniq_partner_id", columnList = {"partner_no", "id_from_partner"}, unique = true),
         @Index(name = "idx_nick_name_from_partner", columnList = "nick_name_from_partner"),
         @Index(name = "uniq_nick_name", columnList = "nick_name")
 }, comment = "用户父表"

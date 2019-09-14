@@ -6,7 +6,7 @@ import io.army.util.ArrayUtils;
 import javafx.scene.media.MediaException;
 
 import javax.annotation.Nullable;
-import java.util.List;
+import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -35,8 +35,6 @@ public interface TableMeta<T extends IDomain> {
 
     boolean immutable();
 
-    int fieldCount();
-
     String comment();
 
     @Nullable
@@ -53,9 +51,9 @@ public interface TableMeta<T extends IDomain> {
     /**
      * contain primary key
      */
-    List<IndexMeta<T>> indexList();
+    Collection<IndexMeta<T>> indexCollection();
 
-    List<FieldMeta<T, ?>> fieldList();
+    Collection<FieldMeta<T, ?>> fieldCollection();
 
     String charset();
 

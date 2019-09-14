@@ -28,7 +28,7 @@ public abstract class AbstractDialect implements Dialect {
         // primary key column
         builder.append(fieldDefinition(tableMeta.primaryKey()));
 
-        for (FieldMeta<?, ?> fieldMeta : tableMeta.fieldList()) {
+        for (FieldMeta<?, ?> fieldMeta : tableMeta.fieldCollection()) {
             if (fieldMeta.isPrimary()) {
                 continue;
             }

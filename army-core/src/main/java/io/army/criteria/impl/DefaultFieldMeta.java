@@ -13,13 +13,14 @@ import org.springframework.util.Assert;
 
 import java.lang.reflect.Field;
 import java.sql.JDBCType;
+import java.util.Objects;
 
 /**
  * created  on 2018/11/18.
  */
 class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> implements FieldMeta<T, F> {
 
-    private static final String ID = "id";
+    private static final String ID = TableMeta.ID;
 
 
     private final TableMeta<T> table;
@@ -65,7 +66,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
             Column column = MetaUtils.columnMeta(table.javaType(), field);
             propertyClass = (Class<F>) field.getType();
-            fieldName = column.name();
+            fieldName = MetaUtils.columnName(column, field);
 
             comment = column.comment();
             mappingType = MetaUtils.mappingType(field);
@@ -78,7 +79,8 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
             defaultValue = column.defaultValue();
         } catch (RuntimeException e) {
-            throw new MetaException(ErrorCode.META_ERROR, e, "Table[%s].%s error", table.tableName(), propertyName);
+            throw new MetaException(ErrorCode.META_ERROR, e, "create entity[%s] mapping property[%s] meta error"
+                    , table.javaType(), propertyName);
         }
 
 
@@ -169,8 +171,45 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
         return propertyName;
     }
 
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof DefaultFieldMeta)) {
+            return false;
+        }
+        DefaultFieldMeta otherField = (DefaultFieldMeta) obj;
+        return this.table().equals(otherField.table())
+                && this.javaType() == otherField.javaType()
+                && this.propertyName().equals(this.propertyName())
+                && this.fieldName().equals(otherField.fieldName())
+                ;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.table(), this.javaType(), this.propertyName(), this.fieldName());
+    }
+
     @Override
     public String toString() {
-        return table.tableName() + "." + fieldName;
+        return defaultToString();
     }
+
+    private String defaultToString() {
+        return new StringBuilder()
+                .append("\n")
+                .append(this.table.javaType().getName())
+                .append(" mapping ")
+                .append(this.table().tableName())
+                .append(" [\n")
+                .append(this.propertyName())
+                .append(" mapping ")
+                .append(this.fieldName())
+                .append("\n]")
+                .toString();
+    }
+
 }

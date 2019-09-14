@@ -5,5 +5,12 @@ package io.army.modelgen;
  */
 public interface MetaConstant {
 
-    String TABLE_PROP_NAME = "T";
+    String TABLE_META = "T";
+
+    String TABLE_NAME = "TABLE_NAME";
+
+    String FIELD_COUNT = "FIELD_COUNT";
+
+    String FIELD_TOTAL = "FIELD_TOTAL";
+
 }

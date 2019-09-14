@@ -13,7 +13,7 @@ import static com.example.domain.account.Account.NONE_VALUE;
  * created  on 2018/9/27.
  */
 @Table(name = "a_account", indexes = {
-        @Index(name = "idx_user_id_account_type", columnList = "user_id,account_type", unique = true)
+        @Index(name = "idx_user_id_account_type", columnList = {"user_id asc", "account_type"}, unique = true)
 }, comment = "account"
 )
 @Inheritance("account_type")

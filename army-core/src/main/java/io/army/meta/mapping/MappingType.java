@@ -6,7 +6,9 @@ import io.army.meta.sqltype.SQLDataType;
 import io.army.util.Precision;
 import org.springframework.lang.NonNull;
 
+import javax.annotation.Nullable;
 import java.sql.JDBCType;
+import java.sql.SQLException;
 
 public interface MappingType<T> {
 
@@ -17,12 +19,10 @@ public interface MappingType<T> {
     Object toSql(T t);
 
     /**
-     * @param databaseValue
-     * @return
-     * @throws IllegalArgumentException
      */
-    T toJava(Object databaseValue);
+    T toJava(Object databaseValue) throws SQLException;
 
+    @Nullable
     SQLDataType sqlType(Dialect dialect);
 
     /**

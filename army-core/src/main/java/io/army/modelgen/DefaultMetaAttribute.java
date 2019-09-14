@@ -43,7 +43,7 @@ class DefaultMetaAttribute implements MetaAttribute {
                 typeSimpleName,
 
                 propName,
-                MetaConstant.TABLE_PROP_NAME,
+                MetaConstant.TABLE_META,
                 methodName,
                 StringUtils.camelToUpperCase(propName),
 

@@ -43,9 +43,13 @@ class DefaultMetaEntity implements MetaEntity {
         if (this.entityElement == null) {
             throw new MetaException(ErrorCode.META_ERROR, "entityMappedElementList error");
         }
+        final Set<String> indexColumnNameSet = createIndexColumnNameSet(this.entityElement);
+
         final Set<VariableElement> mappingPropSet = SourceCreateUtils.generateAttributes(
                 entityMappedElementList,
-                parentMappedElementList);
+                parentMappedElementList,
+                indexColumnNameSet
+        );
 
         final TypeElement parentEntityElement = SourceCreateUtils.entityElement(parentMappedElementList);
 
@@ -53,9 +57,8 @@ class DefaultMetaEntity implements MetaEntity {
 
         this.classDefinition = SourceCreateUtils.generateClassDefinition(this.entityElement, parentEntityElement);
 
-        Set<String> columnNameSet = createIndexColumnNameSet(this.entityElement);
         this.body = SourceCreateUtils.generateBody(this.entityElement, parentEntityElement,
-                generateMappingPropList(mappingPropSet, columnNameSet));
+                generateMappingPropList(mappingPropSet, indexColumnNameSet));
     }
 
 
@@ -97,9 +100,11 @@ class DefaultMetaEntity implements MetaEntity {
         List<MetaAttribute> list = new ArrayList<>(mappingPropSet.size());
         Column column;
         MetaAttribute attribute;
+        String columnName;
         for (VariableElement mappingProp : mappingPropSet) {
             column = mappingProp.getAnnotation(Column.class);
-            attribute = new DefaultMetaAttribute(this.entityElement, mappingProp, columnNameSet.contains(column.name()));
+            columnName = SourceCreateUtils.columnName(this.entityElement, mappingProp, column);
+            attribute = new DefaultMetaAttribute(this.entityElement, mappingProp, columnNameSet.contains(columnName));
             list.add(attribute);
         }
         return Collections.unmodifiableList(list);
@@ -109,8 +114,16 @@ class DefaultMetaEntity implements MetaEntity {
         Table table = entityElement.getAnnotation(Table.class);
         Index[] indexArray = table.indexes();
         Set<String> columnNameSet = new HashSet<>();
+
+        Set<String> indexNameSet = new HashSet<>(indexArray.length + 3);
+
         StringTokenizer tokenizer;
         for (Index index : indexArray) {
+            if (indexNameSet.contains(index.name())) {
+                throw new MetaException(ErrorCode.META_ERROR, "entity[%s] index name[%s] duplication",
+                        entityElement.getQualifiedName());
+            }
+            indexNameSet.add(index.name());
             for (String columnName : index.columnList()) {
                 tokenizer = new StringTokenizer(columnName.trim(), " ", false);
                 columnNameSet.add(tokenizer.nextToken());

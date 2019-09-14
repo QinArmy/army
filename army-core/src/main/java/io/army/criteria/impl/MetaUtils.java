@@ -7,13 +7,11 @@ import io.army.domain.IDomain;
 import io.army.meta.*;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingType;
-import io.army.util.AnnotationUtils;
-import io.army.util.Assert;
-import io.army.util.Precision;
-import io.army.util.ReflectionUtils;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
+import io.army.struct.CodeEnum;
+import io.army.util.*;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -22,7 +20,7 @@ import java.util.*;
  */
 abstract class MetaUtils {
 
-    private static final String PRIMARY_FIELD = "id";
+    private static final String PRIMARY_FIELD = TableMeta.ID;
 
     private static final String ASC = "ASC";
 
@@ -32,7 +30,7 @@ abstract class MetaUtils {
 
     }
 
-    static Column columnMeta(@NonNull Class<? extends IDomain> entityClass, @NonNull Field field) throws MetaException {
+    static Column columnMeta(@Nonnull Class<? extends IDomain> entityClass, @Nonnull Field field) throws MetaException {
         Column column = AnnotationUtils.getAnnotation(field, Column.class);
         if (column == null) {
             throw createNonAnnotationException(entityClass, Column.class);
@@ -40,8 +38,8 @@ abstract class MetaUtils {
         return column;
     }
 
-    @NonNull
-    static Table tableMeta(@NonNull Class<? extends IDomain> entityClass) {
+    @Nonnull
+    static Table tableMeta(@Nonnull Class<? extends IDomain> entityClass) {
         Table table = AnnotationUtils.getAnnotation(entityClass, Table.class);
         if (table == null) {
             throw createNonAnnotationException(entityClass, Table.class);
@@ -56,8 +54,8 @@ abstract class MetaUtils {
     }
 
 
-    @NonNull
-    static MappingType mappingType(@NonNull Field field) {
+    @Nonnull
+    static MappingType mappingType(@Nonnull Field field) {
         Mapping mapping = AnnotationUtils.getAnnotation(field, Mapping.class);
         MappingFactory mappingFactory = mappingFactory();
         return mapping == null
@@ -66,7 +64,7 @@ abstract class MetaUtils {
     }
 
 
-    static int precision(@NonNull Column column, Precision precision) {
+    static int precision(@Nonnull Column column, Precision precision) {
         Integer defaultPrecision = (Integer) AnnotationUtils.getDefaultValue(column, "precision");
         if (defaultPrecision == null) {
             // never this
@@ -75,7 +73,7 @@ abstract class MetaUtils {
         return column.precision() == defaultPrecision ? precision.getPrecision() : column.precision();
     }
 
-    static int scale(@NonNull Column column, Precision precision) {
+    static int scale(@Nonnull Column column, Precision precision) {
         Integer defaultScale = (Integer) AnnotationUtils.getDefaultValue(column, "scale");
         if (defaultScale == null) {
             // never this
@@ -117,50 +115,49 @@ abstract class MetaUtils {
     }
 
 
-    static <T extends IDomain> FieldBean<T> fieldMetaList(final @NonNull TableMeta<T> table, Table tableMeta)
+    static <T extends IDomain> FieldBean<T> fieldMetaList(final @Nonnull TableMeta<T> table, Table tableMeta)
             throws MetaException {
 
-        final List<Class<?>> mappingClassList = mappingClassList(table.javaType());
+        final List<Class<?>> mappedClassList = mappedClassList(table.javaType());
         // this table's column to filed map, but contains id .
-        final Map<String, Field> columnToFieldMap = columnToFieldMap(table, mappingClassList);
+        final Map<String, Field> columnToFieldMap = columnToFieldMap(table, mappedClassList);
 
+        // 1. create index meta
         final List<IndexMeta<T>> indexMetaList = indexMetaList(table, tableMeta, columnToFieldMap);
 
         // exclude indexMetaList column part
         final Map<String, Field> subMap = notIndexColumnToField(indexMetaList, columnToFieldMap);
 
-        List<FieldMeta<T, ?>> fieldList = new ArrayList<>();
+        Map<String, FieldMeta<T, ?>> propNameToFieldMeta = new HashMap<>((int) (columnToFieldMap.size() / 0.75f));
 
-        for (Map.Entry<String, Field> entry : subMap.entrySet()) {
-            fieldList.add(
-                    new DefaultFieldMeta<>(table, entry.getValue(), false, false)
-            );
-        }
-
+        Set<String> columnNameSet = new HashSet<>(), propNameSet = new HashSet<>();
+        //2. append index field meta to propNameToFieldMeta
         for (IndexMeta<T> indexMeta : indexMetaList) {
-            // append index field meta
-            fieldList.addAll(indexMeta.fieldList());
-        }
-        return new FieldBean<T>().setIndexMetaList(indexMetaList)
-                .setFieldMetaList(Collections.unmodifiableList(fieldList));
-    }
-
-
-    static <T extends IDomain> IndexFieldMeta<T, ?> primaryField(List<IndexMeta<T>> indexList,
-                                                                 TableMeta<T> tableMeta) {
-        for (IndexMeta<T> indexMeta : indexList) {
             for (IndexFieldMeta<T, ?> fieldMeta : indexMeta.fieldList()) {
-                if (PRIMARY_FIELD.equals(fieldMeta.fieldName())) {
-                    return fieldMeta;
-                }
+                assertFieldMetaNotDuplication(fieldMeta, columnNameSet, propNameSet);
+                propNameToFieldMeta.put(fieldMeta.propertyName(), fieldMeta);
+                columnNameSet.add(fieldMeta.fieldName());
             }
         }
-        throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] not found primary key definition"
-                , tableMeta.javaType().getName());
+        //3. append rest field meta to propNameToFieldMeta
+        FieldMeta<T, ?> fieldMeta;
+        for (Map.Entry<String, Field> entry : subMap.entrySet()) {
+            fieldMeta = new DefaultFieldMeta<>(table, entry.getValue(), false, false);
+            assertFieldMetaNotDuplication(fieldMeta, columnNameSet, propNameSet);
+            propNameToFieldMeta.put(entry.getValue().getName(), fieldMeta);
+            propNameSet.add(fieldMeta.propertyName());
+        }
+        propNameToFieldMeta = Collections.unmodifiableMap(propNameToFieldMeta);
+        return new FieldBean<T>(
+                propNameToFieldMeta,
+                indexMetaList,
+                // 4. craete discriminator
+                discriminator(table, propNameToFieldMeta, columnToFieldMap)
+        );
     }
 
 
-    static MappingMode mappingMode(@NonNull Class<? extends IDomain> entityClass) throws MetaException {
+    static MappingMode mappingMode(@Nonnull Class<? extends IDomain> entityClass) throws MetaException {
         int tableCount = 0, inheritCount = 0;
         for (Class<?> superClass = entityClass; superClass != null; superClass = superClass.getSuperclass()) {
             if (AnnotationUtils.getAnnotation(superClass, Table.class) != null) {
@@ -201,23 +198,36 @@ abstract class MetaUtils {
     }
 
 
+    static String columnName(Column column, Field field) throws MetaException {
+        if (TableMeta.VERSION_PROPS.contains(field.getName()) && StringUtils.hasText(column.name())) {
+            throw new MetaException(ErrorCode.META_ERROR,
+                    "mapped class [%s] required prop[%s] column name must use default value .",
+                    field.getDeclaringClass().getName(),
+                    field.getName()
+            );
+        }
+        String columnName = column.name();
+        if (!StringUtils.hasText(columnName)) {
+            columnName = StringUtils.camelToLowerCase(field.getName());
+        }
+        return columnName;
+    }
+
+
+
+
     /*################################ private method ####################################*/
 
     /**
      * @return mapping class list(unmodifiable) ,order by extends relation,entityClass is the last one.
      */
-    private static List<Class<?>> mappingClassList(Class<?> entityClass) throws MetaException {
-        List<Class<?>> list = new ArrayList<>(5);
-        if (AnnotationUtils.getAnnotation(entityClass, Table.class) != null) {
-            list.add(entityClass);
-        } else {
-            throw new MetaException(ErrorCode.META_ERROR, "entity class isn't Entity,class[]", entityClass.getName());
-        }
+    private static List<Class<?>> mappedClassList(Class<?> entityClass) throws MetaException {
+        List<Class<?>> list = new ArrayList<>(6);
+        list.add(entityClass);
 
         for (Class<?> superClass = entityClass.getSuperclass(); superClass != null;
              superClass = superClass.getSuperclass()) {
-
-            if (AnnotationUtils.getAnnotation(superClass, Table.class) != null) {
+            if (AnnotationUtils.getAnnotation(superClass, Inheritance.class) != null) {
                 break;
             }
             if (AnnotationUtils.getAnnotation(superClass, MappedSuperclass.class) != null) {
@@ -231,15 +241,12 @@ abstract class MetaUtils {
         return Collections.unmodifiableList(list);
     }
 
-    private static Stack<Class<?>> superMappingClassStack(Class<?> mappingClass) throws MetaException {
+    private static Stack<Class<?>> superMappingClassStack(Class<?> topMappedClass) throws MetaException {
         Stack<Class<?>> stack = new Stack<>();
 
-        for (Class<?> superClass = mappingClass.getSuperclass(); superClass != null;
+        for (Class<?> superClass = topMappedClass; superClass != null;
              superClass = superClass.getSuperclass()) {
-
-            if (AnnotationUtils.getAnnotation(superClass, Table.class) != null) {
-                stack.push(superClass);
-            } else if (AnnotationUtils.getAnnotation(superClass, MappedSuperclass.class) != null) {
+            if (AnnotationUtils.getAnnotation(superClass, MappedSuperclass.class) != null) {
                 stack.push(superClass);
             } else {
                 break;
@@ -267,30 +274,32 @@ abstract class MetaUtils {
     /**
      * @return map(unmodifiable) ,key: column name,value : {@link Field} ,
      */
-    private static Map<String, Field> columnToFieldMap(TableMeta<?> tableMeta, List<Class<?>> mappingClassList) {
+    private static Map<String, Field> columnToFieldMap(TableMeta<?> tableMeta, List<Class<?>> mappedClassList) {
         final Map<String, Field> map = new HashMap<>();
-        for (Class<?> mappingClass : mappingClassList) {
+        for (Class<?> mappingClass : mappedClassList) {
             ReflectionUtils.doWithLocalFields(mappingClass, field -> {
                 Column column = AnnotationUtils.getAnnotation(field, Column.class);
                 if (column == null) {
                     return;
                 }
-                if (map.containsKey(column.name())) {
+                String columnName = columnName(column, field);
+                if (map.containsKey(columnName)) {
                     throw new MetaException(ErrorCode.META_ERROR, "mapping class[%s] column definition duplication",
                             mappingClass.getName());
                 }
-                map.put(column.name(), field);
+                map.put(columnName, field);
             });
 
         }
         if (!map.containsKey(PRIMARY_FIELD)) {
-            map.put(PRIMARY_FIELD, findIdField(tableMeta, mappingClassList.get(0)));
+            map.put(PRIMARY_FIELD, findIdField(tableMeta, mappedClassList.get(0)));
         }
         return Collections.unmodifiableMap(map);
     }
 
-    private static Field findIdField(TableMeta<?> tableMeta, Class<?> mappingClass) {
-        Stack<Class<?>> superMappingStack = superMappingClassStack(mappingClass);
+
+    private static Field findIdField(TableMeta<?> tableMeta, Class<?> topMappedClass) {
+        Stack<Class<?>> superMappingStack = superMappingClassStack(topMappedClass);
         Field field;
         for (Class<?> superMapping; !superMappingStack.empty(); ) {
             superMapping = superMappingStack.pop();
@@ -301,15 +310,15 @@ abstract class MetaUtils {
             }
             if (field != null) {
                 Column column = AnnotationUtils.getAnnotation(field, Column.class);
-                if (column == null || !PRIMARY_FIELD.equals(column.name())) {
+                if (column == null) {
                     throw new MetaException(ErrorCode.META_ERROR, "table[%s] not found primary column definition",
                             tableMeta.tableName());
                 }
                 return field;
             }
         }
-        throw new MetaException(ErrorCode.META_ERROR, "table[%s] not found primary column definition",
-                tableMeta.tableName());
+        throw new MetaException(ErrorCode.META_ERROR, "entity[%s] not found primary key column definition",
+                tableMeta.javaType());
     }
 
 
@@ -325,29 +334,66 @@ abstract class MetaUtils {
     }
 
 
-    static class FieldBean<T extends IDomain> {
+    private static void assertFieldMetaNotDuplication(FieldMeta<?, ?> fieldMeta, Set<String> columnNameSet,
+                                                      Set<String> propNameSet) {
 
-        private List<FieldMeta<T, ?>> fieldMetaList;
-
-        private List<IndexMeta<T>> indexMetaList;
-
-        List<FieldMeta<T, ?>> getFieldMetaList() {
-            return fieldMetaList;
+        if (columnNameSet.contains(fieldMeta.fieldName())) {
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] column[%s] create duplication",
+                    fieldMeta.table().javaType(),
+                    fieldMeta.fieldName()
+            );
         }
-
-        FieldBean<T> setFieldMetaList(List<FieldMeta<T, ?>> fieldMetaList) {
-            this.fieldMetaList = fieldMetaList;
-            return this;
+        if (propNameSet.contains(fieldMeta.propertyName())) {
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] property[%s] create duplication",
+                    fieldMeta.table().javaType(),
+                    fieldMeta.propertyName()
+            );
         }
+    }
 
-        List<IndexMeta<T>> getIndexMetaList() {
-            return indexMetaList;
-        }
 
-        FieldBean<T> setIndexMetaList(List<IndexMeta<T>> indexMetaList) {
-            this.indexMetaList = indexMetaList;
-            return this;
+    @Nullable
+    private static <T extends IDomain> FieldMeta<T, ?> discriminator(TableMeta<T> tableMeta,
+                                                                     Map<String, FieldMeta<T, ?>> propNameToFieldMeta,
+                                                                     Map<String, Field> columnToFieldMap) {
+
+        Inheritance inheritance = AnnotationUtils.getAnnotation(tableMeta.javaType(), Inheritance.class);
+        if (inheritance == null) {
+            return null;
         }
+        Field field = columnToFieldMap.get(inheritance.value());
+        if (field == null) {
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] discriminator column[%s] not found",
+                    tableMeta.javaType().getName(),
+                    inheritance.value()
+            );
+        }
+        if (!field.getDeclaringClass().isAssignableFrom(tableMeta.javaType())) {
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] discriminator property[%s,%s] not match.",
+                    tableMeta.javaType().getName(),
+                    field.getDeclaringClass().getName(),
+                    inheritance.value()
+            );
+        }
+        FieldMeta<T, ?> fieldMeta = propNameToFieldMeta.get(field.getName());
+        if (fieldMeta == null
+                || !fieldMeta.fieldName().equals(inheritance.value())
+                || fieldMeta.table() != tableMeta) {
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] discriminator column[%s] not found",
+                    tableMeta.javaType().getName(),
+                    inheritance.value()
+            );
+        }
+        if (!fieldMeta.javaType().isEnum()
+                || !CodeEnum.class.isAssignableFrom(fieldMeta.javaType())) {
+            throw new MetaException(ErrorCode.META_ERROR,
+                    "entity[%s] discriminator property java class[%s] isn't a Enum implements %s",
+                    tableMeta.javaType().getName(),
+                    fieldMeta.javaType().getName(),
+                    CodeEnum.class.getName()
+            );
+        }
+        return fieldMeta;
     }
 
 
@@ -355,10 +401,11 @@ abstract class MetaUtils {
     /*################################# index meta part private method  start ###################################*/
 
     /**
-     * @param <T> entity java class
+     * @param <T>              entity java class
+     * @param columnToFieldMap unmodifiable map
      * @return index meta list(unmodifiable) of table,
      */
-    private static <T extends IDomain> List<IndexMeta<T>> indexMetaList(final @NonNull TableMeta<T> table,
+    private static <T extends IDomain> List<IndexMeta<T>> indexMetaList(final @Nonnull TableMeta<T> table,
                                                                         Table tableMeta,
                                                                         Map<String, Field> columnToFieldMap) {
 
@@ -368,34 +415,16 @@ abstract class MetaUtils {
         IndexMeta<T> indexMeta;
         Set<String> createdColumnSet = new HashSet<>();
 
-        int idIndex = -1;
         for (Index index : indexArray) {
-            indexMeta = new DefaultIndexMeta<>(table, index, columnToFieldMap,
-                    Collections.unmodifiableSet(createdColumnSet));
+            indexMeta = new DefaultIndexMeta<>(table, index, columnToFieldMap, createdColumnSet);
 
             indexMetaList.add(indexMeta);
-            for (IndexFieldMeta<T, ?> fieldMeta : indexMeta.fieldList()) {
-                if (createdColumnSet.contains(fieldMeta.fieldName())) {
-                    // if army code no bug ,never execute this line.
-                    throw new RuntimeException(String.format("army code error,column[%s,%s] duplication",
-                            table.tableName(), fieldMeta.fieldAsc()));
-                }
-                createdColumnSet.add(fieldMeta.fieldName());
-                if (PRIMARY_FIELD.equals(fieldMeta.fieldName())) {
-                    idIndex = indexMetaList.size() - 1;
-                }
-            }
         }
 
         // handle primary key index, and primary key index must be  first element of list.
-        if (createdColumnSet.contains(PRIMARY_FIELD)) {
-            if (idIndex != 0) {
-                switchPrimaryKeyIndexMeta(idIndex, indexMetaList);
-            }
-        } else {
-            indexMeta = new DefaultIndexMeta<>(table, null, columnToFieldMap,
-                    Collections.unmodifiableSet(createdColumnSet));
-            List<IndexMeta<T>> list = new ArrayList<>(indexArray.length + 1);
+        if (!createdColumnSet.contains(PRIMARY_FIELD)) {
+            indexMeta = new DefaultIndexMeta<>(table, null, columnToFieldMap, createdColumnSet);
+            List<IndexMeta<T>> list = new ArrayList<>(indexMetaList.size() + 1);
             // first,add  primary key index
             list.add(indexMeta);
             list.addAll(indexMetaList);
@@ -405,14 +434,6 @@ abstract class MetaUtils {
         return Collections.unmodifiableList(indexMetaList);
     }
 
-
-    private static <T extends IDomain> void switchPrimaryKeyIndexMeta(final int idIndex,
-                                                                      List<IndexMeta<T>> indexMetaList) {
-        IndexMeta<T> primaryKeyIndex;
-        primaryKeyIndex = indexMetaList.get(idIndex);
-        indexMetaList.set(idIndex, indexMetaList.get(0));
-        indexMetaList.set(0, primaryKeyIndex);
-    }
 
     /**
      * create {@link Index}'s {@link IndexFieldMeta}
@@ -436,41 +457,29 @@ abstract class MetaUtils {
         String columnName;
         boolean columnAsc, uniqueColumn;
 
-        // created column set  in this  index
-        final Set<String> createdIndexColumnSet = new HashSet<>((int) (indexColumns.length / 0.75));
-
-        for (String indexColumn : indexColumns) {
-            tokenizer = new StringTokenizer(indexColumn, " ", false);
+        for (String indexColumnDefinition : indexColumns) {
+            tokenizer = new StringTokenizer(indexColumnDefinition.trim(), " ", false);
             // assert index column definition
-            assertIndexColumn(tokenizer.countTokens(), table.tableName(), indexMeta.name(), indexColumn);
+            assertIndexColumnDefinition(tokenizer.countTokens(), table.javaType(), indexMeta.name(), indexColumnDefinition);
 
             columnName = tokenizer.nextToken();
-            if (createdIndexColumnSet.contains(columnName)) {
-                throw new MetaException(ErrorCode.META_ERROR, "index[%s] column[%s.%s] duplication",
-                        indexMeta.name(), table.tableName(), columnName);
-            }
+
+            assertIndexColumnNotDuplication(indexMeta, createdColumnSet, columnName);
             if (tokenizer.countTokens() == 2) {
-                columnAsc = isAscIndexColumn(tokenizer.nextToken(), table.tableName(), indexMeta.name(), indexColumn);
+                columnAsc = isAscIndexColumn(tokenizer.nextToken(), indexMeta, indexColumnDefinition);
             } else {
                 columnAsc = true;
             }
 
             if (PRIMARY_FIELD.equals(columnName)) {
-                assertPrimaryKeyIndex(indexMeta, indexColumn, indexColumns.length);
+                assertPrimaryKeyIndex(indexMeta, indexColumnDefinition, indexColumns.length);
             }
-
             field = indexField(columnName, table, columnToFieldMap);
-
-            if (createdColumnSet.contains(columnName)) {
-                // created column set  in  other index
-                continue;
-            }
-
             uniqueColumn = indexMeta.unique() && indexColumns.length == 1;
             indexFieldMeta = new DefaultIndexFieldMeta<>(table, field, indexMeta, uniqueColumn, columnAsc);
 
             list.add(indexFieldMeta);
-            createdIndexColumnSet.add(columnName);
+            createdColumnSet.add(columnName);
         }
         return Collections.unmodifiableList(list);
     }
@@ -478,44 +487,57 @@ abstract class MetaUtils {
     private static <T extends IDomain> void assertPrimaryKeyIndex(IndexMeta<T> indexMeta, String indexColumn,
                                                                   final int columnCount) {
         if (!indexMeta.unique() || columnCount != 1) {
-            throw new MetaException(ErrorCode.META_ERROR, "index[%s] indexColumn[%s.%s] is error primary key.",
-                    indexMeta.name(), indexMeta.table().tableName(), indexColumn);
+            throw new MetaException(ErrorCode.META_ERROR,
+                    "entity[%s] index[%s] index column[%s] is error primary key,or not unique .",
+                    indexMeta.table().javaType(), indexMeta.name(), indexColumn);
         }
 
     }
 
-    private static boolean isAscIndexColumn(String order, String tableName, String indexName, String column) {
+    private static boolean isAscIndexColumn(String order, IndexMeta<?> indexMeta, String indexColumnDefinition) {
         boolean asc;
         if (ASC.equalsIgnoreCase(order)) {
             asc = true;
         } else if (DESC.equalsIgnoreCase(order)) {
             asc = false;
         } else {
-            throw new MetaException(ErrorCode.META_ERROR, "table[%s] index[%s] column[%s] order error",
-                    tableName, indexName, column);
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] index[%s] column[%s] order error",
+                    indexMeta.table().javaType(), indexMeta.name(), indexColumnDefinition);
         }
         return asc;
     }
 
     private static Field indexField(String columnName, TableMeta<?> table, Map<String, Field> fieldMap) {
         Field field = fieldMap.get(columnName);
-        if (field == null || !field.getDeclaringClass().isAssignableFrom(table.javaType())) {
-            throw new MetaException(ErrorCode.META_ERROR, "not found index column in table[%s]",
-                    table.tableName());
+        if (field == null) {
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] not found index column[%s]",
+                    table.javaType().getName(),
+                    columnName
+            );
         }
-        Column column = AnnotationUtils.getAnnotation(field, Column.class);
-        if (column == null || column.name().equals(columnName)) {
-            throw new MetaException(ErrorCode.META_ERROR, "not found index column in table[%s]",
-                    table.tableName());
+        if (!field.getDeclaringClass().isAssignableFrom(table.javaType())) {
+            throw new MetaException(ErrorCode.META_ERROR, "mapping property[%s] not mapping in entity[%s]",
+                    field.getName(),
+                    table.javaType().getName()
+            );
         }
         return field;
     }
 
-    private static void assertIndexColumn(int tokensCount, String tableName, String indexName, String column)
+    private static void assertIndexColumnDefinition(int tokensCount, Class<?> entityClass, String indexName,
+                                                    String indexColumnDefinition)
             throws MetaException {
         if (tokensCount < 1 || tokensCount > 2) {
-            throw new MetaException(ErrorCode.META_ERROR, "table[%s] index[%s] column[%s] error",
-                    tableName, indexName, column);
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] index[%s] column definition[%s] error",
+                    entityClass.getName(), indexName, indexColumnDefinition);
+        }
+    }
+
+    private static void assertIndexColumnNotDuplication(IndexMeta<?> indexMeta,
+                                                        Set<String> createdIndexColumnSet, String columnName) {
+        if (createdIndexColumnSet.contains(columnName)) {
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] index[%s] column[%s] duplication",
+                    indexMeta, indexMeta.name(), columnName);
         }
     }
 
@@ -577,6 +599,61 @@ abstract class MetaUtils {
         @Override
         public String type() {
             return this.type;
+        }
+    }
+
+    private static class DefaultIndexFieldMeta<T extends IDomain, F> extends DefaultFieldMeta<T, F>
+            implements IndexFieldMeta<T, F> {
+
+        private final IndexMeta<T> indexMeta;
+
+        private final boolean fieldAsc;
+
+        DefaultIndexFieldMeta(TableMeta<T> table, Field field, IndexMeta<T> indexMeta, boolean fieldUnique,
+                              boolean fieldAsc) throws MetaException {
+            super(table, field, fieldUnique, true);
+            this.indexMeta = indexMeta;
+            this.fieldAsc = fieldAsc;
+        }
+
+        @Override
+        public IndexMeta<T> indexMeta() {
+            return this.indexMeta;
+        }
+
+        @Override
+        public boolean fieldAsc() {
+            return this.fieldAsc;
+        }
+    }
+
+
+    static class FieldBean<T extends IDomain> {
+
+
+        private final Map<String, FieldMeta<T, ?>> propNameToFieldMeta;
+
+        private final List<IndexMeta<T>> indexMetaList;
+
+        private final FieldMeta<T, ?> discriminator;
+
+        private FieldBean(Map<String, FieldMeta<T, ?>> propNameToFieldMeta, List<IndexMeta<T>> indexMetaList,
+                          FieldMeta<T, ?> discriminator) {
+            this.propNameToFieldMeta = propNameToFieldMeta;
+            this.indexMetaList = indexMetaList;
+            this.discriminator = discriminator;
+        }
+
+        Map<String, FieldMeta<T, ?>> getPropNameToFieldMeta() {
+            return propNameToFieldMeta;
+        }
+
+        List<IndexMeta<T>> getIndexMetaList() {
+            return indexMetaList;
+        }
+
+        FieldMeta<T, ?> getDiscriminator() {
+            return discriminator;
         }
     }
 
