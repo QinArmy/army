@@ -1,8 +1,9 @@
 package io.army.meta.sqltype.mysql;
 
+import io.army.meta.sqltype.DataKind;
 import io.army.util.Precision;
 
-public final class MySQLYear extends AbstractMySQLDataType {
+public final class MySQLYear extends MySQLDataType {
 
     public static final MySQLYear INSTANCE = new MySQLYear();
 
@@ -11,13 +12,23 @@ public final class MySQLYear extends AbstractMySQLDataType {
     }
 
     @Override
-    public String typeName() {
-        return "YEAR";
+    public DataKind dataKind() {
+        return DataKind.YEAR;
     }
 
     @Override
-    public String typeName(int precision) {
-        return "YEAR(" + precision + ")";
+    protected String innerTypeName(int precision, int scale) {
+        return innerTypeName();
+    }
+
+    @Override
+    protected String innerTypeName(int precision) {
+        return innerTypeName();
+    }
+
+    @Override
+    protected String innerTypeName() {
+        return "YEAR";
     }
 
     @Override

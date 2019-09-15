@@ -1,12 +1,13 @@
 package io.army.meta.mapping;
 
 import io.army.dialect.Dialect;
-import io.army.dialect.MySQLDialect;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.meta.sqltype.SQLDataType;
 import io.army.meta.sqltype.Varchar;
 import io.army.util.Precision;
 import org.springframework.lang.NonNull;
 
+import javax.annotation.Nonnull;
 import java.sql.JDBCType;
 
 public final class StringMapping extends MappingSupport implements MappingType<String> {
@@ -49,8 +50,9 @@ public final class StringMapping extends MappingSupport implements MappingType<S
         return value;
     }
 
+    @Nonnull
     @Override
-    public SQLDataType sqlType(Dialect dialect) {
+    public SQLDataType sqlType(Dialect dialect) throws MappingException {
 
         SQLDataType sqlDataType;
         if (dialect instanceof MySQLDialect) {

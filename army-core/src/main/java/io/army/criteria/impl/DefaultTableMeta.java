@@ -148,6 +148,11 @@ public final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         return this.schema;
     }
 
+    @Override
+    public boolean isMappingProp(String propName) {
+        return this.propNameToFieldMeta.containsKey(propName);
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public <E extends Enum<E> & CodeEnum> FieldMeta<T, E> discriminator() {

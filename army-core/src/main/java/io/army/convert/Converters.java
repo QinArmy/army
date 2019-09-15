@@ -19,13 +19,13 @@ public abstract class Converters {
 
     public static final Converter<String, String> STRING_TO_STRING = source -> source;
 
-    public static final Converter<String, Integer> STRING_TO_INTERGER = Integer::parseInt;
+    public static final Converter<String, Integer> STRING_TO_INTEGER = Integer::parseInt;
 
     public static final Converter<String, Long> STRING_TO_LONG = Long::parseLong;
 
     public static final Converter<String, Boolean> STRING_TO_BOOLEAN = Boolean::parseBoolean;
 
-    public static final Converter<String, BigDecimal> STRING_TO_BIGDECIMAL = BigDecimal::new;
+    public static final Converter<String, BigDecimal> STRING_TO_BIG_DECIMAL = BigDecimal::new;
 
     public static final Converter<String, LocalTime> STRING_TO_TIME = source ->
             LocalTime.parse(source, TimeUtils.TIME_FORMATTER);
@@ -43,11 +43,11 @@ public abstract class Converters {
         Map<Class<?>, Converter<String, ?>> map = new HashMap<>();
 
         map.put(String.class, STRING_TO_STRING);
-        map.put(Integer.class, STRING_TO_INTERGER);
+        map.put(Integer.class, STRING_TO_INTEGER);
         map.put(Long.class, STRING_TO_LONG);
         map.put(Boolean.class, STRING_TO_BOOLEAN);
 
-        map.put(BigDecimal.class, STRING_TO_BIGDECIMAL);
+        map.put(BigDecimal.class, STRING_TO_BIG_DECIMAL);
         map.put(LocalTime.class, STRING_TO_TIME);
         map.put(LocalDate.class, STRING_TO_DATE);
         map.put(LocalDateTime.class, STRING_TO_DATE_TIME);

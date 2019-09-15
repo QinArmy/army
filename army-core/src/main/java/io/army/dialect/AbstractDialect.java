@@ -1,14 +1,15 @@
 package io.army.dialect;
 
 
-import io.army.domain.IDomain;
+import io.army.dialect.ddl.TableDDL;
+import io.army.dialect.dml.TableDML;
+import io.army.dialect.dql.TableDQL;
+import io.army.dialect.tcl.DialectTCL;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.util.StringUtils;
-import io.army.util.TimeUtils;
 
-import java.time.LocalTime;
-import java.time.temporal.Temporal;
+import javax.annotation.Nonnull;
+import java.util.Collection;
 
 /**
  * this class is abstract implementation of {@link Dialect} .
@@ -17,137 +18,79 @@ import java.time.temporal.Temporal;
 public abstract class AbstractDialect implements Dialect {
 
 
+    @Nonnull
     @Override
-    public <T extends IDomain> String tableDefinition(TableMeta<T> tableMeta) {
-        StringBuilder builder = new StringBuilder(tableCreatePrefix())
-                .append(" ")
-                .append(tableMeta.tableName())
-                .append(" (");
-
-
-        // primary key column
-        builder.append(fieldDefinition(tableMeta.primaryKey()));
-
-        for (FieldMeta<?, ?> fieldMeta : tableMeta.fieldCollection()) {
-            if (fieldMeta.isPrimary()) {
-                continue;
-            }
-            builder.append(',')
-                    .append(fieldDefinition(fieldMeta));
-        }
-
-        // primary key
-        builder.append(',')
-                .append(primaryDefinition(tableMeta));
-        // TODO 设计 IndexMeta
-        return builder.toString();
+    public final String tableDefinition(TableMeta<?> tableMeta) {
+        return tableDDL().tableDefinition(tableMeta);
     }
 
+    @Nonnull
+    @Override
+    public final String addColumn(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> addFieldMetas) {
+        return tableDDL().addColumn(tableMeta, addFieldMetas);
+    }
+
+    @Nonnull
+    @Override
+    public final String modifyColumn(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> addFieldMetas) {
+        return tableDDL().modifyColumn(tableMeta, addFieldMetas);
+    }
+
+    @Nonnull
+    @Override
+    public String name() {
+        return null;
+    }
+
+    @Override
+    public boolean supportZoneId() {
+        return false;
+    }
+
+    @Override
+    public String now() {
+        return null;
+    }
+
+    @Override
+    public String now(int precision) {
+        return null;
+    }
+
+    @Override
+    public String currentDate() {
+        return null;
+    }
+
+    @Override
+    public String currentTime() {
+        return null;
+    }
+
+    @Override
+    public String currentTime(int precision) {
+        return null;
+    }
+
+
+
+
+    /*####################################### below protected template method #################################*/
+
+
+    protected abstract TableDDL tableDDL();
+
+    protected abstract TableDML tableDML();
+
+    protected abstract TableDQL tableDQL();
+
+    protected abstract DialectTCL dialectTcl();
+
+    protected abstract Func func();
 
 
 
     /*############################### sub class override method ####################################*/
-
-
-    protected String tableCreatePrefix() {
-        return "CREATE TABLE";
-    }
-
-    protected String primaryDefinition(TableMeta<?> tableMeta) {
-        // String direction = tableMeta.primaryDesc() ? "DESC" : "ASC";
-        //return String.format(" PRIMARY KEY(%s %s)", tableMeta.primaryKey().fieldName(), direction);
-        return "";
-    }
-
-    /**
-     * return field 的 column definition clause.
-     * <p>
-     * e.g {@code id BIGINT(20) NOT NULL DEFAULT 0 COMMENT 'primary key'}
-     * </p>
-     *
-     * @param field column meta
-     * @return column definition clause
-     */
-    protected String fieldDefinition(FieldMeta<?, ?> field) {
-        String format = columnFormat();
-        return String.format(format,
-                field.fieldName(),
-                sqlDataType(field),
-                sqlDefaultValue(field),
-                field.comment()
-        );
-    }
-
-
-    protected String sqlDataType(FieldMeta<?, ?> field) {
-        return field.mappingType()
-                .sqlType(this)
-                .typeName(field.precision(), field.scale());
-    }
-
-    /**
-     * @see #fieldDefinition(FieldMeta)
-     */
-    protected String sqlDefaultValue(FieldMeta<?, ?> field) {
-        Class<?> javaType = field.javaType();
-        String value;
-        if (javaType == String.class) {
-            value = StringUtils.quote(field.defaultValue());
-        } else if (Temporal.class.isAssignableFrom(javaType)) {
-            value = timeTypeDefault(field);
-        } else {
-            value = field.defaultValue();
-        }
-        return value;
-    }
-
-    /**
-     * @see #sqlDefaultValue(FieldMeta)
-     */
-    protected String timeTypeDefault(FieldMeta<?, ?> field) {
-        String value;
-        switch (field.defaultValue()) {
-            case IDomain.NOW:
-                value = func().now(field.precision());
-                break;
-            case IDomain.SOURCE_DATE_TIME:
-                value = sourceDateTime();
-                break;
-            case IDomain.SOURCE_DATE:
-                value = sourceDate();
-                break;
-            case IDomain.MIDNIGHT:
-                value = StringUtils.quote(LocalTime.MIDNIGHT.format(TimeUtils.TIME_FORMATTER));
-                break;
-            case IDomain.CURRENT_DATE:
-                value = func().currentDate();
-                break;
-            case IDomain.CURRENT_TIME:
-                value = func().currentTime(field.precision());
-                break;
-            default:
-                value = field.defaultValue();
-        }
-        return value;
-    }
-
-    /**
-     * @see #timeTypeDefault(FieldMeta)
-     */
-    protected String sourceDateTime() {
-        return TimeUtils.toDateTime(0L).format(TimeUtils.DATE_TIME_FORMATTER);
-    }
-
-    /**
-     * @see #timeTypeDefault(FieldMeta)
-     */
-    protected String sourceDate() {
-        return TimeUtils.toDate(0L).format(TimeUtils.DATE_FORMATTER);
-    }
-
-    /*############################### sub class implements method ####################################*/
-
-    protected abstract String columnFormat();
 
 
 }

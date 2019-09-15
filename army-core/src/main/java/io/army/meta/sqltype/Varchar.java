@@ -3,8 +3,6 @@ package io.army.meta.sqltype;
 import io.army.dialect.Dialect;
 import io.army.util.Precision;
 
-import java.util.List;
-
 /**
  * this class represent the {@code VARCHAR} of database .
  * see document list
@@ -14,7 +12,7 @@ import java.util.List;
  * <li><a href="https://www.postgresql.org/docs/11/datatype-character.html">Postgre 11.x</a></li>
  * </ul>
  */
-public final class Varchar implements SQLDataType {
+public final class Varchar extends AbstractStandardSQLDataType {
 
     public static final Varchar INSTANCE = new Varchar();
 
@@ -24,23 +22,34 @@ public final class Varchar implements SQLDataType {
     }
 
     @Override
-    public String typeName() {
-        return "VARCHAR";
+    public DataKind dataKind() {
+        return DataKind.TEXT;
     }
 
     @Override
-    public String typeName(int precision) {
-        return "VARCHAR(" + precision + ")";
+    protected String innerTypeName(int precision, int scale) {
+        return null;
     }
 
+    @Override
+    protected String innerTypeName(int precision) {
+        return null;
+    }
+
+    @Override
+    protected String innerTypeName() {
+        return null;
+    }
+
+    @Override
+    public boolean supportDialect(Dialect dialect) {
+        return false;
+    }
 
     @Override
     public Precision defaultPrecision() {
         return Precision.DEFAULT_CHAR_PRECISION;
     }
 
-    @Override
-    public List<Dialect> dialectList() {
-        return null;
-    }
+
 }

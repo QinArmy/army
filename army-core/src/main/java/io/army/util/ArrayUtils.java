@@ -56,26 +56,33 @@ public abstract class ArrayUtils {
         return asUnmodifiableSet(Collections.emptySet(), e);
     }
 
-    @NonNull
-    public static <T> List<T> asList(@NonNull Collection<T> collection, T... e) {
-        List<T> list;
-        int size = collection.size();
-        if (e != null) {
-            size += e.length;
-        }
-        list = new ArrayList<>(size);
-        list.addAll(collection);
-
-        if (e != null) {
-            Collections.addAll(list, e);
-        }
-        return list;
-    }
-
 
     @NonNull
     public static <T> List<T> asUnmodifiableList(T... e) {
         return Collections.unmodifiableList(asList(Collections.emptyList(), e));
     }
 
+    @NonNull
+    public static <T> List<T> asList(@NonNull Collection<T> collection, T... addElements) {
+        List<T> list;
+        int size = collection.size();
+        if (addElements != null) {
+            size += addElements.length;
+        }
+        list = new ArrayList<>(size);
+        list.addAll(collection);
+
+        if (addElements != null) {
+            Collections.addAll(list, addElements);
+        }
+        return list;
+    }
+
+    public static <T> List<T> asUnmodifiableList(Collection<T> collection, T... addElements) {
+        if (collection instanceof List
+                && (addElements == null || addElements.length == 0)) {
+            return Collections.unmodifiableList((List<T>) collection);
+        }
+        return Collections.unmodifiableList(asList(collection, addElements));
+    }
 }

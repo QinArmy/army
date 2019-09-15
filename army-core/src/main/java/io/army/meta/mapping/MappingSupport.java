@@ -1,15 +1,15 @@
 package io.army.meta.mapping;
 
 import io.army.dialect.Dialect;
-import io.army.meta.sqltype.mysql.UnsupportedDialect;
+import io.army.meta.sqltype.UnsupportedDialectException;
 
 import java.sql.SQLException;
 
 public abstract class MappingSupport {
 
 
-    protected UnsupportedDialect unsupportedDialect(Dialect dialect) {
-        return new UnsupportedDialect("%s un support dialect[%s]",
+    protected UnsupportedDialectException unsupportedDialect(Dialect dialect) {
+        return new UnsupportedDialectException("%s un support dialect[%s]",
                 this.getClass().getName(), dialect);
     }
 

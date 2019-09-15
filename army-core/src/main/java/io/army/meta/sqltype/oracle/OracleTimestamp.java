@@ -1,19 +1,32 @@
 package io.army.meta.sqltype.oracle;
 
+import io.army.meta.sqltype.DataKind;
 import io.army.util.Precision;
 
 public final class OracleTimestamp extends OracleSQLDataType {
 
     static final Precision PRECISION = new Precision(6, 0);
 
+
     @Override
-    public String typeName() {
-        return "TIMESTAMP";
+    public DataKind dataKind() {
+        return DataKind.DATE_TIME;
+    }
+
+
+    @Override
+    protected String innerTypeName(int precision, int scale) {
+        return null;
     }
 
     @Override
-    public String typeName(int precision) {
-        return "TIMESTAMP(" + precision + ")";
+    protected String innerTypeName(int precision) {
+        return null;
+    }
+
+    @Override
+    protected String innerTypeName() {
+        return null;
     }
 
     @Override

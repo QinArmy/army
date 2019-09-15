@@ -1,6 +1,7 @@
 package io.army.meta.sqltype.oracle;
 
 
+import io.army.meta.sqltype.DataKind;
 import io.army.util.Precision;
 
 /**
@@ -16,13 +17,23 @@ public final class OracleDate extends OracleSQLDataType {
     }
 
     @Override
-    public String typeName() {
-        return "DATE";
+    public DataKind dataKind() {
+        return DataKind.DATE;
     }
 
     @Override
-    public String typeName(int precision) {
-        return typeName();
+    protected String innerTypeName(int precision, int scale) {
+        return null;
+    }
+
+    @Override
+    protected String innerTypeName(int precision) {
+        return null;
+    }
+
+    @Override
+    protected String innerTypeName() {
+        return null;
     }
 
     @Override

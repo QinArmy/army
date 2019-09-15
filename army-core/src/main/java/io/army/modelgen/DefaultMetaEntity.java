@@ -5,6 +5,8 @@ import io.army.annotation.Column;
 import io.army.annotation.Index;
 import io.army.annotation.Table;
 import io.army.criteria.MetaException;
+import io.army.meta.TableMeta;
+import io.army.util.ArrayUtils;
 import io.army.util.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,8 +59,11 @@ class DefaultMetaEntity implements MetaEntity {
 
         this.classDefinition = SourceCreateUtils.generateClassDefinition(this.entityElement, parentEntityElement);
 
-        this.body = SourceCreateUtils.generateBody(this.entityElement, parentEntityElement,
-                generateMappingPropList(mappingPropSet, indexColumnNameSet));
+
+        this.body = SourceCreateUtils.generateBody(this.entityElement,
+                parentEntityElement,
+                generateMappingPropList(mappingPropSet,
+                        ArrayUtils.asUnmodifiableSet(indexColumnNameSet, TableMeta.ID)));
     }
 
 

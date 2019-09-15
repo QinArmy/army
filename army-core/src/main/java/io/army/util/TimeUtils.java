@@ -40,6 +40,8 @@ public abstract class TimeUtils {
 
     public static final String FULL_DATE_TIME_FORMAT = "uuuu-MM-dd HH:mm:ss.SSS";
 
+    public static final String SIX_FRACTION_DATE_TIME_FORMAT = "uuuu-MM-dd HH:mm:ss.SSSSSS";
+
     public static final String ZONE_DATE_TIME_FORMAT = "uuuu-MM-dd HH:mm:ssZ";
 
     public static final String FULL_ZONE_DATE_TIME_FORMAT = "uuuu-MM-dd HH:mm:ss.SSSZ";
@@ -67,14 +69,17 @@ public abstract class TimeUtils {
 
     public static final DateTimeFormatter FULL_ZONE_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(FULL_ZONE_DATE_TIME_FORMAT);
 
+    public static final DateTimeFormatter SIX_FRACTION_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(SIX_FRACTION_DATE_TIME_FORMAT);
+
     public static final DateTimeFormatter ENGLISH_ZONE_FORMATTER =
             DateTimeFormatter.ofPattern(LOCALE_ZONE_DATE_TIME_FORMAT, Locale.ENGLISH);
 
 
     /**
-     * 1970-01-01 08:00:00 即东八区对应的时间
+     *
+     * @see System#currentTimeMillis()
      */
-    public static final LocalDateTime SOURCE_DATE_TIME = LocalDateTime.ofInstant(Instant.EPOCH, ZONE8);
+    public static final LocalDateTime SOURCE_DATE_TIME = LocalDateTime.ofInstant(Instant.EPOCH, ZoneId.systemDefault());
 
 
     public static final LocalDate SOURCE_DATE = SOURCE_DATE_TIME.toLocalDate();

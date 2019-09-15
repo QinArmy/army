@@ -1,9 +1,9 @@
 package io.army.meta;
 
+import io.army.criteria.MetaException;
 import io.army.domain.IDomain;
 import io.army.struct.CodeEnum;
 import io.army.util.ArrayUtils;
-import javafx.scene.media.MediaException;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -59,7 +59,9 @@ public interface TableMeta<T extends IDomain> {
 
     String schema();
 
-    <F> FieldMeta<T, F> getField(String propName, Class<F> propClass) throws MediaException;
+    boolean isMappingProp(String propName);
 
-    <F> IndexFieldMeta<T, F> getIndexField(String propName, Class<F> propClass) throws MediaException;
+    <F> FieldMeta<T, F> getField(String propName, Class<F> propClass) throws MetaException;
+
+    <F> IndexFieldMeta<T, F> getIndexField(String propName, Class<F> propClass) throws MetaException;
 }

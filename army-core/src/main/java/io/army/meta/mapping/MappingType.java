@@ -6,7 +6,6 @@ import io.army.meta.sqltype.SQLDataType;
 import io.army.util.Precision;
 import org.springframework.lang.NonNull;
 
-import javax.annotation.Nullable;
 import java.sql.JDBCType;
 import java.sql.SQLException;
 
@@ -22,11 +21,11 @@ public interface MappingType<T> {
      */
     T toJava(Object databaseValue) throws SQLException;
 
-    @Nullable
-    SQLDataType sqlType(Dialect dialect);
+    @NonNull
+    SQLDataType sqlType(Dialect dialect) throws MappingException;
 
     /**
-     * if return instance equals {@link Precision#EMPTY} , {@link Column#length()} effective .
+     * if return instance equals {@link Precision#EMPTY} , {@link Column#precision()} effective .
      *
      * @return Precision
      */

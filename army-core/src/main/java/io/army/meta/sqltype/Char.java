@@ -3,8 +3,6 @@ package io.army.meta.sqltype;
 import io.army.dialect.Dialect;
 import io.army.util.Precision;
 
-import java.util.List;
-
 /**
  * this class represent the {@code CHAR}  .
  * see support list
@@ -24,23 +22,34 @@ public final class Char extends AbstractStandardSQLDataType {
     }
 
     @Override
-    public String typeName() {
-        return "CHAR";
+    public DataKind dataKind() {
+        return DataKind.TEXT;
     }
 
     @Override
-    public String typeName(int precision) {
-        return "CHAR(" + precision + ")";
+    protected String innerTypeName(int precision, int scale) {
+        return null;
     }
 
+    @Override
+    protected String innerTypeName(int precision) {
+        return null;
+    }
+
+    @Override
+    protected String innerTypeName() {
+        return null;
+    }
+
+    @Override
+    public boolean supportDialect(Dialect dialect) {
+        return false;
+    }
 
     @Override
     public Precision defaultPrecision() {
         return Precision.DEFAULT_CHAR_PRECISION;
     }
 
-    @Override
-    public List<Dialect> dialectList() {
-        return STANDARD_SUPPORT_DIALECT_LIST;
-    }
+
 }

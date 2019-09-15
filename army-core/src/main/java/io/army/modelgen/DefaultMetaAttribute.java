@@ -1,6 +1,7 @@
 package io.army.modelgen;
 
 import io.army.meta.FieldMeta;
+import io.army.meta.IndexFieldMeta;
 import io.army.util.ClassUtils;
 import io.army.util.StringUtils;
 
@@ -34,11 +35,18 @@ class DefaultMetaAttribute implements MetaAttribute {
 
         String propName = getName();
 
-        String methodName = indexColumn ? "getIndexField" : "getField";
+        String methodName, fieldMetaTypeName;
+        if (indexColumn) {
+            methodName = "getIndexField";
+            fieldMetaTypeName = IndexFieldMeta.class.getSimpleName();
+        } else {
+            methodName = "getField";
+            fieldMetaTypeName = FieldMeta.class.getSimpleName();
+        }
         return String.format(format,
 
                 SourceCreateUtils.PROP_PRE,
-                FieldMeta.class.getSimpleName(),
+                fieldMetaTypeName,
                 entityElement.getSimpleName(),
                 typeSimpleName,
 

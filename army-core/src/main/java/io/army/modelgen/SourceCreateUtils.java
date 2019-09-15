@@ -74,7 +74,7 @@ abstract class SourceCreateUtils {
             return entityPropSet;
         } catch (MetaException e) {
             LOG.error("entityMappedElementList:{}\nparentMappedElementList:{}",
-                    entityMappedElementList, parentMappedElementList);
+                    entityMappedElementList, parentMappedElementList, e);
             throw e;
         }
     }
@@ -171,7 +171,7 @@ abstract class SourceCreateUtils {
         appendMetaCount(table, builder, parentEntityElement, mappingPropList);
 
         // 3. field count validate static method
-        appendFieldCountValidateMethod(entityElement, builder);
+        appendFieldCountValidateMethod(entityElement, builder, mappingPropList);
 
         //4. prop names  definition
         appendMappingPropNames(builder, mappingPropList);
@@ -186,7 +186,8 @@ abstract class SourceCreateUtils {
         return builder.toString();
     }
 
-    private static void appendFieldCountValidateMethod(TypeElement entityElement, StringBuilder builder) {
+    private static void appendFieldCountValidateMethod(TypeElement entityElement, StringBuilder builder,
+                                                       List<MetaAttribute> mappingPropList) {
         builder.append("\n")
                 .append(MEMBER_PRE)
                 .append("static {\n")
@@ -202,9 +203,11 @@ abstract class SourceCreateUtils {
                 .append(",()->\n")
                 .append(MEMBER_PRE)
                 .append("\t\t")
-                .append("String.format(\"entity[%s] field count error.\",")
+                .append("String.format(\"entity[%s] field count[%s] error.\",")
                 .append(entityElement.getSimpleName())
-                .append(".class.getName()));\n\t}\n\n")
+                .append(".class.getName(),")
+                .append(mappingPropList.size())
+                .append("));\n\t}\n\n")
         ;
     }
 

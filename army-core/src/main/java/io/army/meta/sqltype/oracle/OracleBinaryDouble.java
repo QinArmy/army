@@ -1,19 +1,30 @@
 package io.army.meta.sqltype.oracle;
 
+import io.army.meta.sqltype.DataKind;
 import io.army.util.Precision;
 
-public class OracleBinaryDouble extends OracleSQLDataType {
+public final class OracleBinaryDouble extends OracleSQLDataType {
 
     private static final Precision PRECISION = new Precision(53, 0);
 
     @Override
-    public String typeName() {
-        return "BINARY_DOUBLE";
+    public DataKind dataKind() {
+        return DataKind.FLOAT;
     }
 
     @Override
-    public String typeName(int precision) {
-        return "BINARY_DOUBLE(" + precision + ")";
+    protected String innerTypeName(int precision, int scale) {
+        return null;
+    }
+
+    @Override
+    protected String innerTypeName(int precision) {
+        return null;
+    }
+
+    @Override
+    protected String innerTypeName() {
+        return null;
     }
 
     @Override

@@ -1,22 +1,23 @@
 package io.army.meta.sqltype.oracle;
 
 import io.army.dialect.Dialect;
-import io.army.dialect.Oracle12Dialect;
-import io.army.meta.sqltype.SQLDataType;
+import io.army.dialect.oracle.Oracle12Dialect;
+import io.army.meta.sqltype.AbstractSQLDataType;
 import io.army.util.ArrayUtils;
 
-import java.util.List;
+import java.util.Set;
 
 
-public abstract class OracleSQLDataType implements SQLDataType {
+abstract class OracleSQLDataType extends AbstractSQLDataType {
 
-    private final List<Dialect> ORACLE_DIALECT_LIST = ArrayUtils.asUnmodifiableList(
+    protected final Set<Dialect> ORACLE_DIALECT_SET = ArrayUtils.asUnmodifiableSet(
             Oracle12Dialect.INSTANCE
     );
 
 
+
     @Override
-    public final List<Dialect> dialectList() {
-        return ORACLE_DIALECT_LIST;
+    public boolean supportDialect(Dialect dialect) {
+        return ORACLE_DIALECT_SET.contains(dialect);
     }
 }
