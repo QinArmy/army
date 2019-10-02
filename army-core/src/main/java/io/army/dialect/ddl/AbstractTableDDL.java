@@ -5,19 +5,18 @@ import io.army.criteria.MetaException;
 import io.army.dialect.Dialect;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
+import io.army.meta.IndexFieldMeta;
+import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingType;
-import io.army.meta.sqltype.SQLDataType;
+import io.army.util.Assert;
 import io.army.util.StringUtils;
 import io.army.util.TimeUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.*;
 
 public abstract class AbstractTableDDL implements TableDDL {
 
@@ -27,21 +26,19 @@ public abstract class AbstractTableDDL implements TableDDL {
         StringBuilder builder = new StringBuilder();
         // 1. header
         appendDefinitionHeader(builder, tableMeta);
-        builder.append("\n ");
+        builder.append(" \n");
 
         // 2. table column definition
         appendCreateDefinition(builder, tableMeta);
-        builder.append("\n ");
 
         // 3. key definition
-        String keyDefinition = keyDefinition(tableMeta);
-        if (StringUtils.hasText(keyDefinition)) {
-            builder.append(keyDefinition);
-        }
+        appendKeyDefinition(builder, tableMeta);
+
+        builder.append("\n)");
         // 4. table options definition
         appendTableOptions(builder, tableMeta);
 
-        builder.append(tableOptions(tableMeta));
+        builder.append(";");
         return builder.toString();
     }
 
@@ -60,21 +57,6 @@ public abstract class AbstractTableDDL implements TableDDL {
     /*####################################### below protected template method #################################*/
 
 
-    /**
-     * [1,n] key definition , eg. primary key (id)
-     *
-     * @return end with new line
-     */
-    @Nullable
-    protected abstract String keyDefinition(TableMeta<?> tableMeta);
-
-    /**
-     * table options, eg : {@code ENGINE = InnoDB}
-     *
-     * @return not end with new line
-     */
-    @Nonnull
-    protected abstract String tableOptions(TableMeta<?> tableMeta);
 
 
     @Nonnull
@@ -86,27 +68,85 @@ public abstract class AbstractTableDDL implements TableDDL {
 
     /*####################################### below protected method #################################*/
 
+
+    protected final void appendKeyDefinition(StringBuilder builder, TableMeta<?> tableMeta) {
+        List<String> definitionList = new ArrayList<>(tableMeta.indexCollection().size());
+        // placeholder for id
+        definitionList.add("");
+        for (IndexMeta<?> indexMeta : tableMeta.indexCollection()) {
+            if (indexMeta.isPrimaryKey()) {
+                definitionList.set(0, primaryKeyDefinition(indexMeta));
+            } else {
+                definitionList.add(doKeyDefinition(indexMeta));
+            }
+        }
+        for (String keyDefinition : definitionList) {
+            builder.append(",\n")
+                    .append(keyDefinition);
+        }
+    }
+
+    protected String primaryKeyDefinition(IndexMeta<?> indexMeta) {
+        Assert.isTrue(indexMeta.isUnique(), "");
+        Assert.isTrue(indexMeta.fieldList().size() == 1, "");
+
+        IndexFieldMeta<?, ?> primaryKeyMeta = indexMeta.fieldList().get(0);
+        Assert.isTrue(primaryKeyMeta.isUnique(), "");
+        Assert.isTrue(TableMeta.ID.equals(primaryKeyMeta.fieldName()), "");
+
+        return String.format("PRIMARY KEY(%s %s)",
+                primaryKeyMeta.fieldName(), ascOrDesc(primaryKeyMeta.fieldAsc()));
+    }
+
+    protected <T extends IDomain> String doKeyDefinition(IndexMeta<T> indexMeta) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("KEY ")
+                .append(indexMeta.name())
+                .append(" ");
+
+        if (StringUtils.hasText(indexMeta.type())) {
+            builder.append(indexMeta.type())
+                    .append(" ");
+        }
+        builder.append("(");
+        Iterator<IndexFieldMeta<T, ?>> iterator = indexMeta.fieldList().iterator();
+        for (IndexFieldMeta<T, ?> indexFieldMeta; iterator.hasNext(); ) {
+            indexFieldMeta = iterator.next();
+
+            builder.append(indexFieldMeta.fieldName())
+                    .append(" ")
+                    .append(ascOrDesc(indexFieldMeta.fieldAsc()))
+            ;
+
+            if (iterator.hasNext()) {
+                builder.append(",");
+            }
+        }
+        builder.append(")");
+        return builder.toString();
+    }
+
+    protected final String ascOrDesc(boolean asc) {
+        return asc ? "ASC" : "DESC";
+    }
+
+
     /**
-     * @return eg. CREATE [TEMPORARY] TABLE [IF NOT EXISTS] tbl_name
+     * eg. CREATE [TEMPORARY] TABLE [IF NOT EXISTS] tbl_name
      */
-    @Nonnull
     protected void appendDefinitionHeader(StringBuilder builder, TableMeta<?> tableMeta) {
         builder.append("CREATE TABLE ")
                 .append(tableMeta.tableName())
                 .append("(");
     }
 
-    protected void appendColumnDefinition(StringBuilder builder, FieldMeta<?, ?> fieldMeta) {
-        builder.append(fieldMeta.fieldName())
-                .append(" ")
-                .append(dataType(fieldMeta))
-                .append(" NOT NULL DEFAULT ")
-                .append(sqlDefaultValue(fieldMeta))
-                .append(" COMMON '")
-                .append(fieldMeta.comment())
-                .append("'")
-        ;
-
+    protected String columnDefinition(FieldMeta<?, ?> fieldMeta) {
+        return String.format("%s %s NOT NULL DEFAULT %s COMMON '%s'",
+                fieldMeta.fieldName(),
+                dataType(fieldMeta),
+                sqlDefaultValue(fieldMeta),
+                fieldMeta.comment()
+        );
     }
 
     protected final String sqlDefaultValue(FieldMeta<?, ?> fieldMeta) {
@@ -115,7 +155,11 @@ public abstract class AbstractTableDDL implements TableDDL {
         if (TableMeta.VERSION_PROPS.contains(fieldMeta.propertyName())) {
             return requiredMappingDefaultValue(fieldMeta);
         }
-        SQLDataType sqlDataType = fieldMeta.mappingType().sqlType(dialect());
+        return sqlDefaultValueByType(fieldMeta);
+    }
+
+    protected final String sqlDefaultValueByType(FieldMeta<?, ?> fieldMeta) {
+       /* SQLDataType sqlDataType = fieldMeta.mappingType().sqlType(dialect());
         String value;
 
         switch (sqlDataType.dataKind().family()) {
@@ -131,14 +175,26 @@ public abstract class AbstractTableDDL implements TableDDL {
                 break;
             default:
                 value = otherDefaultValue(fieldMeta);
-        }
-        return value;
+        }*/
+        // return value;
+        return null;
     }
 
     protected final String dataType(FieldMeta<?, ?> fieldMeta) {
-        MappingType<?> mappingType = fieldMeta.mappingType();
+      /*  MappingType<?> mappingType = fieldMeta.mappingType();
         SQLDataType sqlDataType = mappingType.sqlType(dialect());
-        return sqlDataType.typeName(fieldMeta.precision(), fieldMeta.scale());
+        if (!sqlDataType.supportDialect(dialect())) {
+            throw new MetaException(ErrorCode.META_ERROR,
+                    "Entity[%s] property[%s] mapping[%s] dialect[%s] is supported by SQLDataType[%s]",
+                    fieldMeta.table().javaType().getName(),
+                    fieldMeta.propertyName(),
+                    fieldMeta.fieldName(),
+                    dialect().name(),
+                    sqlDataType.typeName(fieldMeta.precision(), fieldMeta.scale())
+            );
+        }
+        return sqlDataType.typeName(fieldMeta.precision(), fieldMeta.scale());*/
+        return null;
     }
 
 
@@ -161,7 +217,7 @@ public abstract class AbstractTableDDL implements TableDDL {
         String value;
         switch (requiredFieldMeta.propertyName()) {
             case TableMeta.ID:
-                value = "";
+                value = sqlDefaultValueByType(requiredFieldMeta);
                 break;
             case TableMeta.CREATE_TIME:
             case TableMeta.UPDATE_TIME:
@@ -244,17 +300,52 @@ public abstract class AbstractTableDDL implements TableDDL {
      * create [1,n] col_name column_definition, eg. {@code id BIGINT NOT NULL DEFAULT COMMENT ''}
      */
     private <T extends IDomain> void appendCreateDefinition(StringBuilder builder, TableMeta<T> tableMeta) {
-
-        Iterator<FieldMeta<T, ?>> iterator = tableMeta.fieldCollection().iterator();
-        for (FieldMeta<T, ?> fieldMeta; iterator.hasNext(); ) {
-            fieldMeta = iterator.next();
-            appendColumnDefinition(builder, fieldMeta);
+        Iterator<String> iterator = createColumnDefinitionList(tableMeta).iterator();
+        for (String columnDefinition; iterator.hasNext(); ) {
+            columnDefinition = iterator.next();
+            builder.append(columnDefinition);
             if (iterator.hasNext()) {
                 builder.append(",\n");
             }
         }
 
+    }
 
+    private List<String> createColumnDefinitionList(TableMeta<?> tableMeta) {
+        List<String> propList = new ArrayList<>(tableMeta.fieldCollection().size());
+
+        final int requiredSize = tableMeta.immutable() ? TableMeta.DOMAIN_PROPS.size() : TableMeta.VERSION_PROPS.size();
+
+        for (int i = 0; i < requiredSize; i++) {
+            propList.add("");
+        }
+        List<String> notRequiredPropList = new ArrayList<>(tableMeta.fieldCollection().size() - requiredSize);
+
+        String columnDefinition;
+        for (FieldMeta<?, ?> fieldMeta : tableMeta.fieldCollection()) {
+            columnDefinition = this.columnDefinition(fieldMeta);
+            switch (fieldMeta.propertyName()) {
+                case TableMeta.ID:
+                    propList.set(0, columnDefinition);
+                    break;
+                case TableMeta.CREATE_TIME:
+                    propList.set(1, columnDefinition);
+                    break;
+                case TableMeta.VISIBLE:
+                    propList.set(2, columnDefinition);
+                    break;
+                case TableMeta.UPDATE_TIME:
+                    propList.set(3, columnDefinition);
+                    break;
+                case TableMeta.VERSION:
+                    propList.set(4, columnDefinition);
+                    break;
+                default:
+                    notRequiredPropList.add(columnDefinition);
+            }
+        }
+        propList.addAll(notRequiredPropList);
+        return Collections.unmodifiableList(propList);
     }
 
 }

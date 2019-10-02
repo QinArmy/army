@@ -1,9 +1,5 @@
 package io.army.meta.mapping;
 
-import io.army.dialect.Dialect;
-import io.army.dialect.mysql.MySQLDialect;
-import io.army.meta.sqltype.SQLDataType;
-import io.army.meta.sqltype.mysql.MySQLDecimal;
 import io.army.util.NumberUtils;
 import io.army.util.Precision;
 import org.springframework.lang.NonNull;
@@ -38,17 +34,6 @@ public final class BigDecimalMapping extends MappingSupport implements MappingTy
         return NumberUtils.parseNumberFromObject(databaseValue, BigDecimal.class);
     }
 
-    @Override
-    public SQLDataType sqlType(Dialect dialect) {
-
-        SQLDataType sqlDataType;
-        if (dialect instanceof MySQLDialect) {
-            sqlDataType = MySQLDecimal.INSTANCE;
-        } else {
-            throw unsupportedDialect(dialect);
-        }
-        return sqlDataType;
-    }
 
     @NonNull
     @Override

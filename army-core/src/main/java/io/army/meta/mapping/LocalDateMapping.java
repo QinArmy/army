@@ -1,9 +1,5 @@
 package io.army.meta.mapping;
 
-import io.army.dialect.Dialect;
-import io.army.dialect.mysql.MySQLDialect;
-import io.army.meta.sqltype.SQLDataType;
-import io.army.meta.sqltype.mysql.MySQLDate;
 import io.army.util.Precision;
 import org.springframework.lang.NonNull;
 
@@ -46,16 +42,6 @@ public final class LocalDateMapping extends MappingSupport implements MappingTyp
         return value;
     }
 
-    @Override
-    public SQLDataType sqlType(Dialect dialect) {
-        SQLDataType sqlDataType;
-        if (dialect instanceof MySQLDialect) {
-            sqlDataType = MySQLDate.INSTANCE;
-        } else {
-            throw unsupportedDialect(dialect);
-        }
-        return sqlDataType;
-    }
 
     @NonNull
     @Override

@@ -1,9 +1,5 @@
 package io.army.meta.mapping;
 
-import io.army.dialect.Dialect;
-import io.army.dialect.mysql.MySQLDialect;
-import io.army.meta.sqltype.SQLDataType;
-import io.army.meta.sqltype.mysql.MySQLInt;
 import io.army.struct.CodeEnum;
 import io.army.util.Precision;
 
@@ -65,15 +61,6 @@ public class CodeEnumMapping<T extends Enum<T> & CodeEnum> extends AbstractMappi
             throw convertToJavaException(databaseValue, javaType);
         }
         return t;
-    }
-
-    @Override
-    public SQLDataType sqlType(Dialect dialect) {
-        SQLDataType SQLDataType = null;
-        if (dialect instanceof MySQLDialect) {
-            SQLDataType = MySQLInt.INSTANCE;
-        }
-        return SQLDataType;
     }
 
     @Nonnull

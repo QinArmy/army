@@ -1,16 +1,12 @@
 package io.army.meta.mapping;
 
-import io.army.dialect.Dialect;
-import io.army.dialect.mysql.MySQLDialect;
-import io.army.meta.sqltype.SQLDataType;
-import io.army.meta.sqltype.Varchar;
 import io.army.util.Precision;
 import org.springframework.lang.NonNull;
 
-import javax.annotation.Nonnull;
 import java.sql.JDBCType;
+import java.sql.SQLException;
 
-public final class StringMapping extends MappingSupport implements MappingType<String> {
+public final class StringMapping extends AbstractMappingType<String> {
 
     public static final StringMapping INSTANCE = new StringMapping();
 
@@ -29,15 +25,13 @@ public final class StringMapping extends MappingSupport implements MappingType<S
     }
 
     @Override
-    public Object toSql(String textValue) {
-        return textValue;
+    protected Object nonNullToSql(String text) {
+        return text;
     }
 
+
     @Override
-    public String toJava(Object databaseValue) {
-        if (databaseValue == null) {
-            return null;
-        }
+    protected String nonNullToJava(Object databaseValue) throws SQLException {
         String value;
         if (databaseValue instanceof String) {
             value = (String) databaseValue;
@@ -50,18 +44,6 @@ public final class StringMapping extends MappingSupport implements MappingType<S
         return value;
     }
 
-    @Nonnull
-    @Override
-    public SQLDataType sqlType(Dialect dialect) throws MappingException {
-
-        SQLDataType sqlDataType;
-        if (dialect instanceof MySQLDialect) {
-            sqlDataType = Varchar.INSTANCE;
-        } else {
-            throw unsupportedDialect(dialect);
-        }
-        return sqlDataType;
-    }
 
     @NonNull
     @Override

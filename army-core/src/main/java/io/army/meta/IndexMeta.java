@@ -12,7 +12,9 @@ public interface IndexMeta<T extends IDomain> {
 
     List<IndexFieldMeta<T, ?>> fieldList();
 
-    boolean unique();
+    boolean isPrimaryKey();
+
+    boolean isUnique();
 
     String type();
 

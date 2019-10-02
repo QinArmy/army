@@ -1,9 +1,5 @@
 package io.army.meta.mapping;
 
-import io.army.dialect.Dialect;
-import io.army.dialect.mysql.MySQLDialect;
-import io.army.meta.sqltype.SQLDataType;
-import io.army.meta.sqltype.mysql.MySQLInt;
 import io.army.util.NumberUtils;
 import io.army.util.Precision;
 
@@ -36,16 +32,6 @@ public final class IntegerMapping extends MappingSupport implements MappingType<
         return NumberUtils.parseNumberFromObject(databaseValue, Integer.class);
     }
 
-    @Override
-    public SQLDataType sqlType(Dialect dialect) {
-        SQLDataType sqlDataType;
-        if (dialect instanceof MySQLDialect) {
-            sqlDataType = MySQLInt.INSTANCE;
-        } else {
-            throw unsupportedDialect(dialect);
-        }
-        return sqlDataType;
-    }
 
     @Override
     public Precision precision() {

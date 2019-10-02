@@ -475,7 +475,7 @@ abstract class MetaUtils {
                 assertPrimaryKeyIndex(indexMeta, indexColumnDefinition, indexColumns.length);
             }
             field = indexField(columnName, table, columnToFieldMap);
-            uniqueColumn = indexMeta.unique() && indexColumns.length == 1;
+            uniqueColumn = indexMeta.isUnique() && indexColumns.length == 1;
             indexFieldMeta = new DefaultIndexFieldMeta<>(table, field, indexMeta, uniqueColumn, columnAsc);
 
             list.add(indexFieldMeta);
@@ -486,7 +486,7 @@ abstract class MetaUtils {
 
     private static <T extends IDomain> void assertPrimaryKeyIndex(IndexMeta<T> indexMeta, String indexColumn,
                                                                   final int columnCount) {
-        if (!indexMeta.unique() || columnCount != 1) {
+        if (!indexMeta.isUnique() || columnCount != 1) {
             throw new MetaException(ErrorCode.META_ERROR,
                     "entity[%s] index[%s] index column[%s] is error primary key,or not unique .",
                     indexMeta.table().javaType(), indexMeta.name(), indexColumn);
@@ -553,6 +553,8 @@ abstract class MetaUtils {
 
         private final List<IndexFieldMeta<T, ?>> fieldList;
 
+        private final boolean primaryKey;
+
         /**
          * @param index index or null ( when create primary key for which user don't definite {@link Index})
          */
@@ -566,11 +568,13 @@ abstract class MetaUtils {
                 this.unique = true;
                 this.type = "";
                 columnArray = new String[]{PRIMARY_FIELD};
+                primaryKey = true;
             } else {
                 this.name = index.name();
                 this.unique = index.unique();
                 this.type = index.type();
                 columnArray = index.columnList();
+                primaryKey = columnArray.length == 1 && TableMeta.ID.equals(columnArray[0]);
             }
             this.fieldList = indexFieldMetaList(table, columnArray, this, columnToFieldMap, createdColumnSet);
         }
@@ -592,7 +596,12 @@ abstract class MetaUtils {
         }
 
         @Override
-        public boolean unique() {
+        public boolean isPrimaryKey() {
+            return primaryKey;
+        }
+
+        @Override
+        public boolean isUnique() {
             return this.unique;
         }
 
