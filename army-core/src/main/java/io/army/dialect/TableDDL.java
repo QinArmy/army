@@ -1,4 +1,4 @@
-package io.army.dialect.ddl;
+package io.army.dialect;
 
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;

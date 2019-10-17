@@ -1,6 +1,6 @@
 package io.army.dialect.mysql;
 
-import io.army.dialect.dml.AbstractTableDML;
+import io.army.dialect.AbstractTableDML;
 
 class MySQLTableDML extends AbstractTableDML {
 

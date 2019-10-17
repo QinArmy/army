@@ -1,4 +1,4 @@
-package io.army.dialect.dql;
+package io.army.dialect;
 
 public interface TableDQL {
 }

@@ -5,19 +5,18 @@ import io.army.util.Precision;
 import org.springframework.lang.NonNull;
 
 import java.sql.JDBCType;
-import java.sql.SQLException;
 
-public interface MappingType<T> {
+
+public interface MappingType {
 
     Class<?> javaType();
 
     JDBCType jdbcType();
 
-    Object toSql(T t);
 
-    /**
-     */
-    T toJava(Object databaseValue) throws SQLException;
+    String textValue(Object value);
+
+    boolean isTextValue(String textValue);
 
     /**
      * if return instance equals {@link Precision#EMPTY} , {@link Column#precision()} effective .

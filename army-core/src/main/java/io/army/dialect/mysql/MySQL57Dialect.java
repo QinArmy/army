@@ -2,9 +2,9 @@ package io.army.dialect.mysql;
 
 
 import io.army.dialect.Dialect;
-import io.army.dialect.ddl.TableDDL;
-import io.army.dialect.dml.TableDML;
-import io.army.dialect.dql.TableDQL;
+import io.army.dialect.TableDDL;
+import io.army.dialect.TableDML;
+import io.army.dialect.TableDQL;
 import io.army.dialect.tcl.DialectTCL;
 
 import javax.annotation.Nonnull;

@@ -1,24 +1,43 @@
-package io.army.dialect.ddl;
+package io.army.dialect;
 
 import io.army.ErrorCode;
 import io.army.criteria.MetaException;
-import io.army.dialect.Dialect;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexFieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
+import io.army.util.ArrayUtils;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
 import io.army.util.TimeUtils;
 
 import javax.annotation.Nonnull;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
+import java.sql.JDBCType;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
+import java.util.function.Supplier;
 
 public abstract class AbstractTableDDL implements TableDDL {
+
+    private static final Set<String> SPECIFIED_COLUMN_FUNC_SET = ArrayUtils.asUnmodifiableSet(
+            IDomain.NOW,
+            IDomain.CURRENT_DATE,
+            IDomain.CURRENT_TIME
+    );
+
+    private static final EnumSet<JDBCType> QUOTE_JDBC_TYPE = EnumSet.of(
+            JDBCType.VARCHAR,
+            JDBCType.CHAR,
+            JDBCType.DATE,
+            JDBCType.TIME,
+
+            JDBCType.TIMESTAMP,
+            JDBCType.TIME_WITH_TIMEZONE,
+            JDBCType.TIMESTAMP_WITH_TIMEZONE
+    );
 
 
     @Override
@@ -29,7 +48,7 @@ public abstract class AbstractTableDDL implements TableDDL {
         builder.append(" \n");
 
         // 2. table column definition
-        appendCreateDefinition(builder, tableMeta);
+        appendColumnDefinitions(builder, tableMeta);
 
         // 3. key definition
         appendKeyDefinition(builder, tableMeta);
@@ -58,10 +77,6 @@ public abstract class AbstractTableDDL implements TableDDL {
 
 
 
-
-    @Nonnull
-    protected abstract Dialect dialect();
-
     protected abstract void appendTableOptions(StringBuilder builder, TableMeta<?> tableMeta);
 
 
@@ -80,32 +95,47 @@ public abstract class AbstractTableDDL implements TableDDL {
                 definitionList.add(doKeyDefinition(indexMeta));
             }
         }
-        for (String keyDefinition : definitionList) {
-            builder.append(",\n")
-                    .append(keyDefinition);
+        Iterator<String> iterator = definitionList.iterator();
+        for (; iterator.hasNext(); ) {
+            builder.append(iterator.next());
+            if (iterator.hasNext()) {
+                builder.append(",\n");
+            }
         }
     }
 
     protected String primaryKeyDefinition(IndexMeta<?> indexMeta) {
-        Assert.isTrue(indexMeta.isUnique(), "");
-        Assert.isTrue(indexMeta.fieldList().size() == 1, "");
+        Supplier<String> message = () -> String.format("table[%s].key[%s] isn't primary key",
+                indexMeta.table().tableName(), indexMeta.name());
+
+        Assert.isTrue(indexMeta.isUnique(), message);
+
+        Assert.isTrue(indexMeta.fieldList().size() == 1, message);
 
         IndexFieldMeta<?, ?> primaryKeyMeta = indexMeta.fieldList().get(0);
-        Assert.isTrue(primaryKeyMeta.isUnique(), "");
-        Assert.isTrue(TableMeta.ID.equals(primaryKeyMeta.fieldName()), "");
+        Assert.isTrue(primaryKeyMeta.isUnique(), message);
+        Assert.isTrue(TableMeta.ID.equals(primaryKeyMeta.fieldName()), message);
 
         return String.format("PRIMARY KEY(%s %s)",
                 primaryKeyMeta.fieldName(), ascOrDesc(primaryKeyMeta.fieldAsc()));
     }
 
     protected <T extends IDomain> String doKeyDefinition(IndexMeta<T> indexMeta) {
+
         StringBuilder builder = new StringBuilder();
-        builder.append("KEY ")
+
+        if (indexMeta.isUnique()) {
+            builder.append("UNIQUE");
+        } else {
+            builder.append("KEY");
+        }
+        builder.append(" ")
                 .append(indexMeta.name())
                 .append(" ");
 
         if (StringUtils.hasText(indexMeta.type())) {
-            builder.append(indexMeta.type())
+            builder.append("USING ")
+                    .append(indexMeta.type())
                     .append(" ");
         }
         builder.append("(");
@@ -126,8 +156,16 @@ public abstract class AbstractTableDDL implements TableDDL {
         return builder.toString();
     }
 
-    protected final String ascOrDesc(boolean asc) {
-        return asc ? "ASC" : "DESC";
+    protected final String ascOrDesc(Boolean asc) {
+        String text;
+        if (asc == null) {
+            text = "";
+        } else if (asc) {
+            text = "ASC";
+        } else {
+            text = "DESC";
+        }
+        return text;
     }
 
 
@@ -143,163 +181,116 @@ public abstract class AbstractTableDDL implements TableDDL {
     protected String columnDefinition(FieldMeta<?, ?> fieldMeta) {
         return String.format("%s %s NOT NULL DEFAULT %s COMMON '%s'",
                 fieldMeta.fieldName(),
-                dataType(fieldMeta),
+                dataTypeText(fieldMeta),
                 sqlDefaultValue(fieldMeta),
                 fieldMeta.comment()
         );
     }
 
     protected final String sqlDefaultValue(FieldMeta<?, ?> fieldMeta) {
-        assertSupportTimeType(fieldMeta);
-
-        if (TableMeta.VERSION_PROPS.contains(fieldMeta.propertyName())) {
-            return requiredMappingDefaultValue(fieldMeta);
-        }
-        return sqlDefaultValueByType(fieldMeta);
-    }
-
-    protected final String sqlDefaultValueByType(FieldMeta<?, ?> fieldMeta) {
-       /* SQLDataType sqlDataType = fieldMeta.mappingType().sqlType(dialect());
         String value;
 
-        switch (sqlDataType.dataKind().family()) {
-            case TEXT:
-                value = textTypeDefaultValue(fieldMeta);
-                value = StringUtils.quote(value);
+        if (StringUtils.hasText(fieldMeta.defaultValue())) {
+            if (isSpecifiedFunction(fieldMeta.defaultValue())) {
+                value = specifiedFuncValue(fieldMeta.defaultValue(), fieldMeta);
+            } else if (isSourceTime(fieldMeta.defaultValue())) {
+                value = sourceTimeValue(fieldMeta);
+            } else if (fieldMeta.mappingType().isTextValue(fieldMeta.defaultValue())) {
+                value = fieldMeta.defaultValue();
+            } else {
+                throw new MetaException(ErrorCode.META_ERROR, "Entity[%s].column[%s] default value error",
+                        fieldMeta.table().tableName(), fieldMeta.fieldName());
+            }
+        } else if (TableMeta.VERSION_PROPS.contains(fieldMeta.propertyName())) {
+            value = requiredPropDefaultValue(fieldMeta);
+        } else {
+            throw new MetaException(ErrorCode.META_ERROR, "Entity[%s].column[%s] default value required",
+                    fieldMeta.table().tableName(), fieldMeta.fieldName());
+        }
+        if (isNeedQuote(fieldMeta)) {
+            value = StringUtils.quote(value);
+        }
+        return value;
+    }
+
+    //  dialect implements
+    protected abstract String specifiedFuncValue(String func, FieldMeta<?, ?> fieldMeta);
+
+    protected final String sourceTimeValue(FieldMeta<?, ?> fieldMeta) {
+        String defaultValue = fieldMeta.defaultValue();
+        String timeValue;
+        switch (defaultValue) {
+            case IDomain.SOURCE_DATE_TIME:
+                timeValue = LocalDateTime.ofInstant(Instant.ofEpochMilli(0L), zoneId())
+                        .format(TimeUtils.DATE_TIME_FORMATTER);
                 break;
-            case NUMBER:
-                value = numberTypeDefaultValue(fieldMeta);
-                break;
-            case DATE_TIME:
-                value = timeTypeDefault(fieldMeta);
+            case IDomain.SOURCE_DATE:
+                timeValue = TimeUtils.toDate(0L)
+                        .format(TimeUtils.DATE_FORMATTER);
                 break;
             default:
-                value = otherDefaultValue(fieldMeta);
-        }*/
-        // return value;
-        return null;
-    }
-
-    protected final String dataType(FieldMeta<?, ?> fieldMeta) {
-      /*  MappingType<?> mappingType = fieldMeta.mappingType();
-        SQLDataType sqlDataType = mappingType.sqlType(dialect());
-        if (!sqlDataType.supportDialect(dialect())) {
-            throw new MetaException(ErrorCode.META_ERROR,
-                    "Entity[%s] property[%s] mapping[%s] dialect[%s] is supported by SQLDataType[%s]",
-                    fieldMeta.table().javaType().getName(),
-                    fieldMeta.propertyName(),
-                    fieldMeta.fieldName(),
-                    dialect().name(),
-                    sqlDataType.typeName(fieldMeta.precision(), fieldMeta.scale())
-            );
+                throw new RuntimeException(String.format("Entity[%s].column[%s] default value isn't source time",
+                        fieldMeta.table().tableName(), fieldMeta.fieldName()));
         }
-        return sqlDataType.typeName(fieldMeta.precision(), fieldMeta.scale());*/
-        return null;
+        return StringUtils.quote(timeValue);
+    }
+
+    protected final boolean isNeedQuote(FieldMeta<?, ?> fieldMeta) {
+        return !fieldMeta.isPrimary()
+                && QUOTE_JDBC_TYPE.contains(fieldMeta.mappingType().jdbcType());
     }
 
 
-    protected String textTypeDefaultValue(FieldMeta<?, ?> fieldMeta) {
-        return fieldMeta.defaultValue();
+    protected ZoneId zoneId() {
+        return ZoneId.systemDefault();
     }
 
-    protected String numberTypeDefaultValue(FieldMeta<?, ?> fieldMeta) {
-        return fieldMeta.defaultValue();
+
+    protected abstract String dataTypeText(FieldMeta<?, ?> fieldMeta);
+
+
+    protected final boolean isSpecifiedFunction(String defaultValue) {
+        return SPECIFIED_COLUMN_FUNC_SET.contains(defaultValue);
     }
 
-    protected String otherDefaultValue(FieldMeta<?, ?> fieldMeta) {
-        return fieldMeta.javaType() == String.class
-                ? StringUtils.quote(fieldMeta.defaultValue())
-                : fieldMeta.defaultValue();
+    protected final boolean isSourceTime(String defaultValue) {
+        return IDomain.SOURCE_DATE_TIME.equals(defaultValue)
+                || IDomain.SOURCE_DATE.equals(defaultValue);
     }
 
-    @SuppressWarnings("unchecked")
-    protected final String requiredMappingDefaultValue(FieldMeta<?, ?> requiredFieldMeta) {
+
+
+    /*################################## blow private method ##################################*/
+
+
+    private String requiredPropDefaultValue(FieldMeta<?, ?> fieldMeta) {
         String value;
-        switch (requiredFieldMeta.propertyName()) {
+        switch (fieldMeta.propertyName()) {
             case TableMeta.ID:
-                value = sqlDefaultValueByType(requiredFieldMeta);
+                value = "";
                 break;
             case TableMeta.CREATE_TIME:
             case TableMeta.UPDATE_TIME:
-                value = requiredFieldMeta.precision() >= 0
-                        ? dialect().now(requiredFieldMeta.precision())
-                        : dialect().now();
+                value = specifiedFuncValue(IDomain.NOW, fieldMeta);
                 break;
             case TableMeta.VISIBLE:
-                value = requiredFieldMeta.mappingType().toSql(Boolean.TRUE).toString();
+                value = fieldMeta.mappingType().textValue(Boolean.TRUE);
                 break;
             case TableMeta.VERSION:
-                value = "0";
+                value = IDomain.ZERO;
                 break;
             default:
-                throw new IllegalArgumentException(String.format("entity[%s] mapping prop[%s] isn't  required ",
-                        requiredFieldMeta.table().javaType(),
-                        requiredFieldMeta.propertyName()))
-                        ;
-
+                throw new RuntimeException(String.format("Entity[%s].prop[%s] isn't required prop",
+                        fieldMeta.table().tableName(), fieldMeta.propertyName()));
         }
         return value;
     }
-
-
-    /**
-     * @see #sqlDefaultValue(FieldMeta)
-     */
-    protected final String timeTypeDefault(FieldMeta<?, ?> field) {
-        String value;
-        switch (field.defaultValue()) {
-            case IDomain.NOW:
-                value = field.precision() >= 0 ? dialect().now(field.precision()) : dialect().now();
-                break;
-            case IDomain.SOURCE_DATE_TIME:
-                value = TimeUtils.SOURCE_DATE_TIME.format(TimeUtils.SIX_FRACTION_DATE_TIME_FORMATTER);
-                value = StringUtils.quote(value);
-                break;
-            case IDomain.SOURCE_DATE:
-                value = TimeUtils.SOURCE_DATE.format(TimeUtils.DATE_FORMATTER);
-                value = StringUtils.quote(value);
-                break;
-            case IDomain.MIDNIGHT:
-                value = StringUtils.quote(LocalTime.MIDNIGHT.format(TimeUtils.TIME_FORMATTER));
-                value = StringUtils.quote(value);
-                break;
-            case IDomain.CURRENT_DATE:
-                value = dialect().currentDate();
-                break;
-            case IDomain.CURRENT_TIME:
-                value = field.precision() >= 0 ? dialect().currentTime(field.precision()) : dialect().currentTime();
-                break;
-            default:
-                // TODO zoro handle expression
-                value = field.defaultValue();
-        }
-        return value;
-    }
-
-
-    protected final void assertSupportTimeType(FieldMeta<?, ?> fieldMeta) {
-        if (isZonedTimeType(fieldMeta.javaType()) && !dialect().supportZoneId()) {
-            throw new MetaException(ErrorCode.META_ERROR, String.format(
-                    "dialect[%s] not support time type with zone,entity[%s] mapping property[%s].",
-                    dialect().name(),
-                    fieldMeta.table().javaType().getName(),
-                    fieldMeta.javaType().getName()
-            ));
-        }
-    }
-
-    protected final boolean isZonedTimeType(Class<?> timeTypeClass) {
-        return timeTypeClass == ZonedDateTime.class
-                || timeTypeClass == OffsetDateTime.class;
-    }
-
-    /*####################################### below private method #################################*/
 
 
     /**
      * create [1,n] col_name column_definition, eg. {@code id BIGINT NOT NULL DEFAULT COMMENT ''}
      */
-    private <T extends IDomain> void appendCreateDefinition(StringBuilder builder, TableMeta<T> tableMeta) {
+    private <T extends IDomain> void appendColumnDefinitions(StringBuilder builder, TableMeta<T> tableMeta) {
         Iterator<String> iterator = createColumnDefinitionList(tableMeta).iterator();
         for (String columnDefinition; iterator.hasNext(); ) {
             columnDefinition = iterator.next();
@@ -323,6 +314,7 @@ public abstract class AbstractTableDDL implements TableDDL {
 
         String columnDefinition;
         for (FieldMeta<?, ?> fieldMeta : tableMeta.fieldCollection()) {
+            // create one column definition
             columnDefinition = this.columnDefinition(fieldMeta);
             switch (fieldMeta.propertyName()) {
                 case TableMeta.ID:
@@ -347,5 +339,6 @@ public abstract class AbstractTableDDL implements TableDDL {
         propList.addAll(notRequiredPropList);
         return Collections.unmodifiableList(propList);
     }
+
 
 }

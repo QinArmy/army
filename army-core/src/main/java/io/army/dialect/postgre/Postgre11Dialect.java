@@ -3,8 +3,8 @@ package io.army.dialect.postgre;
 
 import io.army.dialect.Dialect;
 import io.army.dialect.Func;
-import io.army.dialect.dml.TableDML;
-import io.army.dialect.dql.TableDQL;
+import io.army.dialect.TableDML;
+import io.army.dialect.TableDQL;
 import io.army.dialect.tcl.DialectTCL;
 
 /**

@@ -10,10 +10,10 @@ import java.nio.charset.StandardCharsets;
 /**
  * created  on 2018/11/20.
  */
-public interface IDomain extends MappingConstant {
+public interface IDomain {
 
 
-    String NOW = "NOW";
+    String NOW = "NOW()";
 
     String SOURCE_DATE = "SOURCE_DATE";
 
@@ -21,9 +21,9 @@ public interface IDomain extends MappingConstant {
 
     String SOURCE_DATE_TIME = "SOURCE_DATE_TIME";
 
-    String CURRENT_DATE = "CURRENT_DATE";
+    String CURRENT_DATE = "CURRENT_DATE()";
 
-    String CURRENT_TIME = "CURRENT_TIME";
+    String CURRENT_TIME = "CURRENT_TIME()";
 
     String ZERO = "0";
 

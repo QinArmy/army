@@ -1,27 +1,28 @@
 package io.army.dialect.mysql;
 
-import io.army.dialect.Dialect;
-import io.army.dialect.ddl.AbstractTableDDL;
+import io.army.dialect.AbstractTableDDL;
+import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 
-import javax.annotation.Nonnull;
+class MySQLTableDDL extends AbstractTableDDL {
 
-abstract class MySQLTableDDL extends AbstractTableDDL {
+    private final MySQLFunc mySQLFunc;
 
-    private final Dialect dialect;
-
-    MySQLTableDDL(Dialect dialect) {
-        Assert.notNull(dialect, "dialect required");
-        Assert.isAssignable(MySQLDialect.class, dialect.getClass());
-        this.dialect = dialect;
+    MySQLTableDDL(MySQLFunc mySQLFunc) {
+        Assert.notNull(mySQLFunc, "mySQLFunc required");
+        this.mySQLFunc = mySQLFunc;
     }
 
 
-    @Nonnull
     @Override
-    protected Dialect dialect() {
-        return dialect;
+    protected String specifiedFuncValue(String func, FieldMeta<?, ?> fieldMeta) {
+        return null;
+    }
+
+    @Override
+    protected String dataTypeText(FieldMeta<?, ?> fieldMeta) {
+        return null;
     }
 
     @Override

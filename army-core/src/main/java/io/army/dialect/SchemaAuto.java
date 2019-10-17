@@ -1,4 +1,4 @@
-package io.army.dialect.ddl;
+package io.army.dialect;
 
 
 public enum SchemaAuto {

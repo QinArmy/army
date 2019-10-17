@@ -1,11 +1,6 @@
 package io.army.dialect.oracle;
 
-import io.army.dialect.AbstractDialect;
-import io.army.dialect.Dialect;
-import io.army.dialect.Func;
-import io.army.dialect.ddl.TableDDL;
-import io.army.dialect.dml.TableDML;
-import io.army.dialect.dql.TableDQL;
+import io.army.dialect.*;
 import io.army.dialect.tcl.DialectTCL;
 
 /**

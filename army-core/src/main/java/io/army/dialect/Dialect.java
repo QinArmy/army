@@ -1,8 +1,5 @@
 package io.army.dialect;
 
-import io.army.dialect.ddl.TableDDL;
-import io.army.dialect.dml.TableDML;
-import io.army.dialect.dql.TableDQL;
 import io.army.dialect.tcl.DialectTCL;
 
 import javax.annotation.Nonnull;
