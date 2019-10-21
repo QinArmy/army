@@ -22,7 +22,7 @@ public abstract class DDLUtils {
     public static int getNumberPrecision(FieldMeta<?, ?> fieldMeta, int minPrecision, int maxPrecision) {
         int precision = fieldMeta.precision();
         if (precision < minPrecision) {
-            precision = fieldMeta.mappingType().precision().getPrecision();
+            precision = fieldMeta.mappingType().precision();
         }
         Assert.isTrue(precision <= maxPrecision, () -> String.format("Entity[%s].column[%s] precision must in [%s,%s]",
                 fieldMeta.table().tableName(),
@@ -37,7 +37,7 @@ public abstract class DDLUtils {
     public static int getNumberScale(FieldMeta<?, ?> fieldMeta, int minScale, int maxScale) {
         int scale = fieldMeta.scale();
         if (scale < minScale) {
-            scale = fieldMeta.mappingType().precision().getScale();
+            scale = fieldMeta.mappingType().scale();
         }
         Assert.isTrue(scale <= maxScale, () -> String.format("Entity[%s].column[%s] precision must in [1,%s]",
                 fieldMeta.table().tableName(),

@@ -1,6 +1,8 @@
 package io.army.meta.mapping;
 
+import io.army.ErrorCode;
 import io.army.struct.CodeEnum;
+import io.army.util.ClassUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -46,9 +48,6 @@ class DefaultMappingFactory implements MappingFactory {
     }
 
 
-    @SuppressWarnings("unchecked")
-
-
     private boolean isCodeEnum(Class<?> javaType) {
         return javaType.isEnum() && CodeEnum.class.isAssignableFrom(javaType);
     }
@@ -56,11 +55,41 @@ class DefaultMappingFactory implements MappingFactory {
 
     @Override
     public MappingType getMapping(Class<?> javaType) throws MappingException {
-        return null;
+        MappingType mappingType = CUSTOM_MAPPING.get(javaType);
+        if (mappingType == null) {
+            if (isCodeEnum(javaType)) {
+                mappingType = getOrCreateCodeEnumMapping(javaType);
+            } else {
+                mappingType = DEFAULT_MAPPING.get(javaType);
+            }
+        }
+        if (mappingType == null) {
+            throw new MappingException(ErrorCode.META_ERROR,
+                    "not found MappingType for java type[%s]", javaType.getName());
+        }
+        return mappingType;
     }
 
     @Override
     public MappingType getMapping(Class<?> javaType, String mappingType) throws MappingException {
+        try {
+            Class<?> mappingTypeClass = ClassUtils.forName(mappingType, getClass().getClassLoader());
+
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
         return null;
+    }
+
+    /*################################## blow private method ##################################*/
+
+    private MappingType getOrCreateCodeEnumMapping(Class<?> javaType) {
+        MappingType mappingType = CODE_ENUM_MAPPING.get(javaType);
+        if (mappingType == null) {
+            CODE_ENUM_MAPPING.putIfAbsent(javaType, new CodeEnumMapping(javaType));
+            mappingType = CODE_ENUM_MAPPING.get(javaType);
+        }
+        return mappingType;
+
     }
 }

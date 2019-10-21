@@ -80,45 +80,6 @@
                     </compilerArguments>
                 </configuration>
             </plugin>
-            <!--   <plugin>
-                   <groupId>org.jooq</groupId>
-                   <artifactId>jooq-codegen-maven</artifactId>
-                   <version>${jooq.version}</version>
-                   <dependencies>
-                       <dependency>
-                           <groupId>mysql</groupId>
-                           <artifactId>mysql-connector-java</artifactId>
-                           <version>${mysql.version}</version>
-                       </dependency>
-                   </dependencies>
-                   <executions>
-                       <execution>
-                           <goals>
-                               <goal>generate</goal>
-                           </goals>
-                       </execution>
-                   </executions>
-
-                   <configuration>
-                       <jdbc>
-                           <driver>com.mysql.jdbc.Driver</driver>
-                           <url>${slaver.url}</url>
-                           <user>${slaver.username}</user>
-                           <password>${slaver.password}</password>
-                       </jdbc>
-                       <generator>
-                           <database>
-                               <name>org.jooq.meta.mysql.MySQLDatabase</name>
-
-                               <inputCatalog>public</inputCatalog>
-                               <inputSchema>army_example</inputSchema>
-                           </database>
-                           <target>
-                               <packageName>com.example.domain.jooq</packageName>
-                           </target>
-                       </generator>
-                   </configuration>
-               </plugin>-->
         </plugins>
     </build>
 

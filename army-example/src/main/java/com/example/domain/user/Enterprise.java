@@ -18,13 +18,13 @@ public class Enterprise extends User {
     @Column(defaultValue = NOW, updatable = false, comment = "公司注册时间")
     private LocalDateTime registerTime;
 
-    @Column(defaultValue = EMPTY, precision = 64, comment = "公司法人代表")
+    @Column(precision = 64, comment = "公司法人代表")
     private String legalPerson;
 
-    @Column(defaultValue = EMPTY, precision = 64, comment = "公司联系人")
+    @Column(precision = 64, comment = "公司联系人")
     private String contacter;
 
-    @Column(defaultValue = EMPTY, precision = 20, comment = "公司联系人手机")
+    @Column(precision = 20, comment = "公司联系人手机")
     private String contacterPhone;
 
     public LocalDateTime getRegisterTime() {

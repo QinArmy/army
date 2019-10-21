@@ -74,13 +74,13 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
             insertable = column.insertable();
             updatable = column.updatable();
 
-            precision = MetaUtils.precision(column, this.mappingType.precision());
-            scale = MetaUtils.scale(column, this.mappingType.precision());
+            precision = MetaUtils.precision(column, this.mappingType);
+            scale = MetaUtils.scale(column, this.mappingType);
 
             defaultValue = column.defaultValue();
         } catch (RuntimeException e) {
             throw new MetaException(ErrorCode.META_ERROR, e, "create entity[%s] mapping property[%s] meta error"
-                    , table.javaType(), propertyName);
+                    , table.javaType().getName(), propertyName);
         }
 
 

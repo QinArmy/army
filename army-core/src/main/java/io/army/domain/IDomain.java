@@ -21,13 +21,9 @@ public interface IDomain {
 
     String SOURCE_DATE_TIME = "SOURCE_DATE_TIME";
 
-    String CURRENT_DATE = "CURRENT_DATE()";
-
     String ZERO = "0";
 
     String ONE = "1";
-
-    String EMPTY = "''";
 
     String DECIMAL_ZERO = "0.00";
 

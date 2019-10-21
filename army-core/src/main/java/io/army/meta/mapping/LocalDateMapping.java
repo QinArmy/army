@@ -1,7 +1,6 @@
 package io.army.meta.mapping;
 
-import io.army.util.Precision;
-import org.springframework.lang.NonNull;
+import io.army.util.TimeUtils;
 
 import java.sql.JDBCType;
 import java.time.LocalDate;
@@ -9,6 +8,7 @@ import java.time.LocalDate;
 public final class LocalDateMapping extends MappingSupport implements MappingType {
 
     public static final LocalDateMapping INSTANCE = new LocalDateMapping();
+
 
     private LocalDateMapping() {
     }
@@ -25,17 +25,30 @@ public final class LocalDateMapping extends MappingSupport implements MappingTyp
 
     @Override
     public String nullSafeTextValue(Object value) {
-        return null;
+        LocalDate date = (LocalDate) value;
+        return date.format(TimeUtils.DATE_FORMATTER);
     }
+
 
     @Override
     public boolean isTextValue(String textValue) {
-        return false;
+        boolean yes;
+        try {
+            LocalDate.parse(textValue, TimeUtils.DATE_FORMATTER);
+            yes = true;
+        } catch (Exception e) {
+            yes = false;
+        }
+        return yes;
     }
 
-    @NonNull
     @Override
-    public Precision precision() {
-        return Precision.EMPTY;
+    public int precision() {
+        return -1;
+    }
+
+    @Override
+    public int scale() {
+        return -1;
     }
 }

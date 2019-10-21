@@ -44,7 +44,7 @@ class MySQL57TableDDL extends AbstractTableDDL {
     protected void appendTableOptions(StringBuilder builder, TableMeta<?> tableMeta) {
         builder.append("ENGINE = InnoDB CHARACTER SET = ")
                 .append(tableMeta.charset())
-                .append(" COMMON '")
+                .append(" COMMENT '")
                 .append(tableMeta.comment())
                 .append("'")
         ;
@@ -75,7 +75,6 @@ class MySQL57TableDDL extends AbstractTableDDL {
         map.put(JDBCType.TIMESTAMP, MySQLDDLUtils::timestampFunction);
 
         // below string type
-
         map.put(JDBCType.CHAR, MySQLDDLUtils::charFunction);
         map.put(JDBCType.VARCHAR, MySQLDDLUtils::varcharFunction);
         map.put(JDBCType.BINARY, MySQLDDLUtils::binaryFunction);

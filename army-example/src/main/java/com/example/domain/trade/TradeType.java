@@ -40,7 +40,7 @@ public enum TradeType implements CodeEnum {
 
     private final String display;
 
-    private Class<? extends BaseRecord> type;
+    private final Class<? extends BaseRecord> type;
 
     private static final Map<Integer, TradeType> CODE_MAP = CodeEnum.getCodeMap(TradeType.class);
 

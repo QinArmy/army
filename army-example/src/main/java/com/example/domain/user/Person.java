@@ -19,7 +19,7 @@ public class Person extends User {
     @Column(defaultValue = ZERO, comment = "性别")
     private Gender gender;
 
-    @Column(defaultValue = CURRENT_DATE, comment = "生日")
+    @Column(defaultValue = SOURCE_DATE, comment = "生日")
     private LocalDate birthday;
 
     public Gender getGender() {

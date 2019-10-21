@@ -2,7 +2,6 @@ package io.army.meta.mapping;
 
 import io.army.annotation.Column;
 import io.army.util.Precision;
-import org.springframework.lang.NonNull;
 
 import java.sql.JDBCType;
 
@@ -26,7 +25,8 @@ public interface MappingType {
      *
      * @return Precision
      */
-    @NonNull
-    Precision precision();
+    int precision();
+
+    int scale();
 
 }

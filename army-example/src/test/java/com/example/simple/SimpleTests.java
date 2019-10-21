@@ -31,6 +31,6 @@ public class SimpleTests {
 
     @Test
     public void mysqlDDL() {
-        LOG.info("mysql ddl : {}", MySQL57Dialect.INSTANCE.tableDefinition(User_.T));
+        LOG.info("mysql ddl :\n {}", MySQL57Dialect.INSTANCE.tableDefinition(User_.T));
     }
 }

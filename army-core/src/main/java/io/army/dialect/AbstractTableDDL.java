@@ -3,10 +3,7 @@ package io.army.dialect;
 import io.army.ErrorCode;
 import io.army.criteria.MetaException;
 import io.army.domain.IDomain;
-import io.army.meta.FieldMeta;
-import io.army.meta.IndexFieldMeta;
-import io.army.meta.IndexMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 import io.army.util.ArrayUtils;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
@@ -34,12 +31,28 @@ public abstract class AbstractTableDDL implements TableDDL {
             JDBCType.NCHAR,
 
             JDBCType.NVARCHAR,
+            JDBCType.LONGVARCHAR,
             JDBCType.DATE,
             JDBCType.TIME,
 
             JDBCType.TIMESTAMP,
             JDBCType.TIME_WITH_TIMEZONE,
             JDBCType.TIMESTAMP_WITH_TIMEZONE
+    );
+
+    private static final EnumSet<JDBCType> TEXT_JDBC_TYPE = EnumSet.of(
+            JDBCType.VARCHAR,
+            JDBCType.CHAR,
+            JDBCType.BLOB,
+            JDBCType.NCHAR,
+
+            JDBCType.NVARCHAR,
+            JDBCType.LONGVARCHAR
+    );
+
+    private static final EnumSet<MappingMode> REQUIRED_MAPPING_MODE = EnumSet.of(
+            MappingMode.SIMPLE,
+            MappingMode.PARENT
     );
 
 
@@ -77,7 +90,6 @@ public abstract class AbstractTableDDL implements TableDDL {
     }
 
     /*####################################### below protected template method #################################*/
-
 
 
     protected abstract void appendTableOptions(StringBuilder builder, TableMeta<?> tableMeta);
@@ -182,9 +194,16 @@ public abstract class AbstractTableDDL implements TableDDL {
     }
 
     protected String columnDefinition(FieldMeta<?, ?> fieldMeta) {
-        return String.format("%s %s NOT NULL DEFAULT %s COMMON '%s'",
+        String defaultKey;
+        if (fieldMeta.isPrimary()) {
+            defaultKey = "";
+        } else {
+            defaultKey = "DEFAULT";
+        }
+        return String.format("%s %s NOT NULL %s %s COMMENT '%s'",
                 fieldMeta.fieldName(),
                 dataTypeText(fieldMeta),
+                defaultKey,
                 sqlDefaultValue(fieldMeta),
                 fieldMeta.comment()
         );
@@ -193,7 +212,9 @@ public abstract class AbstractTableDDL implements TableDDL {
     protected final String sqlDefaultValue(FieldMeta<?, ?> fieldMeta) {
         String value;
 
-        if (StringUtils.hasText(fieldMeta.defaultValue())) {
+        if (TableMeta.VERSION_PROPS.contains(fieldMeta.propertyName())) {
+            value = requiredPropDefaultValue(fieldMeta);
+        } else if (StringUtils.hasText(fieldMeta.defaultValue())) {
             if (isSpecifiedFunction(fieldMeta.defaultValue())) {
                 value = nowFunc(fieldMeta.defaultValue(), fieldMeta);
             } else if (isSourceTime(fieldMeta.defaultValue())) {
@@ -202,13 +223,13 @@ public abstract class AbstractTableDDL implements TableDDL {
                 value = fieldMeta.defaultValue();
             } else {
                 throw new MetaException(ErrorCode.META_ERROR, "Entity[%s].column[%s] default value error",
-                        fieldMeta.table().tableName(), fieldMeta.fieldName());
+                        fieldMeta.table().javaType().getName(), fieldMeta.fieldName());
             }
-        } else if (TableMeta.VERSION_PROPS.contains(fieldMeta.propertyName())) {
-            value = requiredPropDefaultValue(fieldMeta);
+        } else if (TEXT_JDBC_TYPE.contains(fieldMeta.mappingType().jdbcType())) {
+            value = "";
         } else {
             throw new MetaException(ErrorCode.META_ERROR, "Entity[%s].column[%s] default value required",
-                    fieldMeta.table().tableName(), fieldMeta.fieldName());
+                    fieldMeta.table().javaType().getName(), fieldMeta.fieldName());
         }
         if (isNeedQuote(fieldMeta)) {
             value = StringUtils.quote(value);
@@ -240,6 +261,9 @@ public abstract class AbstractTableDDL implements TableDDL {
 
     protected final boolean isNeedQuote(FieldMeta<?, ?> fieldMeta) {
         return !fieldMeta.isPrimary()
+                && !TableMeta.CREATE_TIME.equals(fieldMeta.propertyName())
+                && !TableMeta.UPDATE_TIME.equals(fieldMeta.propertyName())
+                && !IDomain.NOW.equals(fieldMeta.defaultValue())
                 && QUOTE_JDBC_TYPE.contains(fieldMeta.mappingType().jdbcType());
     }
 
@@ -298,9 +322,7 @@ public abstract class AbstractTableDDL implements TableDDL {
         for (String columnDefinition; iterator.hasNext(); ) {
             columnDefinition = iterator.next();
             builder.append(columnDefinition);
-            if (iterator.hasNext()) {
-                builder.append(",\n");
-            }
+            builder.append(",\n");
         }
 
     }
@@ -308,12 +330,11 @@ public abstract class AbstractTableDDL implements TableDDL {
     private List<String> createColumnDefinitionList(TableMeta<?> tableMeta) {
         List<String> propList = new ArrayList<>(tableMeta.fieldCollection().size());
 
-        final int requiredSize = tableMeta.immutable() ? TableMeta.DOMAIN_PROPS.size() : TableMeta.VERSION_PROPS.size();
+        final int requiredSize = requiredSize(tableMeta);
 
         for (int i = 0; i < requiredSize; i++) {
             propList.add("");
         }
-        List<String> notRequiredPropList = new ArrayList<>(tableMeta.fieldCollection().size() - requiredSize);
 
         String columnDefinition;
         for (FieldMeta<?, ?> fieldMeta : tableMeta.fieldCollection()) {
@@ -336,11 +357,20 @@ public abstract class AbstractTableDDL implements TableDDL {
                     propList.set(4, columnDefinition);
                     break;
                 default:
-                    notRequiredPropList.add(columnDefinition);
+                    propList.add(columnDefinition);
             }
         }
-        propList.addAll(notRequiredPropList);
         return Collections.unmodifiableList(propList);
+    }
+
+    private int requiredSize(TableMeta<?> tableMeta) {
+        int size;
+        if (REQUIRED_MAPPING_MODE.contains(tableMeta.mappingMode())) {
+            size = tableMeta.immutable() ? TableMeta.DOMAIN_PROPS.size() : TableMeta.VERSION_PROPS.size();
+        } else {
+            size = 1;
+        }
+        return size;
     }
 
 

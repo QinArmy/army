@@ -1,7 +1,5 @@
 package io.army.meta.mapping;
 
-import io.army.util.Precision;
-
 import java.sql.JDBCType;
 
 public final class IntegerMapping extends MappingSupport implements MappingType {
@@ -23,16 +21,28 @@ public final class IntegerMapping extends MappingSupport implements MappingType 
 
     @Override
     public String nullSafeTextValue(Object value) {
-        return null;
+        return String.valueOf(value);
     }
 
     @Override
     public boolean isTextValue(String textValue) {
-        return false;
+        boolean yes;
+        try {
+            Integer.parseInt(textValue);
+            yes = true;
+        } catch (NumberFormatException e) {
+            yes = false;
+        }
+        return yes;
     }
 
     @Override
-    public Precision precision() {
-        return Precision.DEFAULT_INT_PRECISION;
+    public int precision() {
+        return 11;
+    }
+
+    @Override
+    public int scale() {
+        return -1;
     }
 }

@@ -1,8 +1,6 @@
 package io.army.meta.mapping;
 
 import io.army.util.Assert;
-import io.army.util.Precision;
-import org.springframework.lang.NonNull;
 
 import java.math.BigDecimal;
 import java.sql.JDBCType;
@@ -42,9 +40,13 @@ public final class BigDecimalMapping extends MappingSupport implements MappingTy
         return yes;
     }
 
-    @NonNull
     @Override
-    public Precision precision() {
-        return Precision.DEFAULT_DECIMAL_PRECISION;
+    public int precision() {
+        return 14;
+    }
+
+    @Override
+    public int scale() {
+        return 2;
     }
 }

@@ -1,7 +1,5 @@
 package io.army.meta.mapping;
 
-import io.army.util.Precision;
-
 import java.sql.JDBCType;
 
 public final class LongMapping extends AbstractMappingType {
@@ -29,11 +27,23 @@ public final class LongMapping extends AbstractMappingType {
 
     @Override
     public boolean isTextValue(String textValue) {
-        return false;
+        boolean yes;
+        try {
+            Long.parseLong(textValue);
+            yes = true;
+        } catch (NumberFormatException e) {
+            yes = false;
+        }
+        return yes;
     }
 
     @Override
-    public Precision precision() {
-        return Precision.DEFAULT_BIGINT_PRECISION;
+    public int precision() {
+        return 20;
+    }
+
+    @Override
+    public int scale() {
+        return -1;
     }
 }

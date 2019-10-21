@@ -10,6 +10,8 @@ import io.army.struct.CodeEnum;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 import io.army.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.lang.model.element.TypeElement;
@@ -20,6 +22,8 @@ import java.util.List;
 import java.util.Set;
 
 abstract class MetaAssert {
+
+    private static final Logger LOG = LoggerFactory.getLogger(MetaAssert.class);
 
 
     static void throwInheritanceDuplication(TypeElement entityElement) throws MetaException {
@@ -53,6 +57,7 @@ abstract class MetaAssert {
         } else {
             missPropNameSet = createMissingPropNameSet(entityPropNameSet, TableMeta.VERSION_PROPS);
         }
+
         if (!CollectionUtils.isEmpty(missPropNameSet)) {
             throw createMissingPropException(entityElement, missPropNameSet);
         }
@@ -69,11 +74,19 @@ abstract class MetaAssert {
                     columnName
             );
         }
-        if (!StringUtils.hasText(column.defaultValue())) {
-            throw new MetaException(ErrorCode.META_ERROR, "mapped class[%s] column[%s] no defaultValue.",
+
+        try {
+            if (!StringUtils.hasText(column.defaultValue())) {
+
+                throw new MetaException(ErrorCode.META_ERROR, "mapped class[%s] column[%s] no defaultValue.",
+                        mappedElement.getQualifiedName(),
+                        columnName
+                );
+            }
+        } catch (Throwable e) {
+            System.out.println(String.format("mapped class[%s] column[%s] no defaultValue.",
                     mappedElement.getQualifiedName(),
-                    columnName
-            );
+                    columnName));
         }
 
 

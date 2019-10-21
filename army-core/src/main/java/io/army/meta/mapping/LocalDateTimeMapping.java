@@ -1,8 +1,5 @@
 package io.army.meta.mapping;
 
-import io.army.util.Precision;
-import org.springframework.lang.NonNull;
-
 import java.sql.JDBCType;
 import java.time.LocalDateTime;
 
@@ -33,9 +30,14 @@ public final class LocalDateTimeMapping extends MappingSupport implements Mappin
         return false;
     }
 
-    @NonNull
+
     @Override
-    public Precision precision() {
-        return Precision.EMPTY;
+    public int precision() {
+        return 6;
+    }
+
+    @Override
+    public int scale() {
+        return -1;
     }
 }

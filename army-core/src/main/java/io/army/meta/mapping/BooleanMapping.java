@@ -2,7 +2,6 @@ package io.army.meta.mapping;
 
 import io.army.domain.IDomain;
 import io.army.util.Precision;
-import org.springframework.lang.NonNull;
 
 import java.sql.JDBCType;
 
@@ -43,9 +42,13 @@ public final class BooleanMapping extends AbstractMappingType {
                 || IDomain.N.equals(textValue);
     }
 
-    @NonNull
     @Override
-    public Precision precision() {
-        return PRECISION;
+    public int precision() {
+        return 1;
+    }
+
+    @Override
+    public int scale() {
+        return -1;
     }
 }

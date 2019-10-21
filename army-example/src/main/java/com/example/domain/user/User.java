@@ -38,19 +38,19 @@ public class User extends VersionDomain {
     @Column(updatable = false, defaultValue = ZERO, comment = "证件记录id,标识一个自然人或合法组织")
     private Long certificateId;
 
-    @Column(defaultValue = EMPTY, precision = 64, comment = "个人或组织的真实名称,此字段加密")
+    @Column(precision = 64, comment = "个人或组织的真实名称,此字段加密")
     private String name;
 
-    @Column(defaultValue = EMPTY, precision = 20, comment = "昵称,此字段不加密")
+    @Column(precision = 20, comment = "昵称,此字段不加密")
     private String nickName;
 
-    @Column(defaultValue = EMPTY, precision = 15, comment = "用户注册时,注册数据来源于哪个合作者")
+    @Column(precision = 15, comment = "用户注册时,注册数据来源于哪个合作者")
     private String partnerNo;
 
-    @Column(defaultValue = EMPTY, precision = 64, comment = "用户在合作者平台用户的id,与 partner_no 联用")
+    @Column(precision = 64, comment = "用户在合作者平台用户的id,与f partner_no 联用")
     private String idFromPartner;
 
-    @Column(defaultValue = EMPTY, precision = 30, comment = "用户在合作者平台用户的昵称,与 partner_no 联用")
+    @Column(precision = 30, comment = "用户在合作者平台用户的昵称,与 partner_no 联用")
     private String nickNameFromPartner;
 
     @Column(defaultValue = NOW, comment = "用户在合作者平台用户的注册时间,与 partner_no 联用")
@@ -75,7 +75,7 @@ public class User extends VersionDomain {
     @Column(defaultValue = ZERO, comment = "风险类型")
     private RiskType riskType;
 
-    @Column(defaultValue = EMPTY, comment = "风险评价")
+    @Column(comment = "风险评价")
     private String riskComment;
 
 

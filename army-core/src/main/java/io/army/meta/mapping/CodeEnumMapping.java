@@ -3,10 +3,8 @@ package io.army.meta.mapping;
 import io.army.struct.CodeEnum;
 import io.army.struct.CodeEnumException;
 import io.army.util.Assert;
-import io.army.util.Precision;
 import io.army.util.ReflectionUtils;
 
-import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
 import java.sql.JDBCType;
 import java.util.Map;
@@ -30,7 +28,7 @@ public class CodeEnumMapping extends AbstractMappingType {
         this.javaType = javaType;
         Assert.isTrue(javaType.isEnum(), () -> String.format("javaType[%s] isn't Enum", javaType));
         Assert.isAssignable(CodeEnum.class, javaType);
-        ReflectionUtils.invokeMethod(GET_CODE_MAP_METHOD, javaType);
+        getCodeMap();
     }
 
     @Override
@@ -45,8 +43,8 @@ public class CodeEnumMapping extends AbstractMappingType {
 
     @Override
     public String nullSafeTextValue(Object value) {
-
-        return null;
+        CodeEnum codeEnum = (CodeEnum) value;
+        return Integer.toString(codeEnum.code());
     }
 
     @Override
@@ -54,9 +52,8 @@ public class CodeEnumMapping extends AbstractMappingType {
         boolean yes;
         try {
             int code = Integer.parseInt(textValue);
-            @SuppressWarnings({"unchecked"})
-            Map<Integer, CodeEnum> codeEnumMap = (Map<Integer, CodeEnum>) ReflectionUtils.invokeMethod(
-                    GET_CODE_MAP_METHOD, javaType);
+
+            Map<Integer, CodeEnum> codeEnumMap = getCodeMap();
             if (codeEnumMap == null) {
                 return false;
             }
@@ -68,9 +65,22 @@ public class CodeEnumMapping extends AbstractMappingType {
         return yes;
     }
 
-    @Nonnull
     @Override
-    public Precision precision() {
-        return Precision.DEFAULT_INT_PRECISION;
+    public int precision() {
+        return 11;
+    }
+
+    @Override
+    public int scale() {
+        return -1;
+    }
+
+
+    /*################################## blow private method ##################################*/
+
+    @SuppressWarnings({"unchecked"})
+    private Map<Integer, CodeEnum> getCodeMap() {
+        return (Map<Integer, CodeEnum>) ReflectionUtils.invokeMethod(
+                GET_CODE_MAP_METHOD, null, javaType);
     }
 }

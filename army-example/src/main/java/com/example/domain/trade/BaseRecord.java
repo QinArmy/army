@@ -69,16 +69,16 @@ public class BaseRecord extends VersionDomain {
     @Column(defaultValue = ZERO, updatable = false, comment = "账户id")
     private Long accountId;
 
-    @Column(defaultValue = EMPTY, comment = "产品名")
+    @Column(comment = "产品名")
     private String productName;
 
     @Column(defaultValue = ZERO, updatable = false, comment = "交易提供者")
     private TradeProvider provider;
 
-    @Column(defaultValue = EMPTY, comment = "描述,给用户看的查询")
+    @Column(comment = "描述,给用户看的查询")
     private String desc;
 
-    @Column(defaultValue = EMPTY, comment = "标签,对交易记录标识")
+    @Column(comment = "标签,对交易记录标识")
     private String label;
 
     @Column(defaultValue = DECIMAL_ZERO, updatable = false, precision = 14, scale = 2, comment = "交易金额,此字段不可更新")
@@ -103,13 +103,13 @@ public class BaseRecord extends VersionDomain {
     @Column(defaultValue = NOW, comment = "交易完成时间")
     private LocalDateTime tradeFinishTime;
 
-    @Column(defaultValue = EMPTY, comment = "第三方返回的消息")
+    @Column(comment = "第三方返回的消息")
     private String tradeMsg;
 
-    @Column(defaultValue = EMPTY, comment = "第三方返回的失败原因")
+    @Column(comment = "第三方返回的失败原因")
     private String failureReason;
 
-    @Column(defaultValue = EMPTY, comment = "请求第三方的序列号")
+    @Column(comment = "请求第三方的序列号")
     private String requestNo;
 
     @Column(defaultValue = NOW, comment = "关闭时间,当用户超时未完成交易的时间")
@@ -127,7 +127,7 @@ public class BaseRecord extends VersionDomain {
     @Column(defaultValue = N, comment = "记录是否已发送过mq")
     private Boolean asyncMsg;
 
-    @Column(defaultValue = EMPTY, comment = "备注,用于给用户填写")
+    @Column(comment = "备注,用于给用户填写")
     private String remark;
 
     @Column(defaultValue = N, comment = "标识记录是否已和第三方进行核对")

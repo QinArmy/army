@@ -4,20 +4,23 @@ import io.army.dialect.AbstractFunc;
 
 class MySQL5757FuncImpl extends AbstractFunc implements MySQL57Func {
 
-    private final MySQL57Dialect mySQLDialect;
 
-    public MySQL5757FuncImpl(MySQL57Dialect mySQLDialect) {
-        this.mySQLDialect = mySQLDialect;
-    }
+
 
     @Override
     public String now() {
-        return null;
+        return "NOW()";
     }
 
     @Override
     public String now(int precision) {
-        return null;
+        if (precision < 0 || precision > 6) {
+            throw new IllegalArgumentException(String.format("NOW() precision must in [0,6],but %s", precision));
+        }
+        if (precision == 0) {
+            return now();
+        }
+        return "NOW(" + precision + ")";
     }
 
     @Override

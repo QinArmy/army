@@ -14,6 +14,8 @@ public class MySQL57Dialect extends AbstractDialect {
 
     public static final MySQL57Dialect INSTANCE = new MySQL57Dialect();
 
+    private final MySQL57Func mySQL57Func;
+
 
     private final TableDDL tableDDL;
 
@@ -23,15 +25,16 @@ public class MySQL57Dialect extends AbstractDialect {
 
     private final DialectTCL dialectTCL;
 
-    private final MySQL57Func mySQL57Func;
 
-    MySQL57Dialect() {
-        this.tableDDL = new MySQL57TableDDL(this);
-        this.tableDML = new MySQLTableDML(this);
-        this.tableDQL = new MySQLTableDQL(this);
+    private MySQL57Dialect() {
+        this.mySQL57Func = new MySQL5757FuncImpl();
 
-        this.dialectTCL = new MySQLDialectTCL(this);
-        this.mySQL57Func = new MySQL5757FuncImpl(this);
+        this.tableDDL = new MySQL57TableDDL(this.mySQL57Func);
+        this.tableDML = new MySQLTableDML();
+        this.tableDQL = new MySQLTableDQL();
+
+        this.dialectTCL = new MySQLDialectTCL();
+
     }
 
     @Override

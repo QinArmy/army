@@ -31,16 +31,16 @@ public class YesterdayRecord extends Domain {
     @Column(defaultValue = ZERO, updatable = false, comment = "账户id")
     private Long accountId;
 
-    @Column(defaultValue = EMPTY, updatable = false, comment = "收益 label")
+    @Column(updatable = false, comment = "收益 label")
     private String yieldLabel;
 
-    @Column(defaultValue = EMPTY, updatable = false, comment = "账务 label")
+    @Column(updatable = false, comment = "账务 label")
     private String debtLabel;
 
     @Column(defaultValue = ZERO, updatable = false, comment = "记录类型,用于区分子表")
     private YesterdayRecordType recordType;
 
-    @Column(defaultValue = CURRENT_DATE, updatable = false, comment = "日期")
+    @Column(defaultValue = SOURCE_DATE, updatable = false, comment = "日期")
     private LocalDate date;
 
     @Column(defaultValue = DECIMAL_ZERO, precision = 14, scale = 2, comment = "昨日收益")

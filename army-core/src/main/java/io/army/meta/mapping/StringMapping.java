@@ -1,8 +1,5 @@
 package io.army.meta.mapping;
 
-import io.army.util.Precision;
-import org.springframework.lang.NonNull;
-
 import java.sql.JDBCType;
 
 public final class StringMapping extends AbstractMappingType {
@@ -33,9 +30,13 @@ public final class StringMapping extends AbstractMappingType {
         return true;
     }
 
-    @NonNull
     @Override
-    public Precision precision() {
-        return Precision.DEFAULT_CHAR_PRECISION;
+    public int precision() {
+        return 255;
+    }
+
+    @Override
+    public int scale() {
+        return -1;
     }
 }

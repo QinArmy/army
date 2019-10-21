@@ -8,7 +8,10 @@ import io.army.meta.*;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingType;
 import io.army.struct.CodeEnum;
-import io.army.util.*;
+import io.army.util.AnnotationUtils;
+import io.army.util.Assert;
+import io.army.util.ReflectionUtils;
+import io.army.util.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -64,22 +67,22 @@ abstract class MetaUtils {
     }
 
 
-    static int precision(@Nonnull Column column, Precision precision) {
+    static int precision(@Nonnull Column column, MappingType mappingType) {
         Integer defaultPrecision = (Integer) AnnotationUtils.getDefaultValue(column, "precision");
         if (defaultPrecision == null) {
             // never this
             throw new RuntimeException();
         }
-        return column.precision() == defaultPrecision ? precision.getPrecision() : column.precision();
+        return column.precision() == defaultPrecision ? mappingType.precision() : column.precision();
     }
 
-    static int scale(@Nonnull Column column, Precision precision) {
+    static int scale(@Nonnull Column column, MappingType mappingType) {
         Integer defaultScale = (Integer) AnnotationUtils.getDefaultValue(column, "scale");
         if (defaultScale == null) {
             // never this
             throw new RuntimeException();
         }
-        return column.scale() == defaultScale ? precision.getScale() : column.scale();
+        return column.scale() == defaultScale ? mappingType.scale() : column.scale();
     }
 
     static int discriminatorValue(MappingMode mappingMode, Class<?> entityClass) {
