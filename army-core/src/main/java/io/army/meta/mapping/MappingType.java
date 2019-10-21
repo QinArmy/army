@@ -14,7 +14,10 @@ public interface MappingType {
     JDBCType jdbcType();
 
 
-    String textValue(Object value);
+    /**
+     * @throws IllegalArgumentException value error
+     */
+    String nullSafeTextValue(Object value);
 
     boolean isTextValue(String textValue);
 

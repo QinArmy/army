@@ -1,11 +1,10 @@
 package io.army.meta.mapping;
 
-import io.army.util.NumberUtils;
 import io.army.util.Precision;
 
 import java.sql.JDBCType;
 
-public final class IntegerMapping extends MappingSupport implements MappingType<Integer> {
+public final class IntegerMapping extends MappingSupport implements MappingType {
 
     public static final IntegerMapping INSTANCE = new IntegerMapping();
 
@@ -23,15 +22,14 @@ public final class IntegerMapping extends MappingSupport implements MappingType<
     }
 
     @Override
-    public Object toSql(Integer integer) {
-        return integer;
+    public String nullSafeTextValue(Object value) {
+        return null;
     }
 
     @Override
-    public Integer toJava(Object databaseValue) {
-        return NumberUtils.parseNumberFromObject(databaseValue, Integer.class);
+    public boolean isTextValue(String textValue) {
+        return false;
     }
-
 
     @Override
     public Precision precision() {

@@ -1,13 +1,13 @@
 package io.army.meta.mapping;
 
-import io.army.util.NumberUtils;
+import io.army.util.Assert;
 import io.army.util.Precision;
 import org.springframework.lang.NonNull;
 
 import java.math.BigDecimal;
 import java.sql.JDBCType;
 
-public final class BigDecimalMapping extends MappingSupport implements MappingType<BigDecimal> {
+public final class BigDecimalMapping extends MappingSupport implements MappingType {
 
     public static final BigDecimalMapping INSTANCE = new BigDecimalMapping();
 
@@ -25,15 +25,22 @@ public final class BigDecimalMapping extends MappingSupport implements MappingTy
     }
 
     @Override
-    public Object toSql(BigDecimal bigDecimal) {
-        return bigDecimal;
+    public String nullSafeTextValue(Object value) {
+        Assert.isInstanceOf(BigDecimal.class, value, () -> String.format("value[%s] isn't BigDecimal.", value));
+        return ((BigDecimal) value).toPlainString();
     }
 
     @Override
-    public BigDecimal toJava(Object databaseValue) {
-        return NumberUtils.parseNumberFromObject(databaseValue, BigDecimal.class);
+    public boolean isTextValue(String textValue) {
+        boolean yes;
+        try {
+            new BigDecimal(textValue);
+            yes = true;
+        } catch (Exception e) {
+            yes = false;
+        }
+        return yes;
     }
-
 
     @NonNull
     @Override

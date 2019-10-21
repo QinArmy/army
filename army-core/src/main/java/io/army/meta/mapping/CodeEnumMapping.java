@@ -1,34 +1,36 @@
 package io.army.meta.mapping;
 
 import io.army.struct.CodeEnum;
+import io.army.struct.CodeEnumException;
+import io.army.util.Assert;
 import io.army.util.Precision;
+import io.army.util.ReflectionUtils;
 
 import javax.annotation.Nonnull;
-import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.sql.JDBCType;
-import java.sql.SQLException;
+import java.util.Map;
 
 /**
  * @see Enum
  * @see io.army.struct.CodeEnum
  */
-public class CodeEnumMapping<T extends Enum<T> & CodeEnum> extends AbstractMappingType<T> {
+public class CodeEnumMapping extends AbstractMappingType {
 
-    static final Constructor<CodeEnumMapping> CONSTRUCTOR;
+    private static final Method GET_CODE_MAP_METHOD;
+
+    private final Class<?> javaType;
+
 
     static {
-        try {
-            CONSTRUCTOR = CodeEnumMapping.class.getConstructor(Class.class);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
+        GET_CODE_MAP_METHOD = ReflectionUtils.findMethod(CodeEnum.class, "getCodeMap", Class.class);
     }
 
-    private final Class<T> javaType;
-
-
-    public CodeEnumMapping(Class<T> javaType) {
+    public CodeEnumMapping(Class<?> javaType) {
         this.javaType = javaType;
+        Assert.isTrue(javaType.isEnum(), () -> String.format("javaType[%s] isn't Enum", javaType));
+        Assert.isAssignable(CodeEnum.class, javaType);
+        ReflectionUtils.invokeMethod(GET_CODE_MAP_METHOD, javaType);
     }
 
     @Override
@@ -42,25 +44,28 @@ public class CodeEnumMapping<T extends Enum<T> & CodeEnum> extends AbstractMappi
     }
 
     @Override
-    protected Object nonNullToSql(T t) {
-        return t.code();
+    public String nullSafeTextValue(Object value) {
+
+        return null;
     }
 
     @Override
-    protected T nonNullToJava(Object databaseValue) throws SQLException {
-        int code;
-        if (databaseValue instanceof Integer) {
-            code = (Integer) databaseValue;
-        } else if (databaseValue instanceof String) {
-            code = Integer.parseInt((String) databaseValue);
-        } else {
-            throw convertToJavaException(databaseValue, javaType);
+    public boolean isTextValue(String textValue) {
+        boolean yes;
+        try {
+            int code = Integer.parseInt(textValue);
+            @SuppressWarnings({"unchecked"})
+            Map<Integer, CodeEnum> codeEnumMap = (Map<Integer, CodeEnum>) ReflectionUtils.invokeMethod(
+                    GET_CODE_MAP_METHOD, javaType);
+            if (codeEnumMap == null) {
+                return false;
+            }
+            CodeEnum codeEnum = codeEnumMap.get(code);
+            yes = codeEnum != null;
+        } catch (NumberFormatException | CodeEnumException e) {
+            yes = false;
         }
-        T t = CodeEnum.getCodeMap(this.javaType).get(code);
-        if (t == null) {
-            throw convertToJavaException(databaseValue, javaType);
-        }
-        return t;
+        return yes;
     }
 
     @Nonnull

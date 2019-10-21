@@ -631,7 +631,7 @@ abstract class MetaUtils {
         }
 
         @Override
-        public boolean fieldAsc() {
+        public Boolean fieldAsc() {
             return this.fieldAsc;
         }
     }

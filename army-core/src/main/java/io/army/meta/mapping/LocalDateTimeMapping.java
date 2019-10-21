@@ -4,10 +4,9 @@ import io.army.util.Precision;
 import org.springframework.lang.NonNull;
 
 import java.sql.JDBCType;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
-public final class LocalDateTimeMapping extends MappingSupport implements MappingType<LocalDateTime> {
+public final class LocalDateTimeMapping extends MappingSupport implements MappingType {
 
     public static final LocalDateTimeMapping INSTANCE = new LocalDateTimeMapping();
 
@@ -25,24 +24,14 @@ public final class LocalDateTimeMapping extends MappingSupport implements Mappin
     }
 
     @Override
-    public Object toSql(LocalDateTime dateTime) {
-        return Timestamp.valueOf(dateTime);
+    public String nullSafeTextValue(Object value) {
+        return null;
     }
 
     @Override
-    public LocalDateTime toJava(Object databaseValue) {
-        if (databaseValue == null) {
-            return null;
-        }
-        LocalDateTime value;
-        if (databaseValue instanceof Timestamp) {
-            value = ((Timestamp) databaseValue).toLocalDateTime();
-        } else {
-            throw databaseValueError(databaseValue);
-        }
-        return value;
+    public boolean isTextValue(String textValue) {
+        return false;
     }
-
 
     @NonNull
     @Override

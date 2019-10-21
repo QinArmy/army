@@ -6,7 +6,7 @@ import org.springframework.lang.NonNull;
 import java.sql.JDBCType;
 import java.time.LocalDate;
 
-public final class LocalDateMapping extends MappingSupport implements MappingType<LocalDate> {
+public final class LocalDateMapping extends MappingSupport implements MappingType {
 
     public static final LocalDateMapping INSTANCE = new LocalDateMapping();
 
@@ -24,24 +24,14 @@ public final class LocalDateMapping extends MappingSupport implements MappingTyp
     }
 
     @Override
-    public Object toSql(LocalDate date) {
-        return date == null ? null : java.sql.Date.valueOf(date);
+    public String nullSafeTextValue(Object value) {
+        return null;
     }
 
     @Override
-    public LocalDate toJava(Object databaseValue) {
-        if (databaseValue == null) {
-            return null;
-        }
-        LocalDate value;
-        if (databaseValue instanceof java.sql.Date) {
-            value = ((java.sql.Date) databaseValue).toLocalDate();
-        } else {
-            throw databaseValueError(databaseValue);
-        }
-        return value;
+    public boolean isTextValue(String textValue) {
+        return false;
     }
-
 
     @NonNull
     @Override

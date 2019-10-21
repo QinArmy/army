@@ -22,15 +22,18 @@ import java.util.function.Supplier;
 
 public abstract class AbstractTableDDL implements TableDDL {
 
+
     private static final Set<String> SPECIFIED_COLUMN_FUNC_SET = ArrayUtils.asUnmodifiableSet(
-            IDomain.NOW,
-            IDomain.CURRENT_DATE,
-            IDomain.CURRENT_TIME
+            IDomain.NOW
     );
 
     private static final EnumSet<JDBCType> QUOTE_JDBC_TYPE = EnumSet.of(
             JDBCType.VARCHAR,
             JDBCType.CHAR,
+            JDBCType.BLOB,
+            JDBCType.NCHAR,
+
+            JDBCType.NVARCHAR,
             JDBCType.DATE,
             JDBCType.TIME,
 
@@ -192,7 +195,7 @@ public abstract class AbstractTableDDL implements TableDDL {
 
         if (StringUtils.hasText(fieldMeta.defaultValue())) {
             if (isSpecifiedFunction(fieldMeta.defaultValue())) {
-                value = specifiedFuncValue(fieldMeta.defaultValue(), fieldMeta);
+                value = nowFunc(fieldMeta.defaultValue(), fieldMeta);
             } else if (isSourceTime(fieldMeta.defaultValue())) {
                 value = sourceTimeValue(fieldMeta);
             } else if (fieldMeta.mappingType().isTextValue(fieldMeta.defaultValue())) {
@@ -214,7 +217,7 @@ public abstract class AbstractTableDDL implements TableDDL {
     }
 
     //  dialect implements
-    protected abstract String specifiedFuncValue(String func, FieldMeta<?, ?> fieldMeta);
+    protected abstract String nowFunc(String func, FieldMeta<?, ?> fieldMeta);
 
     protected final String sourceTimeValue(FieldMeta<?, ?> fieldMeta) {
         String defaultValue = fieldMeta.defaultValue();
@@ -271,10 +274,10 @@ public abstract class AbstractTableDDL implements TableDDL {
                 break;
             case TableMeta.CREATE_TIME:
             case TableMeta.UPDATE_TIME:
-                value = specifiedFuncValue(IDomain.NOW, fieldMeta);
+                value = nowFunc(IDomain.NOW, fieldMeta);
                 break;
             case TableMeta.VISIBLE:
-                value = fieldMeta.mappingType().textValue(Boolean.TRUE);
+                value = fieldMeta.mappingType().nullSafeTextValue(Boolean.TRUE);
                 break;
             case TableMeta.VERSION:
                 value = IDomain.ZERO;

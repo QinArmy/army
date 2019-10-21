@@ -39,7 +39,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     private final String defaultValue;
 
-    private final MappingType<T> mappingType;
+    private final MappingType mappingType;
 
     private final boolean insertable;
 

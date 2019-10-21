@@ -23,8 +23,6 @@ public interface IDomain {
 
     String CURRENT_DATE = "CURRENT_DATE()";
 
-    String CURRENT_TIME = "CURRENT_TIME()";
-
     String ZERO = "0";
 
     String ONE = "1";

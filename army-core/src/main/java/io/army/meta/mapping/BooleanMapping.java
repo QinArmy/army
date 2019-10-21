@@ -5,9 +5,8 @@ import io.army.util.Precision;
 import org.springframework.lang.NonNull;
 
 import java.sql.JDBCType;
-import java.sql.SQLException;
 
-public final class BooleanMapping extends AbstractMappingType<Boolean> {
+public final class BooleanMapping extends AbstractMappingType {
 
     public static final BooleanMapping INSTANCE = new BooleanMapping();
 
@@ -27,39 +26,22 @@ public final class BooleanMapping extends AbstractMappingType<Boolean> {
         return JDBCType.CHAR;
     }
 
-
     @Override
-    protected Object nonNullToSql(Boolean aBoolean) {
-        return aBoolean ? IDomain.Y : IDomain.N;
-    }
-
-    @Override
-    protected Boolean nonNullToJava(Object databaseValue) throws SQLException {
-        Boolean value;
-        if (databaseValue instanceof Character) {
-            char charValue = (Character) databaseValue;
-            if (charValue == 'Y') {
-                value = Boolean.TRUE;
-            } else if (charValue == 'N') {
-                value = Boolean.FALSE;
-            } else {
-                throw convertToJavaException(databaseValue, javaType());
-            }
-        } else if (databaseValue instanceof String) {
-            String textValue = (String) databaseValue;
-            if ("Y".equals(textValue)) {
-                value = Boolean.TRUE;
-            } else if ("N".equals(textValue)) {
-                value = Boolean.FALSE;
-            } else {
-                throw convertToJavaException(databaseValue, javaType());
-            }
+    public String nullSafeTextValue(Object value) {
+        String text;
+        if (Boolean.TRUE.equals(value)) {
+            text = IDomain.Y;
         } else {
-            throw convertToJavaException(databaseValue, javaType());
+            text = IDomain.N;
         }
-        return value;
+        return text;
     }
 
+    @Override
+    public boolean isTextValue(String textValue) {
+        return IDomain.Y.equals(textValue)
+                || IDomain.N.equals(textValue);
+    }
 
     @NonNull
     @Override

@@ -1,12 +1,10 @@
 package io.army.meta.mapping;
 
-import io.army.util.NumberUtils;
 import io.army.util.Precision;
 
 import java.sql.JDBCType;
-import java.sql.SQLException;
 
-public final class LongMapping extends AbstractMappingType<Long> {
+public final class LongMapping extends AbstractMappingType {
 
     public static final LongMapping INSTANCE = new LongMapping();
 
@@ -23,16 +21,16 @@ public final class LongMapping extends AbstractMappingType<Long> {
         return JDBCType.BIGINT;
     }
 
+
     @Override
-    protected Object nonNullToSql(Long aLong) {
-        return aLong;
+    public String nullSafeTextValue(Object value) {
+        return null;
     }
 
     @Override
-    protected Long nonNullToJava(Object databaseValue) throws SQLException {
-        return NumberUtils.parseNumberFromObject(databaseValue, Long.class);
+    public boolean isTextValue(String textValue) {
+        return false;
     }
-
 
     @Override
     public Precision precision() {
