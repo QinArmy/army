@@ -2,6 +2,6 @@ package io.army.dialect.mysql;
 
 import io.army.dialect.Func;
 
-interface MySQLFunc extends Func {
+interface MySQL57Func extends Func {
 
 }

@@ -13,21 +13,21 @@ import java.util.function.Function;
 
 class MySQL57TableDDL extends AbstractTableDDL {
 
-    private final MySQLFunc mySQLFunc;
+    private final MySQL57Func mySQL57Func;
 
 
     private final Map<JDBCType, Function<FieldMeta<?, ?>, String>> jdbcTypeFunctionMap;
 
-    MySQL57TableDDL(MySQLFunc mySQLFunc) {
-        Assert.notNull(mySQLFunc, "mySQLFunc required");
-        this.mySQLFunc = mySQLFunc;
+    MySQL57TableDDL(MySQL57Func mySQL57Func) {
+        Assert.notNull(mySQL57Func, "mySQLFunc required");
+        this.mySQL57Func = mySQL57Func;
         this.jdbcTypeFunctionMap = Collections.unmodifiableMap(jdbcTypeFunctionMap());
     }
 
 
     @Override
     protected String nowFunc(String func, FieldMeta<?, ?> fieldMeta) {
-        return mySQLFunc.now(MySQLDDLUtils.getNumberPrecision(fieldMeta, 0, 6));
+        return mySQL57Func.now(MySQLDDLUtils.getNumberPrecision(fieldMeta, 0, 6));
     }
 
     @Override
