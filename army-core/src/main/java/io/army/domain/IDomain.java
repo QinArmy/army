@@ -34,6 +34,7 @@ public interface IDomain {
     String UTF_8 = StandardCharsets.UTF_8.name();
 
 
+
     static boolean domainEquals(@NonNull IDomain domain, @Nullable Object obj) {
         if (domain == obj) {
             return true;
