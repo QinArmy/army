@@ -2,6 +2,8 @@ package io.army;
 
 import io.army.criteria.LockMode;
 
+import java.sql.SQLException;
+
 /**
  * created  on 2018/9/1.
  */
@@ -41,5 +43,8 @@ public interface Session {
     <T> T get(Class<T> entityClass, Object id, LockMode lockMode, boolean withoutVisible);
 
 
+    void setReadOnly(boolean readOnly) throws SQLException;
+
+    boolean isReadOnly() throws SQLException;
 
 }

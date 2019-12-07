@@ -37,5 +37,15 @@ public class SimpleTests {
         System.out.println(String.valueOf(Byte.MAX_VALUE << 2).length());
     }
 
+    @Test
+    public void maxValue() {
+        System.out.println(~(-1L << 24));
+    }
+
+    @Test
+    public void size() {
+        System.out.println(Integer.numberOfLeadingZeros(16));
+    }
+
 
 }
