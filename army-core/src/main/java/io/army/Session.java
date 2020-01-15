@@ -7,7 +7,7 @@ import java.sql.SQLException;
 /**
  * created  on 2018/9/1.
  */
-public interface Session {
+public interface Session extends AutoCloseable{
 
     /**
      * query all field of entity by primary key.
