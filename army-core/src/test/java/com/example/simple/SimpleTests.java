@@ -1,5 +1,6 @@
 package com.example.simple;
 
+
 import io.army.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +26,11 @@ public class SimpleTests {
 
     @Test
     public void tem() {
-        System.out.println(String.valueOf(Byte.MAX_VALUE).length());
-        System.out.println(String.valueOf(Byte.MAX_VALUE << 2).length());
+
+        float f = Float.MAX_VALUE - 1F;
+        int i = (int)f;
+        System.out.println(i);
+        System.out.println(Integer.MAX_VALUE);
     }
 
     @Test

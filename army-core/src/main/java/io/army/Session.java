@@ -43,8 +43,4 @@ public interface Session extends AutoCloseable{
     <T> T get(Class<T> entityClass, Object id, LockMode lockMode, boolean withoutVisible);
 
 
-    void setReadOnly(boolean readOnly) throws SQLException;
-
-    boolean isReadOnly() throws SQLException;
-
 }

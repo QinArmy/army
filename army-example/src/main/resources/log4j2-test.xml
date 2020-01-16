@@ -2,7 +2,7 @@
 <Configuration status="WARN">
     <Properties>
         <!-- 部署前修改此属性 -->
-        <Property name="baseDir">/data0/logs/army</Property>
+        <Property name="baseDir">~/data0/logs/army</Property>
     </Properties>
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">

@@ -3,13 +3,15 @@ package io.army;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.meta.TableMeta;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public interface SessionFactory extends AutoCloseable{
 
     SessionFactoryOptions options();
 
-    SessionBuilder builder();
+    SessionBuilder sessionBuilder();
 
     /**
      * @see CurrentSessionContext
@@ -37,7 +39,7 @@ public interface SessionFactory extends AutoCloseable{
      */
     boolean isClosed();
 
-    List<TableMeta<?>> tables();
+    Map<Class<?>,TableMeta<?>> tableMetaMap();
 
 
 

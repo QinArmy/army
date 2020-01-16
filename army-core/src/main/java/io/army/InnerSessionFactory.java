@@ -1,6 +1,11 @@
 package io.army;
 
- interface InnerSessionFactory extends SessionFactory {
+import javax.sql.DataSource;
+
+interface InnerSessionFactory extends SessionFactory {
+
+
+  DataSource getDataSource();
 
 
 }
