@@ -59,7 +59,14 @@ public abstract class ArrayUtils {
 
     @NonNull
     public static <T> List<T> asUnmodifiableList(T... e) {
-        return Collections.unmodifiableList(asList(Collections.emptyList(), e));
+        List<T> list;
+        if(e == null){
+            list = Collections.emptyList();
+        }else {
+            list = new ArrayList<>(e.length);
+            Collections.addAll(list,e);
+        }
+        return Collections.unmodifiableList(list);
     }
 
     @NonNull

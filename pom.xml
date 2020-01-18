@@ -20,6 +20,7 @@
         <module>army-example</module>
         <module>army-struct</module>
         <module>army-finance</module>
+        <module>army-spring</module>
     </modules>
 
     <properties>

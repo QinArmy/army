@@ -1,10 +1,14 @@
-package io.army;
+package io.army.boot;
 
+import io.army.ArmyRuntimeException;
+import io.army.Session;
+import io.army.SessionBuilder;
+import io.army.SessionFactoryOptions;
+import io.army.asm.TableMetaLoader;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 
 import javax.sql.DataSource;
-import java.util.Collections;
 import java.util.Map;
 
 class SessionFactoryImpl implements InnerSessionFactory {
@@ -68,6 +72,7 @@ class SessionFactoryImpl implements InnerSessionFactory {
     }
 
     private Map<Class<?>, TableMeta<?>> scanPackagesForMeta() {
-        return Collections.emptyMap();
+        return TableMetaLoader.create()
+                .scanTableMeta(options.getPackagesToScan());
     }
 }

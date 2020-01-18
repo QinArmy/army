@@ -13,4 +13,5 @@ public interface MetaConstant {
 
     String FIELD_TOTAL = "FIELD_TOTAL";
 
+    String META_CLASS_NAME_SUFFIX = "_";
 }

@@ -1,9 +1,13 @@
-package io.army;
+package io.army.boot;
 
+import io.army.SessionFactory;
+import io.army.SessionFactoryOptions;
 import io.army.util.Assert;
 
 import javax.sql.DataSource;
 import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.List;
 
 class SessionFactoryBuilderImpl implements SessionFactoryBuilder {
 
@@ -15,7 +19,7 @@ class SessionFactoryBuilderImpl implements SessionFactoryBuilder {
 
     private boolean readonly;
 
-    private String[] packagesToScan;
+    private List<String> packagesToScan;
 
     private DataSource dataSource;
 
@@ -33,6 +37,7 @@ class SessionFactoryBuilderImpl implements SessionFactoryBuilder {
         Assert.notNull(dataSource,"dataSource required");
 
         SessionFactoryImpl sessionFactory = new SessionFactoryImpl(options,dataSource);
+        // init session factory
         sessionFactory.initSessionFactory();
         return sessionFactory;
     }
@@ -83,13 +88,13 @@ class SessionFactoryBuilderImpl implements SessionFactoryBuilder {
 
 
     @Override
-    public SessionFactoryBuilderImpl setPackagesToScan(String[] packagesToScan) {
-        this.packagesToScan = packagesToScan;
+    public SessionFactoryBuilderImpl setPackagesToScan(String... packagesToScan) {
+        this.packagesToScan = Arrays.asList(packagesToScan);
         return this;
     }
 
     @Override
-    public String[] getPackagesToScan() {
+    public List<String> getPackagesToScan() {
         return this.packagesToScan;
     }
 

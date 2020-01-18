@@ -1,4 +1,6 @@
-package io.army;
+package io.army.boot;
+
+import io.army.SessionFactory;
 
 import javax.sql.DataSource;
 

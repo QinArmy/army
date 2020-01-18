@@ -36,8 +36,6 @@ abstract class SourceCreateUtils {
 
     private static final EnumSet<ElementKind> FIELD_KINDS = EnumSet.of(ElementKind.FIELD);
 
-    private static final String META_CLASS_NAME_SUFFIX = "_";
-
     private static final String JAVA_LANG = "java.lang";
 
     private static final String MEMBER_PRE = "    ";
@@ -141,13 +139,13 @@ abstract class SourceCreateUtils {
 
                 .append("public abstract class ")
                 .append(entityElement.getSimpleName())
-                .append(META_CLASS_NAME_SUFFIX)
+                .append(MetaConstant.META_CLASS_NAME_SUFFIX)
         ;
 
         if (parentEntityElement != null) {
             builder.append(" extends ")
                     .append(parentEntityElement.getSimpleName())
-                    .append(META_CLASS_NAME_SUFFIX)
+                    .append(MetaConstant.META_CLASS_NAME_SUFFIX)
             ;
 
         }
@@ -205,7 +203,7 @@ abstract class SourceCreateUtils {
                 .append("\t\t")
                 .append("String.format(\"entity[%s] field count[%s] error.\",")
                 .append(entityElement.getSimpleName())
-                .append(".class.getName(),")
+                .append(".class.name(),")
                 .append(mappingPropList.size())
                 .append("));\n\t}\n\n")
         ;
@@ -221,7 +219,7 @@ abstract class SourceCreateUtils {
     }
 
     static String getQualifiedName(TypeElement typeElement) {
-        return typeElement.getQualifiedName().toString() + META_CLASS_NAME_SUFFIX;
+        return typeElement.getQualifiedName().toString() + MetaConstant.META_CLASS_NAME_SUFFIX;
     }
 
 
@@ -236,7 +234,7 @@ abstract class SourceCreateUtils {
         } else {
             parentTableMetaText = String.format("%s%s.%s,",
                     parentEntityElement.getSimpleName(),
-                    META_CLASS_NAME_SUFFIX,
+                    MetaConstant.META_CLASS_NAME_SUFFIX,
                     MetaConstant.TABLE_META
             );
         }
@@ -286,7 +284,7 @@ abstract class SourceCreateUtils {
         if (parentEntityElement != null) {
             builder.append(" + ")
                     .append(parentEntityElement.getSimpleName())
-                    .append(META_CLASS_NAME_SUFFIX)
+                    .append(MetaConstant.META_CLASS_NAME_SUFFIX)
                     .append(".")
                     .append(MetaConstant.FIELD_TOTAL)
             ;
@@ -424,7 +422,7 @@ abstract class SourceCreateUtils {
         if (parentEntityElement != null && !samePackage(entityElement, parentEntityElement)) {
             builder.append("import ")
                     .append(parentEntityElement.getQualifiedName())
-                    .append(META_CLASS_NAME_SUFFIX)
+                    .append(MetaConstant.META_CLASS_NAME_SUFFIX)
                     .append(";\n")
             ;
         }

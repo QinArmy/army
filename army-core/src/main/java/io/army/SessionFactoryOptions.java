@@ -1,6 +1,7 @@
 package io.army;
 
 import java.time.ZoneId;
+import java.util.List;
 
 public interface SessionFactoryOptions {
 
@@ -16,6 +17,10 @@ public interface SessionFactoryOptions {
 
     ZoneId getZoneId();
 
-    String[] getPackagesToScan();
+    /**
+     *
+     * @return a unmodifiable List
+     */
+    List<String> getPackagesToScan();
 
 }

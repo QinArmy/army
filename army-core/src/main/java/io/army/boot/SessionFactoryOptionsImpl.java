@@ -1,8 +1,12 @@
-package io.army;
+package io.army.boot;
 
+import io.army.SessionFactoryOptions;
 import io.army.util.ArrayUtils;
 
 import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 class SessionFactoryOptionsImpl implements SessionFactoryOptions {
 
@@ -10,22 +14,17 @@ class SessionFactoryOptionsImpl implements SessionFactoryOptions {
 
     private final ZoneId zoneId;
 
-    private final String[] packagesToScan;
+    private final List<String> packagesToScan;
 
     private boolean showSql;
 
     private boolean formatSql;
 
 
-    SessionFactoryOptionsImpl(boolean readonly, ZoneId zoneId,String[] packagesToScan) {
+    SessionFactoryOptionsImpl(boolean readonly, ZoneId zoneId,List<String> packagesToScan) {
         this.readonly = readonly;
         this.zoneId = zoneId;
-        if(packagesToScan == null){
-            this.packagesToScan = ArrayUtils.EMPTY_STRING_ARRAY;
-        }else {
-            this.packagesToScan = packagesToScan;
-        }
-
+        this.packagesToScan = ArrayUtils.asUnmodifiableList(packagesToScan);
     }
 
     @Override
@@ -61,7 +60,7 @@ class SessionFactoryOptionsImpl implements SessionFactoryOptions {
     }
 
     @Override
-    public String[] getPackagesToScan() {
+    public List<String> getPackagesToScan() {
         return packagesToScan;
     }
 }

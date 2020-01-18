@@ -1,6 +1,9 @@
-package io.army;
+package io.army.boot;
 
- class SessionBuilderImpl implements SessionBuilder {
+import io.army.Session;
+import io.army.SessionBuilder;
+
+class SessionBuilderImpl implements SessionBuilder {
 
      private final InnerSessionFactory innerSessionFactory;
 
