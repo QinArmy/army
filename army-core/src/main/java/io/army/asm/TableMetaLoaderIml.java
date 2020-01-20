@@ -59,6 +59,8 @@ class TableMetaLoaderIml implements TableMetaLoader {
         } catch (IOException e) {
             throw new TableMetaLoadException(ErrorCode.NONE, e, e.getMessage());
         }
+
+        clean();
         return Collections.unmodifiableMap(map);
     }
 
@@ -130,6 +132,11 @@ class TableMetaLoaderIml implements TableMetaLoader {
                     , metaClass, MetaConstant.TABLE_META);
         }
         return (TableMeta<?>) ReflectionUtils.getField(field, null);
+    }
+
+    private void clean(){
+        patternResolver = null;
+        metadataReaderFactory = null;
     }
 
 

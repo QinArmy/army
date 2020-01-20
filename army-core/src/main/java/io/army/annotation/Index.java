@@ -13,18 +13,18 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public @interface Index {
 
     /**
-     * (Optional) The name of the indexes; defaults to a provider-generated name.
+     * (Optional) The name of the indexMap; defaults to a provider-generated name.
      */
     String name();
 
     /**
-     * (Required) The names of the columns to be included in the indexes,
+     * (Required) The names of the columnMap to be included in the indexMap,
      * in order.
      */
     String[] columnList();
 
     /**
-     * (Optional) Whether the indexes is unique.
+     * (Optional) Whether the indexMap is unique.
      */
     boolean unique() default false;
 

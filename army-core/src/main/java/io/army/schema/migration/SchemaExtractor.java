@@ -1,13 +1,13 @@
-package io.army.schema.extract;
+package io.army.schema.migration;
 
 import java.sql.Connection;
 
-public interface SchemaExtractor {
+interface SchemaExtractor {
 
     SchemaInfo extractor(Connection connection);
 
 
-    static SchemaExtractor newInstance(){
+    static SchemaExtractor newInstance() {
         return new SchemaExtractorImpl();
     }
 }

@@ -33,6 +33,7 @@ public interface IDomain {
 
     String UTF_8 = StandardCharsets.UTF_8.name();
 
+    Boolean getVisible();
 
 
     static boolean domainEquals(@NonNull IDomain domain, @Nullable Object obj) {

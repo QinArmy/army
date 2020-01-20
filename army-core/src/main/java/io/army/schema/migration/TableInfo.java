@@ -1,89 +1,83 @@
-package io.army.schema.extract;
+package io.army.schema.migration;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 
-class TableInfoImpl implements TableInfo {
+public class TableInfo {
 
-    @JsonIgnore
     private final SchemaInfo schema;
 
     private final String name;
 
     private String comment;
 
-    private List<ColumnInfo> columns;
+    private Map<String,ColumnInfo> columnMap;
 
-    private List<IndexInfo> indexes;
+    private Map<String,IndexInfo> indexMap;
 
     private boolean physicalTable;
 
-     TableInfoImpl(SchemaInfo schema, String name) {
+     TableInfo(SchemaInfo schema, String name) {
         this.schema = schema;
         this.name = name;
     }
 
-    @Override
+
     public SchemaInfo schema() {
         return schema;
     }
 
-    @Override
+
     public String name() {
         return name;
     }
 
 
-    @Override
+
     public String comment() {
         return comment;
     }
 
-    public TableInfoImpl setComment(String comment) {
+    public TableInfo comment(String comment) {
         this.comment = comment;
         return this;
     }
 
-    @Override
-    public List<ColumnInfo> columns() {
-        return columns;
+
+    public Map<String,ColumnInfo> columnMap() {
+        return columnMap;
     }
 
-    public TableInfoImpl setColumns(List<ColumnInfo> columns) {
-        this.columns = columns;
-        return this;
+    public void columnMap(Map<String,ColumnInfo> columnMap) {
+        this.columnMap = columnMap;
     }
 
-    @Override
-    public List<IndexInfo> indexes() {
-        return indexes;
+
+    public Map<String,IndexInfo> indexMap() {
+        return indexMap;
     }
 
-    public TableInfoImpl setIndexes(List<IndexInfo> indexes) {
-        this.indexes = indexes;
-        return this;
+    public void indexMap(Map<String,IndexInfo> indexMap) {
+        this.indexMap = indexMap;
     }
 
     public boolean physicalTable() {
         return physicalTable;
     }
 
-    public TableInfoImpl setPhysicalTable(boolean physicalTable) {
+    public void physicalTable(boolean physicalTable) {
         this.physicalTable = physicalTable;
-        return this;
     }
 
     @Override
     public String toString() {
 
         StringJoiner columnsJoiner = new StringJoiner(", ", "(", ")");
-        for (ColumnInfo column : columns) {
-            columnsJoiner.add(column.getName());
+        for (ColumnInfo column : columnMap.values()) {
+            columnsJoiner.add(column.name());
         }
         StringJoiner indexJoiner = new StringJoiner(", ", "(", ")");
-        for (IndexInfo index : indexes) {
+        for (IndexInfo index : indexMap.values()) {
             columnsJoiner.add(index.name());
         }
         return new StringJoiner(", ",  "[", "]")
@@ -91,8 +85,8 @@ class TableInfoImpl implements TableInfo {
                 .add("schema=" + schema.name())
                 .add("name='" + name + "'")
                 .add("comment='" + comment + "'")
-                .add("columns=" + columnsJoiner.toString())
-                .add("indexes=" + indexJoiner.toString())
+                .add("columnMap=" + columnsJoiner.toString())
+                .add("indexMap=" + indexJoiner.toString())
                 .add("physicalTable=" + physicalTable)
                 .toString();
     }

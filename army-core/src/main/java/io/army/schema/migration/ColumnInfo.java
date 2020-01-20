@@ -1,13 +1,12 @@
-package io.army.schema.extract;
+package io.army.schema.migration;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.sql.JDBCType;
 import java.util.StringJoiner;
 
-class ColumnInfoImpl implements ColumnInfo {
+public class ColumnInfo {
 
-    @JsonIgnore
     private final TableInfo table;
 
     private final String name;
@@ -26,89 +25,88 @@ class ColumnInfoImpl implements ColumnInfo {
 
     private String defaultValue;
 
-    ColumnInfoImpl(TableInfo table, String name) {
+    ColumnInfo(TableInfo table, String name) {
         this.table = table;
         this.name = name;
     }
 
-    @Override
-    public TableInfo getTable() {
+    public TableInfo table() {
         return table;
     }
 
-    @Override
-    public String getName() {
+
+    public String name() {
         return name;
     }
 
 
-    @Override
-    public String getSqlType() {
+
+    public String sqlType() {
         return sqlType;
     }
 
-    ColumnInfoImpl setSqlType(String sqlType) {
+    ColumnInfo sqlType(String sqlType) {
         this.sqlType = sqlType;
         return this;
     }
 
-    @Override
-    public JDBCType getJdbcType() {
+
+    public JDBCType jdbcType() {
         return jdbcType;
     }
 
-    ColumnInfoImpl setJdbcType(JDBCType jdbcType) {
+    ColumnInfo jdbcType(JDBCType jdbcType) {
         this.jdbcType = jdbcType;
         return this;
     }
 
-    @Override
-    public boolean isNotNull() {
+
+    public boolean nonNull() {
         return notNull;
     }
 
-    ColumnInfoImpl setNotNull(boolean notNull) {
+    ColumnInfo nonNull(boolean notNull) {
         this.notNull = notNull;
         return this;
     }
 
 
-    @Override
-    public String getComment() {
+
+    public String comment() {
         return comment;
     }
 
-    ColumnInfoImpl setComment(String comment) {
+    ColumnInfo comment(String comment) {
         this.comment = comment;
         return this;
     }
 
-    @Override
-    public int getPrecision() {
+
+    public int precision() {
         return precision;
     }
 
-    ColumnInfoImpl setPrecision(int precision) {
+    ColumnInfo precision(int precision) {
         this.precision = precision;
         return this;
     }
 
-    @Override
-    public int getScale() {
+
+    public int scale() {
         return scale;
     }
 
-    ColumnInfoImpl setScale(int scale) {
+    ColumnInfo scale(int scale) {
         this.scale = scale;
         return this;
     }
 
-    @Override
-    public String getDefaultValue() {
+
+    public String defaultValue() {
         return defaultValue;
     }
 
-    ColumnInfoImpl setDefaultValue(String defaultValue) {
+    ColumnInfo defaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
         return this;
     }
@@ -120,7 +118,7 @@ class ColumnInfoImpl implements ColumnInfo {
                 .add("name='" + name + "'")
                 .add("sqlType='" + sqlType + "'")
                 .add("jdbcType=" + jdbcType)
-                .add("notNull=" + notNull)
+                .add("nonNull=" + notNull)
                 .add("comment='" + comment + "'")
                 .add("precision=" + precision)
                 .add("scale=" + scale)

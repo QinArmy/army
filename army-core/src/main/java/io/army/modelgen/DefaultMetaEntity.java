@@ -125,7 +125,7 @@ class DefaultMetaEntity implements MetaEntity {
         StringTokenizer tokenizer;
         for (Index index : indexArray) {
             if (indexNameSet.contains(index.name())) {
-                throw new MetaException(ErrorCode.META_ERROR, "entity[%s] indexes name[%s] duplication",
+                throw new MetaException(ErrorCode.META_ERROR, "entity[%s] indexMap name[%s] duplication",
                         entityElement.getQualifiedName());
             }
             indexNameSet.add(index.name());

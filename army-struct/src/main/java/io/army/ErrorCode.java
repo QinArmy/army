@@ -23,13 +23,15 @@ public enum ErrorCode implements CodeEnum {
     TYPE_ERROR(500, "date type error", NONE),
     CODE_ENUM_ERROR(501, "CedeEnum definition error", TYPE_ERROR),
 
-    UNSUPPORT_DIALECT(600, "不支方言", NONE),
+    UNSUPPORT_DIALECT(600, "", NONE),
 
-    NOT_FOUND_DOMAIN(700,"",NONE),
+    NOT_FOUND_DOMAIN(700, "", NONE),
 
-    NOT_FOUND_META_CLASS(701,"",NONE),
-    META_CLASS_NOT_MATCH(702,"",NONE)
-    ;
+    NOT_FOUND_META_CLASS(701, "", NONE),
+    META_CLASS_NOT_MATCH(702, "", NONE),
+    SQL_TYPE_NOT_MATCH(703, "", NONE),
+    PRECISION_LESS(703, "", NONE),
+    NNSUPPORT_SQL_TYPE(704, "", NONE);
 
 
     private final int code;

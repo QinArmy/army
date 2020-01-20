@@ -125,7 +125,7 @@ abstract class MetaUtils {
         // this table's column to filed map, but contains id .
         final Map<String, Field> columnToFieldMap = columnToFieldMap(table, mappedClassList);
 
-        // 1. create indexes meta
+        // 1. create indexMap meta
         final List<IndexMeta<T>> indexMetaList = indexMetaList(table, tableMeta, columnToFieldMap);
 
         // exclude indexMetaList column part
@@ -134,7 +134,7 @@ abstract class MetaUtils {
         Map<String, FieldMeta<T, ?>> propNameToFieldMeta = new HashMap<>((int) (columnToFieldMap.size() / 0.75f));
 
         Set<String> columnNameSet = new HashSet<>(), propNameSet = new HashSet<>();
-        //2. append indexes field meta to propNameToFieldMeta
+        //2. append indexMap field meta to propNameToFieldMeta
         for (IndexMeta<T> indexMeta : indexMetaList) {
             for (IndexFieldMeta<T, ?> fieldMeta : indexMeta.fieldList()) {
                 assertFieldMetaNotDuplication(fieldMeta, columnNameSet, propNameSet);
@@ -401,12 +401,12 @@ abstract class MetaUtils {
 
 
 
-    /*################################# indexes meta part private method  start ###################################*/
+    /*################################# indexMap meta part private method  start ###################################*/
 
     /**
      * @param <T>              entity java class
      * @param columnToFieldMap unmodifiable map
-     * @return indexes meta list(unmodifiable) of table,
+     * @return indexMap meta list(unmodifiable) of table,
      */
     private static <T extends IDomain> List<IndexMeta<T>> indexMetaList(final @Nonnull TableMeta<T> table,
                                                                         Table tableMeta,
@@ -424,11 +424,11 @@ abstract class MetaUtils {
             indexMetaList.add(indexMeta);
         }
 
-        // handle primary key indexes, and primary key indexes must be  first element of list.
+        // handle primary key indexMap, and primary key indexMap must be  first element of list.
         if (!createdColumnSet.contains(PRIMARY_FIELD)) {
             indexMeta = new DefaultIndexMeta<>(table, null, columnToFieldMap, createdColumnSet);
             List<IndexMeta<T>> list = new ArrayList<>(indexMetaList.size() + 1);
-            // first,add  primary key indexes
+            // first,add  primary key indexMap
             list.add(indexMeta);
             list.addAll(indexMetaList);
             // replace indexMetaList
@@ -441,9 +441,9 @@ abstract class MetaUtils {
     /**
      * create {@link Index}'s {@link IndexFieldMeta}
      *
-     * @param createdColumnSet created column set  in  other indexes
+     * @param createdColumnSet created column set  in  other indexMap
      * @param <T>              entity java class
-     * @return param indexes's {@link IndexFieldMeta}
+     * @return param indexMap's {@link IndexFieldMeta}
      */
     private static <T extends IDomain> List<IndexFieldMeta<T, ?>> indexFieldMetaList(
             final TableMeta<T> table,
@@ -462,7 +462,7 @@ abstract class MetaUtils {
 
         for (String indexColumnDefinition : indexColumns) {
             tokenizer = new StringTokenizer(indexColumnDefinition.trim(), " ", false);
-            // assert indexes column definition
+            // assert indexMap column definition
             assertIndexColumnDefinition(tokenizer.countTokens(), table.javaType(), indexMeta.name(), indexColumnDefinition);
 
             columnName = tokenizer.nextToken();
@@ -491,7 +491,7 @@ abstract class MetaUtils {
                                                                   final int columnCount) {
         if (!indexMeta.isUnique() || columnCount != 1) {
             throw new MetaException(ErrorCode.META_ERROR,
-                    "entity[%s] indexes[%s] indexes column[%s] is error primary key,or not unique .",
+                    "entity[%s] indexMap[%s] indexMap column[%s] is error primary key,or not unique .",
                     indexMeta.table().javaType(), indexMeta.name(), indexColumn);
         }
 
@@ -504,7 +504,7 @@ abstract class MetaUtils {
         } else if (DESC.equalsIgnoreCase(order)) {
             asc = false;
         } else {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] indexes[%s] column[%s] order error",
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] indexMap[%s] column[%s] order error",
                     indexMeta.table().javaType(), indexMeta.name(), indexColumnDefinition);
         }
         return asc;
@@ -513,7 +513,7 @@ abstract class MetaUtils {
     private static Field indexField(String columnName, TableMeta<?> table, Map<String, Field> fieldMap) {
         Field field = fieldMap.get(columnName);
         if (field == null) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] not found indexes column[%s]",
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] not found indexMap column[%s]",
                     table.javaType().getName(),
                     columnName
             );
@@ -531,7 +531,7 @@ abstract class MetaUtils {
                                                     String indexColumnDefinition)
             throws MetaException {
         if (tokensCount < 1 || tokensCount > 2) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] indexes[%s] column definition[%s] error",
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] indexMap[%s] column definition[%s] error",
                     entityClass.getName(), indexName, indexColumnDefinition);
         }
     }
@@ -539,7 +539,7 @@ abstract class MetaUtils {
     private static void assertIndexColumnNotDuplication(IndexMeta<?> indexMeta,
                                                         Set<String> createdIndexColumnSet, String columnName) {
         if (createdIndexColumnSet.contains(columnName)) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] indexes[%s] column[%s] duplication",
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] indexMap[%s] column[%s] duplication",
                     indexMeta, indexMeta.name(), columnName);
         }
     }
@@ -559,7 +559,7 @@ abstract class MetaUtils {
         private final boolean primaryKey;
 
         /**
-         * @param index indexes or null ( when create primary key for which user don't definite {@link Index})
+         * @param index indexMap or null ( when create primary key for which user don't definite {@link Index})
          */
         private DefaultIndexMeta(TableMeta<T> table, @Nullable Index index, Map<String, Field> columnToFieldMap,
                                  Set<String> createdColumnSet) {

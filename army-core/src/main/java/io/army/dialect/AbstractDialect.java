@@ -4,6 +4,7 @@ package io.army.dialect;
 import io.army.dialect.tcl.DialectTCL;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.schema.migration.TableDDL;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
@@ -16,19 +17,17 @@ public abstract class AbstractDialect implements Dialect {
 
 
     @Nonnull
-    @Override
+
     public final String tableDefinition(TableMeta<?> tableMeta) {
         return tableDDL().tableDefinition(tableMeta);
     }
 
     @Nonnull
-    @Override
     public final String addColumn(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> addFieldMetas) {
         return tableDDL().addColumn(tableMeta, addFieldMetas);
     }
 
     @Nonnull
-    @Override
     public final String modifyColumn(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> addFieldMetas) {
         return tableDDL().modifyColumn(tableMeta, addFieldMetas);
     }

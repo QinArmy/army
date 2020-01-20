@@ -1,47 +1,43 @@
-package io.army.schema.extract;
+package io.army.schema.migration;
 
-import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 
-class SchemaInfoImpl implements SchemaInfo {
+class SchemaInfo {
 
     private final String catalog;
 
     private final String schema;
 
-    private List<TableInfo> tables;
+    private Map<String, TableInfo> tableMap;
 
 
-    SchemaInfoImpl(String catalog, String schema) {
+    SchemaInfo(String catalog, String schema) {
         this.catalog = catalog;
         this.schema = schema;
     }
 
-    @Override
     public String catalog() {
         return catalog;
     }
 
-    @Override
     public String name() {
         return schema;
     }
 
-    @Override
-    public List<TableInfo> tables() {
-        return tables;
+    Map<String, TableInfo> tableMap() {
+        return tableMap;
     }
 
-    public SchemaInfoImpl setTables(List<TableInfo> tables) {
-        this.tables = tables;
-        return this;
+    void tableMap(Map<String, TableInfo> tableMap) {
+        this.tableMap = tableMap;
     }
 
     @Override
     public String toString() {
         StringJoiner joiner = new StringJoiner(", ", catalog + "." + schema + "[", "]");
-        for (TableInfo table : tables) {
-            joiner.add(table.name());
+        for (String name : tableMap.keySet()) {
+            joiner.add(name);
         }
         return joiner.toString();
     }

@@ -3,7 +3,7 @@ package io.army.dialect.postgre;
 import io.army.dialect.AbstractDialect;
 import io.army.dialect.Dialect;
 import io.army.dialect.Func;
-import io.army.dialect.TableDDL;
+import io.army.schema.migration.TableDDL;
 
 /**
  * this class is a  {@link Dialect} implementation and abstract base class of all Postgre Dialect

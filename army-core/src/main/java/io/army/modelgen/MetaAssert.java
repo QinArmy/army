@@ -122,7 +122,7 @@ abstract class MetaAssert {
             }
         }
         if (!missingColumnNameSet.isEmpty()) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] indexes %s not exits.",
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] indexMap %s not exits.",
                     entityElement.getQualifiedName(),
                     missingColumnNameSet
             );

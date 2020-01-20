@@ -1,9 +1,9 @@
-package io.army.schema.extract;
+package io.army.schema.migration;
 
-import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 
-class IndexInfoImpl implements IndexInfo {
+class IndexInfo {
 
     private final TableInfo table;
 
@@ -11,50 +11,51 @@ class IndexInfoImpl implements IndexInfo {
 
     private final boolean unique;
 
-    private List<IndexColumnInfo> columns;
+    private Map<String,IndexColumnInfo> columnMap;
 
-    public IndexInfoImpl(TableInfo table, String name, boolean unique) {
+    public IndexInfo(TableInfo table, String name, boolean unique) {
         this.table = table;
         this.name = name;
         this.unique = unique;
     }
 
-    @Override
+
     public TableInfo table() {
         return table;
     }
 
-    @Override
+
     public String name() {
         return name;
     }
 
-    @Override
+
     public boolean unique() {
         return unique;
     }
 
-    void columns(List<IndexColumnInfo> columns) {
-        this.columns = columns;
+    void columnMap(Map<String,IndexColumnInfo> columnMap) {
+        this.columnMap = columnMap;
     }
 
-    @Override
-    public List<IndexColumnInfo> columns() {
-        return columns;
+
+    public Map<String,IndexColumnInfo> columnMap() {
+        return columnMap;
     }
+
 
     @Override
     public String toString() {
 
         StringJoiner columnsJoiner = new StringJoiner(", ", "(", ")");
-        for (IndexColumnInfo column : columns) {
+        for (IndexColumnInfo column : columnMap.values()) {
             columnsJoiner.add(column.name());
         }
         return new StringJoiner(", ", "[", "]")
                 .add("table=" + table.name())
                 .add("name='" + name + "'")
                 .add("unique=" + unique)
-                .add("columns=" + columnsJoiner.toString())
+                .add("columnMap=" + columnsJoiner.toString())
                 .toString();
 
     }

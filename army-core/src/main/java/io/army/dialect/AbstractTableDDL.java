@@ -4,13 +4,13 @@ import io.army.ErrorCode;
 import io.army.criteria.MetaException;
 import io.army.domain.IDomain;
 import io.army.meta.*;
+import io.army.schema.migration.TableDDL;
 import io.army.util.ArrayUtils;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
 import io.army.util.TimeUtils;
 
 import javax.annotation.Nonnull;
-import java.sql.JDBCType;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -22,32 +22,6 @@ public abstract class AbstractTableDDL implements TableDDL {
 
     private static final Set<String> SPECIFIED_COLUMN_FUNC_SET = ArrayUtils.asUnmodifiableSet(
             IDomain.NOW
-    );
-
-    private static final EnumSet<JDBCType> QUOTE_JDBC_TYPE = EnumSet.of(
-            JDBCType.VARCHAR,
-            JDBCType.CHAR,
-            JDBCType.BLOB,
-            JDBCType.NCHAR,
-
-            JDBCType.NVARCHAR,
-            JDBCType.LONGVARCHAR,
-            JDBCType.DATE,
-            JDBCType.TIME,
-
-            JDBCType.TIMESTAMP,
-            JDBCType.TIME_WITH_TIMEZONE,
-            JDBCType.TIMESTAMP_WITH_TIMEZONE
-    );
-
-    private static final EnumSet<JDBCType> TEXT_JDBC_TYPE = EnumSet.of(
-            JDBCType.VARCHAR,
-            JDBCType.CHAR,
-            JDBCType.BLOB,
-            JDBCType.NCHAR,
-
-            JDBCType.NVARCHAR,
-            JDBCType.LONGVARCHAR
     );
 
     private static final EnumSet<MappingMode> REQUIRED_MAPPING_MODE = EnumSet.of(
@@ -88,6 +62,22 @@ public abstract class AbstractTableDDL implements TableDDL {
     public String modifyColumn(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> addFieldMetas) {
         return null;
     }
+
+    @Override
+    public String addIndex(TableMeta<?> tableMeta, Collection<IndexMeta<?>> indexMetas) {
+        return null;
+    }
+
+    @Override
+    public String modifyIndex(TableMeta<?> tableMeta, Collection<IndexMeta<?>> indexMetas) {
+        return null;
+    }
+
+    @Override
+    public String dropIndex(TableMeta<?> tableMeta, Collection<String> indexNames) {
+        return null;
+    }
+
 
     /*####################################### below protected template method #################################*/
 
@@ -225,7 +215,7 @@ public abstract class AbstractTableDDL implements TableDDL {
                 throw new MetaException(ErrorCode.META_ERROR, "Entity[%s].column[%s] default value error",
                         fieldMeta.table().javaType().getName(), fieldMeta.fieldName());
             }
-        } else if (TEXT_JDBC_TYPE.contains(fieldMeta.mappingType().jdbcType())) {
+        } else if (DialectUtils.TEXT_JDBC_TYPE.contains(fieldMeta.mappingType().jdbcType())) {
             value = "";
         } else {
             throw new MetaException(ErrorCode.META_ERROR, "Entity[%s].column[%s] default value required",
@@ -264,7 +254,7 @@ public abstract class AbstractTableDDL implements TableDDL {
                 && !TableMeta.CREATE_TIME.equals(fieldMeta.propertyName())
                 && !TableMeta.UPDATE_TIME.equals(fieldMeta.propertyName())
                 && !IDomain.NOW.equals(fieldMeta.defaultValue())
-                && QUOTE_JDBC_TYPE.contains(fieldMeta.mappingType().jdbcType());
+                && DialectUtils.QUOTE_JDBC_TYPE.contains(fieldMeta.mappingType().jdbcType());
     }
 
 

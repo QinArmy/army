@@ -6,6 +6,10 @@ import io.army.dialect.Func;
 import io.army.dialect.TableDML;
 import io.army.dialect.TableDQL;
 import io.army.dialect.tcl.DialectTCL;
+import io.army.meta.IndexMeta;
+import io.army.meta.TableMeta;
+
+import java.util.Collection;
 
 /**
  * this class is a  {@link Dialect} implementation and represent Postgre 11.x  Dialect
@@ -35,4 +39,6 @@ public class Postgre11Dialect extends PostgreDialect {
     public Func func() {
         return null;
     }
+
+
 }

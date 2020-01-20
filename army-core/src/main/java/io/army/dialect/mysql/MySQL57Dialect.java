@@ -3,6 +3,7 @@ package io.army.dialect.mysql;
 
 import io.army.dialect.*;
 import io.army.dialect.tcl.DialectTCL;
+import io.army.schema.migration.TableDDL;
 
 import javax.annotation.Nonnull;
 

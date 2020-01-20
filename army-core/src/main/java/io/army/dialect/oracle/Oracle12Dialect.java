@@ -2,6 +2,7 @@ package io.army.dialect.oracle;
 
 import io.army.dialect.*;
 import io.army.dialect.tcl.DialectTCL;
+import io.army.schema.migration.TableDDL;
 
 /**
  * this class is a  {@link Dialect} implementation and represent Oracle 12g  Dialect
