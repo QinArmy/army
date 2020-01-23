@@ -3,6 +3,7 @@ package io.army.boot;
 
 import io.army.SessionFactory;
 import io.army.SessionFactoryOptions;
+import io.army.dialect.Dialect;
 
 import java.time.ZoneId;
 
@@ -14,10 +15,11 @@ import java.time.ZoneId;
  */
 public interface SessionFactoryBuilder extends SessionFactoryOptions {
 
-    SessionFactoryBuilder setPackagesToScan(String... packagesToScan);
+    SessionFactoryBuilder packagesToScan(String... packagesToScan);
 
+    SessionFactoryBuilder zoneId(ZoneId schemaZoneId);
 
-    SessionFactoryBuilder setZoneId(ZoneId schemaZoneId);
+    SessionFactoryBuilder dialect(Dialect dialect);
 
     SessionFactory build();
 

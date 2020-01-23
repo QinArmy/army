@@ -1,5 +1,7 @@
 package io.army.sqltype;
 
+import io.army.meta.FieldMeta;
+
 public interface SQLDataType {
 
     String name();
@@ -17,6 +19,7 @@ public interface SQLDataType {
     default int maxScale() {
         return -1;
     }
+
 
     /**
      *

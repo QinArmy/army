@@ -1,42 +1,77 @@
 package io.army.dialect.mysql;
 
+import io.army.ErrorCode;
+import io.army.criteria.MetaException;
 import io.army.dialect.AbstractTableDDL;
+import io.army.dialect.SQL;
+import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.sqltype.MySQLDataType;
 import io.army.util.Assert;
 
 import java.sql.JDBCType;
-import java.util.Collections;
-import java.util.HashMap;
+import java.time.ZoneId;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
 class MySQL57TableDDL extends AbstractTableDDL {
 
-    private final MySQL57Func mySQL57Func;
-
+    private final SQL mysql;
 
     private final Map<JDBCType, Function<FieldMeta<?, ?>, String>> jdbcTypeFunctionMap;
 
-    MySQL57TableDDL(MySQL57Func mySQL57Func) {
-        Assert.notNull(mySQL57Func, "mySQLFunc required");
-        this.mySQL57Func = mySQL57Func;
-        this.jdbcTypeFunctionMap = Collections.unmodifiableMap(jdbcTypeFunctionMap());
+    MySQL57TableDDL(MySQL57Dialect mysql) {
+        Assert.notNull(mysql, "mysql required");
+        this.jdbcTypeFunctionMap = MySQL57DDLUtils.createJdbcFunctionMap();
+        this.mysql = mysql;
     }
 
+    /*################################## blow SQL interface method ##################################*/
 
     @Override
-    protected String nowFunc(String func, FieldMeta<?, ?> fieldMeta) {
-        return mySQL57Func.now(MySQLDDLUtils.getNumberPrecision(fieldMeta, 0, 6));
+    public String quoteIfNeed(String text) {
+        return mysql.quoteIfNeed(text);
+    }
+
+    @Override
+    public boolean isKeyWord(String text) {
+        return mysql.isKeyWord(text);
+    }
+
+    @Override
+    public Map<String, List<String>> standardFunc() {
+        return mysql.standardFunc();
+    }
+
+    @Override
+    public ZoneId zoneId() {
+        return mysql.zoneId();
+    }
+
+    /*################################## blow AbstractTableDDL template method ##################################*/
+
+    @Override
+    protected String createUpdateDefault(FieldMeta<?, ?> fieldMeta) {
+        int precision = fieldMeta.precision();
+        if (precision < 0) {
+            precision = 0;
+        } else if (precision > MySQLDataType.DATETIME.maxPrecision()) {
+            MySQL57DDLUtils.throwPrecisionException(fieldMeta);
+        }
+        return "CURRENT_TIMESTAMP(" + precision + ")";
     }
 
     @Override
     protected String dataTypeText(FieldMeta<?, ?> fieldMeta) {
         Function<FieldMeta<?, ?>, String> function = jdbcTypeFunctionMap.get(fieldMeta.mappingType().jdbcType());
-        Assert.notNull(function, () -> String.format("Entity[%s].column[%s] not found jdbc function",
-                fieldMeta.table().tableName(),
-                fieldMeta.fieldName()
-        ));
+        if (function == null) {
+            throw new MetaException(ErrorCode.META_ERROR, "Entity[%s].column[%s] not found jdbc function"
+                    , fieldMeta.table().tableName()
+                    , fieldMeta.fieldName()
+            );
+        }
         return function.apply(fieldMeta);
     }
 
@@ -50,41 +85,27 @@ class MySQL57TableDDL extends AbstractTableDDL {
         ;
     }
 
-    /*################################## blow protected method ##################################*/
-
-    protected Map<JDBCType, Function<FieldMeta<?, ?>, String>> jdbcTypeFunctionMap() {
-        Map<JDBCType, Function<FieldMeta<?, ?>, String>> map = new HashMap<>();
-
-        // below  numeric type
-
-        map.put(JDBCType.BIT, MySQLDDLUtils::bitFunction);
-        map.put(JDBCType.TINYINT, MySQLDDLUtils::tinyIntFunction);
-        map.put(JDBCType.BOOLEAN, MySQLDDLUtils::booleanFunction);
-        map.put(JDBCType.SMALLINT, MySQLDDLUtils::smallIntFunction);
-
-        map.put(JDBCType.INTEGER, MySQLDDLUtils::intFunction);
-        map.put(JDBCType.BIGINT, MySQLDDLUtils::bigIntFunction);
-        map.put(JDBCType.DECIMAL, MySQLDDLUtils::decimalFunction);
-        map.put(JDBCType.FLOAT, MySQLDDLUtils::floatFunction);
-
-        map.put(JDBCType.DOUBLE, MySQLDDLUtils::doubleFunction);
-
-        // below data time type
-        map.put(JDBCType.DATE, MySQLDDLUtils::dateFunction);
-        map.put(JDBCType.TIME, MySQLDDLUtils::timeFunction);
-        map.put(JDBCType.TIMESTAMP, MySQLDDLUtils::timestampFunction);
-
-        // below string type
-        map.put(JDBCType.CHAR, MySQLDDLUtils::charFunction);
-        map.put(JDBCType.VARCHAR, MySQLDDLUtils::varcharFunction);
-        map.put(JDBCType.BINARY, MySQLDDLUtils::binaryFunction);
-        map.put(JDBCType.VARBINARY, MySQLDDLUtils::varbinaryFunction);
-
-        map.put(JDBCType.BLOB, MySQLDDLUtils::blobFunction);
-
-        return map;
+    @Override
+    protected String nonRequiredPropDefault(FieldMeta<?, ?> fieldMeta) {
+        String defaultValue = fieldMeta.defaultValue().toUpperCase();
+        switch (defaultValue) {
+            case "LOCAL_NOW":
+            case "LOCAL_NOW()":
+                defaultValue = defaultValue.replace("LOCAL_NOW", "CURRENT_TIMESTAMP");
+                break;
+            case IDomain.SOURCE_DATE_TIME:
+                defaultValue = MySQL57DDLUtils.zeroDateTime(fieldMeta, zoneId());
+                break;
+            case IDomain.SOURCE_DATE:
+                defaultValue = MySQL57DDLUtils.zeroDate(fieldMeta, zoneId());
+                break;
+            default:
+        }
+        return defaultValue;
     }
 
+
+    /*################################## blow protected method ##################################*/
 
 
 

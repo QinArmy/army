@@ -3,6 +3,7 @@ package io.army.schema.migration;
 import io.army.ErrorCode;
 import io.army.criteria.MetaException;
 import io.army.dialect.DataBase;
+import io.army.dialect.Dialect;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexFieldMeta;
 import io.army.meta.IndexMeta;
@@ -18,8 +19,8 @@ import java.util.*;
 public abstract class AbstractSchemaMigrator implements SchemaMigrator {
 
     @Override
-    public final List<Migration> migrate(Collection<TableMeta<?>> tableMetas, @Nullable DataBase dataBase,
-                                         Connection connection)
+    public final List<Migration> migrate(Collection<TableMeta<?>> tableMetas, Connection connection,
+                                         @Nullable Dialect dialect)
             throws SchemaInfoException,MetaException {
         // extract schema info from database.
         final SchemaInfo schemaInfo = SchemaExtractor.newInstance().extractor(connection);

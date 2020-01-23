@@ -1,29 +1,43 @@
 package io.army.dialect;
 
 
+import org.springframework.lang.Nullable;
+
 public enum DataBase {
 
-    MySQL,
-    MySQL57(MySQL),
-    MySQL80(MySQL),
+    MySQL("MySQL"),
+    MySQL57(MySQL.productName,MySQL),
+    MySQL80(MySQL.productName,MySQL),
 
-    ;
+    Oracle("Oracle"),
+    OceanBase("OceanBase"),
+    Postgre("Postgre"),
+    SQL_Server("SQL Server"),
+    Db2("Db2");
 
-    private final DataBase family;
+    private final String productName;
 
-    DataBase() {
-        this(null);
+    private final DataBase dataBase;
+
+    DataBase(String productName) {
+        this(productName,null);
     }
 
-    DataBase(DataBase family) {
-        if (family == null) {
-            this.family = family;
-        } else {
-            this.family = family;
+    DataBase(String productName,@Nullable DataBase dataBase) {
+        this.productName = productName;
+        if(dataBase == null){
+            this.dataBase = this;
+        }else {
+            this.dataBase = dataBase;
         }
+
     }
 
-    public DataBase family() {
-        return family;
+    public DataBase dataBase(){
+        return dataBase;
+    }
+
+    public String productName() {
+        return productName;
     }
 }

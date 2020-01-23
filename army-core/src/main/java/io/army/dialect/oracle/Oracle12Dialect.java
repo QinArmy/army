@@ -1,8 +1,13 @@
 package io.army.dialect.oracle;
 
 import io.army.dialect.*;
-import io.army.dialect.tcl.DialectTCL;
-import io.army.schema.migration.TableDDL;
+import io.army.dialect.func.SQLFunc;
+import io.army.dialect.TableDDL;
+import io.army.dialect.func.SQLFuncDescribe;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * this class is a  {@link Dialect} implementation and represent Oracle 12g  Dialect
@@ -11,6 +16,26 @@ import io.army.schema.migration.TableDDL;
 public class Oracle12Dialect extends AbstractDialect {
 
     public static final Oracle12Dialect INSTANCE = new Oracle12Dialect();
+
+    @Override
+    protected Set<String> createKeywordsSet() {
+        return null;
+    }
+
+    @Override
+    protected Map<String, SQLFuncDescribe> createSqlFuncMap() {
+        return null;
+    }
+
+    @Override
+    public Map<String, List<String>> standardFunc() {
+        return null;
+    }
+
+    @Override
+    public DataBase database() {
+        return null;
+    }
 
     @Override
     protected TableDDL tableDDL() {
@@ -42,8 +67,4 @@ public class Oracle12Dialect extends AbstractDialect {
         return null;
     }
 
-    @Override
-    protected DialectTCL dialectTcl() {
-        return null;
-    }
 }

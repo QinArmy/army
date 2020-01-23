@@ -1,5 +1,5 @@
 package io.army.dialect;
 
-public class AbstractTableDQL implements TableDQL {
+public class AbstractTableDQL {
 
 }

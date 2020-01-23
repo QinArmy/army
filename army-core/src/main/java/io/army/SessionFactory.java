@@ -1,6 +1,7 @@
 package io.army;
 
 import io.army.context.spi.CurrentSessionContext;
+import io.army.dialect.Dialect;
 import io.army.meta.TableMeta;
 
 import java.util.Collection;
@@ -17,6 +18,9 @@ public interface SessionFactory extends AutoCloseable{
      * @see CurrentSessionContext
      */
     Session currentSession();
+
+
+    Dialect dialect();
 
     /**
      * Destroy this <tt>SessionFactory</tt> and release all resources (caches,

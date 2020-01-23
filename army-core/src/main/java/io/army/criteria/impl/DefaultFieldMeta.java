@@ -112,6 +112,11 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     }
 
     @Override
+    public boolean isNullable() {
+        return false;
+    }
+
+    @Override
     public TableMeta<T> table() {
         return table;
     }

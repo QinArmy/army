@@ -2,6 +2,7 @@ package io.army.boot;
 
 import io.army.SessionFactory;
 import io.army.SessionFactoryOptions;
+import io.army.dialect.Dialect;
 import io.army.util.Assert;
 
 import javax.sql.DataSource;
@@ -50,9 +51,14 @@ class SessionFactoryBuilderImpl implements SessionFactoryBuilder {
     }
 
     @Override
-    public SessionFactoryBuilderImpl setZoneId(ZoneId zoneId) {
+    public SessionFactoryBuilderImpl zoneId(ZoneId zoneId) {
         this.zoneId = zoneId;
         return this;
+    }
+
+    @Override
+    public SessionFactoryBuilder dialect(Dialect dialect) {
+        return null;
     }
 
     @Override
@@ -88,7 +94,7 @@ class SessionFactoryBuilderImpl implements SessionFactoryBuilder {
 
 
     @Override
-    public SessionFactoryBuilderImpl setPackagesToScan(String... packagesToScan) {
+    public SessionFactoryBuilderImpl packagesToScan(String... packagesToScan) {
         this.packagesToScan = Arrays.asList(packagesToScan);
         return this;
     }

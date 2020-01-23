@@ -1,5 +1,5 @@
 package io.army.dialect;
 
-public interface TableDML {
+public interface TableDML  extends SQL{
 
 }

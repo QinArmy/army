@@ -28,6 +28,8 @@ public abstract class TimeUtils {
 
     public static final String DATE_FORMAT = "uuuu-MM-dd";
 
+    public static final String YEAR_FORMAT = "uuuu";
+
     public static final String MONTH_DAY_FORMAT = "MM-dd";
 
     public static final String YEAR_MONTH_FORMAT = "uuuu-MM";
@@ -50,6 +52,8 @@ public abstract class TimeUtils {
 
 
     public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(DATE_FORMAT);
+
+    public static final DateTimeFormatter YEAR_FORMATTER = DateTimeFormatter.ofPattern(YEAR_FORMAT);
 
     public static final DateTimeFormatter MONTH_DAY_FORMATTER = DateTimeFormatter.ofPattern(MONTH_DAY_FORMAT);
 

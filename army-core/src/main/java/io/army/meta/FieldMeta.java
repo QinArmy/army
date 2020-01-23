@@ -22,6 +22,8 @@ public interface FieldMeta<T extends IDomain, F> extends Expression<F>, Selectio
 
     boolean isIndex();
 
+    boolean isNullable();
+
 
     TableMeta<T> table();
 

@@ -1,24 +1,35 @@
 package io.army.dialect.postgre;
 
 
-import io.army.dialect.Dialect;
-import io.army.dialect.Func;
-import io.army.dialect.TableDML;
-import io.army.dialect.TableDQL;
-import io.army.dialect.tcl.DialectTCL;
-import io.army.meta.IndexMeta;
-import io.army.meta.TableMeta;
+import io.army.dialect.*;
+import io.army.dialect.func.SQLFunc;
+import io.army.dialect.func.SQLFuncDescribe;
 
-import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * this class is a  {@link Dialect} implementation and represent Postgre 11.x  Dialect
  * created  on 2018/10/21.
  */
-public class Postgre11Dialect extends PostgreDialect {
+public class Postgre11Dialect extends PostgreDialectImpl {
 
     public static final Postgre11Dialect INSTANCE = new Postgre11Dialect();
 
+    @Override
+    protected Set<String> createKeywordsSet() {
+        return null;
+    }
+
+    @Override
+    protected Map<String, SQLFuncDescribe<?>> createSqlFuncMap() {
+        return null;
+    }
+
+    @Override
+    public DataBase database() {
+        return null;
+    }
 
     @Override
     protected TableDML tableDML() {
@@ -30,10 +41,7 @@ public class Postgre11Dialect extends PostgreDialect {
         return null;
     }
 
-    @Override
-    protected DialectTCL dialectTcl() {
-        return null;
-    }
+
 
     @Override
     public Func func() {

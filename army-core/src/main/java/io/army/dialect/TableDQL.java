@@ -1,4 +1,5 @@
 package io.army.dialect;
 
-public interface TableDQL {
+public interface TableDQL extends SQL{
+
 }

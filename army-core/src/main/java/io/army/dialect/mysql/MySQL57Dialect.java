@@ -1,22 +1,26 @@
 package io.army.dialect.mysql;
 
 
+import io.army.SessionFactory;
 import io.army.dialect.*;
-import io.army.dialect.tcl.DialectTCL;
-import io.army.schema.migration.TableDDL;
+import io.army.dialect.TableDDL;
+import io.army.dialect.func.SQLFuncDescribe;
+import io.army.meta.FieldMeta;
+import io.army.meta.IndexMeta;
+import io.army.meta.TableMeta;
 
 import javax.annotation.Nonnull;
+import java.time.ZoneId;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * this class is a  {@link Dialect} implementation and abstract base class of all MySQL 5.7 Dialect
  * created  on 2018/10/21.
  */
-public class MySQL57Dialect extends AbstractDialect {
-
-    public static final MySQL57Dialect INSTANCE = new MySQL57Dialect();
-
-    private final MySQL57Func mySQL57Func;
-
+class MySQL57Dialect extends AbstractDialect  {
 
     private final TableDDL tableDDL;
 
@@ -24,49 +28,58 @@ public class MySQL57Dialect extends AbstractDialect {
 
     private final TableDQL tableDQL;
 
-    private final DialectTCL dialectTCL;
+    MySQL57Dialect(SessionFactory sessionFactory) {
+        super(sessionFactory);
 
+        this.tableDDL = new MySQL57TableDDL(this);
+        this.tableDML = null;
+        this.tableDQL = null;
 
-    private MySQL57Dialect() {
-        this.mySQL57Func = new MySQL5757FuncImpl();
+    }
 
-        this.tableDDL = new MySQL57TableDDL(this.mySQL57Func);
-        this.tableDML = new MySQLTableDML();
-        this.tableDQL = new MySQLTableDQL();
+    /*################################## blow interfaces method ##################################*/
 
-        this.dialectTCL = new MySQLDialectTCL();
-
+    @Override
+    public List<String> tableDefinition(TableMeta<?> tableMeta) {
+        return tableDDL.tableDefinition(tableMeta);
     }
 
     @Override
-    protected TableDDL tableDDL() {
-        return this.tableDDL;
+    public List<String> addColumn(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> addFieldMetas) {
+        return tableDDL.addColumn(tableMeta,addFieldMetas);
     }
 
     @Override
-    protected TableDML tableDML() {
-        return this.tableDML;
+    public List<String> changeColumn(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> changeFieldMetas) {
+        return tableDDL.changeColumn(tableMeta,changeFieldMetas);
     }
 
     @Override
-    protected TableDQL tableDQL() {
-        return this.tableDQL;
+    public List<String> addIndex(TableMeta<?> tableMeta, Collection<IndexMeta<?>> indexMetas) {
+        return tableDDL.addIndex(tableMeta,indexMetas);
     }
 
     @Override
-    protected DialectTCL dialectTcl() {
-        return this.dialectTCL;
+    public List<String> dropIndex(TableMeta<?> tableMeta, Collection<String> indexNames) {
+        return tableDDL.dropIndex(tableMeta,indexNames);
     }
 
     @Override
-    protected MySQL57Func func() {
-        return this.mySQL57Func;
+    public DataBase database() {
+        return DataBase.MySQL57;
     }
 
 
-    @Nonnull
+    /*####################################### below protected  method #################################*/
+
     @Override
-    public String name() {
-        return "MySQL57";
+    protected Set<String> createKeywordsSet() {
+        return MySQLUtils.create57KeywordsSet();
     }
+
+    @Override
+    protected Map<String, SQLFuncDescribe> createSqlFuncMap() {
+        return null;
+    }
+
 }

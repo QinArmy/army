@@ -18,6 +18,8 @@ public @interface Column {
 
     String name() default "";
 
+    boolean nullable() default false;
+
 
     /**
      * (Optional) Whether the column is included in SQL INSERT

@@ -1,13 +1,18 @@
 package io.army.dialect;
 
 
-import io.army.dialect.tcl.DialectTCL;
+import io.army.SessionFactory;
+import io.army.dialect.func.SQLFunc;
+import io.army.dialect.func.SQLFuncDescribe;
 import io.army.meta.FieldMeta;
+import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
-import io.army.schema.migration.TableDDL;
+import io.army.util.StringUtils;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
+import java.time.ZoneId;
+import java.util.*;
+
 
 /**
  * this class is abstract implementation of {@link Dialect} .
@@ -15,74 +20,70 @@ import java.util.Collection;
  */
 public abstract class AbstractDialect implements Dialect {
 
+    private final Map<String, SQLFuncDescribe> sqlFunctions ;
 
-    @Nonnull
+    /**
+     * a unmodifiable Set, every element is uppercase .
+     */
+    private final Set<String> keywords ;
 
-    public final String tableDefinition(TableMeta<?> tableMeta) {
-        return tableDDL().tableDefinition(tableMeta);
+    private final SessionFactory sessionFactory;
+
+    public AbstractDialect(SessionFactory sessionFactory) {
+        this.sqlFunctions = Collections.unmodifiableMap(createSqlFuncMap());
+        this.keywords = Collections.unmodifiableSet(createKeywordsSet());
+        this.sessionFactory = sessionFactory;
     }
 
-    @Nonnull
-    public final String addColumn(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> addFieldMetas) {
-        return tableDDL().addColumn(tableMeta, addFieldMetas);
-    }
-
-    @Nonnull
-    public final String modifyColumn(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> addFieldMetas) {
-        return tableDDL().modifyColumn(tableMeta, addFieldMetas);
-    }
-
-    @Nonnull
     @Override
-    public String name() {
-        return null;
+    public final String quoteIfNeed(String text) {
+        String newText = text;
+        if(isKeyWord(text)){
+            newText = StringUtils.quote(newText);
+        }
+        return newText;
     }
+
+    @Override
+    public final boolean isKeyWord(String text) {
+        return keywords.contains(text);
+    }
+
+
+    @Override
+    public final Map<String, List<String>> standardFunc() {
+        return Collections.emptyMap();
+    }
+
+    @Override
+    public final ZoneId zoneId() {
+        return sessionFactory.options().getZoneId();
+    }
+
 
     @Override
     public boolean supportZoneId() {
         return false;
     }
 
-    @Override
-    public String now() {
-        return null;
-    }
-
-    @Override
-    public String now(int precision) {
-        return null;
-    }
-
-    @Override
-    public String currentDate() {
-        return null;
-    }
-
-    @Override
-    public String currentTime() {
-        return null;
-    }
-
-    @Override
-    public String currentTime(int precision) {
-        return null;
-    }
 
 
+
+
+
+    /*####################################### below protected  method #################################*/
 
 
     /*####################################### below protected template method #################################*/
+    /**
+     * @return must a modifiable Set,and every element is uppercase
+     */
+    protected abstract Set<String> createKeywordsSet();
+    /**
+     * @return must a modifiable map,and every key is uppercase
+     */
+    protected abstract Map<String,SQLFuncDescribe> createSqlFuncMap();
 
-
-    protected abstract TableDDL tableDDL();
-
-    protected abstract TableDML tableDML();
-
-    protected abstract TableDQL tableDQL();
-
-    protected abstract DialectTCL dialectTcl();
-
-    protected abstract Func func();
 
 
 

@@ -1,8 +1,9 @@
 package io.army.dialect.mysql;
 
 import io.army.dialect.AbstractFunc;
+import io.army.dialect.Func;
 
-class MySQL5757FuncImpl extends AbstractFunc implements MySQL57Func {
+class MySQL5757FuncImpl extends AbstractFunc implements Func {
 
 
 
