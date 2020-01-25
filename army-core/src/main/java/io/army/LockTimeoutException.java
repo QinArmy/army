@@ -1,10 +1,6 @@
 package io.army;
 
-public class LockTimeoutException extends PersistenceException {
-
-    public LockTimeoutException(ErrorCode errorCode) {
-        super(errorCode);
-    }
+public class LockTimeoutException extends ArmyAccessException {
 
     public LockTimeoutException(ErrorCode errorCode, String format, Object... args) {
         super(errorCode, format, args);

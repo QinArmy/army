@@ -8,8 +8,30 @@ import io.army.sqltype.SQLDataType;
 import io.army.util.Assert;
 
 import java.sql.JDBCType;
+import java.util.EnumSet;
 
 public abstract class DDLUtils {
+
+
+    protected static  EnumSet<JDBCType> QUOTE_JDBC_TYPE = EnumSet.of(
+            JDBCType.VARCHAR,
+            JDBCType.CHAR,
+            JDBCType.BLOB,
+            JDBCType.NCHAR,
+
+            JDBCType.NVARCHAR,
+            JDBCType.BINARY,
+            JDBCType.VARBINARY,
+            JDBCType.LONGVARBINARY,
+
+            JDBCType.LONGVARCHAR,
+            JDBCType.DATE,
+            JDBCType.TIME,
+            JDBCType.TIMESTAMP,
+
+            JDBCType.TIME_WITH_TIMEZONE,
+            JDBCType.TIMESTAMP_WITH_TIMEZONE
+    );
 
 
     protected static String onlyPrecisionType(FieldMeta<?, ?> fieldMeta, SQLDataType dataType) {
@@ -28,7 +50,7 @@ public abstract class DDLUtils {
     }
 
     public static void throwPrecisionException(FieldMeta<?, ?> fieldMeta) {
-        throw new MetaException(ErrorCode.META_ERROR, "Entity[%s].prop[%s]'s precision[%s] error."
+        throw new MetaException(ErrorCode.META_ERROR, "Entity[%s].prop[%s]'s columnSize[%s] error."
                 , fieldMeta.table().javaType()
                 , fieldMeta.propertyName()
                 , fieldMeta.precision()
@@ -41,17 +63,6 @@ public abstract class DDLUtils {
                 , fieldMeta.propertyName()
                 , fieldMeta.scale()
         );
-    }
-
-    protected boolean isQuoted(String expresion, String pattern, int index) {
-        boolean match = false;
-        if (index == 0 || index == expresion.length() - 1) {
-            match = false;
-        } else if (expresion.charAt(index - 1) == '\''
-                && expresion.charAt(index + pattern.length()) == '\'') {
-            match = true;
-        }
-        return match;
     }
 
 

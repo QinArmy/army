@@ -1,15 +1,16 @@
 package io.army.dialect.mysql;
 
-import java.util.HashSet;
-import java.util.Set;
+import io.army.dialect.func.SQLFuncDescribe;
+
+import java.util.*;
 
 abstract class MySQLUtils {
 
     /**
      * @return a modifiable set
      */
-    static Set<String> create57KeywordsSet(){
-        Set<String> keywords =  new HashSet<>();
+    static Set<String> create57KeywordsSet() {
+        Set<String> keywords = new HashSet<>();
 
         keywords.add("ACCESSIBLE");
         keywords.add("ACCOUNT");
@@ -637,7 +638,138 @@ abstract class MySQLUtils {
         return keywords;
     }
 
+    /**
+     * @return a modifiable set
+     */
+    static Set<String> create80KeywordsSet() {
+        Set<String> keywords = create57KeywordsSet();
 
+        keywords.add("ACTIVE");
+        keywords.add("ADMIN");
+        keywords.add("ARRAY");
+        keywords.add("BUCKETS");
+        keywords.add("CLONE");
+        keywords.add("COMPONENT");
+        keywords.add("CUME_DIST");
+        keywords.add("DEFINITION");
+        keywords.add("DENSE_RANK");
+        keywords.add("DESCRIPTION");
+        keywords.add("EMPTY");
+        keywords.add("ENFORCED");
+        keywords.add("EXCEPT");
+        keywords.add("EXCLUDE");
+        keywords.add("FAILED_LOGIN_ATTEMPTS");
+        keywords.add("FIRST_VALUE");
+        keywords.add("FOLLOWING");
+        keywords.add("GEOMCOLLECTION");
+        keywords.add("GET_MASTER_PUBLIC_KEY");
+        keywords.add("GROUPING");
+        keywords.add("GROUPS");
+        keywords.add("HISTOGRAM");
+        keywords.add("HISTORY");
+        keywords.add("INACTIVE");
+        keywords.add("INVISIBLE");
+        keywords.add("JSON_TABLE");
+        keywords.add("LAG");
+        keywords.add("LAST_VALUE");
+        keywords.add("LATERAL");
+        keywords.add("LEAD");
+        keywords.add("LOCKED");
+        keywords.add("MASTER_COMPRESSION_ALGORITHMS");
+        keywords.add("MASTER_PUBLIC_KEY_PATH");
+        keywords.add("MASTER_TLS_CIPHERSUITES");
+        keywords.add("MASTER_ZSTD_COMPRESSION_LEVEL");
+        keywords.add("MEMBER");
+        keywords.add("NESTED");
+        keywords.add("NETWORK_NAMESPACE");
+        keywords.add("NOWAIT");
+        keywords.add("NTH_VALUE");
+        keywords.add("NTILE");
+        keywords.add("NULLS");
+        keywords.add("OF");
+        keywords.add("OFF");
+        keywords.add("OJ");
+        keywords.add("OLD");
+        keywords.add("OPTIONAL");
+        keywords.add("ORDINALITY");
+        keywords.add("ORGANIZATION");
+        keywords.add("OTHERS");
+        keywords.add("OVER");
+        keywords.add("PASSWORD_LOCK_TIME");
+        keywords.add("PATH");
+        keywords.add("PERCENT_RANK");
+        keywords.add("PERSIST");
+        keywords.add("PERSIST_ONLY");
+        keywords.add("PRECEDING");
+        keywords.add("PRIVILEGE_CHECKS_USER");
+        keywords.add("PROCESS");
+        keywords.add("RANDOM");
+        keywords.add("RANK");
+        keywords.add("RECURSIVE");
+        keywords.add("REFERENCE");
+        keywords.add("REQUIRE_ROW_FORMAT");
+        keywords.add("RESOURCE");
+        keywords.add("RESPECT");
+        keywords.add("RESTART");
+        keywords.add("RETAIN");
+        keywords.add("REUSE");
+        keywords.add("ROLE");
+        keywords.add("ROW_NUMBER");
+        keywords.add("SECONDARY");
+        keywords.add("SECONDARY_ENGINE");
+        keywords.add("SECONDARY_LOAD");
+        keywords.add("SECONDARY_UNLOAD");
+        keywords.add("SKIP");
+        keywords.add("SRID");
+        keywords.add("STREAM");
+        keywords.add("SYSTEM");
+        keywords.add("THREAD_PRIORITY");
+        keywords.add("TIES");
+        keywords.add("UNBOUNDED");
+        keywords.add("VCPU");
+        keywords.add("VISIBLE");
+        keywords.add("WINDOW");
+
+        // 8.0 removed keywords
+        createMySQL80RemovedKeywords(keywords);
+        return keywords;
+    }
+
+
+    public static Map<String, SQLFuncDescribe> createMySQL8StandardFuncMap() {
+        Map<String, SQLFuncDescribe> map = new HashMap<>();
+        SQLFuncDescribe func;
+
+        func = SQLFuncDescribe.build("NOW", true);
+        map.put("NOW", func);
+        map.put("CURRENT_TIMESTAMP", func);
+
+        func = SQLFuncDescribe.build("CURDATE", false);
+        map.put("CURDATE", func);
+        map.put("CURRENT_DATE", func);
+
+        func = SQLFuncDescribe.build("CURTIME", false);
+        map.put("CURTIME", func);
+        map.put("CURRENT_TIM", func);
+
+        return map;
+    }
+
+
+    /*################################## blow private method ##################################*/
+
+    /**
+     * M ySQL 8.0 Removed Keywords and Reserved Words
+     */
+    private static void createMySQL80RemovedKeywords(Set<String> keywords) {
+
+        keywords.remove("ANALYSE");
+        keywords.remove("DES_KEY_FILE");
+        keywords.remove("PARSE_GCOL_EXPR");
+        keywords.remove("REDOFILE");
+
+        keywords.remove("SQL_CACHE");
+    }
 
 
 }

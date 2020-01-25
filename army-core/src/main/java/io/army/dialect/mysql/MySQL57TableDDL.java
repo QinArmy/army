@@ -12,7 +12,6 @@ import io.army.util.Assert;
 
 import java.sql.JDBCType;
 import java.time.ZoneId;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -22,7 +21,7 @@ class MySQL57TableDDL extends AbstractTableDDL {
 
     private final Map<JDBCType, Function<FieldMeta<?, ?>, String>> jdbcTypeFunctionMap;
 
-    MySQL57TableDDL(MySQL57Dialect mysql) {
+    MySQL57TableDDL(My57Dialect mysql) {
         Assert.notNull(mysql, "mysql required");
         this.jdbcTypeFunctionMap = MySQL57DDLUtils.createJdbcFunctionMap();
         this.mysql = mysql;
@@ -31,36 +30,37 @@ class MySQL57TableDDL extends AbstractTableDDL {
     /*################################## blow SQL interface method ##################################*/
 
     @Override
-    public String quoteIfNeed(String text) {
+    public final String quoteIfNeed(String text) {
         return mysql.quoteIfNeed(text);
     }
 
     @Override
-    public boolean isKeyWord(String text) {
+    public final boolean isKeyWord(String text) {
         return mysql.isKeyWord(text);
     }
 
-    @Override
-    public Map<String, List<String>> standardFunc() {
-        return mysql.standardFunc();
-    }
 
     @Override
-    public ZoneId zoneId() {
+    public final ZoneId zoneId() {
         return mysql.zoneId();
     }
 
     /*################################## blow AbstractTableDDL template method ##################################*/
 
     @Override
-    protected String createUpdateDefault(FieldMeta<?, ?> fieldMeta) {
+    protected final String createUpdateDefault(FieldMeta<?, ?> fieldMeta) {
         int precision = fieldMeta.precision();
         if (precision < 0) {
             precision = 0;
-        } else if (precision > MySQLDataType.DATETIME.maxPrecision()) {
+        }
+        if (precision > MySQLDataType.DATETIME.maxPrecision()) {
             MySQL57DDLUtils.throwPrecisionException(fieldMeta);
         }
-        return "CURRENT_TIMESTAMP(" + precision + ")";
+        String exp = "CURRENT_TIMESTAMP";
+        if (precision > 0) {
+            exp = exp + "(" + precision + ")";
+        }
+        return exp;
     }
 
     @Override
@@ -86,20 +86,24 @@ class MySQL57TableDDL extends AbstractTableDDL {
     }
 
     @Override
-    protected String nonRequiredPropDefault(FieldMeta<?, ?> fieldMeta) {
+    protected final String nonRequiredPropDefault(FieldMeta<?, ?> fieldMeta) {
         String defaultValue = fieldMeta.defaultValue().toUpperCase();
         switch (defaultValue) {
-            case "LOCAL_NOW":
-            case "LOCAL_NOW()":
-                defaultValue = defaultValue.replace("LOCAL_NOW", "CURRENT_TIMESTAMP");
+            case "NOW":
+            case "NOW()":
+                defaultValue = defaultValue.replace("NOW", "CURRENT_TIMESTAMP");
                 break;
-            case IDomain.SOURCE_DATE_TIME:
+            case IDomain.ZERO_DATE_TIME:
                 defaultValue = MySQL57DDLUtils.zeroDateTime(fieldMeta, zoneId());
                 break;
-            case IDomain.SOURCE_DATE:
+            case IDomain.ZERO_DATE:
                 defaultValue = MySQL57DDLUtils.zeroDate(fieldMeta, zoneId());
                 break;
+            case IDomain.ZERO_YEAR:
+                defaultValue = MySQL57DDLUtils.zeroYear(fieldMeta, zoneId());
+                break;
             default:
+                defaultValue = handleDefaultValue(fieldMeta);
         }
         return defaultValue;
     }
@@ -107,7 +111,12 @@ class MySQL57TableDDL extends AbstractTableDDL {
 
     /*################################## blow protected method ##################################*/
 
-
+    /**
+     * handle default value . invoked by {@link #nonRequiredPropDefault(FieldMeta)}
+     */
+    String handleDefaultValue(FieldMeta<?, ?> fieldMeta) {
+        return MySQL57DDLUtils.quoteDefaultIfNeed(fieldMeta);
+    }
 
 
     /*################################## blow private method ##################################*/

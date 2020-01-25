@@ -44,7 +44,7 @@ public interface FieldMeta<T extends IDomain, F> extends Expression<F>, Selectio
     String defaultValue();
 
     /**
-     * (Optional) The precision for a decimal (exact numeric)
+     * (Optional) The columnSize for a decimal (exact numeric)
      * column. (Applies only if a decimal column is used.)
      * Value must be set by developer if used when generating
      * the DDL for the column.

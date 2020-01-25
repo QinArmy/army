@@ -54,7 +54,7 @@ public final class Precision {
     @Override
     public String toString() {
         return new StringJoiner(", ", Precision.class.getSimpleName() + "[", "]")
-                .add("precision=" + precision)
+                .add("columnSize=" + precision)
                 .add("scale=" + scale)
                 .toString();
     }

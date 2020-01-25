@@ -40,7 +40,7 @@ public class YesterdayRecord extends Domain {
     @Column(defaultValue = ZERO, updatable = false, comment = "记录类型,用于区分子表")
     private YesterdayRecordType recordType;
 
-    @Column(defaultValue = SOURCE_DATE, updatable = false, comment = "日期")
+    @Column(defaultValue = ZERO_DATE, updatable = false, comment = "日期")
     private LocalDate date;
 
     @Column(defaultValue = DECIMAL_ZERO, precision = 14, scale = 2, comment = "昨日收益")

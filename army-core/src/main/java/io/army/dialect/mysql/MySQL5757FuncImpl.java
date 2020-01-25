@@ -16,7 +16,7 @@ class MySQL5757FuncImpl extends AbstractFunc implements Func {
     @Override
     public String now(int precision) {
         if (precision < 0 || precision > 6) {
-            throw new IllegalArgumentException(String.format("NOW() precision must in [0,6],but %s", precision));
+            throw new IllegalArgumentException(String.format("NOW() columnSize must in [0,6],but %s", precision));
         }
         if (precision == 0) {
             return now();

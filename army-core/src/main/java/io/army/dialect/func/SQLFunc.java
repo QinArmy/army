@@ -1,11 +1,11 @@
 package io.army.dialect.func;
 
 import io.army.criteria.Expression;
-import io.army.dialect.DataBase;
+import io.army.dialect.SQLDialect;
 
 public interface SQLFunc<E> extends Expression<E> {
 
-    DataBase database();
+    SQLDialect database();
 
     String funcName();
 

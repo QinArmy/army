@@ -2,14 +2,12 @@ package io.army.dialect;
 
 
 import io.army.SessionFactory;
-import io.army.dialect.func.SQLFunc;
-import io.army.dialect.func.SQLFuncDescribe;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
+import io.army.util.Assert;
 import io.army.util.StringUtils;
 
-import javax.annotation.Nonnull;
 import java.time.ZoneId;
 import java.util.*;
 
@@ -20,44 +18,53 @@ import java.util.*;
  */
 public abstract class AbstractDialect implements Dialect {
 
-    private final Map<String, SQLFuncDescribe> sqlFunctions ;
-
     /**
      * a unmodifiable Set, every element is uppercase .
      */
     private final Set<String> keywords ;
 
-    private final SessionFactory sessionFactory;
+    protected final SessionFactory sessionFactory;
+
+    private final TableDDL tableDDL;
+
+    private final TableDML tableDML;
+
+    private final TableDQL tableDQL;
+
+
 
     public AbstractDialect(SessionFactory sessionFactory) {
-        this.sqlFunctions = Collections.unmodifiableMap(createSqlFuncMap());
+        Assert.notNull(sessionFactory,"sessionFactory required");
+
         this.keywords = Collections.unmodifiableSet(createKeywordsSet());
         this.sessionFactory = sessionFactory;
+
+        this.tableDDL = createTableDDL();
+        this.tableDML = createTableDML();
+        this.tableDQL = createTableDQL();
     }
 
     @Override
-    public final String quoteIfNeed(String text) {
-        String newText = text;
-        if(isKeyWord(text)){
-            newText = StringUtils.quote(newText);
+    public final String quoteIfNeed(String identifier) {
+        String newIdentifier = identifier;
+        if(isKeyWord(identifier)){
+            newIdentifier = doQuote(identifier);
         }
-        return newText;
+        return newIdentifier;
     }
 
     @Override
     public final boolean isKeyWord(String text) {
-        return keywords.contains(text);
+        if(!StringUtils.hasText(text)){
+            return false;
+        }
+        return keywords.contains(text.toUpperCase());
     }
 
-
-    @Override
-    public final Map<String, List<String>> standardFunc() {
-        return Collections.emptyMap();
-    }
 
     @Override
     public final ZoneId zoneId() {
-        return sessionFactory.options().getZoneId();
+        return sessionFactory.options().zoneId();
     }
 
 
@@ -66,7 +73,32 @@ public abstract class AbstractDialect implements Dialect {
         return false;
     }
 
+    /*################################## blow TableDDL method ##################################*/
 
+    @Override
+    public final List<String> tableDefinition(TableMeta<?> tableMeta) {
+        return tableDDL.tableDefinition(tableMeta);
+    }
+
+    @Override
+    public final List<String> addColumn(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> addFieldMetas) {
+        return tableDDL.addColumn(tableMeta, addFieldMetas);
+    }
+
+    @Override
+    public final List<String> changeColumn(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> changeFieldMetas) {
+        return tableDDL.changeColumn(tableMeta, changeFieldMetas);
+    }
+
+    @Override
+    public final List<String> addIndex(TableMeta<?> tableMeta, Collection<IndexMeta<?>> indexMetas) {
+        return tableDDL.addIndex(tableMeta, indexMetas);
+    }
+
+    @Override
+    public final List<String> dropIndex(TableMeta<?> tableMeta, Collection<String> indexNames) {
+        return tableDDL.dropIndex(tableMeta, indexNames);
+    }
 
 
 
@@ -79,13 +111,14 @@ public abstract class AbstractDialect implements Dialect {
      * @return must a modifiable Set,and every element is uppercase
      */
     protected abstract Set<String> createKeywordsSet();
-    /**
-     * @return must a modifiable map,and every key is uppercase
-     */
-    protected abstract Map<String,SQLFuncDescribe> createSqlFuncMap();
 
+    protected abstract String doQuote(String identifier);
 
+   protected abstract TableDDL createTableDDL() ;
 
+    protected abstract TableDML createTableDML() ;
+
+    protected abstract TableDQL createTableDQL() ;
 
     /*############################### sub class override method ####################################*/
 

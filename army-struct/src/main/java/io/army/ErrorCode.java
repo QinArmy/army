@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public enum ErrorCode implements CodeEnum {
 
-    NONE(0, "none", null),
+    NONE(0, "none"),
 
     META_ERROR(100, "meta config error", NONE),
     META_ILLEGALITY(101, "meta config illegality", META_ERROR),
@@ -31,7 +31,11 @@ public enum ErrorCode implements CodeEnum {
     META_CLASS_NOT_MATCH(702, "", NONE),
     SQL_TYPE_NOT_MATCH(703, "", NONE),
     PRECISION_LESS(703, "", NONE),
-    NNSUPPORT_SQL_TYPE(704, "", NONE);
+    NNSUPPORT_SQL_TYPE(704, "", NONE),
+
+    ACCESS_ERROR(801, "", NONE),
+
+    UNSUPPORTED_DIALECT(802, "", NONE);
 
 
     private final int code;
@@ -47,6 +51,9 @@ public enum ErrorCode implements CodeEnum {
         return CODE_MAP.get(code);
     }
 
+    ErrorCode(int code, String display) {
+        this(code, display, null);
+    }
 
     ErrorCode(int code, @NonNull String display, @Nullable ErrorCode family) {
         this.code = code;

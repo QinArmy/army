@@ -7,20 +7,20 @@ public interface SessionFactoryOptions {
 
     boolean isShowSql();
 
-    SessionFactoryOptions setShowSql(boolean showSql);
+    SessionFactoryOptions showSql(boolean showSql);
 
     boolean isFormatSql();
 
-    SessionFactoryOptions setFormatSql(boolean formatSql);
+    SessionFactoryOptions formatSql(boolean formatSql);
 
     boolean isReadonly();
 
-    ZoneId getZoneId();
+    ZoneId zoneId();
 
     /**
      *
      * @return a unmodifiable List
      */
-    List<String> getPackagesToScan();
+    List<String> packagesToScan();
 
 }

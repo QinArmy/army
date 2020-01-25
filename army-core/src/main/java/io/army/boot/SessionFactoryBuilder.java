@@ -4,7 +4,9 @@ package io.army.boot;
 import io.army.SessionFactory;
 import io.army.SessionFactoryOptions;
 import io.army.dialect.Dialect;
+import io.army.dialect.SQLDialect;
 
+import javax.sql.DataSource;
 import java.time.ZoneId;
 
 /**
@@ -20,6 +22,12 @@ public interface SessionFactoryBuilder extends SessionFactoryOptions {
     SessionFactoryBuilder zoneId(ZoneId schemaZoneId);
 
     SessionFactoryBuilder dialect(Dialect dialect);
+
+    SessionFactoryBuilder datasource(DataSource dataSource);
+
+    SessionFactoryBuilder sqlDialect(SQLDialect sqlDialect);
+
+    SessionFactoryBuilder readonly(boolean readonly);
 
     SessionFactory build();
 

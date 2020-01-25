@@ -68,7 +68,7 @@ abstract class MetaUtils {
 
 
     static int precision(@Nonnull Column column, MappingType mappingType) {
-        Integer defaultPrecision = (Integer) AnnotationUtils.getDefaultValue(column, "precision");
+        Integer defaultPrecision = (Integer) AnnotationUtils.getDefaultValue(column, "columnSize");
         if (defaultPrecision == null) {
             // never this
             throw new RuntimeException();

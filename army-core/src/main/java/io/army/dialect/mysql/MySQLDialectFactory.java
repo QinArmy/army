@@ -1,11 +1,27 @@
 package io.army.dialect.mysql;
 
 import io.army.SessionFactory;
-import io.army.dialect.DataBase;
+import io.army.dialect.Dialect;
+import io.army.dialect.SQLDialect;
+import io.army.util.Assert;
 
 public abstract class MySQLDialectFactory {
 
-    static MySQLDialectFactory decideDialect(DataBase dataBase, SessionFactory sessionFactory) {
-       return null;
+    public static Dialect createMySQLDialect(SQLDialect sqlDialect, SessionFactory sessionFactory) {
+        Assert.notNull(sqlDialect,"dialect required");
+
+        Dialect dialect;
+        switch (sqlDialect) {
+            case MySQL:
+            case MySQL57:
+                dialect = new My57Dialect(sessionFactory);
+                break;
+            case MySQL80:
+                dialect = new My80Dialect(sessionFactory);
+                break;
+            default:
+                throw new IllegalArgumentException("dialect not MySQL.");
+        }
+        return dialect;
     }
 }

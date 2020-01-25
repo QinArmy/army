@@ -33,7 +33,7 @@ class SessionFactoryOptionsImpl implements SessionFactoryOptions {
     }
 
     @Override
-    public SessionFactoryOptions setShowSql(boolean showSql) {
+    public SessionFactoryOptions showSql(boolean showSql) {
          this.showSql = showSql;
          return this;
     }
@@ -44,7 +44,7 @@ class SessionFactoryOptionsImpl implements SessionFactoryOptions {
     }
 
     @Override
-    public SessionFactoryOptions setFormatSql(boolean formatSql) {
+    public SessionFactoryOptions formatSql(boolean formatSql) {
         this.formatSql = formatSql;
         return this;
     }
@@ -55,12 +55,12 @@ class SessionFactoryOptionsImpl implements SessionFactoryOptions {
     }
 
     @Override
-    public ZoneId getZoneId() {
+    public ZoneId zoneId() {
         return zoneId;
     }
 
     @Override
-    public List<String> getPackagesToScan() {
+    public List<String> packagesToScan() {
         return packagesToScan;
     }
 }

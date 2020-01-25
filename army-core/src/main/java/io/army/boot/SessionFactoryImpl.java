@@ -1,12 +1,14 @@
 package io.army.boot;
 
-import io.army.ArmyRuntimeException;
-import io.army.Session;
-import io.army.SessionBuilder;
-import io.army.SessionFactoryOptions;
+import io.army.*;
 import io.army.asm.TableMetaLoader;
+import io.army.dialect.Dialect;
+import io.army.dialect.DialectNotMatchException;
+import io.army.dialect.SQLDialect;
+import io.army.dialect.mysql.MySQLDialectFactory;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
+import org.springframework.lang.Nullable;
 
 import javax.sql.DataSource;
 import java.util.Map;
@@ -19,15 +21,20 @@ class SessionFactoryImpl implements InnerSessionFactory {
 
     private final Map<Class<?>, TableMeta<?>> classTableMetaMap;
 
+    private final Dialect dialect;
+
     private boolean closed;
 
-    SessionFactoryImpl(SessionFactoryOptions options, DataSource dataSource) {
+
+    SessionFactoryImpl(SessionFactoryOptions options, DataSource dataSource, @Nullable SQLDialect sqlDialect)
+            throws ArmyRuntimeException {
         Assert.notNull(options, "options required");
         Assert.notNull(dataSource, "dataSource required");
 
         this.options = options;
         this.dataSource = dataSource;
-        this.classTableMetaMap = scanPackagesForMeta();
+        this.classTableMetaMap = SessionFactoryUtils.scanPackagesForMeta(this.options.packagesToScan());
+        this.dialect = SessionFactoryUtils.createDialect(sqlDialect,dataSource,this);
     }
 
 
@@ -48,7 +55,7 @@ class SessionFactoryImpl implements InnerSessionFactory {
 
     @Override
     public void close() throws ArmyRuntimeException {
-
+        this.closed = true;
     }
 
     @Override
@@ -56,6 +63,10 @@ class SessionFactoryImpl implements InnerSessionFactory {
         return this.closed;
     }
 
+    @Override
+    public Dialect dialect() {
+        return dialect;
+    }
 
     @Override
     public Map<Class<?>, TableMeta<?>> tableMetaMap() {
@@ -67,12 +78,11 @@ class SessionFactoryImpl implements InnerSessionFactory {
         return this.dataSource;
     }
 
-    void initSessionFactory() {
+    void initSessionFactory()throws ArmyAccessException {
         // 初始化 schema
+
     }
 
-    private Map<Class<?>, TableMeta<?>> scanPackagesForMeta() {
-        return TableMetaLoader.create()
-                .scanTableMeta(options.getPackagesToScan());
-    }
+    /*################################## blow private method ##################################*/
+
 }

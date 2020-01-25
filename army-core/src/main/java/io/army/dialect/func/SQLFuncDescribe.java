@@ -6,6 +6,8 @@ public interface SQLFuncDescribe {
 
     boolean hasArguments();
 
-    Class<?> returnJavaType();
+    static SQLFuncDescribe build(String name,boolean hasArguments){
+        return new SQLFuncDescribeImpl(name,hasArguments);
+    }
 
 }

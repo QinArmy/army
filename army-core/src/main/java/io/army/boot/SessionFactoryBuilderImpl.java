@@ -3,11 +3,14 @@ package io.army.boot;
 import io.army.SessionFactory;
 import io.army.SessionFactoryOptions;
 import io.army.dialect.Dialect;
+import io.army.dialect.SQLDialect;
 import io.army.util.Assert;
 
 import javax.sql.DataSource;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 class SessionFactoryBuilderImpl implements SessionFactoryBuilder {
@@ -24,6 +27,8 @@ class SessionFactoryBuilderImpl implements SessionFactoryBuilder {
 
     private DataSource dataSource;
 
+    private SQLDialect sqlDialect;
+
 
     @Override
     public SessionFactory build() {
@@ -31,22 +36,21 @@ class SessionFactoryBuilderImpl implements SessionFactoryBuilder {
         if (zoneId == null) {
             zoneId = ZoneId.systemDefault();
         }
-        SessionFactoryOptions options = new SessionFactoryOptionsImpl(readonly, factoryZoneId,packagesToScan)
-                .setShowSql(showSql)
-                .setFormatSql(formatSql);
+        SessionFactoryOptions options = new SessionFactoryOptionsImpl(readonly, factoryZoneId, packagesToScan)
+                .showSql(showSql)
+                .formatSql(formatSql);
 
-        Assert.notNull(dataSource,"dataSource required");
+        Assert.notNull(dataSource, "dataSource required");
 
-        SessionFactoryImpl sessionFactory = new SessionFactoryImpl(options,dataSource);
+        SessionFactoryImpl sessionFactory = new SessionFactoryImpl(options, dataSource,sqlDialect);
         // init session factory
         sessionFactory.initSessionFactory();
         return sessionFactory;
     }
 
 
-
     @Override
-    public ZoneId getZoneId() {
+    public ZoneId zoneId() {
         return zoneId;
     }
 
@@ -67,7 +71,7 @@ class SessionFactoryBuilderImpl implements SessionFactoryBuilder {
     }
 
     @Override
-    public SessionFactoryBuilderImpl setShowSql(boolean showSql) {
+    public SessionFactoryBuilderImpl showSql(boolean showSql) {
         this.showSql = showSql;
         return this;
     }
@@ -78,7 +82,7 @@ class SessionFactoryBuilderImpl implements SessionFactoryBuilder {
     }
 
     @Override
-    public SessionFactoryBuilderImpl setFormatSql(boolean formatSql) {
+    public SessionFactoryBuilderImpl formatSql(boolean formatSql) {
         this.formatSql = formatSql;
         return this;
     }
@@ -87,7 +91,7 @@ class SessionFactoryBuilderImpl implements SessionFactoryBuilder {
         return readonly;
     }
 
-    public SessionFactoryBuilderImpl setReadonly(boolean readonly) {
+    public SessionFactoryBuilderImpl readonly(boolean readonly) {
         this.readonly = readonly;
         return this;
     }
@@ -95,16 +99,24 @@ class SessionFactoryBuilderImpl implements SessionFactoryBuilder {
 
     @Override
     public SessionFactoryBuilderImpl packagesToScan(String... packagesToScan) {
-        this.packagesToScan = Arrays.asList(packagesToScan);
+        this.packagesToScan = Collections.unmodifiableList(Arrays.asList(packagesToScan));
         return this;
     }
 
     @Override
-    public List<String> getPackagesToScan() {
+    public List<String> packagesToScan() {
         return this.packagesToScan;
     }
 
-    public void setDataSource(DataSource dataSource) {
+    @Override
+    public SessionFactoryBuilder datasource(DataSource dataSource) {
         this.dataSource = dataSource;
+        return this;
+    }
+
+    @Override
+    public SessionFactoryBuilder sqlDialect(SQLDialect sqlDialect) {
+        this.sqlDialect = sqlDialect;
+        return this;
     }
 }

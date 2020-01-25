@@ -15,11 +15,11 @@ public interface IDomain {
 
     String NOW = "NOW()";
 
-    String SOURCE_DATE = "SOURCE_DATE";
+    String ZERO_YEAR = "$ZERO_YEAR$";
 
-    String MIDNIGHT = "MIDNIGHT";
+    String ZERO_DATE = "$ZERO_DATE$";
 
-    String SOURCE_DATE_TIME = "SOURCE_DATE_TIME";
+    String ZERO_DATE_TIME = "$ZERO_DATE_TIME$";
 
     String ZERO = "0";
 

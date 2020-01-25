@@ -203,7 +203,7 @@ abstract class SourceCreateUtils {
                 .append("\t\t")
                 .append("String.format(\"entity[%s] field count[%s] error.\",")
                 .append(entityElement.getSimpleName())
-                .append(".class.name(),")
+                .append(".class.getName(),")
                 .append(mappingPropList.size())
                 .append("));\n\t}\n\n")
         ;
