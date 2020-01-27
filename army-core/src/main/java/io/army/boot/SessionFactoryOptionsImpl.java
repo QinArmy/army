@@ -7,6 +7,7 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.StringJoiner;
 
 class SessionFactoryOptionsImpl implements SessionFactoryOptions {
 
@@ -62,5 +63,16 @@ class SessionFactoryOptionsImpl implements SessionFactoryOptions {
     @Override
     public List<String> packagesToScan() {
         return packagesToScan;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", SessionFactoryOptionsImpl.class.getSimpleName() + "[", "]")
+                .add("readonly=" + readonly)
+                .add("zoneId=" + zoneId)
+                .add("packagesToScan=" + packagesToScan)
+                .add("showSql=" + showSql)
+                .add("formatSql=" + formatSql)
+                .toString();
     }
 }

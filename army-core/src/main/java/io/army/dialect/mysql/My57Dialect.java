@@ -39,7 +39,7 @@ class My57Dialect extends AbstractDialect {
 
     @Override
     protected final String doQuote(String identifier) {
-        return "`" + identifier + " `";
+        return "`" + identifier + "`";
     }
 
     @Override

@@ -4,13 +4,17 @@ import io.army.criteria.MetaException;
 import io.army.domain.IDomain;
 import io.army.struct.CodeEnum;
 import io.army.util.ArrayUtils;
+import org.springframework.lang.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Set;
 
 /**
  * created  on 2018/10/8.
+ * @see SchemaMeta
+ * @see FieldMeta
+ * @see IndexMeta
+ * @see IndexFieldMeta
  */
 public interface TableMeta<T extends IDomain> {
 
@@ -57,7 +61,7 @@ public interface TableMeta<T extends IDomain> {
 
     String charset();
 
-    String schema();
+    SchemaMeta schema();
 
     boolean isMappingProp(String propName);
 

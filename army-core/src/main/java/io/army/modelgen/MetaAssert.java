@@ -63,9 +63,11 @@ abstract class MetaAssert {
         }
     }
 
-    static void assertColumn(TypeElement mappedElement, VariableElement mappedProp, Column column,
+    static void assertColumn(TypeElement entityElement, TypeElement mappedElement, VariableElement mappedProp,
+                             Column column,
                              String columnName) {
-        if (TableMeta.VERSION_PROPS.contains(mappedProp.getSimpleName().toString())) {
+        final String propName = mappedProp.getSimpleName().toString();
+        if (TableMeta.VERSION_PROPS.contains(propName)) {
             return;
         }
         if (!StringUtils.hasText(column.comment())) {
@@ -75,24 +77,20 @@ abstract class MetaAssert {
             );
         }
 
-        try {
-            if (!StringUtils.hasText(column.defaultValue())) {
-
-                throw new MetaException(ErrorCode.META_ERROR, "mapped class[%s] column[%s] no defaultValue.",
+        if (TableMeta.ID.equals(propName)) {
+            if (column.nullable()) {
+                throw new MetaException(ErrorCode.META_ERROR, "mapped class[%s] column[%s] nullable must be false.",
                         mappedElement.getQualifiedName(),
                         columnName
                 );
             }
-        } catch (Throwable e) {
-            System.out.println(String.format("mapped class[%s] column[%s] no defaultValue.",
-                    mappedElement.getQualifiedName(),
-                    columnName));
+        } else {
+            assertColumnDefault(entityElement,mappedElement,mappedProp,column,columnName);
         }
-
 
     }
 
-    static MetaException cratePropertyDuplication(TypeElement mappedElement, VariableElement mappedField) {
+    static MetaException createPropertyDuplication(TypeElement mappedElement, VariableElement mappedField) {
         return new MetaException(ErrorCode.META_ERROR, String.format(
                 "Mapped class[%s] mapping property[%s] duplication"
                 , mappedElement.getQualifiedName(), mappedField.getSimpleName()));
@@ -122,7 +120,7 @@ abstract class MetaAssert {
             }
         }
         if (!missingColumnNameSet.isEmpty()) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] indexMap %s not exits.",
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] index map %s not exits.",
                     entityElement.getQualifiedName(),
                     missingColumnNameSet
             );
@@ -154,7 +152,7 @@ abstract class MetaAssert {
         }
     }
 
-    /*################################## private method #########################################*/
+    /*################################## blow private method ##################################*/
 
     private static Set<String> createMissingPropNameSet(Set<String> entityPropNameSet,
                                                         Set<String> requiredPropNameSet) {
@@ -172,6 +170,28 @@ abstract class MetaAssert {
         return new MetaException(ErrorCode.META_ERROR, "Entity[%s] missing required mapping properties %s",
                 entityElement.getQualifiedName(),
                 missPropNameSet);
+    }
+
+    private static boolean isStringType(VariableElement mappedProp) {
+        return String.class.getName().equals(mappedProp.asType().toString());
+    }
+
+    private static void assertColumnDefault(TypeElement entityElement, TypeElement mappedElement
+            , VariableElement mappedProp, Column column, String columnName) {
+        if (!column.nullable()
+                && !isStringType(mappedProp)
+                && !StringUtils.hasText(column.defaultValue())) {
+
+            Inheritance inheritance = entityElement.getAnnotation(Inheritance.class);
+            if (inheritance != null && inheritance.value().equalsIgnoreCase(columnName)) {
+                return;
+            }
+            throw new MetaException(ErrorCode.META_ERROR, "mapped class[%s] column[%s] no defaultValue.",
+                    mappedElement.getQualifiedName(),
+                    columnName
+            );
+        }
+
     }
 
 

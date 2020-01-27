@@ -43,7 +43,7 @@ import io.army.sqltype.MySQLDataType;
     protected boolean defaultValueAlter(FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo)
             throws SchemaInfoException, MetaException {
         //TODO zoro implement interpreter model
-        return !fieldMeta.isPrimary()
+        return !fieldMeta.primary()
                 && !fieldMeta.defaultValue().equals(columnInfo.defaultValue());
     }
 

@@ -36,6 +36,9 @@
         <Logger name="io.army.modelgen.ArmyMetaModelEntityProcessor" level="TRACE" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
+        <Logger name="io.army.boot.SessionFactoryUtils" level="DEBUG" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
         <Root level="INFO">
             <AppenderRef ref="RollingFile"/>
             <AppenderRef ref="Console"/>

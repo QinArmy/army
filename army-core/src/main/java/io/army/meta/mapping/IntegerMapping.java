@@ -38,7 +38,7 @@ public final class IntegerMapping extends MappingSupport implements MappingType 
 
     @Override
     public int precision() {
-        return 11;
+        return -1;
     }
 
     @Override

@@ -7,7 +7,7 @@ package io.army.modelgen;
  * @see io.army.meta.FieldMeta
  * @see MetaEntity
  */
-public interface MetaAttribute {
+ interface MetaAttribute {
 
 
     String getDefinition();

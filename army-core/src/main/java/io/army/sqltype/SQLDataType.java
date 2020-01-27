@@ -1,7 +1,5 @@
 package io.army.sqltype;
 
-import io.army.meta.FieldMeta;
-
 public interface SQLDataType {
 
     String name();
@@ -26,10 +24,10 @@ public interface SQLDataType {
      * @return true match
      * @throws IllegalArgumentException precisionOfField error
      */
-    default boolean precisionMatch(int precisionOfField, int precisionOfColumn)
+    default boolean precisionMatch(int precisionOfField, int columnSize)
             throws IllegalArgumentException{
         return precisionOfField < 0
-                || precisionOfField == precisionOfColumn;
+                || precisionOfField == columnSize;
     }
 
     /**

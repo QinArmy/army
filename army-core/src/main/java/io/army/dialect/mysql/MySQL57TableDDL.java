@@ -48,7 +48,7 @@ class MySQL57TableDDL extends AbstractTableDDL {
     /*################################## blow AbstractTableDDL template method ##################################*/
 
     @Override
-    protected final String createUpdateDefault(FieldMeta<?, ?> fieldMeta) {
+    protected final String defaultOfCreateAndUpdate(FieldMeta<?, ?> fieldMeta) {
         int precision = fieldMeta.precision();
         if (precision < 0) {
             precision = 0;
@@ -64,7 +64,7 @@ class MySQL57TableDDL extends AbstractTableDDL {
     }
 
     @Override
-    protected String dataTypeText(FieldMeta<?, ?> fieldMeta) {
+    protected String dataTypeClause(FieldMeta<?, ?> fieldMeta) {
         Function<FieldMeta<?, ?>, String> function = jdbcTypeFunctionMap.get(fieldMeta.mappingType().jdbcType());
         if (function == null) {
             throw new MetaException(ErrorCode.META_ERROR, "Entity[%s].column[%s] not found jdbc function"
@@ -108,6 +108,11 @@ class MySQL57TableDDL extends AbstractTableDDL {
         return defaultValue;
     }
 
+    @Override
+    protected boolean hasDefaultClause(FieldMeta<?, ?> fieldMeta) {
+        return !fieldMeta.primary()
+                &&  !MySQL57DDLUtils.NO_DEFAULT_JDBC.contains(fieldMeta.jdbcType());
+    }
 
     /*################################## blow protected method ##################################*/
 

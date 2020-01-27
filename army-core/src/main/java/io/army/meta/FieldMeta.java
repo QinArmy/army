@@ -16,13 +16,13 @@ public interface FieldMeta<T extends IDomain, F> extends Expression<F>, Selectio
     Selection as(String tableAlias, String alias);
 
 
-    boolean isPrimary();
+    boolean primary();
 
-    boolean isUnique();
+    boolean unique();
 
-    boolean isIndex();
+    boolean index();
 
-    boolean isNullable();
+    boolean nullable();
 
 
     TableMeta<T> table();
@@ -35,9 +35,9 @@ public interface FieldMeta<T extends IDomain, F> extends Expression<F>, Selectio
 
     MappingType mappingType();
 
-    boolean isInsertalbe();
+    boolean insertalbe();
 
-    boolean isUpdatable();
+    boolean updatable();
 
     String comment();
 

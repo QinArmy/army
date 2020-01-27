@@ -78,13 +78,4 @@ public abstract class DDLUtils {
         return text;
     }
 
-    protected static String nullable(boolean nullable){
-        String not ;
-        if(nullable){
-            not = "";
-        }else {
-            not = "NOT";
-        }
-        return not;
-    }
 }

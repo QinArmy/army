@@ -15,6 +15,8 @@ public @interface Table {
 
     String name();
 
+    String catalog() default "";
+
     /**
      * (Optional) The schema of the table.
      * <p> Defaults to the default schema for user.
@@ -35,6 +37,6 @@ public @interface Table {
 
     boolean immutable() default false;
 
-    String charset() default "utf8mb4";
+    String charset() default "";
 
 }

@@ -9,21 +9,12 @@ package io.army.modelgen;
  */
 interface MetaEntity {
 
-    /**
-     * @return null or package name
-     */
-    String getPackageName();
-
     String getQualifiedName();
 
     String getImportBlock();
 
     String getClassDefinition();
 
-    String getSuperSimpleName();
-
-
     String getBody();
-
 
 }

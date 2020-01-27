@@ -1,15 +1,26 @@
 package io.army.util;
 
 
+import java.util.Locale;
+
 public abstract class StringUtils extends org.springframework.util.StringUtils {
 
+
+    public static String toLowerCase(String text){
+        return text == null ? null : text.toLowerCase(Locale.ROOT);
+    }
+
+    public static String toUpperCase(String text){
+        return text == null ? null : text.toUpperCase(Locale.ROOT);
+    }
+
     public static String camelToUpperCase(String camel) {
-        return camelToUnderline(camel).toUpperCase();
+        return camelToUnderline(camel).toUpperCase(Locale.ROOT);
     }
 
 
     public static String camelToLowerCase(String camel) {
-        return camelToUnderline(camel).toLowerCase();
+        return camelToUnderline(camel).toLowerCase(Locale.ROOT);
     }
 
 

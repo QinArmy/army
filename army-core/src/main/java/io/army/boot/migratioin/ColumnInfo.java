@@ -13,7 +13,7 @@ public class ColumnInfo {
 
     private JDBCType jdbcType;
 
-    private boolean notNull;
+    private boolean nullable;
 
     private String comment;
 
@@ -59,12 +59,12 @@ public class ColumnInfo {
     }
 
 
-    public boolean nonNull() {
-        return notNull;
+    public boolean nullable() {
+        return nullable;
     }
 
-    ColumnInfo nonNull(boolean notNull) {
-        this.notNull = notNull;
+    ColumnInfo nullable(boolean notNull) {
+        this.nullable = notNull;
         return this;
     }
 
@@ -116,7 +116,7 @@ public class ColumnInfo {
                 .add("name='" + name + "'")
                 .add("sqlType='" + sqlType + "'")
                 .add("jdbcType=" + jdbcType)
-                .add("nonNull=" + notNull)
+                .add("nullableKeyword=" + nullable)
                 .add("comment='" + comment + "'")
                 .add("columnSize=" + columnSize)
                 .add("scale=" + scale)

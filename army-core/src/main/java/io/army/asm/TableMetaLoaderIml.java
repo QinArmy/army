@@ -127,7 +127,7 @@ class TableMetaLoaderIml implements TableMetaLoader {
         }
         Field field = ReflectionUtils.findField(metaClass, MetaConstant.TABLE_META);
         if (field == null
-                || TableMeta.class.isAssignableFrom(field.getType())) {
+                || !TableMeta.class.isAssignableFrom(field.getType())) {
             throw new TableMetaLoadException(ErrorCode.NOT_FOUND_META_CLASS, "not meta class,class[%s] not found static property[%s]"
                     , metaClass, MetaConstant.TABLE_META);
         }

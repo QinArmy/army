@@ -40,15 +40,15 @@ public enum MySQLDataType implements SQLDataType {
 
     TIME(6) {
         @Override
-        public boolean precisionMatch(int precisionOfField, int precisionOfColumn) {
-            return timePrecisionMatch(8, precisionOfField, precisionOfColumn);
+        public boolean precisionMatch(int precisionOfField, int columnSize) {
+            return timePrecisionMatch(8, precisionOfField, columnSize);
         }
     },
 
     DATETIME(6) {
         @Override
-        public boolean precisionMatch(int precisionOfField, int precisionOfColumn) {
-            return timePrecisionMatch(19, precisionOfField, precisionOfColumn);
+        public boolean precisionMatch(int precisionOfField, int columnSize) {
+            return timePrecisionMatch(19, precisionOfField, columnSize);
         }
     },
 

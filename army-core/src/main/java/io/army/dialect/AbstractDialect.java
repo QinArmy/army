@@ -8,6 +8,7 @@ import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
 
+import javax.swing.*;
 import java.time.ZoneId;
 import java.util.*;
 
@@ -122,5 +123,8 @@ public abstract class AbstractDialect implements Dialect {
 
     /*############################### sub class override method ####################################*/
 
-
+    @Override
+    public String toString() {
+        return String.valueOf(sqlDialect());
+    }
 }

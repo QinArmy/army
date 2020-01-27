@@ -54,6 +54,11 @@ class DefaultMappingFactory implements MappingFactory {
 
 
     @Override
+    public MappingType getMapping(Class<?> javaType, Class<?> mappingClass) throws MappingException {
+        return null;
+    }
+
+    @Override
     public MappingType getMapping(Class<?> javaType) throws MappingException {
         MappingType mappingType = CUSTOM_MAPPING.get(javaType);
         if (mappingType == null) {

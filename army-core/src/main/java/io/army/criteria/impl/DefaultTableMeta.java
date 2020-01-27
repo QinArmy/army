@@ -19,7 +19,7 @@ import java.util.*;
 /**
  * created  on 2018/11/19.
  */
-public final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
+final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultTableMeta.class);
 
@@ -35,7 +35,7 @@ public final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     private final String charset;
 
-    private final String schema;
+    private final SchemaMeta schemaMeta;
 
     private final int discriminatorValue;
 
@@ -50,7 +50,8 @@ public final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     private final FieldMeta<T, ?> discriminator;
 
     @SuppressWarnings("unchecked")
-    public DefaultTableMeta(@Nullable TableMeta<? super T> parentTableMeta, Class<T> entityClass) {
+    DefaultTableMeta(@Nullable TableMeta<? super T> parentTableMeta, Class<T> entityClass) {
+        Assert.notNull(entityClass,"entityClass required");
         MetaUtils.assertParentTableMeta(parentTableMeta, entityClass);
 
         this.entityClass = entityClass;
@@ -62,7 +63,7 @@ public final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             this.tableName = tableMeta.name();
             this.comment = tableMeta.comment();
             this.immutable = tableMeta.immutable();
-            this.schema = tableMeta.schema();
+            this.schemaMeta = MetaUtils.schemaMeta(tableMeta);
 
             this.charset = tableMeta.charset();
 
@@ -80,7 +81,6 @@ public final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         } catch (ArmyRuntimeException e) {
             throw e;
         } catch (RuntimeException e) {
-            LOG.error("entity[{}] create table meta error.", entityClass, e);
             throw new MetaException(ErrorCode.META_ERROR, e, e.getMessage());
         }
     }
@@ -144,8 +144,8 @@ public final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
 
     @Override
-    public String schema() {
-        return this.schema;
+    public SchemaMeta schema() {
+        return this.schemaMeta;
     }
 
     @Override
@@ -195,7 +195,7 @@ public final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         if (!(o instanceof DefaultTableMeta)) {
             return false;
         }
-        DefaultTableMeta other = (DefaultTableMeta) o;
+        DefaultTableMeta<?> other = (DefaultTableMeta<?>) o;
         return this.javaType() == other.javaType()
                 && this.schema().equals(other.schema())
                 && this.tableName().equals(other.tableName());
@@ -210,17 +210,20 @@ public final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     public String toString() {
         StringBuilder builder = new StringBuilder(this.javaType().getName());
         builder.append(" mapping ");
-        if (StringUtils.hasText(this.schema())) {
+        if (!schemaMeta.defaultSchema()) {
             builder.append(this.schema())
                     .append(".")
-
             ;
         }
         builder.append(this.tableName())
                 .append("[\n");
         Iterator<FieldMeta<T, ?>> iterator = propNameToFieldMeta.values().iterator();
-        for (; iterator.hasNext(); ) {
-            builder.append(iterator.next());
+        for (FieldMeta<T, ?> fieldMeta; iterator.hasNext(); ) {
+            fieldMeta = iterator.next();
+            builder.append(fieldMeta.propertyName())
+                    .append(" mapping ")
+                    .append(fieldMeta.fieldName())
+            ;
             if (iterator.hasNext()) {
                 builder.append(",\n");
             }

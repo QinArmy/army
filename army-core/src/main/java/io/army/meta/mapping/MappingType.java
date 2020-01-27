@@ -14,6 +14,7 @@ public interface MappingType {
 
 
     /**
+     * @return value's text without quote
      * @throws IllegalArgumentException value error
      */
     String nullSafeTextValue(Object value);

@@ -23,7 +23,7 @@ public abstract class AbstractTableDDL implements TableDDL {
     public final List<String> tableDefinition(TableMeta<?> tableMeta) {
         StringBuilder builder = new StringBuilder();
         // 1. header
-        appendDefinitionHeader(builder, tableMeta);
+        builder.append(createHeaderClause(tableMeta));
         builder.append(" \n");
 
         // 2. table column definition
@@ -50,12 +50,12 @@ public abstract class AbstractTableDDL implements TableDDL {
                     , tableMeta.tableName(), addFieldMeta.fieldName()));
 
             addColumnList.add(
-                    String.format("ALTER TABLE %s ADD COLUMN %s %s NULL %s %s COMMENT '%s'"
+                    String.format("ALTER TABLE %s ADD COLUMN %s %s %s %s COMMENT '%s'"
                             , this.quoteIfNeed(tableMeta.tableName())
                             , this.quoteIfNeed(addFieldMeta.fieldName())
-                            , this.dataTypeText(addFieldMeta)
-                            , DDLUtils.nullable(addFieldMeta.isNullable())
-                            , this.sqlDefaultValue(addFieldMeta)
+                            , this.dataTypeClause(addFieldMeta)
+                            , this.nullableClause(addFieldMeta)
+                            , this.defaultClause(addFieldMeta)
                             , addFieldMeta.comment()
                     )
             );
@@ -69,20 +69,21 @@ public abstract class AbstractTableDDL implements TableDDL {
     public List<String> changeColumn(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> changeFieldMetas) {
         List<String> changeColumnList = new ArrayList<>(changeFieldMetas.size());
 
-        for (FieldMeta<?, ?> addFieldMeta : changeFieldMetas) {
-            Assert.isTrue(addFieldMeta.table() == tableMeta, () -> String.format(
+        for (FieldMeta<?, ?> changeFieldMeta : changeFieldMetas) {
+            Assert.isTrue(changeFieldMeta.table() == tableMeta, () -> String.format(
                     "TableMeta[%s] and FieldMeta[%s] not match."
-                    , tableMeta.tableName(), addFieldMeta.fieldName()));
-            String fieldName = this.quoteIfNeed(addFieldMeta.fieldName());
+                    , tableMeta.tableName(), changeFieldMeta.fieldName()));
+
+            String fieldName = this.quoteIfNeed(changeFieldMeta.fieldName());
             changeColumnList.add(
-                    String.format("ALTER TABLE %s CHANGE COLUMN %s %s %s %s NULL %s COMMENT '%s'"
+                    String.format("ALTER TABLE %s CHANGE COLUMN %s %s %s %s %s COMMENT '%s'"
                             , this.quoteIfNeed(tableMeta.tableName())
                             , fieldName
                             , fieldName
-                            , this.dataTypeText(addFieldMeta)
-                            , DDLUtils.nullable(addFieldMeta.isNullable())
-                            , this.sqlDefaultValue(addFieldMeta)
-                            , addFieldMeta.comment()
+                            , this.dataTypeClause(changeFieldMeta)
+                            , this.nullableClause(changeFieldMeta)
+                            , this.defaultClause(changeFieldMeta)
+                            , changeFieldMeta.comment()
                     )
             );
 
@@ -105,7 +106,7 @@ public abstract class AbstractTableDDL implements TableDDL {
                     .append(" ADD INDEX ")
                     .append(this.quoteIfNeed(addIndexMeta.name()))
                     .append(" ")
-                    .append(this.indexTypeText(addIndexMeta))
+                    .append(this.indexTypeClause(addIndexMeta))
                     .append(" (")
             ;
 
@@ -141,36 +142,18 @@ public abstract class AbstractTableDDL implements TableDDL {
 
     protected abstract String nonRequiredPropDefault(FieldMeta<?, ?> fieldMeta);
 
-    protected abstract String createUpdateDefault(FieldMeta<?, ?> fieldMeta);
+    protected abstract String defaultOfCreateAndUpdate(FieldMeta<?, ?> fieldMeta);
 
-    protected abstract String dataTypeText(FieldMeta<?, ?> fieldMeta);
+    protected abstract String dataTypeClause(FieldMeta<?, ?> fieldMeta);
+
+    protected abstract boolean hasDefaultClause(FieldMeta<?,?> fieldMeta);
 
 
 
     /*####################################### below protected method #################################*/
 
 
-    protected final void appendKeyDefinition(StringBuilder builder, TableMeta<?> tableMeta) {
-        List<String> definitionList = new ArrayList<>(tableMeta.indexCollection().size());
-        // placeholder for id
-        definitionList.add("");
-        for (IndexMeta<?> indexMeta : tableMeta.indexCollection()) {
-            if (indexMeta.isPrimaryKey()) {
-                definitionList.set(0, primaryKeyDefinition(indexMeta));
-            } else {
-                definitionList.add(doKeyDefinition(indexMeta));
-            }
-        }
-        Iterator<String> iterator = definitionList.iterator();
-        for (; iterator.hasNext(); ) {
-            builder.append(iterator.next());
-            if (iterator.hasNext()) {
-                builder.append(",\n");
-            }
-        }
-    }
-
-    protected String primaryKeyDefinition(IndexMeta<?> indexMeta) {
+    protected String primaryKeyClause(IndexMeta<?> indexMeta) {
         Supplier<String> message = () -> String.format("table[%s].key[%s] isn't primary key",
                 indexMeta.table().tableName(), indexMeta.name());
 
@@ -179,14 +162,14 @@ public abstract class AbstractTableDDL implements TableDDL {
         Assert.isTrue(indexMeta.fieldList().size() == 1, message);
 
         IndexFieldMeta<?, ?> primaryKeyMeta = indexMeta.fieldList().get(0);
-        Assert.isTrue(primaryKeyMeta.isUnique(), message);
+        Assert.isTrue(primaryKeyMeta.unique(), message);
         Assert.isTrue(TableMeta.ID.equals(primaryKeyMeta.fieldName()), message);
 
         return String.format("PRIMARY KEY(%s %s)",
                 primaryKeyMeta.fieldName(), DDLUtils.ascOrDesc(primaryKeyMeta.fieldAsc()));
     }
 
-    protected <T extends IDomain> String doKeyDefinition(IndexMeta<T> indexMeta) {
+    protected <T extends IDomain> String keyDefinitionClause(IndexMeta<T> indexMeta) {
 
         StringBuilder builder = new StringBuilder();
 
@@ -198,27 +181,16 @@ public abstract class AbstractTableDDL implements TableDDL {
         builder.append(" ")
                 .append(this.quoteIfNeed(indexMeta.name()))
                 .append(" ")
-                .append(indexTypeText(indexMeta))
+                .append(indexTypeClause(indexMeta))
                 .append(" (");
 
-        Iterator<IndexFieldMeta<T, ?>> iterator = indexMeta.fieldList().iterator();
-        for (IndexFieldMeta<T, ?> indexFieldMeta; iterator.hasNext(); ) {
-            indexFieldMeta = iterator.next();
+        appendIndexField(builder,indexMeta.fieldList());
 
-            builder.append(this.quoteIfNeed(indexFieldMeta.fieldName()))
-                    .append(" ")
-                    .append(DDLUtils.ascOrDesc(indexFieldMeta.fieldAsc()))
-            ;
-
-            if (iterator.hasNext()) {
-                builder.append(",");
-            }
-        }
         builder.append(")");
         return builder.toString();
     }
 
-    protected String indexTypeText(IndexMeta<?> indexMeta) {
+    protected String indexTypeClause(IndexMeta<?> indexMeta) {
         String text = "";
         if (StringUtils.hasText(indexMeta.type())) {
             text = "USING " + indexMeta.type();
@@ -228,50 +200,48 @@ public abstract class AbstractTableDDL implements TableDDL {
     }
 
 
-    /**
-     * eg. CREATE [TEMPORARY] TABLE [IF NOT EXISTS] tbl_name
-     */
-    protected void appendDefinitionHeader(StringBuilder builder, TableMeta<?> tableMeta) {
-        builder.append("CREATE TABLE ")
-                .append(this.quoteIfNeed(tableMeta.tableName()))
-                .append("(");
+    protected  String createHeaderClause(TableMeta<?> tableMeta){
+        return "CREATE TABLE " + this.quoteIfNeed(tableMeta.tableName()) + "(";
     }
 
-    protected String columnDefinition(FieldMeta<?, ?> fieldMeta) {
-        String defaultKey, nullable;
-        if (fieldMeta.isPrimary()) {
-            defaultKey = "";
-        } else {
-            defaultKey = "DEFAULT";
-        }
-        if (fieldMeta.isNullable()) {
-            nullable = "";
-        } else {
-            nullable = "NOT";
-        }
-        return String.format("%s %s %s NULL %s %s COMMENT '%s'",
+    protected String columnDefinitionClause(FieldMeta<?, ?> fieldMeta) {
+        return String.format("%s %s %s %s COMMENT '%s'",
                 quoteIfNeed(fieldMeta.fieldName()),
-                dataTypeText(fieldMeta),
-                nullable,
-                defaultKey,
-                sqlDefaultValue(fieldMeta),
+                dataTypeClause(fieldMeta),
+                nullableClause(fieldMeta),
+                defaultClause(fieldMeta),
                 fieldMeta.comment()
         );
     }
 
+    protected  String nullableClause(FieldMeta<?,?> fieldMeta){
+        String clause;
+        if(fieldMeta.nullable()){
+            clause = "NULL";
+        }else {
+            clause = "NOT NULL";
+        }
+        return clause;
+    }
+
+    protected final String defaultClause(FieldMeta<?,?> fieldMeta){
+        String clause;
+        if(hasDefaultClause(fieldMeta)){
+            clause = "DEFAULT " ;
+            if (TableMeta.VERSION_PROPS.contains(fieldMeta.propertyName())) {
+                clause  += requiredPropDefaultValue(fieldMeta);
+            } else {
+                clause += nonRequiredPropDefault(fieldMeta);
+            }
+
+        }else {
+            clause= "";
+        }
+        return clause;
+    }
+
 
     /*################################## blow private method ##################################*/
-
-    private String sqlDefaultValue(FieldMeta<?, ?> fieldMeta) {
-        String value;
-
-        if (TableMeta.VERSION_PROPS.contains(fieldMeta.propertyName())) {
-            value = requiredPropDefaultValue(fieldMeta);
-        } else {
-            value = nonRequiredPropDefault(fieldMeta);
-        }
-        return value;
-    }
 
     private String requiredPropDefaultValue(FieldMeta<?, ?> fieldMeta) {
         String value;
@@ -281,13 +251,13 @@ public abstract class AbstractTableDDL implements TableDDL {
                 break;
             case TableMeta.CREATE_TIME:
             case TableMeta.UPDATE_TIME:
-                value = createUpdateDefault(fieldMeta);
+                value = defaultOfCreateAndUpdate(fieldMeta);
                 break;
             case TableMeta.VISIBLE:
-                value = fieldMeta.mappingType().nullSafeTextValue(Boolean.TRUE);
+                value = StringUtils.quote(fieldMeta.mappingType().nullSafeTextValue(Boolean.TRUE));
                 break;
             case TableMeta.VERSION:
-                value = IDomain.ONE;
+                value = IDomain.ZERO;
                 break;
             default:
                 throw new RuntimeException(String.format("Entity[%s].prop[%s] isn't required prop",
@@ -322,7 +292,7 @@ public abstract class AbstractTableDDL implements TableDDL {
         String columnDefinition;
         for (FieldMeta<?, ?> fieldMeta : tableMeta.fieldCollection()) {
             // create one column definition
-            columnDefinition = this.columnDefinition(fieldMeta);
+            columnDefinition = this.columnDefinitionClause(fieldMeta);
             switch (fieldMeta.propertyName()) {
                 case TableMeta.ID:
                     propList.set(0, columnDefinition);
@@ -357,6 +327,25 @@ public abstract class AbstractTableDDL implements TableDDL {
         return size;
     }
 
+    private  void appendKeyDefinition(StringBuilder builder, TableMeta<?> tableMeta) {
+        List<String> definitionList = new ArrayList<>(tableMeta.indexCollection().size());
+        // placeholder for id
+        definitionList.add("");
+        for (IndexMeta<?> indexMeta : tableMeta.indexCollection()) {
+            if (indexMeta.isPrimaryKey()) {
+                definitionList.set(0, primaryKeyClause(indexMeta));
+            } else {
+                definitionList.add(keyDefinitionClause(indexMeta));
+            }
+        }
+        Iterator<String> iterator = definitionList.iterator();
+        for (; iterator.hasNext(); ) {
+            builder.append(iterator.next());
+            if (iterator.hasNext()) {
+                builder.append(",\n");
+            }
+        }
+    }
 
 
     private <T extends IDomain> void appendIndexField(StringBuilder builder ,List<IndexFieldMeta<T, ?>> indexMetaList){

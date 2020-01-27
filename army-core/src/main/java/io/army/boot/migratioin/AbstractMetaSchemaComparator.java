@@ -10,9 +10,9 @@ import io.army.meta.TableMeta;
 import io.army.schema.SchemaInfoException;
 import io.army.util.Assert;
 import io.army.util.ObjectUtils;
+import io.army.util.StringUtils;
 import org.springframework.lang.Nullable;
 
-import java.sql.Connection;
 import java.util.*;
 
 public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator{
@@ -28,7 +28,8 @@ public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparat
         List<Migration> migrationList = new ArrayList<>();
 
         for (TableMeta<?> tableMeta : tableMetas) {
-            TableInfo tableInfo = tableInfoMap.get(tableMeta.tableName());
+            // make key lower case
+            TableInfo tableInfo = tableInfoMap.get(StringUtils.toLowerCase(tableMeta.tableName()));
             if (tableInfo == null) {
                 // will create table
                 migrationList.add(new MigrationImpl(tableMeta, true));
@@ -80,7 +81,8 @@ public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparat
         final Map<String, ColumnInfo> columnInfoMap = tableInfo.columnMap();
 
         for (FieldMeta<?, ?> fieldMeta : tableMeta.fieldCollection()) {
-            ColumnInfo columnInfo = columnInfoMap.get(fieldMeta.fieldName());
+            // make key lower case
+            ColumnInfo columnInfo = columnInfoMap.get(StringUtils.toLowerCase(fieldMeta.fieldName()));
             if (columnInfo == null) {
                 // alter table add column
                 migration.addColumnToAdd(fieldMeta);
@@ -97,7 +99,7 @@ public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparat
         // index migration
         Set<String> indexNameSet = new HashSet<>();
         for (IndexMeta<?> indexMeta : tableMeta.indexCollection()) {
-            IndexInfo indexInfo = indexInfoMap.get(indexMeta.name());
+            IndexInfo indexInfo = indexInfoMap.get(StringUtils.toLowerCase(indexMeta.name()));
             if (indexInfo == null) {
                 // alter table add index
                 migration.addIndexToAdd(indexMeta);
@@ -105,7 +107,7 @@ public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparat
                 // alter table alter index
                 migration.addIndexToModify(indexMeta);
             }
-            indexNameSet.add(indexMeta.name());
+            indexNameSet.add(StringUtils.toLowerCase(indexMeta.name()));
         }
 
         // find indexes than not in index meta
@@ -147,7 +149,7 @@ public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparat
 
 
     private boolean needAlterColumn(FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo) throws SchemaInfoException {
-        // 1. data type
+        // 1. data type, TODO zoro add dialect jdbc mapping
         assertJdbcTypeMatch(fieldMeta, columnInfo);
         boolean needAlter = false;
 
@@ -157,8 +159,8 @@ public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparat
         } else if (defaultValueAlter(fieldMeta, columnInfo)) {
             // 3. default value
             needAlter = true;
-        } else if (!columnInfo.nonNull()) {
-            // 4. not null
+        } else if (columnInfo.nullable() != fieldMeta.nullable()) {
+            // 4. nullableKeyword
             needAlter = true;
         } else if (!TableMeta.VERSION_PROPS.contains(fieldMeta.propertyName())
                 && !ObjectUtils.nullSafeEquals(fieldMeta.comment(), columnInfo.comment())) {

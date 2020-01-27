@@ -15,19 +15,21 @@ import java.time.ZoneId;
  *     <li>隐藏实现,控制访问级别</li>
  * </ul>
  */
-public interface SessionFactoryBuilder extends SessionFactoryOptions {
+public interface SessionFactoryBuilder  {
 
     SessionFactoryBuilder packagesToScan(String... packagesToScan);
 
     SessionFactoryBuilder zoneId(ZoneId schemaZoneId);
-
-    SessionFactoryBuilder dialect(Dialect dialect);
 
     SessionFactoryBuilder datasource(DataSource dataSource);
 
     SessionFactoryBuilder sqlDialect(SQLDialect sqlDialect);
 
     SessionFactoryBuilder readonly(boolean readonly);
+
+    SessionFactoryBuilder showSql(boolean formatSql);
+
+    SessionFactoryBuilder formatSql(boolean formatSql);
 
     SessionFactory build();
 

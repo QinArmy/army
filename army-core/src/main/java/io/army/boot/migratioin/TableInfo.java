@@ -7,6 +7,9 @@ public class TableInfo {
 
     private final SchemaInfo schema;
 
+    /**
+     * lower case
+     */
     private final String name;
 
     private String comment;

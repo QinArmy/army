@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
 import io.army.annotation.Column;
 import io.army.criteria.MetaException;
@@ -8,8 +9,8 @@ import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingType;
+import io.army.util.Assert;
 import org.springframework.lang.NonNull;
-import org.springframework.util.Assert;
 
 import java.lang.reflect.Field;
 import java.sql.JDBCType;
@@ -41,6 +42,8 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     private final MappingType mappingType;
 
+    private final boolean nullable;
+
     private final boolean insertable;
 
     private final boolean updatable;
@@ -55,6 +58,8 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     DefaultFieldMeta(final @NonNull TableMeta<T> table, final @NonNull Field field, final boolean unique,
                      final boolean index)
             throws MetaException {
+        Assert.notNull(table, "table required");
+        Assert.notNull(field, "field required");
         Assert.isAssignable(field.getDeclaringClass(), table.javaType());
 
         this.table = table;
@@ -65,25 +70,24 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
             this.index = index;
 
             Column column = MetaUtils.columnMeta(table.javaType(), field);
-            propertyClass = (Class<F>) field.getType();
-            fieldName = MetaUtils.columnName(column, field);
+            this.propertyClass = (Class<F>) field.getType();
+            this.fieldName = MetaUtils.columnName(column, field);
+            this.mappingType = MetaUtils.columnMappingType(field);
 
-            comment = column.comment();
-            mappingType = MetaUtils.mappingType(field);
+            this.insertable = column.insertable();
+            this.updatable = column.updatable();
+            this.precision = column.precision();
 
-            insertable = column.insertable();
-            updatable = column.updatable();
-
-            precision = MetaUtils.precision(column, this.mappingType);
-            scale = MetaUtils.scale(column, this.mappingType);
-
-            defaultValue = column.defaultValue();
+            this.scale = column.scale();
+            this.comment = MetaUtils.columnComment(column, this);
+            this.nullable = MetaUtils.columnNullable(column, this);
+            this.defaultValue = MetaUtils.columnDefault(column, this);
+        } catch (ArmyRuntimeException e) {
+            throw e;
         } catch (RuntimeException e) {
             throw new MetaException(ErrorCode.META_ERROR, e, "create entity[%s] mapping property[%s] meta error"
                     , table.javaType().getName(), propertyName);
         }
-
-
     }
 
     @Override
@@ -97,23 +101,23 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     }
 
     @Override
-    public boolean isPrimary() {
+    public boolean primary() {
         return ID.equals(propertyName);
     }
 
     @Override
-    public boolean isUnique() {
+    public boolean unique() {
         return unique;
     }
 
     @Override
-    public boolean isIndex() {
+    public boolean index() {
         return index;
     }
 
     @Override
-    public boolean isNullable() {
-        return false;
+    public boolean nullable() {
+        return nullable;
     }
 
     @Override
@@ -137,12 +141,12 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     }
 
     @Override
-    public boolean isInsertalbe() {
+    public boolean insertalbe() {
         return insertable;
     }
 
     @Override
-    public boolean isUpdatable() {
+    public boolean updatable() {
         return updatable;
     }
 
@@ -185,7 +189,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
         if (!(obj instanceof DefaultFieldMeta)) {
             return false;
         }
-        DefaultFieldMeta otherField = (DefaultFieldMeta) obj;
+        DefaultFieldMeta<?, ?> otherField = (DefaultFieldMeta<?, ?>) obj;
         return this.table().equals(otherField.table())
                 && this.javaType() == otherField.javaType()
                 && this.propertyName().equals(this.propertyName())

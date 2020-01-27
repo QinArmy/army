@@ -16,6 +16,9 @@ class Meta2SchemaImpl implements Meta2Schema {
     @Override
     public Map<String, List<String>> migrate(Collection<TableMeta<?>> tableMetas, Connection connection
             , Dialect dialect) throws SchemaInfoException, MetaException {
+        Assert.notNull(tableMetas,"tableMetas required");
+        Assert.notNull(connection,"connection required");
+        Assert.notNull(dialect,"dialect required");
 
         // 1. extract schema from database's current schema.
         SchemaInfo schemaInfo;

@@ -8,6 +8,7 @@ import io.army.criteria.MetaException;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util.ClassUtils;
+import io.army.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
@@ -45,6 +46,7 @@ class DefaultMetaEntity implements MetaEntity {
         if (this.entityElement == null) {
             throw new MetaException(ErrorCode.META_ERROR, "entityMappedElementList error");
         }
+        // indexColumnNameSet help next step
         final Set<String> indexColumnNameSet = createIndexColumnNameSet(this.entityElement);
 
         final Set<VariableElement> mappingPropSet = SourceCreateUtils.generateAttributes(
@@ -55,21 +57,15 @@ class DefaultMetaEntity implements MetaEntity {
 
         final TypeElement parentEntityElement = SourceCreateUtils.entityElement(parentMappedElementList);
 
+        // 1. generate import part
         this.importsBlock = SourceCreateUtils.generateImport(this.entityElement, parentEntityElement, mappingPropSet);
-
+        // 2. generate class definition part
         this.classDefinition = SourceCreateUtils.generateClassDefinition(this.entityElement, parentEntityElement);
-
-
+        // 3. generate body of class part
         this.body = SourceCreateUtils.generateBody(this.entityElement,
                 parentEntityElement,
                 generateMappingPropList(mappingPropSet,
                         ArrayUtils.asUnmodifiableSet(indexColumnNameSet, TableMeta.ID)));
-    }
-
-
-    @Override
-    public String getPackageName() {
-        return SourceCreateUtils.getPackage(entityElement);
     }
 
     @Override
@@ -82,10 +78,7 @@ class DefaultMetaEntity implements MetaEntity {
         return this.classDefinition;
     }
 
-    @Override
-    public String getSuperSimpleName() {
-        return ClassUtils.getShortName(entityElement.getSimpleName().toString());
-    }
+
 
     @Override
     public String getImportBlock() {
@@ -98,7 +91,10 @@ class DefaultMetaEntity implements MetaEntity {
         return this.body;
     }
 
-
+    /**
+     *
+     * @return a unmodifiable List
+     */
     private List<MetaAttribute> generateMappingPropList(Set<VariableElement> mappingPropSet,
                                                         Set<String> columnNameSet) {
 
@@ -109,6 +105,8 @@ class DefaultMetaEntity implements MetaEntity {
         for (VariableElement mappingProp : mappingPropSet) {
             column = mappingProp.getAnnotation(Column.class);
             columnName = SourceCreateUtils.columnName(this.entityElement, mappingProp, column);
+            // make column name lower case
+            columnName = StringUtils.toLowerCase(columnName);
             attribute = new DefaultMetaAttribute(this.entityElement, mappingProp, columnNameSet.contains(columnName));
             list.add(attribute);
         }
@@ -124,14 +122,17 @@ class DefaultMetaEntity implements MetaEntity {
 
         StringTokenizer tokenizer;
         for (Index index : indexArray) {
-            if (indexNameSet.contains(index.name())) {
+            // make index name lower case
+            String indexName = StringUtils.toLowerCase(index.name());
+            if (indexNameSet.contains(indexName)) {
                 throw new MetaException(ErrorCode.META_ERROR, "entity[%s] indexMap name[%s] duplication",
                         entityElement.getQualifiedName());
             }
-            indexNameSet.add(index.name());
+            indexNameSet.add(indexName);
             for (String columnName : index.columnList()) {
                 tokenizer = new StringTokenizer(columnName.trim(), " ", false);
-                columnNameSet.add(tokenizer.nextToken());
+                // make index field name lower case
+                columnNameSet.add(StringUtils.toLowerCase(tokenizer.nextToken()));
             }
         }
         return Collections.unmodifiableSet(columnNameSet);

@@ -14,10 +14,19 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.function.Function;
 
 abstract class MySQL57DDLUtils extends DDLUtils {
+
+   static EnumSet<JDBCType> NO_DEFAULT_JDBC = EnumSet.of(
+            JDBCType.LONGNVARCHAR,
+            JDBCType.LONGVARCHAR,
+            JDBCType.LONGVARBINARY,
+            JDBCType.BLOB,
+            JDBCType.CLOB
+    );
 
 
 

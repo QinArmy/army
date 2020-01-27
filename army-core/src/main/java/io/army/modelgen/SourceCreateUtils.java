@@ -4,7 +4,7 @@ import io.army.annotation.Column;
 import io.army.annotation.Inheritance;
 import io.army.annotation.Table;
 import io.army.criteria.MetaException;
-import io.army.criteria.impl.DefaultTableMeta;
+import io.army.criteria.impl.TableMetaFactory;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexFieldMeta;
 import io.army.meta.TableMeta;
@@ -46,12 +46,17 @@ abstract class SourceCreateUtils {
 
 
     /**
-     * three key point :
+     * extract entity mapping property elements.
+     * <p>
+     * five key point :
      * <ol>
      *     <li>check required field , eg : {@link TableMeta#DOMAIN_PROPS}</li>
      *     <li>check property override</li>
      *     <li>check column duplication in a table</li>
+     *     <li>check index filed validation</li>
+     *     <li>check discriminator validation</li>
      * </ol>
+     * </p>
      *
      * @return property element set of {@code tableElement} .
      */
@@ -61,14 +66,15 @@ abstract class SourceCreateUtils {
                                                    @Nonnull Set<String> indexColumnNameSet) {
 
         try {
-            Set<String> entityPropName = new HashSet<>();
+            Set<String> entityPropNameSet = new HashSet<>();
 
-            generateEntityAttributes(parentMappedElementList, entityPropName, indexColumnNameSet);
-
+            //1.check super and  add super entity props to entityPropNameSet to avoid child class duplicate prop
+            generateEntityAttributes(parentMappedElementList, entityPropNameSet, indexColumnNameSet);
+            // 2. extract entity property elements and check entity mapping
             final Set<VariableElement> entityPropSet = generateEntityAttributes(entityMappedElementList,
-                    entityPropName, indexColumnNameSet);
+                    entityPropNameSet, indexColumnNameSet);
             // assert required props
-            MetaAssert.assertRequiredMappingProps(entityMappedElementList, entityPropName);
+            MetaAssert.assertRequiredMappingProps(entityMappedElementList, entityPropNameSet);
             return entityPropSet;
         } catch (MetaException e) {
             LOG.error("entityMappedElementList:{}\nparentMappedElementList:{}",
@@ -99,7 +105,7 @@ abstract class SourceCreateUtils {
                                  @NonNull Collection<VariableElement> mappingPropElements) {
         StringBuilder builder = new StringBuilder("package ");
         // 1. source package part
-        builder.append(getPackage(entityElement))
+        builder.append(getPackageName(entityElement))
                 .append(";\n\n")
         ;
 
@@ -117,8 +123,13 @@ abstract class SourceCreateUtils {
     }
 
 
-    static String getPackage(TypeElement type) {
-        return ((PackageElement) type.getEnclosingElement()).getQualifiedName().toString();
+    static String getPackageName(TypeElement entityElement) {
+        /*
+         * not doc
+         * entityElement must be a top-level
+         * @see ArmyMetaModelEntityProcessor#assertEntity(TypeElement, Set)
+         */
+        return ((PackageElement) entityElement.getEnclosingElement()).getQualifiedName().toString();
     }
 
     /**
@@ -144,10 +155,8 @@ abstract class SourceCreateUtils {
 
         if (parentEntityElement != null) {
             builder.append(" extends ")
-                    .append(parentEntityElement.getSimpleName())
-                    .append(MetaConstant.META_CLASS_NAME_SUFFIX)
-            ;
-
+                    .append(parentEntityClassRef(entityElement, parentEntityElement))
+                    .append(MetaConstant.META_CLASS_NAME_SUFFIX);
         }
         builder.append(" {\n\n");
         return builder.toString();
@@ -164,9 +173,8 @@ abstract class SourceCreateUtils {
         //1.  TableMeta part
         appendTableMeta(entityElement, builder, parentEntityElement);
 
-        Table table = entityElement.getAnnotation(Table.class);
         //2.  meta count part
-        appendMetaCount(table, builder, parentEntityElement, mappingPropList);
+        appendMetaCount(entityElement, builder, parentEntityElement, mappingPropList);
 
         // 3. field count validate static method
         appendFieldCountValidateMethod(entityElement, builder, mappingPropList);
@@ -223,17 +231,17 @@ abstract class SourceCreateUtils {
     }
 
 
-    /*####################################### private method #################################################*/
+    /*################################## blow private method ##################################*/
 
     private static void appendTableMeta(@NonNull TypeElement entityElement, StringBuilder builder,
                                         @Nullable TypeElement parentEntityElement) {
-        String format = "%s %s<%s> %s = new %s<>(%s%s.class);\n\n";
+        String format = "%s %s<%s> %s = TableMetaFactory.createTableMeta(%s%s.class);\n\n";
         String parentTableMetaText;
         if (parentEntityElement == null) {
             parentTableMetaText = "";
         } else {
             parentTableMetaText = String.format("%s%s.%s,",
-                    parentEntityElement.getSimpleName(),
+                    parentEntityClassRef(entityElement, parentEntityElement),
                     MetaConstant.META_CLASS_NAME_SUFFIX,
                     MetaConstant.TABLE_META
             );
@@ -243,14 +251,15 @@ abstract class SourceCreateUtils {
                 TableMeta.class.getSimpleName(),
                 entityElement.getSimpleName(),
                 MetaConstant.TABLE_META,
-                DefaultTableMeta.class.getSimpleName(),
                 parentTableMetaText,
                 entityElement.getSimpleName()
         ));
     }
 
-    private static void appendMetaCount(Table table, StringBuilder builder, @Nullable TypeElement parentEntityElement,
-                                        @NonNull List<MetaAttribute> attributeList) {
+    private static void appendMetaCount(TypeElement entityElement, StringBuilder builder
+            , @Nullable TypeElement parentEntityElement, List<MetaAttribute> attributeList) {
+        Table table = entityElement.getAnnotation(Table.class);
+
         builder.append(PROP_PRE)
                 .append(" String ")
                 .append(MetaConstant.TABLE_NAME)
@@ -283,7 +292,7 @@ abstract class SourceCreateUtils {
 
         if (parentEntityElement != null) {
             builder.append(" + ")
-                    .append(parentEntityElement.getSimpleName())
+                    .append(parentEntityClassRef(entityElement, parentEntityElement))
                     .append(MetaConstant.META_CLASS_NAME_SUFFIX)
                     .append(".")
                     .append(MetaConstant.FIELD_TOTAL)
@@ -321,11 +330,12 @@ abstract class SourceCreateUtils {
     /**
      * <ul>
      *     <li>{@link Field#getName()} cannot duplication in Entity mapped by table</li>
-     *     <li>{@link Column#name()} cannot duplication in table</li>
+     *     <li>{@link Column#name()} cannot duplication in a table</li>
      * </ul>
      *
      * @param mappedClassElementList unmodifiable list
      * @param entityPropNameSet      modifiable set
+     * @param indexColumnNameSet     a unmodifiable set
      * @return unmodifiable set
      */
     private static Set<VariableElement> generateEntityAttributes(List<TypeElement> mappedClassElementList,
@@ -336,7 +346,7 @@ abstract class SourceCreateUtils {
         Set<String> columnNameSet = new HashSet<>();
         List<String> discriminatorColumnList = new ArrayList<>(1);
 
-        TypeElement entityElement = entityElement(mappedClassElementList);
+        final TypeElement entityElement = entityElement(mappedClassElementList);
 
         Column column;
         VariableElement mappedProp;
@@ -353,16 +363,19 @@ abstract class SourceCreateUtils {
                     continue;
                 }
                 if (entityPropNameSet.contains(mappedProp.getSimpleName().toString())) {
-                    throw MetaAssert.cratePropertyDuplication(mappedElement, mappedProp);
+                    // child class duplicate prop allowed by army
+                    throw MetaAssert.createPropertyDuplication(mappedElement, mappedProp);
                 }
                 entityPropNameSet.add(mappedProp.getSimpleName().toString());
 
                 columnName = columnName(entityElement, mappedProp, column);
+                // make column name lower case
+                columnName = StringUtils.toLowerCase(columnName);
                 if (columnNameSet.contains(columnName)) {
                     throw MetaAssert.createColumnDuplication(mappedElement, columnName);
                 }
                 // assert io.army.annotation.Column
-                MetaAssert.assertColumn(mappedElement, mappedProp, column, columnName);
+                MetaAssert.assertColumn(entityElement,mappedElement, mappedProp, column, columnName);
                 // assert io.army.annotation.DiscriminatorValue , io.army.annotation.Inheritance
                 addDiscriminator(entityElement, mappedProp, columnName, discriminatorColumnList);
 
@@ -379,7 +392,7 @@ abstract class SourceCreateUtils {
 
     private static void addDiscriminator(TypeElement entityElement, VariableElement mappedProp, String columnName,
                                          List<String> discriminatorColumnList) throws MetaException {
-        Assert.notNull(entityElement, "");
+        Assert.notNull(entityElement, "entityElement required");
 
         Inheritance inheritance = entityElement.getAnnotation(Inheritance.class);
         if (inheritance == null) {
@@ -419,14 +432,19 @@ abstract class SourceCreateUtils {
 
     private static void appendParentClassImport(StringBuilder builder, TypeElement entityElement,
                                                 TypeElement parentEntityElement) {
-        if (parentEntityElement != null && !samePackage(entityElement, parentEntityElement)) {
-            builder.append("import ")
-                    .append(parentEntityElement.getQualifiedName())
-                    .append(MetaConstant.META_CLASS_NAME_SUFFIX)
+        if (parentEntityElement == null) {
+            return;
+        }
+        if (!sameClassName(entityElement, parentEntityElement)
+                && !samePackage(entityElement, parentEntityElement)) {
+            builder.append("import ");
+
+            builder.append(parentEntityElement.getQualifiedName());
+
+            builder.append(MetaConstant.META_CLASS_NAME_SUFFIX)
                     .append(";\n")
             ;
         }
-
     }
 
     private static void appendArmyClassImport(StringBuilder builder) {
@@ -448,7 +466,7 @@ abstract class SourceCreateUtils {
                 .append(";\n")
 
                 .append("import ")
-                .append(DefaultTableMeta.class.getName())
+                .append(TableMetaFactory.class.getName())
                 .append(";\n")
 
                 .append("import ")
@@ -463,6 +481,7 @@ abstract class SourceCreateUtils {
 
     private static void appendMappingPropsClassImport(StringBuilder builder,
                                                       Collection<VariableElement> mappingPropElements) {
+        // set to avoid field type duplicate
         Set<String> fieldTypeNameSet = new HashSet<>();
         String fieldTypeName;
         for (VariableElement mappingProp : mappingPropElements) {
@@ -479,8 +498,32 @@ abstract class SourceCreateUtils {
         }
     }
 
-    private static boolean samePackage(TypeElement type, TypeElement superType) {
-        return type.getEnclosingElement().equals(superType.getEnclosingElement());
+
+    private static boolean samePackage(TypeElement entityElement, TypeElement parentEntityElement) {
+        /*
+         * not doc
+         * entityElement must be a top-level
+         * @see ArmyMetaModelEntityProcessor#assertEntity(TypeElement, Set).
+         */
+        return entityElement.getEnclosingElement().equals(parentEntityElement.getEnclosingElement());
+    }
+
+    private static boolean sameClassName(TypeElement entityElement, TypeElement parentEntityElement) {
+        return entityElement.getSimpleName().equals(parentEntityElement.getSimpleName());
+    }
+
+    /**
+     *
+     * @return reference of parent entity class name
+     */
+    private static String parentEntityClassRef(TypeElement entityElement, TypeElement parentEntityElement) {
+        String parentRef;
+        if (sameClassName(entityElement, parentEntityElement)) {
+            parentRef = parentEntityElement.getQualifiedName().toString();
+        } else {
+            parentRef = parentEntityElement.getSimpleName().toString();
+        }
+        return parentRef;
     }
 
     private static boolean isJavaLang(TypeMirror typeMirror) {

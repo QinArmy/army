@@ -4,9 +4,11 @@ public interface MappingFactory {
 
     MappingType getMapping(Class<?> javaType) throws MappingException;
 
+    MappingType getMapping(Class<?> javaType,Class<?> mappingClass) throws MappingException;
+
     MappingType getMapping(Class<?> javaType, String mappingType) throws MappingException;
 
-    static MappingFactory getDefaultInstance() {
+    static MappingFactory build() {
         return DefaultMappingFactory.getInstance();
     }
 

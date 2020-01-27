@@ -39,7 +39,7 @@ public final class LongMapping extends AbstractMappingType {
 
     @Override
     public int precision() {
-        return 20;
+        return -1;
     }
 
     @Override

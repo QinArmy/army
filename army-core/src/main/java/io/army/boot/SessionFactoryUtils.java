@@ -10,6 +10,8 @@ import io.army.dialect.SQLDialect;
 import io.army.dialect.UnSupportedDialectException;
 import io.army.dialect.mysql.MySQLDialectFactory;
 import io.army.meta.TableMeta;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
 
 import javax.sql.DataSource;
@@ -19,7 +21,12 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @see SessionFactory
+ */
 abstract class SessionFactoryUtils {
+
+    private static final Logger LOG = LoggerFactory.getLogger(SessionFactoryUtils.class);
 
 
     static Dialect createDialect(final @Nullable SQLDialect sqlDialect, DataSource dataSource,
@@ -84,6 +91,7 @@ abstract class SessionFactoryUtils {
     private static SQLDialect decideSQLDialect(SQLDialect dialect, DataSource dataSource) {
         SQLDialect actual = dialect;
         if (actual == null) {
+            LOG.debug("extract sql dialect from database");
             actual = SessionFactoryUtils.getSQLDialect(dataSource);
         } else if (!SessionFactoryUtils.validateSQLDialect(actual, dataSource)) {
             throw new DialectNotMatchException(ErrorCode.META_ERROR, "SQLDialect[%s] and database not match.", actual);
@@ -117,7 +125,7 @@ abstract class SessionFactoryUtils {
         try (Connection conn = dataSource.getConnection()) {
             DatabaseMetaData metaData = conn.getMetaData();
 
-            String productName = metaData.getDatabaseProductName().toUpperCase();
+            String productName = metaData.getDatabaseProductName();
             int major = metaData.getDatabaseMajorVersion();
             int minor = metaData.getDatabaseMinorVersion();
 

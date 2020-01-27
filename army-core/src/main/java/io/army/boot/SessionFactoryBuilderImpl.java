@@ -50,25 +50,11 @@ class SessionFactoryBuilderImpl implements SessionFactoryBuilder {
 
 
     @Override
-    public ZoneId zoneId() {
-        return zoneId;
-    }
-
-    @Override
     public SessionFactoryBuilderImpl zoneId(ZoneId zoneId) {
         this.zoneId = zoneId;
         return this;
     }
 
-    @Override
-    public SessionFactoryBuilder dialect(Dialect dialect) {
-        return null;
-    }
-
-    @Override
-    public boolean isShowSql() {
-        return showSql;
-    }
 
     @Override
     public SessionFactoryBuilderImpl showSql(boolean showSql) {
@@ -77,18 +63,9 @@ class SessionFactoryBuilderImpl implements SessionFactoryBuilder {
     }
 
     @Override
-    public boolean isFormatSql() {
-        return formatSql;
-    }
-
-    @Override
     public SessionFactoryBuilderImpl formatSql(boolean formatSql) {
         this.formatSql = formatSql;
         return this;
-    }
-
-    public boolean isReadonly() {
-        return readonly;
     }
 
     public SessionFactoryBuilderImpl readonly(boolean readonly) {
@@ -101,11 +78,6 @@ class SessionFactoryBuilderImpl implements SessionFactoryBuilder {
     public SessionFactoryBuilderImpl packagesToScan(String... packagesToScan) {
         this.packagesToScan = Collections.unmodifiableList(Arrays.asList(packagesToScan));
         return this;
-    }
-
-    @Override
-    public List<String> packagesToScan() {
-        return this.packagesToScan;
     }
 
     @Override

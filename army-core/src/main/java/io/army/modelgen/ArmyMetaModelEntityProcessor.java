@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.processing.*;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import java.io.PrintWriter;
@@ -61,14 +62,17 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         final long startTime = System.currentTimeMillis();
+        // 1. crate MetaEntity
         List<MetaEntity> entityList = createEntity(roundEnv);
 
-        // create source code file
+        //2. create source code file
         writeSources(entityList);
         LOG.info("{} cost {} ms", ArmyMetaModelEntityProcessor.class.getSimpleName(),
                 System.currentTimeMillis() - startTime);
         return ALLOW_OTHER_PROCESSORS_TO_CLAIM_ANNOTATIONS;
     }
+
+    /*################################## blow private method ##################################*/
 
     private List<MetaEntity> createEntity(RoundEnvironment roundEnv) {
 
@@ -96,6 +100,7 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
                 parentEntityMappedElementList = Collections.emptyList();
             } else {
                 Pair<List<TypeElement>, TypeElement> parentPair;
+                // create super class(annotated by Inheritance ) 的 mapped list
                 parentPair = createEntityMappedElementList(parentEntityElement, mappedSuperMap, inheritanceMap,
                         entityElementMap);
                 parentEntityMappedElementList = parentPair.getFirst();
@@ -155,14 +160,21 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
             throw new MetaException(ErrorCode.META_ERROR, "entity[%s] table name required."
                     , entityElement.getQualifiedName());
         }
-        String tableName = table.schema() + "." + table.name();
-        if (tableNameSet.contains(tableName)) {
+        if(entityElement.getNestingKind() != NestingKind.TOP_LEVEL){
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] must be top level class."
+                    , entityElement.getQualifiedName());
+        }
+
+        String qualifiedTableName = table.catalog() + "." + table.schema() + "." + table.name();
+        // make qualifiedTableName lower case
+        qualifiedTableName = StringUtils.toLowerCase(qualifiedTableName);
+        if (tableNameSet.contains(qualifiedTableName)) {
             throw new MetaException(ErrorCode.META_ERROR, "entity[%s] table name[%s] duplication.",
                     entityElement.getQualifiedName(),
                     table.name()
             );
         } else {
-            tableNameSet.add(tableName);
+            tableNameSet.add(qualifiedTableName);
         }
 
         if (!StringUtils.hasText(table.comment())) {
@@ -173,7 +185,11 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
         }
     }
 
-
+    /**
+     *
+     * @return first: super class (annotated by {@link MappedSuperclass} and {@link Table}) list (order by extends)
+     * util encounter {@link Inheritance}, second: class annotated by {@link Inheritance}
+     */
     private Pair<List<TypeElement>, TypeElement> createEntityMappedElementList(
             TypeElement entityElement,
             Map<String, TypeElement> mappedSuperMap,
@@ -181,6 +197,7 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
             Map<String, TypeElement> entityElementMap) {
 
         List<TypeElement> entityMappedElementList = new ArrayList<>(6);
+        // add entity class firstly
         entityMappedElementList.add(entityElement);
         TypeElement parentEntityElement = null;
         String parentClassName;
@@ -251,20 +268,16 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
             FileObject fo;
             for (MetaEntity metaEntity : entityList) {
                 fo = processingEnv.getFiler().createSourceFile(metaEntity.getQualifiedName());
+
                 try (PrintWriter pw = new PrintWriter(fo.openOutputStream())) {
-                    doWriteSource(pw, metaEntity);
+                    pw.println(metaEntity.getImportBlock());
+                    pw.println(metaEntity.getClassDefinition());
+                    pw.println(metaEntity.getBody());
                 }
             }
         } catch (Exception e) {
             throw new MetaException(ErrorCode.META_ERROR, e.getMessage(), e);
         }
-
-    }
-
-    private void doWriteSource(PrintWriter pw, MetaEntity metaEntity) {
-        pw.println(metaEntity.getImportBlock());
-        pw.println(metaEntity.getClassDefinition());
-        pw.println(metaEntity.getBody());
 
     }
 

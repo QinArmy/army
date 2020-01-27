@@ -67,7 +67,7 @@ public class CodeEnumMapping extends AbstractMappingType {
 
     @Override
     public int precision() {
-        return 11;
+        return -1;
     }
 
     @Override

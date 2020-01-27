@@ -108,7 +108,7 @@ class MigrationImpl implements Migration {
         this.indexesToDrop.add(indexName);
     }
 
-     boolean needAlter() {
+    boolean needAlter() {
         return !CollectionUtils.isEmpty(columnsToAdd)
                 || !CollectionUtils.isEmpty(columnsToModify)
                 || !CollectionUtils.isEmpty(indexesToAdd)
@@ -122,11 +122,11 @@ class MigrationImpl implements Migration {
             return;
         }
         if (needAlter()) {
-            columnsToAdd = Collections.unmodifiableList(columnsToAdd);
-            columnsToModify = Collections.unmodifiableList(columnsToModify);
-            indexesToAdd = Collections.unmodifiableList(indexesToAdd);
-            indexesToModify = Collections.unmodifiableList(indexesToModify);
-            indexesToDrop = Collections.unmodifiableList(indexesToDrop);
+            columnsToAdd = this.unmodifiableList(columnsToAdd);
+            columnsToModify = this.unmodifiableList(columnsToModify);
+            indexesToAdd = this.unmodifiableList(indexesToAdd);
+            indexesToModify = this.unmodifiableList(indexesToModify);
+            indexesToDrop = this.unmodifiableList(indexesToDrop);
         } else {
             columnsToAdd = Collections.emptyList();
             columnsToModify = Collections.emptyList();
@@ -141,12 +141,21 @@ class MigrationImpl implements Migration {
 
     /*################################## blow private method ##################################*/
 
-    private void assertNotFinal(){
-        if(finalFinish){
+    private <T> List<T> unmodifiableList(List<T> list) {
+        List<T> unmodifiableList;
+        if (list == null) {
+            unmodifiableList = Collections.emptyList();
+        } else {
+            unmodifiableList = Collections.unmodifiableList(list);
+        }
+        return unmodifiableList;
+    }
+
+    private void assertNotFinal() {
+        if (finalFinish) {
             throw new UnsupportedOperationException();
         }
     }
-
 
 
 }

@@ -30,8 +30,8 @@ public enum ErrorCode implements CodeEnum {
     NOT_FOUND_META_CLASS(701, "", NONE),
     META_CLASS_NOT_MATCH(702, "", NONE),
     SQL_TYPE_NOT_MATCH(703, "", NONE),
-    PRECISION_LESS(703, "", NONE),
-    NNSUPPORT_SQL_TYPE(704, "", NONE),
+    PRECISION_LESS(704, "", NONE),
+    NNSUPPORT_SQL_TYPE(705, "", NONE),
 
     ACCESS_ERROR(801, "", NONE),
 
