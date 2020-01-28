@@ -36,7 +36,10 @@
         <Logger name="io.army.modelgen.ArmyMetaModelEntityProcessor" level="TRACE" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
-        <Logger name="io.army.boot.SessionFactoryImpl" level="TRACE" additivity="false">
+        <Logger name="io.army.boot.SessionFactoryImpl" level="INFO" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="io.army.boot.migratioin.MySQL57MetaSchemaComparator" level="DEBUG" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
         <Root level="INFO">

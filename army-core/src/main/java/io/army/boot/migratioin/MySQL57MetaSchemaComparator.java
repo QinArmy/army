@@ -5,13 +5,17 @@ import io.army.criteria.MetaException;
 import io.army.meta.FieldMeta;
 import io.army.schema.SchemaInfoException;
 import io.army.sqltype.MySQLDataType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
- class MySQL57MetaSchemaComparator extends AbstractMetaSchemaComparator {
+class MySQL57MetaSchemaComparator extends AbstractMetaSchemaComparator {
 
-      MySQL57MetaSchemaComparator() {
-     }
+    protected final Logger LOG = LoggerFactory.getLogger(getClass());
 
-     @Override
+    MySQL57MetaSchemaComparator() {
+    }
+
+    @Override
     protected boolean precisionOrScaleAlter(FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo)
             throws SchemaInfoException, MetaException {
         MySQLDataType sqlDataType;
@@ -26,8 +30,13 @@ import io.army.sqltype.MySQLDataType;
         }
 
         try {
-            return !sqlDataType.precisionMatch(fieldMeta.precision(), columnInfo.columnSize())
-                    || !sqlDataType.scaleMatch(fieldMeta.precision(), columnInfo.scale());
+
+            boolean alter = !sqlDataType.precisionMatch(fieldMeta.precision(), columnInfo.columnSize())
+                    || !sqlDataType.scaleMatch(fieldMeta.scale(), columnInfo.scale());
+            if (alter) {
+                LOG.debug("columnInfo:{}", columnInfo);
+            }
+            return alter;
         } catch (IllegalArgumentException e) {
             throw new MetaException(ErrorCode.NNSUPPORT_SQL_TYPE,
                     e,
@@ -43,8 +52,7 @@ import io.army.sqltype.MySQLDataType;
     protected boolean defaultValueAlter(FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo)
             throws SchemaInfoException, MetaException {
         //TODO zoro implement interpreter model
-        return !fieldMeta.primary()
-                && !fieldMeta.defaultValue().equals(columnInfo.defaultValue());
+        return false;
     }
 
 

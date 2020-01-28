@@ -15,14 +15,15 @@ final class SchemaMetaImpl implements SchemaMeta {
 
     private final boolean defaultSchema;
 
-    public SchemaMetaImpl(String catalog, String schema) {
+     SchemaMetaImpl(String catalog, String schema) {
         Assert.notNull(catalog, "catalog required");
         Assert.notNull(schema, "schema required");
 
         this.catalog = catalog;
         this.schema = schema;
-        this.defaultSchema = !StringUtils.hasText(catalog)
-                && !StringUtils.hasText(schema);
+        this.defaultSchema = StringUtils.isEmpty(catalog)
+                && StringUtils.isEmpty(schema);
+
     }
 
     @NonNull
@@ -35,6 +36,7 @@ final class SchemaMetaImpl implements SchemaMeta {
     public boolean defaultSchema() {
         return defaultSchema;
     }
+
 
     @NonNull
     @Override

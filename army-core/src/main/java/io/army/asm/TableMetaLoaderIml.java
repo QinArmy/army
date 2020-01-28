@@ -2,6 +2,7 @@ package io.army.asm;
 
 import io.army.ErrorCode;
 import io.army.annotation.Table;
+import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen.MetaConstant;
 import io.army.util.ClassUtils;
@@ -38,7 +39,7 @@ class TableMetaLoaderIml implements TableMetaLoader {
     }
 
     @Override
-    public Map<Class<?>, TableMeta<?>> scanTableMeta(List<String> basePackages) {
+    public Map<Class<?>, TableMeta<?>> scanTableMeta(SchemaMeta schemaMeta, List<String> basePackages) {
         Map<Class<?>, TableMeta<?>> map = new HashMap<>();
         try {
 
@@ -49,7 +50,7 @@ class TableMetaLoaderIml implements TableMetaLoader {
                         continue;
                     }
                     MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
-                    if (!isDomainClass(metadataReader)) {
+                    if (!isDomainClass(schemaMeta, metadataReader)) {
                         continue;
                     }
                     Class<?> domainClass = loadDomainClass(metadataReader.getClassMetadata().getClassName());
@@ -94,13 +95,18 @@ class TableMetaLoaderIml implements TableMetaLoader {
         return this.metadataReaderFactory;
     }
 
-    private boolean isDomainClass(MetadataReader metadataReader) {
+    private boolean isDomainClass(SchemaMeta schemaMeta, MetadataReader metadataReader) {
         ClassMetadata classMetadata = metadataReader.getClassMetadata();
+        Map<String, Object> valueMap;
+        valueMap = metadataReader.getAnnotationMetadata().getAnnotationAttributes(Table.class.getName());
+
         return classMetadata.isIndependent()
                 && classMetadata.isConcrete()
                 && !classMetadata.isInterface()
                 && !classMetadata.isAnnotation()
-                && metadataReader.getAnnotationMetadata().hasAnnotation(Table.class.getName())
+                && valueMap != null
+                && schemaMeta.catalog().equals(valueMap.get("catalog"))
+                && schemaMeta.schema().equals(valueMap.get("schema"))
                 ;
     }
 
@@ -112,6 +118,7 @@ class TableMetaLoaderIml implements TableMetaLoader {
         }
     }
 
+    @SuppressWarnings("all")
     private TableMeta<?> loadTableMetaFor(Class<?> domainClass) {
         Class<?> metaClass;
         try {
@@ -128,13 +135,21 @@ class TableMetaLoaderIml implements TableMetaLoader {
         Field field = ReflectionUtils.findField(metaClass, MetaConstant.TABLE_META);
         if (field == null
                 || !TableMeta.class.isAssignableFrom(field.getType())) {
-            throw new TableMetaLoadException(ErrorCode.NOT_FOUND_META_CLASS, "not meta class,class[%s] not found static property[%s]"
+            throw new TableMetaLoadException(ErrorCode.NOT_FOUND_META_CLASS
+                    , "not meta class,class[%s] not found static property[%s]"
                     , metaClass, MetaConstant.TABLE_META);
         }
-        return (TableMeta<?>) ReflectionUtils.getField(field, null);
+        try {
+            return (TableMeta<?>) ReflectionUtils.getField(field, null);
+        } catch (Throwable e) {
+            throw new TableMetaLoadException(ErrorCode.META_ERROR
+                    , e
+                    , "not meta class,class[%s] not found static property[%s]"
+                    , metaClass, MetaConstant.TABLE_META);
+        }
     }
 
-    private void clean(){
+    private void clean() {
         patternResolver = null;
         metadataReaderFactory = null;
     }

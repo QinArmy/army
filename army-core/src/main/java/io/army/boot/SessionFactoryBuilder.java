@@ -31,6 +31,10 @@ public interface SessionFactoryBuilder  {
 
     SessionFactoryBuilder formatSql(boolean formatSql);
 
+    SessionFactoryBuilder catalog(String catalog);
+
+    SessionFactoryBuilder schema(String schema);
+
     SessionFactory build();
 
     static SessionFactoryBuilder builder(){

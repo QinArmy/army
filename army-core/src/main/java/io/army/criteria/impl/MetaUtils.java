@@ -15,8 +15,6 @@ import org.springframework.lang.Nullable;
 import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * created  on 2019-02-21.
@@ -28,8 +26,6 @@ abstract class MetaUtils {
     private static final String ASC = "ASC";
 
     private static final String DESC = "DESC";
-
-    private static final ConcurrentMap<String, SchemaMeta> SCHEMA_HOLDER = new ConcurrentHashMap<>();
 
     private MetaUtils() {
 
@@ -59,32 +55,65 @@ abstract class MetaUtils {
     }
 
     static SchemaMeta schemaMeta(Table table) {
-        return SCHEMA_HOLDER.computeIfAbsent(
-                StringUtils.toLowerCase(table.catalog() + "." + table.schema())
-                , key -> new SchemaMetaImpl(table.catalog(), table.schema())
-        );
+        return SchemaMetaFactory.getSchema(table.catalog(), table.schema());
     }
 
-    static boolean columnNullable(Column column, FieldMeta<?, ?> fieldMeta) {
-        if (fieldMeta.primary() && column.nullable()) {
-            throw new MetaException(ErrorCode.META_ERROR, "mapped class[%s] column[%s] columnNullable must be false.",
-                    fieldMeta.table().javaType(),
-                    fieldMeta.fieldName()
-            );
+    static boolean columnNullable(Column column, FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
+        if (TableMeta.VERSION_PROPS.contains(fieldMeta.propertyName())
+                || isDiscriminator) {
+            if (column.nullable()) {
+                throw new MetaException(ErrorCode.META_ERROR, "mapped class[%s] column[%s] columnNullable must be false.",
+                        fieldMeta.table().javaType(),
+                        fieldMeta.fieldName()
+                );
+            }
+
         }
         return column.nullable();
     }
 
     @NonNull
-    static String columnComment(Column column, FieldMeta<?, ?> fieldMeta) {
-        if (!TableMeta.VERSION_PROPS.contains(fieldMeta.propertyName())
-                && !StringUtils.hasText(column.comment())) {
-            throw new MetaException(ErrorCode.META_ERROR, "mapped class[%s] column[%s] columnNullable must be false.",
-                    fieldMeta.table().javaType(),
-                    fieldMeta.fieldName()
-            );
+    static String columnComment(Column column, FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
+        String comment = column.comment();
+        if (TableMeta.VERSION_PROPS.contains(fieldMeta.propertyName())
+                || isDiscriminator) {
+
+            if (!StringUtils.hasText(comment)) {
+                comment = commentManagedByArmy(fieldMeta);
+            }
+        } else if (!StringUtils.hasText(comment)) {
+            throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] column[%s] no comment."
+                    , fieldMeta.table().javaType().getName()
+                    , fieldMeta.fieldName());
         }
-        return fieldMeta.comment();
+        return comment;
+    }
+
+
+    static boolean isDiscriminator(FieldMeta<?, ?> fieldMeta) {
+        Inheritance inheritance = AnnotationUtils.getAnnotation(fieldMeta.table().javaType(), Inheritance.class);
+        return inheritance != null
+                && fieldMeta.fieldName().equalsIgnoreCase(inheritance.value());
+    }
+
+
+    static boolean columnInsertable(String propName, Column column, boolean isDiscriminator) {
+        boolean insertable = column.insertable();
+        if (TableMeta.VERSION_PROPS.contains(propName)
+                || isDiscriminator) {
+            insertable = true;
+        }
+        return insertable;
+    }
+
+    static boolean columnUpdatable(String propName, Column column, boolean isDiscriminator) {
+        boolean updatable = column.updatable();
+        if (TableMeta.ID.equals(propName)
+                || TableMeta.CREATE_TIME.equals(propName)
+                || isDiscriminator) {
+            updatable = false;
+        }
+        return updatable;
     }
 
     @Nonnull
@@ -123,6 +152,7 @@ abstract class MetaUtils {
                 && String.class != fieldMeta.javaType()
                 && !StringUtils.hasText(column.defaultValue())
                 && !isManagedByArmy(fieldMeta)) {
+            // TODO zoro optimize
             throw new MetaException(ErrorCode.META_ERROR, "mapped class[%s] column[%s] no defaultValue.",
                     fieldMeta.table().javaType(),
                     fieldMeta.fieldName()
@@ -172,7 +202,7 @@ abstract class MetaUtils {
         // this table's column to filed map, contains id ,key is lower case
         final Map<String, Field> columnToFieldMap = columnToFieldMap(table, mappedClassList);
 
-        // 1. create indexMap meta
+        // 1. build indexMap meta
         final List<IndexMeta<T>> indexMetaList = indexMetaList(table, tableMeta, columnToFieldMap);
 
         // exclude indexMetaList column part
@@ -261,7 +291,14 @@ abstract class MetaUtils {
             );
         }
         String columnName = column.name();
-        if (!StringUtils.hasText(columnName)) {
+        if (StringUtils.hasText(columnName)) {
+           if(!columnName.trim().equals(columnName)){
+               throw new MetaException(ErrorCode.META_ERROR,
+                       "mapped class [%s] required prop[%s] column name contain space.",
+                       field.getDeclaringClass().getName(),
+                       field.getName());
+           }
+        }else {
             columnName = StringUtils.camelToLowerCase(field.getName());
         }
         return columnName;
@@ -271,6 +308,33 @@ abstract class MetaUtils {
 
 
     /*################################ private method ####################################*/
+
+    private static String commentManagedByArmy(FieldMeta<?, ?> fieldMeta) {
+        String comment = "";
+        switch (fieldMeta.propertyName()) {
+            case TableMeta.ID:
+                comment = "primary key";
+                break;
+            case TableMeta.CREATE_TIME:
+                comment = "create time";
+                break;
+            case TableMeta.UPDATE_TIME:
+                comment = "update time";
+                break;
+            case TableMeta.VERSION:
+                comment = "version for optimistic lock";
+                break;
+            case TableMeta.VISIBLE:
+                comment = "visible for logic delete";
+                break;
+            default:
+                if (fieldMeta.javaType().isEnum()
+                        && CodeEnum.class.isAssignableFrom(fieldMeta.javaType())) {
+                    comment = "@see " + fieldMeta.javaType().getName();
+                }
+        }
+        return comment;
+    }
 
     private static boolean isManagedByArmy(FieldMeta<?, ?> fieldMeta) {
         Inheritance inheritance = AnnotationUtils.getAnnotation(fieldMeta.table().javaType(), Inheritance.class);
@@ -416,13 +480,13 @@ abstract class MetaUtils {
             , Set<String> propNameSet) {
 
         if (columnNameSet.contains(lowerColumnName)) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] column[%s] create duplication",
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] column[%s] build duplication",
                     fieldMeta.table().javaType(),
                     fieldMeta.fieldName()
             );
         }
         if (propNameSet.contains(fieldMeta.propertyName())) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] property[%s] create duplication",
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] property[%s] build duplication",
                     fieldMeta.table().javaType(),
                     fieldMeta.propertyName()
             );
@@ -515,7 +579,7 @@ abstract class MetaUtils {
 
 
     /**
-     * create {@link Index}'s {@link IndexFieldMeta}
+     * build {@link Index}'s {@link IndexFieldMeta}
      *
      * @param createdColumnSet created column set  in  other indexMap
      * @param <T>              entity java class
@@ -628,7 +692,7 @@ abstract class MetaUtils {
         private final boolean primaryKey;
 
         /**
-         * @param index            indexMap or null ( when create primary key for which user don't definite {@link Index})
+         * @param index            indexMap or null ( when build primary key for which user don't definite {@link Index})
          * @param columnToFieldMap a unmodifiable map
          */
         private DefaultIndexMeta(TableMeta<T> table, @Nullable Index index, Map<String, Field> columnToFieldMap,
@@ -637,7 +701,7 @@ abstract class MetaUtils {
 
             String[] columnArray;
             if (index == null) {
-                this.name = PRIMARY_FIELD;
+                this.name = "PRIMARY";
                 this.unique = true;
                 this.type = "";
                 columnArray = new String[]{PRIMARY_FIELD};

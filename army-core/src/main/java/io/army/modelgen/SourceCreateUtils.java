@@ -68,13 +68,13 @@ abstract class SourceCreateUtils {
         try {
             Set<String> entityPropNameSet = new HashSet<>();
 
-            //1.check super and  add super entity props to entityPropNameSet to avoid child class duplicate prop
+            //1.check parent mapping and  add super entity props to entityPropNameSet to avoid child class duplicate prop
             generateEntityAttributes(parentMappedElementList, entityPropNameSet, indexColumnNameSet);
             // 2. extract entity property elements and check entity mapping
             final Set<VariableElement> entityPropSet = generateEntityAttributes(entityMappedElementList,
                     entityPropNameSet, indexColumnNameSet);
             // assert required props
-            MetaAssert.assertRequiredMappingProps(entityMappedElementList, entityPropNameSet);
+            MetaUtils.assertRequiredMappingProps(entityMappedElementList, entityPropNameSet);
             return entityPropSet;
         } catch (MetaException e) {
             LOG.error("entityMappedElementList:{}\nparentMappedElementList:{}",
@@ -94,7 +94,7 @@ abstract class SourceCreateUtils {
     }
 
     /**
-     * create meta source code import part
+     * build meta source code import part
      *
      * @param entityElement       entity element that annotated by {@link Table}
      * @param parentEntityElement entityElement's parent element that annotated by {@link Table}
@@ -133,7 +133,7 @@ abstract class SourceCreateUtils {
     }
 
     /**
-     * create meta source code class definition part
+     * build meta source code class definition part
      */
     static String generateClassDefinition(TypeElement entityElement, TypeElement parentEntityElement) {
         StringBuilder builder = new StringBuilder();
@@ -219,7 +219,7 @@ abstract class SourceCreateUtils {
 
 
     static String columnName(TypeElement entityElement, VariableElement mappedProp, Column column) {
-        MetaAssert.assertRequiredColumnName(entityElement, mappedProp, column);
+        MetaUtils.assertRequiredColumnName(entityElement, mappedProp, column);
         return StringUtils.hasText(column.name())
                 ? column.name()
                 : StringUtils.camelToLowerCase(mappedProp.getSimpleName().toString());
@@ -343,11 +343,12 @@ abstract class SourceCreateUtils {
                                                                  Set<String> indexColumnNameSet)
             throws MetaException {
         Set<VariableElement> mappedPropSet = new HashSet<>();
+        // column name set to avoid duplication
         Set<String> columnNameSet = new HashSet<>();
         List<String> discriminatorColumnList = new ArrayList<>(1);
 
         final TypeElement entityElement = entityElement(mappedClassElementList);
-
+        final String discriminatorColumn = discriminatorColumnName(entityElement);
         Column column;
         VariableElement mappedProp;
         String columnName;
@@ -362,20 +363,18 @@ abstract class SourceCreateUtils {
                 if (column == null) {
                     continue;
                 }
-                if (entityPropNameSet.contains(mappedProp.getSimpleName().toString())) {
-                    // child class duplicate prop allowed by army
-                    throw MetaAssert.createPropertyDuplication(mappedElement, mappedProp);
-                }
-                entityPropNameSet.add(mappedProp.getSimpleName().toString());
+                // assert prop name not duplication
+                MetaUtils.assertMappingPropNotDuplication(entityElement,mappedProp.getSimpleName().toString()
+                        ,entityPropNameSet);
 
                 columnName = columnName(entityElement, mappedProp, column);
                 // make column name lower case
                 columnName = StringUtils.toLowerCase(columnName);
                 if (columnNameSet.contains(columnName)) {
-                    throw MetaAssert.createColumnDuplication(mappedElement, columnName);
+                    throw MetaUtils.createColumnDuplication(mappedElement, columnName);
                 }
                 // assert io.army.annotation.Column
-                MetaAssert.assertColumn(entityElement,mappedElement, mappedProp, column, columnName);
+                MetaUtils.assertColumn(entityElement, mappedProp, column, columnName,discriminatorColumn);
                 // assert io.army.annotation.DiscriminatorValue , io.army.annotation.Inheritance
                 addDiscriminator(entityElement, mappedProp, columnName, discriminatorColumnList);
 
@@ -384,8 +383,8 @@ abstract class SourceCreateUtils {
                 mappedPropSet.add(mappedProp);
             }
         }
-        MetaAssert.assertIndexColumnNameSet(entityElement, columnNameSet, indexColumnNameSet);
-        MetaAssert.assertInheritance(entityElement, discriminatorColumnList);
+        MetaUtils.assertIndexColumnNameSet(entityElement, columnNameSet, indexColumnNameSet);
+        MetaUtils.assertInheritance(entityElement, discriminatorColumnList);
         return Collections.unmodifiableSet(mappedPropSet);
     }
 
@@ -405,15 +404,15 @@ abstract class SourceCreateUtils {
         }
 
         if (mappedProp.asType().getKind() != TypeKind.DECLARED) {
-            MetaAssert.throwDiscriminatorNotEnum(entityElement, mappedProp);
+            MetaUtils.throwDiscriminatorNotEnum(entityElement, mappedProp);
         }
         Element element = ((DeclaredType) mappedProp.asType()).asElement();
 
         if (element.getKind() != ElementKind.ENUM) {
-            MetaAssert.throwDiscriminatorNotEnum(entityElement, mappedProp);
+            MetaUtils.throwDiscriminatorNotEnum(entityElement, mappedProp);
         }
         if (!(element instanceof TypeElement)) {
-            MetaAssert.throwDiscriminatorNotEnum(entityElement, mappedProp);
+            MetaUtils.throwDiscriminatorNotEnum(entityElement, mappedProp);
         }
 
         TypeElement enumElement = (TypeElement) element;
@@ -425,7 +424,7 @@ abstract class SourceCreateUtils {
             }
         }
         if (!isCodeEnum) {
-            MetaAssert.throwDiscriminatorNotEnum(entityElement, mappedProp);
+            MetaUtils.throwDiscriminatorNotEnum(entityElement, mappedProp);
         }
 
     }
@@ -534,5 +533,24 @@ abstract class SourceCreateUtils {
             match = JAVA_LANG.equals(name.substring(0, index));
         }
         return match;
+    }
+
+    /**
+     * extract entity's discriminator column name
+     * @return lower case column name
+     */
+    @Nullable
+    private static String discriminatorColumnName(TypeElement entityElement){
+        if(entityElement == null){
+            return null;
+        }
+        Inheritance inheritance = entityElement.getAnnotation(Inheritance.class);
+        String columnName;
+        if(inheritance == null){
+            columnName = null;
+        }else {
+            columnName = StringUtils.toLowerCase(inheritance.value());
+        }
+        return columnName;
     }
 }

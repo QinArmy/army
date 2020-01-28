@@ -23,7 +23,7 @@ import java.util.*;
 /**
  * Main annotation processor.
  * <p>
- * create entity meta source code file
+ * build entity meta source code file
  * </p>
  * created  on 2018/9/27.
  */
@@ -65,7 +65,7 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
         // 1. crate MetaEntity
         List<MetaEntity> entityList = createEntity(roundEnv);
 
-        //2. create source code file
+        //2. build source code file
         writeSources(entityList);
         LOG.info("{} cost {} ms", ArmyMetaModelEntityProcessor.class.getSimpleName(),
                 System.currentTimeMillis() - startTime);
@@ -100,7 +100,7 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
                 parentEntityMappedElementList = Collections.emptyList();
             } else {
                 Pair<List<TypeElement>, TypeElement> parentPair;
-                // create super class(annotated by Inheritance ) 的 mapped list
+                // build super class(annotated by Inheritance ) 的 mapped list
                 parentPair = createEntityMappedElementList(parentEntityElement, mappedSuperMap, inheritanceMap,
                         entityElementMap);
                 parentEntityMappedElementList = parentPair.getFirst();
@@ -160,7 +160,7 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
             throw new MetaException(ErrorCode.META_ERROR, "entity[%s] table name required."
                     , entityElement.getQualifiedName());
         }
-        if(entityElement.getNestingKind() != NestingKind.TOP_LEVEL){
+        if (entityElement.getNestingKind() != NestingKind.TOP_LEVEL) {
             throw new MetaException(ErrorCode.META_ERROR, "entity[%s] must be top level class."
                     , entityElement.getQualifiedName());
         }
@@ -186,7 +186,6 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
     }
 
     /**
-     *
      * @return first: super class (annotated by {@link MappedSuperclass} and {@link Table}) list (order by extends)
      * util encounter {@link Inheritance}, second: class annotated by {@link Inheritance}
      */
@@ -203,14 +202,17 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
         String parentClassName;
 
         final boolean entityAnnotatedInheritance = entityElement.getAnnotation(Inheritance.class) != null;
-
+        int tableCount = 0;
         for (TypeElement parentMappedElement = entityElement; ; ) {
             // key is  parent class name
             parentClassName = parentMappedElement.getSuperclass().toString();
 
             if (inheritanceMap.containsKey(parentClassName)) {
                 if (entityAnnotatedInheritance) {
-                    MetaAssert.throwInheritanceDuplication(entityElement);
+                    MetaUtils.throwInheritanceDuplication(entityElement);
+                }
+                if (tableCount > 0) {
+                    MetaUtils.throwMultiLevelInheritance(entityElement);
                 }
                 parentEntityElement = inheritanceMap.get(parentClassName);
                 break;
@@ -223,6 +225,7 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
                 // get super class
                 parentMappedElement = entityElementMap.get(parentClassName);
                 entityMappedElementList.add(parentMappedElement);
+                tableCount++;
             } else {
                 break;
             }

@@ -48,7 +48,7 @@ class DefaultMetaEntity implements MetaEntity {
         }
         // indexColumnNameSet help next step
         final Set<String> indexColumnNameSet = createIndexColumnNameSet(this.entityElement);
-
+        // prepare mapping prop element
         final Set<VariableElement> mappingPropSet = SourceCreateUtils.generateAttributes(
                 entityMappedElementList,
                 parentMappedElementList,

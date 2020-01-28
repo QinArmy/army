@@ -11,17 +11,21 @@ import io.army.schema.SchemaInfoException;
 import io.army.util.Assert;
 import io.army.util.ObjectUtils;
 import io.army.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
 
 import java.util.*;
 
-public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator{
+public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
+
+
 
     @Override
     public final List<Migration> compare(Collection<TableMeta<?>> tableMetas, SchemaInfo schemaInfo, Dialect dialect)
             throws SchemaInfoException, MetaException {
-        Assert.notNull(tableMetas,"tableMetas required");
-        Assert.notNull(schemaInfo,"schemaInfo required");
+        Assert.notNull(tableMetas, "tableMetas required");
+        Assert.notNull(schemaInfo, "schemaInfo required");
 
         final Map<String, TableInfo> tableInfoMap = schemaInfo.tableMap();
 
@@ -31,7 +35,7 @@ public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparat
             // make key lower case
             TableInfo tableInfo = tableInfoMap.get(StringUtils.toLowerCase(tableMeta.tableName()));
             if (tableInfo == null) {
-                // will create table
+                // will build table
                 migrationList.add(new MigrationImpl(tableMeta, true));
 
             } else {
@@ -51,7 +55,7 @@ public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparat
             throws SchemaInfoException, MetaException;
 
     protected abstract boolean defaultValueAlter(FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo)
-            throws SchemaInfoException,MetaException;
+            throws SchemaInfoException, MetaException;
 
     /*################################## blow private method ##################################*/
 
@@ -64,20 +68,20 @@ public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparat
         MigrationImpl migration = new MigrationImpl(tableMeta, false);
 
         // column migration
-        migrateColumnIfNeed(tableMeta,tableInfo,migration);
+        migrateColumnIfNeed(tableMeta, tableInfo, migration);
         // index migration
-        migrateIndexIfNeed(tableMeta,tableInfo,migration);
+        migrateIndexIfNeed(tableMeta, tableInfo, migration);
 
-        if(migration.needAlter()){
+        if (migration.needAlter()) {
             migration.makeFinal();
-        }else {
+        } else {
             migration = null;
         }
         return migration;
     }
 
 
-    private void migrateColumnIfNeed(TableMeta<?> tableMeta, TableInfo tableInfo,MigrationImpl migration){
+    private void migrateColumnIfNeed(TableMeta<?> tableMeta, TableInfo tableInfo, MigrationImpl migration) {
         final Map<String, ColumnInfo> columnInfoMap = tableInfo.columnMap();
 
         for (FieldMeta<?, ?> fieldMeta : tableMeta.fieldCollection()) {
@@ -94,55 +98,84 @@ public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparat
 
     }
 
-    private void migrateIndexIfNeed(TableMeta<?> tableMeta, TableInfo tableInfo,MigrationImpl migration){
+    private void migrateIndexIfNeed(TableMeta<?> tableMeta, TableInfo tableInfo, MigrationImpl migration) {
         final Map<String, IndexInfo> indexInfoMap = tableInfo.indexMap();
         // index migration
         Set<String> indexNameSet = new HashSet<>();
+
         for (IndexMeta<?> indexMeta : tableMeta.indexCollection()) {
-            IndexInfo indexInfo = indexInfoMap.get(StringUtils.toLowerCase(indexMeta.name()));
+            String indexName = StringUtils.toLowerCase(indexMeta.name());
+            IndexInfo indexInfo = indexInfoMap.get(indexName);
             if (indexInfo == null) {
-                // alter table add index
-                migration.addIndexToAdd(indexMeta);
-            } else if(needAlterIndex(indexMeta,indexInfo)){
+                if (!indexMeta.isPrimaryKey()) {
+                    // alter table add index
+                    migration.addIndexToAdd(indexMeta);
+                }
+            } else if (needAlterIndex(indexMeta, indexInfo)) {
                 // alter table alter index
                 migration.addIndexToModify(indexMeta);
             }
-            indexNameSet.add(StringUtils.toLowerCase(indexMeta.name()));
+            indexNameSet.add(indexName);
         }
 
         // find indexes than not in index meta
         Set<String> indexNameFromSchema = new HashSet<>(indexInfoMap.keySet());
         indexNameFromSchema.removeAll(indexNameSet);
-        for (String indexName: indexNameFromSchema) {
+        for (String indexName : indexNameFromSchema) {
+            if (primaryKeyIndex(indexInfoMap.get(indexName))) {
+                continue;
+            }
             migration.addIndexToDrop(indexName);
         }
     }
 
-    private boolean needAlterIndex(IndexMeta<?> indexMeta, IndexInfo indexInfo) throws SchemaInfoException{
+    private boolean primaryKeyIndex(IndexInfo indexInfo) {
+        boolean yes = false;
+        if ("PRIMARY".equalsIgnoreCase(indexInfo.name())) {
+            yes = true;
+        } else if (indexInfo.unique()) {
+            Map<String, IndexColumnInfo> indexColumnInfoMap = indexInfo.columnMap();
+            yes = indexColumnInfoMap.size() == 1
+                    && indexColumnInfoMap.containsKey(TableMeta.ID);
+        }
+        return yes;
+    }
+
+
+    private boolean needAlterIndex(IndexMeta<?> indexMeta, IndexInfo indexInfo) throws SchemaInfoException {
+        if (primaryKeyIndex(indexInfo)) {
+            return false;
+        }
+        boolean need ;
+        if (indexMeta.isUnique() != indexInfo.unique()) {
+            need = true;
+        } else if (indexMeta.fieldList().size() != indexInfo.columnMap().size()) {
+            need = true;
+        } else {
+           need = indexOrderMatch(indexMeta,indexInfo);
+        }
+        return need;
+    }
+
+    private boolean indexOrderMatch(IndexMeta<?> indexMeta, IndexInfo indexInfo){
+        Map<String, IndexColumnInfo> columnInfoMap = indexInfo.columnMap();
         boolean need = false;
-        if(indexMeta.isUnique() != indexInfo.unique()){
-            need = true;
-        }else if(indexMeta.fieldList().size() != indexInfo.columnMap().size()){
-            need = true;
-        }else {
-            Map<String,IndexColumnInfo> columnInfoMap = indexInfo.columnMap();
-            for (IndexFieldMeta<?,?> indexFieldMeta : indexMeta.fieldList()) {
-                IndexColumnInfo info = columnInfoMap.get(indexFieldMeta.fieldName());
+        for (IndexFieldMeta<?, ?> indexFieldMeta : indexMeta.fieldList()) {
+            IndexColumnInfo info = columnInfoMap.get(StringUtils.toLowerCase(indexFieldMeta.fieldName()));
 
-                if(info == null){
-                    // index column not exists
-                    need = true ;
+            if (info == null) {
+                // index column not exists
+                need = true;
+                break;
+            } else {
+                Boolean fieldAsc = indexFieldMeta.fieldAsc();
+                if (fieldAsc != null && fieldAsc != info.asc()) {
+                    // index column order not match
+                    need = true;
                     break;
-                }else {
-                    Boolean fieldAsc = indexFieldMeta.fieldAsc();
-                    if(fieldAsc != null && fieldAsc != info.asc()){
-                        // index column order not match
-                        need = true;
-                        break;
-                    }
                 }
-
             }
+
         }
         return need;
     }

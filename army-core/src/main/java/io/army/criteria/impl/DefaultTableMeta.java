@@ -77,7 +77,7 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
             this.primaryField = (IndexFieldMeta<T, ?>) this.propNameToFieldMeta.get(TableMeta.ID);
             Assert.state(this.primaryField != null, () -> String.format(
-                    "entity[%s] primary field meta create error.", entityClass.getName()));
+                    "entity[%s] primary field meta build error.", entityClass.getName()));
         } catch (ArmyRuntimeException e) {
             throw e;
         } catch (RuntimeException e) {

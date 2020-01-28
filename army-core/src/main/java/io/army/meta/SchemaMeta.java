@@ -1,6 +1,9 @@
 package io.army.meta;
 
+import io.army.domain.IDomain;
 import org.springframework.lang.NonNull;
+
+import java.util.Map;
 
 /**
  * represent a schema.

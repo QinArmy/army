@@ -87,7 +87,11 @@ abstract class MySQL57DDLUtils extends DDLUtils {
     }
 
     static String varcharFunction(FieldMeta<?, ?> fieldMeta) {
-        return onlyPrecisionType(fieldMeta, MySQLDataType.VARCHAR);
+        int precision = fieldMeta.precision();
+        if(precision < 0){
+            precision = 255;
+        }
+        return onlyPrecisionType(fieldMeta, MySQLDataType.VARCHAR,precision);
     }
 
     static String longVarcharFunction(FieldMeta<?, ?> fieldMeta) {
@@ -236,6 +240,14 @@ abstract class MySQL57DDLUtils extends DDLUtils {
             defaultValue = StringUtils.quote(defaultValue);
         }
         return defaultValue;
+    }
+
+    static String tableCharset(String charset){
+        String actualCharset = charset;
+        if(!StringUtils.hasText(actualCharset)){
+            actualCharset = "utf8mb4";
+        }
+        return actualCharset;
     }
 
 

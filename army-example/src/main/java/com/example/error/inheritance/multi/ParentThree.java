@@ -4,11 +4,11 @@ import io.army.annotation.Column;
 import io.army.annotation.Inheritance;
 import io.army.annotation.Table;
 
-@Table(name = "parent_three", comment = "three parent")
-@Inheritance("mode")
+//@Table(name = "parent_three", comment = "three parent")
+//@Inheritance("mode")
 public class ParentThree extends ParentTwo {
 
-    @Column(comment = "mode")
+    @Column(defaultValue = "" + MultiParentType.Constant.THREE,comment = "mode")
     private MultiParentType mode;
 
     public MultiParentType getMode() {

@@ -2,9 +2,12 @@ package io.army.boot;
 
 import io.army.SessionFactory;
 import io.army.SessionFactoryOptions;
+import io.army.criteria.impl.SchemaMetaFactory;
 import io.army.dialect.Dialect;
 import io.army.dialect.SQLDialect;
+import io.army.meta.SchemaMeta;
 import io.army.util.Assert;
+import io.army.util.StringUtils;
 
 import javax.sql.DataSource;
 import java.time.ZoneId;
@@ -29,6 +32,10 @@ class SessionFactoryBuilderImpl implements SessionFactoryBuilder {
 
     private SQLDialect sqlDialect;
 
+    private String catalog;
+
+    private String schema;
+
 
     @Override
     public SessionFactory build() {
@@ -42,12 +49,11 @@ class SessionFactoryBuilderImpl implements SessionFactoryBuilder {
 
         Assert.notNull(dataSource, "dataSource required");
 
-        SessionFactoryImpl sessionFactory = new SessionFactoryImpl(options, dataSource,sqlDialect);
+        SessionFactoryImpl sessionFactory = new SessionFactoryImpl(options, dataSource, createSchema(), sqlDialect);
         // init session factory
         sessionFactory.initSessionFactory();
         return sessionFactory;
     }
-
 
     @Override
     public SessionFactoryBuilderImpl zoneId(ZoneId zoneId) {
@@ -81,6 +87,18 @@ class SessionFactoryBuilderImpl implements SessionFactoryBuilder {
     }
 
     @Override
+    public SessionFactoryBuilder catalog(String catalog) {
+        this.catalog = catalog;
+        return this;
+    }
+
+    @Override
+    public SessionFactoryBuilder schema(String schema) {
+        this.schema = schema;
+        return this;
+    }
+
+    @Override
     public SessionFactoryBuilder datasource(DataSource dataSource) {
         this.dataSource = dataSource;
         return this;
@@ -91,4 +109,18 @@ class SessionFactoryBuilderImpl implements SessionFactoryBuilder {
         this.sqlDialect = sqlDialect;
         return this;
     }
+
+    /*################################## blow private method ##################################*/
+
+    private SchemaMeta createSchema() {
+        String actualCatalog = catalog, actualSchema = schema;
+        if (!StringUtils.hasText(actualCatalog)) {
+            actualCatalog = "";
+        }
+        if (!StringUtils.hasText(actualSchema)) {
+            actualSchema = "";
+        }
+        return SchemaMetaFactory.getSchema(actualCatalog, actualSchema);
+    }
+
 }

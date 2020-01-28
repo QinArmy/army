@@ -9,7 +9,9 @@ import io.army.dialect.DialectNotMatchException;
 import io.army.dialect.SQLDialect;
 import io.army.dialect.UnSupportedDialectException;
 import io.army.dialect.mysql.MySQLDialectFactory;
+import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
+import io.army.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
@@ -29,9 +31,11 @@ abstract class SessionFactoryUtils {
     private static final Logger LOG = LoggerFactory.getLogger(SessionFactoryUtils.class);
 
 
-    static Dialect createDialect(final @Nullable SQLDialect sqlDialect, DataSource dataSource,
-                                 SessionFactory sessionFactory) {
-        SQLDialect actualSqlDialect = decideSQLDialect(sqlDialect, dataSource);
+    static Pair<Dialect, SQLDialect> createDialect(final @Nullable SQLDialect sqlDialect, DataSource dataSource,
+                                                   SessionFactory sessionFactory) {
+        final SQLDialect databaseSqlDialect = getSQLDialect(dataSource);
+
+        SQLDialect actualSqlDialect = decideSQLDialect(sqlDialect, databaseSqlDialect);
 
         Dialect dialect;
         switch (actualSqlDialect) {
@@ -46,15 +50,17 @@ abstract class SessionFactoryUtils {
             case OceanBase:
             case SQL_Server:
             default:
-                throw new RuntimeException();
+                throw new RuntimeException(String.format("unknown SQLDialect[%s]", actualSqlDialect));
         }
-        return dialect;
+        return new Pair<>(dialect, databaseSqlDialect);
     }
 
-    static Map<Class<?>, TableMeta<?>> scanPackagesForMeta(List<String> packagesToScan){
-        return TableMetaLoader.create()
-                .scanTableMeta(packagesToScan);
+    static Map<Class<?>, TableMeta<?>> scanPackagesForMeta(SchemaMeta schemaMeta, List<String> packagesToScan) {
+        return TableMetaLoader.build()
+                .scanTableMeta(schemaMeta, packagesToScan);
     }
+
+
 
 
     /*################################## blow private method ##################################*/
@@ -88,12 +94,13 @@ abstract class SessionFactoryUtils {
         return sqlDialect;
     }
 
-    private static SQLDialect decideSQLDialect(SQLDialect dialect, DataSource dataSource) {
+    private static SQLDialect decideSQLDialect(SQLDialect dialect, SQLDialect databaseSqlDialect) {
         SQLDialect actual = dialect;
         if (actual == null) {
             LOG.debug("extract sql dialect from database");
-            actual = SessionFactoryUtils.getSQLDialect(dataSource);
-        } else if (!SessionFactoryUtils.validateSQLDialect(actual, dataSource)) {
+            actual = databaseSqlDialect;
+        } else if (!SQLDialect.sameFamily(dialect, databaseSqlDialect)
+                || dialect.ordinal() > databaseSqlDialect.ordinal()) {
             throw new DialectNotMatchException(ErrorCode.META_ERROR, "SQLDialect[%s] and database not match.", actual);
         }
         return actual;

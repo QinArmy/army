@@ -18,7 +18,6 @@ public class BootstrapTests {
                 .packagesToScan("com.example.domain.**")
                 .build();
 
-        LOG.info("SessionFactory:{}", sessionFactory);
     }
 
     @Test//(expectedExceptions = {Throwable.class})
@@ -27,7 +26,6 @@ public class BootstrapTests {
                 .packagesToScan("com.example.error.inheritance.multi")
                 .build();
 
-        LOG.info("SessionFactory:{}", sessionFactory);
     }
 
 

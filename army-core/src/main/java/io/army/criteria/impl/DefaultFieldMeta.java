@@ -64,28 +64,30 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
         this.table = table;
         this.propertyName = field.getName();
-
+        this.propertyClass = (Class<F>) field.getType();
         try {
             this.unique = unique;
             this.index = index;
 
             Column column = MetaUtils.columnMeta(table.javaType(), field);
-            this.propertyClass = (Class<F>) field.getType();
+
+            this.precision = column.precision();
+            this.scale = column.scale();
             this.fieldName = MetaUtils.columnName(column, field);
             this.mappingType = MetaUtils.columnMappingType(field);
 
-            this.insertable = column.insertable();
-            this.updatable = column.updatable();
-            this.precision = column.precision();
+            boolean isDiscriminator = MetaUtils.isDiscriminator(this);
 
-            this.scale = column.scale();
-            this.comment = MetaUtils.columnComment(column, this);
-            this.nullable = MetaUtils.columnNullable(column, this);
+            this.insertable = MetaUtils.columnInsertable(this.propertyName,column,isDiscriminator);
+            this.updatable = MetaUtils.columnUpdatable(this.propertyName,column,isDiscriminator);
+
+            this.comment = MetaUtils.columnComment(column, this,isDiscriminator);
+            this.nullable = MetaUtils.columnNullable(column, this,isDiscriminator);
             this.defaultValue = MetaUtils.columnDefault(column, this);
         } catch (ArmyRuntimeException e) {
             throw e;
         } catch (RuntimeException e) {
-            throw new MetaException(ErrorCode.META_ERROR, e, "create entity[%s] mapping property[%s] meta error"
+            throw new MetaException(ErrorCode.META_ERROR, e, "build entity[%s] mapping property[%s] meta error"
                     , table.javaType().getName(), propertyName);
         }
     }

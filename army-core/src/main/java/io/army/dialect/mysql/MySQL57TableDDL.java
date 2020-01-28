@@ -78,7 +78,7 @@ class MySQL57TableDDL extends AbstractTableDDL {
     @Override
     protected void appendTableOptions(StringBuilder builder, TableMeta<?> tableMeta) {
         builder.append("ENGINE = InnoDB CHARACTER SET = ")
-                .append(tableMeta.charset())
+                .append(MySQL57DDLUtils.tableCharset(tableMeta.charset()))
                 .append(" COMMENT '")
                 .append(tableMeta.comment())
                 .append("'")

@@ -1,19 +1,20 @@
 package io.army.boot;
 
 import io.army.*;
-import io.army.asm.TableMetaLoader;
 import io.army.boot.migratioin.Meta2Schema;
+import io.army.criteria.DDLSQLExecutor;
 import io.army.dialect.Dialect;
-import io.army.dialect.DialectNotMatchException;
 import io.army.dialect.SQLDialect;
-import io.army.dialect.mysql.MySQLDialectFactory;
+import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
+import io.army.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -31,20 +32,29 @@ class SessionFactoryImpl implements InnerSessionFactory {
 
     private final Dialect dialect;
 
+    private final SQLDialect databaseActualSqlDialect;
+
+    private final SchemaMeta schemaMeta;
+
     private boolean closed;
 
 
-    SessionFactoryImpl(SessionFactoryOptions options, DataSource dataSource, @Nullable SQLDialect sqlDialect)
+    SessionFactoryImpl(SessionFactoryOptions options, DataSource dataSource, SchemaMeta schemaMeta,
+                       @Nullable SQLDialect sqlDialect)
             throws ArmyRuntimeException {
         Assert.notNull(options, "options required");
         Assert.notNull(dataSource, "dataSource required");
 
         this.options = options;
         this.dataSource = dataSource;
-        this.classTableMetaMap = SessionFactoryUtils.scanPackagesForMeta(this.options.packagesToScan());
-        this.dialect = SessionFactoryUtils.createDialect(sqlDialect,dataSource,this);
-    }
+        this.schemaMeta = schemaMeta;
 
+        this.classTableMetaMap = SessionFactoryUtils.scanPackagesForMeta(this.schemaMeta, this.options.packagesToScan());
+        Pair<Dialect, SQLDialect> pair = SessionFactoryUtils.createDialect(sqlDialect, dataSource, this);
+        this.dialect = pair.getFirst();
+        this.databaseActualSqlDialect = pair.getSecond();
+
+    }
 
 
     @Override
@@ -78,6 +88,16 @@ class SessionFactoryImpl implements InnerSessionFactory {
     }
 
     @Override
+    public SQLDialect databaseActualSqlDialect() {
+        return databaseActualSqlDialect;
+    }
+
+    @Override
+    public SchemaMeta schemaMeta() {
+        return schemaMeta;
+    }
+
+    @Override
     public Map<Class<?>, TableMeta<?>> tableMetaMap() {
         return this.classTableMetaMap;
     }
@@ -97,32 +117,46 @@ class SessionFactoryImpl implements InnerSessionFactory {
                 .toString();
     }
 
-    void initSessionFactory()throws ArmyAccessException {
+    void initSessionFactory() throws ArmyAccessException {
         // migration meta
         try {
             // 1. generate sql
             Map<String, List<String>> tableSqlMap;
-           tableSqlMap =  Meta2Schema.build().migrate(classTableMetaMap.values(),dataSource.getConnection(),dialect);
-            // 2. execute sql
-            if(LOG.isDebugEnabled()){
+            tableSqlMap = Meta2Schema.build().migrate(classTableMetaMap.values(), dataSource.getConnection(), dialect);
+
+            if (LOG.isDebugEnabled()) {
                 printMigrationSql(tableSqlMap);
             }
+            // 2. execute sql
+            executeDDL(tableSqlMap);
 
         } catch (SQLException e) {
-           throw new ArmyAccessException(ErrorCode.ACCESS_ERROR,e,e.getMessage());
+            throw new ArmyAccessException(ErrorCode.ACCESS_ERROR, e, e.getMessage());
         }
 
     }
 
     /*################################## blow private method ##################################*/
 
-   private void printMigrationSql( Map<String, List<String>> tableSqlMap){
-       for (Map.Entry<String, List<String>> e : tableSqlMap.entrySet()) {
-           LOG.debug("\ntable:{}\n",e.getKey());
-           for (String sql : e.getValue()) {
-               LOG.debug("{}",sql);
-           }
-           LOG.debug("\n");
-       }
-   }
+    private void executeDDL(Map<String, List<String>> tableSqlMap) {
+        if (tableSqlMap.isEmpty()) {
+            return;
+        }
+        try (Connection connection = dataSource.getConnection()) {
+            DDLSQLExecutor ddlsqlExecutor = new BatchDDLSQLExecutor(connection);
+            ddlsqlExecutor.executeDDL(tableSqlMap);
+        } catch (SQLException e) {
+            throw new ArmyAccessException(ErrorCode.ACCESS_ERROR, e, e.getMessage());
+        }
+    }
+
+    private void printMigrationSql(Map<String, List<String>> tableSqlMap) {
+        for (Map.Entry<String, List<String>> e : tableSqlMap.entrySet()) {
+            LOG.debug("\ntable:{}\n", e.getKey());
+            for (String sql : e.getValue()) {
+                LOG.debug("{}", sql);
+            }
+            LOG.debug("\n");
+        }
+    }
 }
