@@ -35,6 +35,13 @@ public interface IDomain {
 
     Boolean getVisible();
 
+    @Override
+    boolean equals(Object o);
+
+    @Override
+    int hashCode();
+
+
 
     static boolean domainEquals(@NonNull IDomain domain, @Nullable Object obj) {
         if (domain == obj) {

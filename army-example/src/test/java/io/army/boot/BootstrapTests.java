@@ -29,7 +29,7 @@ public class BootstrapTests {
     }
 
 
-    private static SessionFactoryBuilder builder() {
+    public static SessionFactoryBuilder builder() {
         return SessionFactoryBuilder.builder()
                 .datasource(DataSourceUtils.createDataSource("army", "army", "army123"))
                 .readonly(false)

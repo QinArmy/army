@@ -19,7 +19,6 @@ public interface SessionFactory extends AutoCloseable{
      */
     Session currentSession();
 
-
     Dialect dialect();
 
     SQLDialect databaseActualSqlDialect();

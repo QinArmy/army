@@ -2,13 +2,13 @@ package io.army.dialect;
 
 
 import io.army.SessionFactory;
+import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
 
-import javax.swing.*;
 import java.time.ZoneId;
 import java.util.*;
 
@@ -102,7 +102,17 @@ public abstract class AbstractDialect implements Dialect {
     }
 
 
+    /*################################## blow TableDML method ##################################*/
 
+    @Override
+    public  SQLDialect sqlDialect() {
+        return null;
+    }
+
+    @Override
+    public final SQLWrapper insert(TableMeta<?> tableMeta, IDomain entity) {
+        return null;
+    }
 
     /*####################################### below protected  method #################################*/
 

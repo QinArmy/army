@@ -12,7 +12,7 @@ class SessionBuilderImpl implements SessionBuilder {
      }
 
      @Override
-     public Session openSession() {
+     public Session openSession()  {
          return null;
      }
  }
