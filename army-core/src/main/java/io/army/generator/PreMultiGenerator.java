@@ -1,14 +1,18 @@
 package io.army.generator;
 
+import io.army.dialect.SQLDialect;
+import io.army.meta.FieldMeta;
+
 /**
  *
- * this interface create value for the mapping property of Entity when persist a entity.
+ * this interface create value for the mapping property of Entity when persist a entity before persistence.
+ * if you want creation before persistence ,use {@link PostMultiGenerator}
  * <p>
  * there is two ways for implementation of MultiGenerator:
  * <pre>
  *    Example one:
  *
- *    public class MyMultiGenerator implements MultiGenerator {
+ *    public class MyMultiGenerator implements PreMultiGenerator {
  *
  *        private MyMultiGenerator(){}
  *
@@ -27,7 +31,7 @@ package io.army.generator;
  * <pre>
  *    Example two:
  *
- *    public class MyMultiGenerator implements MultiGenerator {
+ *    public class MyMultiGenerator implements PreMultiGenerator {
  *
  *        &#047;&#042;&#042;
  *         &#042; &#064;fieldMeta not null
@@ -40,12 +44,13 @@ package io.army.generator;
  * </pre>
  * </p>
  *
- * </p>
- *
  * @see io.army.annotation.Generator
- * @see PreMultiGenerator
  * @see PostMultiGenerator
+ * @since Army 1.0
  */
-public interface MultiGenerator {
+public interface PreMultiGenerator extends MultiGenerator {
+
+
+    Object next(FieldMeta<?, ?> fieldMeta, SQLDialect sqlDialect);
 
 }

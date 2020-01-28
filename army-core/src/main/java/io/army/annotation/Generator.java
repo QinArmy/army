@@ -1,10 +1,10 @@
 package io.army.annotation;
 
 import io.army.generator.MultiGenerator;
-import io.army.generator.SingleGenerator;
+import io.army.generator.PreMultiGenerator;
 
 /**
- * Specifies the {@link MultiGenerator} for the mapping property of Entity.
+ * Specifies the {@link PreMultiGenerator} for the mapping property of Entity.
  *
  * <p>
  * <pre>
@@ -55,9 +55,7 @@ public @interface Generator {
     Class<? extends MultiGenerator> generator() default MultiGenerator.class;
 
     /**
-     * when generator isn't a implementation of {@link SingleGenerator}
-     * and is a implementation of {@link MultiGenerator}
-     * ,Specifies the creation param(s) of {@link MultiGenerator}.
+     * Specifies the creation param(s) of {@link MultiGenerator}.
      */
     GeneratorParam[] params() default {};
 }

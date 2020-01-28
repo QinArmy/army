@@ -1,10 +1,10 @@
 package io.army.annotation;
 
-import io.army.generator.MultiGenerator;
+import io.army.generator.PreMultiGenerator;
 
 /**
  * @see Generator
- * @see MultiGenerator
+ * @see PreMultiGenerator
  */
 public @interface GeneratorParam {
 

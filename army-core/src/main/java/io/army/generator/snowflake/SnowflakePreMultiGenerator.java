@@ -1,15 +1,14 @@
 package io.army.generator.snowflake;
 
 import io.army.dialect.SQLDialect;
-import io.army.generator.MultiGenerator;
+import io.army.generator.PreMultiGenerator;
 import io.army.meta.FieldMeta;
 
-import java.util.List;
 import java.util.Map;
 
-public class SnowflakeMultiGenerator implements MultiGenerator {
+public class SnowflakePreMultiGenerator implements PreMultiGenerator {
 
-    private SnowflakeMultiGenerator(FieldMeta<?, ?> fieldMeta, Map<String,String> paramMap) {
+    private SnowflakePreMultiGenerator(FieldMeta<?, ?> fieldMeta, Map<String,String> paramMap) {
 
     }
 
@@ -22,7 +21,7 @@ public class SnowflakeMultiGenerator implements MultiGenerator {
      *
      * @param paramMap  a unmodifiable map
      */
-    public static SnowflakeMultiGenerator build(FieldMeta<?, ?> fieldMeta, Map<String,String> paramMap) {
+    public static SnowflakePreMultiGenerator build(FieldMeta<?, ?> fieldMeta, Map<String,String> paramMap) {
         return null;
     }
 }
