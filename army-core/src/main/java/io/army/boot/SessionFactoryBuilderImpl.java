@@ -1,9 +1,7 @@
 package io.army.boot;
 
 import io.army.SessionFactory;
-import io.army.SessionFactoryOptions;
 import io.army.criteria.impl.SchemaMetaFactory;
-import io.army.dialect.Dialect;
 import io.army.dialect.SQLDialect;
 import io.army.meta.SchemaMeta;
 import io.army.util.Assert;
@@ -11,7 +9,6 @@ import io.army.util.StringUtils;
 
 import javax.sql.DataSource;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

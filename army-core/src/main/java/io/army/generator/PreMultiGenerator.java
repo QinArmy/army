@@ -1,10 +1,11 @@
 package io.army.generator;
 
+import io.army.beans.BeanWrapper;
 import io.army.dialect.SQLDialect;
+import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 
 /**
- *
  * this interface create value for the mapping property of Entity when persist a entity before persistence.
  * if you want creation before persistence ,use {@link PostMultiGenerator}
  * <p>
@@ -51,6 +52,7 @@ import io.army.meta.FieldMeta;
 public interface PreMultiGenerator extends MultiGenerator {
 
 
-    Object next(FieldMeta<?, ?> fieldMeta, SQLDialect sqlDialect);
+    Object next(FieldMeta<?, ?> fieldMeta, BeanWrapper entityWrapper) throws GeneratorException;
+
 
 }

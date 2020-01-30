@@ -1,13 +1,9 @@
 package io.army.boot;
 
-import io.army.SessionFactoryOptions;
 import io.army.util.ArrayUtils;
 
 import java.time.ZoneId;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 
 class SessionFactoryOptionsImpl implements SessionFactoryOptions {
 
@@ -63,6 +59,16 @@ class SessionFactoryOptionsImpl implements SessionFactoryOptions {
     @Override
     public List<String> packagesToScan() {
         return packagesToScan;
+    }
+
+    @Override
+    public Map<String, String> options() {
+        return Collections.emptyMap();
+    }
+
+    @Override
+    public <T> T getBean(String name, Class<T> beanClass) {
+        return null;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package io.army.annotation;
 
 import io.army.generator.MultiGenerator;
+import io.army.generator.PostMultiGenerator;
 import io.army.generator.PreMultiGenerator;
 
 /**
@@ -38,6 +39,9 @@ import io.army.generator.PreMultiGenerator;
  * </p>
  *
  * @see Column
+ * @see MultiGenerator
+ * @see PreMultiGenerator
+ * @see PostMultiGenerator
  * @since Army 1.0
  */
 public @interface Generator {

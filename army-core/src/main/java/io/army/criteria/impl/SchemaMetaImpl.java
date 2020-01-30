@@ -1,10 +1,12 @@
 package io.army.criteria.impl;
 
 import io.army.meta.SchemaMeta;
+import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
 import org.springframework.lang.NonNull;
 
+import java.util.Map;
 import java.util.Objects;
 
 final class SchemaMetaImpl implements SchemaMeta {
@@ -37,6 +39,10 @@ final class SchemaMetaImpl implements SchemaMeta {
         return defaultSchema;
     }
 
+    @Override
+    public Map<Class<?>, TableMeta<?>> tables() {
+        return null;
+    }
 
     @NonNull
     @Override

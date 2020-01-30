@@ -16,13 +16,15 @@ import java.util.Map;
  */
 public interface SchemaMeta {
 
-    @NonNull
+
     String catalog();
 
-    @NonNull
+
     String schema();
 
     boolean defaultSchema();
+
+    Map<Class<?>,TableMeta<?>> tables();
 
     @Override
     boolean equals(Object o);

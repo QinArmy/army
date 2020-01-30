@@ -3,6 +3,7 @@ package io.army;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.dialect.Dialect;
 import io.army.dialect.SQLDialect;
+import io.army.env.Environment;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
 
@@ -10,7 +11,7 @@ import java.util.Map;
 
 public interface SessionFactory extends AutoCloseable{
 
-    SessionFactoryOptions options();
+    Environment environment();
 
     SessionBuilder sessionBuilder();
 
@@ -45,9 +46,6 @@ public interface SessionFactory extends AutoCloseable{
      * @return True if this factory is already closed; false otherwise.
      */
     boolean isClosed();
-
-    Map<Class<?>,TableMeta<?>> tableMetaMap();
-
 
 
 }

@@ -3,6 +3,7 @@ package io.army.meta;
 import io.army.criteria.Expression;
 import io.army.criteria.Selection;
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingType;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.NonNullApi;
@@ -28,6 +29,9 @@ public interface FieldMeta<T extends IDomain, F> extends Expression<F>, Selectio
 
 
     TableMeta<T> table();
+
+    @Nullable
+    GeneratorMeta generator();
 
 
     /**

@@ -2,8 +2,6 @@ package io.army.boot;
 
 
 import io.army.SessionFactory;
-import io.army.SessionFactoryOptions;
-import io.army.dialect.Dialect;
 import io.army.dialect.SQLDialect;
 
 import javax.sql.DataSource;

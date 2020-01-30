@@ -29,6 +29,8 @@ public class SimpleTests {
 
     @Test
     public void mysqlDDL() {
-
+        System.out.println(Integer.toBinaryString(-1));
+        System.out.println((Integer.toBinaryString(-1 << 8)));
+        System.out.println(Integer.toBinaryString(~(-1<<8)));
     }
 }
