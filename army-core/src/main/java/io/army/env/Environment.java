@@ -22,8 +22,6 @@ public interface Environment {
 
     String READONLY = "io.army.sessionFactoryReadOnly";
 
-    String PACKAGE_TO_SCAN = "io.army.packageToScan";
-
     /**
      * Return whether the given property key is available for resolution,
      * i.e. if the value for the given key is not {@code null}.
@@ -50,17 +48,11 @@ public interface Environment {
      */
     boolean isReadonly();
 
-    ZoneId getZoneId();
 
 
     boolean isOn(String key);
 
     boolean isOff(String key);
-
-    /**
-     * @return a unmodifiable List
-     */
-    List<String> getPackagesToScan();
 
     @Nullable
     <T> T getBean(String name, Class<T> beanClass);

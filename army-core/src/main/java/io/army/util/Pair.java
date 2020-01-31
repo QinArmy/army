@@ -7,13 +7,10 @@ package io.army.util;
 public final class Pair<F, S> {
 
 
-    private F first;
+    private final F first;
 
-    private S second;
+    private final S second;
 
-    public Pair() {
-
-    }
 
     public Pair(F first, S second) {
         this.first = first;
@@ -24,17 +21,8 @@ public final class Pair<F, S> {
         return first;
     }
 
-    public Pair<F, S> setFirst(F first) {
-        this.first = first;
-        return this;
-    }
-
     public S getSecond() {
         return second;
     }
 
-    public Pair<F, S> setSecond(S second) {
-        this.second = second;
-        return this;
-    }
 }

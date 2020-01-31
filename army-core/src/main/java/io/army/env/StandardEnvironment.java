@@ -1,5 +1,6 @@
 package io.army.env;
 
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 
 import java.time.ZoneId;
@@ -8,12 +9,15 @@ import java.util.Map;
 
 public class StandardEnvironment extends AbstractEnvironment {
 
-    private final org.springframework.core.env.ConfigurableEnvironment env;
+    protected final org.springframework.core.env.ConfigurableEnvironment env;
 
 
-    public StandardEnvironment(ZoneId zoneId, List<String> packageToScan) {
-        super(zoneId, packageToScan);
-        this.env = createEnvironmentImplementation();
+    public StandardEnvironment() {
+       this.env = new org.springframework.core.env.StandardEnvironment();
+    }
+
+     StandardEnvironment(ConfigurableEnvironment env) {
+        this.env = env;
     }
 
     @Override
@@ -53,12 +57,12 @@ public class StandardEnvironment extends AbstractEnvironment {
 
     @Override
     public <T> T getBean(String name, Class<T> beanClass) {
-        return env.getProperty(name,beanClass);
+        return env.getProperty(name, beanClass);
     }
 
     @Override
     public <T> T getRequiredBean(String name, Class<T> beanClass) throws IllegalStateException {
-        return env.getRequiredProperty(name,beanClass);
+        return env.getRequiredProperty(name, beanClass);
     }
 
     /*################################## blow io.army.env.ConfigurableEnvironment method ##################################*/
@@ -83,8 +87,5 @@ public class StandardEnvironment extends AbstractEnvironment {
         env.getPropertySources().addAfter(relativePropertyMapName, new MapPropertySource(name, propertyMap));
     }
 
-    org.springframework.core.env.ConfigurableEnvironment createEnvironmentImplementation() {
-        return new org.springframework.core.env.StandardEnvironment();
-    }
 
 }

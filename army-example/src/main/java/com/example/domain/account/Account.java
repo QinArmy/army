@@ -17,7 +17,6 @@ import static com.example.domain.account.Account.NONE_VALUE;
 }, comment = "account"
 )
 @Inheritance("account_type")
-@DiscriminatorValue(NONE_VALUE)
 public class Account extends VersionDomain {
 
     public static final int NONE_VALUE = 0;
@@ -33,6 +32,7 @@ public class Account extends VersionDomain {
     public static final int FUNCTION_VALUE = 3000;
 
 
+    @Generator("")
     @Column(defaultValue = ZERO, updatable = false, comment = "id")
     private Long id;
 

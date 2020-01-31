@@ -1,6 +1,5 @@
 package io.army.dialect;
 
-import com.sun.xml.internal.bind.v2.model.core.ID;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;

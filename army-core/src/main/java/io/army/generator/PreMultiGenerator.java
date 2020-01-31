@@ -4,6 +4,7 @@ import io.army.beans.BeanWrapper;
 import io.army.dialect.SQLDialect;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
+import io.army.meta.GeneratorMeta;
 
 /**
  * this interface create value for the mapping property of Entity when persist a entity before persistence.
@@ -50,6 +51,11 @@ import io.army.meta.FieldMeta;
  * @since Army 1.0
  */
 public interface PreMultiGenerator extends MultiGenerator {
+
+    /**
+     * @see GeneratorMeta#dependPropName()
+     */
+    String DEPEND_PROP_NAME = "dependPropName";
 
 
     Object next(FieldMeta<?, ?> fieldMeta, BeanWrapper entityWrapper) throws GeneratorException;

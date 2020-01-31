@@ -1,5 +1,6 @@
 package io.army.modelgen;
 
+import io.army.annotation.Column;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexFieldMeta;
 import io.army.util.ClassUtils;
@@ -20,17 +21,21 @@ class DefaultMetaAttribute implements MetaAttribute {
 
     private final boolean indexColumn;
 
+    private final String commentLine;
 
-    DefaultMetaAttribute(TypeElement entityElement, VariableElement mappingPropElement, boolean indexColumn) {
+
+    DefaultMetaAttribute(TypeElement entityElement, VariableElement mappingPropElement
+            ,Column column, boolean indexColumn) {
         this.entityElement = entityElement;
         this.mappingPropElement = mappingPropElement;
+        this.commentLine = SourceCreateUtils.COMMENT_PRE + "/**  " + column.comment() + " */";
         this.indexColumn = indexColumn;
     }
 
 
     @Override
     public String getDefinition() {
-        String format = "%s %s<%s,%s> %s = %s.%s(%s,%s.class);";
+        String format = "%s\n%s %s<%s,%s> %s = %s.%s(%s,%s.class);";
         String typeSimpleName = ClassUtils.getShortName(mappingPropElement.asType().toString());
 
         String propName = getName();
@@ -44,7 +49,7 @@ class DefaultMetaAttribute implements MetaAttribute {
             fieldMetaTypeName = FieldMeta.class.getSimpleName();
         }
         return String.format(format,
-
+                commentLine,
                 SourceCreateUtils.PROP_PRE,
                 fieldMetaTypeName,
                 entityElement.getSimpleName(),
@@ -68,8 +73,9 @@ class DefaultMetaAttribute implements MetaAttribute {
     @Override
     public String getNameDefinition() {
         String name = mappingPropElement.getSimpleName().toString();
-        String format = "%s String %s = \"%s\";";
+        String format = "%s\n%s String %s = \"%s\";";
         return String.format(format,
+                commentLine,
                 SourceCreateUtils.PROP_PRE,
                 StringUtils.camelToUpperCase(name),
                 name

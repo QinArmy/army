@@ -4,12 +4,10 @@ import io.army.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.LocalDateTime;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -28,14 +26,9 @@ public abstract class AbstractSnowflakeClient implements SnowflakeClient {
 
     protected final Logger LOG = LoggerFactory.getLogger(getClass());
 
-
-    protected final AtomicReference<LocalDateTime> lastHeartbeatTime = new AtomicReference<>(null);
-
     protected final ConcurrentMap<SnowflakeGenerator, Boolean> generatorHolder = new ConcurrentHashMap<>();
 
-    protected final AtomicReference<Worker> WORKER_HOLDER = new AtomicReference<>(null);
-
-    protected final AtomicInteger workerUpdateCount = new AtomicInteger(0);
+    protected final AtomicReference<Worker> workerHolder = new AtomicReference<>(null);
 
     protected final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(runnable -> {
         Thread thread = new Thread(runnable, schedulerName());
@@ -61,15 +54,16 @@ public abstract class AbstractSnowflakeClient implements SnowflakeClient {
     @Override
     public boolean registerGenerator(SnowflakeGenerator generator) throws SnowflakeWorkerException {
         Assert.notNull(generator, "generator required");
-        final Worker worker = WORKER_HOLDER.get();
+        final Worker worker = workerHolder.get();
 
-        boolean match = true;
+        boolean match ;
         if (SnowflakeGenerator.isMatchWorker(worker, generator.getSnowflake())) {
             if (generatorHolder.putIfAbsent(generator, Boolean.TRUE) != null) {
                 LOG.debug("register generator[{}]", generator);
             } else {
                 LOG.debug("generator[{}] had registered by other thread", generator);
             }
+            match = true;
         } else {
             match = false;
         }
@@ -79,7 +73,7 @@ public abstract class AbstractSnowflakeClient implements SnowflakeClient {
 
     @Override
     public Worker currentWorker() {
-        Worker worker = WORKER_HOLDER.get();
+        Worker worker = workerHolder.get();
         Assert.state(worker != null, "Worker not init.");
         return worker;
     }

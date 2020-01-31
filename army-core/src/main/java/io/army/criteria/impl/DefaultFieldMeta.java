@@ -6,11 +6,13 @@ import io.army.annotation.Column;
 import io.army.criteria.MetaException;
 import io.army.criteria.Selection;
 import io.army.domain.IDomain;
+import io.army.lang.NonNull;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
+import io.army.meta.GeneratorMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
-import org.springframework.lang.NonNull;
 
 import java.lang.reflect.Field;
 import java.sql.JDBCType;
@@ -48,10 +50,13 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     private final boolean updatable;
 
-
     private final int precision;
 
     private final int scale;
+
+    private final GeneratorMeta generatorMeta;
+
+    private final int hashCode;
 
 
     @SuppressWarnings("unchecked")
@@ -69,21 +74,25 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
             this.unique = unique;
             this.index = index;
 
-            Column column = MetaUtils.columnMeta(table.javaType(), field);
+            Column column = FieldMetaUtils.columnMeta(table.javaType(), field);
 
             this.precision = column.precision();
             this.scale = column.scale();
-            this.fieldName = MetaUtils.columnName(column, field);
-            this.mappingType = MetaUtils.columnMappingType(field);
+            this.fieldName = FieldMetaUtils.columnName(column, field);
+            this.mappingType = FieldMetaUtils.columnMappingType(field);
 
-            boolean isDiscriminator = MetaUtils.isDiscriminator(this);
+            boolean isDiscriminator = FieldMetaUtils.isDiscriminator(this);
 
-            this.insertable = MetaUtils.columnInsertable(this.propertyName,column,isDiscriminator);
-            this.updatable = MetaUtils.columnUpdatable(this.propertyName,column,isDiscriminator);
+            this.insertable = FieldMetaUtils.columnInsertable(this.propertyName, column, isDiscriminator);
+            this.updatable = FieldMetaUtils.columnUpdatable(this.propertyName, column, isDiscriminator);
 
-            this.comment = MetaUtils.columnComment(column, this,isDiscriminator);
-            this.nullable = MetaUtils.columnNullable(column, this,isDiscriminator);
-            this.defaultValue = MetaUtils.columnDefault(column, this);
+            this.comment = FieldMetaUtils.columnComment(column, this, isDiscriminator);
+            this.nullable = FieldMetaUtils.columnNullable(column, this, isDiscriminator);
+            this.defaultValue = FieldMetaUtils.columnDefault(column, this);
+            this.generatorMeta = FieldMetaUtils.columnGeneratorMeta(field, this, isDiscriminator);
+
+            // last create hash code
+            this.hashCode = createHashCode();
         } catch (ArmyRuntimeException e) {
             throw e;
         } catch (RuntimeException e) {
@@ -177,14 +186,20 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
         return fieldName;
     }
 
+
     @Override
     public String propertyName() {
         return propertyName;
     }
 
+    @Nullable
+    @Override
+    public GeneratorMeta generator() {
+        return generatorMeta;
+    }
 
     @Override
-    public boolean equals(Object obj) {
+    public final boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }
@@ -200,8 +215,8 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(this.table(), this.javaType(), this.propertyName(), this.fieldName());
+    public final int hashCode() {
+        return hashCode;
     }
 
     @Override
@@ -222,5 +237,12 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
                 .append("\n]")
                 .toString();
     }
+
+    /*################################## blow private method ##################################*/
+
+    private int createHashCode(){
+        return Objects.hash(this.table(), this.javaType(), this.propertyName(), this.fieldName());
+    }
+
 
 }

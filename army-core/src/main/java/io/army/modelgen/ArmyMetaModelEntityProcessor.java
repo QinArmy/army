@@ -6,12 +6,14 @@ import io.army.annotation.Inheritance;
 import io.army.annotation.MappedSuperclass;
 import io.army.annotation.Table;
 import io.army.criteria.MetaException;
+import io.army.util.ExceptionUtils;
 import io.army.util.Pair;
 import io.army.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.processing.*;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
@@ -32,21 +34,24 @@ import java.util.*;
         "io.army.annotation.MappedSuperclass",
         "io.army.annotation.Inheritance"
 })
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedOptions({
-        ArmyMetaModelEntityProcessor.DEBUG_OPTION,
-        ArmyMetaModelEntityProcessor.ADD_GENERATION_DATE,
-        ArmyMetaModelEntityProcessor.ADD_GENERATED_ANNOTATION,
-        ArmyMetaModelEntityProcessor.ADD_SUPPRESS_WARNINGS_ANNOTATION
+//        ArmyMetaModelEntityProcessor.DEBUG_OPTION,
+//        ArmyMetaModelEntityProcessor.ADD_GENERATION_DATE,
+//        ArmyMetaModelEntityProcessor.ADD_GENERATED_ANNOTATION,
+//        ArmyMetaModelEntityProcessor.ADD_SUPPRESS_WARNINGS_ANNOTATION
 })
 public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(ArmyMetaModelEntityProcessor.class);
 
-
     public static final String DEBUG_OPTION = "debug";
+
     public static final String ADD_GENERATION_DATE = "addGenerationDate";
     public static final String ADD_GENERATED_ANNOTATION = "addGeneratedAnnotation";
     public static final String ADD_SUPPRESS_WARNINGS_ANNOTATION = "addSuppressWarningsAnnotation";
+
+
 
     private static final boolean ALLOW_OTHER_PROCESSORS_TO_CLAIM_ANNOTATIONS = false;
 
@@ -232,10 +237,9 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
         }
         Collections.reverse(entityMappedElementList);
 
-        return new Pair<List<TypeElement>, TypeElement>()
-                .setFirst(Collections.unmodifiableList(entityMappedElementList))
-                .setSecond(parentEntityElement)
-                ;
+        return new Pair<>(
+                Collections.unmodifiableList(entityMappedElementList)
+                , parentEntityElement);
     }
 
 

@@ -1,10 +1,7 @@
 package io.army.modelgen;
 
 import io.army.ErrorCode;
-import io.army.annotation.Column;
-import io.army.annotation.Inheritance;
-import io.army.annotation.Mapping;
-import io.army.annotation.Table;
+import io.army.annotation.*;
 import io.army.criteria.MetaException;
 import io.army.meta.TableMeta;
 import io.army.struct.CodeEnum;
@@ -12,20 +9,18 @@ import io.army.util.AnnotationUtils;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 import io.army.util.StringUtils;
+import org.jooq.Meta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
 
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 abstract class MetaUtils {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MetaUtils.class);
+    private static final Map<String, Map<Integer, String>> DISCRIMINATOR_MAP = new HashMap<>();
 
 
     static void throwInheritanceDuplication(TypeElement entityElement) throws MetaException {
@@ -67,9 +62,44 @@ abstract class MetaUtils {
         }
 
         if (!CollectionUtils.isEmpty(missPropNameSet)) {
-            throw createMissingPropException(entityElement, missPropNameSet);
+           // throw new MetaException(ErrorCode.META_ERROR,String.format("entityMappedElementList:%s",entityElement));
+           throw createMissingPropException(entityElement, missPropNameSet);
         }
     }
+
+    static void assertMappingModeParent(List<TypeElement> entityMappedElementList
+            , List<TypeElement> parentMappedElementList) {
+        TypeElement parentEntity = SourceCreateUtils.entityElement(parentMappedElementList);
+        Inheritance inheritance = null;
+        if (parentEntity != null) {
+            inheritance = parentEntity.getAnnotation(Inheritance.class);
+        }
+
+        if (inheritance != null) {
+            assertMappingChild(entityMappedElementList, parentEntity.getQualifiedName().toString());
+        } else {
+            TypeElement entityElement = SourceCreateUtils.entityElement(entityMappedElementList);
+            Assert.notNull(entityElement, "entityMappedElementList error ");
+            inheritance = entityElement.getAnnotation(Inheritance.class);
+            if (inheritance == null) {
+                assertMappingSimple(entityElement);
+            } else {
+                assertMappingParent(entityElement);
+            }
+
+        }
+    }
+
+    private static void assertMappingSimple(TypeElement entityElement) {
+
+        if (entityElement.getAnnotation(DiscriminatorValue.class) != null) {
+            throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] couldn't have %s"
+                    , entityElement.getQualifiedName()
+                    , DiscriminatorValue.class.getName());
+        }
+
+    }
+
 
     static void assertColumn(TypeElement entityElement, VariableElement mappedProp, Column column
             , String columnName, @Nullable String discriminatorColumn) {
@@ -213,6 +243,43 @@ abstract class MetaUtils {
             throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] mapping prop[%s] Mapping no value",
                     entityElement.getQualifiedName(),
                     mappedProp.getSimpleName());
+        }
+    }
+
+
+    private static void assertMappingChild(List<TypeElement> entityMappedElementList, String parentClassName) {
+        TypeElement childEntity = SourceCreateUtils.entityElement(entityMappedElementList);
+        Assert.notNull(childEntity, "entityMappedElementList error ");
+        DiscriminatorValue discriminatorValue = childEntity.getAnnotation(DiscriminatorValue.class);
+        if (discriminatorValue == null) {
+            throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] no %s"
+                    , childEntity.getQualifiedName()
+                    , DiscriminatorValue.class.getName());
+        }
+
+        Map<Integer, String> codeMap = DISCRIMINATOR_MAP.computeIfAbsent(parentClassName, key -> new HashMap<>());
+        String actualClassName = codeMap.get(discriminatorValue.value());
+        String className = childEntity.getQualifiedName().toString();
+        if (actualClassName != null && !actualClassName.equals(className)) {
+            throw new MetaException(ErrorCode.META_ERROR, "child Entity[%s] discriminatorValue duplication", className);
+        } else {
+            codeMap.putIfAbsent(discriminatorValue.value(), className);
+        }
+    }
+
+    private static void assertMappingParent(TypeElement parentEntity) {
+        String className = parentEntity.getQualifiedName().toString();
+        DiscriminatorValue discriminatorValue = parentEntity.getAnnotation(DiscriminatorValue.class);
+        if (discriminatorValue != null && discriminatorValue.value() != 0) {
+            throw new MetaException(ErrorCode.META_ERROR, "parent Entity[%s] discriminatorValue must be 0", className);
+        }
+
+        Map<Integer, String> codeMap = DISCRIMINATOR_MAP.computeIfAbsent(className, key -> new HashMap<>());
+        String actualClassName = codeMap.get(0);
+        if (actualClassName != null && !actualClassName.equals(className)) {
+            throw new MetaException(ErrorCode.META_ERROR, "parent Entity[%s] discriminatorValue duplication", className);
+        } else {
+            codeMap.putIfAbsent(0, className);
         }
     }
 

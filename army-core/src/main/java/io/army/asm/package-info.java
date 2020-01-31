@@ -1,2 +1,2 @@
-@org.springframework.lang.NonNullApi
+@io.army.lang.NonNullApi
 package io.army.asm;

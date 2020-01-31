@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @see Snowflake
  * @see SnowflakeClient
  */
-public class SnowflakeGenerator implements PreMultiGenerator {
+public final class SnowflakeGenerator implements PreMultiGenerator {
 
     /*################################## blow static properties ##################################*/
 

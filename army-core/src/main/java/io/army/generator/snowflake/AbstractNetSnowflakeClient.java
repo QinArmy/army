@@ -1,6 +1,8 @@
 package io.army.generator.snowflake;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class AbstractNetSnowflakeClient extends AbstractSnowflakeClient {
@@ -31,6 +33,12 @@ public abstract class AbstractNetSnowflakeClient extends AbstractSnowflakeClient
     protected final AtomicBoolean loadBalanceEnable = new AtomicBoolean(false);
 
     protected final AtomicBoolean revoked = new AtomicBoolean(false);
+
+    protected final AtomicReference<LocalDateTime> lastHeartbeatTime = new AtomicReference<>(null);
+
+    protected final AtomicInteger workerUpdateCount = new AtomicInteger(0);
+
+
 
 
 }

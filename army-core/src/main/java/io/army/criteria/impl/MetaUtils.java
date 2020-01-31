@@ -4,15 +4,14 @@ import io.army.ErrorCode;
 import io.army.annotation.*;
 import io.army.criteria.MetaException;
 import io.army.domain.IDomain;
+import io.army.lang.NonNull;
+import io.army.lang.Nullable;
 import io.army.meta.*;
-import io.army.meta.mapping.MappingFactory;
-import io.army.meta.mapping.MappingType;
+
 import io.army.struct.CodeEnum;
 import io.army.util.*;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 
-import javax.annotation.Nonnull;
+
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -27,20 +26,15 @@ abstract class MetaUtils {
 
     private static final String DESC = "DESC";
 
-    private MetaUtils() {
+    static final Map<Class<?>, Map<Integer, Class<?>>> DISCRIMINATOR_CODE_MAP = new HashMap<>();
+
+    protected MetaUtils() {
 
     }
 
-    static Column columnMeta(@Nonnull Class<? extends IDomain> entityClass, @Nonnull Field field) throws MetaException {
-        Column column = AnnotationUtils.getAnnotation(field, Column.class);
-        if (column == null) {
-            throw createNonAnnotationException(entityClass, Column.class);
-        }
-        return column;
-    }
 
     @NonNull
-    static Table tableMeta(@Nonnull Class<? extends IDomain> entityClass) {
+    static Table tableMeta(@NonNull Class<? extends IDomain> entityClass) {
         Table table = AnnotationUtils.getAnnotation(entityClass, Table.class);
         if (table == null) {
             throw createNonAnnotationException(entityClass, Table.class);
@@ -48,7 +42,18 @@ abstract class MetaUtils {
         return table;
     }
 
-    static <T extends IDomain> void assertParentTableMeta(TableMeta<? super T> parentTableMeta, Class<T> entityClass) {
+    static String tableName(Table table, Class<? extends IDomain> entityClass) {
+        Assert.hasText(table.name(), () -> String.format("Entity[%s] no table name", entityClass.getName()));
+        return table.name();
+    }
+
+    static String tableComment(Table table, Class<? extends IDomain> entityClass) {
+        Assert.hasText(table.comment(), () -> String.format("Entity[%s] no table comment", entityClass.getName()));
+        return table.comment();
+    }
+
+    static <T extends IDomain> void assertParentTableMeta(@Nullable TableMeta<? super T> parentTableMeta
+            , Class<T> entityClass) {
         if (parentTableMeta != null) {
             Assert.isAssignable(parentTableMeta.javaType(), entityClass);
         }
@@ -58,129 +63,19 @@ abstract class MetaUtils {
         return SchemaMetaFactory.getSchema(table.catalog(), table.schema());
     }
 
-    static boolean columnNullable(Column column, FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
-        if (TableMeta.VERSION_PROPS.contains(fieldMeta.propertyName())
-                || isDiscriminator) {
-            if (column.nullable()) {
-                throw new MetaException(ErrorCode.META_ERROR, "mapped class[%s] column[%s] columnNullable must be false.",
-                        fieldMeta.table().javaType(),
-                        fieldMeta.fieldName()
-                );
-            }
 
-        }
-        return column.nullable();
-    }
-
-    @NonNull
-    static String columnComment(Column column, FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
-        String comment = column.comment();
-        if (TableMeta.VERSION_PROPS.contains(fieldMeta.propertyName())
-                || isDiscriminator) {
-
-            if (!StringUtils.hasText(comment)) {
-                comment = commentManagedByArmy(fieldMeta);
-            }
-        } else if (!StringUtils.hasText(comment)) {
-            throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] column[%s] no comment."
-                    , fieldMeta.table().javaType().getName()
-                    , fieldMeta.fieldName());
-        }
-        return comment;
-    }
-
-
-    static boolean isDiscriminator(FieldMeta<?, ?> fieldMeta) {
-        Inheritance inheritance = AnnotationUtils.getAnnotation(fieldMeta.table().javaType(), Inheritance.class);
-        return inheritance != null
-                && fieldMeta.fieldName().equalsIgnoreCase(inheritance.value());
-    }
-
-
-    static boolean columnInsertable(String propName, Column column, boolean isDiscriminator) {
-        boolean insertable = column.insertable();
-        if (TableMeta.VERSION_PROPS.contains(propName)
-                || isDiscriminator) {
-            insertable = true;
-        }
-        return insertable;
-    }
-
-    static boolean columnUpdatable(String propName, Column column, boolean isDiscriminator) {
-        boolean updatable = column.updatable();
-        if (TableMeta.ID.equals(propName)
-                || TableMeta.CREATE_TIME.equals(propName)
-                || isDiscriminator) {
-            updatable = false;
-        }
-        return updatable;
-    }
-
-    @Nonnull
-    static MappingType columnMappingType(@Nonnull Field field) {
-        Mapping mapping = AnnotationUtils.getAnnotation(field, Mapping.class);
-
-        Class<?> mappingClass;
-        if (mapping == null) {
-            mappingClass = null;
-        } else if (mapping.mapping() != AnnotationUtils.getDefaultValue(Mapping.class, "mapping")) {
-            mappingClass = mapping.mapping();
-        } else {
-            try {
-                mappingClass = ClassUtils.forName(mapping.value(), ClassUtils.getDefaultClassLoader());
-            } catch (ClassNotFoundException e) {
-                throw new MetaException(ErrorCode.META_ERROR, "%s.value() not a %s type."
-                        , Mapping.class.getName()
-                        , MappingType.class.getName()
-                );
-            }
-        }
-
-        MappingFactory mappingFactory = mappingFactory();
-        MappingType mappingType;
-        if (mappingClass == null) {
-            mappingType = mappingFactory.getMapping(field.getType());
-        } else {
-            mappingType = mappingFactory.getMapping(field.getType(), mappingClass);
-        }
-        return mappingType;
-
-    }
-
-    static String columnDefault(Column column, FieldMeta<?, ?> fieldMeta) {
-        if (!fieldMeta.nullable()
-                && String.class != fieldMeta.javaType()
-                && !StringUtils.hasText(column.defaultValue())
-                && !isManagedByArmy(fieldMeta)) {
-            // TODO zoro optimize
-            throw new MetaException(ErrorCode.META_ERROR, "mapped class[%s] column[%s] no defaultValue.",
-                    fieldMeta.table().javaType(),
-                    fieldMeta.fieldName()
-            );
-        }
-        return column.defaultValue().trim();
-    }
-
-
-    static int discriminatorValue(MappingMode mappingMode, Class<?> entityClass) {
+    static int discriminatorValue(MappingMode mappingMode, TableMeta<?> tableMeta) {
         int value;
-        DiscriminatorValue discriminatorValue = AnnotationUtils.getAnnotation(entityClass, DiscriminatorValue.class);
+        DiscriminatorValue discriminatorValue;
+        discriminatorValue = AnnotationUtils.getAnnotation(tableMeta.javaType(), DiscriminatorValue.class);
         switch (mappingMode) {
             case CHILD:
-                if (discriminatorValue == null) {
-                    throw new MetaException(ErrorCode.META_ERROR, "child's %s required ",
-                            DiscriminatorValue.class.getName());
-                }
-                value = discriminatorValue.value();
-                if (value == 0) {
-                    throw new MetaException(ErrorCode.META_ERROR, "child's %s#value() cannot equals 0 . ",
-                            DiscriminatorValue.class.getName());
-                }
+                value = extractModeChildDiscriminatorValue(tableMeta, discriminatorValue);
                 break;
             case PARENT:
                 if (discriminatorValue != null && discriminatorValue.value() != 0) {
-                    throw new MetaException(ErrorCode.META_ERROR, "parent's %s#value() must equals 0 . ",
-                            DiscriminatorValue.class.getName());
+                    throw new MetaException(ErrorCode.META_ERROR, "parent entity[%s] DiscriminatorValue must equals 0"
+                            , tableMeta.javaType().getName());
                 }
                 value = 0;
                 break;
@@ -195,7 +90,7 @@ abstract class MetaUtils {
     }
 
 
-    static <T extends IDomain> FieldBean<T> fieldMetaList(final @Nonnull TableMeta<T> table, Table tableMeta)
+    static <T extends IDomain> FieldBean<T> fieldMetaList(final @NonNull TableMeta<T> table, Table tableMeta)
             throws MetaException {
 
         final List<Class<?>> mappedClassList = mappedClassList(table.javaType());
@@ -244,7 +139,7 @@ abstract class MetaUtils {
     }
 
 
-    static MappingMode mappingMode(@Nonnull Class<? extends IDomain> entityClass) throws MetaException {
+    static MappingMode mappingMode(@NonNull Class<? extends IDomain> entityClass) throws MetaException {
         int tableCount = 0, inheritCount = 0;
         for (Class<?> superClass = entityClass; superClass != null; superClass = superClass.getSuperclass()) {
             if (AnnotationUtils.getAnnotation(superClass, Table.class) != null) {
@@ -292,58 +187,21 @@ abstract class MetaUtils {
         }
         String columnName = column.name();
         if (StringUtils.hasText(columnName)) {
-           if(!columnName.trim().equals(columnName)){
-               throw new MetaException(ErrorCode.META_ERROR,
-                       "mapped class [%s] required prop[%s] column name contain space.",
-                       field.getDeclaringClass().getName(),
-                       field.getName());
-           }
-        }else {
+            if (!columnName.trim().equals(columnName)) {
+                throw new MetaException(ErrorCode.META_ERROR,
+                        "mapped class [%s] required prop[%s] column name contain space.",
+                        field.getDeclaringClass().getName(),
+                        field.getName());
+            }
+        } else {
             columnName = StringUtils.camelToLowerCase(field.getName());
         }
         return columnName;
     }
 
 
-
-
     /*################################ private method ####################################*/
 
-    private static String commentManagedByArmy(FieldMeta<?, ?> fieldMeta) {
-        String comment = "";
-        switch (fieldMeta.propertyName()) {
-            case TableMeta.ID:
-                comment = "primary key";
-                break;
-            case TableMeta.CREATE_TIME:
-                comment = "create time";
-                break;
-            case TableMeta.UPDATE_TIME:
-                comment = "update time";
-                break;
-            case TableMeta.VERSION:
-                comment = "version for optimistic lock";
-                break;
-            case TableMeta.VISIBLE:
-                comment = "visible for logic delete";
-                break;
-            default:
-                if (fieldMeta.javaType().isEnum()
-                        && CodeEnum.class.isAssignableFrom(fieldMeta.javaType())) {
-                    comment = "@see " + fieldMeta.javaType().getName();
-                }
-        }
-        return comment;
-    }
-
-    private static boolean isManagedByArmy(FieldMeta<?, ?> fieldMeta) {
-        Inheritance inheritance = AnnotationUtils.getAnnotation(fieldMeta.table().javaType(), Inheritance.class);
-
-        return TableMeta.VERSION_PROPS.contains(fieldMeta.propertyName())
-                || (inheritance != null
-                && inheritance.value().equalsIgnoreCase(fieldMeta.fieldName()))
-                ;
-    }
 
     /**
      * @return mapping class list(unmodifiable) ,order by extends relation,entityClass is the last one.
@@ -463,11 +321,7 @@ abstract class MetaUtils {
     }
 
 
-    private static MappingFactory mappingFactory() {
-        return MappingFactory.build();
-    }
-
-    private static MetaException createNonAnnotationException(Class<? extends IDomain> entityClass
+    static MetaException createNonAnnotationException(Class<? extends IDomain> entityClass
             , Class<?> annotationClass) {
         return new MetaException(ErrorCode.META_ERROR, "class[%s] isn't annotated by %s "
                 , entityClass.getName()
@@ -492,6 +346,37 @@ abstract class MetaUtils {
             );
         }
     }
+
+    private static int extractModeChildDiscriminatorValue(TableMeta<?> tableMeta
+            , @Nullable DiscriminatorValue discriminatorValue) {
+
+        int value;
+        if (discriminatorValue == null) {
+            throw new MetaException(ErrorCode.META_ERROR, "child entity[%s] no %s"
+                    , tableMeta.javaType().getName()
+                    , DiscriminatorValue.class.getName());
+        }
+        value = discriminatorValue.value();
+        if (value == 0) {
+            throw new MetaException(ErrorCode.META_ERROR, "child entity[%s] DiscriminatorValue cannot equals 0"
+                    , tableMeta.javaType().getName());
+
+        }
+        TableMeta<?> parentMeta = tableMeta.parent();
+        Assert.notNull(parentMeta, () -> String.format("Entity[%s] parentMeta error", tableMeta.javaType().getName()));
+
+        Map<Integer, Class<?>> codeMap;
+        codeMap = DISCRIMINATOR_CODE_MAP.computeIfAbsent(parentMeta.javaType(), key -> new HashMap<>());
+        Class<?> actualClass = codeMap.get(value);
+        if (actualClass != null && actualClass != tableMeta.javaType()) {
+            throw new MetaException(ErrorCode.META_ERROR, "child entity[%s] DiscriminatorValue duplication. ",
+                    tableMeta.javaType().getName());
+        } else {
+            codeMap.putIfAbsent(value, tableMeta.javaType());
+        }
+        return value;
+    }
+
 
     /**
      * @param propNameToFieldMeta a unmodifiable map
@@ -552,7 +437,7 @@ abstract class MetaUtils {
      * @param columnToFieldMap a unmodifiable map
      * @return indexMap meta list(unmodifiable) of table,
      */
-    private static <T extends IDomain> List<IndexMeta<T>> indexMetaList(final @Nonnull TableMeta<T> tableMeta,
+    private static <T extends IDomain> List<IndexMeta<T>> indexMetaList(final @NonNull TableMeta<T> tableMeta,
                                                                         Table table,
                                                                         Map<String, Field> columnToFieldMap) {
 
@@ -785,7 +670,7 @@ abstract class MetaUtils {
         private final FieldMeta<T, ?> discriminator;
 
         private FieldBean(Map<String, FieldMeta<T, ?>> propNameToFieldMeta, List<IndexMeta<T>> indexMetaList,
-                          FieldMeta<T, ?> discriminator) {
+                          @Nullable FieldMeta<T, ?> discriminator) {
             this.propNameToFieldMeta = propNameToFieldMeta;
             this.indexMetaList = indexMetaList;
             this.discriminator = discriminator;
@@ -799,6 +684,7 @@ abstract class MetaUtils {
             return indexMetaList;
         }
 
+        @Nullable
         FieldMeta<T, ?> getDiscriminator() {
             return discriminator;
         }

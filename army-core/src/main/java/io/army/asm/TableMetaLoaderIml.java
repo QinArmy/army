@@ -1,10 +1,16 @@
 package io.army.asm;
 
 import io.army.ErrorCode;
+import io.army.annotation.Inheritance;
 import io.army.annotation.Table;
+import io.army.criteria.MetaException;
+import io.army.criteria.impl.TableMetaFactory;
+import io.army.lang.Nullable;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen.MetaConstant;
+import io.army.util.AnnotationUtils;
+import io.army.util.Assert;
 import io.army.util.ClassUtils;
 import io.army.util.ReflectionUtils;
 import org.slf4j.Logger;
@@ -18,6 +24,7 @@ import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 
 
+import javax.validation.constraints.Null;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -42,7 +49,7 @@ class TableMetaLoaderIml implements TableMetaLoader {
     public Map<Class<?>, TableMeta<?>> scanTableMeta(SchemaMeta schemaMeta, List<String> basePackages) {
         Map<Class<?>, TableMeta<?>> map = new HashMap<>();
         try {
-
+            TableMeta<?> tableMeta;
             for (String basePackage : basePackages) {
                 for (Resource resource : loadClassFiles(basePackage)) {
                     if (!resource.isReadable()) {
@@ -54,7 +61,12 @@ class TableMetaLoaderIml implements TableMetaLoader {
                         continue;
                     }
                     Class<?> domainClass = loadDomainClass(metadataReader.getClassMetadata().getClassName());
-                    map.put(domainClass, loadTableMetaFor(domainClass));
+                    tableMeta = loadTableMetaFor(domainClass);
+                    if (tableMeta.schema() != schemaMeta) {
+                        throw new MetaException(ErrorCode.META_ERROR, String.format(
+                                "Entity[%s] schema error.", domainClass.getName()));
+                    }
+                    map.put(domainClass, tableMeta);
                 }
             }
         } catch (IOException e) {
@@ -102,8 +114,6 @@ class TableMetaLoaderIml implements TableMetaLoader {
 
         return classMetadata.isIndependent()
                 && classMetadata.isConcrete()
-                && !classMetadata.isInterface()
-                && !classMetadata.isAnnotation()
                 && valueMap != null
                 && schemaMeta.catalog().equals(valueMap.get("catalog"))
                 && schemaMeta.schema().equals(valueMap.get("schema"))
@@ -118,7 +128,6 @@ class TableMetaLoaderIml implements TableMetaLoader {
         }
     }
 
-    @SuppressWarnings("all")
     private TableMeta<?> loadTableMetaFor(Class<?> domainClass) {
         Class<?> metaClass;
         try {
@@ -140,18 +149,41 @@ class TableMetaLoaderIml implements TableMetaLoader {
                     , metaClass, MetaConstant.TABLE_META);
         }
         try {
-            return (TableMeta<?>) ReflectionUtils.getField(field, null);
+            TableMeta<?> tableMeta = (TableMeta<?>) ReflectionUtils.getField(field, null);
+            if (tableMeta == null) {
+                throw new MetaException(ErrorCode.META_ERROR, String.format("Entity[%s] meta class error"
+                        , domainClass.getName()));
+            }
+            return tableMeta;
         } catch (Throwable e) {
             throw new TableMetaLoadException(ErrorCode.META_ERROR
                     , e
-                    , "not meta class,class[%s] not found static property[%s]"
-                    , metaClass, MetaConstant.TABLE_META);
+                    , "meta class[%s] error"
+                    , metaClass);
         }
     }
+
+
+/*
+    @Nullable
+    private Class<?> loadParentEntityClass(Class<?> entityClass) {
+        Class<?> superClass = entityClass.getSuperclass();
+        Class<?> parentEntityClass = null;
+        Inheritance inheritance;
+        for (; superClass != Object.class; superClass = superClass.getSuperclass()) {
+            inheritance = AnnotationUtils.getAnnotation(superClass, Inheritance.class);
+            if (inheritance != null && AnnotationUtils.getAnnotation(superClass, Table.class) != null) {
+                parentEntityClass = superClass;
+                break;
+            }
+        }
+        return parentEntityClass;
+    }*/
 
     private void clean() {
         patternResolver = null;
         metadataReaderFactory = null;
+        TableMetaFactory.cleanCache();
     }
 
 

@@ -10,15 +10,6 @@ import java.util.*;
 
 public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 
-    private final ZoneId zoneId;
-
-    private final List<String> packageToScan;
-
-    public AbstractEnvironment(ZoneId zoneId, List<String> packageToScan) {
-        this.zoneId = zoneId;
-        this.packageToScan = packageToScan;
-    }
-
     @Override
     public final boolean containsValue(String key, String targetValue) {
         String[] valueArray = this.getProperty(key, String[].class);
@@ -51,15 +42,6 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
         return Boolean.parseBoolean(getProperty(READONLY));
     }
 
-    @Override
-    public final ZoneId getZoneId() {
-        return zoneId;
-    }
-
-    @Override
-    public final List<String> getPackagesToScan() {
-        return packageToScan;
-    }
 
     @Override
     public final boolean isOn(String key) {
@@ -153,6 +135,8 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 
     /*################################## blow ConfigurableEnvironment method ##################################*/
 
+
+    /*################################## blow protected method ##################################*/
 
 
 

@@ -9,12 +9,14 @@ import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util.ClassUtils;
 import io.army.util.StringUtils;
+import io.army.util.TimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 /**
@@ -60,6 +62,7 @@ class DefaultMetaEntity implements MetaEntity {
         // 1. generate import part
         this.importsBlock = SourceCreateUtils.generateImport(this.entityElement, parentEntityElement, mappingPropSet);
         // 2. generate class definition part
+
         this.classDefinition = SourceCreateUtils.generateClassDefinition(this.entityElement, parentEntityElement);
         // 3. generate body of class part
         this.body = SourceCreateUtils.generateBody(this.entityElement,
@@ -107,7 +110,8 @@ class DefaultMetaEntity implements MetaEntity {
             columnName = SourceCreateUtils.columnName(this.entityElement, mappingProp, column);
             // make column name lower case
             columnName = StringUtils.toLowerCase(columnName);
-            attribute = new DefaultMetaAttribute(this.entityElement, mappingProp, columnNameSet.contains(columnName));
+            attribute = new DefaultMetaAttribute(this.entityElement, mappingProp, column
+                    ,columnNameSet.contains(columnName));
             list.add(attribute);
         }
         return Collections.unmodifiableList(list);

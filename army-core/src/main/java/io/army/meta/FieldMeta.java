@@ -37,7 +37,6 @@ public interface FieldMeta<T extends IDomain, F> extends Expression<F>, Selectio
     /**
      * @return 字段对应的 java 类型
      */
-    @NonNull
     Class<F> javaType();
 
     MappingType mappingType();

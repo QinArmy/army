@@ -65,7 +65,7 @@ public abstract class AbstractDialect implements Dialect {
 
     @Override
     public final ZoneId zoneId() {
-        return sessionFactory.options().zoneId();
+        return sessionFactory.zoneId();
     }
 
 

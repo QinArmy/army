@@ -3,6 +3,8 @@ package io.army.boot;
 
 import io.army.SessionFactory;
 import io.army.dialect.SQLDialect;
+import io.army.env.Environment;
+import io.army.env.StandardEnvironment;
 
 import javax.sql.DataSource;
 import java.time.ZoneId;
@@ -15,23 +17,15 @@ import java.time.ZoneId;
  */
 public interface SessionFactoryBuilder  {
 
-    SessionFactoryBuilder packagesToScan(String... packagesToScan);
-
-    SessionFactoryBuilder zoneId(ZoneId schemaZoneId);
-
     SessionFactoryBuilder datasource(DataSource dataSource);
 
     SessionFactoryBuilder sqlDialect(SQLDialect sqlDialect);
 
-    SessionFactoryBuilder readonly(boolean readonly);
-
-    SessionFactoryBuilder showSql(boolean formatSql);
-
-    SessionFactoryBuilder formatSql(boolean formatSql);
-
     SessionFactoryBuilder catalog(String catalog);
 
     SessionFactoryBuilder schema(String schema);
+
+    SessionFactoryBuilder environment(StandardEnvironment environment);
 
     SessionFactory build();
 

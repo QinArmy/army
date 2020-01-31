@@ -36,7 +36,9 @@ public enum ErrorCode implements CodeEnum {
     ACCESS_ERROR(801, "", NONE),
 
     UNSUPPORTED_DIALECT(802, "", NONE),
-    DDL_EXECUTE_ERROR(803,"",NONE)
+    DDL_EXECUTE_ERROR(803,"",NONE),
+
+    GENERATOR_ERROR(804,"",NONE)
     ;
 
 

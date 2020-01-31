@@ -5,6 +5,8 @@ import io.army.annotation.Inheritance;
 import io.army.annotation.Table;
 import io.army.criteria.MetaException;
 import io.army.criteria.impl.TableMetaFactory;
+import io.army.lang.NonNull;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexFieldMeta;
 import io.army.meta.TableMeta;
@@ -12,19 +14,18 @@ import io.army.struct.CodeEnum;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 import io.army.util.StringUtils;
+import io.army.util.TimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 
-import javax.annotation.Generated;
-import javax.annotation.Nonnull;
+
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.persistence.metamodel.StaticMetamodel;
 import java.lang.reflect.Field;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 /**
@@ -42,7 +43,9 @@ abstract class SourceCreateUtils {
 
     static final String PROP_PRE = MEMBER_PRE + "public static final";
 
-    private static final String COMMENT_PRE = "                       ";
+    static final String COMMENT_PRE = MEMBER_PRE;
+
+    static final String ANNOTATION_PRE = "        ";
 
 
     /**
@@ -60,10 +63,10 @@ abstract class SourceCreateUtils {
      *
      * @return property element set of {@code tableElement} .
      */
-    @Nonnull
-    static Set<VariableElement> generateAttributes(@Nonnull List<TypeElement> entityMappedElementList,
-                                                   @Nonnull List<TypeElement> parentMappedElementList,
-                                                   @Nonnull Set<String> indexColumnNameSet) {
+    @NonNull
+    static Set<VariableElement> generateAttributes(@NonNull List<TypeElement> entityMappedElementList,
+                                                   @NonNull List<TypeElement> parentMappedElementList,
+                                                   @NonNull Set<String> indexColumnNameSet) {
 
         try {
             Set<String> entityPropNameSet = new HashSet<>();
@@ -75,6 +78,9 @@ abstract class SourceCreateUtils {
                     entityPropNameSet, indexColumnNameSet);
             // assert required props
             MetaUtils.assertRequiredMappingProps(entityMappedElementList, entityPropNameSet);
+
+            MetaUtils.assertMappingModeParent(entityMappedElementList, parentMappedElementList);
+
             return entityPropSet;
         } catch (MetaException e) {
             LOG.error("entityMappedElementList:{}\nparentMappedElementList:{}",
@@ -140,6 +146,14 @@ abstract class SourceCreateUtils {
 
         builder.append("@Generated(value = \"")
                 .append(ArmyMetaModelEntityProcessor.class.getName())
+                .append("\"\n")
+                .append(ANNOTATION_PRE)
+                .append(",date = \"")
+                .append(ZonedDateTime.now().format(TimeUtils.FULL_ZONE_DATE_TIME_FORMATTER))
+                .append("\"\n")
+                .append(ANNOTATION_PRE)
+                .append(",comments = \"")
+                .append(entityElement.getAnnotation(Table.class).comment())
                 .append("\")")
                 .append("\n")
 
@@ -364,8 +378,8 @@ abstract class SourceCreateUtils {
                     continue;
                 }
                 // assert prop name not duplication
-                MetaUtils.assertMappingPropNotDuplication(entityElement,mappedProp.getSimpleName().toString()
-                        ,entityPropNameSet);
+                MetaUtils.assertMappingPropNotDuplication(entityElement, mappedProp.getSimpleName().toString()
+                        , entityPropNameSet);
 
                 columnName = columnName(entityElement, mappedProp, column);
                 // make column name lower case
@@ -374,7 +388,7 @@ abstract class SourceCreateUtils {
                     throw MetaUtils.createColumnDuplication(mappedElement, columnName);
                 }
                 // assert io.army.annotation.Column
-                MetaUtils.assertColumn(entityElement, mappedProp, column, columnName,discriminatorColumn);
+                MetaUtils.assertColumn(entityElement, mappedProp, column, columnName, discriminatorColumn);
                 // assert io.army.annotation.DiscriminatorValue , io.army.annotation.Inheritance
                 addDiscriminator(entityElement, mappedProp, columnName, discriminatorColumnList);
 
@@ -456,12 +470,10 @@ abstract class SourceCreateUtils {
                 .append(IndexFieldMeta.class.getName())
                 .append(";\n")
 
-                .append("import ")
-                .append(Generated.class.getName())
+                .append("import javax.annotation.Generated")
                 .append(";\n")
 
-                .append("import ")
-                .append(StaticMetamodel.class.getName())
+                .append("import javax.persistence.metamodel.StaticMetamodel")
                 .append(";\n")
 
                 .append("import ")
@@ -512,7 +524,6 @@ abstract class SourceCreateUtils {
     }
 
     /**
-     *
      * @return reference of parent entity class name
      */
     private static String parentEntityClassRef(TypeElement entityElement, TypeElement parentEntityElement) {
@@ -537,18 +548,19 @@ abstract class SourceCreateUtils {
 
     /**
      * extract entity's discriminator column name
+     *
      * @return lower case column name
      */
     @Nullable
-    private static String discriminatorColumnName(TypeElement entityElement){
-        if(entityElement == null){
+    private static String discriminatorColumnName(TypeElement entityElement) {
+        if (entityElement == null) {
             return null;
         }
         Inheritance inheritance = entityElement.getAnnotation(Inheritance.class);
         String columnName;
-        if(inheritance == null){
+        if (inheritance == null) {
             columnName = null;
-        }else {
+        } else {
             columnName = StringUtils.toLowerCase(inheritance.value());
         }
         return columnName;

@@ -2,9 +2,9 @@ package io.army.meta;
 
 import io.army.criteria.MetaException;
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
 import io.army.struct.CodeEnum;
 import io.army.util.ArrayUtils;
-import org.springframework.lang.Nullable;
 
 import java.util.Collection;
 import java.util.Set;
@@ -48,6 +48,7 @@ public interface TableMeta<T extends IDomain> {
 
     MappingMode mappingMode();
 
+    @Nullable
     <E extends Enum<E> & CodeEnum> FieldMeta<T, E> discriminator();
 
     int discriminatorValue();

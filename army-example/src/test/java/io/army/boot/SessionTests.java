@@ -7,14 +7,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class SessionTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(SessionTests.class);
 
     @Test
     public void openSession() throws Exception {
-        SessionFactory sessionFactory = BootstrapTests.builder()
-                .packagesToScan("com.example.domain.**")
+        Map<String, Object> map = new HashMap<>();
+        map.put(SessionFactory.PACKAGE_TO_SCAN, "com.example.domain.**");
+        SessionFactory sessionFactory = BootstrapTests.builder(map)
                 .build();
         try (Session session = sessionFactory.sessionBuilder().openSession()) {
             LOG.info("session:{}", session);

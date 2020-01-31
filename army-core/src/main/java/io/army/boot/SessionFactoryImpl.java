@@ -4,11 +4,18 @@ import io.army.*;
 import io.army.boot.migratioin.Meta2Schema;
 import io.army.criteria.DDLSQLExecutor;
 import io.army.dialect.Dialect;
+import io.army.dialect.SQL;
 import io.army.dialect.SQLDialect;
+import io.army.env.Environment;
+import io.army.generator.GeneratorFactory;
+import io.army.generator.MultiGenerator;
+import io.army.meta.FieldMeta;
+import io.army.meta.GeneratorMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.Pair;
+import io.army.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
@@ -16,15 +23,14 @@ import org.springframework.lang.Nullable;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
-import java.util.StringJoiner;
+import java.time.ZoneId;
+import java.util.*;
 
 class SessionFactoryImpl implements InnerSessionFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(SessionFactoryImpl.class);
 
-    private final SessionFactoryOptions options;
+    private final Environment env;
 
     private final DataSource dataSource;
 
@@ -36,31 +42,34 @@ class SessionFactoryImpl implements InnerSessionFactory {
 
     private final SchemaMeta schemaMeta;
 
+    private final ZoneId zoneId;
+
+    private final  Map<FieldMeta<?, ?>, MultiGenerator> fieldGeneratorMap;
+
     private boolean closed;
 
 
-    SessionFactoryImpl(SessionFactoryOptions options, DataSource dataSource, SchemaMeta schemaMeta,
+    SessionFactoryImpl(Environment env, DataSource dataSource, SchemaMeta schemaMeta,
                        @Nullable SQLDialect sqlDialect)
             throws ArmyRuntimeException {
-        Assert.notNull(options, "options required");
+        Assert.notNull(env, "env required");
+        Assert.notNull(schemaMeta, "schemaMeta required");
         Assert.notNull(dataSource, "dataSource required");
 
-        this.options = options;
+        this.env = env;
         this.dataSource = dataSource;
         this.schemaMeta = schemaMeta;
+        this.zoneId = createZoneId();
 
-        this.classTableMetaMap = SessionFactoryUtils.scanPackagesForMeta(this.schemaMeta, this.options.packagesToScan());
+        List<String> packagesToScan = env.getRequiredPropertyList(PACKAGE_TO_SCAN, String[].class);
+        this.classTableMetaMap = SessionFactoryUtils.scanPackagesForMeta(this.schemaMeta, packagesToScan);
         Pair<Dialect, SQLDialect> pair = SessionFactoryUtils.createDialect(sqlDialect, dataSource, this);
         this.dialect = pair.getFirst();
         this.databaseActualSqlDialect = pair.getSecond();
 
+        this.fieldGeneratorMap = createFieldGenerator();
     }
 
-
-    @Override
-    public SessionFactoryOptions options() {
-        return options;
-    }
 
     @Override
     public SessionBuilder sessionBuilder() {
@@ -69,7 +78,7 @@ class SessionFactoryImpl implements InnerSessionFactory {
 
     @Override
     public Session currentSession() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -78,39 +87,48 @@ class SessionFactoryImpl implements InnerSessionFactory {
     }
 
     @Override
-    public boolean isClosed() {
+    public final boolean isClosed() {
         return this.closed;
     }
 
     @Override
-    public Dialect dialect() {
+    public final Dialect dialect() {
         return dialect;
     }
 
     @Override
-    public SQLDialect databaseActualSqlDialect() {
+    public final SQLDialect databaseActualSqlDialect() {
         return databaseActualSqlDialect;
     }
 
     @Override
-    public SchemaMeta schemaMeta() {
+    public final ZoneId zoneId() {
+        return zoneId;
+    }
+
+    @Override
+    public final SchemaMeta schemaMeta() {
         return schemaMeta;
     }
 
     @Override
-    public Map<Class<?>, TableMeta<?>> tableMetaMap() {
+    public final Map<Class<?>, TableMeta<?>> tableMetaMap() {
         return this.classTableMetaMap;
     }
 
     @Override
-    public DataSource getDataSource() {
+    public final DataSource getDataSource() {
         return this.dataSource;
+    }
+
+    @Override
+    public final Environment environment() {
+        return env;
     }
 
     @Override
     public String toString() {
         return new StringJoiner(", ", SessionFactoryImpl.class.getSimpleName() + "[", "]")
-                .add("options=" + options)
                 .add("classTableMetaMap=" + classTableMetaMap.entrySet())
                 .add("dialect=" + dialect)
                 .add("closed=" + closed)
@@ -118,7 +136,29 @@ class SessionFactoryImpl implements InnerSessionFactory {
     }
 
     void initSessionFactory() throws ArmyAccessException {
-        // migration meta
+        // 1.  migration meta
+        migrationIfNeed();
+
+
+    }
+
+    /*################################## blow private method ##################################*/
+
+
+    private Map<FieldMeta<?, ?>, MultiGenerator> createFieldGenerator() {
+        Map<FieldMeta<?, ?>, MultiGenerator> generatorMap = new HashMap<>();
+
+        for (TableMeta<?> tableMeta : classTableMetaMap.values()) {
+            for (FieldMeta<?, ?> fieldMeta : tableMeta.fieldCollection()) {
+                if (fieldMeta.generator() != null) {
+                    generatorMap.put(fieldMeta, GeneratorFactory.getGenerator(fieldMeta,this.env));
+                }
+            }
+        }
+        return Collections.unmodifiableMap(generatorMap);
+    }
+
+    private void migrationIfNeed() throws ArmyAccessException {
         try {
             // 1. generate sql
             Map<String, List<String>> tableSqlMap;
@@ -129,14 +169,10 @@ class SessionFactoryImpl implements InnerSessionFactory {
             }
             // 2. execute sql
             executeDDL(tableSqlMap);
-
         } catch (SQLException e) {
             throw new ArmyAccessException(ErrorCode.ACCESS_ERROR, e, e.getMessage());
         }
-
     }
-
-    /*################################## blow private method ##################################*/
 
     private void executeDDL(Map<String, List<String>> tableSqlMap) {
         if (tableSqlMap.isEmpty()) {
@@ -159,4 +195,17 @@ class SessionFactoryImpl implements InnerSessionFactory {
             LOG.debug("\n");
         }
     }
+
+    private ZoneId createZoneId() {
+        String zoneIdText = env.getProperty(String.format(schemaMeta.catalog(), schemaMeta.schema()));
+        ZoneId zoneId;
+        if (StringUtils.hasText(zoneIdText)) {
+            zoneId = ZoneId.of(zoneIdText);
+        } else {
+            zoneId = ZoneId.systemDefault();
+        }
+        return zoneId;
+    }
+
+
 }

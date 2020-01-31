@@ -48,15 +48,8 @@ public @interface Generator {
 
     /**
      * Specifies the class name of {@link MultiGenerator}.
-     * the invocation of the property after {@link #generator()}.
      */
-    String value() default "";
-
-    /**
-     * Specifies the class of {@link MultiGenerator}.
-     * the invocation of the property before {@link #value()}.
-     */
-    Class<? extends MultiGenerator> generator() default MultiGenerator.class;
+    String value() ;
 
     /**
      * Specifies the creation param(s) of {@link MultiGenerator}.

@@ -5,15 +5,11 @@ import io.army.ErrorCode;
 import io.army.annotation.Table;
 import io.army.criteria.MetaException;
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.struct.CodeEnum;
 import io.army.util.Assert;
-import io.army.util.StringUtils;
-import javafx.scene.media.MediaException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -21,7 +17,6 @@ import java.util.*;
  */
 final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultTableMeta.class);
 
     private final Class<T> entityClass;
 
@@ -49,31 +44,35 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     private final FieldMeta<T, ?> discriminator;
 
+    private final int hashCode;
+
     @SuppressWarnings("unchecked")
     DefaultTableMeta(@Nullable TableMeta<? super T> parentTableMeta, Class<T> entityClass) {
-        Assert.notNull(entityClass,"entityClass required");
+        Assert.notNull(entityClass, "entityClass required");
         MetaUtils.assertParentTableMeta(parentTableMeta, entityClass);
 
         this.entityClass = entityClass;
         this.parentTableMeta = parentTableMeta;
         try {
 
-            Table tableMeta = MetaUtils.tableMeta(entityClass);
+            Table table = MetaUtils.tableMeta(entityClass);
 
-            this.tableName = tableMeta.name();
-            this.comment = tableMeta.comment();
-            this.immutable = tableMeta.immutable();
-            this.schemaMeta = MetaUtils.schemaMeta(tableMeta);
+            this.tableName = MetaUtils.tableName(table, entityClass);
+            this.comment = MetaUtils.tableComment(table, entityClass);
+            this.immutable = table.immutable();
+            this.schemaMeta = MetaUtils.schemaMeta(table);
 
-            this.charset = tableMeta.charset();
+            this.charset = table.charset();
+            // before create field meta create hash code
+            this.hashCode = createHashCode();
 
-            MetaUtils.FieldBean<T> fieldBean = MetaUtils.fieldMetaList(this, tableMeta);
+            MetaUtils.FieldBean<T> fieldBean = MetaUtils.fieldMetaList(this, table);
             this.propNameToFieldMeta = fieldBean.getPropNameToFieldMeta();
             this.indexMetaList = fieldBean.getIndexMetaList();
             this.discriminator = fieldBean.getDiscriminator();
 
             this.mappingMode = MetaUtils.mappingMode(entityClass);
-            this.discriminatorValue = MetaUtils.discriminatorValue(this.mappingMode, this.entityClass);
+            this.discriminatorValue = MetaUtils.discriminatorValue(this.mappingMode, this);
 
             this.primaryField = (IndexFieldMeta<T, ?>) this.propNameToFieldMeta.get(TableMeta.ID);
             Assert.state(this.primaryField != null, () -> String.format(
@@ -179,7 +178,7 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     @Override
-    public <F> IndexFieldMeta<T, F> getIndexField(String propName, Class<F> propClass) throws MediaException {
+    public <F> IndexFieldMeta<T, F> getIndexField(String propName, Class<F> propClass) throws MetaException {
         FieldMeta<T, F> fieldMeta = getField(propName, propClass);
         if (!(fieldMeta instanceof IndexFieldMeta)) {
             throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
@@ -202,8 +201,8 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(this.javaType(), this.schema(), this.tableName());
+    public final int hashCode() {
+        return hashCode;
     }
 
     @Override
@@ -232,4 +231,12 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
                 .toString()
                 ;
     }
+
+
+    /*################################## blow private method ##################################*/
+
+    private int createHashCode() {
+        return Objects.hash(this.schemaMeta, this.javaType(), this.tableName);
+    }
+
 }

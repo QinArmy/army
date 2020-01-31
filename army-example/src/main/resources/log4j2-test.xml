@@ -33,7 +33,7 @@
         <Logger name="org.hibernate" level="INFO" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
-        <Logger name="io.army.modelgen.ArmyMetaModelEntityProcessor" level="TRACE" additivity="false">
+        <Logger name="io.army.modelgen.ArmyMetaModelEntityProcessor" level="ERROR" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
         <Logger name="io.army.boot.SessionFactoryImpl" level="INFO" additivity="false">

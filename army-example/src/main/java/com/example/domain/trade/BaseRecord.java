@@ -21,7 +21,6 @@ import static com.example.domain.trade.BaseRecord.NONE_VALUE;
 }, comment = "交易记录父表"
 )
 @Inheritance("trade_type")
-@DiscriminatorValue(NONE_VALUE)
 public class BaseRecord extends VersionDomain {
 
     public static final int NONE_VALUE = 0;
