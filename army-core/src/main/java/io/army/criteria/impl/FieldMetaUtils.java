@@ -90,8 +90,8 @@ abstract class FieldMetaUtils extends MetaUtils {
         if (generator == null) {
             return null;
         }
-
-        Assert.isTrue(!isDiscriminator, () -> String.format("Entity[%s].discriminator[%s] must no Generator"
+        boolean match = !TableMeta.VERSION_PROPS.contains(fieldMeta.propertyName()) && !isDiscriminator;
+        Assert.isTrue(match, () -> String.format("Entity[%s].prop[%s] must no Generator"
                 , fieldMeta.table().javaType().getName()
                 , fieldMeta.propertyName()));
 

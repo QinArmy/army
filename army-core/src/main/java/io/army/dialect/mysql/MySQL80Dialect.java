@@ -8,10 +8,10 @@ import io.army.dialect.TableDQL;
 
 import java.util.Set;
 
-class My80Dialect extends My57Dialect {
+class MySQL80Dialect extends MySQL57Dialect {
 
 
-    My80Dialect(SessionFactory sessionFactory) {
+    MySQL80Dialect(SessionFactory sessionFactory) {
         super(sessionFactory);
     }
 

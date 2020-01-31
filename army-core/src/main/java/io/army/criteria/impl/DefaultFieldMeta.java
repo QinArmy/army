@@ -56,8 +56,6 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     private final GeneratorMeta generatorMeta;
 
-    private final int hashCode;
-
 
     @SuppressWarnings("unchecked")
     DefaultFieldMeta(final @NonNull TableMeta<T> table, final @NonNull Field field, final boolean unique,
@@ -91,8 +89,6 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
             this.defaultValue = FieldMetaUtils.columnDefault(column, this);
             this.generatorMeta = FieldMetaUtils.columnGeneratorMeta(field, this, isDiscriminator);
 
-            // last create hash code
-            this.hashCode = createHashCode();
         } catch (ArmyRuntimeException e) {
             throw e;
         } catch (RuntimeException e) {
@@ -200,23 +196,14 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     @Override
     public final boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof DefaultFieldMeta)) {
-            return false;
-        }
-        DefaultFieldMeta<?, ?> otherField = (DefaultFieldMeta<?, ?>) obj;
-        return this.table().equals(otherField.table())
-                && this.javaType() == otherField.javaType()
-                && this.propertyName().equals(this.propertyName())
-                && this.fieldName().equals(otherField.fieldName())
-                ;
+        // save column only one FieldMeta instance
+       return this == obj;
     }
 
     @Override
     public final int hashCode() {
-        return hashCode;
+        // save column only one FieldMeta instance
+        return super.hashCode();
     }
 
     @Override
@@ -240,9 +227,6 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     /*################################## blow private method ##################################*/
 
-    private int createHashCode(){
-        return Objects.hash(this.table(), this.javaType(), this.propertyName(), this.fieldName());
-    }
 
 
 }

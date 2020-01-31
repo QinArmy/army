@@ -14,10 +14,10 @@ public abstract class MySQLDialectFactory {
         switch (sqlDialect) {
             case MySQL:
             case MySQL57:
-                dialect = new My57Dialect(sessionFactory);
+                dialect = new MySQL57Dialect(sessionFactory);
                 break;
             case MySQL80:
-                dialect = new My80Dialect(sessionFactory);
+                dialect = new MySQL80Dialect(sessionFactory);
                 break;
             default:
                 throw new IllegalArgumentException("dialect not MySQL.");

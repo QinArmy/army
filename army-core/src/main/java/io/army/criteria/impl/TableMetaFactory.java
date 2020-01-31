@@ -14,7 +14,10 @@ public abstract class TableMetaFactory {
     }
 
     public static void cleanCache() {
-        MetaUtils.DISCRIMINATOR_CODE_MAP.clear();
+        if (MetaUtils.discriminatorCodeMap != null) {
+            MetaUtils.discriminatorCodeMap.clear();
+            MetaUtils.discriminatorCodeMap = null;
+        }
     }
 
 }

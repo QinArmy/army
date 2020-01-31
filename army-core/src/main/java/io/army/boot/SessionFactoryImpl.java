@@ -3,12 +3,13 @@ package io.army.boot;
 import io.army.*;
 import io.army.boot.migratioin.Meta2Schema;
 import io.army.criteria.DDLSQLExecutor;
+import io.army.criteria.MetaException;
 import io.army.dialect.Dialect;
-import io.army.dialect.SQL;
 import io.army.dialect.SQLDialect;
 import io.army.env.Environment;
 import io.army.generator.GeneratorFactory;
 import io.army.generator.MultiGenerator;
+import io.army.generator.PreMultiGenerator;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 import io.army.meta.SchemaMeta;
@@ -16,6 +17,7 @@ import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.Pair;
 import io.army.util.StringUtils;
+import javafx.scene.input.InputMethodTextRun;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
@@ -44,7 +46,10 @@ class SessionFactoryImpl implements InnerSessionFactory {
 
     private final ZoneId zoneId;
 
-    private final  Map<FieldMeta<?, ?>, MultiGenerator> fieldGeneratorMap;
+    private final Map<FieldMeta<?, ?>, MultiGenerator> fieldGeneratorMap;
+
+    private final Map<TableMeta<?>, List<FieldMeta<?, ?>>> tableGeneratorChain;
+
 
     private boolean closed;
 
@@ -63,11 +68,15 @@ class SessionFactoryImpl implements InnerSessionFactory {
 
         List<String> packagesToScan = env.getRequiredPropertyList(PACKAGE_TO_SCAN, String[].class);
         this.classTableMetaMap = SessionFactoryUtils.scanPackagesForMeta(this.schemaMeta, packagesToScan);
+
         Pair<Dialect, SQLDialect> pair = SessionFactoryUtils.createDialect(sqlDialect, dataSource, this);
         this.dialect = pair.getFirst();
         this.databaseActualSqlDialect = pair.getSecond();
 
-        this.fieldGeneratorMap = createFieldGenerator();
+        SessionFactoryUtils.GeneratorWrapper generatorWrapper =
+                SessionFactoryUtils.createGeneratorWrapper(this.classTableMetaMap.values(), this.env);
+        this.fieldGeneratorMap = generatorWrapper.getGeneratorChain();
+        this.tableGeneratorChain = generatorWrapper.getTableGeneratorChain();
     }
 
 
@@ -117,6 +126,16 @@ class SessionFactoryImpl implements InnerSessionFactory {
     }
 
     @Override
+    public Map<FieldMeta<?, ?>, MultiGenerator> fieldGeneratorMap() {
+        return fieldGeneratorMap;
+    }
+
+    @Override
+    public Map<TableMeta<?>, List<FieldMeta<?, ?>>> tableGeneratorChain() {
+        return tableGeneratorChain;
+    }
+
+    @Override
     public final DataSource getDataSource() {
         return this.dataSource;
     }
@@ -144,19 +163,6 @@ class SessionFactoryImpl implements InnerSessionFactory {
 
     /*################################## blow private method ##################################*/
 
-
-    private Map<FieldMeta<?, ?>, MultiGenerator> createFieldGenerator() {
-        Map<FieldMeta<?, ?>, MultiGenerator> generatorMap = new HashMap<>();
-
-        for (TableMeta<?> tableMeta : classTableMetaMap.values()) {
-            for (FieldMeta<?, ?> fieldMeta : tableMeta.fieldCollection()) {
-                if (fieldMeta.generator() != null) {
-                    generatorMap.put(fieldMeta, GeneratorFactory.getGenerator(fieldMeta,this.env));
-                }
-            }
-        }
-        return Collections.unmodifiableMap(generatorMap);
-    }
 
     private void migrationIfNeed() throws ArmyAccessException {
         try {

@@ -10,19 +10,15 @@ import java.util.Set;
  * this class is a  {@link Dialect} implementation and abstract base class of all MySQL 5.7 Dialect
  * created  on 2018/10/21.
  */
-class My57Dialect extends AbstractDialect {
+class MySQL57Dialect extends AbstractDialect {
 
 
-
-    My57Dialect(SessionFactory sessionFactory) {
+    MySQL57Dialect(SessionFactory sessionFactory) {
         super(sessionFactory);
-
-
 
     }
 
     /*################################## blow interfaces method ##################################*/
-
 
 
     @Override
@@ -54,7 +50,7 @@ class My57Dialect extends AbstractDialect {
 
     @Override
     protected TableDML createTableDML() {
-        return null;
+        return new MySQL57TableDML(this);
     }
 
     @Override

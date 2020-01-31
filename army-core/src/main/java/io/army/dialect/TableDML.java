@@ -1,11 +1,17 @@
 package io.army.dialect;
 
+import io.army.beans.BeanWrapper;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 
+import java.util.List;
+
 public interface TableDML  extends SQL{
 
-    SQLWrapper insert(TableMeta<?> tableMeta, IDomain entity);
+    /**
+     * @return a modifiable list
+     */
+    List<SQLWrapper> insert(TableMeta<?> tableMeta, BeanWrapper entityWrapper);
 
 
 

@@ -1,7 +1,7 @@
 package io.army.dialect;
 
+import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingType;
-import org.springframework.lang.Nullable;
 
 public interface ParamWrapper {
 
@@ -10,7 +10,7 @@ public interface ParamWrapper {
     @Nullable
     Object value();
 
-    static ParamWrapper build(MappingType mappingType,Object value){
+    static ParamWrapper build(MappingType mappingType,@Nullable Object value){
         return new ParamWrapperImpl(mappingType,value);
     }
 }

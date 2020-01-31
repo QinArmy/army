@@ -158,6 +158,15 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         return (FieldMeta<T, E>) this.discriminator;
     }
 
+    @Override
+    public FieldMeta<?, ?> getField(String propName) throws MetaException {
+        FieldMeta<?, ?> fieldMeta = propNameToFieldMeta.get(propName);
+        if (fieldMeta == null ) {
+            throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
+        }
+        return fieldMeta;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public <F> FieldMeta<T, F> getField(String propName, Class<F> propClass) {
@@ -187,17 +196,9 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof DefaultTableMeta)) {
-            return false;
-        }
-        DefaultTableMeta<?> other = (DefaultTableMeta<?>) o;
-        return this.javaType() == other.javaType()
-                && this.schema().equals(other.schema())
-                && this.tableName().equals(other.tableName());
+    public final boolean equals(Object o) {
+        // save column only one FieldMeta instance
+       return this == o;
     }
 
     @Override

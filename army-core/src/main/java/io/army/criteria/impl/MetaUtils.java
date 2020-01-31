@@ -26,7 +26,7 @@ abstract class MetaUtils {
 
     private static final String DESC = "DESC";
 
-    static final Map<Class<?>, Map<Integer, Class<?>>> DISCRIMINATOR_CODE_MAP = new HashMap<>();
+    static  Map<Class<?>, Map<Integer, Class<?>>> discriminatorCodeMap = new HashMap<>();
 
     protected MetaUtils() {
 
@@ -366,7 +366,10 @@ abstract class MetaUtils {
         Assert.notNull(parentMeta, () -> String.format("Entity[%s] parentMeta error", tableMeta.javaType().getName()));
 
         Map<Integer, Class<?>> codeMap;
-        codeMap = DISCRIMINATOR_CODE_MAP.computeIfAbsent(parentMeta.javaType(), key -> new HashMap<>());
+        if(discriminatorCodeMap == null){
+            discriminatorCodeMap = new HashMap<>();
+        }
+        codeMap = discriminatorCodeMap.computeIfAbsent(parentMeta.javaType(), key -> new HashMap<>());
         Class<?> actualClass = codeMap.get(value);
         if (actualClass != null && actualClass != tableMeta.javaType()) {
             throw new MetaException(ErrorCode.META_ERROR, "child entity[%s] DiscriminatorValue duplication. ",

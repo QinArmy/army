@@ -2,6 +2,7 @@ package io.army.dialect;
 
 
 import io.army.SessionFactory;
+import io.army.beans.BeanWrapper;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
@@ -68,6 +69,10 @@ public abstract class AbstractDialect implements Dialect {
         return sessionFactory.zoneId();
     }
 
+    @Override
+    public final SessionFactory sessionFactory() {
+        return sessionFactory;
+    }
 
     @Override
     public boolean supportZoneId() {
@@ -105,13 +110,13 @@ public abstract class AbstractDialect implements Dialect {
     /*################################## blow TableDML method ##################################*/
 
     @Override
-    public  SQLDialect sqlDialect() {
-        return null;
+    public final List<SQLWrapper> insert(TableMeta<?> tableMeta, BeanWrapper entityWrapper) {
+        return tableDML.insert(tableMeta,entityWrapper);
     }
 
     @Override
-    public final SQLWrapper insert(TableMeta<?> tableMeta, IDomain entity) {
-        return null;
+    public  SQLDialect sqlDialect() {
+        throw new UnsupportedOperationException();
     }
 
     /*####################################### below protected  method #################################*/

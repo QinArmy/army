@@ -4,10 +4,14 @@ import io.army.context.spi.CurrentSessionContext;
 import io.army.dialect.Dialect;
 import io.army.dialect.SQLDialect;
 import io.army.env.Environment;
+import io.army.generator.MultiGenerator;
+import io.army.generator.PreMultiGenerator;
+import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
 
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Map;
 
 public interface SessionFactory extends AutoCloseable{
@@ -34,6 +38,10 @@ public interface SessionFactory extends AutoCloseable{
     SchemaMeta schemaMeta();
 
     Map<Class<?>,TableMeta<?>> tableMetaMap();
+
+    Map<FieldMeta<?, ?>, MultiGenerator> fieldGeneratorMap();
+
+    Map<TableMeta<?>, List<FieldMeta<?,?>>> tableGeneratorChain();
 
     /**
      * Destroy this <tt>SessionFactory</tt> and release all resources (caches,

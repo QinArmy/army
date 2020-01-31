@@ -49,6 +49,7 @@ public interface FieldMeta<T extends IDomain, F> extends Expression<F>, Selectio
 
     String defaultValue();
 
+
     /**
      * (Optional) The columnSize for a decimal (exact numeric)
      * column. (Applies only if a decimal column is used.)
@@ -68,5 +69,9 @@ public interface FieldMeta<T extends IDomain, F> extends Expression<F>, Selectio
 
     String propertyName();
 
+    @Override
+    boolean equals(Object o);
 
+    @Override
+    int hashCode();
 }

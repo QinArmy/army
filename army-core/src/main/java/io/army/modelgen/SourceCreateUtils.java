@@ -226,7 +226,7 @@ abstract class SourceCreateUtils {
                 .append("String.format(\"entity[%s] field count[%s] error.\",")
                 .append(entityElement.getSimpleName())
                 .append(".class.getName(),")
-                .append(mappingPropList.size())
+                .append(MetaConstant.FIELD_COUNT)
                 .append("));\n\t}\n\n")
         ;
     }

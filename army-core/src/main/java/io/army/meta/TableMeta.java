@@ -66,7 +66,16 @@ public interface TableMeta<T extends IDomain> {
 
     boolean isMappingProp(String propName);
 
+    FieldMeta<?, ?> getField(String propName)throws MetaException;
+
     <F> FieldMeta<T, F> getField(String propName, Class<F> propClass) throws MetaException;
 
     <F> IndexFieldMeta<T, F> getIndexField(String propName, Class<F> propClass) throws MetaException;
+
+
+    @Override
+    boolean equals(Object o);
+
+    @Override
+    int hashCode();
 }

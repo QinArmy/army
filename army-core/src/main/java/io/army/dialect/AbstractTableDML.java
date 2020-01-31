@@ -1,11 +1,23 @@
 package io.army.dialect;
 
+import io.army.ErrorCode;
+import io.army.SessionFactory;
+import io.army.beans.BeanWrapper;
+import io.army.beans.PropertyAccessorFactory;
+import io.army.criteria.MetaException;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
+import jdk.nashorn.internal.ir.EmptyNode;
 
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 public abstract class AbstractTableDML implements TableDML {
 
@@ -32,21 +44,36 @@ public abstract class AbstractTableDML implements TableDML {
         return sql.zoneId();
     }
 
+    @Override
+    public final SessionFactory sessionFactory() {
+        return sql.sessionFactory();
+    }
+
     /*################################## blow TableDML method ##################################*/
 
     @Override
-    public final SQLWrapper insert(TableMeta<?> tableMeta, IDomain entity) {
+    public final List<SQLWrapper> insert(TableMeta<?> tableMeta, BeanWrapper entityWrapper) {
         Assert.notNull(tableMeta, "tableMeta required");
-        Assert.notNull(entity, "entity required");
-        Assert.isTrue(tableMeta.javaType() == entity.getClass(), "tableMata and entity not match");
+        Assert.notNull(entityWrapper, "entity required");
+        Assert.isTrue(tableMeta.javaType() == entityWrapper.getWrappedClass(), "tableMata and entity not match");
 
-        SQLWrapper wrapper;
-        if (tableMeta.parent() == null) {
-            wrapper = createInsertForSimple(tableMeta, entity);
-        } else {
-            wrapper = createInsertForChild(tableMeta, entity);
+        List<SQLWrapper> sqlWrapperList;
+        switch (tableMeta.mappingMode()) {
+            case SIMPLE:
+                sqlWrapperList = createInsertForSimple(tableMeta, entityWrapper);
+                break;
+            case CHILD:
+                sqlWrapperList = createInsertForChild(tableMeta, entityWrapper);
+                break;
+            case PARENT:
+                sqlWrapperList = createInsertForParent(tableMeta, entityWrapper);
+                break;
+            default:
+                throw new IllegalArgumentException(
+                        String.format("unknown MappingMode[%s]", tableMeta.mappingMode()));
+
         }
-        return wrapper;
+        return sqlWrapperList;
     }
 
 
@@ -56,15 +83,98 @@ public abstract class AbstractTableDML implements TableDML {
 
     /*################################## blow private method ##################################*/
 
-    private SQLWrapper createInsertForSimple(TableMeta<?> tableMeta, IDomain entity) {
-        for (FieldMeta<?, ?> fieldMeta : tableMeta.fieldCollection()) {
 
+    /**
+     * @return a modifiable list
+     */
+    private <T extends IDomain> List<SQLWrapper> createInsertForSimple(TableMeta<T> tableMeta, BeanWrapper entityWrapper) {
+        StringBuilder nameBuilder = new StringBuilder("INSERT INTO "), valueBuilder = new StringBuilder(" VALUE(");
+        final List<ParamWrapper> paramWrapperList = new ArrayList<>();
+
+        nameBuilder.append(quoteIfNeed(tableMeta.tableName()));
+        nameBuilder.append("(");
+
+        Iterator<FieldMeta<T, ?>> iterator = tableMeta.fieldCollection().iterator();
+        Object value;
+        for (FieldMeta<T, ?> fieldMeta; iterator.hasNext(); ) {
+            fieldMeta = iterator.next();
+
+            if (!fieldMeta.insertalbe()) {
+                continue;
+            }
+            value = entityWrapper.getPropertyValue(fieldMeta.propertyName());
+            if (value == null && !fieldMeta.nullable()) {
+                continue;
+            }
+            // name
+            nameBuilder.append(quoteIfNeed(fieldMeta.fieldName()));
+            // value
+            if (isConstant(fieldMeta)) {
+                valueBuilder.append(createConstant(fieldMeta));
+            } else {
+                valueBuilder.append("?");
+                paramWrapperList.add(ParamWrapper.build(fieldMeta.mappingType(), value));
+            }
+            if (iterator.hasNext()) {
+                nameBuilder.append(",");
+                valueBuilder.append(",");
+            }
         }
-        return null;
+
+        nameBuilder.append(")");
+        valueBuilder.append(")");
+
+        return Collections.singletonList(
+                SQLWrapper.build(
+                        nameBuilder.toString() + valueBuilder.toString()
+                        , paramWrapperList)
+        );
+
     }
 
-    private SQLWrapper createInsertForChild(TableMeta<?> tableMeta, IDomain entity) {
-        return null;
+    /**
+     * @return a modifiable list
+     */
+    private List<SQLWrapper> createInsertForParent(TableMeta<?> tableMeta, BeanWrapper entityWrapper) {
+        return createInsertForSimple(tableMeta, entityWrapper);
     }
+
+    /**
+     * @return a modifiable list
+     */
+    private List<SQLWrapper> createInsertForChild(TableMeta<?> tableMeta, BeanWrapper entityWrapper) {
+        TableMeta<?> parentMeta = tableMeta.parent();
+        Assert.state(parentMeta != null, () -> String.format("entity[%s] parentMeta", tableMeta.javaType().getName()));
+
+        List<SQLWrapper> parentSqlList = createInsertForParent(parentMeta, entityWrapper);
+        List<SQLWrapper> sqlWrapperList = createInsertForSimple(tableMeta, entityWrapper);
+
+        List<SQLWrapper> actualSqlList = new ArrayList<>(parentSqlList.size() + sqlWrapperList.size());
+        actualSqlList.addAll(parentSqlList);
+        actualSqlList.addAll(sqlWrapperList);
+
+        return Collections.unmodifiableList(actualSqlList);
+    }
+
+    private Object createConstant(FieldMeta<?, ?> fieldMeta) {
+        Object value;
+        if (TableMeta.VERSION.equals(fieldMeta.propertyName())) {
+            value = 0;
+        } else if (fieldMeta == fieldMeta.table().discriminator()) {
+            value = fieldMeta.table().discriminatorValue();
+        } else {
+            throw new IllegalArgumentException(String.format("Entity[%s] prop[%s] cannot create constant value"
+                    , fieldMeta.table().javaType().getName()
+                    , fieldMeta.propertyName()));
+        }
+        return value;
+    }
+
+    private boolean isConstant(FieldMeta<?, ?> fieldMeta) {
+        return TableMeta.VERSION.equals(fieldMeta.propertyName())
+                || fieldMeta == fieldMeta.table().discriminator()
+                ;
+    }
+
 
 }

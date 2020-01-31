@@ -3,7 +3,6 @@ package io.army.dialect.mysql;
 import io.army.ErrorCode;
 import io.army.criteria.MetaException;
 import io.army.dialect.AbstractTableDDL;
-import io.army.dialect.SQL;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -11,39 +10,24 @@ import io.army.sqltype.MySQLDataType;
 import io.army.util.Assert;
 
 import java.sql.JDBCType;
-import java.time.ZoneId;
 import java.util.Map;
 import java.util.function.Function;
 
 class MySQL57TableDDL extends AbstractTableDDL {
 
-    private final SQL mysql;
+
 
     private final Map<JDBCType, Function<FieldMeta<?, ?>, String>> jdbcTypeFunctionMap;
 
-    MySQL57TableDDL(My57Dialect mysql) {
+    MySQL57TableDDL(MySQL57Dialect mysql) {
+        super(mysql);
         Assert.notNull(mysql, "mysql required");
         this.jdbcTypeFunctionMap = MySQL57DDLUtils.createJdbcFunctionMap();
-        this.mysql = mysql;
     }
 
     /*################################## blow SQL interface method ##################################*/
 
-    @Override
-    public final String quoteIfNeed(String text) {
-        return mysql.quoteIfNeed(text);
-    }
 
-    @Override
-    public final boolean isKeyWord(String text) {
-        return mysql.isKeyWord(text);
-    }
-
-
-    @Override
-    public final ZoneId zoneId() {
-        return mysql.zoneId();
-    }
 
     /*################################## blow AbstractTableDDL template method ##################################*/
 
