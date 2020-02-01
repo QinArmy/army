@@ -32,7 +32,7 @@ class BatchDDLSQLExecutor implements DDLSQLExecutor {
                 for (String ddl : e.getValue()) {
                     statement.addBatch(ddl);
                     builder.append(ddl)
-                            .append("\n")
+                            .append(";\n")
                     ;
                 }
                 builder.append("\n\n");

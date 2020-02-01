@@ -3,6 +3,8 @@ package io.army.boot;
 import io.army.Session;
 import io.army.SessionBuilder;
 
+import java.sql.SQLException;
+
 class SessionBuilderImpl implements SessionBuilder {
 
      private final InnerSessionFactory innerSessionFactory;
@@ -13,6 +15,10 @@ class SessionBuilderImpl implements SessionBuilder {
 
      @Override
      public Session openSession()  {
-         return null;
+         try {
+             return new SessionImpl(innerSessionFactory,innerSessionFactory.getDataSource().getConnection());
+         } catch (SQLException e) {
+            throw new  RuntimeException(e);
+         }
      }
  }

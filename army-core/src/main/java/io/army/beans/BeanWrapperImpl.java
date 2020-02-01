@@ -1,8 +1,79 @@
 package io.army.beans;
 
-class BeanWrapperImpl extends org.springframework.beans.BeanWrapperImpl implements BeanWrapper {
+import io.army.ErrorCode;
+import org.springframework.beans.PropertyAccessorFactory;
 
-    BeanWrapperImpl(Object object) {
-        super(object);
+class BeanWrapperImpl implements BeanWrapper {
+
+    private final org.springframework.beans.BeanWrapper actualWrapper;
+
+    private final ReadonlyWrapper readonlyWrapper;
+
+    BeanWrapperImpl(Object target) {
+        this.actualWrapper = PropertyAccessorFactory.forBeanPropertyAccess(target);
+        this.readonlyWrapper = new ReadonlyWrapperImpl(actualWrapper);
+    }
+
+
+    @Override
+    public boolean isWritableProperty(String propertyName) {
+        return actualWrapper.isWritableProperty(propertyName);
+    }
+
+    @Override
+    public void setAutoGrowCollectionLimit(int autoGrowCollectionLimit) {
+        actualWrapper.setAutoGrowCollectionLimit(autoGrowCollectionLimit);
+    }
+
+    @Override
+    public int getAutoGrowCollectionLimit() {
+        return actualWrapper.getAutoGrowCollectionLimit();
+    }
+
+    @Override
+    public void setPropertyValue(String propertyName, Object value) throws BeansException {
+        try {
+            actualWrapper.setPropertyValue(propertyName, value);
+        } catch (org.springframework.beans.BeansException e) {
+            throw new BeansException(ErrorCode.BEAN_ACCESS_ERROR, e, e.getMessage());
+        }
+    }
+
+    @Override
+    public boolean isReadableProperty(String propertyName) {
+        return actualWrapper.isReadableProperty(propertyName);
+    }
+
+    @Override
+    public Class<?> getPropertyType(String propertyName) throws BeansException {
+        try {
+            return actualWrapper.getPropertyType(propertyName);
+        } catch (org.springframework.beans.BeansException e) {
+            throw new BeansException(ErrorCode.BEAN_ACCESS_ERROR, e, e.getMessage());
+        }
+    }
+
+    @Override
+    public Object getPropertyValue(String propertyName) throws BeansException {
+        try {
+            return actualWrapper.getPropertyValue(propertyName);
+        } catch (org.springframework.beans.BeansException e) {
+            throw new BeansException(ErrorCode.BEAN_ACCESS_ERROR, e, e.getMessage());
+        }
+    }
+
+    @Override
+    public Object getWrappedInstance() {
+        return actualWrapper.getWrappedInstance();
+    }
+
+    @Override
+    public Class<?> getWrappedClass() {
+        return actualWrapper.getWrappedClass();
+    }
+
+    @Override
+    public ReadonlyWrapper getReadonlyWrapper() {
+        return readonlyWrapper;
     }
 }

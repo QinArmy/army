@@ -87,10 +87,12 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <compilerArguments>
-                        <!-- 自动生成 jpa Metamodel -->
+                    <annotationProcessors>
+                        io.army.modelgen.ArmyMetaModelEntityProcessor
+                    </annotationProcessors>
+                <!--    <compilerArguments>
                         <processor>io.army.modelgen.ArmyMetaModelEntityProcessor</processor>
-                    </compilerArguments>
+                    </compilerArguments>-->
                 </configuration>
             </plugin>
         </plugins>

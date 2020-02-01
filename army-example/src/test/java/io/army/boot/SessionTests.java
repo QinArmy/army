@@ -1,6 +1,7 @@
 package io.army.boot;
 
 
+import com.example.generator.Being;
 import io.army.Session;
 import io.army.SessionFactory;
 import org.slf4j.Logger;
@@ -17,11 +18,14 @@ public class SessionTests {
     @Test
     public void openSession() throws Exception {
         Map<String, Object> map = new HashMap<>();
-        map.put(SessionFactory.PACKAGE_TO_SCAN, "com.example.domain.**");
+        map.put(SessionFactory.PACKAGE_TO_SCAN, "com.example.generator");
         SessionFactory sessionFactory = BootstrapTests.builder(map)
                 .build();
         try (Session session = sessionFactory.sessionBuilder().openSession()) {
-            LOG.info("session:{}", session);
+            Being being = new Being();
+            session.save(being);
+
+            LOG.info("being:{}", being);
         } catch (Exception e) {
             LOG.debug("", e);
             throw e;

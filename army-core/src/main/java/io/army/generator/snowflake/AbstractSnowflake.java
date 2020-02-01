@@ -1,9 +1,11 @@
 package io.army.generator.snowflake;
 
 import io.army.util.Assert;
+import io.army.util.TimeUtils;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -36,7 +38,7 @@ public abstract class AbstractSnowflake implements Snowflake {
         }
         final long workerBits = getWorkerBits();
         final long maxWorkerId = ~(-1L << workerBits);
-        final long maxDataCenterId = (-1L << (WORKER_BIT_SIZE - workerBits));
+        final long maxDataCenterId = ~(-1L << (WORKER_BIT_SIZE - workerBits));
 
         if (workerId > maxWorkerId || workerId < 0) {
             throw new IllegalArgumentException(
@@ -105,7 +107,9 @@ public abstract class AbstractSnowflake implements Snowflake {
     @Override
     public final String nextAsString(long suffixNumber) {
         Assert.isTrue(suffixNumber >= 0L, "suffixNumber must great than 0");
-        return LocalDate.now().format(CLOSE_DATE_FORMATTER) + this.next() + suffixWithZero(suffixNumber);
+        return LocalDateTime.now().format(TimeUtils.CLOSE_DATE_TIME_FORMATTER)
+                + this.next()
+                + suffixWithZero(suffixNumber);
     }
 
     @Override

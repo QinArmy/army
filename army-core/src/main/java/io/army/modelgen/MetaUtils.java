@@ -14,8 +14,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import java.util.*;
 
 abstract class MetaUtils {
@@ -62,8 +67,8 @@ abstract class MetaUtils {
         }
 
         if (!CollectionUtils.isEmpty(missPropNameSet)) {
-           // throw new MetaException(ErrorCode.META_ERROR,String.format("entityMappedElementList:%s",entityElement));
-           throw createMissingPropException(entityElement, missPropNameSet);
+            // throw new MetaException(ErrorCode.META_ERROR,String.format("entityMappedElementList:%s",entityElement));
+            throw createMissingPropException(entityElement, missPropNameSet);
         }
     }
 
@@ -117,7 +122,6 @@ abstract class MetaUtils {
             }
 
         }
-
 
         if (!TableMeta.VERSION_PROPS.contains(propName)
                 && (discriminatorColumn != null && !columnName.equals(discriminatorColumn))) {
@@ -207,6 +211,34 @@ abstract class MetaUtils {
                     mappedProp.getSimpleName()
             );
         }
+    }
+
+    static boolean isCodeEnum(VariableElement mappingPropElement) {
+        TypeMirror typeMirror = mappingPropElement.asType();
+
+        if (typeMirror.getKind() != TypeKind.DECLARED) {
+            return false;
+        }
+
+        Element element = ((DeclaredType) typeMirror).asElement();
+        if (element.getKind() != ElementKind.ENUM) {
+            return false;
+        }
+        TypeElement enumElement = (TypeElement) element;
+
+        boolean match = false;
+        for (TypeMirror enumInterface : enumElement.getInterfaces()) {
+            if (enumInterface.toString().equals(CodeEnum.class.getName())) {
+                match = true;
+                break;
+            }
+        }
+        return match;
+    }
+
+    static boolean isManagedByArmy(VariableElement mappingPropElement){
+        return TableMeta.VERSION_PROPS.contains(mappingPropElement.getSimpleName().toString())
+                ;
     }
 
     /*################################## blow private method ##################################*/

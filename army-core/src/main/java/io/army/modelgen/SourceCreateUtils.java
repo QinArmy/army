@@ -24,7 +24,6 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.lang.reflect.Field;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.*;
 
@@ -417,27 +416,7 @@ abstract class SourceCreateUtils {
             return;
         }
 
-        if (mappedProp.asType().getKind() != TypeKind.DECLARED) {
-            MetaUtils.throwDiscriminatorNotEnum(entityElement, mappedProp);
-        }
-        Element element = ((DeclaredType) mappedProp.asType()).asElement();
-
-        if (element.getKind() != ElementKind.ENUM) {
-            MetaUtils.throwDiscriminatorNotEnum(entityElement, mappedProp);
-        }
-        if (!(element instanceof TypeElement)) {
-            MetaUtils.throwDiscriminatorNotEnum(entityElement, mappedProp);
-        }
-
-        TypeElement enumElement = (TypeElement) element;
-        boolean isCodeEnum = false;
-        for (TypeMirror enumInterface : enumElement.getInterfaces()) {
-            if (enumInterface.toString().equals(CodeEnum.class.getName())) {
-                isCodeEnum = true;
-                break;
-            }
-        }
-        if (!isCodeEnum) {
+        if (!MetaUtils.isCodeEnum(mappedProp)) {
             MetaUtils.throwDiscriminatorNotEnum(entityElement, mappedProp);
         }
 

@@ -9,6 +9,10 @@ import java.util.List;
 
 public abstract class NetUtils {
 
+    public static String getPrivateAsString(){
+        return getPrivate().getHostAddress();
+    }
+
     public static InetAddress getPrivate() {
         InetAddress target = doGetIp(null, null);
         Assert.state(target != null, "network state error");

@@ -138,7 +138,7 @@ public abstract class AbstractTableDDL implements TableDDL {
                     .append(" (")
             ;
 
-            appendIndexField(builder,addIndexMeta.fieldList());
+            appendIndexField(builder, addIndexMeta.fieldList());
             builder.append(")");
 
             addIndexList.add(builder.toString());
@@ -153,8 +153,8 @@ public abstract class AbstractTableDDL implements TableDDL {
         for (String indexName : indexNames) {
             dropIndexList.add(
                     String.format("ALTER TABLE %s DROP INDEX %s"
-                            ,this.quoteIfNeed(tableMeta.tableName())
-                            ,indexName
+                            , this.quoteIfNeed(tableMeta.tableName())
+                            , indexName
                     )
             );
         }
@@ -174,7 +174,7 @@ public abstract class AbstractTableDDL implements TableDDL {
 
     protected abstract String dataTypeClause(FieldMeta<?, ?> fieldMeta);
 
-    protected abstract boolean hasDefaultClause(FieldMeta<?,?> fieldMeta);
+    protected abstract boolean hasDefaultClause(FieldMeta<?, ?> fieldMeta);
 
 
 
@@ -212,7 +212,7 @@ public abstract class AbstractTableDDL implements TableDDL {
                 .append(indexTypeClause(indexMeta))
                 .append(" (");
 
-        appendIndexField(builder,indexMeta.fieldList());
+        appendIndexField(builder, indexMeta.fieldList());
 
         builder.append(")");
         return builder.toString();
@@ -228,7 +228,7 @@ public abstract class AbstractTableDDL implements TableDDL {
     }
 
 
-    protected  String createHeaderClause(TableMeta<?> tableMeta){
+    protected String createHeaderClause(TableMeta<?> tableMeta) {
         return "CREATE TABLE " + this.quoteIfNeed(tableMeta.tableName()) + "(";
     }
 
@@ -242,28 +242,30 @@ public abstract class AbstractTableDDL implements TableDDL {
         );
     }
 
-    protected  String nullableClause(FieldMeta<?,?> fieldMeta){
+    protected String nullableClause(FieldMeta<?, ?> fieldMeta) {
         String clause;
-        if(fieldMeta.nullable()){
+        if (fieldMeta.nullable()) {
             clause = "NULL";
-        }else {
+        } else {
             clause = "NOT NULL";
         }
         return clause;
     }
 
-    protected final String defaultClause(FieldMeta<?,?> fieldMeta){
+    protected final String defaultClause(FieldMeta<?, ?> fieldMeta) {
         String clause;
-        if(hasDefaultClause(fieldMeta)){
-            clause = "DEFAULT " ;
+        if (hasDefaultClause(fieldMeta)) {
+            clause = "DEFAULT ";
             if (TableMeta.VERSION_PROPS.contains(fieldMeta.propertyName())) {
-                clause  += requiredPropDefaultValue(fieldMeta);
+                clause += requiredPropDefaultValue(fieldMeta);
+            } else if (fieldMeta.table().discriminator() == fieldMeta) {
+                clause += fieldMeta.table().discriminatorValue();
             } else {
                 clause += nonRequiredPropDefault(fieldMeta);
             }
 
-        }else {
-            clause= "";
+        } else {
+            clause = "";
         }
         return clause;
     }
@@ -355,7 +357,7 @@ public abstract class AbstractTableDDL implements TableDDL {
         return size;
     }
 
-    private  void appendKeyDefinition(StringBuilder builder, TableMeta<?> tableMeta) {
+    private void appendKeyDefinition(StringBuilder builder, TableMeta<?> tableMeta) {
         List<String> definitionList = new ArrayList<>(tableMeta.indexCollection().size());
         // placeholder for id
         definitionList.add("");
@@ -376,16 +378,16 @@ public abstract class AbstractTableDDL implements TableDDL {
     }
 
 
-    private <T extends IDomain> void appendIndexField(StringBuilder builder ,List<IndexFieldMeta<T, ?>> indexMetaList){
-        Iterator<IndexFieldMeta<T, ?>> iterator =indexMetaList.iterator();
-        for(IndexFieldMeta<T, ?> indexFieldMeta;iterator.hasNext();){
+    private <T extends IDomain> void appendIndexField(StringBuilder builder, List<IndexFieldMeta<T, ?>> indexMetaList) {
+        Iterator<IndexFieldMeta<T, ?>> iterator = indexMetaList.iterator();
+        for (IndexFieldMeta<T, ?> indexFieldMeta; iterator.hasNext(); ) {
             indexFieldMeta = iterator.next();
 
             builder.append(this.quoteIfNeed(indexFieldMeta.fieldName()))
                     .append(" ")
                     .append(DDLUtils.ascOrDesc(indexFieldMeta.fieldAsc()))
             ;
-            if(iterator.hasNext()){
+            if (iterator.hasNext()) {
                 builder.append(",");
             }
         }

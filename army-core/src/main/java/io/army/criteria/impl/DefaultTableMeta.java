@@ -62,6 +62,7 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             this.immutable = table.immutable();
             this.schemaMeta = MetaUtils.schemaMeta(table);
 
+            this.mappingMode = MetaUtils.tableMappingMode(entityClass);
             this.charset = table.charset();
             // before create field meta create hash code
             this.hashCode = createHashCode();
@@ -71,7 +72,7 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             this.indexMetaList = fieldBean.getIndexMetaList();
             this.discriminator = fieldBean.getDiscriminator();
 
-            this.mappingMode = MetaUtils.mappingMode(entityClass);
+
             this.discriminatorValue = MetaUtils.discriminatorValue(this.mappingMode, this);
 
             this.primaryField = (IndexFieldMeta<T, ?>) this.propNameToFieldMeta.get(TableMeta.ID);

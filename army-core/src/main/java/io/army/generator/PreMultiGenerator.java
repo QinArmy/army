@@ -1,6 +1,7 @@
 package io.army.generator;
 
 import io.army.beans.BeanWrapper;
+import io.army.beans.ReadonlyWrapper;
 import io.army.dialect.SQLDialect;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
@@ -58,7 +59,7 @@ public interface PreMultiGenerator extends MultiGenerator {
     String DEPEND_PROP_NAME = "dependPropName";
 
 
-    Object next(FieldMeta<?, ?> fieldMeta, BeanWrapper entityWrapper) throws GeneratorException;
+    Object next(FieldMeta<?, ?> fieldMeta, ReadonlyWrapper entityWrapper) throws GeneratorException;
 
 
 }

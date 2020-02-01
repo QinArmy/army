@@ -8,9 +8,9 @@ import java.net.InetAddress;
 
 public final class SingleApplicationSnowflakeClient extends AbstractSnowflakeClient {
 
-    private static final String DATA_CENTER_FORMAT = "io.army.single.%s.dataCenterId";
+    public static final String DATA_CENTER_FORMAT = "io.army.single.%s.dataCenterId";
 
-    private static final String WORKER_FORMAT = "io.army.single.%s.workerId";
+    public static final String WORKER_FORMAT = "io.army.single.%s.workerId";
 
     private final Environment env;
 
@@ -33,7 +33,7 @@ public final class SingleApplicationSnowflakeClient extends AbstractSnowflakeCli
         );
 
         if (workerHolder.compareAndSet(null, worker)) {
-            LOG.info("worker:{}", worker);
+            LOG.info("init worker accomplished:{}", worker);
         }else {
             LOG.info("worker set by other thread");
         }

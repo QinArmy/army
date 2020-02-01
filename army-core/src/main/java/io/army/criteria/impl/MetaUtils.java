@@ -16,7 +16,6 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 /**
- * created  on 2019-02-21.
  */
 abstract class MetaUtils {
 
@@ -26,7 +25,7 @@ abstract class MetaUtils {
 
     private static final String DESC = "DESC";
 
-    static  Map<Class<?>, Map<Integer, Class<?>>> discriminatorCodeMap = new HashMap<>();
+    static Map<Class<?>, Map<Integer, Class<?>>> discriminatorCodeMap = new HashMap<>();
 
     protected MetaUtils() {
 
@@ -64,13 +63,16 @@ abstract class MetaUtils {
     }
 
 
-    static int discriminatorValue(MappingMode mappingMode, TableMeta<?> tableMeta) {
+    static  int discriminatorValue(MappingMode mappingMode, TableMeta<?> tableMeta) {
         int value;
         DiscriminatorValue discriminatorValue;
         discriminatorValue = AnnotationUtils.getAnnotation(tableMeta.javaType(), DiscriminatorValue.class);
         switch (mappingMode) {
             case CHILD:
                 value = extractModeChildDiscriminatorValue(tableMeta, discriminatorValue);
+                TableMeta<?> parentMeta = tableMeta.parent();
+                Assert.notNull(parentMeta,()->String.format("entity[%s] no parent.",tableMeta.javaType().getName()));
+                assertDiscriminatorValueIsEnumCode(parentMeta,value);
                 break;
             case PARENT:
                 if (discriminatorValue != null && discriminatorValue.value() != 0) {
@@ -78,6 +80,7 @@ abstract class MetaUtils {
                             , tableMeta.javaType().getName());
                 }
                 value = 0;
+                assertDiscriminatorValueIsEnumCode(tableMeta,value);
                 break;
             case SIMPLE:
                 value = 0;
@@ -86,6 +89,7 @@ abstract class MetaUtils {
                 throw new IllegalArgumentException(String.format("unknown MappingMode[%s]", mappingMode));
 
         }
+
         return value;
     }
 
@@ -139,7 +143,7 @@ abstract class MetaUtils {
     }
 
 
-    static MappingMode mappingMode(@NonNull Class<? extends IDomain> entityClass) throws MetaException {
+    static MappingMode tableMappingMode(@NonNull Class<? extends IDomain> entityClass) throws MetaException {
         int tableCount = 0, inheritCount = 0;
         for (Class<?> superClass = entityClass; superClass != null; superClass = superClass.getSuperclass()) {
             if (AnnotationUtils.getAnnotation(superClass, Table.class) != null) {
@@ -151,6 +155,7 @@ abstract class MetaUtils {
                 break;
             }
         }
+        Assert.isTrue(tableCount > 0, () -> String.format("class[%s] not entity", entityClass.getName()));
 
         MappingMode mappingMode;
         if (inheritCount == 0) {
@@ -291,13 +296,14 @@ abstract class MetaUtils {
 
         }
         if (!map.containsKey(PRIMARY_FIELD)) {
-            map.put(PRIMARY_FIELD, findIdField(tableMeta, mappedClassList.get(0)));
+            // child MappingMode
+            map.put(PRIMARY_FIELD, findIdFieldFromParent(tableMeta, mappedClassList.get(0)));
         }
         return Collections.unmodifiableMap(map);
     }
 
 
-    private static Field findIdField(TableMeta<?> tableMeta, Class<?> topMappedClass) {
+    private static Field findIdFieldFromParent(TableMeta<?> tableMeta, Class<?> topMappedClass) {
         Stack<Class<?>> superMappingStack = superMappingClassStack(topMappedClass);
         Field field;
         for (Class<?> superMapping; !superMappingStack.empty(); ) {
@@ -366,7 +372,7 @@ abstract class MetaUtils {
         Assert.notNull(parentMeta, () -> String.format("Entity[%s] parentMeta error", tableMeta.javaType().getName()));
 
         Map<Integer, Class<?>> codeMap;
-        if(discriminatorCodeMap == null){
+        if (discriminatorCodeMap == null) {
             discriminatorCodeMap = new HashMap<>();
         }
         codeMap = discriminatorCodeMap.computeIfAbsent(parentMeta.javaType(), key -> new HashMap<>());
@@ -434,6 +440,20 @@ abstract class MetaUtils {
 
 
     /*################################# indexMap meta part private method  start ###################################*/
+
+    private static <E extends Enum<E> & CodeEnum, T extends IDomain> void assertDiscriminatorValueIsEnumCode(
+            TableMeta<T> tableMeta, int value) {
+        FieldMeta<T, E> fieldMeta = tableMeta.discriminator();
+        Assert.notNull(fieldMeta,()-> String.format("entity[%s] no discriminator",tableMeta.javaType().getName()));
+        Map<Integer, E> codeMap = CodeEnum.getCodeMap(fieldMeta.javaType());
+        if (!codeMap.containsKey(value)) {
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] DiscriminatorValue not %s's code"
+                    , tableMeta.javaType().getName()
+                    ,fieldMeta.javaType().getName()
+            );
+        }
+    }
+
 
     /**
      * @param <T>              entity java class
@@ -644,7 +664,7 @@ abstract class MetaUtils {
         private final Boolean fieldAsc;
 
         DefaultIndexFieldMeta(TableMeta<T> table, Field field, IndexMeta<T> indexMeta, boolean fieldUnique,
-                              Boolean fieldAsc) throws MetaException {
+                              @Nullable Boolean fieldAsc) throws MetaException {
             super(table, field, fieldUnique, true);
             this.indexMeta = indexMeta;
             this.fieldAsc = fieldAsc;

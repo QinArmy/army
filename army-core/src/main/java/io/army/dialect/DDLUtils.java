@@ -2,6 +2,7 @@ package io.army.dialect;
 
 import io.army.ErrorCode;
 import io.army.criteria.MetaException;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.sqltype.MySQLDataType;
 import io.army.sqltype.SQLDataType;
@@ -66,7 +67,7 @@ public abstract class DDLUtils {
     }
 
 
-    protected static String ascOrDesc(Boolean asc) {
+    protected static String ascOrDesc(@Nullable Boolean asc) {
         String text;
         if (asc == null) {
             text = "";

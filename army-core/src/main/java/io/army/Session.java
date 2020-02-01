@@ -8,7 +8,7 @@ import java.io.Serializable;
 /**
  * created  on 2018/9/1.
  */
-public interface  Session extends AutoCloseable {
+public interface Session extends AutoCloseable {
 
     SessionOptions options();
 
@@ -16,6 +16,8 @@ public interface  Session extends AutoCloseable {
 
     boolean closed();
 
-    Serializable save(IDomain entity);
+    SessionFactory sessionFactory();
+
+    void save(IDomain entity);
 
 }

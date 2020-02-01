@@ -46,6 +46,6 @@ public final class Worker {
 
     @Override
     public String toString() {
-        return String.format("dataCenterId:%s,workerId:%s",dataCenterId,workerId);
+        return String.format("dataCenterId:%s,workerId:%s .",dataCenterId,workerId);
     }
 }

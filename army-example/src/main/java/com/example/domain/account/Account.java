@@ -32,7 +32,7 @@ public class Account extends VersionDomain {
     public static final int FUNCTION_VALUE = 3000;
 
 
-    @Generator("")
+    @Generator("io.army.generator.snowflake.SnowflakeGenerator")
     @Column(defaultValue = ZERO, updatable = false, comment = "id")
     private Long id;
 

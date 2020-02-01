@@ -1,7 +1,8 @@
 package io.army.struct;
 
 
-import javax.annotation.Nonnull;
+import io.army.lang.NonNull;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +30,7 @@ public interface CodeEnum extends Compare<CodeEnum> {
     /**
      * @return 用于展示到前端的名称
      */
-    @Nonnull
+    @NonNull
     String display();
 
     default String localizedDisplay() {

@@ -4,6 +4,8 @@ import java.util.Map;
 
 public interface GeneratorMeta {
 
+    FieldMeta<?,?> fieldMeta();
+
     Class<?> type();
 
     /**

@@ -5,14 +5,12 @@ import io.army.criteria.Selection;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingType;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.NonNullApi;
 
 /**
- * 代表 表的一个字段
- * created  on 2018/10/8.
- * F 表示字段的 java 类型
- * T 表对应的 domain 类型
+ * <p> this interface representing a Java class and table column mapping.</p>
+ *
+ * @param <T> representing Entity Java class
+ * @param <F> representing Entity property Java class
  */
 public interface FieldMeta<T extends IDomain, F> extends Expression<F>, Selection {
 
@@ -30,6 +28,12 @@ public interface FieldMeta<T extends IDomain, F> extends Expression<F>, Selectio
 
     TableMeta<T> table();
 
+    /**
+     * <p>
+     * if this field representing {@link TableMeta#ID}
+     * and field's table is {@link MappingMode#CHILD},always return null.
+     * </p>
+     */
     @Nullable
     GeneratorMeta generator();
 

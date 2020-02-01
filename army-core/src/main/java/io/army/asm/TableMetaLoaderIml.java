@@ -1,16 +1,12 @@
 package io.army.asm;
 
 import io.army.ErrorCode;
-import io.army.annotation.Inheritance;
 import io.army.annotation.Table;
 import io.army.criteria.MetaException;
 import io.army.criteria.impl.TableMetaFactory;
-import io.army.lang.Nullable;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen.MetaConstant;
-import io.army.util.AnnotationUtils;
-import io.army.util.Assert;
 import io.army.util.ClassUtils;
 import io.army.util.ReflectionUtils;
 import org.slf4j.Logger;
@@ -24,7 +20,6 @@ import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 
 
-import javax.validation.constraints.Null;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collections;

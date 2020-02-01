@@ -4,7 +4,7 @@ import io.army.ErrorCode;
 import io.army.annotation.*;
 import io.army.criteria.MetaException;
 import io.army.domain.IDomain;
-import io.army.generator.MultiGenerator;
+import io.army.generator.PostMultiGenerator;
 import io.army.generator.PreMultiGenerator;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
@@ -32,6 +32,8 @@ abstract class FieldMetaUtils extends MetaUtils {
 
     static final class GeneratorMetaImpl implements GeneratorMeta {
 
+        private final FieldMeta<?, ?> fieldMeta;
+
         private final Class<?> type;
 
         private final Map<String, String> params;
@@ -39,11 +41,10 @@ abstract class FieldMetaUtils extends MetaUtils {
         private final String dependPropName;
 
 
-        private GeneratorMetaImpl(Class<?> type, Map<String, String> params) {
-            Assert.notNull(type, "type required");
-            Assert.notNull(params, "params required");
+        private GeneratorMetaImpl(FieldMeta<?, ?> fieldMeta, Class<?> type, Map<String, String> params) {
 
             this.type = type;
+            this.fieldMeta = fieldMeta;
 
             final Map<String, String> emptyMap = Collections.emptyMap();
             if (params == emptyMap) {
@@ -57,6 +58,11 @@ abstract class FieldMetaUtils extends MetaUtils {
             } else {
                 this.dependPropName = "";
             }
+        }
+
+        @Override
+        public FieldMeta<?, ?> fieldMeta() {
+            return fieldMeta;
         }
 
         @Override
@@ -86,35 +92,35 @@ abstract class FieldMetaUtils extends MetaUtils {
 
     @Nullable
     static GeneratorMeta columnGeneratorMeta(Field field, FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
+        if (TableMeta.ID.equals(fieldMeta.propertyName())
+                && fieldMeta.table().parent() != null) {
+            return null;
+        }
         Generator generator = AnnotationUtils.getAnnotation(field, Generator.class);
         if (generator == null) {
             return null;
         }
-        boolean match = !TableMeta.VERSION_PROPS.contains(fieldMeta.propertyName()) && !isDiscriminator;
-        Assert.isTrue(match, () -> String.format("Entity[%s].prop[%s] must no Generator"
-                , fieldMeta.table().javaType().getName()
-                , fieldMeta.propertyName()));
+        assertManagedByArmyForGenerator(fieldMeta,isDiscriminator);
 
+        Class<?> generatorClass = loadGeneratorClass(fieldMeta,generator.value());
 
-        Class<?> clazz;
-        try {
-            clazz = ClassUtils.forName(generator.value(), ClassUtils.getDefaultClassLoader());
-        } catch (ClassNotFoundException e) {
-            throw new MetaException(ErrorCode.META_ERROR, e, e.getMessage());
-        }
+        assertGeneratorPreOrPost(generatorClass, fieldMeta);
 
         Map<String, String> paramMap;
-        GeneratorParam[] params = generator.params();
+        Params[] params = generator.params();
         if (params.length == 0) {
             paramMap = Collections.emptyMap();
         } else {
             paramMap = new HashMap<>((int) (params.length / 0.75f));
-            for (GeneratorParam param : params) {
+            for (Params param : params) {
                 paramMap.put(param.name(), param.value());
             }
         }
-        return new GeneratorMetaImpl(clazz, paramMap);
+        assertPreGeneratorDependPropName(paramMap, fieldMeta, generatorClass);
+        return new GeneratorMetaImpl(fieldMeta, generatorClass, paramMap);
     }
+
+
 
     static MappingType columnMappingType(@NonNull Field field) {
         Mapping mapping = AnnotationUtils.getAnnotation(field, Mapping.class);
@@ -261,6 +267,57 @@ abstract class FieldMetaUtils extends MetaUtils {
                 || (inheritance != null
                 && inheritance.value().equalsIgnoreCase(fieldMeta.fieldName()))
                 ;
+    }
+
+
+    private static void assertPreGeneratorDependPropName(Map<String, String> paramMap, FieldMeta<?, ?> fieldMeta
+            , Class<?> generatorClass) {
+
+        // assert DEPEND_PROP_NAME param
+        if (paramMap.containsKey(PreMultiGenerator.DEPEND_PROP_NAME)
+                && !ClassUtils.isAssignable(PreMultiGenerator.class, generatorClass)) {
+            throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] prop[%s] generator cannot have %s param"
+                    , fieldMeta.table().javaType().getName()
+                    , fieldMeta.propertyName()
+                    , PreMultiGenerator.DEPEND_PROP_NAME);
+        }
+    }
+
+    private static void assertGeneratorPreOrPost(Class<?> generatorClass, FieldMeta<?, ?> fieldMeta) {
+        // assert Generator
+        if (ClassUtils.isAssignable(PreMultiGenerator.class, generatorClass)
+                && ClassUtils.isAssignable(PostMultiGenerator.class, generatorClass)) {
+            throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] prop[%s] generator error, cannot be %s and %s"
+                    , fieldMeta.table().javaType().getName()
+                    , fieldMeta.propertyName()
+                    , PreMultiGenerator.class.getName()
+                    , PostMultiGenerator.class.getName());
+        }
+    }
+
+    private static void assertManagedByArmyForGenerator(FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
+        if (!TableMeta.ID.equals(fieldMeta.propertyName())) {
+            if (TableMeta.VERSION_PROPS.contains(fieldMeta.propertyName())
+                    || isDiscriminator) {
+                throw new MetaException(ErrorCode.META_ERROR, "Entity[%s].prop[%s] must no Generator"
+                        , fieldMeta.table().javaType().getName()
+                        , fieldMeta.propertyName());
+            }
+        }
+    }
+
+    private static  Class<?> loadGeneratorClass(FieldMeta<?, ?> fieldMeta,String className){
+        if(!StringUtils.hasText(className)){
+            throw new MetaException(ErrorCode.META_ERROR,"entity[%s] prop[%s] generator no class name"
+                    ,fieldMeta.table().javaType().getName(),fieldMeta.propertyName());
+        }
+        try {
+            return ClassUtils.forName(className, ClassUtils.getDefaultClassLoader());
+        } catch (ClassNotFoundException e) {
+            throw new MetaException(ErrorCode.META_ERROR,e,"entity[%s] prop[%s] generator class not found."
+                    ,fieldMeta.table().javaType().getName(),fieldMeta.propertyName());
+        }
+
     }
 
 

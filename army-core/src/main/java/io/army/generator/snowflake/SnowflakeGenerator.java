@@ -1,6 +1,7 @@
 package io.army.generator.snowflake;
 
-import io.army.beans.BeanWrapper;
+import io.army.annotation.Params;
+import io.army.beans.ReadonlyWrapper;
 import io.army.env.Environment;
 import io.army.generator.PreMultiGenerator;
 import io.army.lang.Nullable;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -58,7 +60,7 @@ public final class SnowflakeGenerator implements PreMultiGenerator {
     public static final String DEFAULT_START_TIME_KEY = SnowflakeGenerator.class.getName().concat("defaultStartTime");
 
     /**
-     * @see io.army.annotation.GeneratorParam
+     * @see Params
      */
     public static final String START_TIME = "startTime";
 
@@ -241,11 +243,11 @@ public final class SnowflakeGenerator implements PreMultiGenerator {
         }
         startTime = env.getRequiredProperty(DEFAULT_START_TIME_KEY, Long.class);
         if (startTime < 0 || startTime > SystemClock.now()) {
-            throw new IllegalStateException(String.format("snowflake start time[%s] error", startTime));
+            throw new IllegalStateException(String.format("default snowflake start time[%s] config error", startTime));
         }
 
         if (DEFAULT_START_TIME.compareAndSet(-1, startTime)) {
-            LOG.info("snowflake start time is {}", DEFAULT_START_TIME.get());
+            LOG.info("default snowflake start time is {}", DEFAULT_START_TIME.get());
         }
         return DEFAULT_START_TIME.get();
     }
@@ -324,19 +326,19 @@ public final class SnowflakeGenerator implements PreMultiGenerator {
     /*################################## blow interface method ##################################*/
 
     @Override
-    public Object next(FieldMeta<?, ?> fieldMeta, BeanWrapper entityWrapper) {
+    public Object next(FieldMeta<?, ?> fieldMeta, ReadonlyWrapper entityWrapper) {
         Object identifier;
 
         if (fieldMeta.javaType() == Long.class) {
             identifier = snowflake.next();
         } else if (fieldMeta.javaType() == String.class) {
-            if (fieldMeta.precision() <= 19) {
+            if (fieldMeta.precision() >=0 && fieldMeta.precision() <= 19) {
                 identifier = snowflake.nextAsString();
             } else {
-                identifier = nextAsString(fieldMeta, entityWrapper);
+                identifier = nextAsStringWithDepend(fieldMeta, entityWrapper);
             }
         } else if (fieldMeta.javaType() == BigInteger.class) {
-            identifier = new BigInteger(nextAsString(fieldMeta, entityWrapper));
+            identifier = new BigInteger(nextAsStringWithDepend(fieldMeta, entityWrapper));
         } else {
             throw new IllegalArgumentException(String.format("SnowflakeGenerator unsupported java type[%s]"
                     , fieldMeta.javaType().getName()));
@@ -344,34 +346,60 @@ public final class SnowflakeGenerator implements PreMultiGenerator {
         return identifier;
     }
 
-    public final Snowflake getSnowflake(){
+    public final Snowflake getSnowflake() {
         return this.snowflake;
     }
 
-    private String nextAsString(FieldMeta<?, ?> fieldMeta, BeanWrapper entityWrapper) {
+    private String nextAsStringWithDepend(FieldMeta<?, ?> fieldMeta, ReadonlyWrapper entityWrapper) {
         GeneratorMeta generatorMeta = fieldMeta.generator();
-        if (generatorMeta == null) {
-            return snowflake.nextAsString();
-        }
+        Assert.notNull(generatorMeta, "fieldMeta must have generator");
+
         String dependOnProp = generatorMeta.dependPropName();
         if (!StringUtils.hasText(dependOnProp)) {
             return snowflake.nextAsString();
         }
+        Assert.isTrue(entityWrapper.isReadableProperty(dependOnProp)
+                , () -> String.format("fieldMeta[%s.%s] depend not readable"
+                        , fieldMeta.javaType().getName(), fieldMeta.propertyName()));
+
         Object dependValue = entityWrapper.getPropertyValue(dependOnProp);
-        if (!(dependValue instanceof Long)) {
-            String type;
-            if (dependValue == null) {
-                type = null;
-            } else {
-                type = dependValue.getClass().getName();
-            }
-            throw new IllegalArgumentException(String.format("%s cannot support depend type[%s]"
-                    , SnowflakeGenerator.class.getName(), type));
+
+        long longValue;
+        if (dependValue instanceof Number) {
+            longValue = ((Number) dependValue).longValue();
+        } else if (dependValue instanceof String) {
+            longValue = tryConvertToLong((String) dependValue);
+        } else {
+            throw createNotSupportDependException(dependValue);
         }
-        return snowflake.nextAsString((Long) dependValue);
+        return snowflake.nextAsString(longValue);
     }
 
     /*################################## blow private method ##################################*/
+
+    private long tryConvertToLong(String dependValue) {
+        try {
+            String text = dependValue;
+            if (text.length() > 5) {
+                text = text.substring(text.length() - 5);
+            }
+            return Long.parseLong(text);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(String.format(
+                    "depend value[%s] cannot convert to long.", dependValue));
+        }
+    }
+
+    private IllegalArgumentException createNotSupportDependException(@Nullable Object dependValue) {
+        String type;
+        if (dependValue == null) {
+            type = null;
+        } else {
+            type = dependValue.getClass().getName();
+        }
+        return new IllegalArgumentException(String.format("%s cannot support depend type[%s]"
+                , SnowflakeGenerator.class.getName(), type));
+    }
 
     /**
      * @see SnowflakeClient#registerGenerator(SnowflakeGenerator)

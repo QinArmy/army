@@ -15,10 +15,8 @@ import io.army.generator.GeneratorFactory;
 import io.army.generator.MultiGenerator;
 import io.army.generator.PreMultiGenerator;
 import io.army.lang.Nullable;
-import io.army.meta.FieldMeta;
-import io.army.meta.GeneratorMeta;
-import io.army.meta.SchemaMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
+import io.army.util.Assert;
 import io.army.util.Pair;
 import io.army.util.StringUtils;
 import org.slf4j.Logger;
@@ -106,21 +104,19 @@ abstract class SessionFactoryUtils {
                 if (generatorMeta == null) {
                     continue;
                 }
-                if (StringUtils.hasText(generatorMeta.dependPropName())
-                        && !tableMeta.isMappingProp(generatorMeta.dependPropName())) {
-                    throw createDependException(fieldMeta);
-                }
+                assertPreGenerator(generatorMeta);
+
                 MultiGenerator generator = GeneratorFactory.getGenerator(fieldMeta, environment);
                 // create generator
-                generatorMap.put(fieldMeta,generator );
+                generatorMap.put(fieldMeta, generator);
 
-                if(generator instanceof PreMultiGenerator){
+                if (generator instanceof PreMultiGenerator) {
                     propGeneratorMap.put(fieldMeta.propertyName(), generatorMeta);
                 }
             }
 
             if (!propGeneratorMap.isEmpty()) {
-                List<FieldMeta<?, ?>> chain = createTableGeneratorChain(tableMeta, propGeneratorMap);
+                List<FieldMeta<?, ?>> chain = createTablePreGeneratorChain(tableMeta, propGeneratorMap);
                 tableGeneratorChain.put(tableMeta, chain);
             }
 
@@ -206,23 +202,31 @@ abstract class SessionFactoryUtils {
 
 
     /**
+     * @param thisGeneratorMap a modifiable map
      * @return a unmodifiable list
+     * @see PreMultiGenerator
      */
-    private static List<FieldMeta<?, ?>> createTableGeneratorChain(TableMeta<?> tableMeta
-            , Map<String, GeneratorMeta> propGeneratorMap) {
+    private static List<FieldMeta<?, ?>> createTablePreGeneratorChain(TableMeta<?> tableMeta
+            , Map<String, GeneratorMeta> thisGeneratorMap) {
 
-       final List<Set<String>> dependLevelList = new ArrayList<>();
-       final Set<String> ancestorLevelSet = new HashSet<>();
-        dependLevelList.add(ancestorLevelSet);
+        if (tableMeta.parent() != null) {
+            // append parent generator
+            appendPrentTableGeneratorMap(tableMeta, thisGeneratorMap);
+        }
 
-        //1. add ancestorLevelSet
-        for (Map.Entry<String, GeneratorMeta> e : propGeneratorMap.entrySet()) {
+        final List<Set<String>> dependLevelList = new ArrayList<>();
+        final Set<String> ancestorLevelSet = new HashSet<>();
+
+        //1. add ancestor level set, they have no dependence.
+        for (Map.Entry<String, GeneratorMeta> e : thisGeneratorMap.entrySet()) {
             if (!StringUtils.hasText(e.getValue().dependPropName())) {
                 ancestorLevelSet.add(e.getKey());
             }
         }
+        dependLevelList.add(ancestorLevelSet);
+
         //2. add child level after ancestor level
-        appendChildLevel(dependLevelList, propGeneratorMap);
+        appendChildLevel(dependLevelList, Collections.unmodifiableMap(thisGeneratorMap));
 
         //3.  create chain
         List<FieldMeta<?, ?>> tempChain = new ArrayList<>(), chain;
@@ -238,9 +242,40 @@ abstract class SessionFactoryUtils {
         return Collections.unmodifiableList(chain);
     }
 
+    /**
+     * @param thisGeneratorMap a modifiable map
+     * @see PreMultiGenerator
+     */
+    private static void appendPrentTableGeneratorMap(TableMeta<?> tableMeta
+            , Map<String, GeneratorMeta> thisGeneratorMap) {
+        TableMeta<?> parentMeta = tableMeta.parent();
+        Assert.isTrue(parentMeta != null, "entity no parent");
+
+        Assert.isTrue(!thisGeneratorMap.containsKey(TableMeta.ID)
+                , () -> String.format("child entity[%s] cannot have id generator.", tableMeta.javaType().getName()));
+
+        for (FieldMeta<?, ?> fieldMeta : parentMeta.fieldCollection()) {
+            GeneratorMeta generatorMeta = fieldMeta.generator();
+            if (generatorMeta == null) {
+                continue;
+            }
+            if (thisGeneratorMap.containsKey(fieldMeta.propertyName())) {
+                throw new MetaException(ErrorCode.META_ERROR, "entity[%s] prop[%s] couldn't override parent's generator"
+                        , tableMeta.javaType().getName(), fieldMeta.fieldName());
+            }
+
+            thisGeneratorMap.put(fieldMeta.propertyName(), generatorMeta);
+        }
+    }
+
+    /**
+     *
+     * @param dependLevelList  a modifiable list
+     * @param propGeneratorMap  a unmodifiable map
+     */
     private static void appendChildLevel(List<Set<String>> dependLevelList
             , Map<String, GeneratorMeta> propGeneratorMap) {
-       final Set<String> lastLevelPropSet = dependLevelList.get(dependLevelList.size() - 1);
+        final Set<String> lastLevelPropSet = dependLevelList.get(dependLevelList.size() - 1);
 
         final Set<String> thisLevelSet = new HashSet<>();
         int thisLevelCount = 0;
@@ -261,6 +296,20 @@ abstract class SessionFactoryUtils {
         return new MetaException(ErrorCode.META_ERROR, "Entity[%s] propName[%s] generator depend error"
                 , fieldMeta.table().javaType().getName()
                 , fieldMeta.propertyName());
+    }
+
+    private static void assertPreGenerator(GeneratorMeta generatorMeta) {
+        if (StringUtils.hasText(generatorMeta.dependPropName())) {
+            TableMeta<?> tableMeta = generatorMeta.fieldMeta().table();
+
+            if (!tableMeta.isMappingProp(generatorMeta.dependPropName())) {
+                TableMeta<?> parentMeta = tableMeta.parent();
+                if (parentMeta == null || !parentMeta.isMappingProp(generatorMeta.dependPropName())) {
+                    throw createDependException(generatorMeta.fieldMeta());
+                }
+            }
+
+        }
     }
 
 }

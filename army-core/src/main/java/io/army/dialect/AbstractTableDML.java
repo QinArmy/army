@@ -4,6 +4,7 @@ import io.army.ErrorCode;
 import io.army.SessionFactory;
 import io.army.beans.BeanWrapper;
 import io.army.beans.PropertyAccessorFactory;
+import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.MetaException;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
@@ -52,7 +53,7 @@ public abstract class AbstractTableDML implements TableDML {
     /*################################## blow TableDML method ##################################*/
 
     @Override
-    public final List<SQLWrapper> insert(TableMeta<?> tableMeta, BeanWrapper entityWrapper) {
+    public final List<SQLWrapper> insert(TableMeta<?> tableMeta, ReadonlyWrapper entityWrapper) {
         Assert.notNull(tableMeta, "tableMeta required");
         Assert.notNull(entityWrapper, "entity required");
         Assert.isTrue(tableMeta.javaType() == entityWrapper.getWrappedClass(), "tableMata and entity not match");
@@ -87,7 +88,8 @@ public abstract class AbstractTableDML implements TableDML {
     /**
      * @return a modifiable list
      */
-    private <T extends IDomain> List<SQLWrapper> createInsertForSimple(TableMeta<T> tableMeta, BeanWrapper entityWrapper) {
+    private <T extends IDomain> List<SQLWrapper> createInsertForSimple(TableMeta<T> tableMeta
+            , ReadonlyWrapper entityWrapper) {
         StringBuilder nameBuilder = new StringBuilder("INSERT INTO "), valueBuilder = new StringBuilder(" VALUE(");
         final List<ParamWrapper> paramWrapperList = new ArrayList<>();
 
@@ -135,14 +137,14 @@ public abstract class AbstractTableDML implements TableDML {
     /**
      * @return a modifiable list
      */
-    private List<SQLWrapper> createInsertForParent(TableMeta<?> tableMeta, BeanWrapper entityWrapper) {
+    private List<SQLWrapper> createInsertForParent(TableMeta<?> tableMeta, ReadonlyWrapper entityWrapper) {
         return createInsertForSimple(tableMeta, entityWrapper);
     }
 
     /**
      * @return a modifiable list
      */
-    private List<SQLWrapper> createInsertForChild(TableMeta<?> tableMeta, BeanWrapper entityWrapper) {
+    private List<SQLWrapper> createInsertForChild(TableMeta<?> tableMeta, ReadonlyWrapper entityWrapper) {
         TableMeta<?> parentMeta = tableMeta.parent();
         Assert.state(parentMeta != null, () -> String.format("entity[%s] parentMeta", tableMeta.javaType().getName()));
 

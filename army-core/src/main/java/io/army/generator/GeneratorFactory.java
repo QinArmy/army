@@ -5,6 +5,7 @@ import io.army.env.Environment;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 import io.army.util.Assert;
+import io.army.util.ClassUtils;
 import io.army.util.ReflectionUtils;
 
 import java.lang.reflect.Method;
@@ -25,7 +26,7 @@ public abstract class GeneratorFactory {
             }
             return generator;
         } catch (Throwable e) {
-            throw new GeneratorException(ErrorCode.GENERATOR_ERROR, "MultiGenerator[%s]  getInstance method error"
+            throw new GeneratorException(ErrorCode.GENERATOR_ERROR, e,"MultiGenerator[%s]  getInstance method error"
                     , generatorMeta.type().getName());
         }
     }
@@ -33,7 +34,8 @@ public abstract class GeneratorFactory {
     private static Method getBuilder(GeneratorMeta generatorMeta) {
         Method method = ReflectionUtils.findMethod(generatorMeta.type()
                 , "getInstance", FieldMeta.class, Environment.class);
-        if (method == null) {
+        if (method == null
+                || !ClassUtils.isAssignable(MultiGenerator.class,method.getReturnType())) {
             throw new GeneratorException(ErrorCode.GENERATOR_ERROR, "MultiGenerator[%s] no getInstance method"
                     , generatorMeta.type().getName());
         }

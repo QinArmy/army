@@ -23,5 +23,9 @@ public abstract class PropertyAccessorFactory {
         return new BeanWrapperImpl(target);
     }
 
+    public static ReadonlyWrapper forReadonlyPropertyAccess(Object target){
+        return new ReadonlyWrapperImpl(target);
+    }
+
 
 }

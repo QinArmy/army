@@ -3,11 +3,15 @@ package io.army.modelgen;
 import io.army.annotation.Column;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexFieldMeta;
+import io.army.meta.TableMeta;
+import io.army.struct.CodeEnum;
 import io.army.util.ClassUtils;
 import io.army.util.StringUtils;
+import org.jooq.Meta;
 
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 
 /**
  * this class is a implement of {@link MetaAttribute}
@@ -25,10 +29,11 @@ class DefaultMetaAttribute implements MetaAttribute {
 
 
     DefaultMetaAttribute(TypeElement entityElement, VariableElement mappingPropElement
-            ,Column column, boolean indexColumn) {
+            , Column column, boolean indexColumn) {
         this.entityElement = entityElement;
         this.mappingPropElement = mappingPropElement;
-        this.commentLine = SourceCreateUtils.COMMENT_PRE + "/**  " + column.comment() + " */";
+        this.commentLine = SourceCreateUtils.COMMENT_PRE + "/**  "
+                + createComment(mappingPropElement,column.comment()) + " */";
         this.indexColumn = indexColumn;
     }
 
@@ -80,5 +85,44 @@ class DefaultMetaAttribute implements MetaAttribute {
                 StringUtils.camelToUpperCase(name),
                 name
         );
+    }
+
+    /*################################## blow private method ##################################*/
+
+    private static String createComment(VariableElement mappingPropElement, String comment) {
+        String actualComment;
+        if (StringUtils.hasText(comment)) {
+            actualComment = comment;
+        } else if (MetaUtils.isManagedByArmy(mappingPropElement)
+                || MetaUtils.isCodeEnum(mappingPropElement)) {
+            actualComment = commentManagedByArmy(mappingPropElement);
+        } else {
+            actualComment = "";
+        }
+        return actualComment;
+    }
+
+    private static String commentManagedByArmy(VariableElement mappingPropElement) {
+        String comment = "";
+        switch (mappingPropElement.getSimpleName().toString()) {
+            case TableMeta.ID:
+                comment = "primary key";
+                break;
+            case TableMeta.CREATE_TIME:
+                comment = "create time";
+                break;
+            case TableMeta.UPDATE_TIME:
+                comment = "update time";
+                break;
+            case TableMeta.VERSION:
+                comment = "version for optimistic lock";
+                break;
+            case TableMeta.VISIBLE:
+                comment = "visible for logic delete";
+                break;
+            default:
+                comment = "@see " + mappingPropElement.asType().toString();
+        }
+        return comment;
     }
 }
