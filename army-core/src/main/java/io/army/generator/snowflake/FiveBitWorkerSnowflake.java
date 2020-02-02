@@ -11,7 +11,7 @@ public final class FiveBitWorkerSnowflake extends AbstractSnowflake {
 
     private static final ConcurrentMap<String, FiveBitWorkerSnowflake> INSTANCE_MAP = new ConcurrentHashMap<>();
 
-    public synchronized static FiveBitWorkerSnowflake getInstance(final long startTime, final Worker worker) {
+    public synchronized static FiveBitWorkerSnowflake build(final long startTime, final Worker worker) {
         return INSTANCE_MAP.computeIfAbsent(
                 String.valueOf(startTime) + worker.getDataCenterId() + worker.getWorkerId()
                 , k -> new FiveBitWorkerSnowflake(startTime, worker.getDataCenterId(), worker.getWorkerId()));

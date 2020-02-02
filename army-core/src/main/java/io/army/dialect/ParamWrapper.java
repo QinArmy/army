@@ -1,6 +1,7 @@
 package io.army.dialect;
 
 import io.army.lang.Nullable;
+import io.army.meta.FieldMeta;
 import io.army.meta.mapping.MappingType;
 
 public interface ParamWrapper {

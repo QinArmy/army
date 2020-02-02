@@ -1,6 +1,11 @@
 package io.army.meta.mapping;
 
+import io.army.util.Assert;
+
 import java.sql.JDBCType;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public final class StringMapping extends AbstractMappingType {
 
@@ -31,12 +36,13 @@ public final class StringMapping extends AbstractMappingType {
     }
 
     @Override
-    public int precision() {
-        return 255;
+    public void nullSafeSet(PreparedStatement st, Object value, int index) throws SQLException {
+        Assert.isInstanceOf(String.class, value, "");
+        st.setString(index, (String) value);
     }
 
     @Override
-    public int scale() {
-        return -1;
+    public Object nullSafeGet(ResultSet resultSet, String alias) throws SQLException {
+        return resultSet.getString(alias);
     }
 }

@@ -7,33 +7,31 @@ import io.army.util.ReflectionUtils;
 
 import java.lang.reflect.Method;
 import java.sql.JDBCType;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Map;
 
 /**
  * @see Enum
  * @see io.army.struct.CodeEnum
  */
-public class CodeEnumMapping extends AbstractMappingType {
-
-    private static final Method GET_CODE_MAP_METHOD;
-
-    private final Class<?> javaType;
+ public final class CodeEnumMapping implements MappingType {
 
 
-    static {
-        GET_CODE_MAP_METHOD = ReflectionUtils.findMethod(CodeEnum.class, "getCodeMap", Class.class);
-    }
+    private final Class<?> enumClass;
 
-    public CodeEnumMapping(Class<?> javaType) {
-        this.javaType = javaType;
-        Assert.isTrue(javaType.isEnum(), () -> String.format("javaType[%s] isn't Enum", javaType));
-        Assert.isAssignable(CodeEnum.class, javaType);
-        getCodeMap();
+
+    public CodeEnumMapping(Class<?> enumClass) {
+        this.enumClass = enumClass;
+        Assert.isTrue(enumClass.isEnum(), () -> String.format("javaType[%s] isn't Enum", enumClass));
+        Assert.isAssignable(CodeEnum.class, enumClass);
+        checkCodeEnum(enumClass);
     }
 
     @Override
     public Class<?> javaType() {
-        return javaType;
+        return enumClass;
     }
 
     @Override
@@ -52,12 +50,7 @@ public class CodeEnumMapping extends AbstractMappingType {
         boolean yes;
         try {
             int code = Integer.parseInt(textValue);
-
-            Map<Integer, CodeEnum> codeEnumMap = getCodeMap();
-            if (codeEnumMap == null) {
-                return false;
-            }
-            CodeEnum codeEnum = codeEnumMap.get(code);
+            CodeEnum codeEnum = getCodeEnum(code);
             yes = codeEnum != null;
         } catch (NumberFormatException | CodeEnumException e) {
             yes = false;
@@ -66,21 +59,35 @@ public class CodeEnumMapping extends AbstractMappingType {
     }
 
     @Override
-    public int precision() {
-        return -1;
+    public void nullSafeSet(PreparedStatement st, Object value, int index) throws SQLException {
+        Assert.isInstanceOf(CodeEnum.class, value);
+        st.setInt(index, ((CodeEnum) value).code());
+
     }
 
     @Override
-    public int scale() {
-        return -1;
+    public Object nullSafeGet(ResultSet resultSet, String alias) throws SQLException {
+        int code = resultSet.getInt(alias);
+        Object value = getCodeEnum(code);
+        if (value == null) {
+            throw new SQLException(String.format("alias[%s] corresponding value[%s] isn't %s code"
+                    , alias, code, enumClass.getName()));
+        }
+        return value;
     }
-
 
     /*################################## blow private method ##################################*/
 
-    @SuppressWarnings({"unchecked"})
-    private Map<Integer, CodeEnum> getCodeMap() {
-        return (Map<Integer, CodeEnum>) ReflectionUtils.invokeMethod(
-                GET_CODE_MAP_METHOD, null, javaType);
+    @SuppressWarnings("unchecked")
+    private static <T extends Enum<T> & CodeEnum> void checkCodeEnum(Class<?> enumClass) {
+        CodeEnum.getCodeMap((Class<T>) enumClass);
     }
+
+    private <T extends Enum<T> & CodeEnum> CodeEnum getCodeEnum(int code) {
+        @SuppressWarnings("unchecked")
+        Map<Integer, T> codeMap = CodeEnum.getCodeMap((Class<T>) enumClass);
+        return codeMap.get(code);
+
+    }
+
 }

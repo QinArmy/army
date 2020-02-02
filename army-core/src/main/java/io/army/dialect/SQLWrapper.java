@@ -11,6 +11,8 @@ public interface SQLWrapper {
      */
     List<ParamWrapper> paramList();
 
+    String toString(Dialect dialect);
+
     @Override
     String toString();
 

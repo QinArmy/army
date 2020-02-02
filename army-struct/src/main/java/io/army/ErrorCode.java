@@ -33,15 +33,15 @@ public enum ErrorCode implements CodeEnum {
     PRECISION_LESS(704, "", NONE),
     NNSUPPORT_SQL_TYPE(705, "", NONE),
 
-    ACCESS_ERROR(801, "", NONE),
+    ACCESS_ERROR(789, "", NONE),
+    INSERT_ERROR(790, "", NONE),
 
     UNSUPPORTED_DIALECT(802, "", NONE),
-    DDL_EXECUTE_ERROR(803,"",NONE),
+    DDL_EXECUTE_ERROR(803, "", NONE),
 
-    GENERATOR_ERROR(804,"",NONE),
+    GENERATOR_ERROR(804, "", NONE),
 
-    BEAN_ACCESS_ERROR(901,"",NONE)
-    ;
+    BEAN_ACCESS_ERROR(901, "", NONE);
 
 
     private final int code;

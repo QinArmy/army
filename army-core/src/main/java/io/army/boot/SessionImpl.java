@@ -6,17 +6,17 @@ import io.army.SessionOptions;
 import io.army.beans.BeanWrapper;
 import io.army.dialect.SQLWrapper;
 import io.army.domain.IDomain;
-import io.army.generator.FieldValuesGenerator;
 import io.army.meta.TableMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
-class SessionImpl implements Session {
+class SessionImpl implements InnerSession {
 
     private static final Logger LOG = LoggerFactory.getLogger(SessionImpl.class);
 
@@ -77,14 +77,12 @@ class SessionImpl implements Session {
     @Override
     public void save(IDomain entity) {
         TableMeta<?> tableMeta = sessionFactory.tableMetaMap().get(entity.getClass());
-        // 1.
-
-       BeanWrapper beanWrapper =  fieldValuesGenerator.createValues(tableMeta,entity);
-        // 2.
-       List<SQLWrapper> sqlList =  sessionFactory.dialect().insert(tableMeta,beanWrapper.getReadonlyWrapper());
-        for (SQLWrapper wrapper : sqlList) {
-            LOG.info("sql wrapper:{}",wrapper);
-        }
+        // 1. create necessary value for domain
+        BeanWrapper beanWrapper = fieldValuesGenerator.createValues(tableMeta, entity);
+        // 2. create insert sql
+        List<SQLWrapper> sqlList = sessionFactory.dialect().insert(tableMeta, beanWrapper.getReadonlyWrapper());
+        // 3. execute sql
+        InsertSQLExecutor.build().executeInsert(this, sqlList, beanWrapper);
     }
 
     @Override
@@ -94,7 +92,7 @@ class SessionImpl implements Session {
 
     @Override
     public boolean closed() {
-       return false;
+        return false;
     }
 
     @Override
@@ -106,5 +104,17 @@ class SessionImpl implements Session {
         }
     }
 
+    /*################################## blow InnerSession method ##################################*/
 
+    @Override
+    public PreparedStatement createStatement(String sql, boolean generatedKey)
+            throws SQLException {
+        int type;
+        if (generatedKey) {
+            type = Statement.RETURN_GENERATED_KEYS;
+        } else {
+            type = Statement.NO_GENERATED_KEYS;
+        }
+        return connection.prepareStatement(sql, type);
+    }
 }

@@ -1,8 +1,13 @@
 package io.army.meta.mapping;
 
-import java.sql.JDBCType;
+import io.army.util.Assert;
 
-public final class IntegerMapping extends MappingSupport implements MappingType {
+import java.sql.JDBCType;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public final class IntegerMapping  implements MappingType {
 
     public static final IntegerMapping INSTANCE = new IntegerMapping();
 
@@ -37,12 +42,13 @@ public final class IntegerMapping extends MappingSupport implements MappingType 
     }
 
     @Override
-    public int precision() {
-        return -1;
+    public void nullSafeSet(PreparedStatement st, Object value, int index)throws SQLException {
+        Assert.isInstanceOf(Integer.class,value,"");
+        st.setInt(index,(Integer) value);
     }
 
     @Override
-    public int scale() {
-        return -1;
+    public Object nullSafeGet(ResultSet st, String alias) throws SQLException {
+        return st.getInt(alias);
     }
 }

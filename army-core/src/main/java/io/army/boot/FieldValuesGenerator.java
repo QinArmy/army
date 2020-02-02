@@ -1,7 +1,6 @@
-package io.army.generator;
+package io.army.boot;
 
 import io.army.Session;
-import io.army.SessionFactory;
 import io.army.beans.BeanWrapper;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;

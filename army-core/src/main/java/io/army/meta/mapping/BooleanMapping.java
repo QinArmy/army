@@ -1,16 +1,21 @@
 package io.army.meta.mapping;
 
 import io.army.domain.IDomain;
+import io.army.util.Assert;
 import io.army.util.Precision;
 
 import java.sql.JDBCType;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
-public final class BooleanMapping extends AbstractMappingType {
+public final class BooleanMapping implements MappingType {
 
     public static final BooleanMapping INSTANCE = new BooleanMapping();
 
-    private static final Precision PRECISION = new Precision(1, 0);
+    private static final String Y = "Y";
 
+    private static final String N = "N";
 
     private BooleanMapping() {
     }
@@ -43,12 +48,28 @@ public final class BooleanMapping extends AbstractMappingType {
     }
 
     @Override
-    public int precision() {
-        return 1;
+    public void nullSafeSet(PreparedStatement st, Object value, int index) throws SQLException {
+        Assert.isInstanceOf(Boolean.class, value);
+        st.setString(index, Boolean.TRUE.equals(value) ? Y : N);
     }
 
     @Override
-    public int scale() {
-        return -1;
+    public Object nullSafeGet(ResultSet resultSet, String alias) throws SQLException {
+        String text = resultSet.getString(alias);
+        if (text == null) {
+            return null;
+        }
+        Boolean value;
+        switch (text) {
+            case Y:
+                value = Boolean.TRUE;
+                break;
+            case N:
+                value = Boolean.FALSE;
+                break;
+            default:
+                throw new SQLException(String.format("database return %s,but only 'Y' or 'N'", text));
+        }
+        return value;
     }
 }

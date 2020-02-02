@@ -1,9 +1,13 @@
 package io.army.meta.mapping;
 
 import io.army.annotation.Column;
+import io.army.meta.FieldMeta;
 import io.army.util.Precision;
 
 import java.sql.JDBCType;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 
 public interface MappingType {
@@ -21,13 +25,7 @@ public interface MappingType {
 
     boolean isTextValue(String textValue);
 
-    /**
-     * if return instance equals {@link Precision#EMPTY} , {@link Column#precision()} effective .
-     *
-     * @return Precision
-     */
-    int precision();
+    void nullSafeSet(PreparedStatement st,Object value, int index)throws SQLException;
 
-    int scale();
-
+    Object nullSafeGet(ResultSet resultSet, String alias)throws SQLException;
 }

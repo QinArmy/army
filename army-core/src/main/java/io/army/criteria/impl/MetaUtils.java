@@ -124,7 +124,7 @@ abstract class MetaUtils {
         //3. append rest field meta to propNameToFieldMeta
         FieldMeta<T, ?> fieldMeta;
         for (Map.Entry<String, Field> entry : subMap.entrySet()) {
-            fieldMeta = new DefaultFieldMeta<>(table, entry.getValue(), false, false);
+            fieldMeta = DefaultFieldMeta.createFieldMeta(table, entry.getValue());
 
             String lowerCaseColumnName = StringUtils.toLowerCase(fieldMeta.fieldName());
             assertFieldMetaNotDuplication(lowerCaseColumnName, fieldMeta, columnNameSet, propNameSet);
@@ -528,7 +528,7 @@ abstract class MetaUtils {
             }
             field = indexField(lowerCaseColumnName, tableMeta, columnToFieldMap);
             uniqueColumn = indexMeta.isUnique() && indexColumns.length == 1;
-            indexFieldMeta = new DefaultIndexFieldMeta<>(tableMeta, field, indexMeta, uniqueColumn, columnAsc);
+            indexFieldMeta = DefaultFieldMeta.createFieldMeta(tableMeta, field, indexMeta, uniqueColumn, columnAsc);
 
             list.add(indexFieldMeta);
             createdColumnSet.add(lowerCaseColumnName);
@@ -653,32 +653,6 @@ abstract class MetaUtils {
         @Override
         public String type() {
             return this.type;
-        }
-    }
-
-    private static class DefaultIndexFieldMeta<T extends IDomain, F> extends DefaultFieldMeta<T, F>
-            implements IndexFieldMeta<T, F> {
-
-        private final IndexMeta<T> indexMeta;
-
-        private final Boolean fieldAsc;
-
-        DefaultIndexFieldMeta(TableMeta<T> table, Field field, IndexMeta<T> indexMeta, boolean fieldUnique,
-                              @Nullable Boolean fieldAsc) throws MetaException {
-            super(table, field, fieldUnique, true);
-            this.indexMeta = indexMeta;
-            this.fieldAsc = fieldAsc;
-        }
-
-        @Override
-        public IndexMeta<T> indexMeta() {
-            return this.indexMeta;
-        }
-
-        @Nullable
-        @Override
-        public Boolean fieldAsc() {
-            return this.fieldAsc;
         }
     }
 

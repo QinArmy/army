@@ -9,6 +9,7 @@ import io.army.util.ClassUtils;
 import io.army.util.ReflectionUtils;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 public abstract class GeneratorFactory {
 
@@ -26,18 +27,26 @@ public abstract class GeneratorFactory {
             }
             return generator;
         } catch (Throwable e) {
-            throw new GeneratorException(ErrorCode.GENERATOR_ERROR, e,"MultiGenerator[%s]  getInstance method error"
+            throw new GeneratorException(ErrorCode.GENERATOR_ERROR, e, "MultiGenerator[%s]  build method error"
                     , generatorMeta.type().getName());
         }
     }
 
     private static Method getBuilder(GeneratorMeta generatorMeta) {
         Method method = ReflectionUtils.findMethod(generatorMeta.type()
-                , "getInstance", FieldMeta.class, Environment.class);
+                , "build", FieldMeta.class, Environment.class);
         if (method == null
-                || !ClassUtils.isAssignable(MultiGenerator.class,method.getReturnType())) {
-            throw new GeneratorException(ErrorCode.GENERATOR_ERROR, "MultiGenerator[%s] no getInstance method"
+                || !Modifier.isStatic(method.getModifiers())
+                || !Modifier.isPublic(method.getModifiers())) {
+            throw new GeneratorException(ErrorCode.GENERATOR_ERROR, "MultiGenerator[%s] no build method"
                     , generatorMeta.type().getName());
+        }
+        if (!ClassUtils.isAssignable(generatorMeta.type(), method.getReturnType())) {
+            throw new GeneratorException(ErrorCode.GENERATOR_ERROR
+                    , "MultiGenerator[%s] return type must be a %s instance"
+                    , generatorMeta.type().getName()
+                    , generatorMeta.type().getName()
+            );
         }
         return method;
     }

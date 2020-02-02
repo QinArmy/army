@@ -11,11 +11,31 @@ import io.army.struct.CodeEnum;
 import io.army.util.Assert;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.function.BiFunction;
 
 /**
  * created  on 2018/11/19.
  */
 final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
+
+    private static final ConcurrentMap<Class<?>, TableMeta<?>> INSTANCE_MAP = new ConcurrentHashMap<>();
+
+    static <T extends IDomain> TableMeta<T> createInstance(@Nullable TableMeta<? super T> parentTableMeta
+            , Class<T> entityClass) {
+        if (INSTANCE_MAP.containsKey(entityClass)) {
+            throw new IllegalStateException(
+                    String.format("TableMeta Can only be created once,%s", entityClass.getName()));
+        }
+        TableMeta<T> tableMeta = new DefaultTableMeta<>(parentTableMeta, entityClass);
+        TableMeta<?> actualTableMeta = INSTANCE_MAP.putIfAbsent(entityClass, tableMeta);
+        if (actualTableMeta != null && actualTableMeta != tableMeta) {
+            throw new IllegalStateException(
+                    String.format("TableMeta Can only be created once,%s", entityClass.getName()));
+        }
+        return tableMeta;
+    }
 
 
     private final Class<T> entityClass;
@@ -44,10 +64,8 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     private final FieldMeta<T, ?> discriminator;
 
-    private final int hashCode;
-
     @SuppressWarnings("unchecked")
-    DefaultTableMeta(@Nullable TableMeta<? super T> parentTableMeta, Class<T> entityClass) {
+    private DefaultTableMeta(@Nullable TableMeta<? super T> parentTableMeta, Class<T> entityClass) {
         Assert.notNull(entityClass, "entityClass required");
         MetaUtils.assertParentTableMeta(parentTableMeta, entityClass);
 
@@ -64,8 +82,6 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
             this.mappingMode = MetaUtils.tableMappingMode(entityClass);
             this.charset = table.charset();
-            // before create field meta create hash code
-            this.hashCode = createHashCode();
 
             MetaUtils.FieldBean<T> fieldBean = MetaUtils.fieldMetaList(this, table);
             this.propNameToFieldMeta = fieldBean.getPropNameToFieldMeta();
@@ -83,10 +99,6 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         } catch (RuntimeException e) {
             throw new MetaException(ErrorCode.META_ERROR, e, e.getMessage());
         }
-    }
-
-    public DefaultTableMeta(Class<T> entityClass) throws MetaException {
-        this(null, entityClass);
     }
 
     @Override
@@ -162,7 +174,7 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     @Override
     public FieldMeta<?, ?> getField(String propName) throws MetaException {
         FieldMeta<?, ?> fieldMeta = propNameToFieldMeta.get(propName);
-        if (fieldMeta == null ) {
+        if (fieldMeta == null) {
             throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
         }
         return fieldMeta;
@@ -199,12 +211,12 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     @Override
     public final boolean equals(Object o) {
         // save column only one FieldMeta instance
-       return this == o;
+        return this == o;
     }
 
     @Override
     public final int hashCode() {
-        return hashCode;
+        return super.hashCode();
     }
 
     @Override
@@ -237,8 +249,5 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     /*################################## blow private method ##################################*/
 
-    private int createHashCode() {
-        return Objects.hash(this.schemaMeta, this.javaType(), this.tableName);
-    }
 
 }

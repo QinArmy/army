@@ -1,8 +1,13 @@
 package io.army.meta.mapping;
 
-import java.sql.JDBCType;
+import io.army.util.Assert;
 
-public final class LongMapping extends AbstractMappingType {
+import java.sql.JDBCType;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public final class LongMapping implements MappingType {
 
     public static final LongMapping INSTANCE = new LongMapping();
 
@@ -38,12 +43,13 @@ public final class LongMapping extends AbstractMappingType {
     }
 
     @Override
-    public int precision() {
-        return -1;
+    public void nullSafeSet(PreparedStatement st, Object value, int index) throws SQLException {
+        Assert.isInstanceOf(Long.class, value, "");
+        st.setLong(index, (Long) value);
     }
 
     @Override
-    public int scale() {
-        return -1;
+    public Object nullSafeGet(ResultSet resultSet, String alias) throws SQLException {
+        return resultSet.getLong(alias);
     }
 }

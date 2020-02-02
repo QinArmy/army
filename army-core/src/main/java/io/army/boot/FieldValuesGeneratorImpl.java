@@ -1,13 +1,13 @@
-package io.army.generator;
+package io.army.boot;
 
 import io.army.ErrorCode;
 import io.army.Session;
-import io.army.SessionFactory;
-import io.army.annotation.Table;
 import io.army.beans.BeanWrapper;
 import io.army.beans.PropertyAccessorFactory;
 import io.army.criteria.MetaException;
 import io.army.domain.IDomain;
+import io.army.generator.MultiGenerator;
+import io.army.generator.PreMultiGenerator;
 import io.army.meta.FieldMeta;
 import io.army.meta.MappingMode;
 import io.army.meta.TableMeta;

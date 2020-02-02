@@ -20,11 +20,11 @@ import io.army.meta.GeneratorMeta;
  *        private MyMultiGenerator(){}
  *
  *        &#047;&#042;&#042;
- *         &#042; &#064;fieldMeta not null
+ *         &#042; &#064;mappingType not null
  *         &#042; &#064;paramMap not null,a unmodifiable map
  *         &#042;
  *         &#042;&#047;
- *        public static MyMultiGenerator build(FieldMeta&lt;?,?&gt; fieldMeta, Map&lt;String,String&gt; paramMap){
+ *        public static MyMultiGenerator build(FieldMeta&lt;?,?&gt; mappingType, Map&lt;String,String&gt; paramMap){
  *           ...
  *        }
  *
@@ -37,11 +37,11 @@ import io.army.meta.GeneratorMeta;
  *    public class MyMultiGenerator implements PreMultiGenerator {
  *
  *        &#047;&#042;&#042;
- *         &#042; &#064;fieldMeta not null
+ *         &#042; &#064;mappingType not null
  *         &#042; &#064;paramMap not null,a unmodifiable map
  *         &#042;
  *         &#042;&#047;
- *        public MyMultiGenerator(FieldMeta&lt;?,?&gt; fieldMeta,  Map&lt;String,String&gt; paramMap){...}
+ *        public MyMultiGenerator(FieldMeta&lt;?,?&gt; mappingType,  Map&lt;String,String&gt; paramMap){...}
  *
  *     }
  * </pre>

@@ -1,4 +1,4 @@
-package io.army.generator;
+package io.army.boot;
 
 import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;

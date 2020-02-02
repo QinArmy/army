@@ -3,10 +3,11 @@ package io.army.generator;
 import io.army.dialect.SQLDialect;
 import io.army.meta.FieldMeta;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
- *
  * this interface create value for the mapping property of Entity when persist a entity after persistence.
  * if you want creation before persistence ,use {@link PreMultiGenerator}
  * <p>
@@ -19,11 +20,11 @@ import java.sql.Statement;
  *        private MyMultiGenerator(){}
  *
  *        &#047;&#042;&#042;
- *         &#042; &#064;fieldMeta not null
+ *         &#042; &#064;mappingType not null
  *         &#042; &#064;paramMap not null,a unmodifiable map
  *         &#042;
  *         &#042;&#047;
- *        public static MyMultiGenerator build(FieldMeta&lt;?,?&gt; fieldMeta, Map&lt;String,String&gt; paramMap){
+ *        public static MyMultiGenerator build(FieldMeta&lt;?,?&gt; mappingType, Map&lt;String,String&gt; paramMap){
  *           ...
  *        }
  *
@@ -36,11 +37,11 @@ import java.sql.Statement;
  *    public class MyMultiGenerator implements PostMultiGenerator {
  *
  *        &#047;&#042;&#042;
- *         &#042; &#064;fieldMeta not null
+ *         &#042; &#064;mappingType not null
  *         &#042; &#064;paramMap not null,a unmodifiable map
  *         &#042;
  *         &#042;&#047;
- *        public MyMultiGenerator(FieldMeta&lt;?,?&gt; fieldMeta,  Map&lt;String,String&gt; paramMap){...}
+ *        public MyMultiGenerator(FieldMeta&lt;?,?&gt; mappingType,  Map&lt;String,String&gt; paramMap){...}
  *
  *     }
  * </pre>
@@ -52,6 +53,7 @@ import java.sql.Statement;
  */
 public interface PostMultiGenerator extends MultiGenerator {
 
-    Object extract(FieldMeta<?, ?> fieldMeta, SQLDialect sqlDialect, Statement statement);
+
+    Object apply(FieldMeta<?,?> fieldMeta,ResultSet resultSet) throws SQLException;
 
 }

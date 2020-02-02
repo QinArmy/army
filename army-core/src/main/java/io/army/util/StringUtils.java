@@ -6,11 +6,11 @@ import java.util.Locale;
 public abstract class StringUtils extends org.springframework.util.StringUtils {
 
 
-    public static String toLowerCase(String text){
+    public static String toLowerCase(String text) {
         return text == null ? null : text.toLowerCase(Locale.ROOT);
     }
 
-    public static String toUpperCase(String text){
+    public static String toUpperCase(String text) {
         return text == null ? null : text.toUpperCase(Locale.ROOT);
     }
 
@@ -22,6 +22,7 @@ public abstract class StringUtils extends org.springframework.util.StringUtils {
     public static String camelToLowerCase(String camel) {
         return camelToUnderline(camel).toLowerCase(Locale.ROOT);
     }
+
 
 
     /*################################## private method #############################################*/
@@ -44,4 +45,6 @@ public abstract class StringUtils extends org.springframework.util.StringUtils {
         }
         return builder.toString();
     }
+
+
 }

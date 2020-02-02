@@ -1,9 +1,11 @@
 package io.army.meta.mapping;
 
-import java.sql.JDBCType;
+import io.army.util.Assert;
+
+import java.sql.*;
 import java.time.LocalDateTime;
 
-public final class LocalDateTimeMapping extends MappingSupport implements MappingType {
+public final class LocalDateTimeMapping implements MappingType {
 
     public static final LocalDateTimeMapping INSTANCE = new LocalDateTimeMapping();
 
@@ -32,12 +34,18 @@ public final class LocalDateTimeMapping extends MappingSupport implements Mappin
 
 
     @Override
-    public int precision() {
-        return 6;
+    public void nullSafeSet(PreparedStatement st, Object value, int index) throws SQLException {
+        Assert.isInstanceOf(LocalDateTime.class, value, "");
+        st.setTimestamp(index, Timestamp.valueOf((LocalDateTime) value));
     }
 
     @Override
-    public int scale() {
-        return -1;
+    public Object nullSafeGet(ResultSet resultSet, String alias) throws SQLException {
+        Timestamp timestamp = resultSet.getTimestamp(alias);
+        LocalDateTime dateTime = null;
+        if (timestamp != null) {
+            dateTime = timestamp.toLocalDateTime();
+        }
+        return dateTime;
     }
 }

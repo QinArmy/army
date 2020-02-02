@@ -8,14 +8,14 @@ import io.army.criteria.Selection;
 import io.army.domain.IDomain;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
-import io.army.meta.FieldMeta;
-import io.army.meta.GeneratorMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
 
 import java.lang.reflect.Field;
 import java.sql.JDBCType;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * created  on 2018/11/18.
@@ -23,6 +23,61 @@ import java.sql.JDBCType;
 class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> implements FieldMeta<T, F> {
 
     private static final String ID = TableMeta.ID;
+
+    private static final ConcurrentMap<Field, FieldMeta<?, ?>> INSTANCE_MAP = new ConcurrentHashMap<>();
+
+    private static final ConcurrentMap<Class<?>, IndexFieldMeta<?, ?>> ID_INSTANCE_MAP = new ConcurrentHashMap<>();
+
+    static <T extends IDomain> FieldMeta<T, ?> createFieldMeta(final @NonNull TableMeta<T> table
+            , final @NonNull Field field) {
+        if (INSTANCE_MAP.containsKey(field)) {
+            throw new IllegalStateException(
+                    String.format("FieldMeta Can only be created once,%s", field));
+        }
+        FieldMeta<T, ?> fieldMeta = new DefaultFieldMeta<>(table, field, false, false);
+
+        FieldMeta<?, ?> actualFieldMeta = INSTANCE_MAP.putIfAbsent(field, fieldMeta);
+
+        if (actualFieldMeta != null && actualFieldMeta != fieldMeta) {
+            throw new IllegalStateException(
+                    String.format("FieldMeta Can only be created once,%s", field));
+        }
+        return fieldMeta;
+    }
+
+    static <T extends IDomain, F> IndexFieldMeta<T, F> createFieldMeta(final @NonNull TableMeta<T> table
+            , final @NonNull Field field, IndexMeta<T> indexMeta, final boolean fieldUnique
+            , @Nullable Boolean fieldAsc) {
+
+        final boolean isId = TableMeta.ID.equals(field.getName());
+
+        if (isId) {
+            if (ID_INSTANCE_MAP.containsKey(table.javaType())) {
+                throw new IllegalStateException(
+                        String.format("FieldMeta Can only be created once,%s", field));
+            }
+
+        } else {
+            if (INSTANCE_MAP.containsKey(field)) {
+                throw new IllegalStateException(
+                        String.format("FieldMeta Can only be created once,%s", field));
+            }
+        }
+
+        IndexFieldMeta<T, F> fieldMeta = new DefaultIndexFieldMeta<>(table, field, indexMeta, fieldUnique, fieldAsc);
+
+        FieldMeta<?, ?> actualFieldMeta;
+        if (isId) {
+            actualFieldMeta = ID_INSTANCE_MAP.putIfAbsent(table.javaType(), fieldMeta);
+        } else {
+            actualFieldMeta = INSTANCE_MAP.putIfAbsent(field, fieldMeta);
+        }
+        if (actualFieldMeta != null && actualFieldMeta != fieldMeta) {
+            throw new IllegalStateException(
+                    String.format("FieldMeta Can only be created once,%s", field));
+        }
+        return fieldMeta;
+    }
 
 
     private final TableMeta<T> table;
@@ -57,8 +112,8 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
 
     @SuppressWarnings("unchecked")
-    DefaultFieldMeta(final @NonNull TableMeta<T> table, final @NonNull Field field, final boolean unique,
-                     final boolean index)
+    private DefaultFieldMeta(final @NonNull TableMeta<T> table, final @NonNull Field field, final boolean unique,
+                             final boolean index)
             throws MetaException {
         Assert.notNull(table, "table required");
         Assert.notNull(field, "field required");
@@ -196,7 +251,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     @Override
     public final boolean equals(Object obj) {
         // save column only one FieldMeta instance
-       return this == obj;
+        return this == obj;
     }
 
     @Override
@@ -224,8 +279,35 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
                 .toString();
     }
 
-    /*################################## blow private method ##################################*/
+    private static class DefaultIndexFieldMeta<T extends IDomain, F> extends DefaultFieldMeta<T, F>
+            implements IndexFieldMeta<T, F> {
 
+        private final IndexMeta<T> indexMeta;
+
+        private final Boolean fieldAsc;
+
+        private DefaultIndexFieldMeta(TableMeta<T> table, Field field, IndexMeta<T> indexMeta, boolean fieldUnique,
+                                      @Nullable Boolean fieldAsc) throws MetaException {
+            super(table, field, fieldUnique, true);
+            Assert.notNull(indexMeta, "");
+
+            this.indexMeta = indexMeta;
+            this.fieldAsc = fieldAsc;
+        }
+
+        @Override
+        public IndexMeta<T> indexMeta() {
+            return this.indexMeta;
+        }
+
+        @Nullable
+        @Override
+        public Boolean fieldAsc() {
+            return this.fieldAsc;
+        }
+    }
+
+    /*################################## blow private method ##################################*/
 
 
 }

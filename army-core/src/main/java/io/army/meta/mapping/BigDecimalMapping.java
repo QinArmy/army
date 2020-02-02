@@ -4,8 +4,11 @@ import io.army.util.Assert;
 
 import java.math.BigDecimal;
 import java.sql.JDBCType;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
-public final class BigDecimalMapping extends MappingSupport implements MappingType {
+public final class BigDecimalMapping  implements MappingType {
 
     public static final BigDecimalMapping INSTANCE = new BigDecimalMapping();
 
@@ -41,12 +44,13 @@ public final class BigDecimalMapping extends MappingSupport implements MappingTy
     }
 
     @Override
-    public int precision() {
-        return 14;
+    public void nullSafeSet(PreparedStatement st, Object value, int index) throws SQLException {
+        Assert.isInstanceOf(BigDecimal.class,value);
+        st.setBigDecimal(index, (BigDecimal) value);
     }
 
     @Override
-    public int scale() {
-        return 2;
+    public Object nullSafeGet(ResultSet resultSet, String alias) throws SQLException {
+        return resultSet.getBigDecimal(alias);
     }
 }
