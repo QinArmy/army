@@ -9,7 +9,7 @@ import io.army.util.Triple;
  */
 public interface QueryAble extends CriteriaContextCapable {
 
-    SqlBuilder setLockMode(LockMode lockMode);
+    SQLBuilder setLockMode(LockMode lockMode);
 
     <R> Query<R> createQuery(Class<R> resultType);
 

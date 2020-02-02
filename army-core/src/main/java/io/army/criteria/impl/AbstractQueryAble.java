@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.LockMode;
 import io.army.criteria.Query;
 import io.army.criteria.QueryAble;
-import io.army.criteria.SqlBuilder;
+import io.army.criteria.SQLBuilder;
 import io.army.util.Pair;
 import io.army.util.Triple;
 
@@ -13,7 +13,7 @@ import io.army.util.Triple;
 abstract class AbstractQueryAble implements QueryAble {
 
     @Override
-    public SqlBuilder setLockMode(LockMode lockMode) {
+    public SQLBuilder setLockMode(LockMode lockMode) {
         return null;
     }
 

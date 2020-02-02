@@ -42,7 +42,7 @@ class SelectedListImpl implements InnerSelectList {
     }
 
     @Override
-    public SqlBuilder setLockMode(LockMode lockMode) {
+    public SQLBuilder setLockMode(LockMode lockMode) {
         return null;
     }
 
