@@ -96,17 +96,19 @@ public abstract class AbstractTableDML implements TableDML {
         nameBuilder.append(quoteIfNeed(tableMeta.tableName()));
         nameBuilder.append("(");
 
-        Iterator<FieldMeta<T, ?>> iterator = tableMeta.fieldCollection().iterator();
         Object value;
-        for (FieldMeta<T, ?> fieldMeta; iterator.hasNext(); ) {
-            fieldMeta = iterator.next();
-
+        int count = 0;
+        for (FieldMeta<T, ?> fieldMeta : tableMeta.fieldCollection()) {
             if (!fieldMeta.insertalbe()) {
                 continue;
             }
             value = entityWrapper.getPropertyValue(fieldMeta.propertyName());
             if (value == null && !fieldMeta.nullable()) {
                 continue;
+            }
+            if (count != 0) {
+                nameBuilder.append(",");
+                valueBuilder.append(",");
             }
             // name
             nameBuilder.append(quoteIfNeed(fieldMeta.fieldName()));
@@ -117,10 +119,7 @@ public abstract class AbstractTableDML implements TableDML {
                 valueBuilder.append("?");
                 paramWrapperList.add(ParamWrapper.build(fieldMeta.mappingType(), value));
             }
-            if (iterator.hasNext()) {
-                nameBuilder.append(",");
-                valueBuilder.append(",");
-            }
+            count++;
         }
 
         nameBuilder.append(")");
