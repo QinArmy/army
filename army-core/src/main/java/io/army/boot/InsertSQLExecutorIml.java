@@ -7,6 +7,7 @@ import io.army.beans.BeanWrapper;
 import io.army.dialect.InsertException;
 import io.army.dialect.ParamWrapper;
 import io.army.dialect.SQLWrapper;
+import io.army.env.Environment;
 import io.army.generator.GeneratorException;
 import io.army.generator.MultiGenerator;
 import io.army.generator.PostMultiGenerator;
@@ -53,14 +54,17 @@ class InsertSQLExecutorIml implements InsertSQLExecutor {
         TableMeta<?> tableMeta = session.sessionFactory().tableMetaMap().get(beanWrapper.getWrappedClass());
         Assert.notNull(tableMeta, "beanWrapper error,not found corresponding TableMeta.");
 
+        final boolean showSql = session.sessionFactory().environment().isShowSql();
         // 1. find PostMultiGenerator
         final GeneratorWrapper generatorMeta = getAutoGeneratorWrapper(session, tableMeta);
         final int[] updateCount = new int[sqlWrapperList.size()];
         int sqlNum = 0;
         final boolean traceEnabled = LOG.isTraceEnabled();
         for (SQLWrapper wrapper : sqlWrapperList) {
+            if (showSql){
+                LOG.info("{}", wrapper);
+            }
             final boolean generatedKey = sqlNum == 0 && generatorMeta != null;
-
             try (PreparedStatement st = session.createStatement(wrapper.sql(), generatedKey)) {
                 // 2. set params
                 setParams(st, wrapper.paramList());
@@ -97,7 +101,7 @@ class InsertSQLExecutorIml implements InsertSQLExecutor {
             if (value == null) {
                 st.setNull(i + 1, mappingType.jdbcType().getVendorTypeNumber());
             } else {
-                mappingType.nullSafeSet(st,value, i + 1);
+                mappingType.nullSafeSet(st, value, i + 1);
             }
         }
     }

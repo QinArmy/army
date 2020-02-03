@@ -4,6 +4,7 @@ package io.army.boot;
 import com.example.generator.Being;
 import io.army.Session;
 import io.army.SessionFactory;
+import io.army.env.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -19,6 +20,7 @@ public class SessionTests {
     public void openSession() throws Exception {
         Map<String, Object> map = new HashMap<>();
         map.put(SessionFactory.PACKAGE_TO_SCAN, "com.example.generator");
+        map.put(Environment.SHOW_SQL,"true");
         SessionFactory sessionFactory = BootstrapTests.builder(map)
                 .build();
         try (Session session = sessionFactory.sessionBuilder().openSession()) {
