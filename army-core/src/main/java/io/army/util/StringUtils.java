@@ -5,6 +5,9 @@ import java.util.Locale;
 
 public abstract class StringUtils extends org.springframework.util.StringUtils {
 
+    protected StringUtils() {
+        throw new UnsupportedOperationException();
+    }
 
     public static String toLowerCase(String text) {
         return text == null ? null : text.toLowerCase(Locale.ROOT);

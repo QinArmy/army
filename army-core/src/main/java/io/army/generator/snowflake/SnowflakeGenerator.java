@@ -100,7 +100,7 @@ public final class SnowflakeGenerator implements PreMultiGenerator {
     private static final AtomicLong DEFAULT_START_TIME = new AtomicLong(-1);
 
     /**
-     * @see #getInstance(FieldMeta, Environment)
+     * @see #build(FieldMeta, Environment)
      */
     private static final ConcurrentMap<Long, SnowflakeGenerator> INSTANCE_HOLDER = new ConcurrentHashMap<>();
 
@@ -269,11 +269,11 @@ public final class SnowflakeGenerator implements PreMultiGenerator {
         }
         Class<?> snowflakeClass = env.getProperty(SNOWFLAKE_CLASS_NAME_KEY, Class.class, FiveBitWorkerSnowflake.class);
 
-        method = ReflectionUtils.findMethod(snowflakeClass, "build", long.class, Worker.class);
+        method = ReflectionUtils.findMethod(snowflakeClass, "debugSQL", long.class, Worker.class);
         if (method == null
                 || !Modifier.isPublic(method.getModifiers())
                 || !Modifier.isStatic(method.getModifiers())) {
-            throw new IllegalStateException(String.format("snowflake implementation[%s] class no build method"
+            throw new IllegalStateException(String.format("snowflake implementation[%s] class no debugSQL method"
                     , snowflakeClass.getName()));
         }
         if (SNOWFLAKE_BUILDER.compareAndSet(null, method)) {

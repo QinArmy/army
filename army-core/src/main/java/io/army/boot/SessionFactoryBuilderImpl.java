@@ -10,6 +10,7 @@ import io.army.util.Assert;
 import io.army.util.StringUtils;
 
 import javax.sql.DataSource;
+import javax.xml.validation.Schema;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,8 +34,9 @@ class SessionFactoryBuilderImpl implements SessionFactoryBuilder {
 
         Assert.notNull(dataSource, "dataSource required");
         Assert.notNull(environment, "environment required");
+        SchemaMeta schemaMeta = createSchema(catalog,schema);
 
-        SessionFactoryImpl sessionFactory = new SessionFactoryImpl(environment, dataSource, createSchema(), sqlDialect);
+        SessionFactoryImpl sessionFactory = new SessionFactoryImpl(environment, dataSource, schemaMeta, sqlDialect);
         // init session factory
         sessionFactory.initSessionFactory();
         return sessionFactory;
@@ -72,7 +74,7 @@ class SessionFactoryBuilderImpl implements SessionFactoryBuilder {
 
     /*################################## blow private method ##################################*/
 
-    private SchemaMeta createSchema() {
+     static SchemaMeta createSchema(String catalog,String schema) {
         String actualCatalog = catalog, actualSchema = schema;
         if (!StringUtils.hasText(actualCatalog)) {
             actualCatalog = "";

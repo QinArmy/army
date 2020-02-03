@@ -9,6 +9,7 @@ import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.struct.CodeEnum;
 import io.army.util.Assert;
+import io.army.util.ClassUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,6 +23,7 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     private static final ConcurrentMap<Class<?>, TableMeta<?>> INSTANCE_MAP = new ConcurrentHashMap<>();
 
+    @SuppressWarnings("unchecked")
     static <T extends IDomain> TableMeta<T> createInstance(@Nullable TableMeta<? super T> parentTableMeta
             , Class<T> entityClass) {
         if (INSTANCE_MAP.containsKey(entityClass)) {
@@ -31,8 +33,16 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         TableMeta<T> tableMeta = new DefaultTableMeta<>(parentTableMeta, entityClass);
         TableMeta<?> actualTableMeta = INSTANCE_MAP.putIfAbsent(entityClass, tableMeta);
         if (actualTableMeta != null && actualTableMeta != tableMeta) {
-            throw new IllegalStateException(
-                    String.format("TableMeta Can only be created once,%s", entityClass.getName()));
+            tableMeta = (TableMeta<T>) actualTableMeta;
+        }
+        return tableMeta;
+    }
+
+    static <T extends IDomain> TableMeta<T> getMeta(Class<T> entityClass) throws IllegalArgumentException {
+        @SuppressWarnings("unchecked")
+        TableMeta<T> tableMeta = (TableMeta<T>) INSTANCE_MAP.get(entityClass);
+        if (tableMeta == null) {
+            throw new IllegalArgumentException(String.format("entity[%s] no scan", entityClass.getName()));
         }
         return tableMeta;
     }
@@ -93,7 +103,7 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
             this.primaryField = (IndexFieldMeta<T, ?>) this.propNameToFieldMeta.get(TableMeta.ID);
             Assert.state(this.primaryField != null, () -> String.format(
-                    "entity[%s] primary field meta build error.", entityClass.getName()));
+                    "entity[%s] primary field meta debugSQL error.", entityClass.getName()));
         } catch (ArmyRuntimeException e) {
             throw e;
         } catch (RuntimeException e) {
@@ -171,14 +181,44 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         return (FieldMeta<T, E>) this.discriminator;
     }
 
+    @Nullable
     @Override
-    public FieldMeta<?, ?> getField(String propName) throws MetaException {
+    public TableMeta<? super T> parent() {
+        return parentTableMeta;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public FieldMeta<T, ?> getField(String propName) throws MetaException {
         FieldMeta<?, ?> fieldMeta = propNameToFieldMeta.get(propName);
         if (fieldMeta == null) {
             throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
         }
-        return fieldMeta;
+        return (FieldMeta<T, ?>) fieldMeta;
     }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public NumberFieldMeta<T, ?> getNumberField(String propName) throws MetaException {
+        FieldMeta<?, ?> fieldMeta = propNameToFieldMeta.get(propName);
+        if (!(fieldMeta instanceof NumberFieldMeta)
+                || !ClassUtils.isAssignable(Number.class, fieldMeta.javaType())) {
+            throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
+        }
+        return (NumberFieldMeta<T, ?>) fieldMeta;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public LongFieldMeta<T> getLongField(String propName) throws MetaException {
+        FieldMeta<?, ?> fieldMeta = propNameToFieldMeta.get(propName);
+        if (!(fieldMeta instanceof LongFieldMeta)
+                || fieldMeta.javaType() != Long.class) {
+            throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
+        }
+        return (LongFieldMeta<T>) fieldMeta;
+    }
+
 
     @SuppressWarnings("unchecked")
     @Override
@@ -193,19 +233,77 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         return (FieldMeta<T, F>) fieldMeta;
     }
 
-    @Nullable
+    @SuppressWarnings("unchecked")
     @Override
-    public TableMeta<? super T> parent() {
-        return parentTableMeta;
+    public <F extends Number> NumberFieldMeta<T, F> getNumberField(String propName, Class<F> propClass)
+            throws MetaException {
+        Assert.notNull(propName, "propName required");
+        Assert.notNull(propName, "propClass required");
+
+        FieldMeta<T, ?> fieldMeta = propNameToFieldMeta.get(propName);
+        if (!(fieldMeta instanceof NumberFieldMeta)
+                || !ClassUtils.isAssignable(Number.class, fieldMeta.javaType())
+                || propClass != fieldMeta.javaType()) {
+            throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
+        }
+        return (NumberFieldMeta<T, F>) fieldMeta;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <F extends Number> LongFieldMeta<T> getLongField(String propName, Class<F> propClass) throws MetaException {
+        Assert.notNull(propName, "propName required");
+        Assert.notNull(propName, "propClass required");
+
+        FieldMeta<T, ?> fieldMeta = propNameToFieldMeta.get(propName);
+        if (!(fieldMeta instanceof LongFieldMeta)
+                || fieldMeta.javaType() != Long.class
+                || propClass != fieldMeta.javaType()) {
+            throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
+        }
+        return (LongFieldMeta<T>) fieldMeta;
     }
 
     @Override
     public <F> IndexFieldMeta<T, F> getIndexField(String propName, Class<F> propClass) throws MetaException {
+        Assert.notNull(propName, "propName required");
+        Assert.notNull(propName, "propClass required");
+
         FieldMeta<T, F> fieldMeta = getField(propName, propClass);
-        if (!(fieldMeta instanceof IndexFieldMeta)) {
+        if (!(fieldMeta instanceof IndexFieldMeta) || propClass != fieldMeta.javaType()) {
             throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
         }
         return (IndexFieldMeta<T, F>) fieldMeta;
+    }
+
+    @Override
+    public <F extends Number> NumberIndexFieldMeta<T, F> getNumberIndexField(String propName, Class<F> propClass)
+            throws MetaException {
+        Assert.notNull(propName, "propName required");
+        Assert.notNull(propName, "propClass required");
+
+        FieldMeta<T, F> fieldMeta = getField(propName, propClass);
+        if (!(fieldMeta instanceof NumberIndexFieldMeta)
+                || !ClassUtils.isAssignable(Number.class, fieldMeta.javaType())
+                || propClass != fieldMeta.javaType()) {
+            throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
+        }
+        return (NumberIndexFieldMeta<T, F>) fieldMeta;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public LongIndexFieldMeta<T> getLongIndexField(String propName, Class<Long> propClass) throws MetaException {
+        Assert.notNull(propName, "propName required");
+        Assert.notNull(propName, "propClass required");
+
+        FieldMeta<T, ?> fieldMeta = getField(propName, propClass);
+        if (!(fieldMeta instanceof LongIndexFieldMeta)
+                || fieldMeta.javaType() != Long.class
+                || propClass != fieldMeta.javaType()) {
+            throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
+        }
+        return (LongIndexFieldMeta<T>) fieldMeta;
     }
 
     @Override

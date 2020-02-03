@@ -17,7 +17,7 @@ package io.army.generator;
  *         &#042; &#064;paramMap not null,a unmodifiable map
  *         &#042;
  *         &#042;&#047;
- *        public static MyMultiGenerator build(FieldMeta&lt;?,?&gt; mappingType, Map&lt;String,String&gt; paramMap){
+ *        public static MyMultiGenerator debugSQL(FieldMeta&lt;?,?&gt; mappingType, Map&lt;String,String&gt; paramMap){
  *           ...
  *        }
  *

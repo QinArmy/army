@@ -45,7 +45,7 @@ class Meta2SchemaImpl implements Meta2Schema {
             List<String> sqlList = new ArrayList<>();
 
             if (migration.newTable()) {
-                // invoke  dialect generate build SQL
+                // invoke  dialect generate debugSQL SQL
                 sqlList.addAll(dialect.tableDefinition(migration.table()));
             } else {
                 // invoke  dialect generate DML SQL

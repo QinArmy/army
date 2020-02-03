@@ -27,18 +27,18 @@ public abstract class GeneratorFactory {
             }
             return generator;
         } catch (Throwable e) {
-            throw new GeneratorException(ErrorCode.GENERATOR_ERROR, e, "MultiGenerator[%s]  build method error"
+            throw new GeneratorException(ErrorCode.GENERATOR_ERROR, e, "MultiGenerator[%s]  debugSQL method error"
                     , generatorMeta.type().getName());
         }
     }
 
     private static Method getBuilder(GeneratorMeta generatorMeta) {
         Method method = ReflectionUtils.findMethod(generatorMeta.type()
-                , "build", FieldMeta.class, Environment.class);
+                , "debugSQL", FieldMeta.class, Environment.class);
         if (method == null
                 || !Modifier.isStatic(method.getModifiers())
                 || !Modifier.isPublic(method.getModifiers())) {
-            throw new GeneratorException(ErrorCode.GENERATOR_ERROR, "MultiGenerator[%s] no build method"
+            throw new GeneratorException(ErrorCode.GENERATOR_ERROR, "MultiGenerator[%s] no debugSQL method"
                     , generatorMeta.type().getName());
         }
         if (!ClassUtils.isAssignable(generatorMeta.type(), method.getReturnType())) {

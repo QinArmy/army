@@ -26,6 +26,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.time.ZoneId;
 import java.util.*;
 
 /**
@@ -122,6 +123,18 @@ abstract class SessionFactoryUtils {
 
         }
         return new GeneratorWrapper(generatorMap, tableGeneratorChain);
+    }
+
+
+    static ZoneId createZoneId(Environment env,SchemaMeta schemaMeta) {
+        String zoneIdText = env.getProperty(String.format(schemaMeta.catalog(), schemaMeta.schema()));
+        ZoneId zoneId;
+        if (StringUtils.hasText(zoneIdText)) {
+            zoneId = ZoneId.of(zoneIdText);
+        } else {
+            zoneId = ZoneId.systemDefault();
+        }
+        return zoneId;
     }
 
 

@@ -7,7 +7,6 @@ import io.army.beans.BeanWrapper;
 import io.army.dialect.InsertException;
 import io.army.dialect.ParamWrapper;
 import io.army.dialect.SQLWrapper;
-import io.army.env.Environment;
 import io.army.generator.GeneratorException;
 import io.army.generator.MultiGenerator;
 import io.army.generator.PostMultiGenerator;
@@ -56,23 +55,23 @@ class InsertSQLExecutorIml implements InsertSQLExecutor {
 
         final boolean showSql = session.sessionFactory().environment().isShowSql();
         // 1. find PostMultiGenerator
-        final GeneratorWrapper generatorMeta = getAutoGeneratorWrapper(session, tableMeta);
+        final GeneratorWrapper generatorWrapper = getAutoGeneratorWrapper(session, tableMeta);
         final int[] updateCount = new int[sqlWrapperList.size()];
         int sqlNum = 0;
         final boolean traceEnabled = LOG.isTraceEnabled();
         for (SQLWrapper wrapper : sqlWrapperList) {
             if (showSql){
-                LOG.info("{}", wrapper);
+                LOG.info("{}", wrapper.toString(session.sessionFactory().dialect()));
             }
-            final boolean generatedKey = sqlNum == 0 && generatorMeta != null;
+            final boolean generatedKey = sqlNum == 0 && generatorWrapper != null;
             try (PreparedStatement st = session.createStatement(wrapper.sql(), generatedKey)) {
                 // 2. set params
                 setParams(st, wrapper.paramList());
                 //3. execute sql
                 updateCount[sqlNum] = st.executeUpdate();
-                if (sqlNum == 0 && generatorMeta != null) {
+                if (sqlNum == 0 && generatorWrapper != null) {
                     // 4. extract generated key (optional)
-                    extractGeneratedKey(generatorMeta, st, beanWrapper);
+                    extractGeneratedKey(generatorWrapper, st, beanWrapper);
                 }
 
             } catch (SQLException e) {

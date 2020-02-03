@@ -58,7 +58,7 @@ class SessionFactoryImpl implements InnerSessionFactory {
         this.env = env;
         this.dataSource = dataSource;
         this.schemaMeta = schemaMeta;
-        this.zoneId = createZoneId();
+        this.zoneId = SessionFactoryUtils.createZoneId(this.env,this.schemaMeta);
 
         List<String> packagesToScan = env.getRequiredPropertyList(PACKAGE_TO_SCAN, String[].class);
         this.classTableMetaMap = SessionFactoryUtils.scanPackagesForMeta(this.schemaMeta, packagesToScan);
@@ -194,17 +194,6 @@ class SessionFactoryImpl implements InnerSessionFactory {
             }
             LOG.debug("\n");
         }
-    }
-
-    private ZoneId createZoneId() {
-        String zoneIdText = env.getProperty(String.format(schemaMeta.catalog(), schemaMeta.schema()));
-        ZoneId zoneId;
-        if (StringUtils.hasText(zoneIdText)) {
-            zoneId = ZoneId.of(zoneIdText);
-        } else {
-            zoneId = ZoneId.systemDefault();
-        }
-        return zoneId;
     }
 
 

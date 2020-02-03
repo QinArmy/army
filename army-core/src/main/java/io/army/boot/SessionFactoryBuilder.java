@@ -15,7 +15,7 @@ import java.time.ZoneId;
  *     <li>隐藏实现,控制访问级别</li>
  * </ul>
  */
-public interface SessionFactoryBuilder  {
+public interface SessionFactoryBuilder {
 
     SessionFactoryBuilder datasource(DataSource dataSource);
 
@@ -29,8 +29,12 @@ public interface SessionFactoryBuilder  {
 
     SessionFactory build();
 
-    static SessionFactoryBuilder builder(){
+    static SessionFactoryBuilder builder() {
         return new SessionFactoryBuilderImpl();
+    }
+
+    static SessionFactoryBuilder mockBuilder() {
+        return new MockSessionFactoryBuilder();
     }
 
 

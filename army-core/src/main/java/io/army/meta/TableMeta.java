@@ -11,6 +11,7 @@ import java.util.Set;
 
 /**
  * created  on 2018/10/8.
+ *
  * @see SchemaMeta
  * @see FieldMeta
  * @see IndexMeta
@@ -66,12 +67,25 @@ public interface TableMeta<T extends IDomain> {
 
     boolean isMappingProp(String propName);
 
-    FieldMeta<?, ?> getField(String propName)throws MetaException;
+    FieldMeta<T, ?> getField(String propName) throws MetaException;
+
+    NumberFieldMeta<T, ?> getNumberField(String propName) throws MetaException;
+
+    LongFieldMeta<T> getLongField(String propName) throws MetaException;
 
     <F> FieldMeta<T, F> getField(String propName, Class<F> propClass) throws MetaException;
 
+    <F extends Number> NumberFieldMeta<T, F> getNumberField(String propName, Class<F> propClass) throws MetaException;
+
+    <F extends Number> LongFieldMeta<T> getLongField(String propName, Class<F> propClass) throws MetaException;
+
     <F> IndexFieldMeta<T, F> getIndexField(String propName, Class<F> propClass) throws MetaException;
 
+    <F extends Number> NumberIndexFieldMeta<T, F> getNumberIndexField(String propName, Class<F> propClass)
+            throws MetaException;
+
+    LongIndexFieldMeta<T> getLongIndexField(String propName, Class<Long> propClass)
+            throws MetaException;
 
     @Override
     boolean equals(Object o);

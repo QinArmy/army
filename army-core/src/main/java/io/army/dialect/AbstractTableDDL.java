@@ -298,7 +298,7 @@ public abstract class AbstractTableDDL implements TableDDL {
 
 
     /**
-     * build [1,n] col_name column_definition, eg. {@code id BIGINT NOT NULL DEFAULT COMMENT ''}
+     * debugSQL [1,n] col_name column_definition, eg. {@code id BIGINT NOT NULL DEFAULT COMMENT ''}
      */
     private <T extends IDomain> void appendColumnDefinitions(StringBuilder builder, TableMeta<T> tableMeta) {
         Iterator<String> iterator = createColumnDefinitionList(tableMeta).iterator();
@@ -321,7 +321,7 @@ public abstract class AbstractTableDDL implements TableDDL {
 
         String columnDefinition;
         for (FieldMeta<?, ?> fieldMeta : tableMeta.fieldCollection()) {
-            // build one column definition
+            // debugSQL one column definition
             columnDefinition = this.columnDefinitionClause(fieldMeta);
             switch (fieldMeta.propertyName()) {
                 case TableMeta.ID:

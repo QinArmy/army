@@ -12,7 +12,7 @@ import java.lang.reflect.Method;
  * ,两者在 {@link Domain }的基础上加上了 version 字段作为条件
  * </p>
  * <p>
- * build by 马桧涛 on 2016/3/26 17:14
+ * debugSQL by 马桧涛 on 2016/3/26 17:14
  *
  * @version 1.0
  */

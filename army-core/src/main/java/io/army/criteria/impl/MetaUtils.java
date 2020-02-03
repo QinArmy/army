@@ -101,7 +101,7 @@ abstract class MetaUtils {
         // this table's column to filed map, contains id ,key is lower case
         final Map<String, Field> columnToFieldMap = columnToFieldMap(table, mappedClassList);
 
-        // 1. build indexMap meta
+        // 1. debugSQL indexMap meta
         final List<IndexMeta<T>> indexMetaList = indexMetaList(table, tableMeta, columnToFieldMap);
 
         // exclude indexMetaList column part
@@ -340,13 +340,13 @@ abstract class MetaUtils {
             , Set<String> propNameSet) {
 
         if (columnNameSet.contains(lowerColumnName)) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] column[%s] build duplication",
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] column[%s] debugSQL duplication",
                     fieldMeta.table().javaType(),
                     fieldMeta.fieldName()
             );
         }
         if (propNameSet.contains(fieldMeta.propertyName())) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] property[%s] build duplication",
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] property[%s] debugSQL duplication",
                     fieldMeta.table().javaType(),
                     fieldMeta.propertyName()
             );
@@ -487,7 +487,7 @@ abstract class MetaUtils {
 
 
     /**
-     * build {@link Index}'s {@link IndexFieldMeta}
+     * debugSQL {@link Index}'s {@link IndexFieldMeta}
      *
      * @param createdColumnSet created column set  in  other indexMap
      * @param <T>              entity java class
@@ -600,7 +600,7 @@ abstract class MetaUtils {
         private final boolean primaryKey;
 
         /**
-         * @param index            indexMap or null ( when build primary key for which user don't definite {@link Index})
+         * @param index            indexMap or null ( when debugSQL primary key for which user don't definite {@link Index})
          * @param columnToFieldMap a unmodifiable map
          */
         private DefaultIndexMeta(TableMeta<T> table, @Nullable Index index, Map<String, Field> columnToFieldMap,

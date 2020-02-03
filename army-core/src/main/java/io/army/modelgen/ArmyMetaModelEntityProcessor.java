@@ -25,7 +25,7 @@ import java.util.*;
 /**
  * Main annotation processor.
  * <p>
- * build entity meta source code file
+ * debugSQL entity meta source code file
  * </p>
  * created  on 2018/9/27.
  */
@@ -70,7 +70,7 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
         // 1. crate MetaEntity
         List<MetaEntity> entityList = createEntity(roundEnv);
 
-        //2. build source code file
+        //2. debugSQL source code file
         writeSources(entityList);
         LOG.info("{} cost {} ms", ArmyMetaModelEntityProcessor.class.getSimpleName(),
                 System.currentTimeMillis() - startTime);
@@ -105,7 +105,7 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
                 parentEntityMappedElementList = Collections.emptyList();
             } else {
                 Pair<List<TypeElement>, TypeElement> parentPair;
-                // build super class(annotated by Inheritance ) 的 mapped list
+                // debugSQL super class(annotated by Inheritance ) 的 mapped list
                 parentPair = createEntityMappedElementList(parentEntityElement, mappedSuperMap, inheritanceMap,
                         entityElementMap);
                 parentEntityMappedElementList = parentPair.getFirst();

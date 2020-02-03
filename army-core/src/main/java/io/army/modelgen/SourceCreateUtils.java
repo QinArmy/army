@@ -7,10 +7,7 @@ import io.army.criteria.MetaException;
 import io.army.criteria.impl.TableMetaFactory;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
-import io.army.meta.FieldMeta;
-import io.army.meta.IndexFieldMeta;
-import io.army.meta.TableMeta;
-import io.army.struct.CodeEnum;
+import io.army.meta.*;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 import io.army.util.StringUtils;
@@ -18,10 +15,7 @@ import io.army.util.TimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import javax.lang.model.element.*;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.lang.reflect.Field;
 import java.time.ZonedDateTime;
@@ -99,7 +93,7 @@ abstract class SourceCreateUtils {
     }
 
     /**
-     * build meta source code import part
+     * debugSQL meta source code import part
      *
      * @param entityElement       entity element that annotated by {@link Table}
      * @param parentEntityElement entityElement's parent element that annotated by {@link Table}
@@ -138,7 +132,7 @@ abstract class SourceCreateUtils {
     }
 
     /**
-     * build meta source code class definition part
+     * debugSQL meta source code class definition part
      */
     static String generateClassDefinition(TypeElement entityElement, TypeElement parentEntityElement) {
         StringBuilder builder = new StringBuilder();
@@ -446,7 +440,23 @@ abstract class SourceCreateUtils {
                 .append(";\n")
 
                 .append("import ")
+                .append(LongFieldMeta.class.getName())
+                .append(";\n")
+
+                .append("import ")
+                .append(NumberFieldMeta.class.getName())
+                .append(";\n")
+
+                .append("import ")
                 .append(IndexFieldMeta.class.getName())
+                .append(";\n")
+
+                .append("import ")
+                .append(LongIndexFieldMeta.class.getName())
+                .append(";\n")
+
+                .append("import ")
+                .append(NumberIndexFieldMeta.class.getName())
                 .append(";\n")
 
                 .append("import javax.annotation.Generated")

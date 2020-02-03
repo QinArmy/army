@@ -10,7 +10,9 @@ public interface Selection {
 
     Class<?> javaType();
 
-    JDBCType jdbcType();
+   default JDBCType jdbcType(){
+       throw new UnsupportedOperationException();
+   }
 
     @Override
     String toString();

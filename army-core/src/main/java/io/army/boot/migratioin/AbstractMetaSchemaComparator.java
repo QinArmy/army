@@ -35,7 +35,7 @@ public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparat
             // make key lower case
             TableInfo tableInfo = tableInfoMap.get(StringUtils.toLowerCase(tableMeta.tableName()));
             if (tableInfo == null) {
-                // will build table
+                // will debugSQL table
                 migrationList.add(new MigrationImpl(tableMeta, true));
 
             } else {
