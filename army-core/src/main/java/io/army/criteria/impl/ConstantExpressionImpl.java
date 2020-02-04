@@ -1,38 +1,47 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.ConstantExpression;
+import io.army.dialect.ParamWrapper;
 import io.army.lang.Nullable;
+import io.army.meta.mapping.MappingFactory;
+import io.army.meta.mapping.MappingType;
+
+import java.util.List;
 
 
 final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements ConstantExpression<E> {
 
-    private static final ConstantExpressionImpl<?> NULL = new ConstantExpressionImpl<>(null);
 
-    @SuppressWarnings("unchecked")
-    static <E> ConstantExpressionImpl<E> build(@Nullable E constant) {
-        ConstantExpressionImpl<E> expression;
-        if (constant == null) {
-            expression = (ConstantExpressionImpl<E>) NULL;
+    static <E> ConstantExpressionImpl<E> build(@Nullable MappingType mappingType, E constant) {
+        MappingType type;
+        if (mappingType == null) {
+            type = MappingFactory.getDefaultMapping(constant.getClass());
         } else {
-            expression = new ConstantExpressionImpl<>(constant);
+            type = mappingType;
         }
-        return expression;
+        return new ConstantExpressionImpl<>(type, constant);
     }
+
+    private final MappingType mappingType;
 
     private final E constant;
 
-    private ConstantExpressionImpl(@Nullable E constant) {
+    private ConstantExpressionImpl(MappingType mappingType, E constant) {
+        this.mappingType = mappingType;
         this.constant = constant;
     }
 
+
     @Override
-    public Class<?> javaType() {
-        return constant == null
-                ? void.class
-                : constant.getClass();
+    public void appendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+        builder.append(mappingType.nonNullTextValue(constant));
     }
 
-    @Nullable
+    @Override
+    public MappingType mappingType() {
+        return mappingType;
+    }
+
     @Override
     public E constant() {
         return constant;

@@ -21,11 +21,13 @@ public interface MappingType {
      * @return value's text without quote
      * @throws IllegalArgumentException value error
      */
-    String nullSafeTextValue(Object value);
+    default String nonNullTextValue(Object value) {
+        return String.valueOf(value);
+    }
 
     boolean isTextValue(String textValue);
 
-    void nullSafeSet(PreparedStatement st,Object value, int index)throws SQLException;
+    void nonNullSet(PreparedStatement st, Object value, int index) throws SQLException;
 
-    Object nullSafeGet(ResultSet resultSet, String alias)throws SQLException;
+    Object nullSafeGet(ResultSet resultSet, String alias) throws SQLException;
 }

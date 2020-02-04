@@ -62,7 +62,7 @@ public @interface Generator {
     String value() ;
 
     /**
-     * Specifies the creation param(s) of {@link MultiGenerator}.
+     * Specifies the creation value(s) of {@link MultiGenerator}.
      */
     Params[] params() default {};
 }

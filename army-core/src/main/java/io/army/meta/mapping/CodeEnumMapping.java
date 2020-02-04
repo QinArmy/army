@@ -11,22 +11,30 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * @see Enum
  * @see io.army.struct.CodeEnum
  */
- public final class CodeEnumMapping implements MappingType {
+public final class CodeEnumMapping implements MappingType {
 
+    private static final ConcurrentMap<Class<?>, CodeEnumMapping> INSTANCE_MAP = new ConcurrentHashMap<>();
+
+
+    public static CodeEnumMapping build(Class<?> javaType) {
+        Assert.isTrue(javaType.isEnum(), () -> String.format("javaType[%s] isn't Enum", javaType));
+        Assert.isAssignable(CodeEnum.class, javaType);
+        return INSTANCE_MAP.computeIfAbsent(javaType, CodeEnumMapping::new);
+    }
 
     private final Class<?> enumClass;
 
-
-    public CodeEnumMapping(Class<?> enumClass) {
+    private CodeEnumMapping(Class<?> enumClass) {
         this.enumClass = enumClass;
-        Assert.isTrue(enumClass.isEnum(), () -> String.format("javaType[%s] isn't Enum", enumClass));
-        Assert.isAssignable(CodeEnum.class, enumClass);
         checkCodeEnum(enumClass);
+
     }
 
     @Override
@@ -40,7 +48,7 @@ import java.util.Map;
     }
 
     @Override
-    public String nullSafeTextValue(Object value) {
+    public String nonNullTextValue(Object value) {
         CodeEnum codeEnum = (CodeEnum) value;
         return Integer.toString(codeEnum.code());
     }
@@ -59,7 +67,7 @@ import java.util.Map;
     }
 
     @Override
-    public void nullSafeSet(PreparedStatement st, Object value, int index) throws SQLException {
+    public void nonNullSet(PreparedStatement st, Object value, int index) throws SQLException {
         Assert.isInstanceOf(CodeEnum.class, value);
         st.setInt(index, ((CodeEnum) value).code());
 

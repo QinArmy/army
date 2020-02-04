@@ -2,22 +2,21 @@ package io.army.meta.mapping;
 
 import io.army.domain.IDomain;
 import io.army.util.Assert;
-import io.army.util.Precision;
 
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public final class BooleanMapping implements MappingType {
+public final class BooleanType implements MappingType {
 
-    public static final BooleanMapping INSTANCE = new BooleanMapping();
+    public static final BooleanType INSTANCE = new BooleanType();
 
-    private static final String Y = "Y";
+    public static final String Y = "Y";
 
-    private static final String N = "N";
+    public static final String N = "N";
 
-    private BooleanMapping() {
+    private BooleanType() {
     }
 
     @Override
@@ -31,7 +30,7 @@ public final class BooleanMapping implements MappingType {
     }
 
     @Override
-    public String nullSafeTextValue(Object value) {
+    public String nonNullTextValue(Object value) {
         String text;
         if (Boolean.TRUE.equals(value)) {
             text = IDomain.Y;
@@ -48,7 +47,7 @@ public final class BooleanMapping implements MappingType {
     }
 
     @Override
-    public void nullSafeSet(PreparedStatement st, Object value, int index) throws SQLException {
+    public void nonNullSet(PreparedStatement st, Object value, int index) throws SQLException {
         Assert.isInstanceOf(Boolean.class, value);
         st.setString(index, Boolean.TRUE.equals(value) ? Y : N);
     }

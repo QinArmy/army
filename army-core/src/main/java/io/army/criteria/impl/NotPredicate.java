@@ -2,45 +2,46 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.Predicate;
+import io.army.dialect.ParamWrapper;
 
-import java.sql.JDBCType;
+import java.util.List;
 
 /**
  * created  on 2018/11/25.
  */
 final class NotPredicate extends AbstractPredicate {
 
-    private final Expression<?> origin;
+    private final Expression<?> expression;
 
     private final boolean not;
 
-    private NotPredicate(Expression<?> origin, boolean not) {
-        this.origin = origin;
+    private NotPredicate(Expression<?> expression, boolean not) {
+        this.expression = expression;
         this.not = not;
+
     }
 
-    static Predicate getNotPredicate(Expression<?> origin) {
-        return origin instanceof NotPredicate
-                ? new NotPredicate(((NotPredicate) origin).getOrigin(), false)
-                : new NotPredicate(origin, true);
+    static Predicate build(Expression<?> expression) {
+        Predicate predicate;
+        if (expression instanceof NotPredicate) {
+            NotPredicate originalPredicate = (NotPredicate) (expression);
+            if (originalPredicate.expression instanceof NotPredicate) {
+                predicate = (NotPredicate) originalPredicate.expression;
+            } else {
+                predicate = new NotPredicate(expression, !originalPredicate.not);
+            }
+        } else {
+            predicate = new NotPredicate(expression, true);
+        }
+        return predicate;
     }
 
     @Override
-    public Class<?> javaType() {
-        return null;
-    }
-
-    @Override
-    public JDBCType jdbcType() {
-        return null;
-    }
-
-    @Override
-    public String toString() {
-        return not ? (UnaryOperator.NOT.rendered() + " " + origin) : origin.toString();
-    }
-
-    Expression<?> getOrigin() {
-        return origin;
+    public void appendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+        if (not) {
+            builder.append(UnaryOperator.NOT.rendered());
+            builder.append(" ");
+        }
+        expression.appendSQL(builder, paramWrapperList);
     }
 }

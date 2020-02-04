@@ -5,11 +5,15 @@ import io.army.util.Assert;
 import java.sql.*;
 import java.time.LocalDateTime;
 
-public final class LocalDateTimeMapping implements MappingType {
+public final class LocalDateTimeType implements MappingType {
 
-    public static final LocalDateTimeMapping INSTANCE = new LocalDateTimeMapping();
+    public static final LocalDateTimeType INSTANCE = new LocalDateTimeType();
 
-    private LocalDateTimeMapping() {
+    public static LocalDateTimeType build(Class<?> typeClass) {
+        return INSTANCE;
+    }
+
+    private LocalDateTimeType() {
     }
 
     @Override
@@ -23,7 +27,7 @@ public final class LocalDateTimeMapping implements MappingType {
     }
 
     @Override
-    public String nullSafeTextValue(Object value) {
+    public String nonNullTextValue(Object value) {
         return null;
     }
 
@@ -34,7 +38,7 @@ public final class LocalDateTimeMapping implements MappingType {
 
 
     @Override
-    public void nullSafeSet(PreparedStatement st, Object value, int index) throws SQLException {
+    public void nonNullSet(PreparedStatement st, Object value, int index) throws SQLException {
         Assert.isInstanceOf(LocalDateTime.class, value, "");
         st.setTimestamp(index, Timestamp.valueOf((LocalDateTime) value));
     }

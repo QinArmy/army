@@ -1,13 +1,15 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
+import io.army.dialect.ParamWrapper;
 
 import java.sql.JDBCType;
+import java.util.List;
 
 /**
  * created  on 2018/11/27.
  */
-class DualConstantPredicate extends AbstractPredicate {
+final class DualConstantPredicate extends AbstractPredicate {
 
 
     private final Expression<?> left;
@@ -16,31 +18,19 @@ class DualConstantPredicate extends AbstractPredicate {
 
     private final Object right;
 
-    public DualConstantPredicate(Expression<?> left, DualOperator operator, Object right) {
+    DualConstantPredicate(Expression<?> left, DualOperator operator, Object right) {
         this.left = left;
         this.operator = operator;
         this.right = right;
     }
 
-    public Expression<?> getLeft() {
-        return left;
-    }
-
-    public DualOperator getOperator() {
-        return operator;
-    }
-
     @Override
-    public Class<?> javaType() {
-        return null;
-    }
-
-    @Override
-    public JDBCType jdbcType() {
-        return null;
-    }
-
-    public Object getRight() {
-        return right;
+    public void appendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+        builder.append("( ");
+        left.appendSQL(builder, paramWrapperList);
+        builder.append(" ");
+        builder.append(operator.rendered());
+        builder.append(" ? ");
+        builder.append(")");
     }
 }

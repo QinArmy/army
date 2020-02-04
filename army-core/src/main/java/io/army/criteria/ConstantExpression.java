@@ -5,8 +5,5 @@ import io.army.lang.Nullable;
 
 public interface ConstantExpression<E> extends Expression<E> {
 
-
-
-    @Nullable
     E constant();
 }

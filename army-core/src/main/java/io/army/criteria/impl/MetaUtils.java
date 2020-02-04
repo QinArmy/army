@@ -491,7 +491,7 @@ abstract class MetaUtils {
      *
      * @param createdColumnSet created column set  in  other indexMap
      * @param <T>              entity java class
-     * @return param indexMap's {@link IndexFieldMeta}
+     * @return value indexMap's {@link IndexFieldMeta}
      */
     private static <T extends IDomain> List<IndexFieldMeta<T, ?>> indexFieldMetaList(
             final TableMeta<T> tableMeta,

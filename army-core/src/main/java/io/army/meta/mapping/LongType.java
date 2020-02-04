@@ -7,11 +7,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public final class LongMapping implements MappingType {
+public final class LongType implements MappingType {
 
-    public static final LongMapping INSTANCE = new LongMapping();
+    public static final LongType INSTANCE = new LongType();
 
-    private LongMapping() {
+
+    public static LongType build(Class<?> typeClass){
+        return INSTANCE;
+    }
+
+    private LongType() {
     }
 
     @Override
@@ -26,7 +31,7 @@ public final class LongMapping implements MappingType {
 
 
     @Override
-    public String nullSafeTextValue(Object value) {
+    public String nonNullTextValue(Object value) {
         return null;
     }
 
@@ -43,7 +48,7 @@ public final class LongMapping implements MappingType {
     }
 
     @Override
-    public void nullSafeSet(PreparedStatement st, Object value, int index) throws SQLException {
+    public void nonNullSet(PreparedStatement st, Object value, int index) throws SQLException {
         Assert.isInstanceOf(Long.class, value, "");
         st.setLong(index, (Long) value);
     }

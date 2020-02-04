@@ -273,10 +273,10 @@ abstract class FieldMetaUtils extends MetaUtils {
     private static void assertPreGeneratorDependPropName(Map<String, String> paramMap, FieldMeta<?, ?> fieldMeta
             , Class<?> generatorClass) {
 
-        // assert DEPEND_PROP_NAME param
+        // assert DEPEND_PROP_NAME value
         if (paramMap.containsKey(PreMultiGenerator.DEPEND_PROP_NAME)
                 && !ClassUtils.isAssignable(PreMultiGenerator.class, generatorClass)) {
-            throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] prop[%s] generator cannot have %s param"
+            throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] prop[%s] generator cannot have %s value"
                     , fieldMeta.table().javaType().getName()
                     , fieldMeta.propertyName()
                     , PreMultiGenerator.DEPEND_PROP_NAME);

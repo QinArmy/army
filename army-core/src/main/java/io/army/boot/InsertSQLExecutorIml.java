@@ -100,7 +100,7 @@ class InsertSQLExecutorIml implements InsertSQLExecutor {
             if (value == null) {
                 st.setNull(i + 1, mappingType.jdbcType().getVendorTypeNumber());
             } else {
-                mappingType.nullSafeSet(st, value, i + 1);
+                mappingType.nonNullSet(st, value, i + 1);
             }
         }
     }

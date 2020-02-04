@@ -3,12 +3,12 @@ package io.army.criteria.impl;
 /**
  * created  on 2018/11/25.
  */
-enum UnaryOperator implements SqlOperator {
+enum UnaryOperator implements SQLOperator {
 
     NOT {
         @Override
-        public SqlOperator negated() {
-            return null;
+        public SQLOperator negated() {
+            return this;
         }
 
         @Override
@@ -56,7 +56,7 @@ enum UnaryOperator implements SqlOperator {
     NEGATED {
         @Override
         public UnaryOperator negated() {
-            return POSITIVE;
+            return this;
         }
 
         @Override

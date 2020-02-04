@@ -25,7 +25,7 @@ public final class LocalDateMapping implements MappingType {
     }
 
     @Override
-    public String nullSafeTextValue(Object value) {
+    public String nonNullTextValue(Object value) {
         LocalDate date = (LocalDate) value;
         return date.format(TimeUtils.DATE_FORMATTER);
     }
@@ -44,7 +44,7 @@ public final class LocalDateMapping implements MappingType {
     }
 
     @Override
-    public void nullSafeSet(PreparedStatement st, Object value, int index) throws SQLException {
+    public void nonNullSet(PreparedStatement st, Object value, int index) throws SQLException {
         Assert.isInstanceOf(LocalDate.class, value, "");
         st.setDate(index, Date.valueOf((LocalDate) value));
     }

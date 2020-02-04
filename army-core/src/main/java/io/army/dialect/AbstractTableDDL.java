@@ -284,7 +284,7 @@ public abstract class AbstractTableDDL implements TableDDL {
                 value = defaultOfCreateAndUpdate(fieldMeta);
                 break;
             case TableMeta.VISIBLE:
-                value = StringUtils.quote(fieldMeta.mappingType().nullSafeTextValue(Boolean.TRUE));
+                value = StringUtils.quote(fieldMeta.mappingType().nonNullTextValue(Boolean.TRUE));
                 break;
             case TableMeta.VERSION:
                 value = IDomain.ZERO;

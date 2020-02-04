@@ -1,5 +1,7 @@
 package io.army.criteria;
 
+import io.army.meta.mapping.MappingType;
+
 import java.sql.JDBCType;
 
 /**
@@ -8,7 +10,13 @@ import java.sql.JDBCType;
  */
 public interface Selection {
 
-    Class<?> javaType();
+    default MappingType mappingType(){
+        throw new UnsupportedOperationException();
+    }
+
+   default Class<?> javaType(){
+       throw new UnsupportedOperationException();
+    }
 
    default JDBCType jdbcType(){
        throw new UnsupportedOperationException();

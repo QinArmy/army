@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 /**
  * created  on 2018/11/25.
  */
-enum DualOperator implements SqlOperator {
+enum DualOperator implements SQLOperator {
 
     EQ {
         @Override
@@ -75,11 +75,101 @@ enum DualOperator implements SqlOperator {
         public String rendered() {
             return ">";
         }
-    };
+    },
+    IN {
+        @Override
+        public SQLOperator negated() {
+            return NOT_IN;
+        }
 
+        @Override
+        public String rendered() {
+            return "IN";
+        }
+    },
+    NOT_IN {
+        @Override
+        public SQLOperator negated() {
+            return IN;
+        }
 
-    @Override
-    public final Position position() {
-        return Position.CENTER;
+        @Override
+        public String rendered() {
+            return "NOT IN";
+        }
+    },
+    LIKE {
+        @Override
+        public SQLOperator negated() {
+            return NOT_LIKE;
+        }
+
+        @Override
+        public String rendered() {
+            return "LIKE";
+        }
+    },
+    NOT_LIKE {
+        @Override
+        public SQLOperator negated() {
+            return LIKE;
+        }
+
+        @Override
+        public String rendered() {
+            return "NOT LIKE";
+        }
+    },
+     ADD {
+         @Override
+         public SQLOperator negated() {
+             return SUBTRACT;
+         }
+
+         @Override
+         public String rendered() {
+             return "+";
+         }
+     },SUBTRACT {
+        @Override
+        public SQLOperator negated() {
+            return ADD;
+        }
+
+        @Override
+        public String rendered() {
+            return "-";
+        }
+    },MOD{
+        @Override
+        public SQLOperator negated() {
+            return null;
+        }
+
+        @Override
+        public String rendered() {
+            return "%";
+        }
+    },MULTIPLY{
+        @Override
+        public SQLOperator negated() {
+            return DIVIDE;
+        }
+
+        @Override
+        public String rendered() {
+            return "*";
+        }
+    },DIVIDE{
+        @Override
+        public SQLOperator negated() {
+            return MULTIPLY;
+        }
+
+        @Override
+        public String rendered() {
+            return "/";
+        }
     }
+
 }

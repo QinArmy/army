@@ -19,21 +19,19 @@ class DefaultMappingFactory implements MappingFactory {
 
     private static final Map<Class<?>, MappingType> DEFAULT_MAPPING = createDefaultMapping();
 
-    private static final ConcurrentMap<Class<?>, MappingType> CODE_ENUM_MAPPING = new ConcurrentHashMap<>();
-
     private static final ConcurrentMap<Class<?>, MappingType> CUSTOM_MAPPING = new ConcurrentHashMap<>();
 
 
     private static Map<Class<?>, MappingType> createDefaultMapping() {
         Map<Class<?>, MappingType> map = new HashMap<>();
 
-        map.put(Long.class, LongMapping.INSTANCE);
-        map.put(Integer.class, IntegerMapping.INSTANCE);
-        map.put(BigDecimal.class, BigDecimalMapping.INSTANCE);
-        map.put(String.class, StringMapping.INSTANCE);
+        map.put(Long.class, LongType.INSTANCE);
+        map.put(Integer.class, IntegerType.INSTANCE);
+        map.put(BigDecimal.class, BigDecimalType.INSTANCE);
+        map.put(String.class, StringType.INSTANCE);
 
-        map.put(Boolean.class, BooleanMapping.INSTANCE);
-        map.put(LocalDateTime.class, LocalDateTimeMapping.INSTANCE);
+        map.put(Boolean.class, BooleanType.INSTANCE);
+        map.put(LocalDateTime.class, LocalDateTimeType.INSTANCE);
         map.put(LocalDate.class, LocalDateMapping.INSTANCE);
 
         return Collections.unmodifiableMap(map);
@@ -53,6 +51,19 @@ class DefaultMappingFactory implements MappingFactory {
     }
 
 
+    static MappingType getDefaultMapping(Class<?> javaType) throws MappingException {
+        MappingType mappingType;
+        if (javaType.isEnum()) {
+            mappingType = CodeEnumMapping.build(javaType);
+        } else {
+            mappingType = DEFAULT_MAPPING.get(javaType);
+        }
+        if (mappingType == null) {
+            throw new MappingException(ErrorCode.META_ERROR, "not found MappingType for %s", javaType.getName());
+        }
+        return mappingType;
+    }
+
     @Override
     public MappingType getMapping(Class<?> javaType, Class<?> mappingClass) throws MappingException {
         return null;
@@ -60,13 +71,12 @@ class DefaultMappingFactory implements MappingFactory {
 
     @Override
     public MappingType getMapping(Class<?> javaType) throws MappingException {
+        if (javaType.isEnum()) {
+            return CodeEnumMapping.build(javaType);
+        }
         MappingType mappingType = CUSTOM_MAPPING.get(javaType);
         if (mappingType == null) {
-            if (isCodeEnum(javaType)) {
-                mappingType = getOrCreateCodeEnumMapping(javaType);
-            } else {
-                mappingType = DEFAULT_MAPPING.get(javaType);
-            }
+            mappingType = DEFAULT_MAPPING.get(javaType);
         }
         if (mappingType == null) {
             throw new MappingException(ErrorCode.META_ERROR,
@@ -88,13 +98,5 @@ class DefaultMappingFactory implements MappingFactory {
 
     /*################################## blow private method ##################################*/
 
-    private MappingType getOrCreateCodeEnumMapping(Class<?> javaType) {
-        MappingType mappingType = CODE_ENUM_MAPPING.get(javaType);
-        if (mappingType == null) {
-            CODE_ENUM_MAPPING.putIfAbsent(javaType, new CodeEnumMapping(javaType));
-            mappingType = CODE_ENUM_MAPPING.get(javaType);
-        }
-        return mappingType;
 
-    }
 }

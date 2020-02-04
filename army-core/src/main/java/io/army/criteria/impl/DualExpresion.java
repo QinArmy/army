@@ -2,25 +2,19 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.dialect.ParamWrapper;
-import io.army.util.StringUtils;
 
-import java.sql.JDBCType;
-import java.util.ArrayList;
 import java.util.List;
 
-/**
- * created  on 2018/11/25.
- */
-final class DualPredicate extends AbstractPredicate {
+ final class DualExpresion<E> extends AbstractExpression<E>  {
 
-    private final Expression<?> left;
+    protected final Expression<?> left;
 
-    private final DualOperator operator;
+    protected final DualOperator operator;
 
-    private final Expression<?> right;
+    protected final Expression<?> right;
 
 
-    DualPredicate(Expression<?> left, DualOperator operator, Expression<?> right) {
+    DualExpresion(Expression<?> left, DualOperator operator, Expression<?> right) {
         this.left = left;
         this.operator = operator;
         this.right = right;
@@ -35,8 +29,5 @@ final class DualPredicate extends AbstractPredicate {
         builder.append(" ");
         right.appendSQL(builder,paramWrapperList);
     }
-
-
-
 
 }

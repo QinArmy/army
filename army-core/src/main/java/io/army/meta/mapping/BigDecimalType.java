@@ -8,11 +8,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public final class BigDecimalMapping  implements MappingType {
+public final class BigDecimalType implements MappingType {
 
-    public static final BigDecimalMapping INSTANCE = new BigDecimalMapping();
+    public static final BigDecimalType INSTANCE = new BigDecimalType();
 
-    private BigDecimalMapping() {
+    public static BigDecimalType build(Class<?> typeClass) {
+        return INSTANCE;
+    }
+
+    private BigDecimalType() {
     }
 
     @Override
@@ -26,7 +30,7 @@ public final class BigDecimalMapping  implements MappingType {
     }
 
     @Override
-    public String nullSafeTextValue(Object value) {
+    public String nonNullTextValue(Object value) {
         Assert.isInstanceOf(BigDecimal.class, value, () -> String.format("value[%s] isn't BigDecimal.", value));
         return ((BigDecimal) value).toPlainString();
     }
@@ -44,8 +48,8 @@ public final class BigDecimalMapping  implements MappingType {
     }
 
     @Override
-    public void nullSafeSet(PreparedStatement st, Object value, int index) throws SQLException {
-        Assert.isInstanceOf(BigDecimal.class,value);
+    public void nonNullSet(PreparedStatement st, Object value, int index) throws SQLException {
+        Assert.isInstanceOf(BigDecimal.class, value);
         st.setBigDecimal(index, (BigDecimal) value);
     }
 

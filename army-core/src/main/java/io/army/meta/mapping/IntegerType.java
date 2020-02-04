@@ -7,11 +7,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public final class IntegerMapping  implements MappingType {
+public final class IntegerType implements MappingType {
 
-    public static final IntegerMapping INSTANCE = new IntegerMapping();
+    public static final IntegerType INSTANCE = new IntegerType();
 
-    private IntegerMapping() {
+
+    public static IntegerType build(Class<?> typeClass) {
+        return INSTANCE;
+    }
+
+    private IntegerType() {
     }
 
     @Override
@@ -25,7 +30,7 @@ public final class IntegerMapping  implements MappingType {
     }
 
     @Override
-    public String nullSafeTextValue(Object value) {
+    public String nonNullTextValue(Object value) {
         return String.valueOf(value);
     }
 
@@ -42,9 +47,9 @@ public final class IntegerMapping  implements MappingType {
     }
 
     @Override
-    public void nullSafeSet(PreparedStatement st, Object value, int index)throws SQLException {
-        Assert.isInstanceOf(Integer.class,value,"");
-        st.setInt(index,(Integer) value);
+    public void nonNullSet(PreparedStatement st, Object value, int index) throws SQLException {
+        Assert.isInstanceOf(Integer.class, value, "");
+        st.setInt(index, (Integer) value);
     }
 
     @Override
