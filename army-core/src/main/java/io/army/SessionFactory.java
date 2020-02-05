@@ -48,7 +48,7 @@ public interface SessionFactory extends AutoCloseable{
      * connection pools, etc).
      * <p/>
      * It is the responsibility of the application to ensure that there are no
-     * open {@link SessionFactory sessions} before calling this method as the impact
+     * open {@link SessionFactory sessions} before calling this method asType the impact
      * on those {@link io.army.Session sessions} is indeterminate.
      * <p/>
      * No-ops if already {@link #isClosed closed}.

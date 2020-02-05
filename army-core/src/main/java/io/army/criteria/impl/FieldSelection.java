@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.Expression;
 import io.army.criteria.Selection;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
@@ -26,12 +27,12 @@ final class FieldSelection<T extends IDomain, F> implements Selection {
     }
 
     @Override
-    public Class<?> javaType() {
+    public String alias() {
         return null;
     }
 
     @Override
-    public JDBCType jdbcType() {
+    public Expression<?> expression() {
         return null;
     }
 

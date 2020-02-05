@@ -9,9 +9,10 @@ import java.sql.SQLException;
 
 public final class StringType extends AbstractMappingType {
 
-    public static final StringType INSTANCE = new StringType();
+    private static final StringType INSTANCE = new StringType();
 
     public static StringType build(Class<?> typeClass) {
+        Assert.isTrue(String.class ==typeClass,"");
         return INSTANCE;
     }
 

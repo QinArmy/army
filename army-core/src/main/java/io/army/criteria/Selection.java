@@ -10,20 +10,11 @@ import java.sql.JDBCType;
  */
 public interface Selection {
 
-    default MappingType mappingType(){
-        throw new UnsupportedOperationException();
-    }
+    String alias();
 
-   default Class<?> javaType(){
-       throw new UnsupportedOperationException();
-    }
-
-   default JDBCType jdbcType(){
-       throw new UnsupportedOperationException();
-   }
+    Expression<?> expression();
 
     @Override
     String toString();
-
 
 }

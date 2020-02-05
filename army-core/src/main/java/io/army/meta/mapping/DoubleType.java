@@ -9,9 +9,10 @@ import java.sql.SQLException;
 
 public final class DoubleType implements MappingType {
 
-    public static final DoubleType INSTANCE = new DoubleType();
+    private static final DoubleType INSTANCE = new DoubleType();
 
-    public static DoubleType build() {
+    public static DoubleType build(Class<?> typeClass) {
+        Assert.isTrue(Double.class == typeClass,"");
         return INSTANCE;
     }
 

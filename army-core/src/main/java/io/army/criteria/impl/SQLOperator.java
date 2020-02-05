@@ -7,8 +7,6 @@ import io.army.lang.Nullable;
  */
 interface SQLOperator {
 
-    @Nullable
-    SQLOperator negated();
 
     String rendered();
 

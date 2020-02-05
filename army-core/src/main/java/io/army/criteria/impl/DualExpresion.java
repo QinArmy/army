@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.dialect.ParamWrapper;
+import io.army.meta.mapping.MappingType;
 
 import java.util.List;
 
@@ -20,8 +21,12 @@ import java.util.List;
         this.right = right;
     }
 
+     @Override
+     public MappingType mappingType() {
+         return left.mappingType();
+     }
 
-    @Override
+     @Override
     public void appendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
         left.appendSQL(builder,paramWrapperList);
         builder.append(" ");

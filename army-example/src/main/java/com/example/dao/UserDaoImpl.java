@@ -13,7 +13,7 @@ public class UserDaoImpl implements UserDao {
 /*
         DLS.select(User_.authStatus, User_.name)
                 .from(User.class)
-                .join(Person.class).as("p").on(Person_.id.eq(User_.id))
+                .join(Person.class).asType("p").on(Person_.id.eq(User_.id))
                 .where(User_.id.eq(3L))
 
         ;*/

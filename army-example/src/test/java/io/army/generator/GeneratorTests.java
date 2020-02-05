@@ -2,7 +2,6 @@ package io.army.generator;
 
 import io.army.SessionFactory;
 import io.army.boot.BootstrapTests;
-import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import org.slf4j.Logger;

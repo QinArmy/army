@@ -25,14 +25,15 @@ class DefaultMappingFactory implements MappingFactory {
     private static Map<Class<?>, MappingType> createDefaultMapping() {
         Map<Class<?>, MappingType> map = new HashMap<>();
 
-        map.put(Long.class, LongType.INSTANCE);
-        map.put(Integer.class, IntegerType.INSTANCE);
-        map.put(BigDecimal.class, BigDecimalType.INSTANCE);
-        map.put(String.class, StringType.INSTANCE);
+        map.put(Long.class, LongType.build(Long.class));
+        map.put(Integer.class, IntegerType.build(Integer.class));
+        map.put(BigDecimal.class, BigDecimalType.build(BigDecimal.class));
+        map.put(String.class, StringType.build(String.class));
 
-        map.put(Boolean.class, BooleanType.INSTANCE);
-        map.put(LocalDateTime.class, LocalDateTimeType.INSTANCE);
-        map.put(LocalDate.class, LocalDateMapping.INSTANCE);
+        map.put(Boolean.class, BooleanType.build(Boolean.class));
+        map.put(LocalDateTime.class, LocalDateTimeType.build(LocalDateTime.class));
+        map.put(LocalDate.class, LocalDateType.build(LocalDate.class));
+        map.put(Double.class, LocalDateType.build(Double.class));
 
         return Collections.unmodifiableMap(map);
     }
@@ -54,7 +55,7 @@ class DefaultMappingFactory implements MappingFactory {
     static MappingType getDefaultMapping(Class<?> javaType) throws MappingException {
         MappingType mappingType;
         if (javaType.isEnum()) {
-            mappingType = CodeEnumMapping.build(javaType);
+            mappingType = CodeEnumType.build(javaType);
         } else {
             mappingType = DEFAULT_MAPPING.get(javaType);
         }
@@ -72,7 +73,7 @@ class DefaultMappingFactory implements MappingFactory {
     @Override
     public MappingType getMapping(Class<?> javaType) throws MappingException {
         if (javaType.isEnum()) {
-            return CodeEnumMapping.build(javaType);
+            return CodeEnumType.build(javaType);
         }
         MappingType mappingType = CUSTOM_MAPPING.get(javaType);
         if (mappingType == null) {

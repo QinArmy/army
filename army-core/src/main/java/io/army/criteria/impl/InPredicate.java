@@ -31,6 +31,7 @@ final class InPredicate extends AbstractPredicate {
         }
     }
 
+
     @Override
     public void appendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
         left.appendSQL(builder, paramWrapperList);

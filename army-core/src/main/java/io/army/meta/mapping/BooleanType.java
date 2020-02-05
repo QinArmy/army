@@ -3,6 +3,7 @@ package io.army.meta.mapping;
 import io.army.domain.IDomain;
 import io.army.util.Assert;
 
+import java.math.BigDecimal;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,7 +11,12 @@ import java.sql.SQLException;
 
 public final class BooleanType implements MappingType {
 
-    public static final BooleanType INSTANCE = new BooleanType();
+    private static final BooleanType INSTANCE = new BooleanType();
+
+    public static BooleanType build(Class<?> typeClass) {
+        Assert.isTrue(Boolean.class == typeClass,"");
+        return INSTANCE;
+    }
 
     public static final String Y = "Y";
 

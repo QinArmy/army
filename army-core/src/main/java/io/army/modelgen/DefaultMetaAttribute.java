@@ -54,30 +54,12 @@ class DefaultMetaAttribute implements MetaAttribute {
 
         String methodName, fieldMetaTypeName;
         if (indexColumn) {
-            if ("java.lang.Long".equals(qualifiedName)) {
-                methodName = "getLongIndexField";
-                fieldMetaTypeName = "LongIndexFieldMeta";
-                typeParameter = "";
-            } else if (isNumberType(mappingPropElement)) {
-                methodName = "getNumberIndexField";
-                fieldMetaTypeName = "NumberIndexFieldMeta";
-            } else {
-                methodName = "getIndexField";
-                fieldMetaTypeName = "IndexFieldMeta";
-            }
+            methodName = "getIndexField";
+            fieldMetaTypeName = "IndexFieldMeta";
 
         } else {
-            if ("java.lang.Long".equals(qualifiedName)) {
-                methodName = "getLongField";
-                fieldMetaTypeName = "LongFieldMeta";
-                typeParameter = "";
-            } else if (isNumberType(mappingPropElement)) {
-                methodName = "getNumberField";
-                fieldMetaTypeName = "NumberFieldMeta";
-            } else {
-                methodName = "getField";
-                fieldMetaTypeName = "FieldMeta";
-            }
+            methodName = "getField";
+            fieldMetaTypeName = "FieldMeta";
         }
         return String.format(format,
                 commentLine, // comment part

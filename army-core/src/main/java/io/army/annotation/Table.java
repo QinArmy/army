@@ -42,7 +42,7 @@ public @interface Table {
     /**
      * (Optional) Indexes for the table.  These are only used if
      * table generation is in effect.  Note that it is not necessary
-     * to specify an indexMap for a primary key, as the primary key
+     * to specify an indexMap for a primary key, asType the primary key
      * indexMap will be created automatically.
      */
     Index[] indexes() default {};

@@ -10,9 +10,10 @@ import java.sql.SQLException;
 
 public final class BigDecimalType implements MappingType {
 
-    public static final BigDecimalType INSTANCE = new BigDecimalType();
+    private static final BigDecimalType INSTANCE = new BigDecimalType();
 
     public static BigDecimalType build(Class<?> typeClass) {
+        Assert.isTrue(BigDecimal.class == typeClass,"");
         return INSTANCE;
     }
 

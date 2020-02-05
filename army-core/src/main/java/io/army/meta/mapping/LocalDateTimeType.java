@@ -7,9 +7,10 @@ import java.time.LocalDateTime;
 
 public final class LocalDateTimeType implements MappingType {
 
-    public static final LocalDateTimeType INSTANCE = new LocalDateTimeType();
+    private static final LocalDateTimeType INSTANCE = new LocalDateTimeType();
 
     public static LocalDateTimeType build(Class<?> typeClass) {
+        Assert.isTrue(LocalDateTime.class == typeClass,"");
         return INSTANCE;
     }
 

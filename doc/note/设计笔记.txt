@@ -1,0 +1,4 @@
+
+1. 放弃 LongExpression ,IntegerExpresion ,NumberExpresioin 的原因
+(1)Java 没有对整形作抽象(Integer,Long,BigInteger 没有共同的抽象类或接口),这使得Army的接口和实现太复杂.
+(2)数据库本身能够对 非整形的数据进行按位操作,支持对非数据类型进行加减.

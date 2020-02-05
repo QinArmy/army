@@ -4,13 +4,14 @@ import io.army.dialect.ParamWrapper;
 import io.army.meta.mapping.MappingType;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
 
 /**
  * created  on 2018/10/8.
  */
-public interface Expression<E> {
+public interface Expression<E> extends SelectAble {
 
     Predicate eq(Expression<E> expression);
 
@@ -58,35 +59,60 @@ public interface Expression<E> {
 
     Predicate notIn(Expression<Collection<E>> values);
 
-    Expression<E> mod(Expression<E> divisor);
+   <N extends Number> Expression<N> mod(Expression<N> operator);
 
-    Expression<E> mod(E divisor);
+    <N extends Number> Expression<N> mod(N operator);
 
-    Expression<E> multiply(Expression<E> multiplicand);
+    <N extends Number> Expression<N> multiply(Expression<N> multiplicand);
 
-    Expression<E> multiply(E multiplicand);
+    <N extends Number> Expression<N> multiply(N multiplicand);
 
-    Expression<E> add(Expression<E> augend);
+    <N extends Number> Expression<N> add(Expression<N> augend);
 
-    Expression<E> add(E augend);
+    <N extends Number> Expression<N> add(N augend);
 
-    Expression<E> subtract(Expression<E> subtrahend);
+    <N extends Number> Expression<N> subtract(Expression<N> subtrahend);
 
-    Expression<E> subtract(E e);
+    <N extends Number> Expression<N> subtract(N subtrahend);
 
-    Expression<E> divide(Expression<E> divisor);
+    <N extends Number> Expression<N> divide(Expression<N> divisor);
 
-    Expression<E> divide(E divisor);
+    <N extends Number> Expression<N> divide(N divisor);
 
-    Expression<E> negate();
+    <N extends Number> Expression<N> negate();
+
+    <N extends Number> Expression<N> and(Expression<N> operator);
+
+    <N extends Number> Expression<N> and(Long operator);
+
+    <N extends Number> Expression<N> or(Expression<N> operator);
+
+    <N extends Number> Expression<N> or(Long operator);
+
+    <N extends Number> Expression<N> xor(Expression<N> operator);
+
+    <N extends Number> Expression<N> xor(Long operator);
+
+    <N extends Number> Expression<N> inversion(Expression<N> operator);
+
+    <N extends Number> Expression<N> inversion(Long operator);
+
+    <N extends Number> Expression<N> rightShift(Integer  bitNumber);
+
+    <N extends Number> Expression<N> rightShift(Expression<N> bitNumber);
+
+    <N extends Number> Expression<N> leftShift(Integer  bitNumber);
+
+    <N extends Number> Expression<N> leftShift(Expression<N> bitNumber);
 
     <O> Expression<E> plusOther(Expression<O> other);
 
     <O> Expression<E> minusOther(Expression<O> other);
 
-    <O>  Expression<O> as(Class<O> convertType);
+    <O> Expression<O> asType(Class<O> convertType);
 
-    <O>  Expression<O> as(Class<O> convertType,MappingType longMapping);
+    <O> Expression<O> asType(Class<O> convertType, MappingType longMapping);
+
 
     Predicate like(String pattern);
 
@@ -98,17 +124,9 @@ public interface Expression<E> {
 
     Predicate some(SubQuery<E> subQuery);
 
-    default void appendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
-        throw new UnsupportedOperationException();
-    }
+    void appendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList);
 
-    default Class<E> javaType() {
-        throw new UnsupportedOperationException();
-    }
-
-    default MappingType mappingType() {
-        throw new UnsupportedOperationException();
-    }
+    MappingType mappingType();
 
     @Override
     String toString();

@@ -11,16 +11,6 @@ import java.util.List;
  */
 final class NotPredicate extends AbstractPredicate {
 
-    private final Expression<?> expression;
-
-    private final boolean not;
-
-    private NotPredicate(Expression<?> expression, boolean not) {
-        this.expression = expression;
-        this.not = not;
-
-    }
-
     static Predicate build(Expression<?> expression) {
         Predicate predicate;
         if (expression instanceof NotPredicate) {
@@ -34,6 +24,16 @@ final class NotPredicate extends AbstractPredicate {
             predicate = new NotPredicate(expression, true);
         }
         return predicate;
+    }
+
+    private final Expression<?> expression;
+
+    private final boolean not;
+
+    private NotPredicate(Expression<?> expression, boolean not) {
+        this.expression = expression;
+        this.not = not;
+
     }
 
     @Override

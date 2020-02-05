@@ -2,6 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Predicate;
 import io.army.criteria.SubQuery;
+import io.army.meta.mapping.MappingFactory;
+import io.army.meta.mapping.MappingType;
 import io.army.util.ArrayUtils;
 
 import java.util.Collections;
@@ -12,6 +14,10 @@ import java.util.List;
  */
 abstract class AbstractPredicate extends AbstractExpression<Boolean> implements Predicate {
 
+    @Override
+    public final MappingType mappingType() {
+        return MappingFactory.getDefaultMapping(Boolean.class);
+    }
 
     @Override
     public final Predicate or(Predicate... andPredicates) {

@@ -1,14 +1,13 @@
 package io.army.criteria.impl;
 
 
-import io.army.criteria.Expression;
-import io.army.criteria.Predicate;
-import io.army.criteria.SubQuery;
+import io.army.criteria.*;
 import io.army.dialect.ParamWrapper;
+import io.army.dialect.SQL;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingType;
-import org.springframework.expression.spel.ast.Ternary;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -16,7 +15,25 @@ import java.util.List;
 /**
  * created  on 2018/11/24.
  */
-public abstract class AbstractExpression<E> implements Expression<E> {
+public abstract class AbstractExpression<E> implements Expression<E>, Selection {
+
+    protected String alias;
+
+    @Override
+    public Selection as(String alias) {
+        this.alias = alias;
+        return this;
+    }
+
+    @Override
+    public String alias() {
+        return alias;
+    }
+
+    @Override
+    public Expression<?> expression() {
+        return this;
+    }
 
     @Override
     public final Predicate eq(Expression<E> expression) {
@@ -25,7 +42,7 @@ public abstract class AbstractExpression<E> implements Expression<E> {
 
     @Override
     public final Predicate eq(E constant) {
-        return new DualConstantPredicate(this, DualOperator.EQ, constant);
+        return new DualPredicate(this, DualOperator.EQ, SQLS.constant(constant, this.mappingType()));
     }
 
     @Override
@@ -35,7 +52,7 @@ public abstract class AbstractExpression<E> implements Expression<E> {
 
     @Override
     public final Predicate lt(Comparable<E> constant) {
-        return new DualConstantPredicate(this, DualOperator.LT, constant);
+        return new DualPredicate(this, DualOperator.LT, SQLS.constant(constant, this.mappingType()));
     }
 
     @Override
@@ -45,7 +62,7 @@ public abstract class AbstractExpression<E> implements Expression<E> {
 
     @Override
     public final Predicate le(Comparable<E> constant) {
-        return new DualConstantPredicate(this, DualOperator.LE, constant);
+        return new DualPredicate(this, DualOperator.LE, SQLS.constant(constant, this.mappingType()));
     }
 
     @Override
@@ -55,7 +72,7 @@ public abstract class AbstractExpression<E> implements Expression<E> {
 
     @Override
     public final Predicate gt(Comparable<E> constant) {
-        return new DualConstantPredicate(this, DualOperator.GT, constant);
+        return new DualPredicate(this, DualOperator.GT, SQLS.constant(constant, this.mappingType()));
     }
 
     @Override
@@ -65,7 +82,7 @@ public abstract class AbstractExpression<E> implements Expression<E> {
 
     @Override
     public final Predicate ge(Comparable<E> constant) {
-        return new DualConstantPredicate(this, DualOperator.GE, constant);
+        return new DualPredicate(this, DualOperator.GE, SQLS.constant(constant, this.mappingType()));
     }
 
     @Override
@@ -75,7 +92,7 @@ public abstract class AbstractExpression<E> implements Expression<E> {
 
     @Override
     public final Predicate notEq(Comparable<E> constant) {
-        return new DualConstantPredicate(this, DualOperator.NOT_EQ, constant);
+        return new DualPredicate(this, DualOperator.NOT_EQ, SQLS.constant(constant, this.mappingType()));
     }
 
     @Override
@@ -85,22 +102,22 @@ public abstract class AbstractExpression<E> implements Expression<E> {
 
     @Override
     public final Predicate between(Expression<E> first, Expression<E> second) {
-        return new TernaryPredicate(TernaryOperator.BETWEEN, this, first, second);
+        return new BetweenPredicate(this, first, second);
     }
 
     @Override
     public final Predicate between(E first, E second) {
-        return new BetweenConstantPredicate(this, first, second);
+        return new BetweenPredicate(this, SQLS.constant(first, this), SQLS.constant(second, this));
     }
 
     @Override
     public final Predicate between(Expression<E> first, E second) {
-        return new BetweenConstantPredicate(this, first, second);
+        return new BetweenPredicate(this, first, SQLS.constant(second, this));
     }
 
     @Override
     public final Predicate between(E first, Expression<E> second) {
-        return new BetweenConstantPredicate(this, first, second);
+        return new BetweenPredicate(this, SQLS.constant(first, this), second);
     }
 
     @Override
@@ -135,67 +152,127 @@ public abstract class AbstractExpression<E> implements Expression<E> {
 
     @Override
     public final Predicate like(String pattern) {
-        return new DualConstantPredicate(this, DualOperator.LIKE, pattern);
+        return new DualPredicate(this, DualOperator.LIKE, SQLS.constant(pattern, this.mappingType()));
     }
 
     @Override
     public final Predicate notLike(String pattern) {
-        return new DualConstantPredicate(this, DualOperator.NOT_LIKE, pattern);
+        return new DualPredicate(this, DualOperator.NOT_LIKE, SQLS.constant(pattern));
     }
 
     @Override
-    public final Expression<E> mod(Expression<E> divisor) {
-        return new DualExpresion<>(this, DualOperator.MOD, divisor);
+    public final  <N extends Number> Expression<N> mod(Expression<N> operator) {
+        return new DualExpresion<>(this, DualOperator.MOD, operator);
     }
 
     @Override
-    public final Expression<E> mod(E divisor) {
-        return new DualExpresion<>(this, DualOperator.MOD, SQLS.constant(divisor, this.mappingType()));
+    public final  <N extends Number> Expression<N> mod(N operator) {
+        return new DualExpresion<>(this, DualOperator.MOD, SQLS.constant(operator));
     }
 
     @Override
-    public final Expression<E> multiply(Expression<E> multiplicand) {
+    public final  <N extends Number> Expression<N> multiply(Expression<N> multiplicand) {
         return new DualExpresion<>(this, DualOperator.MULTIPLY, multiplicand);
     }
 
     @Override
-    public final Expression<E> multiply(E multiplicand) {
-        return new DualExpresion<>(this, DualOperator.MULTIPLY, SQLS.constant(multiplicand, this.mappingType()));
+    public final  <N extends Number> Expression<N> multiply(N multiplicand) {
+        return new DualExpresion<>(this, DualOperator.MULTIPLY, SQLS.constant(multiplicand));
     }
 
     @Override
-    public final Expression<E> add(Expression<E> augend) {
+    public final  <N extends Number> Expression<N> add(Expression<N> augend) {
         return new DualExpresion<>(this, DualOperator.ADD, augend);
     }
 
     @Override
-    public final Expression<E> add(E augend) {
-        return new DualExpresion<>(this, DualOperator.ADD, SQLS.constant(augend, this.mappingType()));
+    public final  <N extends Number> Expression<N> add(N augend) {
+        return new DualExpresion<>(this, DualOperator.ADD, SQLS.constant(augend));
     }
 
     @Override
-    public final Expression<E> subtract(Expression<E> subtrahend) {
+    public final  <N extends Number> Expression<N> subtract(Expression<N> subtrahend) {
         return new DualExpresion<>(this, DualOperator.SUBTRACT, subtrahend);
     }
 
     @Override
-    public final Expression<E> subtract(E subtrahend) {
-        return new DualExpresion<>(this, DualOperator.SUBTRACT, SQLS.constant(subtrahend, this.mappingType()));
+    public final  <N extends Number> Expression<N> subtract(N subtrahend) {
+        return new DualExpresion<>(this, DualOperator.SUBTRACT, SQLS.constant(subtrahend));
     }
 
     @Override
-    public final Expression<E> divide(Expression<E> divisor) {
+    public final  <N extends Number> Expression<N> divide(Expression<N> divisor) {
         return new DualExpresion<>(this, DualOperator.DIVIDE, divisor);
     }
 
     @Override
-    public final Expression<E> divide(E divisor) {
-        return new DualExpresion<>(this, DualOperator.DIVIDE, SQLS.constant(divisor, this.mappingType()));
+    public final  <N extends Number> Expression<N> divide(N divisor) {
+        return new DualExpresion<>(this, DualOperator.DIVIDE, SQLS.constant(divisor));
     }
 
     @Override
-    public final Expression<E> negate() {
-        return new UnaryExpression<>(this, UnaryOperator.NEGATED);
+    public final  <N extends Number> Expression<N> negate() {
+        return new UnaryExpression<>(this,UnaryOperator.NEGATED);
+    }
+
+    @Override
+    public final  <N extends Number> Expression<N> and(Expression<N> operator) {
+        return new DualExpresion<>(this, DualOperator.AND, operator);
+    }
+
+    @Override
+    public final  <N extends Number> Expression<N> and(Long operator) {
+        return new DualExpresion<>(this, DualOperator.AND, SQLS.constant(operator));
+    }
+
+    @Override
+    public final  <N extends Number> Expression<N> or(Expression<N> operator) {
+        return new DualExpresion<>(this, DualOperator.OR, operator);
+    }
+
+    @Override
+    public final  <N extends Number> Expression<N> or(Long operator) {
+        return new DualExpresion<>(this, DualOperator.OR, SQLS.constant(operator));
+    }
+
+    @Override
+    public final  <N extends Number> Expression<N> xor(Expression<N> operator) {
+        return new DualExpresion<>(this, DualOperator.XOR, operator);
+    }
+
+    @Override
+    public final  <N extends Number> Expression<N> xor(Long operator) {
+        return new DualExpresion<>(this, DualOperator.XOR, SQLS.constant(operator));
+    }
+
+    @Override
+    public final  <N extends Number> Expression<N> inversion(Expression<N> operator) {
+        return new DualExpresion<>(this, DualOperator.INVERT, operator);
+    }
+
+    @Override
+    public final  <N extends Number> Expression<N> inversion(Long operator) {
+        return new DualExpresion<>(this, DualOperator.INVERT, SQLS.constant(operator));
+    }
+
+    @Override
+    public final  <N extends Number> Expression<N> rightShift(Integer bitNumber) {
+        return new DualExpresion<>(this, DualOperator.RIGHT_SHIFT, SQLS.constant(bitNumber));
+    }
+
+    @Override
+    public final  <N extends Number> Expression<N> rightShift(Expression<N> bitNumber) {
+        return new DualExpresion<>(this, DualOperator.RIGHT_SHIFT, bitNumber);
+    }
+
+    @Override
+    public final   <N extends Number> Expression<N> leftShift(Integer bitNumber) {
+        return new DualExpresion<>(this, DualOperator.LEFT_SHIFT, SQLS.constant(bitNumber));
+    }
+
+    @Override
+    public final  <N extends Number> Expression<N> leftShift(Expression<N> bitNumber) {
+        return new DualExpresion<>(this, DualOperator.LEFT_SHIFT, bitNumber);
     }
 
     @Override
@@ -209,14 +286,14 @@ public abstract class AbstractExpression<E> implements Expression<E> {
     }
 
     @Override
-    public final <O> Expression<O> as(Class<O> convertType) {
+    public final <O> Expression<O> asType(Class<O> convertType) {
         MappingType targetType = MappingFactory.getDefaultMapping(convertType);
-        return new ConvertExpression<>(this, targetType);
+        return new ConvertExpressionImpl<>(this, targetType);
     }
 
     @Override
-    public final <O> Expression<O> as(Class<O> convertType, MappingType longMapping) {
-        return new ConvertExpression<>(this, longMapping);
+    public final <O> Expression<O> asType(Class<O> convertType, MappingType longMapping) {
+        return new ConvertExpressionImpl<>(this, longMapping);
     }
 
     @Override
@@ -235,7 +312,7 @@ public abstract class AbstractExpression<E> implements Expression<E> {
     }
 
     @Override
-    public final String toString() {
+    public String toString() {
         StringBuilder builder = new StringBuilder();
         List<ParamWrapper> paramWrapperList = new ArrayList<>();
         appendSQL(builder, paramWrapperList);

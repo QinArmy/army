@@ -440,23 +440,7 @@ abstract class SourceCreateUtils {
                 .append(";\n")
 
                 .append("import ")
-                .append(LongFieldMeta.class.getName())
-                .append(";\n")
-
-                .append("import ")
-                .append(NumberFieldMeta.class.getName())
-                .append(";\n")
-
-                .append("import ")
                 .append(IndexFieldMeta.class.getName())
-                .append(";\n")
-
-                .append("import ")
-                .append(LongIndexFieldMeta.class.getName())
-                .append(";\n")
-
-                .append("import ")
-                .append(NumberIndexFieldMeta.class.getName())
                 .append(";\n")
 
                 .append("import javax.annotation.Generated")

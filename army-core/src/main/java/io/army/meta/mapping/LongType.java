@@ -9,10 +9,11 @@ import java.sql.SQLException;
 
 public final class LongType implements MappingType {
 
-    public static final LongType INSTANCE = new LongType();
+    private static final LongType INSTANCE = new LongType();
 
 
     public static LongType build(Class<?> typeClass){
+        Assert.isTrue(Long.class ==typeClass,"");
         return INSTANCE;
     }
 

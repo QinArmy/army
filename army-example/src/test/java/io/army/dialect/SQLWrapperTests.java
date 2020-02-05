@@ -2,8 +2,9 @@ package io.army.dialect;
 
 import io.army.boot.SessionTests;
 import io.army.meta.mapping.BooleanType;
-import io.army.meta.mapping.LocalDateMapping;
+import io.army.meta.mapping.LocalDateType;
 import io.army.meta.mapping.LongType;
+import io.army.meta.mapping.MappingFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -21,9 +22,9 @@ public class SQLWrapperTests {
     public void printInsertWrapper() {
         List<ParamWrapper> list = new ArrayList<>(3);
 
-        list.add(ParamWrapper.build(LongType.INSTANCE, 1L));
-        list.add(ParamWrapper.build(LocalDateMapping.INSTANCE, LocalDateTime.now()));
-        list.add(ParamWrapper.build(BooleanType.INSTANCE, Boolean.TRUE));
+        list.add(ParamWrapper.build(MappingFactory.getDefaultMapping(Long.class), 1L));
+        list.add(ParamWrapper.build(MappingFactory.getDefaultMapping(LocalDateTime.class), LocalDateTime.now()));
+        list.add(ParamWrapper.build(MappingFactory.getDefaultMapping(Boolean.class), Boolean.TRUE));
 
         SQLWrapper wrapper = SQLWrapper.build(
                 "INSERT INTO a_account(id,create_time,visible) value(?,?,?)"

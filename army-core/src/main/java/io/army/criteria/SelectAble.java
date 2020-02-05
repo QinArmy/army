@@ -2,10 +2,8 @@ package io.army.criteria;
 
 import io.army.meta.mapping.MappingType;
 
-public interface SelectAble extends FieldSelectAble {
+public interface SelectAble  {
 
-    Selection as(String alias, MappingType mappingType);
-
-
+    Selection as(String alias);
 
 }

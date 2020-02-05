@@ -3,28 +3,27 @@ package io.army.criteria.impl;
 import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
 import io.army.annotation.Column;
-import io.army.criteria.LongExpression;
 import io.army.criteria.MetaException;
-import io.army.criteria.NumberExpression;
 import io.army.criteria.Selection;
+import io.army.dialect.ParamWrapper;
 import io.army.domain.IDomain;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
-import io.army.util.ClassUtils;
 import io.army.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.sql.JDBCType;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
  * created  on 2018/11/18.
  */
-class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> implements FieldMeta<T, F> {
+class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> implements FieldMeta<T, F>, Selection {
 
     private static final String ID = TableMeta.ID;
 
@@ -41,13 +40,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
             return fieldMeta;
         }
 
-        if (field.getType() == Long.class) {
-            fieldMeta = new DefaultLongFieldMeta<>(table, field, false, false);
-        } else if (ClassUtils.isAssignable(Number.class, field.getType())) {
-            fieldMeta = new DefaultNumberFieldMeta<>(table, field, false, false);
-        } else {
-            fieldMeta = new DefaultFieldMeta<>(table, field, false, false);
-        }
+        fieldMeta = new DefaultFieldMeta<>(table, field, false, false);
         FieldMeta<?, ?> actualFieldMeta = INSTANCE_MAP.putIfAbsent(field, fieldMeta);
 
         if (actualFieldMeta != null && actualFieldMeta != fieldMeta) {
@@ -77,16 +70,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
             }
         }
         // create new IndexFieldMeta
-        if (field.getType() == Long.class) {
-            fieldMeta = (IndexFieldMeta<T, F>) new DefaultLongIndexFieldMeta<>(table, field, indexMeta
-                    , fieldUnique, fieldAsc);
-        } else if (ClassUtils.isAssignable(Number.class, field.getType())) {
-            NumberIndexFieldMeta<T, ?> numberIndexFieldMeta = new DefaultNumberIndexFieldMeta<>(table, field, indexMeta
-                    , fieldUnique, fieldAsc);
-            fieldMeta = (IndexFieldMeta<T, F>) numberIndexFieldMeta;
-        } else {
-            fieldMeta = new DefaultIndexFieldMeta<>(table, field, indexMeta, fieldUnique, fieldAsc);
-        }
+        fieldMeta = new DefaultIndexFieldMeta<>(table, field, indexMeta, fieldUnique, fieldAsc);
 
         FieldMeta<?, ?> actualFieldMeta;
         if (isId) {
@@ -95,9 +79,18 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
             actualFieldMeta = INSTANCE_MAP.putIfAbsent(field, fieldMeta);
         }
         if (actualFieldMeta != null && actualFieldMeta != fieldMeta) {
-            fieldMeta = (IndexFieldMeta<T, F>)actualFieldMeta;
+            fieldMeta = (IndexFieldMeta<T, F>) actualFieldMeta;
         }
         return fieldMeta;
+    }
+
+    private static void assertNotDuplication(Field field, Class<?> entityClass) {
+        if (field.getName().equals(TableMeta.ID)) {
+            Assert.state(!ID_INSTANCE_MAP.containsKey(entityClass)
+                    , () -> String.format("field[%s] entity[%s] duplication", field.getName(), entityClass.getName()));
+        } else {
+            Assert.state(!INSTANCE_MAP.containsKey(field), () -> String.format("field[%s] duplication", field));
+        }
     }
 
 
@@ -139,6 +132,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
         Assert.notNull(table, "table required");
         Assert.notNull(field, "field required");
         Assert.isAssignable(field.getDeclaringClass(), table.javaType());
+        assertNotDuplication(field, table.javaType());
 
         this.table = table;
         this.propertyName = field.getName();
@@ -172,44 +166,47 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
         }
     }
 
+
     @Override
-    public Selection as(String alias) {
-        return new FieldSelection<>(this, "", alias);
+    public final String alias() {
+        return StringUtils.hasText(alias)
+                ? super.alias()
+                : propertyName;
     }
 
     @Override
-    public Selection as(@NonNull String tableAlias, @NonNull String alias) {
-        return new FieldSelection<>(this, tableAlias, alias);
+    public final Selection as(String alias) {
+        return super.as(alias);
     }
 
     @Override
-    public boolean primary() {
+    public final Selection as() {
+        return this;
+    }
+
+    @Override
+    public final boolean primary() {
         return ID.equals(propertyName);
     }
 
     @Override
-    public boolean unique() {
+    public final boolean unique() {
         return unique;
     }
 
     @Override
-    public boolean index() {
+    public final boolean index() {
         return index;
     }
 
     @Override
-    public boolean nullable() {
+    public final boolean nullable() {
         return nullable;
     }
 
     @Override
-    public TableMeta<T> table() {
+    public final TableMeta<T> table() {
         return table;
-    }
-
-    @Override
-    public Class<F> javaType() {
-        return propertyClass;
     }
 
     @Override
@@ -218,54 +215,59 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     }
 
     @Override
-    public MappingType mappingType() {
+    public final Class<F> javaType() {
+        return propertyClass;
+    }
+
+    @Override
+    public final MappingType mappingType() {
         return mappingType;
     }
 
     @Override
-    public boolean insertalbe() {
+    public final boolean insertalbe() {
         return insertable;
     }
 
     @Override
-    public boolean updatable() {
+    public final boolean updatable() {
         return updatable;
     }
 
     @Override
-    public String comment() {
+    public final String comment() {
         return comment;
     }
 
     @Override
-    public String defaultValue() {
+    public final String defaultValue() {
         return defaultValue;
     }
 
     @Override
-    public int precision() {
+    public final int precision() {
         return precision;
     }
 
     @Override
-    public int scale() {
+    public final int scale() {
         return scale;
     }
 
     @Override
-    public String fieldName() {
+    public final String fieldName() {
         return fieldName;
     }
 
 
     @Override
-    public String propertyName() {
+    public final String propertyName() {
         return propertyName;
     }
 
     @Nullable
     @Override
-    public GeneratorMeta generator() {
+    public final GeneratorMeta generator() {
         return generatorMeta;
     }
 
@@ -300,6 +302,10 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
                 .toString();
     }
 
+    @Override
+    public final void appendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+
+    }
 
     /*################################## blow private method ##################################*/
 
@@ -328,237 +334,6 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
         @Override
         public Boolean fieldAsc() {
             return this.fieldAsc;
-        }
-    }
-
-
-    private static class DefaultNumberFieldMeta<T extends IDomain, F extends Number> extends DefaultFieldMeta<T, F>
-            implements NumberFieldMeta<T, F> {
-
-        private DefaultNumberFieldMeta(TableMeta<T> table, Field field, boolean unique, boolean index)
-                throws MetaException {
-            super(table, field, unique, index);
-        }
-
-        @Override
-        public final NumberExpression<F> mod(NumberExpression<F> operator) {
-            return null;
-        }
-
-        @Override
-        public final NumberExpression<F> mod(F f) {
-            return null;
-        }
-
-        @Override
-        public final NumberExpression<F> multiply(NumberExpression<F> multiplicand) {
-            return null;
-        }
-
-        @Override
-        public final NumberExpression<F> multiply(F f) {
-            return null;
-        }
-
-        @Override
-        public final NumberExpression<F> add(NumberExpression<F> augend) {
-            return null;
-        }
-
-        @Override
-        public final NumberExpression<F> add(F f) {
-            return null;
-        }
-
-        @Override
-        public final NumberExpression<F> subtract(NumberExpression<F> subtrahend) {
-            return null;
-        }
-
-        @Override
-        public final NumberExpression<F> subtract(F f) {
-            return null;
-        }
-
-        @Override
-        public final NumberExpression<F> divide(NumberExpression<F> divisor) {
-            return null;
-        }
-
-        @Override
-        public final NumberExpression<F> divide(F f) {
-            return null;
-        }
-
-        @Override
-        public final NumberExpression<F> negate() {
-            return null;
-        }
-    }
-
-    private static class DefaultLongFieldMeta<T extends IDomain> extends DefaultNumberFieldMeta<T, Long>
-            implements LongFieldMeta<T> {
-
-        private DefaultLongFieldMeta(TableMeta<T> table, Field field, boolean unique, boolean index)
-                throws MetaException {
-            super(table, field, unique, index);
-        }
-
-        @Override
-        public final LongExpression and(LongExpression operator) {
-            return null;
-        }
-
-        @Override
-        public final LongExpression and(long operator) {
-            return null;
-        }
-
-        @Override
-        public final LongExpression or(LongExpression operator) {
-            return null;
-        }
-
-        @Override
-        public final LongExpression or(long operator) {
-            return null;
-        }
-
-        @Override
-        public final LongExpression xor(LongExpression operator) {
-            return null;
-        }
-
-        @Override
-        public final LongExpression xor(long operator) {
-            return null;
-        }
-
-        @Override
-        public final LongExpression inversion(LongExpression operator) {
-            return null;
-        }
-
-        @Override
-        public final LongExpression inversion(long operator) {
-            return null;
-        }
-
-        @Override
-        public final LongExpression rightShift(long operator) {
-            return null;
-        }
-
-        @Override
-        public final LongExpression rightShift(LongExpression operator) {
-            return null;
-        }
-
-        @Override
-        public final LongExpression leftShift(long operator) {
-            return null;
-        }
-
-        @Override
-        public final LongExpression leftShift(LongExpression operator) {
-            return null;
-        }
-    }
-
-    private static class DefaultNumberIndexFieldMeta<T extends IDomain, F extends Number>
-            extends DefaultNumberFieldMeta<T, F> implements NumberIndexFieldMeta<T, F> {
-
-        private final IndexMeta<T> indexMeta;
-
-        private final Boolean fieldAsc;
-
-        private DefaultNumberIndexFieldMeta(TableMeta<T> table, Field field, IndexMeta<T> indexMeta, boolean fieldUnique,
-                                            @Nullable Boolean fieldAsc) throws MetaException {
-            super(table, field, fieldUnique, true);
-            Assert.notNull(indexMeta, "");
-
-            this.indexMeta = indexMeta;
-            this.fieldAsc = fieldAsc;
-        }
-
-        @Override
-        public IndexMeta<T> indexMeta() {
-            return this.indexMeta;
-        }
-
-        @Nullable
-        @Override
-        public Boolean fieldAsc() {
-            return this.fieldAsc;
-        }
-    }
-
-    private static final class DefaultLongIndexFieldMeta<T extends IDomain> extends DefaultNumberIndexFieldMeta<T, Long>
-            implements LongIndexFieldMeta<T> {
-
-        public DefaultLongIndexFieldMeta(TableMeta<T> table, Field field, IndexMeta<T> indexMeta
-                , boolean fieldUnique, @Nullable Boolean fieldAsc) throws MetaException {
-            super(table, field, indexMeta, fieldUnique, fieldAsc);
-        }
-
-        @Override
-        public LongExpression and(LongExpression operator) {
-            return null;
-        }
-
-        @Override
-        public LongExpression and(long operator) {
-            return null;
-        }
-
-        @Override
-        public LongExpression or(LongExpression operator) {
-            return null;
-        }
-
-        @Override
-        public LongExpression or(long operator) {
-            return null;
-        }
-
-        @Override
-        public LongExpression xor(LongExpression operator) {
-            return null;
-        }
-
-        @Override
-        public LongExpression xor(long operator) {
-            return null;
-        }
-
-        @Override
-        public LongExpression inversion(LongExpression operator) {
-            return null;
-        }
-
-        @Override
-        public LongExpression inversion(long operator) {
-            return null;
-        }
-
-        @Override
-        public LongExpression rightShift(long operator) {
-            return null;
-        }
-
-        @Override
-        public LongExpression rightShift(LongExpression operator) {
-            return null;
-        }
-
-        @Override
-        public LongExpression leftShift(long operator) {
-            return null;
-        }
-
-        @Override
-        public LongExpression leftShift(LongExpression operator) {
-            return null;
         }
     }
 

@@ -9,10 +9,11 @@ import java.sql.SQLException;
 
 public final class IntegerType implements MappingType {
 
-    public static final IntegerType INSTANCE = new IntegerType();
+    private static final IntegerType INSTANCE = new IntegerType();
 
 
     public static IntegerType build(Class<?> typeClass) {
+        Assert.isTrue(Integer.class == typeClass,"");
         return INSTANCE;
     }
 

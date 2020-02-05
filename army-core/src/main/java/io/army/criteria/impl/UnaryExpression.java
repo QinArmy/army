@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.dialect.ParamWrapper;
+import io.army.meta.mapping.MappingType;
 
 import java.util.List;
 
@@ -14,6 +15,12 @@ final class UnaryExpression<E> extends AbstractExpression<E> {
     UnaryExpression(Expression<?> one, UnaryOperator unaryOperator) {
         this.one = one;
         this.unaryOperator = unaryOperator;
+    }
+
+
+    @Override
+    public MappingType mappingType() {
+        return one.mappingType();
     }
 
     @Override

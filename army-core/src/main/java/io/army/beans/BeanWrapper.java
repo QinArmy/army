@@ -31,7 +31,7 @@ public interface BeanWrapper  extends ReadonlyWrapper {
 
 
     /**
-     * Set the specified value as current property value.
+     * Set the specified value asType current property value.
      * @param propertyName the name of the property to set the value of
      * (may be a nested path and/or an indexed/mapped property)
      * @param value the new value

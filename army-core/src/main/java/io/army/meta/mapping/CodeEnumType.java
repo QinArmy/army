@@ -3,9 +3,7 @@ package io.army.meta.mapping;
 import io.army.struct.CodeEnum;
 import io.army.struct.CodeEnumException;
 import io.army.util.Assert;
-import io.army.util.ReflectionUtils;
 
-import java.lang.reflect.Method;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,20 +16,20 @@ import java.util.concurrent.ConcurrentMap;
  * @see Enum
  * @see io.army.struct.CodeEnum
  */
-public final class CodeEnumMapping implements MappingType {
+public final class CodeEnumType implements MappingType {
 
-    private static final ConcurrentMap<Class<?>, CodeEnumMapping> INSTANCE_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<?>, CodeEnumType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
 
-    public static CodeEnumMapping build(Class<?> javaType) {
+    public static CodeEnumType build(Class<?> javaType) {
         Assert.isTrue(javaType.isEnum(), () -> String.format("javaType[%s] isn't Enum", javaType));
         Assert.isAssignable(CodeEnum.class, javaType);
-        return INSTANCE_MAP.computeIfAbsent(javaType, CodeEnumMapping::new);
+        return INSTANCE_MAP.computeIfAbsent(javaType, CodeEnumType::new);
     }
 
     private final Class<?> enumClass;
 
-    private CodeEnumMapping(Class<?> enumClass) {
+    private CodeEnumType(Class<?> enumClass) {
         this.enumClass = enumClass;
         checkCodeEnum(enumClass);
 

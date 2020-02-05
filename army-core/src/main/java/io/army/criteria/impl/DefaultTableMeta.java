@@ -78,6 +78,8 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     private DefaultTableMeta(@Nullable TableMeta<? super T> parentTableMeta, Class<T> entityClass) {
         Assert.notNull(entityClass, "entityClass required");
         MetaUtils.assertParentTableMeta(parentTableMeta, entityClass);
+        Assert.state(!INSTANCE_MAP.containsKey(entityClass),
+                () -> String.format("entityClass[%s] duplication", entityClass.getName()));
 
         this.entityClass = entityClass;
         this.parentTableMeta = parentTableMeta;
@@ -199,29 +201,6 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public NumberFieldMeta<T, ?> getNumberField(String propName) throws MetaException {
-        FieldMeta<?, ?> fieldMeta = propNameToFieldMeta.get(propName);
-        if (!(fieldMeta instanceof NumberFieldMeta)
-                || !ClassUtils.isAssignable(Number.class, fieldMeta.javaType())) {
-            throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
-        }
-        return (NumberFieldMeta<T, ?>) fieldMeta;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public LongFieldMeta<T> getLongField(String propName) throws MetaException {
-        FieldMeta<?, ?> fieldMeta = propNameToFieldMeta.get(propName);
-        if (!(fieldMeta instanceof LongFieldMeta)
-                || fieldMeta.javaType() != Long.class) {
-            throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
-        }
-        return (LongFieldMeta<T>) fieldMeta;
-    }
-
-
-    @SuppressWarnings("unchecked")
-    @Override
     public <F> FieldMeta<T, F> getField(String propName, Class<F> propClass) {
         Assert.notNull(propName, "propName required");
         Assert.notNull(propName, "propClass required");
@@ -231,37 +210,6 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
         }
         return (FieldMeta<T, F>) fieldMeta;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public <F extends Number> NumberFieldMeta<T, F> getNumberField(String propName, Class<F> propClass)
-            throws MetaException {
-        Assert.notNull(propName, "propName required");
-        Assert.notNull(propName, "propClass required");
-
-        FieldMeta<T, ?> fieldMeta = propNameToFieldMeta.get(propName);
-        if (!(fieldMeta instanceof NumberFieldMeta)
-                || !ClassUtils.isAssignable(Number.class, fieldMeta.javaType())
-                || propClass != fieldMeta.javaType()) {
-            throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
-        }
-        return (NumberFieldMeta<T, F>) fieldMeta;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public <F extends Number> LongFieldMeta<T> getLongField(String propName, Class<F> propClass) throws MetaException {
-        Assert.notNull(propName, "propName required");
-        Assert.notNull(propName, "propClass required");
-
-        FieldMeta<T, ?> fieldMeta = propNameToFieldMeta.get(propName);
-        if (!(fieldMeta instanceof LongFieldMeta)
-                || fieldMeta.javaType() != Long.class
-                || propClass != fieldMeta.javaType()) {
-            throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
-        }
-        return (LongFieldMeta<T>) fieldMeta;
     }
 
     @Override
@@ -274,36 +222,6 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
         }
         return (IndexFieldMeta<T, F>) fieldMeta;
-    }
-
-    @Override
-    public <F extends Number> NumberIndexFieldMeta<T, F> getNumberIndexField(String propName, Class<F> propClass)
-            throws MetaException {
-        Assert.notNull(propName, "propName required");
-        Assert.notNull(propName, "propClass required");
-
-        FieldMeta<T, F> fieldMeta = getField(propName, propClass);
-        if (!(fieldMeta instanceof NumberIndexFieldMeta)
-                || !ClassUtils.isAssignable(Number.class, fieldMeta.javaType())
-                || propClass != fieldMeta.javaType()) {
-            throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
-        }
-        return (NumberIndexFieldMeta<T, F>) fieldMeta;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public LongIndexFieldMeta<T> getLongIndexField(String propName, Class<Long> propClass) throws MetaException {
-        Assert.notNull(propName, "propName required");
-        Assert.notNull(propName, "propClass required");
-
-        FieldMeta<T, ?> fieldMeta = getField(propName, propClass);
-        if (!(fieldMeta instanceof LongIndexFieldMeta)
-                || fieldMeta.javaType() != Long.class
-                || propClass != fieldMeta.javaType()) {
-            throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
-        }
-        return (LongIndexFieldMeta<T>) fieldMeta;
     }
 
     @Override

@@ -60,7 +60,7 @@ public abstract class JsonUtils {
 
         @Override
         public void serialize(Number value, JsonGenerator g, SerializerProvider provider) throws IOException {
-            // should mostly come in as one of these two:
+            // should mostly come in asType one of these two:
             if (value instanceof BigDecimal) {
                 BigDecimal amount = (BigDecimal) value;
                 if (amount.scale() == 0) {

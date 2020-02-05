@@ -6,10 +6,6 @@ package io.army.criteria.impl;
 enum UnaryOperator implements SQLOperator {
 
     NOT {
-        @Override
-        public SQLOperator negated() {
-            return this;
-        }
 
         @Override
         public String rendered() {
@@ -22,10 +18,6 @@ enum UnaryOperator implements SQLOperator {
         }
     },
     EXISTS {
-        @Override
-        public UnaryOperator negated() {
-            return NOT_EXISTS;
-        }
 
         @Override
         public String rendered() {
@@ -38,10 +30,6 @@ enum UnaryOperator implements SQLOperator {
         }
     },
     NOT_EXISTS {
-        @Override
-        public UnaryOperator negated() {
-            return EXISTS;
-        }
 
         @Override
         public String rendered() {
@@ -54,10 +42,6 @@ enum UnaryOperator implements SQLOperator {
         }
     },
     NEGATED {
-        @Override
-        public UnaryOperator negated() {
-            return this;
-        }
 
         @Override
         public String rendered() {
@@ -70,10 +54,6 @@ enum UnaryOperator implements SQLOperator {
         }
     },
     POSITIVE {
-        @Override
-        public UnaryOperator negated() {
-            return NEGATED;
-        }
 
         @Override
         public String rendered() {
@@ -87,11 +67,6 @@ enum UnaryOperator implements SQLOperator {
     },
     IS_NULL {
         @Override
-        public UnaryOperator negated() {
-            return IS_NOT_NULL;
-        }
-
-        @Override
         public String rendered() {
             return "IS NULL";
         }
@@ -102,10 +77,6 @@ enum UnaryOperator implements SQLOperator {
         }
     },
     IS_NOT_NULL {
-        @Override
-        public UnaryOperator negated() {
-            return IS_NULL;
-        }
 
         @Override
         public String rendered() {

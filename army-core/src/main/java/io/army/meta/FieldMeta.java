@@ -6,16 +6,17 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingType;
 
+import java.sql.JDBCType;
+
 /**
  * <p> this interface representing a Java class and table column mapping.</p>
  *
  * @param <T> representing Entity Java class
  * @param <F> representing Entity property Java class
  */
-public interface FieldMeta<T extends IDomain, F> extends Expression<F>, Selection {
+public interface FieldMeta<T extends IDomain, F> extends Expression<F> ,Selection{
 
-    Selection as(String tableAlias, String alias);
-
+    Selection as();
 
     boolean primary();
 
@@ -37,11 +38,12 @@ public interface FieldMeta<T extends IDomain, F> extends Expression<F>, Selectio
     @Nullable
     GeneratorMeta generator();
 
-
+    JDBCType jdbcType();
     /**
      * @return 字段对应的 java 类型
      */
     Class<F> javaType();
+
 
     MappingType mappingType();
 

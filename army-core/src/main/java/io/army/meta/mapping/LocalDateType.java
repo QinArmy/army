@@ -5,13 +5,18 @@ import io.army.util.TimeUtils;
 
 import java.sql.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-public final class LocalDateMapping implements MappingType {
+public final class LocalDateType implements MappingType {
 
-    public static final LocalDateMapping INSTANCE = new LocalDateMapping();
+    private static final LocalDateType INSTANCE = new LocalDateType();
 
+    public static LocalDateType build(Class<?> typeClass){
+        Assert.isTrue(LocalDate.class == typeClass,"");
+        return INSTANCE;
+    }
 
-    private LocalDateMapping() {
+    private LocalDateType() {
     }
 
     @Override

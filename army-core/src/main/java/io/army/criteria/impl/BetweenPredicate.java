@@ -5,9 +5,7 @@ import io.army.dialect.ParamWrapper;
 
 import java.util.List;
 
-final class TernaryPredicate extends AbstractPredicate {
-
-    private final TernaryOperator ternaryOperator;
+final class BetweenPredicate extends AbstractPredicate {
 
     private final Expression<?> left;
 
@@ -15,9 +13,7 @@ final class TernaryPredicate extends AbstractPredicate {
 
     private final Expression<?> right;
 
-    TernaryPredicate(TernaryOperator ternaryOperator, Expression<?> left
-            , Expression<?> center, Expression<?> right) {
-        this.ternaryOperator = ternaryOperator;
+    BetweenPredicate(Expression<?> left, Expression<?> center, Expression<?> right) {
         this.left = left;
         this.center = center;
         this.right = right;
@@ -25,6 +21,10 @@ final class TernaryPredicate extends AbstractPredicate {
 
     @Override
     public void appendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
-        ternaryOperator.appendSQL(builder, paramWrapperList, left, center, right);
+        left.appendSQL(builder, paramWrapperList);
+        builder.append(" BETWEEN ");
+        center.appendSQL(builder,paramWrapperList);
+        builder.append(" AND ");
+        right.appendSQL(builder,paramWrapperList);
     }
 }
