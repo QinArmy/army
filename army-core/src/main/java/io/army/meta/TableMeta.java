@@ -43,7 +43,7 @@ public interface TableMeta<T extends IDomain> {
     String comment();
 
     @Nullable
-    TableMeta<? super T> parent();
+    TableMeta<? super T> parentMeta();
 
     IndexFieldMeta<? super T, ?> primaryKey();
 

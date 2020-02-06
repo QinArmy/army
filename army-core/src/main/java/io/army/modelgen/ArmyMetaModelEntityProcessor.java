@@ -147,14 +147,14 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
         } else {
             if (discriminatorValue.value() != 0) {
                 throw new MetaException(ErrorCode.META_ERROR,
-                        "parent entity[%s] DiscriminatorValue.value() must equals 0.",
+                        "parentMeta entity[%s] DiscriminatorValue.value() must equals 0.",
                         entityElement.getQualifiedName()
                 );
             }
         }
 
         if (discriminatorValue.value() % 100 != 0) {
-            LOG.warn("entity[{}] DiscriminatorValue.value() isn't multiple of 100.", entityElement.getQualifiedName());
+            LOG.warn("entity[{}] DiscriminatorValue.value() isn'table multiple of 100.", entityElement.getQualifiedName());
         }
 
     }
@@ -209,7 +209,7 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
         final boolean entityAnnotatedInheritance = entityElement.getAnnotation(Inheritance.class) != null;
         int tableCount = 0;
         for (TypeElement parentMappedElement = entityElement; ; ) {
-            // key is  parent class name
+            // key is  parentMeta class name
             parentClassName = parentMappedElement.getSuperclass().toString();
 
             if (inheritanceMap.containsKey(parentClassName)) {

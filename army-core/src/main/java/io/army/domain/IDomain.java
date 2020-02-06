@@ -58,7 +58,7 @@ public interface IDomain {
             return id == null ? o_id == null : id.equals(o_id);
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(String.format(
-                    "entity[%s] hasn't getId() method", clazz.getName()
+                    "entity[%s] hasn'table getId() method", clazz.getName()
             ));
         } catch (IllegalAccessException | InvocationTargetException e) {
             //get 不会抛异常,故不会到这里

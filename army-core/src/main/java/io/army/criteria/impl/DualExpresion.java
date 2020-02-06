@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.DualOperator;
 import io.army.criteria.Expression;
 import io.army.dialect.ParamWrapper;
 import io.army.dialect.SQL;

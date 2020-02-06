@@ -5,6 +5,7 @@ import io.army.criteria.ParamExpression;
 import io.army.criteria.Predicate;
 import io.army.criteria.SubQuery;
 import io.army.dialect.ParamWrapper;
+import io.army.dialect.SQL;
 import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingType;
@@ -202,17 +203,15 @@ final class ParamExpressionImp<E> implements ParamExpression<E> {
     }
 
     @Override
-    public void appendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
-        builder.append("?");
+    public void appendSQL(SQL sql, StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+        builder.append("? ");
         paramWrapperList.add(ParamWrapper.build(mappingType, value));
     }
 
+
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        List<ParamWrapper> paramWrapperList = new ArrayList<>();
-        appendSQL(builder, paramWrapperList);
-        return builder.toString();
+        return "?";
     }
 
 

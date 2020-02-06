@@ -70,13 +70,13 @@ abstract class MetaUtils {
         switch (mappingMode) {
             case CHILD:
                 value = extractModeChildDiscriminatorValue(tableMeta, discriminatorValue);
-                TableMeta<?> parentMeta = tableMeta.parent();
-                Assert.notNull(parentMeta,()->String.format("entity[%s] no parent.",tableMeta.javaType().getName()));
+                TableMeta<?> parentMeta = tableMeta.parentMeta();
+                Assert.notNull(parentMeta,()->String.format("entity[%s] no parentMeta.",tableMeta.javaType().getName()));
                 assertDiscriminatorValueIsEnumCode(parentMeta,value);
                 break;
             case PARENT:
                 if (discriminatorValue != null && discriminatorValue.value() != 0) {
-                    throw new MetaException(ErrorCode.META_ERROR, "parent entity[%s] DiscriminatorValue must equals 0"
+                    throw new MetaException(ErrorCode.META_ERROR, "parentMeta entity[%s] DiscriminatorValue must equals 0"
                             , tableMeta.javaType().getName());
                 }
                 value = 0;
@@ -329,7 +329,7 @@ abstract class MetaUtils {
 
     static MetaException createNonAnnotationException(Class<? extends IDomain> entityClass
             , Class<?> annotationClass) {
-        return new MetaException(ErrorCode.META_ERROR, "class[%s] isn't annotated by %s "
+        return new MetaException(ErrorCode.META_ERROR, "class[%s] isn'table annotated by %s "
                 , entityClass.getName()
                 , annotationClass.getName());
     }
@@ -368,7 +368,7 @@ abstract class MetaUtils {
                     , tableMeta.javaType().getName());
 
         }
-        TableMeta<?> parentMeta = tableMeta.parent();
+        TableMeta<?> parentMeta = tableMeta.parentMeta();
         Assert.notNull(parentMeta, () -> String.format("Entity[%s] parentMeta error", tableMeta.javaType().getName()));
 
         Map<Integer, Class<?>> codeMap;
@@ -428,7 +428,7 @@ abstract class MetaUtils {
         if (!fieldMeta.javaType().isEnum()
                 || !CodeEnum.class.isAssignableFrom(fieldMeta.javaType())) {
             throw new MetaException(ErrorCode.META_ERROR,
-                    "entity[%s] discriminator property java class[%s] isn't a Enum that implements %s",
+                    "entity[%s] discriminator property java class[%s] isn'table a Enum that implements %s",
                     tableMeta.javaType().getName(),
                     fieldMeta.javaType().getName(),
                     CodeEnum.class.getName()
@@ -600,7 +600,7 @@ abstract class MetaUtils {
         private final boolean primaryKey;
 
         /**
-         * @param index            indexMap or null ( when debugSQL primary key for which user don't definite {@link Index})
+         * @param index            indexMap or null ( when debugSQL primary key for which user don'table definite {@link Index})
          * @param columnToFieldMap a unmodifiable map
          */
         private DefaultIndexMeta(TableMeta<T> table, @Nullable Index index, Map<String, Field> columnToFieldMap,

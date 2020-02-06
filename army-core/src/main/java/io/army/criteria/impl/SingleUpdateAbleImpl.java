@@ -11,19 +11,23 @@ import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
+import io.army.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 final class SingleUpdateAbleImpl<T extends IDomain> implements SetAbleOfSingleUpdate<T>, WhereAbleOfSingleUpdate<T>
-        , OrderAbleOfSingleUpdate<T>, OrderItemAbleOfSingleUpdate<T>, LimitAbleOfSingleUpdate, InnerSingleUpdateAble {
+        , OrderAbleOfSingleUpdate<T>, OrderItemAbleOfSingleUpdate<T>, InnerSingleUpdateAble
+        , AliasAbleOfSingleUpdate<T> {
 
     private final TableMeta<T> tableMeta;
 
     private final List<FieldMeta<?, ?>> targetFieldList = new ArrayList<>();
 
     private final List<Expression<?>> valueExpressionList = new ArrayList<>();
+
+    private String tableAlias;
 
     private List<Predicate> predicateList;
 
@@ -38,14 +42,24 @@ final class SingleUpdateAbleImpl<T extends IDomain> implements SetAbleOfSingleUp
         this.tableMeta = tableMeta;
     }
 
+    /*################################## blow AliasAbleOfSingleUpdate method ##################################*/
+
+    @Override
+    public SetAbleOfSingleUpdate<T> as(String tableAlias) {
+        Assert.state(!StringUtils.hasText(this.tableAlias), " as clause ended.");
+        Assert.hasText(tableAlias, "tableAlias required");
+        this.tableAlias = tableAlias;
+        return this;
+    }
+
     /*################################## blow SingleSetAble method ##################################*/
 
     @Override
     public <F> WhereAbleOfSingleUpdate<T> set(FieldMeta<T, F> targetField, Expression<F> expression) {
-        Assert.state(CollectionUtils.isEmpty(predicateList), "set clause ended.");
+        Assert.state(CollectionUtils.isEmpty(this.predicateList), "set clause ended.");
 
-        targetFieldList.add(targetField);
-        valueExpressionList.add(expression);
+        this.targetFieldList.add(targetField);
+        this.valueExpressionList.add(expression);
         return this;
     }
 
@@ -79,7 +93,7 @@ final class SingleUpdateAbleImpl<T extends IDomain> implements SetAbleOfSingleUp
     /*################################## blow OrderAbleOfSingleUpdate method ##################################*/
 
     @Override
-    public OrderItemAbleOfSingleUpdate<T> orderBy(Expression<?> orderExp,@Nullable Boolean asc) {
+    public OrderItemAbleOfSingleUpdate<T> orderBy(Expression<?> orderExp, @Nullable Boolean asc) {
         Assert.state(CollectionUtils.isEmpty(orderExpList), "order by clause ended.");
         Assert.state(CollectionUtils.isEmpty(ascExpList), "order by clause ended.");
 
@@ -92,11 +106,11 @@ final class SingleUpdateAbleImpl<T extends IDomain> implements SetAbleOfSingleUp
 
     @Override
     public OrderItemAbleOfSingleUpdate<T> then(Expression<?> orderExp) {
-        return then(orderExp,null);
+        return then(orderExp, null);
     }
 
     @Override
-    public OrderItemAbleOfSingleUpdate<T> then(Expression<?> orderExp,@Nullable Boolean asc) {
+    public OrderItemAbleOfSingleUpdate<T> then(Expression<?> orderExp, @Nullable Boolean asc) {
         Assert.state(!CollectionUtils.isEmpty(orderExpList), "no order by clause.");
         Assert.state(!CollectionUtils.isEmpty(ascExpList), "order by clause ended.");
 
@@ -115,6 +129,11 @@ final class SingleUpdateAbleImpl<T extends IDomain> implements SetAbleOfSingleUp
     }
 
     /*################################## blow io.army.criteria.impl.inner.InnerSingleSetAble method ##################################*/
+
+    @Override
+    public String tableAlias() {
+        return this.tableAlias;
+    }
 
     @Override
     public TableMeta<?> tableMeta() {
@@ -172,7 +191,9 @@ final class SingleUpdateAbleImpl<T extends IDomain> implements SetAbleOfSingleUp
 
         StringBuilder builder = new StringBuilder();
         for (SQLWrapper wrapper : sqlWrapperList) {
-            builder.append(wrapper);
+            builder.append(wrapper)
+                    .append("\n")
+            ;
         }
         return builder.toString();
     }
@@ -180,8 +201,8 @@ final class SingleUpdateAbleImpl<T extends IDomain> implements SetAbleOfSingleUp
     /*################################## blow private method ##################################*/
 
     private void assertUpdateStatement() {
-        if (!CollectionUtils.isEmpty(targetFieldList)
-                && !CollectionUtils.isEmpty(predicateList)) {
+        if (CollectionUtils.isEmpty(targetFieldList)
+                || CollectionUtils.isEmpty(predicateList)) {
             throw new IllegalStateException("no targetField or no predicate");
         }
     }

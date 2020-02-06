@@ -1,11 +1,11 @@
-package io.army.criteria.impl;
+package io.army.criteria;
 
 import io.army.lang.Nullable;
 
 /**
  * created  on 2018/11/25.
  */
-interface SQLOperator {
+public interface SQLOperator {
 
 
     String rendered();

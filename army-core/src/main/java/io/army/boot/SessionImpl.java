@@ -4,6 +4,7 @@ import io.army.SessionFactory;
 import io.army.SessionOptions;
 import io.army.beans.BeanWrapper;
 import io.army.criteria.SingleUpdateAble;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.InnerSingleUpdateAble;
 import io.army.dialect.SQLWrapper;
 import io.army.domain.IDomain;
@@ -16,6 +17,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
 import java.util.List;
 
 class SessionImpl implements InnerSession {
@@ -89,9 +91,16 @@ class SessionImpl implements InnerSession {
 
     @Override
     public List<Integer> update(SingleUpdateAble updateAble) {
-        Assert.isInstanceOf(InnerSingleUpdateAble.class,updateAble,"");
+        return update(updateAble, Visible.ONLY_VISIBLE);
+    }
 
-        return null;
+    @Override
+    public List<Integer> update(SingleUpdateAble updateAble, Visible visible) {
+        List<SQLWrapper> sqlWrapperList = sessionFactory.dialect().update(updateAble, visible);
+        for (SQLWrapper wrapper : sqlWrapperList) {
+            LOG.info("wrapper:{}", wrapper);
+        }
+        return Collections.emptyList();
     }
 
     @Override

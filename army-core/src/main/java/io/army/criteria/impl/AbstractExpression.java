@@ -8,7 +8,6 @@ import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingType;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -41,62 +40,62 @@ import java.util.List;
 
     @Override
     public final Predicate eq(Expression<E> expression) {
-        return new DualPredicate(this, DualOperator.EQ, expression);
+        return new DualPredicateImpl(this, DualOperator.EQ, expression);
     }
 
     @Override
     public final Predicate eq(E constant) {
-        return new DualPredicate(this, DualOperator.EQ, SQLS.constant(constant, this.mappingType()));
+        return new DualPredicateImpl(this, DualOperator.EQ, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
     public final Predicate lt(Expression<? extends Comparable<E>> expression) {
-        return new DualPredicate(this, DualOperator.LT, expression);
+        return new DualPredicateImpl(this, DualOperator.LT, expression);
     }
 
     @Override
     public final Predicate lt(Comparable<E> constant) {
-        return new DualPredicate(this, DualOperator.LT, SQLS.constant(constant, this.mappingType()));
+        return new DualPredicateImpl(this, DualOperator.LT, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
     public final Predicate le(Expression<? extends Comparable<E>> expression) {
-        return new DualPredicate(this, DualOperator.LE, expression);
+        return new DualPredicateImpl(this, DualOperator.LE, expression);
     }
 
     @Override
     public final Predicate le(Comparable<E> constant) {
-        return new DualPredicate(this, DualOperator.LE, SQLS.constant(constant, this.mappingType()));
+        return new DualPredicateImpl(this, DualOperator.LE, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
     public final Predicate gt(Expression<? extends Comparable<E>> expression) {
-        return new DualPredicate(this, DualOperator.GT, expression);
+        return new DualPredicateImpl(this, DualOperator.GT, expression);
     }
 
     @Override
     public final Predicate gt(Comparable<E> constant) {
-        return new DualPredicate(this, DualOperator.GT, SQLS.constant(constant, this.mappingType()));
+        return new DualPredicateImpl(this, DualOperator.GT, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
     public final Predicate ge(Expression<? extends Comparable<E>> expression) {
-        return new DualPredicate(this, DualOperator.GE, expression);
+        return new DualPredicateImpl(this, DualOperator.GE, expression);
     }
 
     @Override
     public final Predicate ge(Comparable<E> constant) {
-        return new DualPredicate(this, DualOperator.GE, SQLS.constant(constant, this.mappingType()));
+        return new DualPredicateImpl(this, DualOperator.GE, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
     public final Predicate notEq(Expression<E> expression) {
-        return new DualPredicate(this, DualOperator.NOT_EQ, expression);
+        return new DualPredicateImpl(this, DualOperator.NOT_EQ, expression);
     }
 
     @Override
     public final Predicate notEq(Comparable<E> constant) {
-        return new DualPredicate(this, DualOperator.NOT_EQ, SQLS.constant(constant, this.mappingType()));
+        return new DualPredicateImpl(this, DualOperator.NOT_EQ, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
@@ -111,17 +110,17 @@ import java.util.List;
 
     @Override
     public final Predicate between(E first, E second) {
-        return new BetweenPredicate(this, SQLS.constant(first, this), SQLS.constant(second, this));
+        return new BetweenPredicate(this, SQLS.param(first, this), SQLS.param(second, this));
     }
 
     @Override
     public final Predicate between(Expression<E> first, E second) {
-        return new BetweenPredicate(this, first, SQLS.constant(second, this));
+        return new BetweenPredicate(this, first, SQLS.param(second, this.mappingType()));
     }
 
     @Override
     public final Predicate between(E first, Expression<E> second) {
-        return new BetweenPredicate(this, SQLS.constant(first, this), second);
+        return new BetweenPredicate(this, SQLS.param(first, this), second);
     }
 
     @Override
@@ -156,12 +155,12 @@ import java.util.List;
 
     @Override
     public final Predicate like(String pattern) {
-        return new DualPredicate(this, DualOperator.LIKE, SQLS.constant(pattern, this.mappingType()));
+        return new DualPredicateImpl(this, DualOperator.LIKE, SQLS.constant(pattern, this.mappingType()));
     }
 
     @Override
     public final Predicate notLike(String pattern) {
-        return new DualPredicate(this, DualOperator.NOT_LIKE, SQLS.constant(pattern));
+        return new DualPredicateImpl(this, DualOperator.NOT_LIKE, SQLS.param(pattern,this.mappingType()));
     }
 
     @Override
@@ -171,7 +170,7 @@ import java.util.List;
 
     @Override
     public final <N extends Number> Expression<N> mod(N operator) {
-        return new DualExpresion<>(this, DualOperator.MOD, SQLS.constant(operator));
+        return new DualExpresion<>(this, DualOperator.MOD, SQLS.param(operator));
     }
 
     @Override
@@ -181,7 +180,7 @@ import java.util.List;
 
     @Override
     public final <N extends Number> Expression<N> multiply(N multiplicand) {
-        return new DualExpresion<>(this, DualOperator.MULTIPLY, SQLS.constant(multiplicand));
+        return new DualExpresion<>(this, DualOperator.MULTIPLY, SQLS.param(multiplicand));
     }
 
     @Override
@@ -191,7 +190,7 @@ import java.util.List;
 
     @Override
     public final <N extends Number> Expression<N> add(N augend) {
-        return new DualExpresion<>(this, DualOperator.ADD, SQLS.constant(augend));
+        return new DualExpresion<>(this, DualOperator.ADD, SQLS.param(augend));
     }
 
     @Override
@@ -201,7 +200,7 @@ import java.util.List;
 
     @Override
     public final <N extends Number> Expression<N> subtract(N subtrahend) {
-        return new DualExpresion<>(this, DualOperator.SUBTRACT, SQLS.constant(subtrahend));
+        return new DualExpresion<>(this, DualOperator.SUBTRACT, SQLS.param(subtrahend));
     }
 
     @Override
@@ -211,7 +210,7 @@ import java.util.List;
 
     @Override
     public final <N extends Number> Expression<N> divide(N divisor) {
-        return new DualExpresion<>(this, DualOperator.DIVIDE, SQLS.constant(divisor));
+        return new DualExpresion<>(this, DualOperator.DIVIDE, SQLS.param(divisor));
     }
 
     @Override
@@ -226,7 +225,7 @@ import java.util.List;
 
     @Override
     public final  Expression<BigInteger>  and(Long operator) {
-        return new DualExpresion<>(this, DualOperator.AND, SQLS.constant(operator));
+        return new DualExpresion<>(this, DualOperator.AND, SQLS.param(operator));
     }
 
     @Override
@@ -236,7 +235,7 @@ import java.util.List;
 
     @Override
     public final  Expression<BigInteger>  or(Long operator) {
-        return new DualExpresion<>(this, DualOperator.OR, SQLS.constant(operator));
+        return new DualExpresion<>(this, DualOperator.OR, SQLS.param(operator));
     }
 
     @Override
@@ -246,7 +245,7 @@ import java.util.List;
 
     @Override
     public final  Expression<BigInteger>  xor(Long operator) {
-        return new DualExpresion<>(this, DualOperator.XOR, SQLS.constant(operator));
+        return new DualExpresion<>(this, DualOperator.XOR, SQLS.param(operator));
     }
 
     @Override
@@ -256,12 +255,12 @@ import java.util.List;
 
     @Override
     public final  Expression<BigInteger>  inversion(Long operator) {
-        return new DualExpresion<>(this, DualOperator.INVERT, SQLS.constant(operator));
+        return new DualExpresion<>(this, DualOperator.INVERT, SQLS.param(operator));
     }
 
     @Override
     public final  Expression<BigInteger>  rightShift(Integer bitNumber) {
-        return new DualExpresion<>(this, DualOperator.RIGHT_SHIFT, SQLS.constant(bitNumber));
+        return new DualExpresion<>(this, DualOperator.RIGHT_SHIFT, SQLS.param(bitNumber));
     }
 
     @Override
@@ -271,7 +270,7 @@ import java.util.List;
 
     @Override
     public final  Expression<BigInteger>  leftShift(Integer bitNumber) {
-        return new DualExpresion<>(this, DualOperator.LEFT_SHIFT, SQLS.constant(bitNumber));
+        return new DualExpresion<>(this, DualOperator.LEFT_SHIFT, SQLS.param(bitNumber));
     }
 
     @Override
@@ -291,8 +290,7 @@ import java.util.List;
 
     @Override
     public final <O> Expression<O> asType(Class<O> convertType) {
-        MappingType targetType = MappingFactory.getDefaultMapping(convertType);
-        return new ConvertExpressionImpl<>(this, targetType);
+        return new ConvertExpressionImpl<>(this, MappingFactory.getDefaultMapping(convertType));
     }
 
     @Override

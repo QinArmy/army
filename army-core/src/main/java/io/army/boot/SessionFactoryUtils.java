@@ -222,8 +222,8 @@ abstract class SessionFactoryUtils {
     private static List<FieldMeta<?, ?>> createTablePreGeneratorChain(TableMeta<?> tableMeta
             , Map<String, GeneratorMeta> thisGeneratorMap) {
 
-        if (tableMeta.parent() != null) {
-            // append parent generator
+        if (tableMeta.parentMeta() != null) {
+            // append parentMeta generator
             appendPrentTableGeneratorMap(tableMeta, thisGeneratorMap);
         }
 
@@ -261,8 +261,8 @@ abstract class SessionFactoryUtils {
      */
     private static void appendPrentTableGeneratorMap(TableMeta<?> tableMeta
             , Map<String, GeneratorMeta> thisGeneratorMap) {
-        TableMeta<?> parentMeta = tableMeta.parent();
-        Assert.isTrue(parentMeta != null, "entity no parent");
+        TableMeta<?> parentMeta = tableMeta.parentMeta();
+        Assert.isTrue(parentMeta != null, "entity no parentMeta");
 
         Assert.isTrue(!thisGeneratorMap.containsKey(TableMeta.ID)
                 , () -> String.format("child entity[%s] cannot have id generator.", tableMeta.javaType().getName()));
@@ -273,7 +273,7 @@ abstract class SessionFactoryUtils {
                 continue;
             }
             if (thisGeneratorMap.containsKey(fieldMeta.propertyName())) {
-                throw new MetaException(ErrorCode.META_ERROR, "entity[%s] prop[%s] couldn't override parent's generator"
+                throw new MetaException(ErrorCode.META_ERROR, "entity[%s] prop[%s] couldn'table override parentMeta's generator"
                         , tableMeta.javaType().getName(), fieldMeta.fieldName());
             }
 
@@ -316,7 +316,7 @@ abstract class SessionFactoryUtils {
             TableMeta<?> tableMeta = generatorMeta.fieldMeta().tableMeta();
 
             if (!tableMeta.isMappingProp(generatorMeta.dependPropName())) {
-                TableMeta<?> parentMeta = tableMeta.parent();
+                TableMeta<?> parentMeta = tableMeta.parentMeta();
                 if (parentMeta == null || !parentMeta.isMappingProp(generatorMeta.dependPropName())) {
                     throw createDependException(generatorMeta.fieldMeta());
                 }

@@ -33,7 +33,8 @@ public final class LongType implements MappingType {
 
     @Override
     public String nonNullTextValue(Object value) {
-        return null;
+        Assert.isInstanceOf(Long.class,value,"");
+        return String.valueOf(value);
     }
 
     @Override

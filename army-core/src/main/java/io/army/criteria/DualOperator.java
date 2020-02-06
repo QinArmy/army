@@ -1,9 +1,11 @@
-package io.army.criteria.impl;
+package io.army.criteria;
+
+import io.army.criteria.SQLOperator;
 
 /**
  * created  on 2018/11/25.
  */
-enum DualOperator implements SQLOperator {
+public enum DualOperator implements SQLOperator {
 
     EQ {
 

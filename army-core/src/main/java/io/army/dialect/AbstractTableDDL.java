@@ -182,7 +182,7 @@ public abstract class AbstractTableDDL implements TableDDL {
 
 
     protected String primaryKeyClause(IndexMeta<?> indexMeta) {
-        Supplier<String> message = () -> String.format("tableMeta[%s].key[%s] isn't primary key",
+        Supplier<String> message = () -> String.format("tableMeta[%s].key[%s] isn'table primary key",
                 indexMeta.table().tableName(), indexMeta.name());
 
         Assert.isTrue(indexMeta.isUnique(), message);
@@ -290,7 +290,7 @@ public abstract class AbstractTableDDL implements TableDDL {
                 value = IDomain.ZERO;
                 break;
             default:
-                throw new RuntimeException(String.format("Entity[%s].prop[%s] isn't required prop",
+                throw new RuntimeException(String.format("Entity[%s].prop[%s] isn'table required prop",
                         fieldMeta.tableMeta().tableName(), fieldMeta.propertyName()));
         }
         return value;

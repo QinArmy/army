@@ -33,7 +33,7 @@ class DefaultMappingFactory implements MappingFactory {
         map.put(Boolean.class, BooleanType.build(Boolean.class));
         map.put(LocalDateTime.class, LocalDateTimeType.build(LocalDateTime.class));
         map.put(LocalDate.class, LocalDateType.build(LocalDate.class));
-        map.put(Double.class, LocalDateType.build(Double.class));
+        map.put(Double.class, DoubleType.build(Double.class));
 
         return Collections.unmodifiableMap(map);
     }

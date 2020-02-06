@@ -185,7 +185,7 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     @Nullable
     @Override
-    public TableMeta<? super T> parent() {
+    public TableMeta<? super T> parentMeta() {
         return parentTableMeta;
     }
 

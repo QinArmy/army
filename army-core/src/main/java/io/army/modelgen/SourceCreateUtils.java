@@ -64,7 +64,7 @@ abstract class SourceCreateUtils {
         try {
             Set<String> entityPropNameSet = new HashSet<>();
 
-            //1.check parent mapping then  add super entity props to entityPropNameSet to avoid child class duplicate prop
+            //1.check parentMeta mapping then  add super entity props to entityPropNameSet to avoid child class duplicate prop
             generateEntityAttributes(parentMappedElementList, entityPropNameSet, indexColumnNameSet);
             // 2. extract entity property elements then check entity mapping
             final Set<VariableElement> entityPropSet = generateEntityAttributes(entityMappedElementList,
@@ -96,7 +96,7 @@ abstract class SourceCreateUtils {
      * debugSQL meta source code import part
      *
      * @param entityElement       entity element that annotated by {@link Table}
-     * @param parentEntityElement entityElement's parent element that annotated by {@link Table}
+     * @param parentEntityElement entityElement's parentMeta element that annotated by {@link Table}
      * @param mappingPropElements entityElement's mapping prop collection
      * @return source code import part
      */
@@ -111,7 +111,7 @@ abstract class SourceCreateUtils {
         // 2. source army import part
         appendArmyClassImport(builder);
 
-        // 3. source parent class import part
+        // 3. source parentMeta class import part
         appendParentClassImport(builder, entityElement, parentEntityElement);
 
         // 4. source mapping props class import part
@@ -497,7 +497,7 @@ abstract class SourceCreateUtils {
     }
 
     /**
-     * @return reference of parent entity class name
+     * @return reference of parentMeta entity class name
      */
     private static String parentEntityClassRef(TypeElement entityElement, TypeElement parentEntityElement) {
         String parentRef;

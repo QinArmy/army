@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
 import io.army.annotation.Column;
-import io.army.criteria.AliasTableFieldMeta;
 import io.army.criteria.MetaException;
 import io.army.criteria.Selection;
 import io.army.dialect.ParamWrapper;
@@ -209,11 +208,6 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     @Override
     public final TableMeta<T> tableMeta() {
         return table;
-    }
-
-    @Override
-    public AliasTableFieldMeta<T, F> table(String tableAlias) {
-        return new AliasTableFieldMetaImpl<>(this,tableAlias);
     }
 
     @Override

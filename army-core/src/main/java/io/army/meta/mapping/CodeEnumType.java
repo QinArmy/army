@@ -22,7 +22,7 @@ public final class CodeEnumType implements MappingType {
 
 
     public static CodeEnumType build(Class<?> javaType) {
-        Assert.isTrue(javaType.isEnum(), () -> String.format("javaType[%s] isn't Enum", javaType));
+        Assert.isTrue(javaType.isEnum(), () -> String.format("javaType[%s] isn'table Enum", javaType));
         Assert.isAssignable(CodeEnum.class, javaType);
         return INSTANCE_MAP.computeIfAbsent(javaType, CodeEnumType::new);
     }
@@ -76,7 +76,7 @@ public final class CodeEnumType implements MappingType {
         int code = resultSet.getInt(alias);
         Object value = getCodeEnum(code);
         if (value == null) {
-            throw new SQLException(String.format("alias[%s] corresponding value[%s] isn't %s code"
+            throw new SQLException(String.format("alias[%s] corresponding value[%s] isn'table %s code"
                     , alias, code, enumClass.getName()));
         }
         return value;

@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
+import io.army.criteria.SQLOperator;
 import io.army.dialect.ParamWrapper;
 import io.army.dialect.SQL;
 import io.army.meta.mapping.MappingType;

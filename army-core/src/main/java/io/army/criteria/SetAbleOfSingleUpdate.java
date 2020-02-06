@@ -11,6 +11,8 @@ import io.army.meta.FieldMeta;
  */
 public interface SetAbleOfSingleUpdate<T extends IDomain>  extends SingleUpdate{
 
+
+
     <F> WhereAbleOfSingleUpdate<T> set(FieldMeta<T,F> targetField, Expression<F> expression);
 
 

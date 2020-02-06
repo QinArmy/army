@@ -6,7 +6,7 @@ public interface ReadonlyWrapper {
 
     /**
      * Determine whether the specified property is readable.
-     * <p>Returns {@code false} if the property doesn't exist.
+     * <p>Returns {@code false} if the property doesn'table exist.
      * @param propertyName the property to check
      * (may be a nested path then/or an indexed/mapped property)
      * @return whether the property is readable
@@ -33,7 +33,7 @@ public interface ReadonlyWrapper {
      * (may be a nested path then/or an indexed/mapped property)
      * @return the value of the property
      * @throws InvalidPropertyException if there is no such property or
-     * if the property isn't readable
+     * if the property isn'table readable
      * @throws PropertyAccessException if the property was valid but the
      * accessor method failed
      */

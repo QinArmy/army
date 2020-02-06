@@ -15,6 +15,8 @@ import java.util.List;
 @DeveloperForbid
 public interface InnerSingleUpdateAble extends SingleUpdateAble {
 
+    String tableAlias();
+
     TableMeta<?> tableMeta();
 
     List<FieldMeta<?, ?>> targetFieldList();

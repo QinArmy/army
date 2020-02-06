@@ -4,7 +4,6 @@ import io.army.criteria.Selection;
 import io.army.dialect.ParamWrapper;
 import io.army.dialect.SQL;
 import io.army.domain.IDomain;
-import io.army.criteria.AliasTableFieldMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 import io.army.meta.TableMeta;
@@ -14,16 +13,16 @@ import io.army.util.Assert;
 import java.sql.JDBCType;
 import java.util.List;
 
-final class AliasTableFieldMetaImpl<T extends IDomain, F> extends AbstractExpression<F> implements FieldMeta<T, F>
-        , AliasTableFieldMeta<T, F> {
+final class AliasTableFieldMetaImpl<T extends IDomain, F> extends AbstractExpression<F> implements FieldMeta<T, F> {
 
     private final FieldMeta<T, F> fieldMeta;
 
     private final String tableAlias;
 
     AliasTableFieldMetaImpl(FieldMeta<T, F> fieldMeta, String tableAlias) {
-        Assert.notNull(fieldMeta,"fieldMeta required");
-        Assert.hasText(tableAlias,"tableAlias required");
+        Assert.notNull(fieldMeta, "fieldMeta required");
+        Assert.hasText(tableAlias, "tableAlias required");
+        Assert.isTrue(!tableAlias.contains("."),"tableAlias must no '.'");
 
         this.fieldMeta = fieldMeta;
         this.tableAlias = tableAlias;
@@ -37,23 +36,8 @@ final class AliasTableFieldMetaImpl<T extends IDomain, F> extends AbstractExpres
     }
 
     @Override
-    public String tableAlias() {
-        return tableAlias;
-    }
-
-    @Override
-    public FieldMeta<T, F> fieldMeta() {
-        return fieldMeta;
-    }
-
-    @Override
     public Selection as() {
         return as(fieldMeta.propertyName());
-    }
-
-    @Override
-    public AliasTableFieldMeta<T, F> table(String tableAlias) {
-        throw new UnsupportedOperationException("only alias once");
     }
 
     @Override

@@ -19,10 +19,10 @@ final class SQLWrapperImpl implements SQLWrapper {
     private final boolean hasVersion;
 
     SQLWrapperImpl(String sql, List<ParamWrapper> paramList) {
-        this(sql,paramList,false);
+        this(sql, paramList, false);
     }
 
-     SQLWrapperImpl(String sql, List<ParamWrapper> paramList, boolean hasVersion) {
+    SQLWrapperImpl(String sql, List<ParamWrapper> paramList, boolean hasVersion) {
         Assert.hasText(sql, "sql required");
         Assert.notNull(paramList, "paramList required");
 
@@ -94,9 +94,6 @@ final class SQLWrapperImpl implements SQLWrapper {
     private static final Logger LOG = LoggerFactory.getLogger(SQLWrapperImpl.class);
 
 
-
-
-
     private String replacePlaceHolder(String sql) {
         StringBuilder builder = new StringBuilder();
 
@@ -104,20 +101,27 @@ final class SQLWrapperImpl implements SQLWrapper {
         final int size = this.paramList.size();
         final List<ParamWrapper> paramList = this.paramList;
         int start = 0, index = 0;
-
+        ParamWrapper paramWrapper;
         for (int i; (i = sql.indexOf("?", start)) >= 0; start = i + 1, index++) {
             Assert.state(index < size, "sql then paramList not match.");
 
             builder.append(sql, start, i)
                     .append("{")
                     .append(index + 1)
-                    .append(":")
-                    .append(paramList.get(index).value())
-                    .append("}")
+                    .append(":");
+            paramWrapper = paramList.get(index);
+            if (paramWrapper.value() == null) {
+                builder.append("NULL");
+            } else {
+                builder.append(paramWrapper.mappingType().nonNullTextValue(paramWrapper.value()));
+            }
+
+            builder.append("}")
             ;
         }
 
-        Assert.state(index == size, "sql then paramList not match.");
+        Assert.state(index == size, () -> String.format(
+                "sql then paramList not match.sql:\n%s\nparamList size:%s", sql, paramList.size()));
 
         if (start < len) {
             builder.append(sql, start, len);

@@ -92,7 +92,7 @@ abstract class FieldMetaUtils extends MetaUtils {
     @Nullable
     static GeneratorMeta columnGeneratorMeta(Field field, FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
         if (TableMeta.ID.equals(fieldMeta.propertyName())
-                && fieldMeta.tableMeta().parent() != null) {
+                && fieldMeta.tableMeta().parentMeta() != null) {
             return null;
         }
         Generator generator = AnnotationUtils.getAnnotation(field, Generator.class);

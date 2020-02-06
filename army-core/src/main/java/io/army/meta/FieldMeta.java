@@ -1,6 +1,5 @@
 package io.army.meta;
 
-import io.army.criteria.AliasTableFieldMeta;
 import io.army.criteria.Expression;
 import io.army.criteria.Selection;
 import io.army.domain.IDomain;
@@ -29,8 +28,6 @@ public interface FieldMeta<T extends IDomain, F> extends Expression<F> ,Selectio
 
 
     TableMeta<T> tableMeta();
-
-    AliasTableFieldMeta<T,F> table(String tableAlias);
 
     /**
      * <p>

@@ -1,8 +1,10 @@
 package io.army.criteria;
 
 import io.army.dialect.ParamWrapper;
+import io.army.dialect.SQL;
 import io.army.meta.mapping.MappingType;
 
+import java.math.BigInteger;
 import java.sql.JDBCType;
 import java.util.Collection;
 import java.util.List;
@@ -11,14 +13,20 @@ import java.util.List;
  * extends {@link ParamWrapper} to avoid new instance of {@link ParamWrapper}
  * created  on 2018/12/4.
  */
-public interface ParamExpression<E> extends Expression<E> ,ParamWrapper{
+public interface ParamExpression<E> extends Expression<E>, ParamWrapper {
 
-    String MSG = "operation isn't supported by ParamExpression";
+    String MSG = "operation isn'table supported by ParamExpression";
 
     E value();
 
+    /**
+     *
+     * @param sql
+     * @param builder
+     * @param paramWrapperList
+     */
     @Override
-    void appendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList);
+    void appendSQL(SQL sql, StringBuilder builder, List<ParamWrapper> paramWrapperList);
 
     @Override
     MappingType mappingType();
@@ -198,62 +206,62 @@ public interface ParamExpression<E> extends Expression<E> ,ParamWrapper{
     }
 
     @Override
-    default <N extends Number> Expression<N> and(Expression<N> operator) {
+    default <O> Expression<BigInteger> and(Expression<O> operator) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    default <N extends Number> Expression<N> and(Long operator) {
+    default Expression<BigInteger> and(Long operator) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    default <N extends Number> Expression<N> or(Expression<N> operator) {
+    default <O> Expression<BigInteger> or(Expression<O> operator) {
+        return null;
+    }
+
+    @Override
+    default Expression<BigInteger> or(Long operator) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    default <N extends Number> Expression<N> or(Long operator) {
+    default <O> Expression<BigInteger> xor(Expression<O> operator) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    default <N extends Number> Expression<N> xor(Expression<N> operator) {
+    default Expression<BigInteger> xor(Long operator) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    default <N extends Number> Expression<N> xor(Long operator) {
+    default <O> Expression<BigInteger> inversion(Expression<O> operator) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    default <N extends Number> Expression<N> inversion(Expression<N> operator) {
+    default Expression<BigInteger> inversion(Long operator) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    default <N extends Number> Expression<N> inversion(Long operator) {
+    default Expression<BigInteger> rightShift(Integer bitNumber) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    default <N extends Number> Expression<N> rightShift(Integer bitNumber) {
+    default <O> Expression<BigInteger> rightShift(Expression<O> bitNumber) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    default <N extends Number> Expression<N> rightShift(Expression<N> bitNumber) {
+    default Expression<BigInteger> leftShift(Integer bitNumber) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    default <N extends Number> Expression<N> leftShift(Integer bitNumber) {
-        throw new UnsupportedOperationException(MSG);
-    }
-
-    @Override
-    default <N extends Number> Expression<N> leftShift(Expression<N> bitNumber) {
+    default <O> Expression<BigInteger> leftShift(Expression<O> bitNumber) {
         throw new UnsupportedOperationException(MSG);
     }
 

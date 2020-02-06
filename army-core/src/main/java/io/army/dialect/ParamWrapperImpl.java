@@ -10,7 +10,7 @@ final class ParamWrapperImpl implements ParamWrapper {
 
     private final Object value;
 
-    ParamWrapperImpl(MappingType mappingType,@Nullable Object value) {
+    ParamWrapperImpl(MappingType mappingType, @Nullable Object value) {
         Assert.notNull(mappingType, "mappingType required");
 
         this.mappingType = mappingType;
@@ -29,9 +29,15 @@ final class ParamWrapperImpl implements ParamWrapper {
 
     @Override
     public String toString() {
+        String valueText;
+        if (value == null) {
+            valueText = "NULL";
+        } else {
+            valueText = mappingType.nonNullTextValue(value);
+        }
         return String.format("mappingType:%s,value:%s"
                 , mappingType.getClass().getName()
-                , value
+                , valueText
         );
     }
 }

@@ -7,7 +7,7 @@ import io.army.domain.IDomain;
 
 import java.time.LocalDateTime;
 
-@Table(name = "parent_one", comment = "first parent")
+@Table(name = "parent_one", comment = "first parentMeta")
 @Inheritance("type")
 public class ParentOne implements IDomain {
 

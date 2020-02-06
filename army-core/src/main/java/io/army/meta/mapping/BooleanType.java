@@ -37,6 +37,7 @@ public final class BooleanType implements MappingType {
 
     @Override
     public String nonNullTextValue(Object value) {
+        Assert.isInstanceOf(Boolean.class,value,"");
         String text;
         if (Boolean.TRUE.equals(value)) {
             text = IDomain.Y;

@@ -3,20 +3,22 @@ package io.army.boot;
 
 import com.example.domain.account.Account_;
 import com.example.generator.Being;
-import com.example.generator.Being_;
 import io.army.Session;
 import io.army.SessionFactory;
+import io.army.criteria.SingleUpdateAble;
 import io.army.criteria.impl.SQLS;
+import io.army.dialect.SQLDialect;
 import io.army.env.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import static io.army.criteria.impl.SQLS.table;
 
 public class SessionTests {
 
@@ -42,16 +44,17 @@ public class SessionTests {
 
     @Test
     public void singleUpdate() {
-        SQLS.update(Account_.T)
-                .set(Account_.balance, BigDecimal.ONE)
-                .set(Account_.updateTime, LocalDateTime.now())
-                .set(Account_.visible,Boolean.TRUE)
-                .set(Account_.userId,0L)
-                .where(Arrays.asList(Being_.id.add(1L).eq(2L),Being_.visible.eq(true)))
-                .orderBy(Account_.id)
-                .desc()
+     SingleUpdateAble updateAble =  SQLS.update(Account_.T).as("a")
+                .set(Account_.balance, table("a",Account_.balance).add(BigDecimal.ONE).brackets())
+                //.set(Account_.updateTime, LocalDateTime.now())
+               // .set(Account_.visible,Boolean.TRUE)
+                //.set(Account_.userId,0L)
+                .where(Arrays.asList(table("a",Account_.userId).add(1L).eq(2L), table("a",Account_.visible).eq(true)))
+                .orderBy(Account_.id,false).then(Account_.createTime,true)
                 .limit(10)
         ;
+
+      LOG.info("sql:\n{}",updateAble.debugSQL(SQLDialect.MySQL57));
     }
 
 

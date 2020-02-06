@@ -37,7 +37,7 @@ abstract class MetaUtils {
 
     static void throwMultiLevelInheritance(TypeElement entityElement) throws MetaException {
         throw new MetaException(ErrorCode.META_ERROR,
-                "Entity[%s] inheritance level greater than 2,it's parent's MappingMode is Child.",
+                "Entity[%s] inheritance level greater than 2,it's parentMeta's MappingMode is Child.",
                 entityElement.getQualifiedName());
     }
 
@@ -98,7 +98,7 @@ abstract class MetaUtils {
     private static void assertMappingSimple(TypeElement entityElement) {
 
         if (entityElement.getAnnotation(DiscriminatorValue.class) != null) {
-            throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] couldn't have %s"
+            throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] couldn'table have %s"
                     , entityElement.getQualifiedName()
                     , DiscriminatorValue.class.getName());
         }
@@ -149,7 +149,7 @@ abstract class MetaUtils {
     static void throwDiscriminatorNotEnum(TypeElement entityElement, VariableElement mappedProp)
             throws MetaException {
         throw new MetaException(ErrorCode.META_ERROR,
-                "entity[%s] discriminator property[%s] isn't a Enum that implements %s .",
+                "entity[%s] discriminator property[%s] isn'table a Enum that implements %s .",
                 entityElement.getQualifiedName(),
                 mappedProp.getSimpleName(),
                 CodeEnum.class.getName()
@@ -303,13 +303,13 @@ abstract class MetaUtils {
         String className = parentEntity.getQualifiedName().toString();
         DiscriminatorValue discriminatorValue = parentEntity.getAnnotation(DiscriminatorValue.class);
         if (discriminatorValue != null && discriminatorValue.value() != 0) {
-            throw new MetaException(ErrorCode.META_ERROR, "parent Entity[%s] discriminatorValue must be 0", className);
+            throw new MetaException(ErrorCode.META_ERROR, "parentMeta Entity[%s] discriminatorValue must be 0", className);
         }
 
         Map<Integer, String> codeMap = DISCRIMINATOR_MAP.computeIfAbsent(className, key -> new HashMap<>());
         String actualClassName = codeMap.get(0);
         if (actualClassName != null && !actualClassName.equals(className)) {
-            throw new MetaException(ErrorCode.META_ERROR, "parent Entity[%s] discriminatorValue duplication", className);
+            throw new MetaException(ErrorCode.META_ERROR, "parentMeta Entity[%s] discriminatorValue duplication", className);
         } else {
             codeMap.putIfAbsent(0, className);
         }

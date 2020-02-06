@@ -42,12 +42,12 @@ public abstract class AbstractSnowflake implements Snowflake {
 
         if (workerId > maxWorkerId || workerId < 0) {
             throw new IllegalArgumentException(
-                    String.format("worker Id can't be greater than %d or less than 0", maxWorkerId));
+                    String.format("worker Id can'table be greater than %d or less than 0", maxWorkerId));
         }
 
         if (dataCenterId > maxDataCenterId || dataCenterId < 0) {
             throw new IllegalArgumentException(
-                    String.format("dataCenter Id can't be greater than %d or less than 0", maxDataCenterId));
+                    String.format("dataCenter Id can'table be greater than %d or less than 0", maxDataCenterId));
         }
 
         this.startTime = startTime;

@@ -4,7 +4,7 @@ import io.army.annotation.Column;
 import io.army.annotation.DiscriminatorValue;
 import io.army.annotation.Table;
 
-@Table(name = "parent_two", comment = "two parent")
+@Table(name = "parent_two", comment = "two parentMeta")
 @DiscriminatorValue(MultiParentType.Constant.TWO)
 public class ParentTwo extends ParentOne {
 

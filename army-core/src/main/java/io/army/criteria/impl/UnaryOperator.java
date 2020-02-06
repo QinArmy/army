@@ -1,5 +1,7 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.SQLOperator;
+
 /**
  * created  on 2018/11/25.
  */

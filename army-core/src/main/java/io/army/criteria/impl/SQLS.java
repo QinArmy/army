@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
+import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.*;
 
@@ -16,8 +17,16 @@ public abstract class SQLS {
         throw new UnsupportedOperationException();
     }
 
-    public static <T extends IDomain> SetAbleOfSingleUpdate<T> update(TableMeta<T> tableMeta) {
+    public static <T extends IDomain> AliasAbleOfSingleUpdate<T> update(TableMeta<T> tableMeta) {
         return new SingleUpdateAbleImpl<>(tableMeta);
+    }
+
+    public static <T extends IDomain, F> FieldMeta<T, F> table(String tableAlias, FieldMeta<T, F> fieldMeta) {
+        return new AliasTableFieldMetaImpl<>(fieldMeta, tableAlias);
+    }
+
+    public static <E> ParamExpression<E> asNull(Class<?> nullTypeClass) {
+        return ParamExpressionImp.build(MappingFactory.getDefaultMapping(nullTypeClass), null);
     }
 
     public static <E> ParamExpression<E> asNull(MappingType mappingType) {
@@ -30,6 +39,10 @@ public abstract class SQLS {
 
     public static <E> ParamExpression<E> param(E param, MappingType mappingType) {
         return ParamExpressionImp.build(mappingType, param);
+    }
+
+    static <E> ParamExpression<E> param(E param, Expression<E> expression) {
+        return ParamExpressionImp.build(expression.mappingType(), param);
     }
 
     public static <E> ConstantExpression<E> constant(E value) {

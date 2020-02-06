@@ -44,7 +44,7 @@ public abstract class VersionDomain extends Domain {
             return version == null ? o_version == null : version.equals(o_version);
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(String.format(
-                    "entity[%s] hasn't getVersion() method", clazz.getName()
+                    "entity[%s] hasn'table getVersion() method", clazz.getName()
             ));
         } catch (IllegalAccessException | InvocationTargetException e) {
             //不会到这里
@@ -66,7 +66,7 @@ public abstract class VersionDomain extends Domain {
             return version == null ? super.hashCode() : super.hashCode() + version.hashCode();
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(String.format(
-                    "entity[%s] hasn't getVersion() method", clazz.getName()
+                    "entity[%s] hasn'table getVersion() method", clazz.getName()
             ));
         } catch (IllegalAccessException | InvocationTargetException e) {
             //不会到这里

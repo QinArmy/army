@@ -9,7 +9,7 @@ public interface BeanWrapper  extends ReadonlyWrapper {
 
     /**
      * Determine whether the specified property is writable.
-     * <p>Returns {@code false} if the property doesn't exist.
+     * <p>Returns {@code false} if the property doesn'table exist.
      * @param propertyName the property to check
      * (may be a nested path then/or an indexed/mapped property)
      * @return whether the property is writable
@@ -36,7 +36,7 @@ public interface BeanWrapper  extends ReadonlyWrapper {
      * (may be a nested path then/or an indexed/mapped property)
      * @param value the new value
      * @throws InvalidPropertyException if there is no such property or
-     * if the property isn't writable
+     * if the property isn'table writable
      * @throws PropertyAccessException if the property was valid but the
      * accessor method failed or a type mismatch occurred
      */

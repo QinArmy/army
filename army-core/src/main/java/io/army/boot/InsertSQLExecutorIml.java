@@ -141,7 +141,7 @@ class InsertSQLExecutorIml implements InsertSQLExecutor {
     @Nullable
     private static GeneratorWrapper getAutoGeneratorWrapper(Session session
             , TableMeta<?> tableMeta) {
-        TableMeta<?> parentMeta = tableMeta.parent();
+        TableMeta<?> parentMeta = tableMeta.parentMeta();
         FieldMeta<?, ?> fieldMeta;
         if (parentMeta == null) {
             fieldMeta = tableMeta.primaryKey();

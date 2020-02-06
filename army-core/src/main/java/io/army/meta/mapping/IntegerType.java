@@ -32,6 +32,7 @@ public final class IntegerType implements MappingType {
 
     @Override
     public String nonNullTextValue(Object value) {
+        Assert.isInstanceOf(Integer.class,value,"");
         return String.valueOf(value);
     }
 

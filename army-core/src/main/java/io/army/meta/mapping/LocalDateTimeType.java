@@ -1,6 +1,7 @@
 package io.army.meta.mapping;
 
 import io.army.util.Assert;
+import io.army.util.TimeUtils;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -29,12 +30,20 @@ public final class LocalDateTimeType implements MappingType {
 
     @Override
     public String nonNullTextValue(Object value) {
-        return null;
+        Assert.isInstanceOf(LocalDateTime.class,value,"");
+        return ((LocalDateTime)value).format(TimeUtils.DATE_TIME_FORMATTER);
     }
 
     @Override
     public boolean isTextValue(String textValue) {
-        return false;
+        boolean match;
+        try {
+            LocalDateTime.parse(textValue);
+            match = true;
+        } catch (Exception e) {
+           match =false;
+        }
+        return match;
     }
 
 
