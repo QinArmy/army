@@ -164,57 +164,57 @@ import java.util.List;
     }
 
     @Override
-    public final <N extends Number> Expression<N> mod(Expression<N> operator) {
+    public final <N extends Number> Expression<E> mod(Expression<N> operator) {
         return new DualExpresion<>(this, DualOperator.MOD, operator);
     }
 
     @Override
-    public final <N extends Number> Expression<N> mod(N operator) {
+    public final <N extends Number> Expression<E> mod(N operator) {
         return new DualExpresion<>(this, DualOperator.MOD, SQLS.param(operator));
     }
 
     @Override
-    public final <N extends Number> Expression<N> multiply(Expression<N> multiplicand) {
+    public final <N extends Number> Expression<E> multiply(Expression<N> multiplicand) {
         return new DualExpresion<>(this, DualOperator.MULTIPLY, multiplicand);
     }
 
     @Override
-    public final <N extends Number> Expression<N> multiply(N multiplicand) {
+    public final <N extends Number> Expression<E> multiply(N multiplicand) {
         return new DualExpresion<>(this, DualOperator.MULTIPLY, SQLS.param(multiplicand));
     }
 
     @Override
-    public final <N extends Number> Expression<N> add(Expression<N> augend) {
+    public final <N extends Number> Expression<E> add(Expression<N> augend) {
         return new DualExpresion<>(this, DualOperator.ADD, augend);
     }
 
     @Override
-    public final <N extends Number> Expression<N> add(N augend) {
+    public final <N extends Number> Expression<E> add(N augend) {
         return new DualExpresion<>(this, DualOperator.ADD, SQLS.param(augend));
     }
 
     @Override
-    public final <N extends Number> Expression<N> subtract(Expression<N> subtrahend) {
+    public final <N extends Number> Expression<E> subtract(Expression<N> subtrahend) {
         return new DualExpresion<>(this, DualOperator.SUBTRACT, subtrahend);
     }
 
     @Override
-    public final <N extends Number> Expression<N> subtract(N subtrahend) {
+    public final <N extends Number> Expression<E> subtract(N subtrahend) {
         return new DualExpresion<>(this, DualOperator.SUBTRACT, SQLS.param(subtrahend));
     }
 
     @Override
-    public final <N extends Number> Expression<N> divide(Expression<N> divisor) {
+    public final <N extends Number> Expression<E> divide(Expression<N> divisor) {
         return new DualExpresion<>(this, DualOperator.DIVIDE, divisor);
     }
 
     @Override
-    public final <N extends Number> Expression<N> divide(N divisor) {
+    public final <N extends Number> Expression<E> divide(N divisor) {
         return new DualExpresion<>(this, DualOperator.DIVIDE, SQLS.param(divisor));
     }
 
     @Override
-    public final <N extends Number> Expression<N> negate() {
+    public final  Expression<E> negate() {
         return new UnaryExpression<>(this, UnaryOperator.NEGATED);
     }
 

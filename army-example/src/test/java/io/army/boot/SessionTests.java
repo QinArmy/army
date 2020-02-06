@@ -42,19 +42,20 @@ public class SessionTests {
         }
     }
 
-    @Test
+    @Test(invocationCount = 100)
     public void singleUpdate() {
-     SingleUpdateAble updateAble =  SQLS.update(Account_.T).as("a")
-                .set(Account_.balance, table("a",Account_.balance).add(BigDecimal.ONE).brackets())
+        final long start = System.currentTimeMillis();
+        SingleUpdateAble updateAble = SQLS.update(Account_.T).as("a")
+                .set(Account_.balance, table("a", Account_.balance).add(BigDecimal.ONE).brackets())
                 //.set(Account_.updateTime, LocalDateTime.now())
-               // .set(Account_.visible,Boolean.TRUE)
+                // .set(Account_.visible,Boolean.TRUE)
                 //.set(Account_.userId,0L)
-                .where(Arrays.asList(table("a",Account_.userId).add(1L).eq(2L), table("a",Account_.visible).eq(true)))
-                .orderBy(Account_.id,false).then(Account_.createTime,true)
-                .limit(10)
-        ;
+                .where(Arrays.asList(table("a", Account_.userId).add(SQLS.constant(1L)).brackets().add(3).eq(2L), table("a", Account_.visible).eq(true)))
+                .orderBy(Account_.id, false).then(Account_.createTime, true)
+                .limit(10);
 
-      LOG.info("sql:\n{}",updateAble.debugSQL(SQLDialect.MySQL57));
+        LOG.info("sql:\n{}", updateAble.debugSQL(SQLDialect.MySQL57));
+        LOG.info("cost:{}", System.currentTimeMillis() - start);
     }
 
 

@@ -151,57 +151,57 @@ public interface ParamExpression<E> extends Expression<E>, ParamWrapper {
     }
 
     @Override
-    default <N extends Number> Expression<N> mod(Expression<N> operator) {
+    default <N extends Number> Expression<E> mod(Expression<N> operator) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    default <N extends Number> Expression<N> mod(N e) {
+    default <N extends Number> Expression<E> mod(N e) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    default <N extends Number> Expression<N> multiply(Expression<N> multiplicand) {
+    default <N extends Number> Expression<E> multiply(Expression<N> multiplicand) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    default <N extends Number> Expression<N> multiply(N e) {
+    default <N extends Number> Expression<E> multiply(N e) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    default <N extends Number> Expression<N> add(Expression<N> augend) {
+    default <N extends Number> Expression<E> add(Expression<N> augend) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    default <N extends Number> Expression<N> add(N e) {
+    default <N extends Number> Expression<E> add(N e) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    default <N extends Number> Expression<N> subtract(Expression<N> subtrahend) {
+    default <N extends Number> Expression<E> subtract(Expression<N> subtrahend) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    default <N extends Number> Expression<N> subtract(N e) {
+    default <N extends Number> Expression<E> subtract(N e) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    default <N extends Number> Expression<N> divide(Expression<N> divisor) {
+    default <N extends Number> Expression<E> divide(Expression<N> divisor) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    default <N extends Number> Expression<N> divide(N e) {
+    default <N extends Number> Expression<E> divide(N e) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    default <N extends Number> Expression<N> negate() {
+    default  Expression<E> negate() {
         throw new UnsupportedOperationException(MSG);
     }
 

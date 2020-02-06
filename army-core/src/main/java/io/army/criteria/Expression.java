@@ -60,27 +60,27 @@ public interface Expression<E> extends SelectAble {
 
     Predicate notIn(Expression<Collection<E>> values);
 
-    <N extends Number> Expression<N> mod(Expression<N> operator);
+    <N extends Number> Expression<E> mod(Expression<N> operator);
 
-    <N extends Number> Expression<N> mod(N operator);
+    <N extends Number> Expression<E> mod(N operator);
 
-    <N extends Number> Expression<N> multiply(Expression<N> multiplicand);
+    <N extends Number> Expression<E> multiply(Expression<N> multiplicand);
 
-    <N extends Number> Expression<N> multiply(N multiplicand);
+    <N extends Number> Expression<E> multiply(N multiplicand);
 
-    <N extends Number> Expression<N> add(Expression<N> augend);
+    <N extends Number> Expression<E> add(Expression<N> augend);
 
-    <N extends Number> Expression<N> add(N augend);
+    <N extends Number> Expression<E> add(N augend);
 
-    <N extends Number> Expression<N> subtract(Expression<N> subtrahend);
+    <N extends Number> Expression<E> subtract(Expression<N> subtrahend);
 
-    <N extends Number> Expression<N> subtract(N subtrahend);
+    <N extends Number> Expression<E> subtract(N subtrahend);
 
-    <N extends Number> Expression<N> divide(Expression<N> divisor);
+    <N extends Number> Expression<E> divide(Expression<N> divisor);
 
-    <N extends Number> Expression<N> divide(N divisor);
+    <N extends Number> Expression<E> divide(N divisor);
 
-    <N extends Number> Expression<N> negate();
+    Expression<E> negate();
 
     <O> Expression<BigInteger> and(Expression<O> operator);
 
