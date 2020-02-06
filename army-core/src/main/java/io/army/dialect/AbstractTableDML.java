@@ -311,7 +311,7 @@ public abstract class AbstractTableDML implements TableDML {
     }
 
     private void appendLimitClause(StringBuilder builder, List<ParamWrapper> paramWrapperList, int rowCount) {
-        if (rowCount > 0) {
+        if (rowCount > -1) {
             builder.append("LIMIT ?");
             paramWrapperList.add(ParamWrapper.build(MappingFactory.getDefaultMapping(Integer.class), rowCount));
         }

@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.SessionFactory;
 import io.army.boot.SessionFactoryBuilder;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerSingleUpdateAble;
@@ -8,6 +9,7 @@ import io.army.dialect.SQLWrapper;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
+import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
@@ -17,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-final class SingleUpdateAbleImpl<T extends IDomain> implements SetAbleOfSingleUpdate<T>, WhereAbleOfSingleUpdate<T>
+final class SingleUpdateAbleImpl<T extends IDomain> extends AbstractSQLAble implements SetAbleOfSingleUpdate<T>, WhereAbleOfSingleUpdate<T>
         , OrderAbleOfSingleUpdate<T>, OrderItemAbleOfSingleUpdate<T>, InnerSingleUpdateAble
         , AliasAbleOfSingleUpdate<T> {
 
@@ -175,28 +177,12 @@ final class SingleUpdateAbleImpl<T extends IDomain> implements SetAbleOfSingleUp
     /*################################## blow io.army.criteria.SQLBuilder method ##################################*/
 
     @Override
-    public String debugSQL(SQLDialect sqlDialect) {
-        return debugSQL(sqlDialect, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
     public String debugSQL(SQLDialect sqlDialect, Visible visible) {
-        List<SQLWrapper> sqlWrapperList = SessionFactoryBuilder.mockBuilder()
-                .catalog(tableMeta.schema().catalog())
-                .schema(tableMeta.schema().schema())
-                .sqlDialect(sqlDialect)
-                .build()
-                .dialect()
-                .update(this, visible);
-
-        StringBuilder builder = new StringBuilder();
-        for (SQLWrapper wrapper : sqlWrapperList) {
-            builder.append(wrapper)
-                    .append("\n")
-            ;
-        }
-        return builder.toString();
+        SessionFactory sessionFactory = createSessionFactory(tableMeta.schema(), sqlDialect);
+        List<SQLWrapper> sqlWrapperList = sessionFactory.dialect().update(this, visible);
+        return printSQL(sqlWrapperList, sessionFactory.dialect());
     }
+
 
     /*################################## blow private method ##################################*/
 

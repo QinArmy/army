@@ -7,6 +7,8 @@ import io.army.dialect.SQLDialect;
  */
 public interface SQLBuilder {
 
+    String debugSQL();
+
     default String debugSQL(SQLDialect sqlDialect) {
         throw new UnsupportedOperationException();
     }
