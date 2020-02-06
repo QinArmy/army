@@ -17,6 +17,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -60,7 +61,7 @@ public class SessionTests {
     }
 
 
-    @Test(invocationCount = 1000)
+    @Test(invocationCount = 10)
     public void singleUpdate() {
         final long start = System.currentTimeMillis();
 
@@ -69,8 +70,11 @@ public class SessionTests {
                 //.set(Account_.updateTime, LocalDateTime.now())
                 // .set(Account_.visible,Boolean.TRUE)
                 //.set(Account_.userId,0L)
-                .where(Arrays.asList(table("a", Account_.userId).add(SQLS.constant(1L)).brackets().multiply(3).eq(2L), table("a", Account_.visible).eq(true)))
-                .orderBy(Account_.id, false).then(Account_.createTime, true)
+                .where(table("a", Account_.userId).add(SQLS.constant(1L)).brackets().multiply(3).eq(2L))
+                .and(table("a", Account_.visible).eq(true))
+                .and(table("a", Account_.createTime).eq(LocalDateTime.now()))
+                .orderBy(Account_.id, false)
+                .then(Account_.createTime, true)
                 .limit(0);
 
         LOG.info("sql:\n{}", updateAble.debugSQL(SQLDialect.MySQL57));

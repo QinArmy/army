@@ -39,7 +39,7 @@ abstract class AbstractSQLAble implements SQLAble, SQLBuilder {
     String printSQL(List<SQLWrapper> sqlWrapperList, Dialect dialect) {
         StringBuilder builder = new StringBuilder();
         for (SQLWrapper wrapper : sqlWrapperList) {
-            builder.append(builder)
+            builder.append(wrapper)
                     .append("\n")
             ;
         }

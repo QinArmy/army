@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 final class SingleUpdateAbleImpl<T extends IDomain> extends AbstractSQLAble implements SetAbleOfSingleUpdate<T>, WhereAbleOfSingleUpdate<T>
-        , OrderAbleOfSingleUpdate<T>, OrderItemAbleOfSingleUpdate<T>, InnerSingleUpdateAble
+        , WhereAndAbleOfSingleUpdate<T>, OrderItemAbleOfSingleUpdate<T>, InnerSingleUpdateAble
         , AliasAbleOfSingleUpdate<T> {
 
     private final TableMeta<T> tableMeta;
@@ -82,6 +82,23 @@ final class SingleUpdateAbleImpl<T extends IDomain> extends AbstractSQLAble impl
         Assert.state(CollectionUtils.isEmpty(this.predicateList), "where clause ended.");
         Assert.notEmpty(predicateList, "no where clause forbade by army ");
         this.predicateList = Collections.unmodifiableList(predicateList);
+        return this;
+    }
+
+    @Override
+    public WhereAndAbleOfSingleUpdate<T> where(Predicate predicate) {
+        Assert.state(CollectionUtils.isEmpty(this.predicateList), "where clause ended.");
+        Assert.notNull(predicate,"predicate required");
+        this.predicateList = new ArrayList<>();
+        this.predicateList.add(predicate);
+        return this;
+    }
+
+    /*################################## blow WhereAndAbleOfSingleUpdate method ##################################*/
+
+    @Override
+    public WhereAndAbleOfSingleUpdate<T> and(Predicate predicate) {
+        this.predicateList.add(predicate);
         return this;
     }
 

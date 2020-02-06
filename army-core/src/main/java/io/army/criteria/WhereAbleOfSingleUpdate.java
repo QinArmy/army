@@ -12,4 +12,7 @@ import java.util.List;
 public interface WhereAbleOfSingleUpdate<T extends IDomain> extends SetAbleOfSingleUpdate<T>{
 
     OrderAbleOfSingleUpdate<T> where(List<Predicate> predicateList);
+
+    WhereAndAbleOfSingleUpdate<T> where(Predicate predicate);
+
 }
