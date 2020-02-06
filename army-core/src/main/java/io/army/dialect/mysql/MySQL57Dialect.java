@@ -7,7 +7,7 @@ import io.army.dialect.*;
 import java.util.Set;
 
 /**
- * this class is a  {@link Dialect} implementation and abstract base class of all MySQL 5.7 Dialect
+ * this class is a  {@link Dialect} implementation then abstract base class of all MySQL 5.7 Dialect
  * created  on 2018/10/21.
  */
 class MySQL57Dialect extends AbstractDialect {

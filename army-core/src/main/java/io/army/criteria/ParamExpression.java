@@ -278,6 +278,11 @@ public interface ParamExpression<E> extends Expression<E> ,ParamWrapper{
     }
 
     @Override
+    default Expression<E> brackets() {
+        throw new UnsupportedOperationException(MSG);
+    }
+
+    @Override
     default Selection as(String alias) {
         throw new UnsupportedOperationException(MSG);
     }

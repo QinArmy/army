@@ -1,7 +1,7 @@
 package io.army.criteria;
 
-public interface LimitAbleOfSingleUpdate extends Updatable {
+public interface LimitAbleOfSingleUpdate extends SingleUpdateAble,SQLBuilder {
 
-    Updatable limit(int rowCount);
+    SingleUpdateAble limit(int rowCount);
 
 }

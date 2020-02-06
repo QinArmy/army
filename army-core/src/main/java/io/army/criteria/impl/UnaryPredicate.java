@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.dialect.ParamWrapper;
+import io.army.dialect.SQL;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
@@ -12,24 +13,24 @@ final class UnaryPredicate extends AbstractPredicate {
 
     private final UnaryOperator operator;
 
-    private final Object expressionOrConstant;
+    private final Expression<?> expression;
 
-    UnaryPredicate(UnaryOperator operator, Object expressionOrConstant) {
-        Assert.notNull(expressionOrConstant, "expressionOrConstant required");
+    UnaryPredicate(UnaryOperator operator, Expression<?> expression) {
+        Assert.notNull(expression, "expression required");
 
         this.operator = operator;
-        this.expressionOrConstant = expressionOrConstant;
+        this.expression = expression;
     }
 
     @Override
-    public void appendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+    protected void appendSQLBeforeWhitespace(SQL sql, StringBuilder builder, List<ParamWrapper> paramWrapperList) {
         switch (operator.position()) {
             case LEFT:
                 builder.append(operator.rendered());
-                doAppend(builder, paramWrapperList);
+                expression.appendSQL(sql, builder, paramWrapperList);
                 break;
             case RIGHT:
-                doAppend(builder, paramWrapperList);
+                expression.appendSQL(sql, builder, paramWrapperList);
                 builder.append(operator.rendered());
                 break;
             default:
@@ -37,13 +38,4 @@ final class UnaryPredicate extends AbstractPredicate {
         }
     }
 
-    private void doAppend(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
-        if (expressionOrConstant instanceof Expression) {
-            ((Expression<?>) expressionOrConstant).appendSQL(builder, paramWrapperList);
-        } else {
-            builder.append("?");
-            MappingType mappingType = MappingFactory.getDefaultMapping(expressionOrConstant.getClass());
-            paramWrapperList.add(ParamWrapper.build(mappingType, expressionOrConstant));
-        }
-    }
 }

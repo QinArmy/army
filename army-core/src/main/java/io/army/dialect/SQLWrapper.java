@@ -19,4 +19,8 @@ public interface SQLWrapper {
     static SQLWrapper build(String sql, List<ParamWrapper> paramList) {
         return new SQLWrapperImpl(sql, paramList);
     }
+
+    static SQLWrapper build(String sql, List<ParamWrapper> paramList,boolean hasVersion) {
+        return new SQLWrapperImpl(sql, paramList,hasVersion);
+    }
 }

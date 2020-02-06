@@ -33,7 +33,7 @@ final class FieldValuesGeneratorImpl implements FieldValuesGenerator {
     public BeanWrapper createValues(TableMeta<?> tableMeta, IDomain entity) throws FieldValuesCreateException {
         Assert.notNull(tableMeta, "tableMeta required");
         Assert.notNull(entity, "entity required");
-        Assert.isTrue(tableMeta.javaType() == entity.getClass(), "tableMata and entity not match");
+        Assert.isTrue(tableMeta.javaType() == entity.getClass(), "tableMata then entity not match");
 
         final BeanWrapper entityWrapper = PropertyAccessorFactory.forBeanPropertyAccess(entity);
 
@@ -65,7 +65,7 @@ final class FieldValuesGeneratorImpl implements FieldValuesGenerator {
 
         Assert.state(fieldMeta.javaType().isInstance(value)
                 , () -> String.format("entity[%s].field[%s] PreMultiGenerator[%s] return error value."
-                        , fieldMeta.table().javaType().getName()
+                        , fieldMeta.tableMeta().javaType().getName()
                         , fieldMeta.propertyName()
                         , generator.getClass().getName()));
 

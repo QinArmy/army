@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.dialect.ParamWrapper;
-import io.army.dialect.func.Func;
+import io.army.dialect.SQL;
 import io.army.meta.mapping.MappingType;
 import io.army.util.ArrayUtils;
 import io.army.util.Assert;
@@ -26,14 +26,15 @@ abstract class Funcs<E> extends AbstractExpression<E> {
     }
 
     @Override
-    public final void appendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+    protected void appendSQLBeforeWhitespace(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList) {
         builder.append(name)
                 .append("(");
-        doAppendSQL(builder, paramWrapperList);
+        doAppendArgument(sql,builder, paramWrapperList);
         builder.append(")");
     }
 
-    protected abstract void doAppendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList);
+
+    protected abstract void doAppendArgument(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList);
 
     /*################################## blow static class  ##################################*/
 
@@ -44,7 +45,7 @@ abstract class Funcs<E> extends AbstractExpression<E> {
         }
 
         @Override
-        protected void doAppendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+        protected void doAppendArgument(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList) {
 
         }
     }
@@ -59,8 +60,8 @@ abstract class Funcs<E> extends AbstractExpression<E> {
         }
 
         @Override
-        protected void doAppendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
-            one.appendSQL(builder, paramWrapperList);
+        protected void doAppendArgument(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+            one.appendSQL(sql,builder, paramWrapperList);
         }
 
     }
@@ -87,11 +88,11 @@ abstract class Funcs<E> extends AbstractExpression<E> {
         }
 
         @Override
-        protected void doAppendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+        protected void doAppendArgument(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList) {
             builder.append(format.get(0));
-            one.appendSQL(builder, paramWrapperList);
+            one.appendSQL(sql,builder, paramWrapperList);
             builder.append(format.get(1));
-            two.appendSQL(builder, paramWrapperList);
+            two.appendSQL(sql,builder, paramWrapperList);
             builder.append(format.get(2));
         }
 
@@ -116,13 +117,13 @@ abstract class Funcs<E> extends AbstractExpression<E> {
         }
 
         @Override
-        protected void doAppendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+        protected void doAppendArgument(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList) {
             builder.append(format.get(0));
-            one.appendSQL(builder, paramWrapperList);
+            one.appendSQL(sql,builder, paramWrapperList);
             builder.append(format.get(1));
-            two.appendSQL(builder, paramWrapperList);
+            two.appendSQL(sql,builder, paramWrapperList);
             builder.append(format.get(2));
-            three.appendSQL(builder, paramWrapperList);
+            three.appendSQL(sql,builder, paramWrapperList);
             builder.append(format.get(3));
 
         }

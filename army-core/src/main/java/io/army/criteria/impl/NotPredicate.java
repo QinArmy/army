@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.Expression;
 import io.army.criteria.Predicate;
 import io.army.dialect.ParamWrapper;
+import io.army.dialect.SQL;
 
 import java.util.List;
 
@@ -37,11 +38,12 @@ final class NotPredicate extends AbstractPredicate {
     }
 
     @Override
-    public void appendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+    protected void appendSQLBeforeWhitespace(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList) {
         if (not) {
             builder.append(UnaryOperator.NOT.rendered());
             builder.append(" ");
         }
-        expression.appendSQL(builder, paramWrapperList);
+        expression.appendSQL(sql,builder, paramWrapperList);
     }
+
 }

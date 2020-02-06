@@ -1,6 +1,7 @@
 package io.army.criteria;
 
 import io.army.dialect.ParamWrapper;
+import io.army.dialect.SQL;
 import io.army.meta.mapping.MappingType;
 
 import java.math.BigDecimal;
@@ -59,7 +60,7 @@ public interface Expression<E> extends SelectAble {
 
     Predicate notIn(Expression<Collection<E>> values);
 
-   <N extends Number> Expression<N> mod(Expression<N> operator);
+    <N extends Number> Expression<N> mod(Expression<N> operator);
 
     <N extends Number> Expression<N> mod(N operator);
 
@@ -81,29 +82,29 @@ public interface Expression<E> extends SelectAble {
 
     <N extends Number> Expression<N> negate();
 
-    <N extends Number> Expression<N> and(Expression<N> operator);
+    <O> Expression<BigInteger> and(Expression<O> operator);
 
-    <N extends Number> Expression<N> and(Long operator);
+    Expression<BigInteger> and(Long operator);
 
-    <N extends Number> Expression<N> or(Expression<N> operator);
+    <O> Expression<BigInteger> or(Expression<O> operator);
 
-    <N extends Number> Expression<N> or(Long operator);
+    Expression<BigInteger> or(Long operator);
 
-    <N extends Number> Expression<N> xor(Expression<N> operator);
+    <O> Expression<BigInteger> xor(Expression<O> operator);
 
-    <N extends Number> Expression<N> xor(Long operator);
+    Expression<BigInteger> xor(Long operator);
 
-    <N extends Number> Expression<N> inversion(Expression<N> operator);
+    <O> Expression<BigInteger> inversion(Expression<O> operator);
 
-    <N extends Number> Expression<N> inversion(Long operator);
+    Expression<BigInteger> inversion(Long operator);
 
-    <N extends Number> Expression<N> rightShift(Integer  bitNumber);
+    Expression<BigInteger> rightShift(Integer bitNumber);
 
-    <N extends Number> Expression<N> rightShift(Expression<N> bitNumber);
+    <O> Expression<BigInteger> rightShift(Expression<O> bitNumber);
 
-    <N extends Number> Expression<N> leftShift(Integer  bitNumber);
+    Expression<BigInteger> leftShift(Integer bitNumber);
 
-    <N extends Number> Expression<N> leftShift(Expression<N> bitNumber);
+    <O> Expression<BigInteger> leftShift(Expression<O> bitNumber);
 
     <O> Expression<E> plusOther(Expression<O> other);
 
@@ -112,6 +113,8 @@ public interface Expression<E> extends SelectAble {
     <O> Expression<O> asType(Class<O> convertType);
 
     <O> Expression<O> asType(Class<O> convertType, MappingType longMapping);
+
+    Expression<E> brackets();
 
 
     Predicate like(String pattern);
@@ -124,7 +127,7 @@ public interface Expression<E> extends SelectAble {
 
     Predicate some(SubQuery<E> subQuery);
 
-    void appendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList);
+    void appendSQL(SQL sql, StringBuilder builder, List<ParamWrapper> paramWrapperList);
 
     MappingType mappingType();
 

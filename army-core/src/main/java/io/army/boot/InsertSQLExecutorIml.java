@@ -133,7 +133,7 @@ class InsertSQLExecutorIml implements InsertSQLExecutor {
     private static ArmyAccessException databaseAutoGeneratorException(FieldMeta<?, ?> fieldMeta) {
         throw new ArmyAccessException(ErrorCode.ACCESS_ERROR
                 , "database no generated key for entity[%s] prop[%s]"
-                , fieldMeta.table().javaType().getName()
+                , fieldMeta.tableMeta().javaType().getName()
                 , fieldMeta.propertyName()
         );
     }

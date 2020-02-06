@@ -176,7 +176,7 @@ abstract class SessionFactoryUtils {
             actual = databaseSqlDialect;
         } else if (!SQLDialect.sameFamily(dialect, databaseSqlDialect)
                 || dialect.ordinal() > databaseSqlDialect.ordinal()) {
-            throw new DialectNotMatchException(ErrorCode.META_ERROR, "SQLDialect[%s] and database not match.", actual);
+            throw new DialectNotMatchException(ErrorCode.META_ERROR, "SQLDialect[%s] then database not match.", actual);
         }
         return actual;
     }
@@ -300,20 +300,20 @@ abstract class SessionFactoryUtils {
         }
         if (thisLevelCount > 0) {
             dependLevelList.add(thisLevelSet);
-            // continue append next level
+            // continue append then level
             appendChildLevel(dependLevelList, propGeneratorMap);
         }
     }
 
     private static MetaException createDependException(FieldMeta<?, ?> fieldMeta) {
         return new MetaException(ErrorCode.META_ERROR, "Entity[%s] propName[%s] generator depend error"
-                , fieldMeta.table().javaType().getName()
+                , fieldMeta.tableMeta().javaType().getName()
                 , fieldMeta.propertyName());
     }
 
     private static void assertPreGenerator(GeneratorMeta generatorMeta) {
         if (StringUtils.hasText(generatorMeta.dependPropName())) {
-            TableMeta<?> tableMeta = generatorMeta.fieldMeta().table();
+            TableMeta<?> tableMeta = generatorMeta.fieldMeta().tableMeta();
 
             if (!tableMeta.isMappingProp(generatorMeta.dependPropName())) {
                 TableMeta<?> parentMeta = tableMeta.parent();

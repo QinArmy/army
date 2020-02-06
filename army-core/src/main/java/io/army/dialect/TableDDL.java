@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * This interface represents the abstract of debugSQL table ,that is a part of DDL.
+ * This interface represents the abstract of debugSQL tableMeta ,that is a part of DDL.
  */
 public interface TableDDL extends SQL {
 

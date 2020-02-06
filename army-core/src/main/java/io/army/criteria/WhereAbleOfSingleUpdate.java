@@ -4,7 +4,12 @@ import io.army.domain.IDomain;
 
 import java.util.List;
 
-public interface WhereAbleOfSingleUpdate<T extends IDomain> extends SingleSetAble<T> {
+/**
+ *
+ * @param <T> domain java class
+ * @see SingleUpdateAble
+ */
+public interface WhereAbleOfSingleUpdate<T extends IDomain> extends SetAbleOfSingleUpdate<T>{
 
     OrderAbleOfSingleUpdate<T> where(List<Predicate> predicateList);
 }

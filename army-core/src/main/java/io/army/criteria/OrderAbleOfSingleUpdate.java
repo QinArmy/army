@@ -1,9 +1,11 @@
 package io.army.criteria;
 
 import io.army.domain.IDomain;
-import io.army.meta.FieldMeta;
+import io.army.lang.Nullable;
 
 public interface OrderAbleOfSingleUpdate<T extends IDomain> extends LimitAbleOfSingleUpdate {
 
-   <F> OrderAscAbleOfSingleUpdate<T> orderBy(FieldMeta<T,F> orderField);
+    OrderItemAbleOfSingleUpdate<T> orderBy(Expression<?> orderExp);
+
+    OrderItemAbleOfSingleUpdate<T> orderBy(Expression<?> orderExp,@Nullable Boolean asc);
 }

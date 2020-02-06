@@ -112,7 +112,7 @@ public class ColumnInfo {
     @Override
     public String toString() {
         return new StringJoiner(", ", "[", "]")
-                .add("table=" + table.name())
+                .add("tableMeta=" + table.name())
                 .add("name='" + name + "'")
                 .add("sqlType='" + sqlType + "'")
                 .add("jdbcType=" + jdbcType)

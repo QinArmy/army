@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.dialect.ParamWrapper;
+import io.army.dialect.SQL;
 import io.army.util.StringUtils;
 
 import java.sql.JDBCType;
@@ -28,14 +29,13 @@ final class DualPredicate extends AbstractPredicate {
 
 
     @Override
-    public void appendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
-        left.appendSQL(builder,paramWrapperList);
+    protected void appendSQLBeforeWhitespace(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+        left.appendSQL(sql,builder,paramWrapperList);
         builder.append(" ");
         builder.append(operator.rendered());
         builder.append(" ");
-        right.appendSQL(builder,paramWrapperList);
+        right.appendSQL(sql,builder,paramWrapperList);
     }
-
 
 
 

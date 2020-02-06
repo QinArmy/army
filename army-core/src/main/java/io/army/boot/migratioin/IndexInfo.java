@@ -52,7 +52,7 @@ class IndexInfo {
             columnsJoiner.add(column.name());
         }
         return new StringJoiner(", ", "[", "]")
-                .add("table=" + table.name())
+                .add("tableMeta=" + table.name())
                 .add("name='" + name + "'")
                 .add("unique=" + unique)
                 .add("columnMap=" + columnsJoiner.toString())

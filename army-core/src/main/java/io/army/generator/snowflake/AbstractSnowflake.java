@@ -81,7 +81,7 @@ public abstract class AbstractSnowflake implements Snowflake {
         if (lastTimestamp == timestamp) {
             sequence = (sequence + 1L) & SEQUENCE_MASK;
             if (sequence == 0) {
-                // block util next millis
+                // block util then millis
                 timestamp = tilNextMillis(lastTimestamp);
             }
         } else {
@@ -164,7 +164,7 @@ public abstract class AbstractSnowflake implements Snowflake {
     /*################################## blow protected method ##################################*/
 
     /**
-     * block util next millis
+     * block util then millis
      *
      * @return current millis
      */

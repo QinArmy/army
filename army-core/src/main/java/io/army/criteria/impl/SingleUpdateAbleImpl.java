@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.boot.SessionFactoryBuilder;
 import io.army.criteria.*;
+import io.army.criteria.impl.inner.InnerSingleUpdateAble;
 import io.army.dialect.SQLDialect;
 import io.army.dialect.SQLWrapper;
 import io.army.domain.IDomain;
@@ -15,25 +16,25 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-final class SingleUpatableImpl<T extends IDomain> implements SingleSetAble<T>, WhereAbleOfSingleUpdate<T>
-        , OrderAbleOfSingleUpdate<T>, OrderAscAbleOfSingleUpdate<T>, LimitAbleOfSingleUpdate, InnerSingleSetAble<T> {
+final class SingleUpdateAbleImpl<T extends IDomain> implements SetAbleOfSingleUpdate<T>, WhereAbleOfSingleUpdate<T>
+        , OrderAbleOfSingleUpdate<T>, OrderItemAbleOfSingleUpdate<T>, LimitAbleOfSingleUpdate, InnerSingleUpdateAble {
 
     private final TableMeta<T> tableMeta;
 
-    private final List<FieldMeta<T, ?>> targetFieldList = new ArrayList<>();
+    private final List<FieldMeta<?, ?>> targetFieldList = new ArrayList<>();
 
     private final List<Expression<?>> valueExpressionList = new ArrayList<>();
 
     private List<Predicate> predicateList;
 
-    private FieldMeta<T, ?> orderField;
+    private List<Expression<?>> orderExpList = new ArrayList<>(4);
 
-    private Boolean asc;
+    private List<Boolean> ascExpList = new ArrayList<>(orderExpList.size());
 
     private int rowCount = -1;
 
 
-    SingleUpatableImpl(TableMeta<T> tableMeta) {
+    SingleUpdateAbleImpl(TableMeta<T> tableMeta) {
         this.tableMeta = tableMeta;
     }
 
@@ -41,7 +42,7 @@ final class SingleUpatableImpl<T extends IDomain> implements SingleSetAble<T>, W
 
     @Override
     public <F> WhereAbleOfSingleUpdate<T> set(FieldMeta<T, F> targetField, Expression<F> expression) {
-        Assert.state(this.predicateList == null, "set clause ended.");
+        Assert.state(CollectionUtils.isEmpty(predicateList), "set clause ended.");
 
         targetFieldList.add(targetField);
         valueExpressionList.add(expression);
@@ -50,9 +51,11 @@ final class SingleUpatableImpl<T extends IDomain> implements SingleSetAble<T>, W
 
     @Override
     public <F> WhereAbleOfSingleUpdate<T> set(FieldMeta<T, F> targetField, @Nullable F newValue) {
-        Assert.state(this.predicateList == null, "set clause ended.");
-        targetFieldList.add(targetField);
-        valueExpressionList.add(SQLS.constant(newValue));
+        if (newValue == null) {
+            set(targetField, SQLS.asNull(targetField.mappingType()));
+        } else {
+            set(targetField, SQLS.param(newValue, targetField.mappingType()));
+        }
         return this;
     }
 
@@ -60,8 +63,8 @@ final class SingleUpatableImpl<T extends IDomain> implements SingleSetAble<T>, W
 
     @Override
     public OrderAbleOfSingleUpdate<T> where(List<Predicate> predicateList) {
-        Assert.state(this.predicateList == null, "where clause ended.");
-        Assert.notEmpty(predicateList, "no where forbade by army ");
+        Assert.state(CollectionUtils.isEmpty(this.predicateList), "where clause ended.");
+        Assert.notEmpty(predicateList, "no where clause forbade by army ");
         this.predicateList = Collections.unmodifiableList(predicateList);
         return this;
     }
@@ -69,46 +72,58 @@ final class SingleUpatableImpl<T extends IDomain> implements SingleSetAble<T>, W
     /*################################## blow OrderAbleOfSingleUpdate method ##################################*/
 
     @Override
-    public <F> OrderAscAbleOfSingleUpdate<T> orderBy(FieldMeta<T, F> orderField) {
-        Assert.state(this.orderField == null, "order by clause ended.");
-        this.orderField = orderField;
+    public OrderItemAbleOfSingleUpdate<T> orderBy(Expression<?> orderExp) {
+        return orderBy(orderExp, null);
+    }
+
+    /*################################## blow OrderAbleOfSingleUpdate method ##################################*/
+
+    @Override
+    public OrderItemAbleOfSingleUpdate<T> orderBy(Expression<?> orderExp,@Nullable Boolean asc) {
+        Assert.state(CollectionUtils.isEmpty(orderExpList), "order by clause ended.");
+        Assert.state(CollectionUtils.isEmpty(ascExpList), "order by clause ended.");
+
+        orderExpList.add(orderExp);
+        ascExpList.add(asc);
         return this;
+    }
+
+    /*################################## blow OrderItemAbleOfSingleUpdate method ##################################*/
+
+    @Override
+    public OrderItemAbleOfSingleUpdate<T> then(Expression<?> orderExp) {
+        return then(orderExp,null);
     }
 
     @Override
-    public LimitAbleOfSingleUpdate asc() {
-        Assert.state(this.asc == null, "asc clause ended.");
-        this.asc = Boolean.TRUE;
+    public OrderItemAbleOfSingleUpdate<T> then(Expression<?> orderExp,@Nullable Boolean asc) {
+        Assert.state(!CollectionUtils.isEmpty(orderExpList), "no order by clause.");
+        Assert.state(!CollectionUtils.isEmpty(ascExpList), "order by clause ended.");
+
+        orderExpList.add(orderExp);
+        ascExpList.add(asc);
         return this;
     }
-
-    @Override
-    public LimitAbleOfSingleUpdate desc() {
-        Assert.state(this.asc == null, "desc clause ended.");
-        this.asc = Boolean.FALSE;
-        return this;
-    }
-
 
     /*################################## blow LimitAbleOfSingleUpdate method ##################################*/
 
     @Override
-    public Updatable limit(int rowCount) {
+    public SingleUpdateAble limit(int rowCount) {
         Assert.state(this.rowCount < 0, "order by clause ended.");
         this.rowCount = rowCount;
         return this;
     }
 
-    /*################################## blow io.army.criteria.impl.InnerSingleSetAble method ##################################*/
+    /*################################## blow io.army.criteria.impl.inner.InnerSingleSetAble method ##################################*/
 
     @Override
-    public TableMeta<T> tableMeta() {
+    public TableMeta<?> tableMeta() {
         assertUpdateStatement();
         return tableMeta;
     }
 
     @Override
-    public List<FieldMeta<T, ?>> targetFieldList() {
+    public List<FieldMeta<?, ?>> targetFieldList() {
         assertUpdateStatement();
         return targetFieldList;
     }
@@ -124,8 +139,13 @@ final class SingleUpatableImpl<T extends IDomain> implements SingleSetAble<T>, W
     }
 
     @Override
-    public FieldMeta<T, ?> orderField() {
-        return orderField;
+    public List<Expression<?>> orderExpList() {
+        return orderExpList;
+    }
+
+    @Override
+    public List<Boolean> ascExpList() {
+        return ascExpList;
     }
 
     @Override
@@ -133,17 +153,22 @@ final class SingleUpatableImpl<T extends IDomain> implements SingleSetAble<T>, W
         return rowCount;
     }
 
-    /*################################## blow private method ##################################*/
+    /*################################## blow io.army.criteria.SQLBuilder method ##################################*/
 
     @Override
     public String debugSQL(SQLDialect sqlDialect) {
+        return debugSQL(sqlDialect, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public String debugSQL(SQLDialect sqlDialect, Visible visible) {
         List<SQLWrapper> sqlWrapperList = SessionFactoryBuilder.mockBuilder()
                 .catalog(tableMeta.schema().catalog())
                 .schema(tableMeta.schema().schema())
                 .sqlDialect(sqlDialect)
                 .build()
                 .dialect()
-                .update(this);
+                .update(this, visible);
 
         StringBuilder builder = new StringBuilder();
         for (SQLWrapper wrapper : sqlWrapperList) {

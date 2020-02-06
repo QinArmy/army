@@ -162,7 +162,7 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
     private static void assertEntityTable(TypeElement entityElement, Set<String> tableNameSet) {
         Table table = entityElement.getAnnotation(Table.class);
         if (!StringUtils.hasText(table.name())) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] table name required."
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] tableMeta name required."
                     , entityElement.getQualifiedName());
         }
         if (entityElement.getNestingKind() != NestingKind.TOP_LEVEL) {
@@ -174,7 +174,7 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
         // make qualifiedTableName lower case
         qualifiedTableName = StringUtils.toLowerCase(qualifiedTableName);
         if (tableNameSet.contains(qualifiedTableName)) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] table name[%s] duplication.",
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] tableMeta name[%s] duplication.",
                     entityElement.getQualifiedName(),
                     table.name()
             );
@@ -183,7 +183,7 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
         }
 
         if (!StringUtils.hasText(table.comment())) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] table comment required."
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] tableMeta comment required."
                     , entityElement.getQualifiedName(),
                     table.comment()
             );
@@ -191,7 +191,7 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
     }
 
     /**
-     * @return first: super class (annotated by {@link MappedSuperclass} and {@link Table}) list (order by extends)
+     * @return first: super class (annotated by {@link MappedSuperclass} then {@link Table}) list (order by extends)
      * util encounter {@link Inheritance}, second: class annotated by {@link Inheritance}
      */
     private Pair<List<TypeElement>, TypeElement> createEntityMappedElementList(

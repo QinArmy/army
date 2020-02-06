@@ -1,12 +1,14 @@
 package io.army.boot;
 
-import io.army.Session;
 import io.army.SessionFactory;
 import io.army.SessionOptions;
 import io.army.beans.BeanWrapper;
+import io.army.criteria.SingleUpdateAble;
+import io.army.criteria.impl.inner.InnerSingleUpdateAble;
 import io.army.dialect.SQLWrapper;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
+import io.army.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,6 +85,13 @@ class SessionImpl implements InnerSession {
         List<SQLWrapper> sqlList = sessionFactory.dialect().insert(tableMeta, beanWrapper.getReadonlyWrapper());
         // 3. execute sql
         InsertSQLExecutor.build().executeInsert(this, sqlList, beanWrapper);
+    }
+
+    @Override
+    public List<Integer> update(SingleUpdateAble updateAble) {
+        Assert.isInstanceOf(InnerSingleUpdateAble.class,updateAble,"");
+
+        return null;
     }
 
     @Override

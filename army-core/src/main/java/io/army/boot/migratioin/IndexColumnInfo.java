@@ -40,7 +40,7 @@ class IndexColumnInfo {
     @Override
     public String toString() {
         return new StringJoiner(", ", "[", "]")
-                .add("table=" + table.name())
+                .add("tableMeta=" + table.name())
                 .add("indexMap=" + index.name())
                 .add("name='" + name + "'")
                 .add("asc=" + asc)

@@ -54,14 +54,14 @@ public abstract class AbstractTableDDL implements TableDDL {
         builder.append(createHeaderClause(tableMeta));
         builder.append(" \n");
 
-        // 2. table column definition
+        // 2. tableMeta column definition
         appendColumnDefinitions(builder, tableMeta);
 
         // 3. key definition
         appendKeyDefinition(builder, tableMeta);
 
         builder.append("\n)");
-        // 4. table options definition
+        // 4. tableMeta options definition
         appendTableOptions(builder, tableMeta);
 
         return Collections.singletonList(builder.toString());
@@ -73,8 +73,8 @@ public abstract class AbstractTableDDL implements TableDDL {
         List<String> addColumnList = new ArrayList<>(addFieldMetas.size());
 
         for (FieldMeta<?, ?> addFieldMeta : addFieldMetas) {
-            Assert.isTrue(addFieldMeta.table() == tableMeta, () -> String.format(
-                    "TableMeta[%s] and FieldMeta[%s] not match."
+            Assert.isTrue(addFieldMeta.tableMeta() == tableMeta, () -> String.format(
+                    "TableMeta[%s] then FieldMeta[%s] not match."
                     , tableMeta.tableName(), addFieldMeta.fieldName()));
 
             addColumnList.add(
@@ -98,8 +98,8 @@ public abstract class AbstractTableDDL implements TableDDL {
         List<String> changeColumnList = new ArrayList<>(changeFieldMetas.size());
 
         for (FieldMeta<?, ?> changeFieldMeta : changeFieldMetas) {
-            Assert.isTrue(changeFieldMeta.table() == tableMeta, () -> String.format(
-                    "TableMeta[%s] and FieldMeta[%s] not match."
+            Assert.isTrue(changeFieldMeta.tableMeta() == tableMeta, () -> String.format(
+                    "TableMeta[%s] then FieldMeta[%s] not match."
                     , tableMeta.tableName(), changeFieldMeta.fieldName()));
 
             String fieldName = this.quoteIfNeed(changeFieldMeta.fieldName());
@@ -125,7 +125,7 @@ public abstract class AbstractTableDDL implements TableDDL {
 
         for (IndexMeta<?> addIndexMeta : addIndexMetas) {
             Assert.isTrue(addIndexMeta.table() == tableMeta, () -> String.format(
-                    "TableMeta[%s] and Index[%s] not match."
+                    "TableMeta[%s] then Index[%s] not match."
                     , tableMeta.tableName(), addIndexMeta.name()));
 
             StringBuilder builder = new StringBuilder();
@@ -182,7 +182,7 @@ public abstract class AbstractTableDDL implements TableDDL {
 
 
     protected String primaryKeyClause(IndexMeta<?> indexMeta) {
-        Supplier<String> message = () -> String.format("table[%s].key[%s] isn't primary key",
+        Supplier<String> message = () -> String.format("tableMeta[%s].key[%s] isn't primary key",
                 indexMeta.table().tableName(), indexMeta.name());
 
         Assert.isTrue(indexMeta.isUnique(), message);
@@ -258,8 +258,8 @@ public abstract class AbstractTableDDL implements TableDDL {
             clause = "DEFAULT ";
             if (TableMeta.VERSION_PROPS.contains(fieldMeta.propertyName())) {
                 clause += requiredPropDefaultValue(fieldMeta);
-            } else if (fieldMeta.table().discriminator() == fieldMeta) {
-                clause += fieldMeta.table().discriminatorValue();
+            } else if (fieldMeta.tableMeta().discriminator() == fieldMeta) {
+                clause += fieldMeta.tableMeta().discriminatorValue();
             } else {
                 clause += nonRequiredPropDefault(fieldMeta);
             }
@@ -291,7 +291,7 @@ public abstract class AbstractTableDDL implements TableDDL {
                 break;
             default:
                 throw new RuntimeException(String.format("Entity[%s].prop[%s] isn't required prop",
-                        fieldMeta.table().tableName(), fieldMeta.propertyName()));
+                        fieldMeta.tableMeta().tableName(), fieldMeta.propertyName()));
         }
         return value;
     }

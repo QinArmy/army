@@ -8,7 +8,7 @@ public interface ReadonlyWrapper {
      * Determine whether the specified property is readable.
      * <p>Returns {@code false} if the property doesn't exist.
      * @param propertyName the property to check
-     * (may be a nested path and/or an indexed/mapped property)
+     * (may be a nested path then/or an indexed/mapped property)
      * @return whether the property is readable
      */
     boolean isReadableProperty(String propertyName);
@@ -19,7 +19,7 @@ public interface ReadonlyWrapper {
      * either checking the property descriptor or checking the value
      * in case of an indexed or mapped element.
      * @param propertyName the property to check
-     * (may be a nested path and/or an indexed/mapped property)
+     * (may be a nested path then/or an indexed/mapped property)
      * @return the property type for the particular property,
      * or {@code null} if not determinable
      * @throws PropertyAccessException if the property was valid but the
@@ -30,7 +30,7 @@ public interface ReadonlyWrapper {
     /**
      * Get the current value of the specified property.
      * @param propertyName the name of the property to get the value of
-     * (may be a nested path and/or an indexed/mapped property)
+     * (may be a nested path then/or an indexed/mapped property)
      * @return the value of the property
      * @throws InvalidPropertyException if there is no such property or
      * if the property isn't readable

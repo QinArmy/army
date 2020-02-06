@@ -16,12 +16,19 @@ final class SQLWrapperImpl implements SQLWrapper {
 
     private final List<ParamWrapper> paramList;
 
+    private final boolean hasVersion;
+
     SQLWrapperImpl(String sql, List<ParamWrapper> paramList) {
+        this(sql,paramList,false);
+    }
+
+     SQLWrapperImpl(String sql, List<ParamWrapper> paramList, boolean hasVersion) {
         Assert.hasText(sql, "sql required");
         Assert.notNull(paramList, "paramList required");
 
         this.sql = sql;
         this.paramList = Collections.unmodifiableList(paramList);
+        this.hasVersion = hasVersion;
     }
 
     @Override
@@ -99,7 +106,7 @@ final class SQLWrapperImpl implements SQLWrapper {
         int start = 0, index = 0;
 
         for (int i; (i = sql.indexOf("?", start)) >= 0; start = i + 1, index++) {
-            Assert.state(index < size, "sql and paramList not match.");
+            Assert.state(index < size, "sql then paramList not match.");
 
             builder.append(sql, start, i)
                     .append("{")
@@ -110,7 +117,7 @@ final class SQLWrapperImpl implements SQLWrapper {
             ;
         }
 
-        Assert.state(index == size, "sql and paramList not match.");
+        Assert.state(index == size, "sql then paramList not match.");
 
         if (start < len) {
             builder.append(sql, start, len);

@@ -16,7 +16,7 @@ class SchemaExtractorImpl implements SchemaExtractor {
     public SchemaInfo extractor(Connection connection) {
         try (Connection conn = connection) {
             SchemaInfo schemaInfo = new SchemaInfo(conn.getCatalog(), conn.getSchema());
-            // extract schema's table info
+            // extract schema's tableMeta info
             schemaInfo.tableMap(extractTableInfo(schemaInfo, conn.getMetaData()));
             return schemaInfo;
         } catch (SQLException e) {
@@ -26,7 +26,7 @@ class SchemaExtractorImpl implements SchemaExtractor {
 
 
     /**
-     * extract schema table info
+     * extract schema tableMeta info
      *
      * @return a unmodifiable map
      */
@@ -57,7 +57,7 @@ class SchemaExtractorImpl implements SchemaExtractor {
     }
 
     /**
-     * extract table column info
+     * extract tableMeta column info
      *
      * @return a unmodifiable map
      */
@@ -87,7 +87,7 @@ class SchemaExtractorImpl implements SchemaExtractor {
     }
 
     /**
-     * extract table indexMap info
+     * extract tableMeta indexMap info
      *
      * @return a modifiable List
      */

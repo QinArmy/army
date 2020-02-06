@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.dialect.ParamWrapper;
+import io.army.dialect.SQL;
 import io.army.util.Assert;
 
 import java.util.Collection;
@@ -31,10 +32,9 @@ final class InPredicate extends AbstractPredicate {
         }
     }
 
-
     @Override
-    public void appendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
-        left.appendSQL(builder, paramWrapperList);
+    protected void appendSQLBeforeWhitespace(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+        left.appendSQL(sql,builder, paramWrapperList);
         DualOperator operator = DualOperator.IN;
         if (!in) {
             operator = DualOperator.NOT_IN;
@@ -44,7 +44,7 @@ final class InPredicate extends AbstractPredicate {
         builder.append(" ");
 
         if (expressionOrValues instanceof Expression) {
-            ((Expression<?>) expressionOrValues).appendSQL(builder, paramWrapperList);
+            ((Expression<?>) expressionOrValues).appendSQL(sql,builder, paramWrapperList);
         } else if (expressionOrValues instanceof Collection) {
             doAppendCollection(builder, paramWrapperList, left, (Collection<?>) expressionOrValues);
         } else {

@@ -42,12 +42,12 @@ abstract class MetaUtils {
     }
 
     static String tableName(Table table, Class<? extends IDomain> entityClass) {
-        Assert.hasText(table.name(), () -> String.format("Entity[%s] no table name", entityClass.getName()));
+        Assert.hasText(table.name(), () -> String.format("Entity[%s] no tableMeta name", entityClass.getName()));
         return table.name();
     }
 
     static String tableComment(Table table, Class<? extends IDomain> entityClass) {
-        Assert.hasText(table.comment(), () -> String.format("Entity[%s] no table comment", entityClass.getName()));
+        Assert.hasText(table.comment(), () -> String.format("Entity[%s] no tableMeta comment", entityClass.getName()));
         return table.comment();
     }
 
@@ -98,7 +98,7 @@ abstract class MetaUtils {
             throws MetaException {
 
         final List<Class<?>> mappedClassList = mappedClassList(table.javaType());
-        // this table's column to filed map, contains id ,key is lower case
+        // this tableMeta's column to filed map, contains id ,key is lower case
         final Map<String, Field> columnToFieldMap = columnToFieldMap(table, mappedClassList);
 
         // 1. debugSQL indexMap meta
@@ -316,7 +316,7 @@ abstract class MetaUtils {
             if (field != null) {
                 Column column = AnnotationUtils.getAnnotation(field, Column.class);
                 if (column == null) {
-                    throw new MetaException(ErrorCode.META_ERROR, "table[%s] not found primary column definition",
+                    throw new MetaException(ErrorCode.META_ERROR, "tableMeta[%s] not found primary column definition",
                             tableMeta.tableName());
                 }
                 return field;
@@ -341,13 +341,13 @@ abstract class MetaUtils {
 
         if (columnNameSet.contains(lowerColumnName)) {
             throw new MetaException(ErrorCode.META_ERROR, "entity[%s] column[%s] debugSQL duplication",
-                    fieldMeta.table().javaType(),
+                    fieldMeta.tableMeta().javaType(),
                     fieldMeta.fieldName()
             );
         }
         if (propNameSet.contains(fieldMeta.propertyName())) {
             throw new MetaException(ErrorCode.META_ERROR, "entity[%s] property[%s] debugSQL duplication",
-                    fieldMeta.table().javaType(),
+                    fieldMeta.tableMeta().javaType(),
                     fieldMeta.propertyName()
             );
         }
@@ -419,7 +419,7 @@ abstract class MetaUtils {
         FieldMeta<T, ?> fieldMeta = propNameToFieldMeta.get(field.getName());
         if (fieldMeta == null
                 || !fieldMeta.fieldName().equals(inheritance.value())
-                || fieldMeta.table() != tableMeta) {
+                || fieldMeta.tableMeta() != tableMeta) {
             throw new MetaException(ErrorCode.META_ERROR, "entity[%s] discriminator column[%s] not found",
                     tableMeta.javaType().getName(),
                     inheritance.value()
@@ -458,7 +458,7 @@ abstract class MetaUtils {
     /**
      * @param <T>              entity java class
      * @param columnToFieldMap a unmodifiable map
-     * @return indexMap meta list(unmodifiable) of table,
+     * @return indexMap meta list(unmodifiable) of tableMeta,
      */
     private static <T extends IDomain> List<IndexMeta<T>> indexMetaList(final @NonNull TableMeta<T> tableMeta,
                                                                         Table table,
@@ -477,7 +477,7 @@ abstract class MetaUtils {
             indexMetaList.add(indexMeta);
         }
 
-        // handle primary key indexMap, and primary key indexMap must be  first element of list.
+        // handle primary key indexMap, then primary key indexMap must be  first element of list.
         if (!createdColumnSet.contains(PRIMARY_FIELD)) {
             indexMeta = new DefaultIndexMeta<>(tableMeta, null, columnToFieldMap, createdColumnSet);
             indexMetaList.add(indexMeta);

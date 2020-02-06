@@ -2,23 +2,17 @@ package io.army.dialect;
 
 import io.army.ErrorCode;
 import io.army.SessionFactory;
-import io.army.beans.BeanWrapper;
-import io.army.beans.PropertyAccessorFactory;
 import io.army.beans.ReadonlyWrapper;
-import io.army.criteria.MetaException;
+import io.army.criteria.*;
+import io.army.criteria.impl.inner.InnerSingleUpdateAble;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.meta.mapping.MappingFactory;
 import io.army.util.Assert;
-import jdk.nashorn.internal.ir.EmptyNode;
 
-import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public abstract class AbstractTableDML implements TableDML {
 
@@ -56,7 +50,7 @@ public abstract class AbstractTableDML implements TableDML {
     public final List<SQLWrapper> insert(TableMeta<?> tableMeta, ReadonlyWrapper entityWrapper) {
         Assert.notNull(tableMeta, "tableMeta required");
         Assert.notNull(entityWrapper, "entity required");
-        Assert.isTrue(tableMeta.javaType() == entityWrapper.getWrappedClass(), "tableMata and entity not match");
+        Assert.isTrue(tableMeta.javaType() == entityWrapper.getWrappedClass(), "tableMata then entity not match");
 
         List<SQLWrapper> sqlWrapperList;
         switch (tableMeta.mappingMode()) {
@@ -77,12 +71,129 @@ public abstract class AbstractTableDML implements TableDML {
         return sqlWrapperList;
     }
 
+    @Override
+    public List<SQLWrapper> update(SingleUpdateAble updateAble, Visible visible) {
+        Assert.isInstanceOf(InnerSingleUpdateAble.class, updateAble, "");
+        InnerSingleUpdateAble innerAble = (InnerSingleUpdateAble) updateAble;
+
+
+        return Collections.emptyList();
+    }
 
     /*################################## blow protected template method ##################################*/
 
     /*################################## blow protected method ##################################*/
 
     /*################################## blow private method ##################################*/
+
+
+    private SQLWrapper createUpdateForChild(InnerSingleUpdateAble innerAble, Visible visible) {
+        return null;
+    }
+
+
+    private SQLWrapper createUpdateForSimple(InnerSingleUpdateAble innerAble, Visible visible) {
+
+        StringBuilder builder = new StringBuilder();
+        List<ParamWrapper> paramWrapperList = new ArrayList<>();
+
+        //1. update clause
+        appendUpdateClause(builder, innerAble);
+        //2. set clause
+        appendSetClause(builder, paramWrapperList, innerAble);
+        //3. where clause
+        boolean hasVersion;
+        hasVersion = appendWhereClause(builder, paramWrapperList, innerAble.predicateList(), visible);
+        //4. order clause
+        appendOrderByClause(builder, paramWrapperList, innerAble);
+        //5. limit clause
+        appendLimitClause(builder, paramWrapperList, innerAble.rowCount());
+
+        return SQLWrapper.build(builder.toString(), paramWrapperList, hasVersion);
+    }
+
+    private void appendUpdateClause(StringBuilder builder, InnerSingleUpdateAble innerAble) {
+        TableMeta<?> tableMeta = innerAble.tableMeta();
+        builder.append("UPDATE ")
+                .append(quoteIfNeed(tableMeta.tableName()));
+    }
+
+    private void appendSetClause(StringBuilder builder, List<ParamWrapper> paramWrapperList
+            , InnerSingleUpdateAble innerAble) {
+        TableMeta<?> tableMeta = innerAble.tableMeta();
+
+        List<FieldMeta<?, ?>> fieldMetaList = innerAble.targetFieldList();
+        List<Expression<?>> valueExpList = innerAble.valueExpressionList();
+
+        Assert.isTrue(fieldMetaList.size() == valueExpList.size(), "updateAble error");
+        builder.append("SET ");
+        final int size = fieldMetaList.size();
+        for (int i = 0; i < size; i++) {
+            FieldMeta<?, ?> fieldMeta = fieldMetaList.get(i);
+            assertTargetField(fieldMeta, tableMeta);
+
+            if (TableMeta.VERSION.equals(fieldMeta.propertyName())
+                    || TableMeta.UPDATE_TIME.equals(fieldMeta.propertyName())) {
+                continue;
+            }
+            builder.append(quoteIfNeed(fieldMeta.fieldName()))
+                    .append(" = ");
+            Expression<?> valueExp = valueExpList.get(i);
+            // assert not null
+            assertFieldAndValueExpressionMatch(fieldMeta,valueExp);
+            // append expression
+            valueExp.appendSQL(this.sql, builder, paramWrapperList);
+
+        }
+        // append update_time and version field
+    }
+
+    private boolean appendWhereClause(StringBuilder builder, List<ParamWrapper> paramWrapperList
+            , List<Predicate> predicateList, Visible visible) {
+        Assert.notEmpty(predicateList, "where clause must be not empty");
+        builder.append("WHERE ");
+        for (Iterator<Predicate> iterator = predicateList.iterator(); iterator.hasNext(); ) {
+            iterator.next().appendSQL(this.sql, builder, paramWrapperList);
+            if (iterator.hasNext()) {
+                builder.append("AND ");
+            }
+        }
+        // append visible field
+        return false;
+    }
+
+    private void appendOrderByClause(StringBuilder builder, List<ParamWrapper> paramWrapperList
+            , InnerSingleUpdateAble innerAble) {
+        builder.append("ORDER BY ");
+
+        List<Expression<?>> orderExpList = innerAble.orderExpList();
+        List<Boolean> ascExpList = innerAble.ascExpList();
+        Assert.isTrue(orderExpList.size() == ascExpList.size(), "orderExpList size and ascExpList size not match.");
+
+        Expression<?> orderExp;
+        Boolean ascExp;
+        final int size = orderExpList.size();
+        for (int i = 0; i < size; i++) {
+            orderExp = orderExpList.get(i);
+            orderExp.appendSQL(this.sql, builder, paramWrapperList);
+            ascExp = ascExpList.get(i);
+            if (Boolean.TRUE.equals(ascExp)) {
+                builder.append("ASC ");
+            } else if (Boolean.FALSE.equals(ascExp)) {
+                builder.append("DESC ");
+            }
+            if (i < size - 1) {
+                builder.append(",");
+            }
+        }
+    }
+
+    private void appendLimitClause(StringBuilder builder, List<ParamWrapper> paramWrapperList, int rowCount) {
+        if (rowCount > 0) {
+            builder.append("LIMIT ");
+            paramWrapperList.add(ParamWrapper.build(MappingFactory.getDefaultMapping(Integer.class), rowCount));
+        }
+    }
 
 
     /**
@@ -161,11 +272,11 @@ public abstract class AbstractTableDML implements TableDML {
         Object value;
         if (TableMeta.VERSION.equals(fieldMeta.propertyName())) {
             value = 0;
-        } else if (fieldMeta == fieldMeta.table().discriminator()) {
-            value = fieldMeta.table().discriminatorValue();
+        } else if (fieldMeta == fieldMeta.tableMeta().discriminator()) {
+            value = fieldMeta.tableMeta().discriminatorValue();
         } else {
             throw new IllegalArgumentException(String.format("Entity[%s] prop[%s] cannot create constant value"
-                    , fieldMeta.table().javaType().getName()
+                    , fieldMeta.tableMeta().javaType().getName()
                     , fieldMeta.propertyName()));
         }
         return value;
@@ -173,8 +284,29 @@ public abstract class AbstractTableDML implements TableDML {
 
     private boolean isConstant(FieldMeta<?, ?> fieldMeta) {
         return TableMeta.VERSION.equals(fieldMeta.propertyName())
-                || fieldMeta == fieldMeta.table().discriminator()
+                || fieldMeta == fieldMeta.tableMeta().discriminator()
                 ;
+    }
+
+    private void assertTargetField(FieldMeta<?, ?> fieldMeta, TableMeta<?> tableMeta) {
+        Assert.isTrue(fieldMeta.tableMeta() == tableMeta, () -> String.format(
+                "field[%s] don't belong to tableMeta[%s]", fieldMeta, tableMeta));
+
+        if (!fieldMeta.updatable()) {
+            throw new NonUpdateAbleException(ErrorCode.NON_UPDATABLE
+                    , String.format("domain[%s] field[%s] is non-updatable"
+                    , fieldMeta.tableMeta().javaType().getName(), fieldMeta.propertyName()));
+        }
+    }
+
+    private void assertFieldAndValueExpressionMatch(FieldMeta<?, ?> fieldMeta, Expression<?> valueExp) {
+        if (!fieldMeta.nullable()
+                && valueExp instanceof ParamExpression
+                && ((ParamExpression<?>) valueExp).value() == null) {
+            throw new IllegalArgumentException(String.format("domain[%s] mapping prop[%s] non-null"
+                    , fieldMeta.tableMeta().javaType().getName()
+                    , fieldMeta.propertyName()));
+        }
     }
 
 

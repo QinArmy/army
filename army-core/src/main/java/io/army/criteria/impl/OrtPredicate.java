@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Predicate;
 import io.army.dialect.ParamWrapper;
+import io.army.dialect.SQL;
 import io.army.util.ArrayUtils;
 
 import java.util.List;
@@ -19,14 +20,15 @@ final class OrtPredicate extends AbstractPredicate implements Predicate {
 
 
     @Override
-    public void appendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+    protected void appendSQLBeforeWhitespace(SQL sql, StringBuilder builder, List<ParamWrapper> paramWrapperList) {
         builder.append("(");
-        orPredicate.appendSQL(builder, paramWrapperList);
+        orPredicate.appendSQL(sql,builder, paramWrapperList);
         builder.append(" OR (");
         for (Predicate predicate : andPredicateList) {
-            predicate.appendSQL(builder, paramWrapperList);
+            predicate.appendSQL(sql,builder, paramWrapperList);
             builder.append(" AND ");
         }
         builder.append("))");
     }
+
 }

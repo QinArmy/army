@@ -15,9 +15,13 @@ import java.util.List;
 /**
  * created  on 2018/11/24.
  */
-public abstract class AbstractExpression<E> implements Expression<E>, Selection {
+ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     protected String alias;
+
+     AbstractExpression() {
+    }
+
 
     @Override
     public Selection as(String alias) {
@@ -31,7 +35,7 @@ public abstract class AbstractExpression<E> implements Expression<E>, Selection 
     }
 
     @Override
-    public Expression<?> expression() {
+    public final Expression<?> expression() {
         return this;
     }
 
@@ -161,117 +165,117 @@ public abstract class AbstractExpression<E> implements Expression<E>, Selection 
     }
 
     @Override
-    public final  <N extends Number> Expression<N> mod(Expression<N> operator) {
+    public final <N extends Number> Expression<N> mod(Expression<N> operator) {
         return new DualExpresion<>(this, DualOperator.MOD, operator);
     }
 
     @Override
-    public final  <N extends Number> Expression<N> mod(N operator) {
+    public final <N extends Number> Expression<N> mod(N operator) {
         return new DualExpresion<>(this, DualOperator.MOD, SQLS.constant(operator));
     }
 
     @Override
-    public final  <N extends Number> Expression<N> multiply(Expression<N> multiplicand) {
+    public final <N extends Number> Expression<N> multiply(Expression<N> multiplicand) {
         return new DualExpresion<>(this, DualOperator.MULTIPLY, multiplicand);
     }
 
     @Override
-    public final  <N extends Number> Expression<N> multiply(N multiplicand) {
+    public final <N extends Number> Expression<N> multiply(N multiplicand) {
         return new DualExpresion<>(this, DualOperator.MULTIPLY, SQLS.constant(multiplicand));
     }
 
     @Override
-    public final  <N extends Number> Expression<N> add(Expression<N> augend) {
+    public final <N extends Number> Expression<N> add(Expression<N> augend) {
         return new DualExpresion<>(this, DualOperator.ADD, augend);
     }
 
     @Override
-    public final  <N extends Number> Expression<N> add(N augend) {
+    public final <N extends Number> Expression<N> add(N augend) {
         return new DualExpresion<>(this, DualOperator.ADD, SQLS.constant(augend));
     }
 
     @Override
-    public final  <N extends Number> Expression<N> subtract(Expression<N> subtrahend) {
+    public final <N extends Number> Expression<N> subtract(Expression<N> subtrahend) {
         return new DualExpresion<>(this, DualOperator.SUBTRACT, subtrahend);
     }
 
     @Override
-    public final  <N extends Number> Expression<N> subtract(N subtrahend) {
+    public final <N extends Number> Expression<N> subtract(N subtrahend) {
         return new DualExpresion<>(this, DualOperator.SUBTRACT, SQLS.constant(subtrahend));
     }
 
     @Override
-    public final  <N extends Number> Expression<N> divide(Expression<N> divisor) {
+    public final <N extends Number> Expression<N> divide(Expression<N> divisor) {
         return new DualExpresion<>(this, DualOperator.DIVIDE, divisor);
     }
 
     @Override
-    public final  <N extends Number> Expression<N> divide(N divisor) {
+    public final <N extends Number> Expression<N> divide(N divisor) {
         return new DualExpresion<>(this, DualOperator.DIVIDE, SQLS.constant(divisor));
     }
 
     @Override
-    public final  <N extends Number> Expression<N> negate() {
-        return new UnaryExpression<>(this,UnaryOperator.NEGATED);
+    public final <N extends Number> Expression<N> negate() {
+        return new UnaryExpression<>(this, UnaryOperator.NEGATED);
     }
 
     @Override
-    public final  <N extends Number> Expression<N> and(Expression<N> operator) {
+    public final <O> Expression<BigInteger>  and(Expression<O> operator) {
         return new DualExpresion<>(this, DualOperator.AND, operator);
     }
 
     @Override
-    public final  <N extends Number> Expression<N> and(Long operator) {
+    public final  Expression<BigInteger>  and(Long operator) {
         return new DualExpresion<>(this, DualOperator.AND, SQLS.constant(operator));
     }
 
     @Override
-    public final  <N extends Number> Expression<N> or(Expression<N> operator) {
+    public final <O> Expression<BigInteger>  or(Expression<O> operator) {
         return new DualExpresion<>(this, DualOperator.OR, operator);
     }
 
     @Override
-    public final  <N extends Number> Expression<N> or(Long operator) {
+    public final  Expression<BigInteger>  or(Long operator) {
         return new DualExpresion<>(this, DualOperator.OR, SQLS.constant(operator));
     }
 
     @Override
-    public final  <N extends Number> Expression<N> xor(Expression<N> operator) {
+    public final <O> Expression<BigInteger>  xor(Expression<O> operator) {
         return new DualExpresion<>(this, DualOperator.XOR, operator);
     }
 
     @Override
-    public final  <N extends Number> Expression<N> xor(Long operator) {
+    public final  Expression<BigInteger>  xor(Long operator) {
         return new DualExpresion<>(this, DualOperator.XOR, SQLS.constant(operator));
     }
 
     @Override
-    public final  <N extends Number> Expression<N> inversion(Expression<N> operator) {
+    public final <O> Expression<BigInteger>  inversion(Expression<O> operator) {
         return new DualExpresion<>(this, DualOperator.INVERT, operator);
     }
 
     @Override
-    public final  <N extends Number> Expression<N> inversion(Long operator) {
+    public final  Expression<BigInteger>  inversion(Long operator) {
         return new DualExpresion<>(this, DualOperator.INVERT, SQLS.constant(operator));
     }
 
     @Override
-    public final  <N extends Number> Expression<N> rightShift(Integer bitNumber) {
+    public final  Expression<BigInteger>  rightShift(Integer bitNumber) {
         return new DualExpresion<>(this, DualOperator.RIGHT_SHIFT, SQLS.constant(bitNumber));
     }
 
     @Override
-    public final  <N extends Number> Expression<N> rightShift(Expression<N> bitNumber) {
+    public final <O> Expression<BigInteger>  rightShift(Expression<O> bitNumber) {
         return new DualExpresion<>(this, DualOperator.RIGHT_SHIFT, bitNumber);
     }
 
     @Override
-    public final   <N extends Number> Expression<N> leftShift(Integer bitNumber) {
+    public final  Expression<BigInteger>  leftShift(Integer bitNumber) {
         return new DualExpresion<>(this, DualOperator.LEFT_SHIFT, SQLS.constant(bitNumber));
     }
 
     @Override
-    public final  <N extends Number> Expression<N> leftShift(Expression<N> bitNumber) {
+    public final <O> Expression<BigInteger>  leftShift(Expression<O> bitNumber) {
         return new DualExpresion<>(this, DualOperator.LEFT_SHIFT, bitNumber);
     }
 
@@ -297,6 +301,12 @@ public abstract class AbstractExpression<E> implements Expression<E>, Selection 
     }
 
     @Override
+    public final Expression<E> brackets() {
+        return new BracketsExpression<>(this);
+    }
+
+
+    @Override
     public final Predicate all(SubQuery<E> subQuery) {
         return null;
     }
@@ -312,10 +322,13 @@ public abstract class AbstractExpression<E> implements Expression<E>, Selection 
     }
 
     @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        List<ParamWrapper> paramWrapperList = new ArrayList<>();
-        appendSQL(builder, paramWrapperList);
-        return builder.toString();
+    public final void appendSQL(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+        appendSQLBeforeWhitespace(sql,builder, paramWrapperList);
+        builder.append(" ");
     }
+
+
+    /*################################## blow protected template method ##################################*/
+
+    protected abstract void appendSQLBeforeWhitespace(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList);
 }

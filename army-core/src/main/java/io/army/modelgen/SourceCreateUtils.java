@@ -48,7 +48,7 @@ abstract class SourceCreateUtils {
      * <ol>
      *     <li>check required field , eg : {@link TableMeta#DOMAIN_PROPS}</li>
      *     <li>check property override</li>
-     *     <li>check column duplication in a table</li>
+     *     <li>check column duplication in a tableMeta</li>
      *     <li>check index filed validation</li>
      *     <li>check discriminator validation</li>
      * </ol>
@@ -64,9 +64,9 @@ abstract class SourceCreateUtils {
         try {
             Set<String> entityPropNameSet = new HashSet<>();
 
-            //1.check parent mapping and  add super entity props to entityPropNameSet to avoid child class duplicate prop
+            //1.check parent mapping then  add super entity props to entityPropNameSet to avoid child class duplicate prop
             generateEntityAttributes(parentMappedElementList, entityPropNameSet, indexColumnNameSet);
-            // 2. extract entity property elements and check entity mapping
+            // 2. extract entity property elements then check entity mapping
             final Set<VariableElement> entityPropSet = generateEntityAttributes(entityMappedElementList,
                     entityPropNameSet, indexColumnNameSet);
             // assert required props
@@ -336,8 +336,8 @@ abstract class SourceCreateUtils {
 
     /**
      * <ul>
-     *     <li>{@link Field#getName()} cannot duplication in Entity mapped by table</li>
-     *     <li>{@link Column#name()} cannot duplication in a table</li>
+     *     <li>{@link Field#getName()} cannot duplication in Entity mapped by tableMeta</li>
+     *     <li>{@link Column#name()} cannot duplication in a tableMeta</li>
      * </ul>
      *
      * @param mappedClassElementList unmodifiable list

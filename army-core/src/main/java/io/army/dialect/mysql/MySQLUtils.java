@@ -759,7 +759,7 @@ abstract class MySQLUtils {
     /*################################## blow private method ##################################*/
 
     /**
-     * M ySQL 8.0 Removed Keywords and Reserved Words
+     * M ySQL 8.0 Removed Keywords then Reserved Words
      */
     private static void createMySQL80RemovedKeywords(Set<String> keywords) {
 

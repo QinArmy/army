@@ -4,7 +4,12 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 
-public interface SingleSetAble<T extends IDomain> extends Updatable {
+/**
+ *
+ * @param <T> entity java class
+ * @see SingleUpdateAble
+ */
+public interface SetAbleOfSingleUpdate<T extends IDomain>  extends SingleUpdate{
 
     <F> WhereAbleOfSingleUpdate<T> set(FieldMeta<T,F> targetField, Expression<F> expression);
 

@@ -4,7 +4,7 @@ package io.army.annotation;
 import java.lang.annotation.*;
 
 /**
- * Specifies the table for the annotated entity.
+ * Specifies the tableMeta for the annotated entity.
  *
  * <p>
  * <pre>
@@ -23,42 +23,42 @@ import java.lang.annotation.*;
 public @interface Table {
 
     /**
-     *  The name of the table.
+     *  The name of the tableMeta.
      * <p> Defaults to the entity name.
      */
     String name();
 
-    /** (Optional) The catalog of the table.
+    /** (Optional) The catalog of the tableMeta.
      * <p> Defaults to the default catalog.
      */
     String catalog() default "";
 
     /**
-     * (Optional) The schema of the table.
+     * (Optional) The schema of the tableMeta.
      * <p> Defaults to the default schema for user.
      */
     String schema() default "";
 
     /**
-     * (Optional) Indexes for the table.  These are only used if
-     * table generation is in effect.  Note that it is not necessary
+     * (Optional) Indexes for the tableMeta.  These are only used if
+     * tableMeta generation is in effect.  Note that it is not necessary
      * to specify an indexMap for a primary key, asType the primary key
      * indexMap will be created automatically.
      */
     Index[] indexes() default {};
 
     /**
-     * The comment of the table.
+     * The comment of the tableMeta.
      */
     String comment() ;
 
     /**
-     * Specifies the table immutable,if true,update sql of the table isn't allowed by army.
+     * Specifies the tableMeta immutable,if true,update sql of the tableMeta isn't allowed by army.
      * <p> Default value is false.
      */
     boolean immutable() default false;
 
-    /** (Optional) The charset of the table.
+    /** (Optional) The charset of the tableMeta.
      * <p>
      *     Default:
      *     <ul>

@@ -26,10 +26,10 @@ public class GeneratorTests {
 
         SessionFactory sessionFactory = BootstrapTests.builder(map)
                 .build();
-        LOG.info("table generator chain:");
+        LOG.info("tableMeta generator chain:");
 
         for (Map.Entry<TableMeta<?>, List<FieldMeta<?, ?>>> e : sessionFactory.tableGeneratorChain().entrySet()) {
-            StringBuilder builder = new StringBuilder("table:");
+            StringBuilder builder = new StringBuilder("tableMeta:");
             builder.append(e.getKey().tableName())
                     .append("\n")
             ;

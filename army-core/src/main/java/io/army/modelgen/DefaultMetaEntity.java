@@ -48,7 +48,7 @@ class DefaultMetaEntity implements MetaEntity {
         if (this.entityElement == null) {
             throw new MetaException(ErrorCode.META_ERROR, "entityMappedElementList error");
         }
-        // indexColumnNameSet help next step
+        // indexColumnNameSet help then step
         final Set<String> indexColumnNameSet = createIndexColumnNameSet(this.entityElement);
         // prepare mapping prop element
         final Set<VariableElement> mappingPropSet = SourceCreateUtils.generateAttributes(

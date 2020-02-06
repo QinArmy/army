@@ -21,7 +21,7 @@ public interface ArmyBaseDao {
     <T> T get(Class<T> entityClass, Object id, boolean withoutVisible);
 
     /**
-     * query all field of entity by primary key and lock the row
+     * query all field of entity by primary key then lock the row
      *
      * @param entityClass entity class
      * @param id          primary key

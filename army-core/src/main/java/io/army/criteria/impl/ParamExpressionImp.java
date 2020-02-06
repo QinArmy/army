@@ -25,7 +25,7 @@ final class ParamExpressionImp<E> implements ParamExpression<E> {
         } else if (value != null) {
             paramExpression = new ParamExpressionImp<>(value);
         } else {
-            throw new IllegalArgumentException("mappingType and value all is null");
+            throw new IllegalArgumentException("mappingType then value all is null");
         }
         return paramExpression;
     }

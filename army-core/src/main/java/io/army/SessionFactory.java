@@ -44,7 +44,7 @@ public interface SessionFactory extends AutoCloseable{
     Map<TableMeta<?>, List<FieldMeta<?,?>>> tableGeneratorChain();
 
     /**
-     * Destroy this <tt>SessionFactory</tt> and release all resources (caches,
+     * Destroy this <tt>SessionFactory</tt> then release all resources (caches,
      * connection pools, etc).
      * <p/>
      * It is the responsibility of the application to ensure that there are no

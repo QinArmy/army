@@ -3,16 +3,17 @@ package io.army.criteria.impl;
 import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
 import io.army.annotation.Column;
+import io.army.criteria.AliasTableFieldMeta;
 import io.army.criteria.MetaException;
 import io.army.criteria.Selection;
 import io.army.dialect.ParamWrapper;
+import io.army.dialect.SQL;
 import io.army.domain.IDomain;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
-import io.army.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.sql.JDBCType;
@@ -129,7 +130,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     private DefaultFieldMeta(final @NonNull TableMeta<T> table, final @NonNull Field field, final boolean unique,
                              final boolean index)
             throws MetaException {
-        Assert.notNull(table, "table required");
+        Assert.notNull(table, "tableMeta required");
         Assert.notNull(field, "field required");
         Assert.isAssignable(field.getDeclaringClass(), table.javaType());
         assertNotDuplication(field, table.javaType());
@@ -169,14 +170,15 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     @Override
     public final String alias() {
-        return StringUtils.hasText(alias)
-                ? super.alias()
-                : propertyName;
+        // must override super alias ,because one column of table only instance
+        return propertyName;
     }
 
     @Override
     public final Selection as(String alias) {
-        return super.as(alias);
+        return propertyName.equals(alias)
+                ? this
+                : new SelectionImpl(this, alias);
     }
 
     @Override
@@ -205,8 +207,13 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     }
 
     @Override
-    public final TableMeta<T> table() {
+    public final TableMeta<T> tableMeta() {
         return table;
+    }
+
+    @Override
+    public AliasTableFieldMeta<T, F> table(String tableAlias) {
+        return new AliasTableFieldMetaImpl<>(this,tableAlias);
     }
 
     @Override
@@ -293,7 +300,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
                 .append("\n")
                 .append(this.table.javaType().getName())
                 .append(" mapping ")
-                .append(this.table().tableName())
+                .append(this.tableMeta().tableName())
                 .append(" [\n")
                 .append(this.propertyName())
                 .append(" mapping ")
@@ -303,8 +310,8 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     }
 
     @Override
-    public final void appendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
-
+    protected final void appendSQLBeforeWhitespace(SQL sql, StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+        builder.append(sql.quoteIfNeed(fieldName));
     }
 
     /*################################## blow private method ##################################*/

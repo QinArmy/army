@@ -7,9 +7,11 @@ import java.util.Collection;
  */
 public abstract class Assert extends org.springframework.util.Assert {
 
-    public static void assertTrue(boolean expression, String format, Object... args) {
-        if (!expression) {
-            throwIllegalArgumentException(format, args);
+
+    public static void stateSizeLt(Collection<?> collection, int excludeMaxSize,String message){
+        if(collection != null
+                &&  collection.size() >= excludeMaxSize){
+                  throw new IllegalStateException(message);
         }
     }
 

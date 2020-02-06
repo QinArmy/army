@@ -4,7 +4,7 @@ package io.army.beans;
 /**
  * Simple factory facade for obtaining {@link BeanWrapper} instances,
  * in particular for {@link BeanWrapper} instances. Conceals the actual
- * target implementation classes and their extended public signature.
+ * target implementation classes then their extended public signature.
  *
  * @since 1.0
  */

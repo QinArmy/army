@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.ConstantExpression;
 import io.army.dialect.ParamWrapper;
+import io.army.dialect.SQL;
 import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingType;
@@ -33,7 +34,7 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
 
 
     @Override
-    public void appendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+    protected void appendSQLBeforeWhitespace(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList) {
         builder.append(mappingType.nonNullTextValue(constant));
     }
 

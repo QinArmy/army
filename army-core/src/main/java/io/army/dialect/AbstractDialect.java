@@ -125,7 +125,7 @@ public abstract class AbstractDialect implements Dialect {
 
     /*####################################### below protected template method #################################*/
     /**
-     * @return must a modifiable Set,and every element is uppercase
+     * @return must a modifiable Set,then every element is uppercase
      */
     protected abstract Set<String> createKeywordsSet();
 

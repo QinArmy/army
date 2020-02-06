@@ -23,7 +23,7 @@ class MySQL57MetaSchemaComparator extends AbstractMetaSchemaComparator {
             sqlDataType = MySQLDataType.valueOf(columnInfo.sqlType());
         } catch (IllegalArgumentException e) {
             throw new SchemaInfoException(ErrorCode.NNSUPPORT_SQL_TYPE,
-                    "table[%s].column[%s]'s sql type[%s] isn't supported",
+                    "tableMeta[%s].column[%s]'s sql type[%s] isn't supported",
                     columnInfo.table().name(),
                     columnInfo.name(),
                     columnInfo.sqlType());
@@ -41,7 +41,7 @@ class MySQL57MetaSchemaComparator extends AbstractMetaSchemaComparator {
             throw new MetaException(ErrorCode.NNSUPPORT_SQL_TYPE,
                     e,
                     "Entity[%s].prop[%s] definition error,%s",
-                    fieldMeta.table().javaType(),
+                    fieldMeta.tableMeta().javaType(),
                     fieldMeta.propertyName(),
                     e.getMessage()
             );

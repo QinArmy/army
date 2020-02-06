@@ -27,7 +27,7 @@ public class ExtractorTests {
         LOG.info("schema:{}", schemaInfo);
 
         for (TableInfo table : schemaInfo.tableMap().values()) {
-            LOG.info("table:{}", table);
+            LOG.info("tableMeta:{}", table);
             for (ColumnInfo column : table.columnMap().values()) {
                 LOG.info("column:{}", column);
             }

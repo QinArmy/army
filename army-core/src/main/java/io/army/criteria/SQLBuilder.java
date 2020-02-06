@@ -7,19 +7,14 @@ import io.army.dialect.SQLDialect;
  */
 public interface SQLBuilder {
 
-
-    default String build() {
-        throw new UnsupportedOperationException();
-    }
-
     default String debugSQL(SQLDialect sqlDialect) {
         throw new UnsupportedOperationException();
     }
 
-
-    default String buildWithParam() {
+    default String debugSQL(SQLDialect sqlDialect,Visible visible) {
         throw new UnsupportedOperationException();
     }
+
 
 
 }

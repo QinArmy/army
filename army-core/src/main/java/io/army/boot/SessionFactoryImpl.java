@@ -188,7 +188,7 @@ class SessionFactoryImpl implements InnerSessionFactory {
 
     private void printMigrationSql(Map<String, List<String>> tableSqlMap) {
         for (Map.Entry<String, List<String>> e : tableSqlMap.entrySet()) {
-            LOG.debug("\ntable:{}\n", e.getKey());
+            LOG.debug("\ntableMeta:{}\n", e.getKey());
             for (String sql : e.getValue()) {
                 LOG.debug("{}", sql);
             }

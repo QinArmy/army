@@ -23,7 +23,7 @@ class Meta2SchemaImpl implements Meta2Schema {
         // 1. extract schema from database's current schema.
         SchemaInfo schemaInfo;
         schemaInfo = SchemaExtractor.newInstance().extractor(connection);
-        // 2. compare meta and schema .
+        // 2. compare meta then schema .
         List<Migration> migrationList;
         migrationList = MetaSchemaComparator.build(dialect.sqlDialect())
                 .compare(tableMetas, schemaInfo, dialect);
@@ -77,7 +77,7 @@ class Meta2SchemaImpl implements Meta2Schema {
             }
             // 4.1 first drop index
             sqlList.addAll(dialect.dropIndex(migration.table(), dropList));
-            // 4.2 and add index
+            // 4.2 then add index
             sqlList.addAll(dialect.addIndex(migration.table(), migration.indexesToAlter()));
         }
         // 5. drop index if need

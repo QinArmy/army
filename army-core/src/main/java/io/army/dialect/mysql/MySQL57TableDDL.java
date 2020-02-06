@@ -52,7 +52,7 @@ class MySQL57TableDDL extends AbstractTableDDL {
         Function<FieldMeta<?, ?>, String> function = jdbcTypeFunctionMap.get(fieldMeta.mappingType().jdbcType());
         if (function == null) {
             throw new MetaException(ErrorCode.META_ERROR, "Entity[%s].column[%s] not found jdbc function"
-                    , fieldMeta.table().tableName()
+                    , fieldMeta.tableMeta().tableName()
                     , fieldMeta.fieldName()
             );
         }

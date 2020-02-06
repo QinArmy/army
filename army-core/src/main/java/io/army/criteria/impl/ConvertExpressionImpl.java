@@ -18,9 +18,8 @@ final class ConvertExpressionImpl<E> extends AbstractExpression<E> implements Co
         this.convertType = convertType;
     }
 
-
     @Override
-    public void appendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+    protected void appendSQLBeforeWhitespace(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
         original.appendSQL(builder, paramWrapperList);
     }
 

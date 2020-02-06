@@ -16,8 +16,8 @@ public abstract class SQLS {
         throw new UnsupportedOperationException();
     }
 
-    public static <T extends IDomain> SingleSetAble<T> update(TableMeta<T> tableMeta) {
-        return new SingleUpatableImpl<>(tableMeta);
+    public static <T extends IDomain> SetAbleOfSingleUpdate<T> update(TableMeta<T> tableMeta) {
+        return new SingleUpdateAbleImpl<>(tableMeta);
     }
 
     public static <E> ParamExpression<E> asNull(MappingType mappingType) {

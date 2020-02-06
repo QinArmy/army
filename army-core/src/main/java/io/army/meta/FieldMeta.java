@@ -1,5 +1,6 @@
 package io.army.meta;
 
+import io.army.criteria.AliasTableFieldMeta;
 import io.army.criteria.Expression;
 import io.army.criteria.Selection;
 import io.army.domain.IDomain;
@@ -9,7 +10,7 @@ import io.army.meta.mapping.MappingType;
 import java.sql.JDBCType;
 
 /**
- * <p> this interface representing a Java class and table column mapping.</p>
+ * <p> this interface representing a Java class then tableMeta column mapping.</p>
  *
  * @param <T> representing Entity Java class
  * @param <F> representing Entity property Java class
@@ -27,12 +28,14 @@ public interface FieldMeta<T extends IDomain, F> extends Expression<F> ,Selectio
     boolean nullable();
 
 
-    TableMeta<T> table();
+    TableMeta<T> tableMeta();
+
+    AliasTableFieldMeta<T,F> table(String tableAlias);
 
     /**
      * <p>
      * if this field representing {@link TableMeta#ID}
-     * and field's table is {@link MappingMode#CHILD},always return null.
+     * then field's tableMeta is {@link MappingMode#CHILD},always return null.
      * </p>
      */
     @Nullable

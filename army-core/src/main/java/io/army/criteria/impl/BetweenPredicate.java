@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.dialect.ParamWrapper;
+import io.army.dialect.SQL;
 
 import java.util.List;
 
@@ -19,12 +20,14 @@ final class BetweenPredicate extends AbstractPredicate {
         this.right = right;
     }
 
+
     @Override
-    public void appendSQL(StringBuilder builder, List<ParamWrapper> paramWrapperList) {
-        left.appendSQL(builder, paramWrapperList);
+    protected void appendSQLBeforeWhitespace(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+        left.appendSQL(sql,builder, paramWrapperList);
         builder.append(" BETWEEN ");
-        center.appendSQL(builder,paramWrapperList);
+        center.appendSQL(sql,builder,paramWrapperList);
         builder.append(" AND ");
-        right.appendSQL(builder,paramWrapperList);
+        right.appendSQL(sql,builder,paramWrapperList);
     }
+
 }

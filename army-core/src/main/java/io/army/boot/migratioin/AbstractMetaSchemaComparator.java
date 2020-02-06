@@ -35,13 +35,13 @@ public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparat
             // make key lower case
             TableInfo tableInfo = tableInfoMap.get(StringUtils.toLowerCase(tableMeta.tableName()));
             if (tableInfo == null) {
-                // will debugSQL table
+                // will debugSQL tableMeta
                 migrationList.add(new MigrationImpl(tableMeta, true));
 
             } else {
                 Migration migration = doMigrateTable(tableMeta, tableInfo);
                 if (migration != null) {
-                    // will alter table
+                    // will alter tableMeta
                     migrationList.add(migration);
                 }
             }
@@ -62,7 +62,7 @@ public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparat
     @Nullable
     private Migration doMigrateTable(TableMeta<?> tableMeta, TableInfo tableInfo) {
         Assert.state(tableMeta.tableName().equals(tableInfo.name()),
-                () -> String.format("TableMeta[%s] and TableInfo[%s] not match",
+                () -> String.format("TableMeta[%s] then TableInfo[%s] not match",
                         tableMeta.tableName(), tableInfo.name()));
 
         MigrationImpl migration = new MigrationImpl(tableMeta, false);
@@ -88,10 +88,10 @@ public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparat
             // make key lower case
             ColumnInfo columnInfo = columnInfoMap.get(StringUtils.toLowerCase(fieldMeta.fieldName()));
             if (columnInfo == null) {
-                // alter table add column
+                // alter tableMeta add column
                 migration.addColumnToAdd(fieldMeta);
             } else if (needAlterColumn(fieldMeta, columnInfo)) {
-                // alter table alter column
+                // alter tableMeta alter column
                 migration.addColumnToModify(fieldMeta);
             }
         }
@@ -108,11 +108,11 @@ public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparat
             IndexInfo indexInfo = indexInfoMap.get(indexName);
             if (indexInfo == null) {
                 if (!indexMeta.isPrimaryKey()) {
-                    // alter table add index
+                    // alter tableMeta add index
                     migration.addIndexToAdd(indexMeta);
                 }
             } else if (needAlterIndex(indexMeta, indexInfo)) {
-                // alter table alter index
+                // alter tableMeta alter index
                 migration.addIndexToModify(indexMeta);
             }
             indexNameSet.add(indexName);
@@ -207,7 +207,7 @@ public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparat
             throws SchemaInfoException {
         if (fieldMeta.jdbcType() != columnInfo.jdbcType()) {
             throw new SchemaInfoException(ErrorCode.SQL_TYPE_NOT_MATCH
-                    , "FieldMeta[%s] and ColumnInfo[%s] SQL type not match"
+                    , "FieldMeta[%s] then ColumnInfo[%s] SQL type not match"
                     , fieldMeta.fieldName(), columnInfo.name());
         }
     }
