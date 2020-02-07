@@ -1,9 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Expression;
-import io.army.criteria.ParamExpression;
-import io.army.criteria.Predicate;
-import io.army.criteria.SubQuery;
+import io.army.criteria.*;
 import io.army.dialect.ParamWrapper;
 import io.army.dialect.SQL;
 import io.army.lang.Nullable;
@@ -203,11 +200,10 @@ final class ParamExpressionImp<E> implements ParamExpression<E> {
     }
 
     @Override
-    public void appendSQL(SQL sql, StringBuilder builder, List<ParamWrapper> paramWrapperList) {
-        builder.append("? ");
-        paramWrapperList.add(ParamWrapper.build(mappingType, value));
+    public void appendSQL(SQLContext context) {
+        context.stringBuilder().append("? ");
+        context.appendParam(ParamWrapper.build(mappingType, value));
     }
-
 
     @Override
     public String toString() {

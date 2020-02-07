@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.Predicate;
+import io.army.criteria.SQLContext;
 import io.army.dialect.ParamWrapper;
 import io.army.dialect.SQL;
 
@@ -38,12 +39,21 @@ final class NotPredicate extends AbstractPredicate {
     }
 
     @Override
-    protected void appendSQLBeforeWhitespace(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+    protected void afterSpace(SQLContext context) {
         if (not) {
-            builder.append(UnaryOperator.NOT.rendered());
-            builder.append(" ");
+            context.stringBuilder()
+                    .append(UnaryOperator.NOT.rendered())
+                    .append(" ");
         }
-        expression.appendSQL(sql,builder, paramWrapperList);
+        expression.appendSQL(context);
     }
 
+    @Override
+    public String toString() {
+        String text = "";
+        if(not){
+            text = UnaryOperator.NOT.rendered() + " ";
+        }
+        return text + expression;
+    }
 }

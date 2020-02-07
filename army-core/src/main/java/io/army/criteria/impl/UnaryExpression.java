@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
+import io.army.criteria.SQLContext;
 import io.army.criteria.SQLOperator;
 import io.army.dialect.ParamWrapper;
 import io.army.dialect.SQL;
@@ -27,13 +28,14 @@ final class UnaryExpression<E> extends AbstractExpression<E> {
 
 
     @Override
-    protected void appendSQLBeforeWhitespace(SQL sql, StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+    protected void afterSpace(SQLContext context) {
+        StringBuilder builder = context.stringBuilder();
         if (unaryOperator.position() == SQLOperator.Position.LEFT) {
             builder.append(unaryOperator.rendered())
                     .append(" ");
-            one.appendSQL(sql,builder, paramWrapperList);
+            one.appendSQL(context);
         } else if (unaryOperator.position() == SQLOperator.Position.RIGHT) {
-            one.appendSQL(sql,builder, paramWrapperList);
+            one.appendSQL(context);
             builder.append(unaryOperator.rendered())
                     .append(" ");
         } else {
@@ -41,4 +43,19 @@ final class UnaryExpression<E> extends AbstractExpression<E> {
         }
     }
 
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        if (unaryOperator.position() == SQLOperator.Position.LEFT) {
+            builder.append(unaryOperator.rendered())
+                    .append(one);
+        } else if (unaryOperator.position() == SQLOperator.Position.RIGHT) {
+            builder.append(one)
+                    .append(" ")
+                    .append(unaryOperator.rendered());
+        } else {
+            throw new IllegalStateException(String.format("UnaryOperator[%s]'s position error.", unaryOperator));
+        }
+        return builder.toString();
+    }
 }

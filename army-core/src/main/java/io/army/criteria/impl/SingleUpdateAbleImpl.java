@@ -29,7 +29,7 @@ final class SingleUpdateAbleImpl<T extends IDomain> extends AbstractSQLAble impl
 
     private final List<Expression<?>> valueExpressionList = new ArrayList<>();
 
-    private String tableAlias;
+    private String tableAlias = "";
 
     private List<Predicate> predicateList;
 

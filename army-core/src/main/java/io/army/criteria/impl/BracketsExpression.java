@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
+import io.army.criteria.SQLContext;
 import io.army.dialect.ParamWrapper;
 import io.army.dialect.SQL;
 import io.army.meta.mapping.MappingType;
@@ -16,14 +17,21 @@ final class BracketsExpression<E> extends AbstractExpression<E> {
     }
 
     @Override
-    protected void appendSQLBeforeWhitespace(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList) {
-        builder.append("( ");
-        exp.appendSQL(sql,builder, paramWrapperList);
+    protected void afterSpace(SQLContext context) {
+        StringBuilder builder = context.stringBuilder();
+        builder.append("(");
+        exp.appendSQL(context);
         builder.append(")");
     }
+
 
     @Override
     public MappingType mappingType() {
         return exp.mappingType();
+    }
+
+    @Override
+    public String toString() {
+        return "(" + exp + ")";
     }
 }

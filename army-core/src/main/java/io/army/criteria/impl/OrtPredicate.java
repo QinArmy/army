@@ -1,10 +1,12 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Predicate;
+import io.army.criteria.SQLContext;
 import io.army.dialect.ParamWrapper;
 import io.army.dialect.SQL;
 import io.army.util.ArrayUtils;
 
+import java.util.Iterator;
 import java.util.List;
 
 final class OrtPredicate extends AbstractPredicate implements Predicate {
@@ -20,15 +22,34 @@ final class OrtPredicate extends AbstractPredicate implements Predicate {
 
 
     @Override
-    protected void appendSQLBeforeWhitespace(SQL sql, StringBuilder builder, List<ParamWrapper> paramWrapperList) {
-        builder.append("(");
-        orPredicate.appendSQL(sql,builder, paramWrapperList);
+    protected void afterSpace(SQLContext context) {
+        StringBuilder builder = context.stringBuilder()
+                .append("(");
+        orPredicate.appendSQL(context);
         builder.append(" OR (");
-        for (Predicate predicate : andPredicateList) {
-            predicate.appendSQL(sql,builder, paramWrapperList);
-            builder.append(" AND ");
+        for (Iterator<Predicate> iterator = andPredicateList.iterator(); iterator.hasNext(); ) {
+            iterator.next().appendSQL(context);
+            if(iterator.hasNext()){
+                builder.append(" AND ");
+            }
         }
-        builder.append("))");
+        builder.append(" ) )");
     }
 
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder("( ");
+        builder.append(orPredicate)
+                .append(" OR (")
+        ;
+        for (Iterator<Predicate> iterator = andPredicateList.iterator(); iterator.hasNext(); ) {
+            builder.append(iterator.next());
+            if (iterator.hasNext()) {
+                builder.append(" AND");
+            }
+
+        }
+        builder.append(" )");
+        return builder.toString();
+    }
 }

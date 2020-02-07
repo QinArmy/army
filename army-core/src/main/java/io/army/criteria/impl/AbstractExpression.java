@@ -320,13 +320,17 @@ import java.util.List;
     }
 
     @Override
-    public final void appendSQL(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList) {
-        appendSQLBeforeWhitespace(sql,builder, paramWrapperList);
-        builder.append(" ");
+    public final void appendSQL(SQLContext context) {
+        context.stringBuilder().append(" ");
+        afterSpace(context);
     }
 
+    @Override
+    public String toString() {
+        return super.toString();
+    }
 
     /*################################## blow protected template method ##################################*/
 
-    protected abstract void appendSQLBeforeWhitespace(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList);
+    protected abstract void afterSpace(SQLContext context);
 }

@@ -21,12 +21,9 @@ public interface ParamExpression<E> extends Expression<E>, ParamWrapper {
 
     /**
      *
-     * @param sql
-     * @param builder
-     * @param paramWrapperList
      */
     @Override
-    void appendSQL(SQL sql, StringBuilder builder, List<ParamWrapper> paramWrapperList);
+    void appendSQL(SQLContext context);
 
     @Override
     MappingType mappingType();

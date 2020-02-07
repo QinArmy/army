@@ -19,7 +19,8 @@ public enum ErrorCode implements CodeEnum {
 
     CRITERIA_ERROR(200, "criteria error", NONE),
     ILLEGAL_PREDICATE(201, "illegal predicate", CRITERIA_ERROR),
-    NON_UPDATABLE(202,"",CRITERIA_ERROR),
+    NON_UPDATABLE(202, "", CRITERIA_ERROR),
+    TABLE_ALIAS_ERROR(203, "", CRITERIA_ERROR),
 
     TYPE_ERROR(500, "date type error", NONE),
     CODE_ENUM_ERROR(501, "CedeEnum definition error", TYPE_ERROR),

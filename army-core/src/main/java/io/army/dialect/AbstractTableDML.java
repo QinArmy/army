@@ -112,116 +112,120 @@ public abstract class AbstractTableDML implements TableDML {
         StringBuilder builder = new StringBuilder();
         List<ParamWrapper> paramWrapperList = new ArrayList<>();
 
+        String tableAlias = innerAble.tableAlias();
+
+        if (StringUtils.hasText(tableAlias)) {
+            tableAlias = this.sql.quoteIfNeed(tableAlias);
+        } else {
+            tableAlias = "";
+        }
+        // build sql context
+        final SQLContext context = new SingleUpdateSQLContext(this.sql, builder, paramWrapperList
+                , tableAlias, innerAble.tableMeta());
+
         //1. update clause
-        String tableAlias = appendUpdateClause(builder, innerAble);
+        appendUpdateClause(context, tableAlias, innerAble);
         //2. set clause
-        appendSetClause(builder, paramWrapperList, tableAlias, innerAble);
+        appendSetClause(context, tableAlias, innerAble);
         //3. where clause
         boolean hasVersion;
-        hasVersion = appendWhereClause(builder, paramWrapperList, tableAlias, innerAble, visible);
+        hasVersion = appendWhereClause(context, tableAlias, innerAble, visible);
         //4. order clause
-        appendOrderByClause(builder, paramWrapperList, innerAble);
+        appendOrderByClause(context, innerAble);
         //5. limit clause
         appendLimitClause(builder, paramWrapperList, innerAble.rowCount());
 
         return SQLWrapper.build(builder.toString(), paramWrapperList, hasVersion);
     }
 
-    @Nullable
-    private String appendUpdateClause(StringBuilder builder, InnerSingleUpdateAble innerAble) {
-        TableMeta<?> tableMeta = innerAble.tableMeta();
-        builder.append("UPDATE ")
-                .append(quoteIfNeed(tableMeta.tableName()))
-                .append(" ")
-        ;
-        String tableAlias = innerAble.tableAlias();
+    private void appendUpdateClause(SQLContext context, String tableAlias, InnerSingleUpdateAble innerAble) {
+        context.stringBuilder().append("UPDATE ")
+                .append(this.sql.quoteIfNeed(innerAble.tableMeta().tableName()));
 
         if (StringUtils.hasText(tableAlias)) {
-            builder.append("AS ")
-                    .append(quoteIfNeed(tableAlias))
-                    .append(" ");
-        } else {
-            tableAlias = null;
+            context.stringBuilder()
+                    .append(" AS ")
+                    .append(tableAlias);
         }
-        return tableAlias;
     }
 
-    private void appendSetClause(StringBuilder builder, List<ParamWrapper> paramWrapperList
-            , final @Nullable String tableAlias, InnerSingleUpdateAble innerAble) {
+    private void appendSetClause(SQLContext context, final String tableAlias, InnerSingleUpdateAble innerAble) {
         TableMeta<?> tableMeta = innerAble.tableMeta();
 
         List<FieldMeta<?, ?>> fieldMetaList = innerAble.targetFieldList();
         List<Expression<?>> valueExpList = innerAble.valueExpressionList();
 
         Assert.isTrue(fieldMetaList.size() == valueExpList.size(), "updateAble error");
-        builder.append("SET ");
+        StringBuilder builder = context.stringBuilder();
+        builder.append(" SET");
         final int size = fieldMetaList.size();
         for (int i = 0; i < size; i++) {
             FieldMeta<?, ?> fieldMeta = fieldMetaList.get(i);
             assertTargetField(fieldMeta, tableMeta);
 
-            if (tableAlias != null) {
-                builder.append(tableAlias)
+            if (StringUtils.hasText(tableAlias)) {
+                builder.append(" ")
+                        .append(tableAlias)
                         .append(".");
             }
-            builder.append(quoteIfNeed(fieldMeta.fieldName()))
-                    .append(" = ");
+            builder.append(this.sql.quoteIfNeed(fieldMeta.fieldName()))
+                    .append(" =");
             Expression<?> valueExp = valueExpList.get(i);
             // assert not null
             assertFieldAndValueExpressionMatch(fieldMeta, valueExp);
             // append expression
-            valueExp.appendSQL(this.sql, builder, paramWrapperList);
+            valueExp.appendSQL(context);
             if (i < size - 1) {
                 builder.append(",");
             }
 
         }
         // append update_time and version field
-        appendFieldsManagedByArmy(tableMeta, builder, paramWrapperList, tableAlias);
+        appendFieldsManagedByArmy(tableMeta, context, tableAlias);
     }
 
-    private void appendFieldsManagedByArmy(TableMeta<?> tableMeta, StringBuilder builder
-            , List<ParamWrapper> paramWrapperList, final @Nullable String tableAlias) {
+    private void appendFieldsManagedByArmy(TableMeta<?> tableMeta, SQLContext context, final String tableAlias) {
         //1. version field
         FieldMeta<?, ?> fieldMeta = tableMeta.getField(TableMeta.VERSION);
-
+        StringBuilder builder = context.stringBuilder();
         builder.append(",");
-        if (tableAlias != null) {
-            builder.append(tableAlias)
-                    .append(".");
+        String qualifiedName = this.sql.quoteIfNeed(fieldMeta.fieldName());
+        if (StringUtils.hasText(tableAlias)) {
+            qualifiedName = " " + tableAlias + "." + qualifiedName;
         }
-        builder.append(quoteIfNeed(fieldMeta.fieldName()))
+        builder.append(qualifiedName)
                 .append(" = ")
+                .append(qualifiedName)
+                .append(" + 1")
         ;
-        // version = version + 1
-        fieldMeta.add(1).appendSQL(this.sql, builder, paramWrapperList);
+
         //2. updateTime field
         fieldMeta = tableMeta.getField(TableMeta.UPDATE_TIME);
         builder.append(",");
-        if (tableAlias != null) {
-            builder.append(tableAlias)
-                    .append(".");
+        qualifiedName = this.sql.quoteIfNeed(fieldMeta.fieldName());
+        if (StringUtils.hasText(tableAlias)) {
+            qualifiedName = " " + tableAlias + "." + qualifiedName;
         }
-        builder.append(quoteIfNeed(fieldMeta.fieldName()))
-                .append(" = ");
+        builder.append(qualifiedName)
+                .append(" =");
 
         if (fieldMeta.javaType() == LocalDateTime.class) {
-            SQLS.param(LocalDateTime.now()).appendSQL(this.sql, builder, paramWrapperList);
+            SQLS.param(LocalDateTime.now()).appendSQL(context);
         } else if (fieldMeta.javaType() == ZonedDateTime.class) {
-            SQLS.param(ZonedDateTime.now(this.zoneId())).appendSQL(this.sql, builder, paramWrapperList);
+            SQLS.param(ZonedDateTime.now(this.zoneId())).appendSQL(context);
         } else {
             throw new MetaException(ErrorCode.META_ERROR
                     , "createTime or updateTime only support LocalDateTime or ZonedDateTime");
         }
     }
 
-    private boolean appendWhereClause(StringBuilder builder, List<ParamWrapper> paramWrapperList
-            , final @Nullable String tableAlias, InnerSingleUpdateAble innerAble, Visible visible) {
+    private boolean appendWhereClause(SQLContext context, final String tableAlias, InnerSingleUpdateAble innerAble
+            , Visible visible) {
 
         final List<Predicate> predicateList = innerAble.predicateList();
         Assert.notEmpty(predicateList, "where clause must be not empty");
 
-        builder.append("WHERE ");
+        StringBuilder builder = context.stringBuilder().append(" WHERE");
 
         Predicate predicate;
         final TableMeta<?> tableMeta = innerAble.tableMeta();
@@ -231,26 +235,27 @@ public abstract class AbstractTableDML implements TableDML {
         boolean hasVersion = false;
         for (Iterator<Predicate> iterator = predicateList.iterator(); iterator.hasNext(); ) {
             predicate = iterator.next();
-            predicate.appendSQL(this.sql, builder, paramWrapperList);
+            // append predicate
+            predicate.appendSQL(context);
             if (iterator.hasNext()) {
-                builder.append("AND ");
+                builder.append(" AND");
             }
             if (predicate instanceof DualPredicate) {
                 DualPredicate dualPredicate = (DualPredicate) predicate;
                 // version = expresion
-                if (versionField.equals(dualPredicate.leftExpression())
+                if (versionField == dualPredicate.leftExpression()
                         && dualPredicate.dualOperator() == DualOperator.EQ) {
                     hasVersion = true;
                 }
             }
         }
         // append visible predicate
-        appendVisiblePredicate(tableMeta, builder, paramWrapperList, tableAlias, visible);
+        appendVisiblePredicate(tableMeta, context, tableAlias, visible);
         return hasVersion;
     }
 
-    private void appendVisiblePredicate(TableMeta<?> tableMeta, StringBuilder builder
-            , List<ParamWrapper> paramWrapperList, final @Nullable String tableAlias, Visible visible) {
+    private void appendVisiblePredicate(TableMeta<?> tableMeta, SQLContext context
+            , final String tableAlias, Visible visible) {
 
         final FieldMeta<?, ?> visibleField = tableMeta.getField(TableMeta.VISIBLE);
 
@@ -271,22 +276,22 @@ public abstract class AbstractTableDML implements TableDML {
                 throw new IllegalArgumentException(String.format("unknown visible[%s]", visible));
         }
         if (visibleValue != null) {
-            builder.append("AND ");
-
-            if (tableAlias != null) {
+            StringBuilder builder = context.stringBuilder().append(" AND ");
+            if (StringUtils.hasText(tableAlias)) {
                 builder.append(tableAlias)
                         .append(".");
             }
-            visibleField.appendSQL(this.sql, builder, paramWrapperList);
-            builder.append("= ? ");
-            paramWrapperList.add(ParamWrapper.build(visibleField.mappingType(),visibleValue));
+            builder.append(this.sql.quoteIfNeed(visibleField.fieldName()))
+                    .append(" = ? ");
+            context.appendParam(ParamWrapper.build(visibleField.mappingType(), visibleValue));
         }
 
     }
 
-    private void appendOrderByClause(StringBuilder builder, List<ParamWrapper> paramWrapperList
+    private void appendOrderByClause(SQLContext context
             , InnerSingleUpdateAble innerAble) {
-        builder.append("ORDER BY ");
+
+        StringBuilder builder = context.stringBuilder().append(" ORDER BY");
 
         List<Expression<?>> orderExpList = innerAble.orderExpList();
         List<Boolean> ascExpList = innerAble.ascExpList();
@@ -297,12 +302,13 @@ public abstract class AbstractTableDML implements TableDML {
         final int size = orderExpList.size();
         for (int i = 0; i < size; i++) {
             orderExp = orderExpList.get(i);
-            orderExp.appendSQL(this.sql, builder, paramWrapperList);
+            orderExp.appendSQL(context);
             ascExp = ascExpList.get(i);
+
             if (Boolean.TRUE.equals(ascExp)) {
-                builder.append("ASC ");
+                builder.append(" ASC");
             } else if (Boolean.FALSE.equals(ascExp)) {
-                builder.append("DESC ");
+                builder.append(" DESC");
             }
             if (i < size - 1) {
                 builder.append(",");
@@ -312,7 +318,7 @@ public abstract class AbstractTableDML implements TableDML {
 
     private void appendLimitClause(StringBuilder builder, List<ParamWrapper> paramWrapperList, int rowCount) {
         if (rowCount > -1) {
-            builder.append("LIMIT ?");
+            builder.append(" LIMIT ?");
             paramWrapperList.add(ParamWrapper.build(MappingFactory.getDefaultMapping(Integer.class), rowCount));
         }
     }

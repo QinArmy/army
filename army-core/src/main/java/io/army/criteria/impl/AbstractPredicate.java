@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Predicate;
 import io.army.criteria.SubQuery;
+import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingType;
 import io.army.util.ArrayUtils;
@@ -20,7 +21,7 @@ abstract class AbstractPredicate extends AbstractExpression<Boolean> implements 
     }
 
     @Override
-    public final Predicate or(Predicate... andPredicates) {
+    public final Predicate or(@Nullable Predicate... andPredicates) {
         if (andPredicates == null) {
             return this;
         }

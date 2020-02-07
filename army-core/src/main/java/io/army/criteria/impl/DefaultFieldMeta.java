@@ -4,6 +4,7 @@ import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
 import io.army.annotation.Column;
 import io.army.criteria.MetaException;
+import io.army.criteria.SQLContext;
 import io.army.criteria.Selection;
 import io.army.dialect.ParamWrapper;
 import io.army.dialect.SQL;
@@ -169,7 +170,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     @Override
     public final String alias() {
-        // must override super alias ,because one column of table only instance
+        // must override super alias ,because one column of table only one instance
         return propertyName;
     }
 
@@ -304,9 +305,10 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     }
 
     @Override
-    protected final void appendSQLBeforeWhitespace(SQL sql, StringBuilder builder, List<ParamWrapper> paramWrapperList) {
-        builder.append(sql.quoteIfNeed(fieldName));
+    protected  final void afterSpace(SQLContext context) {
+        context.quoteIfKeyAndAppend(fieldName);
     }
+
 
     /*################################## blow private method ##################################*/
 

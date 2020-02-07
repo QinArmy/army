@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.ConvertExpression;
 import io.army.criteria.Expression;
+import io.army.criteria.SQLContext;
 import io.army.dialect.ParamWrapper;
 import io.army.dialect.SQL;
 import io.army.meta.mapping.MappingType;
@@ -20,9 +21,10 @@ final class ConvertExpressionImpl<E> extends AbstractExpression<E> implements Co
     }
 
     @Override
-    protected void appendSQLBeforeWhitespace(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList) {
-        original.appendSQL(sql,builder, paramWrapperList);
+    protected void afterSpace(SQLContext context) {
+        original.appendSQL(context);
     }
+
 
     @Override
     public MappingType mappingType() {
@@ -34,5 +36,8 @@ final class ConvertExpressionImpl<E> extends AbstractExpression<E> implements Co
         return original;
     }
 
-
+    @Override
+    public String toString() {
+        return original.toString();
+    }
 }

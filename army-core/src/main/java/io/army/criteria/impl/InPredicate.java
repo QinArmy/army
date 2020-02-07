@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.DualOperator;
 import io.army.criteria.Expression;
+import io.army.criteria.SQLContext;
 import io.army.dialect.ParamWrapper;
 import io.army.dialect.SQL;
 import io.army.util.Assert;
@@ -34,30 +35,30 @@ final class InPredicate extends AbstractPredicate {
     }
 
     @Override
-    protected void appendSQLBeforeWhitespace(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList) {
-        left.appendSQL(sql,builder, paramWrapperList);
+    protected void afterSpace(SQLContext context) {
+        left.appendSQL(context);
         DualOperator operator = DualOperator.IN;
         if (!in) {
             operator = DualOperator.NOT_IN;
         }
-        builder.append(" ");
-        builder.append(operator.rendered());
-        builder.append(" ");
+        StringBuilder builder = context.stringBuilder();
+        builder.append(" ")
+                .append(operator.rendered())
+                .append(" ");
 
         if (expressionOrValues instanceof Expression) {
-            ((Expression<?>) expressionOrValues).appendSQL(sql,builder, paramWrapperList);
+            ((Expression<?>) expressionOrValues).appendSQL(context);
         } else if (expressionOrValues instanceof Collection) {
-            doAppendCollection(builder, paramWrapperList, left, (Collection<?>) expressionOrValues);
+            doAppendCollection(context, left, (Collection<?>) expressionOrValues);
         } else {
             throw new IllegalArgumentException("expressionOrValues only Expression or Collection");
         }
 
     }
 
-    private static void doAppendCollection(StringBuilder builder, List<ParamWrapper> paramWrapperList
-            , Expression<?> left
-            , Collection<?> collection) {
 
+    private static void doAppendCollection(SQLContext context, Expression<?> left, Collection<?> collection) {
+        StringBuilder builder = context.stringBuilder();
         builder.append("(");
         Object value;
 
@@ -65,7 +66,7 @@ final class InPredicate extends AbstractPredicate {
             value = iterator.next();
             Assert.notNull(value, "expressionOrValues has null");
             builder.append("?");
-            paramWrapperList.add(ParamWrapper.build(left.mappingType(), value));
+            context.appendParam(ParamWrapper.build(left.mappingType(), value));
             if (iterator.hasNext()) {
                 builder.append(",");
             }
@@ -74,4 +75,29 @@ final class InPredicate extends AbstractPredicate {
         builder.append(")");
     }
 
+    @Override
+    public String toString() {
+        DualOperator operator = DualOperator.IN;
+        if (!in) {
+            operator = DualOperator.NOT_IN;
+        }
+        if (expressionOrValues instanceof Expression) {
+            return operator.rendered() + " " + expressionOrValues;
+        }
+        StringBuilder builder = new StringBuilder(operator.rendered())
+                .append(" (");
+        collectionToString(builder, (Collection<?>) expressionOrValues);
+        builder.append(")");
+
+        return builder.toString();
+    }
+
+    private static void collectionToString(StringBuilder builder, Collection<?> collection) {
+        for (Iterator<?> iterator = collection.iterator(); iterator.hasNext(); ) {
+            builder.append(iterator.next());
+            if (iterator.hasNext()) {
+                builder.append(",");
+            }
+        }
+    }
 }

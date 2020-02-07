@@ -1,8 +1,7 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.SQLContext;
 import io.army.criteria.Selection;
-import io.army.dialect.ParamWrapper;
-import io.army.dialect.SQL;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
@@ -11,7 +10,7 @@ import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
 
 import java.sql.JDBCType;
-import java.util.List;
+
 
 final class AliasTableFieldMetaImpl<T extends IDomain, F> extends AbstractExpression<F> implements FieldMeta<T, F> {
 
@@ -29,10 +28,17 @@ final class AliasTableFieldMetaImpl<T extends IDomain, F> extends AbstractExpres
     }
 
     @Override
-    protected void appendSQLBeforeWhitespace(SQL sql, StringBuilder builder, List<ParamWrapper> paramWrapperList) {
-        builder.append(tableAlias)
+    protected void afterSpace(SQLContext context) {
+        context.registerAlias(tableAlias,fieldMeta.tableMeta());
+        context.stringBuilder()
+                .append(tableAlias)
                 .append(".")
-                .append(sql.quoteIfNeed(fieldMeta.fieldName()));
+                .append(context.sql().quoteIfNeed(fieldMeta.fieldName()));
+    }
+
+    @Override
+    public String toString() {
+        return tableAlias + "." + fieldMeta.fieldName();
     }
 
     @Override

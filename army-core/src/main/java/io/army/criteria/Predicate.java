@@ -10,7 +10,7 @@ import java.util.List;
  */
 public interface Predicate extends Expression<Boolean> {
 
-    Predicate or(Predicate... andPredicates);
+    Predicate or(@Nullable Predicate... andPredicates);
 
     Predicate or(List<Predicate> andPredicateList);
 

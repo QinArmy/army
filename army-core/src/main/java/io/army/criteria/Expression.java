@@ -127,12 +127,9 @@ public interface Expression<E> extends SelectAble {
 
     Predicate some(SubQuery<E> subQuery);
 
-    void appendSQL(SQL sql, StringBuilder builder, List<ParamWrapper> paramWrapperList);
+    void appendSQL(SQLContext context);
 
     MappingType mappingType();
-
-    @Override
-    String toString();
 
 
 }

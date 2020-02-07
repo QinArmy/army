@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.ConstantExpression;
+import io.army.criteria.SQLContext;
 import io.army.dialect.DialectUtils;
 import io.army.dialect.ParamWrapper;
 import io.army.dialect.SQL;
@@ -33,15 +34,9 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
         this.constant = constant;
     }
 
-
     @Override
-    protected void appendSQLBeforeWhitespace(SQL sql, StringBuilder builder, List<ParamWrapper> paramWrapperList) {
-        builder.append(
-                DialectUtils.quoteIfNeed(
-                        mappingType
-                        , mappingType.nonNullTextValue(constant)
-                )
-        );
+    protected void afterSpace(SQLContext context) {
+        context.appendTextValue(mappingType,constant);
     }
 
     @Override
@@ -52,5 +47,10 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
     @Override
     public E constant() {
         return constant;
+    }
+
+    @Override
+    public String toString() {
+        return mappingType.nonNullTextValue(constant);
     }
 }

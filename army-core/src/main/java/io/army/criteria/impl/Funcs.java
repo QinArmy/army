@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
+import io.army.criteria.SQLContext;
 import io.army.dialect.ParamWrapper;
 import io.army.dialect.SQL;
 import io.army.meta.mapping.MappingType;
@@ -26,15 +27,22 @@ abstract class Funcs<E> extends AbstractExpression<E> {
     }
 
     @Override
-    protected void appendSQLBeforeWhitespace(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList) {
-        builder.append(name)
+    protected void afterSpace(SQLContext context) {
+        context.stringBuilder()
+                .append(name)
                 .append("(");
-        doAppendArgument(sql,builder, paramWrapperList);
-        builder.append(")");
+        doAppendArgument(context);
+        context.stringBuilder().append(")");
     }
 
+    @Override
+    public String toString() {
+        return String.format("%s(%s)",name,argumentToString());
+    }
 
-    protected abstract void doAppendArgument(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList);
+    protected abstract void doAppendArgument(SQLContext context);
+
+    protected abstract String argumentToString();
 
     /*################################## blow static class  ##################################*/
 
@@ -45,8 +53,13 @@ abstract class Funcs<E> extends AbstractExpression<E> {
         }
 
         @Override
-        protected void doAppendArgument(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+        protected void doAppendArgument(SQLContext context) {
 
+        }
+
+        @Override
+        protected String argumentToString() {
+            return "";
         }
     }
 
@@ -60,10 +73,14 @@ abstract class Funcs<E> extends AbstractExpression<E> {
         }
 
         @Override
-        protected void doAppendArgument(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList) {
-            one.appendSQL(sql,builder, paramWrapperList);
+        protected void doAppendArgument(SQLContext context) {
+            one.appendSQL(context);
         }
 
+        @Override
+        protected String argumentToString() {
+            return one.toString();
+        }
     }
 
     static class TwoArgumentFunc<E> extends OneArgumentFunc<E> {
@@ -78,7 +95,7 @@ abstract class Funcs<E> extends AbstractExpression<E> {
         TwoArgumentFunc(String name, MappingType returnType, List<String> format, Expression<?> one
                 , Expression<?> two) {
             super(name, returnType, one);
-            Assert.isTrue(format.size() > 2, "");
+            Assert.isTrue(format.size() >= 3, "");
             this.format = format;
             this.two = two;
         }
@@ -88,14 +105,19 @@ abstract class Funcs<E> extends AbstractExpression<E> {
         }
 
         @Override
-        protected void doAppendArgument(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+        protected void doAppendArgument(SQLContext context) {
+            StringBuilder builder = context.stringBuilder();
             builder.append(format.get(0));
-            one.appendSQL(sql,builder, paramWrapperList);
+            one.appendSQL(context);
             builder.append(format.get(1));
-            two.appendSQL(sql,builder, paramWrapperList);
+            two.appendSQL(context);
             builder.append(format.get(2));
         }
 
+        @Override
+        protected String argumentToString() {
+            return format.get(0) + one + format.get(1) + two + format.get(2);
+        }
     }
 
     static class ThreeArgumentFunc<E> extends TwoArgumentFunc<E> {
@@ -107,6 +129,7 @@ abstract class Funcs<E> extends AbstractExpression<E> {
         ThreeArgumentFunc(String name, MappingType returnType, List<String> format, Expression<?> one
                 , Expression<?> two, Expression<?> three) {
             super(name, returnType, format, one, two);
+            Assert.isTrue(format.size() >= 4,"format error");
             this.three = three;
         }
 
@@ -116,18 +139,23 @@ abstract class Funcs<E> extends AbstractExpression<E> {
             this.three = three;
         }
 
-        @Override
-        protected void doAppendArgument(SQL sql,StringBuilder builder, List<ParamWrapper> paramWrapperList) {
-            builder.append(format.get(0));
-            one.appendSQL(sql,builder, paramWrapperList);
-            builder.append(format.get(1));
-            two.appendSQL(sql,builder, paramWrapperList);
-            builder.append(format.get(2));
-            three.appendSQL(sql,builder, paramWrapperList);
-            builder.append(format.get(3));
 
+        @Override
+        protected void doAppendArgument(SQLContext context) {
+            StringBuilder builder = context.stringBuilder();
+            builder.append(format.get(0));
+            one.appendSQL(context);
+            builder.append(format.get(1));
+            two.appendSQL(context);
+            builder.append(format.get(2));
+            three.appendSQL(context);
+            builder.append(format.get(3));
         }
 
+        @Override
+        protected String argumentToString() {
+            return format.get(0) + one + format.get(1) + two + format.get(2) + three + format.get(3);
+        }
     }
 
 

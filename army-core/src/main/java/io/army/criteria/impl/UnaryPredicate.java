@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
+import io.army.criteria.SQLContext;
 import io.army.dialect.ParamWrapper;
 import io.army.dialect.SQL;
 import io.army.meta.mapping.MappingFactory;
@@ -23,19 +24,37 @@ final class UnaryPredicate extends AbstractPredicate {
     }
 
     @Override
-    protected void appendSQLBeforeWhitespace(SQL sql, StringBuilder builder, List<ParamWrapper> paramWrapperList) {
+    protected void afterSpace(SQLContext context) {
         switch (operator.position()) {
             case LEFT:
-                builder.append(operator.rendered());
-                expression.appendSQL(sql, builder, paramWrapperList);
+                context.stringBuilder().append(operator.rendered());
+                expression.appendSQL(context);
                 break;
             case RIGHT:
-                expression.appendSQL(sql, builder, paramWrapperList);
-                builder.append(operator.rendered());
+                expression.appendSQL(context);
+                context.stringBuilder().append(operator.rendered());
                 break;
             default:
                 throw new IllegalStateException(String.format("UnaryOperator[%s]'s position error.", operator));
         }
     }
 
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        switch (operator.position()) {
+            case LEFT:
+                builder.append(operator.rendered())
+                        .append(expression);
+                break;
+            case RIGHT:
+                builder.append(expression)
+                        .append(" ")
+                        .append(operator.rendered());
+                break;
+            default:
+                throw new IllegalStateException(String.format("UnaryOperator[%s]'s position error.", operator));
+        }
+        return builder.toString();
+    }
 }
