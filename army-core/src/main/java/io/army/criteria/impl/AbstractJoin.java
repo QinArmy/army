@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaContext;
 import io.army.criteria.Join;
-import io.army.criteria.Predicate;
+import io.army.criteria.IPredicate;
 import org.springframework.lang.NonNull;
 
 /**
@@ -40,7 +40,7 @@ abstract class AbstractJoin<X> extends AbstractWhereAble implements InnerJoin<X>
 
 
     @Override
-    public Join<X> on(Predicate... predicate) {
+    public Join<X> on(IPredicate... IPredicate) {
         return null;
     }
 

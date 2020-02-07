@@ -4,18 +4,16 @@ import io.army.criteria.DualOperator;
 import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
 import io.army.dialect.ParamWrapper;
-import io.army.dialect.SQL;
 import io.army.util.Assert;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * @see DualOperator#IN
  * @see DualOperator#NOT_IN
  */
-final class InPredicate extends AbstractPredicate {
+final class InIPredicate extends AbstractIPredicate {
 
     private final boolean in;
 
@@ -23,7 +21,7 @@ final class InPredicate extends AbstractPredicate {
 
     private final Object expressionOrValues;
 
-    public InPredicate(boolean in, Expression<?> left, Object expressionOrValues) {
+    public InIPredicate(boolean in, Expression<?> left, Object expressionOrValues) {
         this.in = in;
         this.left = left;
         if (expressionOrValues instanceof Expression

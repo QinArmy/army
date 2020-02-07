@@ -2,14 +2,11 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
-import io.army.dialect.ParamWrapper;
-import io.army.dialect.SQL;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingType;
 
 import java.math.BigInteger;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * created  on 2018/11/24.
@@ -39,128 +36,128 @@ import java.util.List;
     }
 
     @Override
-    public final Predicate eq(Expression<E> expression) {
-        return new DualPredicateImpl(this, DualOperator.EQ, expression);
+    public final IPredicate eq(Expression<E> expression) {
+        return new DualIPredicateImpl(this, DualOperator.EQ, expression);
     }
 
     @Override
-    public final Predicate eq(E constant) {
-        return new DualPredicateImpl(this, DualOperator.EQ, SQLS.param(constant, this.mappingType()));
+    public final IPredicate eq(E constant) {
+        return new DualIPredicateImpl(this, DualOperator.EQ, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
-    public final Predicate lt(Expression<? extends Comparable<E>> expression) {
-        return new DualPredicateImpl(this, DualOperator.LT, expression);
+    public final IPredicate lt(Expression<? extends Comparable<E>> expression) {
+        return new DualIPredicateImpl(this, DualOperator.LT, expression);
     }
 
     @Override
-    public final Predicate lt(Comparable<E> constant) {
-        return new DualPredicateImpl(this, DualOperator.LT, SQLS.param(constant, this.mappingType()));
+    public final IPredicate lt(Comparable<E> constant) {
+        return new DualIPredicateImpl(this, DualOperator.LT, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
-    public final Predicate le(Expression<? extends Comparable<E>> expression) {
-        return new DualPredicateImpl(this, DualOperator.LE, expression);
+    public final IPredicate le(Expression<? extends Comparable<E>> expression) {
+        return new DualIPredicateImpl(this, DualOperator.LE, expression);
     }
 
     @Override
-    public final Predicate le(Comparable<E> constant) {
-        return new DualPredicateImpl(this, DualOperator.LE, SQLS.param(constant, this.mappingType()));
+    public final IPredicate le(Comparable<E> constant) {
+        return new DualIPredicateImpl(this, DualOperator.LE, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
-    public final Predicate gt(Expression<? extends Comparable<E>> expression) {
-        return new DualPredicateImpl(this, DualOperator.GT, expression);
+    public final IPredicate gt(Expression<? extends Comparable<E>> expression) {
+        return new DualIPredicateImpl(this, DualOperator.GT, expression);
     }
 
     @Override
-    public final Predicate gt(Comparable<E> constant) {
-        return new DualPredicateImpl(this, DualOperator.GT, SQLS.param(constant, this.mappingType()));
+    public final IPredicate gt(Comparable<E> constant) {
+        return new DualIPredicateImpl(this, DualOperator.GT, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
-    public final Predicate ge(Expression<? extends Comparable<E>> expression) {
-        return new DualPredicateImpl(this, DualOperator.GE, expression);
+    public final IPredicate ge(Expression<? extends Comparable<E>> expression) {
+        return new DualIPredicateImpl(this, DualOperator.GE, expression);
     }
 
     @Override
-    public final Predicate ge(Comparable<E> constant) {
-        return new DualPredicateImpl(this, DualOperator.GE, SQLS.param(constant, this.mappingType()));
+    public final IPredicate ge(Comparable<E> constant) {
+        return new DualIPredicateImpl(this, DualOperator.GE, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
-    public final Predicate notEq(Expression<E> expression) {
-        return new DualPredicateImpl(this, DualOperator.NOT_EQ, expression);
+    public final IPredicate notEq(Expression<E> expression) {
+        return new DualIPredicateImpl(this, DualOperator.NOT_EQ, expression);
     }
 
     @Override
-    public final Predicate notEq(Comparable<E> constant) {
-        return new DualPredicateImpl(this, DualOperator.NOT_EQ, SQLS.param(constant, this.mappingType()));
+    public final IPredicate notEq(Comparable<E> constant) {
+        return new DualIPredicateImpl(this, DualOperator.NOT_EQ, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
-    public final Predicate not() {
-        return NotPredicate.build(this);
+    public final IPredicate not() {
+        return NotIPredicate.build(this);
     }
 
     @Override
-    public final Predicate between(Expression<E> first, Expression<E> second) {
-        return new BetweenPredicate(this, first, second);
+    public final IPredicate between(Expression<E> first, Expression<E> second) {
+        return new BetweenIPredicate(this, first, second);
     }
 
     @Override
-    public final Predicate between(E first, E second) {
-        return new BetweenPredicate(this, SQLS.param(first, this), SQLS.param(second, this));
+    public final IPredicate between(E first, E second) {
+        return new BetweenIPredicate(this, SQLS.param(first, this), SQLS.param(second, this));
     }
 
     @Override
-    public final Predicate between(Expression<E> first, E second) {
-        return new BetweenPredicate(this, first, SQLS.param(second, this.mappingType()));
+    public final IPredicate between(Expression<E> first, E second) {
+        return new BetweenIPredicate(this, first, SQLS.param(second, this.mappingType()));
     }
 
     @Override
-    public final Predicate between(E first, Expression<E> second) {
-        return new BetweenPredicate(this, SQLS.param(first, this), second);
+    public final IPredicate between(E first, Expression<E> second) {
+        return new BetweenIPredicate(this, SQLS.param(first, this), second);
     }
 
     @Override
-    public final Predicate isNull() {
-        return new UnaryPredicate(UnaryOperator.IS_NULL, this);
+    public final IPredicate isNull() {
+        return new UnaryIPredicate(UnaryOperator.IS_NULL, this);
     }
 
     @Override
-    public final Predicate isNotNull() {
-        return new UnaryPredicate(UnaryOperator.IS_NOT_NULL, this);
+    public final IPredicate isNotNull() {
+        return new UnaryIPredicate(UnaryOperator.IS_NOT_NULL, this);
     }
 
     @Override
-    public final Predicate in(Collection<E> values) {
-        return new InPredicate(true, this, values);
+    public final IPredicate in(Collection<E> values) {
+        return new InIPredicate(true, this, values);
     }
 
     @Override
-    public final Predicate in(Expression<Collection<E>> values) {
-        return new InPredicate(true, this, values);
+    public final IPredicate in(Expression<Collection<E>> values) {
+        return new InIPredicate(true, this, values);
     }
 
     @Override
-    public final Predicate notIn(Collection<E> values) {
-        return new InPredicate(false, this, values);
+    public final IPredicate notIn(Collection<E> values) {
+        return new InIPredicate(false, this, values);
     }
 
     @Override
-    public final Predicate notIn(Expression<Collection<E>> values) {
-        return new InPredicate(false, this, values);
+    public final IPredicate notIn(Expression<Collection<E>> values) {
+        return new InIPredicate(false, this, values);
     }
 
     @Override
-    public final Predicate like(String pattern) {
-        return new DualPredicateImpl(this, DualOperator.LIKE, SQLS.constant(pattern, this.mappingType()));
+    public final IPredicate like(String pattern) {
+        return new DualIPredicateImpl(this, DualOperator.LIKE, SQLS.constant(pattern, this.mappingType()));
     }
 
     @Override
-    public final Predicate notLike(String pattern) {
-        return new DualPredicateImpl(this, DualOperator.NOT_LIKE, SQLS.param(pattern,this.mappingType()));
+    public final IPredicate notLike(String pattern) {
+        return new DualIPredicateImpl(this, DualOperator.NOT_LIKE, SQLS.param(pattern,this.mappingType()));
     }
 
     @Override
@@ -305,17 +302,17 @@ import java.util.List;
 
 
     @Override
-    public final Predicate all(SubQuery<E> subQuery) {
+    public final IPredicate all(SubQuery<E> subQuery) {
         return null;
     }
 
     @Override
-    public final Predicate any(SubQuery<E> subQuery) {
+    public final IPredicate any(SubQuery<E> subQuery) {
         return null;
     }
 
     @Override
-    public final Predicate some(SubQuery<E> subQuery) {
+    public final IPredicate some(SubQuery<E> subQuery) {
         return null;
     }
 

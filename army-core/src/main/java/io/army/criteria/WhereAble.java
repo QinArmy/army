@@ -10,10 +10,10 @@ import java.util.List;
 public interface WhereAble {
 
     @NonNull
-    QueryAble where(Predicate... predicates);
+    QueryAble where(IPredicate... IPredicates);
 
     @NonNull
-    QueryAble where(@NonNull List<Predicate> predicateList);
+    QueryAble where(@NonNull List<IPredicate> IPredicateList);
 
 
 }

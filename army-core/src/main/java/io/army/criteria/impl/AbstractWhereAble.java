@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.GroupAble;
-import io.army.criteria.Predicate;
+import io.army.criteria.IPredicate;
 import io.army.criteria.WhereAble;
 import io.army.util.ArrayUtils;
 import io.army.util.Assert;
@@ -15,21 +15,21 @@ import java.util.List;
  */
 abstract class AbstractWhereAble extends AbstractGroupAble implements WhereAble {
 
-    private List<Predicate> predicateList = Collections.emptyList();
+    private List<IPredicate> IPredicateList = Collections.emptyList();
 
 
     @NonNull
     @Override
-    public GroupAble where(Predicate... predicates) {
-        this.predicateList = ArrayUtils.asUnmodifiableList(predicates);
+    public GroupAble where(IPredicate... IPredicates) {
+        this.IPredicateList = ArrayUtils.asUnmodifiableList(IPredicates);
         return this;
     }
 
     @NonNull
     @Override
-    public GroupAble where(@NonNull List<Predicate> predicateList) {
-        Assert.assertNotNull(predicateList, "predicateList required");
-        this.predicateList = Collections.unmodifiableList(predicateList);
+    public GroupAble where(@NonNull List<IPredicate> IPredicateList) {
+        Assert.assertNotNull(IPredicateList, "predicateList required");
+        this.IPredicateList = Collections.unmodifiableList(IPredicateList);
         return this;
     }
 

@@ -1,7 +1,7 @@
 package io.army.criteria;
 
 
-public interface DualPredicate extends Predicate {
+public interface DualIPredicate extends IPredicate {
 
     Expression<?> leftExpression();
 

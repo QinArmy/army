@@ -1,18 +1,14 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.DualOperator;
-import io.army.criteria.DualPredicate;
+import io.army.criteria.DualIPredicate;
 import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
-import io.army.dialect.ParamWrapper;
-import io.army.dialect.SQL;
-
-import java.util.List;
 
 /**
  * created  on 2018/11/25.
  */
-final class DualPredicateImpl extends AbstractPredicate implements DualPredicate {
+final class DualIPredicateImpl extends AbstractIPredicate implements DualIPredicate {
 
     private final Expression<?> left;
 
@@ -21,7 +17,7 @@ final class DualPredicateImpl extends AbstractPredicate implements DualPredicate
     private final Expression<?> right;
 
 
-    DualPredicateImpl(Expression<?> left, DualOperator operator, Expression<?> right) {
+    DualIPredicateImpl(Expression<?> left, DualOperator operator, Expression<?> right) {
         this.left = left;
         this.operator = operator;
         this.right = right;

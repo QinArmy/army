@@ -12,7 +12,7 @@ public interface SelectJoin<X> extends Join<X>, SelectWhereAble {
     <Y> SelectJoin<Y> join(Class<Y> tableClass);
 
     @Override
-    SelectJoin<X> on(Predicate... predicate);
+    SelectJoin<X> on(IPredicate... IPredicate);
 
     <Y> SelectJoin<Y> straightJoin(Class<Y> tableClass);
 

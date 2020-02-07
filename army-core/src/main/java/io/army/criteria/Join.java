@@ -12,7 +12,7 @@ public interface Join<X> extends WhereAble {
     <Y> Join<Y> join(Class<Y> tableClass);
 
 
-    Join<X> on(Predicate... predicate);
+    Join<X> on(IPredicate... IPredicate);
 
 
 }

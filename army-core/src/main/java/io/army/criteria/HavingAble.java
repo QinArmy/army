@@ -5,6 +5,6 @@ package io.army.criteria;
  */
 public interface HavingAble extends OrderAble {
 
-    OrderAble having(Predicate... predicates);
+    OrderAble having(IPredicate... IPredicates);
 
 }

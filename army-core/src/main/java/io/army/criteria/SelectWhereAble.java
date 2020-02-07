@@ -11,10 +11,10 @@ public interface SelectWhereAble extends WhereAble, GroupAble {
 
     @NonNull
     @Override
-    GroupAble where(Predicate... predicates);
+    GroupAble where(IPredicate... IPredicates);
 
     @NonNull
     @Override
-    GroupAble where(@NonNull List<Predicate> predicateList);
+    GroupAble where(@NonNull List<IPredicate> IPredicateList);
 
 }

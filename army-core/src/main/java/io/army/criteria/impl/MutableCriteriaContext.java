@@ -34,7 +34,7 @@ public final class MutableCriteriaContext implements InnerCriteriaContext {
     }
 
     @Override
-    public List<Predicate> getPredicateList() {
+    public List<IPredicate> getPredicateList() {
         return null;
     }
 
@@ -59,7 +59,7 @@ public final class MutableCriteriaContext implements InnerCriteriaContext {
     }
 
     @Override
-    public void where(List<Predicate> predicateList) {
+    public void where(List<IPredicate> IPredicateList) {
 
     }
 

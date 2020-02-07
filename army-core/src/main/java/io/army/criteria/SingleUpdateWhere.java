@@ -8,8 +8,8 @@ import java.util.List;
 public interface SingleUpdateWhere extends WhereAble {
 
     @Override
-    OrderAble where(Predicate... predicates);
+    OrderAble where(IPredicate... IPredicates);
 
     @Override
-    OrderAble where(List<Predicate> predicateList);
+    OrderAble where(List<IPredicate> IPredicateList);
 }

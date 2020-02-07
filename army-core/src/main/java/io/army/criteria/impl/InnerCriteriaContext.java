@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaContext;
 import io.army.criteria.ParamExpression;
-import io.army.criteria.Predicate;
+import io.army.criteria.IPredicate;
 import org.springframework.lang.NonNull;
 
 import java.util.List;
@@ -16,6 +16,6 @@ interface InnerCriteriaContext extends CriteriaContext {
 
     void addParamList(List<ParamExpression<?>> list);
 
-    void where(List<Predicate> predicateList);
+    void where(List<IPredicate> IPredicateList);
 
 }

@@ -1,38 +1,34 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
-import io.army.criteria.Predicate;
+import io.army.criteria.IPredicate;
 import io.army.criteria.SQLContext;
-import io.army.dialect.ParamWrapper;
-import io.army.dialect.SQL;
-
-import java.util.List;
 
 /**
  * created  on 2018/11/25.
  */
-final class NotPredicate extends AbstractPredicate {
+final class NotIPredicate extends AbstractIPredicate {
 
-    static Predicate build(Expression<?> expression) {
-        Predicate predicate;
-        if (expression instanceof NotPredicate) {
-            NotPredicate originalPredicate = (NotPredicate) (expression);
-            if (originalPredicate.expression instanceof NotPredicate) {
-                predicate = (NotPredicate) originalPredicate.expression;
+    static IPredicate build(Expression<?> expression) {
+        IPredicate IPredicate;
+        if (expression instanceof NotIPredicate) {
+            NotIPredicate originalPredicate = (NotIPredicate) (expression);
+            if (originalPredicate.expression instanceof NotIPredicate) {
+                IPredicate = (NotIPredicate) originalPredicate.expression;
             } else {
-                predicate = new NotPredicate(expression, !originalPredicate.not);
+                IPredicate = new NotIPredicate(expression, !originalPredicate.not);
             }
         } else {
-            predicate = new NotPredicate(expression, true);
+            IPredicate = new NotIPredicate(expression, true);
         }
-        return predicate;
+        return IPredicate;
     }
 
     private final Expression<?> expression;
 
     private final boolean not;
 
-    private NotPredicate(Expression<?> expression, boolean not) {
+    private NotIPredicate(Expression<?> expression, boolean not) {
         this.expression = expression;
         this.not = not;
 

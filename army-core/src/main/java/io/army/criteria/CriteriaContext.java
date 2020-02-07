@@ -14,7 +14,7 @@ public interface CriteriaContext {
 
     List<Expression<?>> getTableList();
 
-    List<Predicate> getPredicateList();
+    List<IPredicate> getPredicateList();
 
     List<OrderExpression<?>> getOrderList();
 

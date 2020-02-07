@@ -7,7 +7,6 @@ import io.army.criteria.*;
 import io.army.criteria.impl.SQLS;
 import io.army.criteria.impl.inner.InnerSingleUpdateAble;
 import io.army.domain.IDomain;
-import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
@@ -222,26 +221,26 @@ public abstract class AbstractTableDML implements TableDML {
     private boolean appendWhereClause(SQLContext context, final String tableAlias, InnerSingleUpdateAble innerAble
             , Visible visible) {
 
-        final List<Predicate> predicateList = innerAble.predicateList();
-        Assert.notEmpty(predicateList, "where clause must be not empty");
+        final List<IPredicate> IPredicateList = innerAble.predicateList();
+        Assert.notEmpty(IPredicateList, "where clause must be not empty");
 
         StringBuilder builder = context.stringBuilder().append(" WHERE");
 
-        Predicate predicate;
+        IPredicate IPredicate;
         final TableMeta<?> tableMeta = innerAble.tableMeta();
 
         final FieldMeta<?, ?> versionField = tableMeta.getField(TableMeta.VERSION);
 
         boolean hasVersion = false;
-        for (Iterator<Predicate> iterator = predicateList.iterator(); iterator.hasNext(); ) {
-            predicate = iterator.next();
+        for (Iterator<IPredicate> iterator = IPredicateList.iterator(); iterator.hasNext(); ) {
+            IPredicate = iterator.next();
             // append predicate
-            predicate.appendSQL(context);
+            IPredicate.appendSQL(context);
             if (iterator.hasNext()) {
                 builder.append(" AND");
             }
-            if (predicate instanceof DualPredicate) {
-                DualPredicate dualPredicate = (DualPredicate) predicate;
+            if (IPredicate instanceof DualIPredicate) {
+                DualIPredicate dualPredicate = (DualIPredicate) IPredicate;
                 // version = expresion
                 if (versionField == dualPredicate.leftExpression()
                         && dualPredicate.dualOperator() == DualOperator.EQ) {

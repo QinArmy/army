@@ -1,64 +1,60 @@
 package io.army.criteria;
 
-import io.army.dialect.ParamWrapper;
-import io.army.dialect.SQL;
 import io.army.meta.mapping.MappingType;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * created  on 2018/10/8.
  */
 public interface Expression<E> extends SelectAble {
 
-    Predicate eq(Expression<E> expression);
+    IPredicate eq(Expression<E> expression);
 
-    Predicate eq(E constant);
+    IPredicate eq(E constant);
 
-    Predicate lt(Expression<? extends Comparable<E>> expression);
+    IPredicate lt(Expression<? extends Comparable<E>> expression);
 
-    Predicate lt(Comparable<E> constant);
+    IPredicate lt(Comparable<E> constant);
 
-    Predicate le(Expression<? extends Comparable<E>> expression);
+    IPredicate le(Expression<? extends Comparable<E>> expression);
 
-    Predicate le(Comparable<E> constant);
+    IPredicate le(Comparable<E> constant);
 
-    Predicate gt(Expression<? extends Comparable<E>> expression);
+    IPredicate gt(Expression<? extends Comparable<E>> expression);
 
-    Predicate gt(Comparable<E> constant);
+    IPredicate gt(Comparable<E> constant);
 
-    Predicate ge(Expression<? extends Comparable<E>> expression);
+    IPredicate ge(Expression<? extends Comparable<E>> expression);
 
-    Predicate ge(Comparable<E> constant);
+    IPredicate ge(Comparable<E> constant);
 
-    Predicate notEq(Expression<E> expression);
+    IPredicate notEq(Expression<E> expression);
 
-    Predicate notEq(Comparable<E> constant);
+    IPredicate notEq(Comparable<E> constant);
 
-    Predicate not();
+    IPredicate not();
 
-    Predicate between(Expression<E> first, Expression<E> second);
+    IPredicate between(Expression<E> first, Expression<E> second);
 
-    Predicate between(E first, E second);
+    IPredicate between(E first, E second);
 
-    Predicate between(Expression<E> first, E second);
+    IPredicate between(Expression<E> first, E second);
 
-    Predicate between(E first, Expression<E> second);
+    IPredicate between(E first, Expression<E> second);
 
-    Predicate isNull();
+    IPredicate isNull();
 
-    Predicate isNotNull();
+    IPredicate isNotNull();
 
-    Predicate in(Collection<E> values);
+    IPredicate in(Collection<E> values);
 
-    Predicate in(Expression<Collection<E>> values);
+    IPredicate in(Expression<Collection<E>> values);
 
-    Predicate notIn(Collection<E> values);
+    IPredicate notIn(Collection<E> values);
 
-    Predicate notIn(Expression<Collection<E>> values);
+    IPredicate notIn(Expression<Collection<E>> values);
 
     <N extends Number> Expression<E> mod(Expression<N> operator);
 
@@ -117,15 +113,15 @@ public interface Expression<E> extends SelectAble {
     Expression<E> brackets();
 
 
-    Predicate like(String pattern);
+    IPredicate like(String pattern);
 
-    Predicate notLike(String pattern);
+    IPredicate notLike(String pattern);
 
-    Predicate all(SubQuery<E> subQuery);
+    IPredicate all(SubQuery<E> subQuery);
 
-    Predicate any(SubQuery<E> subQuery);
+    IPredicate any(SubQuery<E> subQuery);
 
-    Predicate some(SubQuery<E> subQuery);
+    IPredicate some(SubQuery<E> subQuery);
 
     void appendSQL(SQLContext context);
 

@@ -2,12 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
-import io.army.dialect.ParamWrapper;
-import io.army.dialect.SQL;
 
-import java.util.List;
-
-final class BetweenPredicate extends AbstractPredicate {
+final class BetweenIPredicate extends AbstractIPredicate {
 
     private final Expression<?> left;
 
@@ -15,7 +11,7 @@ final class BetweenPredicate extends AbstractPredicate {
 
     private final Expression<?> right;
 
-    BetweenPredicate(Expression<?> left, Expression<?> center, Expression<?> right) {
+    BetweenIPredicate(Expression<?> left, Expression<?> center, Expression<?> right) {
         this.left = left;
         this.center = center;
         this.right = right;

@@ -2,21 +2,15 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
-import io.army.dialect.ParamWrapper;
-import io.army.dialect.SQL;
-import io.army.meta.mapping.MappingFactory;
-import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
 
-import java.util.List;
-
-final class UnaryPredicate extends AbstractPredicate {
+final class UnaryIPredicate extends AbstractIPredicate {
 
     private final UnaryOperator operator;
 
     private final Expression<?> expression;
 
-    UnaryPredicate(UnaryOperator operator, Expression<?> expression) {
+    UnaryIPredicate(UnaryOperator operator, Expression<?> expression) {
         Assert.notNull(expression, "expression required");
 
         this.operator = operator;

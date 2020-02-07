@@ -2,15 +2,12 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.dialect.ParamWrapper;
-import io.army.dialect.SQL;
 import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 final class ParamExpressionImp<E> implements ParamExpression<E> {
 
@@ -50,142 +47,142 @@ final class ParamExpressionImp<E> implements ParamExpression<E> {
     }
 
     @Override
-    public Predicate eq(Expression<E> expression) {
+    public IPredicate eq(Expression<E> expression) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate eq(E constant) {
+    public IPredicate eq(E constant) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate lt(Expression<? extends Comparable<E>> expression) {
+    public IPredicate lt(Expression<? extends Comparable<E>> expression) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate lt(Comparable<E> constant) {
+    public IPredicate lt(Comparable<E> constant) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate le(Expression<? extends Comparable<E>> expression) {
+    public IPredicate le(Expression<? extends Comparable<E>> expression) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate le(Comparable<E> constant) {
+    public IPredicate le(Comparable<E> constant) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate gt(Expression<? extends Comparable<E>> expression) {
+    public IPredicate gt(Expression<? extends Comparable<E>> expression) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate gt(Comparable<E> constant) {
+    public IPredicate gt(Comparable<E> constant) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate ge(Expression<? extends Comparable<E>> expression) {
+    public IPredicate ge(Expression<? extends Comparable<E>> expression) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate ge(Comparable<E> constant) {
+    public IPredicate ge(Comparable<E> constant) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate notEq(Expression<E> expression) {
+    public IPredicate notEq(Expression<E> expression) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate notEq(Comparable<E> constant) {
+    public IPredicate notEq(Comparable<E> constant) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate not() {
+    public IPredicate not() {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate between(Expression<E> first, Expression<E> second) {
+    public IPredicate between(Expression<E> first, Expression<E> second) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate between(E first, E second) {
+    public IPredicate between(E first, E second) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate between(Expression<E> first, E second) {
+    public IPredicate between(Expression<E> first, E second) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate between(E first, Expression<E> second) {
+    public IPredicate between(E first, Expression<E> second) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate isNull() {
+    public IPredicate isNull() {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate isNotNull() {
+    public IPredicate isNotNull() {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate in(Collection<E> values) {
+    public IPredicate in(Collection<E> values) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate in(Expression<Collection<E>> values) {
+    public IPredicate in(Expression<Collection<E>> values) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate notIn(Collection<E> values) {
+    public IPredicate notIn(Collection<E> values) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate notIn(Expression<Collection<E>> values) {
+    public IPredicate notIn(Expression<Collection<E>> values) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate like(String pattern) {
+    public IPredicate like(String pattern) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate notLike(String pattern) {
+    public IPredicate notLike(String pattern) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate all(SubQuery<E> subQuery) {
+    public IPredicate all(SubQuery<E> subQuery) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate any(SubQuery<E> subQuery) {
+    public IPredicate any(SubQuery<E> subQuery) {
         throw createUnsupported();
     }
 
     @Override
-    public Predicate some(SubQuery<E> subQuery) {
+    public IPredicate some(SubQuery<E> subQuery) {
         throw createUnsupported();
     }
 

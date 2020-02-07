@@ -1,23 +1,21 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Predicate;
+import io.army.criteria.IPredicate;
 import io.army.criteria.SQLContext;
-import io.army.dialect.ParamWrapper;
-import io.army.dialect.SQL;
 import io.army.util.ArrayUtils;
 
 import java.util.Iterator;
 import java.util.List;
 
-final class OrtPredicate extends AbstractPredicate implements Predicate {
+final class OrtIPredicate extends AbstractIPredicate implements IPredicate {
 
-    private final Predicate orPredicate;
+    private final IPredicate orIPredicate;
 
-    private final List<Predicate> andPredicateList;
+    private final List<IPredicate> andIPredicateList;
 
-    OrtPredicate(Predicate orPredicate, List<Predicate> andPredicateList) {
-        this.orPredicate = orPredicate;
-        this.andPredicateList = ArrayUtils.asUnmodifiableList(andPredicateList);
+    OrtIPredicate(IPredicate orIPredicate, List<IPredicate> andIPredicateList) {
+        this.orIPredicate = orIPredicate;
+        this.andIPredicateList = ArrayUtils.asUnmodifiableList(andIPredicateList);
     }
 
 
@@ -25,9 +23,9 @@ final class OrtPredicate extends AbstractPredicate implements Predicate {
     protected void afterSpace(SQLContext context) {
         StringBuilder builder = context.stringBuilder()
                 .append("(");
-        orPredicate.appendSQL(context);
+        orIPredicate.appendSQL(context);
         builder.append(" OR (");
-        for (Iterator<Predicate> iterator = andPredicateList.iterator(); iterator.hasNext(); ) {
+        for (Iterator<IPredicate> iterator = andIPredicateList.iterator(); iterator.hasNext(); ) {
             iterator.next().appendSQL(context);
             if(iterator.hasNext()){
                 builder.append(" AND ");
@@ -39,10 +37,10 @@ final class OrtPredicate extends AbstractPredicate implements Predicate {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder("( ");
-        builder.append(orPredicate)
+        builder.append(orIPredicate)
                 .append(" OR (")
         ;
-        for (Iterator<Predicate> iterator = andPredicateList.iterator(); iterator.hasNext(); ) {
+        for (Iterator<IPredicate> iterator = andIPredicateList.iterator(); iterator.hasNext(); ) {
             builder.append(iterator.next());
             if (iterator.hasNext()) {
                 builder.append(" AND");

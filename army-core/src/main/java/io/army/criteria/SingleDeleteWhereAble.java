@@ -11,10 +11,10 @@ public interface SingleDeleteWhereAble extends WhereAble {
 
     @NonNull
     @Override
-    OrderAble where(Predicate... predicates);
+    OrderAble where(IPredicate... IPredicates);
 
     @NonNull
     @Override
-    OrderAble where(@NonNull List<Predicate> predicateList);
+    OrderAble where(@NonNull List<IPredicate> IPredicateList);
 
 }
