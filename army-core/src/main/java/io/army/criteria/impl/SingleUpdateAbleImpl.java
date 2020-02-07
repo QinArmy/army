@@ -179,73 +179,14 @@ final class SingleUpdateAbleImpl<T extends IDomain, C1, C2> extends AbstractSQLA
     }
 
     @Override
-    public OrderAbleOfSingleUpdate<T, C1, C2> where(Predicate<C1> predicate, List<IPredicate> predicateList) {
-        if (predicate.test(this.criteria1)) {
-            where(predicateList);
-        }
-        return this;
+    public OrderAbleOfSingleUpdate<T, C1, C2> where(Function<C1, IPredicate> function, boolean one) {
+        return where(function.apply(this.criteria1));
     }
 
     @Override
-    public OrderAbleOfSingleUpdate<T, C1, C2> where(BiPredicate<C1, C2> biPredicate, List<IPredicate> predicateList) {
-        if (biPredicate.test(this.criteria1, this.criteria2)) {
-            where(predicateList);
-        }
-        return this;
+    public OrderAbleOfSingleUpdate<T, C1, C2> where(BiFunction<C1, C2, IPredicate> biFunction, boolean one) {
+        return where(biFunction.apply(this.criteria1, this.criteria2));
     }
-
-    @Override
-    public OrderAbleOfSingleUpdate<T, C1, C2> where(Predicate<C1> predicate
-            , Function<C1, List<IPredicate>> function) {
-        if (predicate.test(this.criteria1)) {
-            where(function.apply(this.criteria1));
-        }
-        return this;
-    }
-
-    @Override
-    public OrderAbleOfSingleUpdate<T, C1, C2> where(BiPredicate<C1, C2> biPredicate, BiFunction<C1, C2
-            , List<IPredicate>> biFunction) {
-        if (biPredicate.test(this.criteria1, this.criteria2)) {
-            where(biFunction.apply(this.criteria1, this.criteria2));
-        }
-        return this;
-    }
-
-    @Override
-    public WhereAndAbleOfSingleUpdate<T, C1, C2> where(Predicate<C1> testPredicate, IPredicate predicate) {
-        if (testPredicate.test(this.criteria1)) {
-            where(predicate);
-        }
-        return this;
-    }
-
-    @Override
-    public WhereAndAbleOfSingleUpdate<T, C1, C2> where(BiPredicate<C1, C2> biPredicate, IPredicate predicate) {
-        if (biPredicate.test(this.criteria1, this.criteria2)) {
-            where(predicate);
-        }
-        return this;
-    }
-
-    @Override
-    public WhereAndAbleOfSingleUpdate<T, C1, C2> where(Predicate<C1> testPredicate, Function<C1, IPredicate> function
-            , boolean predicate) {
-        if (testPredicate.test(this.criteria1)) {
-            where(function.apply(this.criteria1));
-        }
-        return this;
-    }
-
-    @Override
-    public WhereAndAbleOfSingleUpdate<T, C1, C2> where(BiPredicate<C1, C2> biPredicate
-            , BiFunction<C1, C2, IPredicate> biFunction, boolean predicate) {
-        if (biPredicate.test(this.criteria1, this.criteria2)) {
-            where(biFunction.apply(this.criteria1, this.criteria2));
-        }
-        return this;
-    }
-
 
     /*################################## blow WhereAndAbleOfSingleUpdate method ##################################*/
 

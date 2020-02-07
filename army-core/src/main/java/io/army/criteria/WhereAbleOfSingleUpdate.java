@@ -21,23 +21,10 @@ public interface WhereAbleOfSingleUpdate<T extends IDomain, C1, C2> extends SetA
 
     OrderAbleOfSingleUpdate<T, C1, C2> where(BiFunction<C1, C2, List<IPredicate>> biFunction);
 
-    OrderAbleOfSingleUpdate<T, C1, C2> where(Predicate<C1> predicate, List<IPredicate> predicateList);
-
-    OrderAbleOfSingleUpdate<T, C1, C2> where(BiPredicate<C1, C2> biPredicate, List<IPredicate> predicateList);
-
-    OrderAbleOfSingleUpdate<T, C1, C2> where(Predicate<C1> biPredicate, Function<C1, List<IPredicate>> function);
-
-    OrderAbleOfSingleUpdate<T, C1, C2> where(BiPredicate<C1, C2> biPredicate, BiFunction<C1, C2, List<IPredicate>> biFunction);
-
-
     WhereAndAbleOfSingleUpdate<T, C1, C2> where(IPredicate predicate);
 
-    WhereAndAbleOfSingleUpdate<T, C1, C2> where(Predicate<C1> testPredicate, IPredicate predicate);
+    OrderAbleOfSingleUpdate<T, C1, C2> where(Function<C1, IPredicate> function,boolean one);
 
-    WhereAndAbleOfSingleUpdate<T, C1, C2> where(BiPredicate<C1, C2> biPredicate, IPredicate predicate);
-
-    WhereAndAbleOfSingleUpdate<T, C1, C2> where(Predicate<C1> testPredicate, Function<C1, IPredicate> function, boolean predicate);
-
-    WhereAndAbleOfSingleUpdate<T, C1, C2> where(BiPredicate<C1, C2> biPredicate, BiFunction<C1, C2, IPredicate> biFunction, boolean predicate);
+    OrderAbleOfSingleUpdate<T, C1, C2> where(BiFunction<C1, C2, IPredicate> biFunction,boolean one);
 
 }

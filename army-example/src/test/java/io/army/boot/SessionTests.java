@@ -63,26 +63,27 @@ public class SessionTests {
 
     @Test(invocationCount = 10)
     public void singleUpdate() {
+
         final long start = System.currentTimeMillis();
-          Map<String,Object> map = new HashMap<>();
-        SingleUpdateAble updateAble = SQLS.updateWithCriteria(Account_.T,map).as("a")
+        Map<String, Object> map = new HashMap<>();
+        SingleUpdateAble updateAble = SQLS.updateWithCriteria(Account_.T, map).as("a")
                 .set(Account_.balance, table("a", Account_.balance).add(BigDecimal.ONE).brackets())
                 //.set(Account_.updateTime, LocalDateTime.now())
                 // .set(Account_.visible,Boolean.TRUE)
                 //.set(Account_.userId,0L)
-                .set(this::isUser,Account_.balance,BigDecimal.ZERO)
+                .set(this::isUser, Account_.balance, BigDecimal.ZERO)
                 .where(table("a", Account_.userId).add(SQLS.constant(1L)).brackets().multiply(3).eq(2L))
                 .and(table("a", Account_.visible).eq(true))
                 .and(table("a", Account_.createTime).eq(LocalDateTime.now()))
-                .orderBy(table("a",Account_.id), false)
-                .then(table("a",Account_.createTime), true)
+                .orderBy(table("a", Account_.id), false)
+                .then(table("a", Account_.createTime), true)
                 .limit(0);
 
         LOG.info("sql:\n{}", updateAble.debugSQL(SQLDialect.MySQL57));
         LOG.info("cost:{}", System.currentTimeMillis() - start);
     }
 
-    private boolean isUser(Map<String,Object> map){
+    private boolean isUser(Map<String, Object> map) {
         return false;
     }
 

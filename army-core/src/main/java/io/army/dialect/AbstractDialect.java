@@ -4,6 +4,7 @@ package io.army.dialect;
 import io.army.SessionFactory;
 import io.army.beans.BeanWrapper;
 import io.army.beans.ReadonlyWrapper;
+import io.army.criteria.SingleDeleteAble;
 import io.army.criteria.SingleUpdateAble;
 import io.army.criteria.Visible;
 import io.army.domain.IDomain;
@@ -120,6 +121,11 @@ public abstract class AbstractDialect implements Dialect {
     @Override
     public final List<SQLWrapper> update(SingleUpdateAble singleUpdateAble, Visible visible) {
         return tableDML.update(singleUpdateAble,visible);
+    }
+
+    @Override
+    public List<SQLWrapper> delete(SingleDeleteAble deleteAble, Visible visible) {
+        return tableDML.delete(deleteAble,visible);
     }
 
     @Override

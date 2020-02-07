@@ -5,12 +5,14 @@ import io.army.SessionFactory;
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLS;
+import io.army.criteria.impl.inner.InnerSingleDeleteAble;
 import io.army.criteria.impl.inner.InnerSingleUpdateAble;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
 import io.army.util.Assert;
+import io.army.util.CollectionUtils;
 import io.army.util.StringUtils;
 
 import java.time.LocalDateTime;
@@ -94,11 +96,69 @@ public abstract class AbstractTableDML implements TableDML {
         return Collections.unmodifiableList(wrapperList);
     }
 
+    @Override
+    public List<SQLWrapper> delete(SingleDeleteAble deleteAble, Visible visible) {
+        return Collections.emptyList();
+    }
+
     /*################################## blow protected template method ##################################*/
 
     /*################################## blow protected method ##################################*/
 
     /*################################## blow private method ##################################*/
+
+
+    private List<SQLWrapper> createDeleteForSimple(InnerSingleDeleteAble deleteAble, Visible visible) {
+
+        final SQLContext context = new DefaultSQLContext(this.sql);
+        TableMeta<?> tableMeta = deleteAble.tableMeta();
+
+        final String tableName = this.sql.quoteIfNeed(tableMeta.tableName());
+        // 1. delete clause
+        appendDeleteClause(context, tableName, deleteAble);
+        // 2. where clause
+        appendDeleteWhereClause(context, deleteAble, visible);
+        // 3. order by clause
+        appendOrderByClause(context, deleteAble.orderExpList(), deleteAble.ascList());
+        // 4. limit clause
+        appendLimitClause(context, deleteAble.rowCount());
+
+        return Collections.singletonList(
+                SQLWrapper.build(context.stringBuilder().toString(), context.paramWrapper())
+        );
+    }
+
+    private void appendDeleteClause(SQLContext context, String tableName, InnerSingleDeleteAble deleteAble) {
+        context.stringBuilder()
+                .append("DELETE FROM ")
+                .append(tableName);
+
+    }
+
+    private void appendDeleteWhereClause(SQLContext context, InnerSingleDeleteAble deleteAble, Visible visible) {
+        StringBuilder builder = context.stringBuilder()
+                .append(" WHERE");
+        List<IPredicate> predicateList = deleteAble.predicateList();
+        Assert.notEmpty(predicateList, "no where clause forbidden by army");
+
+        for (Iterator<IPredicate> iterator = predicateList.iterator(); iterator.hasNext(); ) {
+            iterator.next().appendSQL(context);
+            if (iterator.hasNext()) {
+                builder.append(" AND");
+            }
+        }
+        Boolean visibleValue = visible.getValue();
+        if (visibleValue != null) {
+            FieldMeta<?, ?> visibleField = deleteAble.tableMeta().getField(TableMeta.VISIBLE);
+            String textValue = visibleField.mappingType().nonNullTextValue(visibleValue);
+            builder.append(" AND ")
+                    .append(this.quoteIfNeed(visibleField.fieldName()))
+                    .append(" = ")
+                    .append(DialectUtils.quoteIfNeed(visibleField.mappingType(), textValue))
+            ;
+        }
+    }
+
 
 
     private List<SQLWrapper> createUpdateForChild(InnerSingleUpdateAble innerAble, Visible visible) {
@@ -130,9 +190,9 @@ public abstract class AbstractTableDML implements TableDML {
         boolean hasVersion;
         hasVersion = appendWhereClause(context, tableAlias, innerAble, visible);
         //4. order clause
-        appendOrderByClause(context, innerAble);
+        appendOrderByClause(context, innerAble.orderExpList(), innerAble.ascExpList());
         //5. limit clause
-        appendLimitClause(builder, paramWrapperList, innerAble.rowCount());
+        appendLimitClause(context, innerAble.rowCount());
 
         return SQLWrapper.build(builder.toString(), paramWrapperList, hasVersion);
     }
@@ -287,14 +347,9 @@ public abstract class AbstractTableDML implements TableDML {
 
     }
 
-    private void appendOrderByClause(SQLContext context
-            , InnerSingleUpdateAble innerAble) {
-
-        StringBuilder builder = context.stringBuilder().append(" ORDER BY");
-
-        List<Expression<?>> orderExpList = innerAble.orderExpList();
-        List<Boolean> ascExpList = innerAble.ascExpList();
+    private void appendOrderByClause(SQLContext context, List<Expression<?>> orderExpList, List<Boolean> ascExpList) {
         Assert.isTrue(orderExpList.size() == ascExpList.size(), "orderExpList size and ascExpList size not match.");
+        StringBuilder builder = context.stringBuilder().append(" ORDER BY");
 
         Expression<?> orderExp;
         Boolean ascExp;
@@ -315,12 +370,15 @@ public abstract class AbstractTableDML implements TableDML {
         }
     }
 
-    private void appendLimitClause(StringBuilder builder, List<ParamWrapper> paramWrapperList, int rowCount) {
+    private void appendLimitClause(SQLContext context, int rowCount) {
         if (rowCount > -1) {
-            builder.append(" LIMIT ?");
-            paramWrapperList.add(ParamWrapper.build(MappingFactory.getDefaultMapping(Integer.class), rowCount));
+            context.stringBuilder().append(" LIMIT ?");
+            context.appendParam(
+                    ParamWrapper.build(MappingFactory.getDefaultMapping(Integer.class), rowCount)
+            );
         }
     }
+
 
 
     /**
