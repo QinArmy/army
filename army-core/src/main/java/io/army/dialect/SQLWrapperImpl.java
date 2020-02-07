@@ -96,6 +96,9 @@ final class SQLWrapperImpl implements SQLWrapper {
 
     private String replacePlaceHolder(String sql) {
         StringBuilder builder = new StringBuilder();
+        builder.append("original sql:\n")
+                .append(sql)
+        .append("\nsql with param(s):\n");
 
         final int len = sql.length();
         final int size = this.paramList.size();

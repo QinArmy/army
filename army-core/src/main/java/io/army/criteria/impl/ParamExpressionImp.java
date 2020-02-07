@@ -201,7 +201,7 @@ final class ParamExpressionImp<E> implements ParamExpression<E> {
 
     @Override
     public void appendSQL(SQLContext context) {
-        context.stringBuilder().append("? ");
+        context.stringBuilder().append(" ?");
         context.appendParam(ParamWrapper.build(mappingType, value));
     }
 
