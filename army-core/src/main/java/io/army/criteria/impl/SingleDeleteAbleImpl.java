@@ -21,6 +21,7 @@ final class SingleDeleteAbleImpl<T extends IDomain, C> extends AbstractSQLAble
         implements SingleDelete.WhereAbleOfSingleDelete<T, C>
         , SingleDelete.WhereAndOfSingleDelete<T, C>, SingleDelete.OrderAbleOfSingleDelete<T, C>
         , SingleDelete.OrderItemOfSingleDelete<T, C>, SingleDelete.LimitAbleOfSingleDelete<T, C>
+        , SingleDelete.OptionalOrderOfSingleDelete<T, C>
         , InnerSingleDeleteAble {
 
     private final TableMeta<T> tableMeta;
@@ -145,28 +146,136 @@ final class SingleDeleteAbleImpl<T extends IDomain, C> extends AbstractSQLAble
     }
 
     @Override
-    public LimitAbleOfSingleDelete<T, C> orderBy(Predicate<C> testPredicate, Expression<?> orderExp
-            ,@Nullable Boolean asc) {
-        if(testPredicate.test(this.criteria)){
-            orderBy(orderExp,asc);
+    public OptionalOrderOfSingleDelete<T, C> orderBy(Predicate<C> testPredicate, Expression<?> orderExp) {
+        if (testPredicate.test(this.criteria)) {
+            orderBy(orderExp, (Boolean) null);
         }
         return this;
     }
 
     @Override
-    public LimitAbleOfSingleDelete<T, C> orderBy(Predicate<C> testPredicate, Function<C, Expression<?>> function
-            ,@Nullable  Boolean asc) {
-        if(testPredicate.test(this.criteria)){
-            orderBy(function.apply(this.criteria),asc);
+    public OptionalOrderOfSingleDelete<T, C> orderBy(Predicate<C> testPredicate, Expression<?> orderExp
+            , @Nullable Boolean asc) {
+        if (testPredicate.test(this.criteria)) {
+            orderBy(orderExp, asc);
         }
         return this;
     }
 
     @Override
-    public LimitAbleOfSingleDelete<T, C> orderBy(Predicate<C> testPredicate, Function<C, Expression<?>> function
+    public OptionalOrderOfSingleDelete<T, C> orderBy(Predicate<C> testPredicate, Function<C, Expression<?>> function
+            , @Nullable Boolean asc) {
+        if (testPredicate.test(this.criteria)) {
+            orderBy(function.apply(this.criteria), asc);
+        }
+        return this;
+    }
+
+    @Override
+    public OptionalOrderOfSingleDelete<T, C> orderBy(Predicate<C> testPredicate, Function<C, Expression<?>> function
             , Function<C, Boolean> ascFunction) {
-        if(testPredicate.test(this.criteria)){
-            orderBy(function.apply(this.criteria),ascFunction.apply(this.criteria));
+        if (testPredicate.test(this.criteria)) {
+            orderBy(function.apply(this.criteria), ascFunction.apply(this.criteria));
+        }
+        return this;
+    }
+
+    @Override
+    public OptionalOrderOfSingleDelete<T, C> orderBy(Predicate<C> testPredicate, Expression<?> orderExp
+            , Function<C, Boolean> ascFunction) {
+        if (testPredicate.test(this.criteria)) {
+            orderBy(orderExp, ascFunction.apply(this.criteria));
+        }
+        return this;
+    }
+
+    /*################################## blow OptionalOrderOfSingleDelete method ##################################*/
+
+    @Override
+    public OptionalOrderOfSingleDelete<T, C> maybeThen(Expression<?> orderExp) {
+        if (!CollectionUtils.isEmpty(this.orderExpList)) {
+            then(orderExp);
+        }
+        return this;
+    }
+
+    @Override
+    public OptionalOrderOfSingleDelete<T, C> maybeThen(Expression<?> orderExp, @Nullable Boolean asc) {
+        if (!CollectionUtils.isEmpty(this.orderExpList)) {
+            then(orderExp, asc);
+        }
+        return this;
+    }
+
+    @Override
+    public OptionalOrderOfSingleDelete<T, C> maybeThen(Function<C, Expression<?>> function, @Nullable Boolean asc) {
+        if (!CollectionUtils.isEmpty(this.orderExpList)) {
+            then(function.apply(this.criteria), asc);
+        }
+        return this;
+    }
+
+    @Override
+    public OptionalOrderOfSingleDelete<T, C> maybeThen(Function<C, Expression<?>> function, Function<C, Boolean> ascFunction) {
+        if (!CollectionUtils.isEmpty(this.orderExpList)) {
+            then(function.apply(this.criteria), ascFunction.apply(this.criteria));
+        }
+        return this;
+    }
+
+    @Override
+    public OptionalOrderOfSingleDelete<T, C> maybeThen(Expression<?> orderExp, Function<C, Boolean> ascFunction) {
+        if (!CollectionUtils.isEmpty(this.orderExpList)) {
+            then(orderExp, ascFunction.apply(this.criteria));
+        }
+        return this;
+    }
+
+    @Override
+    public OptionalOrderOfSingleDelete<T, C> maybeThen(Predicate<C> testPredicate, Expression<?> orderExp
+            , @Nullable Boolean asc) {
+        if (!CollectionUtils.isEmpty(this.orderExpList)
+                && testPredicate.test(this.criteria)) {
+            then(orderExp, asc);
+        }
+        return this;
+    }
+
+    @Override
+    public OptionalOrderOfSingleDelete<T, C> maybeThen(Predicate<C> testPredicate, Expression<?> orderExp
+            , Function<C, Boolean> ascFunction) {
+        if (!CollectionUtils.isEmpty(this.orderExpList)
+                && testPredicate.test(this.criteria)) {
+            then(orderExp, ascFunction.apply(this.criteria));
+        }
+        return this;
+    }
+
+    @Override
+    public OptionalOrderOfSingleDelete<T, C> maybeThen(Predicate<C> testPredicate, Function<C, Expression<?>> function
+            , @Nullable Boolean asc) {
+        if (!CollectionUtils.isEmpty(this.orderExpList)
+                && testPredicate.test(this.criteria)) {
+            then(function.apply(this.criteria), asc);
+        }
+        return this;
+    }
+
+    @Override
+    public OptionalOrderOfSingleDelete<T, C> maybeThen(Predicate<C> testPredicate, Expression<?> orderExp) {
+        if (!CollectionUtils.isEmpty(this.orderExpList)
+                && testPredicate.test(this.criteria)) {
+            then(orderExp, (Boolean) null);
+        }
+        return this;
+    }
+
+    @Override
+    public OptionalOrderOfSingleDelete<T, C> maybeThen(Predicate<C> testPredicate, Function<C, Expression<?>> function,
+                                                       Function<C, Boolean> ascFunction) {
+        if (!CollectionUtils.isEmpty(this.orderExpList)
+                && testPredicate.test(this.criteria)) {
+            then(function.apply(this.criteria), ascFunction.apply(this.criteria));
         }
         return this;
     }
@@ -175,7 +284,7 @@ final class SingleDeleteAbleImpl<T extends IDomain, C> extends AbstractSQLAble
 
     @Override
     public OrderItemOfSingleDelete<T, C> then(Expression<?> orderExp) {
-        return orderBy(orderExp, (Boolean) null);
+        return then(orderExp, (Boolean) null);
     }
 
     @Override
@@ -190,14 +299,14 @@ final class SingleDeleteAbleImpl<T extends IDomain, C> extends AbstractSQLAble
 
     @Override
     public OrderItemOfSingleDelete<T, C> then(Expression<?> orderExp, Function<C, Boolean> ascFunction) {
-        return orderBy(orderExp, ascFunction.apply(this.criteria));
+        return then(orderExp, ascFunction.apply(this.criteria));
     }
 
     @Override
     public OrderItemOfSingleDelete<T, C> then(Predicate<C> testPredicate, Expression<?> orderExp
             , @Nullable Boolean asc) {
         if (testPredicate.test(this.criteria)) {
-            orderBy(orderExp, asc);
+            then(orderExp, asc);
         }
         return this;
     }
@@ -206,7 +315,7 @@ final class SingleDeleteAbleImpl<T extends IDomain, C> extends AbstractSQLAble
     public OrderItemOfSingleDelete<T, C> then(Predicate<C> testPredicate, Expression<?> orderExp
             , Function<C, Boolean> ascFunction) {
         if (testPredicate.test(this.criteria)) {
-            orderBy(orderExp, ascFunction.apply(this.criteria));
+            then(orderExp, ascFunction.apply(this.criteria));
         }
         return this;
     }
@@ -215,7 +324,7 @@ final class SingleDeleteAbleImpl<T extends IDomain, C> extends AbstractSQLAble
     public OrderItemOfSingleDelete<T, C> then(Predicate<C> testPredicate, Function<C, Expression<?>> function
             , @Nullable Boolean asc) {
         if (testPredicate.test(this.criteria)) {
-            orderBy(function.apply(this.criteria), asc);
+            then(function.apply(this.criteria), asc);
         }
         return this;
     }
@@ -259,7 +368,7 @@ final class SingleDeleteAbleImpl<T extends IDomain, C> extends AbstractSQLAble
 
     @Override
     public List<IPredicate> predicateList() {
-        if(CollectionUtils.isEmpty(this.predicateList)){
+        if (CollectionUtils.isEmpty(this.predicateList)) {
             throw new IllegalStateException("single delete sql invoke error,no where clause.");
         }
         return predicateList;
@@ -267,7 +376,7 @@ final class SingleDeleteAbleImpl<T extends IDomain, C> extends AbstractSQLAble
 
     @Override
     public List<Expression<?>> orderExpList() {
-        if(this.orderExpList == null){
+        if (this.orderExpList == null) {
             return Collections.emptyList();
         }
         return orderExpList;
@@ -275,7 +384,7 @@ final class SingleDeleteAbleImpl<T extends IDomain, C> extends AbstractSQLAble
 
     @Override
     public List<Boolean> ascList() {
-        if(this.ascList == null){
+        if (this.ascList == null) {
             return Collections.emptyList();
         }
         return ascList;

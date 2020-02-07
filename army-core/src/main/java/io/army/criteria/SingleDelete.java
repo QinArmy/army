@@ -50,14 +50,48 @@ public interface SingleDelete extends SQLAble {
 
         OrderItemOfSingleDelete<T, C> orderBy(Expression<?> orderExp, Function<C, Boolean> ascFunction);
 
-        LimitAbleOfSingleDelete<T, C> orderBy(Predicate<C> testPredicate,Expression<?> orderExp,@Nullable Boolean asc);
+        OptionalOrderOfSingleDelete<T, C> orderBy(Predicate<C> testPredicate, Expression<?> orderExp);
 
-        LimitAbleOfSingleDelete<T, C> orderBy(Predicate<C> testPredicate,Function<C,Expression<?>> function
-                ,@Nullable Boolean asc);
+        OptionalOrderOfSingleDelete<T, C> orderBy(Predicate<C> testPredicate, Expression<?> orderExp
+                , @Nullable Boolean asc);
 
-        LimitAbleOfSingleDelete<T, C> orderBy(Predicate<C> testPredicate,Function<C,Expression<?>> function
-                ,Function<C,Boolean> ascFunction);
+        OptionalOrderOfSingleDelete<T, C> orderBy(Predicate<C> testPredicate, Function<C, Expression<?>> function
+                , @Nullable Boolean asc);
 
+        OptionalOrderOfSingleDelete<T, C> orderBy(Predicate<C> testPredicate, Function<C, Expression<?>> function
+                , Function<C, Boolean> ascFunction);
+
+        OptionalOrderOfSingleDelete<T, C> orderBy(Predicate<C> testPredicate, Expression<?> orderExp
+                , Function<C, Boolean> ascFunction);
+    }
+
+    interface OptionalOrderOfSingleDelete<T extends IDomain, C> extends LimitAbleOfSingleDelete<T, C> {
+
+        OptionalOrderOfSingleDelete<T, C> maybeThen(Expression<?> orderExp);
+
+        OptionalOrderOfSingleDelete<T, C> maybeThen(Expression<?> orderExp, @Nullable Boolean asc);
+
+        OptionalOrderOfSingleDelete<T, C> maybeThen(Function<C, Expression<?>> function, @Nullable Boolean asc);
+
+        OptionalOrderOfSingleDelete<T, C> maybeThen(Expression<?> orderExp, Function<C, Boolean> ascFunction);
+
+        OptionalOrderOfSingleDelete<T, C> maybeThen(Function<C, Expression<?>> function
+                , Function<C, Boolean> ascFunction);
+
+
+        OptionalOrderOfSingleDelete<T, C> maybeThen(Predicate<C> testPredicate,Expression<?> orderExp);
+
+        OptionalOrderOfSingleDelete<T, C> maybeThen(Predicate<C> testPredicate,Expression<?> orderExp
+                , @Nullable Boolean asc);
+
+        OptionalOrderOfSingleDelete<T, C> maybeThen(Predicate<C> testPredicate,Function<C, Expression<?>> function
+                , @Nullable Boolean asc);
+
+        OptionalOrderOfSingleDelete<T, C> maybeThen(Predicate<C> testPredicate,Expression<?> orderExp
+                , Function<C, Boolean> ascFunction);
+
+        OptionalOrderOfSingleDelete<T, C> maybeThen(Predicate<C> testPredicate,Function<C, Expression<?>> function
+                , Function<C, Boolean> ascFunction);
     }
 
     interface OrderItemOfSingleDelete<T extends IDomain, C> extends LimitAbleOfSingleDelete<T, C> {

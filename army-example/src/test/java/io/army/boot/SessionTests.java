@@ -5,6 +5,7 @@ import com.example.domain.account.Account_;
 import com.example.generator.Being;
 import io.army.Session;
 import io.army.SessionFactory;
+import io.army.criteria.SingleDeleteAble;
 import io.army.criteria.SingleUpdateAble;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.SQLS;
@@ -83,8 +84,25 @@ public class SessionTests {
         LOG.info("cost:{}", System.currentTimeMillis() - start);
     }
 
+    @Test(invocationCount = 10)
+    public void singleDelete() {
+        final long start = System.currentTimeMillis();
+
+        Map<String, Object> criteria = new HashMap<>();
+
+        SingleDeleteAble deleteAble = SQLS.deleteWithCriteria(Account_.T, criteria)
+                .where(Account_.id.le(1000L))
+                .and(Account_.debt.gt(BigDecimal.ONE))
+                .orderBy(this::isUser, Account_.id, false)
+                .maybeThen(Account_.createTime, false)
+                .limit(2);
+
+        LOG.info("sql:\n{}", deleteAble.debugSQL(SQLDialect.MySQL57));
+        LOG.info("cost:{}", System.currentTimeMillis() - start);
+    }
+
     private boolean isUser(Map<String, Object> map) {
-        return false;
+        return true;
     }
 
 

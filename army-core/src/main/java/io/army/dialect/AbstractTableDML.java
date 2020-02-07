@@ -97,8 +97,16 @@ public abstract class AbstractTableDML implements TableDML {
     }
 
     @Override
-    public List<SQLWrapper> delete(SingleDeleteAble deleteAble, Visible visible) {
-        return Collections.emptyList();
+    public List<SQLWrapper> delete(SingleDeleteAble singleDeleteAble, Visible visible) {
+        InnerSingleDeleteAble deleteAble = (InnerSingleDeleteAble) singleDeleteAble;
+        TableMeta<?> tableMeta = deleteAble.tableMeta();
+        List<SQLWrapper> list;
+        if (tableMeta.parentMeta() == null) {
+            list = createDeleteForSimple(deleteAble, visible);
+        } else {
+            list = createDeleteForChild(deleteAble, visible);
+        }
+        return Collections.unmodifiableList(list);
     }
 
     /*################################## blow protected template method ##################################*/
@@ -106,6 +114,10 @@ public abstract class AbstractTableDML implements TableDML {
     /*################################## blow protected method ##################################*/
 
     /*################################## blow private method ##################################*/
+
+    private List<SQLWrapper> createDeleteForChild(InnerSingleDeleteAble deleteAble, Visible visible) {
+        return Collections.emptyList();
+    }
 
 
     private List<SQLWrapper> createDeleteForSimple(InnerSingleDeleteAble deleteAble, Visible visible) {
@@ -123,9 +135,10 @@ public abstract class AbstractTableDML implements TableDML {
         // 4. limit clause
         appendLimitClause(context, deleteAble.rowCount());
 
-        return Collections.singletonList(
-                SQLWrapper.build(context.stringBuilder().toString(), context.paramWrapper())
-        );
+        SQLWrapper sqlWrapper = SQLWrapper.build(context.stringBuilder().toString(), context.paramWrapper());
+        List<SQLWrapper> list = new ArrayList<>(1);
+        list.add(sqlWrapper);
+        return list;
     }
 
     private void appendDeleteClause(SQLContext context, String tableName, InnerSingleDeleteAble deleteAble) {
@@ -136,10 +149,12 @@ public abstract class AbstractTableDML implements TableDML {
     }
 
     private void appendDeleteWhereClause(SQLContext context, InnerSingleDeleteAble deleteAble, Visible visible) {
-        StringBuilder builder = context.stringBuilder()
-                .append(" WHERE");
+
         List<IPredicate> predicateList = deleteAble.predicateList();
         Assert.notEmpty(predicateList, "no where clause forbidden by army");
+
+        StringBuilder builder = context.stringBuilder()
+                .append(" WHERE");
 
         for (Iterator<IPredicate> iterator = predicateList.iterator(); iterator.hasNext(); ) {
             iterator.next().appendSQL(context);
@@ -158,7 +173,6 @@ public abstract class AbstractTableDML implements TableDML {
             ;
         }
     }
-
 
 
     private List<SQLWrapper> createUpdateForChild(InnerSingleUpdateAble innerAble, Visible visible) {
@@ -320,20 +334,7 @@ public abstract class AbstractTableDML implements TableDML {
 
         Assert.state(visibleField.javaType() == Boolean.class, "visible prop class type only is Boolean");
         // append visible field
-        Boolean visibleValue;
-        switch (visible) {
-            case ONLY_VISIBLE:
-                visibleValue = Boolean.TRUE;
-                break;
-            case ONLY_NON_VISIBLE:
-                visibleValue = Boolean.FALSE;
-                break;
-            case BOTH:
-                visibleValue = null;
-                break;
-            default:
-                throw new IllegalArgumentException(String.format("unknown visible[%s]", visible));
-        }
+        Boolean visibleValue = visible.getValue();
         if (visibleValue != null) {
             StringBuilder builder = context.stringBuilder().append(" AND ");
             if (StringUtils.hasText(tableAlias)) {
@@ -348,8 +349,13 @@ public abstract class AbstractTableDML implements TableDML {
     }
 
     private void appendOrderByClause(SQLContext context, List<Expression<?>> orderExpList, List<Boolean> ascExpList) {
+        if(CollectionUtils.isEmpty(orderExpList)){
+            return;
+        }
         Assert.isTrue(orderExpList.size() == ascExpList.size(), "orderExpList size and ascExpList size not match.");
-        StringBuilder builder = context.stringBuilder().append(" ORDER BY");
+
+        StringBuilder builder = context.stringBuilder()
+                .append(" ORDER BY");
 
         Expression<?> orderExp;
         Boolean ascExp;
@@ -378,7 +384,6 @@ public abstract class AbstractTableDML implements TableDML {
             );
         }
     }
-
 
 
     /**

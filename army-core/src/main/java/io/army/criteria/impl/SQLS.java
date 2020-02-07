@@ -33,6 +33,16 @@ public abstract class SQLS {
         return new SingleUpdateAbleImpl<>(tableMeta, criteria1, criteria2);
     }
 
+    public static <T extends IDomain> SingleDelete.WhereAbleOfSingleDelete<T, EmptyObject> delete(
+            TableMeta<T> tableMeta) {
+        return new SingleDeleteAbleImpl<>(tableMeta, EmptyObject.getInstance());
+    }
+
+    public static <T extends IDomain, C> SingleDelete.WhereAbleOfSingleDelete<T, C> deleteWithCriteria(
+            TableMeta<T> tableMeta, C criteria) {
+        return new SingleDeleteAbleImpl<>(tableMeta, criteria);
+    }
+
     public static <T extends IDomain, F> FieldMeta<T, F> table(String tableAlias, FieldMeta<T, F> fieldMeta) {
         return new AliasTableFieldMetaImpl<>(fieldMeta, tableAlias);
     }
