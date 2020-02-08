@@ -171,20 +171,7 @@ final class ParamExpressionImp<E> implements ParamExpression<E> {
         throw createUnsupported();
     }
 
-    @Override
-    public IPredicate all(SubQuery<E> subQuery) {
-        throw createUnsupported();
-    }
 
-    @Override
-    public IPredicate any(SubQuery<E> subQuery) {
-        throw createUnsupported();
-    }
-
-    @Override
-    public IPredicate some(SubQuery<E> subQuery) {
-        throw createUnsupported();
-    }
 
     @Override
     public E value() {

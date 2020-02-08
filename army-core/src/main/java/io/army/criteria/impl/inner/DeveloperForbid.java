@@ -1,4 +1,4 @@
-package io.army.criteria.impl;
+package io.army.criteria.impl.inner;
 
 import java.lang.annotation.*;
 

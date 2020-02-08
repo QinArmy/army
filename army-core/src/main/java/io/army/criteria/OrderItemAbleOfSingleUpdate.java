@@ -8,7 +8,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public interface OrderItemAbleOfSingleUpdate<T extends IDomain, C1, C2> extends LimitAbleOfSingleUpdate<T, C1, C2> {
+public interface OrderItemAbleOfSingleUpdate<T extends IDomain, C1, C2> extends SingleUpdate.LimitAbleOfSingleUpdate<T, C1, C2> {
 
     OrderItemAbleOfSingleUpdate<T, C1, C2> then(Expression<?> orderExp);
 

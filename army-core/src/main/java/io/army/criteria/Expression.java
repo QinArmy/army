@@ -8,7 +8,7 @@ import java.util.Collection;
 /**
  * created  on 2018/10/8.
  */
-public interface Expression<E> extends SelectAble {
+public interface Expression<E> extends SelectionAble {
 
     IPredicate eq(Expression<E> expression);
 
@@ -117,11 +117,6 @@ public interface Expression<E> extends SelectAble {
 
     IPredicate notLike(String pattern);
 
-    IPredicate all(SubQuery<E> subQuery);
-
-    IPredicate any(SubQuery<E> subQuery);
-
-    IPredicate some(SubQuery<E> subQuery);
 
     void appendSQL(SQLContext context);
 

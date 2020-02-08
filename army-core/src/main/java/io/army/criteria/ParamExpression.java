@@ -299,20 +299,6 @@ public interface ParamExpression<E> extends Expression<E>, ParamWrapper {
         throw new UnsupportedOperationException(MSG);
     }
 
-    @Override
-    default IPredicate all(SubQuery<E> subQuery) {
-        throw new UnsupportedOperationException(MSG);
-    }
-
-    @Override
-    default IPredicate any(SubQuery<E> subQuery) {
-        throw new UnsupportedOperationException(MSG);
-    }
-
-    @Override
-    default IPredicate some(SubQuery<E> subQuery) {
-        throw new UnsupportedOperationException(MSG);
-    }
 
 
 }

@@ -253,7 +253,7 @@ public abstract class AbstractTableDML implements TableDML {
             }
 
         }
-        // append update_time and version field
+        // append update_time havingAnd version field
         appendFieldsManagedByArmy(tableMeta, context, tableAlias);
     }
 
@@ -352,7 +352,7 @@ public abstract class AbstractTableDML implements TableDML {
         if(CollectionUtils.isEmpty(orderExpList)){
             return;
         }
-        Assert.isTrue(orderExpList.size() == ascExpList.size(), "orderExpList size and ascExpList size not match.");
+        Assert.isTrue(orderExpList.size() == ascExpList.size(), "orderExpList size havingAnd ascExpList size not match.");
 
         StringBuilder builder = context.stringBuilder()
                 .append(" ORDER BY");

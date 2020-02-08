@@ -22,9 +22,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 final class SingleUpdateAbleImpl<T extends IDomain, C1, C2> extends AbstractSQLAble implements
-        SetAbleOfSingleUpdate<T, C1, C2>, WhereAbleOfSingleUpdate<T, C1, C2>
-        , WhereAndAbleOfSingleUpdate<T, C1, C2>, OrderItemAbleOfSingleUpdate<T, C1, C2>, InnerSingleUpdateAble
-        , AliasAbleOfSingleUpdate<T, C1, C2> {
+        SingleUpdate.SetAbleOfSingleUpdate<T, C1, C2>, SingleUpdate.WhereAbleOfSingleUpdate<T, C1, C2>
+        , SingleUpdate.WhereAndAbleOfSingleUpdate<T, C1, C2>, OrderItemAbleOfSingleUpdate<T, C1, C2>
+        , InnerSingleUpdateAble, SingleUpdate.AliasAbleOfSingleUpdate<T, C1, C2> {
 
     private final TableMeta<T> tableMeta;
 

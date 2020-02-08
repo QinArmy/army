@@ -3,13 +3,12 @@ package io.army.criteria;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 
-import javax.validation.constraints.Null;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public interface OrderAbleOfSingleUpdate<T extends IDomain, C1, C2> extends LimitAbleOfSingleUpdate<T,C1,C2> {
+public interface OrderAbleOfSingleUpdate<T extends IDomain, C1, C2> extends SingleUpdate.LimitAbleOfSingleUpdate<T,C1,C2> {
 
     OrderItemAbleOfSingleUpdate<T, C1, C2> orderBy(Expression<?> orderExp);
 

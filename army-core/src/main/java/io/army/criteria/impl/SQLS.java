@@ -6,7 +6,6 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.*;
-import sun.invoke.empty.Empty;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,17 +17,17 @@ public abstract class SQLS {
         throw new UnsupportedOperationException();
     }
 
-    public static <T extends IDomain> AliasAbleOfSingleUpdate<T, EmptyObject, EmptyObject> update(TableMeta<T> tableMeta) {
+    public static <T extends IDomain> SingleUpdate.AliasAbleOfSingleUpdate<T, EmptyObject, EmptyObject> update(TableMeta<T> tableMeta) {
         return new SingleUpdateAbleImpl<>(tableMeta, EmptyObject.getInstance(), EmptyObject.getInstance());
     }
 
 
-    public static <T extends IDomain, C1> AliasAbleOfSingleUpdate<T, C1, EmptyObject> updateWithCriteria(TableMeta<T> tableMeta
+    public static <T extends IDomain, C1> SingleUpdate.AliasAbleOfSingleUpdate<T, C1, EmptyObject> updateWithCriteria(TableMeta<T> tableMeta
             , C1 criteria1) {
         return new SingleUpdateAbleImpl<>(tableMeta, criteria1, EmptyObject.getInstance());
     }
 
-    public static <T extends IDomain, C1, C2> AliasAbleOfSingleUpdate<T, C1, C2> updateWithCriteria(TableMeta<T> tableMeta
+    public static <T extends IDomain, C1, C2> SingleUpdate.AliasAbleOfSingleUpdate<T, C1, C2> updateWithCriteria(TableMeta<T> tableMeta
             , C1 criteria1, C2 criteria2) {
         return new SingleUpdateAbleImpl<>(tableMeta, criteria1, criteria2);
     }

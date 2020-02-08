@@ -302,21 +302,6 @@ import java.util.Collection;
 
 
     @Override
-    public final IPredicate all(SubQuery<E> subQuery) {
-        return null;
-    }
-
-    @Override
-    public final IPredicate any(SubQuery<E> subQuery) {
-        return null;
-    }
-
-    @Override
-    public final IPredicate some(SubQuery<E> subQuery) {
-        return null;
-    }
-
-    @Override
     public final void appendSQL(SQLContext context) {
         context.stringBuilder().append(" ");
         afterSpace(context);
