@@ -76,7 +76,7 @@ public final class CodeEnumType implements MappingType {
         int code = resultSet.getInt(alias);
         Object value = getCodeEnum(code);
         if (value == null) {
-            throw new SQLException(String.format("alias[%s] corresponding value[%s] isn'table %s code"
+            throw new SQLException(String.format("as[%s] corresponding value[%s] isn'table %s code"
                     , alias, code, enumClass.getName()));
         }
         return value;

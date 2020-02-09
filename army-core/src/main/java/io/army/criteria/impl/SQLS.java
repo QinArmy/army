@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.domain.IDomain;
-import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.*;
@@ -11,25 +10,16 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 
-public abstract class SQLS {
+public abstract class SQLS extends AbstractSQLS {
 
-    protected SQLS() {
-        throw new UnsupportedOperationException();
+
+    public static <T extends IDomain> UpdateAble.AliasAble<T, EmptyObject> update(TableMeta<T> tableMeta) {
+        return new UpdateAbleImpl<>(tableMeta, EmptyObject.getInstance());
     }
 
-    public static <T extends IDomain> SingleUpdate.AliasAbleOfSingleUpdate<T, EmptyObject, EmptyObject> update(TableMeta<T> tableMeta) {
-        return new SingleUpdateAbleImpl<>(tableMeta, EmptyObject.getInstance(), EmptyObject.getInstance());
-    }
-
-
-    public static <T extends IDomain, C1> SingleUpdate.AliasAbleOfSingleUpdate<T, C1, EmptyObject> updateWithCriteria(TableMeta<T> tableMeta
-            , C1 criteria1) {
-        return new SingleUpdateAbleImpl<>(tableMeta, criteria1, EmptyObject.getInstance());
-    }
-
-    public static <T extends IDomain, C1, C2> SingleUpdate.AliasAbleOfSingleUpdate<T, C1, C2> updateWithCriteria(TableMeta<T> tableMeta
-            , C1 criteria1, C2 criteria2) {
-        return new SingleUpdateAbleImpl<>(tableMeta, criteria1, criteria2);
+    public static <T extends IDomain, C> UpdateAble.AliasAble<T, C> updateWithCriteria(
+            TableMeta<T> tableMeta, C criteria) {
+        return new UpdateAbleImpl<>(tableMeta, criteria);
     }
 
     public static <T extends IDomain> SingleDelete.WhereAbleOfSingleDelete<T, EmptyObject> delete(
@@ -44,38 +34,6 @@ public abstract class SQLS {
 
     public static <T extends IDomain, F> FieldMeta<T, F> table(String tableAlias, FieldMeta<T, F> fieldMeta) {
         return new AliasTableFieldMetaImpl<>(fieldMeta, tableAlias);
-    }
-
-    public static <E> ParamExpression<E> asNull(Class<?> nullTypeClass) {
-        return ParamExpressionImp.build(MappingFactory.getDefaultMapping(nullTypeClass), null);
-    }
-
-    public static <E> ParamExpression<E> asNull(MappingType mappingType) {
-        return ParamExpressionImp.build(mappingType, null);
-    }
-
-    public static <E> ParamExpression<E> param(E param) {
-        return ParamExpressionImp.build(null, param);
-    }
-
-    public static <E> ParamExpression<E> param(E param, MappingType mappingType) {
-        return ParamExpressionImp.build(mappingType, param);
-    }
-
-    static <E> ParamExpression<E> param(E param, Expression<E> expression) {
-        return ParamExpressionImp.build(expression.mappingType(), param);
-    }
-
-    public static <E> ConstantExpression<E> constant(E value) {
-        return ConstantExpressionImpl.build(null, value);
-    }
-
-    public static <E> ConstantExpression<E> constant(E value, @Nullable MappingType mappingType) {
-        return ConstantExpressionImpl.build(mappingType, value);
-    }
-
-    static <E> ConstantExpression<E> constant(E value, Expression<E> expression) {
-        return ConstantExpressionImpl.build(expression.mappingType(), value);
     }
 
 

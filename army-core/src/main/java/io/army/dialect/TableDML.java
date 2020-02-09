@@ -2,7 +2,7 @@ package io.army.dialect;
 
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.SingleDeleteAble;
-import io.army.criteria.SingleUpdateAble;
+import io.army.criteria.UpdateAble;
 import io.army.criteria.Visible;
 import io.army.meta.TableMeta;
 
@@ -26,7 +26,7 @@ public interface TableDML extends SQL {
      *
      * @return a modifiable list
      */
-    default List<SQLWrapper> update(SingleUpdateAble singleUpdateAble, Visible visible) {
+    default List<SQLWrapper> update(UpdateAble updateAble, Visible visible) {
         throw new UnsupportedOperationException();
     }
 

@@ -35,7 +35,7 @@ final class SingleUpdateSQLContext implements SQLContext {
     public void registerAlias(String alias, TableMeta<?> tableMeta) throws TableAliasException {
         if (this.tableAlias.equals(alias) && tableMeta != this.tableMeta) {
             throw new TableAliasException(ErrorCode.CRITERIA_ERROR
-                    , "alias[%s] only %s%s ,not %s%s"
+                    , "as[%s] only %s%s ,not %s%s"
                     , this.tableAlias
                     , this.tableMeta.javaType().getSimpleName()
                     , MetaConstant.META_CLASS_NAME_SUFFIX

@@ -170,7 +170,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     @Override
     public final String alias() {
-        // must override super alias ,because one column of table only one instance
+        // must override super as ,because one column of table only one instance
         return propertyName;
     }
 

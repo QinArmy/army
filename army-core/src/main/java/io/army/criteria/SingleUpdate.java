@@ -16,12 +16,11 @@ public interface SingleUpdate extends SQLAble{
 
         SetAbleOfSingleUpdate<T,C1,C2>  as(String tableAlias);
 
-
     }
 
     /**
      * @param <T> entity java class
-     * @see SingleUpdateAble
+     * @see UpdateAble
      */
     interface SetAbleOfSingleUpdate<T extends IDomain, C1, C2> extends SingleUpdate {
 
@@ -56,55 +55,55 @@ public interface SingleUpdate extends SQLAble{
 
     /**
      * @param <T> domain java class
-     * @see SingleUpdateAble
+     * @see UpdateAble
      */
     interface WhereAbleOfSingleUpdate<T extends IDomain, C1, C2> extends SetAbleOfSingleUpdate<T, C1, C2> {
 
-        OrderAbleOfSingleUpdate<T, C1, C2> where(List<IPredicate> predicateList);
+        OrderAbleOfUpdate<T, C1, C2> where(List<IPredicate> predicateList);
 
-        OrderAbleOfSingleUpdate<T, C1, C2> where(Function<C1, List<IPredicate>> function);
+        OrderAbleOfUpdate<T, C1, C2> where(Function<C1, List<IPredicate>> function);
 
-        OrderAbleOfSingleUpdate<T, C1, C2> where(BiFunction<C1, C2, List<IPredicate>> biFunction);
+        OrderAbleOfUpdate<T, C1, C2> where(BiFunction<C1, C2, List<IPredicate>> biFunction);
 
-        WhereAndAbleOfSingleUpdate<T, C1, C2> where(IPredicate predicate);
+        WhereAndAbleOfUpdate<T, C1, C2> where(IPredicate predicate);
 
-        OrderAbleOfSingleUpdate<T, C1, C2> where(Function<C1, IPredicate> function, boolean one);
+        OrderAbleOfUpdate<T, C1, C2> where(Function<C1, IPredicate> function, boolean one);
 
-        OrderAbleOfSingleUpdate<T, C1, C2> where(BiFunction<C1, C2, IPredicate> biFunction, boolean one);
+        OrderAbleOfUpdate<T, C1, C2> where(BiFunction<C1, C2, IPredicate> biFunction, boolean one);
 
     }
 
-    interface WhereAndAbleOfSingleUpdate<T extends IDomain, C1, C2> extends OrderAbleOfSingleUpdate<T, C1, C2> {
+    interface WhereAndAbleOfUpdate<T extends IDomain, C1, C2> extends OrderAbleOfUpdate<T, C1, C2> {
 
-        WhereAndAbleOfSingleUpdate<T, C1, C2> and(IPredicate predicate);
+        WhereAndAbleOfUpdate<T, C1, C2> and(IPredicate predicate);
 
-        WhereAndAbleOfSingleUpdate<T, C1, C2> and(Function<C1, IPredicate> function);
+        WhereAndAbleOfUpdate<T, C1, C2> and(Function<C1, IPredicate> function);
 
-        WhereAndAbleOfSingleUpdate<T, C1, C2> and(BiFunction<C1, C2, IPredicate> biFunction);
+        WhereAndAbleOfUpdate<T, C1, C2> and(BiFunction<C1, C2, IPredicate> biFunction);
 
-        WhereAndAbleOfSingleUpdate<T, C1, C2> and(Predicate<C1> testPredicate, IPredicate predicate);
+        WhereAndAbleOfUpdate<T, C1, C2> and(Predicate<C1> testPredicate, IPredicate predicate);
 
-        WhereAndAbleOfSingleUpdate<T, C1, C2> and(BiPredicate<C1, C2> biPredicate, IPredicate predicate);
+        WhereAndAbleOfUpdate<T, C1, C2> and(BiPredicate<C1, C2> biPredicate, IPredicate predicate);
 
-        WhereAndAbleOfSingleUpdate<T, C1, C2> and(Predicate<C1> testPredicate, Function<C1, IPredicate> function);
+        WhereAndAbleOfUpdate<T, C1, C2> and(Predicate<C1> testPredicate, Function<C1, IPredicate> function);
 
-        WhereAndAbleOfSingleUpdate<T, C1, C2> and(BiPredicate<C1, C2> biPredicate, BiFunction<C1, C2, IPredicate> biFunction);
+        WhereAndAbleOfUpdate<T, C1, C2> and(BiPredicate<C1, C2> biPredicate, BiFunction<C1, C2, IPredicate> biFunction);
     }
 
-    interface LimitAbleOfSingleUpdate<T extends IDomain, C1, C2> extends SingleUpdateAble,SQLBuilder {
+    interface LimitAbleOfUpdate<T extends IDomain, C1, C2> extends UpdateAble,SQLBuilder {
 
-        SingleUpdateAble limit(int rowCount);
+        UpdateAble limit(int rowCount);
 
-        SingleUpdateAble limit(Function<C1, Integer> function);
+        UpdateAble limit(Function<C1, Integer> function);
 
-        SingleUpdateAble limit(BiFunction<C1, C2, Integer> function);
+        UpdateAble limit(BiFunction<C1, C2, Integer> function);
 
-        SingleUpdateAble limit(Predicate<C1> predicate, int rowCount);
+        UpdateAble limit(Predicate<C1> predicate, int rowCount);
 
-        SingleUpdateAble limit(BiPredicate<C1, C2> predicate, int rowCount);
+        UpdateAble limit(BiPredicate<C1, C2> predicate, int rowCount);
 
-        SingleUpdateAble limit(Predicate<C1> predicate, Function<C1, Integer> function);
+        UpdateAble limit(Predicate<C1> predicate, Function<C1, Integer> function);
 
-        SingleUpdateAble limit(BiPredicate<C1, C2> predicate, BiFunction<C1, C2, Integer> biFunction);
+        UpdateAble limit(BiPredicate<C1, C2> predicate, BiFunction<C1, C2, Integer> biFunction);
     }
 }

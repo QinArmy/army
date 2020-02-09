@@ -1,11 +1,9 @@
 package io.army;
 
-import io.army.criteria.SingleUpdateAble;
+import io.army.criteria.UpdateAble;
 import io.army.criteria.Visible;
 import io.army.domain.IDomain;
 
-import java.io.Closeable;
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -28,8 +26,8 @@ public interface Session extends AutoCloseable {
      * @param updateAble will execute update sql instance.
      * @return a unmodifiable list, at most two element.
      */
-    List<Integer> update(SingleUpdateAble updateAble);
+    List<Integer> update(UpdateAble updateAble);
 
-    List<Integer> update(SingleUpdateAble updateAble, Visible visible);
+    List<Integer> update(UpdateAble updateAble, Visible visible);
 
 }

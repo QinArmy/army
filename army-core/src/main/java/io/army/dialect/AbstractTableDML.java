@@ -6,7 +6,7 @@ import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLS;
 import io.army.criteria.impl.inner.InnerSingleDeleteAble;
-import io.army.criteria.impl.inner.InnerSingleUpdateAble;
+import io.army.criteria.impl.inner.InnerUpdateAble;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -78,10 +78,10 @@ public abstract class AbstractTableDML implements TableDML {
     }
 
     @Override
-    public List<SQLWrapper> update(SingleUpdateAble updateAble, Visible visible) {
-        Assert.isInstanceOf(InnerSingleUpdateAble.class, updateAble, "");
+    public final List<SQLWrapper> update(UpdateAble updateAble, Visible visible) {
+        Assert.isInstanceOf(InnerUpdateAble.class, updateAble, "");
 
-        InnerSingleUpdateAble innerAble = (InnerSingleUpdateAble) updateAble;
+        InnerUpdateAble innerAble = (InnerUpdateAble) updateAble;
         TableMeta<?> tableMeta = innerAble.tableMeta();
 
         List<SQLWrapper> wrapperList;
@@ -175,12 +175,34 @@ public abstract class AbstractTableDML implements TableDML {
     }
 
 
-    private List<SQLWrapper> createUpdateForChild(InnerSingleUpdateAble innerAble, Visible visible) {
+    private List<SQLWrapper> createUpdateForChild(InnerUpdateAble innerAble, Visible visible) {
+        List<FieldMeta<?, ?>> fieldMetaList = innerAble.targetFieldList();
+        List<Expression<?>> valueExpList = innerAble.valueExpressionList();
+
+        final List<FieldMeta<?, ?>> childFieldList = new ArrayList<>(), parentFieldList = new ArrayList<>();
+        final List<Expression<?>> childValueList = new ArrayList<>(), parentValueList = new ArrayList<>();
+
+        final TableMeta<?> child = innerAble.tableMeta(), parent = child.parentMeta();
+
+        final int size = fieldMetaList.size();
+        FieldMeta<?, ?> fieldMeta;
+        for (int i = 0; i < size; i++) {
+            fieldMeta = fieldMetaList.get(i);
+            if (fieldMeta.tableMeta() == child) {
+                childFieldList.add(fieldMeta);
+                childValueList.add(valueExpList.get(i));
+            } else if (fieldMeta.tableMeta() == parent) {
+                parentFieldList.add(fieldMeta);
+                parentValueList.add(valueExpList.get(i));
+            } else {
+                throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "");
+            }
+        }
         return Collections.emptyList();
     }
 
 
-    private SQLWrapper createUpdateForSimple(InnerSingleUpdateAble innerAble, Visible visible) {
+    private SQLWrapper createUpdateForSimple(InnerUpdateAble innerAble, Visible visible) {
 
         StringBuilder builder = new StringBuilder();
         List<ParamWrapper> paramWrapperList = new ArrayList<>();
@@ -203,15 +225,11 @@ public abstract class AbstractTableDML implements TableDML {
         //3. where clause
         boolean hasVersion;
         hasVersion = appendWhereClause(context, tableAlias, innerAble, visible);
-        //4. order clause
-        appendOrderByClause(context, innerAble.orderExpList(), innerAble.ascExpList());
-        //5. limit clause
-        appendLimitClause(context, innerAble.rowCount());
 
         return SQLWrapper.build(builder.toString(), paramWrapperList, hasVersion);
     }
 
-    private void appendUpdateClause(SQLContext context, String tableAlias, InnerSingleUpdateAble innerAble) {
+    private void appendUpdateClause(SQLContext context, String tableAlias, InnerUpdateAble innerAble) {
         context.stringBuilder().append("UPDATE ")
                 .append(this.sql.quoteIfNeed(innerAble.tableMeta().tableName()));
 
@@ -222,7 +240,7 @@ public abstract class AbstractTableDML implements TableDML {
         }
     }
 
-    private void appendSetClause(SQLContext context, final String tableAlias, InnerSingleUpdateAble innerAble) {
+    private void appendSetClause(SQLContext context, final String tableAlias, InnerUpdateAble innerAble) {
         TableMeta<?> tableMeta = innerAble.tableMeta();
 
         List<FieldMeta<?, ?>> fieldMetaList = innerAble.targetFieldList();
@@ -292,7 +310,7 @@ public abstract class AbstractTableDML implements TableDML {
         }
     }
 
-    private boolean appendWhereClause(SQLContext context, final String tableAlias, InnerSingleUpdateAble innerAble
+    private boolean appendWhereClause(SQLContext context, final String tableAlias, InnerUpdateAble innerAble
             , Visible visible) {
 
         final List<IPredicate> IPredicateList = innerAble.predicateList();
@@ -349,7 +367,7 @@ public abstract class AbstractTableDML implements TableDML {
     }
 
     private void appendOrderByClause(SQLContext context, List<Expression<?>> orderExpList, List<Boolean> ascExpList) {
-        if(CollectionUtils.isEmpty(orderExpList)){
+        if (CollectionUtils.isEmpty(orderExpList)) {
             return;
         }
         Assert.isTrue(orderExpList.size() == ascExpList.size(), "orderExpList size havingAnd ascExpList size not match.");

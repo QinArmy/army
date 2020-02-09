@@ -6,11 +6,9 @@ import com.example.generator.Being;
 import io.army.Session;
 import io.army.SessionFactory;
 import io.army.criteria.SingleDeleteAble;
-import io.army.criteria.SingleUpdateAble;
-import io.army.criteria.Visible;
+import io.army.criteria.UpdateAble;
 import io.army.criteria.impl.SQLS;
 import io.army.dialect.SQLDialect;
-import io.army.dialect.SQLWrapper;
 import io.army.env.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,9 +17,7 @@ import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static io.army.criteria.impl.SQLS.table;
@@ -67,18 +63,16 @@ public class SessionTests {
 
         final long start = System.currentTimeMillis();
         Map<String, Object> map = new HashMap<>();
-        SingleUpdateAble updateAble = SQLS.updateWithCriteria(Account_.T, map).as("a")
+        UpdateAble updateAble = SQLS.updateWithCriteria(Account_.T, map).as("a")
                 .set(Account_.balance, table("a", Account_.balance).add(BigDecimal.ONE).brackets())
                 //.set(Account_.updateTime, LocalDateTime.now())
                 // .set(Account_.visible,Boolean.TRUE)
                 //.set(Account_.userId,0L)
-                .set(this::isUser, Account_.balance, BigDecimal.ZERO)
+                .ifSet(this::isUser, Account_.balance, BigDecimal.ZERO)
                 .where(table("a", Account_.userId).add(SQLS.constant(1L)).brackets().multiply(3).eq(2L))
                 .and(table("a", Account_.visible).eq(true))
                 .and(table("a", Account_.createTime).eq(LocalDateTime.now()))
-                .orderBy(table("a", Account_.id), false)
-                .then(table("a", Account_.createTime), true)
-                .limit(0);
+                ;
 
         LOG.info("sql:\n{}", updateAble.debugSQL(SQLDialect.MySQL57));
         LOG.info("cost:{}", System.currentTimeMillis() - start);
