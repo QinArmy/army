@@ -2,6 +2,7 @@ package io.army.criteria;
 
 import io.army.dialect.ParamWrapper;
 import io.army.dialect.SQL;
+import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingType;
 
@@ -9,7 +10,10 @@ import java.util.List;
 
 public interface SQLContext {
 
-    void registerAlias(String alias, TableMeta<?> tableMeta)throws TableAliasException;
+    SQLStatement sqlStatement();
+
+
+    void appendField(String tableAlias, FieldMeta<?,?> fieldMeta)throws TableAliasException;
 
     void quoteIfKeyAndAppend(String textValue);
 

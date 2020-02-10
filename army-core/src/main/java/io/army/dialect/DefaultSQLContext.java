@@ -1,10 +1,14 @@
 package io.army.dialect;
 
+import io.army.ErrorCode;
+import io.army.criteria.CriteriaException;
 import io.army.criteria.SQLContext;
+import io.army.criteria.SQLStatement;
 import io.army.criteria.TableAliasException;
 import io.army.dialect.DialectUtils;
 import io.army.dialect.ParamWrapper;
 import io.army.dialect.SQL;
+import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingType;
 
@@ -13,19 +17,30 @@ import java.util.List;
 
 class DefaultSQLContext implements SQLContext {
 
-    private final SQL sql;
 
-    private final StringBuilder builder = new StringBuilder();
+    final SQL sql;
 
-    private final List<ParamWrapper> paramWrapperList = new ArrayList<>();
+    final SQLStatement sqlStatement;
 
-    DefaultSQLContext( SQL sql) {
+    final StringBuilder builder = new StringBuilder();
+
+    final List<ParamWrapper> paramWrapperList = new ArrayList<>();
+
+    DefaultSQLContext(SQL sql, SQLStatement sqlStatement) {
         this.sql = sql;
+        this.sqlStatement = sqlStatement;
     }
 
     @Override
-    public void registerAlias(String alias, TableMeta<?> tableMeta) throws TableAliasException {
+    public SQLStatement sqlStatement() {
+        return sqlStatement;
+    }
 
+    @Override
+    public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException {
+        builder.append(this.sql.quoteIfNeed(tableAlias))
+                .append(".")
+                .append(this.sql.quoteIfNeed(fieldMeta.fieldName()));
     }
 
     @Override
@@ -62,4 +77,10 @@ class DefaultSQLContext implements SQLContext {
     public final List<ParamWrapper> paramWrapper() {
         return paramWrapperList;
     }
- }
+
+    protected final void throwTableAliasError(String tableAlias,FieldMeta<?,?> fieldMeta){
+        throw new CriteriaException(ErrorCode.CRITERIA_ERROR,"table alias[%s] field[%s] error"
+                ,tableAlias
+                ,fieldMeta.propertyName());
+    }
+}

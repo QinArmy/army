@@ -6,8 +6,6 @@ import io.army.annotation.Column;
 import io.army.criteria.MetaException;
 import io.army.criteria.SQLContext;
 import io.army.criteria.Selection;
-import io.army.dialect.ParamWrapper;
-import io.army.dialect.SQL;
 import io.army.domain.IDomain;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
@@ -17,7 +15,6 @@ import io.army.util.Assert;
 
 import java.lang.reflect.Field;
 import java.sql.JDBCType;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -306,7 +303,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     @Override
     protected  final void afterSpace(SQLContext context) {
-        context.quoteIfKeyAndAppend(fieldName);
+        context.appendField("",this);
     }
 
 

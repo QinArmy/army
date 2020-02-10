@@ -21,6 +21,9 @@
         <module>army-struct</module>
         <module>army-finance</module>
         <module>army-spring</module>
+        <module>army-mysql</module>
+        <module>army-orcale</module>
+        <module>army-postgre</module>
     </modules>
 
     <properties>

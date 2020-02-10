@@ -49,7 +49,7 @@ class UpdateAbleImpl<T extends IDomain, C> extends AbstractSQLAble implements Up
 
     @Override
     public UpdateAble.SetAble<T, C> as(String tableAlias) {
-        Assert.state(!StringUtils.hasText(tableAlias), "as clause ended");
+        Assert.state(!StringUtils.hasText(this.tableAlias), "as clause ended");
         Assert.hasText(tableAlias, "tableAlias required");
         this.tableAlias = tableAlias;
         return this;
@@ -58,26 +58,26 @@ class UpdateAbleImpl<T extends IDomain, C> extends AbstractSQLAble implements Up
     /*################################## blow SetAble method ##################################*/
 
     @Override
-    public <F> UpdateAble.WhereAble<T, C> set(FieldMeta<T, F> target, F value) {
+    public <F> UpdateAble.WhereAble<T, C> set(FieldMeta<? super T, F> target, F value) {
         return set(target, SQLS.param(value));
     }
 
     @Override
-    public <F> UpdateAble.WhereAble<T, C> set(FieldMeta<T, F> target, Expression<?> valueExp) {
+    public <F> UpdateAble.WhereAble<T, C> set(FieldMeta<? super T, F> target, Expression<?> valueExp) {
         fieldList.add(target);
         valueExpList.add(valueExp);
         return this;
     }
 
     @Override
-    public <F> UpdateAble.WhereAble<T, C> set(FieldMeta<T, F> target, Function<C, Expression<?>> valueExpFunction) {
+    public <F> UpdateAble.WhereAble<T, C> set(FieldMeta<? super T, F> target, Function<C, Expression<?>> valueExpFunction) {
         return set(target, valueExpFunction.apply(this.criteria));
     }
 
     /*################################## blow WhereAble method ##################################*/
 
     @Override
-    public <F> UpdateAble.WhereAble<T, C> ifSet(Predicate<C> test, FieldMeta<T, F> target, F value) {
+    public <F> UpdateAble.WhereAble<T, C> ifSet(Predicate<C> test, FieldMeta<? super T, F> target, F value) {
         if (test.test(this.criteria)) {
             set(target, SQLS.param(value, target.mappingType()));
         }
@@ -85,7 +85,7 @@ class UpdateAbleImpl<T extends IDomain, C> extends AbstractSQLAble implements Up
     }
 
     @Override
-    public <F> UpdateAble.WhereAble<T, C> ifSet(Predicate<C> test, FieldMeta<T, F> target, Expression<?> valueExp) {
+    public <F> UpdateAble.WhereAble<T, C> ifSet(Predicate<C> test, FieldMeta<? super T, F> target, Expression<?> valueExp) {
         if (test.test(this.criteria)) {
             set(target, valueExp);
         }
@@ -93,7 +93,7 @@ class UpdateAbleImpl<T extends IDomain, C> extends AbstractSQLAble implements Up
     }
 
     @Override
-    public <F> UpdateAble.WhereAble<T, C> ifSet(Predicate<C> test, FieldMeta<T, F> target
+    public <F> UpdateAble.WhereAble<T, C> ifSet(Predicate<C> test, FieldMeta<? super T, F> target
             , Function<C, Expression<?>> valueExpFunction) {
         if (test.test(this.criteria)) {
             set(target, valueExpFunction.apply(this.criteria));
@@ -165,7 +165,7 @@ class UpdateAbleImpl<T extends IDomain, C> extends AbstractSQLAble implements Up
     public void prepare() {
         Assert.state(!CollectionUtils.isEmpty(this.fieldList), "no target field");
         Assert.state(!CollectionUtils.isEmpty(this.valueExpList), "no value expression");
-        Assert.state(this.fieldList.size() == this.valueExpList.size(), "fields and value exp size not match");
+        Assert.state(this.fieldList.size() == this.valueExpList.size(), "fields ifAnd value exp size not match");
         Assert.state(!CollectionUtils.isEmpty(this.predicateList), "no where clause forbidden by army");
 
         if (!StringUtils.hasText(this.tableAlias)) {

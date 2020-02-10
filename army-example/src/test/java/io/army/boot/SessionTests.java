@@ -1,12 +1,15 @@
 package io.army.boot;
 
 
+import com.example.domain.account.AccountType;
 import com.example.domain.account.Account_;
+import com.example.domain.account.InvestAccount_;
 import com.example.generator.Being;
 import io.army.Session;
 import io.army.SessionFactory;
-import io.army.criteria.SingleDeleteAble;
+import io.army.criteria.DeleteAble;
 import io.army.criteria.UpdateAble;
+import io.army.criteria.impl.ObjectSQLS;
 import io.army.criteria.impl.SQLS;
 import io.army.dialect.SQLDialect;
 import io.army.env.Environment;
@@ -71,8 +74,22 @@ public class SessionTests {
                 .ifSet(this::isUser, Account_.balance, BigDecimal.ZERO)
                 .where(table("a", Account_.userId).add(SQLS.constant(1L)).brackets().multiply(3).eq(2L))
                 .and(table("a", Account_.visible).eq(true))
-                .and(table("a", Account_.createTime).eq(LocalDateTime.now()))
-                ;
+                .and(table("a", Account_.createTime).eq(LocalDateTime.now()));
+
+        LOG.info("sql:\n{}", updateAble.debugSQL(SQLDialect.MySQL57));
+        LOG.info("cost:{}", System.currentTimeMillis() - start);
+    }
+
+    @Test(invocationCount = 10)
+    public void objectSQLUpdate(){
+        final long start = System.currentTimeMillis();
+        Map<String, Object> map = new HashMap<>();
+        UpdateAble updateAble = ObjectSQLS.updateWithCriteria(InvestAccount_.T, map).as("a")
+                .set(InvestAccount_.balance, InvestAccount_.balance.add(BigDecimal.ONE).brackets())
+                .ifSet(this::isUser, InvestAccount_.balance, BigDecimal.ZERO)
+                .where(InvestAccount_.userId.add(SQLS.constant(1L)).brackets().multiply(3).eq(2L))
+                .and(InvestAccount_.visible.eq(true))
+                .and( InvestAccount_.createTime.eq(LocalDateTime.now()));
 
         LOG.info("sql:\n{}", updateAble.debugSQL(SQLDialect.MySQL57));
         LOG.info("cost:{}", System.currentTimeMillis() - start);
@@ -84,12 +101,11 @@ public class SessionTests {
 
         Map<String, Object> criteria = new HashMap<>();
 
-        SingleDeleteAble deleteAble = SQLS.deleteWithCriteria(Account_.T, criteria)
+        DeleteAble deleteAble = SQLS.prepareDelete(criteria)
+                .from(Account_.T)
                 .where(Account_.id.le(1000L))
                 .and(Account_.debt.gt(BigDecimal.ONE))
-                .orderBy(this::isUser, Account_.id, false)
-                .maybeThen(Account_.createTime, false)
-                .limit(2);
+                .ifAnd(this::isUser, Account_.accountType.eq(AccountType.BALANCE));
 
         LOG.info("sql:\n{}", deleteAble.debugSQL(SQLDialect.MySQL57));
         LOG.info("cost:{}", System.currentTimeMillis() - start);

@@ -3,7 +3,7 @@ package io.army.dialect;
 
 import io.army.SessionFactory;
 import io.army.beans.ReadonlyWrapper;
-import io.army.criteria.SingleDeleteAble;
+import io.army.criteria.DeleteAble;
 import io.army.criteria.UpdateAble;
 import io.army.criteria.Visible;
 import io.army.meta.FieldMeta;
@@ -122,7 +122,7 @@ public abstract class AbstractDialect implements Dialect {
     }
 
     @Override
-    public List<SQLWrapper> delete(SingleDeleteAble deleteAble, Visible visible) {
+    public List<SQLWrapper> delete(DeleteAble.SingleDeleteAble deleteAble, Visible visible) {
         return tableDML.delete(deleteAble,visible);
     }
 

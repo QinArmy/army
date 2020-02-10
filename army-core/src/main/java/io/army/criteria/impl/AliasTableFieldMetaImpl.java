@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.AliasTableFieldMeta;
 import io.army.criteria.SQLContext;
 import io.army.criteria.Selection;
 import io.army.domain.IDomain;
@@ -12,7 +13,8 @@ import io.army.util.Assert;
 import java.sql.JDBCType;
 
 
-final class AliasTableFieldMetaImpl<T extends IDomain, F> extends AbstractExpression<F> implements FieldMeta<T, F> {
+final class AliasTableFieldMetaImpl<T extends IDomain, F> extends AbstractExpression<F>
+        implements FieldMeta<T, F> , AliasTableFieldMeta<T,F> {
 
     private final FieldMeta<T, F> fieldMeta;
 
@@ -29,11 +31,7 @@ final class AliasTableFieldMetaImpl<T extends IDomain, F> extends AbstractExpres
 
     @Override
     protected void afterSpace(SQLContext context) {
-        context.registerAlias(tableAlias,fieldMeta.tableMeta());
-        context.stringBuilder()
-                .append(tableAlias)
-                .append(".")
-                .append(context.sql().quoteIfNeed(fieldMeta.fieldName()));
+        context.appendField(tableAlias,fieldMeta);
     }
 
     @Override

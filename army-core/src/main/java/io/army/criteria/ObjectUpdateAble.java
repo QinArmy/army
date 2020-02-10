@@ -4,6 +4,6 @@ package io.army.criteria;
  *
  * @see UpdateAble
  */
-public interface ObjectUpdateAble extends UpdateAble, SQLBuilder {
+public interface ObjectUpdateAble extends UpdateAble {
 
 }

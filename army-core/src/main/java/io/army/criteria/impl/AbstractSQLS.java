@@ -9,7 +9,7 @@ import io.army.meta.mapping.MappingType;
 
 abstract class AbstractSQLS {
 
-    protected AbstractSQLS() {
+     AbstractSQLS() {
         throw new UnsupportedOperationException();
     }
 

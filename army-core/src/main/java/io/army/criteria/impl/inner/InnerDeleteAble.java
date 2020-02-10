@@ -5,16 +5,11 @@ import io.army.criteria.IPredicate;
 import io.army.meta.TableMeta;
 
 import java.util.List;
-
-public interface InnerSingleDeleteAble {
+@DeveloperForbid
+public interface InnerDeleteAble {
 
     TableMeta<?> tableMeta();
 
     List<IPredicate> predicateList();
 
-    List<Expression<?>> orderExpList();
-
-    List<Boolean> ascList();
-
-    int rowCount();
 }

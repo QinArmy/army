@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 
 public abstract class SQLS extends AbstractSQLS {
 
+    SQLS() {
+    }
 
     public static <T extends IDomain> UpdateAble.AliasAble<T, EmptyObject> update(TableMeta<T> tableMeta) {
         return new UpdateAbleImpl<>(tableMeta, EmptyObject.getInstance());
@@ -22,14 +24,12 @@ public abstract class SQLS extends AbstractSQLS {
         return new UpdateAbleImpl<>(tableMeta, criteria);
     }
 
-    public static <T extends IDomain> SingleDelete.WhereAbleOfSingleDelete<T, EmptyObject> delete(
-            TableMeta<T> tableMeta) {
-        return new SingleDeleteAbleImpl<>(tableMeta, EmptyObject.getInstance());
+    public static DeleteAble.FromAble<EmptyObject> delete() {
+        return new DeleteAbleImpl<>(EmptyObject.getInstance());
     }
 
-    public static <T extends IDomain, C> SingleDelete.WhereAbleOfSingleDelete<T, C> deleteWithCriteria(
-            TableMeta<T> tableMeta, C criteria) {
-        return new SingleDeleteAbleImpl<>(tableMeta, criteria);
+    public static <C> DeleteAble.FromAble<C> prepareDelete(C criteria) {
+        return new DeleteAbleImpl<>(criteria);
     }
 
     public static <T extends IDomain, F> FieldMeta<T, F> table(String tableAlias, FieldMeta<T, F> fieldMeta) {

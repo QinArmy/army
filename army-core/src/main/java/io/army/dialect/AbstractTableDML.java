@@ -5,7 +5,8 @@ import io.army.SessionFactory;
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLS;
-import io.army.criteria.impl.inner.InnerSingleDeleteAble;
+import io.army.criteria.impl.inner.InnerObjectUpdateAble;
+import io.army.criteria.impl.inner.InnerDeleteAble;
 import io.army.criteria.impl.inner.InnerUpdateAble;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
@@ -80,25 +81,21 @@ public abstract class AbstractTableDML implements TableDML {
     @Override
     public final List<SQLWrapper> update(UpdateAble updateAble, Visible visible) {
         Assert.isInstanceOf(InnerUpdateAble.class, updateAble, "");
-
         InnerUpdateAble innerAble = (InnerUpdateAble) updateAble;
-        TableMeta<?> tableMeta = innerAble.tableMeta();
 
         List<SQLWrapper> wrapperList;
-        if (tableMeta.parentMeta() == null) {
-            wrapperList = new ArrayList<>(1);
-            // create update sql for simple(parentMeta) mapping mode
-            wrapperList.add(createUpdateForSimple(innerAble, visible));
-        } else {
+        if (updateAble instanceof InnerObjectUpdateAble) {
             // create update sql for child mapping mode
-            wrapperList = createUpdateForChild(innerAble, visible);
+            wrapperList = createObjectUpdate((InnerObjectUpdateAble) innerAble, visible);
+        } else {
+            wrapperList = createUpdateForSimple(innerAble, visible);
         }
-        return Collections.unmodifiableList(wrapperList);
+        return wrapperList;
     }
 
     @Override
-    public List<SQLWrapper> delete(SingleDeleteAble singleDeleteAble, Visible visible) {
-        InnerSingleDeleteAble deleteAble = (InnerSingleDeleteAble) singleDeleteAble;
+    public List<SQLWrapper> delete(DeleteAble.SingleDeleteAble singleDeleteAble, Visible visible) {
+        InnerDeleteAble deleteAble = (InnerDeleteAble) singleDeleteAble;
         TableMeta<?> tableMeta = deleteAble.tableMeta();
         List<SQLWrapper> list;
         if (tableMeta.parentMeta() == null) {
@@ -106,7 +103,7 @@ public abstract class AbstractTableDML implements TableDML {
         } else {
             list = createDeleteForChild(deleteAble, visible);
         }
-        return Collections.unmodifiableList(list);
+        return list;
     }
 
     /*################################## blow protected template method ##################################*/
@@ -115,14 +112,17 @@ public abstract class AbstractTableDML implements TableDML {
 
     /*################################## blow private method ##################################*/
 
-    private List<SQLWrapper> createDeleteForChild(InnerSingleDeleteAble deleteAble, Visible visible) {
+    private List<SQLWrapper> createDeleteForChild(InnerDeleteAble deleteAble, Visible visible) {
         return Collections.emptyList();
     }
 
 
-    private List<SQLWrapper> createDeleteForSimple(InnerSingleDeleteAble deleteAble, Visible visible) {
+    /**
+     * @return a unmodifiable list
+     */
+    private List<SQLWrapper> createDeleteForSimple(InnerDeleteAble deleteAble, Visible visible) {
 
-        final SQLContext context = new DefaultSQLContext(this.sql);
+        final SQLContext context = new DefaultSQLContext(this.sql, SQLStatement.DELETE);
         TableMeta<?> tableMeta = deleteAble.tableMeta();
 
         final String tableName = this.sql.quoteIfNeed(tableMeta.tableName());
@@ -130,25 +130,19 @@ public abstract class AbstractTableDML implements TableDML {
         appendDeleteClause(context, tableName, deleteAble);
         // 2. where clause
         appendDeleteWhereClause(context, deleteAble, visible);
-        // 3. order by clause
-        appendOrderByClause(context, deleteAble.orderExpList(), deleteAble.ascList());
-        // 4. limit clause
-        appendLimitClause(context, deleteAble.rowCount());
-
-        SQLWrapper sqlWrapper = SQLWrapper.build(context.stringBuilder().toString(), context.paramWrapper());
-        List<SQLWrapper> list = new ArrayList<>(1);
-        list.add(sqlWrapper);
-        return list;
+        return Collections.singletonList(
+                SQLWrapper.build(context.stringBuilder().toString(), context.paramWrapper())
+        );
     }
 
-    private void appendDeleteClause(SQLContext context, String tableName, InnerSingleDeleteAble deleteAble) {
+    private void appendDeleteClause(SQLContext context, String tableName, InnerDeleteAble deleteAble) {
         context.stringBuilder()
                 .append("DELETE FROM ")
                 .append(tableName);
 
     }
 
-    private void appendDeleteWhereClause(SQLContext context, InnerSingleDeleteAble deleteAble, Visible visible) {
+    private void appendDeleteWhereClause(SQLContext context, InnerDeleteAble deleteAble, Visible visible) {
 
         List<IPredicate> predicateList = deleteAble.predicateList();
         Assert.notEmpty(predicateList, "no where clause forbidden by army");
@@ -174,131 +168,152 @@ public abstract class AbstractTableDML implements TableDML {
         }
     }
 
+    /**
+     * @return a unmodifiable list
+     */
+    private List<SQLWrapper> createObjectUpdate(InnerObjectUpdateAble updateAble, Visible visible) {
+        TableMeta<?> childMeta = updateAble.tableMeta(), parentMeta = childMeta.parentMeta();
+        Assert.notNull(parentMeta, () -> String.format("Table[%s] not child mode", childMeta.tableName()));
 
-    private List<SQLWrapper> createUpdateForChild(InnerUpdateAble innerAble, Visible visible) {
-        List<FieldMeta<?, ?>> fieldMetaList = innerAble.targetFieldList();
-        List<Expression<?>> valueExpList = innerAble.valueExpressionList();
+        ObjectUpdateContextImpl context = new ObjectUpdateContextImpl(this.sql, childMeta, updateAble.tableAlias());
+        // 1. update clause
+        appendObjectUpdateClause(context);
+        // 2. set clause
+        appendSetClause(context, updateAble.targetFieldList(), updateAble.valueExpressionList());
+        // 3. where clause
+        appendWhereClause(context, updateAble.predicateList());
+        //4. append child visible
+        appendVisiblePredicate(parentMeta, context, context.safeParentAlias(), visible);
 
-        final List<FieldMeta<?, ?>> childFieldList = new ArrayList<>(), parentFieldList = new ArrayList<>();
-        final List<Expression<?>> childValueList = new ArrayList<>(), parentValueList = new ArrayList<>();
+        return Collections.singletonList(
+                SQLWrapper.build(context.builder.toString(), context.paramWrapperList)
+        );
+    }
 
-        final TableMeta<?> child = innerAble.tableMeta(), parent = child.parentMeta();
+    private void appendObjectUpdateClause(ObjectUpdateContextImpl context) {
+        TableMeta<?> childMeta = context.tableMeta(), parentMeta = childMeta.parentMeta();
+        Assert.notNull(parentMeta, () -> String.format("Table[%s] not child mode", childMeta.tableName()));
+
+        StringBuilder builder = context.stringBuilder()
+                .append("UPDATE ")
+                .append(this.sql.quoteIfNeed(childMeta.tableName()));
+
+        if (StringUtils.hasText(context.safeAlias())) {
+            builder.append(" AS ")
+                    .append(context.safeAlias());
+        }
+        builder.append(" JOIN ")
+                .append(this.sql.quoteIfNeed(parentMeta.tableName()))
+                .append(" AS ")
+                .append(context.safeParentAlias())
+                .append(" ON ")
+                .append(context.safeAlias())
+                .append(".")
+                .append(TableMeta.ID)
+                .append(" = ")
+                .append(context.safeParentAlias())
+                .append(".")
+                .append(TableMeta.ID)
+        ;
+    }
+
+    private void appendSetClause(UpdateSQLContext context, List<FieldMeta<?, ?>> fieldMetaList
+            , List<Expression<?>> valueExpList) {
+
+        Assert.notEmpty(fieldMetaList, "set clause must not empty");
+        Assert.isTrue(fieldMetaList.size() == valueExpList.size(), "field list ifAnd value exp list size not match");
 
         final int size = fieldMetaList.size();
         FieldMeta<?, ?> fieldMeta;
+        Expression<?> valueExp;
+
+        StringBuilder builder = context.stringBuilder()
+                .append(" SET");
         for (int i = 0; i < size; i++) {
             fieldMeta = fieldMetaList.get(i);
-            if (fieldMeta.tableMeta() == child) {
-                childFieldList.add(fieldMeta);
-                childValueList.add(valueExpList.get(i));
-            } else if (fieldMeta.tableMeta() == parent) {
-                parentFieldList.add(fieldMeta);
-                parentValueList.add(valueExpList.get(i));
-            } else {
-                throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "");
-            }
-        }
-        return Collections.emptyList();
-    }
+            valueExp = valueExpList.get(i);
 
+            context.assertField(fieldMeta);
 
-    private SQLWrapper createUpdateForSimple(InnerUpdateAble innerAble, Visible visible) {
-
-        StringBuilder builder = new StringBuilder();
-        List<ParamWrapper> paramWrapperList = new ArrayList<>();
-
-        String tableAlias = innerAble.tableAlias();
-
-        if (StringUtils.hasText(tableAlias)) {
-            tableAlias = this.sql.quoteIfNeed(tableAlias);
-        } else {
-            tableAlias = "";
-        }
-        // build sql context
-        final SQLContext context = new SingleUpdateSQLContext(this.sql, builder, paramWrapperList
-                , tableAlias, innerAble.tableMeta());
-
-        //1. update clause
-        appendUpdateClause(context, tableAlias, innerAble);
-        //2. set clause
-        appendSetClause(context, tableAlias, innerAble);
-        //3. where clause
-        boolean hasVersion;
-        hasVersion = appendWhereClause(context, tableAlias, innerAble, visible);
-
-        return SQLWrapper.build(builder.toString(), paramWrapperList, hasVersion);
-    }
-
-    private void appendUpdateClause(SQLContext context, String tableAlias, InnerUpdateAble innerAble) {
-        context.stringBuilder().append("UPDATE ")
-                .append(this.sql.quoteIfNeed(innerAble.tableMeta().tableName()));
-
-        if (StringUtils.hasText(tableAlias)) {
-            context.stringBuilder()
-                    .append(" AS ")
-                    .append(tableAlias);
-        }
-    }
-
-    private void appendSetClause(SQLContext context, final String tableAlias, InnerUpdateAble innerAble) {
-        TableMeta<?> tableMeta = innerAble.tableMeta();
-
-        List<FieldMeta<?, ?>> fieldMetaList = innerAble.targetFieldList();
-        List<Expression<?>> valueExpList = innerAble.valueExpressionList();
-
-        Assert.isTrue(fieldMetaList.size() == valueExpList.size(), "updateAble error");
-        StringBuilder builder = context.stringBuilder();
-        builder.append(" SET");
-        final int size = fieldMetaList.size();
-        for (int i = 0; i < size; i++) {
-            FieldMeta<?, ?> fieldMeta = fieldMetaList.get(i);
-            assertTargetField(fieldMeta, tableMeta);
-
-            if (StringUtils.hasText(tableAlias)) {
-                builder.append(" ")
-                        .append(tableAlias)
-                        .append(".");
-            }
-            builder.append(this.sql.quoteIfNeed(fieldMeta.fieldName()))
-                    .append(" =");
-            Expression<?> valueExp = valueExpList.get(i);
-            // assert not null
-            assertFieldAndValueExpressionMatch(fieldMeta, valueExp);
-            // append expression
+            // fieldMeta self-describe
+            fieldMeta.appendSQL(context);
+            builder.append(" =");
+            // expression self-describe
             valueExp.appendSQL(context);
             if (i < size - 1) {
                 builder.append(",");
             }
-
         }
-        // append update_time havingAnd version field
-        appendFieldsManagedByArmy(tableMeta, context, tableAlias);
+        // append version ifAnd updateTime
+        appendFieldsManagedByArmy(context);
+
     }
 
-    private void appendFieldsManagedByArmy(TableMeta<?> tableMeta, SQLContext context, final String tableAlias) {
-        //1. version field
-        FieldMeta<?, ?> fieldMeta = tableMeta.getField(TableMeta.VERSION);
-        StringBuilder builder = context.stringBuilder();
-        builder.append(",");
-        String qualifiedName = this.sql.quoteIfNeed(fieldMeta.fieldName());
-        if (StringUtils.hasText(tableAlias)) {
-            qualifiedName = " " + tableAlias + "." + qualifiedName;
+
+    private void appendWhereClause(SQLContext context, List<IPredicate> predicateList) {
+        Assert.notEmpty(predicateList, "where clause must be not empty");
+
+        StringBuilder builder = context.stringBuilder()
+                .append(" WHERE");
+
+        for (Iterator<IPredicate> iterator = predicateList.iterator(); iterator.hasNext(); ) {
+            // predicate self-describe
+            iterator.next().appendSQL(context);
+            if (iterator.hasNext()) {
+                builder.append(" AND");
+            }
         }
-        builder.append(qualifiedName)
-                .append(" = ")
-                .append(qualifiedName)
-                .append(" + 1")
-        ;
+    }
+
+
+    private List<SQLWrapper> createUpdateForSimple(InnerUpdateAble innerAble, Visible visible) {
+
+        // build sql context
+        final UpdateSQLContextImpl context = new UpdateSQLContextImpl(this.sql, SQLStatement.UPDATE
+                , innerAble.tableMeta(), innerAble.tableAlias());
+
+        //1. update clause
+        appendUpdateClause(context);
+        //2. set clause
+        appendSetClause(context, innerAble.targetFieldList(), innerAble.valueExpressionList());
+        //3. where clause
+        appendWhereClause(context, innerAble.predicateList());
+        //4. append visible
+        appendVisiblePredicate(context.updateTable, context, context.safeAlias(), visible);
+
+        return Collections.singletonList(
+                SQLWrapper.build(context.builder.toString(), context.paramWrapperList)
+        );
+    }
+
+    private void appendUpdateClause(UpdateSQLContext context) {
+        context.stringBuilder().append("UPDATE ")
+                .append(this.sql.quoteIfNeed(context.tableMeta().tableName()));
+
+        if (StringUtils.hasText(context.safeAlias())) {
+            context.stringBuilder()
+                    .append(" AS ")
+                    .append(context.safeAlias());
+        }
+    }
+
+    private void appendFieldsManagedByArmy(UpdateSQLContext context) {
+        //1. version field
+        FieldMeta<?, ?> fieldMeta = context.versionField();
+        StringBuilder builder = context.stringBuilder();
+
+        builder.append(",");
+        fieldMeta.appendSQL(context);
+
+        builder.append(" = ");
+        fieldMeta.add(SQLS.constant(1)).appendSQL(context);
 
         //2. updateTime field
-        fieldMeta = tableMeta.getField(TableMeta.UPDATE_TIME);
+        fieldMeta = context.updateTimeField();
         builder.append(",");
-        qualifiedName = this.sql.quoteIfNeed(fieldMeta.fieldName());
-        if (StringUtils.hasText(tableAlias)) {
-            qualifiedName = " " + tableAlias + "." + qualifiedName;
-        }
-        builder.append(qualifiedName)
-                .append(" =");
+        // updateTime field self-describe
+        fieldMeta.appendSQL(context);
+        builder.append(" = ");
 
         if (fieldMeta.javaType() == LocalDateTime.class) {
             SQLS.param(LocalDateTime.now()).appendSQL(context);
@@ -310,53 +325,18 @@ public abstract class AbstractTableDML implements TableDML {
         }
     }
 
-    private boolean appendWhereClause(SQLContext context, final String tableAlias, InnerUpdateAble innerAble
-            , Visible visible) {
 
-        final List<IPredicate> IPredicateList = innerAble.predicateList();
-        Assert.notEmpty(IPredicateList, "where clause must be not empty");
-
-        StringBuilder builder = context.stringBuilder().append(" WHERE");
-
-        IPredicate IPredicate;
-        final TableMeta<?> tableMeta = innerAble.tableMeta();
-
-        final FieldMeta<?, ?> versionField = tableMeta.getField(TableMeta.VERSION);
-
-        boolean hasVersion = false;
-        for (Iterator<IPredicate> iterator = IPredicateList.iterator(); iterator.hasNext(); ) {
-            IPredicate = iterator.next();
-            // append predicate
-            IPredicate.appendSQL(context);
-            if (iterator.hasNext()) {
-                builder.append(" AND");
-            }
-            if (IPredicate instanceof DualIPredicate) {
-                DualIPredicate dualPredicate = (DualIPredicate) IPredicate;
-                // version = expresion
-                if (versionField == dualPredicate.leftExpression()
-                        && dualPredicate.dualOperator() == DualOperator.EQ) {
-                    hasVersion = true;
-                }
-            }
-        }
-        // append visible predicate
-        appendVisiblePredicate(tableMeta, context, tableAlias, visible);
-        return hasVersion;
-    }
-
-    private void appendVisiblePredicate(TableMeta<?> tableMeta, SQLContext context
-            , final String tableAlias, Visible visible) {
-
-        final FieldMeta<?, ?> visibleField = tableMeta.getField(TableMeta.VISIBLE);
+    private void appendVisiblePredicate(TableMeta<?> tableMetaWithVisible, SQLContext context
+            , final String safeTableAlias, Visible visible) {
+        final FieldMeta<?, ?> visibleField = tableMetaWithVisible.getField(TableMeta.VISIBLE);
 
         Assert.state(visibleField.javaType() == Boolean.class, "visible prop class type only is Boolean");
         // append visible field
         Boolean visibleValue = visible.getValue();
         if (visibleValue != null) {
             StringBuilder builder = context.stringBuilder().append(" AND ");
-            if (StringUtils.hasText(tableAlias)) {
-                builder.append(tableAlias)
+            if (StringUtils.hasText(safeTableAlias)) {
+                builder.append(safeTableAlias)
                         .append(".");
             }
             builder.append(this.sql.quoteIfNeed(visibleField.fieldName()))
