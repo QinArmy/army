@@ -45,6 +45,7 @@ public abstract class SQLS extends AbstractSQLS {
     }
 
 
+
     /*################################## blow number function method ##################################*/
 
     /**

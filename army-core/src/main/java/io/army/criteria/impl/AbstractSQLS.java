@@ -4,12 +4,13 @@ import io.army.criteria.ConstantExpression;
 import io.army.criteria.Expression;
 import io.army.criteria.ParamExpression;
 import io.army.lang.Nullable;
+import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingType;
 
 abstract class AbstractSQLS {
 
-     AbstractSQLS() {
+    AbstractSQLS() {
         throw new UnsupportedOperationException();
     }
 
@@ -44,6 +45,10 @@ abstract class AbstractSQLS {
 
     static <E> ConstantExpression<E> constant(E value, Expression<E> expression) {
         return ConstantExpressionImpl.build(expression.mappingType(), value);
+    }
+
+    public static TableMeta<Dual> dual() {
+        return Dual.INSTANCE;
     }
 
 }

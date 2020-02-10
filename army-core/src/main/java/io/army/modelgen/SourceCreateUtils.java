@@ -63,18 +63,25 @@ abstract class SourceCreateUtils {
 
         try {
             Set<String> entityPropNameSet = new HashSet<>();
-
+            Map<String,VariableElement> parentPropMap ,entityPropMap;
             //1.check parentMeta mapping then  add super entity props to entityPropNameSet to avoid child class duplicate prop
-            generateEntityAttributes(parentMappedElementList, entityPropNameSet, indexColumnNameSet);
+            parentPropMap =   generateEntityAttributes(parentMappedElementList, entityPropNameSet, indexColumnNameSet);
             // 2. extract entity property elements then check entity mapping
-            final Set<VariableElement> entityPropSet = generateEntityAttributes(entityMappedElementList,
+           entityPropMap = generateEntityAttributes(entityMappedElementList,
                     entityPropNameSet, indexColumnNameSet);
+
+           Set<VariableElement> entityPropSet = new HashSet<>(entityPropMap.values());
+           if(!parentPropMap.isEmpty()){
+               VariableElement idProp = parentPropMap.get(TableMeta.ID);
+               Assert.notNull(idProp,()-> String.format("entity[%s] no id",entityElement(parentMappedElementList)));
+               entityPropSet.add(idProp);
+           }
             // assert required props
             MetaUtils.assertRequiredMappingProps(entityMappedElementList, entityPropNameSet);
 
             MetaUtils.assertMappingModeParent(entityMappedElementList, parentMappedElementList);
 
-            return entityPropSet;
+            return Collections.unmodifiableSet(entityPropSet);
         } catch (MetaException e) {
             LOG.error("entityMappedElementList:{}\nparentMappedElementList:{}",
                     entityMappedElementList, parentMappedElementList, e);
@@ -274,21 +281,13 @@ abstract class SourceCreateUtils {
                 .append(table.name())
                 .append("\";\n\n");
 
-        if (parentEntityElement != null) {
-            builder.append(COMMENT_PRE)
-                    .append("/** plus primary key column **/\n");
-        }
         builder.append(PROP_PRE)
                 .append(" int ")
                 .append(MetaConstant.FIELD_COUNT)
                 .append(" = ");
 
-        if (parentEntityElement == null) {
-            builder.append(attributeList.size());
-        } else {
-            // plus primary key column
-            builder.append(attributeList.size() + 1);
-        }
+        builder.append(attributeList.size());
+
         builder.append(";\n\n")
                 .append(PROP_PRE)
                 .append(" int ")
@@ -343,13 +342,13 @@ abstract class SourceCreateUtils {
      * @param mappedClassElementList unmodifiable list
      * @param entityPropNameSet      modifiable set
      * @param indexColumnNameSet     a unmodifiable set
-     * @return unmodifiable set
+     * @return a unmodifiable map
      */
-    private static Set<VariableElement> generateEntityAttributes(List<TypeElement> mappedClassElementList,
+    private static Map<String,VariableElement> generateEntityAttributes(List<TypeElement> mappedClassElementList,
                                                                  Set<String> entityPropNameSet,
                                                                  Set<String> indexColumnNameSet)
             throws MetaException {
-        Set<VariableElement> mappedPropSet = new HashSet<>();
+        Map<String,VariableElement> mappedPropMap = new HashMap<>();
         // column name set to avoid duplication
         Set<String> columnNameSet = new HashSet<>();
         List<String> discriminatorColumnList = new ArrayList<>(1);
@@ -387,12 +386,12 @@ abstract class SourceCreateUtils {
 
                 columnNameSet.add(columnName);
 
-                mappedPropSet.add(mappedProp);
+                mappedPropMap.put(mappedProp.getSimpleName().toString(),mappedProp);
             }
         }
         MetaUtils.assertIndexColumnNameSet(entityElement, columnNameSet, indexColumnNameSet);
         MetaUtils.assertInheritance(entityElement, discriminatorColumnList);
-        return Collections.unmodifiableSet(mappedPropSet);
+        return Collections.unmodifiableMap(mappedPropMap);
     }
 
 
