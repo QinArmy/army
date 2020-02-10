@@ -43,7 +43,7 @@ class IndexColumnInfo {
                 .add("tableMeta=" + table.name())
                 .add("indexMap=" + index.name())
                 .add("name='" + name + "'")
-                .add("asc=" + asc)
+                .add("ascExp=" + asc)
                 .toString();
     }
 }

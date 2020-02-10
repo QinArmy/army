@@ -16,7 +16,7 @@ public interface CriteriaContext {
 
     List<IPredicate> getPredicateList();
 
-    List<OrderExpression<?>> getOrderList();
+    List<SortExpression<?>> getOrderList();
 
     Pair<Integer, Integer> getLimitPair();
 

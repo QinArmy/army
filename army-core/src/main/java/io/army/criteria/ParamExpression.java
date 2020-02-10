@@ -1,6 +1,7 @@
 package io.army.criteria;
 
 import io.army.dialect.ParamWrapper;
+import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingType;
 
 import java.math.BigInteger;
@@ -281,6 +282,16 @@ public interface ParamExpression<E> extends Expression<E>, ParamWrapper {
 
     @Override
     default Expression<E> brackets() {
+        throw new UnsupportedOperationException(MSG);
+    }
+
+    @Override
+    default SortExpression<E> order() {
+        throw new UnsupportedOperationException(MSG);
+    }
+
+    @Override
+    default SortExpression<E> order(@Nullable  Boolean ascExp) {
         throw new UnsupportedOperationException(MSG);
     }
 

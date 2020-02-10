@@ -4,11 +4,11 @@ package io.army.boot;
 import com.example.domain.account.AccountType;
 import com.example.domain.account.Account_;
 import com.example.domain.account.InvestAccount_;
+import com.example.domain.user.User_;
 import com.example.generator.Being;
 import io.army.Session;
 import io.army.SessionFactory;
-import io.army.criteria.DeleteAble;
-import io.army.criteria.UpdateAble;
+import io.army.criteria.*;
 import io.army.criteria.impl.ObjectSQLS;
 import io.army.criteria.impl.SQLS;
 import io.army.dialect.SQLDialect;
@@ -68,9 +68,6 @@ public class SessionTests {
         Map<String, Object> map = new HashMap<>();
         UpdateAble updateAble = SQLS.updateWithCriteria(Account_.T, map).as("a")
                 .set(Account_.balance, table("a", Account_.balance).add(BigDecimal.ONE).brackets())
-                //.set(Account_.updateTime, LocalDateTime.now())
-                // .set(Account_.visible,Boolean.TRUE)
-                //.set(Account_.userId,0L)
                 .ifSet(this::isUser, Account_.balance, BigDecimal.ZERO)
                 .where(table("a", Account_.userId).add(SQLS.constant(1L)).brackets().multiply(3).eq(2L))
                 .and(table("a", Account_.visible).eq(true))
@@ -81,7 +78,7 @@ public class SessionTests {
     }
 
     @Test(invocationCount = 10)
-    public void objectSQLUpdate(){
+    public void objectSQLUpdate() {
         final long start = System.currentTimeMillis();
         Map<String, Object> map = new HashMap<>();
         UpdateAble updateAble = ObjectSQLS.updateWithCriteria(InvestAccount_.T, map).as("a")
@@ -89,7 +86,7 @@ public class SessionTests {
                 .ifSet(this::isUser, InvestAccount_.balance, BigDecimal.ZERO)
                 .where(InvestAccount_.userId.add(SQLS.constant(1L)).brackets().multiply(3).eq(2L))
                 .and(InvestAccount_.visible.eq(true))
-                .and( InvestAccount_.createTime.eq(LocalDateTime.now()));
+                .and(InvestAccount_.createTime.eq(LocalDateTime.now()));
 
         LOG.info("sql:\n{}", updateAble.debugSQL(SQLDialect.MySQL57));
         LOG.info("cost:{}", System.currentTimeMillis() - start);
@@ -109,6 +106,29 @@ public class SessionTests {
 
         LOG.info("sql:\n{}", deleteAble.debugSQL(SQLDialect.MySQL57));
         LOG.info("cost:{}", System.currentTimeMillis() - start);
+    }
+
+    @Test(invocationCount = 10)
+    public void select() {
+        final long start = System.currentTimeMillis();
+
+        Map<String, Object> criteria = new HashMap<>();
+
+        SelectAble selectAble = SQLS.prepareSelect(criteria)
+                .modifier(DistinctModifier.DISTINCT)
+                .select(Account_.T)
+                .from(Account_.T, "a").join(User_.T, "u").on(Account_.id.eq(User_.id))
+                .where(Account_.id.eq(1L))
+                .and(Account_.debt.gt(BigDecimal.ZERO))
+                .ifGroupBy(this::isUser, Account_.id.order())
+                .having(Account_.id.gt(0L))
+                .orderBy(Account_.id.order())
+                .limit(10)
+                .lock(LockMode.READ);
+
+        LOG.info("sql:\n{}", selectAble.debugSQL(SQLDialect.MySQL57));
+        LOG.info("cost:{}", System.currentTimeMillis() - start);
+
     }
 
     private boolean isUser(Map<String, Object> map) {

@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
+import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingType;
 
@@ -300,6 +301,15 @@ import java.util.Collection;
         return new BracketsExpression<>(this);
     }
 
+    @Override
+    public final SortExpression<E> order() {
+        return new SortExpressionImpl<>(this, null);
+    }
+
+    @Override
+    public final SortExpression<E> order(@Nullable Boolean ascExp) {
+        return new SortExpressionImpl<>(this, ascExp);
+    }
 
     @Override
     public final void appendSQL(SQLContext context) {

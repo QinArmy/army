@@ -1,5 +1,6 @@
 package io.army.criteria;
 
+import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingType;
 
 import java.math.BigInteger;
@@ -112,6 +113,9 @@ public interface Expression<E> extends SelectionAble {
 
     Expression<E> brackets();
 
+    SortExpression<E> order();
+
+    SortExpression<E> order(@Nullable Boolean ascExp);
 
     IPredicate like(String pattern);
 

@@ -5,7 +5,7 @@ import io.army.meta.mapping.MappingType;
 import java.sql.JDBCType;
 
 /**
- * 代表 select 列表中的元素
+ * 代表 prepareSelect 列表中的元素
  * created  on 2018/10/8.
  */
 public interface Selection {

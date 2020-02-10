@@ -32,6 +32,14 @@ public abstract class SQLS extends AbstractSQLS {
         return new DeleteAbleImpl<>(criteria);
     }
 
+    public static SelectAble.DistinctAble<EmptyObject> prepareSelect() {
+        return new SelectAbleImpl<>(EmptyObject.getInstance());
+    }
+
+    public static <C> SelectAble.DistinctAble<C> prepareSelect(C criteria) {
+        return new SelectAbleImpl<>(criteria);
+    }
+
     public static <T extends IDomain, F> FieldMeta<T, F> table(String tableAlias, FieldMeta<T, F> fieldMeta) {
         return new AliasTableFieldMetaImpl<>(fieldMeta, tableAlias);
     }

@@ -51,7 +51,7 @@ public abstract class AbstractTableDDL implements TableDDL {
     public final List<String> tableDefinition(TableMeta<?> tableMeta) {
         StringBuilder builder = new StringBuilder();
         // 1. header
-        builder.append(createHeaderClause(tableMeta));
+        builder.append(tableHeaderClause(tableMeta));
         builder.append(" \n");
 
         // 2. tableMeta column definition
@@ -228,7 +228,7 @@ public abstract class AbstractTableDDL implements TableDDL {
     }
 
 
-    protected String createHeaderClause(TableMeta<?> tableMeta) {
+    protected String tableHeaderClause(TableMeta<?> tableMeta) {
         return "CREATE TABLE " + this.quoteIfNeed(tableMeta.tableName()) + "(";
     }
 

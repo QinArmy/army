@@ -11,7 +11,7 @@ public class UserDaoImpl implements UserDao {
     @Override
     public User get(Long id) {
 /*
-        DLS.select(User_.authStatus, User_.name)
+        DLS.prepareSelect(User_.authStatus, User_.name)
                 .from(User.class)
                 .join(Person.class).asType("p").on(Person_.id.eq(User_.id))
                 .where(User_.id.eq(3L))
