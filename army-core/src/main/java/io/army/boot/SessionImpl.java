@@ -81,9 +81,9 @@ class SessionImpl implements InnerSession {
         TableMeta<?> tableMeta = sessionFactory.tableMetaMap().get(entity.getClass());
         // 1. create necessary value for domain
         BeanWrapper beanWrapper = fieldValuesGenerator.createValues(tableMeta, entity);
-        // 2. create insert sql
+        // 2. create insert dml
         List<SQLWrapper> sqlList = sessionFactory.dialect().insert(tableMeta, beanWrapper.getReadonlyWrapper());
-        // 3. execute sql
+        // 3. execute dml
         InsertSQLExecutor.build().executeInsert(this, sqlList, beanWrapper);
     }
 

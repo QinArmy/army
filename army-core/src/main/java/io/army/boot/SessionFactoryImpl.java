@@ -160,14 +160,14 @@ class SessionFactoryImpl implements InnerSessionFactory {
 
     private void migrationIfNeed() throws ArmyAccessException {
         try {
-            // 1. generate sql
+            // 1. generate dml
             Map<String, List<String>> tableSqlMap;
             tableSqlMap = Meta2Schema.build().migrate(classTableMetaMap.values(), dataSource.getConnection(), dialect);
 
             if (LOG.isDebugEnabled()) {
                 printMigrationSql(tableSqlMap);
             }
-            // 2. execute sql
+            // 2. execute dml
             executeDDL(tableSqlMap);
         } catch (SQLException e) {
             throw new ArmyAccessException(ErrorCode.ACCESS_ERROR, e, e.getMessage());

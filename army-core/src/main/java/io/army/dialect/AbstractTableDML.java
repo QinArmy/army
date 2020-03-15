@@ -85,7 +85,7 @@ public abstract class AbstractTableDML implements TableDML {
 
         List<SQLWrapper> wrapperList;
         if (updateAble instanceof InnerObjectUpdateAble) {
-            // create update sql for child mapping mode
+            // create update dml for child mapping mode
             wrapperList = createObjectUpdate((InnerObjectUpdateAble) innerAble, visible);
         } else {
             wrapperList = createUpdateForSimple(innerAble, visible);
@@ -122,7 +122,7 @@ public abstract class AbstractTableDML implements TableDML {
      */
     private List<SQLWrapper> createDeleteForSimple(InnerDeleteAble deleteAble, Visible visible) {
 
-        final SQLContext context = new DefaultSQLContext(this.sql, SQLStatement.DELETE);
+        final SQLContext context = new DefaultSQLContext(this, SQLStatement.DELETE);
         TableMeta<?> tableMeta = deleteAble.tableMeta();
 
         final String tableName = this.sql.quoteIfNeed(tableMeta.tableName());
@@ -175,7 +175,7 @@ public abstract class AbstractTableDML implements TableDML {
         TableMeta<?> childMeta = updateAble.tableMeta(), parentMeta = childMeta.parentMeta();
         Assert.notNull(parentMeta, () -> String.format("Table[%s] not child mode", childMeta.tableName()));
 
-        ObjectUpdateContextImpl context = new ObjectUpdateContextImpl(this.sql, childMeta, updateAble.tableAlias());
+        ObjectUpdateContextImpl context = new ObjectUpdateContextImpl(this, childMeta, updateAble.tableAlias());
         // 1. update clause
         appendObjectUpdateClause(context);
         // 2. set clause
@@ -268,8 +268,8 @@ public abstract class AbstractTableDML implements TableDML {
 
     private List<SQLWrapper> createUpdateForSimple(InnerUpdateAble innerAble, Visible visible) {
 
-        // build sql context
-        final UpdateSQLContextImpl context = new UpdateSQLContextImpl(this.sql, SQLStatement.UPDATE
+        // build dml context
+        final UpdateSQLContextImpl context = new UpdateSQLContextImpl(this, SQLStatement.UPDATE
                 , innerAble.tableMeta(), innerAble.tableAlias());
 
         //1. update clause

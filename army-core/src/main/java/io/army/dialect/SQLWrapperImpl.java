@@ -23,7 +23,7 @@ final class SQLWrapperImpl implements SQLWrapper {
     }
 
     SQLWrapperImpl(String sql, List<ParamWrapper> paramList, boolean hasVersion) {
-        Assert.hasText(sql, "sql required");
+        Assert.hasText(sql, "dml required");
         Assert.notNull(paramList, "paramList required");
 
         this.sql = sql;
@@ -62,7 +62,7 @@ final class SQLWrapperImpl implements SQLWrapper {
     private void plusIndexPrefix(final String tablePart, StringBuilder builder) {
         int index;
         index = tablePart.indexOf("(");
-        Assert.isTrue(index > 0, () -> String.format("insert sql error,%s", tablePart));
+        Assert.isTrue(index > 0, () -> String.format("insert dml error,%s", tablePart));
         // insert into (
         builder.append(tablePart, 0, index);
 
@@ -96,9 +96,9 @@ final class SQLWrapperImpl implements SQLWrapper {
 
     private String replacePlaceHolder(String sql) {
         StringBuilder builder = new StringBuilder();
-        builder.append("original sql:\n")
+        builder.append("original dml:\n")
                 .append(sql)
-        .append("\nsql with param(s):\n");
+        .append("\ndml with param(s):\n");
 
         final int len = sql.length();
         final int size = this.paramList.size();
@@ -106,7 +106,7 @@ final class SQLWrapperImpl implements SQLWrapper {
         int start = 0, index = 0;
         ParamWrapper paramWrapper;
         for (int i; (i = sql.indexOf("?", start)) >= 0; start = i + 1, index++) {
-            Assert.state(index < size, "sql then paramList not match.");
+            Assert.state(index < size, "dml then paramList not match.");
 
             builder.append(sql, start, i)
                     .append("{")
@@ -124,7 +124,7 @@ final class SQLWrapperImpl implements SQLWrapper {
         }
 
         Assert.state(index == size, () -> String.format(
-                "sql then paramList not match.sql:\n%s\nparamList size:%s", sql, paramList.size()));
+                "dml then paramList not match.dml:\n%s\nparamList size:%s", sql, paramList.size()));
 
         if (start < len) {
             builder.append(sql, start, len);
@@ -283,7 +283,7 @@ final class SQLWrapperImpl implements SQLWrapper {
 
 
     private static IllegalArgumentException createSqlError(String partSQL) {
-        return new IllegalArgumentException(String.format("value part of insert sql,%s", partSQL));
+        return new IllegalArgumentException(String.format("value part of insert dml,%s", partSQL));
     }
 
 }

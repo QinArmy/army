@@ -1,6 +1,7 @@
 package io.army.meta;
 
 import io.army.criteria.MetaException;
+import io.army.criteria.TableAble;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.struct.CodeEnum;
@@ -17,7 +18,7 @@ import java.util.Set;
  * @see IndexMeta
  * @see IndexFieldMeta
  */
-public interface TableMeta<T extends IDomain> {
+public interface TableMeta<T extends IDomain> extends TableAble {
 
     String ID = "id";
 

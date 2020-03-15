@@ -19,7 +19,7 @@ public interface Meta2Schema {
 
 
     /**
-     * @return key : tableMeta name,value : ddl or dml sql list
+     * @return key : tableMeta name,value : ddl or dml dml list
      */
     Map<String, List<String>> migrate(Collection<TableMeta<?>> tableMetas, Connection connection
             , Dialect dialect) throws SchemaInfoException, MetaException;

@@ -9,7 +9,7 @@ import java.util.Collection;
 /**
  * created  on 2018/10/8.
  */
-public interface Expression<E> extends SelectionAble {
+public interface Expression<E> extends SelectionAble ,SelfDescribed{
 
     IPredicate eq(Expression<E> expression);
 
@@ -121,8 +121,6 @@ public interface Expression<E> extends SelectionAble {
 
     IPredicate notLike(String pattern);
 
-
-    void appendSQL(SQLContext context);
 
     MappingType mappingType();
 

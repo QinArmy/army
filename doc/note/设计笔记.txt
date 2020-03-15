@@ -2,3 +2,15 @@
 1. 放弃 LongExpression ,IntegerExpresion ,NumberExpresioin 的原因
 (1)Java 没有对整形作抽象(Integer,Long,BigInteger 没有共同的抽象类或接口),这使得Army的接口和实现太复杂.
 (2)数据库本身能够对 非整形的数据进行按位操作,支持对非数据类型进行加减.
+
+2. 为什么 io.army.criteria.Select.SelectSQLAble 没有 直接转换为子查询的方法,
+因为这样容易让开发者偷懒把外层查询转变为子查询,这样会造成一旦相应的普通查询修改就会造成对应的子查询出bug。
+
+3. 为什么 把 SelectSQLAble 设计为不同体系
+(1) 让各数据库的特点尽可能的发挥,在现实开发中更换数据库的情况并不多见.
+(2) 让子四种子查询(scale,column,row,table)的API更简洁而直接.
+(3) 在实现的复杂和使用的简洁性的平衡下，选择多体系方案.
+(4) 子查询和外层查询的语法不同,比如 锁语法.
+
+4. 为什么 select 的 from 和 join 子句没有直接以 TableAble 为参数,而是区分了 table 和子查询?
+(1) 对子查询的特别处理更重要.

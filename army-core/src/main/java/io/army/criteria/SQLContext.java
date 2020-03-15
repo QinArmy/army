@@ -2,6 +2,7 @@ package io.army.criteria;
 
 import io.army.dialect.ParamWrapper;
 import io.army.dialect.SQL;
+import io.army.dialect.TableDML;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingType;
@@ -22,7 +23,7 @@ public interface SQLContext {
      */
     void appendTextValue(MappingType mappingType,Object value);
 
-    SQL sql();
+    TableDML dml();
 
     StringBuilder stringBuilder();
 

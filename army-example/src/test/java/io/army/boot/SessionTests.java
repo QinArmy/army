@@ -73,7 +73,7 @@ public class SessionTests {
                 .and(table("a", Account_.visible).eq(true))
                 .and(table("a", Account_.createTime).eq(LocalDateTime.now()));
 
-        LOG.info("sql:\n{}", updateAble.debugSQL(SQLDialect.MySQL57));
+        LOG.info("dml:\n{}", updateAble.debugSQL(SQLDialect.MySQL57));
         LOG.info("cost:{}", System.currentTimeMillis() - start);
     }
 
@@ -88,7 +88,7 @@ public class SessionTests {
                 .and(InvestAccount_.visible.eq(true))
                 .and(InvestAccount_.createTime.eq(LocalDateTime.now()));
 
-        LOG.info("sql:\n{}", updateAble.debugSQL(SQLDialect.MySQL57));
+        LOG.info("dml:\n{}", updateAble.debugSQL(SQLDialect.MySQL57));
         LOG.info("cost:{}", System.currentTimeMillis() - start);
     }
 
@@ -104,7 +104,7 @@ public class SessionTests {
                 .and(Account_.debt.gt(BigDecimal.ONE))
                 .ifAnd(this::isUser, Account_.accountType.eq(AccountType.BALANCE));
 
-        LOG.info("sql:\n{}", deleteAble.debugSQL(SQLDialect.MySQL57));
+        LOG.info("dml:\n{}", deleteAble.debugSQL(SQLDialect.MySQL57));
         LOG.info("cost:{}", System.currentTimeMillis() - start);
     }
 
@@ -114,8 +114,8 @@ public class SessionTests {
 
         Map<String, Object> criteria = new HashMap<>();
 
-        SelectAble selectAble = SQLS.prepareSelect(criteria)
-                .modifier(DistinctModifier.DISTINCT)
+        Select select = SQLS.prepareSelect(criteria)
+                .modifier(Distinct.DISTINCT)
                 .select(Account_.T)
                 .from(Account_.T, "a").join(User_.T, "u").on(Account_.id.eq(User_.id))
                 .where(Account_.id.eq(1L))
@@ -126,7 +126,7 @@ public class SessionTests {
                 .limit(10)
                 .lock(LockMode.READ);
 
-        LOG.info("sql:\n{}", selectAble.debugSQL(SQLDialect.MySQL57));
+        LOG.info("dml:\n{}", select.debugSQL(SQLDialect.MySQL57));
         LOG.info("cost:{}", System.currentTimeMillis() - start);
 
     }

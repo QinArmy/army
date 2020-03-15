@@ -23,7 +23,7 @@ public interface Session extends AutoCloseable {
 
     /**
      *
-     * @param updateAble will execute update sql instance.
+     * @param updateAble will execute update dml instance.
      * @return a unmodifiable list, at most two element.
      */
     List<Integer> update(UpdateAble updateAble);

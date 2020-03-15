@@ -67,7 +67,7 @@ class InsertSQLExecutorIml implements InsertSQLExecutor {
             try (PreparedStatement st = session.createStatement(wrapper.sql(), generatedKey)) {
                 // 2. set params
                 setParams(st, wrapper.paramList());
-                //3. execute sql
+                //3. execute dml
                 updateCount[sqlNum] = st.executeUpdate();
                 if (sqlNum == 0 && generatorWrapper != null) {
                     // 4. extract generated key (optional)
@@ -75,12 +75,12 @@ class InsertSQLExecutorIml implements InsertSQLExecutor {
                 }
 
             } catch (SQLException e) {
-                throw new InsertException(ErrorCode.INSERT_ERROR, e, "sql execute error:\n%s"
+                throw new InsertException(ErrorCode.INSERT_ERROR, e, "dml execute error:\n%s"
                         , wrapper.toString(session.sessionFactory().dialect()));
             }
 
             if (traceEnabled) {
-                LOG.trace("sql:{};update count:{}", wrapper.sql(), updateCount[sqlNum]);
+                LOG.trace("dml:{};update count:{}", wrapper.sql(), updateCount[sqlNum]);
             }
             sqlNum++;
 

@@ -5,11 +5,7 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.SQLContext;
 import io.army.criteria.SQLStatement;
 import io.army.criteria.TableAliasException;
-import io.army.dialect.DialectUtils;
-import io.army.dialect.ParamWrapper;
-import io.army.dialect.SQL;
 import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingType;
 
 import java.util.ArrayList;
@@ -18,7 +14,7 @@ import java.util.List;
 class DefaultSQLContext implements SQLContext {
 
 
-    final SQL sql;
+    final TableDML dml;
 
     final SQLStatement sqlStatement;
 
@@ -26,8 +22,8 @@ class DefaultSQLContext implements SQLContext {
 
     final List<ParamWrapper> paramWrapperList = new ArrayList<>();
 
-    DefaultSQLContext(SQL sql, SQLStatement sqlStatement) {
-        this.sql = sql;
+    DefaultSQLContext(TableDML dml, SQLStatement sqlStatement) {
+        this.dml = dml;
         this.sqlStatement = sqlStatement;
     }
 
@@ -38,14 +34,14 @@ class DefaultSQLContext implements SQLContext {
 
     @Override
     public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException {
-        builder.append(this.sql.quoteIfNeed(tableAlias))
+        builder.append(this.dml.quoteIfNeed(tableAlias))
                 .append(".")
-                .append(this.sql.quoteIfNeed(fieldMeta.fieldName()));
+                .append(this.dml.quoteIfNeed(fieldMeta.fieldName()));
     }
 
     @Override
     public final void quoteIfKeyAndAppend(String textValue) {
-        builder.append(sql.quoteIfNeed(textValue));
+        builder.append(dml.quoteIfNeed(textValue));
     }
 
     @Override
@@ -59,8 +55,8 @@ class DefaultSQLContext implements SQLContext {
     }
 
     @Override
-    public final SQL sql() {
-        return sql;
+    public final TableDML dml() {
+        return dml;
     }
 
     @Override

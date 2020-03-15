@@ -172,7 +172,7 @@ abstract class SessionFactoryUtils {
     private static SQLDialect decideSQLDialect(@Nullable SQLDialect dialect, SQLDialect databaseSqlDialect) {
         SQLDialect actual = dialect;
         if (actual == null) {
-            LOG.debug("extract sql dialect from database");
+            LOG.debug("extract dml dialect from database");
             actual = databaseSqlDialect;
         } else if (!SQLDialect.sameFamily(dialect, databaseSqlDialect)
                 || dialect.ordinal() > databaseSqlDialect.ordinal()) {

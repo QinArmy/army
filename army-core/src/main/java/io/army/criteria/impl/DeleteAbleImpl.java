@@ -44,7 +44,7 @@ import java.util.function.Predicate;
     @Override
     public DeleteAble where(List<IPredicate> predicates) {
         Assert.state(this.predicateList == null, "where clause ended.");
-        Assert.notEmpty(predicates, "delete sql no where clause forbidden by army");
+        Assert.notEmpty(predicates, "delete dml no where clause forbidden by army");
         this.predicateList = predicates;
         return this;
     }
@@ -57,7 +57,7 @@ import java.util.function.Predicate;
     @Override
     public WhereAndAble< C> where(IPredicate predicate) {
         Assert.state(this.predicateList == null, "where clause ended.");
-        Assert.notNull(predicate, "delete sql no where clause forbidden by army");
+        Assert.notNull(predicate, "delete dml no where clause forbidden by army");
         this.predicateList = new ArrayList<>();
         this.predicateList.add(predicate);
         return this;
@@ -106,7 +106,7 @@ import java.util.function.Predicate;
     @Override
     public List<IPredicate> predicateList() {
         if (CollectionUtils.isEmpty(this.predicateList)) {
-            throw new IllegalStateException("single delete sql invoke error,no where clause.");
+            throw new IllegalStateException("single delete dml invoke error,no where clause.");
         }
         return predicateList;
     }

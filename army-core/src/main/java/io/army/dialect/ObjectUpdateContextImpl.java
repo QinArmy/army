@@ -16,12 +16,12 @@ final class ObjectUpdateContextImpl extends UpdateSQLContextImpl  {
     private final String safeParentAlias;
 
 
-    ObjectUpdateContextImpl(SQL sql, TableMeta<?> childMeta, String tableAlias) {
-        super(sql, SQLStatement.OBJECT_UPDATE,childMeta,tableAlias);
+    ObjectUpdateContextImpl(TableDML dml, TableMeta<?> childMeta, String tableAlias) {
+        super(dml, SQLStatement.OBJECT_UPDATE,childMeta,tableAlias);
 
         Assert.notNull(childMeta.parentMeta(), "childMeta not child mode");
         this.parentAliasOfChild = "parentOf" + tableAlias;
-        this.safeParentAlias = this.sql.quoteIfNeed(this.parentAliasOfChild);
+        this.safeParentAlias = this.dml.quoteIfNeed(this.parentAliasOfChild);
 
     }
 
@@ -66,10 +66,10 @@ final class ObjectUpdateContextImpl extends UpdateSQLContextImpl  {
             builder.append(this.safeParentAlias)
                     .append(".");
         } else if (StringUtils.hasText(tableAlias)) {
-            builder.append(this.sql.quoteIfNeed(tableAlias))
+            builder.append(this.dml.quoteIfNeed(tableAlias))
                     .append(".");
         }
-        builder.append(this.sql.quoteIfNeed(fieldMeta.fieldName()));
+        builder.append(this.dml.quoteIfNeed(fieldMeta.fieldName()));
     }
 
 
@@ -81,7 +81,7 @@ final class ObjectUpdateContextImpl extends UpdateSQLContextImpl  {
     private void assertTableAlias(String tableAlias, FieldMeta<?, ?> fieldMeta) {
         if (StringUtils.hasText(tableAlias)
                 && !tableAlias.equals(this.tableAlias)) {
-            throw new TableAliasException(ErrorCode.CRITERIA_ERROR, "object sql table[%s] alias[%s] error"
+            throw new TableAliasException(ErrorCode.CRITERIA_ERROR, "object dml table[%s] alias[%s] error"
                     , fieldMeta.tableMeta().tableName(), tableAlias);
         }
     }
@@ -90,7 +90,7 @@ final class ObjectUpdateContextImpl extends UpdateSQLContextImpl  {
         if (StringUtils.hasText(tableAlias)
                 && !tableAlias.equals(this.parentAliasOfChild)) {
             throw new TableAliasException(ErrorCode.CRITERIA_ERROR
-                    , "object sql table[%s] alias[%s] error,must be [%s]"
+                    , "object dml table[%s] alias[%s] error,must be [%s]"
                     , fieldMeta.tableMeta()
                     , tableAlias
                     ,safeParentAlias

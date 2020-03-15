@@ -1,9 +1,7 @@
 package io.army.dialect;
 
 import io.army.beans.ReadonlyWrapper;
-import io.army.criteria.DeleteAble;
-import io.army.criteria.UpdateAble;
-import io.army.criteria.Visible;
+import io.army.criteria.*;
 import io.army.meta.TableMeta;
 
 import java.util.List;
@@ -30,7 +28,15 @@ public interface TableDML extends SQL {
         throw new UnsupportedOperationException();
     }
 
-    default List<SQLWrapper> delete(DeleteAble.SingleDeleteAble deleteAble, Visible visible){
+    default List<SQLWrapper> delete(DeleteAble.SingleDeleteAble deleteAble, Visible visible) {
+        throw new UnsupportedOperationException();
+    }
+
+    default List<SQLWrapper> select(Select select) {
+        throw new UnsupportedOperationException();
+    }
+
+    default SQLWrapper subQuery(SubQuery subQuery) {
         throw new UnsupportedOperationException();
     }
 

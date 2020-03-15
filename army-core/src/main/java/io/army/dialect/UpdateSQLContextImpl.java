@@ -18,17 +18,17 @@ class UpdateSQLContextImpl extends DefaultSQLContext implements UpdateSQLContext
 
     protected final String safeAlias;
 
-    UpdateSQLContextImpl(SQL sql, SQLStatement sqlStatement, TableMeta<?> updateTable,String tableAlias) {
-        super(sql, sqlStatement);
+    UpdateSQLContextImpl(TableDML dml, SQLStatement sqlStatement, TableMeta<?> updateTable,String tableAlias) {
+        super(dml, sqlStatement);
         this.updateTable = updateTable;
 
-        Assert.isTrue(sqlStatement.isUpdate(), "sqlStatement no object sql");
+        Assert.isTrue(sqlStatement.isUpdate(), "sqlStatement no object dml");
         Assert.hasText(tableAlias, "tableAlisa required");
 
         this.tableAlias = tableAlias;
 
         if (StringUtils.hasText(this.tableAlias)) {
-            this.safeAlias = this.sql.quoteIfNeed(this.tableAlias);
+            this.safeAlias = this.dml.quoteIfNeed(this.tableAlias);
         } else {
             this.safeAlias = "";
         }
@@ -53,7 +53,7 @@ class UpdateSQLContextImpl extends DefaultSQLContext implements UpdateSQLContext
        }else {
            builder.append(this.safeAlias)
                    .append(".")
-                   .append(this.sql.quoteIfNeed(fieldMeta.fieldName()));
+                   .append(this.dml.quoteIfNeed(fieldMeta.fieldName()));
        }
     }
 
