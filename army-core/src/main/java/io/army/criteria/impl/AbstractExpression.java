@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.lang.Nullable;
+import io.army.meta.FieldMeta;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingType;
 
@@ -32,11 +33,6 @@ import java.util.Collection;
     }
 
     @Override
-    public final Expression<?> expression() {
-        return this;
-    }
-
-    @Override
     public final IPredicate eq(Expression<E> expression) {
         return new DualIPredicateImpl(this, DualOperator.EQ, expression);
     }
@@ -44,6 +40,21 @@ import java.util.Collection;
     @Override
     public final IPredicate eq(E constant) {
         return new DualIPredicateImpl(this, DualOperator.EQ, SQLS.param(constant, this.mappingType()));
+    }
+
+    @Override
+    public final IPredicate eq(String subQueryAlias, String fieldAlias) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate eq(String tableAlias, FieldMeta<?, E> fieldMeta) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate eq(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
+        return null;
     }
 
     @Override
@@ -57,6 +68,21 @@ import java.util.Collection;
     }
 
     @Override
+    public final IPredicate lt(String subQueryAlias, String fieldAlias) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate lt(String tableAlias, FieldMeta<?, E> fieldMeta) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate lt(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
+        return null;
+    }
+
+    @Override
     public final IPredicate le(Expression<? extends Comparable<E>> expression) {
         return new DualIPredicateImpl(this, DualOperator.LE, expression);
     }
@@ -64,6 +90,21 @@ import java.util.Collection;
     @Override
     public final IPredicate le(Comparable<E> constant) {
         return new DualIPredicateImpl(this, DualOperator.LE, SQLS.param(constant, this.mappingType()));
+    }
+
+    @Override
+    public final IPredicate le(String subQueryAlias, String fieldAlias) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate le(String tableAlias, FieldMeta<?, E> fieldMeta) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate le(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
+        return null;
     }
 
     @Override
@@ -77,6 +118,21 @@ import java.util.Collection;
     }
 
     @Override
+    public final IPredicate gt(String subQueryAlias, String fieldAlias) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate gt(String tableAlias, FieldMeta<?, E> fieldMeta) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate gt(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
+        return null;
+    }
+
+    @Override
     public final IPredicate ge(Expression<? extends Comparable<E>> expression) {
         return new DualIPredicateImpl(this, DualOperator.GE, expression);
     }
@@ -87,6 +143,21 @@ import java.util.Collection;
     }
 
     @Override
+    public final IPredicate ge(String subQueryAlias, String fieldAlias) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate ge(String tableAlias, FieldMeta<?, E> fieldMeta) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate ge(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
+        return null;
+    }
+
+    @Override
     public final IPredicate notEq(Expression<E> expression) {
         return new DualIPredicateImpl(this, DualOperator.NOT_EQ, expression);
     }
@@ -94,6 +165,21 @@ import java.util.Collection;
     @Override
     public final IPredicate notEq(Comparable<E> constant) {
         return new DualIPredicateImpl(this, DualOperator.NOT_EQ, SQLS.param(constant, this.mappingType()));
+    }
+
+    @Override
+    public final IPredicate notEq(String subQueryAlias, String fieldAlias) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate notEq(String tableAlias, FieldMeta<?, E> fieldMeta) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate notEq(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
+        return null;
     }
 
     @Override
@@ -122,6 +208,31 @@ import java.util.Collection;
     }
 
     @Override
+    public final IPredicate between(String subQueryAlias, String firstDerivedFieldName, String secondDerivedFieldName) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate between(String subQueryAlias, String firstDerivedFieldName, Expression<E> second) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate between(String subQueryAlias, String fieldAlias, E second) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate between(Expression<E> first, String subQueryAlias, String fieldAlias) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate between(E first, String subQueryAlias, String fieldAlias) {
+        return null;
+    }
+
+    @Override
     public final IPredicate isNull() {
         return new UnaryIPredicate(UnaryOperator.IS_NULL, this);
     }
@@ -142,6 +253,11 @@ import java.util.Collection;
     }
 
     @Override
+    public final IPredicate in(ColumnSubQuery<E> subQuery) {
+        return null;
+    }
+
+    @Override
     public final IPredicate notIn(Collection<E> values) {
         return new InIPredicate(false, this, values);
     }
@@ -152,13 +268,28 @@ import java.util.Collection;
     }
 
     @Override
+    public final IPredicate notIn(ColumnSubQuery<E> subQuery) {
+        return null;
+    }
+
+    @Override
     public final IPredicate like(String pattern) {
         return new DualIPredicateImpl(this, DualOperator.LIKE, SQLS.constant(pattern, this.mappingType()));
     }
 
     @Override
+    public final IPredicate like(Expression<String> pattern) {
+        return null;
+    }
+
+    @Override
     public final IPredicate notLike(String pattern) {
         return new DualIPredicateImpl(this, DualOperator.NOT_LIKE, SQLS.param(pattern,this.mappingType()));
+    }
+
+    @Override
+    public final IPredicate notLike(Expression<String> pattern) {
+        return null;
     }
 
     @Override
@@ -172,6 +303,16 @@ import java.util.Collection;
     }
 
     @Override
+    public final Expression<E> mod(String subQueryAlias, String fieldAlias) {
+        return null;
+    }
+
+    @Override
+    public final Expression<E> mod(String tableAlias, FieldMeta<?, E> fieldMeta) {
+        return null;
+    }
+
+    @Override
     public final <N extends Number> Expression<E> multiply(Expression<N> multiplicand) {
         return new DualExpresion<>(this, DualOperator.MULTIPLY, multiplicand);
     }
@@ -179,6 +320,16 @@ import java.util.Collection;
     @Override
     public final <N extends Number> Expression<E> multiply(N multiplicand) {
         return new DualExpresion<>(this, DualOperator.MULTIPLY, SQLS.param(multiplicand));
+    }
+
+    @Override
+    public final Expression<E> multiply(String subQueryAlias, String fieldAlias) {
+        return null;
+    }
+
+    @Override
+    public final Expression<E> multiply(String tableAlias, FieldMeta<?, E> fieldMeta) {
+        return null;
     }
 
     @Override
@@ -192,6 +343,16 @@ import java.util.Collection;
     }
 
     @Override
+    public final Expression<E> add(String subQueryAlias, String fieldAlias) {
+        return null;
+    }
+
+    @Override
+    public final Expression<E> add(String tableAlias, FieldMeta<?, E> fieldMeta) {
+        return null;
+    }
+
+    @Override
     public final <N extends Number> Expression<E> subtract(Expression<N> subtrahend) {
         return new DualExpresion<>(this, DualOperator.SUBTRACT, subtrahend);
     }
@@ -202,6 +363,16 @@ import java.util.Collection;
     }
 
     @Override
+    public final Expression<E> subtract(String subQueryAlias, String fieldAlias) {
+        return null;
+    }
+
+    @Override
+    public final Expression<E> subtract(String tableAlias, FieldMeta<?, E> fieldMeta) {
+        return null;
+    }
+
+    @Override
     public final <N extends Number> Expression<E> divide(Expression<N> divisor) {
         return new DualExpresion<>(this, DualOperator.DIVIDE, divisor);
     }
@@ -209,6 +380,16 @@ import java.util.Collection;
     @Override
     public final <N extends Number> Expression<E> divide(N divisor) {
         return new DualExpresion<>(this, DualOperator.DIVIDE, SQLS.param(divisor));
+    }
+
+    @Override
+    public final Expression<E> divide(String subQueryAlias, String fieldAlias) {
+        return null;
+    }
+
+    @Override
+    public final Expression<E> divide(String tableAlias, FieldMeta<?, E> fieldMeta) {
+        return null;
     }
 
     @Override
@@ -227,6 +408,16 @@ import java.util.Collection;
     }
 
     @Override
+    public final Expression<BigInteger> and(String subQueryAlias, String fieldAlias) {
+        return null;
+    }
+
+    @Override
+    public final  <O> Expression<BigInteger> and(String tableAlias, FieldMeta<?, O> fieldMeta) {
+        return null;
+    }
+
+    @Override
     public final <O> Expression<BigInteger>  or(Expression<O> operator) {
         return new DualExpresion<>(this, DualOperator.OR, operator);
     }
@@ -234,6 +425,16 @@ import java.util.Collection;
     @Override
     public final  Expression<BigInteger>  or(Long operator) {
         return new DualExpresion<>(this, DualOperator.OR, SQLS.param(operator));
+    }
+
+    @Override
+    public final Expression<BigInteger> or(String subQueryAlias, String fieldAlias) {
+        return null;
+    }
+
+    @Override
+    public final  <O> Expression<BigInteger> or(String tableAlias, FieldMeta<?, O> fieldMeta) {
+        return null;
     }
 
     @Override
@@ -247,6 +448,16 @@ import java.util.Collection;
     }
 
     @Override
+    public final Expression<BigInteger> xor(String subQueryAlias, String fieldAlias) {
+        return null;
+    }
+
+    @Override
+    public final  <O> Expression<BigInteger> xor(String tableAlias, FieldMeta<?, O> fieldMeta) {
+        return null;
+    }
+
+    @Override
     public final <O> Expression<BigInteger>  inversion(Expression<O> operator) {
         return new DualExpresion<>(this, DualOperator.INVERT, operator);
     }
@@ -254,6 +465,16 @@ import java.util.Collection;
     @Override
     public final  Expression<BigInteger>  inversion(Long operator) {
         return new DualExpresion<>(this, DualOperator.INVERT, SQLS.param(operator));
+    }
+
+    @Override
+    public final Expression<BigInteger> inversion(String subQueryAlias, String fieldAlias) {
+        return null;
+    }
+
+    @Override
+    public final  <O> Expression<BigInteger> inversion(String tableAlias, FieldMeta<?, O> fieldMeta) {
+        return null;
     }
 
     @Override
@@ -267,6 +488,16 @@ import java.util.Collection;
     }
 
     @Override
+    public final  <O> Expression<BigInteger> rightShift(String tableAlias, FieldMeta<?, O> fieldMeta) {
+        return null;
+    }
+
+    @Override
+    public final Expression<BigInteger> rightShift(String subQueryAlias, String fieldAlias) {
+        return null;
+    }
+
+    @Override
     public final  Expression<BigInteger>  leftShift(Integer bitNumber) {
         return new DualExpresion<>(this, DualOperator.LEFT_SHIFT, SQLS.param(bitNumber));
     }
@@ -277,13 +508,43 @@ import java.util.Collection;
     }
 
     @Override
+    public final Expression<BigInteger> leftShift(String subQueryAlias, String fieldAlias) {
+        return null;
+    }
+
+    @Override
+    public final  <O> Expression<BigInteger> leftShift(String tableAlias, FieldMeta<?, O> fieldMeta) {
+        return null;
+    }
+
+    @Override
     public final <O> Expression<E> plusOther(Expression<O> other) {
         return new DualExpresion<>(this, DualOperator.ADD, other);
     }
 
     @Override
+    public final Expression<E> plusOther(String subQueryAlias, String fieldAlias) {
+        return null;
+    }
+
+    @Override
+    public final  <O> Expression<E> plusOther(String tableAlias, FieldMeta<?, O> fieldMeta) {
+        return null;
+    }
+
+    @Override
     public final <O> Expression<E> minusOther(Expression<O> other) {
         return new DualExpresion<>(this, DualOperator.SUBTRACT, other);
+    }
+
+    @Override
+    public final Expression<E> minusOther(String subQueryAlias, String fieldAlias) {
+        return null;
+    }
+
+    @Override
+    public final  <O> Expression<E> minusOther(String tableAlias, FieldMeta<?, O> fieldMeta) {
+        return null;
     }
 
     @Override
@@ -302,14 +563,15 @@ import java.util.Collection;
     }
 
     @Override
-    public final SortExpression<E> order() {
-        return new SortExpressionImpl<>(this, null);
+    public final Expression<E> sort(@Nullable Boolean asc) {
+         if(asc == null){
+             return this;
+         }else {
+             return new SortExpressionImpl<>(this,asc);
+         }
     }
 
-    @Override
-    public final SortExpression<E> order(@Nullable Boolean ascExp) {
-        return new SortExpressionImpl<>(this, ascExp);
-    }
+
 
     @Override
     public final void appendSQL(SQLContext context) {

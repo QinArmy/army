@@ -81,7 +81,7 @@ final class ObjectUpdateContextImpl extends UpdateSQLContextImpl  {
     private void assertTableAlias(String tableAlias, FieldMeta<?, ?> fieldMeta) {
         if (StringUtils.hasText(tableAlias)
                 && !tableAlias.equals(this.tableAlias)) {
-            throw new TableAliasException(ErrorCode.CRITERIA_ERROR, "object dml table[%s] alias[%s] error"
+            throw new TableAliasException(ErrorCode.CRITERIA_ERROR, "object dml field[%s] alias[%s] error"
                     , fieldMeta.tableMeta().tableName(), tableAlias);
         }
     }
@@ -90,7 +90,7 @@ final class ObjectUpdateContextImpl extends UpdateSQLContextImpl  {
         if (StringUtils.hasText(tableAlias)
                 && !tableAlias.equals(this.parentAliasOfChild)) {
             throw new TableAliasException(ErrorCode.CRITERIA_ERROR
-                    , "object dml table[%s] alias[%s] error,must be [%s]"
+                    , "object dml field[%s] alias[%s] error,must be [%s]"
                     , fieldMeta.tableMeta()
                     , tableAlias
                     ,safeParentAlias

@@ -154,7 +154,7 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
         }
 
         if (discriminatorValue.value() % 100 != 0) {
-            LOG.warn("entity[{}] DiscriminatorValue.value() isn'table multiple of 100.", entityElement.getQualifiedName());
+            LOG.warn("entity[{}] DiscriminatorValue.value() isn'field multiple of 100.", entityElement.getQualifiedName());
         }
 
     }
@@ -191,7 +191,7 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
     }
 
     /**
-     * @return first: super class (annotated by {@link MappedSuperclass} then {@link Table}) list (order by extends)
+     * @return first: super class (annotated by {@link MappedSuperclass} then {@link Table}) list (asSort by extends)
      * util encounter {@link Inheritance}, second: class annotated by {@link Inheritance}
      */
     private Pair<List<TypeElement>, TypeElement> createEntityMappedElementList(

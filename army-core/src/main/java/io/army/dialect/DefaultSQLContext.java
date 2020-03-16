@@ -75,7 +75,7 @@ class DefaultSQLContext implements SQLContext {
     }
 
     protected final void throwTableAliasError(String tableAlias,FieldMeta<?,?> fieldMeta){
-        throw new CriteriaException(ErrorCode.CRITERIA_ERROR,"table alias[%s] field[%s] error"
+        throw new CriteriaException(ErrorCode.CRITERIA_ERROR,"field alias[%s] field[%s] error"
                 ,tableAlias
                 ,fieldMeta.propertyName());
     }

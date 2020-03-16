@@ -39,10 +39,6 @@ final class AliasTableFieldMetaImpl<T extends IDomain, F> extends AbstractExpres
         return tableAlias + "." + fieldMeta.fieldName();
     }
 
-    @Override
-    public Selection as() {
-        return as(fieldMeta.propertyName());
-    }
 
     @Override
     public boolean primary() {

@@ -99,7 +99,7 @@ import java.util.function.Predicate;
 
     @Override
     public TableMeta<?> tableMeta() {
-        Assert.state(this.tableMeta != null,"table meta must not null");
+        Assert.state(this.tableMeta != null,"field meta must not null");
         return tableMeta;
     }
 

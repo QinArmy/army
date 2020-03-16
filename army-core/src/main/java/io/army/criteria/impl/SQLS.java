@@ -8,12 +8,12 @@ import io.army.meta.mapping.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.function.Function;
 
 
 public abstract class SQLS extends AbstractSQLS {
 
-    SQLS() {
-    }
 
     public static <T extends IDomain> UpdateAble.AliasAble<T, EmptyObject> update(TableMeta<T> tableMeta) {
         return new UpdateAbleImpl<>(tableMeta, EmptyObject.getInstance());
@@ -32,18 +32,37 @@ public abstract class SQLS extends AbstractSQLS {
         return new DeleteAbleImpl<>(criteria);
     }
 
-    public static Select.DistinctAble<EmptyObject> prepareSelect() {
-        return new AbstractSelect<>(EmptyObject.getInstance());
+    public static Select.SelectionAble<EmptyObject> prepareSelect() {
+        return new SelectImpl<>(EmptyObject.getInstance());
     }
 
-    public static <C> Select.DistinctAble<C> prepareSelect(C criteria) {
-        return new AbstractSelect<>(criteria);
+    public static <C> Select.SelectionAble<C> prepareSelect(C criteria) {
+        return new SelectImpl<>(criteria);
     }
 
-    public static <T extends IDomain, F> FieldMeta<T, F> table(String tableAlias, FieldMeta<T, F> fieldMeta) {
+    public static <T extends IDomain, F> FieldMeta<T, F> field(String tableAlias, FieldMeta<T, F> fieldMeta) {
         return new AliasTableFieldMetaImpl<>(fieldMeta, tableAlias);
     }
 
+    public static IPredicate exists(SubQuery subQuery){
+        return null;
+    }
+
+    public static <C> IPredicate exists(Function<C,SubQuery> function){
+        return null;
+    }
+
+    public static IPredicate notExists(SubQuery subQuery){
+        return null;
+    }
+
+    public static <C> IPredicate notExists(Function<C,SubQuery> function){
+        return null;
+    }
+
+    public static Row row(List<Expression<?>> columnList){
+        return null;
+    }
 
 
     /*################################## blow number function method ##################################*/

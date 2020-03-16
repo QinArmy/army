@@ -12,18 +12,23 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-final class SubQueryImpl<C> implements
-        InnerSubQueryAble, OuterQueryAble, SubQuery.SubQuerySelectionAble<C>
-        , SubQuery.SubQueryFromAble<C>, SubQuery.SubQueryOnAble<C>, SubQuery.SubQueryJoinAble<C>
-        , SubQuery.SubQueryWhereAndAble<C>, SubQuery.SubQueryHavingAble<C> {
+final class ColumnSubQueryImpl<E,C> implements ColumnSubQuery<E>, InnerSubQueryAble, OuterQueryAble
+        , ColumnSubQuery.ColumnSubQuerySelectionAble<E,C>, ColumnSubQuery.ColumnSubQueryFromAble<E,C>
+        , ColumnSubQuery.ColumnSubQueryOnAble<E,C>, ColumnSubQuery.ColumnSubQueryWhereAndAble<E,C>
+        , ColumnSubQuery.ColumnSubQueryJoinAble<E,C>, ColumnSubQuery.ColumnSubQueryHavingAble<E,C>  {
+
+    private final Class<E> javaType;
 
     private final SelectImpl<C> actualSelect;
 
     private QueryAble outerQuery;
 
-    SubQueryImpl(C criteria) {
+
+    ColumnSubQueryImpl(Class<E> javaType,C criteria) {
+        this.javaType = javaType;
         this.actualSelect = new SelectImpl<>(criteria);
     }
+
 
     /*################################## blow SelfDescribed method ##################################*/
 
@@ -32,7 +37,7 @@ final class SubQueryImpl<C> implements
         context.dml().subQuery(this, context);
     }
 
-    /*################################## blow SubQuery method ##################################*/
+    /*################################## blow ColumnSubQuery<E> method ##################################*/
 
     @Override
     public final QueryAble outerQuery() {
@@ -40,277 +45,283 @@ final class SubQueryImpl<C> implements
         return this.outerQuery;
     }
 
+    @Override
+    public final Selection selection() {
+        List<Selection> selectionList = this.actualSelect.selectionList();
+        Assert.state(selectionList.size() == 1,"selectionList size isn't 1,criteria error.");
+        return selectionList.get(0);
+    }
 
-    /*################################## blow SubQuerySelectionAble method ##################################*/
+    /*################################## blow RowSubQuerySelectionAble method ##################################*/
 
     @Override
-    public <T extends IDomain> SubQueryFromAble<C> select(Distinct distinct, TableMeta<T> tableMeta) {
+    public <T extends IDomain> ColumnSubQuery.ColumnSubQueryFromAble<E,C> select(Distinct distinct, TableMeta<T> tableMeta) {
         this.actualSelect.select(distinct, tableMeta);
         return this;
     }
 
     @Override
-    public <T extends IDomain> SubQueryFromAble<C> select(TableMeta<T> tableMeta) {
+    public <T extends IDomain> ColumnSubQuery.ColumnSubQueryFromAble<E,C> select(TableMeta<T> tableMeta) {
         this.actualSelect.select(tableMeta);
         return this;
     }
 
     @Override
-    public SubQueryFromAble<C> select(String subQueryAlias) {
+    public ColumnSubQuery.ColumnSubQueryFromAble<E,C> select(String subQueryAlias) {
         this.actualSelect.select(subQueryAlias);
         return this;
     }
 
     @Override
-    public SubQueryFromAble<C> select(Distinct distinct, String subQueryAlias) {
-        this.actualSelect.select(distinct, subQueryAlias);
+    public ColumnSubQuery.ColumnSubQueryFromAble<E,C> select(Distinct distinct, String RowSubQueryAlias) {
+        this.actualSelect.select(distinct, RowSubQueryAlias);
         return this;
     }
 
     @Override
-    public SubQueryFromAble<C> select(List<Selection> selectionList) {
+    public ColumnSubQuery.ColumnSubQueryFromAble<E,C> select(List<Selection> selectionList) {
         this.actualSelect.select(selectionList);
         return this;
     }
 
     @Override
-    public SubQueryFromAble<C> select(Distinct distinct, List<Selection> selectionList) {
+    public ColumnSubQuery.ColumnSubQueryFromAble<E,C> select(Distinct distinct, List<Selection> selectionList) {
         this.actualSelect.select(distinct, selectionList);
         return this;
     }
 
     @Override
-    public SubQueryFromAble<C> select(Function<C, List<Selection>> function) {
+    public ColumnSubQuery.ColumnSubQueryFromAble<E,C> select(Function<C, List<Selection>> function) {
         this.actualSelect.select(function);
         return this;
     }
 
     @Override
-    public SubQueryFromAble<C> select(Distinct distinct, Function<C, List<Selection>> function) {
+    public ColumnSubQuery.ColumnSubQueryFromAble<E,C> select(Distinct distinct, Function<C, List<Selection>> function) {
         this.actualSelect.select(distinct, function);
         return this;
     }
 
-    /*################################## blow SubQueryFromAble method ##################################*/
+    /*################################## blow RowSubQueryFromAble method ##################################*/
 
     @Override
-    public SubQueryOnAble<C> from(TableAble tableAble, String tableAlias) {
+    public ColumnSubQuery.ColumnSubQueryOnAble<E,C> from(TableAble tableAble, String tableAlias) {
         this.actualSelect.from(tableAble, tableAlias);
         return this;
     }
 
-    /*################################## blow SubQueryOnAble method ##################################*/
+    /*################################## blow RowSubQueryOnAble method ##################################*/
 
     @Override
-    public SubQueryJoinAble<C> on(List<IPredicate> predicateList) {
+    public ColumnSubQuery.ColumnSubQueryJoinAble<E,C> on(List<IPredicate> predicateList) {
         this.actualSelect.on(predicateList);
         return this;
     }
 
     @Override
-    public SubQueryJoinAble<C> on(IPredicate predicate) {
+    public ColumnSubQuery.ColumnSubQueryJoinAble<E,C> on(IPredicate predicate) {
         this.actualSelect.on(predicate);
         return this;
     }
 
     @Override
-    public SubQueryJoinAble<C> on(Function<C, List<IPredicate>> function) {
+    public ColumnSubQuery.ColumnSubQueryJoinAble<E,C> on(Function<C, List<IPredicate>> function) {
         this.actualSelect.on(function);
         return this;
     }
 
-    /*################################## blow SubQueryJoinAble method ##################################*/
+    /*################################## blow RowSubQueryJoinAble method ##################################*/
 
     @Override
-    public SubQueryOnAble<C> leftJoin(TableAble tableAble, String tableAlias) {
+    public ColumnSubQuery.ColumnSubQueryOnAble<E,C> leftJoin(TableAble tableAble, String tableAlias) {
         this.actualSelect.leftJoin(tableAble, tableAlias);
         return this;
     }
 
     @Override
-    public SubQueryOnAble<C> join(TableAble tableAble, String tableAlias) {
+    public ColumnSubQuery.ColumnSubQueryOnAble<E,C> join(TableAble tableAble, String tableAlias) {
         this.actualSelect.join(tableAble, tableAlias);
         return this;
     }
 
     @Override
-    public SubQueryOnAble<C> rightJoin(TableAble tableAble, String tableAlias) {
+    public ColumnSubQuery.ColumnSubQueryOnAble<E,C> rightJoin(TableAble tableAble, String tableAlias) {
         this.actualSelect.rightJoin(tableAble, tableAlias);
         return this;
     }
 
 
-    /*################################## blow SubQueryWhereAble method ##################################*/
+    /*################################## blow RowSubQueryWhereAble method ##################################*/
 
     @Override
-    public SubQueryGroupByAble<C> where(List<IPredicate> predicateList) {
+    public ColumnSubQuery.ColumnSubQueryGroupByAble<E,C> where(List<IPredicate> predicateList) {
         this.actualSelect.where(predicateList);
         return this;
     }
 
     @Override
-    public SubQueryGroupByAble<C> where(Function<C, List<IPredicate>> function) {
+    public ColumnSubQuery.ColumnSubQueryGroupByAble<E,C> where(Function<C, List<IPredicate>> function) {
         this.actualSelect.where(function);
         return this;
     }
 
     @Override
-    public SubQueryWhereAndAble<C> where(IPredicate predicate) {
+    public ColumnSubQuery.ColumnSubQueryWhereAndAble<E,C> where(IPredicate predicate) {
         this.actualSelect.where(predicate);
         return this;
     }
 
 
-    /*################################## blow SubQueryWhereAndAble method ##################################*/
+    /*################################## blow RowSubQueryWhereAndAble method ##################################*/
 
     @Override
-    public SubQueryWhereAndAble<C> and(IPredicate predicate) {
+    public ColumnSubQuery.ColumnSubQueryWhereAndAble<E,C> and(IPredicate predicate) {
         this.actualSelect.and(predicate);
         return this;
     }
 
     @Override
-    public SubQueryWhereAndAble<C> and(Function<C, IPredicate> function) {
+    public ColumnSubQuery.ColumnSubQueryWhereAndAble<E,C> and(Function<C, IPredicate> function) {
         this.actualSelect.and(function);
         return this;
     }
 
     @Override
-    public SubQueryWhereAndAble<C> ifAnd(Predicate<C> testPredicate, IPredicate predicate) {
+    public ColumnSubQuery.ColumnSubQueryWhereAndAble<E,C> ifAnd(Predicate<C> testPredicate, IPredicate predicate) {
         this.actualSelect.ifAnd(testPredicate, predicate);
         return this;
     }
 
     @Override
-    public SubQueryWhereAndAble<C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function) {
+    public ColumnSubQuery.ColumnSubQueryWhereAndAble<E,C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function) {
         this.actualSelect.ifAnd(testPredicate, function);
         return this;
     }
 
-    /*################################## blow SubQueryGroupByAble method ##################################*/
+    /*################################## blow RowSubQueryGroupByAble method ##################################*/
 
     @Override
-    public SubQueryHavingAble<C> groupBy(Expression<?> groupExp) {
+    public ColumnSubQuery.ColumnSubQueryHavingAble<E,C> groupBy(Expression<?> groupExp) {
         this.actualSelect.groupBy(groupExp);
         return this;
     }
 
     @Override
-    public SubQueryHavingAble<C> groupBy(Function<C, List<Expression<?>>> function) {
+    public ColumnSubQuery.ColumnSubQueryHavingAble<E,C> groupBy(Function<C, List<Expression<?>>> function) {
         this.actualSelect.groupBy(function);
         return this;
     }
 
     @Override
-    public SubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, Expression<?> groupExp) {
+    public ColumnSubQuery.ColumnSubQueryHavingAble<E,C> ifGroupBy(Predicate<C> predicate, Expression<?> groupExp) {
         this.actualSelect.ifGroupBy(predicate, groupExp);
         return this;
     }
 
     @Override
-    public SubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction) {
+    public ColumnSubQuery.ColumnSubQueryHavingAble<E,C> ifGroupBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction) {
         this.actualSelect.ifGroupBy(predicate, expFunction);
         return this;
     }
 
-    /*################################## blow SubQueryHavingAble method ##################################*/
+    /*################################## blow RowSubQueryHavingAble method ##################################*/
 
     @Override
-    public SubQueryOrderByAble<C> having(List<IPredicate> predicateList) {
+    public ColumnSubQuery.ColumnSubQueryOrderByAble<E,C> having(List<IPredicate> predicateList) {
         this.actualSelect.having(predicateList);
         return this;
     }
 
     @Override
-    public SubQueryOrderByAble<C> having(Function<C, List<IPredicate>> function) {
+    public ColumnSubQuery.ColumnSubQueryOrderByAble<E,C> having(Function<C, List<IPredicate>> function) {
         this.actualSelect.having(function);
         return this;
     }
 
     @Override
-    public SubQueryOrderByAble<C> having(IPredicate predicate) {
+    public ColumnSubQuery.ColumnSubQueryOrderByAble<E,C> having(IPredicate predicate) {
         this.actualSelect.having(predicate);
         return this;
     }
 
     @Override
-    public SubQueryOrderByAble<C> ifHaving(Predicate<C> predicate, List<IPredicate> predicateList) {
+    public ColumnSubQuery.ColumnSubQueryOrderByAble<E,C> ifHaving(Predicate<C> predicate, List<IPredicate> predicateList) {
         this.actualSelect.ifHaving(predicate, predicateList);
         return this;
     }
 
     @Override
-    public SubQueryOrderByAble<C> ifHaving(Predicate<C> predicate, Function<C, List<IPredicate>> function) {
+    public ColumnSubQuery.ColumnSubQueryOrderByAble<E,C> ifHaving(Predicate<C> predicate, Function<C, List<IPredicate>> function) {
         this.actualSelect.ifHaving(predicate, function);
         return this;
     }
 
     @Override
-    public SubQueryOrderByAble<C> ifHaving(Predicate<C> testPredicate, IPredicate predicate) {
+    public ColumnSubQuery.ColumnSubQueryOrderByAble<E,C> ifHaving(Predicate<C> testPredicate, IPredicate predicate) {
         this.actualSelect.ifHaving(testPredicate, predicate);
         return this;
     }
 
-    /*################################## blow SubQueryOrderByAble method ##################################*/
+    /*################################## blow RowSubQueryOrderByAble method ##################################*/
 
     @Override
-    public SubQueryLimitAble<C> orderBy(Expression<?> groupExp) {
+    public ColumnSubQuery.ColumnSubQueryLimitAble<E,C> orderBy(Expression<?> groupExp) {
         this.actualSelect.orderBy(groupExp);
         return this;
     }
 
     @Override
-    public SubQueryLimitAble<C> orderBy(Function<C, List<Expression<?>>> function) {
+    public ColumnSubQuery.ColumnSubQueryLimitAble<E,C> orderBy(Function<C, List<Expression<?>>> function) {
         this.actualSelect.orderBy(function);
         return this;
     }
 
     @Override
-    public SubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, Expression<?> groupExp) {
+    public ColumnSubQuery.ColumnSubQueryLimitAble<E,C> ifOrderBy(Predicate<C> predicate, Expression<?> groupExp) {
         this.actualSelect.ifOrderBy(predicate, groupExp);
         return this;
     }
 
     @Override
-    public SubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction) {
+    public ColumnSubQuery.ColumnSubQueryLimitAble<E,C> ifOrderBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction) {
         this.actualSelect.ifOrderBy(predicate, expFunction);
         return this;
     }
 
-    /*################################## blow SubQueryLimitAble method ##################################*/
+    /*################################## blow RowSubQueryLimitAble method ##################################*/
 
     @Override
-    public SubQuery limit(int rowCount) {
+    public ColumnSubQuery<E> limit(int rowCount) {
         this.actualSelect.limit(rowCount);
         return this;
     }
 
     @Override
-    public SubQuery limit(int offset, int rowCount) {
+    public ColumnSubQuery<E> limit(int offset, int rowCount) {
         this.actualSelect.limit(offset, rowCount);
         return this;
     }
 
     @Override
-    public SubQuery limit(Function<C, Pair<Integer, Integer>> function) {
+    public ColumnSubQuery<E> limit(Function<C, Pair<Integer, Integer>> function) {
         this.actualSelect.limit(function);
         return this;
     }
 
     @Override
-    public SubQuery ifLimit(Predicate<C> predicate, int rowCount) {
+    public ColumnSubQuery<E> ifLimit(Predicate<C> predicate, int rowCount) {
         this.actualSelect.ifLimit(predicate, rowCount);
         return this;
     }
 
     @Override
-    public SubQuery ifLimit(Predicate<C> predicate, int offset, int rowCount) {
+    public ColumnSubQuery<E> ifLimit(Predicate<C> predicate, int offset, int rowCount) {
         this.actualSelect.ifLimit(predicate, offset, rowCount);
         return this;
     }
 
     @Override
-    public SubQuery ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
+    public ColumnSubQuery<E> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
         this.actualSelect.ifLimit(predicate, function);
         return this;
     }
@@ -328,7 +339,7 @@ final class SubQueryImpl<C> implements
     /*################################## blow TableSubQueryAble method ##################################*/
 
     @Override
-    public final SubQuery asSubQuery() {
+    public final ColumnSubQuery<E> asColumnSubQuery() {
         return this;
     }
 

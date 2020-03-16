@@ -23,7 +23,7 @@ class MySQL57MetaSchemaComparator extends AbstractMetaSchemaComparator {
             sqlDataType = MySQLDataType.valueOf(columnInfo.sqlType());
         } catch (IllegalArgumentException e) {
             throw new SchemaInfoException(ErrorCode.NNSUPPORT_SQL_TYPE,
-                    "tableMeta[%s].column[%s]'s dml type[%s] isn'table supported",
+                    "tableMeta[%s].column[%s]'s dml type[%s] isn'field supported",
                     columnInfo.table().name(),
                     columnInfo.name(),
                     columnInfo.sqlType());

@@ -36,7 +36,7 @@ public interface TableDML extends SQL {
         throw new UnsupportedOperationException();
     }
 
-    default SQLWrapper subQuery(SubQuery subQuery) {
+    default void subQuery(SubQuery subQuery,SQLContext context) {
         throw new UnsupportedOperationException();
     }
 

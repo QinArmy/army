@@ -8,14 +8,14 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public interface Select extends SQLBuilder, SQLAble {
+public interface Select extends SQLBuilder, SQLAble, QueryAble {
 
     interface SelectAble {
 
         Select asSelect();
     }
 
-    interface SelectSQLAble extends  SQLAble {
+    interface SelectSQLAble extends SQLAble {
 
     }
 
@@ -25,22 +25,24 @@ public interface Select extends SQLBuilder, SQLAble {
 
         <T extends IDomain> FromAble<C> select(TableMeta<T> tableMeta);
 
+        FromAble<C> select(String subQueryAlias);
+
+        FromAble<C> select(Distinct distinct,String subQueryAlias);
+
         FromAble<C> select(List<Selection> selectionList);
 
-        FromAble<C> select(Distinct distinct,List<Selection> selectionList);
+        FromAble<C> select(Distinct distinct, List<Selection> selectionList);
 
         FromAble<C> select(Function<C, List<Selection>> function);
 
-        FromAble<C> select(Distinct distinct,Function<C, List<Selection>> function);
+        FromAble<C> select(Distinct distinct, Function<C, List<Selection>> function);
     }
 
-    interface FromAble<C> extends SelectSQLAble,SelectAble {
+    interface FromAble<C> extends SelectSQLAble, SelectAble {
 
-        <T extends IDomain>  JoinAble<C> from(TableMeta<T> tableAble, String tableAlias);
+        JoinAble<C> from(TableAble tableAble, String tableAlias);
 
-        JoinAble<C> from(SubQuery subQuery, String subQueryAlias);
     }
-
 
     interface OnAble<C> extends SelectSQLAble {
 
@@ -54,20 +56,14 @@ public interface Select extends SQLBuilder, SQLAble {
 
     interface JoinAble<C> extends WhereAble<C> {
 
-        <T extends IDomain>  OnAble<C> leftJoin(TableMeta<T> tableAble, String tableAlias);
+        OnAble<C> leftJoin(TableAble tableAble, String tableAlias);
 
-        <T extends IDomain>  OnAble<C> join(TableMeta<T> tableAble, String tableAlias);
+        OnAble<C> join(TableAble tableAble, String tableAlias);
 
-        <T extends IDomain>  OnAble<C> rightJoin(TableMeta<T> tableAble, String tableAlias);
-
-        OnAble<C> leftJoin(SubQuery subQuery, String subQueryAlias);
-
-        OnAble<C> join(SubQuery subQuery, String subQueryAlias);
-
-        OnAble<C> rightJoin(SubQuery subQuery, String subQueryAlias);
+        OnAble<C> rightJoin(TableAble tableAble, String tableAlias);
     }
 
-    interface WhereAble<C>  extends GroupByAble<C>{
+    interface WhereAble<C> extends GroupByAble<C> {
 
         GroupByAble<C> where(List<IPredicate> predicateList);
 
@@ -91,13 +87,13 @@ public interface Select extends SQLBuilder, SQLAble {
 
     interface GroupByAble<C> extends OrderByAble<C> {
 
-        HavingAble<C> groupBy(SortExpression<?> groupExp);
+        HavingAble<C> groupBy(Expression<?> groupExp);
 
-        HavingAble<C> groupBy(Function<C, List<SortExpression<?>>> function);
+        HavingAble<C> groupBy(Function<C, List<Expression<?>>> function);
 
-        HavingAble<C> ifGroupBy(Predicate<C> predicate, SortExpression<?> groupExp);
+        HavingAble<C> ifGroupBy(Predicate<C> predicate, Expression<?> groupExp);
 
-        HavingAble<C> ifGroupBy(Predicate<C> predicate, Function<C, List<SortExpression<?>>> expFunction);
+        HavingAble<C> ifGroupBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction);
 
     }
 
@@ -119,13 +115,13 @@ public interface Select extends SQLBuilder, SQLAble {
 
     interface OrderByAble<C> extends LimitAble<C> {
 
-        LimitAble<C> orderBy(SortExpression<?> groupExp);
+        LimitAble<C> orderBy(Expression<?> groupExp);
 
-        LimitAble<C> orderBy(Function<C, List<SortExpression<?>>> function);
+        LimitAble<C> orderBy(Function<C, List<Expression<?>>> function);
 
-        LimitAble<C> ifOrderBy(Predicate<C> predicate, SortExpression<?> groupExp);
+        LimitAble<C> ifOrderBy(Predicate<C> predicate, Expression<?> groupExp);
 
-        LimitAble<C> ifOrderBy(Predicate<C> predicate, Function<C, List<SortExpression<?>>> expFunction);
+        LimitAble<C> ifOrderBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction);
     }
 
 
@@ -135,13 +131,13 @@ public interface Select extends SQLBuilder, SQLAble {
 
         LockAble<C> limit(int offset, int rowCount);
 
-        LockAble<C> limit(Function<C, Pair<Integer,Integer>> function);
+        LockAble<C> limit(Function<C, Pair<Integer, Integer>> function);
 
         LockAble<C> ifLimit(Predicate<C> predicate, int rowCount);
 
         LockAble<C> ifLimit(Predicate<C> predicate, int offset, int rowCount);
 
-        LockAble<C> ifLimit(Predicate<C> predicate,Function<C, Pair<Integer,Integer>> function);
+        LockAble<C> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
     }
 
     interface LockAble<C> extends SelectSQLAble, SelectAble {

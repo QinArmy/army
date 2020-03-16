@@ -7,7 +7,7 @@ public abstract class MappingSupport {
 
     protected IllegalArgumentException databaseValueError(Object databaseValue) {
         return new IllegalArgumentException(String.format(
-                "databaseValue[%s] couldn'table convert to %s", databaseValue, getClass()));
+                "databaseValue[%s] couldn'field convert to %s", databaseValue, getClass()));
     }
 
     protected SQLException convertToJavaException(Object databaseValue, Class<?> javaType) throws SQLException {

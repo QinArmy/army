@@ -98,7 +98,7 @@ abstract class MetaUtils {
     private static void assertMappingSimple(TypeElement entityElement) {
 
         if (entityElement.getAnnotation(DiscriminatorValue.class) != null) {
-            throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] couldn'table have %s"
+            throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] couldn'field have %s"
                     , entityElement.getQualifiedName()
                     , DiscriminatorValue.class.getName());
         }
@@ -149,7 +149,7 @@ abstract class MetaUtils {
     static void throwDiscriminatorNotEnum(TypeElement entityElement, VariableElement mappedProp)
             throws MetaException {
         throw new MetaException(ErrorCode.META_ERROR,
-                "entity[%s] discriminator property[%s] isn'table a Enum that implements %s .",
+                "entity[%s] discriminator property[%s] isn'field a Enum that implements %s .",
                 entityElement.getQualifiedName(),
                 mappedProp.getSimpleName(),
                 CodeEnum.class.getName()

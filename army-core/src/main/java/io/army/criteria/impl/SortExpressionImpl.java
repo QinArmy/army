@@ -2,37 +2,34 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
-import io.army.criteria.SortExpression;
 import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
 
-final class SortExpressionImpl<E> extends AbstractExpression<E> implements SortExpression<E> {
+final class SortExpressionImpl<E> extends AbstractExpression<E> {
 
     private final Expression<?> expression;
 
-    private final Boolean ascExp;
+    private final boolean ascExp;
 
-    SortExpressionImpl(Expression<?> expression, @Nullable Boolean ascExp) {
-        Assert.isTrue(!(expression instanceof SortExpression), "expression error");
+    SortExpressionImpl(Expression<?> expression, boolean ascExp) {
         this.expression = expression;
         this.ascExp = ascExp;
     }
 
-    @Nullable
     @Override
-    public Boolean ascExp() {
-        return ascExp;
+    public Boolean sortExp() {
+        return this.ascExp;
     }
 
     @Override
     protected void afterSpace(SQLContext context) {
         expression.appendSQL(context);
 
-        if (Boolean.TRUE.equals(ascExp)) {
+        if (this.ascExp) {
             context.stringBuilder()
                     .append(" ASC");
-        } else if (Boolean.FALSE.equals(ascExp)) {
+        } else {
             context.stringBuilder()
                     .append(" DESC");
         }

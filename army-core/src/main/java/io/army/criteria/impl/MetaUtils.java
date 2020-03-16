@@ -209,7 +209,7 @@ abstract class MetaUtils {
 
 
     /**
-     * @return mapping class list(unmodifiable) ,order by extends relation,entityClass is the last one.
+     * @return mapping class list(unmodifiable) ,asSort by extends relation,entityClass is the last one.
      */
     private static List<Class<?>> mappedClassList(Class<?> entityClass) throws MetaException {
         List<Class<?>> list = new ArrayList<>(6);
@@ -329,7 +329,7 @@ abstract class MetaUtils {
 
     static MetaException createNonAnnotationException(Class<? extends IDomain> entityClass
             , Class<?> annotationClass) {
-        return new MetaException(ErrorCode.META_ERROR, "class[%s] isn'table annotated by %s "
+        return new MetaException(ErrorCode.META_ERROR, "class[%s] isn'field annotated by %s "
                 , entityClass.getName()
                 , annotationClass.getName());
     }
@@ -428,7 +428,7 @@ abstract class MetaUtils {
         if (!fieldMeta.javaType().isEnum()
                 || !CodeEnum.class.isAssignableFrom(fieldMeta.javaType())) {
             throw new MetaException(ErrorCode.META_ERROR,
-                    "entity[%s] discriminator property java class[%s] isn'table a Enum that implements %s",
+                    "entity[%s] discriminator property java class[%s] isn'field a Enum that implements %s",
                     tableMeta.javaType().getName(),
                     fieldMeta.javaType().getName(),
                     CodeEnum.class.getName()
@@ -553,7 +553,7 @@ abstract class MetaUtils {
         } else if (DESC.equalsIgnoreCase(order)) {
             asc = false;
         } else {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] indexMap[%s] column[%s] order error",
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] indexMap[%s] column[%s] asSort error",
                     indexMeta.table().javaType(), indexMeta.name(), indexColumnDefinition);
         }
         return asc;
@@ -600,7 +600,7 @@ abstract class MetaUtils {
         private final boolean primaryKey;
 
         /**
-         * @param index            indexMap or null ( when debugSQL primary key for which user don'table definite {@link Index})
+         * @param index            indexMap or null ( when debugSQL primary key for which user don'field definite {@link Index})
          * @param columnToFieldMap a unmodifiable map
          */
         private DefaultIndexMeta(TableMeta<T> table, @Nullable Index index, Map<String, Field> columnToFieldMap,

@@ -273,7 +273,7 @@ abstract class SessionFactoryUtils {
                 continue;
             }
             if (thisGeneratorMap.containsKey(fieldMeta.propertyName())) {
-                throw new MetaException(ErrorCode.META_ERROR, "entity[%s] prop[%s] couldn'table override parentMeta's generator"
+                throw new MetaException(ErrorCode.META_ERROR, "entity[%s] prop[%s] couldn'field override parentMeta's generator"
                         , tableMeta.javaType().getName(), fieldMeta.fieldName());
             }
 

@@ -76,7 +76,7 @@ public abstract class JsonUtils {
             } else if (value instanceof Float) {
                 g.writeNumber(value.floatValue());
             } else if (value instanceof Integer || value instanceof Byte || value instanceof Short) {
-                g.writeNumber(value.intValue()); // doesn'table need to be cast to smaller numbers
+                g.writeNumber(value.intValue()); // doesn'field need to be cast to smaller numbers
             } else {
                 g.writeNumber(value.toString());
             }

@@ -32,7 +32,7 @@ public final class BigDecimalType implements MappingType {
 
     @Override
     public String nonNullTextValue(Object value) {
-        Assert.isInstanceOf(BigDecimal.class, value, () -> String.format("value[%s] isn'table BigDecimal.", value));
+        Assert.isInstanceOf(BigDecimal.class, value, () -> String.format("value[%s] isn'field BigDecimal.", value));
         return ((BigDecimal) value).toPlainString();
     }
 

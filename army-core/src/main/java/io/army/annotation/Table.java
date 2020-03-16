@@ -53,7 +53,7 @@ public @interface Table {
     String comment() ;
 
     /**
-     * Specifies the tableMeta immutable,if true,update dml of the tableMeta isn'table allowed by army.
+     * Specifies the tableMeta immutable,if true,update dml of the tableMeta isn'field allowed by army.
      * <p> Default value is false.
      */
     boolean immutable() default false;

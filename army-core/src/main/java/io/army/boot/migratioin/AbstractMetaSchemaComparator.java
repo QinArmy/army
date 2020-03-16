@@ -170,7 +170,7 @@ public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparat
             } else {
                 Boolean fieldAsc = indexFieldMeta.fieldAsc();
                 if (fieldAsc != null && fieldAsc != info.asc()) {
-                    // index column order not match
+                    // index column asSort not match
                     need = true;
                     break;
                 }

@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.army.criteria.impl.SQLS.table;
+import static io.army.criteria.impl.SQLS.field;
 
 public class SessionTests {
 
@@ -67,11 +67,11 @@ public class SessionTests {
         final long start = System.currentTimeMillis();
         Map<String, Object> map = new HashMap<>();
         UpdateAble updateAble = SQLS.updateWithCriteria(Account_.T, map).as("a")
-                .set(Account_.balance, table("a", Account_.balance).add(BigDecimal.ONE).brackets())
+                .set(Account_.balance, field("a", Account_.balance).add(BigDecimal.ONE).brackets())
                 .ifSet(this::isUser, Account_.balance, BigDecimal.ZERO)
-                .where(table("a", Account_.userId).add(SQLS.constant(1L)).brackets().multiply(3).eq(2L))
-                .and(table("a", Account_.visible).eq(true))
-                .and(table("a", Account_.createTime).eq(LocalDateTime.now()));
+                .where(field("a", Account_.userId).add(SQLS.constant(1L)).brackets().multiply(3).eq(2L))
+                .and(field("a", Account_.visible).eq(true))
+                .and(field("a", Account_.createTime).eq(LocalDateTime.now()));
 
         LOG.info("dml:\n{}", updateAble.debugSQL(SQLDialect.MySQL57));
         LOG.info("cost:{}", System.currentTimeMillis() - start);
@@ -115,14 +115,13 @@ public class SessionTests {
         Map<String, Object> criteria = new HashMap<>();
 
         Select select = SQLS.prepareSelect(criteria)
-                .modifier(Distinct.DISTINCT)
-                .select(Account_.T)
+                .select(Distinct.DISTINCT,Account_.T)
                 .from(Account_.T, "a").join(User_.T, "u").on(Account_.id.eq(User_.id))
                 .where(Account_.id.eq(1L))
                 .and(Account_.debt.gt(BigDecimal.ZERO))
-                .ifGroupBy(this::isUser, Account_.id.order())
+                .ifGroupBy(this::isUser, Account_.id)
                 .having(Account_.id.gt(0L))
-                .orderBy(Account_.id.order())
+                .orderBy(Account_.id)
                 .limit(10)
                 .lock(LockMode.READ);
 

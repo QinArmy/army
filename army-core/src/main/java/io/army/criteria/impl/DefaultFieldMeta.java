@@ -167,7 +167,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     @Override
     public final String alias() {
-        // must override super as ,because one column of table only one instance
+        // must override super as ,because one column of field only one instance
         return propertyName;
     }
 
@@ -175,13 +175,9 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     public final Selection as(String alias) {
         return propertyName.equals(alias)
                 ? this
-                : new SelectionImpl(this, alias);
+                : new ExpressionSelection(this, alias);
     }
 
-    @Override
-    public final Selection as() {
-        return this;
-    }
 
     @Override
     public final boolean primary() {

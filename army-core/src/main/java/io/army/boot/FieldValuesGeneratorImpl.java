@@ -101,7 +101,7 @@ final class FieldValuesGeneratorImpl implements FieldValuesGenerator {
         Map<Integer, E> codeMap = CodeEnum.getCodeMap(discriminator.javaType());
         E e = codeMap.get(tableMeta.discriminatorValue());
         if (e == null) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] discriminator couldn'table convert to %s type."
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] discriminator couldn'field convert to %s type."
                     , tableMeta.javaType().getName()
                     , discriminator.javaType().getName()
             );

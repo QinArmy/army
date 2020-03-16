@@ -37,7 +37,7 @@ class DefaultMetaEntity implements MetaEntity {
 
 
     /**
-     * @param entityMappedElementList {@link io.army.annotation.MappedSuperclass} list ,order by  class extends
+     * @param entityMappedElementList {@link io.army.annotation.MappedSuperclass} list ,asSort by  class extends
      * @param parentMappedElementList {@link io.army.annotation.Inheritance}
      */
     DefaultMetaEntity(@NonNull List<TypeElement> entityMappedElementList,

@@ -478,7 +478,7 @@ public abstract class AbstractTableDML implements TableDML {
 
     private void assertTargetField(FieldMeta<?, ?> fieldMeta, TableMeta<?> tableMeta) {
         Assert.isTrue(fieldMeta.tableMeta() == tableMeta, () -> String.format(
-                "field[%s] don'table belong to tableMeta[%s]", fieldMeta, tableMeta));
+                "field[%s] don'field belong to tableMeta[%s]", fieldMeta, tableMeta));
 
         if (!fieldMeta.updatable()) {
             throw new NonUpdateAbleException(ErrorCode.NON_UPDATABLE

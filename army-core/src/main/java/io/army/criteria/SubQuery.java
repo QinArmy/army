@@ -1,5 +1,6 @@
 package io.army.criteria;
 
+
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.util.Pair;
@@ -8,11 +9,14 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public interface SubQuery extends SelfDescribed, TableAble, Select {
 
-    Select outerQuery();
+public interface SubQuery extends SelfDescribed, TableAble, QueryAble {
 
-    interface TableSubQueryAble {
+    List<Selection> selectionList();
+
+    QueryAble outerQuery();
+
+    interface TableSubQueryAble extends SubQuerySQLAble{
 
         SubQuery asSubQuery();
 
@@ -28,6 +32,10 @@ public interface SubQuery extends SelfDescribed, TableAble, Select {
 
         <T extends IDomain> SubQueryFromAble<C> select(TableMeta<T> tableMeta);
 
+        SubQueryFromAble<C> select(String subQueryAlias);
+
+        SubQueryFromAble<C> select(Distinct distinct, String subQueryAlias);
+
         SubQueryFromAble<C> select(List<Selection> selectionList);
 
         SubQueryFromAble<C> select(Distinct distinct, List<Selection> selectionList);
@@ -37,11 +45,9 @@ public interface SubQuery extends SelfDescribed, TableAble, Select {
         SubQueryFromAble<C> select(Distinct distinct, Function<C, List<Selection>> function);
     }
 
-    interface SubQueryFromAble<C> extends SubQuerySQLAble, TableSubQueryAble {
+    interface SubQueryFromAble<C> extends  TableSubQueryAble {
 
-        <T extends IDomain> SubQueryJoinAble<C> from(TableMeta<T> tableMeta, String tableAlias);
-
-        SubQueryJoinAble<C> from(SubQuery subQuery, String subQueryAlias);
+        SubQueryOnAble<C> from(TableAble tableAble, String tableAlias);
     }
 
 
@@ -57,18 +63,11 @@ public interface SubQuery extends SelfDescribed, TableAble, Select {
 
     interface SubQueryJoinAble<C> extends SubQueryWhereAble<C> {
 
-        <T extends IDomain> SubQueryOnAble<C> leftJoin(TableMeta<T> tableMeta, String tableAlias);
+        SubQueryOnAble<C> leftJoin(TableAble tableAble, String tableAlias);
 
-        <T extends IDomain> SubQueryOnAble<C> join(TableMeta<T> tableMeta, String tableAlias);
+        SubQueryOnAble<C> join(TableAble tableAble, String tableAlias);
 
-        <T extends IDomain> SubQueryOnAble<C> rightJoin(TableMeta<T> tableMeta, String tableAlias);
-
-
-        SubQueryOnAble<C> leftJoin(SubQuery subQuery, String subQueryAlias);
-
-        SubQueryOnAble<C> join(SubQuery subQuery, String subQueryAlias);
-
-        SubQueryOnAble<C> rightJoin(SubQuery subQuery, String subQueryAlias);
+        SubQueryOnAble<C> rightJoin(TableAble tableAble, String tableAlias);
     }
 
     interface SubQueryWhereAble<C> extends SubQueryGroupByAble<C> {
@@ -95,17 +94,17 @@ public interface SubQuery extends SelfDescribed, TableAble, Select {
 
     interface SubQueryGroupByAble<C> extends SubQueryOrderByAble<C> {
 
-        SubQueryHavingAble<C> groupBy(SortExpression<?> groupExp);
+        SubQueryHavingAble<C> groupBy(Expression<?> groupExp);
 
-        SubQueryHavingAble<C> groupBy(Function<C, List<SortExpression<?>>> function);
+        SubQueryHavingAble<C> groupBy(Function<C, List<Expression<?>>> function);
 
-        SubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, SortExpression<?> groupExp);
+        SubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, Expression<?> groupExp);
 
-        SubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, Function<C, List<SortExpression<?>>> expFunction);
+        SubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction);
 
     }
 
-    interface SubQueryHavingAble<C> extends SubQueryGroupByAble<C> {
+    interface SubQueryHavingAble<C> extends SubQueryOrderByAble<C> {
 
         SubQueryOrderByAble<C> having(List<IPredicate> predicateList);
 
@@ -123,13 +122,13 @@ public interface SubQuery extends SelfDescribed, TableAble, Select {
 
     interface SubQueryOrderByAble<C> extends SubQueryLimitAble<C> {
 
-        SubQueryLimitAble<C> orderBy(SortExpression<?> groupExp);
+        SubQueryLimitAble<C> orderBy(Expression<?> groupExp);
 
-        SubQueryLimitAble<C> orderBy(Function<C, List<SortExpression<?>>> function);
+        SubQueryLimitAble<C> orderBy(Function<C, List<Expression<?>>> function);
 
-        SubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, SortExpression<?> groupExp);
+        SubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, Expression<?> groupExp);
 
-        SubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, Function<C, List<SortExpression<?>>> expFunction);
+        SubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction);
     }
 
 

@@ -5,7 +5,7 @@ import org.springframework.lang.Nullable;
 import java.util.List;
 
 /**
- * can'table {@code then}
+ * can'field {@code then}
  * created  on 2018/10/8.
  */
 public interface IPredicate extends Expression<Boolean> {

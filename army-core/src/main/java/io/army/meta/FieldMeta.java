@@ -16,7 +16,6 @@ import java.sql.JDBCType;
  */
 public interface FieldMeta<T extends IDomain, F> extends Expression<F> ,Selection{
 
-    Selection as();
 
     boolean primary();
 
