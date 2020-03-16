@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
 
-final class BetweenIPredicate extends AbstractIPredicate {
+final class BetweenPredicate extends AbstractPredicate {
 
     private final Expression<?> left;
 
@@ -11,7 +11,7 @@ final class BetweenIPredicate extends AbstractIPredicate {
 
     private final Expression<?> right;
 
-    BetweenIPredicate(Expression<?> left, Expression<?> center, Expression<?> right) {
+    BetweenPredicate(Expression<?> left, Expression<?> center, Expression<?> right) {
         this.left = left;
         this.center = center;
         this.right = right;

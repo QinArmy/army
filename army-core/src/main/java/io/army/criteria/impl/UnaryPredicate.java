@@ -4,13 +4,13 @@ import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
 import io.army.util.Assert;
 
-final class UnaryIPredicate extends AbstractIPredicate {
+final class UnaryPredicate extends AbstractPredicate {
 
     private final UnaryOperator operator;
 
     private final Expression<?> expression;
 
-    UnaryIPredicate(UnaryOperator operator, Expression<?> expression) {
+    UnaryPredicate(UnaryOperator operator, Expression<?> expression) {
         Assert.notNull(expression, "expression required");
 
         this.operator = operator;

@@ -10,6 +10,10 @@ public interface SQLOperator {
 
     String rendered();
 
+   default boolean relational(){
+       return false;
+   }
+
    default Position position(){
        return Position.CENTER;
    }

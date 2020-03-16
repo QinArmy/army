@@ -6,6 +6,9 @@ public interface Row extends SelfDescribed{
 
     List<Expression<?>> columnList();
 
+    @Override
+    String toString();
+
     IPredicate eq(RowSubQuery rowSubQuery);
 
     IPredicate notEq(RowSubQuery rowSubQuery);
@@ -19,4 +22,6 @@ public interface Row extends SelfDescribed{
     IPredicate ge(RowSubQuery rowSubQuery);
 
     IPredicate in(RowSubQuery rowSubQuery);
+
+    IPredicate notIn(RowSubQuery rowSubQuery);
 }

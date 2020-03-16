@@ -5,6 +5,7 @@ import io.army.criteria.impl.inner.InnerQueryAble;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.dialect.SQLDialect;
 import io.army.domain.IDomain;
+import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.Pair;
@@ -18,7 +19,7 @@ import java.util.function.Predicate;
 final class SelectImpl<C> extends AbstractSQLAble implements
         Select, Select.SelectionAble<C>, Select.FromAble<C>, Select.JoinAble<C>,
         Select.OnAble<C>, Select.WhereAndAble<C>, Select.LimitAble<C>
-        , Select.HavingAble<C>, InnerQueryAble {
+        , Select.HavingAble<C>, InnerQueryAble, CriteriaContext {
 
     private static final class TableWrapperImpl implements TableWrapper {
 
@@ -82,6 +83,7 @@ final class SelectImpl<C> extends AbstractSQLAble implements
 
 
     SelectImpl(C criteria) {
+        Assert.notNull(criteria, "criteria required");
         this.criteria = criteria;
     }
 
@@ -151,7 +153,7 @@ final class SelectImpl<C> extends AbstractSQLAble implements
     public final Select.JoinAble<C> from(TableAble tableAble, String tableAlias) {
         Assert.state(this.tableWrapperList.isEmpty(), "form clause ended.");
         setOutQueryIfNeed(tableAble);
-        appendDerivedSelectionIfNeed(tableAble,tableAlias);
+        appendDerivedSelectionIfNeed(tableAble, tableAlias);
         this.tableWrapperList.add(new TableWrapperImpl(tableAble, tableAlias, JoinType.NONE));
         return this;
     }
@@ -444,6 +446,30 @@ final class SelectImpl<C> extends AbstractSQLAble implements
         return this;
     }
 
+
+    /*################################## blow CriteriaContext method ##################################*/
+
+    @Override
+    public <T extends IDomain, F> AliasTableFieldMeta<T, F> aliasField(String tableAlias, FieldMeta<T, F> fieldMeta) {
+        return null;
+    }
+
+    @Override
+    public <E> Expression<E> ref(String subQueryAlias, String derivedFieldName) {
+        return null;
+    }
+
+    @Override
+    public <E> Expression<E> ref(String subQueryAlias, String derivedFieldName, Class<E> selectionType) {
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public C criteria() {
+        return this.criteria;
+    }
+
     /*################################## blow AbstractSQLAble method ##################################*/
 
     @Override
@@ -528,13 +554,14 @@ final class SelectImpl<C> extends AbstractSQLAble implements
         this.sortExpList = Collections.unmodifiableList(this.sortExpList);
 
         this.prepared = true;
+        CriteriaContextHolder.clearContext(this);
     }
 
     /*################################## blow private method ##################################*/
 
     private OnAble<C> appendTableWrapper(TableAble tableAble, String tableAlias, JoinType joinType) {
         setOutQueryIfNeed(tableAble);
-        appendDerivedSelectionIfNeed(tableAble,tableAlias);
+        appendDerivedSelectionIfNeed(tableAble, tableAlias);
         Assert.state(!this.tableWrapperList.isEmpty(), "no form clause.");
         this.tableWrapperList.add(new TableWrapperImpl(tableAble, tableAlias, joinType));
         return this;
@@ -544,7 +571,7 @@ final class SelectImpl<C> extends AbstractSQLAble implements
         if (!tableAlias.equals(this.derivedTableName)) {
             return;
         }
-        Assert.state(this.selectionList.isEmpty(),"selectionList not empty,criteria error.");
+        Assert.state(this.selectionList.isEmpty(), "selectionList not empty,criteria error.");
 
         if (tableAble instanceof TableMeta) {
             this.selectionList.addAll(((TableMeta<?>) tableAble).fieldCollection());
@@ -555,15 +582,15 @@ final class SelectImpl<C> extends AbstractSQLAble implements
         }
     }
 
-    private void setOutQueryIfNeed(TableAble tableAble){
-        if(tableAble instanceof OuterQueryAble){
+    private void setOutQueryIfNeed(TableAble tableAble) {
+        if (tableAble instanceof OuterQueryAble) {
             ((OuterQueryAble) tableAble).outerQuery(this);
-        }else if(!(tableAble instanceof TableMeta)){
+        } else if (!(tableAble instanceof TableMeta)) {
             throwTableAbleError(tableAble);
         }
     }
 
-    private void throwTableAbleError(TableAble tableAble){
+    private void throwTableAbleError(TableAble tableAble) {
         throw new IllegalArgumentException(String.format(
                 "TableAble[%s] type unknown.", tableAble.getClass().getName()));
     }

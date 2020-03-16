@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.DualOperator;
 import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
+import io.army.criteria.SelfDescribed;
 import io.army.dialect.ParamWrapper;
 import io.army.util.Assert;
 
@@ -13,7 +14,7 @@ import java.util.Iterator;
  * @see DualOperator#IN
  * @see DualOperator#NOT_IN
  */
-final class InIPredicate extends AbstractIPredicate {
+final class InPredicate extends AbstractPredicate {
 
     private final boolean in;
 
@@ -21,7 +22,7 @@ final class InIPredicate extends AbstractIPredicate {
 
     private final Object expressionOrValues;
 
-    public InIPredicate(boolean in, Expression<?> left, Object expressionOrValues) {
+    public InPredicate(boolean in, Expression<?> left, Object expressionOrValues) {
         this.in = in;
         this.left = left;
         if (expressionOrValues instanceof Expression
@@ -44,8 +45,8 @@ final class InIPredicate extends AbstractIPredicate {
                 .append(operator.rendered())
                 .append(" ");
 
-        if (expressionOrValues instanceof Expression) {
-            ((Expression<?>) expressionOrValues).appendSQL(context);
+        if (expressionOrValues instanceof SelfDescribed) {
+            ((SelfDescribed) expressionOrValues).appendSQL(context);
         } else if (expressionOrValues instanceof Collection) {
             doAppendCollection(context, left, (Collection<?>) expressionOrValues);
         } else {

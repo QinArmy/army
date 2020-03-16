@@ -7,6 +7,7 @@ import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
+import io.army.util.ClassUtils;
 import io.army.util.Pair;
 
 import java.util.List;
@@ -29,6 +30,7 @@ final class ScalarSubQueryImpl<E, C> extends AbstractExpression<E> implements Sc
 
 
     ScalarSubQueryImpl(Class<E> javaType, MappingType mappingType, C criteria) {
+        Assert.isAssignable(javaType,mappingType.javaType(),"javaType and mappingType not match.");
         this.javaType = javaType;
         this.mappingType = mappingType;
         this.actualSelect = new SelectImpl<>(criteria);

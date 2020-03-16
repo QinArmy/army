@@ -18,17 +18,4 @@ public interface ParamExpression<E> extends Expression<E>, ParamWrapper {
 
     E value();
 
-    /**
-     *
-     */
-    @Override
-    void appendSQL(SQLContext context);
-
-    @Override
-    MappingType mappingType();
-
-    @Override
-    String toString();
-
-
 }

@@ -8,7 +8,7 @@ import io.army.criteria.SQLContext;
 /**
  * created  on 2018/11/25.
  */
-final class DualIPredicateImpl extends AbstractIPredicate implements DualIPredicate {
+final class DualPredicateImpl extends AbstractPredicate implements DualIPredicate {
 
     private final Expression<?> left;
 
@@ -17,7 +17,7 @@ final class DualIPredicateImpl extends AbstractIPredicate implements DualIPredic
     private final Expression<?> right;
 
 
-    DualIPredicateImpl(Expression<?> left, DualOperator operator, Expression<?> right) {
+    DualPredicateImpl(Expression<?> left, DualOperator operator, Expression<?> right) {
         this.left = left;
         this.operator = operator;
         this.right = right;

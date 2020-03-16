@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.Function;
 
-
+@SuppressWarnings({"unused"})
 public abstract class SQLS extends AbstractSQLS {
 
 
@@ -40,30 +40,85 @@ public abstract class SQLS extends AbstractSQLS {
         return new SelectImpl<>(criteria);
     }
 
-    public static <T extends IDomain, F> FieldMeta<T, F> field(String tableAlias, FieldMeta<T, F> fieldMeta) {
-        return new AliasTableFieldMetaImpl<>(fieldMeta, tableAlias);
+    public static <C> SubQuery.SubQuerySelectionAble<C> subQuery() {
+        return new SubQueryImpl<>(
+                CriteriaContextHolder.getContext().criteria()
+        );
     }
 
-    public static IPredicate exists(SubQuery subQuery){
-        return null;
+    public static <C> RowSubQuery.RowSubQuerySelectionAble<C> rowSubQuery() {
+        return new RowSubQueryImpl<>(
+                CriteriaContextHolder.getContext().criteria()
+        );
     }
 
-    public static <C> IPredicate exists(Function<C,SubQuery> function){
-        return null;
+    public static <E, C> ColumnSubQuery.ColumnSubQuerySelectionAble<E, C> columnSubQuery(Class<E> columnType) {
+        return new ColumnSubQueryImpl<>(columnType,
+                CriteriaContextHolder.getContext().criteria()
+        );
     }
 
-    public static IPredicate notExists(SubQuery subQuery){
-        return null;
+    public static <E, C> ScalarSubQuery.ScalarSubQuerySelectionAble<E, C> scalarSubQuery(
+            Class<E> columnType, MappingType mappingType) {
+        return new ScalarSubQueryImpl<>(columnType
+                , mappingType
+                , CriteriaContextHolder.getContext().criteria()
+        );
     }
 
-    public static <C> IPredicate notExists(Function<C,SubQuery> function){
-        return null;
+    public static <E> ScalarSubQuery.ScalarSubQuerySelectionAble<E, EmptyObject> scalarSubQuery(Class<E> columnType) {
+        return new ScalarSubQueryImpl<>(columnType
+                , MappingFactory.getDefaultMapping(columnType)
+                , CriteriaContextHolder.getContext().criteria()
+        );
     }
 
-    public static Row row(List<Expression<?>> columnList){
-        return null;
+    public static <T extends IDomain, F> AliasTableFieldMeta<T, F> field(String tableAlias, FieldMeta<T, F> fieldMeta) {
+        return CriteriaContextHolder.getContext()
+                .aliasField(tableAlias, fieldMeta);
     }
 
+    public static <E> Expression<E> ref(String subQueryAlias, String derivedFieldName) {
+        return CriteriaContextHolder.getContext()
+                .ref(subQueryAlias, derivedFieldName);
+    }
+
+    public static <E> Expression<E> ref(String subQueryAlias, String derivedFieldName, Class<E> selectionType) {
+        return CriteriaContextHolder.getContext()
+                .ref(subQueryAlias, derivedFieldName, selectionType);
+    }
+
+    /*################################## blow sql key word operate method ##################################*/
+
+    public static IPredicate exists(SubQuery subQuery) {
+        return new ExistsPredicate(subQuery);
+    }
+
+    public static <C> IPredicate exists(Function<C, SubQuery> function) {
+        return new ExistsPredicate(function.apply(
+                CriteriaContextHolder.getContext().criteria()
+        ));
+    }
+
+    public static IPredicate notExists(SubQuery subQuery) {
+        return new ExistsPredicate(true, subQuery);
+    }
+
+    public static <C> IPredicate notExists(Function<C, SubQuery> function) {
+        return new ExistsPredicate(true, function.apply(
+                CriteriaContextHolder.getContext().criteria()
+        ));
+    }
+
+    public static Row row(List<Expression<?>> columnList) {
+        return new RowImpl(columnList);
+    }
+
+    public static <C> Row row(Function<C, List<Expression<?>>> function) {
+        return new RowImpl(function.apply(
+                CriteriaContextHolder.getContext().criteria()
+        ));
+    }
 
     /*################################## blow number function method ##################################*/
 

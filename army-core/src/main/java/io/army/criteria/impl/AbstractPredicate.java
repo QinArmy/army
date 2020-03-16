@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * created  on 2018/11/25.
  */
-abstract class AbstractIPredicate extends AbstractExpression<Boolean> implements IPredicate {
+abstract class AbstractPredicate extends AbstractExpression<Boolean> implements IPredicate {
 
     @Override
     public final MappingType mappingType() {
@@ -23,12 +23,12 @@ abstract class AbstractIPredicate extends AbstractExpression<Boolean> implements
         if (andIPredicates == null) {
             return this;
         }
-        return new OrtIPredicate(this, ArrayUtils.asList(andIPredicates));
+        return new OrtPredicate(this, ArrayUtils.asList(andIPredicates));
     }
 
     @Override
     public final IPredicate or(List<IPredicate> andIPredicateList) {
-        return new OrtIPredicate(this, andIPredicateList);
+        return new OrtPredicate(this, andIPredicateList);
     }
 
 

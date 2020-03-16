@@ -40,262 +40,264 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     @Override
     public final IPredicate eq(Expression<E> expression) {
-        return new DualIPredicateImpl(this, DualOperator.EQ, expression);
+        return new DualPredicateImpl(this, DualOperator.EQ, expression);
     }
 
     @Override
     public final IPredicate eq(E constant) {
-        return new DualIPredicateImpl(this, DualOperator.EQ, SQLS.param(constant, this.mappingType()));
+        return new DualPredicateImpl(this, DualOperator.EQ, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
     public final IPredicate eq(String subQueryAlias, String fieldAlias) {
-        return null;
+        return new DualPredicateImpl(this, DualOperator.EQ, SQLS.ref(subQueryAlias,fieldAlias));
     }
 
     @Override
     public final IPredicate eq(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return null;
+        return new DualPredicateImpl(this, DualOperator.EQ, SQLS.field(tableAlias,fieldMeta));
     }
 
     @Override
     public final IPredicate eq(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
-        return null;
+        return new ColumnSubQueryPredicate(this,DualOperator.EQ,keyOperator,subQuery);
     }
 
     @Override
     public final IPredicate lt(Expression<? extends Comparable<E>> expression) {
-        return new DualIPredicateImpl(this, DualOperator.LT, expression);
+        return new DualPredicateImpl(this, DualOperator.LT, expression);
     }
 
     @Override
     public final IPredicate lt(Comparable<E> constant) {
-        return new DualIPredicateImpl(this, DualOperator.LT, SQLS.param(constant, this.mappingType()));
+        return new DualPredicateImpl(this, DualOperator.LT, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
     public final IPredicate lt(String subQueryAlias, String fieldAlias) {
-        return null;
+        return new DualPredicateImpl(this, DualOperator.LT, SQLS.ref(subQueryAlias,fieldAlias));
     }
 
     @Override
     public final IPredicate lt(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return null;
+        return new DualPredicateImpl(this, DualOperator.LT, SQLS.field(tableAlias,fieldMeta));
     }
 
     @Override
     public final IPredicate lt(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
-        return null;
+        return new ColumnSubQueryPredicate(this,DualOperator.LT,keyOperator,subQuery);
     }
 
     @Override
     public final IPredicate le(Expression<? extends Comparable<E>> expression) {
-        return new DualIPredicateImpl(this, DualOperator.LE, expression);
+        return new DualPredicateImpl(this, DualOperator.LE, expression);
     }
 
     @Override
     public final IPredicate le(Comparable<E> constant) {
-        return new DualIPredicateImpl(this, DualOperator.LE, SQLS.param(constant, this.mappingType()));
+        return new DualPredicateImpl(this, DualOperator.LE, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
     public final IPredicate le(String subQueryAlias, String fieldAlias) {
-        return null;
+        return new DualPredicateImpl(this, DualOperator.LE, SQLS.ref(subQueryAlias,fieldAlias));
     }
 
     @Override
     public final IPredicate le(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return null;
+        return new DualPredicateImpl(this, DualOperator.LE, SQLS.field(tableAlias,fieldMeta));
     }
 
     @Override
     public final IPredicate le(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
-        return null;
+        return new ColumnSubQueryPredicate(this,DualOperator.LE,keyOperator,subQuery);
     }
 
     @Override
     public final IPredicate gt(Expression<? extends Comparable<E>> expression) {
-        return new DualIPredicateImpl(this, DualOperator.GT, expression);
+        return new DualPredicateImpl(this, DualOperator.GT, expression);
     }
 
     @Override
     public final IPredicate gt(Comparable<E> constant) {
-        return new DualIPredicateImpl(this, DualOperator.GT, SQLS.param(constant, this.mappingType()));
+        return new DualPredicateImpl(this, DualOperator.GT, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
     public final IPredicate gt(String subQueryAlias, String fieldAlias) {
-        return null;
+        return new DualPredicateImpl(this, DualOperator.GT, SQLS.ref(subQueryAlias,fieldAlias));
     }
 
     @Override
     public final IPredicate gt(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return null;
+        return new DualPredicateImpl(this, DualOperator.GT, SQLS.field(tableAlias,fieldMeta));
     }
 
     @Override
     public final IPredicate gt(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
-        return null;
+        return new ColumnSubQueryPredicate(this,DualOperator.GT,keyOperator,subQuery);
     }
 
     @Override
     public final IPredicate ge(Expression<? extends Comparable<E>> expression) {
-        return new DualIPredicateImpl(this, DualOperator.GE, expression);
+        return new DualPredicateImpl(this, DualOperator.GE, expression);
     }
 
     @Override
     public final IPredicate ge(Comparable<E> constant) {
-        return new DualIPredicateImpl(this, DualOperator.GE, SQLS.param(constant, this.mappingType()));
+        return new DualPredicateImpl(this, DualOperator.GE, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
     public final IPredicate ge(String subQueryAlias, String fieldAlias) {
-        return null;
+        return new DualPredicateImpl(this, DualOperator.GE, SQLS.ref(subQueryAlias,fieldAlias));
     }
 
     @Override
     public final IPredicate ge(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return null;
+        return new DualPredicateImpl(this, DualOperator.GE, SQLS.field(tableAlias,fieldMeta));
     }
 
     @Override
     public final IPredicate ge(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
-        return null;
+        return new ColumnSubQueryPredicate(this,DualOperator.GE,keyOperator,subQuery);
     }
 
     @Override
     public final IPredicate notEq(Expression<E> expression) {
-        return new DualIPredicateImpl(this, DualOperator.NOT_EQ, expression);
+        return new DualPredicateImpl(this, DualOperator.NOT_EQ, expression);
     }
 
     @Override
     public final IPredicate notEq(Comparable<E> constant) {
-        return new DualIPredicateImpl(this, DualOperator.NOT_EQ, SQLS.param(constant, this.mappingType()));
+        return new DualPredicateImpl(this, DualOperator.NOT_EQ, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
     public final IPredicate notEq(String subQueryAlias, String fieldAlias) {
-        return null;
+        return new DualPredicateImpl(this, DualOperator.NOT_EQ, SQLS.ref(subQueryAlias,fieldAlias));
     }
 
     @Override
     public final IPredicate notEq(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return null;
+        return new DualPredicateImpl(this, DualOperator.NOT_EQ, SQLS.field(tableAlias,fieldMeta));
     }
 
     @Override
     public final IPredicate notEq(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
-        return null;
+        return new ColumnSubQueryPredicate(this,DualOperator.NOT_EQ,keyOperator,subQuery);
     }
 
     @Override
     public final IPredicate not() {
-        return NotIPredicate.build(this);
+        return NotPredicate.build(this);
     }
 
     @Override
     public final IPredicate between(Expression<E> first, Expression<E> second) {
-        return new BetweenIPredicate(this, first, second);
+        return new BetweenPredicate(this, first, second);
     }
 
     @Override
     public final IPredicate between(E first, E second) {
-        return new BetweenIPredicate(this, SQLS.param(first, this), SQLS.param(second, this));
+        return new BetweenPredicate(this, SQLS.param(first, this), SQLS.param(second, this));
     }
 
     @Override
     public final IPredicate between(Expression<E> first, E second) {
-        return new BetweenIPredicate(this, first, SQLS.param(second, this.mappingType()));
+        return new BetweenPredicate(this, first, SQLS.param(second, this.mappingType()));
     }
 
     @Override
     public final IPredicate between(E first, Expression<E> second) {
-        return new BetweenIPredicate(this, SQLS.param(first, this), second);
+        return new BetweenPredicate(this, SQLS.param(first, this), second);
     }
 
     @Override
-    public final IPredicate between(String subQueryAlias, String firstDerivedFieldName, String secondDerivedFieldName) {
-        return null;
+    public final IPredicate between(String subQueryAlias, String derivedFieldName, Expression<E> second) {
+        return new BetweenPredicate(this, SQLS.ref(subQueryAlias,derivedFieldName), second);
     }
 
     @Override
-    public final IPredicate between(String subQueryAlias, String firstDerivedFieldName, Expression<E> second) {
-        return null;
+    public final IPredicate between(String subQueryAlias, String derivedFieldName, E second) {
+        return new BetweenPredicate(this, SQLS.ref(subQueryAlias,derivedFieldName), SQLS.param(second, this));
     }
 
     @Override
-    public final IPredicate between(String subQueryAlias, String fieldAlias, E second) {
-        return null;
+    public final IPredicate between(String subQueryAlias1, String derivedFieldName1
+            , String subQueryAlias2, String derivedFieldName2) {
+        return new BetweenPredicate(this, SQLS.ref(subQueryAlias1,derivedFieldName1)
+                , SQLS.ref(subQueryAlias2, derivedFieldName2));
     }
 
     @Override
-    public final IPredicate between(Expression<E> first, String subQueryAlias, String fieldAlias) {
-        return null;
+    public final IPredicate between(Expression<E> first, String subQueryAlias, String derivedFieldName) {
+        return new BetweenPredicate(this,first,SQLS.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
-    public final IPredicate between(E first, String subQueryAlias, String fieldAlias) {
-        return null;
+    public final IPredicate between(E first, String subQueryAlias, String derivedFieldName) {
+        return new BetweenPredicate(this,SQLS.param(first, this),SQLS.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final IPredicate isNull() {
-        return new UnaryIPredicate(UnaryOperator.IS_NULL, this);
+        return new UnaryPredicate(UnaryOperator.IS_NULL, this);
     }
 
     @Override
     public final IPredicate isNotNull() {
-        return new UnaryIPredicate(UnaryOperator.IS_NOT_NULL, this);
+        return new UnaryPredicate(UnaryOperator.IS_NOT_NULL, this);
     }
 
     @Override
     public final IPredicate in(Collection<E> values) {
-        return new InIPredicate(true, this, values);
+        return new InPredicate(true, this, values);
     }
 
     @Override
     public final IPredicate in(Expression<Collection<E>> values) {
-        return new InIPredicate(true, this, values);
+        return new InPredicate(true, this, values);
     }
 
     @Override
     public final IPredicate in(ColumnSubQuery<E> subQuery) {
-        return null;
+        return new InPredicate(true, this, subQuery);
     }
 
     @Override
     public final IPredicate notIn(Collection<E> values) {
-        return new InIPredicate(false, this, values);
+        return new InPredicate(false, this, values);
     }
 
     @Override
     public final IPredicate notIn(Expression<Collection<E>> values) {
-        return new InIPredicate(false, this, values);
+        return new InPredicate(false, this, values);
     }
 
     @Override
     public final IPredicate notIn(ColumnSubQuery<E> subQuery) {
-        return null;
+        return new InPredicate(false, this, subQuery);
     }
 
     @Override
     public final IPredicate like(String pattern) {
-        return new DualIPredicateImpl(this, DualOperator.LIKE, SQLS.constant(pattern, this.mappingType()));
+        return new DualPredicateImpl(this, DualOperator.LIKE, SQLS.constant(pattern, this.mappingType()));
     }
 
     @Override
     public final IPredicate like(Expression<String> pattern) {
-        return null;
+        return new DualPredicateImpl(this, DualOperator.LIKE, pattern);
     }
 
     @Override
     public final IPredicate notLike(String pattern) {
-        return new DualIPredicateImpl(this, DualOperator.NOT_LIKE, SQLS.param(pattern, this.mappingType()));
+        return new DualPredicateImpl(this, DualOperator.NOT_LIKE, SQLS.param(pattern, this.mappingType()));
     }
 
     @Override
     public final IPredicate notLike(Expression<String> pattern) {
-        return null;
+        return new DualPredicateImpl(this, DualOperator.NOT_LIKE, pattern);
     }
 
     @Override
@@ -309,13 +311,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
-    public final Expression<E> mod(String subQueryAlias, String fieldAlias) {
-        return null;
+    public final Expression<E> mod(String subQueryAlias, String derivedFieldName) {
+        return new DualExpresion<>(this, DualOperator.MOD, SQLS.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final Expression<E> mod(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return null;
+        return new DualExpresion<>(this, DualOperator.MOD, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -329,13 +331,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
-    public final Expression<E> multiply(String subQueryAlias, String fieldAlias) {
-        return null;
+    public final Expression<E> multiply(String subQueryAlias, String derivedFieldName) {
+        return new DualExpresion<>(this, DualOperator.MULTIPLY, SQLS.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final Expression<E> multiply(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return null;
+        return new DualExpresion<>(this, DualOperator.MULTIPLY, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -349,13 +351,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
-    public final Expression<E> add(String subQueryAlias, String fieldAlias) {
-        return null;
+    public final Expression<E> add(String subQueryAlias, String derivedFieldName) {
+        return new DualExpresion<>(this, DualOperator.ADD, SQLS.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final Expression<E> add(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return null;
+        return new DualExpresion<>(this, DualOperator.ADD, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -369,13 +371,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
-    public final Expression<E> subtract(String subQueryAlias, String fieldAlias) {
-        return null;
+    public final Expression<E> subtract(String subQueryAlias, String derivedFieldName) {
+        return new DualExpresion<>(this, DualOperator.SUBTRACT, SQLS.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final Expression<E> subtract(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return null;
+        return new DualExpresion<>(this, DualOperator.SUBTRACT, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -389,13 +391,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
-    public final Expression<E> divide(String subQueryAlias, String fieldAlias) {
-        return null;
+    public final Expression<E> divide(String subQueryAlias, String derivedFieldName) {
+        return new DualExpresion<>(this, DualOperator.DIVIDE, SQLS.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final Expression<E> divide(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return null;
+        return new DualExpresion<>(this, DualOperator.DIVIDE, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -414,13 +416,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
-    public final Expression<BigInteger> and(String subQueryAlias, String fieldAlias) {
-        return null;
+    public final Expression<BigInteger> and(String subQueryAlias, String derivedFieldName) {
+        return new DualExpresion<>(this, DualOperator.AND, SQLS.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final <O> Expression<BigInteger> and(String tableAlias, FieldMeta<?, O> fieldMeta) {
-        return null;
+        return new DualExpresion<>(this, DualOperator.AND, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -434,13 +436,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
-    public final Expression<BigInteger> or(String subQueryAlias, String fieldAlias) {
-        return null;
+    public final Expression<BigInteger> or(String subQueryAlias, String derivedFieldName) {
+        return new DualExpresion<>(this, DualOperator.OR, SQLS.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final <O> Expression<BigInteger> or(String tableAlias, FieldMeta<?, O> fieldMeta) {
-        return null;
+        return new DualExpresion<>(this, DualOperator.OR, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -454,13 +456,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
-    public final Expression<BigInteger> xor(String subQueryAlias, String fieldAlias) {
-        return null;
+    public final Expression<BigInteger> xor(String subQueryAlias, String derivedFieldName) {
+        return new DualExpresion<>(this, DualOperator.XOR, SQLS.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final <O> Expression<BigInteger> xor(String tableAlias, FieldMeta<?, O> fieldMeta) {
-        return null;
+        return new DualExpresion<>(this, DualOperator.XOR, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -474,13 +476,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
-    public final Expression<BigInteger> inversion(String subQueryAlias, String fieldAlias) {
-        return null;
+    public final Expression<BigInteger> inversion(String subQueryAlias, String derivedFieldName) {
+        return new DualExpresion<>(this, DualOperator.INVERT, SQLS.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final <O> Expression<BigInteger> inversion(String tableAlias, FieldMeta<?, O> fieldMeta) {
-        return null;
+        return new DualExpresion<>(this, DualOperator.INVERT, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -494,13 +496,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
-    public final <O> Expression<BigInteger> rightShift(String tableAlias, FieldMeta<?, O> fieldMeta) {
-        return null;
+    public final Expression<BigInteger> rightShift(String subQueryAlias, String derivedFieldName) {
+        return new DualExpresion<>(this, DualOperator.RIGHT_SHIFT, SQLS.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
-    public final Expression<BigInteger> rightShift(String subQueryAlias, String fieldAlias) {
-        return null;
+    public final <O> Expression<BigInteger> rightShift(String tableAlias, FieldMeta<?, O> fieldMeta) {
+        return new DualExpresion<>(this, DualOperator.RIGHT_SHIFT, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -514,13 +516,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
-    public final Expression<BigInteger> leftShift(String subQueryAlias, String fieldAlias) {
-        return null;
+    public final Expression<BigInteger> leftShift(String subQueryAlias, String derivedFieldName) {
+        return new DualExpresion<>(this, DualOperator.LEFT_SHIFT, SQLS.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final <O> Expression<BigInteger> leftShift(String tableAlias, FieldMeta<?, O> fieldMeta) {
-        return null;
+        return new DualExpresion<>(this, DualOperator.LEFT_SHIFT, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -529,13 +531,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
-    public final Expression<E> plusOther(String subQueryAlias, String fieldAlias) {
-        return null;
+    public final Expression<E> plusOther(String subQueryAlias, String derivedFieldName) {
+        return new DualExpresion<>(this, DualOperator.ADD, SQLS.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final <O> Expression<E> plusOther(String tableAlias, FieldMeta<?, O> fieldMeta) {
-        return null;
+        return new DualExpresion<>(this, DualOperator.ADD, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -544,13 +546,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
-    public final Expression<E> minusOther(String subQueryAlias, String fieldAlias) {
-        return null;
+    public final Expression<E> minusOther(String subQueryAlias, String derivedFieldName) {
+        return new DualExpresion<>(this, DualOperator.SUBTRACT, SQLS.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final <O> Expression<E> minusOther(String tableAlias, FieldMeta<?, O> fieldMeta) {
-        return null;
+        return new DualExpresion<>(this, DualOperator.SUBTRACT, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override

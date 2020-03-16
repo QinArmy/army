@@ -1,7 +1,5 @@
 package io.army.criteria;
 
-import io.army.criteria.SQLOperator;
-
 /**
  * created  on 2018/11/25.
  */
@@ -14,6 +12,10 @@ public enum DualOperator implements SQLOperator {
             return "=";
         }
 
+        @Override
+        public boolean relational() {
+            return true;
+        }
     },
     NOT_EQ {
 
@@ -22,6 +24,10 @@ public enum DualOperator implements SQLOperator {
             return "!=";
         }
 
+        @Override
+        public boolean relational() {
+            return true;
+        }
     },
 
     LT {
@@ -31,12 +37,21 @@ public enum DualOperator implements SQLOperator {
             return "<";
         }
 
+        @Override
+        public boolean relational() {
+            return true;
+        }
     },
     LE {
 
         @Override
         public String rendered() {
             return "<=";
+        }
+
+        @Override
+        public boolean relational() {
+            return true;
         }
     },
     GE {
@@ -45,12 +60,22 @@ public enum DualOperator implements SQLOperator {
         public String rendered() {
             return ">=";
         }
+
+        @Override
+        public boolean relational() {
+            return true;
+        }
     },
     GT {
 
         @Override
         public String rendered() {
             return ">";
+        }
+
+        @Override
+        public boolean relational() {
+            return true;
         }
     },
     IN {
@@ -144,5 +169,7 @@ public enum DualOperator implements SQLOperator {
             return "~";
         }
     }
+
+
 
 }

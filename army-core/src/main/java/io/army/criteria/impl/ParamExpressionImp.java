@@ -49,7 +49,6 @@ final class ParamExpressionImp<E> implements ParamExpression<E> {
     }
 
 
-
     @Override
     public E value() {
         return value;
@@ -70,7 +69,6 @@ final class ParamExpressionImp<E> implements ParamExpression<E> {
     public String toString() {
         return "?";
     }
-
 
 
     @Override
@@ -249,27 +247,28 @@ final class ParamExpressionImp<E> implements ParamExpression<E> {
     }
 
     @Override
-    public IPredicate between(String subQueryAlias, String firstDerivedFieldName, String secondDerivedFieldName) {
+    public IPredicate between(String subQueryAlias1, String derivedFieldName1
+            , String subQueryAlias2, String derivedFieldName2) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    public IPredicate between(String subQueryAlias, String firstDerivedFieldName, Expression<E> second) {
+    public IPredicate between(String subQueryAlias, String derivedFieldName, Expression<E> second) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    public IPredicate between(String subQueryAlias, String fieldAlias, E second) {
+    public IPredicate between(String subQueryAlias, String derivedFieldName, E second) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    public IPredicate between(Expression<E> first, String subQueryAlias, String fieldAlias) {
+    public IPredicate between(Expression<E> first, String subQueryAlias, String derivedFieldName) {
         throw new UnsupportedOperationException(MSG);
     }
 
     @Override
-    public IPredicate between(E first, String subQueryAlias, String fieldAlias) {
+    public IPredicate between(E first, String subQueryAlias, String derivedFieldName) {
         throw new UnsupportedOperationException(MSG);
     }
 
@@ -324,7 +323,7 @@ final class ParamExpressionImp<E> implements ParamExpression<E> {
     }
 
     @Override
-    public Expression<E> mod(String subQueryAlias, String fieldAlias) {
+    public Expression<E> mod(String subQueryAlias, String derivedFieldName) {
         throw new UnsupportedOperationException(MSG);
     }
 
@@ -344,7 +343,7 @@ final class ParamExpressionImp<E> implements ParamExpression<E> {
     }
 
     @Override
-    public Expression<E> multiply(String subQueryAlias, String fieldAlias) {
+    public Expression<E> multiply(String subQueryAlias, String derivedFieldName) {
         throw new UnsupportedOperationException(MSG);
     }
 
@@ -364,7 +363,7 @@ final class ParamExpressionImp<E> implements ParamExpression<E> {
     }
 
     @Override
-    public Expression<E> add(String subQueryAlias, String fieldAlias) {
+    public Expression<E> add(String subQueryAlias, String derivedFieldName) {
         throw new UnsupportedOperationException(MSG);
     }
 
@@ -384,7 +383,7 @@ final class ParamExpressionImp<E> implements ParamExpression<E> {
     }
 
     @Override
-    public Expression<E> subtract(String subQueryAlias, String fieldAlias) {
+    public Expression<E> subtract(String subQueryAlias, String derivedFieldName) {
         throw new UnsupportedOperationException(MSG);
     }
 
@@ -404,7 +403,7 @@ final class ParamExpressionImp<E> implements ParamExpression<E> {
     }
 
     @Override
-    public Expression<E> divide(String subQueryAlias, String fieldAlias) {
+    public Expression<E> divide(String subQueryAlias, String derivedFieldName) {
         throw new UnsupportedOperationException(MSG);
     }
 
@@ -414,7 +413,7 @@ final class ParamExpressionImp<E> implements ParamExpression<E> {
     }
 
     @Override
-    public  Expression<E> negate() {
+    public Expression<E> negate() {
         throw new UnsupportedOperationException(MSG);
     }
 
@@ -429,7 +428,7 @@ final class ParamExpressionImp<E> implements ParamExpression<E> {
     }
 
     @Override
-    public Expression<BigInteger> and(String subQueryAlias, String fieldAlias) {
+    public Expression<BigInteger> and(String subQueryAlias, String derivedFieldName) {
         throw new UnsupportedOperationException(MSG);
     }
 
@@ -449,7 +448,7 @@ final class ParamExpressionImp<E> implements ParamExpression<E> {
     }
 
     @Override
-    public Expression<BigInteger> or(String subQueryAlias, String fieldAlias) {
+    public Expression<BigInteger> or(String subQueryAlias, String derivedFieldName) {
         throw new UnsupportedOperationException(MSG);
     }
 
@@ -469,7 +468,7 @@ final class ParamExpressionImp<E> implements ParamExpression<E> {
     }
 
     @Override
-    public Expression<BigInteger> xor(String subQueryAlias, String fieldAlias) {
+    public Expression<BigInteger> xor(String subQueryAlias, String derivedFieldName) {
         throw new UnsupportedOperationException(MSG);
     }
 
@@ -489,7 +488,7 @@ final class ParamExpressionImp<E> implements ParamExpression<E> {
     }
 
     @Override
-    public Expression<BigInteger> inversion(String subQueryAlias, String fieldAlias) {
+    public Expression<BigInteger> inversion(String subQueryAlias, String derivedFieldName) {
         throw new UnsupportedOperationException(MSG);
     }
 
@@ -514,7 +513,7 @@ final class ParamExpressionImp<E> implements ParamExpression<E> {
     }
 
     @Override
-    public Expression<BigInteger> rightShift(String subQueryAlias, String fieldAlias) {
+    public Expression<BigInteger> rightShift(String subQueryAlias, String derivedFieldName) {
         throw new UnsupportedOperationException(MSG);
     }
 
@@ -529,7 +528,7 @@ final class ParamExpressionImp<E> implements ParamExpression<E> {
     }
 
     @Override
-    public Expression<BigInteger> leftShift(String subQueryAlias, String fieldAlias) {
+    public Expression<BigInteger> leftShift(String subQueryAlias, String derivedFieldName) {
         throw new UnsupportedOperationException(MSG);
     }
 
@@ -544,7 +543,7 @@ final class ParamExpressionImp<E> implements ParamExpression<E> {
     }
 
     @Override
-    public Expression<E> plusOther(String subQueryAlias, String fieldAlias) {
+    public Expression<E> plusOther(String subQueryAlias, String derivedFieldName) {
         throw new UnsupportedOperationException(MSG);
     }
 
@@ -559,7 +558,7 @@ final class ParamExpressionImp<E> implements ParamExpression<E> {
     }
 
     @Override
-    public Expression<E> minusOther(String subQueryAlias, String fieldAlias) {
+    public Expression<E> minusOther(String subQueryAlias, String derivedFieldName) {
         throw new UnsupportedOperationException(MSG);
     }
 

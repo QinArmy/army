@@ -7,13 +7,13 @@ import io.army.util.ArrayUtils;
 import java.util.Iterator;
 import java.util.List;
 
-final class OrtIPredicate extends AbstractIPredicate implements IPredicate {
+final class OrtPredicate extends AbstractPredicate implements IPredicate {
 
     private final IPredicate orIPredicate;
 
     private final List<IPredicate> andIPredicateList;
 
-    OrtIPredicate(IPredicate orIPredicate, List<IPredicate> andIPredicateList) {
+    OrtPredicate(IPredicate orIPredicate, List<IPredicate> andIPredicateList) {
         this.orIPredicate = orIPredicate;
         this.andIPredicateList = ArrayUtils.asUnmodifiableList(andIPredicateList);
     }
