@@ -44,7 +44,7 @@ final class UnaryExpression<E> extends AbstractExpression<E> {
     }
 
     @Override
-    public String toString() {
+    public String beforeAs() {
         StringBuilder builder = new StringBuilder();
         if (unaryOperator.position() == SQLOperator.Position.LEFT) {
             builder.append(unaryOperator.rendered())

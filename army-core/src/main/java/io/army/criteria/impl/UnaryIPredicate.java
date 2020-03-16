@@ -34,7 +34,7 @@ final class UnaryIPredicate extends AbstractIPredicate {
     }
 
     @Override
-    public String toString() {
+    public String beforeAs() {
         StringBuilder builder = new StringBuilder();
         switch (operator.position()) {
             case LEFT:

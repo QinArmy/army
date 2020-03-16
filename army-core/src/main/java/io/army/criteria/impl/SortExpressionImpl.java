@@ -36,6 +36,17 @@ final class SortExpressionImpl<E> extends AbstractExpression<E> {
     }
 
     @Override
+    protected String beforeAs() {
+        String text = expression.toString();
+        if(ascExp){
+            text += " ASC";
+        }else {
+            text += " DESC";
+        }
+        return  text;
+    }
+
+    @Override
     public MappingType mappingType() {
         return expression.mappingType();
     }

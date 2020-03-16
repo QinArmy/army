@@ -6,6 +6,8 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingType;
+import io.army.util.Assert;
+import io.army.util.StringUtils;
 
 import java.math.BigInteger;
 import java.util.Collection;
@@ -13,22 +15,26 @@ import java.util.Collection;
 /**
  * created  on 2018/11/24.
  */
- abstract class AbstractExpression<E> implements Expression<E>, Selection {
+abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     protected String alias;
 
-     AbstractExpression() {
+    AbstractExpression() {
     }
 
 
     @Override
     public Selection as(String alias) {
+        Assert.isTrue(StringUtils.hasText(alias), "alias required");
         this.alias = alias;
         return this;
     }
 
     @Override
     public String alias() {
+        if (this.alias == null) {
+            throw new IllegalStateException("alias is null,expression state error.");
+        }
         return alias;
     }
 
@@ -284,7 +290,7 @@ import java.util.Collection;
 
     @Override
     public final IPredicate notLike(String pattern) {
-        return new DualIPredicateImpl(this, DualOperator.NOT_LIKE, SQLS.param(pattern,this.mappingType()));
+        return new DualIPredicateImpl(this, DualOperator.NOT_LIKE, SQLS.param(pattern, this.mappingType()));
     }
 
     @Override
@@ -393,17 +399,17 @@ import java.util.Collection;
     }
 
     @Override
-    public final  Expression<E> negate() {
+    public final Expression<E> negate() {
         return new UnaryExpression<>(this, UnaryOperator.NEGATED);
     }
 
     @Override
-    public final <O> Expression<BigInteger>  and(Expression<O> operator) {
+    public final <O> Expression<BigInteger> and(Expression<O> operator) {
         return new DualExpresion<>(this, DualOperator.AND, operator);
     }
 
     @Override
-    public final  Expression<BigInteger>  and(Long operator) {
+    public final Expression<BigInteger> and(Long operator) {
         return new DualExpresion<>(this, DualOperator.AND, SQLS.param(operator));
     }
 
@@ -413,17 +419,17 @@ import java.util.Collection;
     }
 
     @Override
-    public final  <O> Expression<BigInteger> and(String tableAlias, FieldMeta<?, O> fieldMeta) {
+    public final <O> Expression<BigInteger> and(String tableAlias, FieldMeta<?, O> fieldMeta) {
         return null;
     }
 
     @Override
-    public final <O> Expression<BigInteger>  or(Expression<O> operator) {
+    public final <O> Expression<BigInteger> or(Expression<O> operator) {
         return new DualExpresion<>(this, DualOperator.OR, operator);
     }
 
     @Override
-    public final  Expression<BigInteger>  or(Long operator) {
+    public final Expression<BigInteger> or(Long operator) {
         return new DualExpresion<>(this, DualOperator.OR, SQLS.param(operator));
     }
 
@@ -433,17 +439,17 @@ import java.util.Collection;
     }
 
     @Override
-    public final  <O> Expression<BigInteger> or(String tableAlias, FieldMeta<?, O> fieldMeta) {
+    public final <O> Expression<BigInteger> or(String tableAlias, FieldMeta<?, O> fieldMeta) {
         return null;
     }
 
     @Override
-    public final <O> Expression<BigInteger>  xor(Expression<O> operator) {
+    public final <O> Expression<BigInteger> xor(Expression<O> operator) {
         return new DualExpresion<>(this, DualOperator.XOR, operator);
     }
 
     @Override
-    public final  Expression<BigInteger>  xor(Long operator) {
+    public final Expression<BigInteger> xor(Long operator) {
         return new DualExpresion<>(this, DualOperator.XOR, SQLS.param(operator));
     }
 
@@ -453,17 +459,17 @@ import java.util.Collection;
     }
 
     @Override
-    public final  <O> Expression<BigInteger> xor(String tableAlias, FieldMeta<?, O> fieldMeta) {
+    public final <O> Expression<BigInteger> xor(String tableAlias, FieldMeta<?, O> fieldMeta) {
         return null;
     }
 
     @Override
-    public final <O> Expression<BigInteger>  inversion(Expression<O> operator) {
+    public final <O> Expression<BigInteger> inversion(Expression<O> operator) {
         return new DualExpresion<>(this, DualOperator.INVERT, operator);
     }
 
     @Override
-    public final  Expression<BigInteger>  inversion(Long operator) {
+    public final Expression<BigInteger> inversion(Long operator) {
         return new DualExpresion<>(this, DualOperator.INVERT, SQLS.param(operator));
     }
 
@@ -473,22 +479,22 @@ import java.util.Collection;
     }
 
     @Override
-    public final  <O> Expression<BigInteger> inversion(String tableAlias, FieldMeta<?, O> fieldMeta) {
+    public final <O> Expression<BigInteger> inversion(String tableAlias, FieldMeta<?, O> fieldMeta) {
         return null;
     }
 
     @Override
-    public final  Expression<BigInteger>  rightShift(Integer bitNumber) {
+    public final Expression<BigInteger> rightShift(Integer bitNumber) {
         return new DualExpresion<>(this, DualOperator.RIGHT_SHIFT, SQLS.param(bitNumber));
     }
 
     @Override
-    public final <O> Expression<BigInteger>  rightShift(Expression<O> bitNumber) {
+    public final <O> Expression<BigInteger> rightShift(Expression<O> bitNumber) {
         return new DualExpresion<>(this, DualOperator.RIGHT_SHIFT, bitNumber);
     }
 
     @Override
-    public final  <O> Expression<BigInteger> rightShift(String tableAlias, FieldMeta<?, O> fieldMeta) {
+    public final <O> Expression<BigInteger> rightShift(String tableAlias, FieldMeta<?, O> fieldMeta) {
         return null;
     }
 
@@ -498,12 +504,12 @@ import java.util.Collection;
     }
 
     @Override
-    public final  Expression<BigInteger>  leftShift(Integer bitNumber) {
+    public final Expression<BigInteger> leftShift(Integer bitNumber) {
         return new DualExpresion<>(this, DualOperator.LEFT_SHIFT, SQLS.param(bitNumber));
     }
 
     @Override
-    public final <O> Expression<BigInteger>  leftShift(Expression<O> bitNumber) {
+    public final <O> Expression<BigInteger> leftShift(Expression<O> bitNumber) {
         return new DualExpresion<>(this, DualOperator.LEFT_SHIFT, bitNumber);
     }
 
@@ -513,7 +519,7 @@ import java.util.Collection;
     }
 
     @Override
-    public final  <O> Expression<BigInteger> leftShift(String tableAlias, FieldMeta<?, O> fieldMeta) {
+    public final <O> Expression<BigInteger> leftShift(String tableAlias, FieldMeta<?, O> fieldMeta) {
         return null;
     }
 
@@ -528,7 +534,7 @@ import java.util.Collection;
     }
 
     @Override
-    public final  <O> Expression<E> plusOther(String tableAlias, FieldMeta<?, O> fieldMeta) {
+    public final <O> Expression<E> plusOther(String tableAlias, FieldMeta<?, O> fieldMeta) {
         return null;
     }
 
@@ -543,7 +549,7 @@ import java.util.Collection;
     }
 
     @Override
-    public final  <O> Expression<E> minusOther(String tableAlias, FieldMeta<?, O> fieldMeta) {
+    public final <O> Expression<E> minusOther(String tableAlias, FieldMeta<?, O> fieldMeta) {
         return null;
     }
 
@@ -564,13 +570,12 @@ import java.util.Collection;
 
     @Override
     public final Expression<E> sort(@Nullable Boolean asc) {
-         if(asc == null){
-             return this;
-         }else {
-             return new SortExpressionImpl<>(this,asc);
-         }
+        if (asc == null) {
+            return this;
+        } else {
+            return new SortExpressionImpl<>(this, asc);
+        }
     }
-
 
 
     @Override
@@ -580,11 +585,18 @@ import java.util.Collection;
     }
 
     @Override
-    public String toString() {
-        return super.toString();
+    public final String toString() {
+        String text = beforeAs();
+        if (StringUtils.hasText(this.alias)) {
+            text = text + " AS " + this.alias;
+        }
+        return text;
     }
 
     /*################################## blow protected template method ##################################*/
 
     protected abstract void afterSpace(SQLContext context);
+
+    protected abstract String beforeAs();
+
 }

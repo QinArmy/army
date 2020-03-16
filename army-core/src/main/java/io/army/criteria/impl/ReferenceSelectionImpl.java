@@ -31,12 +31,6 @@ final class ReferenceSelectionImpl<E> extends AbstractExpression<E> implements R
                ;
     }
 
-
-    @Override
-    public final String alias() {
-        return alias;
-    }
-
     @Override
     public MappingType mappingType() {
         Assert.state(selection != null, "selectionList is null,criteria error.");
@@ -52,7 +46,7 @@ final class ReferenceSelectionImpl<E> extends AbstractExpression<E> implements R
     }
 
     @Override
-    public String toString() {
+    protected String beforeAs() {
         return tableAlias + "." + derivedFieldName;
     }
 }

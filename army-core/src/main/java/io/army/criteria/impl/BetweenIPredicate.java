@@ -27,8 +27,10 @@ final class BetweenIPredicate extends AbstractIPredicate {
         right.appendSQL(context);
     }
 
+
+
     @Override
-    public String toString() {
+    public String beforeAs() {
         return String.format("%s BETWEEN %s AND %s",left,center,right);
     }
 }

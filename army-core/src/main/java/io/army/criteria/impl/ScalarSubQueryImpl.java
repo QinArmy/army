@@ -43,6 +43,11 @@ final class ScalarSubQueryImpl<E, C> extends AbstractExpression<E> implements Sc
     }
 
     @Override
+    protected final String beforeAs() {
+        return "#ScalarSubQuery";
+    }
+
+    @Override
     public final MappingType mappingType() {
         return mappingType;
     }

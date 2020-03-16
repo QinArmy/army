@@ -14,7 +14,7 @@ import java.sql.JDBCType;
 
 
 final class AliasTableFieldMetaImpl<T extends IDomain, F> extends AbstractExpression<F>
-        implements FieldMeta<T, F> , AliasTableFieldMeta<T,F> {
+        implements AliasTableFieldMeta<T, F> {
 
     private final FieldMeta<T, F> fieldMeta;
 
@@ -23,7 +23,7 @@ final class AliasTableFieldMetaImpl<T extends IDomain, F> extends AbstractExpres
     AliasTableFieldMetaImpl(FieldMeta<T, F> fieldMeta, String tableAlias) {
         Assert.notNull(fieldMeta, "fieldMeta required");
         Assert.hasText(tableAlias, "tableAlias required");
-        Assert.isTrue(!tableAlias.contains("."),"tableAlias must no '.'");
+        Assert.isTrue(!tableAlias.contains("."), "tableAlias must no '.'");
 
         this.fieldMeta = fieldMeta;
         this.tableAlias = tableAlias;
@@ -31,14 +31,18 @@ final class AliasTableFieldMetaImpl<T extends IDomain, F> extends AbstractExpres
 
     @Override
     protected void afterSpace(SQLContext context) {
-        context.appendField(tableAlias,fieldMeta);
+        context.appendField(tableAlias, fieldMeta);
     }
 
     @Override
-    public String toString() {
+    public String beforeAs() {
         return tableAlias + "." + fieldMeta.fieldName();
     }
 
+    @Override
+    public String tableAlias() {
+        return this.tableAlias;
+    }
 
     @Override
     public boolean primary() {

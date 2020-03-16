@@ -35,7 +35,7 @@ final class OrtIPredicate extends AbstractIPredicate implements IPredicate {
     }
 
     @Override
-    public String toString() {
+    public String beforeAs() {
         StringBuilder builder = new StringBuilder("( ");
         builder.append(orIPredicate)
                 .append(" OR (")

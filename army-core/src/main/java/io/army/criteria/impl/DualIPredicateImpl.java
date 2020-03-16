@@ -35,7 +35,7 @@ final class DualIPredicateImpl extends AbstractIPredicate implements DualIPredic
     }
 
     @Override
-    public String toString() {
+    public String beforeAs() {
         return String.format("%s %s %s",left,operator,right);
     }
 

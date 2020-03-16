@@ -36,7 +36,7 @@ abstract class Funcs<E> extends AbstractExpression<E> {
     }
 
     @Override
-    public String toString() {
+    public final String beforeAs() {
         return String.format("%s(%s)",name,argumentToString());
     }
 

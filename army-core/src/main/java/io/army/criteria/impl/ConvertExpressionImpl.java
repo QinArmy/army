@@ -37,7 +37,7 @@ final class ConvertExpressionImpl<E> extends AbstractExpression<E> implements Co
     }
 
     @Override
-    public String toString() {
+    public String beforeAs() {
         return original.toString();
     }
 }

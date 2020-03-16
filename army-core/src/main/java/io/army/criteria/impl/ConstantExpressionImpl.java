@@ -50,7 +50,7 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
     }
 
     @Override
-    public String toString() {
+    public String beforeAs() {
         return mappingType.nonNullTextValue(constant);
     }
 }

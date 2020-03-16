@@ -31,7 +31,7 @@ final class BracketsExpression<E> extends AbstractExpression<E> {
     }
 
     @Override
-    public String toString() {
+    public String beforeAs() {
         return "(" + exp + ")";
     }
 }

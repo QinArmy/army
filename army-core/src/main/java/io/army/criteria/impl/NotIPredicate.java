@@ -45,7 +45,7 @@ final class NotIPredicate extends AbstractIPredicate {
     }
 
     @Override
-    public String toString() {
+    public String beforeAs() {
         String text = "";
         if(not){
             text = UnaryOperator.NOT.rendered() + " ";

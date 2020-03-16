@@ -5,4 +5,5 @@ import io.army.meta.FieldMeta;
 
 public interface AliasTableFieldMeta<T extends IDomain,F> extends FieldMeta<T,F> {
 
+    String tableAlias();
 }

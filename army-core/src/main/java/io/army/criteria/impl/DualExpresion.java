@@ -40,7 +40,7 @@ final class DualExpresion<E> extends AbstractExpression<E> {
     }
 
     @Override
-    public String toString() {
+    public String beforeAs() {
         return left + " " + operator.rendered() + " " + right;
     }
 }

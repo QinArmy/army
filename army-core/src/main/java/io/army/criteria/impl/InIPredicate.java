@@ -74,7 +74,7 @@ final class InIPredicate extends AbstractIPredicate {
     }
 
     @Override
-    public String toString() {
+    public String beforeAs() {
         DualOperator operator = DualOperator.IN;
         if (!in) {
             operator = DualOperator.NOT_IN;
