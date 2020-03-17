@@ -20,11 +20,6 @@ final class SubQuerySelectImpl<C> extends AbstractSelectImpl<C> implements SubQu
     }
 
     @Override
-    public SubQuery asSubQuery() {
-        return this;
-    }
-
-    @Override
     public  SubQuery subordinateSubQuery(String subordinateSubQueryAlias) {
         return subordinateSubQueries.get(subordinateSubQueryAlias);
     }

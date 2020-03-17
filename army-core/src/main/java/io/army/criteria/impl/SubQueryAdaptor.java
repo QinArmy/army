@@ -1,11 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.InnerSubQueryAble;
-import io.army.criteria.impl.inner.TableWrapper;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
-import io.army.util.Assert;
 import io.army.util.Pair;
 
 import java.util.List;
@@ -302,6 +299,7 @@ final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectionAble<C>
 
     @Override
     public final SubQuery asSubQuery() {
+        this.actualSelect.asSelect();
         return this.actualSelect;
     }
 

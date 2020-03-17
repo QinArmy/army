@@ -328,7 +328,7 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery, OuterQueryAble
 
     @Override
     public final RowSubQuery asRowSubQuery() {
-        this.actualSelect.asSubQuery();
+        this.actualSelect.asSelect();
         return this;
     }
 

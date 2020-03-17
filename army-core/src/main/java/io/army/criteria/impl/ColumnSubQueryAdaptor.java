@@ -338,7 +338,7 @@ final class ColumnSubQueryAdaptor<E, C> implements ColumnSubQuery<E>, ColumnSubQ
 
     @Override
     public final ColumnSubQuery<E> asColumnSubQuery() {
-        this.actualSelect.asSubQuery();
+        this.actualSelect.asSelect();
         return this;
     }
 

@@ -356,7 +356,7 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
 
     @Override
     public final ScalarSubQuery<E> asScalarSubQuery() {
-        this.actualSelect.asSubQuery();
+        this.actualSelect.asSelect();
         return this;
     }
 
