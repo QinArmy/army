@@ -299,7 +299,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     @Override
     protected  final void afterSpace(SQLContext context) {
-        context.appendField("",this);
+        context.appendField(this.table.tableName(),this);
     }
 
 

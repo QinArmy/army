@@ -1,7 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.impl.inner.InnerSQLAble;
-import io.army.util.Assert;
 import org.springframework.core.NamedThreadLocal;
 
 

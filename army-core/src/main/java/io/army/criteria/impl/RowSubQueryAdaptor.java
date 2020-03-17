@@ -1,46 +1,52 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.InnerSubQueryAble;
-import io.army.criteria.impl.inner.TableWrapper;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
-import io.army.util.Assert;
 import io.army.util.Pair;
 
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-final class RowSubQueryImpl<C> implements RowSubQuery, InnerSubQueryAble, OuterQueryAble
+final class RowSubQueryAdaptor<C> implements RowSubQuery, OuterQueryAble
         , RowSubQuery.RowSubQuerySelectionAble<C>, RowSubQuery.RowSubQueryFromAble<C>
         , RowSubQuery.RowSubQueryOnAble<C>, RowSubQuery.RowSubQueryWhereAndAble<C>
         , RowSubQuery.RowSubQueryJoinAble<C>, RowSubQuery.RowSubQueryHavingAble<C> {
 
 
-    private final SelectImpl<C> actualSelect;
+    private final SubQuerySelect<C> actualSelect;
 
-    private QueryAble outerQuery;
-
-
-    RowSubQueryImpl(C criteria) {
-        this.actualSelect = new SelectImpl<>(criteria);
+    RowSubQueryAdaptor(C criteria) {
+        this.actualSelect = SubQuerySelect.build(criteria);
     }
 
-
-    /*################################## blow SelfDescribed method ##################################*/
-
-    @Override
-    public final void appendSQL(SQLContext context) {
-        context.dml().subQuery(this, context);
-    }
 
     /*################################## blow RowSubQuery method ##################################*/
 
     @Override
+    public List<Selection> selectionList() {
+        return this.actualSelect.selectionList();
+    }
+
+    @Override
+    public SubQuery subordinateSubQuery(String subordinateSubQueryAlias) {
+        return this.actualSelect.subordinateSubQuery(subordinateSubQueryAlias);
+    }
+
+    @Override
+    public final void appendSQL(SQLContext context) {
+        this.actualSelect.appendSQL(context);
+    }
+
+    @Override
+    public void outerQuery(QueryAble outerQuery) {
+        this.actualSelect.outerQuery(outerQuery);
+    }
+
+    @Override
     public final QueryAble outerQuery() {
-        Assert.state(this.outerQuery != null, "outerQuery is null,criteria state error.");
-        return this.outerQuery;
+        return this.actualSelect.outerQuery();
     }
 
 
@@ -285,106 +291,45 @@ final class RowSubQueryImpl<C> implements RowSubQuery, InnerSubQueryAble, OuterQ
     @Override
     public RowSubQuery limit(int rowCount) {
         this.actualSelect.limit(rowCount);
-        return this;
+        return asRowSubQuery();
     }
 
     @Override
     public RowSubQuery limit(int offset, int rowCount) {
         this.actualSelect.limit(offset, rowCount);
-        return this;
+        return asRowSubQuery();
     }
 
     @Override
     public RowSubQuery limit(Function<C, Pair<Integer, Integer>> function) {
         this.actualSelect.limit(function);
-        return this;
+        return asRowSubQuery();
     }
 
     @Override
     public RowSubQuery ifLimit(Predicate<C> predicate, int rowCount) {
         this.actualSelect.ifLimit(predicate, rowCount);
-        return this;
+        return asRowSubQuery();
     }
 
     @Override
     public RowSubQuery ifLimit(Predicate<C> predicate, int offset, int rowCount) {
         this.actualSelect.ifLimit(predicate, offset, rowCount);
-        return this;
+        return asRowSubQuery();
     }
 
     @Override
     public RowSubQuery ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
         this.actualSelect.ifLimit(predicate, function);
-        return this;
+        return asRowSubQuery();
     }
 
-    /*################################## blow OuterQueryAble method ##################################*/
-
-
-    @Override
-    public void outerQuery(QueryAble outerQuery) {
-        Assert.state(this.outerQuery == null, "outerQuery only update once.");
-        Assert.notNull(outerQuery, "outerQuery required.");
-        this.outerQuery = outerQuery;
-    }
-
-    /*################################## blow TableSubQueryAble method ##################################*/
+    /*################################## blow SubQueryAble method ##################################*/
 
     @Override
     public final RowSubQuery asRowSubQuery() {
+        this.actualSelect.asSubQuery();
         return this;
     }
 
-    /*################################## blow InnerSubQueryAble method ##################################*/
-
-    @Override
-    public List<SQLModifier> modifierList() {
-        return this.actualSelect.modifierList();
-    }
-
-    @Override
-    public List<Selection> selectionList() {
-        return actualSelect.selectionList();
-    }
-
-    @Override
-    public List<TableWrapper> tableWrapperList() {
-        return this.actualSelect.tableWrapperList();
-    }
-
-    @Override
-    public List<IPredicate> predicateList() {
-        return this.actualSelect.predicateList();
-    }
-
-    @Override
-    public List<Expression<?>> groupExpList() {
-        return this.actualSelect.groupExpList();
-    }
-
-    @Override
-    public List<IPredicate> havingList() {
-        return this.actualSelect.havingList();
-    }
-
-    @Override
-    public List<Expression<?>> sortExpList() {
-        return this.actualSelect.sortExpList();
-    }
-
-    @Override
-    public int offset() {
-        return this.actualSelect.offset();
-    }
-
-    @Override
-    public int rowCount() {
-        return this.actualSelect.rowCount();
-    }
-
-    @Override
-    public void prepare() {
-        Assert.state(this.outerQuery != null, "outerQuery is null,criteria error.");
-        this.actualSelect.prepare();
-    }
 }

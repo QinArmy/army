@@ -33,47 +33,47 @@ public abstract class SQLS extends AbstractSQLS {
     }
 
     public static Select.SelectionAble<EmptyObject> prepareSelect() {
-        return new SelectImpl<>(EmptyObject.getInstance());
+        return new ContextualSelectImpl<>(EmptyObject.getInstance());
     }
 
     public static <C> Select.SelectionAble<C> prepareSelect(C criteria) {
-        return new SelectImpl<>(criteria);
+        return new ContextualSelectImpl<>(criteria);
     }
 
     public static <C> SubQuery.SubQuerySelectionAble<C> subQuery() {
-        return new SubQueryImpl<>(
+        return new SubQueryAdaptor<>(
                 CriteriaContextHolder.getContext().criteria()
         );
     }
 
     public static <C> RowSubQuery.RowSubQuerySelectionAble<C> rowSubQuery() {
-        return new RowSubQueryImpl<>(
+        return new RowSubQueryAdaptor<>(
                 CriteriaContextHolder.getContext().criteria()
         );
     }
 
     public static <E, C> ColumnSubQuery.ColumnSubQuerySelectionAble<E, C> columnSubQuery(Class<E> columnType) {
-        return new ColumnSubQueryImpl<>(columnType,
+        return new ColumnSubQueryAdaptor<>(columnType,
                 CriteriaContextHolder.getContext().criteria()
         );
     }
 
     public static <E, C> ScalarSubQuery.ScalarSubQuerySelectionAble<E, C> scalarSubQuery(
             Class<E> columnType, MappingType mappingType) {
-        return new ScalarSubQueryImpl<>(columnType
+        return new ScalarSubQueryAdaptor<>(columnType
                 , mappingType
                 , CriteriaContextHolder.getContext().criteria()
         );
     }
 
     public static <E> ScalarSubQuery.ScalarSubQuerySelectionAble<E, EmptyObject> scalarSubQuery(Class<E> columnType) {
-        return new ScalarSubQueryImpl<>(columnType
+        return new ScalarSubQueryAdaptor<>(columnType
                 , MappingFactory.getDefaultMapping(columnType)
                 , CriteriaContextHolder.getContext().criteria()
         );
     }
 
-    public static <T extends IDomain, F> AliasTableFieldMeta<T, F> field(String tableAlias, FieldMeta<T, F> fieldMeta) {
+    public static <T extends IDomain, F> AliasFieldMeta<T, F> field(String tableAlias, FieldMeta<T, F> fieldMeta) {
         return CriteriaContextHolder.getContext()
                 .aliasField(tableAlias, fieldMeta);
     }
@@ -85,7 +85,7 @@ public abstract class SQLS extends AbstractSQLS {
 
     public static <E> Expression<E> ref(String subQueryAlias, String derivedFieldName, Class<E> selectionType) {
         return CriteriaContextHolder.getContext()
-                .ref(subQueryAlias, derivedFieldName, selectionType);
+                .ref(subQueryAlias, derivedFieldName,selectionType);
     }
 
     /*################################## blow sql key word operate method ##################################*/

@@ -10,7 +10,7 @@ import java.util.function.Predicate;
 
 public interface Select extends SQLBuilder, SQLAble, QueryAble {
 
-    interface SelectAble {
+    interface SelectAble  extends SelectSQLAble{
 
         Select asSelect();
     }
@@ -23,11 +23,15 @@ public interface Select extends SQLBuilder, SQLAble, QueryAble {
 
         <T extends IDomain> FromAble<C> select(Distinct distinct, TableMeta<T> tableMeta);
 
+        <T extends IDomain> FromAble<C> select(Distinct distinct, String tableAlias, TableMeta<T> tableMeta);
+
         <T extends IDomain> FromAble<C> select(TableMeta<T> tableMeta);
+
+        <T extends IDomain> FromAble<C> select(String tableAlias, TableMeta<T> tableMeta);
 
         FromAble<C> select(String subQueryAlias);
 
-        FromAble<C> select(Distinct distinct,String subQueryAlias);
+        FromAble<C> select(Distinct distinct, String subQueryAlias);
 
         FromAble<C> select(List<Selection> selectionList);
 
@@ -36,6 +40,10 @@ public interface Select extends SQLBuilder, SQLAble, QueryAble {
         FromAble<C> select(Function<C, List<Selection>> function);
 
         FromAble<C> select(Distinct distinct, Function<C, List<Selection>> function);
+    }
+
+    interface SelectionGroupAble<C> extends SelectionAble<C> {
+
     }
 
     interface FromAble<C> extends SelectSQLAble, SelectAble {

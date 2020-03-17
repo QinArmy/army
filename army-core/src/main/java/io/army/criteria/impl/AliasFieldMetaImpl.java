@@ -1,8 +1,7 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.AliasTableFieldMeta;
+import io.army.criteria.AliasFieldMeta;
 import io.army.criteria.SQLContext;
-import io.army.criteria.Selection;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
@@ -13,14 +12,14 @@ import io.army.util.Assert;
 import java.sql.JDBCType;
 
 
-final class AliasTableFieldMetaImpl<T extends IDomain, F> extends AbstractExpression<F>
-        implements AliasTableFieldMeta<T, F> {
+final class AliasFieldMetaImpl<T extends IDomain, F> extends AbstractExpression<F>
+        implements AliasFieldMeta<T, F> {
 
     private final FieldMeta<T, F> fieldMeta;
 
     private final String tableAlias;
 
-    AliasTableFieldMetaImpl(FieldMeta<T, F> fieldMeta, String tableAlias) {
+    AliasFieldMetaImpl(FieldMeta<T, F> fieldMeta, String tableAlias) {
         Assert.notNull(fieldMeta, "fieldMeta required");
         Assert.hasText(tableAlias, "tableAlias required");
         Assert.isTrue(!tableAlias.contains("."), "tableAlias must no '.'");
@@ -42,6 +41,11 @@ final class AliasTableFieldMetaImpl<T extends IDomain, F> extends AbstractExpres
     @Override
     public String tableAlias() {
         return this.tableAlias;
+    }
+
+    @Override
+    public FieldMeta<T, F> fieldMeta() {
+        return this.fieldMeta;
     }
 
     @Override

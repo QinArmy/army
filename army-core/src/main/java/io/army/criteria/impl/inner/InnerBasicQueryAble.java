@@ -5,7 +5,7 @@ import io.army.criteria.*;
 import java.util.List;
 
 @DeveloperForbid
-public interface InnerBasicQueryAble extends InnerSQLAble{
+public interface InnerBasicQueryAble {
 
     List<SQLModifier> modifierList();
 

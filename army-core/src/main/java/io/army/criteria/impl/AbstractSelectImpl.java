@@ -10,16 +10,14 @@ import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.Pair;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-final class SelectImpl<C> extends AbstractSQLAble implements
+ abstract class AbstractSelectImpl<C> extends AbstractSQLAble implements
         Select, Select.SelectionAble<C>, Select.FromAble<C>, Select.JoinAble<C>,
         Select.OnAble<C>, Select.WhereAndAble<C>, Select.LimitAble<C>
-        , Select.HavingAble<C>, InnerQueryAble, CriteriaContext {
+        , Select.HavingAble<C>, InnerQueryAble {
 
     private static final class TableWrapperImpl implements TableWrapper {
 
@@ -55,7 +53,7 @@ final class SelectImpl<C> extends AbstractSQLAble implements
     }
 
 
-    private final C criteria;
+    protected final C criteria;
 
     private List<SQLModifier> modifierList = new ArrayList<>(2);
 
@@ -82,7 +80,7 @@ final class SelectImpl<C> extends AbstractSQLAble implements
     private boolean prepared = false;
 
 
-    SelectImpl(C criteria) {
+    AbstractSelectImpl(C criteria) {
         Assert.notNull(criteria, "criteria required");
         this.criteria = criteria;
     }
@@ -102,8 +100,28 @@ final class SelectImpl<C> extends AbstractSQLAble implements
     }
 
     @Override
+    public final <T extends IDomain> FromAble<C> select(Distinct distinct, String tableAlias, TableMeta<T> tableMeta) {
+        Assert.state(this.modifierList.isEmpty(), "select clause ended.");
+        this.modifierList.add(distinct);
+        return select(tableAlias, tableMeta);
+    }
+
+    @Override
     public final <T extends IDomain> Select.FromAble<C> select(TableMeta<T> tableMeta) {
         this.selectionList.addAll(tableMeta.fieldCollection());
+        return this;
+    }
+
+    @Override
+    public final <T extends IDomain> FromAble<C> select(String tableAlias, TableMeta<T> tableMeta) {
+        if (tableMeta.tableName().equals(tableAlias)) {
+            return select(tableMeta);
+        }
+
+        Assert.state(this.selectionList.isEmpty(), "select clause ended.");
+        for (FieldMeta<T, ?> fieldMeta : tableMeta.fieldCollection()) {
+            this.selectionList.add(new AliasFieldMetaImpl<>(fieldMeta, tableAlias));
+        }
         return this;
     }
 
@@ -161,7 +179,7 @@ final class SelectImpl<C> extends AbstractSQLAble implements
     /*################################## blow JoinAble method ##################################*/
 
     @Override
-    public Select.OnAble<C> leftJoin(TableAble tableAble, String tableAlias) {
+    public final Select.OnAble<C> leftJoin(TableAble tableAble, String tableAlias) {
         return appendTableWrapper(tableAble, tableAlias, JoinType.LEFT);
     }
 
@@ -306,7 +324,7 @@ final class SelectImpl<C> extends AbstractSQLAble implements
 
     @Override
     public final Select.OrderByAble<C> ifHaving(Predicate<C> predicate, List<IPredicate> predicateList) {
-        if (predicate.test(this.criteria)) {
+        if (predicate.test(this.criteria))   {
             having(predicateList);
         }
         return this;
@@ -419,55 +437,31 @@ final class SelectImpl<C> extends AbstractSQLAble implements
     /*################################## blow LockAble method ##################################*/
 
     @Override
-    public Select lock(LockMode lockMode) {
+    public final Select lock(LockMode lockMode) {
         Assert.state(this.lockMode == null, "lock clause ended.");
         this.lockMode = lockMode;
-        return this;
+        return asSelect();
     }
 
     @Override
-    public Select lock(Function<C, LockMode> function) {
+    public final Select lock(Function<C, LockMode> function) {
         return lock(function.apply(this.criteria));
     }
 
     @Override
-    public Select ifLock(Predicate<C> predicate, LockMode lockMode) {
+    public final Select ifLock(Predicate<C> predicate, LockMode lockMode) {
         if (predicate.test(this.criteria)) {
             lock(lockMode);
         }
-        return this;
+        return asSelect();
     }
 
     @Override
-    public Select ifLock(Predicate<C> predicate, Function<C, LockMode> function) {
+    public final Select ifLock(Predicate<C> predicate, Function<C, LockMode> function) {
         if (predicate.test(this.criteria)) {
             lock(function);
         }
-        return this;
-    }
-
-
-    /*################################## blow CriteriaContext method ##################################*/
-
-    @Override
-    public <T extends IDomain, F> AliasTableFieldMeta<T, F> aliasField(String tableAlias, FieldMeta<T, F> fieldMeta) {
-        return null;
-    }
-
-    @Override
-    public <E> Expression<E> ref(String subQueryAlias, String derivedFieldName) {
-        return null;
-    }
-
-    @Override
-    public <E> Expression<E> ref(String subQueryAlias, String derivedFieldName, Class<E> selectionType) {
-        return null;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public C criteria() {
-        return this.criteria;
+        return asSelect();
     }
 
     /*################################## blow AbstractSQLAble method ##################################*/
@@ -536,13 +530,8 @@ final class SelectImpl<C> extends AbstractSQLAble implements
 
     @Override
     public final Select asSelect() {
-        return this;
-    }
-
-    @Override
-    public final void prepare() {
         if (prepared) {
-            return;
+            return this;
         }
         this.modifierList = Collections.unmodifiableList(this.modifierList);
         this.selectionList = Collections.unmodifiableList(this.selectionList);
@@ -553,11 +542,20 @@ final class SelectImpl<C> extends AbstractSQLAble implements
         this.havingList = Collections.unmodifiableList(this.havingList);
         this.sortExpList = Collections.unmodifiableList(this.sortExpList);
 
+        doPrepare();
         this.prepared = true;
-        CriteriaContextHolder.clearContext(this);
+        return this;
     }
 
+    protected abstract void  doPrepare();
+
+    protected abstract void doTable(TableMeta<?> table,String tableAlias);
+
+    protected abstract void doSubQuery(SubQuery subQuery,String subQueryAlias);
+
     /*################################## blow private method ##################################*/
+
+
 
     private OnAble<C> appendTableWrapper(TableAble tableAble, String tableAlias, JoinType joinType) {
         setOutQueryIfNeed(tableAble);
@@ -573,9 +571,7 @@ final class SelectImpl<C> extends AbstractSQLAble implements
         }
         Assert.state(this.selectionList.isEmpty(), "selectionList not empty,criteria error.");
 
-        if (tableAble instanceof TableMeta) {
-            this.selectionList.addAll(((TableMeta<?>) tableAble).fieldCollection());
-        } else if (tableAble instanceof SubQuery) {
+        if (tableAble instanceof SubQuery) {
             this.selectionList.addAll(((SubQuery) tableAble).selectionList());
         } else {
             throwTableAbleError(tableAble);
@@ -592,7 +588,7 @@ final class SelectImpl<C> extends AbstractSQLAble implements
 
     private void throwTableAbleError(TableAble tableAble) {
         throw new IllegalArgumentException(String.format(
-                "TableAble[%s] type unknown.", tableAble.getClass().getName()));
+                "TableAble[%s] isn't SubQuery.", tableAble.getClass().getName()));
     }
 
 

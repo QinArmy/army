@@ -1,10 +1,8 @@
 package io.army.criteria.impl.inner;
 
-import io.army.criteria.QueryAble;
+import io.army.criteria.SubQuery;
 
 @DeveloperForbid
-public interface InnerSubQueryAble extends InnerBasicQueryAble {
-
-    QueryAble outerQuery();
+public interface InnerSubQueryAble extends InnerBasicQueryAble, SubQuery {
 
 }

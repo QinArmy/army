@@ -1,39 +1,30 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.InnerSubQueryAble;
-import io.army.criteria.impl.inner.TableWrapper;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
-import io.army.util.ClassUtils;
 import io.army.util.Pair;
 
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-final class ScalarSubQueryImpl<E, C> extends AbstractExpression<E> implements ScalarSubQuery<E>
-        , InnerSubQueryAble, OuterQueryAble
+final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements ScalarSubQuery<E>, OuterQueryAble
         , ScalarSubQuery.ScalarSubQuerySelectionAble<E, C>, ScalarSubQuery.ScalarSubQueryFromAble<E, C>
         , ScalarSubQuery.ScalarSubQueryOnAble<E, C>, ScalarSubQuery.ScalarSubQueryWhereAndAble<E, C>
         , ScalarSubQuery.ScalarSubQueryJoinAble<E, C>, ScalarSubQuery.ScalarSubQueryHavingAble<E, C> {
 
-    private final Class<E> javaType;
 
     private final MappingType mappingType;
 
-    private final SelectImpl<C> actualSelect;
+    private final SubQuerySelect<C> actualSelect;
 
-    private QueryAble outerQuery;
-
-
-    ScalarSubQueryImpl(Class<E> javaType, MappingType mappingType, C criteria) {
-        Assert.isAssignable(javaType,mappingType.javaType(),"javaType and mappingType not match.");
-        this.javaType = javaType;
+    ScalarSubQueryAdaptor(Class<E> javaType, MappingType mappingType, C criteria) {
+        Assert.isAssignable(javaType, mappingType.javaType(), "javaType and mappingType not match.");
         this.mappingType = mappingType;
-        this.actualSelect = new SelectImpl<>(criteria);
+        this.actualSelect = SubQuerySelect.build(criteria);
     }
 
 
@@ -41,7 +32,7 @@ final class ScalarSubQueryImpl<E, C> extends AbstractExpression<E> implements Sc
 
     @Override
     protected final void afterSpace(SQLContext context) {
-        context.dml().subQuery(this, context);
+        this.actualSelect.appendSQL(context);
     }
 
     @Override
@@ -54,12 +45,28 @@ final class ScalarSubQueryImpl<E, C> extends AbstractExpression<E> implements Sc
         return mappingType;
     }
 
+    /*################################## blow OuterQueryAble method ##################################*/
+
+    @Override
+    public void outerQuery(QueryAble outerQuery) {
+        this.actualSelect.outerQuery(outerQuery);
+    }
+
     /*################################## blow ScalarSubQuery<E> method ##################################*/
 
     @Override
     public final QueryAble outerQuery() {
-        Assert.state(this.outerQuery != null, "outerQuery is null,criteria state error.");
-        return this.outerQuery;
+        return this.actualSelect.outerQuery();
+    }
+
+    @Override
+    public List<Selection> selectionList() {
+        return this.actualSelect.selectionList();
+    }
+
+    @Override
+    public SubQuery subordinateSubQuery(String subordinateSubQueryAlias) {
+        return this.actualSelect.subordinateSubQuery(subordinateSubQueryAlias);
     }
 
     @Override
@@ -310,107 +317,48 @@ final class ScalarSubQueryImpl<E, C> extends AbstractExpression<E> implements Sc
     @Override
     public ScalarSubQuery<E> limit(int rowCount) {
         this.actualSelect.limit(rowCount);
-        return this;
+        return asScalarSubQuery();
     }
 
     @Override
     public ScalarSubQuery<E> limit(int offset, int rowCount) {
         this.actualSelect.limit(offset, rowCount);
-        return this;
+        return asScalarSubQuery();
     }
 
     @Override
     public ScalarSubQuery<E> limit(Function<C, Pair<Integer, Integer>> function) {
         this.actualSelect.limit(function);
-        return this;
+        return asScalarSubQuery();
     }
 
     @Override
     public ScalarSubQuery<E> ifLimit(Predicate<C> predicate, int rowCount) {
         this.actualSelect.ifLimit(predicate, rowCount);
-        return this;
+        return asScalarSubQuery();
     }
 
     @Override
     public ScalarSubQuery<E> ifLimit(Predicate<C> predicate, int offset, int rowCount) {
         this.actualSelect.ifLimit(predicate, offset, rowCount);
-        return this;
+        return asScalarSubQuery();
     }
 
     @Override
     public ScalarSubQuery<E> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
         this.actualSelect.ifLimit(predicate, function);
-        return this;
+        return asScalarSubQuery();
     }
 
-    /*################################## blow OuterQueryAble method ##################################*/
 
-
-    @Override
-    public void outerQuery(QueryAble outerQuery) {
-        Assert.state(this.outerQuery == null, "outerQuery only update once.");
-        Assert.notNull(outerQuery, "outerQuery required.");
-        this.outerQuery = outerQuery;
-    }
 
     /*################################## blow TableSubQueryAble method ##################################*/
 
     @Override
     public final ScalarSubQuery<E> asScalarSubQuery() {
+        this.actualSelect.asSubQuery();
         return this;
     }
 
-    /*################################## blow InnerSubQueryAble method ##################################*/
-
-    @Override
-    public List<SQLModifier> modifierList() {
-        return this.actualSelect.modifierList();
-    }
-
-    @Override
-    public List<Selection> selectionList() {
-        return actualSelect.selectionList();
-    }
-
-    @Override
-    public List<TableWrapper> tableWrapperList() {
-        return this.actualSelect.tableWrapperList();
-    }
-
-    @Override
-    public List<IPredicate> predicateList() {
-        return this.actualSelect.predicateList();
-    }
-
-    @Override
-    public List<Expression<?>> groupExpList() {
-        return this.actualSelect.groupExpList();
-    }
-
-    @Override
-    public List<IPredicate> havingList() {
-        return this.actualSelect.havingList();
-    }
-
-    @Override
-    public List<Expression<?>> sortExpList() {
-        return this.actualSelect.sortExpList();
-    }
-
-    @Override
-    public int offset() {
-        return this.actualSelect.offset();
-    }
-
-    @Override
-    public int rowCount() {
-        return this.actualSelect.rowCount();
-    }
-
-    @Override
-    public void prepare() {
-        Assert.state(this.outerQuery != null, "outerQuery is null,criteria error.");
-        this.actualSelect.prepare();
-    }
 
 }

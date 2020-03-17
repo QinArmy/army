@@ -2,6 +2,7 @@ package io.army.criteria;
 
 
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.Pair;
 
@@ -14,9 +15,12 @@ public interface SubQuery extends SelfDescribed, TableAble, QueryAble {
 
     List<Selection> selectionList();
 
+    @Nullable
+    SubQuery subordinateSubQuery(String subordinateSubQueryAlias);
+
     QueryAble outerQuery();
 
-    interface TableSubQueryAble extends SubQuerySQLAble{
+    interface SubQueryAble extends SubQuerySQLAble{
 
         SubQuery asSubQuery();
 
@@ -45,7 +49,7 @@ public interface SubQuery extends SelfDescribed, TableAble, QueryAble {
         SubQueryFromAble<C> select(Distinct distinct, Function<C, List<Selection>> function);
     }
 
-    interface SubQueryFromAble<C> extends  TableSubQueryAble {
+    interface SubQueryFromAble<C> extends SubQueryAble {
 
         SubQueryOnAble<C> from(TableAble tableAble, String tableAlias);
     }
@@ -132,7 +136,7 @@ public interface SubQuery extends SelfDescribed, TableAble, QueryAble {
     }
 
 
-    interface SubQueryLimitAble<C> extends SubQuerySQLAble, TableSubQueryAble {
+    interface SubQueryLimitAble<C> extends SubQuerySQLAble, SubQueryAble {
 
         SubQuery limit(int rowCount);
 

@@ -1,13 +1,13 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.AliasTableFieldMeta;
+import io.army.criteria.AliasFieldMeta;
 import io.army.criteria.Expression;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 
 interface CriteriaContext {
 
-    <T extends IDomain, F> AliasTableFieldMeta<T, F> aliasField(String tableAlias, FieldMeta<T, F> fieldMeta);
+    <T extends IDomain, F> AliasFieldMeta<T, F> aliasField(String tableAlias, FieldMeta<T, F> fieldMeta);
 
     <E> Expression<E> ref(String subQueryAlias, String derivedFieldName);
 
