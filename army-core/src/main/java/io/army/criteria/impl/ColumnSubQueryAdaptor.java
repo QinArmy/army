@@ -30,13 +30,18 @@ final class ColumnSubQueryAdaptor<E, C> implements ColumnSubQuery<E>, ColumnSubQ
     @Override
     public Selection selection() {
         List<Selection> selectionList = this.actualSelect.selectionList();
-        Assert.state(selectionList.size() == 1,"ColumnSubQuery select clause error,selection count isn't 1 .");
+        Assert.state(selectionList.size() == 1, "ColumnSubQuery select clause error,selection count isn't 1 .");
         return selectionList.get(0);
     }
 
     @Override
     public SubQuery subordinateSubQuery(String subordinateSubQueryAlias) {
         return this.actualSelect.subordinateSubQuery(subordinateSubQueryAlias);
+    }
+
+    @Override
+    public Selection getSelection(String derivedFieldName) {
+        return this.actualSelect.getSelection(derivedFieldName);
     }
 
     @Override

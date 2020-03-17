@@ -18,9 +18,12 @@ public interface SubQuery extends SelfDescribed, TableAble, QueryAble {
     @Nullable
     SubQuery subordinateSubQuery(String subordinateSubQueryAlias);
 
+    Selection getSelection(String derivedFieldName);
+
     QueryAble outerQuery();
 
-    interface SubQueryAble extends SubQuerySQLAble{
+
+    interface SubQueryAble extends SubQuerySQLAble {
 
         SubQuery asSubQuery();
 

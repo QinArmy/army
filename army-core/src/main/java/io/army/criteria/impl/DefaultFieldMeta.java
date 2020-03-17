@@ -173,9 +173,11 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     @Override
     public final Selection as(String alias) {
-        return propertyName.equals(alias)
-                ? this
-                : new FieldSelection(this, alias);
+        if (propertyName.equals(alias)) {
+            return this;
+        } else {
+            return new FieldSelection<>(this, alias);
+        }
     }
 
 
@@ -279,33 +281,21 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     }
 
     @Override
-    public String beforeAs() {
-        return defaultToString();
-    }
-
-    private String defaultToString() {
-        return new StringBuilder()
-                .append("\n")
-                .append(this.table.javaType().getName())
-                .append(" mapping ")
-                .append(this.tableMeta().tableName())
-                .append(" [\n")
-                .append(this.propertyName())
-                .append(" mapping ")
-                .append(this.fieldName())
-                .append("\n]")
-                .toString();
+    public final String beforeAs() {
+        return table.tableName()
+                .concat(".")
+                .concat(fieldName);
     }
 
     @Override
-    protected  final void afterSpace(SQLContext context) {
-        context.appendField(this.table.tableName(),this);
+    protected final void afterSpace(SQLContext context) {
+        context.appendField(this.table.tableName(), this);
     }
 
 
     /*################################## blow private method ##################################*/
 
-    private static class DefaultIndexFieldMeta<T extends IDomain, F> extends DefaultFieldMeta<T, F>
+    private static final class DefaultIndexFieldMeta<T extends IDomain, F> extends DefaultFieldMeta<T, F>
             implements IndexFieldMeta<T, F> {
 
         private final IndexMeta<T> indexMeta;

@@ -35,6 +35,11 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery, OuterQueryAble
     }
 
     @Override
+    public Selection getSelection(String derivedFieldName) {
+        return this.actualSelect.getSelection(derivedFieldName);
+    }
+
+    @Override
     public final void appendSQL(SQLContext context) {
         this.actualSelect.appendSQL(context);
     }

@@ -70,6 +70,11 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
     }
 
     @Override
+    public Selection getSelection(String derivedFieldName) {
+        return this.actualSelect.getSelection(derivedFieldName);
+    }
+
+    @Override
     public final Selection selection() {
         List<Selection> selectionList = this.actualSelect.selectionList();
         Assert.state(selectionList.size() == 1, "selectionList size isn't 1,criteria error.");

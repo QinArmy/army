@@ -4,7 +4,8 @@ import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.*;
+import io.army.meta.mapping.MappingFactory;
+import io.army.meta.mapping.MappingType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -85,7 +86,23 @@ public abstract class SQLS extends AbstractSQLS {
 
     public static <E> Expression<E> ref(String subQueryAlias, String derivedFieldName, Class<E> selectionType) {
         return CriteriaContextHolder.getContext()
-                .ref(subQueryAlias, derivedFieldName,selectionType);
+                .ref(subQueryAlias, derivedFieldName, selectionType);
+    }
+
+    public static SelectionGroup group(TableMeta<?> tableMeta, String alias) {
+        return null;
+    }
+
+    public static SelectionGroup group(String tableAlias, List<FieldMeta<?, ?>> fieldMetaList) {
+        return null;
+    }
+
+    public static SelectionGroup derivedGroup(String subQueryAlias) {
+        return null;
+    }
+
+    public static SelectionGroup derivedGroup(String subQueryAlias, List<String> derivedFieldNameList) {
+        return null;
     }
 
     /*################################## blow sql key word operate method ##################################*/

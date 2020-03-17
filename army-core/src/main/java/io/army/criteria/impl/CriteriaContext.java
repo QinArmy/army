@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.AliasFieldMeta;
 import io.army.criteria.Expression;
+import io.army.criteria.SubQuery;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 
@@ -13,6 +14,8 @@ interface CriteriaContext {
 
     <E> Expression<E> ref(String subQueryAlias, String derivedFieldName, Class<E> selectionType);
 
-   <C> C criteria();
+    void onAddSubQuery(SubQuery subQuery, String subQueryAlias);
+
+    <C> C criteria();
 
 }

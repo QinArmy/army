@@ -6,22 +6,21 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.util.CollectionUtils;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
-final class ContextualSelectImpl<C> extends AbstractSelectImpl<C> implements CriteriaContext
-        , Select.SelectionGroupAble<C> {
+final class ContextualSelectImpl<C> extends AbstractSelectImpl<C> implements CriteriaContext {
 
     /*################################## blow cache prop ##################################*/
+
+    private Map<String, SubQuery> subQueryMap = new HashMap<>();
 
     private Map<String, AliasFieldMeta<?, ?>> aliasTableFieldCache = new HashMap<>();
 
     private Map<String, RefSelection<?>> refSelectionCache = new HashMap<>();
 
-    private Map<String, Collection<RefSelection<?>>> noSelectionRefCache = new HashMap<>();
+    private Map<String, Set<RefSelection<?>>> onceChangeRefCache = new HashMap<>();
 
     ContextualSelectImpl(C criteria) {
         super(criteria);
@@ -64,12 +63,36 @@ final class ContextualSelectImpl<C> extends AbstractSelectImpl<C> implements Cri
         );
     }
 
+    @Override
+    public void onAddSubQuery(SubQuery subQuery, String subQueryAlias) {
+        if (subQueryMap.putIfAbsent(subQueryAlias, subQuery) != subQuery) {
+            throw new CriteriaException(ErrorCode.TABLE_ALIAS_DUPLICATION
+                    , "SubQuery alias[%s] duplication.", subQueryAlias);
+        }
+        doOnceChangeRefSelection(subQuery, subQueryAlias);
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public final C criteria() {
         return this.criteria;
     }
 
+    @Override
+    public void clear() {
+        super.clear();
+
+        this.subQueryMap.clear();
+        this.subQueryMap = null;
+        this.aliasTableFieldCache.clear();
+        this.aliasTableFieldCache = null;
+
+        this.refSelectionCache.clear();
+        this.refSelectionCache = null;
+        this.onceChangeRefCache.clear();
+        this.onceChangeRefCache = null;
+
+    }
 
     /*################################## blow protected template method ##################################*/
 
@@ -80,53 +103,77 @@ final class ContextualSelectImpl<C> extends AbstractSelectImpl<C> implements Cri
 
     @Override
     protected void doSubQuery(SubQuery subQuery, String subQueryAlias) {
-
+        onAddSubQuery(subQuery, subQueryAlias);
     }
 
     protected final void doPrepare() {
         CriteriaContextHolder.clearContext(this);
 
-        this.aliasTableFieldCache.clear();
-        this.aliasTableFieldCache = null;
-        this.refSelectionCache.clear();
-        this.refSelectionCache = null;
-
-        this.noSelectionRefCache.clear();
-        this.noSelectionRefCache = null;
+        if (!this.onceChangeRefCache.isEmpty()) {
+            throw new CriteriaException(ErrorCode.REF_EXP_ERROR, createReferenceErrorMsg());
+        }
     }
 
 
     /*################################## blow private method ##################################*/
 
+    private String createReferenceErrorMsg() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Reference Expressions[\n");
+        for (Set<RefSelection<?>> refSet : this.onceChangeRefCache.values()) {
+            for (Iterator<RefSelection<?>> iterator = refSet.iterator(); iterator.hasNext(); ) {
+                RefSelection<?> ref = iterator.next();
+
+                builder.append(ref);
+                if (iterator.hasNext()) {
+                    builder.append("\n");
+                }
+            }
+
+        }
+        builder.append("] not found from select query.");
+        return builder.toString();
+    }
 
     private <E> RefSelection<E> createRefSelection(String subQueryAlias, String derivedFieldName
             , @Nullable Class<E> selectionType) {
-        RefSelection<E> refSelection;
-        if (selectionType == null) {
-            refSelection = new RefSelectionImpl<>(subQueryAlias, derivedFieldName);
-        } else {
-            refSelection = new RefSelectionImpl<>(subQueryAlias, derivedFieldName, selectionType);
+        // 1. try to get targetSelection
+        Selection targetSelection = null;
+        SubQuery subQuery = subQueryMap.get(subQueryAlias);
+        if (subQuery != null) {
+            targetSelection = subQuery.getSelection(derivedFieldName);
         }
-        Collection<RefSelection<?>> collection = this.noSelectionRefCache.computeIfAbsent(
-                subQueryAlias, key -> new HashSet<>());
-
-        collection.add(refSelection);
-
+        // 2. create RefSelection
+        RefSelection<E> refSelection;
+        if (targetSelection == null) {
+            refSelection = RefSelectionImpl.buildOnceChange(subQueryAlias, derivedFieldName);
+            // 2-1. get refSelectionSet by subQueryAlias
+            Set<RefSelection<?>> refSelectionSet = this.onceChangeRefCache.computeIfAbsent(
+                    subQueryAlias, key -> new HashSet<>());
+            // 2-2. add RefSelection that only change once.
+            refSelectionSet.add(refSelection);
+        } else {
+            refSelection = RefSelectionImpl.buildImmutable(subQueryAlias, targetSelection);
+        }
+        // 3. cache refSelection
+        this.refSelectionCache.putIfAbsent(subQueryAlias + derivedFieldName, refSelection);
         return refSelection;
     }
 
-   /* private void setSelection() {
-        for (TableWrapper tableWrapper : tableWrapperList) {
-            Collection<RefSelection<?>> collection = this.noSelectionRefCache.get(tableWrapper.getAlias());
-            if(CollectionUtils.isEmpty(collection)){
-                continue;
-            }
-
-            for (RefSelection<?> refSelection : collection) {
-                refSelection.selection();
-            }
+    private void doOnceChangeRefSelection(SubQuery subQuery, String subQueryAlias) {
+        Set<RefSelection<?>> set = this.onceChangeRefCache.get(subQueryAlias);
+        if (CollectionUtils.isEmpty(set)) {
+            return;
         }
-    }*/
+
+        RefSelection<?> ref;
+        for (Iterator<RefSelection<?>> iterator = set.iterator(); iterator.hasNext(); ) {
+            ref = iterator.next();
+            ref.selection(subQuery.getSelection(ref.derivedFieldName()));
+            iterator.remove();
+        }
+        this.onceChangeRefCache.remove(subQueryAlias);
+    }
 
 
 }

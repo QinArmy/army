@@ -10,14 +10,16 @@ import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.Pair;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
  abstract class AbstractSelectImpl<C> extends AbstractSQLAble implements
-        Select, Select.SelectionAble<C>, Select.FromAble<C>, Select.JoinAble<C>,
-        Select.OnAble<C>, Select.WhereAndAble<C>, Select.LimitAble<C>
-        , Select.HavingAble<C>, InnerQueryAble {
+         Select, Select.SelectionGroupAble<C>, Select.FromAble<C>, Select.JoinAble<C>,
+         Select.OnAble<C>, Select.WhereAndAble<C>, Select.LimitAble<C>
+         , Select.HavingAble<C>, InnerQueryAble {
 
     private static final class TableWrapperImpl implements TableWrapper {
 
@@ -155,25 +157,35 @@ import java.util.function.Predicate;
         return this;
     }
 
-    @Override
-    public final Select.FromAble<C> select(Distinct distinct, Function<C, List<Selection>> function) {
-        return select(distinct, function.apply(this.criteria));
-    }
+     @Override
+     public final Select.FromAble<C> select(Distinct distinct, Function<C, List<Selection>> function) {
+         return select(distinct, function.apply(this.criteria));
+     }
 
-    @Override
-    public final Select.FromAble<C> select(Function<C, List<Selection>> function) {
-        return select(function.apply(this.criteria));
-    }
+     @Override
+     public final Select.FromAble<C> select(Function<C, List<Selection>> function) {
+         return select(function.apply(this.criteria));
+     }
 
-    /*################################## blow FromAble method ##################################*/
+     @Override
+     public final FromAble<C> select(Function<C, List<SelectionGroup>> function, boolean group) {
+         return null;
+     }
 
-    @Override
-    public final Select.JoinAble<C> from(TableAble tableAble, String tableAlias) {
-        Assert.state(this.tableWrapperList.isEmpty(), "form clause ended.");
-        setOutQueryIfNeed(tableAble);
-        appendDerivedSelectionIfNeed(tableAble, tableAlias);
-        this.tableWrapperList.add(new TableWrapperImpl(tableAble, tableAlias, JoinType.NONE));
-        return this;
+     @Override
+     public final FromAble<C> select(Distinct distinct, Function<C, List<SelectionGroup>> function, boolean group) {
+         return null;
+     }
+
+     /*################################## blow FromAble method ##################################*/
+
+     @Override
+     public final Select.JoinAble<C> from(TableAble tableAble, String tableAlias) {
+         Assert.state(this.tableWrapperList.isEmpty(), "form clause ended.");
+         setOutQueryIfNeed(tableAble);
+         appendDerivedSelectionIfNeed(tableAble, tableAlias);
+         this.tableWrapperList.add(new TableWrapperImpl(tableAble, tableAlias, JoinType.NONE));
+         return this;
     }
 
     /*################################## blow JoinAble method ##################################*/
@@ -547,19 +559,30 @@ import java.util.function.Predicate;
         return this;
     }
 
-    protected abstract void  doPrepare();
+     protected abstract void doPrepare();
 
-    protected abstract void doTable(TableMeta<?> table,String tableAlias);
+     @Override
+     public void clear() {
+         this.modifierList = null;
+         this.selectionList = null;
+         this.tableWrapperList = null;
+         this.predicateList = null;
 
-    protected abstract void doSubQuery(SubQuery subQuery,String subQueryAlias);
+         this.groupExpList = null;
+         this.havingList = null;
+         this.sortExpList = null;
+     }
 
-    /*################################## blow private method ##################################*/
+     protected abstract void doTable(TableMeta<?> table, String tableAlias);
+
+     protected abstract void doSubQuery(SubQuery subQuery, String subQueryAlias);
+
+     /*################################## blow private method ##################################*/
 
 
-
-    private OnAble<C> appendTableWrapper(TableAble tableAble, String tableAlias, JoinType joinType) {
-        setOutQueryIfNeed(tableAble);
-        appendDerivedSelectionIfNeed(tableAble, tableAlias);
+     private OnAble<C> appendTableWrapper(TableAble tableAble, String tableAlias, JoinType joinType) {
+         setOutQueryIfNeed(tableAble);
+         appendDerivedSelectionIfNeed(tableAble, tableAlias);
         Assert.state(!this.tableWrapperList.isEmpty(), "no form clause.");
         this.tableWrapperList.add(new TableWrapperImpl(tableAble, tableAlias, joinType));
         return this;

@@ -24,10 +24,7 @@ final class FieldSelection<E> extends AbstractExpression<E> {
 
     @Override
     protected void afterSpace(SQLContext context) {
-        fieldMeta.appendSQL(context);
-        context.stringBuilder()
-                .append(" AS ")
-                .append(alias);
+        this.fieldMeta.appendSQL(context);
     }
 
     @Override

@@ -11,37 +11,32 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-final class RefSelectionImpl<E> extends AbstractExpression<E> implements RefSelection<E> {
+abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefSelection<E> {
 
-    private final String subQueryAlias;
 
-    private final String derivedFieldName;
-
-    private final ProxyMappingType proxyMappingType = new ProxyMappingType();
-
-    RefSelectionImpl(String subQueryAlias, String derivedFieldName) {
-        this.subQueryAlias = subQueryAlias;
-        this.derivedFieldName = derivedFieldName;
+    static <E> RefSelectionImpl<E> buildImmutable(String subQueryAlias, Selection selection) {
+        return new ImmutableRefSelection<>(subQueryAlias, selection);
     }
 
-    RefSelectionImpl(String subQueryAlias, String derivedFieldName, Class<E> selectionType) {
-        this(subQueryAlias,derivedFieldName);
+    static <E> RefSelectionImpl<E> buildOnceChange(String subQueryAlias, String derivedFieldName) {
+        return new OnceChangeRefSelection<>(subQueryAlias, derivedFieldName);
+    }
+
+
+    protected final String subQueryAlias;
+
+    private RefSelectionImpl(String subQueryAlias) {
+        this.subQueryAlias = subQueryAlias;
     }
 
     @Override
-    protected void afterSpace(SQLContext context) {
-
+    protected final void afterSpace(SQLContext context) {
         SQL sql = context.dml();
+
         context.stringBuilder()
                 .append(sql.quoteIfNeed(subQueryAlias))
                 .append(".")
-                .append(sql.quoteIfNeed(derivedFieldName))
-               ;
-    }
-
-    @Override
-    public MappingType mappingType() {
-        return this.proxyMappingType;
+                .append(sql.quoteIfNeed(derivedFieldName()));
     }
 
     @Override
@@ -50,30 +45,77 @@ final class RefSelectionImpl<E> extends AbstractExpression<E> implements RefSele
     }
 
     @Override
-    public final String derivedFieldName() {
-        return this.derivedFieldName;
-    }
-
-    @Override
-    public final Selection selection() {
-        return this.proxyMappingType.selection();
-    }
-
-    @Override
-    public void selection(Selection selection) {
-        Assert.isTrue(this.derivedFieldName.equals(selection.alias()),()->String.format
-                ("selection[%s] alias and %s.%s not match.",selection,this.subQueryAlias,this.derivedFieldName));
-        this.proxyMappingType.selection(selection);
-    }
-
-    @Override
-    protected String beforeAs() {
-        return subQueryAlias + "." + derivedFieldName;
+    protected final String beforeAs() {
+        return subQueryAlias + "." + derivedFieldName();
     }
 
 
+    private static final class ImmutableRefSelection<E> extends RefSelectionImpl<E> {
 
-    private static final class ProxyMappingType  implements MappingType {
+        private final Selection selection;
+
+        private ImmutableRefSelection(String subQueryAlias, Selection selection) {
+            super(subQueryAlias);
+            this.selection = selection;
+        }
+
+        @Override
+        public Selection selection() {
+            return this.selection;
+        }
+
+        @Override
+        public MappingType mappingType() {
+            return this.selection.mappingType();
+        }
+
+        @Override
+        public String derivedFieldName() {
+            return this.selection.alias();
+        }
+
+        @Override
+        public void selection(Selection selection) {
+            throw new UnsupportedOperationException(String.format("selection[%s] is immutable.", this));
+        }
+    }
+
+    private static final class OnceChangeRefSelection<E> extends RefSelectionImpl<E> {
+
+        private final String derivedFieldName;
+
+        private final ProxyMappingType proxyMappingType = new ProxyMappingType();
+
+        private OnceChangeRefSelection(String subQueryAlias, String derivedFieldName) {
+            super(subQueryAlias);
+            this.derivedFieldName = derivedFieldName;
+        }
+
+        @Override
+        public Selection selection() {
+            return proxyMappingType.selection();
+        }
+
+        @Override
+        public MappingType mappingType() {
+            return proxyMappingType;
+        }
+
+        @Override
+        public String derivedFieldName() {
+            return this.derivedFieldName;
+        }
+
+        @Override
+        public void selection(Selection selection) {
+            Assert.isTrue(this.derivedFieldName.equals(selection.alias()), () -> String.format
+                    ("selection[%s] alias and %s.%s not match.", selection, this.subQueryAlias, this.derivedFieldName));
+            this.proxyMappingType.selection(selection);
+        }
+    }
+
+
+    private static final class ProxyMappingType implements MappingType {
 
         private Selection selection;
 
@@ -81,49 +123,49 @@ final class RefSelectionImpl<E> extends AbstractExpression<E> implements RefSele
 
         }
 
-        private void selection(Selection selection){
-            Assert.state(this.selection == null,"selection only update once.");
+        private void selection(Selection selection) {
+            Assert.state(this.selection == null, "selection only update once.");
             this.selection = selection;
         }
 
-        private Selection selection(){
-            Assert.state(this.selection != null,"no selection.");
+        private Selection selection() {
+            Assert.state(this.selection != null, "no selection.");
             return selection;
         }
 
         @Override
         public Class<?> javaType() {
-            Assert.state(this.selection != null,"no selection.");
+            Assert.state(this.selection != null, "no selection.");
             return selection.mappingType().javaType();
         }
 
         @Override
         public JDBCType jdbcType() {
-            Assert.state(this.selection != null,"no selection.");
+            Assert.state(this.selection != null, "no selection.");
             return selection.mappingType().jdbcType();
         }
 
         @Override
         public boolean isTextValue(String textValue) {
-            Assert.state(this.selection != null,"no selection.");
+            Assert.state(this.selection != null, "no selection.");
             return selection.mappingType().isTextValue(textValue);
         }
 
         @Override
         public void nonNullSet(PreparedStatement st, Object value, int index) throws SQLException {
-            Assert.state(this.selection != null,"no selection.");
-            selection.mappingType().nonNullSet(st,value,index);
+            Assert.state(this.selection != null, "no selection.");
+            selection.mappingType().nonNullSet(st, value, index);
         }
 
         @Override
         public Object nullSafeGet(ResultSet resultSet, String alias) throws SQLException {
-            Assert.state(this.selection != null,"no selection.");
-            return selection.mappingType().nullSafeGet(resultSet,alias);
+            Assert.state(this.selection != null, "no selection.");
+            return selection.mappingType().nullSafeGet(resultSet, alias);
         }
 
         @Override
         public String nonNullTextValue(Object value) {
-            Assert.state(this.selection != null,"no selection.");
+            Assert.state(this.selection != null, "no selection.");
             return selection.mappingType().nonNullTextValue(value);
         }
     }

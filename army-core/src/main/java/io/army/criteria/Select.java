@@ -44,6 +44,10 @@ public interface Select extends SQLBuilder, SQLAble, QueryAble {
 
     interface SelectionGroupAble<C> extends SelectionAble<C> {
 
+        FromAble<C> select(Function<C, List<SelectionGroup>> function, boolean group);
+
+        FromAble<C> select(Distinct distinct, Function<C, List<SelectionGroup>> function, boolean group);
+
     }
 
     interface FromAble<C> extends SelectSQLAble, SelectAble {

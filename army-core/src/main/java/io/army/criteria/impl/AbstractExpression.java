@@ -25,7 +25,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     @Override
     public Selection as(String alias) {
-        Assert.isTrue(StringUtils.hasText(alias), "alias required");
+        Assert.hasText(alias, "alias required");
         this.alias = alias;
         return this;
     }
@@ -50,17 +50,17 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     @Override
     public final IPredicate eq(String subQueryAlias, String fieldAlias) {
-        return new DualPredicateImpl(this, DualOperator.EQ, SQLS.ref(subQueryAlias,fieldAlias));
+        return new DualPredicateImpl(this, DualOperator.EQ, SQLS.ref(subQueryAlias, fieldAlias));
     }
 
     @Override
     public final IPredicate eq(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return new DualPredicateImpl(this, DualOperator.EQ, SQLS.field(tableAlias,fieldMeta));
+        return new DualPredicateImpl(this, DualOperator.EQ, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override
     public final IPredicate eq(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
-        return new ColumnSubQueryPredicate(this,DualOperator.EQ,keyOperator,subQuery);
+        return new ColumnSubQueryPredicate(this, DualOperator.EQ, keyOperator, subQuery);
     }
 
     @Override
@@ -75,17 +75,17 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     @Override
     public final IPredicate lt(String subQueryAlias, String fieldAlias) {
-        return new DualPredicateImpl(this, DualOperator.LT, SQLS.ref(subQueryAlias,fieldAlias));
+        return new DualPredicateImpl(this, DualOperator.LT, SQLS.ref(subQueryAlias, fieldAlias));
     }
 
     @Override
     public final IPredicate lt(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return new DualPredicateImpl(this, DualOperator.LT, SQLS.field(tableAlias,fieldMeta));
+        return new DualPredicateImpl(this, DualOperator.LT, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override
     public final IPredicate lt(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
-        return new ColumnSubQueryPredicate(this,DualOperator.LT,keyOperator,subQuery);
+        return new ColumnSubQueryPredicate(this, DualOperator.LT, keyOperator, subQuery);
     }
 
     @Override
@@ -100,17 +100,17 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     @Override
     public final IPredicate le(String subQueryAlias, String fieldAlias) {
-        return new DualPredicateImpl(this, DualOperator.LE, SQLS.ref(subQueryAlias,fieldAlias));
+        return new DualPredicateImpl(this, DualOperator.LE, SQLS.ref(subQueryAlias, fieldAlias));
     }
 
     @Override
     public final IPredicate le(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return new DualPredicateImpl(this, DualOperator.LE, SQLS.field(tableAlias,fieldMeta));
+        return new DualPredicateImpl(this, DualOperator.LE, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override
     public final IPredicate le(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
-        return new ColumnSubQueryPredicate(this,DualOperator.LE,keyOperator,subQuery);
+        return new ColumnSubQueryPredicate(this, DualOperator.LE, keyOperator, subQuery);
     }
 
     @Override
@@ -125,17 +125,17 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     @Override
     public final IPredicate gt(String subQueryAlias, String fieldAlias) {
-        return new DualPredicateImpl(this, DualOperator.GT, SQLS.ref(subQueryAlias,fieldAlias));
+        return new DualPredicateImpl(this, DualOperator.GT, SQLS.ref(subQueryAlias, fieldAlias));
     }
 
     @Override
     public final IPredicate gt(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return new DualPredicateImpl(this, DualOperator.GT, SQLS.field(tableAlias,fieldMeta));
+        return new DualPredicateImpl(this, DualOperator.GT, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override
     public final IPredicate gt(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
-        return new ColumnSubQueryPredicate(this,DualOperator.GT,keyOperator,subQuery);
+        return new ColumnSubQueryPredicate(this, DualOperator.GT, keyOperator, subQuery);
     }
 
     @Override
@@ -150,17 +150,17 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     @Override
     public final IPredicate ge(String subQueryAlias, String fieldAlias) {
-        return new DualPredicateImpl(this, DualOperator.GE, SQLS.ref(subQueryAlias,fieldAlias));
+        return new DualPredicateImpl(this, DualOperator.GE, SQLS.ref(subQueryAlias, fieldAlias));
     }
 
     @Override
     public final IPredicate ge(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return new DualPredicateImpl(this, DualOperator.GE, SQLS.field(tableAlias,fieldMeta));
+        return new DualPredicateImpl(this, DualOperator.GE, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override
     public final IPredicate ge(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
-        return new ColumnSubQueryPredicate(this,DualOperator.GE,keyOperator,subQuery);
+        return new ColumnSubQueryPredicate(this, DualOperator.GE, keyOperator, subQuery);
     }
 
     @Override
@@ -175,17 +175,17 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     @Override
     public final IPredicate notEq(String subQueryAlias, String fieldAlias) {
-        return new DualPredicateImpl(this, DualOperator.NOT_EQ, SQLS.ref(subQueryAlias,fieldAlias));
+        return new DualPredicateImpl(this, DualOperator.NOT_EQ, SQLS.ref(subQueryAlias, fieldAlias));
     }
 
     @Override
     public final IPredicate notEq(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return new DualPredicateImpl(this, DualOperator.NOT_EQ, SQLS.field(tableAlias,fieldMeta));
+        return new DualPredicateImpl(this, DualOperator.NOT_EQ, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override
     public final IPredicate notEq(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
-        return new ColumnSubQueryPredicate(this,DualOperator.NOT_EQ,keyOperator,subQuery);
+        return new ColumnSubQueryPredicate(this, DualOperator.NOT_EQ, keyOperator, subQuery);
     }
 
     @Override
@@ -215,29 +215,29 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     @Override
     public final IPredicate between(String subQueryAlias, String derivedFieldName, Expression<E> second) {
-        return new BetweenPredicate(this, SQLS.ref(subQueryAlias,derivedFieldName), second);
+        return new BetweenPredicate(this, SQLS.ref(subQueryAlias, derivedFieldName), second);
     }
 
     @Override
     public final IPredicate between(String subQueryAlias, String derivedFieldName, E second) {
-        return new BetweenPredicate(this, SQLS.ref(subQueryAlias,derivedFieldName), SQLS.param(second, this));
+        return new BetweenPredicate(this, SQLS.ref(subQueryAlias, derivedFieldName), SQLS.param(second, this));
     }
 
     @Override
     public final IPredicate between(String subQueryAlias1, String derivedFieldName1
             , String subQueryAlias2, String derivedFieldName2) {
-        return new BetweenPredicate(this, SQLS.ref(subQueryAlias1,derivedFieldName1)
+        return new BetweenPredicate(this, SQLS.ref(subQueryAlias1, derivedFieldName1)
                 , SQLS.ref(subQueryAlias2, derivedFieldName2));
     }
 
     @Override
     public final IPredicate between(Expression<E> first, String subQueryAlias, String derivedFieldName) {
-        return new BetweenPredicate(this,first,SQLS.ref(subQueryAlias, derivedFieldName));
+        return new BetweenPredicate(this, first, SQLS.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final IPredicate between(E first, String subQueryAlias, String derivedFieldName) {
-        return new BetweenPredicate(this,SQLS.param(first, this),SQLS.ref(subQueryAlias, derivedFieldName));
+        return new BetweenPredicate(this, SQLS.param(first, this), SQLS.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
@@ -582,8 +582,17 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     @Override
     public final void appendSQL(SQLContext context) {
-        context.stringBuilder().append(" ");
+        context.stringBuilder()
+                .append(" ");
+        // invoke descendant method
         afterSpace(context);
+
+        if (this.alias != null) {
+            context.stringBuilder()
+                    .append(" AS ")
+                    .append(context.dml().quoteIfNeed(this.alias))
+            ;
+        }
     }
 
     @Override
