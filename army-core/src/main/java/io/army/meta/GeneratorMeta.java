@@ -2,14 +2,13 @@ package io.army.meta;
 
 import java.util.Map;
 
-public interface GeneratorMeta {
+public interface GeneratorMeta extends Meta {
 
-    FieldMeta<?,?> fieldMeta();
+    FieldMeta<?, ?> fieldMeta();
 
     Class<?> type();
 
     /**
-     *
      * @return prop name or empty.
      * @see io.army.generator.PreMultiGenerator#DEPEND_PROP_NAME
      */

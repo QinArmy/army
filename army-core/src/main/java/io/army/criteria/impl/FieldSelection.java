@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.AliasFieldMeta;
+import io.army.criteria.AliasFieldExp;
 import io.army.criteria.SQLContext;
 import io.army.meta.FieldMeta;
 import io.army.meta.mapping.MappingType;
@@ -30,8 +30,8 @@ final class FieldSelection<E> extends AbstractExpression<E> {
     @Override
     public String beforeAs() {
         String tableAlias;
-        if (fieldMeta instanceof AliasFieldMeta) {
-            tableAlias = ((AliasFieldMeta<?, ?>) fieldMeta).tableAlias();
+        if (fieldMeta instanceof AliasFieldExp) {
+            tableAlias = ((AliasFieldExp<?, ?>) fieldMeta).tableAlias();
         } else {
             tableAlias = "";
         }

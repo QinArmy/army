@@ -1,6 +1,5 @@
 package io.army.criteria;
 
-import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.util.Pair;
 
@@ -23,9 +22,9 @@ public interface ColumnSubQuery<E> extends SubQuery {
 
     interface ColumnSubQuerySelectionAble<E, C> extends ColumnSubQuerySQLAble {
 
-        <T extends IDomain> ColumnSubQueryFromAble<E, C> select(Distinct distinct, TableMeta<T> tableMeta);
+        ColumnSubQueryFromAble<E, C> select(Distinct distinct, String tableAlias, TableMeta<?> tableMeta);
 
-        <T extends IDomain> ColumnSubQueryFromAble<E, C> select(TableMeta<T> tableMeta);
+        ColumnSubQueryFromAble<E, C> select(String tableAlias, TableMeta<?> tableMeta);
 
         ColumnSubQueryFromAble<E, C> select(String subQueryAlias);
 
@@ -38,6 +37,11 @@ public interface ColumnSubQuery<E> extends SubQuery {
         ColumnSubQueryFromAble<E, C> select(Function<C, List<Selection>> function);
 
         ColumnSubQueryFromAble<E, C> select(Distinct distinct, Function<C, List<Selection>> function);
+
+        ColumnSubQueryFromAble<E, C> select(Function<C, List<SelectionGroup>> function, boolean group);
+
+        ColumnSubQueryFromAble<E, C> select(Distinct distinct, Function<C, List<SelectionGroup>> function, boolean group);
+
     }
 
     interface ColumnSubQueryFromAble<E, C> extends ColumnSubQuerySQLAble, ColumnSubQueryAble<E> {

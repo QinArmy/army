@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.AliasFieldMeta;
+import io.army.criteria.AliasFieldExp;
 import io.army.criteria.SQLContext;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
@@ -12,14 +12,14 @@ import io.army.util.Assert;
 import java.sql.JDBCType;
 
 
-final class AliasFieldMetaImpl<T extends IDomain, F> extends AbstractExpression<F>
-        implements AliasFieldMeta<T, F> {
+final class AliasFieldExpImpl<T extends IDomain, F> extends AbstractExpression<F>
+        implements AliasFieldExp<T, F> {
 
     private final FieldMeta<T, F> fieldMeta;
 
     private final String tableAlias;
 
-    AliasFieldMetaImpl(FieldMeta<T, F> fieldMeta, String tableAlias) {
+    AliasFieldExpImpl(FieldMeta<T, F> fieldMeta, String tableAlias) {
         Assert.notNull(fieldMeta, "fieldMeta required");
         Assert.hasText(tableAlias, "tableAlias required");
         Assert.isTrue(!tableAlias.contains("."), "tableAlias must no '.'");

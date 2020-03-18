@@ -1,6 +1,5 @@
 package io.army.criteria;
 
-import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.util.Pair;
 
@@ -10,7 +9,7 @@ import java.util.function.Predicate;
 
 public interface Select extends SQLBuilder, SQLAble, QueryAble {
 
-    interface SelectAble  extends SelectSQLAble{
+    interface SelectAble extends SelectSQLAble {
 
         Select asSelect();
     }
@@ -21,33 +20,25 @@ public interface Select extends SQLBuilder, SQLAble, QueryAble {
 
     interface SelectionAble<C> extends SelectSQLAble {
 
-        <T extends IDomain> FromAble<C> select(Distinct distinct, TableMeta<T> tableMeta);
+        FromAble<C> select(Distinct distinct, String tableAlias, TableMeta<?> tableMeta);
 
-        <T extends IDomain> FromAble<C> select(Distinct distinct, String tableAlias, TableMeta<T> tableMeta);
-
-        <T extends IDomain> FromAble<C> select(TableMeta<T> tableMeta);
-
-        <T extends IDomain> FromAble<C> select(String tableAlias, TableMeta<T> tableMeta);
-
-        FromAble<C> select(String subQueryAlias);
+        FromAble<C> select(String tableAlias, TableMeta<?> tableMeta);
 
         FromAble<C> select(Distinct distinct, String subQueryAlias);
 
-        FromAble<C> select(List<Selection> selectionList);
+        FromAble<C> select(String subQueryAlias);
 
-        FromAble<C> select(Distinct distinct, List<Selection> selectionList);
-
-        FromAble<C> select(Function<C, List<Selection>> function);
-
-        FromAble<C> select(Distinct distinct, Function<C, List<Selection>> function);
     }
 
-    interface SelectionGroupAble<C> extends SelectionAble<C> {
+    interface SelectPartAble<C> extends SelectionAble<C> {
 
-        FromAble<C> select(Function<C, List<SelectionGroup>> function, boolean group);
+        FromAble<C> select(List<SelectPart> selectionList);
 
-        FromAble<C> select(Distinct distinct, Function<C, List<SelectionGroup>> function, boolean group);
+        FromAble<C> select(Distinct distinct, List<SelectPart> selectionList);
 
+        FromAble<C> select(Function<C, List<SelectPart>> function);
+
+        FromAble<C> select(Distinct distinct, Function<C, List<SelectPart>> function);
     }
 
     interface FromAble<C> extends SelectSQLAble, SelectAble {

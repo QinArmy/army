@@ -18,7 +18,7 @@ import java.util.Set;
  * @see IndexMeta
  * @see IndexFieldMeta
  */
-public interface TableMeta<T extends IDomain> extends TableAble {
+public interface TableMeta<T extends IDomain> extends TableAble, Meta {
 
     String ID = "id";
 

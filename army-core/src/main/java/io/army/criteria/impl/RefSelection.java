@@ -3,15 +3,15 @@ package io.army.criteria.impl;
 import io.army.criteria.Expression;
 import io.army.criteria.Selection;
 
-interface RefSelection<E> extends Expression<E> {
+interface RefSelection<E> extends Expression<E>, Selection {
 
-     String subQueryAlias();
+    String subQueryAlias();
 
-     String derivedFieldName();
+    String derivedFieldName();
 
-     Selection selection();
+    Selection selection();
 
-     void selection(Selection selection);
+    void selection(Selection selection);
 
 
 }

@@ -74,7 +74,7 @@ public abstract class SQLS extends AbstractSQLS {
         );
     }
 
-    public static <T extends IDomain, F> AliasFieldMeta<T, F> field(String tableAlias, FieldMeta<T, F> fieldMeta) {
+    public static <T extends IDomain, F> AliasFieldExp<T, F> field(String tableAlias, FieldMeta<T, F> fieldMeta) {
         return CriteriaContextHolder.getContext()
                 .aliasField(tableAlias, fieldMeta);
     }
@@ -90,7 +90,7 @@ public abstract class SQLS extends AbstractSQLS {
     }
 
     public static SelectionGroup group(TableMeta<?> tableMeta, String alias) {
-        return null;
+        return AbstractSelectionGroup.build(tableMeta, alias);
     }
 
     public static SelectionGroup group(String tableAlias, List<FieldMeta<?, ?>> fieldMetaList) {
@@ -104,6 +104,7 @@ public abstract class SQLS extends AbstractSQLS {
     public static SelectionGroup derivedGroup(String subQueryAlias, List<String> derivedFieldNameList) {
         return null;
     }
+
 
     /*################################## blow sql key word operate method ##################################*/
 
@@ -286,6 +287,8 @@ public abstract class SQLS extends AbstractSQLS {
     public static Expression<LocalDate> currentDate() {
         return new Funcs.NoArgumentFunc<>("CURRENT_DATE", MappingFactory.getDefaultMapping(LocalDate.class));
     }
+
+    /*################################## blow static inner class  ##################################*/
 
 
 }

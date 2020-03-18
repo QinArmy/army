@@ -12,7 +12,14 @@
 (3) 在实现的复杂和使用的简洁性的平衡下，选择多体系方案.
 (4) 子查询和外层查询的语法不同,比如 锁语法.
 
-4. 为什么设计  SelectionGroup ?
+
+4. 为什么设计 SQLS.ref(String,String) ?
+(1) 为了在外层查询的 select 子句中 引用 SubQuery 的 Selection .
+(2) 避免重复创建 RefSelection.
+
+5. 为什么设计  SelectionGroup ?
 (1) 可以减少不必要的 RefSelection 对象的创建,提高运行效率.
 (2) 可以减少不必要的 AliasField 对象的创建,提高运行效率.
 (3) 简化 select 子句的 api,如 : select t1.*,t2.*,subQueryAlias.* from t1 join t2 on xxx join () as subQueryAlias .
+(4) 当 TableMeta 在 Select SQL 的 from 子句 和 join 子句 总共只出现一次时,
+可以将 TableMeta 的 FieldMeta 封装成一个 SelectionGroup,且生成的 sql 中 对应的FieldMeta 有表别名.

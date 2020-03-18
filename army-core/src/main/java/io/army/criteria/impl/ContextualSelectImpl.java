@@ -16,7 +16,7 @@ final class ContextualSelectImpl<C> extends AbstractSelectImpl<C> implements Cri
 
     private Map<String, SubQuery> subQueryMap = new HashMap<>();
 
-    private Map<String, AliasFieldMeta<?, ?>> aliasTableFieldCache = new HashMap<>();
+    private Map<String, AliasFieldExp<?, ?>> aliasTableFieldCache = new HashMap<>();
 
     private Map<String, RefSelection<?>> refSelectionCache = new HashMap<>();
 
@@ -32,11 +32,11 @@ final class ContextualSelectImpl<C> extends AbstractSelectImpl<C> implements Cri
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <T extends IDomain, F> AliasFieldMeta<T, F> aliasField(
+    public final <T extends IDomain, F> AliasFieldExp<T, F> aliasField(
             String tableAlias, FieldMeta<T, F> fieldMeta) {
-        AliasFieldMeta<T, F> aliasField = (AliasFieldMeta<T, F>) aliasTableFieldCache.computeIfAbsent(
+        AliasFieldExp<T, F> aliasField = (AliasFieldExp<T, F>) aliasTableFieldCache.computeIfAbsent(
                 tableAlias + fieldMeta.fieldName()
-                , k -> new AliasFieldMetaImpl<>(fieldMeta, tableAlias)
+                , k -> new AliasFieldExpImpl<>(fieldMeta, tableAlias)
         );
         if (aliasField.fieldMeta() != fieldMeta) {
             throw new CriteriaException(ErrorCode.TABLE_ALIAS_DUPLICATION, "table alias[%s] duplication", tableAlias);

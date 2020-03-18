@@ -30,6 +30,15 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
     }
 
     @Override
+    public final String alias() {
+        if (this.alias == null) {
+            return derivedFieldName();
+        } else {
+            return this.alias;
+        }
+    }
+
+    @Override
     protected final void afterSpace(SQLContext context) {
         SQL sql = context.dml();
 

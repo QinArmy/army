@@ -1,8 +1,5 @@
 package io.army.meta;
 
-import io.army.domain.IDomain;
-import org.springframework.lang.NonNull;
-
 import java.util.Map;
 
 /**
@@ -14,7 +11,7 @@ import java.util.Map;
  *
  * @see TableMeta
  */
-public interface SchemaMeta {
+public interface SchemaMeta extends Meta {
 
 
     String catalog();
@@ -24,7 +21,7 @@ public interface SchemaMeta {
 
     boolean defaultSchema();
 
-    Map<Class<?>,TableMeta<?>> tables();
+    Map<Class<?>, TableMeta<?>> tables();
 
     @Override
     boolean equals(Object o);

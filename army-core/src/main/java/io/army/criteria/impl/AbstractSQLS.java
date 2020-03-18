@@ -51,4 +51,9 @@ abstract class AbstractSQLS {
         return Dual.INSTANCE;
     }
 
+
+
+
+    /*################################## blow static inner class  ##################################*/
+
 }

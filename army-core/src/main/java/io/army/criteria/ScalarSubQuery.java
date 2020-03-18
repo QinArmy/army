@@ -1,6 +1,5 @@
 package io.army.criteria;
 
-import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.util.Pair;
 
@@ -8,10 +7,10 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public interface ScalarSubQuery<E> extends ColumnSubQuery<E>,RowSubQuery ,Expression<E>{
+public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expression<E> {
 
 
-    interface ScalarSubQueryAble<E> extends ScalarSubQuerySQLAble{
+    interface ScalarSubQueryAble<E> extends ScalarSubQuerySQLAble {
 
         ScalarSubQuery<E> asScalarSubQuery();
     }
@@ -22,9 +21,9 @@ public interface ScalarSubQuery<E> extends ColumnSubQuery<E>,RowSubQuery ,Expres
 
     interface ScalarSubQuerySelectionAble<E, C> extends ScalarSubQuerySQLAble {
 
-        <T extends IDomain> ScalarSubQueryFromAble<E, C> select(Distinct distinct, TableMeta<T> tableMeta);
+        ScalarSubQueryFromAble<E, C> select(Distinct distinct, String tableAlias, TableMeta<?> tableMeta);
 
-        <T extends IDomain> ScalarSubQueryFromAble<E, C> select(TableMeta<T> tableMeta);
+        ScalarSubQueryFromAble<E, C> select(String tableAlias, TableMeta<?> tableMeta);
 
         ScalarSubQueryFromAble<E, C> select(String subQueryAlias);
 
@@ -37,6 +36,11 @@ public interface ScalarSubQuery<E> extends ColumnSubQuery<E>,RowSubQuery ,Expres
         ScalarSubQueryFromAble<E, C> select(Function<C, List<Selection>> function);
 
         ScalarSubQueryFromAble<E, C> select(Distinct distinct, Function<C, List<Selection>> function);
+
+        ScalarSubQueryFromAble<E, C> select(Function<C, List<SelectionGroup>> function, boolean group);
+
+        ScalarSubQueryFromAble<E, C> select(Distinct distinct, Function<C, List<SelectionGroup>> function, boolean group);
+
     }
 
     interface ScalarSubQueryFromAble<E, C> extends ScalarSubQuerySQLAble, ScalarSubQueryAble<E> {

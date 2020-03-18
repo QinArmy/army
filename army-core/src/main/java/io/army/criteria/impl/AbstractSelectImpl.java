@@ -1,25 +1,24 @@
 package io.army.criteria.impl;
 
+import io.army.ErrorCode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerQueryAble;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.dialect.SQLDialect;
-import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
+import io.army.util.CollectionUtils;
 import io.army.util.Pair;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
- abstract class AbstractSelectImpl<C> extends AbstractSQLAble implements
-         Select, Select.SelectionGroupAble<C>, Select.FromAble<C>, Select.JoinAble<C>,
-         Select.OnAble<C>, Select.WhereAndAble<C>, Select.LimitAble<C>
-         , Select.HavingAble<C>, InnerQueryAble {
+abstract class AbstractSelectImpl<C> extends AbstractSQLAble implements
+        Select, Select.SelectPartAble<C>, Select.FromAble<C>, Select.JoinAble<C>,
+        Select.OnAble<C>, Select.WhereAndAble<C>, Select.LimitAble<C>
+        , Select.HavingAble<C>, InnerQueryAble {
 
     private static final class TableWrapperImpl implements TableWrapper {
 
@@ -59,9 +58,7 @@ import java.util.function.Predicate;
 
     private List<SQLModifier> modifierList = new ArrayList<>(2);
 
-    private List<Selection> selectionList = new ArrayList<>();
-
-    private String derivedTableName;
+    private List<SelectPart> selectPartList = new ArrayList<>();
 
     private List<TableWrapper> tableWrapperList = new ArrayList<>(6);
 
@@ -82,6 +79,11 @@ import java.util.function.Predicate;
     private boolean prepared = false;
 
 
+    /*################################## blow cache props ##################################*/
+
+    private Map<TableMeta<?>, Integer> tableRefCountCache = new HashMap<>();
+
+
     AbstractSelectImpl(C criteria) {
         Assert.notNull(criteria, "criteria required");
         this.criteria = criteria;
@@ -92,58 +94,38 @@ import java.util.function.Predicate;
     /*################################## blow SelectListAble method ##################################*/
 
     @Override
-    public final <T extends IDomain> Select.FromAble<C> select(Distinct distinct, TableMeta<T> tableMeta) {
-        Assert.state(this.modifierList.isEmpty(), "select clause ended.");
-        Assert.state(this.selectionList.isEmpty(), "select clause ended.");
-
-        this.modifierList.add(distinct);
-        this.selectionList.addAll(tableMeta.fieldCollection());
-        return this;
-    }
-
-    @Override
-    public final <T extends IDomain> FromAble<C> select(Distinct distinct, String tableAlias, TableMeta<T> tableMeta) {
+    public final FromAble<C> select(Distinct distinct, String tableAlias, TableMeta<?> tableMeta) {
         Assert.state(this.modifierList.isEmpty(), "select clause ended.");
         this.modifierList.add(distinct);
         return select(tableAlias, tableMeta);
     }
 
     @Override
-    public final <T extends IDomain> Select.FromAble<C> select(TableMeta<T> tableMeta) {
-        this.selectionList.addAll(tableMeta.fieldCollection());
+    public final FromAble<C> select(String tableAlias, TableMeta<?> tableMeta) {
+        Assert.state(this.selectPartList.isEmpty(), "select clause ended.");
+
+        this.selectPartList.add(SQLS.group(tableMeta, tableAlias));
         return this;
     }
 
     @Override
-    public final <T extends IDomain> FromAble<C> select(String tableAlias, TableMeta<T> tableMeta) {
-        if (tableMeta.tableName().equals(tableAlias)) {
-            return select(tableMeta);
-        }
-
-        Assert.state(this.selectionList.isEmpty(), "select clause ended.");
-        for (FieldMeta<T, ?> fieldMeta : tableMeta.fieldCollection()) {
-            this.selectionList.add(new AliasFieldMetaImpl<>(fieldMeta, tableAlias));
-        }
+    public final FromAble<C> select(String subQueryAlias) {
+        this.selectPartList.add(SQLS.derivedGroup(subQueryAlias));
         return this;
     }
 
     @Override
-    public final FromAble<C> select(String derivedTableName) {
-        this.derivedTableName = derivedTableName;
-        return this;
-    }
-
-    @Override
-    public final FromAble<C> select(Distinct distinct, String derivedTableName) {
+    public final FromAble<C> select(Distinct distinct, String subQueryAlias) {
         Assert.state(this.modifierList.isEmpty(), "select clause ended.");
-        this.derivedTableName = derivedTableName;
+        this.modifierList.add(distinct);
+        this.selectPartList.add(SQLS.derivedGroup(subQueryAlias));
         return this;
     }
 
     @Override
     public final Select.FromAble<C> select(Distinct distinct, List<Selection> selectionList) {
         Assert.state(this.modifierList.isEmpty(), "select clause ended.");
-        Assert.state(this.selectionList.isEmpty(), "select clause ended.");
+        Assert.state(this.selectPartList.isEmpty(), "select clause ended.");
 
         this.modifierList.add(distinct);
         this.selectionList.addAll(selectionList);
@@ -157,35 +139,35 @@ import java.util.function.Predicate;
         return this;
     }
 
-     @Override
-     public final Select.FromAble<C> select(Distinct distinct, Function<C, List<Selection>> function) {
-         return select(distinct, function.apply(this.criteria));
-     }
+    @Override
+    public final Select.FromAble<C> select(Distinct distinct, Function<C, List<Selection>> function) {
+        return select(distinct, function.apply(this.criteria));
+    }
 
-     @Override
-     public final Select.FromAble<C> select(Function<C, List<Selection>> function) {
-         return select(function.apply(this.criteria));
-     }
+    @Override
+    public final Select.FromAble<C> select(Function<C, List<Selection>> function) {
+        return select(function.apply(this.criteria));
+    }
 
-     @Override
-     public final FromAble<C> select(Function<C, List<SelectionGroup>> function, boolean group) {
-         return null;
-     }
+    @Override
+    public final FromAble<C> select(Function<C, List<SelectionGroup>> function, boolean group) {
+        return null;
+    }
 
-     @Override
-     public final FromAble<C> select(Distinct distinct, Function<C, List<SelectionGroup>> function, boolean group) {
-         return null;
-     }
+    @Override
+    public final FromAble<C> select(Distinct distinct, Function<C, List<SelectionGroup>> function, boolean group) {
+        return null;
+    }
 
-     /*################################## blow FromAble method ##################################*/
+    /*################################## blow FromAble method ##################################*/
 
-     @Override
-     public final Select.JoinAble<C> from(TableAble tableAble, String tableAlias) {
-         Assert.state(this.tableWrapperList.isEmpty(), "form clause ended.");
-         setOutQueryIfNeed(tableAble);
-         appendDerivedSelectionIfNeed(tableAble, tableAlias);
-         this.tableWrapperList.add(new TableWrapperImpl(tableAble, tableAlias, JoinType.NONE));
-         return this;
+    @Override
+    public final Select.JoinAble<C> from(TableAble tableAble, String tableAlias) {
+        Assert.state(this.tableWrapperList.isEmpty(), "form clause ended.");
+        setOutQueryIfNeed(tableAble);
+        appendDerivedSelectionIfNeed(tableAble, tableAlias);
+        this.tableWrapperList.add(new TableWrapperImpl(tableAble, tableAlias, JoinType.NONE));
+        return this;
     }
 
     /*################################## blow JoinAble method ##################################*/
@@ -336,7 +318,7 @@ import java.util.function.Predicate;
 
     @Override
     public final Select.OrderByAble<C> ifHaving(Predicate<C> predicate, List<IPredicate> predicateList) {
-        if (predicate.test(this.criteria))   {
+        if (predicate.test(this.criteria)) {
             having(predicateList);
         }
         return this;
@@ -559,30 +541,30 @@ import java.util.function.Predicate;
         return this;
     }
 
-     protected abstract void doPrepare();
+    protected abstract void doPrepare();
 
-     @Override
-     public void clear() {
-         this.modifierList = null;
-         this.selectionList = null;
-         this.tableWrapperList = null;
-         this.predicateList = null;
+    @Override
+    public void clear() {
+        this.modifierList = null;
+        this.selectPartList = null;
+        this.tableWrapperList = null;
+        this.predicateList = null;
 
-         this.groupExpList = null;
-         this.havingList = null;
-         this.sortExpList = null;
-     }
+        this.groupExpList = null;
+        this.havingList = null;
+        this.sortExpList = null;
+    }
 
-     protected abstract void doTable(TableMeta<?> table, String tableAlias);
+    protected abstract void doTable(TableMeta<?> table, String tableAlias);
 
-     protected abstract void doSubQuery(SubQuery subQuery, String subQueryAlias);
+    protected abstract void doSubQuery(SubQuery subQuery, String subQueryAlias);
 
-     /*################################## blow private method ##################################*/
+    /*################################## blow private method ##################################*/
 
 
-     private OnAble<C> appendTableWrapper(TableAble tableAble, String tableAlias, JoinType joinType) {
-         setOutQueryIfNeed(tableAble);
-         appendDerivedSelectionIfNeed(tableAble, tableAlias);
+    private OnAble<C> appendTableWrapper(TableAble tableAble, String tableAlias, JoinType joinType) {
+        setOutQueryIfNeed(tableAble);
+        appendDerivedSelectionIfNeed(tableAble, tableAlias);
         Assert.state(!this.tableWrapperList.isEmpty(), "no form clause.");
         this.tableWrapperList.add(new TableWrapperImpl(tableAble, tableAlias, joinType));
         return this;
@@ -612,6 +594,78 @@ import java.util.function.Predicate;
     private void throwTableAbleError(TableAble tableAble) {
         throw new IllegalArgumentException(String.format(
                 "TableAble[%s] isn't SubQuery.", tableAble.getClass().getName()));
+    }
+
+
+    private void doListSemiSelectPart(ListSemiSelectPart selectPart) {
+
+        Map<TableMeta<?>, List<FieldMeta<?, ?>>> tableSelectionMap = new HashMap<>();
+
+        // 1. find FieldMata from selectPart as tableSelectionMap.
+        for (Selection selection : selectPart.selectionList) {
+            if (!(selection instanceof FieldMeta)) {
+                this.selectPartList.add(selection);
+                continue;
+            }
+            FieldMeta<?, ?> fieldMeta = (FieldMeta<?, ?>) selection;
+            int refCount = tableRefCountCache.getOrDefault(fieldMeta.tableMeta(), 0);
+            switch (refCount) {
+                case 0:
+                    String f = "not found the table of FieldMeta[%s] from criteria context,please check from clause.";
+                    throw new CriteriaException(ErrorCode.CRITERIA_ERROR, f, selection);
+                case 1:
+                    List<FieldMeta<?, ?>> fieldMetaList = tableSelectionMap.computeIfAbsent(fieldMeta.tableMeta()
+                            , key -> new ArrayList<>());
+                    fieldMetaList.add((FieldMeta<?, ?>) selection);
+                    break;
+                default:
+                    throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                            , "FieldMeta[%s] ambiguity,please check select clause and from clause.", selection);
+            }
+        }
+
+        // 2. find table alias to create SelectionGroup .
+        for (TableWrapper tableWrapper : tableWrapperList) {
+
+            if (tableWrapper.getTableAble() instanceof TableMeta) {
+                TableMeta<?> tableMeta = (TableMeta<?>) tableWrapper.getTableAble();
+                List<FieldMeta<?, ?>> fieldMetaList = tableSelectionMap.get(tableMeta);
+                if (CollectionUtils.isEmpty(fieldMetaList)) {
+                    continue;
+                }
+                this.selectPartList.add(SQLS.group(tableWrapper.getAlias(), fieldMetaList));
+            }
+        }
+
+
+    }
+
+    private void doSubQuerySemiSelectPart(SubQuerySemiSelectPartImp semiSelectPart) {
+        // 2. find SubQuery object to create SelectionGroup .
+        for (TableWrapper tableWrapper : tableWrapperList) {
+
+            if (tableWrapper.getTableAble() instanceof SubQuery
+                    && tableWrapper.getAlias().equals(semiSelectPart.subQueryAlias)) {
+
+                this.selectPartList.add(SQLS.group(tableWrapper.getAlias(), fieldMetaList));
+            }
+        }
+    }
+
+
+    private static final class ListSemiSelectPart implements SelectPart {
+
+        private final List<Selection> selectionList;
+
+        private ListSemiSelectPart(List<Selection> selectionList) {
+            this.selectionList = selectionList;
+        }
+
+        @Override
+        public void appendSQL(SQLContext context) {
+            throw new UnsupportedOperationException();
+        }
+
     }
 
 

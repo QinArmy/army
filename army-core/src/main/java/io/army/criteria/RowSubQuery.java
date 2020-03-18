@@ -1,6 +1,5 @@
 package io.army.criteria;
 
-import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.util.Pair;
 
@@ -10,7 +9,7 @@ import java.util.function.Predicate;
 
 public interface RowSubQuery extends SubQuery {
 
-    interface RowSubQueryAble extends RowSubQuerySQLAble{
+    interface RowSubQueryAble extends RowSubQuerySQLAble {
 
         RowSubQuery asRowSubQuery();
 
@@ -22,9 +21,9 @@ public interface RowSubQuery extends SubQuery {
 
     interface RowSubQuerySelectionAble<C> extends RowSubQuerySQLAble {
 
-        <T extends IDomain> RowSubQueryFromAble<C> select(Distinct distinct, TableMeta<T> tableMeta);
+        RowSubQueryFromAble<C> select(Distinct distinct, String tableAlias, TableMeta<?> tableMeta);
 
-        <T extends IDomain> RowSubQueryFromAble<C> select(TableMeta<T> tableMeta);
+        RowSubQueryFromAble<C> select(String tableAlias, TableMeta<?> tableMeta);
 
         RowSubQueryFromAble<C> select(String subQueryAlias);
 
@@ -37,9 +36,14 @@ public interface RowSubQuery extends SubQuery {
         RowSubQueryFromAble<C> select(Function<C, List<Selection>> function);
 
         RowSubQueryFromAble<C> select(Distinct distinct, Function<C, List<Selection>> function);
+
+        RowSubQueryFromAble<C> select(Function<C, List<SelectionGroup>> function, boolean group);
+
+        RowSubQueryFromAble<C> select(Distinct distinct, Function<C, List<SelectionGroup>> function, boolean group);
+
     }
 
-    interface RowSubQueryFromAble<C> extends  RowSubQueryAble {
+    interface RowSubQueryFromAble<C> extends RowSubQueryAble {
 
         RowSubQueryOnAble<C> from(TableAble tableAble, String tableAlias);
     }
