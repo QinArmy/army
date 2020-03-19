@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public interface DeleteAble extends SQLAble,SQLBuilder {
+public interface DeleteAble extends SQLAble, SQLDebug {
 
     interface SingleDeleteAble {
 
     }
 
-    interface FromAble<C> extends SingleDeleteAble{
+    interface FromAble<C> extends SingleDeleteAble {
 
         WhereAble<C> from(TableMeta<?> tableMeta);
     }

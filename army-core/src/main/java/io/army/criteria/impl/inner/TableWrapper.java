@@ -9,11 +9,11 @@ import java.util.List;
 @DeveloperForbid
 public interface TableWrapper {
 
-    TableAble getTableAble();
+    TableAble tableAble();
 
-    String getAlias();
+    String alias();
 
-    JoinType getJointType();
+    JoinType jointType();
 
-    List<IPredicate> getPredicateList();
+    List<IPredicate> onPredicateList();
 }

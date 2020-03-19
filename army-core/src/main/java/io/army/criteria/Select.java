@@ -7,10 +7,13 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public interface Select extends SQLBuilder, SQLAble, QueryAble {
+public interface Select extends SQLDebug, SQLAble, QueryAble {
 
     interface SelectAble extends SelectSQLAble {
-
+        /*
+         *not doc
+         * @see io.army.criteria.impl.CriteriaContextHolder.clearContext
+         */
         Select asSelect();
     }
 
@@ -18,7 +21,7 @@ public interface Select extends SQLBuilder, SQLAble, QueryAble {
 
     }
 
-    interface SelectionAble<C> extends SelectSQLAble {
+    interface SelectionGroupAble<C> extends SelectSQLAble {
 
         FromAble<C> select(Distinct distinct, String tableAlias, TableMeta<?> tableMeta);
 
@@ -30,21 +33,46 @@ public interface Select extends SQLBuilder, SQLAble, QueryAble {
 
     }
 
-    interface SelectPartAble<C> extends SelectionAble<C> {
+    interface SelectionAble<C> extends SelectSQLAble {
 
-        FromAble<C> select(List<SelectPart> selectionList);
+        NoJoinFromAble<C> select(Distinct distinct, String tableAlias, TableMeta<?> tableMeta);
 
-        FromAble<C> select(Distinct distinct, List<SelectPart> selectionList);
+        NoJoinFromAble<C> select(String tableAlias, TableMeta<?> tableMeta);
+
+        NoJoinFromAble<C> select(Distinct distinct, String subQueryAlias);
+
+        NoJoinFromAble<C> select(String subQueryAlias);
+
+        NoJoinFromAble<C> select(Distinct distinct, List<Selection> selectionList);
+
+        NoJoinFromAble<C> select(List<Selection> selectionList);
+
+        NoJoinFromAble<C> select(Distinct distinct, Selection selection);
+
+        NoJoinFromAble<C> select(Selection selection);
+    }
+
+    interface SelectPartAble<C> extends SelectionGroupAble<C> {
+
+        FromAble<C> select(List<SelectPart> selectPartList);
+
+        FromAble<C> select(Distinct distinct, List<SelectPart> selectPartList);
 
         FromAble<C> select(Function<C, List<SelectPart>> function);
 
         FromAble<C> select(Distinct distinct, Function<C, List<SelectPart>> function);
     }
 
-    interface FromAble<C> extends SelectSQLAble, SelectAble {
+
+    interface FromAble<C> extends SelectAble {
 
         JoinAble<C> from(TableAble tableAble, String tableAlias);
 
+    }
+
+    interface NoJoinFromAble<C> extends SelectAble {
+
+        WhereAble<C> from(TableAble tableAble, String tableAlias);
     }
 
     interface OnAble<C> extends SelectSQLAble {
@@ -102,13 +130,9 @@ public interface Select extends SQLBuilder, SQLAble, QueryAble {
 
     interface HavingAble<C> extends OrderByAble<C> {
 
-        OrderByAble<C> having(List<IPredicate> predicateList);
-
-        OrderByAble<C> having(Function<C, List<IPredicate>> function);
-
         OrderByAble<C> having(IPredicate predicate);
 
-        OrderByAble<C> ifHaving(Predicate<C> predicate, List<IPredicate> predicateList);
+        OrderByAble<C> having(Function<C, List<IPredicate>> function);
 
         OrderByAble<C> ifHaving(Predicate<C> predicate, Function<C, List<IPredicate>> function);
 

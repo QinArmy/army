@@ -21,10 +21,9 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-class UpdateAbleImpl<T extends IDomain, C> extends AbstractSQLAble implements UpdateAble.AliasAble<T, C>
+class UpdateAbleImpl<T extends IDomain, C> extends AbstractSQLDebug implements UpdateAble.AliasAble<T, C>
         , UpdateAble.SetAble<T, C>, UpdateAble.WhereAble<T, C>, UpdateAble.WhereAndAble<T, C>
         , InnerUpdateAble, UpdateAble {
-
 
 
     protected final TableMeta<T> tableMeta;

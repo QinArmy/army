@@ -12,12 +12,12 @@ import java.util.function.Predicate;
 
 public interface SubQuery extends SelfDescribed, TableAble, QueryAble {
 
-    List<Selection> selectionList();
+    List<SelectPart> selectPartList();
 
     @Nullable
     SubQuery subordinateSubQuery(String subordinateSubQueryAlias);
 
-    Selection getSelection(String derivedFieldName);
+    Selection selection(String derivedFieldName);
 
     QueryAble outerQuery();
 
@@ -32,29 +32,26 @@ public interface SubQuery extends SelfDescribed, TableAble, QueryAble {
 
     }
 
-    interface SubQuerySelectionAble<C> extends SubQuerySQLAble {
+
+    interface SubQuerySelectPartAble<C> extends SubQuerySQLAble {
 
         SubQueryFromAble<C> select(Distinct distinct, String tableAlias, TableMeta<?> tableMeta);
 
         SubQueryFromAble<C> select(String tableAlias, TableMeta<?> tableMeta);
 
-        SubQueryFromAble<C> select(String subQueryAlias);
-
         SubQueryFromAble<C> select(Distinct distinct, String subQueryAlias);
 
-        SubQueryFromAble<C> select(List<Selection> selectionList);
+        SubQueryFromAble<C> select(String subQueryAlias);
 
-        SubQueryFromAble<C> select(Distinct distinct, List<Selection> selectionList);
+        SubQueryFromAble<C> select(List<SelectPart> selectPartList);
 
-        SubQueryFromAble<C> select(Function<C, List<Selection>> function);
+        SubQueryFromAble<C> select(Distinct distinct, List<SelectPart> selectPartList);
 
-        SubQueryFromAble<C> select(Distinct distinct, Function<C, List<Selection>> function);
+        SubQueryFromAble<C> select(Function<C, List<SelectPart>> function);
 
-        SubQueryFromAble<C> select(Function<C, List<SelectionGroup>> function, boolean group);
-
-        SubQueryFromAble<C> select(Distinct distinct, Function<C, List<SelectionGroup>> function, boolean group);
-
+        SubQueryFromAble<C> select(Distinct distinct, Function<C, List<SelectPart>> function);
     }
+
 
     interface SubQueryFromAble<C> extends SubQueryAble {
 
@@ -117,13 +114,9 @@ public interface SubQuery extends SelfDescribed, TableAble, QueryAble {
 
     interface SubQueryHavingAble<C> extends SubQueryOrderByAble<C> {
 
-        SubQueryOrderByAble<C> having(List<IPredicate> predicateList);
-
         SubQueryOrderByAble<C> having(Function<C, List<IPredicate>> function);
 
         SubQueryOrderByAble<C> having(IPredicate predicate);
-
-        SubQueryOrderByAble<C> ifHaving(Predicate<C> predicate, List<IPredicate> predicateList);
 
         SubQueryOrderByAble<C> ifHaving(Predicate<C> predicate, Function<C, List<IPredicate>> function);
 

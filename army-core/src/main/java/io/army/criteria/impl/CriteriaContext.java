@@ -18,4 +18,6 @@ interface CriteriaContext {
 
     <C> C criteria();
 
+    void clear();
+
 }

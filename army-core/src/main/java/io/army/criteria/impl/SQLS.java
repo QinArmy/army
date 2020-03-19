@@ -33,21 +33,21 @@ public abstract class SQLS extends AbstractSQLS {
         return new DeleteAbleImpl<>(criteria);
     }
 
-    public static Select.SelectionAble<EmptyObject> prepareSelect() {
-        return new ContextualSelectImpl<>(EmptyObject.getInstance());
+    public static Select.SelectionGroupAble<EmptyObject> prepareSelect() {
+        return new ContextualMultiSelect<>(EmptyObject.getInstance());
     }
 
-    public static <C> Select.SelectionAble<C> prepareSelect(C criteria) {
-        return new ContextualSelectImpl<>(criteria);
+    public static <C> Select.SelectionGroupAble<C> prepareSelect(C criteria) {
+        return new ContextualMultiSelect<>(criteria);
     }
 
-    public static <C> SubQuery.SubQuerySelectionAble<C> subQuery() {
+    public static <C> SubQuery.SubQuerySelectPartAble<C> subQuery() {
         return new SubQueryAdaptor<>(
                 CriteriaContextHolder.getContext().criteria()
         );
     }
 
-    public static <C> RowSubQuery.RowSubQuerySelectionAble<C> rowSubQuery() {
+    public static <C> RowSubQuery.RowSubQuerySelectPartAble<C> rowSubQuery() {
         return new RowSubQueryAdaptor<>(
                 CriteriaContextHolder.getContext().criteria()
         );
@@ -94,15 +94,24 @@ public abstract class SQLS extends AbstractSQLS {
     }
 
     public static SelectionGroup group(String tableAlias, List<FieldMeta<?, ?>> fieldMetaList) {
-        return null;
+        return AbstractSelectionGroup.buildForFieldList(tableAlias, fieldMetaList);
+    }
+
+    /**
+     * package method.
+     * package develop guarantee each element of fieldMetaList is {@link FieldMeta}
+     * and elements belong to same {@link TableMeta}.
+     */
+    static SelectionGroup fieldGroup(String tableAlias, List<Selection> fieldMetaLis) {
+        return AbstractSelectionGroup.buildForFields(tableAlias, fieldMetaLis);
     }
 
     public static SelectionGroup derivedGroup(String subQueryAlias) {
-        return null;
+        return AbstractSelectionGroup.build(subQueryAlias);
     }
 
     public static SelectionGroup derivedGroup(String subQueryAlias, List<String> derivedFieldNameList) {
-        return null;
+        return AbstractSelectionGroup.build(subQueryAlias, derivedFieldNameList);
     }
 
 

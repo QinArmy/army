@@ -1,28 +1,27 @@
 package io.army.criteria.impl;
 
 import io.army.SessionFactory;
-import io.army.criteria.*;
+import io.army.criteria.DeleteAble;
+import io.army.criteria.IPredicate;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.InnerDeleteAble;
 import io.army.dialect.SQLDialect;
 import io.army.dialect.SQLWrapper;
-import io.army.domain.IDomain;
-import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
- class DeleteAbleImpl< C> extends AbstractSQLAble
-        implements DeleteAble.WhereAble< C>, DeleteAble.WhereAndAble< C>,DeleteAble.FromAble<C>,InnerDeleteAble {
+class DeleteAbleImpl<C> extends AbstractSQLDebug
+        implements DeleteAble.WhereAble<C>, DeleteAble.WhereAndAble<C>, DeleteAble.FromAble<C>, InnerDeleteAble {
 
     private final C criteria;
 
-    private  TableMeta<?> tableMeta;
+    private TableMeta<?> tableMeta;
 
     private List<IPredicate> predicateList;
 

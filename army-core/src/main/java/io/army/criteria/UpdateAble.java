@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public interface UpdateAble extends SQLAble, SQLBuilder {
+public interface UpdateAble extends SQLAble, SQLDebug {
 
     interface SingleUpdateAble extends SQLAble {
 

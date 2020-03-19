@@ -115,7 +115,7 @@ public class SessionTests {
         Map<String, Object> criteria = new HashMap<>();
 
         Select select = SQLS.prepareSelect(criteria)
-                .select(Distinct.DISTINCT,Account_.T)
+                .select(Distinct.DISTINCT, "a", Account_.T)
                 .from(Account_.T, "a").join(User_.T, "u").on(Account_.id.eq(User_.id))
                 .where(Account_.id.eq(1L))
                 .and(Account_.debt.gt(BigDecimal.ZERO))

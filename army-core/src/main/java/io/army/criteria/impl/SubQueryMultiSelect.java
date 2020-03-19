@@ -5,18 +5,19 @@ import io.army.criteria.*;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-final class SubQuerySelectImpl<C> extends AbstractSelectImpl<C> implements SubQuerySelect<C> {
+final class SubQueryMultiSelect<C> extends AbstractMultiSelectImpl<C> implements SubQuerySelect<C> {
 
-    private final Map<String, SubQuery> subordinateSubQueries = new HashMap<>();
+    private Map<String, SubQuery> subordinateSubQueries;
 
     private Map<String, Selection> selectionMap;
 
     private QueryAble outerQuery;
 
-    SubQuerySelectImpl(C criteria) {
+    SubQueryMultiSelect(C criteria) {
         super(criteria);
     }
 
@@ -26,15 +27,9 @@ final class SubQuerySelectImpl<C> extends AbstractSelectImpl<C> implements SubQu
     }
 
     @Override
-    public Selection getSelection(String derivedFieldName) {
+    public Selection selection(String derivedFieldName) {
         if (this.selectionMap == null) {
-            this.selectionMap = new HashMap<>();
-            for (Selection selection : selectionList()) {
-                if (this.selectionMap.putIfAbsent(selection.alias(), selection) != selection) {
-                    throw new CriteriaException(ErrorCode.SELECTION_DUPLICATION
-                            , "Selection[%s] of SubQuery duplication.", selection.alias());
-                }
-            }
+            this.selectionMap = createSelectionMap();
         }
         Selection s = this.selectionMap.get(derivedFieldName);
         if (s == null) {
@@ -63,19 +58,34 @@ final class SubQuerySelectImpl<C> extends AbstractSelectImpl<C> implements SubQu
     }
 
     @Override
-    protected void doTable(TableMeta<?> table, String tableAlias) {
+    void doClear() {
+        this.subordinateSubQueries = null;
+        this.selectionMap = null;
+        this.outerQuery = null;
+    }
+
+
+    /*################################## blow package template method ##################################*/
+
+    @Override
+    void onAddTable(TableMeta<?> table, String tableAlias) {
 
     }
 
     @Override
-    protected void doSubQuery(SubQuery subQuery, String subQueryAlias) {
-        subordinateSubQueries.putIfAbsent(subQueryAlias, subQuery);
+    void onAddSubQuery(SubQuery subQuery, String subQueryAlias) {
+        if (this.subordinateSubQueries == null) {
+            this.subordinateSubQueries = new HashMap<>();
+        }
+        this.subordinateSubQueries.putIfAbsent(subQueryAlias, subQuery);
         CriteriaContext context = CriteriaContextHolder.getContext();
         context.onAddSubQuery(subQuery, subQueryAlias);
     }
 
     @Override
-    protected void doPrepare() {
-
+    void afterDoAsSelect() {
+        if (this.subordinateSubQueries != null) {
+            this.subordinateSubQueries = Collections.unmodifiableMap(this.subordinateSubQueries);
+        }
     }
 }

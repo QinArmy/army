@@ -1,11 +1,12 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.Select;
 import org.springframework.core.NamedThreadLocal;
 
 
  abstract class CriteriaContextHolder {
 
-    private static final NamedThreadLocal<CriteriaContext> HOLDER = new NamedThreadLocal<>("criteria sql accessor.");
+     private static final NamedThreadLocal<CriteriaContext> HOLDER = new NamedThreadLocal<>("CriteriaContext holder");
 
     private CriteriaContextHolder() {
         throw new UnsupportedOperationException();
@@ -25,9 +26,9 @@ import org.springframework.core.NamedThreadLocal;
         return context;
     }
 
-    /**
-     * @see InnerSQLAble#prepare()
-     */
+     /**
+      * @see Select.SelectAble#asSelect()
+      */
     static void clearContext(CriteriaContext context) {
         CriteriaContext current = HOLDER.get();
         if(current != context){

@@ -19,33 +19,28 @@ public interface RowSubQuery extends SubQuery {
 
     }
 
-    interface RowSubQuerySelectionAble<C> extends RowSubQuerySQLAble {
+    interface RowSubQuerySelectPartAble<C> extends RowSubQuerySQLAble {
 
         RowSubQueryFromAble<C> select(Distinct distinct, String tableAlias, TableMeta<?> tableMeta);
 
         RowSubQueryFromAble<C> select(String tableAlias, TableMeta<?> tableMeta);
 
-        RowSubQueryFromAble<C> select(String subQueryAlias);
-
         RowSubQueryFromAble<C> select(Distinct distinct, String subQueryAlias);
 
-        RowSubQueryFromAble<C> select(List<Selection> selectionList);
+        RowSubQueryFromAble<C> select(String subQueryAlias);
 
-        RowSubQueryFromAble<C> select(Distinct distinct, List<Selection> selectionList);
+        RowSubQueryFromAble<C> select(List<SelectPart> selectPartList);
 
-        RowSubQueryFromAble<C> select(Function<C, List<Selection>> function);
+        RowSubQueryFromAble<C> select(Distinct distinct, List<SelectPart> selectPartList);
 
-        RowSubQueryFromAble<C> select(Distinct distinct, Function<C, List<Selection>> function);
+        RowSubQueryFromAble<C> select(Function<C, List<SelectPart>> function);
 
-        RowSubQueryFromAble<C> select(Function<C, List<SelectionGroup>> function, boolean group);
-
-        RowSubQueryFromAble<C> select(Distinct distinct, Function<C, List<SelectionGroup>> function, boolean group);
-
+        RowSubQueryFromAble<C> select(Distinct distinct, Function<C, List<SelectPart>> function);
     }
 
     interface RowSubQueryFromAble<C> extends RowSubQueryAble {
 
-        RowSubQueryOnAble<C> from(TableAble tableAble, String tableAlias);
+        RowSubQueryJoinAble<C> from(TableAble tableAble, String tableAlias);
     }
 
 
@@ -104,13 +99,9 @@ public interface RowSubQuery extends SubQuery {
 
     interface RowSubQueryHavingAble<C> extends RowSubQueryOrderByAble<C> {
 
-        RowSubQueryOrderByAble<C> having(List<IPredicate> predicateList);
-
         RowSubQueryOrderByAble<C> having(Function<C, List<IPredicate>> function);
 
         RowSubQueryOrderByAble<C> having(IPredicate predicate);
-
-        RowSubQueryOrderByAble<C> ifHaving(Predicate<C> predicate, List<IPredicate> predicateList);
 
         RowSubQueryOrderByAble<C> ifHaving(Predicate<C> predicate, Function<C, List<IPredicate>> function);
 

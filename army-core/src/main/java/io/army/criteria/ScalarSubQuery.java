@@ -1,12 +1,14 @@
 package io.army.criteria;
 
-import io.army.meta.TableMeta;
 import io.army.util.Pair;
 
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+/**
+ * @param <E> {@link ScalarSubQuery#selection()}'s Java Type.
+ */
 public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expression<E> {
 
 
@@ -21,31 +23,15 @@ public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expre
 
     interface ScalarSubQuerySelectionAble<E, C> extends ScalarSubQuerySQLAble {
 
-        ScalarSubQueryFromAble<E, C> select(Distinct distinct, String tableAlias, TableMeta<?> tableMeta);
+        ScalarSubQuerySelectionAble<E, C> select(Distinct distinct, Selection selection);
 
-        ScalarSubQueryFromAble<E, C> select(String tableAlias, TableMeta<?> tableMeta);
-
-        ScalarSubQueryFromAble<E, C> select(String subQueryAlias);
-
-        ScalarSubQueryFromAble<E, C> select(Distinct distinct, String subQueryAlias);
-
-        ScalarSubQueryFromAble<E, C> select(List<Selection> selectionList);
-
-        ScalarSubQueryFromAble<E, C> select(Distinct distinct, List<Selection> selectionList);
-
-        ScalarSubQueryFromAble<E, C> select(Function<C, List<Selection>> function);
-
-        ScalarSubQueryFromAble<E, C> select(Distinct distinct, Function<C, List<Selection>> function);
-
-        ScalarSubQueryFromAble<E, C> select(Function<C, List<SelectionGroup>> function, boolean group);
-
-        ScalarSubQueryFromAble<E, C> select(Distinct distinct, Function<C, List<SelectionGroup>> function, boolean group);
+        ScalarSubQuerySelectionAble<E, C> select(Selection selection);
 
     }
 
     interface ScalarSubQueryFromAble<E, C> extends ScalarSubQuerySQLAble, ScalarSubQueryAble<E> {
 
-        ScalarSubQueryOnAble<E, C> from(TableAble tableAble, String tableAlias);
+        ScalarSubQueryJoinAble<E, C> from(TableAble tableAble, String tableAlias);
     }
 
 
@@ -104,13 +90,9 @@ public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expre
 
     interface ScalarSubQueryHavingAble<E, C> extends ScalarSubQueryOrderByAble<E, C> {
 
-        ScalarSubQueryOrderByAble<E, C> having(List<IPredicate> predicateList);
-
         ScalarSubQueryOrderByAble<E, C> having(Function<C, List<IPredicate>> function);
 
         ScalarSubQueryOrderByAble<E, C> having(IPredicate predicate);
-
-        ScalarSubQueryOrderByAble<E, C> ifHaving(Predicate<C> predicate, List<IPredicate> predicateList);
 
         ScalarSubQueryOrderByAble<E, C> ifHaving(Predicate<C> predicate, Function<C, List<IPredicate>> function);
 

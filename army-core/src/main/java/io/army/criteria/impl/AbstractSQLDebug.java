@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.SessionFactory;
 import io.army.boot.SessionFactoryBuilder;
 import io.army.criteria.SQLAble;
-import io.army.criteria.SQLBuilder;
+import io.army.criteria.SQLDebug;
 import io.army.criteria.Visible;
 import io.army.dialect.Dialect;
 import io.army.dialect.SQLDialect;
@@ -12,7 +12,7 @@ import io.army.meta.SchemaMeta;
 
 import java.util.List;
 
-abstract class AbstractSQLAble implements SQLAble, SQLBuilder {
+abstract class AbstractSQLDebug implements SQLAble, SQLDebug {
 
     @Override
     public final String debugSQL() {

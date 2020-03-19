@@ -1,20 +1,28 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.domain.IDomain;
-import io.army.meta.TableMeta;
+import io.army.criteria.impl.inner.InnerSubQueryAble;
+import io.army.criteria.impl.inner.TableWrapper;
 import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
 import io.army.util.Pair;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+/**
+ * this class is a implementation of {@link ScalarSubQuery}.
+ *
+ * @param <E> {@link ScalarSubQuery#selection()}'s Java Type.
+ * @param <C> custom object for Dynamic SQL.
+ */
 final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements ScalarSubQuery<E>, OuterQueryAble
         , ScalarSubQuery.ScalarSubQuerySelectionAble<E, C>, ScalarSubQuery.ScalarSubQueryFromAble<E, C>
         , ScalarSubQuery.ScalarSubQueryOnAble<E, C>, ScalarSubQuery.ScalarSubQueryWhereAndAble<E, C>
-        , ScalarSubQuery.ScalarSubQueryJoinAble<E, C>, ScalarSubQuery.ScalarSubQueryHavingAble<E, C> {
+        , ScalarSubQuery.ScalarSubQueryJoinAble<E, C>, ScalarSubQuery.ScalarSubQueryHavingAble<E, C>
+        , InnerSubQueryAble {
 
 
     private final MappingType mappingType;
@@ -37,7 +45,7 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
 
     @Override
     protected final String beforeAs() {
-        return "#ScalarSubQuery";
+        return "#ScalarSubQuery:" + System.identityHashCode(this);
     }
 
     @Override
@@ -60,8 +68,8 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
     }
 
     @Override
-    public List<Selection> selectionList() {
-        return this.actualSelect.selectionList();
+    public List<SelectPart> selectPartList() {
+        return this.actualSelect.selectPartList();
     }
 
     @Override
@@ -70,76 +78,40 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
     }
 
     @Override
-    public Selection getSelection(String derivedFieldName) {
-        return this.actualSelect.getSelection(derivedFieldName);
+    public Selection selection(String derivedFieldName) {
+        return this.actualSelect.selection(derivedFieldName);
     }
 
     @Override
     public final Selection selection() {
-        List<Selection> selectionList = this.actualSelect.selectionList();
-        Assert.state(selectionList.size() == 1, "selectionList size isn't 1,criteria error.");
-        return selectionList.get(0);
+        List<SelectPart> selectPartList = this.actualSelect.selectPartList();
+        Assert.state(selectPartList.size() == 1, "selectPartList size isn't 1,criteria error.");
+        return (Selection) selectPartList.get(0);
     }
 
-    /*################################## blow RowSubQuerySelectionAble method ##################################*/
+    /*################################## blow ScalarSubQuerySelectionAble method ##################################*/
 
     @Override
-    public <T extends IDomain> ScalarSubQuery.ScalarSubQueryFromAble<E, C> select(Distinct distinct, TableMeta<T> tableMeta) {
-        this.actualSelect.select(distinct, tableMeta);
+    public ScalarSubQuerySelectionAble<E, C> select(Distinct distinct, Selection selection) {
+        this.actualSelect.select(distinct, Collections.singletonList(selection));
         return this;
     }
 
     @Override
-    public <T extends IDomain> ScalarSubQuery.ScalarSubQueryFromAble<E, C> select(TableMeta<T> tableMeta) {
-        this.actualSelect.select(tableMeta);
+    public ScalarSubQuerySelectionAble<E, C> select(Selection selection) {
+        this.actualSelect.select(Collections.singletonList(selection));
         return this;
     }
 
-    @Override
-    public ScalarSubQuery.ScalarSubQueryFromAble<E, C> select(String subQueryAlias) {
-        this.actualSelect.select(subQueryAlias);
-        return this;
-    }
+    /*################################## blow ScalarSubQueryFromAble method ##################################*/
 
     @Override
-    public ScalarSubQuery.ScalarSubQueryFromAble<E, C> select(Distinct distinct, String RowSubQueryAlias) {
-        this.actualSelect.select(distinct, RowSubQueryAlias);
-        return this;
-    }
-
-    @Override
-    public ScalarSubQuery.ScalarSubQueryFromAble<E, C> select(List<Selection> selectionList) {
-        this.actualSelect.select(selectionList);
-        return this;
-    }
-
-    @Override
-    public ScalarSubQuery.ScalarSubQueryFromAble<E, C> select(Distinct distinct, List<Selection> selectionList) {
-        this.actualSelect.select(distinct, selectionList);
-        return this;
-    }
-
-    @Override
-    public ScalarSubQuery.ScalarSubQueryFromAble<E, C> select(Function<C, List<Selection>> function) {
-        this.actualSelect.select(function);
-        return this;
-    }
-
-    @Override
-    public ScalarSubQuery.ScalarSubQueryFromAble<E, C> select(Distinct distinct, Function<C, List<Selection>> function) {
-        this.actualSelect.select(distinct, function);
-        return this;
-    }
-
-    /*################################## blow RowSubQueryFromAble method ##################################*/
-
-    @Override
-    public ScalarSubQuery.ScalarSubQueryOnAble<E, C> from(TableAble tableAble, String tableAlias) {
+    public ScalarSubQuery.ScalarSubQueryJoinAble<E, C> from(TableAble tableAble, String tableAlias) {
         this.actualSelect.from(tableAble, tableAlias);
         return this;
     }
 
-    /*################################## blow RowSubQueryOnAble method ##################################*/
+    /*################################## blow ScalarSubQueryOnAble method ##################################*/
 
     @Override
     public ScalarSubQuery.ScalarSubQueryJoinAble<E, C> on(List<IPredicate> predicateList) {
@@ -159,7 +131,7 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
         return this;
     }
 
-    /*################################## blow RowSubQueryJoinAble method ##################################*/
+    /*################################## blow ScalarSubQueryJoinAble method ##################################*/
 
     @Override
     public ScalarSubQuery.ScalarSubQueryOnAble<E, C> leftJoin(TableAble tableAble, String tableAlias) {
@@ -180,7 +152,7 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
     }
 
 
-    /*################################## blow RowSubQueryWhereAble method ##################################*/
+    /*################################## blow ScalarSubQueryWhereAble method ##################################*/
 
     @Override
     public ScalarSubQuery.ScalarSubQueryGroupByAble<E, C> where(List<IPredicate> predicateList) {
@@ -201,7 +173,7 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
     }
 
 
-    /*################################## blow RowSubQueryWhereAndAble method ##################################*/
+    /*################################## blow ScalarSubQueryWhereAndAble method ##################################*/
 
     @Override
     public ScalarSubQuery.ScalarSubQueryWhereAndAble<E, C> and(IPredicate predicate) {
@@ -227,7 +199,7 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
         return this;
     }
 
-    /*################################## blow RowSubQueryGroupByAble method ##################################*/
+    /*################################## blow ScalarSubQueryGroupByAble method ##################################*/
 
     @Override
     public ScalarSubQuery.ScalarSubQueryHavingAble<E, C> groupBy(Expression<?> groupExp) {
@@ -253,13 +225,7 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
         return this;
     }
 
-    /*################################## blow RowSubQueryHavingAble method ##################################*/
-
-    @Override
-    public ScalarSubQuery.ScalarSubQueryOrderByAble<E, C> having(List<IPredicate> predicateList) {
-        this.actualSelect.having(predicateList);
-        return this;
-    }
+    /*################################## blow ScalarSubQueryHavingAble method ##################################*/
 
     @Override
     public ScalarSubQuery.ScalarSubQueryOrderByAble<E, C> having(Function<C, List<IPredicate>> function) {
@@ -270,12 +236,6 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
     @Override
     public ScalarSubQuery.ScalarSubQueryOrderByAble<E, C> having(IPredicate predicate) {
         this.actualSelect.having(predicate);
-        return this;
-    }
-
-    @Override
-    public ScalarSubQuery.ScalarSubQueryOrderByAble<E, C> ifHaving(Predicate<C> predicate, List<IPredicate> predicateList) {
-        this.actualSelect.ifHaving(predicate, predicateList);
         return this;
     }
 
@@ -291,7 +251,7 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
         return this;
     }
 
-    /*################################## blow RowSubQueryOrderByAble method ##################################*/
+    /*################################## blow ScalarSubQueryOrderByAble method ##################################*/
 
     @Override
     public ScalarSubQuery.ScalarSubQueryLimitAble<E, C> orderBy(Expression<?> groupExp) {
@@ -317,7 +277,7 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
         return this;
     }
 
-    /*################################## blow RowSubQueryLimitAble method ##################################*/
+    /*################################## blow ScalarSubQueryLimitAble method ##################################*/
 
     @Override
     public ScalarSubQuery<E> limit(int rowCount) {
@@ -357,7 +317,7 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
 
 
 
-    /*################################## blow TableSubQueryAble method ##################################*/
+    /*################################## blow ScalarSubQueryAble method ##################################*/
 
     @Override
     public final ScalarSubQuery<E> asScalarSubQuery() {
@@ -365,5 +325,50 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
         return this;
     }
 
+    /*################################## blow InnerSubQueryAble method ##################################*/
 
+    @Override
+    public List<SQLModifier> modifierList() {
+        return this.actualSelect.modifierList();
+    }
+
+    @Override
+    public List<TableWrapper> tableWrapperList() {
+        return this.actualSelect.tableWrapperList();
+    }
+
+    @Override
+    public List<IPredicate> predicateList() {
+        return this.actualSelect.predicateList();
+    }
+
+    @Override
+    public List<Expression<?>> groupExpList() {
+        return this.actualSelect.groupExpList();
+    }
+
+    @Override
+    public List<IPredicate> havingList() {
+        return this.actualSelect.havingList();
+    }
+
+    @Override
+    public List<Expression<?>> sortExpList() {
+        return this.actualSelect.sortExpList();
+    }
+
+    @Override
+    public int offset() {
+        return this.actualSelect.offset();
+    }
+
+    @Override
+    public int rowCount() {
+        return this.actualSelect.rowCount();
+    }
+
+    @Override
+    public void clear() {
+        this.actualSelect.clear();
+    }
 }

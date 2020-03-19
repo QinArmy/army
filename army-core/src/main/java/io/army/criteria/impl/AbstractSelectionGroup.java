@@ -1,19 +1,25 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.SQLContext;
-import io.army.criteria.Selection;
-import io.army.criteria.SelectionGroup;
-import io.army.criteria.SubQuery;
+import io.army.ErrorCode;
+import io.army.criteria.*;
 import io.army.dialect.TableDML;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 abstract class AbstractSelectionGroup implements SelectionGroup {
 
     private AbstractSelectionGroup() {
+    }
+
+    @Override
+    public final String toString() {
+        return super.toString();
     }
 
     @Override
@@ -39,9 +45,10 @@ abstract class AbstractSelectionGroup implements SelectionGroup {
 
         }
 
+
     }
 
-    static SelectionGroup buildForField(String tableAlias, List<FieldMeta<?, ?>> fieldMetaList) {
+    static SelectionGroup buildForFieldList(String tableAlias, List<FieldMeta<?, ?>> fieldMetaList) {
         List<Selection> selectionList = new ArrayList<>(fieldMetaList.size());
         TableMeta<?> tableMeta = null;
         for (FieldMeta<?, ?> fieldMeta : fieldMetaList) {
@@ -58,14 +65,24 @@ abstract class AbstractSelectionGroup implements SelectionGroup {
     }
 
     static SelectionGroup build(TableMeta<?> tableMeta, String tableAlias) {
-        List<Selection> selectionList = new ArrayList<>(tableMeta.fieldCollection().size());
-        selectionList.addAll(tableMeta.fieldCollection());
-        return new ImmutableSelectionGroup(tableAlias, selectionList);
+        return new ImmutableSelectionGroup(tableAlias, new ArrayList<>(tableMeta.fieldCollection()));
     }
 
     static SelectionGroup build(String subQueryAlias) {
-        return new SubQuerySelectGroupImpl(subQueryAlias);
+        return new SubQuerySelectionGroupImpl(subQueryAlias);
     }
+
+    static SelectionGroup build(String subQueryAlias, List<String> derivedFieldNameList) {
+        return new SubQueryListSelectionGroup(subQueryAlias, new ArrayList<>(derivedFieldNameList));
+    }
+
+    static SelectionGroup buildForFields(String tableAlias, List<Selection> fieldMetaList) {
+        return new ImmutableSelectionGroup(tableAlias, fieldMetaList);
+    }
+
+
+    /*################################## blow static inner class  ##################################*/
+
 
     private static final class ImmutableSelectionGroup extends AbstractSelectionGroup {
 
@@ -90,14 +107,14 @@ abstract class AbstractSelectionGroup implements SelectionGroup {
 
     }
 
-    private static final class SubQuerySelectGroupImpl extends AbstractSelectionGroup
-            implements SelectionGroup.SubQuerySelectGroup {
+    private static final class SubQuerySelectionGroupImpl extends AbstractSelectionGroup
+            implements SubQuerySelectGroup {
 
         private final String subQueryAlias;
 
         private List<Selection> selectionList;
 
-        private SubQuerySelectGroupImpl(String subQueryAlias) {
+        private SubQuerySelectionGroupImpl(String subQueryAlias) {
             this.subQueryAlias = subQueryAlias;
         }
 
@@ -108,48 +125,66 @@ abstract class AbstractSelectionGroup implements SelectionGroup {
 
         @Override
         public void finish(SubQuery subQuery) {
-            Assert.state(this.selectionList == null, "selectionList only update once.");
-            this.selectionList = subQuery.selectionList();
+            Assert.state(this.selectionList == null, "selectPartList only update once.");
+            List<Selection> selectionList = new ArrayList<>();
+
+            for (SelectPart selectPart : subQuery.selectPartList()) {
+                if (selectPart instanceof Selection) {
+                    selectionList.add((Selection) selectPart);
+                } else if (selectPart instanceof SelectionGroup) {
+                    selectionList.addAll(((SelectionGroup) selectPart).selectionList());
+                } else {
+                    throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                            , "a selectPart of SubQuery[%s] isn't Selection or SelectionGroup.", subQueryAlias);
+                }
+            }
+            this.selectionList = Collections.unmodifiableList(selectionList);
         }
 
         @Override
         public List<Selection> selectionList() {
-            Assert.state(this.selectionList != null, "selectionList is null,SubQuerySelectGroup state error.");
+            Assert.state(this.selectionList != null, "selectPartList is null,SubQuerySelectGroup state error.");
             return this.selectionList;
         }
 
     }
 
-    private static final class ListSelectGroupImpl implements SelectionGroup.ListSelectGroup {
 
-        private final List<Selection> originalSelectionList;
+    private static final class SubQueryListSelectionGroup extends AbstractSelectionGroup
+            implements SubQuerySelectGroup {
+
+        private final String subQueryAlias;
+
+        private List<String> derivedFieldNameList;
 
         private List<Selection> selectionList;
 
-        private List<SelectionGroup> selectionGroupList;
+        private SubQueryListSelectionGroup(String subQueryAlias, List<String> derivedFieldNameList) {
+            this.subQueryAlias = subQueryAlias;
+            this.derivedFieldNameList = Collections.unmodifiableList(derivedFieldNameList);
+        }
 
-        private ListSelectGroupImpl(List<Selection> originalSelectionList) {
-            this.originalSelectionList = Collections.unmodifiableList(new ArrayList<>(originalSelectionList));
+        @Override
+        public void finish(SubQuery subQuery) {
+            Assert.state(this.selectionList == null, "SubQuerySelectGroup only update once.");
+            List<Selection> selectionList = new ArrayList<>(derivedFieldNameList.size());
+            for (String derivedField : derivedFieldNameList) {
+                selectionList.add(subQuery.selection(derivedField));
+            }
+            this.selectionList = Collections.unmodifiableList(selectionList);
+            this.derivedFieldNameList = null;
         }
 
         @Override
         public String tableAlias() {
-            return null;
+            return this.subQueryAlias;
         }
 
         @Override
         public List<Selection> selectionList() {
-            return null;
-        }
-
-        @Override
-        public boolean tryFinish(Map<TableMeta<?>, String> tableAliasMap) {
-            return false;
-        }
-
-        @Override
-        public void appendSQL(SQLContext context) {
-
+            Assert.state(this.selectionList != null, () -> String.format("selectionList is null,%s not finished"
+                    , SubQueryListSelectionGroup.class.getSimpleName()));
+            return this.selectionList;
         }
     }
 

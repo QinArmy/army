@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.util.Pair;
 
@@ -9,7 +8,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectionAble<C>
+final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectPartAble<C>
         , SubQuery.SubQueryFromAble<C>, SubQuery.SubQueryOnAble<C>, SubQuery.SubQueryJoinAble<C>
         , SubQuery.SubQueryWhereAndAble<C>, SubQuery.SubQueryHavingAble<C> {
 
@@ -21,23 +20,17 @@ final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectionAble<C>
 
     /*################################## blow SelfDescribed method ##################################*/
 
-    /*################################## blow SubQuerySelectionAble method ##################################*/
+    /*################################## blow SubQuerySelectPartAble method ##################################*/
 
     @Override
-    public <T extends IDomain> SubQuery.SubQueryFromAble<C> select(Distinct distinct, TableMeta<T> tableMeta) {
-        this.actualSelect.select(distinct, tableMeta);
+    public SubQuery.SubQueryFromAble<C> select(Distinct distinct, String tableAlias, TableMeta<?> tableMeta) {
+        this.actualSelect.select(distinct, tableAlias, tableMeta);
         return this;
     }
 
     @Override
-    public <T extends IDomain> SubQuery.SubQueryFromAble<C> select(TableMeta<T> tableMeta) {
-        this.actualSelect.select(tableMeta);
-        return this;
-    }
-
-    @Override
-    public SubQuery.SubQueryFromAble<C> select(String subQueryAlias) {
-        this.actualSelect.select(subQueryAlias);
+    public SubQuery.SubQueryFromAble<C> select(String tableAlias, TableMeta<?> tableMeta) {
+        this.actualSelect.select(tableAlias, tableMeta);
         return this;
     }
 
@@ -48,25 +41,31 @@ final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectionAble<C>
     }
 
     @Override
-    public SubQuery.SubQueryFromAble<C> select(List<Selection> selectionList) {
-        this.actualSelect.select(selectionList);
+    public SubQuery.SubQueryFromAble<C> select(String subQueryAlias) {
+        this.actualSelect.select(subQueryAlias);
         return this;
     }
 
     @Override
-    public SubQuery.SubQueryFromAble<C> select(Distinct distinct, List<Selection> selectionList) {
-        this.actualSelect.select(distinct, selectionList);
+    public SubQuery.SubQueryFromAble<C> select(List<SelectPart> selectPartList) {
+        this.actualSelect.select(selectPartList);
         return this;
     }
 
     @Override
-    public SubQuery.SubQueryFromAble<C> select(Function<C, List<Selection>> function) {
+    public SubQuery.SubQueryFromAble<C> select(Distinct distinct, List<SelectPart> selectPartList) {
+        this.actualSelect.select(distinct, selectPartList);
+        return this;
+    }
+
+    @Override
+    public SubQuery.SubQueryFromAble<C> select(Function<C, List<SelectPart>> function) {
         this.actualSelect.select(function);
         return this;
     }
 
     @Override
-    public SubQuery.SubQueryFromAble<C> select(Distinct distinct, Function<C, List<Selection>> function) {
+    public SubQuery.SubQueryFromAble<C> select(Distinct distinct, Function<C, List<SelectPart>> function) {
         this.actualSelect.select(distinct, function);
         return this;
     }
@@ -196,12 +195,6 @@ final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectionAble<C>
     /*################################## blow SubQueryHavingAble method ##################################*/
 
     @Override
-    public SubQuery.SubQueryOrderByAble<C> having(List<IPredicate> predicateList) {
-        this.actualSelect.having(predicateList);
-        return this;
-    }
-
-    @Override
     public SubQuery.SubQueryOrderByAble<C> having(Function<C, List<IPredicate>> function) {
         this.actualSelect.having(function);
         return this;
@@ -210,12 +203,6 @@ final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectionAble<C>
     @Override
     public SubQuery.SubQueryOrderByAble<C> having(IPredicate predicate) {
         this.actualSelect.having(predicate);
-        return this;
-    }
-
-    @Override
-    public SubQuery.SubQueryOrderByAble<C> ifHaving(Predicate<C> predicate, List<IPredicate> predicateList) {
-        this.actualSelect.ifHaving(predicate, predicateList);
         return this;
     }
 

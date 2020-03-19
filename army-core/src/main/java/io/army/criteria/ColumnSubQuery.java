@@ -1,6 +1,5 @@
 package io.army.criteria;
 
-import io.army.meta.TableMeta;
 import io.army.util.Pair;
 
 import java.util.List;
@@ -22,31 +21,15 @@ public interface ColumnSubQuery<E> extends SubQuery {
 
     interface ColumnSubQuerySelectionAble<E, C> extends ColumnSubQuerySQLAble {
 
-        ColumnSubQueryFromAble<E, C> select(Distinct distinct, String tableAlias, TableMeta<?> tableMeta);
+        ColumnSubQueryFromAble<E, C> select(Distinct distinct, Selection selection);
 
-        ColumnSubQueryFromAble<E, C> select(String tableAlias, TableMeta<?> tableMeta);
-
-        ColumnSubQueryFromAble<E, C> select(String subQueryAlias);
-
-        ColumnSubQueryFromAble<E, C> select(Distinct distinct, String subQueryAlias);
-
-        ColumnSubQueryFromAble<E, C> select(List<Selection> selectionList);
-
-        ColumnSubQueryFromAble<E, C> select(Distinct distinct, List<Selection> selectionList);
-
-        ColumnSubQueryFromAble<E, C> select(Function<C, List<Selection>> function);
-
-        ColumnSubQueryFromAble<E, C> select(Distinct distinct, Function<C, List<Selection>> function);
-
-        ColumnSubQueryFromAble<E, C> select(Function<C, List<SelectionGroup>> function, boolean group);
-
-        ColumnSubQueryFromAble<E, C> select(Distinct distinct, Function<C, List<SelectionGroup>> function, boolean group);
+        ColumnSubQueryFromAble<E, C> select(Selection selection);
 
     }
 
     interface ColumnSubQueryFromAble<E, C> extends ColumnSubQuerySQLAble, ColumnSubQueryAble<E> {
 
-        ColumnSubQueryOnAble<E, C> from(TableAble tableAble, String tableAlias);
+        ColumnSubQueryJoinAble<E, C> from(TableAble tableAble, String tableAlias);
     }
 
 
@@ -105,13 +88,9 @@ public interface ColumnSubQuery<E> extends SubQuery {
 
     interface ColumnSubQueryHavingAble<E, C> extends ColumnSubQueryOrderByAble<E, C> {
 
-        ColumnSubQueryOrderByAble<E, C> having(List<IPredicate> predicateList);
-
         ColumnSubQueryOrderByAble<E, C> having(Function<C, List<IPredicate>> function);
 
         ColumnSubQueryOrderByAble<E, C> having(IPredicate predicate);
-
-        ColumnSubQueryOrderByAble<E, C> ifHaving(Predicate<C> predicate, List<IPredicate> predicateList);
 
         ColumnSubQueryOrderByAble<E, C> ifHaving(Predicate<C> predicate, Function<C, List<IPredicate>> function);
 
