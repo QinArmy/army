@@ -1,6 +1,6 @@
 package io.army;
 
-import io.army.criteria.UpdateAble;
+import io.army.criteria.Update;
 import io.army.criteria.Visible;
 import io.army.domain.IDomain;
 
@@ -22,12 +22,11 @@ public interface Session extends AutoCloseable {
     void save(IDomain entity);
 
     /**
-     *
-     * @param updateAble will execute update dml instance.
+     * @param update will execute singleUpdate dml instance.
      * @return a unmodifiable list, at most two element.
      */
-    List<Integer> update(UpdateAble updateAble);
+    List<Integer> update(Update update);
 
-    List<Integer> update(UpdateAble updateAble, Visible visible);
+    List<Integer> update(Update update, Visible visible);
 
 }

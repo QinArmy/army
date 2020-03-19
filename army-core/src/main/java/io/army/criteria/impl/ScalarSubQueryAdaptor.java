@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.InnerSubQueryAble;
+import io.army.criteria.impl.inner.InnerSubQuery;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
@@ -22,7 +22,7 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
         , ScalarSubQuery.ScalarSubQuerySelectionAble<E, C>, ScalarSubQuery.ScalarSubQueryFromAble<E, C>
         , ScalarSubQuery.ScalarSubQueryOnAble<E, C>, ScalarSubQuery.ScalarSubQueryWhereAndAble<E, C>
         , ScalarSubQuery.ScalarSubQueryJoinAble<E, C>, ScalarSubQuery.ScalarSubQueryHavingAble<E, C>
-        , InnerSubQueryAble {
+        , InnerSubQuery {
 
 
     private final MappingType mappingType;

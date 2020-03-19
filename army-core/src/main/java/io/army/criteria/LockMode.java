@@ -27,7 +27,7 @@ public enum LockMode {
     OPTIMISTIC,
 
     /**
-     * Optimistic lock, with version update.
+     * Optimistic lock, with version singleUpdate.
      *
      * @since Java Persistence 2.0
      */
@@ -48,7 +48,7 @@ public enum LockMode {
     PESSIMISTIC_WRITE,
 
     /**
-     * Pessimistic write lock, with version update.
+     * Pessimistic write lock, with version singleUpdate.
      *
      * @since Java Persistence 2.0
      */

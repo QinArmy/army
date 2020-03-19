@@ -242,7 +242,7 @@ abstract class FieldMetaUtils extends MetaUtils {
                 comment = "create time";
                 break;
             case TableMeta.UPDATE_TIME:
-                comment = "update time";
+                comment = "singleUpdate time";
                 break;
             case TableMeta.VERSION:
                 comment = "version for optimistic lock";

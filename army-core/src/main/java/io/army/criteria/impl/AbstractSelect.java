@@ -4,7 +4,6 @@ import io.army.ErrorCode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerSelectAble;
 import io.army.criteria.impl.inner.TableWrapper;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -16,8 +15,10 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select
+abstract class AbstractSelect<C> extends AbstractSQL implements Select
         , Select.WhereAble<C>, Select.WhereAndAble<C>, Select.HavingAble<C>, InnerSelectAble {
+
+    static final String NOT_PREPARED_MSG = "Select criteria don't haven invoke asSelect() method.";
 
     final C criteria;
 
@@ -25,7 +26,6 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select
 
     private List<SelectPart> selectPartList = new LinkedList<>();
 
-    private List<TableWrapper> tableWrapperList = new ArrayList<>(tableWrapperCount());
 
     private List<IPredicate> predicateList = new ArrayList<>();
 
@@ -42,10 +42,6 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select
     private LockMode lockMode;
 
     private boolean prepared = false;
-
-    /*################################## blow cache props ##################################*/
-
-    private Map<TableMeta<?>, Integer> tableRefCountCache = new HashMap<>(tableWrapperCount() + 3);
 
 
     AbstractSelect(C criteria) {
@@ -304,17 +300,15 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select
         // before unmodifiableList .
         processSelectPartList();
 
+        this.asSQL();
         this.modifierList = Collections.unmodifiableList(this.modifierList);
         this.selectPartList = Collections.unmodifiableList(this.selectPartList);
-        this.tableWrapperList = Collections.unmodifiableList(this.tableWrapperList);
         this.predicateList = Collections.unmodifiableList(this.predicateList);
 
         this.groupExpList = Collections.unmodifiableList(this.groupExpList);
         this.havingList = Collections.unmodifiableList(this.havingList);
         this.sortExpList = Collections.unmodifiableList(this.sortExpList);
-        this.tableRefCountCache.clear();
 
-        this.tableRefCountCache = null;
 
         doAsSelect();
 
@@ -327,62 +321,68 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select
 
     @Override
     public final List<SQLModifier> modifierList() {
+        Assert.state(this.prepared, NOT_PREPARED_MSG);
         return this.modifierList;
     }
 
     @Override
     public final List<SelectPart> selectPartList() {
+        Assert.state(this.prepared, NOT_PREPARED_MSG);
         return this.selectPartList;
     }
 
-    @Override
-    public final List<TableWrapper> tableWrapperList() {
-        return this.tableWrapperList;
-    }
 
     @Override
     public final List<IPredicate> predicateList() {
+        Assert.state(this.prepared, NOT_PREPARED_MSG);
         return this.predicateList;
     }
 
     @Override
     public final List<Expression<?>> groupExpList() {
+        Assert.state(this.prepared, NOT_PREPARED_MSG);
         return this.groupExpList;
     }
 
     @Override
     public final List<IPredicate> havingList() {
+        Assert.state(this.prepared, NOT_PREPARED_MSG);
         return this.havingList;
     }
 
     @Override
     public final List<Expression<?>> sortExpList() {
+        Assert.state(this.prepared, NOT_PREPARED_MSG);
         return this.sortExpList;
     }
 
     @Override
     public final int offset() {
+        Assert.state(this.prepared, NOT_PREPARED_MSG);
         return this.offset;
     }
 
     @Override
     public final int rowCount() {
+        Assert.state(this.prepared, NOT_PREPARED_MSG);
         return this.rowCount;
     }
 
     @Override
     public final LockMode lockMode() {
+        Assert.state(this.prepared, NOT_PREPARED_MSG);
         return this.lockMode;
     }
 
     @Override
     public final void clear() {
+        super.beforeClear(NOT_PREPARED_MSG);
+
         this.modifierList = null;
         this.selectPartList = null;
-        this.tableWrapperList = null;
         this.predicateList = null;
-
         this.groupExpList = null;
+
         this.havingList = null;
         this.sortExpList = null;
         this.lockMode = null;
@@ -392,9 +392,11 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select
 
     /*################################## blow package method ##################################*/
 
+    @Override
     final boolean prepared() {
         return this.prepared;
     }
+
 
     final void doSelect(@Nullable Distinct distinct, List<SelectPart> selectPartList) {
         Assert.state(this.modifierList.isEmpty() && this.selectPartList.isEmpty(), "select clause ended.");
@@ -432,61 +434,14 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select
         this.selectPartList.addAll(selectionList);
     }
 
-    final void doOn(List<IPredicate> predicateList) {
-        Assert.notEmpty(predicateList, "predicateList required");
-        Assert.state(!this.tableWrapperList.isEmpty(), "no form/join clause.");
 
-        TableWrapperImpl tableWrapper = (TableWrapperImpl) this.tableWrapperList.get(this.tableWrapperList.size() - 1);
 
-        Assert.state(tableWrapper.onPredicateList.isEmpty()
-                , () -> String.format("on clause of table[%s] ended.", tableWrapper.alias()));
-
-        tableWrapper.onPredicateList.addAll(predicateList);
-    }
-
-    /**
-     * {@link #tableRefCountCache } shared by this method and {@link #processSelectFieldMeta(FieldMeta, Map)}
-     *
-     * @see #processSelectFieldMeta(FieldMeta, Map)
-     */
-    final void addTableAble(TableAble tableAble
-            , String tableAlias, JoinType joinType) {
-
-        if (joinType == JoinType.NONE) {
-            Assert.state(this.tableWrapperList.isEmpty(), "from clause ended.");
-        } else {
-            Assert.state(!this.tableWrapperList.isEmpty(), "no from clause.");
-        }
-
-        if (tableAble instanceof TableMeta) {
-            int refCount = tableRefCountCache.getOrDefault(tableAble, 0);
-            tableRefCountCache.put((TableMeta<?>) tableAble, ++refCount);
-
-            onAddTable((TableMeta<?>) tableAble, tableAlias);
-        } else if (tableAble instanceof OuterQueryAble) {
-            ((OuterQueryAble) tableAble).outerQuery(this);
-
-            onAddSubQuery((SubQuery) tableAble, tableAlias);
-        } else {
-            throw new IllegalArgumentException(String.format("tableAble[%s] isn't TableMeta or SubQuery.", tableAlias));
-        }
-
-        this.tableWrapperList.add(new TableWrapperImpl(tableAble, tableAlias, joinType));
-    }
 
 
     /*################################## blow package template method ##################################*/
 
-    /**
-     * @see #tableWrapperList
-     */
-    abstract int tableWrapperCount();
 
     abstract void doAsSelect();
-
-    abstract void onAddTable(TableMeta<?> table, String tableAlias);
-
-    abstract void onAddSubQuery(SubQuery subQuery, String subQueryAlias);
 
     /**
      * @see #clear()
@@ -524,7 +479,7 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select
         }
 
         // 2. find table alias to create SelectionGroup .
-        for (TableWrapper tableWrapper : this.tableWrapperList) {
+        for (TableWrapper tableWrapper : this.immutableTableWrapperList()) {
             TableAble tableAble = tableWrapper.tableAble();
 
             if (tableAble instanceof TableMeta) {
@@ -558,214 +513,10 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select
 
     }
 
-    /**
-     * @see #addTableAble(TableAble, String, JoinType)
-     */
-    private void processSelectFieldMeta(FieldMeta<?, ?> fieldMeta
-            , Map<TableMeta<?>, List<Selection>> tableFieldListMap) {
 
-        int refCount = tableRefCountCache.getOrDefault(fieldMeta.tableMeta(), 0);
-
-        switch (refCount) {
-            case 0:
-                String msg = "not found the table of FieldMeta[%s] from criteria context,please check from clause.";
-                throw new CriteriaException(ErrorCode.CRITERIA_ERROR, msg, fieldMeta);
-            case 1:
-                List<Selection> fieldMetaList = tableFieldListMap.computeIfAbsent(fieldMeta.tableMeta()
-                        , key -> new ArrayList<>());
-                fieldMetaList.add(fieldMeta);
-                break;
-            default:
-                throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                        , "FieldMeta[%s] ambiguity,please check select clause and from clause.", fieldMeta);
-        }
-    }
 
 
     /*################################## blow inner class ##################################*/
-
-
-    static final class TableWrapperImpl implements TableWrapper {
-
-        private final TableAble tableAble;
-
-        private final String alias;
-
-        private final JoinType jointType;
-
-        final List<IPredicate> onPredicateList = new ArrayList<>();
-
-        TableWrapperImpl(TableAble tableAble, String alias, JoinType jointType) {
-            this.tableAble = tableAble;
-            this.alias = alias;
-            this.jointType = jointType;
-        }
-
-        public TableAble tableAble() {
-            return tableAble;
-        }
-
-        public String alias() {
-            return alias;
-        }
-
-        public JoinType jointType() {
-            return jointType;
-        }
-
-        public List<IPredicate> onPredicateList() {
-            return onPredicateList;
-        }
-    }
-
-
-    static final class CriteriaContextImpl<C> implements CriteriaContext {
-
-        private final C criteria;
-
-        /*################################## blow cache prop ##################################*/
-
-        private Map<String, SubQuery> subQueryMap = new HashMap<>();
-
-        private Map<String, AliasFieldExp<?, ?>> aliasTableFieldCache = new HashMap<>();
-
-        private Map<String, RefSelection<?>> refSelectionCache = new HashMap<>();
-
-        private Map<String, Set<RefSelection<?>>> onceChangeRefCache = new HashMap<>();
-
-        CriteriaContextImpl(C criteria) {
-            this.criteria = criteria;
-        }
-
-        /*################################## blow CriteriaContext method ##################################*/
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public final <T extends IDomain, F> AliasFieldExp<T, F> aliasField(
-                String tableAlias, FieldMeta<T, F> fieldMeta) {
-            AliasFieldExp<T, F> aliasField = (AliasFieldExp<T, F>) aliasTableFieldCache.computeIfAbsent(
-                    tableAlias + fieldMeta.fieldName()
-                    , k -> new AliasFieldExpImpl<>(fieldMeta, tableAlias)
-            );
-            if (aliasField.fieldMeta() != fieldMeta) {
-                throw new CriteriaException(ErrorCode.TABLE_ALIAS_DUPLICATION, "table alias[%s] duplication", tableAlias);
-            }
-            return aliasField;
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public final <E> Expression<E> ref(String subQueryAlias, String derivedFieldName) {
-            return (Expression<E>) refSelectionCache.computeIfAbsent(
-                    subQueryAlias + derivedFieldName
-                    , key -> createRefSelection(subQueryAlias, derivedFieldName, null)
-            );
-
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public final <E> Expression<E> ref(String subQueryAlias, String derivedFieldName, Class<E> selectionType) {
-            return (Expression<E>) refSelectionCache.computeIfAbsent(
-                    subQueryAlias + derivedFieldName
-                    , key -> createRefSelection(subQueryAlias, derivedFieldName, selectionType)
-            );
-        }
-
-        @Override
-        public void onAddSubQuery(SubQuery subQuery, String subQueryAlias) {
-            if (subQueryMap.putIfAbsent(subQueryAlias, subQuery) != subQuery) {
-                throwSubQueryDuplicationException(subQueryAlias);
-            }
-            doOnceChangeRefSelection(subQuery, subQueryAlias);
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public final C criteria() {
-            return this.criteria;
-        }
-
-        @Override
-        public void clear() {
-            if (!this.onceChangeRefCache.isEmpty()) {
-                throw new CriteriaException(ErrorCode.REF_EXP_ERROR, createReferenceErrorMsg());
-            }
-
-            this.subQueryMap.clear();
-            this.subQueryMap = null;
-            this.aliasTableFieldCache.clear();
-            this.aliasTableFieldCache = null;
-
-            this.refSelectionCache.clear();
-            this.refSelectionCache = null;
-            this.onceChangeRefCache = null;
-
-        }
-
-
-        private <E> RefSelection<E> createRefSelection(String subQueryAlias, String derivedFieldName
-                , @Nullable Class<E> selectionType) {
-            // 1. try to get targetSelection
-            Selection targetSelection = null;
-            SubQuery subQuery = subQueryMap.get(subQueryAlias);
-            if (subQuery != null) {
-                targetSelection = subQuery.selection(derivedFieldName);
-            }
-            // 2. create RefSelection
-            RefSelection<E> refSelection;
-            if (targetSelection == null) {
-                refSelection = RefSelectionImpl.buildOnceChange(subQueryAlias, derivedFieldName);
-                // 2-1. get refSelectionSet by subQueryAlias
-                Set<RefSelection<?>> refSelectionSet = this.onceChangeRefCache.computeIfAbsent(
-                        subQueryAlias, key -> new HashSet<>());
-                // 2-2. add RefSelection that only change once.
-                refSelectionSet.add(refSelection);
-            } else {
-                refSelection = RefSelectionImpl.buildImmutable(subQueryAlias, targetSelection);
-            }
-            // 3. cache refSelection
-            this.refSelectionCache.putIfAbsent(subQueryAlias + derivedFieldName, refSelection);
-            return refSelection;
-        }
-
-        private void doOnceChangeRefSelection(SubQuery subQuery, String subQueryAlias) {
-            Set<RefSelection<?>> refSet = this.onceChangeRefCache.get(subQueryAlias);
-            if (CollectionUtils.isEmpty(refSet)) {
-                return;
-            }
-            for (RefSelection<?> refSelection : refSet) {
-                refSelection.selection(subQuery.selection(refSelection.derivedFieldName()));
-            }
-            refSet.clear();
-            this.onceChangeRefCache.remove(subQueryAlias);
-        }
-
-        private String createReferenceErrorMsg() {
-            StringBuilder builder = new StringBuilder();
-            builder.append("Reference Expressions[\n");
-            for (Set<RefSelection<?>> refSet : this.onceChangeRefCache.values()) {
-                for (Iterator<RefSelection<?>> iterator = refSet.iterator(); iterator.hasNext(); ) {
-                    RefSelection<?> ref = iterator.next();
-
-                    builder.append(ref);
-                    if (iterator.hasNext()) {
-                        builder.append("\n");
-                    }
-                }
-
-            }
-            builder.append("] not found from select query.");
-            return builder.toString();
-        }
-
-    }
-
-
-    static void throwSubQueryDuplicationException(String subQueryAlias) {
-        throw new CriteriaException(ErrorCode.TABLE_ALIAS_DUPLICATION
-                , "SubQuery alias[%s] duplication.", subQueryAlias);
-    }
 
 
 }

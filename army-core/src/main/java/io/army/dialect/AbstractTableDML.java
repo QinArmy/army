@@ -5,9 +5,9 @@ import io.army.SessionFactory;
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLS;
-import io.army.criteria.impl.inner.InnerObjectUpdateAble;
 import io.army.criteria.impl.inner.InnerDeleteAble;
-import io.army.criteria.impl.inner.InnerUpdateAble;
+import io.army.criteria.impl.inner.InnerObjectUpdate;
+import io.army.criteria.impl.inner.InnerUpdate;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -19,7 +19,10 @@ import io.army.util.StringUtils;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 public abstract class AbstractTableDML implements TableDML {
 
@@ -79,14 +82,14 @@ public abstract class AbstractTableDML implements TableDML {
     }
 
     @Override
-    public final List<SQLWrapper> update(UpdateAble updateAble, Visible visible) {
-        Assert.isInstanceOf(InnerUpdateAble.class, updateAble, "");
-        InnerUpdateAble innerAble = (InnerUpdateAble) updateAble;
+    public final List<SQLWrapper> update(Update update, Visible visible) {
+        Assert.isInstanceOf(InnerUpdate.class, update, "");
+        InnerUpdate innerAble = (InnerUpdate) update;
 
         List<SQLWrapper> wrapperList;
-        if (updateAble instanceof InnerObjectUpdateAble) {
-            // create update dml for child mapping mode
-            wrapperList = createObjectUpdate((InnerObjectUpdateAble) innerAble, visible);
+        if (update instanceof InnerObjectUpdate) {
+            // create singleUpdate dml for child mapping mode
+            wrapperList = createObjectUpdate((InnerObjectUpdate) innerAble, visible);
         } else {
             wrapperList = createUpdateForSimple(innerAble, visible);
         }
@@ -171,15 +174,15 @@ public abstract class AbstractTableDML implements TableDML {
     /**
      * @return a unmodifiable list
      */
-    private List<SQLWrapper> createObjectUpdate(InnerObjectUpdateAble updateAble, Visible visible) {
+    private List<SQLWrapper> createObjectUpdate(InnerObjectUpdate updateAble, Visible visible) {
         TableMeta<?> childMeta = updateAble.tableMeta(), parentMeta = childMeta.parentMeta();
         Assert.notNull(parentMeta, () -> String.format("Table[%s] not child mode", childMeta.tableName()));
 
         ObjectUpdateContextImpl context = new ObjectUpdateContextImpl(this, childMeta, updateAble.tableAlias());
-        // 1. update clause
+        // 1. singleUpdate clause
         appendObjectUpdateClause(context);
         // 2. set clause
-        appendSetClause(context, updateAble.targetFieldList(), updateAble.valueExpressionList());
+        appendSetClause(context, updateAble.targetFieldList(), updateAble.valueExpList());
         // 3. where clause
         appendWhereClause(context, updateAble.predicateList());
         //4. append child visible
@@ -266,16 +269,16 @@ public abstract class AbstractTableDML implements TableDML {
     }
 
 
-    private List<SQLWrapper> createUpdateForSimple(InnerUpdateAble innerAble, Visible visible) {
+    private List<SQLWrapper> createUpdateForSimple(InnerUpdate innerAble, Visible visible) {
 
         // build dml context
         final UpdateSQLContextImpl context = new UpdateSQLContextImpl(this, SQLStatement.UPDATE
                 , innerAble.tableMeta(), innerAble.tableAlias());
 
-        //1. update clause
+        //1. singleUpdate clause
         appendUpdateClause(context);
         //2. set clause
-        appendSetClause(context, innerAble.targetFieldList(), innerAble.valueExpressionList());
+        appendSetClause(context, innerAble.targetFieldList(), innerAble.valueExpList());
         //3. where clause
         appendWhereClause(context, innerAble.predicateList());
         //4. append visible

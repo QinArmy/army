@@ -125,7 +125,7 @@ abstract class AbstractSelectionGroup implements SelectionGroup {
 
         @Override
         public void finish(SubQuery subQuery) {
-            Assert.state(this.selectionList == null, "selectPartList only update once.");
+            Assert.state(this.selectionList == null, "selectPartList only singleUpdate once.");
             List<Selection> selectionList = new ArrayList<>();
 
             for (SelectPart selectPart : subQuery.selectPartList()) {
@@ -166,7 +166,7 @@ abstract class AbstractSelectionGroup implements SelectionGroup {
 
         @Override
         public void finish(SubQuery subQuery) {
-            Assert.state(this.selectionList == null, "SubQuerySelectGroup only update once.");
+            Assert.state(this.selectionList == null, "SubQuerySelectGroup only singleUpdate once.");
             List<Selection> selectionList = new ArrayList<>(derivedFieldNameList.size());
             for (String derivedField : derivedFieldNameList) {
                 selectionList.add(subQuery.selection(derivedField));

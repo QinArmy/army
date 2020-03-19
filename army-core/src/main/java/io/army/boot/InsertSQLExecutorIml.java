@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.List;
 
 class InsertSQLExecutorIml implements InsertSQLExecutor {
 
@@ -80,7 +80,7 @@ class InsertSQLExecutorIml implements InsertSQLExecutor {
             }
 
             if (traceEnabled) {
-                LOG.trace("dml:{};update count:{}", wrapper.sql(), updateCount[sqlNum]);
+                LOG.trace("dml:{};singleUpdate count:{}", wrapper.sql(), updateCount[sqlNum]);
             }
             sqlNum++;
 

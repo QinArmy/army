@@ -1,7 +1,6 @@
 package io.army.criteria.impl.inner;
 
 @DeveloperForbid
-public interface InnerSQLAble {
+public interface InnerObjectUpdate extends InnerUpdate {
 
-    void clear();
 }

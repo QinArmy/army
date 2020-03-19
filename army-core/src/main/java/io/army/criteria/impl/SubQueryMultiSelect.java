@@ -42,7 +42,7 @@ final class SubQueryMultiSelect<C> extends AbstractMultiSelectImpl<C> implements
 
     @Override
     public void outerQuery(QueryAble outerQuery) {
-        Assert.state(this.outerQuery == null, "outerQuery only update once.");
+        Assert.state(this.outerQuery == null, "outerQuery only singleUpdate once.");
         this.outerQuery = outerQuery;
     }
 

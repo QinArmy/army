@@ -17,14 +17,14 @@ public interface TableDML extends SQL {
     /**
      * key points:
      * <ol>
-     *     <li>update update_time</li>
-     *     <li>update version</li>
+     *     <li>singleUpdate update_time</li>
+     *     <li>singleUpdate version</li>
      *     <li>logic delete</li>
      * </ol>
      *
      * @return a modifiable list
      */
-    default List<SQLWrapper> update(UpdateAble updateAble, Visible visible) {
+    default List<SQLWrapper> update(Update update, Visible visible) {
         throw new UnsupportedOperationException();
     }
 

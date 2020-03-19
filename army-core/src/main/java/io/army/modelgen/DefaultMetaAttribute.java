@@ -2,13 +2,9 @@ package io.army.modelgen;
 
 import io.army.annotation.Column;
 import io.army.lang.Nullable;
-import io.army.meta.FieldMeta;
-import io.army.meta.IndexFieldMeta;
 import io.army.meta.TableMeta;
-import io.army.struct.CodeEnum;
 import io.army.util.ClassUtils;
 import io.army.util.StringUtils;
-import org.jooq.Meta;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -120,7 +116,7 @@ class DefaultMetaAttribute implements MetaAttribute {
                 comment = "create time";
                 break;
             case TableMeta.UPDATE_TIME:
-                comment = "update time";
+                comment = "singleUpdate time";
                 break;
             case TableMeta.VERSION:
                 comment = "version for optimistic lock";

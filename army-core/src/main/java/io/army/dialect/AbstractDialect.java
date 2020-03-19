@@ -4,7 +4,7 @@ package io.army.dialect;
 import io.army.SessionFactory;
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.DeleteAble;
-import io.army.criteria.UpdateAble;
+import io.army.criteria.Update;
 import io.army.criteria.Visible;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
@@ -13,7 +13,10 @@ import io.army.util.Assert;
 import io.army.util.StringUtils;
 
 import java.time.ZoneId;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -117,8 +120,8 @@ public abstract class AbstractDialect implements Dialect {
     }
 
     @Override
-    public final List<SQLWrapper> update(UpdateAble updateAble, Visible visible) {
-        return tableDML.update(updateAble,visible);
+    public final List<SQLWrapper> update(Update update, Visible visible) {
+        return tableDML.update(update, visible);
     }
 
     @Override

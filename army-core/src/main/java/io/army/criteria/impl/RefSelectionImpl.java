@@ -133,7 +133,7 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
         }
 
         private void selection(Selection selection) {
-            Assert.state(this.selection == null, "selection only update once.");
+            Assert.state(this.selection == null, "selection only singleUpdate once.");
             this.selection = selection;
         }
 

@@ -7,4 +7,13 @@ public interface SQLPart extends SelfDescribed {
     }
 
 
+    interface SetPart extends SQLPart {
+
+    }
+
+    interface SetClause extends SetPart {
+
+    }
+
+
 }

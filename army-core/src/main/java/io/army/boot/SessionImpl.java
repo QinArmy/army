@@ -3,7 +3,7 @@ package io.army.boot;
 import io.army.SessionFactory;
 import io.army.SessionOptions;
 import io.army.beans.BeanWrapper;
-import io.army.criteria.UpdateAble;
+import io.army.criteria.Update;
 import io.army.criteria.Visible;
 import io.army.dialect.SQLWrapper;
 import io.army.domain.IDomain;
@@ -88,13 +88,13 @@ class SessionImpl implements InnerSession {
     }
 
     @Override
-    public List<Integer> update(UpdateAble updateAble) {
-        return update(updateAble, Visible.ONLY_VISIBLE);
+    public List<Integer> update(Update update) {
+        return update(update, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public List<Integer> update(UpdateAble updateAble, Visible visible) {
-        List<SQLWrapper> sqlWrapperList = sessionFactory.dialect().update(updateAble, visible);
+    public List<Integer> update(Update update, Visible visible) {
+        List<SQLWrapper> sqlWrapperList = sessionFactory.dialect().update(update, visible);
         for (SQLWrapper wrapper : sqlWrapperList) {
             LOG.info("wrapper:{}", wrapper);
         }

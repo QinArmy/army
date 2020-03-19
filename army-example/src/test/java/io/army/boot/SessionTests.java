@@ -66,14 +66,14 @@ public class SessionTests {
 
         final long start = System.currentTimeMillis();
         Map<String, Object> map = new HashMap<>();
-        UpdateAble updateAble = SQLS.updateWithCriteria(Account_.T, map).as("a")
+        Update update = SQLS.updateWithCriteria(Account_.T, map).as("a")
                 .set(Account_.balance, field("a", Account_.balance).add(BigDecimal.ONE).brackets())
                 .ifSet(this::isUser, Account_.balance, BigDecimal.ZERO)
                 .where(field("a", Account_.userId).add(SQLS.constant(1L)).brackets().multiply(3).eq(2L))
                 .and(field("a", Account_.visible).eq(true))
                 .and(field("a", Account_.createTime).eq(LocalDateTime.now()));
 
-        LOG.info("dml:\n{}", updateAble.debugSQL(SQLDialect.MySQL57));
+        LOG.info("dml:\n{}", update.debugSQL(SQLDialect.MySQL57));
         LOG.info("cost:{}", System.currentTimeMillis() - start);
     }
 
@@ -81,14 +81,14 @@ public class SessionTests {
     public void objectSQLUpdate() {
         final long start = System.currentTimeMillis();
         Map<String, Object> map = new HashMap<>();
-        UpdateAble updateAble = ObjectSQLS.updateWithCriteria(InvestAccount_.T, map).as("a")
+        Update update = ObjectSQLS.updateWithCriteria(InvestAccount_.T, map).as("a")
                 .set(InvestAccount_.balance, InvestAccount_.balance.add(BigDecimal.ONE).brackets())
                 .ifSet(this::isUser, InvestAccount_.balance, BigDecimal.ZERO)
                 .where(InvestAccount_.userId.add(SQLS.constant(1L)).brackets().multiply(3).eq(2L))
                 .and(InvestAccount_.visible.eq(true))
                 .and(InvestAccount_.createTime.eq(LocalDateTime.now()));
 
-        LOG.info("dml:\n{}", updateAble.debugSQL(SQLDialect.MySQL57));
+        LOG.info("dml:\n{}", update.debugSQL(SQLDialect.MySQL57));
         LOG.info("cost:{}", System.currentTimeMillis() - start);
     }
 
@@ -109,14 +109,15 @@ public class SessionTests {
     }
 
     @Test(invocationCount = 10)
-    public void select() {
+    public void multiSelect() {
         final long start = System.currentTimeMillis();
 
         Map<String, Object> criteria = new HashMap<>();
 
-        Select select = SQLS.prepareSelect(criteria)
+        Select select = SQLS.multiSelect(criteria)
                 .select(Distinct.DISTINCT, "a", Account_.T)
-                .from(Account_.T, "a").join(User_.T, "u").on(Account_.id.eq(User_.id))
+                .from(Account_.T, "a")
+                .join(User_.T, "u").on(Account_.id.eq(User_.id))
                 .where(Account_.id.eq(1L))
                 .and(Account_.debt.gt(BigDecimal.ZERO))
                 .ifGroupBy(this::isUser, Account_.id)
@@ -128,6 +129,27 @@ public class SessionTests {
         LOG.info("dml:\n{}", select.debugSQL(SQLDialect.MySQL57));
         LOG.info("cost:{}", System.currentTimeMillis() - start);
 
+    }
+
+    @Test(invocationCount = 10)
+    public void singleSelect() {
+        final long start = System.currentTimeMillis();
+
+        Map<String, Object> criteria = new HashMap<>();
+
+        Select select = SQLS.singleSelect(criteria)
+                .select(Distinct.DISTINCT, "a", Account_.T)
+                .from(Account_.T, "a")
+                .where(Account_.id.eq(1L))
+                .and(Account_.debt.gt(BigDecimal.ZERO))
+                .ifGroupBy(this::isUser, Account_.id)
+                .having(Account_.id.gt(0L))
+                .orderBy(Account_.id)
+                .limit(10)
+                .lock(LockMode.READ);
+
+        LOG.info("dml:\n{}", select.debugSQL(SQLDialect.MySQL57));
+        LOG.info("cost:{}", System.currentTimeMillis() - start);
     }
 
     private boolean isUser(Map<String, Object> map) {

@@ -8,13 +8,11 @@ import io.army.criteria.SelectPart;
 import java.util.List;
 
 @DeveloperForbid
-public interface InnerQueryAble extends InnerSQLAble {
+public interface InnerQuery extends InnerSQL {
 
     List<SQLModifier> modifierList();
 
     List<SelectPart> selectPartList();
-
-    List<TableWrapper> tableWrapperList();
 
     List<IPredicate> predicateList();
 

@@ -91,7 +91,7 @@ final class ContextualSingleSelect<C> extends AbstractSelect<C> implements
         CriteriaContextHolder.clearContext(this.criteriaContext);
         this.criteriaContext.clear();
 
-        Assert.state(tableWrapperList().size() < 2
+        Assert.state(tableWrapperListSize() < 2
                 , "tableWrapperList.size() isn't 1,ContextualSingleSelect state error.");
     }
 

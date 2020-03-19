@@ -16,13 +16,13 @@ import java.util.function.Function;
 public abstract class SQLS extends AbstractSQLS {
 
 
-    public static <T extends IDomain> UpdateAble.AliasAble<T, EmptyObject> update(TableMeta<T> tableMeta) {
-        return new UpdateAbleImpl<>(tableMeta, EmptyObject.getInstance());
+    public static <T extends IDomain> Update.AliasAble<T, EmptyObject> singleUpdate(TableMeta<T> tableMeta) {
+        return new ContextualSingleUpdate<>(tableMeta, EmptyObject.getInstance());
     }
 
-    public static <T extends IDomain, C> UpdateAble.AliasAble<T, C> updateWithCriteria(
+    public static <T extends IDomain, C> Update.AliasAble<T, C> updateWithCriteria(
             TableMeta<T> tableMeta, C criteria) {
-        return new UpdateAbleImpl<>(tableMeta, criteria);
+        return new ContextualSingleUpdate<>(tableMeta, criteria);
     }
 
     public static DeleteAble.FromAble<EmptyObject> delete() {
@@ -33,11 +33,19 @@ public abstract class SQLS extends AbstractSQLS {
         return new DeleteAbleImpl<>(criteria);
     }
 
-    public static Select.SelectionGroupAble<EmptyObject> prepareSelect() {
+    public static Select.SelectionAble<EmptyObject> singleSelect() {
+        return new ContextualSingleSelect<>(EmptyObject.getInstance());
+    }
+
+    public static <C> Select.SelectionAble<C> singleSelect(C criteria) {
+        return new ContextualSingleSelect<>(criteria);
+    }
+
+    public static Select.SelectionGroupAble<EmptyObject> multiSelect() {
         return new ContextualMultiSelect<>(EmptyObject.getInstance());
     }
 
-    public static <C> Select.SelectionGroupAble<C> prepareSelect(C criteria) {
+    public static <C> Select.SelectionGroupAble<C> multiSelect(C criteria) {
         return new ContextualMultiSelect<>(criteria);
     }
 

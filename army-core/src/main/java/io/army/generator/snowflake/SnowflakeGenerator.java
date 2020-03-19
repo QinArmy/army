@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigInteger;
-import java.security.SecureRandom;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -305,7 +304,7 @@ public final class SnowflakeGenerator implements PreMultiGenerator {
         Assert.state(newSnowflake != null, () -> String.format("method[%s] return null", method));
 
         if (DEFAULT_SNOWFLAKE_HOLDER.compareAndSet(oldSnowflake, newSnowflake)) {
-            LOG.info("default snowflake update,worker[{}],Snowflake[{}]", worker, newSnowflake.getClass().getName());
+            LOG.info("default snowflake singleUpdate,worker[{}],Snowflake[{}]", worker, newSnowflake.getClass().getName());
         }
         // other thread maybe delay read new value
         defaultSnowflake = DEFAULT_SNOWFLAKE_HOLDER.get();
