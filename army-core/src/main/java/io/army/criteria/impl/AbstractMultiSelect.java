@@ -11,11 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-abstract class AbstractMultiSelectImpl<C> extends AbstractSelect<C> implements
+abstract class AbstractMultiSelect<C> extends AbstractSelect<C> implements
         Select.SelectPartAble<C>, Select.FromAble<C>, Select.JoinAble<C>, Select.OnAble<C> {
 
 
-    AbstractMultiSelectImpl(C criteria) {
+    AbstractMultiSelect(C criteria) {
         super((criteria));
     }
 

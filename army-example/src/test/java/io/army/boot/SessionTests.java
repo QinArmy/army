@@ -3,13 +3,14 @@ package io.army.boot;
 
 import com.example.domain.account.AccountType;
 import com.example.domain.account.Account_;
-import com.example.domain.account.InvestAccount_;
 import com.example.domain.user.User_;
 import com.example.generator.Being;
 import io.army.Session;
 import io.army.SessionFactory;
-import io.army.criteria.*;
-import io.army.criteria.impl.ObjectSQLS;
+import io.army.criteria.DeleteAble;
+import io.army.criteria.Distinct;
+import io.army.criteria.LockMode;
+import io.army.criteria.Select;
 import io.army.criteria.impl.SQLS;
 import io.army.dialect.SQLDialect;
 import io.army.env.Environment;
@@ -19,11 +20,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-
-import static io.army.criteria.impl.SQLS.field;
 
 public class SessionTests {
 
@@ -63,10 +61,10 @@ public class SessionTests {
 
     @Test(invocationCount = 10)
     public void singleUpdate() {
-
+/*
         final long start = System.currentTimeMillis();
         Map<String, Object> map = new HashMap<>();
-        Update update = SQLS.updateWithCriteria(Account_.T, map).as("a")
+        Update update = SQLS.multiUpdate(Account_.T, map).as("a")
                 .set(Account_.balance, field("a", Account_.balance).add(BigDecimal.ONE).brackets())
                 .ifSet(this::isUser, Account_.balance, BigDecimal.ZERO)
                 .where(field("a", Account_.userId).add(SQLS.constant(1L)).brackets().multiply(3).eq(2L))
@@ -74,12 +72,12 @@ public class SessionTests {
                 .and(field("a", Account_.createTime).eq(LocalDateTime.now()));
 
         LOG.info("dml:\n{}", update.debugSQL(SQLDialect.MySQL57));
-        LOG.info("cost:{}", System.currentTimeMillis() - start);
+        LOG.info("cost:{}", System.currentTimeMillis() - start);*/
     }
 
     @Test(invocationCount = 10)
     public void objectSQLUpdate() {
-        final long start = System.currentTimeMillis();
+       /* final long start = System.currentTimeMillis();
         Map<String, Object> map = new HashMap<>();
         Update update = ObjectSQLS.updateWithCriteria(InvestAccount_.T, map).as("a")
                 .set(InvestAccount_.balance, InvestAccount_.balance.add(BigDecimal.ONE).brackets())
@@ -89,7 +87,7 @@ public class SessionTests {
                 .and(InvestAccount_.createTime.eq(LocalDateTime.now()));
 
         LOG.info("dml:\n{}", update.debugSQL(SQLDialect.MySQL57));
-        LOG.info("cost:{}", System.currentTimeMillis() - start);
+        LOG.info("cost:{}", System.currentTimeMillis() - start);*/
     }
 
     @Test(invocationCount = 10)

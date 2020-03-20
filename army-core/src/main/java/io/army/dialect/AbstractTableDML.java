@@ -175,10 +175,10 @@ public abstract class AbstractTableDML implements TableDML {
      * @return a unmodifiable list
      */
     private List<SQLWrapper> createObjectUpdate(InnerObjectUpdate updateAble, Visible visible) {
-        TableMeta<?> childMeta = updateAble.tableMeta(), parentMeta = childMeta.parentMeta();
+        TableMeta<?> childMeta = null, parentMeta = childMeta.parentMeta();
         Assert.notNull(parentMeta, () -> String.format("Table[%s] not child mode", childMeta.tableName()));
 
-        ObjectUpdateContextImpl context = new ObjectUpdateContextImpl(this, childMeta, updateAble.tableAlias());
+        ObjectUpdateContextImpl context = new ObjectUpdateContextImpl(this, childMeta, null);
         // 1. singleUpdate clause
         appendObjectUpdateClause(context);
         // 2. set clause
@@ -273,7 +273,7 @@ public abstract class AbstractTableDML implements TableDML {
 
         // build dml context
         final UpdateSQLContextImpl context = new UpdateSQLContextImpl(this, SQLStatement.UPDATE
-                , innerAble.tableMeta(), innerAble.tableAlias());
+                , null, null);
 
         //1. singleUpdate clause
         appendUpdateClause(context);

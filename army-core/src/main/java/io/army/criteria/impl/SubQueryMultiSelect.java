@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-final class SubQueryMultiSelect<C> extends AbstractMultiSelectImpl<C> implements SubQuerySelect<C> {
+final class SubQueryMultiSelect<C> extends AbstractMultiSelect<C> implements SubQuerySelect<C> {
 
     private Map<String, SubQuery> subordinateSubQueries;
 
@@ -78,8 +78,9 @@ final class SubQueryMultiSelect<C> extends AbstractMultiSelectImpl<C> implements
             this.subordinateSubQueries = new HashMap<>();
         }
         this.subordinateSubQueries.putIfAbsent(subQueryAlias, subQuery);
-        CriteriaContext context = CriteriaContextHolder.getContext();
-        context.onAddSubQuery(subQuery, subQueryAlias);
+
+        CriteriaContextHolder.getContext()
+                .onAddSubQuery(subQuery, subQueryAlias);
     }
 
     @Override

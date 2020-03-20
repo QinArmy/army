@@ -8,13 +8,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-final class ContextualSingleSelect<C> extends AbstractSelect<C> implements
+final class StandardContextualSingleSelect<C> extends AbstractSelect<C> implements
         Select.SelectionAble<C>, Select.NoJoinFromAble<C> {
 
     private final CriteriaContext criteriaContext;
 
 
-    ContextualSingleSelect(C criteria) {
+    StandardContextualSingleSelect(C criteria) {
         super(criteria);
         this.criteriaContext = new CriteriaContextImpl<>(criteria);
         CriteriaContextHolder.setContext(this.criteriaContext);

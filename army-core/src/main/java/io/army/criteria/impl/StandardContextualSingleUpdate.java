@@ -1,20 +1,14 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.JoinType;
-import io.army.criteria.SubQuery;
 import io.army.criteria.Update;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 
-final class ContextualSingleUpdate<C> extends AbstractUpdate<C> implements Update.NoJoinUpdateCommandAble<C> {
+final class StandardContextualSingleUpdate<C> extends AbstractContextualUpdate<C> implements Update.SingleUpdateAble<C> {
 
-    private final CriteriaContext criteriaContext;
-
-
-    ContextualSingleUpdate(C criteria) {
+    StandardContextualSingleUpdate(C criteria) {
         super(criteria);
-        this.criteriaContext = new AbstractSelect.CriteriaContextImpl<>(criteria);
-        CriteriaContextHolder.setContext(this.criteriaContext);
     }
 
     /*################################## blow NoJoinUpdateCommandAble method ##################################*/
@@ -34,26 +28,9 @@ final class ContextualSingleUpdate<C> extends AbstractUpdate<C> implements Updat
 
     @Override
     final void doAsUpdate() {
-        CriteriaContextHolder.clearContext(this.criteriaContext);
-        this.criteriaContext.clear();
-
         Assert.state(tableWrapperListSize() == 1, "ContextualSingleUpdate update table count not equals 1 .");
-
     }
 
-    @Override
-    void doClear() {
 
-    }
-
-    @Override
-    void onAddTable(TableMeta<?> table, String tableAlias) {
-
-    }
-
-    @Override
-    final void onAddSubQuery(SubQuery subQuery, String subQueryAlias) {
-        CriteriaContextHolder.getContext()
-                .onAddSubQuery(subQuery, subQueryAlias);
-    }
 }
+

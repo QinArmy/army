@@ -2,10 +2,12 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
+import io.army.criteria.SubQuery;
 import io.army.criteria.Update;
 import io.army.criteria.impl.inner.InnerUpdate;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
+import io.army.meta.TableMeta;
 import io.army.util.Assert;
 
 import java.util.ArrayList;
@@ -14,12 +16,14 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class AbstractUpdate<C> extends AbstractSQL implements InnerUpdate
+abstract class AbstractContextualUpdate<C> extends AbstractSQL implements InnerUpdate
         , Update.UpdateAble, Update.WhereAble<C>, Update.WhereAndAble<C> {
 
     static final String NOT_PREPARED_MSG = "update criteria don't haven invoke asUpdate() method.";
 
     final C criteria;
+
+    private final CriteriaContext criteriaContext;
 
     private List<FieldMeta<?, ?>> targetFieldList = new ArrayList<>();
 
@@ -29,9 +33,12 @@ abstract class AbstractUpdate<C> extends AbstractSQL implements InnerUpdate
 
     private boolean prepared;
 
-    AbstractUpdate(C criteria) {
+    AbstractContextualUpdate(C criteria) {
         Assert.notNull(criteria, "criteria required");
         this.criteria = criteria;
+
+        this.criteriaContext = new AbstractSelect.CriteriaContextImpl<>(criteria);
+        CriteriaContextHolder.setContext(this.criteriaContext);
     }
 
     /*################################## blow SetAble method ##################################*/
@@ -137,6 +144,8 @@ abstract class AbstractUpdate<C> extends AbstractSQL implements InnerUpdate
         if (this.prepared) {
             return this;
         }
+        CriteriaContextHolder.clearContext(this.criteriaContext);
+        this.criteriaContext.clear();
 
         this.asSQL();
         this.targetFieldList = Collections.unmodifiableList(this.targetFieldList);
@@ -144,7 +153,6 @@ abstract class AbstractUpdate<C> extends AbstractSQL implements InnerUpdate
         this.predicateList = Collections.unmodifiableList(this.predicateList);
 
         doAsUpdate();
-
         this.prepared = true;
         return this;
     }
@@ -182,22 +190,28 @@ abstract class AbstractUpdate<C> extends AbstractSQL implements InnerUpdate
 
     /*################################## blow package method ##################################*/
 
-    final List<FieldMeta<?, ?>> immutableTargetFieldList() {
-        if (this.prepared) {
-            return this.targetFieldList;
-        } else {
-            return Collections.unmodifiableList(this.targetFieldList);
-        }
-    }
-
-    /*################################## blow package template method ##################################*/
-
     @Override
     final boolean prepared() {
         return this.prepared;
     }
 
+    @Override
+    final void onAddSubQuery(SubQuery subQuery, String subQueryAlias) {
+        this.criteriaContext.onAddSubQuery(subQuery, subQueryAlias);
+    }
+
+    void doClear() {
+
+    }
+
+    @Override
+    void onAddTable(TableMeta<?> table, String tableAlias) {
+
+    }
+
+
+    /*################################## blow package template method ##################################*/
+
     abstract void doAsUpdate();
 
-    abstract void doClear();
 }

@@ -3,12 +3,13 @@ package io.army.criteria.impl;
 import io.army.criteria.SubQuery;
 import io.army.meta.TableMeta;
 
-final class ContextualMultiSelect<C> extends AbstractMultiSelectImpl<C> {
+final class StandardContextualMultiSelect<C> extends AbstractMultiSelect<C> {
 
     private final CriteriaContext criteriaContext;
 
-    ContextualMultiSelect(C criteria) {
+    StandardContextualMultiSelect(C criteria) {
         super(criteria);
+
         this.criteriaContext = new CriteriaContextImpl<>(criteria);
         CriteriaContextHolder.setContext(this.criteriaContext);
     }

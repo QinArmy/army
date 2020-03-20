@@ -20,13 +20,12 @@ public interface Update extends SQLAble, SQLDebug {
 
     }
 
-    interface NoJoinUpdateCommandAble<C> extends UpdateSQLAble {
+    interface SingleUpdateAble<C> extends UpdateSQLAble {
 
         SetAble<C> update(TableMeta<?> tableMeta, String tableAlias);
-
     }
 
-    interface UpdateCommandAble<C> extends UpdateSQLAble {
+    interface MultiUpdateAble<C> extends UpdateSQLAble {
 
         JoinAble<C> update(TableMeta<?> tableMeta, String tableAlias);
 
