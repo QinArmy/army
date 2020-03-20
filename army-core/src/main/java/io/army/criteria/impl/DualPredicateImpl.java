@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.DualOperator;
 import io.army.criteria.DualIPredicate;
+import io.army.criteria.DualOperator;
 import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
 
@@ -45,7 +45,7 @@ final class DualPredicateImpl extends AbstractPredicate implements DualIPredicat
     }
 
     @Override
-    public DualOperator dualOperator() {
+    public DualOperator operator() {
         return operator;
     }
 

@@ -18,17 +18,18 @@ public abstract class SQLS extends AbstractSQLS {
         return new StandardContextualSingleUpdate<>(EmptyObject.getInstance());
     }
 
-    public static <C> Update.MultiUpdateAble<C> multiUpdate(C criteria) {
-        return new StandardContextualMultiUpdate<>(criteria);
+    public static <C> Update.SingleUpdateAble<C> singleUpdate(C criteria) {
+        return new StandardContextualSingleUpdate<>(criteria);
     }
 
-    public static DeleteAble.FromAble<EmptyObject> delete() {
-        return new DeleteAbleImpl<>(EmptyObject.getInstance());
+    public static Delete.SingleDeleteAble<EmptyObject> singleDelete() {
+        return new StandardContextualSingleDelete<>(EmptyObject.getInstance());
     }
 
-    public static <C> DeleteAble.FromAble<C> prepareDelete(C criteria) {
-        return new DeleteAbleImpl<>(criteria);
+    public static <C> Delete.SingleDeleteAble<C> singleDelete(C criteria) {
+        return new StandardContextualSingleDelete<>(criteria);
     }
+
 
     public static Select.SelectionAble<EmptyObject> singleSelect() {
         return new StandardContextualSingleSelect<>(EmptyObject.getInstance());
@@ -78,6 +79,8 @@ public abstract class SQLS extends AbstractSQLS {
                 , CriteriaContextHolder.getContext().criteria()
         );
     }
+
+    /*################################## blow sql reference method ##################################*/
 
     public static <T extends IDomain, F> AliasFieldExp<T, F> field(String tableAlias, FieldMeta<T, F> fieldMeta) {
         return CriteriaContextHolder.getContext()

@@ -12,13 +12,29 @@ import io.army.util.CollectionUtils;
 
 import java.util.*;
 
+/**
+ * <ol>
+ *     <li>invoke {@link #asSQL()} method in below method :
+ *      <ul>
+ *          <li>{@link Select.SelectAble#asSelect()}</li>
+ *          <li>{@link SubQuery.SubQueryAble#asSubQuery()}</li>
+ *          <li>{@link RowSubQuery.RowSubQueryAble#asRowSubQuery()} </li>
+ *          <li>{@link ColumnSubQuery.ColumnSubQueryAble#asColumnSubQuery()}</li>
+ *          <li>{@link ScalarSubQuery.ScalarSubQueryAble#asScalarSubQuery()}</li>
+ *          <li>{@link Update.UpdateAble#asUpdate()}</li>
+ *          <li>{@link Delete.DeleteAble#asDelete()}</li>
+ *      </ul>
+ *     </li>
+ *     <li>invoke {@link #beforeClear(String)} in {@link #clear()}</li>
+ * </ol>
+ */
 abstract class AbstractSQL extends AbstractSQLDebug implements QueryAble {
 
     private List<TableWrapper> tableWrapperList = new ArrayList<>(tableWrapperCount());
 
     /*################################## blow cache props ##################################*/
 
-    private Map<TableMeta<?>, Integer> tableRefCountCache = new HashMap<>(tableWrapperCount() + 3);
+    private Map<TableMeta<?>, Integer> tablePresentCountMap = new HashMap<>(tableWrapperCount() + 3);
 
 
 
@@ -30,13 +46,17 @@ abstract class AbstractSQL extends AbstractSQLDebug implements QueryAble {
         return this.tableWrapperList;
     }
 
-
-
+    @Override
+    public final Map<TableMeta<?>, Integer> tablePresentCountMap() {
+        Assert.state(prepared(), "sql no prepared.");
+        return this.tablePresentCountMap;
+    }
 
     /*################################## blow package method ##################################*/
 
     final void asSQL() {
         this.tableWrapperList = Collections.unmodifiableList(this.tableWrapperList);
+        this.tablePresentCountMap = Collections.unmodifiableMap(this.tablePresentCountMap);
     }
 
     final int tableWrapperListSize() {
@@ -56,7 +76,7 @@ abstract class AbstractSQL extends AbstractSQLDebug implements QueryAble {
     final void processSelectFieldMeta(FieldMeta<?, ?> fieldMeta
             , Map<TableMeta<?>, List<Selection>> tableFieldListMap) {
 
-        int refCount = this.tableRefCountCache.getOrDefault(fieldMeta.tableMeta(), 0);
+        int refCount = this.tablePresentCountMap.getOrDefault(fieldMeta.tableMeta(), 0);
 
         switch (refCount) {
             case 0:
@@ -100,8 +120,8 @@ abstract class AbstractSQL extends AbstractSQLDebug implements QueryAble {
         }
 
         if (tableAble instanceof TableMeta) {
-            int refCount = tableRefCountCache.getOrDefault(tableAble, 0);
-            tableRefCountCache.put((TableMeta<?>) tableAble, ++refCount);
+            int refCount = tablePresentCountMap.getOrDefault(tableAble, 0);
+            tablePresentCountMap.put((TableMeta<?>) tableAble, ++refCount);
 
             onAddTable((TableMeta<?>) tableAble, tableAlias);
         } else if (tableAble instanceof OuterQueryAble) {
@@ -119,8 +139,7 @@ abstract class AbstractSQL extends AbstractSQLDebug implements QueryAble {
         Assert.state(prepared(), msg);
 
         this.tableWrapperList = null;
-        this.tableRefCountCache.clear();
-        this.tableRefCountCache = null;
+        this.tablePresentCountMap = null;
     }
 
     /*################################## blow package template method ##################################*/

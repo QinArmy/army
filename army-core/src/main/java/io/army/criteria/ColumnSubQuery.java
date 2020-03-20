@@ -112,16 +112,16 @@ public interface ColumnSubQuery<E> extends SubQuery {
 
     interface ColumnSubQueryLimitAble<E, C> extends ColumnSubQuerySQLAble, ColumnSubQueryAble<E> {
 
-        ColumnSubQuery<E> limit(int rowCount);
+        ColumnSubQueryAble<E> limit(int rowCount);
 
-        ColumnSubQuery<E> limit(int offset, int rowCount);
+        ColumnSubQueryAble<E> limit(int offset, int rowCount);
 
-        ColumnSubQuery<E> limit(Function<C, Pair<Integer, Integer>> function);
+        ColumnSubQueryAble<E> limit(Function<C, Pair<Integer, Integer>> function);
 
-        ColumnSubQuery<E> ifLimit(Predicate<C> predicate, int rowCount);
+        ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, int rowCount);
 
-        ColumnSubQuery<E> ifLimit(Predicate<C> predicate, int offset, int rowCount);
+        ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, int offset, int rowCount);
 
-        ColumnSubQuery<E> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
+        ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
     }
 }

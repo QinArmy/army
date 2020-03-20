@@ -7,10 +7,7 @@ import com.example.domain.user.User_;
 import com.example.generator.Being;
 import io.army.Session;
 import io.army.SessionFactory;
-import io.army.criteria.DeleteAble;
-import io.army.criteria.Distinct;
-import io.army.criteria.LockMode;
-import io.army.criteria.Select;
+import io.army.criteria.*;
 import io.army.criteria.impl.SQLS;
 import io.army.dialect.SQLDialect;
 import io.army.env.Environment;
@@ -20,6 +17,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -61,18 +59,25 @@ public class SessionTests {
 
     @Test(invocationCount = 10)
     public void singleUpdate() {
-/*
         final long start = System.currentTimeMillis();
         Map<String, Object> map = new HashMap<>();
-        Update update = SQLS.multiUpdate(Account_.T, map).as("a")
-                .set(Account_.balance, field("a", Account_.balance).add(BigDecimal.ONE).brackets())
+        Update update = SQLS.singleUpdate(map)
+                .update(Account_.T, "a")
+                .set(Account_.balance, SQLS.field("a", Account_.balance).add(BigDecimal.ONE).brackets())
                 .ifSet(this::isUser, Account_.balance, BigDecimal.ZERO)
-                .where(field("a", Account_.userId).add(SQLS.constant(1L)).brackets().multiply(3).eq(2L))
-                .and(field("a", Account_.visible).eq(true))
-                .and(field("a", Account_.createTime).eq(LocalDateTime.now()));
+                .where(
+                        SQLS.field("a", Account_.userId)
+                                .add(SQLS.constant(1L))
+                                .brackets()
+                                .multiply(3)
+                                .eq(2L)
+                )
+                .and(SQLS.field("a", Account_.visible).eq(true))
+                .and(SQLS.field("a", Account_.createTime).eq(LocalDateTime.now()))
+                .asUpdate();
 
         LOG.info("dml:\n{}", update.debugSQL(SQLDialect.MySQL57));
-        LOG.info("cost:{}", System.currentTimeMillis() - start);*/
+        LOG.info("cost:{}", System.currentTimeMillis() - start);
     }
 
     @Test(invocationCount = 10)
@@ -96,13 +101,15 @@ public class SessionTests {
 
         Map<String, Object> criteria = new HashMap<>();
 
-        DeleteAble deleteAble = SQLS.prepareDelete(criteria)
+        Delete delete = SQLS.singleDelete(criteria)
+                .delete()
                 .from(Account_.T)
                 .where(Account_.id.le(1000L))
                 .and(Account_.debt.gt(BigDecimal.ONE))
-                .ifAnd(this::isUser, Account_.accountType.eq(AccountType.BALANCE));
+                .ifAnd(this::isUser, Account_.accountType.eq(AccountType.BALANCE))
+                .asDelete();
 
-        LOG.info("dml:\n{}", deleteAble.debugSQL(SQLDialect.MySQL57));
+        LOG.info("dml:\n{}", delete.debugSQL(SQLDialect.MySQL57));
         LOG.info("cost:{}", System.currentTimeMillis() - start);
     }
 
@@ -122,7 +129,8 @@ public class SessionTests {
                 .having(Account_.id.gt(0L))
                 .orderBy(Account_.id)
                 .limit(10)
-                .lock(LockMode.READ);
+                .lock(LockMode.READ)
+                .asSelect();
 
         LOG.info("dml:\n{}", select.debugSQL(SQLDialect.MySQL57));
         LOG.info("cost:{}", System.currentTimeMillis() - start);
@@ -144,7 +152,8 @@ public class SessionTests {
                 .having(Account_.id.gt(0L))
                 .orderBy(Account_.id)
                 .limit(10)
-                .lock(LockMode.READ);
+                .lock(LockMode.READ)
+                .asSelect();
 
         LOG.info("dml:\n{}", select.debugSQL(SQLDialect.MySQL57));
         LOG.info("cost:{}", System.currentTimeMillis() - start);

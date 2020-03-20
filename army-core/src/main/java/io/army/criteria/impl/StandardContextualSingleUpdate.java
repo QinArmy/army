@@ -5,32 +5,39 @@ import io.army.criteria.Update;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 
-final class StandardContextualSingleUpdate<C> extends AbstractContextualUpdate<C> implements Update.SingleUpdateAble<C> {
+ class StandardContextualSingleUpdate<C> extends AbstractContextualUpdate<C> implements Update.SingleUpdateAble<C> {
 
-    StandardContextualSingleUpdate(C criteria) {
-        super(criteria);
-    }
+     StandardContextualSingleUpdate(C criteria) {
+         super(criteria);
+     }
 
-    /*################################## blow NoJoinUpdateCommandAble method ##################################*/
+     /*################################## blow NoJoinUpdateCommandAble method ##################################*/
 
-    @Override
-    public final SetAble<C> update(TableMeta<?> tableMeta, String tableAlias) {
-        addTableAble(tableMeta, tableAlias, JoinType.NONE);
-        return this;
-    }
+     @Override
+     public SetAble<C> update(TableMeta<?> tableMeta, String tableAlias) {
+         addTableAble(tableMeta, tableAlias, JoinType.NONE);
+         return this;
+     }
 
-    /*################################## blow package template method ##################################*/
+     /*################################## blow package  method ##################################*/
 
     @Override
     final int tableWrapperCount() {
         return 1;
     }
 
-    @Override
-    final void doAsUpdate() {
-        Assert.state(tableWrapperListSize() == 1, "ContextualSingleUpdate update table count not equals 1 .");
-    }
+     @Override
+     final void doAsUpdate() {
+         Assert.state(tableWrapperListSize() == 1, "ContextualSingleUpdate update table count not equals 1 .");
 
+         afterDoAsUpdate();
+     }
 
-}
+     /*################################## blow package template method ##################################*/
+
+     void afterDoAsUpdate() {
+
+     }
+
+ }
 

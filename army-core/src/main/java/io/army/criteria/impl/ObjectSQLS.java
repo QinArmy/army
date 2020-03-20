@@ -1,9 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.DeleteAble;
-import io.army.criteria.EmptyObject;
-
-public abstract class ObjectSQLS extends AbstractSQLS {
+abstract class ObjectSQLS extends AbstractSQLS {
 /*
     public static <T extends IDomain> Update.AliasAble<T, EmptyObject> update(TableMeta<T> tableMeta) {
         return new ObjectUpdateImpl<>(tableMeta, EmptyObject.getInstance());
@@ -14,13 +11,13 @@ public abstract class ObjectSQLS extends AbstractSQLS {
         return new ObjectUpdateImpl<>(tableMeta, criteria);
     }*/
 
-    public static DeleteAble.FromAble<EmptyObject> delete() {
+   /* public static Delete.NoJoinFromAble<EmptyObject> delete() {
         return new ObjectDeleteAbleImpl<>(EmptyObject.getInstance());
     }
 
-    public static <C> DeleteAble.FromAble<C> prepareDelete(C criteria){
+    public static <C> Delete.NoJoinFromAble<C> prepareDelete(C criteria){
         return new ObjectDeleteAbleImpl<>(criteria);
     }
-
+*/
 
 }

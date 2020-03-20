@@ -3,11 +3,13 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerSubQuery;
 import io.army.criteria.impl.inner.TableWrapper;
+import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.Pair;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -256,39 +258,39 @@ final class ColumnSubQueryAdaptor<E, C> implements ColumnSubQuery<E>, ColumnSubQ
     /*################################## blow ColumnSubQueryLimitAble method ##################################*/
 
     @Override
-    public ColumnSubQuery<E> limit(int rowCount) {
+    public ColumnSubQueryAble<E> limit(int rowCount) {
         this.actualSelect.limit(rowCount);
-        return asColumnSubQuery();
+        return this;
     }
 
     @Override
-    public ColumnSubQuery<E> limit(int offset, int rowCount) {
+    public ColumnSubQueryAble<E> limit(int offset, int rowCount) {
         this.actualSelect.limit(offset, rowCount);
-        return asColumnSubQuery();
+        return this;
     }
 
     @Override
-    public ColumnSubQuery<E> limit(Function<C, Pair<Integer, Integer>> function) {
+    public ColumnSubQueryAble<E> limit(Function<C, Pair<Integer, Integer>> function) {
         this.actualSelect.limit(function);
-        return asColumnSubQuery();
+        return this;
     }
 
     @Override
-    public ColumnSubQuery<E> ifLimit(Predicate<C> predicate, int rowCount) {
+    public ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, int rowCount) {
         this.actualSelect.ifLimit(predicate, rowCount);
-        return asColumnSubQuery();
+        return this;
     }
 
     @Override
-    public ColumnSubQuery<E> ifLimit(Predicate<C> predicate, int offset, int rowCount) {
+    public ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, int offset, int rowCount) {
         this.actualSelect.ifLimit(predicate, offset, rowCount);
-        return asColumnSubQuery();
+        return this;
     }
 
     @Override
-    public ColumnSubQuery<E> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
+    public ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
         this.actualSelect.ifLimit(predicate, function);
-        return asColumnSubQuery();
+        return this;
     }
 
     /*################################## blow ColumnSubQueryAble method ##################################*/
@@ -344,5 +346,10 @@ final class ColumnSubQueryAdaptor<E, C> implements ColumnSubQuery<E>, ColumnSubQ
     @Override
     public void clear() {
         this.actualSelect.clear();
+    }
+
+    @Override
+    public Map<TableMeta<?>, Integer> tablePresentCountMap() {
+        return this.actualSelect.tablePresentCountMap();
     }
 }

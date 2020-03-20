@@ -247,42 +247,42 @@ final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectPartAble<C>
     /*################################## blow SubQueryLimitAble method ##################################*/
 
     @Override
-    public SubQuery limit(int rowCount) {
+    public SubQuery.SubQueryAble limit(int rowCount) {
         this.actualSelect.limit(rowCount);
-        return asSubQuery();
+        return this;
     }
 
     @Override
-    public SubQuery limit(int offset, int rowCount) {
+    public SubQuery.SubQueryAble limit(int offset, int rowCount) {
         this.actualSelect.limit(offset, rowCount);
-        return asSubQuery();
+        return this;
     }
 
     @Override
-    public SubQuery limit(Function<C, Pair<Integer, Integer>> function) {
+    public SubQuery.SubQueryAble limit(Function<C, Pair<Integer, Integer>> function) {
         this.actualSelect.limit(function);
-        return asSubQuery();
+        return this;
     }
 
     @Override
-    public SubQuery ifLimit(Predicate<C> predicate, int rowCount) {
+    public SubQuery.SubQueryAble ifLimit(Predicate<C> predicate, int rowCount) {
         this.actualSelect.ifLimit(predicate, rowCount);
-        return asSubQuery();
+        return this;
     }
 
     @Override
-    public SubQuery ifLimit(Predicate<C> predicate, int offset, int rowCount) {
+    public SubQuery.SubQueryAble ifLimit(Predicate<C> predicate, int offset, int rowCount) {
         this.actualSelect.ifLimit(predicate, offset, rowCount);
-        return asSubQuery();
+        return this;
     }
 
     @Override
-    public SubQuery ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
+    public SubQuery.SubQueryAble ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
         this.actualSelect.ifLimit(predicate, function);
-        return asSubQuery();
+        return this;
     }
 
-    /*################################## blow TableSubQueryAble method ##################################*/
+    /*################################## blow SubQueryAble method ##################################*/
 
     @Override
     public final SubQuery asSubQuery() {

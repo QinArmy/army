@@ -7,6 +7,7 @@ import io.army.meta.TableMeta;
 import io.army.util.Pair;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -283,39 +284,39 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery, OuterQueryAble
     /*################################## blow RowSubQueryLimitAble method ##################################*/
 
     @Override
-    public RowSubQuery limit(int rowCount) {
+    public RowSubQueryAble limit(int rowCount) {
         this.actualSelect.limit(rowCount);
-        return asRowSubQuery();
+        return this;
     }
 
     @Override
-    public RowSubQuery limit(int offset, int rowCount) {
+    public RowSubQueryAble limit(int offset, int rowCount) {
         this.actualSelect.limit(offset, rowCount);
-        return asRowSubQuery();
+        return this;
     }
 
     @Override
-    public RowSubQuery limit(Function<C, Pair<Integer, Integer>> function) {
+    public RowSubQueryAble limit(Function<C, Pair<Integer, Integer>> function) {
         this.actualSelect.limit(function);
-        return asRowSubQuery();
+        return this;
     }
 
     @Override
-    public RowSubQuery ifLimit(Predicate<C> predicate, int rowCount) {
+    public RowSubQueryAble ifLimit(Predicate<C> predicate, int rowCount) {
         this.actualSelect.ifLimit(predicate, rowCount);
-        return asRowSubQuery();
+        return this;
     }
 
     @Override
-    public RowSubQuery ifLimit(Predicate<C> predicate, int offset, int rowCount) {
+    public RowSubQueryAble ifLimit(Predicate<C> predicate, int offset, int rowCount) {
         this.actualSelect.ifLimit(predicate, offset, rowCount);
-        return asRowSubQuery();
+        return this;
     }
 
     @Override
-    public RowSubQuery ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
+    public RowSubQueryAble ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
         this.actualSelect.ifLimit(predicate, function);
-        return asRowSubQuery();
+        return this;
     }
 
     /*################################## blow SubQueryAble method ##################################*/
@@ -371,5 +372,10 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery, OuterQueryAble
     @Override
     public void clear() {
         this.actualSelect.clear();
+    }
+
+    @Override
+    public Map<TableMeta<?>, Integer> tablePresentCountMap() {
+        return this.actualSelect.tablePresentCountMap();
     }
 }

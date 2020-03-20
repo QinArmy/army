@@ -1,8 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.ConstantExpression;
-import io.army.criteria.Expression;
-import io.army.criteria.ParamExpression;
+import io.army.criteria.*;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
@@ -12,6 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 abstract class AbstractSQLS {
+
 
     AbstractSQLS() {
         throw new UnsupportedOperationException();
@@ -52,6 +51,10 @@ abstract class AbstractSQLS {
 
     public static TableMeta<Dual> dual() {
         return Dual.INSTANCE;
+    }
+
+    public static IPredicate always() {
+        return AlwaysPredicate.INSTANCE;
     }
 
 
@@ -212,4 +215,30 @@ abstract class AbstractSQLS {
 
     /*################################## blow static inner class  ##################################*/
 
+    private static final class AlwaysPredicate extends AbstractPredicate {
+
+        private static final AlwaysPredicate INSTANCE = new AlwaysPredicate();
+
+        private AlwaysPredicate() {
+        }
+
+
+        @Override
+        public Selection as(String alias) {
+            throw new UnsupportedOperationException(
+                    String.format("%s not support as(String alias) method.", AlwaysPredicate.class.getName()));
+        }
+
+        @Override
+        protected void afterSpace(SQLContext context) {
+            context.stringBuilder()
+                    .append("1=1");
+        }
+
+        @Override
+        protected String beforeAs() {
+            return "1=1";
+        }
+
+    }
 }

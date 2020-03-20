@@ -5,7 +5,7 @@ public interface DualIPredicate extends IPredicate {
 
     Expression<?> leftExpression();
 
-    DualOperator dualOperator();
+    DualOperator operator();
 
     Expression<?> rightExpression();
 

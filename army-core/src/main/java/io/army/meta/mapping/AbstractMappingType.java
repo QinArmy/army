@@ -1,9 +1,21 @@
 package io.army.meta.mapping;
 
-public abstract class AbstractMappingType extends MappingSupport implements MappingType {
+public abstract class AbstractMappingType implements MappingType {
 
+    @Override
+    public final int hashCode() {
+        return super.hashCode();
+    }
 
+    @Override
+    public final boolean equals(Object obj) {
+        return this == obj;
+    }
 
-    /*######################## template method ################################*/
+    @Override
+    public final String toString() {
+        return javaType().getName() + "#" + jdbcType().name();
+    }
+
 
 }

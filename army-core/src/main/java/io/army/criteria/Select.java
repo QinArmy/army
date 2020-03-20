@@ -33,6 +33,7 @@ public interface Select extends SQLDebug, SQLAble, QueryAble {
 
     }
 
+
     interface SelectionAble<C> extends SelectSQLAble {
 
         NoJoinFromAble<C> select(Distinct distinct, String tableAlias, TableMeta<?> tableMeta);
@@ -51,6 +52,7 @@ public interface Select extends SQLDebug, SQLAble, QueryAble {
 
         NoJoinFromAble<C> select(Selection selection);
     }
+
 
     interface SelectPartAble<C> extends SelectionGroupAble<C> {
 
@@ -120,6 +122,8 @@ public interface Select extends SQLDebug, SQLAble, QueryAble {
 
         HavingAble<C> groupBy(Expression<?> groupExp);
 
+        HavingAble<C> groupBy(List<Expression<?>> groupExpList);
+
         HavingAble<C> groupBy(Function<C, List<Expression<?>>> function);
 
         HavingAble<C> ifGroupBy(Predicate<C> predicate, Expression<?> groupExp);
@@ -142,11 +146,11 @@ public interface Select extends SQLDebug, SQLAble, QueryAble {
 
     interface OrderByAble<C> extends LimitAble<C> {
 
-        LimitAble<C> orderBy(Expression<?> groupExp);
+        LimitAble<C> orderBy(Expression<?> orderExp);
 
         LimitAble<C> orderBy(Function<C, List<Expression<?>>> function);
 
-        LimitAble<C> ifOrderBy(Predicate<C> predicate, Expression<?> groupExp);
+        LimitAble<C> ifOrderBy(Predicate<C> predicate, Expression<?> orderExp);
 
         LimitAble<C> ifOrderBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction);
     }
@@ -169,13 +173,13 @@ public interface Select extends SQLDebug, SQLAble, QueryAble {
 
     interface LockAble<C> extends SelectSQLAble, SelectAble {
 
-        Select lock(LockMode lockMode);
+        SelectAble lock(LockMode lockMode);
 
-        Select lock(Function<C, LockMode> function);
+        SelectAble lock(Function<C, LockMode> function);
 
-        Select ifLock(Predicate<C> predicate, LockMode lockMode);
+        SelectAble ifLock(Predicate<C> predicate, LockMode lockMode);
 
-        Select ifLock(Predicate<C> predicate, Function<C, LockMode> function);
+        SelectAble ifLock(Predicate<C> predicate, Function<C, LockMode> function);
 
     }
 

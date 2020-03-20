@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.SubQuery;
 import io.army.meta.TableMeta;
 
-final class StandardContextualMultiSelect<C> extends AbstractMultiSelect<C> {
+class StandardContextualMultiSelect<C> extends AbstractMultiSelect<C> {
 
     private final CriteriaContext criteriaContext;
 
@@ -15,14 +15,21 @@ final class StandardContextualMultiSelect<C> extends AbstractMultiSelect<C> {
     }
 
 
-    /*################################## blow package template method ##################################*/
-
+    /*################################## blow package method ##################################*/
 
     @Override
-    void afterDoAsSelect() {
+    final void afterDoAsSelect() {
         CriteriaContextHolder.clearContext(this.criteriaContext);
         this.criteriaContext.clear();
     }
+
+    @Override
+    final void onAddSubQuery(SubQuery subQuery, String subQueryAlias) {
+        this.criteriaContext.onAddSubQuery(subQuery, subQueryAlias);
+    }
+
+    /*################################## blow package template method ##################################*/
+
 
     @Override
     void onAddTable(TableMeta<?> table, String tableAlias) {
@@ -30,16 +37,9 @@ final class StandardContextualMultiSelect<C> extends AbstractMultiSelect<C> {
     }
 
     @Override
-    void onAddSubQuery(SubQuery subQuery, String subQueryAlias) {
-        this.criteriaContext.onAddSubQuery(subQuery, subQueryAlias);
-    }
-
-    @Override
     void doClear() {
 
     }
-
-    /*################################## blow private method ##################################*/
 
 
 }

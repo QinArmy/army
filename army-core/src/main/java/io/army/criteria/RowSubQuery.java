@@ -123,17 +123,17 @@ public interface RowSubQuery extends SubQuery {
 
     interface RowSubQueryLimitAble<C> extends RowSubQuerySQLAble, RowSubQueryAble {
 
-        RowSubQuery limit(int rowCount);
+        RowSubQueryAble limit(int rowCount);
 
-        RowSubQuery limit(int offset, int rowCount);
+        RowSubQueryAble limit(int offset, int rowCount);
 
-        RowSubQuery limit(Function<C, Pair<Integer, Integer>> function);
+        RowSubQueryAble limit(Function<C, Pair<Integer, Integer>> function);
 
-        RowSubQuery ifLimit(Predicate<C> predicate, int rowCount);
+        RowSubQueryAble ifLimit(Predicate<C> predicate, int rowCount);
 
-        RowSubQuery ifLimit(Predicate<C> predicate, int offset, int rowCount);
+        RowSubQueryAble ifLimit(Predicate<C> predicate, int offset, int rowCount);
 
-        RowSubQuery ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
+        RowSubQueryAble ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
     }
 
 }

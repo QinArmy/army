@@ -1,9 +1,5 @@
 package io.army.meta.mapping;
 
-import io.army.annotation.Column;
-import io.army.meta.FieldMeta;
-import io.army.util.Precision;
-
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -30,4 +26,22 @@ public interface MappingType {
     void nonNullSet(PreparedStatement st, Object value, int index) throws SQLException;
 
     Object nullSafeGet(ResultSet resultSet, String alias) throws SQLException;
+
+    /**
+     * @return java class name + {@code #} + {@link JDBCType#name()}
+     */
+    @Override
+    String toString();
+
+    /**
+     * Consistent with {@link Object#hashCode()}
+     */
+    @Override
+    int hashCode();
+
+    /**
+     * Consistent with {@link Object#equals(Object)}
+     */
+    @Override
+    boolean equals(Object o);
 }

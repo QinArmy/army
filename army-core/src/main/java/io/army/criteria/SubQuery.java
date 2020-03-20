@@ -138,17 +138,17 @@ public interface SubQuery extends SelfDescribed, TableAble, QueryAble {
 
     interface SubQueryLimitAble<C> extends SubQuerySQLAble, SubQueryAble {
 
-        SubQuery limit(int rowCount);
+        SubQueryAble limit(int rowCount);
 
-        SubQuery limit(int offset, int rowCount);
+        SubQueryAble limit(int offset, int rowCount);
 
-        SubQuery limit(Function<C, Pair<Integer, Integer>> function);
+        SubQueryAble limit(Function<C, Pair<Integer, Integer>> function);
 
-        SubQuery ifLimit(Predicate<C> predicate, int rowCount);
+        SubQueryAble ifLimit(Predicate<C> predicate, int rowCount);
 
-        SubQuery ifLimit(Predicate<C> predicate, int offset, int rowCount);
+        SubQueryAble ifLimit(Predicate<C> predicate, int offset, int rowCount);
 
-        SubQuery ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
+        SubQueryAble ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
     }
 
 

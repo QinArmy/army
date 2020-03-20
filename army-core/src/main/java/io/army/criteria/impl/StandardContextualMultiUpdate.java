@@ -10,70 +10,74 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
-final class StandardContextualMultiUpdate<C> extends AbstractContextualUpdate<C> implements Update.MultiUpdateAble<C>
-        , Update.JoinAble<C>, Update.OnAble<C> {
+ class StandardContextualMultiUpdate<C> extends AbstractContextualUpdate<C> implements Update.MultiUpdateAble<C>
+         , Update.JoinAble<C>, Update.OnAble<C> {
 
-    StandardContextualMultiUpdate(C criteria) {
-        super(criteria);
-    }
+     StandardContextualMultiUpdate(C criteria) {
+         super(criteria);
+     }
 
-    /*################################## blow MultiUpdateAble method ##################################*/
+     /*################################## blow MultiUpdateAble method ##################################*/
 
-    @Override
-    public JoinAble<C> update(TableMeta<?> tableMeta, String tableAlias) {
-        addTableAble(tableMeta, tableAlias, JoinType.NONE);
-        return this;
-    }
+     @Override
+     public final JoinAble<C> update(TableMeta<?> tableMeta, String tableAlias) {
+         addTableAble(tableMeta, tableAlias, JoinType.NONE);
+         return this;
+     }
 
     /*################################## blow JoinAble method ##################################*/
 
-    @Override
-    public OnAble<C> leftJoin(TableAble tableAble, String tableAlias) {
-        addTableAble(tableAble, tableAlias, JoinType.LEFT);
-        return this;
-    }
+     @Override
+     public final OnAble<C> leftJoin(TableAble tableAble, String tableAlias) {
+         addTableAble(tableAble, tableAlias, JoinType.LEFT);
+         return this;
+     }
 
-    @Override
-    public OnAble<C> join(TableAble tableAble, String tableAlias) {
-        addTableAble(tableAble, tableAlias, JoinType.JOIN);
-        return this;
-    }
+     @Override
+     public final OnAble<C> join(TableAble tableAble, String tableAlias) {
+         addTableAble(tableAble, tableAlias, JoinType.JOIN);
+         return this;
+     }
 
-    @Override
-    public OnAble<C> rightJoin(TableAble tableAble, String tableAlias) {
-        addTableAble(tableAble, tableAlias, JoinType.RIGHT);
-        return this;
-    }
+     @Override
+     public final OnAble<C> rightJoin(TableAble tableAble, String tableAlias) {
+         addTableAble(tableAble, tableAlias, JoinType.RIGHT);
+         return this;
+     }
 
     /*################################## blow OnAble method ##################################*/
 
-    @Override
-    public JoinAble<C> on(List<IPredicate> predicateList) {
-        doOn(predicateList);
-        return this;
-    }
+     @Override
+     public final JoinAble<C> on(List<IPredicate> predicateList) {
+         doOn(predicateList);
+         return this;
+     }
 
-    @Override
-    public JoinAble<C> on(IPredicate predicate) {
-        doOn(Collections.singletonList(predicate));
-        return this;
-    }
+     @Override
+     public final JoinAble<C> on(IPredicate predicate) {
+         doOn(Collections.singletonList(predicate));
+         return this;
+     }
 
-    @Override
-    public JoinAble<C> on(Function<C, List<IPredicate>> function) {
-        doOn(function.apply(this.criteria));
-        return this;
-    }
+     @Override
+     public final JoinAble<C> on(Function<C, List<IPredicate>> function) {
+         doOn(function.apply(this.criteria));
+         return this;
+     }
 
-    /*################################## blow package template method ##################################*/
-
-    @Override
-    int tableWrapperCount() {
-        return 6;
-    }
+     /*################################## blow package method ##################################*/
 
 
-    @Override
+
+     /*################################## blow package template method ##################################*/
+
+     @Override
+     int tableWrapperCount() {
+         return 6;
+     }
+
+
+     @Override
     void doAsUpdate() {
 
     }

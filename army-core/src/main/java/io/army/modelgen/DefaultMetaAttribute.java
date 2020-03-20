@@ -122,7 +122,7 @@ class DefaultMetaAttribute implements MetaAttribute {
                 comment = "version for optimistic lock";
                 break;
             case TableMeta.VISIBLE:
-                comment = "visible for logic delete";
+                comment = "visible for logic singleDelete";
                 break;
             default:
                 comment = "@see " + mappingPropElement.asType().toString();

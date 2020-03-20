@@ -248,7 +248,7 @@ abstract class FieldMetaUtils extends MetaUtils {
                 comment = "version for optimistic lock";
                 break;
             case TableMeta.VISIBLE:
-                comment = "visible for logic delete";
+                comment = "visible for logic singleDelete";
                 break;
             default:
                 if (fieldMeta.javaType().isEnum()

@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public interface Update extends SQLAble, SQLDebug {
+public interface Update extends SQLAble, SQLDebug, QueryAble {
 
     interface UpdateAble extends UpdateSQLAble {
 
@@ -68,9 +68,9 @@ public interface Update extends SQLAble, SQLDebug {
         <F> WhereAble<C> ifSet(Predicate<C> predicate, FieldMeta<? extends IDomain, F> target
                 , Function<C, Expression<?>> valueExpFunction);
 
-        Update where(List<IPredicate> predicateList);
+        UpdateAble where(List<IPredicate> predicateList);
 
-        Update where(Function<C, List<IPredicate>> function);
+        UpdateAble where(Function<C, List<IPredicate>> function);
 
         WhereAndAble<C> where(IPredicate predicate);
     }

@@ -23,3 +23,13 @@
 (3) 简化 select 子句的 api,如 : select t1.*,t2.*,subQueryAlias.* from t1 join t2 on xxx join () as subQueryAlias .
 (4) 当 TableMeta 在 Select SQL 的 from 子句 和 join 子句 总共只出现一次时,
 可以将 TableMeta 的 FieldMeta 封装成一个 SelectionGroup,且生成的 sql 中 对应的FieldMeta 有表别名.
+
+6. 为什么不在 Select 的内部接口中 加上 List<SQLModifier> modifierList 或  <M extends SQLModifier> List<S> modifierList
+参数的方法?
+(1) 在数据库变更时 这样的 api 不容易发现 bug, 也正因为如此 MySQL 的专用 api 参数才使用 枚举 MySQLModifier
+ 而不是使用 接口 SQLModifier .
+
+7. 为什么把 标准 API 各个数据库的专用 API 写在不同的模块?
+(1) 因为在变更数据库是只要把相应的 maven 模块移出,就在找到需要修改的地方.
+
+

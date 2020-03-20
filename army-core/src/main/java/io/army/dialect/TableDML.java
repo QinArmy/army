@@ -19,7 +19,7 @@ public interface TableDML extends SQL {
      * <ol>
      *     <li>singleUpdate update_time</li>
      *     <li>singleUpdate version</li>
-     *     <li>logic delete</li>
+     *     <li>logic singleDelete</li>
      * </ol>
      *
      * @return a modifiable list
@@ -28,7 +28,7 @@ public interface TableDML extends SQL {
         throw new UnsupportedOperationException();
     }
 
-    default List<SQLWrapper> delete(DeleteAble.SingleDeleteAble deleteAble, Visible visible) {
+    default List<SQLWrapper> delete(Delete.DeleteAble deleteAble, Visible visible) {
         throw new UnsupportedOperationException();
     }
 

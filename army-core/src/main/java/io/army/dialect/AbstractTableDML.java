@@ -5,7 +5,7 @@ import io.army.SessionFactory;
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLS;
-import io.army.criteria.impl.inner.InnerDeleteAble;
+import io.army.criteria.impl.inner.InnerDelete;
 import io.army.criteria.impl.inner.InnerObjectUpdate;
 import io.army.criteria.impl.inner.InnerUpdate;
 import io.army.domain.IDomain;
@@ -97,16 +97,16 @@ public abstract class AbstractTableDML implements TableDML {
     }
 
     @Override
-    public List<SQLWrapper> delete(DeleteAble.SingleDeleteAble singleDeleteAble, Visible visible) {
-        InnerDeleteAble deleteAble = (InnerDeleteAble) singleDeleteAble;
+    public List<SQLWrapper> delete(Delete.DeleteAble singleDeleteAble, Visible visible) {
+       /* InnerDelete deleteAble = (InnerDelete) singleDeleteAble;
         TableMeta<?> tableMeta = deleteAble.tableMeta();
         List<SQLWrapper> list;
         if (tableMeta.parentMeta() == null) {
             list = createDeleteForSimple(deleteAble, visible);
         } else {
             list = createDeleteForChild(deleteAble, visible);
-        }
-        return list;
+        }*/
+        return Collections.emptyList();
     }
 
     /*################################## blow protected template method ##################################*/
@@ -115,7 +115,7 @@ public abstract class AbstractTableDML implements TableDML {
 
     /*################################## blow private method ##################################*/
 
-    private List<SQLWrapper> createDeleteForChild(InnerDeleteAble deleteAble, Visible visible) {
+    private List<SQLWrapper> createDeleteForChild(InnerDelete deleteAble, Visible visible) {
         return Collections.emptyList();
     }
 
@@ -123,31 +123,32 @@ public abstract class AbstractTableDML implements TableDML {
     /**
      * @return a unmodifiable list
      */
-    private List<SQLWrapper> createDeleteForSimple(InnerDeleteAble deleteAble, Visible visible) {
+    private List<SQLWrapper> createDeleteForSimple(InnerDelete deleteAble, Visible visible) {
 
-        final SQLContext context = new DefaultSQLContext(this, SQLStatement.DELETE);
+       /* final SQLContext context = new DefaultSQLContext(this, SQLStatement.DELETE);
         TableMeta<?> tableMeta = deleteAble.tableMeta();
 
         final String tableName = this.sql.quoteIfNeed(tableMeta.tableName());
-        // 1. delete clause
+        // 1. singleDelete clause
         appendDeleteClause(context, tableName, deleteAble);
         // 2. where clause
         appendDeleteWhereClause(context, deleteAble, visible);
         return Collections.singletonList(
                 SQLWrapper.build(context.stringBuilder().toString(), context.paramWrapper())
-        );
+        );*/
+        return Collections.emptyList();
     }
 
-    private void appendDeleteClause(SQLContext context, String tableName, InnerDeleteAble deleteAble) {
+    private void appendDeleteClause(SQLContext context, String tableName, InnerDelete deleteAble) {
         context.stringBuilder()
                 .append("DELETE FROM ")
                 .append(tableName);
 
     }
 
-    private void appendDeleteWhereClause(SQLContext context, InnerDeleteAble deleteAble, Visible visible) {
+    private void appendDeleteWhereClause(SQLContext context, InnerDelete deleteAble, Visible visible) {
 
-        List<IPredicate> predicateList = deleteAble.predicateList();
+        /*List<IPredicate> predicateList = deleteAble.predicateList();
         Assert.notEmpty(predicateList, "no where clause forbidden by army");
 
         StringBuilder builder = context.stringBuilder()
@@ -168,7 +169,8 @@ public abstract class AbstractTableDML implements TableDML {
                     .append(" = ")
                     .append(DialectUtils.quoteIfNeed(visibleField.mappingType(), textValue))
             ;
-        }
+        }*/
+
     }
 
     /**

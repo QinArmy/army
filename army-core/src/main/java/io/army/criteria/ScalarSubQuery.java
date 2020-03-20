@@ -114,17 +114,17 @@ public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expre
 
     interface ScalarSubQueryLimitAble<E, C> extends ScalarSubQuerySQLAble, ScalarSubQueryAble<E> {
 
-        ScalarSubQuery<E> limit(int rowCount);
+        ScalarSubQueryAble<E> limit(int rowCount);
 
-        ScalarSubQuery<E> limit(int offset, int rowCount);
+        ScalarSubQueryAble<E> limit(int offset, int rowCount);
 
-        ScalarSubQuery<E> limit(Function<C, Pair<Integer, Integer>> function);
+        ScalarSubQueryAble<E> limit(Function<C, Pair<Integer, Integer>> function);
 
-        ScalarSubQuery<E> ifLimit(Predicate<C> predicate, int rowCount);
+        ScalarSubQueryAble<E> ifLimit(Predicate<C> predicate, int rowCount);
 
-        ScalarSubQuery<E> ifLimit(Predicate<C> predicate, int offset, int rowCount);
+        ScalarSubQueryAble<E> ifLimit(Predicate<C> predicate, int offset, int rowCount);
 
-        ScalarSubQuery<E> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
+        ScalarSubQueryAble<E> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
     }
 
 }

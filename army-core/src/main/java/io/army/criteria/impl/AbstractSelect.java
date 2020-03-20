@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.InnerSelectAble;
+import io.army.criteria.impl.inner.InnerSelect;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -16,7 +16,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 abstract class AbstractSelect<C> extends AbstractSQL implements Select
-        , Select.WhereAble<C>, Select.WhereAndAble<C>, Select.HavingAble<C>, InnerSelectAble {
+        , Select.WhereAble<C>, Select.WhereAndAble<C>, Select.HavingAble<C>, InnerSelect {
 
     static final String NOT_PREPARED_MSG = "Select criteria don't haven invoke asSelect() method.";
 
@@ -53,19 +53,18 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
 
     @Override
     public final Select.GroupByAble<C> where(List<IPredicate> predicateList) {
-        Assert.state(this.predicateList.isEmpty(), "where ended.");
         this.predicateList.addAll(predicateList);
         return this;
     }
 
     @Override
     public final Select.GroupByAble<C> where(Function<C, List<IPredicate>> function) {
-        return where(function.apply(this.criteria));
+        this.predicateList.addAll(function.apply(this.criteria));
+        return this;
     }
 
     @Override
     public final Select.WhereAndAble<C> where(IPredicate predicate) {
-        Assert.state(this.predicateList.isEmpty(), "where ended.");
         this.predicateList.add(predicate);
         return this;
     }
@@ -74,20 +73,20 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
 
     @Override
     public final Select.WhereAndAble<C> and(IPredicate predicate) {
-        Assert.state(!this.predicateList.isEmpty(), "no where clause.");
         this.predicateList.add(predicate);
         return this;
     }
 
     @Override
     public final Select.WhereAndAble<C> and(Function<C, IPredicate> function) {
-        return and(function.apply(this.criteria));
+        this.predicateList.add(function.apply(this.criteria));
+        return this;
     }
 
     @Override
     public final Select.WhereAndAble<C> ifAnd(Predicate<C> testPredicate, IPredicate predicate) {
         if (testPredicate.test(this.criteria)) {
-            and(predicate);
+            this.predicateList.add(predicate);
         }
         return this;
     }
@@ -95,7 +94,7 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
     @Override
     public final Select.WhereAndAble<C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function) {
         if (testPredicate.test(this.criteria)) {
-            and(function.apply(this.criteria));
+            this.predicateList.add(function.apply(this.criteria));
         }
         return this;
     }
@@ -104,22 +103,26 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
 
     @Override
     public final Select.HavingAble<C> groupBy(Expression<?> groupExp) {
-        Assert.state(this.groupExpList.isEmpty(), "group by clause ended.");
-        groupExpList.add(groupExp);
+        this.groupExpList.add(groupExp);
+        return this;
+    }
+
+    @Override
+    public final HavingAble<C> groupBy(List<Expression<?>> groupExpList) {
+        this.groupExpList.addAll(groupExpList);
         return this;
     }
 
     @Override
     public final Select.HavingAble<C> groupBy(Function<C, List<Expression<?>>> function) {
-        Assert.state(this.groupExpList.isEmpty(), "group by clause ended.");
-        groupExpList.addAll(function.apply(this.criteria));
+        this.groupExpList.addAll(function.apply(this.criteria));
         return this;
     }
 
     @Override
     public final Select.HavingAble<C> ifGroupBy(Predicate<C> predicate, Expression<?> groupExp) {
         if (predicate.test(this.criteria)) {
-            groupBy(groupExp);
+            this.groupExpList.add(groupExp);
         }
         return this;
     }
@@ -127,7 +130,7 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
     @Override
     public final Select.HavingAble<C> ifGroupBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction) {
         if (predicate.test(this.criteria)) {
-            groupBy(expFunction);
+            this.groupExpList.addAll(expFunction.apply(this.criteria));
         }
         return this;
     }
@@ -174,23 +177,21 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
     /*################################## blow OrderByAble method ##################################*/
 
     @Override
-    public final Select.LimitAble<C> orderBy(Expression<?> groupExp) {
-        Assert.state(this.sortExpList.isEmpty(), "order by clause ended.");
-        this.sortExpList.add(groupExp);
+    public final Select.LimitAble<C> orderBy(Expression<?> orderExp) {
+        this.sortExpList.add(orderExp);
         return this;
     }
 
     @Override
     public final Select.LimitAble<C> orderBy(Function<C, List<Expression<?>>> function) {
-        Assert.state(this.sortExpList.isEmpty(), "order by clause ended.");
         this.sortExpList.addAll(function.apply(this.criteria));
         return this;
     }
 
     @Override
-    public final Select.LimitAble<C> ifOrderBy(Predicate<C> predicate, Expression<?> groupExp) {
+    public final Select.LimitAble<C> ifOrderBy(Predicate<C> predicate, Expression<?> orderExp) {
         if (predicate.test(this.criteria)) {
-            orderBy(groupExp);
+            this.sortExpList.add(orderExp);
         }
         return this;
     }
@@ -198,7 +199,7 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
     @Override
     public final Select.LimitAble<C> ifOrderBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction) {
         if (predicate.test(this.criteria)) {
-            orderBy(expFunction);
+            this.sortExpList.addAll(expFunction.apply(this.criteria));
         }
         return this;
     }
@@ -208,15 +209,12 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
 
     @Override
     public final Select.LockAble<C> limit(int rowCount) {
-        Assert.state(this.rowCount < 0, "limit clause ended.");
         this.rowCount = rowCount;
         return this;
     }
 
     @Override
     public final Select.LockAble<C> limit(int offset, int rowCount) {
-        Assert.state(this.offset < 0, "limit clause ended.");
-        Assert.state(this.rowCount < 0, "limit clause ended.");
         this.offset = offset;
         this.rowCount = rowCount;
         return this;
@@ -263,31 +261,31 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
     /*################################## blow LockAble method ##################################*/
 
     @Override
-    public final Select lock(LockMode lockMode) {
-        Assert.state(this.lockMode == null, "lock clause ended.");
+    public final SelectAble lock(LockMode lockMode) {
         this.lockMode = lockMode;
-        return asSelect();
+        return this;
     }
 
     @Override
-    public final Select lock(Function<C, LockMode> function) {
-        return lock(function.apply(this.criteria));
+    public final SelectAble lock(Function<C, LockMode> function) {
+        this.lockMode = function.apply(this.criteria);
+        return this;
     }
 
     @Override
-    public final Select ifLock(Predicate<C> predicate, LockMode lockMode) {
+    public final SelectAble ifLock(Predicate<C> predicate, LockMode lockMode) {
         if (predicate.test(this.criteria)) {
-            lock(lockMode);
+            this.lockMode = lockMode;
         }
-        return asSelect();
+        return this;
     }
 
     @Override
-    public final Select ifLock(Predicate<C> predicate, Function<C, LockMode> function) {
+    public final SelectAble ifLock(Predicate<C> predicate, Function<C, LockMode> function) {
         if (predicate.test(this.criteria)) {
-            lock(function);
+            this.lockMode = function.apply(this.criteria);
         }
-        return asSelect();
+        return this;
     }
 
     /*################################## blow SelectAble method ##################################*/
@@ -398,8 +396,7 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
     }
 
 
-    final void doSelect(@Nullable Distinct distinct, List<SelectPart> selectPartList) {
-        Assert.state(this.modifierList.isEmpty() && this.selectPartList.isEmpty(), "select clause ended.");
+    final <S extends SelectPart> void doSelect(@Nullable Distinct distinct, List<S> selectPartList) {
         if (distinct != null) {
             this.modifierList.add(distinct);
         }
@@ -407,31 +404,22 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
         this.selectPartList.addAll(selectPartList);
     }
 
-    final void doSelect(List<SQLModifier> modifierList, List<SelectPart> selectPartList) {
-        Assert.state(this.modifierList.isEmpty() && this.selectPartList.isEmpty(), "select clause ended.");
+    final <M extends SQLModifier, S extends SelectPart> void doSelect(List<M> modifierList, List<S> selectPartList) {
         this.modifierList.addAll(modifierList);
         Assert.notEmpty(selectPartList, "select clause must have SelectPart.");
         this.selectPartList.addAll(selectPartList);
     }
 
     final void doSelect(@Nullable Distinct distinct, SelectionGroup selectionGroup) {
-        Assert.state(this.modifierList.isEmpty() && this.selectPartList.isEmpty(), "select clause ended.");
         if (distinct != null) {
             this.modifierList.add(distinct);
         }
         this.selectPartList.add(selectionGroup);
     }
 
-    final void doSelect(List<SQLModifier> modifierList, SelectionGroup selectionGroup) {
-        Assert.state(this.modifierList.isEmpty() && this.selectPartList.isEmpty(), "select clause ended.");
+    final <M extends SQLModifier> void doSelect(List<M> modifierList, SelectionGroup selectionGroup) {
         this.modifierList.addAll(modifierList);
         this.selectPartList.add(selectionGroup);
-    }
-
-    final void doSelectBySelection(List<SQLModifier> modifierList, List<Selection> selectionList) {
-        Assert.state(this.modifierList.isEmpty() && this.selectPartList.isEmpty(), "select clause ended.");
-        this.modifierList.addAll(modifierList);
-        this.selectPartList.addAll(selectionList);
     }
 
 
