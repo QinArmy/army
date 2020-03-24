@@ -20,7 +20,7 @@ public enum MySQLModifier implements SQLModifier {
     SQL_CALC_FOUND_ROWS;
 
     @Override
-    public String keyWord() {
+    public String render() {
         return name();
     }
 }

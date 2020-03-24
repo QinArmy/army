@@ -2,16 +2,14 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerMySQLSelect;
-import io.army.meta.TableMeta;
 import io.army.util.Assert;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 final class MySQLContextualSingleSelect<C> extends StandardContextualSingleSelect<C>
-        implements InnerMySQLSelect, MySQLSelect.ModifierSelectionAble<C>
+        implements InnerMySQLSelect, MySQLSelect.MySQLNoJoinSelectAble<C>
         , MySQLSelect.MySQLGroupByAble<C>, MySQLSelect.MySQLHavingAble<C> {
 
     private boolean withRollUp;
@@ -23,26 +21,21 @@ final class MySQLContextualSingleSelect<C> extends StandardContextualSingleSelec
     /*################################## blow ModifierSelectionAble method ##################################*/
 
     @Override
-    public NoJoinFromAble<C> select(List<MySQLModifier> modifierList, String tableAlias, TableMeta<?> tableMeta) {
-        doSelect(modifierList, SQLS.group(tableMeta, tableAlias));
+    public <S extends SelectPart> NoJoinFromAble<C> select(Function<C, List<MySQLModifier>> modifierFunction
+            , Function<C, List<S>> selectPartFunction) {
+        this.doSelect(modifierFunction.apply(this.criteria), selectPartFunction.apply(this.criteria));
         return this;
     }
 
     @Override
-    public NoJoinFromAble<C> select(List<MySQLModifier> modifierList, String subQueryAlias) {
-        doSelect(modifierList, SQLS.derivedGroup(subQueryAlias));
+    public NoJoinFromAble<C> select(List<MySQLModifier> modifierList, SelectPart selectPart) {
+        doSelect(modifierList, selectPart);
         return this;
     }
 
     @Override
-    public NoJoinFromAble<C> select(List<MySQLModifier> modifierList, List<Selection> selectionList) {
-        doSelect(modifierList, selectionList);
-        return this;
-    }
-
-    @Override
-    public NoJoinFromAble<C> select(List<MySQLModifier> modifierList, Selection selection) {
-        doSelect(modifierList, Collections.singletonList(selection));
+    public <S extends SelectPart> NoJoinFromAble<C> select(List<MySQLModifier> modifierList, List<S> selectPartList) {
+        doSelect(modifierList, selectPartList);
         return this;
     }
 
@@ -50,16 +43,16 @@ final class MySQLContextualSingleSelect<C> extends StandardContextualSingleSelec
     /*################################## blow MySQLGroupByAble method ##################################*/
 
     @Override
-    public MySQLHavingAble<C> groupBy(Expression<?> groupExp, boolean withRollUp) {
+    public MySQLHavingAble<C> groupByAndRollUp(Expression<?> groupExp) {
         super.groupBy(groupExp);
-        this.withRollUp = withRollUp;
+        this.withRollUp = true;
         return this;
     }
 
     @Override
-    public MySQLHavingAble<C> groupBy(Function<C, List<Expression<?>>> function, boolean withRollUp) {
+    public MySQLHavingAble<C> groupByAndRollUp(Function<C, List<Expression<?>>> function) {
         super.groupBy(function);
-        this.withRollUp = withRollUp;
+        this.withRollUp = true;
         return this;
     }
 

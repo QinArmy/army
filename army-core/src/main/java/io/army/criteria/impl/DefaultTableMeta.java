@@ -4,17 +4,19 @@ import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
 import io.army.annotation.Table;
 import io.army.criteria.MetaException;
+import io.army.criteria.SQLContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.struct.CodeEnum;
 import io.army.util.Assert;
-import io.army.util.ClassUtils;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.BiFunction;
 
 /**
  * created  on 2018/11/19.
@@ -222,6 +224,13 @@ final class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
         }
         return (IndexFieldMeta<T, F>) fieldMeta;
+    }
+
+    @Override
+    public final void appendSQL(SQLContext context) {
+        context.stringBuilder()
+                .append(" ")
+                .append(context.dml().quoteIfNeed(this.tableName));
     }
 
     @Override

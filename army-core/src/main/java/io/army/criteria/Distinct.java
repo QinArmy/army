@@ -8,7 +8,7 @@ public enum Distinct implements SQLModifier {
 
 
     @Override
-    public String keyWord() {
+    public String render() {
         return name();
     }
 

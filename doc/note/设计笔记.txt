@@ -32,4 +32,19 @@
 7. 为什么把 标准 API 各个数据库的专用 API 写在不同的模块?
 (1) 因为在变更数据库是只要把相应的 maven 模块移出,就在找到需要修改的地方.
 
+8. 为什么不支持 postgre select 中的 only 关键字？
+(1)因为 postgre 的继承与 army 的继承不是一个概念,如果支持可能会查出没有 domain 的表。
+
+9. 在 select 语句中为什么要设计没有 join 的 api ?
+(1)因为有的 "表" from 后不能 join ,如: DUAL .
+
+10. 为什么 PostgreAliasFuncTable 没有继承 PostgreFuncTable?
+(1) 因为在 ROWS FROM 子句中 函数 导出的表定义是不能有别名的,如果继承则将会造成语法错误.
+
+11. 为什么 postgre 的 select 语句在 使用 group by 和 window 后仍然能调用  lock 方法?
+(1) 因为 在 java 中 Postgres 要继承 SQLS , PostgreSelectPartAble 要继承 SelectPartAble , 造成返回类型不兼容.
+
+12. 为什么 IPredicate 不支持 and 操作符?
+(1) 因为 IPredicate 是自我描述的,如果支持 and ,生成的 SQL 会有很多不必要的 () ,这样的 SQL 很难看.
+
 

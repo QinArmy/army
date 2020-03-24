@@ -1,10 +1,11 @@
-package io.army.criteria;
+package io.army.criteria.impl;
 
-public enum JoinType {
+enum JoinType {
     NONE(""),
     LEFT("LEFT JOIN"),
     JOIN("JOIN"),
-    RIGHT("RIGHT JOIN");
+    RIGHT("RIGHT JOIN"),
+    FULL("FULL JOIN");
 
     public final String keyWord;
 

@@ -22,83 +22,85 @@ abstract class AbstractMultiSelect<C> extends AbstractSelect<C> implements
 
     /*################################## blow SelectPartAble method ##################################*/
 
-
     @Override
-    public final Select.FromAble<C> select(Distinct distinct, List<SelectPart> selectPartList) {
-        doSelect(distinct, selectPartList);
-        return this;
-    }
-
-    @Override
-    public final Select.FromAble<C> select(List<SelectPart> selectPartList) {
-        doSelect((Distinct) null, selectPartList);
-        return this;
-    }
-
-    @Override
-    public final Select.FromAble<C> select(Distinct distinct, Function<C, List<SelectPart>> function) {
+    public <S extends SelectPart> FromAble<C> select(Distinct distinct, Function<C, List<S>> function) {
         doSelect(distinct, function.apply(this.criteria));
         return this;
     }
 
     @Override
-    public final Select.FromAble<C> select(Function<C, List<SelectPart>> function) {
-        doSelect((Distinct) null, function.apply(this.criteria));
-        return this;
-    }
-
-    /*################################## blow SelectionGroupAble method ##################################*/
-
-    @Override
-    public final FromAble<C> select(Distinct distinct, String tableAlias, TableMeta<?> tableMeta) {
-        doSelect(distinct, SQLS.group(tableMeta, tableAlias));
+    public FromAble<C> select(Distinct distinct, SelectPart selectPart) {
+        doSelect(distinct, selectPart);
         return this;
     }
 
     @Override
-    public final FromAble<C> select(String tableAlias, TableMeta<?> tableMeta) {
-        doSelect((Distinct) null, SQLS.group(tableMeta, tableAlias));
+    public FromAble<C> select(SelectPart selectPart) {
+        doSelect((Distinct) null, selectPart);
         return this;
     }
 
     @Override
-    public final FromAble<C> select(String subQueryAlias) {
-        doSelect((Distinct) null, SQLS.derivedGroup(subQueryAlias));
+    public <S extends SelectPart> FromAble<C> select(Distinct distinct, List<S> selectPartList) {
+        doSelect(distinct, selectPartList);
         return this;
     }
 
     @Override
-    public final FromAble<C> select(Distinct distinct, String subQueryAlias) {
-        doSelect(distinct, SQLS.derivedGroup(subQueryAlias));
+    public <S extends SelectPart> FromAble<C> select(List<S> selectPartList) {
+        doSelect((Distinct) null, selectPartList);
         return this;
     }
-
 
     /*################################## blow FromAble method ##################################*/
 
     @Override
-    public final Select.JoinAble<C> from(TableAble tableAble, String tableAlias) {
-        addTableAble(tableAble, tableAlias, JoinType.NONE);
+    public JoinAble<C> from(TableMeta<?> tableMeta, String tableAlias) {
+        addTableAble(tableMeta, tableAlias, JoinType.NONE);
+        return this;
+    }
+
+    @Override
+    public JoinAble<C> from(Function<C, SubQuery> function, String subQueryAlia) {
+        addTableAble(function.apply(this.criteria), subQueryAlia, JoinType.NONE);
         return this;
     }
 
     /*################################## blow JoinAble method ##################################*/
 
     @Override
-    public final Select.OnAble<C> leftJoin(TableAble tableAble, String tableAlias) {
-        addTableAble(tableAble, tableAlias, JoinType.LEFT);
+    public OnAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias) {
+        addTableAble(tableMeta, tableAlias, JoinType.LEFT);
         return this;
     }
 
     @Override
-    public final Select.OnAble<C> join(TableAble tableAble, String tableAlias) {
-        addTableAble(tableAble, tableAlias, JoinType.JOIN);
+    public OnAble<C> leftJoin(Function<C, SubQuery> function, String subQueryAlia) {
+        addTableAble(function.apply(this.criteria), subQueryAlia, JoinType.LEFT);
         return this;
     }
 
     @Override
-    public final Select.OnAble<C> rightJoin(TableAble tableAble, String tableAlias) {
-        addTableAble(tableAble, tableAlias, JoinType.RIGHT);
+    public OnAble<C> join(TableMeta<?> tableMeta, String tableAlias) {
+        addTableAble(tableMeta, tableAlias, JoinType.JOIN);
+        return this;
+    }
+
+    @Override
+    public OnAble<C> join(Function<C, SubQuery> function, String subQueryAlia) {
+        addTableAble(function.apply(this.criteria), subQueryAlia, JoinType.JOIN);
+        return this;
+    }
+
+    @Override
+    public OnAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias) {
+        addTableAble(tableMeta, tableAlias, JoinType.RIGHT);
+        return this;
+    }
+
+    @Override
+    public OnAble<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia) {
+        addTableAble(function.apply(this.criteria), subQueryAlia, JoinType.RIGHT);
         return this;
     }
 

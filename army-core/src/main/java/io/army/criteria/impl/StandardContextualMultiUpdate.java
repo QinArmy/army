@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.IPredicate;
-import io.army.criteria.JoinType;
 import io.army.criteria.TableAble;
 import io.army.criteria.Update;
 import io.army.meta.TableMeta;

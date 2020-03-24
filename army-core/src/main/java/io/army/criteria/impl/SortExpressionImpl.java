@@ -2,11 +2,9 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
-import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingType;
-import io.army.util.Assert;
 
-final class SortExpressionImpl<E> extends AbstractExpression<E> {
+final class SortExpressionImpl<E> extends AbstractNoNOperationExpression<E> implements SortExpression<E> {
 
     private final Expression<?> expression;
 
@@ -36,15 +34,16 @@ final class SortExpressionImpl<E> extends AbstractExpression<E> {
     }
 
     @Override
-    protected String beforeAs() {
+    public String toString() {
         String text = expression.toString();
-        if(ascExp){
+        if (ascExp) {
             text += " ASC";
-        }else {
+        } else {
             text += " DESC";
         }
-        return  text;
+        return text;
     }
+
 
     @Override
     public MappingType mappingType() {

@@ -1,8 +1,8 @@
 package io.army.criteria.impl.inner;
 
 import io.army.criteria.IPredicate;
-import io.army.criteria.JoinType;
 import io.army.criteria.TableAble;
+import io.army.criteria.impl.JoinType;
 
 import java.util.List;
 

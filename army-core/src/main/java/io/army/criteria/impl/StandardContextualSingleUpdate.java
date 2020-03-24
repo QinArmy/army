@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.JoinType;
 import io.army.criteria.Update;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;

@@ -21,60 +21,49 @@ public interface Select extends SQLDebug, SQLAble, QueryAble {
 
     }
 
-    interface SelectionGroupAble<C> extends SelectSQLAble {
 
-        FromAble<C> select(Distinct distinct, String tableAlias, TableMeta<?> tableMeta);
+    interface NoJoinSelectPartAble<C> extends SelectSQLAble {
 
-        FromAble<C> select(String tableAlias, TableMeta<?> tableMeta);
+        <S extends SelectPart> NoJoinFromAble<C> select(Distinct distinct, Function<C, List<S>> function);
 
-        FromAble<C> select(Distinct distinct, String subQueryAlias);
+        NoJoinFromAble<C> select(Distinct distinct, SelectPart selectPart);
 
-        FromAble<C> select(String subQueryAlias);
+        NoJoinFromAble<C> select(SelectPart selectPart);
 
-    }
+        <S extends SelectPart> NoJoinFromAble<C> select(Distinct distinct, List<S> selectPartList);
 
-
-    interface SelectionAble<C> extends SelectSQLAble {
-
-        NoJoinFromAble<C> select(Distinct distinct, String tableAlias, TableMeta<?> tableMeta);
-
-        NoJoinFromAble<C> select(String tableAlias, TableMeta<?> tableMeta);
-
-        NoJoinFromAble<C> select(Distinct distinct, String subQueryAlias);
-
-        NoJoinFromAble<C> select(String subQueryAlias);
-
-        NoJoinFromAble<C> select(Distinct distinct, List<Selection> selectionList);
-
-        NoJoinFromAble<C> select(List<Selection> selectionList);
-
-        NoJoinFromAble<C> select(Distinct distinct, Selection selection);
-
-        NoJoinFromAble<C> select(Selection selection);
-    }
-
-
-    interface SelectPartAble<C> extends SelectionGroupAble<C> {
-
-        FromAble<C> select(List<SelectPart> selectPartList);
-
-        FromAble<C> select(Distinct distinct, List<SelectPart> selectPartList);
-
-        FromAble<C> select(Function<C, List<SelectPart>> function);
-
-        FromAble<C> select(Distinct distinct, Function<C, List<SelectPart>> function);
-    }
-
-
-    interface FromAble<C> extends SelectAble {
-
-        JoinAble<C> from(TableAble tableAble, String tableAlias);
+        <S extends SelectPart> NoJoinFromAble<C> select(List<S> selectPartList);
 
     }
 
-    interface NoJoinFromAble<C> extends SelectAble {
 
-        WhereAble<C> from(TableAble tableAble, String tableAlias);
+    interface SelectPartAble<C> extends NoJoinSelectPartAble<C> {
+
+        <S extends SelectPart> FromAble<C> select(Distinct distinct, Function<C, List<S>> function);
+
+        FromAble<C> select(Distinct distinct, SelectPart selectPart);
+
+        FromAble<C> select(SelectPart selectPart);
+
+        <S extends SelectPart> FromAble<C> select(Distinct distinct, List<S> selectPartList);
+
+        <S extends SelectPart> FromAble<C> select(List<S> selectPartList);
+    }
+
+
+    interface FromAble<C> extends NoJoinFromAble<C> {
+
+        JoinAble<C> from(TableMeta<?> tableMeta, String tableAlias);
+
+        JoinAble<C> from(Function<C, SubQuery> function, String subQueryAlia);
+
+    }
+
+    interface NoJoinFromAble<C> extends WhereAble<C> {
+
+        WhereAble<C> from(TableMeta<?> tableMeta, String tableAlias);
+
+        WhereAble<C> from(Function<C, SubQuery> function, String subQueryAlia);
     }
 
     interface OnAble<C> extends SelectSQLAble {
@@ -89,11 +78,17 @@ public interface Select extends SQLDebug, SQLAble, QueryAble {
 
     interface JoinAble<C> extends WhereAble<C> {
 
-        OnAble<C> leftJoin(TableAble tableAble, String tableAlias);
+        OnAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias);
 
-        OnAble<C> join(TableAble tableAble, String tableAlias);
+        OnAble<C> leftJoin(Function<C, SubQuery> function, String subQueryAlia);
 
-        OnAble<C> rightJoin(TableAble tableAble, String tableAlias);
+        OnAble<C> join(TableMeta<?> tableMeta, String tableAlias);
+
+        OnAble<C> join(Function<C, SubQuery> function, String subQueryAlia);
+
+        OnAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias);
+
+        OnAble<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia);
     }
 
     interface WhereAble<C> extends GroupByAble<C> {

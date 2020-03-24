@@ -12,18 +12,19 @@ public interface MySQLSelect extends Select {
 
     }
 
-    interface ModifierSelectionAble<C> extends SelectionAble<C>, MySQLSelectSQLAble {
+    interface MySQLNoJoinSelectAble<C> extends NoJoinSelectPartAble<C>, MySQLSelectSQLAble {
 
-        NoJoinFromAble<C> select(List<MySQLModifier> modifierList, String tableAlias, TableMeta<?> tableMeta);
+        <S extends SelectPart> NoJoinFromAble<C> select(Function<C, List<MySQLModifier>> modifierFunction
+                , Function<C, List<S>> selectPartFunction);
 
-        NoJoinFromAble<C> select(List<MySQLModifier> modifierList, String subQueryAlias);
+        NoJoinFromAble<C> select(List<MySQLModifier> modifierList, SelectPart selectPart);
 
-        NoJoinFromAble<C> select(List<MySQLModifier> modifierList, List<Selection> selectionList);
+        <S extends SelectPart> NoJoinFromAble<C> select(List<MySQLModifier> modifierList, List<S> selectPartList);
 
-        NoJoinFromAble<C> select(List<MySQLModifier> modifierList, Selection selection);
+
     }
 
-    interface ModifierSelectPartAble<C> extends SelectPartAble<C>, MySQLSelectSQLAble {
+    interface SelectPartAble<C> extends Select.SelectPartAble<C>, MySQLSelectSQLAble {
 
         FromAble<C> select(List<MySQLModifier> modifierList, String tableAlias, TableMeta<?> tableMeta);
 
@@ -36,9 +37,9 @@ public interface MySQLSelect extends Select {
 
     interface MySQLGroupByAble<C> extends GroupByAble<C>, MySQLSelectSQLAble {
 
-        MySQLHavingAble<C> groupBy(Expression<?> groupExp, boolean withRollUp);
+        MySQLHavingAble<C> groupByAndRollUp(Expression<?> groupExp);
 
-        MySQLHavingAble<C> groupBy(Function<C, List<Expression<?>>> function, boolean withRollUp);
+        MySQLHavingAble<C> groupByAndRollUp(Function<C, List<Expression<?>>> function);
 
         MySQLHavingAble<C> ifGroupByAndRollUp(Predicate<C> predicate, Function<C, MySQLGroup> expFunction);
     }

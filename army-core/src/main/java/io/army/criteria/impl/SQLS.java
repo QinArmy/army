@@ -13,6 +13,9 @@ import java.util.function.Function;
 @SuppressWarnings({"unused"})
 public abstract class SQLS extends AbstractSQLS {
 
+    SQLS() {
+
+    }
 
     public static Update.SingleUpdateAble<EmptyObject> singleUpdate() {
         return new StandardContextualSingleUpdate<>(EmptyObject.getInstance());
@@ -31,19 +34,19 @@ public abstract class SQLS extends AbstractSQLS {
     }
 
 
-    public static Select.SelectionAble<EmptyObject> singleSelect() {
+    public static Select.NoJoinSelectPartAble<EmptyObject> singleSelect() {
         return new StandardContextualSingleSelect<>(EmptyObject.getInstance());
     }
 
-    public static <C> Select.SelectionAble<C> singleSelect(C criteria) {
+    public static <C> Select.NoJoinSelectPartAble<C> singleSelect(C criteria) {
         return new StandardContextualSingleSelect<>(criteria);
     }
 
-    public static Select.SelectionGroupAble<EmptyObject> multiSelect() {
+    public static Select.SelectPartAble<EmptyObject> multiSelect() {
         return new StandardContextualMultiSelect<>(EmptyObject.getInstance());
     }
 
-    public static <C> Select.SelectionGroupAble<C> multiSelect(C criteria) {
+    public static <C> Select.SelectPartAble<C> multiSelect(C criteria) {
         return new StandardContextualMultiSelect<>(criteria);
     }
 

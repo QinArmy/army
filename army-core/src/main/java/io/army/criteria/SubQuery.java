@@ -10,14 +10,11 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 
-public interface SubQuery extends SelfDescribed, TableAble, QueryAble {
-
-    List<SelectPart> selectPartList();
+public interface SubQuery extends SelfDescribed, DerivedTable, QueryAble {
 
     @Nullable
     SubQuery subordinateSubQuery(String subordinateSubQueryAlias);
 
-    Selection selection(String derivedFieldName);
 
     QueryAble outerQuery();
 

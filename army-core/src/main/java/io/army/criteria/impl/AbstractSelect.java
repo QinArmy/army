@@ -49,6 +49,7 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
         this.criteria = criteria;
     }
 
+
     /*################################## blow WhereAble method ##################################*/
 
     @Override
@@ -410,16 +411,16 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
         this.selectPartList.addAll(selectPartList);
     }
 
-    final void doSelect(@Nullable Distinct distinct, SelectionGroup selectionGroup) {
+    final <S extends SelectPart> void doSelect(@Nullable Distinct distinct, S selectPart) {
         if (distinct != null) {
             this.modifierList.add(distinct);
         }
-        this.selectPartList.add(selectionGroup);
+        this.selectPartList.add(selectPart);
     }
 
-    final <M extends SQLModifier> void doSelect(List<M> modifierList, SelectionGroup selectionGroup) {
+    final <M extends SQLModifier, S extends SelectPart> void doSelect(List<M> modifierList, S selectPart) {
         this.modifierList.addAll(modifierList);
-        this.selectPartList.add(selectionGroup);
+        this.selectPartList.add(selectPart);
     }
 
 

@@ -46,19 +46,19 @@ public abstract class MySQLS extends SQLS {
     /*################################## blow select method ##################################*/
 
 
-    public static MySQLSelect.ModifierSelectionAble<EmptyObject> singleSelect() {
+    public static MySQLSelect.MySQLNoJoinSelectAble<EmptyObject> singleSelect() {
         return new MySQLContextualSingleSelect<>(EmptyObject.getInstance());
     }
 
-    public static <C> MySQLSelect.ModifierSelectionAble<C> singleSelect(C criteria) {
+    public static <C> MySQLSelect.MySQLNoJoinSelectAble<C> singleSelect(C criteria) {
         return new MySQLContextualSingleSelect<>(criteria);
     }
 
-    public static MySQLSelect.ModifierSelectPartAble<EmptyObject> multiSelect() {
+    public static MySQLSelect.SelectPartAble<EmptyObject> multiSelect() {
         return new MySQLContextualMultiSelect<>(EmptyObject.getInstance());
     }
 
-    public static <C> MySQLSelect.ModifierSelectPartAble<C> multiSelect(C criteria) {
+    public static <C> MySQLSelect.SelectPartAble<C> multiSelect(C criteria) {
         return new MySQLContextualMultiSelect<>(criteria);
     }
 

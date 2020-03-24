@@ -10,7 +10,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 final class MySQLContextualMultiSelect<C> extends StandardContextualMultiSelect<C>
-        implements InnerMySQLSelect, MySQLSelect.ModifierSelectPartAble<C>
+        implements InnerMySQLSelect, MySQLSelect.SelectPartAble<C>
         , MySQLSelect.MySQLGroupByAble<C>, MySQLSelect.MySQLHavingAble<C> {
 
     private boolean withRollUp;
@@ -50,16 +50,16 @@ final class MySQLContextualMultiSelect<C> extends StandardContextualMultiSelect<
     /*################################## blow MySQLGroupByAble method ##################################*/
 
     @Override
-    public MySQLHavingAble<C> groupBy(Expression<?> groupExp, boolean withRollUp) {
+    public MySQLHavingAble<C> groupByAndRollUp(Expression<?> groupExp) {
         super.groupBy(groupExp);
-        this.withRollUp = withRollUp;
+        this.withRollUp = true;
         return this;
     }
 
     @Override
-    public MySQLHavingAble<C> groupBy(Function<C, List<Expression<?>>> function, boolean withRollUp) {
+    public MySQLHavingAble<C> groupByAndRollUp(Function<C, List<Expression<?>>> function) {
         super.groupBy(function);
-        this.withRollUp = withRollUp;
+        this.withRollUp = true;
         return this;
     }
 

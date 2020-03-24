@@ -11,5 +11,11 @@
 
     <artifactId>army-postgre</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>io.army</groupId>
+            <artifactId>army-core</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>
