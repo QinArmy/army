@@ -1,7 +1,6 @@
 package io.army.criteria;
 
 
-import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.Pair;
 
@@ -12,11 +11,8 @@ import java.util.function.Predicate;
 
 public interface SubQuery extends SelfDescribed, DerivedTable, QueryAble {
 
-    @Nullable
-    SubQuery subordinateSubQuery(String subordinateSubQueryAlias);
 
-
-    QueryAble outerQuery();
+    /*################################## blow interfaces ##################################*/
 
 
     interface SubQueryAble extends SubQuerySQLAble {
@@ -32,27 +28,23 @@ public interface SubQuery extends SelfDescribed, DerivedTable, QueryAble {
 
     interface SubQuerySelectPartAble<C> extends SubQuerySQLAble {
 
-        SubQueryFromAble<C> select(Distinct distinct, String tableAlias, TableMeta<?> tableMeta);
+        <S extends SelectPart> SubQueryFromAble<C> select(Distinct distinct, Function<C, List<S>> function);
 
-        SubQueryFromAble<C> select(String tableAlias, TableMeta<?> tableMeta);
+        SubQueryFromAble<C> select(Distinct distinct, SelectPart selectPart);
 
-        SubQueryFromAble<C> select(Distinct distinct, String subQueryAlias);
+        SubQueryFromAble<C> select(SelectPart selectPart);
 
-        SubQueryFromAble<C> select(String subQueryAlias);
+        <S extends SelectPart> SubQueryFromAble<C> select(Distinct distinct, List<S> selectPartList);
 
-        SubQueryFromAble<C> select(List<SelectPart> selectPartList);
-
-        SubQueryFromAble<C> select(Distinct distinct, List<SelectPart> selectPartList);
-
-        SubQueryFromAble<C> select(Function<C, List<SelectPart>> function);
-
-        SubQueryFromAble<C> select(Distinct distinct, Function<C, List<SelectPart>> function);
+        <S extends SelectPart> SubQueryFromAble<C> select(List<S> selectPartList);
     }
 
 
     interface SubQueryFromAble<C> extends SubQueryAble {
 
-        SubQueryOnAble<C> from(TableAble tableAble, String tableAlias);
+        SubQueryOnAble<C> from(TableMeta<?> tableMeta, String tableAlias);
+
+        SubQueryOnAble<C> from(Function<C, SubQuery> function, String subQueryAlia);
     }
 
 
@@ -68,11 +60,17 @@ public interface SubQuery extends SelfDescribed, DerivedTable, QueryAble {
 
     interface SubQueryJoinAble<C> extends SubQueryWhereAble<C> {
 
-        SubQueryOnAble<C> leftJoin(TableAble tableAble, String tableAlias);
+        SubQueryOnAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias);
 
-        SubQueryOnAble<C> join(TableAble tableAble, String tableAlias);
+        SubQueryOnAble<C> leftJoin(Function<C, SubQuery> function, String subQueryAlia);
 
-        SubQueryOnAble<C> rightJoin(TableAble tableAble, String tableAlias);
+        SubQueryOnAble<C> join(TableMeta<?> tableMeta, String tableAlias);
+
+        SubQueryOnAble<C> join(Function<C, SubQuery> function, String subQueryAlia);
+
+        SubQueryOnAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias);
+
+        SubQueryOnAble<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia);
     }
 
     interface SubQueryWhereAble<C> extends SubQueryGroupByAble<C> {
@@ -133,19 +131,31 @@ public interface SubQuery extends SelfDescribed, DerivedTable, QueryAble {
     }
 
 
-    interface SubQueryLimitAble<C> extends SubQuerySQLAble, SubQueryAble {
+    interface SubQueryLimitAble<C> extends SubQueryUnionAble<C> {
 
-        SubQueryAble limit(int rowCount);
+        SubQueryUnionAble<C> limit(int rowCount);
 
-        SubQueryAble limit(int offset, int rowCount);
+        SubQueryUnionAble<C> limit(int offset, int rowCount);
 
-        SubQueryAble limit(Function<C, Pair<Integer, Integer>> function);
+        SubQueryUnionAble<C> limit(Function<C, Pair<Integer, Integer>> function);
 
-        SubQueryAble ifLimit(Predicate<C> predicate, int rowCount);
+        SubQueryUnionAble<C> ifLimit(Predicate<C> predicate, int rowCount);
 
-        SubQueryAble ifLimit(Predicate<C> predicate, int offset, int rowCount);
+        SubQueryUnionAble<C> ifLimit(Predicate<C> predicate, int offset, int rowCount);
 
-        SubQueryAble ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
+        SubQueryUnionAble<C> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
+    }
+
+    interface SubQueryUnionAble<C> extends SubQueryAble {
+
+        SubQueryUnionAble<C> brackets();
+
+        <S extends SubQuery> SubQueryUnionAble<C> union(Function<C, S> function);
+
+        <S extends SubQuery> SubQueryUnionAble<C> unionAll(Function<C, S> function);
+
+        <S extends SubQuery> SubQueryUnionAble<C> unionDistinct(Function<C, S> function);
+
     }
 
 

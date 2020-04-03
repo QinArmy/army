@@ -1,35 +1,38 @@
 package io.army.criteria.impl;
 
 import io.army.ErrorCode;
-import io.army.criteria.*;
+import io.army.criteria.CriteriaException;
+import io.army.criteria.SQLContext;
+import io.army.criteria.Selection;
+import io.army.criteria.SubQuery;
 import io.army.meta.TableMeta;
-import io.army.util.Assert;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 final class SubQueryMultiSelect<C> extends AbstractMultiSelect<C> implements SubQuerySelect<C> {
 
-    private Map<String, SubQuery> subordinateSubQueries;
 
     private Map<String, Selection> selectionMap;
-
-    private QueryAble outerQuery;
 
     SubQueryMultiSelect(C criteria) {
         super(criteria);
     }
 
+
     @Override
-    public SubQuery subordinateSubQuery(String subordinateSubQueryAlias) {
-        return subordinateSubQueries.get(subordinateSubQueryAlias);
+    public C criteria() {
+        return this.criteria;
+    }
+
+    @Override
+    public String toString() {
+        return "#SubQuery";
     }
 
     @Override
     public Selection selection(String derivedFieldName) {
         if (this.selectionMap == null) {
-            this.selectionMap = createSelectionMap();
+            this.selectionMap = CriteriaUtils.createSelectionMap(selectPartList());
         }
         Selection s = this.selectionMap.get(derivedFieldName);
         if (s == null) {
@@ -41,29 +44,15 @@ final class SubQueryMultiSelect<C> extends AbstractMultiSelect<C> implements Sub
 
 
     @Override
-    public void outerQuery(QueryAble outerQuery) {
-        Assert.state(this.outerQuery == null, "outerQuery only singleUpdate once.");
-        this.outerQuery = outerQuery;
-    }
-
-    @Override
-    public QueryAble outerQuery() {
-        Assert.state(this.outerQuery != null, "outerQuery is null,SubQuery state error.");
-        return this.outerQuery;
-    }
-
-    @Override
     public void appendSQL(SQLContext context) {
         context.dml().subQuery(this, context);
     }
 
     @Override
-    void doClear() {
-        this.subordinateSubQueries = null;
+    public void clear() {
+        super.clear();
         this.selectionMap = null;
-        this.outerQuery = null;
     }
-
 
     /*################################## blow package template method ##################################*/
 
@@ -74,19 +63,12 @@ final class SubQueryMultiSelect<C> extends AbstractMultiSelect<C> implements Sub
 
     @Override
     void onAddSubQuery(SubQuery subQuery, String subQueryAlias) {
-        if (this.subordinateSubQueries == null) {
-            this.subordinateSubQueries = new HashMap<>();
-        }
-        this.subordinateSubQueries.putIfAbsent(subQueryAlias, subQuery);
-
         CriteriaContextHolder.getContext()
                 .onAddSubQuery(subQuery, subQueryAlias);
     }
 
     @Override
     void afterDoAsSelect() {
-        if (this.subordinateSubQueries != null) {
-            this.subordinateSubQueries = Collections.unmodifiableMap(this.subordinateSubQueries);
-        }
+
     }
 }

@@ -3,7 +3,7 @@ package io.army.criteria;
 /**
  * created  on 2018/10/21.
  */
-public enum LockMode {
+public enum LockMode implements SQLModifier {
 
     /**
      * Synonymous with <code>OPTIMISTIC</code>.
@@ -59,6 +59,11 @@ public enum LockMode {
      *
      * @since Java Persistence 2.0
      */
-    NONE
+    NONE;
 
+
+    @Override
+    public String render() {
+        return null;
+    }
 }

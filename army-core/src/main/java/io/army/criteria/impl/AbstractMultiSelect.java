@@ -1,14 +1,10 @@
 package io.army.criteria.impl;
 
-import io.army.ErrorCode;
 import io.army.criteria.*;
 import io.army.meta.TableMeta;
-import io.army.util.Assert;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 abstract class AbstractMultiSelect<C> extends AbstractSelect<C> implements
@@ -56,13 +52,13 @@ abstract class AbstractMultiSelect<C> extends AbstractSelect<C> implements
 
     @Override
     public JoinAble<C> from(TableMeta<?> tableMeta, String tableAlias) {
-        addTableAble(tableMeta, tableAlias, JoinType.NONE);
+        addTableAble(new TableWrapperImpl(tableMeta, tableAlias, JoinType.NONE));
         return this;
     }
 
     @Override
     public JoinAble<C> from(Function<C, SubQuery> function, String subQueryAlia) {
-        addTableAble(function.apply(this.criteria), subQueryAlia, JoinType.NONE);
+        addTableAble(new TableWrapperImpl(function.apply(this.criteria), subQueryAlia, JoinType.NONE));
         return this;
     }
 
@@ -70,37 +66,37 @@ abstract class AbstractMultiSelect<C> extends AbstractSelect<C> implements
 
     @Override
     public OnAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias) {
-        addTableAble(tableMeta, tableAlias, JoinType.LEFT);
+        addTableAble(new TableWrapperImpl(tableMeta, tableAlias, JoinType.LEFT));
         return this;
     }
 
     @Override
     public OnAble<C> leftJoin(Function<C, SubQuery> function, String subQueryAlia) {
-        addTableAble(function.apply(this.criteria), subQueryAlia, JoinType.LEFT);
+        addTableAble(new TableWrapperImpl(function.apply(this.criteria), subQueryAlia, JoinType.LEFT));
         return this;
     }
 
     @Override
     public OnAble<C> join(TableMeta<?> tableMeta, String tableAlias) {
-        addTableAble(tableMeta, tableAlias, JoinType.JOIN);
+        addTableAble(new TableWrapperImpl(tableMeta, tableAlias, JoinType.JOIN));
         return this;
     }
 
     @Override
     public OnAble<C> join(Function<C, SubQuery> function, String subQueryAlia) {
-        addTableAble(function.apply(this.criteria), subQueryAlia, JoinType.JOIN);
+        addTableAble(new TableWrapperImpl(function.apply(this.criteria), subQueryAlia, JoinType.JOIN));
         return this;
     }
 
     @Override
     public OnAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias) {
-        addTableAble(tableMeta, tableAlias, JoinType.RIGHT);
+        addTableAble(new TableWrapperImpl(tableMeta, tableAlias, JoinType.RIGHT));
         return this;
     }
 
     @Override
     public OnAble<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia) {
-        addTableAble(function.apply(this.criteria), subQueryAlia, JoinType.RIGHT);
+        addTableAble(new TableWrapperImpl(function.apply(this.criteria), subQueryAlia, JoinType.RIGHT));
         return this;
     }
 
@@ -138,37 +134,7 @@ abstract class AbstractMultiSelect<C> extends AbstractSelect<C> implements
 
     /*################################## blow package method ##################################*/
 
-    /**
-     * invoke after {@link #asSelect()}
-     *
-     * @return a unmodifiable map
-     */
-    final Map<String, Selection> createSelectionMap() {
-        Assert.state(prepared(), "select no prepared,state error.");
 
-        Map<String, Selection> selectionMap = new HashMap<>();
-        for (SelectPart selectPart : this.selectPartList()) {
-
-            if (selectPart instanceof Selection) {
-                Selection selection = (Selection) selectPart;
-                if (selectionMap.putIfAbsent(selection.alias(), selection) != selection) {
-                    throw new CriteriaException(ErrorCode.SELECTION_DUPLICATION, "selection[%s] duplication"
-                            , selection);
-                }
-            } else if (selectPart instanceof SelectionGroup) {
-                SelectionGroup group = (SelectionGroup) selectPart;
-                String tableAlias = group.tableAlias();
-                for (Selection selection : group.selectionList()) {
-                    if (selectionMap.putIfAbsent(tableAlias, selection) != selection) {
-                        throw new CriteriaException(ErrorCode.SELECTION_DUPLICATION, "selection[%s] duplication"
-                                , selection);
-                    }
-                }
-            }
-
-        }
-        return Collections.unmodifiableMap(selectionMap);
-    }
 
     /*################################## blow package template method ##################################*/
 

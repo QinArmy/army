@@ -42,6 +42,7 @@
         <ali.druid.version>1.1.20</ali.druid.version>
         <!-- javax  -->
         <jsr305.version>3.0.2</jsr305.version>
+        <army.version>${project.version}</army.version>
     </properties>
 
     <dependencyManagement>
@@ -49,24 +50,29 @@
         <dependencies>
             <!-- 模块 start  -->
             <dependency>
-                <groupId>${project.groupId}</groupId>
+                <groupId>io.army</groupId>
                 <artifactId>army-core</artifactId>
-                <version>${project.version}</version>
+                <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>${project.groupId}</groupId>
+                <groupId>io.army</groupId>
                 <artifactId>army-struct</artifactId>
-                <version>${project.version}</version>
+                <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>${project.groupId}</groupId>
+                <groupId>io.army</groupId>
                 <artifactId>army-finance</artifactId>
-                <version>${project.version}</version>
+                <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>${project.groupId}</groupId>
+                <groupId>io.army</groupId>
                 <artifactId>army-example</artifactId>
-                <version>${project.version}</version>
+                <version>${army.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.army</groupId>
+                <artifactId>army-postgre</artifactId>
+                <version>${army.version}</version>
             </dependency>
 
             <!-- 模块 end  -->

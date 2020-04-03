@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.criteria.*;
+import io.army.criteria.impl.inner.InnerSQL;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
@@ -28,7 +29,7 @@ import java.util.*;
  *     <li>invoke {@link #beforeClear(String)} in {@link #clear()}</li>
  * </ol>
  */
-abstract class AbstractSQL extends AbstractSQLDebug implements QueryAble {
+abstract class AbstractSQL extends AbstractSQLDebug implements QueryAble, InnerSQL {
 
     private List<TableWrapper> tableWrapperList = new ArrayList<>(tableWrapperCount());
 
@@ -71,7 +72,7 @@ abstract class AbstractSQL extends AbstractSQLDebug implements QueryAble {
     }
 
     /**
-     * @see #addTableAble(TableAble, String, JoinType)
+     * @see #addTableAble(TableWrapper)
      */
     final void processSelectFieldMeta(FieldMeta<?, ?> fieldMeta
             , Map<TableMeta<?>, List<Selection>> tableFieldListMap) {
@@ -110,30 +111,31 @@ abstract class AbstractSQL extends AbstractSQLDebug implements QueryAble {
     /**
      *
      */
-    final void addTableAble(TableAble tableAble
-            , String tableAlias, JoinType joinType) {
+    final void addTableAble(TableWrapperImpl wrapper) {
 
-        if (joinType == JoinType.NONE) {
+        if (wrapper.jointType == JoinType.NONE) {
             Assert.state(this.tableWrapperList.isEmpty(), "from clause ended.");
         } else {
             Assert.state(!this.tableWrapperList.isEmpty(), "no from clause.");
         }
 
-        if (tableAble instanceof TableMeta) {
-            int refCount = tablePresentCountMap.getOrDefault(tableAble, 0);
-            tablePresentCountMap.put((TableMeta<?>) tableAble, ++refCount);
+        if (wrapper.tableAble instanceof TableMeta) {
+            TableMeta<?> tableMeta = (TableMeta<?>) wrapper.tableAble;
+            int refCount = tablePresentCountMap.getOrDefault(tableMeta, 0);
+            tablePresentCountMap.put(tableMeta, ++refCount);
 
-            onAddTable((TableMeta<?>) tableAble, tableAlias);
-        } else if (tableAble instanceof OuterQueryAble) {
-            ((OuterQueryAble) tableAble).outerQuery(this);
+            onAddTable(tableMeta, wrapper.alias);
+        } else if (wrapper.tableAble instanceof OuterQueryAble) {
+            OuterQueryAble outerQueryAble = (OuterQueryAble) wrapper.tableAble;
+            outerQueryAble.outerQuery(this);
 
-            onAddSubQuery((SubQuery) tableAble, tableAlias);
+            onAddSubQuery(outerQueryAble, wrapper.alias());
         } else {
-            throw new IllegalArgumentException(String.format("tableAble[%s] isn't TableMeta or SubQuery.", tableAlias));
+            doCheckTableAble(wrapper);
         }
-
-        this.tableWrapperList.add(new TableWrapperImpl(tableAble, tableAlias, joinType));
+        this.tableWrapperList.add(wrapper);
     }
+
 
     final void beforeClear(String msg) {
         Assert.state(prepared(), msg);
@@ -142,7 +144,83 @@ abstract class AbstractSQL extends AbstractSQLDebug implements QueryAble {
         this.tablePresentCountMap = null;
     }
 
+    final TableWrapper lastTableWrapper() {
+        Assert.state(!this.tableWrapperList.isEmpty(), "tableWrapperList is empty.");
+        return this.tableWrapperList.get(this.tableWrapperList.size() - 1);
+    }
+
+
+    /**
+     * <ol>
+     *     <li> process {@link FieldMeta} in {@code selectPartList}</li>
+     *     <li> process {@link SubQuerySelectGroup} in {@code selectPartList}</li>
+     * </ol>
+     */
+    final void processSelectPartList(final List<SelectPart> selectPartList) {
+
+        Map<TableMeta<?>, List<Selection>> tableFieldListMap = new HashMap<>();
+        Map<String, SubQuerySelectGroup> subQuerySelectGroupMap = new LinkedHashMap<>();
+
+        // 1. find FieldMata/SubQuerySelectGroup from selectPart as tableSelectionMap/subQuerySelectGroupMap.
+        for (Iterator<SelectPart> iterator = selectPartList.iterator(); iterator.hasNext(); ) {
+            SelectPart selectPart = iterator.next();
+
+            if (selectPart instanceof FieldMeta) {
+                // process fieldMeta
+                processSelectFieldMeta((FieldMeta<?, ?>) selectPart, tableFieldListMap);
+                // remove FieldMeta from selectPartList.
+                iterator.remove();
+            } else if (selectPart instanceof SubQuerySelectGroup) {
+                SubQuerySelectGroup group = (SubQuerySelectGroup) selectPart;
+                subQuerySelectGroupMap.put(group.tableAlias(), group);
+            }
+
+        }
+
+        // 2. find table alias to create SelectionGroup .
+        for (TableWrapper tableWrapper : this.tableWrapperList) {
+            TableAble tableAble = tableWrapper.tableAble();
+
+            if (tableAble instanceof TableMeta) {
+
+                TableMeta<?> tableMeta = (TableMeta<?>) tableAble;
+                List<Selection> fieldMetaList = tableFieldListMap.remove(tableMeta);
+
+                if (!CollectionUtils.isEmpty(fieldMetaList)) {
+                    // create SelectGroup for alias table and add to selectPartList.
+                    selectPartList.add(SQLS.fieldGroup(tableWrapper.alias(), fieldMetaList));
+                }
+
+            } else if (tableAble instanceof SubQuery) {
+                SubQuerySelectGroup group = subQuerySelectGroupMap.remove(tableWrapper.alias());
+                if (group != null) {
+                    // finish SubQuerySelectGroup
+                    group.finish((SubQuery) tableAble);
+                }
+            }
+        }
+
+        // 3. assert tableFieldListMap and subQuerySelectGroupMap all is empty.
+        if (!tableFieldListMap.isEmpty()) {
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                    , "the table of FieldMeta not found form criteria context,please check from clause.");
+        }
+        if (!subQuerySelectGroupMap.isEmpty()) {
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                    , "SelectGroup of SubQuery[%s] no found from criteria context,please check from clause.");
+        }
+
+    }
+
+
+
     /*################################## blow package template method ##################################*/
+
+
+    void doCheckTableAble(TableWrapper wrapper) {
+        throw new IllegalArgumentException(String.format("tableAble[%s] isn't TableMeta or SubQuery."
+                , wrapper.alias()));
+    }
 
     abstract boolean prepared();
 
@@ -158,13 +236,13 @@ abstract class AbstractSQL extends AbstractSQLDebug implements QueryAble {
 
     /*################################## blow static inner class ##################################*/
 
-    static final class TableWrapperImpl implements TableWrapper {
+    static class TableWrapperImpl implements TableWrapper {
 
         private final TableAble tableAble;
 
         private final String alias;
 
-        private final JoinType jointType;
+        private final SQLModifier jointType;
 
         final List<IPredicate> onPredicateList = new ArrayList<>();
 
@@ -174,19 +252,19 @@ abstract class AbstractSQL extends AbstractSQLDebug implements QueryAble {
             this.jointType = jointType;
         }
 
-        public TableAble tableAble() {
+        public final TableAble tableAble() {
             return tableAble;
         }
 
-        public String alias() {
+        public final String alias() {
             return alias;
         }
 
-        public JoinType jointType() {
+        public final SQLModifier jointType() {
             return jointType;
         }
 
-        public List<IPredicate> onPredicateList() {
+        public final List<IPredicate> onPredicateList() {
             return onPredicateList;
         }
     }

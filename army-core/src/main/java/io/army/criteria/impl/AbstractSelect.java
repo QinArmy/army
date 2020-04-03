@@ -1,22 +1,22 @@
 package io.army.criteria.impl;
 
-import io.army.ErrorCode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerSelect;
-import io.army.criteria.impl.inner.TableWrapper;
 import io.army.lang.Nullable;
-import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 import io.army.util.Pair;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 abstract class AbstractSelect<C> extends AbstractSQL implements Select
-        , Select.WhereAble<C>, Select.WhereAndAble<C>, Select.HavingAble<C>, InnerSelect {
+        , Select.WhereAble<C>, Select.WhereAndAble<C>, Select.HavingAble<C>
+        , Select.UnionAble<C>, InnerSelect {
 
     static final String NOT_PREPARED_MSG = "Select criteria don't haven invoke asSelect() method.";
 
@@ -49,6 +49,18 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
         this.criteria = criteria;
     }
 
+
+    /*################################## blow Select method ##################################*/
+
+
+    @Override
+    public final boolean requiredBrackets() {
+        return CollectionUtils.isEmpty(this.sortExpList)
+                || this.offset > -1
+                || this.rowCount > 0
+                || this.lockMode != null
+                ;
+    }
 
     /*################################## blow WhereAble method ##################################*/
 
@@ -109,7 +121,7 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
     }
 
     @Override
-    public final HavingAble<C> groupBy(List<Expression<?>> groupExpList) {
+    public final Select.HavingAble<C> groupBy(List<Expression<?>> groupExpList) {
         this.groupExpList.addAll(groupExpList);
         return this;
     }
@@ -262,19 +274,19 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
     /*################################## blow LockAble method ##################################*/
 
     @Override
-    public final SelectAble lock(LockMode lockMode) {
+    public final Select.UnionAble<C> lock(LockMode lockMode) {
         this.lockMode = lockMode;
         return this;
     }
 
     @Override
-    public final SelectAble lock(Function<C, LockMode> function) {
+    public final Select.UnionAble<C> lock(Function<C, LockMode> function) {
         this.lockMode = function.apply(this.criteria);
         return this;
     }
 
     @Override
-    public final SelectAble ifLock(Predicate<C> predicate, LockMode lockMode) {
+    public final Select.UnionAble<C> ifLock(Predicate<C> predicate, LockMode lockMode) {
         if (predicate.test(this.criteria)) {
             this.lockMode = lockMode;
         }
@@ -282,11 +294,33 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
     }
 
     @Override
-    public final SelectAble ifLock(Predicate<C> predicate, Function<C, LockMode> function) {
+    public final UnionAble<C> ifLock(Predicate<C> predicate, Function<C, LockMode> function) {
         if (predicate.test(this.criteria)) {
             this.lockMode = function.apply(this.criteria);
         }
         return this;
+    }
+
+    /*################################## blow UnionAble method ##################################*/
+
+    @Override
+    public final UnionAble<C> brackets() {
+        return ComposeSelects.brackets(this.criteria, thisSelect());
+    }
+
+    @Override
+    public final <S extends Select> UnionAble<C> union(Function<C, S> function) {
+        return ComposeSelects.compose(this.criteria, thisSelect(), UnionType.UNION, function);
+    }
+
+    @Override
+    public final <S extends Select> UnionAble<C> unionAll(Function<C, S> function) {
+        return ComposeSelects.compose(this.criteria, thisSelect(), UnionType.UNION_ALL, function);
+    }
+
+    @Override
+    public final <S extends Select> UnionAble<C> unionDistinct(Function<C, S> function) {
+        return ComposeSelects.compose(this.criteria, thisSelect(), UnionType.UNION_DISTINCT, function);
     }
 
     /*################################## blow SelectAble method ##################################*/
@@ -297,7 +331,7 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
             return this;
         }
         // before unmodifiableList .
-        processSelectPartList();
+        processSelectPartList(this.selectPartList);
 
         this.asSQL();
         this.modifierList = Collections.unmodifiableList(this.modifierList);
@@ -374,7 +408,7 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
     }
 
     @Override
-    public final void clear() {
+    public void clear() {
         super.beforeClear(NOT_PREPARED_MSG);
 
         this.modifierList = null;
@@ -386,7 +420,6 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
         this.sortExpList = null;
         this.lockMode = null;
 
-        this.doClear();
     }
 
     /*################################## blow package method ##################################*/
@@ -432,77 +465,13 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
 
     abstract void doAsSelect();
 
-    /**
-     * @see #clear()
-     */
-    abstract void doClear();
 
     /*################################## blow private method ##################################*/
 
 
-    /**
-     * <ol>
-     *     <li> process {@link FieldMeta} in {@link #selectPartList}</li>
-     *     <li> process {@link SubQuerySelectGroup} in {@link #selectPartList}</li>
-     * </ol>
-     */
-    private void processSelectPartList() {
-
-        Map<TableMeta<?>, List<Selection>> tableFieldListMap = new HashMap<>();
-        Map<String, SubQuerySelectGroup> subQuerySelectGroupMap = new LinkedHashMap<>();
-
-        // 1. find FieldMata/SubQuerySelectGroup from selectPart as tableSelectionMap/subQuerySelectGroupMap.
-        for (Iterator<SelectPart> iterator = this.selectPartList.iterator(); iterator.hasNext(); ) {
-            SelectPart selectPart = iterator.next();
-
-            if (selectPart instanceof FieldMeta) {
-                // process fieldMeta
-                processSelectFieldMeta((FieldMeta<?, ?>) selectPart, tableFieldListMap);
-                // remove FieldMeta from selectPartList.
-                iterator.remove();
-            } else if (selectPart instanceof SubQuerySelectGroup) {
-                SubQuerySelectGroup group = (SubQuerySelectGroup) selectPart;
-                subQuerySelectGroupMap.put(group.tableAlias(), group);
-            }
-
-        }
-
-        // 2. find table alias to create SelectionGroup .
-        for (TableWrapper tableWrapper : this.immutableTableWrapperList()) {
-            TableAble tableAble = tableWrapper.tableAble();
-
-            if (tableAble instanceof TableMeta) {
-
-                TableMeta<?> tableMeta = (TableMeta<?>) tableAble;
-                List<Selection> fieldMetaList = tableFieldListMap.remove(tableMeta);
-
-                if (!CollectionUtils.isEmpty(fieldMetaList)) {
-                    // create SelectGroup for alias table and add to selectPartList.
-                    this.selectPartList.add(SQLS.fieldGroup(tableWrapper.alias(), fieldMetaList));
-                }
-
-            } else if (tableAble instanceof SubQuery) {
-                SubQuerySelectGroup group = subQuerySelectGroupMap.remove(tableWrapper.alias());
-                if (group != null) {
-                    // finish SubQuerySelectGroup
-                    group.finish((SubQuery) tableAble);
-                }
-            }
-        }
-
-        // 3. assert tableFieldListMap and subQuerySelectGroupMap all is empty.
-        if (!tableFieldListMap.isEmpty()) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                    , "the table of FieldMeta not found form criteria context,please check from clause.");
-        }
-        if (!subQuerySelectGroupMap.isEmpty()) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                    , "SelectGroup of SubQuery[%s] no found from criteria context,please check from clause.");
-        }
-
+    private Select thisSelect() {
+        return this.asSelect();
     }
-
-
 
 
     /*################################## blow inner class ##################################*/

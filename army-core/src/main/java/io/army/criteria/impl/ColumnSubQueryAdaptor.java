@@ -16,13 +16,18 @@ import java.util.function.Predicate;
 final class ColumnSubQueryAdaptor<E, C> implements ColumnSubQuery<E>, ColumnSubQuery.ColumnSubQuerySelectionAble<E, C>
         , ColumnSubQuery.ColumnSubQueryFromAble<E, C>, ColumnSubQuery.ColumnSubQueryOnAble<E, C>
         , ColumnSubQuery.ColumnSubQueryWhereAndAble<E, C>, ColumnSubQuery.ColumnSubQueryJoinAble<E, C>
-        , ColumnSubQuery.ColumnSubQueryHavingAble<E, C>, OuterQueryAble, InnerSubQuery {
+        , ColumnSubQuery.ColumnSubQueryHavingAble<E, C>, InnerSubQuery {
 
     private final SubQuerySelect<C> actualSelect;
 
 
     ColumnSubQueryAdaptor(Class<E> javaType, C criteria) {
         this.actualSelect = SubQuerySelect.build(criteria);
+    }
+
+    @Override
+    public String toString() {
+        return "#ColumnSubQuery@" + System.identityHashCode(this);
     }
 
     @Override
@@ -37,25 +42,12 @@ final class ColumnSubQueryAdaptor<E, C> implements ColumnSubQuery<E>, ColumnSubQ
         return (Selection) selectionList.get(0);
     }
 
-    @Override
-    public SubQuery subordinateSubQuery(String subordinateSubQueryAlias) {
-        return this.actualSelect.subordinateSubQuery(subordinateSubQueryAlias);
-    }
 
     @Override
     public Selection selection(String derivedFieldName) {
         return this.actualSelect.selection(derivedFieldName);
     }
 
-    @Override
-    public void outerQuery(QueryAble outerQuery) {
-        this.actualSelect.outerQuery(outerQuery);
-    }
-
-    @Override
-    public QueryAble outerQuery() {
-        return this.actualSelect.outerQuery();
-    }
 
     @Override
     public void appendSQL(SQLContext context) {
@@ -79,8 +71,14 @@ final class ColumnSubQueryAdaptor<E, C> implements ColumnSubQuery<E>, ColumnSubQ
     /*################################## blow ColumnSubQueryFromAble method ##################################*/
 
     @Override
-    public ColumnSubQuery.ColumnSubQueryJoinAble<E, C> from(TableAble tableAble, String tableAlias) {
-        this.actualSelect.from(tableAble, tableAlias);
+    public ColumnSubQueryJoinAble<E, C> from(TableMeta<?> tableMeta, String tableAlias) {
+        this.actualSelect.from(tableMeta, tableAlias);
+        return this;
+    }
+
+    @Override
+    public ColumnSubQueryJoinAble<E, C> from(Function<C, SubQuery> function, String subQueryAlia) {
+        this.actualSelect.from(function, subQueryAlia);
         return this;
     }
 
@@ -107,23 +105,40 @@ final class ColumnSubQueryAdaptor<E, C> implements ColumnSubQuery<E>, ColumnSubQ
     /*################################## blow ColumnSubQueryJoinAble method ##################################*/
 
     @Override
-    public ColumnSubQuery.ColumnSubQueryOnAble<E, C> leftJoin(TableAble tableAble, String tableAlias) {
-        this.actualSelect.leftJoin(tableAble, tableAlias);
+    public ColumnSubQueryOnAble<E, C> leftJoin(TableMeta<?> tableMeta, String tableAlias) {
+        this.actualSelect.leftJoin(tableMeta, tableAlias);
         return this;
     }
 
     @Override
-    public ColumnSubQuery.ColumnSubQueryOnAble<E, C> join(TableAble tableAble, String tableAlias) {
-        this.actualSelect.join(tableAble, tableAlias);
+    public ColumnSubQueryOnAble<E, C> leftJoin(Function<C, SubQuery> function, String subQueryAlia) {
+        this.actualSelect.leftJoin(function, subQueryAlia);
         return this;
     }
 
     @Override
-    public ColumnSubQuery.ColumnSubQueryOnAble<E, C> rightJoin(TableAble tableAble, String tableAlias) {
-        this.actualSelect.rightJoin(tableAble, tableAlias);
+    public ColumnSubQueryOnAble<E, C> join(TableMeta<?> tableMeta, String tableAlias) {
+        this.actualSelect.join(tableMeta, tableAlias);
         return this;
     }
 
+    @Override
+    public ColumnSubQueryOnAble<E, C> join(Function<C, SubQuery> function, String subQueryAlia) {
+        this.actualSelect.join(function, subQueryAlia);
+        return this;
+    }
+
+    @Override
+    public ColumnSubQueryOnAble<E, C> rightJoin(TableMeta<?> tableMeta, String tableAlias) {
+        this.actualSelect.rightJoin(tableMeta, tableAlias);
+        return this;
+    }
+
+    @Override
+    public ColumnSubQueryOnAble<E, C> rightJoin(Function<C, SubQuery> function, String subQueryAlia) {
+        this.actualSelect.rightJoin(function, subQueryAlia);
+        return this;
+    }
 
     /*################################## blow ColumnSubQueryWhereAble method ##################################*/
 
@@ -258,45 +273,69 @@ final class ColumnSubQueryAdaptor<E, C> implements ColumnSubQuery<E>, ColumnSubQ
     /*################################## blow ColumnSubQueryLimitAble method ##################################*/
 
     @Override
-    public ColumnSubQueryAble<E> limit(int rowCount) {
+    public ColumnSubQueryUnionAble<E, C> limit(int rowCount) {
         this.actualSelect.limit(rowCount);
         return this;
     }
 
     @Override
-    public ColumnSubQueryAble<E> limit(int offset, int rowCount) {
+    public ColumnSubQueryUnionAble<E, C> limit(int offset, int rowCount) {
         this.actualSelect.limit(offset, rowCount);
         return this;
     }
 
     @Override
-    public ColumnSubQueryAble<E> limit(Function<C, Pair<Integer, Integer>> function) {
+    public ColumnSubQueryUnionAble<E, C> limit(Function<C, Pair<Integer, Integer>> function) {
         this.actualSelect.limit(function);
         return this;
     }
 
     @Override
-    public ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, int rowCount) {
+    public ColumnSubQueryUnionAble<E, C> ifLimit(Predicate<C> predicate, int rowCount) {
         this.actualSelect.ifLimit(predicate, rowCount);
         return this;
     }
 
     @Override
-    public ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, int offset, int rowCount) {
+    public ColumnSubQueryUnionAble<E, C> ifLimit(Predicate<C> predicate, int offset, int rowCount) {
         this.actualSelect.ifLimit(predicate, offset, rowCount);
         return this;
     }
 
     @Override
-    public ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
+    public ColumnSubQueryUnionAble<E, C> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
         this.actualSelect.ifLimit(predicate, function);
         return this;
+    }
+
+    /*################################## blow ColumnSubQueryUnionAble method ##################################*/
+
+    @Override
+    public ColumnSubQueryUnionAble<E, C> brackets() {
+        return ComposeColumnSubQueries.brackets(this.actualSelect.criteria(), thisSubQuery());
+    }
+
+    @Override
+    public <S extends ColumnSubQuery<E>> ColumnSubQueryUnionAble<E, C> union(Function<C, S> function) {
+        return ComposeColumnSubQueries.compose(this.actualSelect.criteria(), thisSubQuery(), UnionType.UNION, function);
+    }
+
+    @Override
+    public <S extends ColumnSubQuery<E>> ColumnSubQueryUnionAble<E, C> unionAll(Function<C, S> function) {
+        return ComposeColumnSubQueries.compose(this.actualSelect.criteria(), thisSubQuery()
+                , UnionType.UNION_ALL, function);
+    }
+
+    @Override
+    public <S extends ColumnSubQuery<E>> ColumnSubQueryUnionAble<E, C> unionDistinct(Function<C, S> function) {
+        return ComposeColumnSubQueries.compose(this.actualSelect.criteria(), thisSubQuery()
+                , UnionType.UNION_DISTINCT, function);
     }
 
     /*################################## blow ColumnSubQueryAble method ##################################*/
 
     @Override
-    public final ColumnSubQuery<E> asColumnSubQuery() {
+    public final ColumnSubQuery<E> asSubQuery() {
         this.actualSelect.asSelect();
         return this;
     }
@@ -351,5 +390,12 @@ final class ColumnSubQueryAdaptor<E, C> implements ColumnSubQuery<E>, ColumnSubQ
     @Override
     public Map<TableMeta<?>, Integer> tablePresentCountMap() {
         return this.actualSelect.tablePresentCountMap();
+    }
+
+
+    /*################################## blow private method ##################################*/
+
+    private ColumnSubQuery<E> thisSubQuery() {
+        return this.asSubQuery();
     }
 }

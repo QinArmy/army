@@ -4,6 +4,7 @@ import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
 import io.army.criteria.SQLModifier;
 import io.army.criteria.postgre.PostgreSelect;
+import io.army.criteria.postgre.PostgreWindow;
 import io.army.dialect.TableDML;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
@@ -15,7 +16,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-final class PostgreWindowImpl<C> implements PostgreSelect.PostgreWindow, PostgreSelect.PostgreWindowNameAble<C> {
+final class PostgreWindowImpl<C> implements PostgreWindow, PostgreSelect.PostgreWindowNameAble<C>
+        , PostgreSelect.PostgreWindowFrameExclusion {
 
     private final C criteria;
 
@@ -108,7 +110,7 @@ final class PostgreWindowImpl<C> implements PostgreSelect.PostgreWindow, Postgre
     }
 
     @Override
-    public PostgreSelect.PostgreWindow asWindow() {
+    public PostgreWindow asWindow() {
         return this;
     }
 
@@ -203,22 +205,24 @@ final class PostgreWindowImpl<C> implements PostgreSelect.PostgreWindow, Postgre
     }
 
     @Override
-    public PostgreSelect.PostgreWindowFrameStartEndAble<C> range() {
+    public PostgreSelect.PostgreWindowFrameRangeAble<C> range() {
         this.frameOption = FrameOption.RANGE;
         return this;
     }
 
     @Override
-    public PostgreSelect.PostgreWindowFrameStartEndAble<C> rows() {
+    public PostgreSelect.PostgreWindowFrameRangeAble<C> rows() {
         this.frameOption = FrameOption.ROWS;
         return this;
     }
 
     @Override
-    public PostgreSelect.PostgreWindowFrameStartEndAble<C> groups() {
+    public PostgreSelect.PostgreWindowFrameRangeAble<C> groups() {
         this.frameOption = FrameOption.GROUPS;
         return this;
     }
+
+    /*################################## blow PostgreWindowFrameRangeAble method ##################################*/
 
     @Override
     public PostgreSelect.PostgreWindowFrameExclusion startPreceding(Long offset) {
@@ -244,45 +248,64 @@ final class PostgreWindowImpl<C> implements PostgreSelect.PostgreWindow, Postgre
         return this;
     }
 
+
     @Override
-    public PostgreSelect.PostgreWindowFrameExclusion startFollowing() {
-        this.rangeText = Range.UNBOUNDED_FOLLOWING.keyWords;
+    public PostgreSelect.PostgreWindowFrameExclusion betweenUnBoundedAndPreceding(Long offset) {
+        this.rangeText = Range.betweenUnBoundedAndPreceding(offset);
         return this;
     }
 
     @Override
-    public PostgreSelect.PostgreWindowFrameExclusion between(Long startOffset, Long endOffset) {
-        this.rangeText = Range.between(startOffset, endOffset);
-        return this;
-    }
-
-    @Override
-    public PostgreSelect.PostgreWindowFrameExclusion betweenPreceding(Long endOffset) {
-        this.rangeText = Range.between(Range.UNBOUNDED_PRECEDING, endOffset);
-        return this;
-    }
-
-    @Override
-    public PostgreSelect.PostgreWindowFrameExclusion betweenFollowing(Long startOffset) {
-        this.rangeText = Range.between(startOffset, Range.UNBOUNDED_FOLLOWING);
-        return this;
-    }
-
-    @Override
-    public PostgreSelect.PostgreWindowFrameExclusion betweenPrecedingAndFollowing() {
-        this.rangeText = Range.between(Range.UNBOUNDED_PRECEDING, Range.UNBOUNDED_FOLLOWING);
-        return this;
-    }
-
-    @Override
-    public PostgreSelect.PostgreWindowFrameExclusion betweenPrecedingAndCurrentRow() {
+    public PostgreSelect.PostgreWindowFrameExclusion betweenUnBoundedAndCurrentRow() {
         this.rangeText = Range.between(Range.UNBOUNDED_PRECEDING, Range.CURRENT_ROW);
         return this;
     }
 
     @Override
-    public PostgreSelect.PostgreWindowFrameExclusion betweenCurrentRowAndFollowing() {
+    public PostgreSelect.PostgreWindowFrameExclusion betweenUnBoundedAndFollowing(Long offset) {
+        this.rangeText = Range.betweenUnBoundedAndFollowing(offset);
+        return this;
+    }
+
+    @Override
+    public PostgreSelect.PostgreWindowFrameExclusion betweenUnBoundedAndUnBounded() {
+        this.rangeText = Range.between(Range.UNBOUNDED_PRECEDING, Range.UNBOUNDED_FOLLOWING);
+        return this;
+    }
+
+    @Override
+    public PostgreSelect.PostgreWindowFrameExclusion betweenPrecedingAndCurrentRow(Long offset) {
+        this.rangeText = Range.betweenPrecedingAndCurrent(offset);
+        return this;
+    }
+
+    @Override
+    public PostgreSelect.PostgreWindowFrameExclusion betweenPrecedingAndFollowing(Long start, Long end) {
+        this.rangeText = Range.betweenPrecedingAndFollowing(start, end);
+        return this;
+    }
+
+    @Override
+    public PostgreSelect.PostgreWindowFrameExclusion betweenPrecedingAndUnBounded(Long offset) {
+        this.rangeText = Range.betweenPrecedingAndUnBounded(offset);
+        return this;
+    }
+
+    @Override
+    public PostgreSelect.PostgreWindowFrameExclusion betweenCurrentAndFollowing(Long offset) {
+        this.rangeText = Range.betweenCurrentAndFollowing(offset);
+        return this;
+    }
+
+    @Override
+    public PostgreSelect.PostgreWindowFrameExclusion betweenCurrentAndUnBounded() {
         this.rangeText = Range.between(Range.CURRENT_ROW, Range.UNBOUNDED_FOLLOWING);
+        return this;
+    }
+
+    @Override
+    public PostgreSelect.PostgreWindowFrameExclusion betweenFollowingAndUnBounded(Long offset) {
+        this.rangeText = Range.betweenFollowAndUnBounded(offset);
         return this;
     }
 
@@ -386,20 +409,37 @@ final class PostgreWindowImpl<C> implements PostgreSelect.PostgreWindow, Postgre
             return start + " " + FOLLOWING.keyWords;
         }
 
-        static String between(Long start, Long end) {
+
+        static String betweenUnBoundedAndPreceding(Long end) {
+            return "BETWEEN " + UNBOUNDED_PRECEDING.keyWords + " AND " + offsetPreceding(end);
+        }
+
+        static String betweenUnBoundedAndFollowing(Long end) {
+            return "BETWEEN " + UNBOUNDED_PRECEDING.keyWords + " AND " + offsetFollowing(end);
+        }
+
+        static String betweenPrecedingAndCurrent(Long offset) {
+            return "BETWEEN " + offsetPreceding(offset) + " AND " + CURRENT_ROW.keyWords;
+        }
+
+        static String betweenPrecedingAndUnBounded(Long offset) {
+            return "BETWEEN " + offsetPreceding(offset) + " AND " + UNBOUNDED_FOLLOWING.keyWords;
+        }
+
+        static String betweenPrecedingAndFollowing(Long start, Long end) {
             return "BETWEEN " + offsetPreceding(start) + " AND " + offsetFollowing(end);
-        }
-
-        static String between(Long start, Range end) {
-            return "BETWEEN " + offsetPreceding(start) + " AND " + end.keyWords;
-        }
-
-        static String between(Range start, Long end) {
-            return "BETWEEN " + start.keyWords + " AND " + offsetFollowing(end);
         }
 
         static String between(Range start, Range end) {
             return "BETWEEN " + start.keyWords + " AND " + end.keyWords;
+        }
+
+        static String betweenCurrentAndFollowing(Long offset) {
+            return "BETWEEN " + CURRENT_ROW.keyWords + " AND " + offsetFollowing(offset);
+        }
+
+        static String betweenFollowAndUnBounded(Long offset) {
+            return "BETWEEN " + offsetFollowing(offset) + " AND " + UNBOUNDED_FOLLOWING.keyWords;
         }
     }
 

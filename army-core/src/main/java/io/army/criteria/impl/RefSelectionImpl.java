@@ -161,9 +161,9 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
         }
 
         @Override
-        public void nonNullSet(PreparedStatement st, Object value, int index) throws SQLException {
+        public void nonNullSet(PreparedStatement st, Object nonNullValue, int index) throws SQLException {
             Assert.state(this.selection != null, "no selection.");
-            selection.mappingType().nonNullSet(st, value, index);
+            selection.mappingType().nonNullSet(st, nonNullValue, index);
         }
 
         @Override

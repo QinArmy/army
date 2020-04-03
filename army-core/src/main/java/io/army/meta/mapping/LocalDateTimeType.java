@@ -48,9 +48,9 @@ public final class LocalDateTimeType implements MappingType {
 
 
     @Override
-    public void nonNullSet(PreparedStatement st, Object value, int index) throws SQLException {
-        Assert.isInstanceOf(LocalDateTime.class, value, "");
-        st.setTimestamp(index, Timestamp.valueOf((LocalDateTime) value));
+    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index) throws SQLException {
+        Assert.isInstanceOf(LocalDateTime.class, nonNullValue, "");
+        st.setTimestamp(index, Timestamp.valueOf((LocalDateTime) nonNullValue));
     }
 
     @Override

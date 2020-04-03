@@ -22,7 +22,7 @@ class StandardContextualSingleDelete<C> extends AbstractContextualDelete<C>
 
     @Override
     public WhereAble<C> from(TableMeta<?> tableMeta) {
-        addTableAble(tableMeta, "", JoinType.NONE);
+        addTableAble(new TableWrapperImpl(tableMeta, "", JoinType.NONE));
         return this;
     }
 

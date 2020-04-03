@@ -1,7 +1,13 @@
 package io.army.criteria.impl;
 
 import io.army.ErrorCode;
-import io.army.criteria.*;
+import io.army.criteria.CriteriaException;
+import io.army.criteria.SQLContext;
+import io.army.criteria.SelectPart;
+import io.army.criteria.Selection;
+import io.army.criteria.postgre.PostgreFuncColExp;
+import io.army.criteria.postgre.PostgreFuncTable;
+import io.army.criteria.postgre.PostgreRowsFromTable;
 import io.army.dialect.TableDML;
 import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingType;

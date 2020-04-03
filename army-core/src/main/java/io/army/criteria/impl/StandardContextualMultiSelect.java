@@ -36,10 +36,4 @@ class StandardContextualMultiSelect<C> extends AbstractMultiSelect<C> {
 
     }
 
-    @Override
-    void doClear() {
-
-    }
-
-
 }

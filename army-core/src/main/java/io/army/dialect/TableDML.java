@@ -32,11 +32,15 @@ public interface TableDML extends SQL {
         throw new UnsupportedOperationException();
     }
 
-    default List<SQLWrapper> select(Select select) {
+    default List<SQLWrapper> select(Select<?> select) {
         throw new UnsupportedOperationException();
     }
 
-    default void subQuery(SubQuery subQuery,SQLContext context) {
+    default void select(Select<?> select, SQLContext context) {
+        throw new UnsupportedOperationException();
+    }
+
+    default void subQuery(SubQuery subQuery, SQLContext context) {
         throw new UnsupportedOperationException();
     }
 

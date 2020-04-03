@@ -3,18 +3,17 @@ package io.army.meta.mapping;
 import io.army.domain.IDomain;
 import io.army.util.Assert;
 
-import java.math.BigDecimal;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public final class BooleanType implements MappingType {
+public final class YesNoType implements MappingType {
 
-    private static final BooleanType INSTANCE = new BooleanType();
+    private static final YesNoType INSTANCE = new YesNoType();
 
-    public static BooleanType build(Class<?> typeClass) {
-        Assert.isTrue(Boolean.class == typeClass,"");
+    public static YesNoType build(Class<?> typeClass) {
+        Assert.isTrue(Boolean.class == typeClass, "");
         return INSTANCE;
     }
 
@@ -22,7 +21,7 @@ public final class BooleanType implements MappingType {
 
     public static final String N = "N";
 
-    private BooleanType() {
+    private YesNoType() {
     }
 
     @Override
@@ -54,9 +53,9 @@ public final class BooleanType implements MappingType {
     }
 
     @Override
-    public void nonNullSet(PreparedStatement st, Object value, int index) throws SQLException {
-        Assert.isInstanceOf(Boolean.class, value);
-        st.setString(index, Boolean.TRUE.equals(value) ? Y : N);
+    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index) throws SQLException {
+        Assert.isInstanceOf(Boolean.class, nonNullValue);
+        st.setString(index, Boolean.TRUE.equals(nonNullValue) ? Y : N);
     }
 
     @Override

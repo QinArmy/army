@@ -45,9 +45,9 @@ public final class DoubleType implements MappingType {
     }
 
     @Override
-    public void nonNullSet(PreparedStatement st, Object value, int index) throws SQLException {
-        Assert.isInstanceOf(Double.class, value, "");
-        st.setDouble(index, (Double) value);
+    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index) throws SQLException {
+        Assert.isInstanceOf(Double.class, nonNullValue, "");
+        st.setDouble(index, (Double) nonNullValue);
     }
 
     @Override

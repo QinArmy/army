@@ -2,6 +2,9 @@ package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.criteria.*;
+import io.army.criteria.postgre.PostgreAliasFuncTable;
+import io.army.criteria.postgre.PostgreFuncColExp;
+import io.army.criteria.postgre.PostgreFuncTable;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
 

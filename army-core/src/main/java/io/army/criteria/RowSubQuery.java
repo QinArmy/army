@@ -9,38 +9,35 @@ import java.util.function.Predicate;
 
 public interface RowSubQuery extends SubQuery {
 
-    interface RowSubQueryAble extends RowSubQuerySQLAble {
 
-        RowSubQuery asRowSubQuery();
+    interface RowSubQueryAble extends SubQueryAble {
+
+        RowSubQuery asSubQuery();
 
     }
 
-    interface RowSubQuerySQLAble extends SQLAble {
+    interface RowSubQuerySQLAble extends SubQuerySQLAble {
 
     }
 
     interface RowSubQuerySelectPartAble<C> extends RowSubQuerySQLAble {
 
-        RowSubQueryFromAble<C> select(Distinct distinct, String tableAlias, TableMeta<?> tableMeta);
+        <S extends SelectPart> RowSubQueryFromAble<C> select(Distinct distinct, Function<C, List<S>> function);
 
-        RowSubQueryFromAble<C> select(String tableAlias, TableMeta<?> tableMeta);
+        RowSubQueryFromAble<C> select(Distinct distinct, SelectPart selectPart);
 
-        RowSubQueryFromAble<C> select(Distinct distinct, String subQueryAlias);
+        RowSubQueryFromAble<C> select(SelectPart selectPart);
 
-        RowSubQueryFromAble<C> select(String subQueryAlias);
+        <S extends SelectPart> RowSubQueryFromAble<C> select(Distinct distinct, List<S> selectPartList);
 
-        RowSubQueryFromAble<C> select(List<SelectPart> selectPartList);
-
-        RowSubQueryFromAble<C> select(Distinct distinct, List<SelectPart> selectPartList);
-
-        RowSubQueryFromAble<C> select(Function<C, List<SelectPart>> function);
-
-        RowSubQueryFromAble<C> select(Distinct distinct, Function<C, List<SelectPart>> function);
+        <S extends SelectPart> RowSubQueryFromAble<C> select(List<S> selectPartList);
     }
 
     interface RowSubQueryFromAble<C> extends RowSubQueryAble {
 
-        RowSubQueryJoinAble<C> from(TableAble tableAble, String tableAlias);
+        RowSubQueryFromAble<C> from(TableMeta<?> tableMeta, String tableAlias);
+
+        RowSubQueryFromAble<C> from(Function<C, SubQuery> function, String subQueryAlia);
     }
 
 
@@ -56,11 +53,17 @@ public interface RowSubQuery extends SubQuery {
 
     interface RowSubQueryJoinAble<C> extends RowSubQueryWhereAble<C> {
 
-        RowSubQueryOnAble<C> leftJoin(TableAble tableAble, String tableAlias);
+        RowSubQueryJoinAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias);
 
-        RowSubQueryOnAble<C> join(TableAble tableAble, String tableAlias);
+        RowSubQueryJoinAble<C> leftJoin(Function<C, SubQuery> function, String subQueryAlia);
 
-        RowSubQueryOnAble<C> rightJoin(TableAble tableAble, String tableAlias);
+        RowSubQueryJoinAble<C> join(TableMeta<?> tableMeta, String tableAlias);
+
+        RowSubQueryJoinAble<C> join(Function<C, SubQuery> function, String subQueryAlia);
+
+        RowSubQueryJoinAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias);
+
+        RowSubQueryJoinAble<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia);
     }
 
     interface RowSubQueryWhereAble<C> extends RowSubQueryGroupByAble<C> {
@@ -121,7 +124,7 @@ public interface RowSubQuery extends SubQuery {
     }
 
 
-    interface RowSubQueryLimitAble<C> extends RowSubQuerySQLAble, RowSubQueryAble {
+    interface RowSubQueryLimitAble<C> extends RowSubQueryAble {
 
         RowSubQueryAble limit(int rowCount);
 
@@ -135,5 +138,6 @@ public interface RowSubQuery extends SubQuery {
 
         RowSubQueryAble ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
     }
+
 
 }

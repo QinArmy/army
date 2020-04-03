@@ -50,9 +50,9 @@ public final class LongType implements MappingType {
     }
 
     @Override
-    public void nonNullSet(PreparedStatement st, Object value, int index) throws SQLException {
-        Assert.isInstanceOf(Long.class, value, "");
-        st.setLong(index, (Long) value);
+    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index) throws SQLException {
+        Assert.isInstanceOf(Long.class, nonNullValue, "");
+        st.setLong(index, (Long) nonNullValue);
     }
 
     @Override

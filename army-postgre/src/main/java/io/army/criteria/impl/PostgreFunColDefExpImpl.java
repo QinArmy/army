@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.PostgreFuncColExp;
 import io.army.criteria.SQLContext;
+import io.army.criteria.postgre.PostgreFuncColExp;
 import io.army.dialect.TableDML;
 import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingType;

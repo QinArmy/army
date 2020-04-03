@@ -49,9 +49,9 @@ public final class BigDecimalType implements MappingType {
     }
 
     @Override
-    public void nonNullSet(PreparedStatement st, Object value, int index) throws SQLException {
-        Assert.isInstanceOf(BigDecimal.class, value);
-        st.setBigDecimal(index, (BigDecimal) value);
+    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index) throws SQLException {
+        Assert.isInstanceOf(BigDecimal.class, nonNullValue);
+        st.setBigDecimal(index, (BigDecimal) nonNullValue);
     }
 
     @Override

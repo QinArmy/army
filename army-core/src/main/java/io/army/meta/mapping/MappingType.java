@@ -23,7 +23,7 @@ public interface MappingType {
 
     boolean isTextValue(String textValue);
 
-    void nonNullSet(PreparedStatement st, Object value, int index) throws SQLException;
+    void nonNullSet(PreparedStatement st, Object nonNullValue, int index) throws SQLException;
 
     Object nullSafeGet(ResultSet resultSet, String alias) throws SQLException;
 

@@ -1,16 +1,23 @@
 package io.army.criteria.impl;
 
-enum JoinType {
+import io.army.criteria.SQLModifier;
+
+enum JoinType implements SQLModifier {
     NONE(""),
     LEFT("LEFT JOIN"),
     JOIN("JOIN"),
     RIGHT("RIGHT JOIN"),
     FULL("FULL JOIN");
 
-    public final String keyWord;
+    public final String keyWords;
 
-    JoinType(String keyWord) {
-        this.keyWord = keyWord;
+    JoinType(String keyWords) {
+        this.keyWords = keyWords;
     }
 
+
+    @Override
+    public String render() {
+        return this.keyWords;
+    }
 }

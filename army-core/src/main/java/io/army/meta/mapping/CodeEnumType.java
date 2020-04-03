@@ -65,9 +65,9 @@ public final class CodeEnumType implements MappingType {
     }
 
     @Override
-    public void nonNullSet(PreparedStatement st, Object value, int index) throws SQLException {
-        Assert.isInstanceOf(CodeEnum.class, value);
-        st.setInt(index, ((CodeEnum) value).code());
+    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index) throws SQLException {
+        Assert.isInstanceOf(CodeEnum.class, nonNullValue);
+        st.setInt(index, ((CodeEnum) nonNullValue).code());
 
     }
 

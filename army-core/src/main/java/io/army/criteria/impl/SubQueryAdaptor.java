@@ -23,58 +23,47 @@ final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectPartAble<C>
     /*################################## blow SubQuerySelectPartAble method ##################################*/
 
     @Override
-    public SubQuery.SubQueryFromAble<C> select(Distinct distinct, String tableAlias, TableMeta<?> tableMeta) {
-        this.actualSelect.select(distinct, tableAlias, tableMeta);
+    public <S extends SelectPart> SubQuery.SubQueryFromAble<C> select(Distinct distinct
+            , Function<C, List<S>> function) {
+        this.actualSelect.select(distinct, function);
         return this;
     }
 
     @Override
-    public SubQuery.SubQueryFromAble<C> select(String tableAlias, TableMeta<?> tableMeta) {
-        this.actualSelect.select(tableAlias, tableMeta);
+    public SubQuery.SubQueryFromAble<C> select(Distinct distinct, SelectPart selectPart) {
+        this.actualSelect.select(distinct, selectPart);
         return this;
     }
 
     @Override
-    public SubQuery.SubQueryFromAble<C> select(Distinct distinct, String subQueryAlias) {
-        this.actualSelect.select(distinct, subQueryAlias);
+    public SubQuery.SubQueryFromAble<C> select(SelectPart selectPart) {
+        this.actualSelect.select(selectPart);
         return this;
     }
 
     @Override
-    public SubQuery.SubQueryFromAble<C> select(String subQueryAlias) {
-        this.actualSelect.select(subQueryAlias);
-        return this;
-    }
-
-    @Override
-    public SubQuery.SubQueryFromAble<C> select(List<SelectPart> selectPartList) {
-        this.actualSelect.select(selectPartList);
-        return this;
-    }
-
-    @Override
-    public SubQuery.SubQueryFromAble<C> select(Distinct distinct, List<SelectPart> selectPartList) {
+    public <S extends SelectPart> SubQuery.SubQueryFromAble<C> select(Distinct distinct, List<S> selectPartList) {
         this.actualSelect.select(distinct, selectPartList);
         return this;
     }
 
     @Override
-    public SubQuery.SubQueryFromAble<C> select(Function<C, List<SelectPart>> function) {
-        this.actualSelect.select(function);
-        return this;
-    }
-
-    @Override
-    public SubQuery.SubQueryFromAble<C> select(Distinct distinct, Function<C, List<SelectPart>> function) {
-        this.actualSelect.select(distinct, function);
+    public <S extends SelectPart> SubQuery.SubQueryFromAble<C> select(List<S> selectPartList) {
+        this.actualSelect.select(selectPartList);
         return this;
     }
 
     /*################################## blow SubQueryFromAble method ##################################*/
 
     @Override
-    public SubQuery.SubQueryOnAble<C> from(TableAble tableAble, String tableAlias) {
-        this.actualSelect.from(tableAble, tableAlias);
+    public SubQuery.SubQueryOnAble<C> from(TableMeta<?> tableMeta, String tableAlias) {
+        this.actualSelect.from(tableMeta, tableAlias);
+        return this;
+    }
+
+    @Override
+    public SubQuery.SubQueryOnAble<C> from(Function<C, SubQuery> function, String subQueryAlia) {
+        this.actualSelect.from(function, subQueryAlia);
         return this;
     }
 
@@ -101,23 +90,40 @@ final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectPartAble<C>
     /*################################## blow SubQueryJoinAble method ##################################*/
 
     @Override
-    public SubQuery.SubQueryOnAble<C> leftJoin(TableAble tableAble, String tableAlias) {
-        this.actualSelect.leftJoin(tableAble, tableAlias);
+    public SubQuery.SubQueryOnAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias) {
+        this.actualSelect.leftJoin(tableMeta, tableAlias);
         return this;
     }
 
     @Override
-    public SubQuery.SubQueryOnAble<C> join(TableAble tableAble, String tableAlias) {
-        this.actualSelect.join(tableAble, tableAlias);
+    public SubQuery.SubQueryOnAble<C> leftJoin(Function<C, SubQuery> function, String subQueryAlia) {
+        this.actualSelect.leftJoin(function, subQueryAlia);
         return this;
     }
 
     @Override
-    public SubQuery.SubQueryOnAble<C> rightJoin(TableAble tableAble, String tableAlias) {
-        this.actualSelect.rightJoin(tableAble, tableAlias);
+    public SubQuery.SubQueryOnAble<C> join(TableMeta<?> tableMeta, String tableAlias) {
+        this.actualSelect.join(tableMeta, tableAlias);
         return this;
     }
 
+    @Override
+    public SubQuery.SubQueryOnAble<C> join(Function<C, SubQuery> function, String subQueryAlia) {
+        this.actualSelect.join(function, subQueryAlia);
+        return this;
+    }
+
+    @Override
+    public SubQuery.SubQueryOnAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias) {
+        this.actualSelect.rightJoin(tableMeta, tableAlias);
+        return this;
+    }
+
+    @Override
+    public SubQuery.SubQueryOnAble<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia) {
+        this.actualSelect.rightJoin(function, subQueryAlia);
+        return this;
+    }
 
     /*################################## blow SubQueryWhereAble method ##################################*/
 
@@ -247,39 +253,62 @@ final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectPartAble<C>
     /*################################## blow SubQueryLimitAble method ##################################*/
 
     @Override
-    public SubQuery.SubQueryAble limit(int rowCount) {
+    public SubQuery.SubQueryUnionAble<C> limit(int rowCount) {
         this.actualSelect.limit(rowCount);
         return this;
     }
 
     @Override
-    public SubQuery.SubQueryAble limit(int offset, int rowCount) {
+    public SubQuery.SubQueryUnionAble<C> limit(int offset, int rowCount) {
         this.actualSelect.limit(offset, rowCount);
         return this;
     }
 
     @Override
-    public SubQuery.SubQueryAble limit(Function<C, Pair<Integer, Integer>> function) {
+    public SubQuery.SubQueryUnionAble<C> limit(Function<C, Pair<Integer, Integer>> function) {
         this.actualSelect.limit(function);
         return this;
     }
 
     @Override
-    public SubQuery.SubQueryAble ifLimit(Predicate<C> predicate, int rowCount) {
+    public SubQuery.SubQueryUnionAble<C> ifLimit(Predicate<C> predicate, int rowCount) {
         this.actualSelect.ifLimit(predicate, rowCount);
         return this;
     }
 
     @Override
-    public SubQuery.SubQueryAble ifLimit(Predicate<C> predicate, int offset, int rowCount) {
+    public SubQuery.SubQueryUnionAble<C> ifLimit(Predicate<C> predicate, int offset, int rowCount) {
         this.actualSelect.ifLimit(predicate, offset, rowCount);
         return this;
     }
 
     @Override
-    public SubQuery.SubQueryAble ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
+    public SubQuery.SubQueryUnionAble<C> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
         this.actualSelect.ifLimit(predicate, function);
         return this;
+    }
+
+    /*################################## blow SubQueryUnionAble method ##################################*/
+
+    @Override
+    public SubQuery.SubQueryUnionAble<C> brackets() {
+        return ComposeSubQueries.brackets(this.actualSelect.criteria(), thisSubQuery());
+    }
+
+    @Override
+    public <S extends SubQuery> SubQuery.SubQueryUnionAble<C> union(Function<C, S> function) {
+        return ComposeSubQueries.compose(this.actualSelect.criteria(), thisSubQuery(), UnionType.UNION, function);
+    }
+
+    @Override
+    public <S extends SubQuery> SubQuery.SubQueryUnionAble<C> unionAll(Function<C, S> function) {
+        return ComposeSubQueries.compose(this.actualSelect.criteria(), thisSubQuery(), UnionType.UNION_ALL, function);
+    }
+
+    @Override
+    public <S extends SubQuery> SubQuery.SubQueryUnionAble<C> unionDistinct(Function<C, S> function) {
+        return ComposeSubQueries.compose(this.actualSelect.criteria(), thisSubQuery()
+                , UnionType.UNION_DISTINCT, function);
     }
 
     /*################################## blow SubQueryAble method ##################################*/
@@ -288,6 +317,12 @@ final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectPartAble<C>
     public final SubQuery asSubQuery() {
         this.actualSelect.asSelect();
         return this.actualSelect;
+    }
+
+    /*################################## blow private method ##################################*/
+
+    SubQuery thisSubQuery() {
+        return this.asSubQuery();
     }
 
 

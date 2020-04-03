@@ -21,111 +21,61 @@ public interface PostgreSelect extends Select {
 
     }
 
+    interface PostgreWithQueryAble extends PostgreSelectSQLAble {
+
+    }
+
+    interface PostgreSelectAble extends SelectAble, PostgreSelectSQLAble {
+
+        @Override
+        PostgreSelect asSelect();
+
+    }
+
+
     interface PostgreWithAble<C> extends PostgreSelectPartAble<C> {
 
-        PostgreSelectPartAble<C> with();
+        PostgreSelectPartAble<C> with(Function<C, List<PostgreWithQuery>> function);
 
-        PostgreSelectPartAble<C> withRecursive();
-    }
-
-    interface PostgreNoJoinWithAble<C> extends PostgreNoJoinSelectPartAble<C> {
-
-        PostgreNoJoinSelectPartAble<C> with();
-
-        PostgreNoJoinSelectPartAble<C> withRecursive();
-    }
-
-    interface PostgreNoJoinSelectPartAble<C> extends NoJoinSelectPartAble<C>, PostgreSelectSQLAble {
-
-        @Override
-        <S extends SelectPart> PostgreNoJoinFromAble<C> select(Distinct distinct, Function<C, List<S>> function);
-
-        @Override
-        PostgreNoJoinFromAble<C> select(Distinct distinct, SelectPart selectPart);
-
-        @Override
-        PostgreNoJoinFromAble<C> select(SelectPart selectPart);
-
-        @Override
-        <S extends SelectPart> PostgreNoJoinFromAble<C> select(Distinct distinct, List<S> selectPartList);
-
-        @Override
-        <S extends SelectPart> PostgreNoJoinFromAble<C> select(List<S> selectPartList);
-
-
-        /**
-         * @see <a href="https://www.postgresql.org/docs/12/sql-select.html">Postgre distinct clause of select.</a>
-         */
-        <S extends SelectPart> PostgreNoJoinFromAble<C> selectDistinct(Function<C, List<IPredicate>> onExpsFunction
-                , Function<C, List<S>> selectParsFunction);
-
-        /**
-         * @see <a href="https://www.postgresql.org/docs/12/sql-select.html">Postgre distinct clause of select.</a>
-         */
-        <S extends SelectPart> PostgreNoJoinFromAble<C> selectDistinct(Function<C, List<IPredicate>> onFunction
-                , S selectPart);
-
+        PostgreSelectPartAble<C> withRecursive(Function<C, List<PostgreWithQuery>> function);
     }
 
 
-    interface PostgreSelectPartAble<C> extends SelectPartAble<C>, PostgreNoJoinSelectPartAble<C> {
+    interface PostgreSelectPartAble<C> extends PostgreSelectSQLAble {
 
-        @Override
         <S extends SelectPart> PostgreFromAble<C> select(Distinct distinct, Function<C, List<S>> function);
 
-        @Override
         PostgreFromAble<C> select(Distinct distinct, SelectPart selectPart);
 
-        @Override
         PostgreFromAble<C> select(SelectPart selectPart);
 
-        @Override
         <S extends SelectPart> PostgreFromAble<C> select(Distinct distinct, List<S> selectPartList);
 
-        @Override
         <S extends SelectPart> PostgreFromAble<C> select(List<S> selectPartList);
 
-        @Override
-        <S extends SelectPart> PostgreFromAble<C> selectDistinct(Function<C, List<IPredicate>> onExpsFunction
+        <S extends SelectPart> PostgreFromAble<C> selectDistinct(Function<C, List<Expression<?>>> onExpsFunction
                 , Function<C, List<S>> selectParsFunction);
 
-        @Override
-        <S extends SelectPart> PostgreFromAble<C> selectDistinct(Function<C, List<IPredicate>> onFunction
+        <S extends SelectPart> PostgreFromAble<C> selectDistinct(Function<C, List<Expression<?>>> onFunction
                 , S selectPart);
     }
 
 
-    interface PostgreNoJoinFromAble<C> extends NoJoinFromAble<C>, PostgreWhereAble<C> {
+    interface PostgreFromAble<C> extends PostgreWhereAble<C> {
 
-        @Override
-        PostgreWhereAble<C> from(TableMeta<?> tableMeta, String tableAlias);
-
-        @Override
-        PostgreWhereAble<C> from(Function<C, SubQuery> function, String subQueryAlia);
-
-        PostgreWhereAble<C> fromLateral(Function<C, SubQuery> subQueryFunction, String subQueryAlia);
-
-        PostgreWhereAble<C> fromWithQuery(String withSubQueryName);
-
-        PostgreWhereAble<C> fromFunc(Function<C, PostgreFuncTable> funcFunction);
-    }
-
-
-    interface PostgreFromAble<C> extends FromAble<C>, PostgreNoJoinFromAble<C> {
-
-        @Override
         PostgreTableSampleAble<C> from(TableMeta<?> tableMeta, String tableAlias);
 
-        @Override
         PostgreJoinAble<C> from(Function<C, SubQuery> subQueryFunction, String subQueryAlia);
 
         PostgreJoinAble<C> fromLateral(Function<C, SubQuery> subQueryFunction, String subQueryAlia);
 
         PostgreJoinAble<C> fromWithQuery(String withSubQueryName);
 
-        PostgreJoinAble<C> fromAliasFunc(Function<C, PostgreAliasFuncTable> funcFunction);
+        PostgreWhereAble<C> fromFunc(Function<C, PostgreFuncTable> funcFunction);
 
+        PostgreJoinAble<C> fromAliasFunc(Function<C, PostgreAliasFuncTable> funcFunction);
     }
+
 
     interface PostgreTableSampleAble<C> extends PostgreJoinAble<C> {
 
@@ -135,15 +85,12 @@ public interface PostgreSelect extends Select {
 
         PostgreJoinAble<C> tableSample(Function<C, Expression<?>> samplingMethodFunction
                 , Function<C, Expression<Double>> seedFunction);
-
     }
 
-    interface PostgreJoinAble<C> extends JoinAble<C>, PostgreWhereAble<C> {
+    interface PostgreJoinAble<C> extends PostgreWhereAble<C> {
 
-        @Override
         PostgreTableSampleOnAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias);
 
-        @Override
         PostgreOnAble<C> leftJoin(Function<C, SubQuery> function, String subQueryAlia);
 
         PostgreOnAble<C> leftJoinLateral(Function<C, SubQuery> function, String subQueryAlia);
@@ -152,10 +99,8 @@ public interface PostgreSelect extends Select {
 
         PostgreOnAble<C> leftJoinAliasFunc(Function<C, PostgreAliasFuncTable> funcFunction);
 
-        @Override
         PostgreTableSampleOnAble<C> join(TableMeta<?> tableMeta, String tableAlias);
 
-        @Override
         PostgreOnAble<C> join(Function<C, SubQuery> function, String subQueryAlia);
 
         PostgreOnAble<C> joinLateral(Function<C, SubQuery> function, String subQueryAlia);
@@ -164,10 +109,8 @@ public interface PostgreSelect extends Select {
 
         PostgreOnAble<C> joinAliasFunc(Function<C, PostgreAliasFuncTable> funcFunction);
 
-        @Override
         PostgreTableSampleOnAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias);
 
-        @Override
         PostgreOnAble<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia);
 
         PostgreOnAble<C> rightJoinWithQuery(String withSubQueryName);
@@ -185,15 +128,12 @@ public interface PostgreSelect extends Select {
     }
 
 
-    interface PostgreOnAble<C> extends OnAble<C>, PostgreSelectSQLAble {
+    interface PostgreOnAble<C> extends PostgreSelectSQLAble {
 
-        @Override
         PostgreJoinAble<C> on(List<IPredicate> predicateList);
 
-        @Override
         PostgreJoinAble<C> on(IPredicate predicate);
 
-        @Override
         PostgreJoinAble<C> on(Function<C, List<IPredicate>> function);
     }
 
@@ -209,75 +149,103 @@ public interface PostgreSelect extends Select {
     }
 
 
-    interface PostgreWhereAble<C> extends WhereAble<C>, PostgreGroupByAble<C> {
+    interface PostgreWhereAble<C> extends PostgreGroupByAble<C> {
 
-        @Override
         PostgreGroupByAble<C> where(List<IPredicate> predicateList);
 
-        @Override
         PostgreGroupByAble<C> where(Function<C, List<IPredicate>> function);
 
-        @Override
         PostgreWhereAndAble<C> where(IPredicate predicate);
     }
 
 
-    interface PostgreWhereAndAble<C> extends WhereAndAble<C>, PostgreGroupByAble<C> {
+    interface PostgreWhereAndAble<C> extends PostgreGroupByAble<C> {
 
-        @Override
         PostgreWhereAndAble<C> and(IPredicate predicate);
 
-        @Override
         PostgreWhereAndAble<C> and(Function<C, IPredicate> function);
 
-        @Override
         PostgreWhereAndAble<C> ifAnd(Predicate<C> testPredicate, IPredicate predicate);
 
-        @Override
         PostgreWhereAndAble<C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function);
     }
 
-    interface PostgreGroupByAble<C> extends GroupByAble<C>, PostgreWindowAble<C> {
+    interface PostgreGroupByAble<C> extends PostgreWindowAble<C> {
 
-        @Override
+
         PostgreHavingAble<C> groupBy(Expression<?> groupExp);
 
-        @Override
+
         PostgreHavingAble<C> groupBy(List<Expression<?>> groupExpList);
 
-        @Override
+
         PostgreHavingAble<C> groupBy(Function<C, List<Expression<?>>> function);
 
-        @Override
+
         PostgreHavingAble<C> ifGroupBy(Predicate<C> predicate, Expression<?> groupExp);
 
-        @Override
+
         PostgreHavingAble<C> ifGroupBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction);
     }
 
 
-    interface PostgreHavingAble<C> extends HavingAble<C>, PostgreWindowAble<C> {
-        @Override
-        PostgreOrderByAble<C> having(IPredicate predicate);
+    interface PostgreHavingAble<C> extends PostgreNoLockWindowAble<C> {
 
-        @Override
-        PostgreOrderByAble<C> having(Function<C, List<IPredicate>> function);
+        PostgreNoLockWindowAble<C> having(IPredicate predicate);
 
-        @Override
-        PostgreOrderByAble<C> ifHaving(Predicate<C> predicate, Function<C, List<IPredicate>> function);
 
-        @Override
-        PostgreOrderByAble<C> ifHaving(Predicate<C> testPredicate, IPredicate predicate);
+        PostgreNoLockWindowAble<C> having(Function<C, List<IPredicate>> function);
+
+
+        PostgreNoLockWindowAble<C> ifHaving(Predicate<C> predicate, Function<C, List<IPredicate>> function);
+
+
+        PostgreNoLockWindowAble<C> ifHaving(Predicate<C> testPredicate, IPredicate predicate);
+    }
+
+    interface PostgreNoLockWindowAble<C> extends PostgreNoLockOrderByAble<C> {
+
+        PostgreNoLockOrderByAble<C> window(Function<C, List<PostgreWindow>> windowListFunction);
     }
 
 
-    interface PostgreWindowAble<C> extends PostgreOrderByAble<C> {
+    interface PostgreWindowAble<C> extends PostgreOrderByAble<C>, PostgreNoLockWindowAble<C> {
 
-        PostgreOrderByAble<C> window(Function<C, List<PostgreWindow>> windowListFunction);
+        /**
+         * @see Postgres#window()
+         * @see Postgres#window(Object)
+         */
+        PostgreNoLockOrderByAble<C> window(Function<C, List<PostgreWindow>> windowListFunction);
 
     }
 
-    interface PostgreOrderByAble<C> extends OrderByAble<C>, PostgreLimitAble<C> {
+
+    interface PostgreNoLockOrderByAble<C> extends PostgreNoLockLimitAble<C> {
+
+        /**
+         * @see Postgres#nullsFirst(Expression)
+         * @see Postgres#nullsLast(Expression)
+         * @see Postgres#sortUsing(Expression, SQLOperator)
+         */
+
+        PostgreNoLockLimitAble<C> orderBy(Expression<?> orderExp);
+
+
+        PostgreNoLockLimitAble<C> orderBy(Function<C, List<Expression<?>>> function);
+
+
+        PostgreNoLockLimitAble<C> ifOrderBy(Predicate<C> predicate, Expression<?> orderExp);
+
+
+        PostgreNoLockLimitAble<C> ifOrderBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction);
+    }
+
+    /**
+     * @see Postgres#nullsFirst(Expression)
+     * @see Postgres#nullsLast(Expression)
+     * @see Postgres#sortUsing(Expression, SQLOperator)
+     */
+    interface PostgreOrderByAble<C> extends PostgreLimitAble<C>, PostgreNoLockOrderByAble<C> {
 
         @Override
         PostgreLimitAble<C> orderBy(Expression<?> orderExp);
@@ -293,7 +261,29 @@ public interface PostgreSelect extends Select {
     }
 
 
-    interface PostgreLimitAble<C> extends LimitAble<C>, PostgreLockAble<C> {
+    interface PostgreNoLockLimitAble<C> extends PostgreComposeAble<C> {
+
+
+        PostgreComposeAble<C> limit(int rowCount);
+
+
+        PostgreComposeAble<C> limit(int offset, int rowCount);
+
+
+        PostgreComposeAble<C> limit(Function<C, Pair<Integer, Integer>> function);
+
+
+        PostgreComposeAble<C> ifLimit(Predicate<C> predicate, int rowCount);
+
+
+        PostgreComposeAble<C> ifLimit(Predicate<C> predicate, int offset, int rowCount);
+
+
+        PostgreComposeAble<C> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
+    }
+
+
+    interface PostgreLimitAble<C> extends PostgreNoLockLimitAble<C>, PostgreLockAble<C> {
 
         @Override
         PostgreLockAble<C> limit(int rowCount);
@@ -314,14 +304,68 @@ public interface PostgreSelect extends Select {
         PostgreLockAble<C> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
     }
 
+    interface PostgreNoComposeLockAble<C> extends PostgreSelectAble {
 
-    interface PostgreLockAble<C> extends LockAble<C>, PostgreSelectSQLAble {
+        PostgreLockOfTablesAble<C> lock(LockMode lockMode);
+
+
+        PostgreLockOfTablesAble<C> lock(Function<C, LockMode> function);
+
+
+        PostgreLockOfTablesAble<C> ifLock(Predicate<C> predicate, LockMode lockMode);
+
+
+        PostgreLockOfTablesAble<C> ifLock(Predicate<C> predicate, Function<C, LockMode> function);
 
     }
 
-    interface PostgreWindow extends SelfDescribed {
 
-        String windowName();
+    interface PostgreLockAble<C> extends PostgreComposeAble<C>, PostgreNoComposeLockAble<C> {
+
+
+    }
+
+    interface PostgreComposeAble<C> extends PostgreSelectAble {
+
+        PostgreComposeAble<C> brackets();
+
+        <S extends Select> PostgreComposeAble<C> union(Function<C, S> function);
+
+        <S extends Select> PostgreComposeAble<C> unionAll(Function<C, S> function);
+
+        <S extends Select> PostgreComposeAble<C> unionDistinct(Function<C, S> function);
+
+        <S extends Select> PostgreComposeAble<C> intersect(Function<C, S> function);
+
+        <S extends Select> PostgreComposeAble<C> intersectAll(Function<C, S> function);
+
+        <S extends Select> PostgreComposeAble<C> intersectDistinct(Function<C, S> function);
+
+        <S extends Select> PostgreComposeAble<C> except(Function<C, S> function);
+
+        <S extends Select> PostgreComposeAble<C> exceptAll(Function<C, S> function);
+
+        <S extends Select> PostgreComposeAble<C> exceptDistinct(Function<C, S> function);
+
+    }
+
+    interface PostgreLockOfTablesAble<C> extends PostgreLockOptionAble<C> {
+
+        PostgreLockOptionAble<C> ofTable(TableMeta<?> lockTable);
+
+        PostgreLockOptionAble<C> ofTable(List<TableMeta<?>> lockTableList);
+
+        PostgreLockOptionAble<C> ifOfTable(Predicate<C> predicate, TableMeta<?> lockTable);
+
+        PostgreLockOptionAble<C> ifOfTable(Predicate<C> predicate, Function<C, List<TableMeta<?>>> function);
+
+    }
+
+    interface PostgreLockOptionAble<C> extends PostgreLockAble<C> {
+
+        PostgreNoComposeLockAble<C> noWait();
+
+        PostgreNoComposeLockAble<C> skipLocked();
     }
 
     interface PostgreWindowClauseAble extends PostgreSelectSQLAble {
@@ -360,8 +404,18 @@ public interface PostgreSelect extends Select {
 
     }
 
+    /**
+     * @see Postgres#nullsFirst(Expression)
+     * @see Postgres#nullsLast(Expression)
+     * @see Postgres#sortUsing(Expression, SQLOperator)
+     */
     interface PostgreWindowOrderByAble<C> extends PostgreWindowFrameAble<C> {
 
+        /**
+         * @see Postgres#nullsFirst(Expression)
+         * @see Postgres#nullsLast(Expression)
+         * @see Postgres#sortUsing(Expression, SQLOperator)
+         */
         PostgreWindowFrameAble<C> orderBy(Expression<?> expression);
 
         PostgreWindowFrameAble<C> orderBy(Function<C, List<Expression<?>>> function);
@@ -372,39 +426,88 @@ public interface PostgreSelect extends Select {
 
     }
 
-    interface PostgreWindowFrameAble<C> extends PostgreWindowFrameStartEndAble<C> {
+    interface PostgreWindowFrameAble<C> extends PostgreSelectSQLAble {
 
-        PostgreWindowFrameStartEndAble<C> range();
+        PostgreWindowFrameRangeAble<C> range();
 
-        PostgreWindowFrameStartEndAble<C> rows();
+        PostgreWindowFrameRangeAble<C> rows();
 
-        PostgreWindowFrameStartEndAble<C> groups();
+        PostgreWindowFrameRangeAble<C> groups();
 
     }
 
-    interface PostgreWindowFrameStartEndAble<C> extends PostgreWindowFrameExclusion {
+    interface PostgreWindowFrameRangeAble<C> extends PostgreSelectSQLAble {
 
+        /**
+         * representing  {@code offset PRECEDING}
+         */
         PostgreWindowFrameExclusion startPreceding(Long offset);
 
+        /**
+         * representing {@code offset FOLLOWING}
+         */
         PostgreWindowFrameExclusion startFollowing(Long offset);
 
+        /**
+         * representing {@code UNBOUNDED PRECEDING}
+         */
         PostgreWindowFrameExclusion startPreceding();
 
+        /**
+         * representing {@code CURRENT ROW}
+         */
         PostgreWindowFrameExclusion startCurrentRow();
 
-        PostgreWindowFrameExclusion startFollowing();
+        /**
+         * representing {@code BETWEEN UNBOUNDED PRECEDING AND offset PRECEDING}
+         */
+        PostgreWindowFrameExclusion betweenUnBoundedAndPreceding(Long offset);
 
-        PostgreWindowFrameExclusion between(Long startOffset, Long endOffset);
+        /**
+         * representing {@code BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW}
+         */
+        PostgreWindowFrameExclusion betweenUnBoundedAndCurrentRow();
 
-        PostgreWindowFrameExclusion betweenPreceding(Long endOffset);
+        /**
+         * representing {@code BETWEEN UNBOUNDED PRECEDING AND offset FOLLOWING}
+         */
+        PostgreWindowFrameExclusion betweenUnBoundedAndFollowing(Long offset);
 
-        PostgreWindowFrameExclusion betweenFollowing(Long startOffset);
+        /**
+         * representing {@code BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING}
+         */
+        PostgreWindowFrameExclusion betweenUnBoundedAndUnBounded();
 
-        PostgreWindowFrameExclusion betweenPrecedingAndFollowing();
+        /**
+         * representing {@code BETWEEN offset PRECEDING AND CURRENT ROW}
+         */
+        PostgreWindowFrameExclusion betweenPrecedingAndCurrentRow(Long offset);
 
-        PostgreWindowFrameExclusion betweenPrecedingAndCurrentRow();
+        /**
+         * representing {@code BETWEEN offset PRECEDING AND offset FOLLOWING}
+         */
+        PostgreWindowFrameExclusion betweenPrecedingAndFollowing(Long start, Long end);
 
-        PostgreWindowFrameExclusion betweenCurrentRowAndFollowing();
+        /**
+         * representing {@code BETWEEN offset PRECEDING AND UNBOUNDED FOLLOWING}
+         */
+        PostgreWindowFrameExclusion betweenPrecedingAndUnBounded(Long offset);
+
+        /**
+         * representing {@code BETWEEN CURRENT ROW AND offset FOLLOWING}
+         */
+        PostgreWindowFrameExclusion betweenCurrentAndFollowing(Long offset);
+
+        /**
+         * representing {@code BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING}
+         */
+        PostgreWindowFrameExclusion betweenCurrentAndUnBounded();
+
+        /**
+         * representing {@code BETWEEN offset FOLLOWING AND UNBOUNDED FOLLOWING}
+         */
+        PostgreWindowFrameExclusion betweenFollowingAndUnBounded(Long offset);
+
     }
 
     interface PostgreWindowFrameExclusion extends PostgreWindowClauseAble {

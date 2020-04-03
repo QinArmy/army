@@ -7,7 +7,12 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+@SuppressWarnings("unused")
 public interface Select extends SQLDebug, SQLAble, QueryAble {
+
+
+    boolean requiredBrackets();
+
 
     interface SelectAble extends SelectSQLAble {
         /*
@@ -15,6 +20,7 @@ public interface Select extends SQLDebug, SQLAble, QueryAble {
          * @see io.army.criteria.impl.CriteriaContextHolder.clearContext
          */
         Select asSelect();
+
     }
 
     interface SelectSQLAble extends SQLAble {
@@ -22,22 +28,7 @@ public interface Select extends SQLDebug, SQLAble, QueryAble {
     }
 
 
-    interface NoJoinSelectPartAble<C> extends SelectSQLAble {
-
-        <S extends SelectPart> NoJoinFromAble<C> select(Distinct distinct, Function<C, List<S>> function);
-
-        NoJoinFromAble<C> select(Distinct distinct, SelectPart selectPart);
-
-        NoJoinFromAble<C> select(SelectPart selectPart);
-
-        <S extends SelectPart> NoJoinFromAble<C> select(Distinct distinct, List<S> selectPartList);
-
-        <S extends SelectPart> NoJoinFromAble<C> select(List<S> selectPartList);
-
-    }
-
-
-    interface SelectPartAble<C> extends NoJoinSelectPartAble<C> {
+    interface SelectPartAble<C> {
 
         <S extends SelectPart> FromAble<C> select(Distinct distinct, Function<C, List<S>> function);
 
@@ -166,15 +157,27 @@ public interface Select extends SQLDebug, SQLAble, QueryAble {
         LockAble<C> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
     }
 
-    interface LockAble<C> extends SelectSQLAble, SelectAble {
+    interface LockAble<C> extends SelectAble {
 
-        SelectAble lock(LockMode lockMode);
+        UnionAble<C> lock(LockMode lockMode);
 
-        SelectAble lock(Function<C, LockMode> function);
+        UnionAble<C> lock(Function<C, LockMode> function);
 
-        SelectAble ifLock(Predicate<C> predicate, LockMode lockMode);
+        UnionAble<C> ifLock(Predicate<C> predicate, LockMode lockMode);
 
-        SelectAble ifLock(Predicate<C> predicate, Function<C, LockMode> function);
+        UnionAble<C> ifLock(Predicate<C> predicate, Function<C, LockMode> function);
+
+    }
+
+    interface UnionAble<C> extends SelectAble {
+
+        UnionAble<C> brackets();
+
+        <S extends Select> UnionAble<C> union(Function<C, S> function);
+
+        <S extends Select> UnionAble<C> unionAll(Function<C, S> function);
+
+        <S extends Select> UnionAble<C> unionDistinct(Function<C, S> function);
 
     }
 

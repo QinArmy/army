@@ -41,9 +41,9 @@ public final class StringType extends AbstractMappingType {
     }
 
     @Override
-    public void nonNullSet(PreparedStatement st, Object value, int index) throws SQLException {
-        Assert.isInstanceOf(String.class, value, "");
-        st.setString(index, (String) value);
+    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index) throws SQLException {
+        Assert.isInstanceOf(String.class, nonNullValue, "");
+        st.setString(index, (String) nonNullValue);
     }
 
     @Override

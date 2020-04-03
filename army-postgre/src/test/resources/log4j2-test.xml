@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <!-- 部署前修改此属性 -->
+        <Property name="baseDir">~/data0/logs/army</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%highlight{%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %l %n ~ %msg%n}"/>
+        </Console>
+        <RollingFile name="RollingFile" fileName="${baseDir}/army.log"
+                     filePattern="${baseDir}/${date:yyyy-MM}/jelly-%d{MM-dd}_%i.log">
+            <PatternLayout pattern="%highlight{%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %l %n ~ %msg%n}"/>
+            <Policies>
+                <CronTriggeringPolicy schedule="0 0 0 * * ?"/>
+                <SizeBasedTriggeringPolicy size="250 MB"/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Logger name="com.example.jelly.datasource.JellyRoutingDataSource" level="DEBUG" additivity="false">
+            <AppenderRef ref="RollingFile"/>
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="com.example.jelly" level="DEBUG" additivity="false">
+            <AppenderRef ref="RollingFile"/>
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="com.example.jelly" level="DEBUG" additivity="false">
+            <AppenderRef ref="RollingFile"/>
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="org.hibernate" level="INFO" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="io.army.modelgen.ArmyMetaModelEntityProcessor" level="TRACE" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="io.army.boot.SessionFactoryUtils" level="DEBUG" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Root level="INFO">
+            <AppenderRef ref="RollingFile"/>
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>

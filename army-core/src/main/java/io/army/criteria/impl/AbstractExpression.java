@@ -572,6 +572,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     @Override
     public final Expression<E> sort(@Nullable Boolean asc) {
+        Assert.isTrue(!(this instanceof SortExpression), "expression has ASC/DESC clause.");
         if (asc == null) {
             return this;
         } else {

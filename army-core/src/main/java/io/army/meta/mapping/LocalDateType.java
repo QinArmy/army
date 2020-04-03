@@ -5,7 +5,6 @@ import io.army.util.TimeUtils;
 
 import java.sql.*;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public final class LocalDateType implements MappingType {
 
@@ -49,9 +48,9 @@ public final class LocalDateType implements MappingType {
     }
 
     @Override
-    public void nonNullSet(PreparedStatement st, Object value, int index) throws SQLException {
-        Assert.isInstanceOf(LocalDate.class, value, "");
-        st.setDate(index, Date.valueOf((LocalDate) value));
+    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index) throws SQLException {
+        Assert.isInstanceOf(LocalDate.class, nonNullValue, "");
+        st.setDate(index, Date.valueOf((LocalDate) nonNullValue));
     }
 
     @Override

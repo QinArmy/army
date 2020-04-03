@@ -1,5 +1,6 @@
 package io.army.criteria;
 
+import io.army.meta.TableMeta;
 import io.army.util.Pair;
 
 import java.util.List;
@@ -10,9 +11,9 @@ public interface ColumnSubQuery<E> extends SubQuery {
 
     Selection selection();
 
-    interface ColumnSubQueryAble<E> {
+    interface ColumnSubQueryAble<E> extends SubQueryAble {
 
-        ColumnSubQuery<E> asColumnSubQuery();
+        ColumnSubQuery<E> asSubQuery();
     }
 
     interface ColumnSubQuerySQLAble extends SQLAble {
@@ -29,7 +30,9 @@ public interface ColumnSubQuery<E> extends SubQuery {
 
     interface ColumnSubQueryFromAble<E, C> extends ColumnSubQuerySQLAble, ColumnSubQueryAble<E> {
 
-        ColumnSubQueryJoinAble<E, C> from(TableAble tableAble, String tableAlias);
+        ColumnSubQueryJoinAble<E, C> from(TableMeta<?> tableMeta, String tableAlias);
+
+        ColumnSubQueryJoinAble<E, C> from(Function<C, SubQuery> function, String subQueryAlia);
     }
 
 
@@ -45,11 +48,17 @@ public interface ColumnSubQuery<E> extends SubQuery {
 
     interface ColumnSubQueryJoinAble<E, C> extends ColumnSubQueryWhereAble<E, C> {
 
-        ColumnSubQueryOnAble<E, C> leftJoin(TableAble tableAble, String tableAlias);
+        ColumnSubQueryOnAble<E, C> leftJoin(TableMeta<?> tableMeta, String tableAlias);
 
-        ColumnSubQueryOnAble<E, C> join(TableAble tableAble, String tableAlias);
+        ColumnSubQueryOnAble<E, C> leftJoin(Function<C, SubQuery> function, String subQueryAlia);
 
-        ColumnSubQueryOnAble<E, C> rightJoin(TableAble tableAble, String tableAlias);
+        ColumnSubQueryOnAble<E, C> join(TableMeta<?> tableMeta, String tableAlias);
+
+        ColumnSubQueryOnAble<E, C> join(Function<C, SubQuery> function, String subQueryAlia);
+
+        ColumnSubQueryOnAble<E, C> rightJoin(TableMeta<?> tableMeta, String tableAlias);
+
+        ColumnSubQueryOnAble<E, C> rightJoin(Function<C, SubQuery> function, String subQueryAlia);
     }
 
     interface ColumnSubQueryWhereAble<E, C> extends ColumnSubQueryGroupByAble<E, C> {
@@ -110,18 +119,32 @@ public interface ColumnSubQuery<E> extends SubQuery {
     }
 
 
-    interface ColumnSubQueryLimitAble<E, C> extends ColumnSubQuerySQLAble, ColumnSubQueryAble<E> {
+    interface ColumnSubQueryLimitAble<E, C> extends ColumnSubQueryUnionAble<E, C> {
 
-        ColumnSubQueryAble<E> limit(int rowCount);
+        ColumnSubQueryUnionAble<E, C> limit(int rowCount);
 
-        ColumnSubQueryAble<E> limit(int offset, int rowCount);
+        ColumnSubQueryUnionAble<E, C> limit(int offset, int rowCount);
 
-        ColumnSubQueryAble<E> limit(Function<C, Pair<Integer, Integer>> function);
+        ColumnSubQueryUnionAble<E, C> limit(Function<C, Pair<Integer, Integer>> function);
 
-        ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, int rowCount);
+        ColumnSubQueryUnionAble<E, C> ifLimit(Predicate<C> predicate, int rowCount);
 
-        ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, int offset, int rowCount);
+        ColumnSubQueryUnionAble<E, C> ifLimit(Predicate<C> predicate, int offset, int rowCount);
 
-        ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
+        ColumnSubQueryUnionAble<E, C> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
     }
+
+    interface ColumnSubQueryUnionAble<E, C> extends ColumnSubQueryAble<E> {
+
+        ColumnSubQueryUnionAble<E, C> brackets();
+
+        <S extends ColumnSubQuery<E>> ColumnSubQueryUnionAble<E, C> union(Function<C, S> function);
+
+        <S extends ColumnSubQuery<E>> ColumnSubQueryUnionAble<E, C> unionAll(Function<C, S> function);
+
+        <S extends ColumnSubQuery<E>> ColumnSubQueryUnionAble<E, C> unionDistinct(Function<C, S> function);
+
+    }
+
+
 }

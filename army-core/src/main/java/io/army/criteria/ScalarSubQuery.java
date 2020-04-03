@@ -1,5 +1,6 @@
 package io.army.criteria;
 
+import io.army.meta.TableMeta;
 import io.army.util.Pair;
 
 import java.util.List;
@@ -12,9 +13,9 @@ import java.util.function.Predicate;
 public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expression<E> {
 
 
-    interface ScalarSubQueryAble<E> extends ScalarSubQuerySQLAble {
+    interface ScalarSubQueryAble<E> extends SubQueryAble {
 
-        ScalarSubQuery<E> asScalarSubQuery();
+        ScalarSubQuery<E> asSubQuery();
     }
 
     interface ScalarSubQuerySQLAble extends SQLAble {
@@ -31,7 +32,9 @@ public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expre
 
     interface ScalarSubQueryFromAble<E, C> extends ScalarSubQuerySQLAble, ScalarSubQueryAble<E> {
 
-        ScalarSubQueryJoinAble<E, C> from(TableAble tableAble, String tableAlias);
+        ScalarSubQueryFromAble<E, C> from(TableMeta<?> tableMeta, String tableAlias);
+
+        ScalarSubQueryFromAble<E, C> from(Function<C, SubQuery> function, String subQueryAlia);
     }
 
 
@@ -47,11 +50,17 @@ public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expre
 
     interface ScalarSubQueryJoinAble<E, C> extends ScalarSubQueryWhereAble<E, C> {
 
-        ScalarSubQueryOnAble<E, C> leftJoin(TableAble tableAble, String tableAlias);
+        ScalarSubQueryOnAble<E, C> leftJoin(TableMeta<?> tableMeta, String tableAlias);
 
-        ScalarSubQueryOnAble<E, C> join(TableAble tableAble, String tableAlias);
+        ScalarSubQueryOnAble<E, C> leftJoin(Function<C, SubQuery> function, String subQueryAlia);
 
-        ScalarSubQueryOnAble<E, C> rightJoin(TableAble tableAble, String tableAlias);
+        ScalarSubQueryOnAble<E, C> join(TableMeta<?> tableMeta, String tableAlias);
+
+        ScalarSubQueryOnAble<E, C> join(Function<C, SubQuery> function, String subQueryAlia);
+
+        ScalarSubQueryOnAble<E, C> rightJoin(TableMeta<?> tableMeta, String tableAlias);
+
+        ScalarSubQueryOnAble<E, C> rightJoin(Function<C, SubQuery> function, String subQueryAlia);
     }
 
     interface ScalarSubQueryWhereAble<E, C> extends ScalarSubQueryGroupByAble<E, C> {

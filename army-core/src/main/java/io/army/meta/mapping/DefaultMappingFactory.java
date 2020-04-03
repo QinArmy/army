@@ -30,7 +30,7 @@ class DefaultMappingFactory implements MappingFactory {
         map.put(BigDecimal.class, BigDecimalType.build(BigDecimal.class));
         map.put(String.class, StringType.build(String.class));
 
-        map.put(Boolean.class, BooleanType.build(Boolean.class));
+        map.put(Boolean.class, YesNoType.build(Boolean.class));
         map.put(LocalDateTime.class, LocalDateTimeType.build(LocalDateTime.class));
         map.put(LocalDate.class, LocalDateType.build(LocalDate.class));
         map.put(Double.class, DoubleType.build(Double.class));

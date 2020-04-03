@@ -20,7 +20,7 @@ import java.util.function.Predicate;
  * @param <E> {@link ScalarSubQuery#selection()}'s Java Type.
  * @param <C> custom object for Dynamic SQL.
  */
-final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements ScalarSubQuery<E>, OuterQueryAble
+final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements ScalarSubQuery<E>
         , ScalarSubQuery.ScalarSubQuerySelectionAble<E, C>, ScalarSubQuery.ScalarSubQueryFromAble<E, C>
         , ScalarSubQuery.ScalarSubQueryOnAble<E, C>, ScalarSubQuery.ScalarSubQueryWhereAndAble<E, C>
         , ScalarSubQuery.ScalarSubQueryJoinAble<E, C>, ScalarSubQuery.ScalarSubQueryHavingAble<E, C>
@@ -55,29 +55,13 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
         return mappingType;
     }
 
-    /*################################## blow OuterQueryAble method ##################################*/
-
-    @Override
-    public void outerQuery(QueryAble outerQuery) {
-        this.actualSelect.outerQuery(outerQuery);
-    }
-
     /*################################## blow ScalarSubQuery<E> method ##################################*/
-
-    @Override
-    public final QueryAble outerQuery() {
-        return this.actualSelect.outerQuery();
-    }
 
     @Override
     public List<SelectPart> selectPartList() {
         return this.actualSelect.selectPartList();
     }
 
-    @Override
-    public SubQuery subordinateSubQuery(String subordinateSubQueryAlias) {
-        return this.actualSelect.subordinateSubQuery(subordinateSubQueryAlias);
-    }
 
     @Override
     public Selection selection(String derivedFieldName) {
@@ -108,11 +92,16 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
     /*################################## blow ScalarSubQueryFromAble method ##################################*/
 
     @Override
-    public ScalarSubQuery.ScalarSubQueryJoinAble<E, C> from(TableAble tableAble, String tableAlias) {
-        this.actualSelect.from(tableAble, tableAlias);
+    public ScalarSubQueryFromAble<E, C> from(TableMeta<?> tableMeta, String tableAlias) {
+        this.actualSelect.from(tableMeta, tableAlias);
         return this;
     }
 
+    @Override
+    public ScalarSubQueryFromAble<E, C> from(Function<C, SubQuery> function, String subQueryAlia) {
+        this.actualSelect.from(function, subQueryAlia);
+        return this;
+    }
     /*################################## blow ScalarSubQueryOnAble method ##################################*/
 
     @Override
@@ -136,23 +125,40 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
     /*################################## blow ScalarSubQueryJoinAble method ##################################*/
 
     @Override
-    public ScalarSubQuery.ScalarSubQueryOnAble<E, C> leftJoin(TableAble tableAble, String tableAlias) {
-        this.actualSelect.leftJoin(tableAble, tableAlias);
+    public ScalarSubQueryOnAble<E, C> leftJoin(TableMeta<?> tableMeta, String tableAlias) {
+        this.actualSelect.leftJoin(tableMeta, tableAlias);
         return this;
     }
 
     @Override
-    public ScalarSubQuery.ScalarSubQueryOnAble<E, C> join(TableAble tableAble, String tableAlias) {
-        this.actualSelect.join(tableAble, tableAlias);
+    public ScalarSubQueryOnAble<E, C> leftJoin(Function<C, SubQuery> function, String subQueryAlia) {
+        this.actualSelect.leftJoin(function, subQueryAlia);
         return this;
     }
 
     @Override
-    public ScalarSubQuery.ScalarSubQueryOnAble<E, C> rightJoin(TableAble tableAble, String tableAlias) {
-        this.actualSelect.rightJoin(tableAble, tableAlias);
+    public ScalarSubQueryOnAble<E, C> join(TableMeta<?> tableMeta, String tableAlias) {
+        this.actualSelect.join(tableMeta, tableAlias);
         return this;
     }
 
+    @Override
+    public ScalarSubQueryOnAble<E, C> join(Function<C, SubQuery> function, String subQueryAlia) {
+        this.actualSelect.join(function, subQueryAlia);
+        return this;
+    }
+
+    @Override
+    public ScalarSubQueryOnAble<E, C> rightJoin(TableMeta<?> tableMeta, String tableAlias) {
+        this.actualSelect.rightJoin(tableMeta, tableAlias);
+        return this;
+    }
+
+    @Override
+    public ScalarSubQueryOnAble<E, C> rightJoin(Function<C, SubQuery> function, String subQueryAlia) {
+        this.actualSelect.rightJoin(function, subQueryAlia);
+        return this;
+    }
 
     /*################################## blow ScalarSubQueryWhereAble method ##################################*/
 
@@ -322,7 +328,7 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
     /*################################## blow ScalarSubQueryAble method ##################################*/
 
     @Override
-    public final ScalarSubQuery<E> asScalarSubQuery() {
+    public final ScalarSubQuery<E> asSubQuery() {
         this.actualSelect.asSelect();
         return this;
     }
