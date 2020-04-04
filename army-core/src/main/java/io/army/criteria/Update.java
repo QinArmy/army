@@ -1,6 +1,7 @@
 package io.army.criteria;
 
 
+import io.army.criteria.impl.SQLS;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -11,14 +12,15 @@ import java.util.function.Predicate;
 
 public interface Update extends SQLAble, SQLDebug, QueryAble {
 
+    interface UpdateSQLAble extends SQLAble {
+
+    }
+
     interface UpdateAble extends UpdateSQLAble {
 
         Update asUpdate();
     }
 
-    interface UpdateSQLAble extends SQLAble {
-
-    }
 
     interface SingleUpdateAble<C> extends UpdateSQLAble {
 
@@ -35,6 +37,9 @@ public interface Update extends SQLAble, SQLDebug, QueryAble {
 
         <F> WhereAble<C> set(FieldMeta<? extends IDomain, F> target, F value);
 
+        /**
+         * @see SQLS#defaultValue()
+         */
         <F> WhereAble<C> set(FieldMeta<? extends IDomain, F> target, Expression<F> valueExp);
 
         <F> WhereAble<C> set(FieldMeta<? extends IDomain, F> target, Function<C, Expression<?>> function);

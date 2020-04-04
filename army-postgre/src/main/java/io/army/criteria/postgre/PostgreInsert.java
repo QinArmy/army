@@ -10,15 +10,25 @@ import io.army.meta.TableMeta;
 import java.util.List;
 import java.util.function.Function;
 
+@SuppressWarnings("unused")
 public interface PostgreInsert extends Insert {
 
     /*################################## blow interfaces  ##################################*/
 
-    interface PostgreInsertAble extends InsertAble {
+    interface PostgreInsertSQLAble extends InsertSQLAble {
+
+    }
+
+    interface PostgreInsertAble extends InsertAble, PostgreInsertSQLAble {
 
         @Override
         PostgreInsert asInsert();
 
+    }
+
+    interface PostgreWithQueryAble extends PostgreInsertSQLAble {
+
+        PostgreWithQuery asWithQuery(String withQueryName) throws PostgreWithQueryException;
     }
 
     interface PostgreWithAble<T extends IDomain, C> extends PostgreInsertOptionAble<T, C> {
@@ -39,7 +49,7 @@ public interface PostgreInsert extends Insert {
 
         PostgreInsertValuesAble<T, C> insertInto(TableMeta<T> tableMeta);
 
-        PostgreInsertWithQueryAble insertInto(T domain);
+        PostgreWithQueryAble insertInto(T domain);
     }
 
     interface PostgreInsertValueAble<T extends IDomain, C> extends InsertSQLAble {
@@ -50,7 +60,7 @@ public interface PostgreInsert extends Insert {
          * @see io.army.annotation.Generator
          * @see io.army.generator.MultiGenerator
          */
-        <F> PostgreInsertValueAble<T, C> generate(FieldMeta<T, F> fieldMeta);
+        PostgreInsertValueAble<T, C> generate(FieldMeta<T, ?> fieldMeta);
 
         PostgreInsertValueAble<T, C> defaultValue(FieldMeta<T, ?> fieldMeta);
 
@@ -60,7 +70,6 @@ public interface PostgreInsert extends Insert {
 
     interface PostgreInsertGroupAble<T extends IDomain, C> extends PostgreInsertAble
             , PostgreInsertValueAble<T, C>, PostgreReturningAble<C> {
-
 
     }
 
@@ -74,15 +83,10 @@ public interface PostgreInsert extends Insert {
 
     interface PostgreReturningAble<C> extends PostgreInsertAble {
 
-        PostgreInsertWithQueryAble returning(List<SelectPart> selectPartList);
+        PostgreWithQueryAble returning(List<SelectPart> selectPartList);
 
-        PostgreInsertWithQueryAble returning(Function<C, List<SelectPart>> function);
+        PostgreWithQueryAble returning(Function<C, List<SelectPart>> function);
 
-    }
-
-    interface PostgreInsertWithQueryAble extends PostgreInsertAble {
-
-        PostgreWithQuery asWithQuery() throws PostgreWithQueryException;
     }
 
 

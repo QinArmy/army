@@ -25,7 +25,7 @@ import java.util.function.Predicate;
 abstract class AbstractPostgreMultiSelect<C> extends AbstractSQL implements PostgreSelect
         , PostgreSelect.PostgreSelectPartAble<C>, PostgreSelect.PostgreFromAble<C>
         , PostgreSelect.PostgreHavingAble<C>, PostgreSelect.PostgreWhereAndAble<C>
-        , PostgreSelect.PostgreTableSampleAble<C>, PostgreSelect.PostgreJoinAble<C>
+        , PostgreSelect.PostgreFromTableSampleAble<C>, PostgreSelect.PostgreJoinAble<C>
         , PostgreSelect.PostgreTableSampleOnAble<C>, PostgreSelect.PostgreLockOfTablesAble<C>
         , PostgreInnerQuery {
 
@@ -130,7 +130,7 @@ abstract class AbstractPostgreMultiSelect<C> extends AbstractSQL implements Post
     /*################################## blow PostgreFromAble method ##################################*/
 
     @Override
-    public final PostgreSelect.PostgreTableSampleAble<C> from(TableMeta<?> tableMeta, String tableAlias) {
+    public final PostgreFromTableSampleAble<C> from(TableMeta<?> tableMeta, String tableAlias) {
         addTableAble(new PostgreTableWrapperImpl(tableMeta, tableAlias, JoinType.NONE, new ArrayList<>(2)));
         return this;
     }
@@ -222,28 +222,50 @@ abstract class AbstractPostgreMultiSelect<C> extends AbstractSQL implements Post
         return this;
     }
 
-    /*################################## blow PostgreTableSampleAble method ##################################*/
+    /*################################## blow PostgreFromTableSampleAble method ##################################*/
 
     @Override
-    public final PostgreSelect.PostgreJoinAble<C> tableSample(Function<C, Expression<?>> samplingMethodFunction) {
+    public final PostgreSelect.PostgreJoinAble<C> tableSampleAfterFrom(Function<C, Expression<?>> samplingMethodFunction) {
         addTableSample(samplingMethodFunction.apply(this.criteria), null);
         return this;
     }
 
     @Override
-    public final PostgreSelect.PostgreJoinAble<C> tableSample(Function<C, Expression<?>> samplingMethodFunction
+    public final PostgreSelect.PostgreJoinAble<C> tableSampleAfterFrom(Function<C, Expression<?>> samplingMethodFunction
             , Expression<Double> seedExp) {
         addTableSample(samplingMethodFunction.apply(this.criteria), seedExp);
         return this;
     }
 
     @Override
-    public final PostgreSelect.PostgreJoinAble<C> tableSample(Function<C, Expression<?>> samplingMethodFunction
+    public final PostgreSelect.PostgreJoinAble<C> tableSampleAfterFrom(Function<C, Expression<?>> samplingMethodFunction
             , Function<C, Expression<Double>> seedFunction) {
         addTableSample(samplingMethodFunction.apply(this.criteria), seedFunction.apply(this.criteria));
         return this;
     }
 
+
+    /*################################## blow PostgreTableSampleOnAble method ##################################*/
+
+    @Override
+    public final PostgreOnAble<C> tableSample(Function<C, Expression<?>> samplingMethodFunction) {
+        addTableSample(samplingMethodFunction.apply(this.criteria), null);
+        return this;
+    }
+
+    @Override
+    public final PostgreOnAble<C> tableSample(Function<C, Expression<?>> samplingMethodFunction
+            , Expression<Double> seedExp) {
+        addTableSample(samplingMethodFunction.apply(this.criteria), seedExp);
+        return this;
+    }
+
+    @Override
+    public final PostgreOnAble<C> tableSample(Function<C, Expression<?>> samplingMethodFunction
+            , Function<C, Expression<Double>> seedFunction) {
+        addTableSample(samplingMethodFunction.apply(this.criteria), seedFunction.apply(this.criteria));
+        return this;
+    }
 
     /*################################## blow PostgreJoinAble method ##################################*/
 

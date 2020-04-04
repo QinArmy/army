@@ -1,7 +1,6 @@
 package io.army.criteria;
 
 import io.army.meta.TableMeta;
-import io.army.util.Pair;
 
 import java.util.List;
 import java.util.function.Function;
@@ -123,17 +122,8 @@ public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expre
 
     interface ScalarSubQueryLimitAble<E, C> extends ScalarSubQuerySQLAble, ScalarSubQueryAble<E> {
 
-        ScalarSubQueryAble<E> limit(int rowCount);
+        ScalarSubQueryAble<E> limitOne();
 
-        ScalarSubQueryAble<E> limit(int offset, int rowCount);
-
-        ScalarSubQueryAble<E> limit(Function<C, Pair<Integer, Integer>> function);
-
-        ScalarSubQueryAble<E> ifLimit(Predicate<C> predicate, int rowCount);
-
-        ScalarSubQueryAble<E> ifLimit(Predicate<C> predicate, int offset, int rowCount);
-
-        ScalarSubQueryAble<E> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
     }
 
 }

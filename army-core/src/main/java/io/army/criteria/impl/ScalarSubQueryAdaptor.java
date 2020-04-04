@@ -6,7 +6,6 @@ import io.army.criteria.impl.inner.TableWrapper;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
-import io.army.util.Pair;
 
 import java.util.Collections;
 import java.util.List;
@@ -288,42 +287,10 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
     /*################################## blow ScalarSubQueryLimitAble method ##################################*/
 
     @Override
-    public ScalarSubQueryAble<E> limit(int rowCount) {
-        this.actualSelect.limit(rowCount);
+    public ScalarSubQueryAble<E> limitOne() {
+        this.actualSelect.limit(1);
         return this;
     }
-
-    @Override
-    public ScalarSubQueryAble<E> limit(int offset, int rowCount) {
-        this.actualSelect.limit(offset, rowCount);
-        return this;
-    }
-
-    @Override
-    public ScalarSubQueryAble<E> limit(Function<C, Pair<Integer, Integer>> function) {
-        this.actualSelect.limit(function);
-        return this;
-    }
-
-    @Override
-    public ScalarSubQueryAble<E> ifLimit(Predicate<C> predicate, int rowCount) {
-        this.actualSelect.ifLimit(predicate, rowCount);
-        return this;
-    }
-
-    @Override
-    public ScalarSubQueryAble<E> ifLimit(Predicate<C> predicate, int offset, int rowCount) {
-        this.actualSelect.ifLimit(predicate, offset, rowCount);
-        return this;
-    }
-
-    @Override
-    public ScalarSubQueryAble<E> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
-        this.actualSelect.ifLimit(predicate, function);
-        return this;
-    }
-
-
 
     /*################################## blow ScalarSubQueryAble method ##################################*/
 

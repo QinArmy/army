@@ -23,6 +23,8 @@ public interface PostgreSubQuery extends SubQuery {
     interface PostgreSubQueryAble extends SubQueryAble, PostgreSubQuerySQLAble {
 
         PostgreSubQuery asSubQuery();
+
+        PostgreWithQuery asWithQuery(String withQueryName) throws PostgreWithQueryException;
     }
 
     interface PostgreSubQuerySelectPartAble<C> extends PostgreSubQuerySQLAble {
@@ -47,7 +49,7 @@ public interface PostgreSubQuery extends SubQuery {
 
     interface PostgreSubQueryFromAble<C> extends PostgreSubQueryWhereAble<C> {
 
-        PostgreSubQueryTableSampleOnAble<C> from(TableMeta<?> tableMeta, String tableAlias);
+        PostgreSubQueryFromTableSampleAble<C> from(TableMeta<?> tableMeta, String tableAlias);
 
         PostgreSubQueryJoinAble<C> from(Function<C, SubQuery> subQueryFunction, String subQueryAlia);
 
@@ -101,14 +103,24 @@ public interface PostgreSubQuery extends SubQuery {
 
     }
 
+    interface PostgreSubQueryFromTableSampleAble<C> extends PostgreSubQueryJoinAble<C> {
+
+        PostgreSubQueryJoinAble<C> tableSampleAfterFrom(Function<C, Expression<?>> samplingMethodFunction);
+
+        PostgreSubQueryJoinAble<C> tableSampleAfterFrom(Function<C, Expression<?>> samplingMethodFunction, Expression<Double> seedExp);
+
+        PostgreSubQueryJoinAble<C> tableSampleAfterFrom(Function<C, Expression<?>> samplingMethodFunction
+                , Function<C, Expression<Double>> seedFunction);
+    }
+
 
     interface PostgreSubQueryTableSampleOnAble<C> extends PostgreSubQueryOnAble<C> {
 
-        PostgreSubQueryJoinAble<C> tableSample(Function<C, Expression<?>> samplingMethodFunction);
+        PostgreSubQueryOnAble<C> tableSample(Function<C, Expression<?>> samplingMethodFunction);
 
-        PostgreSubQueryJoinAble<C> tableSample(Function<C, Expression<?>> samplingMethodFunction, Expression<Double> seedExp);
+        PostgreSubQueryOnAble<C> tableSample(Function<C, Expression<?>> samplingMethodFunction, Expression<Double> seedExp);
 
-        PostgreSubQueryJoinAble<C> tableSample(Function<C, Expression<?>> samplingMethodFunction
+        PostgreSubQueryOnAble<C> tableSample(Function<C, Expression<?>> samplingMethodFunction
                 , Function<C, Expression<Double>> seedFunction);
     }
 
@@ -225,23 +237,23 @@ public interface PostgreSubQuery extends SubQuery {
 
         PostgreSubQueryComposeAble<C> brackets();
 
-        <S extends Select> PostgreSubQueryComposeAble<C> union(Function<C, S> function);
+        <S extends SubQuery> PostgreSubQueryComposeAble<C> union(Function<C, S> function);
 
-        <S extends Select> PostgreSubQueryComposeAble<C> unionAll(Function<C, S> function);
+        <S extends SubQuery> PostgreSubQueryComposeAble<C> unionAll(Function<C, S> function);
 
-        <S extends Select> PostgreSubQueryComposeAble<C> unionDistinct(Function<C, S> function);
+        <S extends SubQuery> PostgreSubQueryComposeAble<C> unionDistinct(Function<C, S> function);
 
-        <S extends Select> PostgreSubQueryComposeAble<C> intersect(Function<C, S> function);
+        <S extends SubQuery> PostgreSubQueryComposeAble<C> intersect(Function<C, S> function);
 
-        <S extends Select> PostgreSubQueryComposeAble<C> intersectAll(Function<C, S> function);
+        <S extends SubQuery> PostgreSubQueryComposeAble<C> intersectAll(Function<C, S> function);
 
-        <S extends Select> PostgreSubQueryComposeAble<C> intersectDistinct(Function<C, S> function);
+        <S extends SubQuery> PostgreSubQueryComposeAble<C> intersectDistinct(Function<C, S> function);
 
-        <S extends Select> PostgreSubQueryComposeAble<C> except(Function<C, S> function);
+        <S extends SubQuery> PostgreSubQueryComposeAble<C> except(Function<C, S> function);
 
-        <S extends Select> PostgreSubQueryComposeAble<C> exceptAll(Function<C, S> function);
+        <S extends SubQuery> PostgreSubQueryComposeAble<C> exceptAll(Function<C, S> function);
 
-        <S extends Select> PostgreSubQueryComposeAble<C> exceptDistinct(Function<C, S> function);
+        <S extends SubQuery> PostgreSubQueryComposeAble<C> exceptDistinct(Function<C, S> function);
 
     }
 

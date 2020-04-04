@@ -1,5 +1,5 @@
 package io.army.criteria;
 
-public interface SelfDescribedSelect<C> extends Select<C>, SelfDescribed {
+public interface SelfDescribedSelect extends Select, SelfDescribed {
 
 }

@@ -8,7 +8,7 @@ import io.army.criteria.postgre.PostgreSelect;
 
 import java.util.function.Function;
 
-abstract class PostgreComposeSelects<C> implements ComposeSelect<C>, PostgreSelect, PostgreSelect.PostgreComposeAble<C> {
+abstract class PostgreComposeSelects<C> implements ComposeSelect, PostgreSelect, PostgreSelect.PostgreComposeAble<C> {
 
     static <C> PostgreSelect.PostgreComposeAble<C> brackets(C criteria, Select enclosedSelect) {
         return new BracketsSelect<>(criteria, enclosedSelect);

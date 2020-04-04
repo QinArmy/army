@@ -28,7 +28,7 @@ class StandardContextualMultiDelete<C> extends AbstractContextualDelete<C>
 
     @Override
     public final JoinAble<C> from(TableMeta<?> tableMeta, String tableAlias) {
-        addTableAble(tableMeta, tableAlias, JoinType.NONE);
+       // addTableAble(tableMeta, tableAlias, JoinType.NONE);
         return this;
     }
 
@@ -36,19 +36,19 @@ class StandardContextualMultiDelete<C> extends AbstractContextualDelete<C>
 
     @Override
     public final OnAble<C> leftJoin(TableAble tableAble, String tableAlias) {
-        addTableAble(tableAble, tableAlias, JoinType.LEFT);
+        //addTableAble(tableAble, tableAlias, JoinType.LEFT);
         return this;
     }
 
     @Override
     public final OnAble<C> join(TableAble tableAble, String tableAlias) {
-        addTableAble(tableAble, tableAlias, JoinType.JOIN);
+        //addTableAble(tableAble, tableAlias, JoinType.JOIN);
         return this;
     }
 
     @Override
     public final OnAble<C> rightJoin(TableAble tableAble, String tableAlias) {
-        addTableAble(tableAble, tableAlias, JoinType.RIGHT);
+        // addTableAble(tableAble, tableAlias, JoinType.RIGHT);
         return this;
     }
 

@@ -34,14 +34,6 @@ public abstract class SQLS extends AbstractSQLS {
     }
 
 
-    public static Select.NoJoinSelectPartAble<EmptyObject> singleSelect() {
-        return new StandardContextualSingleSelect<>(EmptyObject.getInstance());
-    }
-
-    public static <C> Select.NoJoinSelectPartAble<C> singleSelect(C criteria) {
-        return new StandardContextualSingleSelect<>(criteria);
-    }
-
     public static Select.SelectPartAble<EmptyObject> multiSelect() {
         return new StandardContextualMultiSelect<>(EmptyObject.getInstance());
     }

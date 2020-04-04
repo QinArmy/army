@@ -19,9 +19,9 @@ import java.util.*;
  *      <ul>
  *          <li>{@link Select.SelectAble#asSelect()}</li>
  *          <li>{@link SubQuery.SubQueryAble#asSubQuery()}</li>
- *          <li>{@link RowSubQuery.RowSubQueryAble#asRowSubQuery()} </li>
- *          <li>{@link ColumnSubQuery.ColumnSubQueryAble#asColumnSubQuery()}</li>
- *          <li>{@link ScalarSubQuery.ScalarSubQueryAble#asScalarSubQuery()}</li>
+ *          <li>{@link RowSubQuery.RowSubQueryAble#asSubQuery()} </li>
+ *          <li>{@link ColumnSubQuery.ColumnSubQueryAble#asSubQuery()}</li>
+ *          <li>{@link ScalarSubQuery.ScalarSubQueryAble#asSubQuery()}</li>
  *          <li>{@link Update.UpdateAble#asUpdate()}</li>
  *          <li>{@link Delete.DeleteAble#asDelete()}</li>
  *      </ul>
@@ -72,7 +72,7 @@ abstract class AbstractSQL extends AbstractSQLDebug implements QueryAble, InnerS
     }
 
     /**
-     * @see #addTableAble(TableWrapper)
+     *
      */
     final void processSelectFieldMeta(FieldMeta<?, ?> fieldMeta
             , Map<TableMeta<?>, List<Selection>> tableFieldListMap) {
@@ -125,11 +125,6 @@ abstract class AbstractSQL extends AbstractSQLDebug implements QueryAble, InnerS
             tablePresentCountMap.put(tableMeta, ++refCount);
 
             onAddTable(tableMeta, wrapper.alias);
-        } else if (wrapper.tableAble instanceof OuterQueryAble) {
-            OuterQueryAble outerQueryAble = (OuterQueryAble) wrapper.tableAble;
-            outerQueryAble.outerQuery(this);
-
-            onAddSubQuery(outerQueryAble, wrapper.alias());
         } else {
             doCheckTableAble(wrapper);
         }

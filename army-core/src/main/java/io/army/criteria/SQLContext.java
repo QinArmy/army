@@ -1,7 +1,6 @@
 package io.army.criteria;
 
 import io.army.dialect.ParamWrapper;
-import io.army.dialect.SQL;
 import io.army.dialect.TableDML;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -13,15 +12,18 @@ public interface SQLContext {
 
     SQLStatement sqlStatement();
 
+    default void appendTable(TableMeta<?> tableMeta) {
+        throw new UnsupportedOperationException();
+    }
 
-    void appendField(String tableAlias, FieldMeta<?,?> fieldMeta)throws TableAliasException;
+    void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException;
 
     void quoteIfKeyAndAppend(String textValue);
 
     /**
      * @see ConstantExpression
      */
-    void appendTextValue(MappingType mappingType,Object value);
+    void appendTextValue(MappingType mappingType, Object value);
 
     TableDML dml();
 

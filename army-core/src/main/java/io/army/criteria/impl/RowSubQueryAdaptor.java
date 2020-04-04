@@ -4,7 +4,6 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerSubQuery;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.meta.TableMeta;
-import io.army.util.Pair;
 
 import java.util.List;
 import java.util.Map;
@@ -273,38 +272,8 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery
     /*################################## blow RowSubQueryLimitAble method ##################################*/
 
     @Override
-    public RowSubQueryAble limit(int rowCount) {
-        this.actualSelect.limit(rowCount);
-        return this;
-    }
-
-    @Override
-    public RowSubQueryAble limit(int offset, int rowCount) {
-        this.actualSelect.limit(offset, rowCount);
-        return this;
-    }
-
-    @Override
-    public RowSubQueryAble limit(Function<C, Pair<Integer, Integer>> function) {
-        this.actualSelect.limit(function);
-        return this;
-    }
-
-    @Override
-    public RowSubQueryAble ifLimit(Predicate<C> predicate, int rowCount) {
-        this.actualSelect.ifLimit(predicate, rowCount);
-        return this;
-    }
-
-    @Override
-    public RowSubQueryAble ifLimit(Predicate<C> predicate, int offset, int rowCount) {
-        this.actualSelect.ifLimit(predicate, offset, rowCount);
-        return this;
-    }
-
-    @Override
-    public RowSubQueryAble ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
-        this.actualSelect.ifLimit(predicate, function);
+    public RowSubQueryAble limitOne() {
+        this.actualSelect.limit(1);
         return this;
     }
 

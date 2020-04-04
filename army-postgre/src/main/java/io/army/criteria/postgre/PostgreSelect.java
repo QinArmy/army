@@ -63,7 +63,7 @@ public interface PostgreSelect extends Select {
 
     interface PostgreFromAble<C> extends PostgreWhereAble<C> {
 
-        PostgreTableSampleAble<C> from(TableMeta<?> tableMeta, String tableAlias);
+        PostgreFromTableSampleAble<C> from(TableMeta<?> tableMeta, String tableAlias);
 
         PostgreJoinAble<C> from(Function<C, SubQuery> subQueryFunction, String subQueryAlia);
 
@@ -77,13 +77,13 @@ public interface PostgreSelect extends Select {
     }
 
 
-    interface PostgreTableSampleAble<C> extends PostgreJoinAble<C> {
+    interface PostgreFromTableSampleAble<C> extends PostgreJoinAble<C> {
 
-        PostgreJoinAble<C> tableSample(Function<C, Expression<?>> samplingMethodFunction);
+        PostgreJoinAble<C> tableSampleAfterFrom(Function<C, Expression<?>> samplingMethodFunction);
 
-        PostgreJoinAble<C> tableSample(Function<C, Expression<?>> samplingMethodFunction, Expression<Double> seedExp);
+        PostgreJoinAble<C> tableSampleAfterFrom(Function<C, Expression<?>> samplingMethodFunction, Expression<Double> seedExp);
 
-        PostgreJoinAble<C> tableSample(Function<C, Expression<?>> samplingMethodFunction
+        PostgreJoinAble<C> tableSampleAfterFrom(Function<C, Expression<?>> samplingMethodFunction
                 , Function<C, Expression<Double>> seedFunction);
     }
 
@@ -139,11 +139,11 @@ public interface PostgreSelect extends Select {
 
     interface PostgreTableSampleOnAble<C> extends PostgreOnAble<C> {
 
-        PostgreJoinAble<C> tableSample(Function<C, Expression<?>> samplingMethodFunction);
+        PostgreOnAble<C> tableSample(Function<C, Expression<?>> samplingMethodFunction);
 
-        PostgreJoinAble<C> tableSample(Function<C, Expression<?>> samplingMethodFunction, Expression<Double> seedExp);
+        PostgreOnAble<C> tableSample(Function<C, Expression<?>> samplingMethodFunction, Expression<Double> seedExp);
 
-        PostgreJoinAble<C> tableSample(Function<C, Expression<?>> samplingMethodFunction
+        PostgreOnAble<C> tableSample(Function<C, Expression<?>> samplingMethodFunction
                 , Function<C, Expression<Double>> seedFunction);
 
     }

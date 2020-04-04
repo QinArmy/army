@@ -17,7 +17,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 final class PostgreWindowImpl<C> implements PostgreWindow, PostgreSelect.PostgreWindowNameAble<C>
-        , PostgreSelect.PostgreWindowFrameExclusion {
+        , PostgreSelect.PostgreWindowFrameExclusion, PostgreSelect.PostgreWindowFrameRangeAble<C> {
 
     private final C criteria;
 
@@ -226,86 +226,71 @@ final class PostgreWindowImpl<C> implements PostgreWindow, PostgreSelect.Postgre
 
     @Override
     public PostgreSelect.PostgreWindowFrameExclusion startPreceding(Long offset) {
-        this.rangeText = Range.offsetPreceding(offset);
         return this;
     }
 
     @Override
     public PostgreSelect.PostgreWindowFrameExclusion startFollowing(Long offset) {
-        this.rangeText = Range.offsetFollowing(offset);
         return this;
     }
 
     @Override
     public PostgreSelect.PostgreWindowFrameExclusion startPreceding() {
-        this.rangeText = Range.UNBOUNDED_PRECEDING.keyWords;
         return this;
     }
 
     @Override
     public PostgreSelect.PostgreWindowFrameExclusion startCurrentRow() {
-        this.rangeText = Range.CURRENT_ROW.keyWords;
         return this;
     }
 
-
     @Override
     public PostgreSelect.PostgreWindowFrameExclusion betweenUnBoundedAndPreceding(Long offset) {
-        this.rangeText = Range.betweenUnBoundedAndPreceding(offset);
         return this;
     }
 
     @Override
     public PostgreSelect.PostgreWindowFrameExclusion betweenUnBoundedAndCurrentRow() {
-        this.rangeText = Range.between(Range.UNBOUNDED_PRECEDING, Range.CURRENT_ROW);
         return this;
     }
 
     @Override
     public PostgreSelect.PostgreWindowFrameExclusion betweenUnBoundedAndFollowing(Long offset) {
-        this.rangeText = Range.betweenUnBoundedAndFollowing(offset);
         return this;
     }
 
     @Override
     public PostgreSelect.PostgreWindowFrameExclusion betweenUnBoundedAndUnBounded() {
-        this.rangeText = Range.between(Range.UNBOUNDED_PRECEDING, Range.UNBOUNDED_FOLLOWING);
         return this;
     }
 
     @Override
     public PostgreSelect.PostgreWindowFrameExclusion betweenPrecedingAndCurrentRow(Long offset) {
-        this.rangeText = Range.betweenPrecedingAndCurrent(offset);
         return this;
     }
 
     @Override
     public PostgreSelect.PostgreWindowFrameExclusion betweenPrecedingAndFollowing(Long start, Long end) {
-        this.rangeText = Range.betweenPrecedingAndFollowing(start, end);
         return this;
     }
 
     @Override
     public PostgreSelect.PostgreWindowFrameExclusion betweenPrecedingAndUnBounded(Long offset) {
-        this.rangeText = Range.betweenPrecedingAndUnBounded(offset);
         return this;
     }
 
     @Override
     public PostgreSelect.PostgreWindowFrameExclusion betweenCurrentAndFollowing(Long offset) {
-        this.rangeText = Range.betweenCurrentAndFollowing(offset);
         return this;
     }
 
     @Override
     public PostgreSelect.PostgreWindowFrameExclusion betweenCurrentAndUnBounded() {
-        this.rangeText = Range.between(Range.CURRENT_ROW, Range.UNBOUNDED_FOLLOWING);
         return this;
     }
 
     @Override
     public PostgreSelect.PostgreWindowFrameExclusion betweenFollowingAndUnBounded(Long offset) {
-        this.rangeText = Range.betweenFollowAndUnBounded(offset);
         return this;
     }
 

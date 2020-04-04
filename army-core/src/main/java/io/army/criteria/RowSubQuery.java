@@ -1,7 +1,6 @@
 package io.army.criteria;
 
 import io.army.meta.TableMeta;
-import io.army.util.Pair;
 
 import java.util.List;
 import java.util.function.Function;
@@ -126,17 +125,8 @@ public interface RowSubQuery extends SubQuery {
 
     interface RowSubQueryLimitAble<C> extends RowSubQueryAble {
 
-        RowSubQueryAble limit(int rowCount);
+        RowSubQueryAble limitOne();
 
-        RowSubQueryAble limit(int offset, int rowCount);
-
-        RowSubQueryAble limit(Function<C, Pair<Integer, Integer>> function);
-
-        RowSubQueryAble ifLimit(Predicate<C> predicate, int rowCount);
-
-        RowSubQueryAble ifLimit(Predicate<C> predicate, int offset, int rowCount);
-
-        RowSubQueryAble ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
     }
 
 

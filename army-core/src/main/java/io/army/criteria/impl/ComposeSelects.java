@@ -1,13 +1,10 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.SQLContext;
-import io.army.criteria.SQLModifier;
-import io.army.criteria.Select;
-import io.army.criteria.SelfDescribedSelect;
+import io.army.criteria.*;
 
 import java.util.function.Function;
 
-abstract class ComposeSelects<C> implements SelfDescribedSelect<C>, Select.UnionAble<C> {
+abstract class ComposeSelects<C> implements SelfDescribedSelect, Select.UnionAble<C> {
 
     static <C> UnionAble<C> brackets(C criteria, Select enclosedSelect) {
         return new BracketsSelect<>(criteria, enclosedSelect);
@@ -85,7 +82,7 @@ abstract class ComposeSelects<C> implements SelfDescribedSelect<C>, Select.Union
 
     }
 
-    private static final class ComposeSelectImpl<C> extends ComposeSelects<C> {
+    private static final class ComposeSelectImpl<C> extends ComposeSelects<C> implements ComposeSelect {
 
         private final Select leftSelect;
 

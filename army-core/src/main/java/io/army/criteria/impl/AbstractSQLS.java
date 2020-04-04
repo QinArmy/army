@@ -5,6 +5,7 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.StringType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -49,8 +50,13 @@ abstract class AbstractSQLS {
         return ConstantExpressionImpl.build(expression.mappingType(), value);
     }
 
+    @SuppressWarnings("unchecked")
+    public static <E> Expression<E> defaultValue() {
+        return (Expression<E>) DefaultValueExpression.INSTANCE;
+    }
+
     public static TableMeta<Dual> dual() {
-        return Dual.INSTANCE;
+        return Dual.DualTableMeta.INSTANCE;
     }
 
     public static IPredicate always() {
@@ -240,5 +246,24 @@ abstract class AbstractSQLS {
             return "1=1";
         }
 
+    }
+
+    private static final class DefaultValueExpression<E> extends AbstractNoNOperationExpression<E> {
+
+        private static final DefaultValueExpression<?> INSTANCE = new DefaultValueExpression<>();
+
+        private DefaultValueExpression() {
+        }
+
+        @Override
+        protected void afterSpace(SQLContext context) {
+            context.stringBuilder()
+                    .append(" DEFAULT");
+        }
+
+        @Override
+        public MappingType mappingType() {
+            return StringType.build(String.class);
+        }
     }
 }

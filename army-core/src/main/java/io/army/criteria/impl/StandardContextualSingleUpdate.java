@@ -14,7 +14,7 @@ import io.army.util.Assert;
 
      @Override
      public SetAble<C> update(TableMeta<?> tableMeta, String tableAlias) {
-         addTableAble(tableMeta, tableAlias, JoinType.NONE);
+        // addTableAble(tableMeta, tableAlias, JoinType.NONE);
          return this;
      }
 

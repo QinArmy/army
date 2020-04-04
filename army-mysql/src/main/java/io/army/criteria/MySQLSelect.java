@@ -12,7 +12,7 @@ public interface MySQLSelect extends Select {
 
     }
 
-    interface MySQLNoJoinSelectAble<C> extends NoJoinSelectPartAble<C>, MySQLSelectSQLAble {
+    interface MySQLNoJoinSelectAble<C> extends MySQLSelectSQLAble {
 
         <S extends SelectPart> NoJoinFromAble<C> select(Function<C, List<MySQLModifier>> modifierFunction
                 , Function<C, List<S>> selectPartFunction);

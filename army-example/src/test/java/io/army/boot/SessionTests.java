@@ -120,7 +120,7 @@ public class SessionTests {
         Map<String, Object> criteria = new HashMap<>();
 
         Select select = SQLS.multiSelect(criteria)
-                .select(Distinct.DISTINCT, "a", Account_.T)
+                .select(Distinct.DISTINCT, SQLS.group(Account_.T, "a"))
                 .from(Account_.T, "a")
                 .join(User_.T, "u").on(Account_.id.eq(User_.id))
                 .where(Account_.id.eq(1L))
@@ -137,27 +137,6 @@ public class SessionTests {
 
     }
 
-    @Test(invocationCount = 10)
-    public void singleSelect() {
-        final long start = System.currentTimeMillis();
-
-        Map<String, Object> criteria = new HashMap<>();
-
-        Select select = SQLS.singleSelect(criteria)
-                .select(Distinct.DISTINCT, "a", Account_.T)
-                .from(Account_.T, "a")
-                .where(Account_.id.eq(1L))
-                .and(Account_.debt.gt(BigDecimal.ZERO))
-                .ifGroupBy(this::isUser, Account_.id)
-                .having(Account_.id.gt(0L))
-                .orderBy(Account_.id)
-                .limit(10)
-                .lock(LockMode.READ)
-                .asSelect();
-
-        LOG.info("dml:\n{}", select.debugSQL(SQLDialect.MySQL57));
-        LOG.info("cost:{}", System.currentTimeMillis() - start);
-    }
 
     private boolean isUser(Map<String, Object> map) {
         return true;

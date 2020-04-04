@@ -21,12 +21,12 @@ public class PostgreSelectTests {
     public void select() {
         MyCriteria criteria = new MyCriteria();
 
-        Select<MyCriteria> select = Postgres.specialSelect(criteria)
+        Select select = Postgres.specialSelect(criteria)
 
                 .withRecursive(this::withQuery)
                 .selectDistinct(this::selectOnExpList, Account_.acceptTime)
                 .from(Account_.T, "t")
-                .tableSample(this::tableSampleList)
+                .tableSampleAfterFrom(this::tableSampleList)
                 .join(BalanceAccount_.T, "b")
                 .on(Account_.id.eq(BalanceAccount_.id))
                 .where(SQLS.always())
@@ -35,14 +35,10 @@ public class PostgreSelectTests {
                 .window(this::windowList)
                 .orderBy(Account_.id)
                 .limit(10)
-                .asSelect()
-
-                .union(this::secondSelect)
-                .intersect(this::secondSelect)
-                .exceptAll(this::secondSelect);
+                .asSelect();
     }
 
-    private Select<MyCriteria> secondSelect(MyCriteria criteria) {
+    private Select secondSelect(MyCriteria criteria) {
         return null;
     }
 
