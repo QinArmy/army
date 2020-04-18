@@ -34,7 +34,7 @@ abstract class AbstractContextualUpdate<C> extends AbstractSQL implements InnerU
         Assert.notNull(criteria, "criteria required");
         this.criteria = criteria;
 
-        this.criteriaContext = new AbstractSelect.CriteriaContextImpl<>(criteria);
+        this.criteriaContext = new AbstractStandardSelect.CriteriaContextImpl<>(criteria);
         CriteriaContextHolder.setContext(this.criteriaContext);
     }
 

@@ -128,6 +128,11 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
         }
 
         @Override
+        public void appendSortPart(SQLContext context) {
+            context.quoteIfKeyAndAppend(this.alias);
+        }
+
+        @Override
         public String toString() {
             return this.constant.constant() + " AS " + this.alias;
         }

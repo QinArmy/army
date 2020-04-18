@@ -34,21 +34,21 @@ public abstract class AbstractDialect implements Dialect {
 
     private final TableDDL tableDDL;
 
-    private final TableDML tableDML;
+    private final DML DML;
 
-    private final TableDQL tableDQL;
+    private final DQL DQL;
 
 
 
     public AbstractDialect(SessionFactory sessionFactory) {
-        Assert.notNull(sessionFactory,"sessionFactory required");
+        Assert.notNull(sessionFactory, "sessionFactory required");
 
         this.keywords = Collections.unmodifiableSet(createKeywordsSet());
         this.sessionFactory = sessionFactory;
 
         this.tableDDL = createTableDDL();
-        this.tableDML = createTableDML();
-        this.tableDQL = createTableDQL();
+        this.DML = createTableDML();
+        this.DQL = createTableDQL();
     }
 
     @Override
@@ -116,17 +116,17 @@ public abstract class AbstractDialect implements Dialect {
 
     @Override
     public final List<SQLWrapper> insert(TableMeta<?> tableMeta, ReadonlyWrapper entityWrapper) {
-        return tableDML.insert(tableMeta,entityWrapper);
+        return DML.insert(tableMeta, entityWrapper);
     }
 
     @Override
     public final List<SQLWrapper> update(Update update, Visible visible) {
-        return tableDML.update(update, visible);
+        return DML.update(update, visible);
     }
 
     @Override
     public List<SQLWrapper> delete(Delete.DeleteAble deleteAble, Visible visible) {
-        return tableDML.delete(deleteAble, visible);
+        return DML.delete(deleteAble, visible);
     }
 
     @Override
@@ -147,9 +147,9 @@ public abstract class AbstractDialect implements Dialect {
 
    protected abstract TableDDL createTableDDL() ;
 
-    protected abstract TableDML createTableDML() ;
+    protected abstract DML createTableDML();
 
-    protected abstract TableDQL createTableDQL() ;
+    protected abstract DQL createTableDQL();
 
     /*############################### sub class override method ####################################*/
 

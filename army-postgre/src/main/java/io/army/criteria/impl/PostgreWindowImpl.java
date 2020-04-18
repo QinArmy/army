@@ -5,7 +5,7 @@ import io.army.criteria.SQLContext;
 import io.army.criteria.SQLModifier;
 import io.army.criteria.postgre.PostgreSelect;
 import io.army.criteria.postgre.PostgreWindow;
-import io.army.dialect.TableDML;
+import io.army.dialect.DML;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 import io.army.util.StringUtils;
@@ -48,7 +48,7 @@ final class PostgreWindowImpl<C> implements PostgreWindow, PostgreSelect.Postgre
     @Override
     public void appendSQL(SQLContext context) {
         Assert.state(StringUtils.hasText(this.windowName), "windowName is null,state error.");
-        TableDML dml = context.dml();
+        DML dml = context.dml();
         boolean hasList = false;
         //1. below window_name clause
         StringBuilder builder = context.stringBuilder()

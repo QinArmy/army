@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
-import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingType;
@@ -11,6 +10,7 @@ import io.army.util.StringUtils;
 
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.function.Function;
 
 /**
  * created  on 2018/11/24.
@@ -38,154 +38,294 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
         return alias;
     }
 
+
     @Override
     public final IPredicate eq(Expression<E> expression) {
-        return new DualPredicateImpl(this, DualOperator.EQ, expression);
+        return DualPredicate.build(this, DualOperator.EQ, expression);
     }
 
     @Override
     public final IPredicate eq(E constant) {
-        return new DualPredicateImpl(this, DualOperator.EQ, SQLS.param(constant, this.mappingType()));
+        return DualPredicate.build(this, DualOperator.EQ, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
     public final IPredicate eq(String subQueryAlias, String fieldAlias) {
-        return new DualPredicateImpl(this, DualOperator.EQ, SQLS.ref(subQueryAlias, fieldAlias));
+        return DualPredicate.build(this, DualOperator.EQ, SQLS.ref(subQueryAlias, fieldAlias));
     }
 
     @Override
     public final IPredicate eq(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return new DualPredicateImpl(this, DualOperator.EQ, SQLS.field(tableAlias, fieldMeta));
+        return DualPredicate.build(this, DualOperator.EQ, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override
-    public final IPredicate eq(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
-        return new ColumnSubQueryPredicate(this, DualOperator.EQ, keyOperator, subQuery);
+    public final <C, S extends Expression<E>> IPredicate eq(Function<C, S> expOrSubQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return DualPredicate.build(this, DualOperator.EQ, expOrSubQuery.apply(criteria));
+    }
+
+    @Override
+    public final <C, S extends ColumnSubQuery<E>> IPredicate eqAny(Function<C, S> subQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return ColumnSubQueryPredicate.build(this, DualOperator.EQ, SubQueryOperator.ANY, subQuery.apply(criteria));
+    }
+
+    @Override
+    public final <C, S extends ColumnSubQuery<E>> IPredicate eqSome(Function<C, S> subQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return ColumnSubQueryPredicate.build(this, DualOperator.EQ, SubQueryOperator.SOME, subQuery.apply(criteria));
+    }
+
+    @Override
+    public final <C, S extends ColumnSubQuery<E>> IPredicate eqAll(Function<C, S> subQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return ColumnSubQueryPredicate.build(this, DualOperator.EQ, SubQueryOperator.ALL, subQuery.apply(criteria));
     }
 
     @Override
     public final IPredicate lt(Expression<? extends Comparable<E>> expression) {
-        return new DualPredicateImpl(this, DualOperator.LT, expression);
+        return DualPredicate.build(this, DualOperator.LT, expression);
     }
 
     @Override
     public final IPredicate lt(Comparable<E> constant) {
-        return new DualPredicateImpl(this, DualOperator.LT, SQLS.param(constant, this.mappingType()));
+        return DualPredicate.build(this, DualOperator.LT, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
     public final IPredicate lt(String subQueryAlias, String fieldAlias) {
-        return new DualPredicateImpl(this, DualOperator.LT, SQLS.ref(subQueryAlias, fieldAlias));
+        return DualPredicate.build(this, DualOperator.LT, SQLS.ref(subQueryAlias, fieldAlias));
     }
 
     @Override
     public final IPredicate lt(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return new DualPredicateImpl(this, DualOperator.LT, SQLS.field(tableAlias, fieldMeta));
+        return DualPredicate.build(this, DualOperator.LT, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override
-    public final IPredicate lt(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
-        return new ColumnSubQueryPredicate(this, DualOperator.LT, keyOperator, subQuery);
+    public final <C, S extends Expression<E>> IPredicate lt(Function<C, S> expOrSubQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return DualPredicate.build(this, DualOperator.LT, expOrSubQuery.apply(criteria));
+    }
+
+    @Override
+    public final <C, S extends ColumnSubQuery<E>> IPredicate ltAny(Function<C, S> subQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return ColumnSubQueryPredicate.build(this, DualOperator.LT, SubQueryOperator.ANY, subQuery.apply(criteria));
+    }
+
+    @Override
+    public final <C, S extends ColumnSubQuery<E>> IPredicate ltSome(Function<C, S> subQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return ColumnSubQueryPredicate.build(this, DualOperator.LT, SubQueryOperator.SOME, subQuery.apply(criteria));
+    }
+
+    @Override
+    public final <C, S extends ColumnSubQuery<E>> IPredicate ltAll(Function<C, S> subQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return ColumnSubQueryPredicate.build(this, DualOperator.LT, SubQueryOperator.ALL, subQuery.apply(criteria));
     }
 
     @Override
     public final IPredicate le(Expression<? extends Comparable<E>> expression) {
-        return new DualPredicateImpl(this, DualOperator.LE, expression);
+        return DualPredicate.build(this, DualOperator.LE, expression);
     }
 
     @Override
     public final IPredicate le(Comparable<E> constant) {
-        return new DualPredicateImpl(this, DualOperator.LE, SQLS.param(constant, this.mappingType()));
+        return DualPredicate.build(this, DualOperator.LE, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
     public final IPredicate le(String subQueryAlias, String fieldAlias) {
-        return new DualPredicateImpl(this, DualOperator.LE, SQLS.ref(subQueryAlias, fieldAlias));
+        return DualPredicate.build(this, DualOperator.LE, SQLS.ref(subQueryAlias, fieldAlias));
     }
 
     @Override
     public final IPredicate le(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return new DualPredicateImpl(this, DualOperator.LE, SQLS.field(tableAlias, fieldMeta));
+        return DualPredicate.build(this, DualOperator.LE, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override
-    public final IPredicate le(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
-        return new ColumnSubQueryPredicate(this, DualOperator.LE, keyOperator, subQuery);
+    public final <C, S extends Expression<E>> IPredicate le(Function<C, S> expOrSubQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return DualPredicate.build(this, DualOperator.LE, expOrSubQuery.apply(criteria));
+    }
+
+    @Override
+    public final <C, S extends ColumnSubQuery<E>> IPredicate leAny(Function<C, S> subQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return ColumnSubQueryPredicate.build(this, DualOperator.LE, SubQueryOperator.ANY, subQuery.apply(criteria));
+    }
+
+    @Override
+    public final <C, S extends ColumnSubQuery<E>> IPredicate leSome(Function<C, S> subQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return ColumnSubQueryPredicate.build(this, DualOperator.LE, SubQueryOperator.SOME, subQuery.apply(criteria));
+    }
+
+    @Override
+    public final <C, S extends ColumnSubQuery<E>> IPredicate leAll(Function<C, S> subQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return ColumnSubQueryPredicate.build(this, DualOperator.LE, SubQueryOperator.ALL, subQuery.apply(criteria));
     }
 
     @Override
     public final IPredicate gt(Expression<? extends Comparable<E>> expression) {
-        return new DualPredicateImpl(this, DualOperator.GT, expression);
+        return DualPredicate.build(this, DualOperator.GT, expression);
     }
 
     @Override
     public final IPredicate gt(Comparable<E> constant) {
-        return new DualPredicateImpl(this, DualOperator.GT, SQLS.param(constant, this.mappingType()));
+        return DualPredicate.build(this, DualOperator.GT, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
     public final IPredicate gt(String subQueryAlias, String fieldAlias) {
-        return new DualPredicateImpl(this, DualOperator.GT, SQLS.ref(subQueryAlias, fieldAlias));
+        return DualPredicate.build(this, DualOperator.GT, SQLS.ref(subQueryAlias, fieldAlias));
     }
 
     @Override
     public final IPredicate gt(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return new DualPredicateImpl(this, DualOperator.GT, SQLS.field(tableAlias, fieldMeta));
+        return DualPredicate.build(this, DualOperator.GT, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override
-    public final IPredicate gt(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
-        return new ColumnSubQueryPredicate(this, DualOperator.GT, keyOperator, subQuery);
+    public final <C, S extends Expression<E>> IPredicate gt(Function<C, S> expOrSubQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return DualPredicate.build(this, DualOperator.GT, expOrSubQuery.apply(criteria));
+    }
+
+    @Override
+    public final <C, S extends ColumnSubQuery<E>> IPredicate gtAny(Function<C, S> subQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return ColumnSubQueryPredicate.build(this, DualOperator.GT, SubQueryOperator.ANY, subQuery.apply(criteria));
+    }
+
+    @Override
+    public final <C, S extends ColumnSubQuery<E>> IPredicate gtSome(Function<C, S> subQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return ColumnSubQueryPredicate.build(this, DualOperator.GT, SubQueryOperator.SOME, subQuery.apply(criteria));
+    }
+
+    @Override
+    public final <C, S extends ColumnSubQuery<E>> IPredicate gtAll(Function<C, S> subQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return ColumnSubQueryPredicate.build(this, DualOperator.GT, SubQueryOperator.ALL, subQuery.apply(criteria));
     }
 
     @Override
     public final IPredicate ge(Expression<? extends Comparable<E>> expression) {
-        return new DualPredicateImpl(this, DualOperator.GE, expression);
+        return DualPredicate.build(this, DualOperator.GE, expression);
     }
 
     @Override
     public final IPredicate ge(Comparable<E> constant) {
-        return new DualPredicateImpl(this, DualOperator.GE, SQLS.param(constant, this.mappingType()));
+        return DualPredicate.build(this, DualOperator.GE, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
     public final IPredicate ge(String subQueryAlias, String fieldAlias) {
-        return new DualPredicateImpl(this, DualOperator.GE, SQLS.ref(subQueryAlias, fieldAlias));
+        return DualPredicate.build(this, DualOperator.GE, SQLS.ref(subQueryAlias, fieldAlias));
     }
 
     @Override
     public final IPredicate ge(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return new DualPredicateImpl(this, DualOperator.GE, SQLS.field(tableAlias, fieldMeta));
+        return DualPredicate.build(this, DualOperator.GE, SQLS.field(tableAlias, fieldMeta));
+    }
+
+
+    @Override
+    public final <C, S extends Expression<E>> IPredicate ge(Function<C, S> expOrSubQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return DualPredicate.build(this, DualOperator.GE, expOrSubQuery.apply(criteria));
     }
 
     @Override
-    public final IPredicate ge(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
-        return new ColumnSubQueryPredicate(this, DualOperator.GE, keyOperator, subQuery);
+    public final <C, S extends ColumnSubQuery<E>> IPredicate geAny(Function<C, S> subQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return ColumnSubQueryPredicate.build(this, DualOperator.GE, SubQueryOperator.ANY, subQuery.apply(criteria));
+    }
+
+    @Override
+    public final <C, S extends ColumnSubQuery<E>> IPredicate geSome(Function<C, S> subQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return ColumnSubQueryPredicate.build(this, DualOperator.GE, SubQueryOperator.SOME, subQuery.apply(criteria));
+    }
+
+    @Override
+    public final <C, S extends ColumnSubQuery<E>> IPredicate geAll(Function<C, S> subQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return ColumnSubQueryPredicate.build(this, DualOperator.GE, SubQueryOperator.ALL, subQuery.apply(criteria));
     }
 
     @Override
     public final IPredicate notEq(Expression<E> expression) {
-        return new DualPredicateImpl(this, DualOperator.NOT_EQ, expression);
+        return DualPredicate.build(this, DualOperator.NOT_EQ, expression);
     }
 
     @Override
     public final IPredicate notEq(Comparable<E> constant) {
-        return new DualPredicateImpl(this, DualOperator.NOT_EQ, SQLS.param(constant, this.mappingType()));
+        return DualPredicate.build(this, DualOperator.NOT_EQ, SQLS.param(constant, this.mappingType()));
     }
 
     @Override
     public final IPredicate notEq(String subQueryAlias, String fieldAlias) {
-        return new DualPredicateImpl(this, DualOperator.NOT_EQ, SQLS.ref(subQueryAlias, fieldAlias));
+        return DualPredicate.build(this, DualOperator.NOT_EQ, SQLS.ref(subQueryAlias, fieldAlias));
     }
 
     @Override
     public final IPredicate notEq(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return new DualPredicateImpl(this, DualOperator.NOT_EQ, SQLS.field(tableAlias, fieldMeta));
+        return DualPredicate.build(this, DualOperator.NOT_EQ, SQLS.field(tableAlias, fieldMeta));
     }
 
     @Override
-    public final IPredicate notEq(KeyOperator keyOperator, ColumnSubQuery<E> subQuery) {
-        return new ColumnSubQueryPredicate(this, DualOperator.NOT_EQ, keyOperator, subQuery);
+    public final <C, S extends Expression<E>> IPredicate notEq(Function<C, S> expOrSubQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return DualPredicate.build(this, DualOperator.NOT_EQ, expOrSubQuery.apply(criteria));
+    }
+
+    @Override
+    public final <C, S extends ColumnSubQuery<E>> IPredicate notEqAny(Function<C, S> subQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return ColumnSubQueryPredicate.build(this, DualOperator.NOT_EQ, SubQueryOperator.ANY, subQuery.apply(criteria));
+    }
+
+    @Override
+    public final <C, S extends ColumnSubQuery<E>> IPredicate notEqSome(Function<C, S> subQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return ColumnSubQueryPredicate.build(this, DualOperator.NOT_EQ, SubQueryOperator.SOME, subQuery.apply(criteria));
+    }
+
+    @Override
+    public final <C, S extends ColumnSubQuery<E>> IPredicate notEqAll(Function<C, S> subQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return ColumnSubQueryPredicate.build(this, DualOperator.NOT_EQ, SubQueryOperator.ALL, subQuery.apply(criteria));
     }
 
     @Override
@@ -214,90 +354,89 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
-    public final IPredicate between(String subQueryAlias, String derivedFieldName, Expression<E> second) {
-        return new BetweenPredicate(this, SQLS.ref(subQueryAlias, derivedFieldName), second);
-    }
-
-    @Override
-    public final IPredicate between(String subQueryAlias, String derivedFieldName, E second) {
-        return new BetweenPredicate(this, SQLS.ref(subQueryAlias, derivedFieldName), SQLS.param(second, this));
-    }
-
-    @Override
-    public final IPredicate between(String subQueryAlias1, String derivedFieldName1
-            , String subQueryAlias2, String derivedFieldName2) {
-        return new BetweenPredicate(this, SQLS.ref(subQueryAlias1, derivedFieldName1)
-                , SQLS.ref(subQueryAlias2, derivedFieldName2));
-    }
-
-    @Override
-    public final IPredicate between(Expression<E> first, String subQueryAlias, String derivedFieldName) {
-        return new BetweenPredicate(this, first, SQLS.ref(subQueryAlias, derivedFieldName));
-    }
-
-    @Override
-    public final IPredicate between(E first, String subQueryAlias, String derivedFieldName) {
-        return new BetweenPredicate(this, SQLS.param(first, this), SQLS.ref(subQueryAlias, derivedFieldName));
+    public final <C> IPredicate between(Function<C, BetweenExp<E>> function) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        BetweenExp<E> betweenExp = function.apply(criteria);
+        return new BetweenPredicate(this, betweenExp.first(), betweenExp.second());
     }
 
     @Override
     public final IPredicate isNull() {
-        return new UnaryPredicate(UnaryOperator.IS_NULL, this);
+        return UnaryPredicate.build(UnaryOperator.IS_NULL, this);
     }
 
     @Override
     public final IPredicate isNotNull() {
-        return new UnaryPredicate(UnaryOperator.IS_NOT_NULL, this);
+        return UnaryPredicate.build(UnaryOperator.IS_NOT_NULL, this);
     }
 
     @Override
     public final IPredicate in(Collection<E> values) {
-        return new InPredicate(true, this, values);
+        return DualPredicate.build(this, DualOperator.IN, CollectionExpression.build(mappingType(), values));
     }
 
     @Override
     public final IPredicate in(Expression<Collection<E>> values) {
-        return new InPredicate(true, this, values);
+        return DualPredicate.build(this, DualOperator.IN, values);
     }
 
     @Override
-    public final IPredicate in(ColumnSubQuery<E> subQuery) {
-        return new InPredicate(true, this, subQuery);
+    public final <C> IPredicate in(Function<C, ColumnSubQuery<E>> subQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return DualPredicate.build(this, SubQueryOperator.IN, subQuery.apply(criteria));
     }
 
     @Override
     public final IPredicate notIn(Collection<E> values) {
-        return new InPredicate(false, this, values);
+        return DualPredicate.build(this, DualOperator.NOT_IN, CollectionExpression.build(mappingType(), values));
     }
 
     @Override
     public final IPredicate notIn(Expression<Collection<E>> values) {
-        return new InPredicate(false, this, values);
+        return DualPredicate.build(this, DualOperator.NOT_IN, values);
     }
 
     @Override
-    public final IPredicate notIn(ColumnSubQuery<E> subQuery) {
-        return new InPredicate(false, this, subQuery);
+    public final <C> IPredicate notIn(Function<C, ColumnSubQuery<E>> subQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return DualPredicate.build(this, SubQueryOperator.NOT_IN, subQuery.apply(criteria));
     }
 
     @Override
     public final IPredicate like(String pattern) {
-        return new DualPredicateImpl(this, DualOperator.LIKE, SQLS.constant(pattern, this.mappingType()));
+        return DualPredicate.build(this, DualOperator.LIKE, SQLS.constant(pattern, this.mappingType()));
     }
 
     @Override
     public final IPredicate like(Expression<String> pattern) {
-        return new DualPredicateImpl(this, DualOperator.LIKE, pattern);
+        return DualPredicate.build(this, DualOperator.LIKE, pattern);
+    }
+
+    @Override
+    public final <C, S extends Expression<String>> IPredicate like(Function<C, S> expOrSubQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return DualPredicate.build(this, DualOperator.LIKE, expOrSubQuery.apply(criteria));
     }
 
     @Override
     public final IPredicate notLike(String pattern) {
-        return new DualPredicateImpl(this, DualOperator.NOT_LIKE, SQLS.param(pattern, this.mappingType()));
+        return DualPredicate.build(this, DualOperator.NOT_LIKE, SQLS.param(pattern, this.mappingType()));
     }
 
     @Override
     public final IPredicate notLike(Expression<String> pattern) {
-        return new DualPredicateImpl(this, DualOperator.NOT_LIKE, pattern);
+        return DualPredicate.build(this, DualOperator.NOT_LIKE, pattern);
+    }
+
+    @Override
+    public final <C, S extends Expression<String>> IPredicate notLike(Function<C, S> expOrSubQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return DualPredicate.build(this, DualOperator.NOT_LIKE, expOrSubQuery.apply(criteria));
     }
 
     @Override
@@ -316,8 +455,15 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
-    public final Expression<E> mod(String tableAlias, FieldMeta<?, E> fieldMeta) {
+    public final <N extends Number> Expression<E> mod(String tableAlias, FieldMeta<?, N> fieldMeta) {
         return new DualExpresion<>(this, DualOperator.MOD, SQLS.field(tableAlias, fieldMeta));
+    }
+
+    @Override
+    public final <C, N extends Number, S extends Expression<N>> Expression<E> mod(Function<C, S> expOrSubQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return new DualExpresion<>(this, DualOperator.MOD, expOrSubQuery.apply(criteria));
     }
 
     @Override
@@ -341,6 +487,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
+    public final <C, N extends Number, S extends Expression<N>> Expression<E> multiply(Function<C, S> expOrSubQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return new DualExpresion<>(this, DualOperator.MULTIPLY, expOrSubQuery.apply(criteria));
+    }
+
+    @Override
     public final <N extends Number> Expression<E> add(Expression<N> augend) {
         return new DualExpresion<>(this, DualOperator.ADD, augend);
     }
@@ -358,6 +511,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     @Override
     public final Expression<E> add(String tableAlias, FieldMeta<?, E> fieldMeta) {
         return new DualExpresion<>(this, DualOperator.ADD, SQLS.field(tableAlias, fieldMeta));
+    }
+
+    @Override
+    public final <C, N extends Number, S extends Expression<N>> Expression<E> add(Function<C, S> expOrSubQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return new DualExpresion<>(this, DualOperator.ADD, expOrSubQuery.apply(criteria));
     }
 
     @Override
@@ -381,6 +541,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
+    public final <C, N extends Number, S extends Expression<N>> Expression<E> subtract(Function<C, S> expOrSubQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return new DualExpresion<>(this, DualOperator.SUBTRACT, expOrSubQuery.apply(criteria));
+    }
+
+    @Override
     public final <N extends Number> Expression<E> divide(Expression<N> divisor) {
         return new DualExpresion<>(this, DualOperator.DIVIDE, divisor);
     }
@@ -401,8 +568,15 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
+    public final <C, N extends Number, S extends Expression<N>> Expression<E> divide(Function<C, S> expOrSubQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return new DualExpresion<>(this, DualOperator.DIVIDE, expOrSubQuery.apply(criteria));
+    }
+
+    @Override
     public final Expression<E> negate() {
-        return new UnaryExpression<>(this, UnaryOperator.NEGATED);
+        return UnaryExpression.build(this, UnaryOperator.NEGATED);
     }
 
     @Override
@@ -426,6 +600,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
+    public final <C, O, S extends Expression<O>> Expression<E> and(Function<C, S> expOrSubQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return new DualExpresion<>(this, DualOperator.AND, expOrSubQuery.apply(criteria));
+    }
+
+    @Override
     public final <O> Expression<BigInteger> or(Expression<O> operator) {
         return new DualExpresion<>(this, DualOperator.OR, operator);
     }
@@ -443,6 +624,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     @Override
     public final <O> Expression<BigInteger> or(String tableAlias, FieldMeta<?, O> fieldMeta) {
         return new DualExpresion<>(this, DualOperator.OR, SQLS.field(tableAlias, fieldMeta));
+    }
+
+    @Override
+    public final <C, O, S extends Expression<O>> Expression<E> or(Function<C, S> expOrSubQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return new DualExpresion<>(this, DualOperator.OR, expOrSubQuery.apply(criteria));
     }
 
     @Override
@@ -466,6 +654,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
+    public final <C, O, S extends Expression<O>> Expression<E> xor(Function<C, S> expOrSubQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return new DualExpresion<>(this, DualOperator.XOR, expOrSubQuery.apply(criteria));
+    }
+
+    @Override
     public final <O> Expression<BigInteger> inversion(Expression<O> operator) {
         return new DualExpresion<>(this, DualOperator.INVERT, operator);
     }
@@ -483,6 +678,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     @Override
     public final <O> Expression<BigInteger> inversion(String tableAlias, FieldMeta<?, O> fieldMeta) {
         return new DualExpresion<>(this, DualOperator.INVERT, SQLS.field(tableAlias, fieldMeta));
+    }
+
+    @Override
+    public final <C, O, S extends Expression<O>> Expression<E> inversion(Function<C, S> expOrSubQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return new DualExpresion<>(this, DualOperator.INVERT, expOrSubQuery.apply(criteria));
     }
 
     @Override
@@ -506,6 +708,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
+    public final <C, O, S extends Expression<O>> Expression<E> rightShift(Function<C, S> expOrSubQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return new DualExpresion<>(this, DualOperator.RIGHT_SHIFT, expOrSubQuery.apply(criteria));
+    }
+
+    @Override
     public final Expression<BigInteger> leftShift(Integer bitNumber) {
         return new DualExpresion<>(this, DualOperator.LEFT_SHIFT, SQLS.param(bitNumber));
     }
@@ -526,6 +735,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
+    public final <C, O, S extends Expression<O>> Expression<E> leftShift(Function<C, S> expOrSubQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return new DualExpresion<>(this, DualOperator.LEFT_SHIFT, expOrSubQuery.apply(criteria));
+    }
+
+    @Override
     public final <O> Expression<E> plusOther(Expression<O> other) {
         return new DualExpresion<>(this, DualOperator.ADD, other);
     }
@@ -538,6 +754,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     @Override
     public final <O> Expression<E> plusOther(String tableAlias, FieldMeta<?, O> fieldMeta) {
         return new DualExpresion<>(this, DualOperator.ADD, SQLS.field(tableAlias, fieldMeta));
+    }
+
+    @Override
+    public final <C, O, S extends Expression<O>> Expression<E> plusOther(Function<C, S> expOrSubQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return new DualExpresion<>(this, DualOperator.ADD, expOrSubQuery.apply(criteria));
     }
 
     @Override
@@ -556,6 +779,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
+    public final <C, O, S extends Expression<O>> Expression<E> minusOther(Function<C, S> expOrSubQuery) {
+        @SuppressWarnings("unchecked")
+        C criteria = (C) CriteriaContextHolder.getContext();
+        return new DualExpresion<>(this, DualOperator.SUBTRACT, expOrSubQuery.apply(criteria));
+    }
+
+    @Override
     public final <O> Expression<O> asType(Class<O> convertType) {
         return new ConvertExpressionImpl<>(this, MappingFactory.getDefaultMapping(convertType));
     }
@@ -571,13 +801,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
-    public final Expression<E> sort(@Nullable Boolean asc) {
-        Assert.isTrue(!(this instanceof SortExpression), "expression has ASC/DESC clause.");
-        if (asc == null) {
-            return this;
-        } else {
-            return new SortExpressionImpl<>(this, asc);
-        }
+    public final SortPart asc() {
+        return new SortPartImpl(this, true);
+    }
+
+    @Override
+    public final SortPart desc() {
+        return new SortPartImpl(this, false);
     }
 
 
@@ -593,6 +823,15 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
                     .append(" AS ")
                     .append(context.dml().quoteIfNeed(this.alias))
             ;
+        }
+    }
+
+    @Override
+    public void appendSortPart(SQLContext context) {
+        if (this.alias == null) {
+            this.appendSQL(context);
+        } else {
+            context.quoteIfKeyAndAppend(this.alias);
         }
     }
 

@@ -1,16 +1,33 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
+import io.army.criteria.SelfDescribed;
+import io.army.criteria.SubQuery;
 import io.army.util.Assert;
 
 final class UnaryPredicate extends AbstractPredicate {
 
+    static UnaryPredicate build(UnaryOperator operator, SubQuery subQuery) {
+        switch (operator) {
+            case NOT_EXISTS:
+            case EXISTS:
+                break;
+            default:
+                throw new IllegalArgumentException(
+                        String.format("operator[%s] not in[EXISTS,NOT_EXISTS]", operator));
+        }
+        return new UnaryPredicate(operator, subQuery);
+    }
+
+    static UnaryPredicate build(UnaryOperator operator, SelfDescribed expression) {
+        return new UnaryPredicate(operator, expression);
+    }
+
     private final UnaryOperator operator;
 
-    private final Expression<?> expression;
+    private final SelfDescribed expression;
 
-    UnaryPredicate(UnaryOperator operator, Expression<?> expression) {
+    private UnaryPredicate(UnaryOperator operator, SelfDescribed expression) {
         Assert.notNull(expression, "expression required");
 
         this.operator = operator;
@@ -21,7 +38,8 @@ final class UnaryPredicate extends AbstractPredicate {
     protected void afterSpace(SQLContext context) {
         switch (operator.position()) {
             case LEFT:
-                context.stringBuilder().append(operator.rendered());
+                context.stringBuilder()
+                        .append(operator.rendered());
                 expression.appendSQL(context);
                 break;
             case RIGHT:

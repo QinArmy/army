@@ -12,7 +12,7 @@ interface SubQuerySelect<C> extends InnerSubQuery, SubQuery
     C criteria();
 
     static <C> SubQuerySelect<C> build(C criteria) {
-        return new SubQueryMultiSelect<>(criteria);
+        return new StandardSubQueryMultiSelect<>(criteria);
     }
 
 }

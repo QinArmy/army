@@ -48,7 +48,7 @@ final class PostgreMultiSubQuery<C> extends AbstractPostgreMultiSelect<C>
 
     @Override
     public final void appendSQL(SQLContext context) {
-        context.dml().subQuery(this, context);
+        context.dql().subQuery(this, context);
     }
 
 

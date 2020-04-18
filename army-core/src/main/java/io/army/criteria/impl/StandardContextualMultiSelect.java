@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.SubQuery;
 import io.army.meta.TableMeta;
 
-class StandardContextualMultiSelect<C> extends AbstractMultiSelect<C> {
+class StandardContextualMultiSelect<C> extends AbstractStandardSelect<C> {
 
     private final CriteriaContext criteriaContext;
 
@@ -18,10 +18,11 @@ class StandardContextualMultiSelect<C> extends AbstractMultiSelect<C> {
     /*################################## blow package method ##################################*/
 
     @Override
-    final void afterDoAsSelect() {
+    final void doAsSelect() {
         CriteriaContextHolder.clearContext(this.criteriaContext);
         this.criteriaContext.clear();
     }
+
 
     @Override
     final void onAddSubQuery(SubQuery subQuery, String subQueryAlias) {

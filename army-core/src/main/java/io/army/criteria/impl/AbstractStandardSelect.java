@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerSelect;
 import io.army.lang.Nullable;
+import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 import io.army.util.Pair;
@@ -14,26 +15,27 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class AbstractSelect<C> extends AbstractSQL implements Select
+abstract class AbstractStandardSelect<C> extends AbstractSQL implements Select
         , Select.WhereAble<C>, Select.WhereAndAble<C>, Select.HavingAble<C>
-        , Select.UnionAble<C>, InnerSelect {
+        , Select.UnionClause<C>, Select.SelectPartAble<C>, Select.FromAble<C>
+        , Select.JoinAble<C>, Select.OnAble<C>, InnerSelect {
 
     static final String NOT_PREPARED_MSG = "Select criteria don't haven invoke asSelect() method.";
 
     final C criteria;
 
-    private List<SQLModifier> modifierList = new ArrayList<>(2);
+    private List<SQLModifier> modifierList;
 
     private List<SelectPart> selectPartList = new LinkedList<>();
 
 
     private List<IPredicate> predicateList = new ArrayList<>();
 
-    private List<Expression<?>> groupExpList = new ArrayList<>(3);
+    private List<SortPart> groupExpList;
 
-    private List<IPredicate> havingList = new ArrayList<>(3);
+    private List<IPredicate> havingList;
 
-    private List<Expression<?>> sortExpList = new ArrayList<>(3);
+    private List<SortPart> orderByList;
 
     private int offset = -1;
 
@@ -44,7 +46,7 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
     private boolean prepared = false;
 
 
-    AbstractSelect(C criteria) {
+    AbstractStandardSelect(C criteria) {
         Assert.notNull(criteria, "criteria required");
         this.criteria = criteria;
     }
@@ -55,11 +57,117 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
 
     @Override
     public final boolean requiredBrackets() {
-        return CollectionUtils.isEmpty(this.sortExpList)
+        return CollectionUtils.isEmpty(this.orderByList)
                 || this.offset > -1
                 || this.rowCount > 0
                 || this.lockMode != null
                 ;
+    }
+
+
+    /*################################## blow SelectPartAble method ##################################*/
+
+    @Override
+    public <S extends SelectPart> FromAble<C> select(Distinct distinct, Function<C, List<S>> function) {
+        doSelect(distinct, function.apply(this.criteria));
+        return this;
+    }
+
+    @Override
+    public FromAble<C> select(Distinct distinct, SelectPart selectPart) {
+        doSelect(distinct, selectPart);
+        return this;
+    }
+
+    @Override
+    public FromAble<C> select(SelectPart selectPart) {
+        doSelect((Distinct) null, selectPart);
+        return this;
+    }
+
+    @Override
+    public <S extends SelectPart> FromAble<C> select(Distinct distinct, List<S> selectPartList) {
+        doSelect(distinct, selectPartList);
+        return this;
+    }
+
+    @Override
+    public <S extends SelectPart> FromAble<C> select(List<S> selectPartList) {
+        doSelect((Distinct) null, selectPartList);
+        return this;
+    }
+
+    /*################################## blow FromAble method ##################################*/
+
+    @Override
+    public JoinAble<C> from(TableMeta<?> tableMeta, String tableAlias) {
+        addTableAble(new TableWrapperImpl(tableMeta, tableAlias, JoinType.NONE));
+        return this;
+    }
+
+    @Override
+    public JoinAble<C> from(Function<C, SubQuery> function, String subQueryAlia) {
+        addTableAble(new TableWrapperImpl(function.apply(this.criteria), subQueryAlia, JoinType.NONE));
+        return this;
+    }
+
+
+    /*################################## blow JoinAble method ##################################*/
+
+    @Override
+    public OnAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias) {
+        addTableAble(new TableWrapperImpl(tableMeta, tableAlias, JoinType.LEFT));
+        return this;
+    }
+
+    @Override
+    public OnAble<C> leftJoin(Function<C, SubQuery> function, String subQueryAlia) {
+        addTableAble(new TableWrapperImpl(function.apply(this.criteria), subQueryAlia, JoinType.LEFT));
+        return this;
+    }
+
+    @Override
+    public OnAble<C> join(TableMeta<?> tableMeta, String tableAlias) {
+        addTableAble(new TableWrapperImpl(tableMeta, tableAlias, JoinType.JOIN));
+        return this;
+    }
+
+    @Override
+    public OnAble<C> join(Function<C, SubQuery> function, String subQueryAlia) {
+        addTableAble(new TableWrapperImpl(function.apply(this.criteria), subQueryAlia, JoinType.JOIN));
+        return this;
+    }
+
+    @Override
+    public OnAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias) {
+        addTableAble(new TableWrapperImpl(tableMeta, tableAlias, JoinType.RIGHT));
+        return this;
+    }
+
+    @Override
+    public OnAble<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia) {
+        addTableAble(new TableWrapperImpl(function.apply(this.criteria), subQueryAlia, JoinType.RIGHT));
+        return this;
+    }
+
+    /*################################## blow OnAble method ##################################*/
+
+    @Override
+    public final Select.JoinAble<C> on(List<IPredicate> predicateList) {
+        doOn(predicateList);
+        return this;
+    }
+
+    @Override
+    public final Select.JoinAble<C> on(IPredicate predicate) {
+        doOn(Collections.singletonList(predicate));
+        return this;
+    }
+
+    @Override
+    public final Select.JoinAble<C> on(Function<C, List<IPredicate>> function) {
+        doOn(function.apply(this.criteria));
+        return this;
     }
 
     /*################################## blow WhereAble method ##################################*/
@@ -115,39 +223,43 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
     /*################################## blow GroupByAble method ##################################*/
 
     @Override
-    public final Select.HavingAble<C> groupBy(Expression<?> groupExp) {
-        this.groupExpList.add(groupExp);
+    public final HavingAble<C> groupBy(SortPart sortPart) {
+        if (this.groupExpList == null) {
+            this.groupExpList = new ArrayList<>(1);
+        }
+        this.groupExpList.add(sortPart);
         return this;
     }
 
     @Override
-    public final Select.HavingAble<C> groupBy(List<Expression<?>> groupExpList) {
-        this.groupExpList.addAll(groupExpList);
+    public final HavingAble<C> groupBy(List<SortPart> sortPartList) {
+        if (this.groupExpList == null) {
+            this.groupExpList = new ArrayList<>(sortPartList.size());
+        }
+        this.groupExpList.addAll(sortPartList);
         return this;
     }
 
     @Override
-    public final Select.HavingAble<C> groupBy(Function<C, List<Expression<?>>> function) {
-        this.groupExpList.addAll(function.apply(this.criteria));
-        return this;
+    public final HavingAble<C> groupBy(Function<C, List<SortPart>> function) {
+        return groupBy(function.apply(this.criteria));
     }
 
     @Override
-    public final Select.HavingAble<C> ifGroupBy(Predicate<C> predicate, Expression<?> groupExp) {
-        if (predicate.test(this.criteria)) {
-            this.groupExpList.add(groupExp);
+    public final HavingAble<C> ifGroupBy(Predicate<C> test, SortPart sortPart) {
+        if (test.test(this.criteria)) {
+            groupBy(sortPart);
         }
         return this;
     }
 
     @Override
-    public final Select.HavingAble<C> ifGroupBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction) {
-        if (predicate.test(this.criteria)) {
-            this.groupExpList.addAll(expFunction.apply(this.criteria));
+    public final HavingAble<C> ifGroupBy(Predicate<C> test, Function<C, List<SortPart>> function) {
+        if (test.test(this.criteria)) {
+            groupBy(function.apply(this.criteria));
         }
         return this;
     }
-
 
     /*################################## blow HavingAble method ##################################*/
 
@@ -190,33 +302,44 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
     /*################################## blow OrderByAble method ##################################*/
 
     @Override
-    public final Select.LimitAble<C> orderBy(Expression<?> orderExp) {
-        this.sortExpList.add(orderExp);
+    public final LimitAble<C> orderBy(SortPart sortPart) {
+        if (this.orderByList == null) {
+            this.orderByList = new ArrayList<>(1);
+        }
+        this.orderByList.add(sortPart);
         return this;
     }
 
     @Override
-    public final Select.LimitAble<C> orderBy(Function<C, List<Expression<?>>> function) {
-        this.sortExpList.addAll(function.apply(this.criteria));
+    public final LimitClause<C> orderBy(List<SortPart> sortPartList) {
+        if (this.orderByList == null) {
+            this.orderByList = new ArrayList<>(sortPartList.size());
+        }
+        this.orderByList.addAll(sortPartList);
         return this;
     }
 
     @Override
-    public final Select.LimitAble<C> ifOrderBy(Predicate<C> predicate, Expression<?> orderExp) {
-        if (predicate.test(this.criteria)) {
-            this.sortExpList.add(orderExp);
+    public final LimitAble<C> orderBy(Function<C, List<SortPart>> function) {
+        orderBy(function.apply(this.criteria));
+        return this;
+    }
+
+    @Override
+    public final LimitAble<C> ifOrderBy(Predicate<C> test, SortPart sortPart) {
+        if (test.test(this.criteria)) {
+            orderBy(sortPart);
         }
         return this;
     }
 
     @Override
-    public final Select.LimitAble<C> ifOrderBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction) {
-        if (predicate.test(this.criteria)) {
-            this.sortExpList.addAll(expFunction.apply(this.criteria));
+    public final LimitAble<C> ifOrderBy(Predicate<C> test, Function<C, List<SortPart>> function) {
+        if (test.test(this.criteria)) {
+            orderBy(function.apply(this.criteria));
         }
         return this;
     }
-
 
     /*################################## blow LimitAble method ##################################*/
 
@@ -274,19 +397,19 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
     /*################################## blow LockAble method ##################################*/
 
     @Override
-    public final Select.UnionAble<C> lock(LockMode lockMode) {
+    public final UnionClause<C> lock(LockMode lockMode) {
         this.lockMode = lockMode;
         return this;
     }
 
     @Override
-    public final Select.UnionAble<C> lock(Function<C, LockMode> function) {
+    public final UnionClause<C> lock(Function<C, LockMode> function) {
         this.lockMode = function.apply(this.criteria);
         return this;
     }
 
     @Override
-    public final Select.UnionAble<C> ifLock(Predicate<C> predicate, LockMode lockMode) {
+    public final UnionClause<C> ifLock(Predicate<C> predicate, LockMode lockMode) {
         if (predicate.test(this.criteria)) {
             this.lockMode = lockMode;
         }
@@ -294,7 +417,7 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
     }
 
     @Override
-    public final UnionAble<C> ifLock(Predicate<C> predicate, Function<C, LockMode> function) {
+    public final UnionClause<C> ifLock(Predicate<C> predicate, Function<C, LockMode> function) {
         if (predicate.test(this.criteria)) {
             this.lockMode = function.apply(this.criteria);
         }
@@ -340,7 +463,7 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
 
         this.groupExpList = Collections.unmodifiableList(this.groupExpList);
         this.havingList = Collections.unmodifiableList(this.havingList);
-        this.sortExpList = Collections.unmodifiableList(this.sortExpList);
+        this.orderByList = Collections.unmodifiableList(this.orderByList);
 
 
         doAsSelect();
@@ -354,56 +477,47 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
 
     @Override
     public final List<SQLModifier> modifierList() {
-        Assert.state(this.prepared, NOT_PREPARED_MSG);
         return this.modifierList;
     }
 
     @Override
     public final List<SelectPart> selectPartList() {
-        Assert.state(this.prepared, NOT_PREPARED_MSG);
         return this.selectPartList;
     }
 
 
     @Override
     public final List<IPredicate> predicateList() {
-        Assert.state(this.prepared, NOT_PREPARED_MSG);
         return this.predicateList;
     }
 
     @Override
-    public final List<Expression<?>> groupExpList() {
-        Assert.state(this.prepared, NOT_PREPARED_MSG);
+    public final List<SortPart> groupPartList() {
         return this.groupExpList;
     }
 
     @Override
     public final List<IPredicate> havingList() {
-        Assert.state(this.prepared, NOT_PREPARED_MSG);
         return this.havingList;
     }
 
     @Override
-    public final List<Expression<?>> sortExpList() {
-        Assert.state(this.prepared, NOT_PREPARED_MSG);
-        return this.sortExpList;
+    public final List<SortPart> orderPartList() {
+        return this.orderByList;
     }
 
     @Override
     public final int offset() {
-        Assert.state(this.prepared, NOT_PREPARED_MSG);
         return this.offset;
     }
 
     @Override
     public final int rowCount() {
-        Assert.state(this.prepared, NOT_PREPARED_MSG);
         return this.rowCount;
     }
 
     @Override
     public final LockMode lockMode() {
-        Assert.state(this.prepared, NOT_PREPARED_MSG);
         return this.lockMode;
     }
 
@@ -417,7 +531,7 @@ abstract class AbstractSelect<C> extends AbstractSQL implements Select
         this.groupExpList = null;
 
         this.havingList = null;
-        this.sortExpList = null;
+        this.orderByList = null;
         this.lockMode = null;
 
     }

@@ -1,17 +1,17 @@
 package io.army.criteria;
 
-import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.mapping.MappingType;
 
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.function.Function;
 
 /**
  * created  on 2018/10/8.
  */
 @SuppressWarnings("unused")
-public interface Expression<E> extends SelectionAble, SelfDescribed, MappingTypeAble {
+public interface Expression<E> extends SelectionAble, SelfDescribed, MappingTypeAble, SortPart {
 
     IPredicate eq(Expression<E> expression);
 
@@ -21,7 +21,13 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingType
 
     IPredicate eq(E constant);
 
-    IPredicate eq(KeyOperator keyOperator, ColumnSubQuery<E> subQuery);
+    <C, S extends Expression<E>> IPredicate eq(Function<C, S> expOrSubQuery);
+
+    <C, S extends ColumnSubQuery<E>> IPredicate eqAny(Function<C, S> subQuery);
+
+    <C, S extends ColumnSubQuery<E>> IPredicate eqSome(Function<C, S> subQuery);
+
+    <C, S extends ColumnSubQuery<E>> IPredicate eqAll(Function<C, S> subQuery);
 
     IPredicate lt(Expression<? extends Comparable<E>> expression);
 
@@ -31,7 +37,13 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingType
 
     IPredicate lt(String tableAlias, FieldMeta<?, E> fieldMeta);
 
-    IPredicate lt(KeyOperator keyOperator, ColumnSubQuery<E> subQuery);
+    <C, S extends Expression<E>> IPredicate lt(Function<C, S> expOrSubQuery);
+
+    <C, S extends ColumnSubQuery<E>> IPredicate ltAny(Function<C, S> subQuery);
+
+    <C, S extends ColumnSubQuery<E>> IPredicate ltSome(Function<C, S> subQuery);
+
+    <C, S extends ColumnSubQuery<E>> IPredicate ltAll(Function<C, S> subQuery);
 
     IPredicate le(Expression<? extends Comparable<E>> expression);
 
@@ -41,7 +53,13 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingType
 
     IPredicate le(String tableAlias, FieldMeta<?, E> fieldMeta);
 
-    IPredicate le(KeyOperator keyOperator, ColumnSubQuery<E> subQuery);
+    <C, S extends Expression<E>> IPredicate le(Function<C, S> expOrSubQuery);
+
+    <C, S extends ColumnSubQuery<E>> IPredicate leAny(Function<C, S> subQuery);
+
+    <C, S extends ColumnSubQuery<E>> IPredicate leSome(Function<C, S> subQuery);
+
+    <C, S extends ColumnSubQuery<E>> IPredicate leAll(Function<C, S> subQuery);
 
     IPredicate gt(Expression<? extends Comparable<E>> expression);
 
@@ -51,7 +69,13 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingType
 
     IPredicate gt(String tableAlias, FieldMeta<?, E> fieldMeta);
 
-    IPredicate gt(KeyOperator keyOperator, ColumnSubQuery<E> subQuery);
+    <C, S extends Expression<E>> IPredicate gt(Function<C, S> expOrSubQuery);
+
+    <C, S extends ColumnSubQuery<E>> IPredicate gtAny(Function<C, S> subQuery);
+
+    <C, S extends ColumnSubQuery<E>> IPredicate gtSome(Function<C, S> subQuery);
+
+    <C, S extends ColumnSubQuery<E>> IPredicate gtAll(Function<C, S> subQuery);
 
     IPredicate ge(Expression<? extends Comparable<E>> expression);
 
@@ -61,7 +85,13 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingType
 
     IPredicate ge(String tableAlias, FieldMeta<?, E> fieldMeta);
 
-    IPredicate ge(KeyOperator keyOperator, ColumnSubQuery<E> subQuery);
+    <C, S extends Expression<E>> IPredicate ge(Function<C, S> expOrSubQuery);
+
+    <C, S extends ColumnSubQuery<E>> IPredicate geAny(Function<C, S> subQuery);
+
+    <C, S extends ColumnSubQuery<E>> IPredicate geSome(Function<C, S> subQuery);
+
+    <C, S extends ColumnSubQuery<E>> IPredicate geAll(Function<C, S> subQuery);
 
     IPredicate notEq(Expression<E> expression);
 
@@ -71,7 +101,13 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingType
 
     IPredicate notEq(String tableAlias, FieldMeta<?, E> fieldMeta);
 
-    IPredicate notEq(KeyOperator keyOperator, ColumnSubQuery<E> subQuery);
+    <C, S extends Expression<E>> IPredicate notEq(Function<C, S> expOrSubQuery);
+
+    <C, S extends ColumnSubQuery<E>> IPredicate notEqAny(Function<C, S> subQuery);
+
+    <C, S extends ColumnSubQuery<E>> IPredicate notEqSome(Function<C, S> subQuery);
+
+    <C, S extends ColumnSubQuery<E>> IPredicate notEqAll(Function<C, S> subQuery);
 
     IPredicate not();
 
@@ -83,16 +119,7 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingType
 
     IPredicate between(E first, Expression<E> second);
 
-    IPredicate between(String subQueryAlias, String derivedFieldName, Expression<E> second);
-
-    IPredicate between(String subQueryAlias, String derivedFieldName, E second);
-
-    IPredicate between(String subQueryAlias1, String derivedFieldName1
-            , String subQueryAlias2, String derivedFieldName2);
-
-    IPredicate between(Expression<E> first, String subQueryAlias, String derivedFieldName);
-
-    IPredicate between(E first, String subQueryAlias, String derivedFieldName);
+    <C> IPredicate between(Function<C, BetweenExp<E>> function);
 
     IPredicate isNull();
 
@@ -102,13 +129,13 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingType
 
     IPredicate in(Expression<Collection<E>> values);
 
-    IPredicate in(ColumnSubQuery<E> subQuery);
+    <C> IPredicate in(Function<C, ColumnSubQuery<E>> subQuery);
 
     IPredicate notIn(Collection<E> values);
 
     IPredicate notIn(Expression<Collection<E>> values);
 
-    IPredicate notIn(ColumnSubQuery<E> subQuery);
+    <C> IPredicate notIn(Function<C, ColumnSubQuery<E>> subQuery);
 
     <N extends Number> Expression<E> mod(Expression<N> operator);
 
@@ -116,7 +143,9 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingType
 
     Expression<E> mod(String subQueryAlias, String derivedFieldName);
 
-    Expression<E> mod(String tableAlias, FieldMeta<?, E> fieldMeta);
+    <N extends Number> Expression<E> mod(String tableAlias, FieldMeta<?, N> fieldMeta);
+
+    <C, N extends Number, S extends Expression<N>> Expression<E> mod(Function<C, S> expOrSubQuery);
 
     <N extends Number> Expression<E> multiply(Expression<N> multiplicand);
 
@@ -126,6 +155,8 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingType
 
     Expression<E> multiply(String tableAlias, FieldMeta<?, E> fieldMeta);
 
+    <C, N extends Number, S extends Expression<N>> Expression<E> multiply(Function<C, S> expOrSubQuery);
+
     <N extends Number> Expression<E> add(Expression<N> augend);
 
     <N extends Number> Expression<E> add(N augend);
@@ -133,6 +164,8 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingType
     Expression<E> add(String subQueryAlias, String derivedFieldName);
 
     Expression<E> add(String tableAlias, FieldMeta<?, E> fieldMeta);
+
+    <C, N extends Number, S extends Expression<N>> Expression<E> add(Function<C, S> expOrSubQuery);
 
     <N extends Number> Expression<E> subtract(Expression<N> subtrahend);
 
@@ -142,6 +175,8 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingType
 
     Expression<E> subtract(String tableAlias, FieldMeta<?, E> fieldMeta);
 
+    <C, N extends Number, S extends Expression<N>> Expression<E> subtract(Function<C, S> expOrSubQuery);
+
     <N extends Number> Expression<E> divide(Expression<N> divisor);
 
     <N extends Number> Expression<E> divide(N divisor);
@@ -149,6 +184,8 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingType
     Expression<E> divide(String subQueryAlias, String derivedFieldName);
 
     Expression<E> divide(String tableAlias, FieldMeta<?, E> fieldMeta);
+
+    <C, N extends Number, S extends Expression<N>> Expression<E> divide(Function<C, S> expOrSubQuery);
 
     Expression<E> negate();
 
@@ -160,6 +197,8 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingType
 
     <O> Expression<BigInteger> and(String tableAlias, FieldMeta<?, O> fieldMeta);
 
+    <C, O, S extends Expression<O>> Expression<E> and(Function<C, S> expOrSubQuery);
+
     <O> Expression<BigInteger> or(Expression<O> operator);
 
     Expression<BigInteger> or(Long operator);
@@ -167,6 +206,8 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingType
     Expression<BigInteger> or(String subQueryAlias, String derivedFieldName);
 
     <O> Expression<BigInteger> or(String tableAlias, FieldMeta<?, O> fieldMeta);
+
+    <C, O, S extends Expression<O>> Expression<E> or(Function<C, S> expOrSubQuery);
 
     <O> Expression<BigInteger> xor(Expression<O> operator);
 
@@ -176,6 +217,8 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingType
 
     <O> Expression<BigInteger> xor(String tableAlias, FieldMeta<?, O> fieldMeta);
 
+    <C, O, S extends Expression<O>> Expression<E> xor(Function<C, S> expOrSubQuery);
+
     <O> Expression<BigInteger> inversion(Expression<O> operator);
 
     Expression<BigInteger> inversion(Long operator);
@@ -183,6 +226,8 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingType
     Expression<BigInteger> inversion(String subQueryAlias, String derivedFieldName);
 
     <O> Expression<BigInteger> inversion(String tableAlias, FieldMeta<?, O> fieldMeta);
+
+    <C, O, S extends Expression<O>> Expression<E> inversion(Function<C, S> expOrSubQuery);
 
     Expression<BigInteger> rightShift(Integer bitNumber);
 
@@ -192,6 +237,8 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingType
 
     Expression<BigInteger> rightShift(String subQueryAlias, String derivedFieldName);
 
+    <C, O, S extends Expression<O>> Expression<E> rightShift(Function<C, S> expOrSubQuery);
+
     Expression<BigInteger> leftShift(Integer bitNumber);
 
     <O> Expression<BigInteger> leftShift(Expression<O> bitNumber);
@@ -200,11 +247,15 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingType
 
     <O> Expression<BigInteger> leftShift(String tableAlias, FieldMeta<?, O> fieldMeta);
 
+    <C, O, S extends Expression<O>> Expression<E> leftShift(Function<C, S> expOrSubQuery);
+
     <O> Expression<E> plusOther(Expression<O> other);
 
     Expression<E> plusOther(String subQueryAlias, String derivedFieldName);
 
     <O> Expression<E> plusOther(String tableAlias, FieldMeta<?, O> fieldMeta);
+
+    <C, O, S extends Expression<O>> Expression<E> plusOther(Function<C, S> expOrSubQuery);
 
     <O> Expression<E> minusOther(Expression<O> other);
 
@@ -212,25 +263,28 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingType
 
     <O> Expression<E> minusOther(String tableAlias, FieldMeta<?, O> fieldMeta);
 
+    <C, O, S extends Expression<O>> Expression<E> minusOther(Function<C, S> expOrSubQuery);
+
     <O> Expression<O> asType(Class<O> convertType);
 
     <O> Expression<O> asType(Class<O> convertType, MappingType longMapping);
 
     Expression<E> brackets();
 
-    @Nullable
-    default Boolean sortExp() {
-        return null;
-    }
+    SortPart asc();
 
-    Expression<E> sort(@Nullable Boolean asc);
+    SortPart desc();
 
     IPredicate like(String pattern);
+
+    <C, S extends Expression<String>> IPredicate like(Function<C, S> expOrSubQuery);
 
     IPredicate notLike(String pattern);
 
     IPredicate like(Expression<String> pattern);
 
     IPredicate notLike(Expression<String> pattern);
+
+    <C, S extends Expression<String>> IPredicate notLike(Function<C, S> expOrSubQuery);
 
 }

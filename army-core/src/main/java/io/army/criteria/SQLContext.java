@@ -1,7 +1,8 @@
 package io.army.criteria;
 
+import io.army.dialect.DML;
+import io.army.dialect.DQL;
 import io.army.dialect.ParamWrapper;
-import io.army.dialect.TableDML;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingType;
@@ -25,7 +26,11 @@ public interface SQLContext {
      */
     void appendTextValue(MappingType mappingType, Object value);
 
-    TableDML dml();
+    DML dml();
+
+    default DQL dql() {
+        throw new UnsupportedOperationException();
+    }
 
     StringBuilder stringBuilder();
 

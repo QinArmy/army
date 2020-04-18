@@ -1,10 +1,14 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.dialect.DQL;
+import io.army.util.Pair;
 
+import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
-abstract class ComposeSelects<C> implements SelfDescribedSelect, Select.UnionAble<C> {
+abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements SelfDescribedSelect, Select.UnionAble<C> {
 
     static <C> UnionAble<C> brackets(C criteria, Select enclosedSelect) {
         return new BracketsSelect<>(criteria, enclosedSelect);
@@ -23,11 +27,8 @@ abstract class ComposeSelects<C> implements SelfDescribedSelect, Select.UnionAbl
         return new ComposeSelectImpl<>(criteria, left, modifier, right);
     }
 
-
-    private final C criteria;
-
-    ComposeSelects(C criteria) {
-        this.criteria = criteria;
+    private ComposeSelects(C criteria) {
+        super(criteria);
     }
 
 
@@ -56,10 +57,85 @@ abstract class ComposeSelects<C> implements SelfDescribedSelect, Select.UnionAbl
         return compose(this.criteria, this, UnionType.UNION_DISTINCT, function);
     }
 
+    /*################################## blow OrderByClause method ##################################*/
+
     @Override
-    public final Select asSelect() {
+    public final LimitClause<C> orderBy(SortPart sortPart) {
+        doOrderBy(sortPart);
         return this;
     }
+
+    @Override
+    public final LimitClause<C> orderBy(List<SortPart> sortPartList) {
+        doOrderBy(sortPartList);
+        return this;
+    }
+
+    @Override
+    public final LimitClause<C> orderBy(Function<C, List<SortPart>> function) {
+        doOrderBy(function);
+        return this;
+    }
+
+    @Override
+    public final LimitClause<C> ifOrderBy(Predicate<C> test, SortPart sortPart) {
+        doOrderBy(test, sortPart);
+        return this;
+    }
+
+    @Override
+    public final LimitClause<C> ifOrderBy(Predicate<C> test, Function<C, List<SortPart>> function) {
+        doOrderBy(test, function);
+        return this;
+    }
+
+
+    /*################################## blow LimitClause method ##################################*/
+
+    @Override
+    public final SelectAble limit(int rowCount) {
+        doLimit(rowCount);
+        return this;
+    }
+
+    @Override
+    public final SelectAble limit(int offset, int rowCount) {
+        doLimit(offset, rowCount);
+        return this;
+    }
+
+    @Override
+    public final SelectAble limit(Function<C, Pair<Integer, Integer>> function) {
+        doLimit(function);
+        return this;
+    }
+
+    @Override
+    public final SelectAble ifLimit(Predicate<C> predicate, int rowCount) {
+        doLimit(predicate, rowCount);
+        return this;
+    }
+
+    @Override
+    public final SelectAble ifLimit(Predicate<C> predicate, int offset, int rowCount) {
+        doLimit(predicate, offset, rowCount);
+        return this;
+    }
+
+    @Override
+    public final SelectAble ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
+        doLimit(predicate, function);
+        return this;
+    }
+
+
+    @Override
+    public final Select asSelect() {
+        asQuery();
+        return this;
+    }
+
+
 
     /*################################## blow static inner class ##################################*/
 
@@ -73,11 +149,12 @@ abstract class ComposeSelects<C> implements SelfDescribedSelect, Select.UnionAbl
         }
 
         @Override
-        public final void appendSQL(SQLContext context) {
+        void beforePart(SQLContext context) {
             StringBuilder builder = context.stringBuilder()
                     .append(" (");
-            context.dml().select(this.enclosedSelect, context);
+            context.dql().select(this.enclosedSelect, context);
             builder.append(" )");
+
         }
 
     }
@@ -98,15 +175,17 @@ abstract class ComposeSelects<C> implements SelfDescribedSelect, Select.UnionAbl
         }
 
         @Override
-        public final void appendSQL(SQLContext context) {
-            context.dml().select(leftSelect, context);
+        void beforePart(SQLContext context) {
+            DQL dql = context.dql();
+            dql.select(leftSelect, context);
 
             context.stringBuilder()
                     .append(" ")
                     .append(modifier.render())
                     .append(" ");
 
-            context.dml().select(rightSelect, context);
+            dql.select(rightSelect, context);
+
         }
 
 

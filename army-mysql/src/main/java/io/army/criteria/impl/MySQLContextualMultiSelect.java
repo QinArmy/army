@@ -58,7 +58,7 @@ final class MySQLContextualMultiSelect<C> extends StandardContextualMultiSelect<
 
     @Override
     public MySQLHavingAble<C> groupByAndRollUp(Function<C, List<Expression<?>>> function) {
-        super.groupBy(function);
+       // super.groupBy(function);
         this.withRollUp = true;
         return this;
     }
@@ -67,7 +67,7 @@ final class MySQLContextualMultiSelect<C> extends StandardContextualMultiSelect<
     public MySQLHavingAble<C> ifGroupByAndRollUp(Predicate<C> predicate, Function<C, MySQLGroup> expFunction) {
         if (predicate.test(this.criteria)) {
             MySQLGroup mySQLGroup = expFunction.apply(this.criteria);
-            super.groupBy(mySQLGroup.groupExpList());
+            // super.groupBy(mySQLGroup.groupExpList());
             this.withRollUp = mySQLGroup.withRollUp();
         }
         return this;

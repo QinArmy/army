@@ -89,13 +89,15 @@ public interface RowSubQuery extends SubQuery {
 
     interface RowSubQueryGroupByAble<C> extends RowSubQueryOrderByAble<C> {
 
-        RowSubQueryHavingAble<C> groupBy(Expression<?> groupExp);
+        RowSubQueryHavingAble<C> groupBy(SortPart sortPart);
 
-        RowSubQueryHavingAble<C> groupBy(Function<C, List<Expression<?>>> function);
+        RowSubQueryHavingAble<C> groupBy(List<SortPart> sortPartList);
 
-        RowSubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, Expression<?> groupExp);
+        RowSubQueryHavingAble<C> groupBy(Function<C, List<SortPart>> function);
 
-        RowSubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction);
+        RowSubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, SortPart sortPart);
+
+        RowSubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, Function<C, List<SortPart>> expFunction);
 
     }
 
@@ -113,13 +115,15 @@ public interface RowSubQuery extends SubQuery {
 
     interface RowSubQueryOrderByAble<C> extends RowSubQueryLimitAble<C> {
 
-        RowSubQueryLimitAble<C> orderBy(Expression<?> groupExp);
+        RowSubQueryLimitAble<C> orderBy(SortPart sortPart);
 
-        RowSubQueryLimitAble<C> orderBy(Function<C, List<Expression<?>>> function);
+        RowSubQueryLimitAble<C> orderBy(List<SortPart> sortPartList);
 
-        RowSubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, Expression<?> groupExp);
+        RowSubQueryLimitAble<C> orderBy(Function<C, List<SortPart>> function);
 
-        RowSubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction);
+        RowSubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, SortPart sortPart);
+
+        RowSubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, Function<C, List<SortPart>> expFunction);
     }
 
 

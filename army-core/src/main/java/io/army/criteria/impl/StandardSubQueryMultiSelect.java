@@ -9,12 +9,12 @@ import io.army.meta.TableMeta;
 
 import java.util.Map;
 
-final class SubQueryMultiSelect<C> extends AbstractMultiSelect<C> implements SubQuerySelect<C> {
+final class StandardSubQueryMultiSelect<C> extends AbstractStandardSelect<C> implements SubQuerySelect<C> {
 
 
     private Map<String, Selection> selectionMap;
 
-    SubQueryMultiSelect(C criteria) {
+    StandardSubQueryMultiSelect(C criteria) {
         super(criteria);
     }
 
@@ -26,7 +26,7 @@ final class SubQueryMultiSelect<C> extends AbstractMultiSelect<C> implements Sub
 
     @Override
     public String toString() {
-        return "#SubQuery";
+        return "#SubQuery@" + System.identityHashCode(this);
     }
 
     @Override
@@ -45,7 +45,7 @@ final class SubQueryMultiSelect<C> extends AbstractMultiSelect<C> implements Sub
 
     @Override
     public void appendSQL(SQLContext context) {
-        context.dml().subQuery(this, context);
+        context.dql().subQuery(this, context);
     }
 
     @Override
@@ -68,7 +68,12 @@ final class SubQueryMultiSelect<C> extends AbstractMultiSelect<C> implements Sub
     }
 
     @Override
-    void afterDoAsSelect() {
+    void doAsSelect() {
 
+    }
+
+    @Override
+    int tableWrapperCount() {
+        return 6;
     }
 }

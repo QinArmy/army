@@ -11,15 +11,18 @@ import java.util.function.Predicate;
  */
 public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expression<E> {
 
+    /*################################## blow  interfaces  ##################################*/
 
-    interface ScalarSubQueryAble<E> extends SubQueryAble {
+
+    interface ScalarSubQuerySQLAble extends ColumnSubQuerySQLAble, RowSubQuerySQLAble {
+
+    }
+
+    interface ScalarSubQueryAble<E> extends ScalarSubQuerySQLAble, ColumnSubQueryAble<E>, RowSubQueryAble {
 
         ScalarSubQuery<E> asSubQuery();
     }
 
-    interface ScalarSubQuerySQLAble extends SQLAble {
-
-    }
 
     interface ScalarSubQuerySelectionAble<E, C> extends ScalarSubQuerySQLAble {
 
@@ -29,7 +32,7 @@ public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expre
 
     }
 
-    interface ScalarSubQueryFromAble<E, C> extends ScalarSubQuerySQLAble, ScalarSubQueryAble<E> {
+    interface ScalarSubQueryFromAble<E, C> extends ScalarSubQueryAble<E> {
 
         ScalarSubQueryFromAble<E, C> from(TableMeta<?> tableMeta, String tableAlias);
 
@@ -75,8 +78,6 @@ public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expre
 
         ScalarSubQueryWhereAndAble<E, C> and(IPredicate predicate);
 
-        ScalarSubQueryWhereAndAble<E, C> and(Function<C, IPredicate> function);
-
         ScalarSubQueryWhereAndAble<E, C> ifAnd(Predicate<C> testPredicate, IPredicate predicate);
 
         ScalarSubQueryWhereAndAble<E, C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function);
@@ -86,13 +87,15 @@ public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expre
 
     interface ScalarSubQueryGroupByAble<E, C> extends ScalarSubQueryOrderByAble<E, C> {
 
-        ScalarSubQueryHavingAble<E, C> groupBy(Expression<?> groupExp);
+        ScalarSubQueryHavingAble<E, C> groupBy(SortPart sortPart);
 
-        ScalarSubQueryHavingAble<E, C> groupBy(Function<C, List<Expression<?>>> function);
+        ScalarSubQueryHavingAble<E, C> groupBy(List<SortPart> sortPartList);
 
-        ScalarSubQueryHavingAble<E, C> ifGroupBy(Predicate<C> predicate, Expression<?> groupExp);
+        ScalarSubQueryHavingAble<E, C> groupBy(Function<C, List<SortPart>> function);
 
-        ScalarSubQueryHavingAble<E, C> ifGroupBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction);
+        ScalarSubQueryHavingAble<E, C> ifGroupBy(Predicate<C> predicate, SortPart sortPart);
+
+        ScalarSubQueryHavingAble<E, C> ifGroupBy(Predicate<C> predicate, Function<C, List<SortPart>> function);
 
     }
 
@@ -110,13 +113,15 @@ public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expre
 
     interface ScalarSubQueryOrderByAble<E, C> extends ScalarSubQueryLimitAble<E, C> {
 
-        ScalarSubQueryLimitAble<E, C> orderBy(Expression<?> groupExp);
+        ScalarSubQueryLimitAble<E, C> orderBy(SortPart sortPart);
 
-        ScalarSubQueryLimitAble<E, C> orderBy(Function<C, List<Expression<?>>> function);
+        ScalarSubQueryLimitAble<E, C> orderBy(List<SortPart> sortPartList);
 
-        ScalarSubQueryLimitAble<E, C> ifOrderBy(Predicate<C> predicate, Expression<?> groupExp);
+        ScalarSubQueryLimitAble<E, C> orderBy(Function<C, List<SortPart>> function);
 
-        ScalarSubQueryLimitAble<E, C> ifOrderBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction);
+        ScalarSubQueryLimitAble<E, C> ifOrderBy(Predicate<C> test, SortPart sortPart);
+
+        ScalarSubQueryLimitAble<E, C> ifOrderBy(Predicate<C> test, Function<C, List<SortPart>> function);
     }
 
 

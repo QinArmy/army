@@ -1,10 +1,10 @@
 package io.army.dialect.mysql;
 
 import io.army.SessionFactory;
+import io.army.dialect.DML;
+import io.army.dialect.DQL;
 import io.army.dialect.SQLDialect;
 import io.army.dialect.TableDDL;
-import io.army.dialect.TableDML;
-import io.army.dialect.TableDQL;
 
 import java.util.Set;
 
@@ -37,12 +37,12 @@ class MySQL80Dialect extends MySQL57Dialect {
     }
 
     @Override
-    protected TableDML createTableDML() {
+    protected DML createTableDML() {
         return super.createTableDML();
     }
 
     @Override
-    protected TableDQL createTableDQL() {
+    protected DQL createTableDQL() {
         return super.createTableDQL();
     }
 }

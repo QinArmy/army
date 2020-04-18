@@ -49,12 +49,12 @@ class MySQL57Dialect extends AbstractDialect {
     }
 
     @Override
-    protected TableDML createTableDML() {
+    protected DML createTableDML() {
         return new MySQL57TableDML(this);
     }
 
     @Override
-    protected TableDQL createTableDQL() {
+    protected DQL createTableDQL() {
         return null;
     }
 }

@@ -16,7 +16,7 @@ import java.util.function.Predicate;
 final class ColumnSubQueryAdaptor<E, C> implements ColumnSubQuery<E>, ColumnSubQuery.ColumnSubQuerySelectionAble<E, C>
         , ColumnSubQuery.ColumnSubQueryFromAble<E, C>, ColumnSubQuery.ColumnSubQueryOnAble<E, C>
         , ColumnSubQuery.ColumnSubQueryWhereAndAble<E, C>, ColumnSubQuery.ColumnSubQueryJoinAble<E, C>
-        , ColumnSubQuery.ColumnSubQueryHavingAble<E, C>, InnerSubQuery {
+        , ColumnSubQuery.ColumnSubQueryHavingAble<E, C>, ColumnSubQuery.ColumnSubQueryUnionAble<E, C>, InnerSubQuery {
 
     private final SubQuerySelect<C> actualSelect;
 
@@ -190,27 +190,32 @@ final class ColumnSubQueryAdaptor<E, C> implements ColumnSubQuery<E>, ColumnSubQ
     /*################################## blow ColumnSubQueryGroupByAble method ##################################*/
 
     @Override
-    public ColumnSubQuery.ColumnSubQueryHavingAble<E, C> groupBy(Expression<?> groupExp) {
-        this.actualSelect.groupBy(groupExp);
+    public ColumnSubQueryHavingAble<E, C> groupBy(SortPart sortPart) {
+        this.actualSelect.groupBy(sortPart);
         return this;
     }
 
     @Override
-    public ColumnSubQuery.ColumnSubQueryHavingAble<E, C> groupBy(Function<C, List<Expression<?>>> function) {
+    public ColumnSubQueryHavingAble<E, C> groupBy(List<SortPart> sortPartList) {
+        this.actualSelect.groupBy(sortPartList);
+        return this;
+    }
+
+    @Override
+    public ColumnSubQueryHavingAble<E, C> groupBy(Function<C, List<SortPart>> function) {
         this.actualSelect.groupBy(function);
         return this;
     }
 
     @Override
-    public ColumnSubQuery.ColumnSubQueryHavingAble<E, C> ifGroupBy(Predicate<C> predicate, Expression<?> groupExp) {
-        this.actualSelect.ifGroupBy(predicate, groupExp);
+    public ColumnSubQueryHavingAble<E, C> ifGroupBy(Predicate<C> predicate, SortPart sortPart) {
+        this.actualSelect.ifGroupBy(predicate, sortPart);
         return this;
     }
 
     @Override
-    public ColumnSubQuery.ColumnSubQueryHavingAble<E, C> ifGroupBy(
-            Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction) {
-        this.actualSelect.ifGroupBy(predicate, expFunction);
+    public ColumnSubQueryHavingAble<E, C> ifGroupBy(Predicate<C> predicate, Function<C, List<SortPart>> function) {
+        this.actualSelect.ifGroupBy(predicate, function);
         return this;
     }
 
@@ -246,27 +251,32 @@ final class ColumnSubQueryAdaptor<E, C> implements ColumnSubQuery<E>, ColumnSubQ
     /*################################## blow ColumnSubQueryOrderByAble method ##################################*/
 
     @Override
-    public ColumnSubQuery.ColumnSubQueryLimitAble<E, C> orderBy(Expression<?> groupExp) {
-        this.actualSelect.orderBy(groupExp);
+    public ColumnSubQueryLimitAble<E, C> orderBy(SortPart sortPart) {
+        this.actualSelect.orderBy(sortPart);
         return this;
     }
 
     @Override
-    public ColumnSubQuery.ColumnSubQueryLimitAble<E, C> orderBy(Function<C, List<Expression<?>>> function) {
+    public ColumnSubQueryLimitAble<E, C> orderBy(List<SortPart> sortPartList) {
+        this.actualSelect.orderBy(sortPartList);
+        return this;
+    }
+
+    @Override
+    public ColumnSubQueryLimitAble<E, C> orderBy(Function<C, List<SortPart>> function) {
         this.actualSelect.orderBy(function);
         return this;
     }
 
     @Override
-    public ColumnSubQuery.ColumnSubQueryLimitAble<E, C> ifOrderBy(Predicate<C> predicate, Expression<?> groupExp) {
-        this.actualSelect.ifOrderBy(predicate, groupExp);
+    public ColumnSubQueryLimitAble<E, C> ifOrderBy(Predicate<C> test, SortPart sortPart) {
+        this.actualSelect.ifOrderBy(test, sortPart);
         return this;
     }
 
     @Override
-    public ColumnSubQuery.ColumnSubQueryLimitAble<E, C> ifOrderBy(
-            Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction) {
-        this.actualSelect.ifOrderBy(predicate, expFunction);
+    public ColumnSubQueryLimitAble<E, C> ifOrderBy(Predicate<C> test, Function<C, List<SortPart>> function) {
+        this.actualSelect.ifOrderBy(test, function);
         return this;
     }
 
@@ -358,8 +368,8 @@ final class ColumnSubQueryAdaptor<E, C> implements ColumnSubQuery<E>, ColumnSubQ
     }
 
     @Override
-    public List<Expression<?>> groupExpList() {
-        return this.actualSelect.groupExpList();
+    public List<SortPart> groupPartList() {
+        return this.actualSelect.groupPartList();
     }
 
     @Override
@@ -368,8 +378,8 @@ final class ColumnSubQueryAdaptor<E, C> implements ColumnSubQuery<E>, ColumnSubQ
     }
 
     @Override
-    public List<Expression<?>> sortExpList() {
-        return this.actualSelect.sortExpList();
+    public List<SortPart> orderPartList() {
+        return this.actualSelect.orderPartList();
     }
 
     @Override

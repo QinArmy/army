@@ -121,23 +121,25 @@ public abstract class SQLS extends AbstractSQLS {
     /*################################## blow sql key word operate method ##################################*/
 
     public static IPredicate exists(SubQuery subQuery) {
-        return new ExistsPredicate(subQuery);
+        return UnaryPredicate.build(UnaryOperator.EXISTS, subQuery);
     }
 
     public static <C> IPredicate exists(Function<C, SubQuery> function) {
-        return new ExistsPredicate(function.apply(
-                CriteriaContextHolder.getContext().criteria()
-        ));
+        return UnaryPredicate.build(
+                UnaryOperator.EXISTS, function.apply(
+                        CriteriaContextHolder.getContext().criteria()
+                ));
     }
 
     public static IPredicate notExists(SubQuery subQuery) {
-        return new ExistsPredicate(true, subQuery);
+        return UnaryPredicate.build(UnaryOperator.NOT_EXISTS, subQuery);
     }
 
     public static <C> IPredicate notExists(Function<C, SubQuery> function) {
-        return new ExistsPredicate(true, function.apply(
-                CriteriaContextHolder.getContext().criteria()
-        ));
+        return UnaryPredicate.build(
+                UnaryOperator.NOT_EXISTS, function.apply(
+                        CriteriaContextHolder.getContext().criteria()
+                ));
     }
 
     public static Row row(List<Expression<?>> columnList) {

@@ -16,8 +16,8 @@ final class ObjectUpdateContextImpl extends UpdateSQLContextImpl  {
     private final String safeParentAlias;
 
 
-    ObjectUpdateContextImpl(TableDML dml, TableMeta<?> childMeta, String tableAlias) {
-        super(dml, SQLStatement.OBJECT_UPDATE,childMeta,tableAlias);
+    ObjectUpdateContextImpl(DML dml, TableMeta<?> childMeta, String tableAlias) {
+        super(dml, SQLStatement.OBJECT_UPDATE, childMeta, tableAlias);
 
         Assert.notNull(childMeta.parentMeta(), "childMeta not child mode");
         this.parentAliasOfChild = "parentOf" + tableAlias;

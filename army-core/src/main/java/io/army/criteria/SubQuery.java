@@ -14,17 +14,15 @@ public interface SubQuery extends SelfDescribed, DerivedTable, QueryAble {
 
     /*################################## blow interfaces ##################################*/
 
+    interface SubQuerySQLAble extends SQLAble {
+
+    }
 
     interface SubQueryAble extends SubQuerySQLAble {
 
         SubQuery asSubQuery();
 
     }
-
-    interface SubQuerySQLAble extends SQLAble {
-
-    }
-
 
     interface SubQuerySelectPartAble<C> extends SubQuerySQLAble {
 
@@ -40,7 +38,7 @@ public interface SubQuery extends SelfDescribed, DerivedTable, QueryAble {
     }
 
 
-    interface SubQueryFromAble<C> extends SubQueryAble {
+    interface SubQueryFromAble<C> extends SubQueryUnionClause<C> {
 
         SubQueryOnAble<C> from(TableMeta<?> tableMeta, String tableAlias);
 
@@ -97,13 +95,15 @@ public interface SubQuery extends SelfDescribed, DerivedTable, QueryAble {
 
     interface SubQueryGroupByAble<C> extends SubQueryOrderByAble<C> {
 
-        SubQueryHavingAble<C> groupBy(Expression<?> groupExp);
+        SubQueryHavingAble<C> groupBy(SortPart sortPart);
 
-        SubQueryHavingAble<C> groupBy(Function<C, List<Expression<?>>> function);
+        SubQueryHavingAble<C> groupBy(List<SortPart> sortPartList);
 
-        SubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, Expression<?> groupExp);
+        SubQueryHavingAble<C> groupBy(Function<C, List<SortPart>> function);
 
-        SubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction);
+        SubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, SortPart sortPart);
+
+        SubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, Function<C, List<SortPart>> function);
 
     }
 
@@ -119,34 +119,41 @@ public interface SubQuery extends SelfDescribed, DerivedTable, QueryAble {
     }
 
 
-    interface SubQueryOrderByAble<C> extends SubQueryLimitAble<C> {
+    interface SubQueryOrderByAble<C> extends SubQueryOrderByClause<C>, SubQueryLimitAble<C> {
 
-        SubQueryLimitAble<C> orderBy(Expression<?> groupExp);
+        SubQueryLimitAble<C> orderBy(SortPart sortPart);
 
-        SubQueryLimitAble<C> orderBy(Function<C, List<Expression<?>>> function);
+        SubQueryLimitAble<C> orderBy(List<SortPart> sortPartList);
 
-        SubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, Expression<?> groupExp);
+        SubQueryLimitAble<C> orderBy(Function<C, List<SortPart>> function);
 
-        SubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction);
+        SubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, SortPart sortPart);
+
+        SubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, Function<C, List<SortPart>> function);
+
     }
 
 
-    interface SubQueryLimitAble<C> extends SubQueryUnionAble<C> {
+    interface SubQueryLimitAble<C> extends SubQueryLimitClause<C>, SubQueryUnionClause<C> {
 
-        SubQueryUnionAble<C> limit(int rowCount);
+        SubQueryUnionClause<C> limit(int rowCount);
 
-        SubQueryUnionAble<C> limit(int offset, int rowCount);
+        SubQueryUnionClause<C> limit(int offset, int rowCount);
 
-        SubQueryUnionAble<C> limit(Function<C, Pair<Integer, Integer>> function);
+        SubQueryUnionClause<C> limit(Function<C, Pair<Integer, Integer>> function);
 
-        SubQueryUnionAble<C> ifLimit(Predicate<C> predicate, int rowCount);
+        SubQueryUnionClause<C> ifLimit(Predicate<C> predicate, int rowCount);
 
-        SubQueryUnionAble<C> ifLimit(Predicate<C> predicate, int offset, int rowCount);
+        SubQueryUnionClause<C> ifLimit(Predicate<C> predicate, int offset, int rowCount);
 
-        SubQueryUnionAble<C> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
+        SubQueryUnionClause<C> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
     }
 
-    interface SubQueryUnionAble<C> extends SubQueryAble {
+    interface SubQueryUnionAble<C> extends SubQueryUnionClause<C>, SubQueryOrderByClause<C> {
+
+    }
+
+    interface SubQueryUnionClause<C> extends SubQueryAble {
 
         SubQueryUnionAble<C> brackets();
 
@@ -156,6 +163,34 @@ public interface SubQuery extends SelfDescribed, DerivedTable, QueryAble {
 
         <S extends SubQuery> SubQueryUnionAble<C> unionDistinct(Function<C, S> function);
 
+    }
+
+    interface SubQueryOrderByClause<C> extends SubQueryLimitClause<C> {
+
+        SubQueryLimitClause<C> orderBy(SortPart sortPart);
+
+        SubQueryLimitClause<C> orderBy(List<SortPart> sortPartList);
+
+        SubQueryLimitClause<C> orderBy(Function<C, List<SortPart>> function);
+
+        SubQueryLimitClause<C> ifOrderBy(Predicate<C> test, SortPart sortPart);
+
+        SubQueryLimitClause<C> ifOrderBy(Predicate<C> test, Function<C, List<SortPart>> function);
+    }
+
+    interface SubQueryLimitClause<C> extends SubQueryAble {
+
+        SubQueryAble limit(int rowCount);
+
+        SubQueryAble limit(int offset, int rowCount);
+
+        SubQueryAble limit(Function<C, Pair<Integer, Integer>> function);
+
+        SubQueryAble ifLimit(Predicate<C> predicate, int rowCount);
+
+        SubQueryAble ifLimit(Predicate<C> predicate, int offset, int rowCount);
+
+        SubQueryAble ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
     }
 
 

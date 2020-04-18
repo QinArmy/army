@@ -2,59 +2,64 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
-import io.army.criteria.SQLOperator;
-import io.army.dialect.ParamWrapper;
-import io.army.dialect.SQL;
 import io.army.meta.mapping.MappingType;
-
-import java.util.List;
 
 final class UnaryExpression<E> extends AbstractExpression<E> {
 
-    private final Expression<?> one;
+    static <E> UnaryExpression<E> build(Expression<E> expression, UnaryOperator unaryOperator) {
+        return new UnaryExpression<>(expression, unaryOperator);
+    }
 
-    private final UnaryOperator unaryOperator;
+    private final Expression<E> expression;
 
-    UnaryExpression(Expression<?> one, UnaryOperator unaryOperator) {
-        this.one = one;
-        this.unaryOperator = unaryOperator;
+    private final UnaryOperator operator;
+
+    private UnaryExpression(Expression<E> expression, UnaryOperator operator) {
+        this.expression = expression;
+        this.operator = operator;
     }
 
 
     @Override
     public MappingType mappingType() {
-        return one.mappingType();
+        return expression.mappingType();
     }
 
 
     @Override
     protected void afterSpace(SQLContext context) {
-        StringBuilder builder = context.stringBuilder();
-        if (unaryOperator.position() == SQLOperator.Position.LEFT) {
-            builder.append(unaryOperator.rendered())
-                    .append(" ");
-            one.appendSQL(context);
-        } else if (unaryOperator.position() == SQLOperator.Position.RIGHT) {
-            one.appendSQL(context);
-            builder.append(unaryOperator.rendered())
-                    .append(" ");
-        } else {
-            throw new IllegalStateException(String.format("UnaryOperator[%s]'s position error.", unaryOperator));
+        switch (operator.position()) {
+            case LEFT:
+                context.stringBuilder()
+                        .append(operator.rendered());
+                expression.appendSQL(context);
+                break;
+            case RIGHT:
+                expression.appendSQL(context);
+                context.stringBuilder()
+                        .append(" ")
+                        .append(operator.rendered());
+                break;
+            default:
+                throw new IllegalStateException(String.format("UnaryOperator[%s]'s position error.", operator));
         }
     }
 
     @Override
     public String beforeAs() {
         StringBuilder builder = new StringBuilder();
-        if (unaryOperator.position() == SQLOperator.Position.LEFT) {
-            builder.append(unaryOperator.rendered())
-                    .append(one);
-        } else if (unaryOperator.position() == SQLOperator.Position.RIGHT) {
-            builder.append(one)
-                    .append(" ")
-                    .append(unaryOperator.rendered());
-        } else {
-            throw new IllegalStateException(String.format("UnaryOperator[%s]'s position error.", unaryOperator));
+        switch (operator.position()) {
+            case LEFT:
+                builder.append(operator.rendered())
+                        .append(expression);
+                break;
+            case RIGHT:
+                builder.append(expression)
+                        .append(" ")
+                        .append(operator.rendered());
+                break;
+            default:
+                throw new IllegalStateException(String.format("UnaryOperator[%s]'s position error.", operator));
         }
         return builder.toString();
     }

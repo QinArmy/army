@@ -1,30 +1,43 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.ColumnSubQuery;
+import io.army.criteria.DualOperator;
+import io.army.criteria.Expression;
+import io.army.criteria.SQLContext;
 import io.army.util.Assert;
 
 final class ColumnSubQueryPredicate extends AbstractPredicate {
+
+    static ColumnSubQueryPredicate build(Expression<?> operand, DualOperator operator
+            , SubQueryOperator subQueryOperator, ColumnSubQuery<?> subQuery) {
+        switch (subQueryOperator) {
+            case ALL:
+            case ANY:
+            case SOME:
+                break;
+            default:
+                throw new IllegalArgumentException(String.format("subQueryOperator[%s] error.", subQuery));
+        }
+        return new ColumnSubQueryPredicate(operand, operator, subQueryOperator, subQuery);
+    }
 
     private final Expression<?> operand;
 
     private final DualOperator operator;
 
-    private final KeyOperator keyOperator;
+    private final SubQueryOperator keyOperator;
 
-    private final ColumnSubQuery<?> columnSubQuery;
+    private final ColumnSubQuery<?> subQuery;
 
-    ColumnSubQueryPredicate(Expression<?> operand, DualOperator operator
-            , KeyOperator keyOperator, ColumnSubQuery<?> columnSubQuery) {
+    private ColumnSubQueryPredicate(Expression<?> operand, DualOperator operator
+            , SubQueryOperator keyOperator, ColumnSubQuery<?> subQuery) {
 
-        Assert.isTrue(operator.relational()
-                        || operator == DualOperator.IN
-                        || operator == DualOperator.NOT_IN
-                , "operator error.");
+        Assert.isTrue(operator.relational(), "operator isn't relational operator.");
 
         this.operand = operand;
         this.operator = operator;
         this.keyOperator = keyOperator;
-        this.columnSubQuery = columnSubQuery;
+        this.subQuery = subQuery;
     }
 
 
@@ -37,7 +50,7 @@ final class ColumnSubQueryPredicate extends AbstractPredicate {
                 .append(" ")
                 .append(keyOperator.rendered())
                 .append(" ");
-        columnSubQuery.appendSQL(context);
+        subQuery.appendSQL(context);
     }
 
     @SuppressWarnings("all")
@@ -51,7 +64,7 @@ final class ColumnSubQueryPredicate extends AbstractPredicate {
                 .append(" ")
                 .append(keyOperator.rendered())
                 .append(" ")
-                .append(columnSubQuery)
+                .append(subQuery)
                 .append(")")
                 .toString();
 

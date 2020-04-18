@@ -73,8 +73,4 @@ final class ParamExpressionImp<E> extends AbstractNoNOperationExpression<E> impl
         return "?";
     }
 
-    @Override
-    public Boolean sortExp() {
-        throw new UnsupportedOperationException(ERROR_MSG);
-    }
 }

@@ -771,7 +771,7 @@ abstract class AbstractPostgreMultiSelect<C> extends AbstractSQL implements Post
         this.selectPartList = Collections.unmodifiableList(this.selectPartList);
         this.predicateList = Collections.unmodifiableList(this.predicateList);
 
-        // immutable groupExpList and havingList
+        // immutable groupPartList and havingList
         if (this.groupExpList == null) {
             this.groupExpList = Collections.emptyList();
             this.havingList = Collections.emptyList();
@@ -841,9 +841,8 @@ abstract class AbstractPostgreMultiSelect<C> extends AbstractSQL implements Post
     }
 
     @Override
-    public final List<Expression<?>> groupExpList() {
-        Assert.state(this.prepared, NOT_PREPARED_MSG);
-        return this.groupExpList;
+    public final List<SortPart> groupPartList() {
+        return null;
     }
 
     @Override
@@ -853,9 +852,8 @@ abstract class AbstractPostgreMultiSelect<C> extends AbstractSQL implements Post
     }
 
     @Override
-    public final List<Expression<?>> sortExpList() {
-        Assert.state(this.prepared, NOT_PREPARED_MSG);
-        return this.sortExpList;
+    public final List<SortPart> orderPartList() {
+        return null;
     }
 
     @Override

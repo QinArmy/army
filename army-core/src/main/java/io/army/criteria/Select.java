@@ -10,9 +10,18 @@ import java.util.function.Predicate;
 @SuppressWarnings("unused")
 public interface Select extends SQLDebug, SQLAble, QueryAble {
 
+    /*################################## blow select method ##################################*/
+
 
     boolean requiredBrackets();
 
+
+    /*################################## blow select clause  interfaces ##################################*/
+
+
+    interface SelectSQLAble extends SQLAble {
+
+    }
 
     interface SelectAble extends SelectSQLAble {
         /*
@@ -20,10 +29,6 @@ public interface Select extends SQLDebug, SQLAble, QueryAble {
          * @see io.army.criteria.impl.CriteriaContextHolder.clearContext
          */
         Select asSelect();
-
-    }
-
-    interface SelectSQLAble extends SQLAble {
 
     }
 
@@ -42,7 +47,7 @@ public interface Select extends SQLDebug, SQLAble, QueryAble {
     }
 
 
-    interface FromAble<C> extends NoJoinFromAble<C> {
+    interface FromAble<C> extends UnionClause<C> {
 
         JoinAble<C> from(TableMeta<?> tableMeta, String tableAlias);
 
@@ -50,12 +55,6 @@ public interface Select extends SQLDebug, SQLAble, QueryAble {
 
     }
 
-    interface NoJoinFromAble<C> extends WhereAble<C> {
-
-        WhereAble<C> from(TableMeta<?> tableMeta, String tableAlias);
-
-        WhereAble<C> from(Function<C, SubQuery> function, String subQueryAlia);
-    }
 
     interface OnAble<C> extends SelectSQLAble {
 
@@ -106,15 +105,15 @@ public interface Select extends SQLDebug, SQLAble, QueryAble {
 
     interface GroupByAble<C> extends OrderByAble<C> {
 
-        HavingAble<C> groupBy(Expression<?> groupExp);
+        HavingAble<C> groupBy(SortPart sortPart);
 
-        HavingAble<C> groupBy(List<Expression<?>> groupExpList);
+        HavingAble<C> groupBy(List<SortPart> sortPartList);
 
-        HavingAble<C> groupBy(Function<C, List<Expression<?>>> function);
+        HavingAble<C> groupBy(Function<C, List<SortPart>> function);
 
-        HavingAble<C> ifGroupBy(Predicate<C> predicate, Expression<?> groupExp);
+        HavingAble<C> ifGroupBy(Predicate<C> test, SortPart sortPart);
 
-        HavingAble<C> ifGroupBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction);
+        HavingAble<C> ifGroupBy(Predicate<C> test, Function<C, List<SortPart>> function);
 
     }
 
@@ -130,19 +129,26 @@ public interface Select extends SQLDebug, SQLAble, QueryAble {
     }
 
 
-    interface OrderByAble<C> extends LimitAble<C> {
+    interface OrderByAble<C> extends OrderByClause<C>, LimitAble<C> {
 
-        LimitAble<C> orderBy(Expression<?> orderExp);
+        @Override
+        LimitAble<C> orderBy(SortPart sortPart);
 
-        LimitAble<C> orderBy(Function<C, List<Expression<?>>> function);
+        @Override
+        LimitClause<C> orderBy(List<SortPart> sortPartList);
 
-        LimitAble<C> ifOrderBy(Predicate<C> predicate, Expression<?> orderExp);
+        @Override
+        LimitAble<C> orderBy(Function<C, List<SortPart>> function);
 
-        LimitAble<C> ifOrderBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction);
+        @Override
+        LimitAble<C> ifOrderBy(Predicate<C> test, SortPart sortPart);
+
+        @Override
+        LimitAble<C> ifOrderBy(Predicate<C> test, Function<C, List<SortPart>> function);
     }
 
 
-    interface LimitAble<C> extends LockAble<C> {
+    interface LimitAble<C> extends LimitClause<C>, LockAble<C> {
 
         LockAble<C> limit(int rowCount);
 
@@ -157,19 +163,24 @@ public interface Select extends SQLDebug, SQLAble, QueryAble {
         LockAble<C> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
     }
 
-    interface LockAble<C> extends SelectAble {
+    interface LockAble<C> extends SelectAble, UnionClause<C> {
 
-        UnionAble<C> lock(LockMode lockMode);
+        SelectAble lock(LockMode lockMode);
 
-        UnionAble<C> lock(Function<C, LockMode> function);
+        SelectAble lock(Function<C, LockMode> function);
 
-        UnionAble<C> ifLock(Predicate<C> predicate, LockMode lockMode);
+        SelectAble ifLock(Predicate<C> predicate, LockMode lockMode);
 
-        UnionAble<C> ifLock(Predicate<C> predicate, Function<C, LockMode> function);
+        SelectAble ifLock(Predicate<C> predicate, Function<C, LockMode> function);
 
     }
 
-    interface UnionAble<C> extends SelectAble {
+
+    interface UnionAble<C> extends UnionClause<C>, OrderByClause<C> {
+
+    }
+
+    interface UnionClause<C> extends SelectAble {
 
         UnionAble<C> brackets();
 
@@ -179,6 +190,34 @@ public interface Select extends SQLDebug, SQLAble, QueryAble {
 
         <S extends Select> UnionAble<C> unionDistinct(Function<C, S> function);
 
+    }
+
+    interface OrderByClause<C> extends LimitClause<C> {
+
+        LimitClause<C> orderBy(SortPart sortPart);
+
+        LimitClause<C> orderBy(List<SortPart> sortPartList);
+
+        LimitClause<C> orderBy(Function<C, List<SortPart>> function);
+
+        LimitClause<C> ifOrderBy(Predicate<C> test, SortPart sortPart);
+
+        LimitClause<C> ifOrderBy(Predicate<C> test, Function<C, List<SortPart>> function);
+    }
+
+    interface LimitClause<C> extends SelectAble {
+
+        SelectAble limit(int rowCount);
+
+        SelectAble limit(int offset, int rowCount);
+
+        SelectAble limit(Function<C, Pair<Integer, Integer>> function);
+
+        SelectAble ifLimit(Predicate<C> predicate, int rowCount);
+
+        SelectAble ifLimit(Predicate<C> predicate, int offset, int rowCount);
+
+        SelectAble ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
     }
 
 

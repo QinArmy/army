@@ -55,13 +55,13 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery
     }
 
     @Override
-    public RowSubQueryFromAble<C> select(Distinct distinct, SelectPart selectPart) {
+    public final RowSubQueryFromAble<C> select(Distinct distinct, SelectPart selectPart) {
         this.actualSelect.select(distinct, selectPart);
         return this;
     }
 
     @Override
-    public RowSubQueryFromAble<C> select(SelectPart selectPart) {
+    public final RowSubQueryFromAble<C> select(SelectPart selectPart) {
         this.actualSelect.select(selectPart);
         return this;
     }
@@ -81,13 +81,13 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery
     /*################################## blow RowSubQueryFromAble method ##################################*/
 
     @Override
-    public RowSubQueryFromAble<C> from(TableMeta<?> tableMeta, String tableAlias) {
+    public final RowSubQueryFromAble<C> from(TableMeta<?> tableMeta, String tableAlias) {
         this.actualSelect.from(tableMeta, tableAlias);
         return this;
     }
 
     @Override
-    public RowSubQueryFromAble<C> from(Function<C, SubQuery> function, String subQueryAlia) {
+    public final RowSubQueryFromAble<C> from(Function<C, SubQuery> function, String subQueryAlia) {
         this.actualSelect.from(function, subQueryAlia);
         return this;
     }
@@ -95,19 +95,19 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery
     /*################################## blow RowSubQueryOnAble method ##################################*/
 
     @Override
-    public RowSubQueryJoinAble<C> on(List<IPredicate> predicateList) {
+    public final RowSubQueryJoinAble<C> on(List<IPredicate> predicateList) {
         this.actualSelect.on(predicateList);
         return this;
     }
 
     @Override
-    public RowSubQueryJoinAble<C> on(IPredicate predicate) {
+    public final RowSubQueryJoinAble<C> on(IPredicate predicate) {
         this.actualSelect.on(predicate);
         return this;
     }
 
     @Override
-    public RowSubQueryJoinAble<C> on(Function<C, List<IPredicate>> function) {
+    public final RowSubQueryJoinAble<C> on(Function<C, List<IPredicate>> function) {
         this.actualSelect.on(function);
         return this;
     }
@@ -115,51 +115,51 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery
     /*################################## blow RowSubQueryJoinAble method ##################################*/
 
     @Override
-    public RowSubQueryJoinAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias) {
+    public final RowSubQueryJoinAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias) {
         return this;
     }
 
     @Override
-    public RowSubQueryJoinAble<C> leftJoin(Function<C, SubQuery> function, String subQueryAlia) {
+    public final RowSubQueryJoinAble<C> leftJoin(Function<C, SubQuery> function, String subQueryAlia) {
         return this;
     }
 
     @Override
-    public RowSubQueryJoinAble<C> join(TableMeta<?> tableMeta, String tableAlias) {
+    public final RowSubQueryJoinAble<C> join(TableMeta<?> tableMeta, String tableAlias) {
         return this;
     }
 
     @Override
-    public RowSubQueryJoinAble<C> join(Function<C, SubQuery> function, String subQueryAlia) {
+    public final RowSubQueryJoinAble<C> join(Function<C, SubQuery> function, String subQueryAlia) {
         return this;
     }
 
     @Override
-    public RowSubQueryJoinAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias) {
+    public final RowSubQueryJoinAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias) {
         return this;
     }
 
     @Override
-    public RowSubQueryJoinAble<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia) {
+    public final RowSubQueryJoinAble<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia) {
         return this;
     }
 
     /*################################## blow RowSubQueryWhereAble method ##################################*/
 
     @Override
-    public RowSubQueryGroupByAble<C> where(List<IPredicate> predicateList) {
+    public final RowSubQueryGroupByAble<C> where(List<IPredicate> predicateList) {
         this.actualSelect.where(predicateList);
         return this;
     }
 
     @Override
-    public RowSubQueryGroupByAble<C> where(Function<C, List<IPredicate>> function) {
+    public final RowSubQueryGroupByAble<C> where(Function<C, List<IPredicate>> function) {
         this.actualSelect.where(function);
         return this;
     }
 
     @Override
-    public RowSubQueryWhereAndAble<C> where(IPredicate predicate) {
+    public final RowSubQueryWhereAndAble<C> where(IPredicate predicate) {
         this.actualSelect.where(predicate);
         return this;
     }
@@ -168,25 +168,25 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery
     /*################################## blow RowSubQueryWhereAndAble method ##################################*/
 
     @Override
-    public RowSubQueryWhereAndAble<C> and(IPredicate predicate) {
+    public final RowSubQueryWhereAndAble<C> and(IPredicate predicate) {
         this.actualSelect.and(predicate);
         return this;
     }
 
     @Override
-    public RowSubQueryWhereAndAble<C> and(Function<C, IPredicate> function) {
+    public final RowSubQueryWhereAndAble<C> and(Function<C, IPredicate> function) {
         this.actualSelect.and(function);
         return this;
     }
 
     @Override
-    public RowSubQueryWhereAndAble<C> ifAnd(Predicate<C> testPredicate, IPredicate predicate) {
+    public final RowSubQueryWhereAndAble<C> ifAnd(Predicate<C> testPredicate, IPredicate predicate) {
         this.actualSelect.ifAnd(testPredicate, predicate);
         return this;
     }
 
     @Override
-    public RowSubQueryWhereAndAble<C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function) {
+    public final RowSubQueryWhereAndAble<C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function) {
         this.actualSelect.ifAnd(testPredicate, function);
         return this;
     }
@@ -194,25 +194,31 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery
     /*################################## blow RowSubQueryGroupByAble method ##################################*/
 
     @Override
-    public RowSubQueryHavingAble<C> groupBy(Expression<?> groupExp) {
-        this.actualSelect.groupBy(groupExp);
+    public final RowSubQueryHavingAble<C> groupBy(SortPart sortPart) {
+        this.actualSelect.groupBy(sortPart);
         return this;
     }
 
     @Override
-    public RowSubQueryHavingAble<C> groupBy(Function<C, List<Expression<?>>> function) {
+    public final RowSubQueryHavingAble<C> groupBy(List<SortPart> sortPartList) {
+        this.actualSelect.groupBy(sortPartList);
+        return this;
+    }
+
+    @Override
+    public final RowSubQueryHavingAble<C> groupBy(Function<C, List<SortPart>> function) {
         this.actualSelect.groupBy(function);
         return this;
     }
 
     @Override
-    public RowSubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, Expression<?> groupExp) {
-        this.actualSelect.ifGroupBy(predicate, groupExp);
+    public final RowSubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, SortPart sortPart) {
+        this.actualSelect.ifGroupBy(predicate, sortPart);
         return this;
     }
 
     @Override
-    public RowSubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction) {
+    public final RowSubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, Function<C, List<SortPart>> expFunction) {
         this.actualSelect.ifGroupBy(predicate, expFunction);
         return this;
     }
@@ -220,25 +226,25 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery
     /*################################## blow RowSubQueryHavingAble method ##################################*/
 
     @Override
-    public RowSubQueryOrderByAble<C> having(Function<C, List<IPredicate>> function) {
+    public final RowSubQueryOrderByAble<C> having(Function<C, List<IPredicate>> function) {
         this.actualSelect.having(function);
         return this;
     }
 
     @Override
-    public RowSubQueryOrderByAble<C> having(IPredicate predicate) {
+    public final RowSubQueryOrderByAble<C> having(IPredicate predicate) {
         this.actualSelect.having(predicate);
         return this;
     }
 
     @Override
-    public RowSubQueryOrderByAble<C> ifHaving(Predicate<C> predicate, Function<C, List<IPredicate>> function) {
+    public final RowSubQueryOrderByAble<C> ifHaving(Predicate<C> predicate, Function<C, List<IPredicate>> function) {
         this.actualSelect.ifHaving(predicate, function);
         return this;
     }
 
     @Override
-    public RowSubQueryOrderByAble<C> ifHaving(Predicate<C> testPredicate, IPredicate predicate) {
+    public final RowSubQueryOrderByAble<C> ifHaving(Predicate<C> testPredicate, IPredicate predicate) {
         this.actualSelect.ifHaving(testPredicate, predicate);
         return this;
     }
@@ -246,33 +252,39 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery
     /*################################## blow RowSubQueryOrderByAble method ##################################*/
 
     @Override
-    public RowSubQueryLimitAble<C> orderBy(Expression<?> groupExp) {
-        this.actualSelect.orderBy(groupExp);
+    public final RowSubQueryLimitAble<C> orderBy(SortPart sortPart) {
+        this.actualSelect.orderBy(sortPart);
         return this;
     }
 
     @Override
-    public RowSubQueryLimitAble<C> orderBy(Function<C, List<Expression<?>>> function) {
+    public final RowSubQueryLimitAble<C> orderBy(List<SortPart> sortPartList) {
+        this.actualSelect.orderBy(sortPartList);
+        return this;
+    }
+
+    @Override
+    public final RowSubQueryLimitAble<C> orderBy(Function<C, List<SortPart>> function) {
         this.actualSelect.orderBy(function);
         return this;
     }
 
     @Override
-    public RowSubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, Expression<?> groupExp) {
-        this.actualSelect.ifOrderBy(predicate, groupExp);
+    public final RowSubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, SortPart sortPart) {
+        this.actualSelect.ifOrderBy(predicate, sortPart);
         return this;
     }
 
     @Override
-    public RowSubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction) {
-        this.actualSelect.ifOrderBy(predicate, expFunction);
+    public final RowSubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, Function<C, List<SortPart>> expFunction) {
+        this.actualSelect.ifGroupBy(predicate, expFunction);
         return this;
     }
 
     /*################################## blow RowSubQueryLimitAble method ##################################*/
 
     @Override
-    public RowSubQueryAble limitOne() {
+    public final RowSubQueryAble limitOne() {
         this.actualSelect.limit(1);
         return this;
     }
@@ -303,8 +315,8 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery
     }
 
     @Override
-    public List<Expression<?>> groupExpList() {
-        return this.actualSelect.groupExpList();
+    public List<SortPart> groupPartList() {
+        return this.actualSelect.groupPartList();
     }
 
     @Override
@@ -313,8 +325,8 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery
     }
 
     @Override
-    public List<Expression<?>> sortExpList() {
-        return this.actualSelect.sortExpList();
+    public List<SortPart> orderPartList() {
+        return this.actualSelect.orderPartList();
     }
 
     @Override

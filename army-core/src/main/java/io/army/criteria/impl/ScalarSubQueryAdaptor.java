@@ -189,19 +189,14 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
     }
 
     @Override
-    public ScalarSubQuery.ScalarSubQueryWhereAndAble<E, C> and(Function<C, IPredicate> function) {
-        this.actualSelect.and(function);
-        return this;
-    }
-
-    @Override
     public ScalarSubQuery.ScalarSubQueryWhereAndAble<E, C> ifAnd(Predicate<C> testPredicate, IPredicate predicate) {
         this.actualSelect.ifAnd(testPredicate, predicate);
         return this;
     }
 
     @Override
-    public ScalarSubQuery.ScalarSubQueryWhereAndAble<E, C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function) {
+    public ScalarSubQuery.ScalarSubQueryWhereAndAble<E, C> ifAnd(Predicate<C> testPredicate
+            , Function<C, IPredicate> function) {
         this.actualSelect.ifAnd(testPredicate, function);
         return this;
     }
@@ -209,26 +204,32 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
     /*################################## blow ScalarSubQueryGroupByAble method ##################################*/
 
     @Override
-    public ScalarSubQuery.ScalarSubQueryHavingAble<E, C> groupBy(Expression<?> groupExp) {
-        this.actualSelect.groupBy(groupExp);
+    public ScalarSubQueryHavingAble<E, C> groupBy(SortPart sortPart) {
+        this.actualSelect.groupBy(sortPart);
         return this;
     }
 
     @Override
-    public ScalarSubQuery.ScalarSubQueryHavingAble<E, C> groupBy(Function<C, List<Expression<?>>> function) {
+    public ScalarSubQueryHavingAble<E, C> groupBy(List<SortPart> sortPartList) {
+        this.actualSelect.groupBy(sortPartList);
+        return this;
+    }
+
+    @Override
+    public ScalarSubQueryHavingAble<E, C> groupBy(Function<C, List<SortPart>> function) {
         this.actualSelect.groupBy(function);
         return this;
     }
 
     @Override
-    public ScalarSubQuery.ScalarSubQueryHavingAble<E, C> ifGroupBy(Predicate<C> predicate, Expression<?> groupExp) {
-        this.actualSelect.ifGroupBy(predicate, groupExp);
+    public ScalarSubQueryHavingAble<E, C> ifGroupBy(Predicate<C> predicate, SortPart sortPart) {
+        this.actualSelect.ifGroupBy(predicate, sortPart);
         return this;
     }
 
     @Override
-    public ScalarSubQuery.ScalarSubQueryHavingAble<E, C> ifGroupBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction) {
-        this.actualSelect.ifGroupBy(predicate, expFunction);
+    public ScalarSubQueryHavingAble<E, C> ifGroupBy(Predicate<C> predicate, Function<C, List<SortPart>> function) {
+        this.actualSelect.ifGroupBy(predicate, function);
         return this;
     }
 
@@ -261,26 +262,32 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
     /*################################## blow ScalarSubQueryOrderByAble method ##################################*/
 
     @Override
-    public ScalarSubQuery.ScalarSubQueryLimitAble<E, C> orderBy(Expression<?> groupExp) {
-        this.actualSelect.orderBy(groupExp);
+    public ScalarSubQueryLimitAble<E, C> orderBy(SortPart sortPart) {
+        this.actualSelect.orderBy(sortPart);
         return this;
     }
 
     @Override
-    public ScalarSubQuery.ScalarSubQueryLimitAble<E, C> orderBy(Function<C, List<Expression<?>>> function) {
+    public ScalarSubQueryLimitAble<E, C> orderBy(List<SortPart> sortPartList) {
+        this.actualSelect.orderBy(sortPartList);
+        return this;
+    }
+
+    @Override
+    public ScalarSubQueryLimitAble<E, C> orderBy(Function<C, List<SortPart>> function) {
         this.actualSelect.orderBy(function);
         return this;
     }
 
     @Override
-    public ScalarSubQuery.ScalarSubQueryLimitAble<E, C> ifOrderBy(Predicate<C> predicate, Expression<?> groupExp) {
-        this.actualSelect.ifOrderBy(predicate, groupExp);
+    public ScalarSubQueryLimitAble<E, C> ifOrderBy(Predicate<C> test, SortPart sortPart) {
+        this.actualSelect.ifOrderBy(test, sortPart);
         return this;
     }
 
     @Override
-    public ScalarSubQuery.ScalarSubQueryLimitAble<E, C> ifOrderBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction) {
-        this.actualSelect.ifOrderBy(predicate, expFunction);
+    public ScalarSubQueryLimitAble<E, C> ifOrderBy(Predicate<C> test, Function<C, List<SortPart>> function) {
+        this.actualSelect.ifOrderBy(test, function);
         return this;
     }
 
@@ -319,8 +326,8 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
     }
 
     @Override
-    public List<Expression<?>> groupExpList() {
-        return this.actualSelect.groupExpList();
+    public List<SortPart> groupPartList() {
+        return this.actualSelect.groupPartList();
     }
 
     @Override
@@ -329,8 +336,8 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
     }
 
     @Override
-    public List<Expression<?>> sortExpList() {
-        return this.actualSelect.sortExpList();
+    public List<SortPart> orderPartList() {
+        return this.actualSelect.orderPartList();
     }
 
     @Override

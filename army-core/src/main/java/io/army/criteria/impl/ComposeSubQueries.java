@@ -1,11 +1,15 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.dialect.DQL;
+import io.army.util.Pair;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
-abstract class ComposeSubQueries<C> implements ComposeSubQuery, SubQuery.SubQueryUnionAble<C> {
+abstract class ComposeSubQueries<C> extends AbstractComposeQuery<C> implements ComposeSubQuery,
+        SubQuery.SubQueryUnionAble<C> {
 
     static <C> SubQuery.SubQueryUnionAble<C> brackets(C criteria, SubQuery encloseSubQuery) {
         return new ComposeSubQueries.BracketsSubQuery<>(criteria, encloseSubQuery);
@@ -18,10 +22,8 @@ abstract class ComposeSubQueries<C> implements ComposeSubQuery, SubQuery.SubQuer
     }
 
 
-    private final C criteria;
-
     private ComposeSubQueries(C criteria) {
-        this.criteria = criteria;
+        super(criteria);
     }
 
     @Override
@@ -29,10 +31,6 @@ abstract class ComposeSubQueries<C> implements ComposeSubQuery, SubQuery.SubQuer
         return "#ComposeSubQuery@" + System.identityHashCode(this);
     }
 
-    @Override
-    public final SubQuery asSubQuery() {
-        return this;
-    }
 
     @Override
     public final SubQueryUnionAble<C> brackets() {
@@ -54,6 +52,88 @@ abstract class ComposeSubQueries<C> implements ComposeSubQuery, SubQuery.SubQuer
         return compose(this.criteria, this, UnionType.UNION_DISTINCT, function);
     }
 
+    /*################################## blow SubQueryOrderByClause method ##################################*/
+
+    @Override
+    public final SubQueryLimitClause<C> orderBy(SortPart sortPart) {
+        doOrderBy(sortPart);
+        return this;
+    }
+
+    @Override
+    public final SubQueryLimitClause<C> orderBy(List<SortPart> sortPartList) {
+        doOrderBy(sortPartList);
+        return this;
+    }
+
+    @Override
+    public final SubQueryLimitClause<C> orderBy(Function<C, List<SortPart>> function) {
+        doOrderBy(function);
+        return this;
+    }
+
+    @Override
+    public final SubQueryLimitClause<C> ifOrderBy(Predicate<C> test, SortPart sortPart) {
+        doOrderBy(test, sortPart);
+        return this;
+    }
+
+    @Override
+    public final SubQueryLimitClause<C> ifOrderBy(Predicate<C> test, Function<C, List<SortPart>> function) {
+        doOrderBy(test, function);
+        return this;
+    }
+
+    /*################################## blow SubQueryLimitClause method ##################################*/
+
+    @Override
+    public final SubQueryAble limit(int rowCount) {
+        doLimit(rowCount);
+        return this;
+    }
+
+    @Override
+    public final SubQueryAble limit(int offset, int rowCount) {
+        doLimit(offset, rowCount);
+        return this;
+    }
+
+    @Override
+    public final SubQueryAble limit(Function<C, Pair<Integer, Integer>> function) {
+        doLimit(function);
+        return this;
+    }
+
+    @Override
+    public final SubQueryAble ifLimit(Predicate<C> predicate, int rowCount) {
+        doLimit(predicate, rowCount);
+        return this;
+    }
+
+    @Override
+    public final SubQueryAble ifLimit(Predicate<C> predicate, int offset, int rowCount) {
+        doLimit(predicate, offset, rowCount);
+        return this;
+    }
+
+    @Override
+    public final SubQueryAble ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
+        doLimit(predicate, function);
+        return this;
+    }
+
+    /*################################## blow SelectAble method ##################################*/
+
+    @Override
+    public final SubQuery asSubQuery() {
+        asQuery();
+        return this;
+    }
+
+
+
+
+
     /*################################## blow static inner class ##################################*/
 
     private static final class BracketsSubQuery<C> extends ComposeSubQueries<C> {
@@ -66,10 +146,10 @@ abstract class ComposeSubQueries<C> implements ComposeSubQuery, SubQuery.SubQuer
         }
 
         @Override
-        public final void appendSQL(SQLContext context) {
+        void beforePart(SQLContext context) {
             StringBuilder builder = context.stringBuilder()
                     .append(" (");
-            context.dml().subQuery(this.encloseSubQuery, context);
+            context.dql().subQuery(this.encloseSubQuery, context);
             builder.append(" )");
         }
 
@@ -100,15 +180,14 @@ abstract class ComposeSubQueries<C> implements ComposeSubQuery, SubQuery.SubQuer
         }
 
         @Override
-        public final void appendSQL(SQLContext context) {
-
-            context.dml().subQuery(leftSubQuery, context);
+        void beforePart(SQLContext context) {
+            DQL dql = context.dql();
+            dql.subQuery(leftSubQuery, context);
 
             context.stringBuilder().append(" ")
-                    .append(modifier.render())
-                    .append(" ");
+                    .append(modifier.render());
 
-            context.dml().subQuery(rightSubQuery, context);
+            dql.subQuery(rightSubQuery, context);
 
         }
 

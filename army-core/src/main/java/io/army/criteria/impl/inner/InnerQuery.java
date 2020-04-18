@@ -1,9 +1,9 @@
 package io.army.criteria.impl.inner;
 
-import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
 import io.army.criteria.SQLModifier;
 import io.army.criteria.SelectPart;
+import io.army.criteria.SortPart;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ public interface InnerQuery extends InnerSQL {
     /**
      * @return a unmodifiable list
      */
-    List<Expression<?>> groupExpList();
+    List<SortPart> groupPartList();
 
     /**
      * @return a unmodifiable list
@@ -33,7 +33,7 @@ public interface InnerQuery extends InnerSQL {
     /**
      * @return a unmodifiable list
      */
-    List<Expression<?>> sortExpList();
+    List<SortPart> orderPartList();
 
     int offset();
 

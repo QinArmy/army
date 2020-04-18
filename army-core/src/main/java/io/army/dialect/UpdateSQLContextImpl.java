@@ -18,7 +18,7 @@ class UpdateSQLContextImpl extends DefaultSQLContext implements UpdateSQLContext
 
     protected final String safeAlias;
 
-    UpdateSQLContextImpl(TableDML dml, SQLStatement sqlStatement, TableMeta<?> updateTable,String tableAlias) {
+    UpdateSQLContextImpl(DML dml, SQLStatement sqlStatement, TableMeta<?> updateTable, String tableAlias) {
         super(dml, sqlStatement);
         this.updateTable = updateTable;
 

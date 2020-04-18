@@ -208,6 +208,13 @@ abstract class AbstractSQL extends AbstractSQLDebug implements QueryAble, InnerS
     }
 
 
+    /**
+     * @see #tableWrapperList
+     */
+    int tableWrapperCount() {
+        return 6;
+    }
+
 
     /*################################## blow package template method ##################################*/
 
@@ -219,10 +226,6 @@ abstract class AbstractSQL extends AbstractSQLDebug implements QueryAble, InnerS
 
     abstract boolean prepared();
 
-    /**
-     * @see #tableWrapperList
-     */
-    abstract int tableWrapperCount();
 
     abstract void onAddTable(TableMeta<?> table, String tableAlias);
 

@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.SQLContext;
 import io.army.criteria.postgre.PostgreFuncColExp;
-import io.army.dialect.TableDML;
+import io.army.dialect.DML;
 import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingType;
 import io.army.sqltype.PostgreSQLType;
@@ -38,7 +38,7 @@ final class PostgreFunColDefExpImpl<E> extends AbstractExpression<E> implements 
 
     @Override
     protected void afterSpace(SQLContext context) {
-        TableDML dml = context.dml();
+        DML dml = context.dml();
         StringBuilder builder = context.stringBuilder()
                 .append(dml.quoteIfNeed(this.columnName))
                 .append(" ");

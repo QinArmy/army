@@ -30,7 +30,7 @@ public class PostgreSelectTests {
                 .join(BalanceAccount_.T, "b")
                 .on(Account_.id.eq(BalanceAccount_.id))
                 .where(SQLS.always())
-                .groupBy(Account_.id.sort(false))
+                .groupBy(Account_.id)
                 .having(Account_.id.ge(3L))
                 .window(this::windowList)
                 .orderBy(Account_.id)

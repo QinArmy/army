@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.criteria.*;
-import io.army.dialect.TableDML;
+import io.army.dialect.DML;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
@@ -28,7 +28,7 @@ abstract class AbstractSelectionGroup implements SelectionGroup {
         final List<Selection> selectionList = this.selectionList();
 
         final StringBuilder builder = context.stringBuilder();
-        final TableDML dml = context.dml();
+        final DML dml = context.dml();
 
         builder.append(" ");
 

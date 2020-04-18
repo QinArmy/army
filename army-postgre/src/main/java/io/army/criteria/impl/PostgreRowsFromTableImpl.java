@@ -8,7 +8,7 @@ import io.army.criteria.Selection;
 import io.army.criteria.postgre.PostgreFuncColExp;
 import io.army.criteria.postgre.PostgreFuncTable;
 import io.army.criteria.postgre.PostgreRowsFromTable;
-import io.army.dialect.TableDML;
+import io.army.dialect.DML;
 import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingType;
 
@@ -126,7 +126,7 @@ final class PostgreRowsFromTableImpl implements PostgreRowsFromTable {
             builder.append(" WITH ORDINALITY");
         }
 
-        TableDML dml = context.dml();
+        DML dml = context.dml();
         builder.append(" AS ")
                 .append(dml.quoteIfNeed(this.tableAlias))
                 .append(" ( ")
@@ -221,6 +221,11 @@ final class PostgreRowsFromTableImpl implements PostgreRowsFromTable {
 
         @Override
         public void appendSQL(SQLContext context) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void appendSortPart(SQLContext context) {
             throw new UnsupportedOperationException();
         }
 

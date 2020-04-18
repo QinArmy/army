@@ -1,12 +1,14 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.util.Pair;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
-abstract class ComposeColumnSubQueries<E, C> implements ComposeSubQuery, ColumnSubQuery<E>
-        , ColumnSubQuery.ColumnSubQueryUnionAble<E, C> {
+abstract class ComposeColumnSubQueries<E, C> extends AbstractComposeQuery<C> implements ComposeSubQuery
+        , ColumnSubQuery<E>, ColumnSubQuery.ColumnSubQueryUnionAble<E, C> {
 
     static <E, C> ColumnSubQuery.ColumnSubQueryUnionAble<E, C> brackets(C criteria, ColumnSubQuery<E> encloseSubQuery) {
         return new BracketsColumnSubQuery<>(criteria, encloseSubQuery);
@@ -17,10 +19,9 @@ abstract class ComposeColumnSubQueries<E, C> implements ComposeSubQuery, ColumnS
         return new ComposeColumnSubQueryImpl<>(criteria, leftQuery, modifier, function.apply(criteria));
     }
 
-    private final C criteria;
 
     private ComposeColumnSubQueries(C criteria) {
-        this.criteria = criteria;
+        super(criteria);
     }
 
 
@@ -29,11 +30,6 @@ abstract class ComposeColumnSubQueries<E, C> implements ComposeSubQuery, ColumnS
         return "#ComposeColumnSubQuery@" + System.identityHashCode(this);
     }
 
-
-    @Override
-    public final ColumnSubQuery<E> asSubQuery() {
-        return this;
-    }
 
     @Override
     public final ColumnSubQueryUnionAble<E, C> brackets() {
@@ -55,6 +51,84 @@ abstract class ComposeColumnSubQueries<E, C> implements ComposeSubQuery, ColumnS
         return compose(this.criteria, this, UnionType.UNION_DISTINCT, function);
     }
 
+    /*################################## blow ColumnSubQueryOrderByClause method ##################################*/
+
+    @Override
+    public ColumnSubQueryLimitClause<E, C> orderBy(SortPart sortPart) {
+        doOrderBy(sortPart);
+        return this;
+    }
+
+    @Override
+    public ColumnSubQueryLimitClause<E, C> orderBy(List<SortPart> sortPartList) {
+        doOrderBy(sortPartList);
+        return this;
+    }
+
+    @Override
+    public ColumnSubQueryLimitClause<E, C> orderBy(Function<C, List<SortPart>> function) {
+        doOrderBy(function);
+        return this;
+    }
+
+    @Override
+    public ColumnSubQueryLimitClause<E, C> ifOrderBy(Predicate<C> test, SortPart sortPart) {
+        doOrderBy(test, sortPart);
+        return this;
+    }
+
+    @Override
+    public ColumnSubQueryLimitClause<E, C> ifOrderBy(Predicate<C> test, Function<C, List<SortPart>> function) {
+        doOrderBy(test, function);
+        return this;
+    }
+
+    /*################################## blow ColumnSubQueryLimitClause method ##################################*/
+
+    @Override
+    public ColumnSubQueryAble<E> limit(int rowCount) {
+        doLimit(rowCount);
+        return this;
+    }
+
+    @Override
+    public ColumnSubQueryAble<E> limit(int offset, int rowCount) {
+        doLimit(offset, rowCount);
+        return this;
+    }
+
+    @Override
+    public ColumnSubQueryAble<E> limit(Function<C, Pair<Integer, Integer>> function) {
+        doLimit(function);
+        return this;
+    }
+
+    @Override
+    public ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, int rowCount) {
+        doLimit(predicate, rowCount);
+        return this;
+    }
+
+    @Override
+    public ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, int offset, int rowCount) {
+        doLimit(predicate, offset, rowCount);
+        return this;
+    }
+
+    @Override
+    public ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
+        doLimit(predicate, function);
+        return this;
+    }
+
+    /*################################## blow ColumnSubQueryAble method ##################################*/
+
+    @Override
+    public final ColumnSubQuery<E> asSubQuery() {
+        asQuery();
+        return this;
+    }
+
 
     /*################################## blow static inner class ##################################*/
 
@@ -68,25 +142,25 @@ abstract class ComposeColumnSubQueries<E, C> implements ComposeSubQuery, ColumnS
         }
 
         @Override
-        public final void appendSQL(SQLContext context) {
+        final void beforePart(SQLContext context) {
             StringBuilder builder = context.stringBuilder()
                     .append(" (");
-            context.dml().subQuery(this.encloseSubQuery, context);
+            context.dql().subQuery(this.encloseSubQuery, context);
             builder.append(" )");
         }
 
         @Override
-        public List<SelectPart> selectPartList() {
+        public final List<SelectPart> selectPartList() {
             return encloseSubQuery.selectPartList();
         }
 
         @Override
-        public Selection selection(String derivedFieldName) {
+        public final Selection selection(String derivedFieldName) {
             return encloseSubQuery.selection(derivedFieldName);
         }
 
         @Override
-        public Selection selection() {
+        public final Selection selection() {
             return encloseSubQuery.selection();
         }
     }
@@ -108,30 +182,30 @@ abstract class ComposeColumnSubQueries<E, C> implements ComposeSubQuery, ColumnS
         }
 
         @Override
-        public final void appendSQL(SQLContext context) {
+        final void beforePart(SQLContext context) {
 
-            context.dml().subQuery(leftSubQuery, context);
+            context.dql().subQuery(leftSubQuery, context);
 
             context.stringBuilder().append(" ")
                     .append(modifier.render())
                     .append(" ");
 
-            context.dml().subQuery(rightSubQuery, context);
+            context.dql().subQuery(rightSubQuery, context);
 
         }
 
         @Override
-        public List<SelectPart> selectPartList() {
+        public final List<SelectPart> selectPartList() {
             return leftSubQuery.selectPartList();
         }
 
         @Override
-        public Selection selection(String derivedFieldName) {
+        public final Selection selection(String derivedFieldName) {
             return leftSubQuery.selection(derivedFieldName);
         }
 
         @Override
-        public Selection selection() {
+        public final Selection selection() {
             return leftSubQuery.selection();
         }
     }

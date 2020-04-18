@@ -14,7 +14,7 @@ import java.util.List;
 class DefaultSQLContext implements SQLContext {
 
 
-    final TableDML dml;
+    final DML dml;
 
     final SQLStatement sqlStatement;
 
@@ -22,7 +22,7 @@ class DefaultSQLContext implements SQLContext {
 
     final List<ParamWrapper> paramWrapperList = new ArrayList<>();
 
-    DefaultSQLContext(TableDML dml, SQLStatement sqlStatement) {
+    DefaultSQLContext(DML dml, SQLStatement sqlStatement) {
         this.dml = dml;
         this.sqlStatement = sqlStatement;
     }
@@ -41,7 +41,8 @@ class DefaultSQLContext implements SQLContext {
 
     @Override
     public final void quoteIfKeyAndAppend(String textValue) {
-        builder.append(dml.quoteIfNeed(textValue));
+        builder.append(" ")
+                .append(dml.quoteIfNeed(textValue));
     }
 
     @Override
@@ -55,7 +56,7 @@ class DefaultSQLContext implements SQLContext {
     }
 
     @Override
-    public final TableDML dml() {
+    public final DML dml() {
         return dml;
     }
 

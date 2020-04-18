@@ -11,14 +11,17 @@ public interface ColumnSubQuery<E> extends SubQuery {
 
     Selection selection();
 
-    interface ColumnSubQueryAble<E> extends SubQueryAble {
+    /*################################## blow  interfaces  ##################################*/
+
+    interface ColumnSubQuerySQLAble extends SubQuerySQLAble {
+
+    }
+
+    interface ColumnSubQueryAble<E> extends ColumnSubQuerySQLAble {
 
         ColumnSubQuery<E> asSubQuery();
     }
 
-    interface ColumnSubQuerySQLAble extends SQLAble {
-
-    }
 
     interface ColumnSubQuerySelectionAble<E, C> extends ColumnSubQuerySQLAble {
 
@@ -28,7 +31,7 @@ public interface ColumnSubQuery<E> extends SubQuery {
 
     }
 
-    interface ColumnSubQueryFromAble<E, C> extends ColumnSubQuerySQLAble, ColumnSubQueryAble<E> {
+    interface ColumnSubQueryFromAble<E, C> extends ColumnSubQueryUnionClause<E, C> {
 
         ColumnSubQueryJoinAble<E, C> from(TableMeta<?> tableMeta, String tableAlias);
 
@@ -85,13 +88,15 @@ public interface ColumnSubQuery<E> extends SubQuery {
 
     interface ColumnSubQueryGroupByAble<E, C> extends ColumnSubQueryOrderByAble<E, C> {
 
-        ColumnSubQueryHavingAble<E, C> groupBy(Expression<?> groupExp);
+        ColumnSubQueryHavingAble<E, C> groupBy(SortPart sortPart);
 
-        ColumnSubQueryHavingAble<E, C> groupBy(Function<C, List<Expression<?>>> function);
+        ColumnSubQueryHavingAble<E, C> groupBy(List<SortPart> sortPartList);
 
-        ColumnSubQueryHavingAble<E, C> ifGroupBy(Predicate<C> predicate, Expression<?> groupExp);
+        ColumnSubQueryHavingAble<E, C> groupBy(Function<C, List<SortPart>> function);
 
-        ColumnSubQueryHavingAble<E, C> ifGroupBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction);
+        ColumnSubQueryHavingAble<E, C> ifGroupBy(Predicate<C> predicate, SortPart sortPart);
+
+        ColumnSubQueryHavingAble<E, C> ifGroupBy(Predicate<C> predicate, Function<C, List<SortPart>> function);
 
     }
 
@@ -107,34 +112,51 @@ public interface ColumnSubQuery<E> extends SubQuery {
     }
 
 
-    interface ColumnSubQueryOrderByAble<E, C> extends ColumnSubQueryLimitAble<E, C> {
+    interface ColumnSubQueryOrderByAble<E, C> extends ColumnSubQueryOrderByClause<E, C>, ColumnSubQueryLimitAble<E, C> {
 
-        ColumnSubQueryLimitAble<E, C> orderBy(Expression<?> groupExp);
+        @Override
+        ColumnSubQueryLimitAble<E, C> orderBy(SortPart sortPart);
 
-        ColumnSubQueryLimitAble<E, C> orderBy(Function<C, List<Expression<?>>> function);
+        @Override
+        ColumnSubQueryLimitAble<E, C> orderBy(List<SortPart> sortPartList);
 
-        ColumnSubQueryLimitAble<E, C> ifOrderBy(Predicate<C> predicate, Expression<?> groupExp);
+        @Override
+        ColumnSubQueryLimitAble<E, C> orderBy(Function<C, List<SortPart>> function);
 
-        ColumnSubQueryLimitAble<E, C> ifOrderBy(Predicate<C> predicate, Function<C, List<Expression<?>>> expFunction);
+        @Override
+        ColumnSubQueryLimitAble<E, C> ifOrderBy(Predicate<C> test, SortPart sortPart);
+
+        @Override
+        ColumnSubQueryLimitAble<E, C> ifOrderBy(Predicate<C> test, Function<C, List<SortPart>> function);
     }
 
 
-    interface ColumnSubQueryLimitAble<E, C> extends ColumnSubQueryUnionAble<E, C> {
+    interface ColumnSubQueryLimitAble<E, C> extends ColumnSubQueryOrderByClause<E, C>, ColumnSubQueryUnionClause<E, C> {
 
-        ColumnSubQueryUnionAble<E, C> limit(int rowCount);
+        @Override
+        ColumnSubQueryUnionClause<E, C> limit(int rowCount);
 
-        ColumnSubQueryUnionAble<E, C> limit(int offset, int rowCount);
+        @Override
+        ColumnSubQueryUnionClause<E, C> limit(int offset, int rowCount);
 
-        ColumnSubQueryUnionAble<E, C> limit(Function<C, Pair<Integer, Integer>> function);
+        @Override
+        ColumnSubQueryUnionClause<E, C> limit(Function<C, Pair<Integer, Integer>> function);
 
-        ColumnSubQueryUnionAble<E, C> ifLimit(Predicate<C> predicate, int rowCount);
+        @Override
+        ColumnSubQueryUnionClause<E, C> ifLimit(Predicate<C> predicate, int rowCount);
 
-        ColumnSubQueryUnionAble<E, C> ifLimit(Predicate<C> predicate, int offset, int rowCount);
+        @Override
+        ColumnSubQueryUnionClause<E, C> ifLimit(Predicate<C> predicate, int offset, int rowCount);
 
-        ColumnSubQueryUnionAble<E, C> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
+        @Override
+        ColumnSubQueryUnionClause<E, C> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
     }
 
-    interface ColumnSubQueryUnionAble<E, C> extends ColumnSubQueryAble<E> {
+    interface ColumnSubQueryUnionAble<E, C> extends ColumnSubQueryUnionClause<E, C>, ColumnSubQueryOrderByClause<E, C> {
+
+    }
+
+    interface ColumnSubQueryUnionClause<E, C> extends ColumnSubQueryAble<E> {
 
         ColumnSubQueryUnionAble<E, C> brackets();
 
@@ -144,6 +166,34 @@ public interface ColumnSubQuery<E> extends SubQuery {
 
         <S extends ColumnSubQuery<E>> ColumnSubQueryUnionAble<E, C> unionDistinct(Function<C, S> function);
 
+    }
+
+    interface ColumnSubQueryOrderByClause<E, C> extends ColumnSubQueryLimitClause<E, C> {
+
+        ColumnSubQueryLimitClause<E, C> orderBy(SortPart sortPart);
+
+        ColumnSubQueryLimitClause<E, C> orderBy(List<SortPart> sortPartList);
+
+        ColumnSubQueryLimitClause<E, C> orderBy(Function<C, List<SortPart>> function);
+
+        ColumnSubQueryLimitClause<E, C> ifOrderBy(Predicate<C> test, SortPart sortPart);
+
+        ColumnSubQueryLimitClause<E, C> ifOrderBy(Predicate<C> test, Function<C, List<SortPart>> function);
+    }
+
+    interface ColumnSubQueryLimitClause<E, C> extends ColumnSubQueryAble<E> {
+
+        ColumnSubQueryAble<E> limit(int rowCount);
+
+        ColumnSubQueryAble<E> limit(int offset, int rowCount);
+
+        ColumnSubQueryAble<E> limit(Function<C, Pair<Integer, Integer>> function);
+
+        ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, int rowCount);
+
+        ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, int offset, int rowCount);
+
+        ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
     }
 
 
