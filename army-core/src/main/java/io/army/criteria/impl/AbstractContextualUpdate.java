@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class AbstractContextualUpdate<C> extends AbstractSQL implements InnerUpdate
-        , Update.UpdateAble, Update.WhereAble<C>, Update.WhereAndAble<C> {
+abstract class AbstractContextualUpdate<T extends IDomain, C> extends AbstractSQL implements InnerUpdate
+        , Update.UpdateAble, Update.WhereAble<T, C>, Update.WhereAndAble<T, C> {
 
     static final String NOT_PREPARED_MSG = "update criteria don't haven invoke asUpdate() method.";
 
@@ -41,21 +41,21 @@ abstract class AbstractContextualUpdate<C> extends AbstractSQL implements InnerU
     /*################################## blow SetAble method ##################################*/
 
     @Override
-    public <F> WhereAble<C> set(FieldMeta<? extends IDomain, F> target, F value) {
+    public final <F> WhereAble<T, C> set(FieldMeta<T, F> target, F value) {
         this.targetFieldList.add(target);
-        this.valueExpList.add(SQLS.param(value, target.mappingType()));
+        this.valueExpList.add(SQLS.param(value));
         return this;
     }
 
     @Override
-    public <F> WhereAble<C> set(FieldMeta<? extends IDomain, F> target, Expression<F> valueExp) {
+    public final <F> WhereAble<T, C> set(FieldMeta<T, F> target, Expression<F> valueExp) {
         this.targetFieldList.add(target);
         this.valueExpList.add(valueExp);
         return this;
     }
 
     @Override
-    public <F> WhereAble<C> set(FieldMeta<? extends IDomain, F> target, Function<C, Expression<?>> function) {
+    public final <F> WhereAble<T, C> set(FieldMeta<T, F> target, Function<C, Expression<F>> function) {
         this.targetFieldList.add(target);
         this.valueExpList.add(function.apply(this.criteria));
         return this;
@@ -64,7 +64,7 @@ abstract class AbstractContextualUpdate<C> extends AbstractSQL implements InnerU
     /*################################## blow WhereAble method ##################################*/
 
     @Override
-    public <F> WhereAble<C> ifSet(Predicate<C> predicate, FieldMeta<? extends IDomain, F> target, F value) {
+    public final <F> WhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<T, F> target, F value) {
         if (predicate.test(this.criteria)) {
             set(target, value);
         }
@@ -72,8 +72,7 @@ abstract class AbstractContextualUpdate<C> extends AbstractSQL implements InnerU
     }
 
     @Override
-    public <F> WhereAble<C> ifSet(Predicate<C> predicate, FieldMeta<? extends IDomain, F> target
-            , Expression<F> valueExp) {
+    public final <F> WhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<T, F> target, Expression<F> valueExp) {
         if (predicate.test(this.criteria)) {
             set(target, valueExp);
         }
@@ -81,8 +80,8 @@ abstract class AbstractContextualUpdate<C> extends AbstractSQL implements InnerU
     }
 
     @Override
-    public <F> WhereAble<C> ifSet(Predicate<C> predicate, FieldMeta<? extends IDomain, F> target
-            , Function<C, Expression<?>> valueExpFunction) {
+    public final <F> WhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<T, F> target
+            , Function<C, Expression<F>> valueExpFunction) {
         if (predicate.test(this.criteria)) {
             set(target, valueExpFunction);
         }
@@ -90,22 +89,19 @@ abstract class AbstractContextualUpdate<C> extends AbstractSQL implements InnerU
     }
 
     @Override
-    public Update.UpdateAble where(List<IPredicate> predicateList) {
-        Assert.state(this.predicateList.isEmpty(), "where clause ended.");
+    public final Update.UpdateAble where(List<IPredicate> predicateList) {
         this.predicateList.addAll(predicateList);
         return this;
     }
 
     @Override
-    public Update.UpdateAble where(Function<C, List<IPredicate>> function) {
-        Assert.state(this.predicateList.isEmpty(), "where clause ended.");
+    public final Update.UpdateAble where(Function<C, List<IPredicate>> function) {
         this.predicateList.addAll(function.apply(this.criteria));
         return this;
     }
 
     @Override
-    public WhereAndAble<C> where(IPredicate predicate) {
-        Assert.state(this.predicateList.isEmpty(), "where clause ended.");
+    public final WhereAndAble<T, C> where(IPredicate predicate) {
         this.predicateList.add(predicate);
         return this;
     }
@@ -113,13 +109,13 @@ abstract class AbstractContextualUpdate<C> extends AbstractSQL implements InnerU
     /*################################## blow WhereAndAble method ##################################*/
 
     @Override
-    public WhereAndAble<C> and(IPredicate predicate) {
+    public final WhereAndAble<T, C> and(IPredicate predicate) {
         this.predicateList.add(predicate);
         return this;
     }
 
     @Override
-    public WhereAndAble<C> ifAnd(Predicate<C> testPredicate, IPredicate predicate) {
+    public final WhereAndAble<T, C> ifAnd(Predicate<C> testPredicate, IPredicate predicate) {
         if (testPredicate.test(this.criteria)) {
             this.predicateList.add(predicate);
         }
@@ -127,7 +123,7 @@ abstract class AbstractContextualUpdate<C> extends AbstractSQL implements InnerU
     }
 
     @Override
-    public WhereAndAble<C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function) {
+    public final WhereAndAble<T, C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function) {
         if (testPredicate.test(this.criteria)) {
             this.predicateList.add(function.apply(this.criteria));
         }
@@ -141,6 +137,8 @@ abstract class AbstractContextualUpdate<C> extends AbstractSQL implements InnerU
         if (this.prepared) {
             return this;
         }
+        Assert.notEmpty(this.predicateList, "update statement must have where.");
+
         CriteriaContextHolder.clearContext(this.criteriaContext);
         this.criteriaContext.clear();
 

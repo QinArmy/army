@@ -61,7 +61,7 @@ public class SessionTests {
     public void singleUpdate() {
         final long start = System.currentTimeMillis();
         Map<String, Object> map = new HashMap<>();
-        Update update = SQLS.singleUpdate(map)
+        Update update = SQLS.singleUpdate(Account_.T, map)
                 .update(Account_.T, "a")
                 .set(Account_.balance, SQLS.field("a", Account_.balance).add(BigDecimal.ONE).brackets())
                 .ifSet(this::isUser, Account_.balance, BigDecimal.ZERO)
