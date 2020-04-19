@@ -20,13 +20,9 @@ public interface MySQLDelete extends Delete {
         MySQLNoJoinFromAble<C> delete();
     }
 
-    interface MySQLMultiDeleteAble<C> extends MultiDeleteAble<C>, MySQLDeleteSQLAble {
 
-        FromAble<C> delete(List<MySQLModifier> modifierList);
 
-    }
-
-    interface MySQLNoJoinFromAble<C> extends NoJoinFromAble<C>, MySQLDeleteSQLAble {
+    interface MySQLNoJoinFromAble<C> extends FromAble<C>, MySQLDeleteSQLAble {
 
         @Override
         MySQLWhereAble<C> from(TableMeta<?> tableMeta);

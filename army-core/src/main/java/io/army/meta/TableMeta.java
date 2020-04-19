@@ -43,17 +43,17 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
 
     String comment();
 
-    @Nullable
-    TableMeta<? super T> parentMeta();
-
     IndexFieldMeta<? super T, ?> primaryKey();
 
     MappingMode mappingMode();
 
+    int discriminatorValue();
+
+    @Nullable
+    ParentTableMeta<? super T> parentMeta();
+
     @Nullable
     <E extends Enum<E> & CodeEnum> FieldMeta<T, E> discriminator();
-
-    int discriminatorValue();
 
     /**
      * contain primary key

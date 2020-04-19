@@ -4,8 +4,8 @@ import io.army.criteria.Delete;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 
-class StandardContextualSingleDelete<C> extends AbstractContextualDelete<C>
-        implements Delete.NoJoinFromAble<C>, Delete.SingleDeleteAble<C> {
+final class StandardContextualSingleDelete<C> extends AbstractContextualDelete<C>
+        implements Delete.FromAble<C>, Delete.SingleDeleteAble<C> {
 
     StandardContextualSingleDelete(C criteria) {
         super(criteria);
@@ -14,7 +14,7 @@ class StandardContextualSingleDelete<C> extends AbstractContextualDelete<C>
     /*################################## blow SingleDeleteAble method ##################################*/
 
     @Override
-    public NoJoinFromAble<C> delete() {
+    public FromAble<C> delete() {
         return this;
     }
 

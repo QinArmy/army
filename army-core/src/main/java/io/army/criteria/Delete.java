@@ -19,40 +19,12 @@ public interface Delete extends SQLAble, SQLDebug, QueryAble {
 
     interface SingleDeleteAble<C> extends DeleteSQLAble {
 
-        NoJoinFromAble<C> delete();
-    }
-
-    interface MultiDeleteAble<C> extends DeleteSQLAble {
-
         FromAble<C> delete();
     }
 
     interface FromAble<C> extends DeleteSQLAble {
 
-        JoinAble<C> from(TableMeta<?> tableMeta, String tableAlias);
-    }
-
-    interface NoJoinFromAble<C> extends DeleteSQLAble {
-
         WhereAble<C> from(TableMeta<?> tableMeta);
-    }
-
-    interface JoinAble<C> extends WhereAble<C> {
-
-        OnAble<C> leftJoin(TableAble tableAble, String tableAlias);
-
-        OnAble<C> join(TableAble tableAble, String tableAlias);
-
-        OnAble<C> rightJoin(TableAble tableAble, String tableAlias);
-    }
-
-    interface OnAble<C> extends DeleteSQLAble {
-
-        JoinAble<C> on(List<IPredicate> predicateList);
-
-        JoinAble<C> on(IPredicate predicate);
-
-        JoinAble<C> on(Function<C, List<IPredicate>> function);
     }
 
     interface WhereAble<C> extends DeleteSQLAble {

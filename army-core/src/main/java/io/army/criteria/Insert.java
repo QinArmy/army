@@ -23,6 +23,10 @@ public interface Insert extends SQLAble, SQLDebug, QueryAble {
 
     interface InsertOptionAble<T extends IDomain, C> extends InsertIntoAble<T, C> {
 
+        <F> InsertOptionAble<T, C> commonValue(FieldMeta<T, F> fieldMeta, Expression<F> valueExp);
+
+        <F, S extends Expression<F>> InsertOptionAble<T, C> commonValue(FieldMeta<T, F> fieldMeta, Function<C, S> function);
+
         InsertIntoAble<T, C> defaultIfNull();
     }
 
@@ -33,26 +37,11 @@ public interface Insert extends SQLAble, SQLDebug, QueryAble {
         InsertValuesAble<T, C> insertInto(TableMeta<T> tableMeta);
 
         InsertAble insertInto(T domain);
+
+        InsertAble batchInsertInto(List<T> domainList);
     }
 
-
-    interface InsertValueAble<T extends IDomain> extends InsertSQLAble {
-
-        <F> InsertValueAble<T> pair(FieldMeta<T, F> fieldMeta, F fieldValue);
-
-        /**
-         * @see io.army.annotation.Generator
-         * @see io.army.generator.MultiGenerator
-         */
-        <F> InsertValueAble<T> generate(FieldMeta<T, F> fieldMeta);
-
-        InsertValueAble<T> defaultValue(FieldMeta<T, ?> fieldMeta);
-
-        InsertValueAble<T> and();
-    }
-
-
-    interface InsertValuesAble<T extends IDomain, C> extends InsertValueAble<T> {
+    interface InsertValuesAble<T extends IDomain, C> extends InsertSQLAble {
 
         InsertAble values(Function<C, SubQuery> function);
 

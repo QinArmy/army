@@ -249,11 +249,20 @@ abstract class SourceCreateUtils {
 
     private static void appendTableMeta(@NonNull TypeElement entityElement, StringBuilder builder,
                                         @Nullable TypeElement parentEntityElement) {
-        String format = "%s %s<%s> %s = TableMetaFactory.createTableMeta(%s%s.class);\n\n";
-        String parentTableMetaText;
+        String format = "%s %s<%s> %s = TableMetaFactory.%s(%s%s.class);\n\n";
+        String parentTableMetaText, methodName, tableMetaName;
         if (parentEntityElement == null) {
+            if (entityElement.getAnnotation(Inheritance.class) == null) {
+                methodName = "createTableMeta";
+                tableMetaName = TableMeta.class.getSimpleName();
+            } else {
+                methodName = "createParentTableMta";
+                tableMetaName = ParentTableMeta.class.getSimpleName();
+            }
             parentTableMetaText = "";
         } else {
+            methodName = "createChildTableMeta";
+            tableMetaName = ChildTableMeta.class.getSimpleName();
             parentTableMetaText = String.format("%s%s.%s,",
                     parentEntityClassRef(entityElement, parentEntityElement),
                     MetaConstant.META_CLASS_NAME_SUFFIX,
@@ -262,9 +271,10 @@ abstract class SourceCreateUtils {
         }
         builder.append(String.format(format,
                 PROP_PRE,
-                TableMeta.class.getSimpleName(),
+                tableMetaName,
                 entityElement.getSimpleName(),
                 MetaConstant.TABLE_META,
+                methodName,
                 parentTableMetaText,
                 entityElement.getSimpleName()
         ));
@@ -454,6 +464,14 @@ abstract class SourceCreateUtils {
 
                 .append("import ")
                 .append(TableMeta.class.getName())
+                .append(";\n\n")
+
+                .append("import ")
+                .append(ParentTableMeta.class.getName())
+                .append(";\n\n")
+
+                .append("import ")
+                .append(ChildTableMeta.class.getName())
                 .append(";\n\n")
 
                 .append("import ")

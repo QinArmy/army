@@ -17,12 +17,22 @@ public abstract class SQLS extends AbstractSQLS {
 
     }
 
-    public static <T extends IDomain> Update.SingleUpdateAble<T, EmptyObject> singleUpdate(TableMeta<T> tableMeta) {
-        return new StandardContextualSingleUpdate<>(tableMeta, EmptyObject.getInstance());
+    public static <T extends IDomain> Insert.InsertOptionAble<T, EmptyObject> singleInsert(TableMeta<T> targetTable) {
+        return new StandardContextualInsert<>(targetTable, EmptyObject.getInstance());
     }
 
-    public static <T extends IDomain, C> Update.SingleUpdateAble<T, C> singleUpdate(TableMeta<T> tableMeta, C criteria) {
-        return new StandardContextualSingleUpdate<>(tableMeta, criteria);
+    public static <T extends IDomain, C> Insert.InsertOptionAble<T, C> singleInsert(TableMeta<T> targetTable
+            , C criteria) {
+        return new StandardContextualInsert<>(targetTable, criteria);
+    }
+
+    public static <T extends IDomain> Update.SingleUpdateAble<T, EmptyObject> singleUpdate(TableMeta<T> targetTable) {
+        return new StandardContextualSingleUpdate<>(targetTable, EmptyObject.getInstance());
+    }
+
+    public static <T extends IDomain, C> Update.SingleUpdateAble<T, C> singleUpdate(TableMeta<T> targetTable
+            , C criteria) {
+        return new StandardContextualSingleUpdate<>(targetTable, criteria);
     }
 
     public static Delete.SingleDeleteAble<EmptyObject> singleDelete() {

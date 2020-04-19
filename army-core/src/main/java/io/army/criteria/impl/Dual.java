@@ -60,7 +60,7 @@ final class Dual implements IDomain {
         }
 
         @Override
-        public TableMeta<? super Dual> parentMeta() {
+        public ParentTableMeta<? super Dual> parentMeta() {
             return null;
         }
 

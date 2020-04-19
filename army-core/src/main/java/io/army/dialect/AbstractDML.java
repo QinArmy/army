@@ -24,34 +24,34 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-public abstract class AbstractTableDML implements DML {
+public abstract class AbstractDML implements DML {
 
-    private final SQL sql;
+    private final Dialect dialect;
 
-    public AbstractTableDML(SQL sql) {
-        this.sql = sql;
+    public AbstractDML(Dialect dialect) {
+        this.dialect = dialect;
     }
 
     /*################################## blow SQL interface method ##################################*/
 
     @Override
     public final String quoteIfNeed(String identifier) {
-        return sql.quoteIfNeed(identifier);
+        return dialect.quoteIfNeed(identifier);
     }
 
     @Override
     public final boolean isKeyWord(String identifier) {
-        return sql.isKeyWord(identifier);
+        return dialect.isKeyWord(identifier);
     }
 
     @Override
     public final ZoneId zoneId() {
-        return sql.zoneId();
+        return dialect.zoneId();
     }
 
     @Override
     public final SessionFactory sessionFactory() {
-        return sql.sessionFactory();
+        return dialect.sessionFactory();
     }
 
     /*################################## blow TableDML method ##################################*/
@@ -201,14 +201,14 @@ public abstract class AbstractTableDML implements DML {
 
         StringBuilder builder = context.stringBuilder()
                 .append("UPDATE ")
-                .append(this.sql.quoteIfNeed(childMeta.tableName()));
+                .append(this.dialect.quoteIfNeed(childMeta.tableName()));
 
         if (StringUtils.hasText(context.safeAlias())) {
             builder.append(" AS ")
                     .append(context.safeAlias());
         }
         builder.append(" JOIN ")
-                .append(this.sql.quoteIfNeed(parentMeta.tableName()))
+                .append(this.dialect.quoteIfNeed(parentMeta.tableName()))
                 .append(" AS ")
                 .append(context.safeParentAlias())
                 .append(" ON ")
@@ -293,7 +293,7 @@ public abstract class AbstractTableDML implements DML {
 
     private void appendUpdateClause(UpdateSQLContext context) {
         context.stringBuilder().append("UPDATE ")
-                .append(this.sql.quoteIfNeed(context.tableMeta().tableName()));
+                .append(this.dialect.quoteIfNeed(context.tableMeta().tableName()));
 
         if (StringUtils.hasText(context.safeAlias())) {
             context.stringBuilder()
@@ -344,7 +344,7 @@ public abstract class AbstractTableDML implements DML {
                 builder.append(safeTableAlias)
                         .append(".");
             }
-            builder.append(this.sql.quoteIfNeed(visibleField.fieldName()))
+            builder.append(this.dialect.quoteIfNeed(visibleField.fieldName()))
                     .append(" = ? ");
             context.appendParam(ParamWrapper.build(visibleField.mappingType(), visibleValue));
         }
