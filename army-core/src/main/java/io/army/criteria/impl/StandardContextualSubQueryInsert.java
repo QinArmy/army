@@ -52,6 +52,12 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
     /*################################## blow SubQueryValueAble method ##################################*/
 
     @Override
+    public final InsertAble values(SubQuery subQuery) {
+        this.subQuery = subQuery;
+        return this;
+    }
+
+    @Override
     public final InsertAble values(Function<C, SubQuery> function) {
         this.subQuery = function.apply(this.criteria);
         return this;
@@ -91,7 +97,7 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
         this.criteriaContext.clear();
 
         Assert.state(!CollectionUtils.isEmpty(this.fieldList), "fieldList is empty,error.");
-        Assert.state(this.subQuery != null, "values(SubQuery) must be invoked.");
+        Assert.state(this.subQuery != null, "values(SubQuery) or values(Function<C, SubQuery> ) must be invoked.");
 
         this.fieldList = Collections.unmodifiableList(this.fieldList);
         this.prepared = true;

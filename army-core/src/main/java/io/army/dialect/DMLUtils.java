@@ -4,8 +4,7 @@ import io.army.ErrorCode;
 import io.army.beans.BeanWrapper;
 import io.army.beans.ReadonlyWrapper;
 import io.army.boot.FieldValuesGenerator;
-import io.army.criteria.CriteriaException;
-import io.army.criteria.Expression;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerStandardInsert;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
@@ -19,6 +18,18 @@ abstract class DMLUtils {
 
     DMLUtils() {
         throw new UnsupportedOperationException();
+    }
+
+    static int selectionCount(SubQuery subQuery) {
+        int count = 0;
+        for (SelectPart selectPart : subQuery.selectPartList()) {
+            if (selectPart instanceof SelectionGroup) {
+                count += ((SelectionGroup) selectPart).selectionList().size();
+            } else {
+                count++;
+            }
+        }
+        return count;
     }
 
 
@@ -163,6 +174,14 @@ abstract class DMLUtils {
         return SQLWrapper.build(
                 context.fieldStringBuilder().toString() + context.stringBuilder().toString()
                 , context.paramWrapper()
+        );
+    }
+
+    static BeanSQLWrapper createSQLWrapper(InsertContext context, BeanWrapper beanWrapper) {
+        return BeanSQLWrapper.build(
+                context.fieldStringBuilder().toString() + context.stringBuilder().toString()
+                , context.paramWrapper()
+                , beanWrapper
         );
     }
 

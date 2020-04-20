@@ -19,6 +19,12 @@ final class BatchSQLWrapperImpl implements BatchSQLWrapper {
     }
 
     @Override
+    public String toString(Dialect dialect) {
+        //TODO zoro implement sql parse.
+        return "";
+    }
+
+    @Override
     public final List<List<ParamWrapper>> paramGroupList() {
         return this.paramGroupList;
     }

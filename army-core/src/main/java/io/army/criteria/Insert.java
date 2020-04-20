@@ -22,26 +22,32 @@ public interface Insert extends SQLAble, SQLDebug, QueryAble {
         Insert asInsert();
     }
 
-    /*################################## blow  insert interfaces ##################################*/
+    /*################################## blow  batchInsert interfaces ##################################*/
 
-    interface InsertOptionAble<T extends IDomain> extends InsertIntoAble<T> {
+    interface InsertOptionAble<T extends IDomain, C> extends BatchInsertIntoAble<T> {
 
-        <F> InsertOptionAble<T> commonValue(FieldMeta<T, F> fieldMeta, Expression<F> valueExp);
+        <F> InsertOptionAble<T, C> commonValue(FieldMeta<? super T, F> fieldMeta, Expression<F> valueExp);
 
-        InsertOptionAble<T> alwaysUseCommonValue();
+        <F> InsertOptionAble<T, C> commonValue(FieldMeta<? super T, F> fieldMeta, Function<C, Expression<F>> function);
+
+        InsertOptionAble<T, C> alwaysUseCommonValue();
 
         InsertIntoAble<T> defaultIfNull();
     }
 
+    interface BatchInsertIntoAble<T extends IDomain> extends InsertIntoAble<T> {
+
+        InsertAble batchInsert(List<T> domainList);
+    }
+
     interface InsertIntoAble<T extends IDomain> extends InsertSQLAble {
 
-        InsertValuesAble<T> insertInto(Collection<FieldMeta<T, ?>> fieldMetaList);
+        InsertValuesAble<T> insertInto(Collection<FieldMeta<? super T, ?>> fieldMetaList);
 
         InsertValuesAble<T> insertInto(TableMeta<T> tableMeta);
 
         InsertAble insert(T domain);
 
-        InsertAble insert(List<T> domainList);
 
     }
 
@@ -53,7 +59,7 @@ public interface Insert extends SQLAble, SQLDebug, QueryAble {
     }
 
 
-    /*################################## blow subQuery insert interfaces ##################################*/
+    /*################################## blow subQuery batchInsert interfaces ##################################*/
 
     interface SubQueryTargetFieldAble<T extends IDomain, C> extends InsertSQLAble {
 
@@ -62,6 +68,8 @@ public interface Insert extends SQLAble, SQLDebug, QueryAble {
     }
 
     interface SubQueryValueAble<C> extends InsertSQLAble {
+
+        InsertAble values(SubQuery subQuery);
 
         InsertAble values(Function<C, SubQuery> function);
     }

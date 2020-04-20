@@ -1,11 +1,10 @@
 package io.army.dialect;
 
-import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.Delete;
 import io.army.criteria.Insert;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
-import io.army.meta.TableMeta;
+import io.army.domain.IDomain;
 
 import java.util.List;
 
@@ -14,7 +13,7 @@ public interface DML extends SQL {
     /**
      * @return a modifiable list
      */
-    List<SQLWrapper> insert(TableMeta<?> tableMeta, ReadonlyWrapper entityWrapper);
+    List<SQLWrapper> insert(IDomain domain);
 
     default List<SQLWrapper> insert(Insert insert) {
         throw new UnsupportedOperationException();

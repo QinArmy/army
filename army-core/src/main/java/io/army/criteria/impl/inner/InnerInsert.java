@@ -14,8 +14,8 @@ public interface InnerInsert {
 
     /**
      * @return a unmodifiable list , maybe empty.
-     * @see Insert.InsertIntoAble#insertInto(TableMeta)
-     * @see Insert.InsertIntoAble#insertInto(Collection)
+     * @see Insert.BatchInsertIntoAble#insertInto(TableMeta)
+     * @see Insert.BatchInsertIntoAble#insertInto(Collection)
      */
     List<FieldMeta<?, ?>> fieldList();
 

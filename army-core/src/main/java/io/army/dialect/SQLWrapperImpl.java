@@ -2,24 +2,23 @@ package io.army.dialect;
 
 import io.army.lang.Nullable;
 import io.army.util.Assert;
-import io.army.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
 
-final class SQLWrapperImpl implements SQLWrapper {
+ class SQLWrapperImpl implements SQLWrapper {
 
 
-    private final String sql;
+     private final String sql;
 
-    private final List<ParamWrapper> paramList;
+     private final List<ParamWrapper> paramList;
 
-    private final boolean hasVersion;
+     private final boolean hasVersion;
 
-    SQLWrapperImpl(String sql, List<ParamWrapper> paramList) {
-        this(sql, paramList, false);
+     SQLWrapperImpl(String sql, List<ParamWrapper> paramList) {
+         this(sql, paramList, false);
     }
 
     SQLWrapperImpl(String sql, List<ParamWrapper> paramList, boolean hasVersion) {
@@ -55,15 +54,15 @@ final class SQLWrapperImpl implements SQLWrapper {
 
     private boolean isInsertSql(String afterTrimSql) {
         return afterTrimSql.startsWith("INSERT INTO ")
-                || afterTrimSql.startsWith("insert into ");
+                || afterTrimSql.startsWith("batchInsert into ");
     }
 
 
     private void plusIndexPrefix(final String tablePart, StringBuilder builder) {
         int index;
         index = tablePart.indexOf("(");
-        Assert.isTrue(index > 0, () -> String.format("insert dml error,%s", tablePart));
-        // insert into (
+        Assert.isTrue(index > 0, () -> String.format("batchInsert dml error,%s", tablePart));
+        // batchInsert into (
         builder.append(tablePart, 0, index);
 
         final int len = tablePart.length();
@@ -283,7 +282,7 @@ final class SQLWrapperImpl implements SQLWrapper {
 
 
     private static IllegalArgumentException createSqlError(String partSQL) {
-        return new IllegalArgumentException(String.format("value part of insert dml,%s", partSQL));
+        return new IllegalArgumentException(String.format("value part of batchInsert dml,%s", partSQL));
     }
 
 }

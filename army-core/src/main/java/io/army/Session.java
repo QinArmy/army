@@ -29,4 +29,6 @@ public interface Session extends AutoCloseable {
 
     List<Integer> update(Update update, Visible visible);
 
+    boolean showSql();
+
 }

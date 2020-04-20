@@ -4,7 +4,7 @@ public class EmptyObject {
 
      static final EmptyObject INSTANCE = new EmptyObject();
 
-    public static  EmptyObject getInstance() {
+    public static EmptyObject getInstance() {
         return INSTANCE;
     }
 

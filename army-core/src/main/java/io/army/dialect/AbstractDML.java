@@ -3,18 +3,20 @@ package io.army.dialect;
 import io.army.ErrorCode;
 import io.army.SessionFactory;
 import io.army.beans.BeanWrapper;
-import io.army.beans.ReadonlyWrapper;
 import io.army.boot.FieldValuesGenerator;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLS;
 import io.army.criteria.impl.inner.*;
 import io.army.domain.IDomain;
+import io.army.generator.PostMultiGenerator;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
+import io.army.meta.GeneratorMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
 import io.army.util.Assert;
+import io.army.util.ClassUtils;
 import io.army.util.CollectionUtils;
 import io.army.util.StringUtils;
 
@@ -54,15 +56,21 @@ public abstract class AbstractDML implements DML {
         return dialect.sessionFactory();
     }
 
-    /*################################## blow DML insert method ##################################*/
+    /*################################## blow DML batchInsert method ##################################*/
 
     @Override
-    public final List<SQLWrapper> insert(TableMeta<?> tableMeta, ReadonlyWrapper entityWrapper) {
-        Assert.notNull(tableMeta, "tableMeta required");
-        Assert.notNull(entityWrapper, "entity required");
-        Assert.isTrue(tableMeta.javaType() == entityWrapper.getWrappedClass(), "tableMata then entity not match");
+    public final List<SQLWrapper> insert(IDomain domain) {
+        Assert.notNull(domain, "domain required");
+
+        final SessionFactory sessionFactory = this.dialect.sessionFactory();
+
+        TableMeta<?> tableMeta = sessionFactory.tableMetaMap().get(domain.getClass());
+        //  create necessary value for domain
+        BeanWrapper beanWrapper = FieldValuesGenerator.build(sessionFactory)
+                .createValues(tableMeta, domain);
+
         return Collections.unmodifiableList(
-                insertDomain(tableMeta, entityWrapper, tableMeta.fieldCollection(), null)
+                insertDomain(tableMeta, beanWrapper, tableMeta.fieldCollection(), null)
         );
 
     }
@@ -126,7 +134,7 @@ public abstract class AbstractDML implements DML {
         return Collections.emptyList();
     }
 
-    /*################################## blow package insert template method ##################################*/
+    /*################################## blow package batchInsert template method ##################################*/
 
     InsertContext createInsertContext(@Nullable InnerInsert insert) {
         InsertContext context;
@@ -145,7 +153,7 @@ public abstract class AbstractDML implements DML {
 
     /*################################## blow protected method ##################################*/
 
-    /*################################## blow private insert method ##################################*/
+    /*################################## blow private batchInsert method ##################################*/
 
     /**
      * @return a modifiable list
@@ -179,14 +187,22 @@ public abstract class AbstractDML implements DML {
 
     private List<SQLWrapper> standardSubQueryInsert(InnerStandardSubQueryInsert insert) {
         TableMeta<?> tableMeta = insert.tableMeta();
+        List<FieldMeta<?, ?>> fieldMetaList = insert.fieldList();
+        int subQuerySelectionCount = DMLUtils.selectionCount(insert.subQuery());
 
-        if (tableMeta instanceof ChildTableMeta) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "Insert from SubQuery not support ChildTableMeta.");
+        if (subQuerySelectionCount != fieldMetaList.size()) {
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                    , "selection size[%s] of SubQuery and targetFieldList size[%s] not match."
+                    , subQuerySelectionCount, fieldMetaList.size());
         }
+
         InsertContext context = createInsertContext(insert);
-        StringBuilder builder = context.fieldStringBuilder().append("INSERT INTO ( ");
+        StringBuilder builder = context.fieldStringBuilder().append("INSERT INTO ");
+        context.appendTable(tableMeta);
+        builder.append(" ( ");
+
         int index = 0;
-        for (FieldMeta<?, ?> fieldMeta : insert.fieldList()) {
+        for (FieldMeta<?, ?> fieldMeta : fieldMetaList) {
             if (index > 0) {
                 builder.append(",");
             }
@@ -199,20 +215,16 @@ public abstract class AbstractDML implements DML {
     }
 
 
-    private List<SQLWrapper> insertDomain(TableMeta<?> tableMeta, ReadonlyWrapper entityWrapper
+    private List<SQLWrapper> insertDomain(TableMeta<?> tableMeta, BeanWrapper entityWrapper
             , @Nullable Collection<? extends FieldMeta<?, ?>> fieldMetas
             , @Nullable InnerInsert innerInsert) {
 
         List<SQLWrapper> sqlWrapperList;
         switch (tableMeta.mappingMode()) {
             case SIMPLE:
-                InsertContext context = createInsertContext(innerInsert);
-                Collection<? extends FieldMeta<?, ?>> targetFields = fieldMetas;
-                if (targetFields == null) {
-                    targetFields = tableMeta.fieldCollection();
-                }
-                DMLUtils.createInsertForSimple(tableMeta, targetFields, entityWrapper, context);
-                sqlWrapperList = Collections.singletonList(DMLUtils.createSQLWrapper(context));
+                sqlWrapperList = Collections.singletonList(
+                        createInsertForSimple(tableMeta, entityWrapper, fieldMetas, innerInsert)
+                );
                 break;
             case CHILD:
                 sqlWrapperList = createInsertForChild((ChildTableMeta<?>) tableMeta
@@ -233,12 +245,11 @@ public abstract class AbstractDML implements DML {
 
 
     private List<SQLWrapper> createInsertForChild(ChildTableMeta<?> childMeta
-            , ReadonlyWrapper entityWrapper, @Nullable Collection<? extends FieldMeta<?, ?>> fieldMetas
+            , BeanWrapper beanWrapper, @Nullable Collection<? extends FieldMeta<?, ?>> fieldMetas
             , @Nullable InnerInsert innerInsert) {
 
         TableMeta<?> parentMeta = childMeta.parentMeta();
-        Collection<FieldMeta<?, ?>> childFields;
-        Collection<FieldMeta<?, ?>> parentFields;
+        Collection<FieldMeta<?, ?>> childFields, parentFields;
         if (fieldMetas == null) {
             // unmodifiableCollection for avoid generic error in below part
             parentFields = Collections.unmodifiableCollection(parentMeta.fieldCollection());
@@ -266,11 +277,11 @@ public abstract class AbstractDML implements DML {
 
         List<SQLWrapper> sqlWrapperList = new ArrayList<>(2);
         sqlWrapperList.add(
-                createInsertForParent(parentMeta, entityWrapper, parentFields, innerInsert)
+                createInsertForParent(parentMeta, beanWrapper, parentFields, innerInsert)
         );
 
         InsertContext context = createInsertContext(innerInsert);
-        DMLUtils.createInsertForSimple(childMeta, childFields, entityWrapper, context);
+        DMLUtils.createInsertForSimple(childMeta, childFields, beanWrapper, context);
         sqlWrapperList.add(DMLUtils.createSQLWrapper(context));
 
         return sqlWrapperList;
@@ -280,17 +291,31 @@ public abstract class AbstractDML implements DML {
     /**
      * @return a modifiable list
      */
-    private SQLWrapper createInsertForParent(TableMeta<?> tableMeta, ReadonlyWrapper entityWrapper
+    private SQLWrapper createInsertForParent(TableMeta<?> tableMeta, BeanWrapper beanWrapper
             , @Nullable Collection<? extends FieldMeta<?, ?>> fieldMetas, @Nullable InnerInsert innerInsert) {
+        return createInsertForSimple(tableMeta, beanWrapper, fieldMetas, innerInsert);
+    }
 
+    private SQLWrapper createInsertForSimple(TableMeta<?> tableMeta, BeanWrapper beanWrapper
+            , @Nullable Collection<? extends FieldMeta<?, ?>> fieldMetas, @Nullable InnerInsert innerInsert) {
         Collection<? extends FieldMeta<?, ?>> targetFields = fieldMetas;
         if (targetFields == null) {
             // unmodifiableCollection for avoid generic error
             targetFields = tableMeta.fieldCollection();
         }
         InsertContext context = createInsertContext(innerInsert);
-        DMLUtils.createInsertForSimple(tableMeta, targetFields, entityWrapper, context);
-        return DMLUtils.createSQLWrapper(context);
+        DMLUtils.createInsertForSimple(tableMeta, targetFields, beanWrapper, context);
+
+        SQLWrapper sqlWrapper;
+        GeneratorMeta generatorMeta = tableMeta.primaryKey().generator();
+
+        if (generatorMeta != null
+                && ClassUtils.isAssignable(PostMultiGenerator.class, generatorMeta.type())) {
+            sqlWrapper = DMLUtils.createSQLWrapper(context, beanWrapper);
+        } else {
+            sqlWrapper = DMLUtils.createSQLWrapper(context);
+        }
+        return sqlWrapper;
     }
 
     private List<BatchSQLWrapper> standardBatchInsert(InnerStandardInsert insert) {
@@ -355,7 +380,7 @@ public abstract class AbstractDML implements DML {
 
     private void assertStandardBatchInsert(InnerStandardInsert insert) {
         if (!CollectionUtils.isEmpty(insert.fieldList()) || insert.defaultExpIfNull()) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "fieldList required for batch insert.");
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "fieldList required for batch batchInsert.");
         }
     }
 
@@ -426,7 +451,7 @@ public abstract class AbstractDML implements DML {
         // 2. set clause
         appendSetClause(context, updateAble.targetFieldList(), updateAble.valueExpList());
         // 3. where clause
-        appendWhereClause(context, updateAble.predicateList());
+        // appendWhereClause(context, updateAble.predicateList());
         //4. append child visible
         appendVisiblePredicate(parentMeta, context, context.safeParentAlias(), visible);
 
@@ -521,7 +546,7 @@ public abstract class AbstractDML implements DML {
         //2. set clause
         appendSetClause(context, innerAble.targetFieldList(), innerAble.valueExpList());
         //3. where clause
-        appendWhereClause(context, innerAble.predicateList());
+        // appendWhereClause(context, innerAble.predicateList());
         //4. append visible
         appendVisiblePredicate(context.updateTable, context, context.safeAlias(), visible);
 

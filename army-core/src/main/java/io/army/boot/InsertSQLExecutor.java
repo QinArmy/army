@@ -1,7 +1,6 @@
 package io.army.boot;
 
-import io.army.Session;
-import io.army.beans.BeanWrapper;
+import io.army.dialect.BatchSQLWrapper;
 import io.army.dialect.InsertException;
 import io.army.dialect.SQLWrapper;
 
@@ -13,8 +12,10 @@ import java.util.List;
 interface InsertSQLExecutor extends DMLSQLExecutor {
 
 
-    void executeInsert(InnerSession session, List<SQLWrapper> sqlWrapperList, BeanWrapper beanWrapper)
-            throws InsertException;
+    void insert(InnerSession session, List<SQLWrapper> sqlWrapperList) throws InsertException;
+
+    void batchInsert(InnerSession session, List<BatchSQLWrapper> batchSQLWrapperList);
+
 
     static InsertSQLExecutor build() {
         return InsertSQLExecutorIml.INSTANCE;

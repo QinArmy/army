@@ -17,16 +17,20 @@ public abstract class SQLS extends AbstractSQLS {
 
     }
 
-    public static <T extends IDomain> Insert.InsertOptionAble<T> insert(TableMeta<T> targetTable) {
-        return new StandardInsert<>(targetTable);
+    public static <T extends IDomain> Insert.InsertOptionAble<T, EmptyObject> insert(TableMeta<T> targetTable) {
+        return new StandardInsert<>(targetTable, EmptyObject.getInstance());
     }
 
-    public static <T extends IDomain> Insert.SubQueryTargetFieldAble<T, EmptyObject> insertFromSubQuery(
+    public static <T extends IDomain, C> Insert.InsertOptionAble<T, C> insert(TableMeta<T> targetTable, C criteria) {
+        return new StandardInsert<>(targetTable, criteria);
+    }
+
+    public static <T extends IDomain> Insert.SubQueryTargetFieldAble<T, EmptyObject> subQueryInsert(
             TableMeta<T> targetTable) {
         return new StandardContextualSubQueryInsert<>(targetTable, EmptyObject.getInstance());
     }
 
-    public static <T extends IDomain, C> Insert.SubQueryTargetFieldAble<T, C> insertFromSubQuery(
+    public static <T extends IDomain, C> Insert.SubQueryTargetFieldAble<T, C> subQueryInsert(
             TableMeta<T> targetTable, C criteria) {
         return new StandardContextualSubQueryInsert<>(targetTable, criteria);
     }
@@ -38,6 +42,16 @@ public abstract class SQLS extends AbstractSQLS {
     public static <T extends IDomain, C> Update.SingleUpdateAble<T, C> singleUpdate(TableMeta<T> targetTable
             , C criteria) {
         return new StandardContextualSingleUpdate<>(targetTable, criteria);
+    }
+
+    public static <T extends IDomain> Update.DomainUpdateAble<T, EmptyObject> domainUpdate(TableMeta<T> targetTable
+            , Object primaryKeyValue) {
+        return new StandardContextualDomainUpdate<>(targetTable, primaryKeyValue, EmptyObject.getInstance());
+    }
+
+    public static <T extends IDomain, C> Update.DomainUpdateAble<T, C> domainUpdate(TableMeta<T> targetTable
+            , Object primaryKeyValue, C criteria) {
+        return new StandardContextualDomainUpdate<>(targetTable, primaryKeyValue, criteria);
     }
 
     public static Delete.SingleDeleteAble<EmptyObject> singleDelete() {

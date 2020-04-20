@@ -10,13 +10,16 @@ import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 
 import java.util.*;
+import java.util.function.Function;
 
-final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implements Insert
-        , Insert.InsertAble, Insert.InsertOptionAble<T>, Insert.InsertIntoAble<T>, Insert.InsertValuesAble<T>
+final class StandardInsert<T extends IDomain, C> extends AbstractSQLDebug implements Insert
+        , Insert.InsertAble, Insert.InsertOptionAble<T, C>, Insert.BatchInsertIntoAble<T>, Insert.InsertValuesAble<T>
         , InnerStandardInsert {
 
 
     private final TableMeta<T> tableMeta;
+
+    private final C criteria;
 
     private boolean defaultExpIfNull;
 
@@ -30,14 +33,15 @@ final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implement
 
     private boolean prepared;
 
-    StandardInsert(TableMeta<T> tableMeta) {
+    StandardInsert(TableMeta<T> tableMeta, C criteria) {
         this.tableMeta = tableMeta;
+        this.criteria = criteria;
     }
 
     /*################################## blow InsertOptionAble method ##################################*/
 
     @Override
-    public final <F> InsertOptionAble<T> commonValue(FieldMeta<T, F> fieldMeta, Expression<F> valueExp) {
+    public final <F> InsertOptionAble<T, C> commonValue(FieldMeta<? super T, F> fieldMeta, Expression<F> valueExp) {
         if (this.commonValueMap == null) {
             this.commonValueMap = new HashMap<>();
         }
@@ -46,13 +50,18 @@ final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implement
     }
 
     @Override
-    public final InsertOptionAble<T> alwaysUseCommonValue() {
+    public <F> InsertOptionAble<T, C> commonValue(FieldMeta<? super T, F> fieldMeta, Function<C, Expression<F>> function) {
+        return commonValue(fieldMeta, function.apply(this.criteria));
+    }
+
+    @Override
+    public final InsertOptionAble<T, C> alwaysUseCommonValue() {
         this.alwaysUseCommonExp = true;
         return this;
     }
 
     @Override
-    public final InsertIntoAble<T> defaultIfNull() {
+    public final BatchInsertIntoAble<T> defaultIfNull() {
         this.defaultExpIfNull = true;
         return this;
     }
@@ -60,7 +69,7 @@ final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implement
     /*################################## blow private method ##################################*/
 
     @Override
-    public final InsertValuesAble<T> insertInto(Collection<FieldMeta<T, ?>> fieldMetas) {
+    public final InsertValuesAble<T> insertInto(Collection<FieldMeta<? super T, ?>> fieldMetas) {
         this.fieldList = new ArrayList<>(fieldMetas);
         return this;
     }
@@ -79,7 +88,7 @@ final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implement
     }
 
     @Override
-    public final InsertAble insert(List<T> domainList) {
+    public final InsertAble batchInsert(List<T> domainList) {
         this.valueList = new ArrayList<>(domainList);
         return this;
     }

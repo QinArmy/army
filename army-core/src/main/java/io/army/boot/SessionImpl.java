@@ -2,12 +2,10 @@ package io.army.boot;
 
 import io.army.SessionFactory;
 import io.army.SessionOptions;
-import io.army.beans.BeanWrapper;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
 import io.army.dialect.SQLWrapper;
 import io.army.domain.IDomain;
-import io.army.meta.TableMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,13 +76,10 @@ class SessionImpl implements InnerSession {
 
     @Override
     public void save(IDomain entity) {
-        TableMeta<?> tableMeta = sessionFactory.tableMetaMap().get(entity.getClass());
-        // 1. create necessary value for domain
-        BeanWrapper beanWrapper = fieldValuesGenerator.createValues(tableMeta, entity);
-        // 2. create insert dml
-        List<SQLWrapper> sqlList = sessionFactory.dialect().insert(tableMeta, beanWrapper.getReadonlyWrapper());
+        //1. create necessary value for domain ; 2. create batchInsert dml
+        List<SQLWrapper> sqlList = sessionFactory.dialect().insert(entity);
         // 3. execute dml
-        InsertSQLExecutor.build().executeInsert(this, sqlList, beanWrapper);
+        InsertSQLExecutor.build().insert(this, sqlList);
     }
 
     @Override
@@ -99,6 +94,11 @@ class SessionImpl implements InnerSession {
             LOG.info("wrapper:{}", wrapper);
         }
         return Collections.emptyList();
+    }
+
+    @Override
+    public boolean showSql() {
+        return false;
     }
 
     @Override

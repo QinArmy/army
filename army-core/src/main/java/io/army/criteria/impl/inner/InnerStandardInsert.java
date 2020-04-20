@@ -31,7 +31,7 @@ public interface InnerStandardInsert extends InnerInsert {
 
     /**
      * @see Insert.InsertValuesAble
-     * @see Insert.InsertIntoAble#insert(IDomain)
+     * @see Insert.BatchInsertIntoAble#insert(IDomain)
      */
     List<IDomain> valueList();
 }

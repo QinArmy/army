@@ -2,8 +2,8 @@ package io.army.dialect;
 
 
 import io.army.SessionFactory;
-import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.*;
+import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
@@ -109,11 +109,11 @@ public abstract class AbstractDialect implements Dialect {
     }
 
 
-    /*################################## blow TableDML method ##################################*/
+    /*################################## blow DML method ##################################*/
 
     @Override
-    public final List<SQLWrapper> insert(TableMeta<?> tableMeta, ReadonlyWrapper entityWrapper) {
-        return this.dml.insert(tableMeta, entityWrapper);
+    public final List<SQLWrapper> insert(IDomain domain) {
+        return this.dml.insert(domain);
     }
 
     @Override

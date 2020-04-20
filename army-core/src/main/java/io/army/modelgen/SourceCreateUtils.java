@@ -464,15 +464,15 @@ abstract class SourceCreateUtils {
 
                 .append("import ")
                 .append(TableMeta.class.getName())
-                .append(";\n\n")
+                .append(";\n")
 
                 .append("import ")
                 .append(ParentTableMeta.class.getName())
-                .append(";\n\n")
+                .append(";\n")
 
                 .append("import ")
                 .append(ChildTableMeta.class.getName())
-                .append(";\n\n")
+                .append(";\n")
 
                 .append("import ")
                 .append(Assert.class.getName())

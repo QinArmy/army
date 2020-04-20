@@ -1,7 +1,9 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
-import io.army.criteria.impl.inner.InnerUpdate;
+import io.army.criteria.Expression;
+import io.army.criteria.IPredicate;
+import io.army.criteria.Update;
+import io.army.criteria.impl.inner.InnerStandardDomainUpdate;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -13,14 +15,20 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class AbstractContextualUpdate<T extends IDomain, C> extends AbstractSQL implements InnerUpdate
-        , Update.UpdateAble, Update.WhereAble<T, C>, Update.WhereAndAble<T, C> {
+final class StandardContextualDomainUpdate<T extends IDomain, C> extends AbstractSQLDebug implements
+        InnerStandardDomainUpdate, Update, Update.UpdateAble, Update.DomainWhereAble<T, C>
+        , Update.WhereAndAble<T, C>, Update.DomainUpdateAble<T, C> {
 
-    static final String NOT_PREPARED_MSG = "update criteria don't haven invoke asUpdate() method.";
 
-    final C criteria;
+    private final TableMeta<?> tableMeta;
+
+    private final Object primaryKeyValue;
+
+    private final C criteria;
 
     private final CriteriaContext criteriaContext;
+
+    private String tableAlias;
 
     private List<FieldMeta<?, ?>> targetFieldList = new ArrayList<>();
 
@@ -30,41 +38,57 @@ abstract class AbstractContextualUpdate<T extends IDomain, C> extends AbstractSQ
 
     private boolean prepared;
 
-    AbstractContextualUpdate(C criteria) {
+    StandardContextualDomainUpdate(TableMeta<?> tableMeta, Object primaryKeyValue, C criteria) {
+        Assert.notNull(tableMeta, "tableMeta required");
         Assert.notNull(criteria, "criteria required");
+
+        Assert.isInstanceOf(tableMeta.primaryKey().javaType(), primaryKeyValue);
+
+        this.tableMeta = tableMeta;
+        this.primaryKeyValue = primaryKeyValue;
         this.criteria = criteria;
 
         this.criteriaContext = new AbstractStandardSelect.CriteriaContextImpl<>(criteria);
         CriteriaContextHolder.setContext(this.criteriaContext);
     }
 
-    /*################################## blow SetAble method ##################################*/
+    /*################################## blow DomainUpdateAble method ##################################*/
 
     @Override
-    public final <F> WhereAble<T, C> set(FieldMeta<T, F> target, F value) {
+    public final DomainSetAble<T, C> update(TableMeta<T> tableMeta, String tableAlias) {
+        Assert.isTrue(this.tableMeta == tableMeta, "tableMeta not match.");
+        Assert.hasText(tableAlias, "tableAlias required");
+        this.tableAlias = tableAlias;
+        return this;
+    }
+
+    /*################################## blow DomainSetAble method ##################################*/
+
+    @Override
+    public final <F> DomainWhereAble<T, C> set(FieldMeta<? super T, F> target, F value) {
         this.targetFieldList.add(target);
         this.valueExpList.add(SQLS.param(value));
         return this;
     }
 
     @Override
-    public final <F> WhereAble<T, C> set(FieldMeta<T, F> target, Expression<F> valueExp) {
+    public final <F> DomainWhereAble<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp) {
         this.targetFieldList.add(target);
         this.valueExpList.add(valueExp);
         return this;
     }
 
     @Override
-    public final <F> WhereAble<T, C> set(FieldMeta<T, F> target, Function<C, Expression<F>> function) {
+    public final <F> DomainWhereAble<T, C> set(FieldMeta<? super T, F> target, Function<C, Expression<F>> function) {
         this.targetFieldList.add(target);
         this.valueExpList.add(function.apply(this.criteria));
         return this;
     }
 
-    /*################################## blow WhereAble method ##################################*/
+    /*################################## blow DomainWhereAble method ##################################*/
 
     @Override
-    public final <F> WhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<T, F> target, F value) {
+    public final <F> DomainWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value) {
         if (predicate.test(this.criteria)) {
             set(target, value);
         }
@@ -72,7 +96,8 @@ abstract class AbstractContextualUpdate<T extends IDomain, C> extends AbstractSQ
     }
 
     @Override
-    public final <F> WhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<T, F> target, Expression<F> valueExp) {
+    public final <F> DomainWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target
+            , Expression<F> valueExp) {
         if (predicate.test(this.criteria)) {
             set(target, valueExp);
         }
@@ -80,7 +105,7 @@ abstract class AbstractContextualUpdate<T extends IDomain, C> extends AbstractSQ
     }
 
     @Override
-    public final <F> WhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<T, F> target
+    public final <F> DomainWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target
             , Function<C, Expression<F>> valueExpFunction) {
         if (predicate.test(this.criteria)) {
             set(target, valueExpFunction);
@@ -89,13 +114,13 @@ abstract class AbstractContextualUpdate<T extends IDomain, C> extends AbstractSQ
     }
 
     @Override
-    public final Update.UpdateAble where(List<IPredicate> predicateList) {
+    public final UpdateAble where(List<IPredicate> predicateList) {
         this.predicateList.addAll(predicateList);
         return this;
     }
 
     @Override
-    public final Update.UpdateAble where(Function<C, List<IPredicate>> function) {
+    public final UpdateAble where(Function<C, List<IPredicate>> function) {
         this.predicateList.addAll(function.apply(this.criteria));
         return this;
     }
@@ -130,88 +155,65 @@ abstract class AbstractContextualUpdate<T extends IDomain, C> extends AbstractSQ
         return this;
     }
 
-    /*################################## blow UpdateAble method ##################################*/
+    /*################################## blow private method ##################################*/
 
     @Override
     public final Update asUpdate() {
         if (this.prepared) {
             return this;
         }
-        Assert.notEmpty(this.predicateList, "update statement must have where.");
+        Assert.hasText(this.tableAlias, "tableAlias has no text,state error.");
 
         CriteriaContextHolder.clearContext(this.criteriaContext);
         this.criteriaContext.clear();
 
-        this.asSQL();
         this.targetFieldList = Collections.unmodifiableList(this.targetFieldList);
         this.valueExpList = Collections.unmodifiableList(this.valueExpList);
         this.predicateList = Collections.unmodifiableList(this.predicateList);
 
-        doAsUpdate();
         this.prepared = true;
         return this;
     }
 
-    /*################################## blow InnerUpdate method ##################################*/
+    /*################################## blow InnerStandardDomainUpdate method ##################################*/
 
     @Override
-    public List<SQLModifier> modifierList() {
-        return Collections.emptyList();
+    public final TableMeta<?> tableMata() {
+        return this.tableMeta;
+    }
+
+    @Override
+    public final String tableAlias() {
+        return this.tableAlias;
+    }
+
+    @Override
+    public final Object primaryKeyValue() {
+        return this.primaryKeyValue;
+    }
+
+    @Override
+    public final List<IPredicate> predicateList() {
+        return this.predicateList;
     }
 
     @Override
     public final List<FieldMeta<?, ?>> targetFieldList() {
-        Assert.state(this.prepared, NOT_PREPARED_MSG);
         return this.targetFieldList;
     }
 
     @Override
     public final List<Expression<?>> valueExpList() {
-        Assert.state(this.prepared, NOT_PREPARED_MSG);
         return this.valueExpList;
     }
 
     @Override
-    public final List<IPredicate> predicateList() {
-        Assert.state(this.prepared, NOT_PREPARED_MSG);
-        return this.predicateList;
-    }
-
-    @Override
     public final void clear() {
-        super.beforeClear(NOT_PREPARED_MSG);
+        Assert.state(this.prepared, "Update not invoke asUpdate() method.");
 
         this.targetFieldList = null;
         this.valueExpList = null;
         this.predicateList = null;
-
-        this.doClear();
     }
-
-    /*################################## blow package method ##################################*/
-
-    @Override
-    final boolean prepared() {
-        return this.prepared;
-    }
-
-    @Override
-    final void onAddSubQuery(SubQuery subQuery, String subQueryAlias) {
-        this.criteriaContext.onAddSubQuery(subQuery, subQueryAlias);
-    }
-
-    void doClear() {
-
-    }
-
-    @Override
-    void onAddTable(TableMeta<?> table, String tableAlias) {
-
-    }
-
-
-    /*################################## blow package template method ##################################*/
-
-    abstract void doAsUpdate();
-
 }
+

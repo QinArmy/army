@@ -4,9 +4,7 @@ import io.army.ArmyAccessException;
 import io.army.ErrorCode;
 import io.army.Session;
 import io.army.beans.BeanWrapper;
-import io.army.dialect.InsertException;
-import io.army.dialect.ParamWrapper;
-import io.army.dialect.SQLWrapper;
+import io.army.dialect.*;
 import io.army.generator.GeneratorException;
 import io.army.generator.MultiGenerator;
 import io.army.generator.PostMultiGenerator;
@@ -14,7 +12,6 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingType;
-import io.army.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +20,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-class InsertSQLExecutorIml implements InsertSQLExecutor {
+final class InsertSQLExecutorIml implements InsertSQLExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(InsertSQLExecutorIml.class);
 
@@ -46,30 +43,31 @@ class InsertSQLExecutorIml implements InsertSQLExecutor {
     }
 
     @Override
-    public final void executeInsert(InnerSession session, List<SQLWrapper> sqlWrapperList, BeanWrapper beanWrapper)
+    public final void insert(InnerSession session, List<SQLWrapper> sqlWrapperList)
             throws InsertException {
-        Assert.isTrue(sqlWrapperList.size() < 3, "sqlWrapperList error.");
 
-        TableMeta<?> tableMeta = session.sessionFactory().tableMetaMap().get(beanWrapper.getWrappedClass());
-        Assert.notNull(tableMeta, "beanWrapper error,not found corresponding TableMeta.");
-
-        final boolean showSql = session.sessionFactory().environment().isShowSql();
-        // 1. find PostMultiGenerator
-        final GeneratorWrapper generatorWrapper = getAutoGeneratorWrapper(session, tableMeta);
+        final boolean showSql = session.showSql();
+        GeneratorWrapper generatorWrapper = null;
+        BeanWrapper beanWrapper = null;
         final int[] updateCount = new int[sqlWrapperList.size()];
         int sqlNum = 0;
         final boolean traceEnabled = LOG.isTraceEnabled();
+
         for (SQLWrapper wrapper : sqlWrapperList) {
-            if (showSql){
+            if (showSql) {
                 LOG.info("{}", wrapper.toString(session.sessionFactory().dialect()));
             }
-            final boolean generatedKey = sqlNum == 0 && generatorWrapper != null;
-            try (PreparedStatement st = session.createStatement(wrapper.sql(), generatedKey)) {
+            if (wrapper instanceof BeanSQLWrapper) {
+                beanWrapper = ((BeanSQLWrapper) wrapper).beanWrapper();
+                // 1. find PostMultiGenerator
+                generatorWrapper = getAutoGeneratorWrapper(session, beanWrapper);
+            }
+            try (PreparedStatement st = session.createStatement(wrapper.sql(), generatorWrapper != null)) {
                 // 2. set params
                 setParams(st, wrapper.paramList());
                 //3. execute dml
                 updateCount[sqlNum] = st.executeUpdate();
-                if (sqlNum == 0 && generatorWrapper != null) {
+                if (generatorWrapper != null) {
                     // 4. extract generated key (optional)
                     extractGeneratedKey(generatorWrapper, st, beanWrapper);
                 }
@@ -82,10 +80,35 @@ class InsertSQLExecutorIml implements InsertSQLExecutor {
             if (traceEnabled) {
                 LOG.trace("dml:{};singleUpdate count:{}", wrapper.sql(), updateCount[sqlNum]);
             }
+            //5. beanWrapper,generatorWrapper as null;
+            beanWrapper = null;
+            generatorWrapper = null;
             sqlNum++;
 
         }
 
+    }
+
+
+    @Override
+    public final void batchInsert(InnerSession session, List<BatchSQLWrapper> batchSQLWrapperList) {
+        for (BatchSQLWrapper sqlWrapper : batchSQLWrapperList) {
+            // 1. create PreparedStatement
+            try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
+                for (List<ParamWrapper> paramList : sqlWrapper.paramGroupList()) {
+                    // 2. set params.
+                    setParams(st, paramList);
+                    // 3. add param group to batch.
+                    st.addBatch();
+                }
+                //3. execute batch.
+                st.executeBatch();
+
+            } catch (SQLException e) {
+                throw new InsertException(ErrorCode.INSERT_ERROR, e, "dml execute error:\n%s"
+                        , sqlWrapper.toString(session.sessionFactory().dialect()));
+            }
+        }
     }
 
     private static void setParams(PreparedStatement st, List<ParamWrapper> paramWrapperList)
@@ -139,20 +162,21 @@ class InsertSQLExecutorIml implements InsertSQLExecutor {
     }
 
     @Nullable
-    private static GeneratorWrapper getAutoGeneratorWrapper(Session session
-            , TableMeta<?> tableMeta) {
+    private static GeneratorWrapper getAutoGeneratorWrapper(Session session, BeanWrapper beanWrapper) {
+        TableMeta<?> tableMeta = session.sessionFactory().tableMetaMap().get(beanWrapper.getWrappedClass());
+
         TableMeta<?> parentMeta = tableMeta.parentMeta();
-        FieldMeta<?, ?> fieldMeta;
+        FieldMeta<?, ?> primaryField;
         if (parentMeta == null) {
-            fieldMeta = tableMeta.primaryKey();
+            primaryField = tableMeta.primaryKey();
         } else {
-            fieldMeta = parentMeta.primaryKey();
+            primaryField = parentMeta.primaryKey();
         }
 
-        MultiGenerator multiGenerator = session.sessionFactory().fieldGeneratorMap().get(fieldMeta);
+        MultiGenerator multiGenerator = session.sessionFactory().fieldGeneratorMap().get(primaryField);
         GeneratorWrapper wrapper = null;
         if (multiGenerator instanceof PostMultiGenerator) {
-            wrapper = new GeneratorWrapper(fieldMeta, (PostMultiGenerator) multiGenerator);
+            wrapper = new GeneratorWrapper(primaryField, (PostMultiGenerator) multiGenerator);
         }
         return wrapper;
     }
