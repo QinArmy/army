@@ -239,8 +239,9 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     @Nullable
     @Override
     public ParentTableMeta<? super T> parentMeta() {
-        return parentTableMeta;
+        return this.parentTableMeta;
     }
+
 
     @SuppressWarnings("unchecked")
     @Override

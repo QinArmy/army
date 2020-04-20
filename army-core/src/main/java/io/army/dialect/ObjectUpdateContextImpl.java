@@ -2,22 +2,21 @@ package io.army.dialect;
 
 import io.army.ErrorCode;
 import io.army.criteria.CriteriaException;
-import io.army.criteria.SQLStatement;
 import io.army.criteria.TableAliasException;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
 
-final class ObjectUpdateContextImpl extends UpdateSQLContextImpl  {
+final class ObjectUpdateContextImpl extends UpdateSQLContextImpl {
 
     private final String parentAliasOfChild;
 
     private final String safeParentAlias;
 
 
-    ObjectUpdateContextImpl(DML dml, TableMeta<?> childMeta, String tableAlias) {
-        super(dml, SQLStatement.OBJECT_UPDATE, childMeta, tableAlias);
+    ObjectUpdateContextImpl(DML dml, DQL dql, TableMeta<?> childMeta, String tableAlias) {
+        super(dml, dql, childMeta, tableAlias);
 
         Assert.notNull(childMeta.parentMeta(), "childMeta not child mode");
         this.parentAliasOfChild = "parentOf" + tableAlias;

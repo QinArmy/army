@@ -62,7 +62,7 @@ class SessionImpl implements InnerSession {
                 , connection.getAutoCommit()
                 , connection.getNetworkTimeout()
                 , this.readonly);
-        this.fieldValuesGenerator = FieldValuesGenerator.build(this);
+        this.fieldValuesGenerator = FieldValuesGenerator.build(this.sessionFactory);
     }
 
     @Override

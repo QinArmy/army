@@ -4,6 +4,7 @@ import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
@@ -21,31 +22,48 @@ public interface Insert extends SQLAble, SQLDebug, QueryAble {
         Insert asInsert();
     }
 
-    interface InsertOptionAble<T extends IDomain, C> extends InsertIntoAble<T, C> {
+    /*################################## blow  insert interfaces ##################################*/
 
-        <F> InsertOptionAble<T, C> commonValue(FieldMeta<T, F> fieldMeta, Expression<F> valueExp);
+    interface InsertOptionAble<T extends IDomain> extends InsertIntoAble<T> {
 
-        <F, S extends Expression<F>> InsertOptionAble<T, C> commonValue(FieldMeta<T, F> fieldMeta, Function<C, S> function);
+        <F> InsertOptionAble<T> commonValue(FieldMeta<T, F> fieldMeta, Expression<F> valueExp);
 
-        InsertIntoAble<T, C> defaultIfNull();
+        InsertOptionAble<T> alwaysUseCommonValue();
+
+        InsertIntoAble<T> defaultIfNull();
     }
 
-    interface InsertIntoAble<T extends IDomain, C> extends InsertSQLAble {
+    interface InsertIntoAble<T extends IDomain> extends InsertSQLAble {
 
-        InsertValuesAble<T, C> insertInto(List<FieldMeta<T, ?>> fieldMetaList);
+        InsertValuesAble<T> insertInto(Collection<FieldMeta<T, ?>> fieldMetaList);
 
-        InsertValuesAble<T, C> insertInto(TableMeta<T> tableMeta);
+        InsertValuesAble<T> insertInto(TableMeta<T> tableMeta);
 
-        InsertAble insertInto(T domain);
+        InsertAble insert(T domain);
 
-        InsertAble batchInsertInto(List<T> domainList);
+        InsertAble insert(List<T> domainList);
+
     }
 
-    interface InsertValuesAble<T extends IDomain, C> extends InsertSQLAble {
+    interface InsertValuesAble<T extends IDomain> extends InsertSQLAble {
 
-        InsertAble values(Function<C, SubQuery> function);
+        InsertAble value(T domain);
 
         InsertAble values(List<T> domainList);
+    }
+
+
+    /*################################## blow subQuery insert interfaces ##################################*/
+
+    interface SubQueryTargetFieldAble<T extends IDomain, C> extends InsertSQLAble {
+
+        SubQueryValueAble<C> insertInto(List<FieldMeta<T, ?>> fieldMetaList);
+
+    }
+
+    interface SubQueryValueAble<C> extends InsertSQLAble {
+
+        InsertAble values(Function<C, SubQuery> function);
     }
 
 

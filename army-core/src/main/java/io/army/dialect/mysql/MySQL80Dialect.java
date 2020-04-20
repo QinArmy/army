@@ -37,12 +37,12 @@ class MySQL80Dialect extends MySQL57Dialect {
     }
 
     @Override
-    protected DML createTableDML() {
-        return super.createTableDML();
+    protected DML createDML() {
+        return super.createDML();
     }
 
     @Override
-    protected DQL createTableDQL() {
-        return super.createTableDQL();
+    protected DQL createDQL() {
+        return super.createDQL();
     }
 }

@@ -3,7 +3,6 @@ package io.army.dialect;
 import io.army.ErrorCode;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.NonUpdateAbleException;
-import io.army.criteria.SQLStatement;
 import io.army.criteria.TableAliasException;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -18,11 +17,10 @@ class UpdateSQLContextImpl extends DefaultSQLContext implements UpdateSQLContext
 
     protected final String safeAlias;
 
-    UpdateSQLContextImpl(DML dml, SQLStatement sqlStatement, TableMeta<?> updateTable, String tableAlias) {
-        super(dml, sqlStatement);
+    UpdateSQLContextImpl(DML dml, DQL dql, TableMeta<?> updateTable, String tableAlias) {
+        super(dml, dql);
         this.updateTable = updateTable;
 
-        Assert.isTrue(sqlStatement.isUpdate(), "sqlStatement no object dml");
         Assert.hasText(tableAlias, "tableAlisa required");
 
         this.tableAlias = tableAlias;

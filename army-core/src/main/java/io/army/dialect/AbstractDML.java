@@ -2,13 +2,15 @@ package io.army.dialect;
 
 import io.army.ErrorCode;
 import io.army.SessionFactory;
+import io.army.beans.BeanWrapper;
 import io.army.beans.ReadonlyWrapper;
+import io.army.boot.FieldValuesGenerator;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLS;
-import io.army.criteria.impl.inner.InnerDelete;
-import io.army.criteria.impl.inner.InnerObjectUpdate;
-import io.army.criteria.impl.inner.InnerUpdate;
+import io.army.criteria.impl.inner.*;
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
+import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
@@ -19,14 +21,12 @@ import io.army.util.StringUtils;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public abstract class AbstractDML implements DML {
 
     private final Dialect dialect;
+    private Collection<FieldMeta<?, ?>> childFields;
 
     public AbstractDML(Dialect dialect) {
         this.dialect = dialect;
@@ -54,31 +54,48 @@ public abstract class AbstractDML implements DML {
         return dialect.sessionFactory();
     }
 
-    /*################################## blow TableDML method ##################################*/
+    /*################################## blow DML insert method ##################################*/
 
     @Override
     public final List<SQLWrapper> insert(TableMeta<?> tableMeta, ReadonlyWrapper entityWrapper) {
         Assert.notNull(tableMeta, "tableMeta required");
         Assert.notNull(entityWrapper, "entity required");
         Assert.isTrue(tableMeta.javaType() == entityWrapper.getWrappedClass(), "tableMata then entity not match");
+        return Collections.unmodifiableList(
+                insertDomain(tableMeta, entityWrapper, tableMeta.fieldCollection(), null)
+        );
 
-        List<SQLWrapper> sqlWrapperList;
-        switch (tableMeta.mappingMode()) {
-            case SIMPLE:
-                sqlWrapperList = createInsertForSimple(tableMeta, entityWrapper);
-                break;
-            case CHILD:
-                sqlWrapperList = createInsertForChild(tableMeta, entityWrapper);
-                break;
-            case PARENT:
-                sqlWrapperList = createInsertForParent(tableMeta, entityWrapper);
-                break;
-            default:
-                throw new IllegalArgumentException(
-                        String.format("unknown MappingMode[%s]", tableMeta.mappingMode()));
+    }
 
+
+    @Override
+    public final List<SQLWrapper> insert(Insert insert) {
+        List<SQLWrapper> list;
+        if (insert instanceof InnerStandardInsert) {
+            list = standardInsert((InnerStandardInsert) insert);
+        } else if (insert instanceof InnerStandardSubQueryInsert) {
+            list = standardSubQueryInsert((InnerStandardSubQueryInsert) insert);
+        } else if (insert instanceof InnerSpecialInsert) {
+            list = specialInsert((InnerSpecialInsert) insert);
+        } else {
+            throw new IllegalArgumentException(String.format("Insert[%s] type unknown.", insert.getClass().getName()));
         }
-        return sqlWrapperList;
+
+        return Collections.unmodifiableList(list);
+    }
+
+    @Override
+    public final List<BatchSQLWrapper> batchInsert(Insert insert) {
+        List<BatchSQLWrapper> list;
+        if (insert instanceof InnerStandardInsert) {
+            assertStandardBatchInsert((InnerStandardInsert) insert);
+            list = standardBatchInsert((InnerStandardInsert) insert);
+        } else if (insert instanceof InnerSpecialInsert) {
+            list = specialBatchInsert((InnerSpecialInsert) insert);
+        } else {
+            throw new IllegalArgumentException(String.format("Insert[%s] type unknown.", insert.getClass().getName()));
+        }
+        return Collections.unmodifiableList(list);
     }
 
     @Override
@@ -109,14 +126,237 @@ public abstract class AbstractDML implements DML {
         return Collections.emptyList();
     }
 
-    /*################################## blow protected template method ##################################*/
+    /*################################## blow package insert template method ##################################*/
+
+    InsertContext createInsertContext(@Nullable InnerInsert insert) {
+        InsertContext context;
+        if (insert == null) {
+            context = new StandardInsertContext(this, this.dialect);
+        } else {
+            context = new StandardInsertContext(this, this.dialect, insert);
+        }
+        return context;
+    }
+
+
+    protected abstract List<SQLWrapper> specialInsert(InnerSpecialInsert insert);
+
+    protected abstract List<BatchSQLWrapper> specialBatchInsert(InnerSpecialInsert insert);
 
     /*################################## blow protected method ##################################*/
 
-    /*################################## blow private method ##################################*/
+    /*################################## blow private insert method ##################################*/
 
-    private List<SQLWrapper> createDeleteForChild(InnerDelete deleteAble, Visible visible) {
-        return Collections.emptyList();
+    /**
+     * @return a modifiable list
+     */
+    private List<SQLWrapper> standardInsert(InnerStandardInsert insert) {
+
+        List<IDomain> domainList = insert.valueList();
+        TableMeta<?> tableMeta = insert.tableMeta();
+        Collection<FieldMeta<?, ?>> fieldMetas = insert.fieldList();
+        if (CollectionUtils.isEmpty(fieldMetas)) {
+            fieldMetas = Collections.unmodifiableCollection(tableMeta.fieldCollection());
+        }
+        FieldValuesGenerator valuesGenerator = FieldValuesGenerator.build(this.dialect.sessionFactory());
+        BeanWrapper beanWrapper;
+
+        List<SQLWrapper> sqlWrapperList;
+        if (tableMeta instanceof ChildTableMeta) {
+            sqlWrapperList = new ArrayList<>(domainList.size() * 2);
+        } else {
+            sqlWrapperList = new ArrayList<>(domainList.size());
+        }
+        for (IDomain domain : domainList) {
+            // create value
+            beanWrapper = valuesGenerator.createValues(tableMeta, domain);
+            sqlWrapperList.addAll(
+                    insertDomain(tableMeta, beanWrapper, fieldMetas, insert)
+            );
+        }
+        return sqlWrapperList;
+    }
+
+    private List<SQLWrapper> standardSubQueryInsert(InnerStandardSubQueryInsert insert) {
+        TableMeta<?> tableMeta = insert.tableMeta();
+
+        if (tableMeta instanceof ChildTableMeta) {
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "Insert from SubQuery not support ChildTableMeta.");
+        }
+        InsertContext context = createInsertContext(insert);
+        StringBuilder builder = context.fieldStringBuilder().append("INSERT INTO ( ");
+        int index = 0;
+        for (FieldMeta<?, ?> fieldMeta : insert.fieldList()) {
+            if (index > 0) {
+                builder.append(",");
+            }
+            builder.append(this.dialect.quoteIfNeed(fieldMeta.fieldName()));
+            index++;
+        }
+        builder.append(" )");
+        insert.subQuery().appendSQL(context);
+        return Collections.singletonList(DMLUtils.createSQLWrapper(context));
+    }
+
+
+    private List<SQLWrapper> insertDomain(TableMeta<?> tableMeta, ReadonlyWrapper entityWrapper
+            , @Nullable Collection<? extends FieldMeta<?, ?>> fieldMetas
+            , @Nullable InnerInsert innerInsert) {
+
+        List<SQLWrapper> sqlWrapperList;
+        switch (tableMeta.mappingMode()) {
+            case SIMPLE:
+                InsertContext context = createInsertContext(innerInsert);
+                Collection<? extends FieldMeta<?, ?>> targetFields = fieldMetas;
+                if (targetFields == null) {
+                    targetFields = tableMeta.fieldCollection();
+                }
+                DMLUtils.createInsertForSimple(tableMeta, targetFields, entityWrapper, context);
+                sqlWrapperList = Collections.singletonList(DMLUtils.createSQLWrapper(context));
+                break;
+            case CHILD:
+                sqlWrapperList = createInsertForChild((ChildTableMeta<?>) tableMeta
+                        , entityWrapper, fieldMetas, innerInsert);
+                break;
+            case PARENT:
+                sqlWrapperList = Collections.singletonList(
+                        createInsertForParent(tableMeta, entityWrapper, fieldMetas, innerInsert)
+                );
+                break;
+            default:
+                throw new IllegalArgumentException(
+                        String.format("unknown MappingMode[%s]", tableMeta.mappingMode()));
+
+        }
+        return sqlWrapperList;
+    }
+
+
+    private List<SQLWrapper> createInsertForChild(ChildTableMeta<?> childMeta
+            , ReadonlyWrapper entityWrapper, @Nullable Collection<? extends FieldMeta<?, ?>> fieldMetas
+            , @Nullable InnerInsert innerInsert) {
+
+        TableMeta<?> parentMeta = childMeta.parentMeta();
+        Collection<FieldMeta<?, ?>> childFields;
+        Collection<FieldMeta<?, ?>> parentFields;
+        if (fieldMetas == null) {
+            // unmodifiableCollection for avoid generic error in below part
+            parentFields = Collections.unmodifiableCollection(parentMeta.fieldCollection());
+            childFields = Collections.unmodifiableCollection(childMeta.fieldCollection());
+        } else {
+
+            Set<FieldMeta<?, ?>> parentFieldSet = new HashSet<>(parentMeta.fieldCollection());
+            Set<FieldMeta<?, ?>> childFieldSet = new HashSet<>(childMeta.fieldCollection());
+
+            childFields = new ArrayList<>();
+            parentFields = new ArrayList<>();
+
+            for (FieldMeta<?, ?> fieldMeta : fieldMetas) {
+                if (childFieldSet.contains(fieldMeta)) {
+                    childFields.add(fieldMeta);
+                } else if (parentFieldSet.contains(fieldMeta)) {
+                    parentFields.add(fieldMeta);
+                } else {
+                    throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "FieldMeta[%s] and ChildTableMeta[%s] not match."
+                            , fieldMeta, childMeta);
+                }
+            }
+
+        }
+
+        List<SQLWrapper> sqlWrapperList = new ArrayList<>(2);
+        sqlWrapperList.add(
+                createInsertForParent(parentMeta, entityWrapper, parentFields, innerInsert)
+        );
+
+        InsertContext context = createInsertContext(innerInsert);
+        DMLUtils.createInsertForSimple(childMeta, childFields, entityWrapper, context);
+        sqlWrapperList.add(DMLUtils.createSQLWrapper(context));
+
+        return sqlWrapperList;
+    }
+
+
+    /**
+     * @return a modifiable list
+     */
+    private SQLWrapper createInsertForParent(TableMeta<?> tableMeta, ReadonlyWrapper entityWrapper
+            , @Nullable Collection<? extends FieldMeta<?, ?>> fieldMetas, @Nullable InnerInsert innerInsert) {
+
+        Collection<? extends FieldMeta<?, ?>> targetFields = fieldMetas;
+        if (targetFields == null) {
+            // unmodifiableCollection for avoid generic error
+            targetFields = tableMeta.fieldCollection();
+        }
+        InsertContext context = createInsertContext(innerInsert);
+        DMLUtils.createInsertForSimple(tableMeta, targetFields, entityWrapper, context);
+        return DMLUtils.createSQLWrapper(context);
+    }
+
+    private List<BatchSQLWrapper> standardBatchInsert(InnerStandardInsert insert) {
+        TableMeta<?> tableMeta = insert.tableMeta();
+
+        List<SQLWrapper> sqlWrapperList;
+        switch (tableMeta.mappingMode()) {
+            case SIMPLE:
+                sqlWrapperList = Collections.singletonList(
+                        standardBatchInsertForSimple(insert)
+                );
+                break;
+            case PARENT:
+                sqlWrapperList = Collections.singletonList(
+                        standardBatchInsertForParent(insert)
+                );
+                break;
+            case CHILD:
+                sqlWrapperList = standardBatchInsertForChild(insert);
+                break;
+            default:
+                throw new IllegalArgumentException(
+                        String.format("unknown MappingMode[%s]", tableMeta.mappingMode()));
+
+        }
+        return DMLUtils.createBatchInsertWrapper(
+                insert
+                , sqlWrapperList
+                , FieldValuesGenerator.build(this.dialect.sessionFactory())
+        );
+    }
+
+
+    private SQLWrapper standardBatchInsertForSimple(InnerStandardInsert insert) {
+        InsertContext context = createInsertContext(insert);
+        DMLUtils.createBatchInsertForSimple(insert.tableMeta(), context);
+        return DMLUtils.createSQLWrapper(context);
+    }
+
+    private SQLWrapper standardBatchInsertForParent(InnerStandardInsert insert) {
+        return standardBatchInsertForSimple(insert);
+    }
+
+    private List<SQLWrapper> standardBatchInsertForChild(InnerStandardInsert insert) {
+        ChildTableMeta<?> childMeta = (ChildTableMeta<?>) insert.tableMeta();
+        TableMeta<?> parentMeta = childMeta.parentMeta();
+
+        List<SQLWrapper> sqlWrapperList = new ArrayList<>(2);
+        // 1. parent sql wrapper
+        sqlWrapperList.add(
+                standardBatchInsertForParent(insert)
+        );
+        // child sql wrapper
+        InsertContext context = createInsertContext(insert);
+        DMLUtils.createBatchInsertForSimple(insert.tableMeta(), context);
+        sqlWrapperList.add(
+                DMLUtils.createSQLWrapper(context)
+        );
+        return Collections.unmodifiableList(sqlWrapperList);
+    }
+
+
+    private void assertStandardBatchInsert(InnerStandardInsert insert) {
+        if (!CollectionUtils.isEmpty(insert.fieldList()) || insert.defaultExpIfNull()) {
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "fieldList required for batch insert.");
+        }
     }
 
 
@@ -180,7 +420,7 @@ public abstract class AbstractDML implements DML {
         TableMeta<?> childMeta = null, parentMeta = childMeta.parentMeta();
         Assert.notNull(parentMeta, () -> String.format("Table[%s] not child mode", childMeta.tableName()));
 
-        ObjectUpdateContextImpl context = new ObjectUpdateContextImpl(this, childMeta, null);
+        ObjectUpdateContextImpl context = new ObjectUpdateContextImpl(this, this.dialect, childMeta, null);
         // 1. singleUpdate clause
         appendObjectUpdateClause(context);
         // 2. set clause
@@ -274,8 +514,7 @@ public abstract class AbstractDML implements DML {
     private List<SQLWrapper> createUpdateForSimple(InnerUpdate innerAble, Visible visible) {
 
         // build dml context
-        final UpdateSQLContextImpl context = new UpdateSQLContextImpl(this, SQLStatement.UPDATE
-                , null, null);
+        final UpdateSQLContextImpl context = new UpdateSQLContextImpl(this, this.dialect, null, null);
 
         //1. singleUpdate clause
         appendUpdateClause(context);
@@ -388,98 +627,6 @@ public abstract class AbstractDML implements DML {
         }
     }
 
-
-    /**
-     * @return a modifiable list
-     */
-    private <T extends IDomain> List<SQLWrapper> createInsertForSimple(TableMeta<T> tableMeta
-            , ReadonlyWrapper entityWrapper) {
-        StringBuilder nameBuilder = new StringBuilder("INSERT INTO "), valueBuilder = new StringBuilder(" VALUE(");
-        final List<ParamWrapper> paramWrapperList = new ArrayList<>();
-
-        nameBuilder.append(quoteIfNeed(tableMeta.tableName()));
-        nameBuilder.append("(");
-
-        Object value;
-        int count = 0;
-        for (FieldMeta<T, ?> fieldMeta : tableMeta.fieldCollection()) {
-            if (!fieldMeta.insertalbe()) {
-                continue;
-            }
-            value = entityWrapper.getPropertyValue(fieldMeta.propertyName());
-            if (value == null && !fieldMeta.nullable()) {
-                continue;
-            }
-            if (count != 0) {
-                nameBuilder.append(",");
-                valueBuilder.append(",");
-            }
-            // name
-            nameBuilder.append(quoteIfNeed(fieldMeta.fieldName()));
-            // value
-            if (isConstant(fieldMeta)) {
-                valueBuilder.append(createConstant(fieldMeta));
-            } else {
-                valueBuilder.append("?");
-                paramWrapperList.add(ParamWrapper.build(fieldMeta.mappingType(), value));
-            }
-            count++;
-        }
-
-        nameBuilder.append(")");
-        valueBuilder.append(")");
-
-        return Collections.singletonList(
-                SQLWrapper.build(
-                        nameBuilder.toString() + valueBuilder.toString()
-                        , paramWrapperList)
-        );
-
-    }
-
-    /**
-     * @return a modifiable list
-     */
-    private List<SQLWrapper> createInsertForParent(TableMeta<?> tableMeta, ReadonlyWrapper entityWrapper) {
-        return createInsertForSimple(tableMeta, entityWrapper);
-    }
-
-    /**
-     * @return a modifiable list
-     */
-    private List<SQLWrapper> createInsertForChild(TableMeta<?> tableMeta, ReadonlyWrapper entityWrapper) {
-        TableMeta<?> parentMeta = tableMeta.parentMeta();
-        Assert.state(parentMeta != null, () -> String.format("entity[%s] parentMeta", tableMeta.javaType().getName()));
-
-        List<SQLWrapper> parentSqlList = createInsertForParent(parentMeta, entityWrapper);
-        List<SQLWrapper> sqlWrapperList = createInsertForSimple(tableMeta, entityWrapper);
-
-        List<SQLWrapper> actualSqlList = new ArrayList<>(parentSqlList.size() + sqlWrapperList.size());
-        actualSqlList.addAll(parentSqlList);
-        actualSqlList.addAll(sqlWrapperList);
-
-        return Collections.unmodifiableList(actualSqlList);
-    }
-
-    private Object createConstant(FieldMeta<?, ?> fieldMeta) {
-        Object value;
-        if (TableMeta.VERSION.equals(fieldMeta.propertyName())) {
-            value = 0;
-        } else if (fieldMeta == fieldMeta.tableMeta().discriminator()) {
-            value = fieldMeta.tableMeta().discriminatorValue();
-        } else {
-            throw new IllegalArgumentException(String.format("Entity[%s] prop[%s] cannot create constant value"
-                    , fieldMeta.tableMeta().javaType().getName()
-                    , fieldMeta.propertyName()));
-        }
-        return value;
-    }
-
-    private boolean isConstant(FieldMeta<?, ?> fieldMeta) {
-        return TableMeta.VERSION.equals(fieldMeta.propertyName())
-                || fieldMeta == fieldMeta.tableMeta().discriminator()
-                ;
-    }
 
     private void assertTargetField(FieldMeta<?, ?> fieldMeta, TableMeta<?> tableMeta) {
         Assert.isTrue(fieldMeta.tableMeta() == tableMeta, () -> String.format(

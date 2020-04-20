@@ -17,13 +17,18 @@ public abstract class SQLS extends AbstractSQLS {
 
     }
 
-    public static <T extends IDomain> Insert.InsertOptionAble<T, EmptyObject> singleInsert(TableMeta<T> targetTable) {
-        return new StandardContextualInsert<>(targetTable, EmptyObject.getInstance());
+    public static <T extends IDomain> Insert.InsertOptionAble<T> insert(TableMeta<T> targetTable) {
+        return new StandardInsert<>(targetTable);
     }
 
-    public static <T extends IDomain, C> Insert.InsertOptionAble<T, C> singleInsert(TableMeta<T> targetTable
-            , C criteria) {
-        return new StandardContextualInsert<>(targetTable, criteria);
+    public static <T extends IDomain> Insert.SubQueryTargetFieldAble<T, EmptyObject> insertFromSubQuery(
+            TableMeta<T> targetTable) {
+        return new StandardContextualSubQueryInsert<>(targetTable, EmptyObject.getInstance());
+    }
+
+    public static <T extends IDomain, C> Insert.SubQueryTargetFieldAble<T, C> insertFromSubQuery(
+            TableMeta<T> targetTable, C criteria) {
+        return new StandardContextualSubQueryInsert<>(targetTable, criteria);
     }
 
     public static <T extends IDomain> Update.SingleUpdateAble<T, EmptyObject> singleUpdate(TableMeta<T> targetTable) {

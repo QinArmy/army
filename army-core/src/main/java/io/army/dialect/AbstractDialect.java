@@ -3,9 +3,7 @@ package io.army.dialect;
 
 import io.army.SessionFactory;
 import io.army.beans.ReadonlyWrapper;
-import io.army.criteria.Delete;
-import io.army.criteria.Update;
-import io.army.criteria.Visible;
+import io.army.criteria.*;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
@@ -28,16 +26,15 @@ public abstract class AbstractDialect implements Dialect {
     /**
      * a unmodifiable Set, every element is uppercase .
      */
-    private final Set<String> keywords ;
+    private final Set<String> keywords;
 
     protected final SessionFactory sessionFactory;
 
     private final TableDDL tableDDL;
 
-    private final DML DML;
+    private final DML dml;
 
-    private final DQL DQL;
-
+    private final DQL dql;
 
 
     public AbstractDialect(SessionFactory sessionFactory) {
@@ -47,14 +44,14 @@ public abstract class AbstractDialect implements Dialect {
         this.sessionFactory = sessionFactory;
 
         this.tableDDL = createTableDDL();
-        this.DML = createTableDML();
-        this.DQL = createTableDQL();
+        this.dml = createDML();
+        this.dql = createDQL();
     }
 
     @Override
     public final String quoteIfNeed(String identifier) {
         String newIdentifier = identifier;
-        if(isKeyWord(identifier)){
+        if (isKeyWord(identifier)) {
             newIdentifier = doQuote(identifier);
         }
         return newIdentifier;
@@ -62,7 +59,7 @@ public abstract class AbstractDialect implements Dialect {
 
     @Override
     public final boolean isKeyWord(String text) {
-        if(!StringUtils.hasText(text)){
+        if (!StringUtils.hasText(text)) {
             return false;
         }
         return keywords.contains(text.toUpperCase());
@@ -116,28 +113,58 @@ public abstract class AbstractDialect implements Dialect {
 
     @Override
     public final List<SQLWrapper> insert(TableMeta<?> tableMeta, ReadonlyWrapper entityWrapper) {
-        return DML.insert(tableMeta, entityWrapper);
+        return this.dml.insert(tableMeta, entityWrapper);
+    }
+
+    @Override
+    public final List<SQLWrapper> insert(Insert insert) {
+        return this.dml.insert(insert);
+    }
+
+    @Override
+    public final List<BatchSQLWrapper> batchInsert(Insert insert) {
+        return this.dml.batchInsert(insert);
     }
 
     @Override
     public final List<SQLWrapper> update(Update update, Visible visible) {
-        return DML.update(update, visible);
+        return dml.update(update, visible);
     }
 
     @Override
     public List<SQLWrapper> delete(Delete.DeleteAble deleteAble, Visible visible) {
-        return DML.delete(deleteAble, visible);
+        return dml.delete(deleteAble, visible);
     }
 
     @Override
-    public  SQLDialect sqlDialect() {
+    public SQLDialect sqlDialect() {
         throw new UnsupportedOperationException();
     }
 
-    /*####################################### below protected  method #################################*/
+    /*####################################### below DQL  method #################################*/
 
+    @Override
+    public final List<SQLWrapper> select(Select select) {
+        return dql.select(select);
+    }
+
+    @Override
+    public final void select(Select select, SQLContext context) {
+        dql.select(select, context);
+    }
+
+    @Override
+    public final void partQuery(QueryAfterSet select, SQLContext context) {
+        dql.partQuery(select, context);
+    }
+
+    @Override
+    public final void subQuery(SubQuery subQuery, SQLContext context) {
+        dql.subQuery(subQuery, context);
+    }
 
     /*####################################### below protected template method #################################*/
+
     /**
      * @return must a modifiable Set,then every element is uppercase
      */
@@ -145,11 +172,11 @@ public abstract class AbstractDialect implements Dialect {
 
     protected abstract String doQuote(String identifier);
 
-   protected abstract TableDDL createTableDDL() ;
+    protected abstract TableDDL createTableDDL();
 
-    protected abstract DML createTableDML();
+    protected abstract DML createDML();
 
-    protected abstract DQL createTableDQL();
+    protected abstract DQL createDQL();
 
     /*############################### sub class override method ####################################*/
 

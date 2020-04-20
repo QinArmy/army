@@ -1,6 +1,6 @@
 package io.army.boot;
 
-import io.army.Session;
+import io.army.SessionFactory;
 import io.army.beans.BeanWrapper;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
@@ -10,7 +10,10 @@ public interface FieldValuesGenerator {
     BeanWrapper createValues(TableMeta<?> tableMeta, IDomain entity)
             throws FieldValuesCreateException;
 
-    static FieldValuesGenerator build(Session session){
-        return new FieldValuesGeneratorImpl(session);
+    BeanWrapper createValues(TableMeta<?> tableMeta, IDomain entity, boolean noDependValueAbort)
+            throws FieldValuesCreateException;
+
+    static FieldValuesGenerator build(SessionFactory sessionFactory) {
+        return FieldValuesGeneratorImpl.build(sessionFactory);
     }
 }

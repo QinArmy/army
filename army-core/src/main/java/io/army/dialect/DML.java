@@ -16,11 +16,11 @@ public interface DML extends SQL {
      */
     List<SQLWrapper> insert(TableMeta<?> tableMeta, ReadonlyWrapper entityWrapper);
 
-    default List<SQLWrapper> insert(List<Insert> insertList) {
+    default List<SQLWrapper> insert(Insert insert) {
         throw new UnsupportedOperationException();
     }
 
-    default List<SQLWrapper> insert(Insert insert) {
+    default List<BatchSQLWrapper> batchInsert(Insert insert) {
         throw new UnsupportedOperationException();
     }
 

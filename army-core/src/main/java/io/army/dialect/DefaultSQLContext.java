@@ -3,7 +3,6 @@ package io.army.dialect;
 import io.army.ErrorCode;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.SQLContext;
-import io.army.criteria.SQLStatement;
 import io.army.criteria.TableAliasException;
 import io.army.meta.FieldMeta;
 import io.army.meta.mapping.MappingType;
@@ -16,20 +15,15 @@ class DefaultSQLContext implements SQLContext {
 
     final DML dml;
 
-    final SQLStatement sqlStatement;
+    final DQL dql;
 
     final StringBuilder builder = new StringBuilder();
 
     final List<ParamWrapper> paramWrapperList = new ArrayList<>();
 
-    DefaultSQLContext(DML dml, SQLStatement sqlStatement) {
+    DefaultSQLContext(DML dml, DQL dql) {
         this.dml = dml;
-        this.sqlStatement = sqlStatement;
-    }
-
-    @Override
-    public SQLStatement sqlStatement() {
-        return sqlStatement;
+        this.dql = dql;
     }
 
     @Override

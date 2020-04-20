@@ -11,8 +11,6 @@ import java.util.List;
 
 public interface SQLContext {
 
-    SQLStatement sqlStatement();
-
     default void appendTable(TableMeta<?> tableMeta) {
         throw new UnsupportedOperationException();
     }
