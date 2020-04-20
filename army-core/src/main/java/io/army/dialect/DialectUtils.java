@@ -3,7 +3,6 @@ package io.army.dialect;
 import io.army.meta.mapping.MappingType;
 import io.army.util.StringUtils;
 
-import javax.swing.plaf.PanelUI;
 import java.sql.JDBCType;
 import java.util.EnumSet;
 

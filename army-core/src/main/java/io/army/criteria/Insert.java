@@ -22,22 +22,17 @@ public interface Insert extends SQLAble, SQLDebug, QueryAble {
         Insert asInsert();
     }
 
-    /*################################## blow  batchInsert interfaces ##################################*/
+    /*################################## blow insert interfaces ##################################*/
 
-    interface InsertOptionAble<T extends IDomain, C> extends BatchInsertIntoAble<T> {
+    interface InsertOptionAble<T extends IDomain, C> extends InsertIntoAble<T> {
 
         <F> InsertOptionAble<T, C> commonValue(FieldMeta<? super T, F> fieldMeta, Expression<F> valueExp);
 
         <F> InsertOptionAble<T, C> commonValue(FieldMeta<? super T, F> fieldMeta, Function<C, Expression<F>> function);
 
-        InsertOptionAble<T, C> alwaysUseCommonValue();
+        InsertOptionAble<T, C> ignoreGeneratorIfCrash();
 
         InsertIntoAble<T> defaultIfNull();
-    }
-
-    interface BatchInsertIntoAble<T extends IDomain> extends InsertIntoAble<T> {
-
-        InsertAble batchInsert(List<T> domainList);
     }
 
     interface InsertIntoAble<T extends IDomain> extends InsertSQLAble {
@@ -48,7 +43,7 @@ public interface Insert extends SQLAble, SQLDebug, QueryAble {
 
         InsertAble insert(T domain);
 
-
+        Insert insert(List<T> domainList);
     }
 
     interface InsertValuesAble<T extends IDomain> extends InsertSQLAble {
@@ -56,6 +51,28 @@ public interface Insert extends SQLAble, SQLDebug, QueryAble {
         InsertAble value(T domain);
 
         InsertAble values(List<T> domainList);
+    }
+
+    /*################################## blow batchInsert method ##################################*/
+
+    interface BatchInsertOptionAble<T extends IDomain> extends BatchInsertIntoAble<T> {
+
+        <F> BatchInsertOptionAble<T> commonValue(FieldMeta<? super T, F> fieldMeta, Expression<F> valueExp);
+
+        BatchInsertOptionAble<T> ignoreGeneratorIfCrash();
+    }
+
+    interface BatchInsertIntoAble<T extends IDomain> extends InsertSQLAble {
+
+        BatchInsertValuesAble<T> insertInto(Collection<FieldMeta<? super T, ?>> fieldMetaList);
+
+        BatchInsertValuesAble<T> insertInto(TableMeta<T> tableMeta);
+    }
+
+    interface BatchInsertValuesAble<T extends IDomain> extends InsertSQLAble {
+
+        InsertAble values(List<T> domainList);
+
     }
 
 

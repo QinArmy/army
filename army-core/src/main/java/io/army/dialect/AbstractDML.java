@@ -5,6 +5,7 @@ import io.army.SessionFactory;
 import io.army.beans.BeanWrapper;
 import io.army.boot.FieldValuesGenerator;
 import io.army.criteria.*;
+import io.army.criteria.impl.CriteriaCounselor;
 import io.army.criteria.impl.SQLS;
 import io.army.criteria.impl.inner.*;
 import io.army.domain.IDomain;
@@ -95,9 +96,8 @@ public abstract class AbstractDML implements DML {
     @Override
     public final List<BatchSQLWrapper> batchInsert(Insert insert) {
         List<BatchSQLWrapper> list;
-        if (insert instanceof InnerStandardInsert) {
-            assertStandardBatchInsert((InnerStandardInsert) insert);
-            list = standardBatchInsert((InnerStandardInsert) insert);
+        if (insert instanceof InnerStandardBatchInsert) {
+            list = standardBatchInsert((InnerStandardBatchInsert) insert);
         } else if (insert instanceof InnerSpecialInsert) {
             list = specialBatchInsert((InnerSpecialInsert) insert);
         } else {
@@ -105,6 +105,8 @@ public abstract class AbstractDML implements DML {
         }
         return Collections.unmodifiableList(list);
     }
+
+    /*################################## blow update method ##################################*/
 
     @Override
     public final List<SQLWrapper> update(Update update, Visible visible) {
@@ -136,7 +138,7 @@ public abstract class AbstractDML implements DML {
 
     /*################################## blow package batchInsert template method ##################################*/
 
-    InsertContext createInsertContext(@Nullable InnerInsert insert) {
+    protected InsertContext createInsertContext(@Nullable InnerInsert insert) {
         InsertContext context;
         if (insert == null) {
             context = new StandardInsertContext(this, this.dialect);
@@ -145,7 +147,6 @@ public abstract class AbstractDML implements DML {
         }
         return context;
     }
-
 
     protected abstract List<SQLWrapper> specialInsert(InnerSpecialInsert insert);
 
@@ -159,15 +160,15 @@ public abstract class AbstractDML implements DML {
      * @return a modifiable list
      */
     private List<SQLWrapper> standardInsert(InnerStandardInsert insert) {
+        CriteriaCounselor.assertInsert(insert);
 
         List<IDomain> domainList = insert.valueList();
         TableMeta<?> tableMeta = insert.tableMeta();
+        // 1. get target fields.
         Collection<FieldMeta<?, ?>> fieldMetas = insert.fieldList();
         if (CollectionUtils.isEmpty(fieldMetas)) {
             fieldMetas = Collections.unmodifiableCollection(tableMeta.fieldCollection());
         }
-        FieldValuesGenerator valuesGenerator = FieldValuesGenerator.build(this.dialect.sessionFactory());
-        BeanWrapper beanWrapper;
 
         List<SQLWrapper> sqlWrapperList;
         if (tableMeta instanceof ChildTableMeta) {
@@ -175,8 +176,12 @@ public abstract class AbstractDML implements DML {
         } else {
             sqlWrapperList = new ArrayList<>(domainList.size());
         }
+
+        FieldValuesGenerator valuesGenerator = FieldValuesGenerator.build(this.dialect.sessionFactory());
+        BeanWrapper beanWrapper;
+
         for (IDomain domain : domainList) {
-            // create value
+            // 2. create required values.
             beanWrapper = valuesGenerator.createValues(tableMeta, domain);
             sqlWrapperList.addAll(
                     insertDomain(tableMeta, beanWrapper, fieldMetas, insert)
@@ -186,6 +191,8 @@ public abstract class AbstractDML implements DML {
     }
 
     private List<SQLWrapper> standardSubQueryInsert(InnerStandardSubQueryInsert insert) {
+        CriteriaCounselor.assertInsert(insert);
+
         TableMeta<?> tableMeta = insert.tableMeta();
         List<FieldMeta<?, ?>> fieldMetaList = insert.fieldList();
         int subQuerySelectionCount = DMLUtils.selectionCount(insert.subQuery());
@@ -318,9 +325,10 @@ public abstract class AbstractDML implements DML {
         return sqlWrapper;
     }
 
-    private List<BatchSQLWrapper> standardBatchInsert(InnerStandardInsert insert) {
-        TableMeta<?> tableMeta = insert.tableMeta();
+    private List<BatchSQLWrapper> standardBatchInsert(InnerStandardBatchInsert insert) {
+        CriteriaCounselor.assertInsert(insert);
 
+        TableMeta<?> tableMeta = insert.tableMeta();
         List<SQLWrapper> sqlWrapperList;
         switch (tableMeta.mappingMode()) {
             case SIMPLE:
@@ -349,17 +357,17 @@ public abstract class AbstractDML implements DML {
     }
 
 
-    private SQLWrapper standardBatchInsertForSimple(InnerStandardInsert insert) {
+    private SQLWrapper standardBatchInsertForSimple(InnerStandardBatchInsert insert) {
         InsertContext context = createInsertContext(insert);
         DMLUtils.createBatchInsertForSimple(insert.tableMeta(), context);
         return DMLUtils.createSQLWrapper(context);
     }
 
-    private SQLWrapper standardBatchInsertForParent(InnerStandardInsert insert) {
+    private SQLWrapper standardBatchInsertForParent(InnerStandardBatchInsert insert) {
         return standardBatchInsertForSimple(insert);
     }
 
-    private List<SQLWrapper> standardBatchInsertForChild(InnerStandardInsert insert) {
+    private List<SQLWrapper> standardBatchInsertForChild(InnerStandardBatchInsert insert) {
         ChildTableMeta<?> childMeta = (ChildTableMeta<?>) insert.tableMeta();
         TableMeta<?> parentMeta = childMeta.parentMeta();
 
@@ -368,7 +376,7 @@ public abstract class AbstractDML implements DML {
         sqlWrapperList.add(
                 standardBatchInsertForParent(insert)
         );
-        // child sql wrapper
+        //2. child sql wrapper
         InsertContext context = createInsertContext(insert);
         DMLUtils.createBatchInsertForSimple(insert.tableMeta(), context);
         sqlWrapperList.add(

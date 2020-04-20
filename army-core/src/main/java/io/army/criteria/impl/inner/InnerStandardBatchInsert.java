@@ -9,8 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 @DeveloperForbid
-public interface InnerStandardInsert extends InnerInsert {
-
+public interface InnerStandardBatchInsert extends InnerInsert {
 
     /**
      * @return a unmodifiable list
@@ -18,16 +17,7 @@ public interface InnerStandardInsert extends InnerInsert {
      */
     Map<FieldMeta<?, ?>, Expression<?>> commonValueMap();
 
-    /**
-     * @see Insert.InsertOptionAble#ignoreGeneratorIfCrash()
-     */
-    boolean commonPriorityGenerator();
-
-    /**
-     * @see Insert.InsertOptionAble#defaultIfNull()
-     */
-    boolean defaultExpIfNull();
-
+    boolean ignoreGenerateValueIfCrash();
 
     /**
      * @see Insert.InsertValuesAble

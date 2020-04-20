@@ -5,7 +5,7 @@ import io.army.beans.BeanWrapper;
 import io.army.beans.ReadonlyWrapper;
 import io.army.boot.FieldValuesGenerator;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.InnerStandardInsert;
+import io.army.criteria.impl.inner.InnerStandardBatchInsert;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -90,6 +90,8 @@ abstract class DMLUtils {
         fieldBuilder.append(" ( ");
 
         final SQL sql = context.dql();
+        final boolean ignoreGeneratorIfCash = ((InnerStandardBatchInsert) context.innerInsert())
+                .ignoreGenerateValueIfCrash();
         int index = 0;
         Expression<?> commonExp;
         for (FieldMeta<?, ?> fieldMeta : tableMeta.fieldCollection()) {
@@ -102,10 +104,9 @@ abstract class DMLUtils {
             commonExp = context.commonExp(fieldMeta);
             if (!fieldMeta.insertalbe()) {
                 valueBuilder.append("DEFAULT");
-            }
-            if (isConstant(fieldMeta)) {
+            } else if (isConstant(fieldMeta)) {
                 valueBuilder.append(createConstant(fieldMeta));
-            } else if (commonExp != null) {
+            } else if (commonExp != null && (ignoreGeneratorIfCash || fieldMeta.generator() == null)) {
                 commonExp.appendSQL(context);
             } else {
                 valueBuilder.append("?");
@@ -117,7 +118,7 @@ abstract class DMLUtils {
         valueBuilder.append(" )");
     }
 
-    static List<BatchSQLWrapper> createBatchInsertWrapper(InnerStandardInsert insert
+    static List<BatchSQLWrapper> createBatchInsertWrapper(InnerStandardBatchInsert insert
             , List<SQLWrapper> sqlWrapperList, final FieldValuesGenerator valuesGenerator) {
         if (sqlWrapperList.size() < 3) {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "sqlWrapperList size must less than 3.");
@@ -125,7 +126,6 @@ abstract class DMLUtils {
         List<FieldMeta<?, ?>> fieldList = insert.fieldList();
         List<IDomain> domainList = insert.valueList();
         final TableMeta<?> tableMeta = insert.tableMeta();
-        final boolean alwaysUseCommonExp = insert.alwaysUseCommonExp();
 
         BeanWrapper beanWrapper;
 
@@ -138,7 +138,7 @@ abstract class DMLUtils {
 
                 beanWrapper = beanWrapperMap.computeIfAbsent(domain
                         // create required value
-                        , key -> valuesGenerator.createValues(tableMeta, key, alwaysUseCommonExp));
+                        , key -> valuesGenerator.createValues(tableMeta, key));
 
                 Assert.state(beanWrapper.getWrappedInstance() == domain
                         , () -> String.format("IDomain[%s] hasCode() and equals() implementation error.", domain));

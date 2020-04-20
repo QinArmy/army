@@ -13,7 +13,7 @@ import java.util.*;
 import java.util.function.Function;
 
 final class StandardInsert<T extends IDomain, C> extends AbstractSQLDebug implements Insert
-        , Insert.InsertAble, Insert.InsertOptionAble<T, C>, Insert.BatchInsertIntoAble<T>, Insert.InsertValuesAble<T>
+        , Insert.InsertAble, Insert.InsertOptionAble<T, C>, Insert.InsertIntoAble<T>, Insert.InsertValuesAble<T>
         , InnerStandardInsert {
 
 
@@ -55,13 +55,13 @@ final class StandardInsert<T extends IDomain, C> extends AbstractSQLDebug implem
     }
 
     @Override
-    public final InsertOptionAble<T, C> alwaysUseCommonValue() {
+    public final InsertOptionAble<T, C> ignoreGeneratorIfCrash() {
         this.alwaysUseCommonExp = true;
         return this;
     }
 
     @Override
-    public final BatchInsertIntoAble<T> defaultIfNull() {
+    public final InsertIntoAble<T> defaultIfNull() {
         this.defaultExpIfNull = true;
         return this;
     }
@@ -88,7 +88,7 @@ final class StandardInsert<T extends IDomain, C> extends AbstractSQLDebug implem
     }
 
     @Override
-    public final InsertAble batchInsert(List<T> domainList) {
+    public final Insert insert(List<T> domainList) {
         this.valueList = new ArrayList<>(domainList);
         return this;
     }
@@ -121,7 +121,7 @@ final class StandardInsert<T extends IDomain, C> extends AbstractSQLDebug implem
     }
 
     @Override
-    public final boolean alwaysUseCommonExp() {
+    public final boolean commonPriorityGenerator() {
         return this.alwaysUseCommonExp;
     }
 
