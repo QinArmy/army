@@ -34,7 +34,7 @@ class DefaultSQLContext implements SQLContext {
     }
 
     @Override
-    public final void quoteIfKeyAndAppend(String textValue) {
+    public final void appendText(String textValue) {
         builder.append(" ")
                 .append(dml.quoteIfNeed(textValue));
     }

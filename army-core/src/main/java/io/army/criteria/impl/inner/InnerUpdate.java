@@ -8,6 +8,7 @@ import java.util.List;
 @DeveloperForbid
 public interface InnerUpdate {
 
+
     /**
      * @return a unmodifiable list
      */

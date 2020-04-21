@@ -831,7 +831,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
         if (this.alias == null) {
             this.appendSQL(context);
         } else {
-            context.quoteIfKeyAndAppend(this.alias);
+            context.appendText(this.alias);
         }
     }
 

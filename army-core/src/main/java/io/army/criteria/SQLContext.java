@@ -3,6 +3,7 @@ package io.army.criteria;
 import io.army.dialect.DML;
 import io.army.dialect.DQL;
 import io.army.dialect.ParamWrapper;
+import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingType;
@@ -15,9 +16,17 @@ public interface SQLContext {
         throw new UnsupportedOperationException();
     }
 
+    default void appendParentTableOf(ChildTableMeta<?> childTableMeta) {
+        throw new UnsupportedOperationException();
+    }
+
     void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException;
 
-    void quoteIfKeyAndAppend(String textValue);
+    default void appendField(FieldMeta<?, ?> fieldMeta) {
+
+    }
+
+    void appendText(String textValue);
 
     /**
      * @see ConstantExpression

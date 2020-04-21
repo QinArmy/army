@@ -15,7 +15,10 @@ import io.army.generator.GeneratorFactory;
 import io.army.generator.MultiGenerator;
 import io.army.generator.PreMultiGenerator;
 import io.army.lang.Nullable;
-import io.army.meta.*;
+import io.army.meta.FieldMeta;
+import io.army.meta.GeneratorMeta;
+import io.army.meta.SchemaMeta;
+import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.Pair;
 import io.army.util.StringUtils;
@@ -223,7 +226,7 @@ abstract class SessionFactoryUtils {
             , Map<String, GeneratorMeta> thisGeneratorMap) {
 
         if (tableMeta.parentMeta() != null) {
-            // append parentMeta generator
+            // appendText parentMeta generator
             appendPrentTableGeneratorMap(tableMeta, thisGeneratorMap);
         }
 
@@ -300,7 +303,7 @@ abstract class SessionFactoryUtils {
         }
         if (thisLevelCount > 0) {
             dependLevelList.add(thisLevelSet);
-            // continue append then level
+            // continue appendText then level
             appendChildLevel(dependLevelList, propGeneratorMap);
         }
     }

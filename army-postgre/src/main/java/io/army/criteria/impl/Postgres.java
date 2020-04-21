@@ -73,7 +73,7 @@ public abstract class Postgres extends SQLS {
     }
 
     /**
-     * append {@code NULLS FIRST} after {@code expression}
+     * appendText {@code NULLS FIRST} after {@code expression}
      */
     public static <E> Expression<E> nullsFirst(Expression<E> expression) {
         Assert.isTrue(!(expression instanceof NullsOrderExpression), "expression has NULLS { FIRST | LAST }");
@@ -81,7 +81,7 @@ public abstract class Postgres extends SQLS {
     }
 
     /**
-     * append {@code NULLS LAST} after {@code expression}
+     * appendText {@code NULLS LAST} after {@code expression}
      */
     public static <E> Expression<E> nullsLast(Expression<E> expression) {
         Assert.isTrue(!(expression instanceof NullsOrderExpression), "expression has NULLS { FIRST | LAST }");
@@ -89,7 +89,7 @@ public abstract class Postgres extends SQLS {
     }
 
     /**
-     * append {@code USING operator} after {@code expression}
+     * appendText {@code USING operator} after {@code expression}
      */
     public static <E> Expression<E> sortUsing(Expression<E> expression, SQLOperator operator) {
         Assert.isTrue(!(expression instanceof SortUsingOperatorExpression), "expression has USING operator clause.");

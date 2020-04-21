@@ -7,10 +7,11 @@ import io.army.domain.IDomain;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.*;
-
 import io.army.struct.CodeEnum;
-import io.army.util.*;
-
+import io.army.util.AnnotationUtils;
+import io.army.util.Assert;
+import io.army.util.ReflectionUtils;
+import io.army.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -110,7 +111,7 @@ abstract class MetaUtils {
         Map<String, FieldMeta<T, ?>> propNameToFieldMeta = new HashMap<>((int) (columnToFieldMap.size() / 0.75f));
 
         Set<String> columnNameSet = new HashSet<>(), propNameSet = new HashSet<>();
-        //2. append indexMap field meta to propNameToFieldMeta
+        //2. appendText indexMap field meta to propNameToFieldMeta
         for (IndexMeta<T> indexMeta : indexMetaList) {
             String lowerCaseColumnName;
             for (IndexFieldMeta<T, ?> fieldMeta : indexMeta.fieldList()) {
@@ -121,7 +122,7 @@ abstract class MetaUtils {
                 propNameSet.add(fieldMeta.propertyName());
             }
         }
-        //3. append rest field meta to propNameToFieldMeta
+        //3. appendText rest field meta to propNameToFieldMeta
         FieldMeta<T, ?> fieldMeta;
         for (Map.Entry<String, Field> entry : subMap.entrySet()) {
             fieldMeta = DefaultFieldMeta.createFieldMeta(table, entry.getValue());

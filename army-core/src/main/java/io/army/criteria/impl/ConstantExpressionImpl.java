@@ -123,13 +123,13 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
             constant.appendSQL(context);
             context.stringBuilder()
                     .append(" AS ");
-            context.quoteIfKeyAndAppend(this.alias);
+            context.appendText(this.alias);
 
         }
 
         @Override
         public void appendSortPart(SQLContext context) {
-            context.quoteIfKeyAndAppend(this.alias);
+            context.appendText(this.alias);
         }
 
         @Override

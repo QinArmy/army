@@ -11,10 +11,7 @@ import io.army.criteria.impl.inner.*;
 import io.army.domain.IDomain;
 import io.army.generator.PostMultiGenerator;
 import io.army.lang.Nullable;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.FieldMeta;
-import io.army.meta.GeneratorMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 import io.army.meta.mapping.MappingFactory;
 import io.army.util.Assert;
 import io.army.util.ClassUtils;
@@ -101,7 +98,7 @@ public abstract class AbstractDML implements DML {
         } else if (insert instanceof InnerSpecialInsert) {
             list = specialBatchInsert((InnerSpecialInsert) insert);
         } else {
-            throw new IllegalArgumentException(String.format("Insert[%s] type unknown.", insert.getClass().getName()));
+            throw new IllegalArgumentException(String.format("Insert[%s] type unknown.", insert));
         }
         return Collections.unmodifiableList(list);
     }
@@ -110,17 +107,23 @@ public abstract class AbstractDML implements DML {
 
     @Override
     public final List<SQLWrapper> update(Update update, Visible visible) {
-        Assert.isInstanceOf(InnerUpdate.class, update, "");
-        InnerUpdate innerAble = (InnerUpdate) update;
+        List<SQLWrapper> list;
+        if (update instanceof InnerStandardSingleUpdate) {
 
-        List<SQLWrapper> wrapperList;
-        if (update instanceof InnerObjectUpdate) {
-            // create singleUpdate dml for child mapping mode
-            wrapperList = createObjectUpdate((InnerObjectUpdate) innerAble, visible);
+            CriteriaCounselor.assertUpdate((InnerStandardSingleUpdate) update);
+            list = standardSingleUpdate((InnerStandardSingleUpdate) update, visible);
+
+        } else if (update instanceof InnerStandardDomainUpdate) {
+
+            CriteriaCounselor.assertUpdate((InnerStandardDomainUpdate) update);
+            list = standardDomainUpdate((InnerStandardDomainUpdate) update, visible);
+
+        } else if (update instanceof InnerSpecialUpdate) {
+            list = specialUpdate((InnerSpecialUpdate) update, visible);
         } else {
-            wrapperList = createUpdateForSimple(innerAble, visible);
+            throw new IllegalArgumentException(String.format("Update[%s] type unknown.", update));
         }
-        return wrapperList;
+        return Collections.unmodifiableList(list);
     }
 
     @Override
@@ -148,9 +151,27 @@ public abstract class AbstractDML implements DML {
         return context;
     }
 
+
+    protected UpdateContext createUpdateContext(@Nullable InnerUpdate update) {
+        return new StandardUpdateContext(this, this.dialect, update);
+    }
+
     protected abstract List<SQLWrapper> specialInsert(InnerSpecialInsert insert);
 
     protected abstract List<BatchSQLWrapper> specialBatchInsert(InnerSpecialInsert insert);
+
+    protected abstract List<SQLWrapper> specialUpdate(InnerSpecialUpdate update, Visible visible);
+
+    protected void standardSingleUpdateModifier(UpdateContext context) {
+
+    }
+
+    protected String subQueryParentAlias(String parentTableName) {
+        Random random = new Random();
+        return "_" + parentTableName + random.nextInt(4) + "_";
+    }
+
+    protected abstract boolean tableAliasAfterAs();
 
     /*################################## blow protected method ##################################*/
 
@@ -385,11 +406,212 @@ public abstract class AbstractDML implements DML {
         return Collections.unmodifiableList(sqlWrapperList);
     }
 
+    /*################################## blow update private method ##################################*/
 
-    private void assertStandardBatchInsert(InnerStandardInsert insert) {
-        if (!CollectionUtils.isEmpty(insert.fieldList()) || insert.defaultExpIfNull()) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "fieldList required for batch batchInsert.");
+    private SQLWrapper standardSingleUpdate(InnerStandardSingleUpdate update, Visible visible) {
+        UpdateContext context = createUpdateContext(update);
+
+        StringBuilder builder = context.stringBuilder().append("UPDATE ");
+        standardSingleUpdateModifier(context);
+        // append table name and alias
+        context.appendTable(update.tableMata());
+        if (tableAliasAfterAs()) {
+            builder.append(" AS");
         }
+        context.appendText(update.tableAlias());
+        // set clause
+        standardSingleUpdateSetClause(context, update.tableMata(), update.tableAlias()
+                , update.targetFieldList(), update.valueExpList());
+        // where clause
+        singleTableWhereClause(context, update.tableMata(), update.tableAlias()
+                , update.predicateList(), visible);
+
+        return SQLWrapper.build(
+                context.stringBuilder().toString()
+                , context.paramWrapper()
+        );
+    }
+
+    private List<SQLWrapper> standardDomainUpdate(InnerStandardDomainUpdate update, Visible visible) {
+        UpdateContext context = createUpdateContext(update);
+
+        return Collections.emptyList();
+    }
+
+
+    private void standardSingleUpdateSetClause(UpdateContext context, TableMeta<?> tableMeta, String tableAlias
+            , List<FieldMeta<?, ?>> fieldMetaList, List<Expression<?>> valueExpList) {
+
+        Assert.notEmpty(fieldMetaList, "set clause must not empty");
+        Assert.isTrue(fieldMetaList.size() == valueExpList.size(), "field list ifAnd value exp list size not match");
+
+        final int size = fieldMetaList.size();
+        FieldMeta<?, ?> fieldMeta;
+        Expression<?> valueExp;
+
+        StringBuilder builder = context.stringBuilder()
+                .append(" SET");
+        for (int i = 0; i < size; i++) {
+            if (i > 0) {
+                builder.append(",");
+            }
+
+            fieldMeta = fieldMetaList.get(i);
+            valueExp = valueExpList.get(i);
+
+            DMLUtils.assertSingleUpdateSetClauseField(fieldMeta, tableMeta);
+
+            // fieldMeta self-describe
+            context.appendField(tableAlias, fieldMeta);
+            builder.append(" =");
+            // expression self-describe
+            valueExp.appendSQL(context);
+
+        }
+        if (tableMeta.mappingMode() != MappingMode.CHILD) {
+            // appendText version And updateTime
+            setClauseFieldsManagedByArmy(context, tableMeta, tableAlias);
+        }
+    }
+
+    private void setClauseFieldsManagedByArmy(UpdateContext context, TableMeta<?> tableMeta, String tableAlias) {
+        //1. version field
+        final FieldMeta<?, ?> versionField = tableMeta.getField(TableMeta.VERSION);
+        StringBuilder builder = context.stringBuilder();
+
+        builder.append(",");
+        context.appendField(tableAlias, versionField);
+
+        builder.append(" =");
+        context.appendField(tableAlias, versionField);
+        builder.append(" + 1 ");
+
+        //2. updateTime field
+        final FieldMeta<?, ?> updateTimeField = tableMeta.getField(TableMeta.UPDATE_TIME);
+
+        builder.append(",");
+        // updateTime field self-describe
+        context.appendField(tableAlias, updateTimeField);
+        builder.append(" =");
+
+        final ZonedDateTime now = ZonedDateTime.now(context.dql().zoneId());
+
+        if (updateTimeField.javaType() == LocalDateTime.class) {
+            SQLS.param(now.toLocalDateTime(), updateTimeField.mappingType())
+                    .appendSQL(context);
+        } else if (updateTimeField.javaType() == ZonedDateTime.class) {
+            SQLS.param(now, updateTimeField.mappingType())
+                    .appendSQL(context);
+        } else {
+            throw new MetaException(ErrorCode.META_ERROR
+                    , "createTime or updateTime only support LocalDateTime or ZonedDateTime");
+        }
+    }
+
+    private void singleTableWhereClause(SQLContext context, TableMeta<?> tableMeta, String tableAlias
+            , List<IPredicate> predicateList
+            , Visible visible) {
+
+        if (CollectionUtils.isEmpty(predicateList)) {
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "update or delete must have where clause.");
+        }
+
+        StringBuilder builder = context.stringBuilder()
+                .append(" WHERE");
+
+        for (Iterator<IPredicate> iterator = predicateList.iterator(); iterator.hasNext(); ) {
+            // predicate self-describe
+            iterator.next().appendSQL(context);
+            if (iterator.hasNext()) {
+                builder.append(" AND");
+            }
+        }
+
+        switch (tableMeta.mappingMode()) {
+            case SIMPLE:
+            case PARENT:
+                visibleConstantPredicateForSimple(context, tableMeta, tableAlias, visible);
+                break;
+            case CHILD:
+                visibleSubQueryPredicateForChild(context, (ChildTableMeta<?>) tableMeta, tableAlias, visible);
+                break;
+            default:
+                throw new IllegalArgumentException(String.format("unknown MappingMode[%s].", tableMeta.mappingMode()));
+        }
+    }
+
+    private void visibleConstantPredicateForSimple(SQLContext context
+            , TableMeta<?> tableMeta, String tableAlias, Visible visible) {
+
+        switch (visible) {
+            case ONLY_VISIBLE:
+                visibleConstantPredicate(context, Boolean.TRUE, tableMeta, tableAlias);
+                break;
+            case ONLY_NON_VISIBLE:
+                visibleConstantPredicate(context, Boolean.FALSE, tableMeta, tableAlias);
+                break;
+            case BOTH:
+                break;
+            default:
+                throw new IllegalArgumentException(String.format("unknown Visible[%s]", visible));
+        }
+    }
+
+    private void visibleSubQueryPredicateForChild(SQLContext context
+            , ChildTableMeta<?> childMeta, String childAlias, Visible visible) {
+        if (visible == Visible.BOTH) {
+            return;
+        }
+
+        ParentTableMeta<?> parentMeta = childMeta.parentMeta();
+
+        final String parentAlias = subQueryParentAlias(parentMeta.tableName());
+        // append exists SubQuery
+        StringBuilder builder = context.stringBuilder()
+                .append(" AND EXISTS ( SELECT");
+
+        context.appendField(parentAlias, parentMeta.primaryKey());
+        // from clause
+        builder.append(" FROM");
+        context.appendParentTableOf(childMeta);
+
+        if (tableAliasAfterAs()) {
+            builder.append(" AS");
+        }
+        context.appendText(parentAlias);
+        // where clause
+        builder.append(" WHERE");
+        context.appendField(parentAlias, parentMeta.primaryKey());
+        builder.append(" =");
+        context.appendField(childAlias, childMeta.primaryKey());
+
+        // visible predicate
+        switch (visible) {
+            case ONLY_VISIBLE:
+                visibleConstantPredicate(context, Boolean.TRUE, parentMeta, parentAlias);
+                break;
+            case ONLY_NON_VISIBLE:
+                visibleConstantPredicate(context, Boolean.FALSE, parentMeta, parentAlias);
+                break;
+            default:
+                throw new IllegalArgumentException(String.format("unknown Visible[%s]", visible));
+
+        }
+        builder.append(" )");
+    }
+
+    private void visibleConstantPredicate(SQLContext context, Boolean visible
+            , TableMeta<?> tableMeta, String tableAlias) {
+
+        final FieldMeta<?, ?> visibleField = tableMeta.getField(TableMeta.VISIBLE);
+
+        StringBuilder builder = context.stringBuilder()
+                .append(" AND");
+        context.appendField(tableAlias, visibleField);
+        builder.append(" =");
+        SQLS.constant(visible, visibleField.mappingType())
+                .appendSQL(context);
+
     }
 
 
@@ -425,22 +647,22 @@ public abstract class AbstractDML implements DML {
         Assert.notEmpty(predicateList, "no where clause forbidden by army");
 
         StringBuilder builder = context.stringBuilder()
-                .append(" WHERE");
+                .appendText(" WHERE");
 
         for (Iterator<IPredicate> iterator = predicateList.iterator(); iterator.hasNext(); ) {
             iterator.next().appendSQL(context);
             if (iterator.hasNext()) {
-                builder.append(" AND");
+                builder.appendText(" AND");
             }
         }
         Boolean visibleValue = visible.getValue();
         if (visibleValue != null) {
             FieldMeta<?, ?> visibleField = deleteAble.tableMeta().getField(TableMeta.VISIBLE);
             String textValue = visibleField.mappingType().nonNullTextValue(visibleValue);
-            builder.append(" AND ")
-                    .append(this.quoteIfNeed(visibleField.fieldName()))
-                    .append(" = ")
-                    .append(DialectUtils.quoteIfNeed(visibleField.mappingType(), textValue))
+            builder.appendText(" AND ")
+                    .appendText(this.quoteIfNeed(visibleField.fieldName()))
+                    .appendText(" = ")
+                    .appendText(DialectUtils.quoteIfNeed(visibleField.mappingType(), textValue))
             ;
         }*/
 
@@ -457,10 +679,10 @@ public abstract class AbstractDML implements DML {
         // 1. singleUpdate clause
         appendObjectUpdateClause(context);
         // 2. set clause
-        appendSetClause(context, updateAble.targetFieldList(), updateAble.valueExpList());
+        standardSingleUpdateSetClause(context, updateAble.targetFieldList(), updateAble.valueExpList());
         // 3. where clause
-        // appendWhereClause(context, updateAble.predicateList());
-        //4. append child visible
+        // singleTableWhereClause(context, updateAble.predicateList());
+        //4. appendText child visible
         appendVisiblePredicate(parentMeta, context, context.safeParentAlias(), visible);
 
         return Collections.singletonList(
@@ -495,133 +717,6 @@ public abstract class AbstractDML implements DML {
         ;
     }
 
-    private void appendSetClause(UpdateSQLContext context, List<FieldMeta<?, ?>> fieldMetaList
-            , List<Expression<?>> valueExpList) {
-
-        Assert.notEmpty(fieldMetaList, "set clause must not empty");
-        Assert.isTrue(fieldMetaList.size() == valueExpList.size(), "field list ifAnd value exp list size not match");
-
-        final int size = fieldMetaList.size();
-        FieldMeta<?, ?> fieldMeta;
-        Expression<?> valueExp;
-
-        StringBuilder builder = context.stringBuilder()
-                .append(" SET");
-        for (int i = 0; i < size; i++) {
-            fieldMeta = fieldMetaList.get(i);
-            valueExp = valueExpList.get(i);
-
-            context.assertField(fieldMeta);
-
-            // fieldMeta self-describe
-            fieldMeta.appendSQL(context);
-            builder.append(" =");
-            // expression self-describe
-            valueExp.appendSQL(context);
-            if (i < size - 1) {
-                builder.append(",");
-            }
-        }
-        // append version ifAnd updateTime
-        appendFieldsManagedByArmy(context);
-
-    }
-
-
-    private void appendWhereClause(SQLContext context, List<IPredicate> predicateList) {
-        Assert.notEmpty(predicateList, "where clause must be not empty");
-
-        StringBuilder builder = context.stringBuilder()
-                .append(" WHERE");
-
-        for (Iterator<IPredicate> iterator = predicateList.iterator(); iterator.hasNext(); ) {
-            // predicate self-describe
-            iterator.next().appendSQL(context);
-            if (iterator.hasNext()) {
-                builder.append(" AND");
-            }
-        }
-    }
-
-
-    private List<SQLWrapper> createUpdateForSimple(InnerUpdate innerAble, Visible visible) {
-
-        // build dml context
-        final UpdateSQLContextImpl context = new UpdateSQLContextImpl(this, this.dialect, null, null);
-
-        //1. singleUpdate clause
-        appendUpdateClause(context);
-        //2. set clause
-        appendSetClause(context, innerAble.targetFieldList(), innerAble.valueExpList());
-        //3. where clause
-        // appendWhereClause(context, innerAble.predicateList());
-        //4. append visible
-        appendVisiblePredicate(context.updateTable, context, context.safeAlias(), visible);
-
-        return Collections.singletonList(
-                SQLWrapper.build(context.builder.toString(), context.paramWrapperList)
-        );
-    }
-
-    private void appendUpdateClause(UpdateSQLContext context) {
-        context.stringBuilder().append("UPDATE ")
-                .append(this.dialect.quoteIfNeed(context.tableMeta().tableName()));
-
-        if (StringUtils.hasText(context.safeAlias())) {
-            context.stringBuilder()
-                    .append(" AS ")
-                    .append(context.safeAlias());
-        }
-    }
-
-    private void appendFieldsManagedByArmy(UpdateSQLContext context) {
-        //1. version field
-        FieldMeta<?, ?> fieldMeta = context.versionField();
-        StringBuilder builder = context.stringBuilder();
-
-        builder.append(",");
-        fieldMeta.appendSQL(context);
-
-        builder.append(" = ");
-        fieldMeta.add(SQLS.constant(1)).appendSQL(context);
-
-        //2. updateTime field
-        fieldMeta = context.updateTimeField();
-        builder.append(",");
-        // updateTime field self-describe
-        fieldMeta.appendSQL(context);
-        builder.append(" = ");
-
-        if (fieldMeta.javaType() == LocalDateTime.class) {
-            SQLS.param(LocalDateTime.now()).appendSQL(context);
-        } else if (fieldMeta.javaType() == ZonedDateTime.class) {
-            SQLS.param(ZonedDateTime.now(this.zoneId())).appendSQL(context);
-        } else {
-            throw new MetaException(ErrorCode.META_ERROR
-                    , "createTime or updateTime only support LocalDateTime or ZonedDateTime");
-        }
-    }
-
-
-    private void appendVisiblePredicate(TableMeta<?> tableMetaWithVisible, SQLContext context
-            , final String safeTableAlias, Visible visible) {
-        final FieldMeta<?, ?> visibleField = tableMetaWithVisible.getField(TableMeta.VISIBLE);
-
-        Assert.state(visibleField.javaType() == Boolean.class, "visible prop class type only is Boolean");
-        // append visible field
-        Boolean visibleValue = visible.getValue();
-        if (visibleValue != null) {
-            StringBuilder builder = context.stringBuilder().append(" AND ");
-            if (StringUtils.hasText(safeTableAlias)) {
-                builder.append(safeTableAlias)
-                        .append(".");
-            }
-            builder.append(this.dialect.quoteIfNeed(visibleField.fieldName()))
-                    .append(" = ? ");
-            context.appendParam(ParamWrapper.build(visibleField.mappingType(), visibleValue));
-        }
-
-    }
 
     private void appendOrderByClause(SQLContext context, List<Expression<?>> orderExpList, List<Boolean> ascExpList) {
         if (CollectionUtils.isEmpty(orderExpList)) {
@@ -660,21 +755,6 @@ public abstract class AbstractDML implements DML {
         }
     }
 
-
-    private void assertTargetField(FieldMeta<?, ?> fieldMeta, TableMeta<?> tableMeta) {
-        Assert.isTrue(fieldMeta.tableMeta() == tableMeta, () -> String.format(
-                "field[%s] don'field belong to tableMeta[%s]", fieldMeta, tableMeta));
-
-        if (!fieldMeta.updatable()) {
-            throw new NonUpdateAbleException(ErrorCode.NON_UPDATABLE
-                    , String.format("domain[%s] field[%s] is non-updatable"
-                    , fieldMeta.tableMeta().javaType().getName(), fieldMeta.propertyName()));
-        }
-        if (TableMeta.VERSION.equals(fieldMeta.propertyName())
-                || TableMeta.UPDATE_TIME.equals(fieldMeta.propertyName())) {
-            throw new IllegalArgumentException("version or updateTime is managed by army.");
-        }
-    }
 
     private void assertFieldAndValueExpressionMatch(FieldMeta<?, ?> fieldMeta, Expression<?> valueExp) {
         if (!fieldMeta.nullable()

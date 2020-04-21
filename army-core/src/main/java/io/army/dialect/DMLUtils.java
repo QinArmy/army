@@ -32,6 +32,26 @@ abstract class DMLUtils {
         return count;
     }
 
+    static void assertSingleUpdateSetClauseField(FieldMeta<?, ?> fieldMeta, TableMeta<?> tableMeta) {
+        if (fieldMeta.tableMeta() == tableMeta) {
+            throw new IllegalArgumentException(String.format(
+                    "FieldMeta[%s] don't belong to TableMeta[%s]", fieldMeta, tableMeta));
+        }
+
+        assertSetClauseField(fieldMeta);
+    }
+
+    static void assertSetClauseField(FieldMeta<?, ?> fieldMeta) {
+        if (!fieldMeta.updatable()) {
+            throw new NonUpdateAbleException(ErrorCode.NON_UPDATABLE
+                    , String.format("domain[%s] field[%s] is non-updatable."
+                    , fieldMeta, fieldMeta.propertyName()));
+        }
+        if (TableMeta.VERSION.equals(fieldMeta.propertyName())
+                || TableMeta.UPDATE_TIME.equals(fieldMeta.propertyName())) {
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "version or updateTime is managed by army.");
+        }
+    }
 
     static void createInsertForSimple(TableMeta<?> tableMeta, Collection<? extends FieldMeta<?, ?>> fieldMetas
             , ReadonlyWrapper entityWrapper, InsertContext context) {
@@ -166,7 +186,7 @@ abstract class DMLUtils {
                     )
             );
         }
-        return Collections.unmodifiableList(batchWrapperList);
+        return batchWrapperList;
     }
 
 
@@ -176,6 +196,7 @@ abstract class DMLUtils {
                 , context.paramWrapper()
         );
     }
+
 
     static BeanSQLWrapper createSQLWrapper(InsertContext context, BeanWrapper beanWrapper) {
         return BeanSQLWrapper.build(
