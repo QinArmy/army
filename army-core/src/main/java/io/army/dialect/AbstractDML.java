@@ -147,7 +147,7 @@ public abstract class AbstractDML implements DML {
 
     /*################################## blow package batchInsert template method ##################################*/
 
-    protected InsertContext createInsertContext(@Nullable InnerInsert insert) {
+    protected InsertContext createInsertContext(InnerInsert insert) {
         InsertContext context;
         if (insert == null) {
             context = new StandardInsertContext(this, this.dialect);

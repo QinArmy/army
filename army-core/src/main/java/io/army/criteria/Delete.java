@@ -1,5 +1,6 @@
 package io.army.criteria;
 
+import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 
 import java.util.List;
@@ -19,34 +20,27 @@ public interface Delete extends SQLAble, SQLDebug, QueryAble {
 
     interface SingleDeleteAble<C> extends DeleteSQLAble {
 
-        FromAble<C> delete();
+        SingleDeleteWhereAble<C> deleteFrom(TableMeta<? extends IDomain> tableMeta);
     }
 
-    interface FromAble<C> extends DeleteSQLAble {
-
-        WhereAble<C> from(TableMeta<?> tableMeta);
-    }
-
-    interface WhereAble<C> extends DeleteSQLAble {
+    interface SingleDeleteWhereAble<C> extends DeleteSQLAble {
 
         DeleteAble where(List<IPredicate> predicateList);
 
         DeleteAble where(Function<C, List<IPredicate>> function);
 
-        WhereAndAble<C> where(IPredicate predicate);
-
+        SingleDeleteWhereAndAble<C> where(IPredicate predicate);
     }
 
-    interface WhereAndAble<C> extends DeleteAble {
 
-        WhereAndAble<C> and(IPredicate predicate);
+    interface SingleDeleteWhereAndAble<C> extends DeleteAble {
 
-        WhereAndAble<C> and(Function<C, IPredicate> function);
+        SingleDeleteWhereAndAble<C> and(IPredicate predicate);
 
-        WhereAndAble<C> ifAnd(Predicate<C> testPredicate, IPredicate predicate);
+        SingleDeleteWhereAndAble<C> ifAnd(Predicate<C> testPredicate, IPredicate predicate);
 
-        WhereAndAble<C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function);
+        SingleDeleteWhereAndAble<C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function);
+
     }
-
 
 }

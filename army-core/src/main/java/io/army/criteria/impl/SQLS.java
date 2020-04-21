@@ -55,13 +55,20 @@ public abstract class SQLS extends AbstractSQLS {
     }
 
     public static Delete.SingleDeleteAble<EmptyObject> singleDelete() {
-        return new StandardContextualSingleDelete<>(EmptyObject.getInstance());
+        return StandardContextualSingleDelete.buildDelete(EmptyObject.getInstance());
     }
 
     public static <C> Delete.SingleDeleteAble<C> singleDelete(C criteria) {
-        return new StandardContextualSingleDelete<>(criteria);
+        return StandardContextualSingleDelete.buildDelete(criteria);
     }
 
+    public static Delete.SingleDeleteAble<EmptyObject> domainDelete(Object primaryKeyValue) {
+        return StandardContextualSingleDelete.buildDomainDelete(primaryKeyValue, EmptyObject.getInstance());
+    }
+
+    public static <C> Delete.SingleDeleteAble<C> domainDelete(Object primaryKeyValue, C criteria) {
+        return StandardContextualSingleDelete.buildDomainDelete(primaryKeyValue, criteria);
+    }
 
     public static Select.SelectPartAble<EmptyObject> multiSelect() {
         return new StandardContextualMultiSelect<>(EmptyObject.getInstance());
@@ -171,11 +178,11 @@ public abstract class SQLS extends AbstractSQLS {
                 ));
     }
 
-    public static Row row(List<Expression<?>> columnList) {
+    static Row row(List<Expression<?>> columnList) {
         return new RowImpl(columnList);
     }
 
-    public static <C> Row row(Function<C, List<Expression<?>>> function) {
+    static <C> Row row(Function<C, List<Expression<?>>> function) {
         return new RowImpl(function.apply(
                 CriteriaContextHolder.getContext().criteria()
         ));
