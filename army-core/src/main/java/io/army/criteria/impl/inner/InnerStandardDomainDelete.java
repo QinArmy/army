@@ -1,7 +1,6 @@
 package io.army.criteria.impl.inner;
 
 @DeveloperForbid
-public interface InnerStandardDomainDelete extends InnerStandardSingleDelete {
-
-    Object primaryKeyValue();
+public interface InnerStandardDomainDelete extends InnerStandardSingleDelete, InnerDomainDelete
+        , InnerStandardDomainDML {
 }

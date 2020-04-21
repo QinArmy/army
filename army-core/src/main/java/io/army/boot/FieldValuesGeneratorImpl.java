@@ -50,7 +50,7 @@ final class FieldValuesGeneratorImpl implements FieldValuesGenerator {
             throws FieldValuesCreateException {
         Assert.notNull(tableMeta, "tableMeta required");
         Assert.notNull(entity, "entity required");
-        Assert.isTrue(tableMeta.javaType() == entity.getClass(), "tableMata then entity not match");
+        Assert.isTrue(tableMeta.javaType() == entity.getClass(), "tableMeta then entity not match");
 
         final BeanWrapper entityWrapper = PropertyAccessorFactory.forBeanPropertyAccess(entity);
 

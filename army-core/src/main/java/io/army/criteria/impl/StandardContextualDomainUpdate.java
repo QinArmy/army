@@ -178,7 +178,7 @@ final class StandardContextualDomainUpdate<T extends IDomain, C> extends Abstrac
     /*################################## blow InnerStandardDomainUpdate method ##################################*/
 
     @Override
-    public final TableMeta<?> tableMata() {
+    public final TableMeta<?> tableMeta() {
         return this.tableMeta;
     }
 

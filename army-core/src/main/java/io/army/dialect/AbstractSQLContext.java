@@ -4,6 +4,7 @@ import io.army.ErrorCode;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.SQLContext;
 import io.army.criteria.TableAliasException;
+import io.army.criteria.Visible;
 import io.army.meta.FieldMeta;
 import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
@@ -13,32 +14,32 @@ import java.util.List;
 
 public abstract class AbstractSQLContext implements SQLContext {
 
-    protected final DML dml;
-
-    protected final DQL dql;
+    protected final Dialect dialect;
 
     protected final StringBuilder builder = new StringBuilder();
 
     protected final List<ParamWrapper> paramList = new ArrayList<>();
 
+    protected final Visible visible;
+
     boolean finished;
 
-    AbstractSQLContext(DML dml, DQL dql) {
-        this.dml = dml;
-        this.dql = dql;
+    protected AbstractSQLContext(Dialect dialect, Visible visible) {
+        this.dialect = dialect;
+        this.visible = visible;
     }
 
     @Override
     public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException {
-        builder.append(this.dml.quoteIfNeed(tableAlias))
+        builder.append(this.dialect.quoteIfNeed(tableAlias))
                 .append(".")
-                .append(this.dml.quoteIfNeed(fieldMeta.fieldName()));
+                .append(this.dialect.quoteIfNeed(fieldMeta.fieldName()));
     }
 
     @Override
     public final void appendText(String textValue) {
         builder.append(" ")
-                .append(dml.quoteIfNeed(textValue));
+                .append(dialect.quoteIfNeed(textValue));
     }
 
     @Override
@@ -53,7 +54,12 @@ public abstract class AbstractSQLContext implements SQLContext {
 
     @Override
     public final DML dml() {
-        return dml;
+        return this.dialect;
+    }
+
+    @Override
+    public final DQL dql() {
+        return this.dialect;
     }
 
     @Override
@@ -80,6 +86,11 @@ public abstract class AbstractSQLContext implements SQLContext {
                 builder.toString()
                 , paramList
         );
+    }
+
+    @Override
+    public final Visible visible() {
+        return this.visible;
     }
 
     protected final void throwTableAliasError(String tableAlias, FieldMeta<?, ?> fieldMeta) {

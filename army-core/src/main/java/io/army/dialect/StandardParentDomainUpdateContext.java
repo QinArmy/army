@@ -1,6 +1,7 @@
 package io.army.dialect;
 
 import io.army.criteria.TableAliasException;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.InnerDomainUpdate;
 import io.army.criteria.impl.inner.InnerStandardDomainUpdate;
 import io.army.meta.ChildTableMeta;
@@ -9,7 +10,7 @@ import io.army.meta.ParentTableMeta;
 
 import java.util.Collection;
 
-final class ParentDomainUpdateContextImpl extends AbstractSQLContext implements ParentDomainUpdateContext {
+final class StandardParentDomainUpdateContext extends AbstractSQLContext implements ParentDomainUpdateContext {
 
 
     private final InnerStandardDomainUpdate innerUpdate;
@@ -22,12 +23,12 @@ final class ParentDomainUpdateContextImpl extends AbstractSQLContext implements 
 
     private boolean needQueryChild;
 
-    ParentDomainUpdateContextImpl(DML dml, DQL dql, InnerStandardDomainUpdate update
+    StandardParentDomainUpdateContext(Dialect dialect, Visible visible, InnerStandardDomainUpdate update
             , Collection<FieldMeta<?, ?>> childFields) {
-        super(dml, dql);
+        super(dialect, visible);
         this.innerUpdate = update;
         this.childFields = childFields;
-        ChildTableMeta<?> childMeta = (ChildTableMeta<?>) update.tableMata();
+        ChildTableMeta<?> childMeta = (ChildTableMeta<?>) update.tableMeta();
         this.tableMeta = childMeta.parentMeta();
         this.tableAlias = update.tableAlias();
     }

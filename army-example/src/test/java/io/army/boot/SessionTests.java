@@ -102,7 +102,7 @@ public class SessionTests {
         Map<String, Object> criteria = new HashMap<>();
 
         Delete delete = SQLS.singleDelete(criteria)
-                .deleteFrom(Account_.T)
+                .deleteFrom(Account_.T, "a")
                 .where(Account_.id.le(1000L))
                 .and(Account_.debt.gt(BigDecimal.ONE))
                 .ifAnd(this::isUser, Account_.accountType.eq(AccountType.BALANCE))

@@ -8,7 +8,7 @@ import java.util.List;
 @DeveloperForbid
 public interface InnerStandardSingleUpdate extends InnerUpdate {
 
-    TableMeta<?> tableMata();
+    TableMeta<?> tableMeta();
 
     String tableAlias();
 

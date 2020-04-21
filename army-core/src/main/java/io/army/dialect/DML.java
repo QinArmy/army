@@ -38,9 +38,10 @@ public interface DML extends SQL {
         throw new UnsupportedOperationException();
     }
 
-    default List<SQLWrapper> delete(Delete.DeleteAble deleteAble, Visible visible) {
+    default List<SQLWrapper> delete(Delete delete, Visible visible) {
         throw new UnsupportedOperationException();
     }
 
+    boolean singleDeleteHasTableAlias();
 
 }

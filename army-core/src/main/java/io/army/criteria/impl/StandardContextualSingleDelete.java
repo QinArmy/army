@@ -8,6 +8,7 @@ import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
+import io.army.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,6 +34,8 @@ class StandardContextualSingleDelete<C> extends AbstractSQLDebug implements Dele
 
     private TableMeta<?> tableMeta;
 
+    private String tableAlias;
+
     private List<IPredicate> predicateList = new ArrayList<>();
 
     private boolean prepared;
@@ -46,8 +49,9 @@ class StandardContextualSingleDelete<C> extends AbstractSQLDebug implements Dele
     /*################################## blow SingleDeleteAble method ##################################*/
 
     @Override
-    public final SingleDeleteWhereAble<C> deleteFrom(TableMeta<? extends IDomain> tableMeta) {
+    public final SingleDeleteWhereAble<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias) {
         this.tableMeta = tableMeta;
+        this.tableAlias = tableAlias;
         return this;
     }
 
@@ -107,6 +111,7 @@ class StandardContextualSingleDelete<C> extends AbstractSQLDebug implements Dele
         this.criteriaContext.clear();
 
         Assert.state(this.tableMeta != null, "Delete must specify TableMeta.");
+        Assert.state(StringUtils.hasText(this.tableAlias), "Delete must specify table alias.");
         Assert.state(!CollectionUtils.isEmpty(this.predicateList), "Delete must have where clause.");
         assertPrimaryKeyValue(this.tableMeta);
 
@@ -129,13 +134,18 @@ class StandardContextualSingleDelete<C> extends AbstractSQLDebug implements Dele
         return this.predicateList;
     }
 
+    @Override
+    public final String tableAlias() {
+        return this.tableAlias;
+    }
+
     void assertPrimaryKeyValue(TableMeta<?> tableMeta) {
 
     }
 
     /*################################## blow static inner class ##################################*/
 
-    private static final class StandardContextualDomainDelete<C> extends StandardContextualSingleDelete<C>
+    static final class StandardContextualDomainDelete<C> extends StandardContextualSingleDelete<C>
             implements InnerStandardDomainDelete {
 
         private final Object primaryKeyValue;

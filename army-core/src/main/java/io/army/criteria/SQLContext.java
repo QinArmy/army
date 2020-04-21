@@ -52,9 +52,7 @@ public interface SQLContext {
 
     DML dml();
 
-    default DQL dql() {
-        throw new UnsupportedOperationException();
-    }
+     DQL dql();
 
     StringBuilder sqlBuilder();
 
@@ -66,5 +64,6 @@ public interface SQLContext {
         throw new UnsupportedOperationException();
     }
 
+    Visible visible();
 
 }

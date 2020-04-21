@@ -57,4 +57,5 @@ class MySQL57Dialect extends AbstractDialect {
     protected DQL createDQL() {
         return null;
     }
+
 }

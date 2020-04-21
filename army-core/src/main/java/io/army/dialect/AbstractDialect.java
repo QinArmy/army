@@ -2,7 +2,10 @@ package io.army.dialect;
 
 
 import io.army.SessionFactory;
-import io.army.criteria.*;
+import io.army.criteria.Delete;
+import io.army.criteria.Insert;
+import io.army.criteria.Update;
+import io.army.criteria.Visible;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
@@ -128,12 +131,17 @@ public abstract class AbstractDialect implements Dialect {
 
     @Override
     public final List<SQLWrapper> update(Update update, Visible visible) {
-        return dml.update(update, visible);
+        return this.dml.update(update, visible);
     }
 
     @Override
-    public List<SQLWrapper> delete(Delete.DeleteAble deleteAble, Visible visible) {
-        return dml.delete(deleteAble, visible);
+    public final List<SQLWrapper> delete(Delete delete, Visible visible) {
+        return this.dml.delete(delete, visible);
+    }
+
+    @Override
+    public final boolean singleDeleteHasTableAlias() {
+        return this.dml.singleDeleteHasTableAlias();
     }
 
     @Override
@@ -143,25 +151,6 @@ public abstract class AbstractDialect implements Dialect {
 
     /*####################################### below DQL  method #################################*/
 
-    @Override
-    public final List<SQLWrapper> select(Select select) {
-        return dql.select(select);
-    }
-
-    @Override
-    public final void select(Select select, SQLContext context) {
-        dql.select(select, context);
-    }
-
-    @Override
-    public final void partQuery(QueryAfterSet select, SQLContext context) {
-        dql.partQuery(select, context);
-    }
-
-    @Override
-    public final void subQuery(SubQuery subQuery, SQLContext context) {
-        dql.subQuery(subQuery, context);
-    }
 
     /*####################################### below protected template method #################################*/
 

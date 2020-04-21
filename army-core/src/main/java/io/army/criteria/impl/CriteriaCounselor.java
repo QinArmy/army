@@ -20,6 +20,16 @@ public abstract class CriteriaCounselor {
         }
     }
 
+    public static void assertStandardDelete(InnerStandardSingleDelete delete) {
+        if (!(delete instanceof StandardContextualSingleDelete)) {
+            throw new IllegalArgumentException(String.format("%s isn't instance of %s", delete
+                    , StandardContextualSingleDelete.class.getName()));
+        } else if (!(delete instanceof StandardContextualSingleDelete.StandardContextualDomainDelete)) {
+            throw new IllegalArgumentException(String.format("%s isn't instance of %s", delete
+                    , StandardContextualSingleDelete.StandardContextualDomainDelete.class.getName()));
+        }
+    }
+
     public static void assertInsert(InnerStandardInsert insert) {
         if (!(insert instanceof StandardInsert)) {
             throw new IllegalArgumentException(String.format("%s isn't instance of %s", insert

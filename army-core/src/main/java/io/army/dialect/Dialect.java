@@ -11,5 +11,4 @@ public interface Dialect extends TableDDL, DML, DQL {
 
     boolean supportZoneId();
 
-
 }

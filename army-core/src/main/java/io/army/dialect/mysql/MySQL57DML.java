@@ -1,6 +1,7 @@
 package io.army.dialect.mysql;
 
 import io.army.criteria.Visible;
+import io.army.criteria.impl.inner.InnerSpecialDelete;
 import io.army.criteria.impl.inner.InnerSpecialInsert;
 import io.army.criteria.impl.inner.InnerSpecialUpdate;
 import io.army.dialect.AbstractDML;
@@ -31,7 +32,17 @@ class MySQL57DML extends AbstractDML {
     }
 
     @Override
-    protected boolean tableAliasAfterAs() {
+    protected final boolean tableAliasAfterAs() {
+        return true;
+    }
+
+    @Override
+    protected List<SQLWrapper> specialDelete(InnerSpecialDelete delete, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public final boolean singleDeleteHasTableAlias() {
         return false;
     }
 }

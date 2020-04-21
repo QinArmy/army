@@ -2,9 +2,10 @@ package io.army.dialect;
 
 import io.army.meta.ChildTableMeta;
 
-public interface ChildDomainUpdateContext extends DomainUpdateContext {
+public interface ChildDomainDeleteContext extends DomainDeleteContext {
 
     @Override
     ChildTableMeta<?> tableMeta();
+
 
 }

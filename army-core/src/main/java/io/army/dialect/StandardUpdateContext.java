@@ -1,15 +1,15 @@
 package io.army.dialect;
 
+import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.InnerStandardSingleUpdate;
 import io.army.criteria.impl.inner.InnerUpdate;
-import io.army.meta.TableMeta;
 
 final class StandardUpdateContext extends AbstractSQLContext implements UpdateContext {
 
     private final InnerStandardSingleUpdate innerUpdate;
 
-    StandardUpdateContext(DML dml, DQL dql, InnerStandardSingleUpdate update) {
-        super(dml, dql);
+    StandardUpdateContext(Dialect dialect, Visible visible, InnerStandardSingleUpdate update) {
+        super(dialect, visible);
         this.innerUpdate = update;
     }
 
@@ -18,14 +18,5 @@ final class StandardUpdateContext extends AbstractSQLContext implements UpdateCo
         return this.innerUpdate;
     }
 
-    @Override
-    public final TableMeta<?> tableMeta() {
-        return this.innerUpdate.tableMata();
-    }
-
-    @Override
-    public final String tableAlias() {
-        return this.innerUpdate.tableAlias();
-    }
 
 }

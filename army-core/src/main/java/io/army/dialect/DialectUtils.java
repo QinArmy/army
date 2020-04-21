@@ -1,5 +1,8 @@
 package io.army.dialect;
 
+import io.army.ArmyRuntimeException;
+import io.army.ErrorCode;
+import io.army.meta.MappingMode;
 import io.army.meta.mapping.MappingType;
 import io.army.util.StringUtils;
 
@@ -31,6 +34,15 @@ public abstract class DialectUtils {
             return StringUtils.quote(textValue);
         }
         return textValue;
+    }
+
+    public static IllegalArgumentException createMappingModeUnknownException(MappingMode mappingMode) {
+        throw new IllegalArgumentException(String.format("unknown MappingMode[%s]",
+                mappingMode));
+    }
+
+    public static ArmyRuntimeException createArmyCriteriaException() {
+        return new ArmyRuntimeException(ErrorCode.NONE, "Army criteria error.");
     }
 
 

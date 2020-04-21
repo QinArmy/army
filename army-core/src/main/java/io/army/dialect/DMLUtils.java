@@ -1,6 +1,5 @@
 package io.army.dialect;
 
-import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
 import io.army.beans.BeanWrapper;
 import io.army.beans.PropertyAccessorFactory;
@@ -9,7 +8,7 @@ import io.army.boot.FieldValuesGenerator;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLS;
 import io.army.criteria.impl.inner.InnerStandardBatchInsert;
-import io.army.criteria.impl.inner.InnerStandardDomainUpdate;
+import io.army.criteria.impl.inner.InnerStandardDomainDML;
 import io.army.domain.IDomain;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
@@ -38,12 +37,12 @@ abstract class DMLUtils {
         return count;
     }
 
-    static List<SQLWrapper> createDomainUpdateSQLWrapperList(SQLWrapper childSql, List<SQLWrapper> parentSqlList) {
+    static List<SQLWrapper> createDomainSQLWrapperList(SQLWrapper childSql, List<SQLWrapper> parentSqlList) {
         List<SQLWrapper> sqlWrapperList;
         if (parentSqlList.size() == 2) {
             final SQLWrapper queryChildSql = parentSqlList.get(0);
             if (!(queryChildSql instanceof BeanSQLWrapper)) {
-                throw new ArmyRuntimeException(ErrorCode.NONE, "DomainUpdate sql error.");
+                throw DialectUtils.createArmyCriteriaException();
             }
             sqlWrapperList = new ArrayList<>(3);
             // 1. query child table sql.
@@ -60,9 +59,9 @@ abstract class DMLUtils {
             // 2. update parent table sql.
             sqlWrapperList.add(parentSqlList.get(0));
         } else {
-            throw new ArmyRuntimeException(ErrorCode.NONE, "DomainUpdate sql error.");
+            throw DialectUtils.createArmyCriteriaException();
         }
-        return Collections.unmodifiableList(sqlWrapperList);
+        return sqlWrapperList;
     }
 
     static void assertSingleUpdateSetClauseField(FieldMeta<?, ?> fieldMeta, TableMeta<?> tableMeta) {
@@ -75,12 +74,12 @@ abstract class DMLUtils {
     }
 
     @SuppressWarnings("unchecked")
-    static BeanSQLWrapper createQueryChildBeanSQLWrapper(InnerStandardDomainUpdate update
-            , List<FieldMeta<?, ?>> childFieldList, Dialect dialect) {
+    static BeanSQLWrapper createQueryChildBeanSQLWrapper(InnerStandardDomainDML domainDML
+            , List<FieldMeta<?, ?>> childFieldList, Dialect dialect, final Visible visible) {
 
-        final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) update.tableMata();
+        final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) domainDML.tableMeta();
         final IndexFieldMeta<?, Object> primaryField = (IndexFieldMeta<?, Object>) childMeta.primaryKey();
-        final Object primaryKeyValue = update.primaryKeyValue();
+        final Object primaryKeyValue = domainDML.primaryKeyValue();
 
         Assert.isInstanceOf(primaryField.javaType(), primaryKeyValue);
 
@@ -92,7 +91,7 @@ abstract class DMLUtils {
                 .where(primaryField.eq(paramExp))
                 .asSelect();
         // parse query child table sql.
-        List<SQLWrapper> sqlWrapperList = dialect.select(select);
+        List<SQLWrapper> sqlWrapperList = dialect.select(select, visible);
 
         Assert.isTrue(sqlWrapperList.size() == 1, "DomainUpdate query child sql error.");
         SQLWrapper sqlWrapper = sqlWrapperList.get(0);

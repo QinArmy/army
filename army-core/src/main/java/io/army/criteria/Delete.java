@@ -20,7 +20,7 @@ public interface Delete extends SQLAble, SQLDebug, QueryAble {
 
     interface SingleDeleteAble<C> extends DeleteSQLAble {
 
-        SingleDeleteWhereAble<C> deleteFrom(TableMeta<? extends IDomain> tableMeta);
+        SingleDeleteWhereAble<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias);
     }
 
     interface SingleDeleteWhereAble<C> extends DeleteSQLAble {

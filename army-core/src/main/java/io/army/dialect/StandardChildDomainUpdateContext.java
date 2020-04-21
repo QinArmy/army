@@ -1,6 +1,7 @@
 package io.army.dialect;
 
 import io.army.criteria.TableAliasException;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.InnerDomainUpdate;
 import io.army.criteria.impl.inner.InnerStandardDomainUpdate;
 import io.army.meta.ChildTableMeta;
@@ -18,12 +19,13 @@ final class StandardChildDomainUpdateContext extends AbstractSQLContext implemen
 
     private final Collection<FieldMeta<?, ?>> parentFields;
 
-    StandardChildDomainUpdateContext(DML dml, DQL dql, InnerStandardDomainUpdate update
+    StandardChildDomainUpdateContext(Dialect dialect, Visible visible, InnerStandardDomainUpdate update
             , Collection<FieldMeta<?, ?>> parentFields) {
-        super(dml, dql);
+        super(dialect, visible);
+
         this.innerUpdate = update;
         this.parentFields = parentFields;
-        this.tableMeta = (ChildTableMeta<?>) update.tableMata();
+        this.tableMeta = (ChildTableMeta<?>) update.tableMeta();
         this.tableAlias = update.tableAlias();
     }
 

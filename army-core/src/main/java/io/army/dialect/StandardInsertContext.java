@@ -1,6 +1,7 @@
 package io.army.dialect;
 
 import io.army.criteria.Expression;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.SQLS;
 import io.army.criteria.impl.inner.InnerInsert;
 import io.army.criteria.impl.inner.InnerStandardInsert;
@@ -39,8 +40,8 @@ class StandardInsertContext extends AbstractSQLContext implements InsertContext 
 
     private final InnerInsert innerInsert;
 
-    StandardInsertContext(DML dml, DQL dql, InnerInsert innerInsert) {
-        super(dml, dql);
+    StandardInsertContext(Dialect dialect, Visible visible, InnerInsert innerInsert) {
+        super(dialect, visible);
         this.innerInsert = innerInsert;
         if (innerInsert instanceof InnerStandardInsert) {
             InnerStandardInsert insert = (InnerStandardInsert) innerInsert;
@@ -52,8 +53,8 @@ class StandardInsertContext extends AbstractSQLContext implements InsertContext 
         }
     }
 
-    StandardInsertContext(DML dml, DQL dql) {
-        super(dml, dql);
+    StandardInsertContext(Dialect dialect, Visible visible) {
+        super(dialect, visible);
         this.innerInsert = EMPTY_INSERT;
         this.defaultIfNull = false;
         this.commonValueMap = Collections.emptyMap();

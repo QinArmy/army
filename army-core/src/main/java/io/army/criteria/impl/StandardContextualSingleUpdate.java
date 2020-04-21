@@ -199,7 +199,7 @@ final class StandardContextualSingleUpdate<T extends IDomain, C> extends Abstrac
     }
 
     @Override
-    public final TableMeta<?> tableMata() {
+    public final TableMeta<?> tableMeta() {
         return this.tableMeta;
     }
 
