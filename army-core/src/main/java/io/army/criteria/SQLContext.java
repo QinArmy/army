@@ -3,6 +3,7 @@ package io.army.criteria;
 import io.army.dialect.DML;
 import io.army.dialect.DQL;
 import io.army.dialect.ParamWrapper;
+import io.army.dialect.SQLWrapper;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -39,11 +40,15 @@ public interface SQLContext {
         throw new UnsupportedOperationException();
     }
 
-    StringBuilder stringBuilder();
+    StringBuilder sqlBuilder();
 
     void appendParam(ParamWrapper paramWrapper);
 
-    List<ParamWrapper> paramWrapper();
+    List<ParamWrapper> paramList();
+
+    default SQLWrapper build() {
+        throw new UnsupportedOperationException();
+    }
 
 
 }

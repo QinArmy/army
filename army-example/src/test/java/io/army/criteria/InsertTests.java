@@ -25,7 +25,6 @@ public class InsertTests {
 
         Insert insert = SQLS.insert(BalanceAccount_.T)
                 .commonValue(BalanceAccount_.balance, SQLS.constant(new BigDecimal(4)).add(new BigDecimal(4)))
-                .alwaysUseCommonValue()
                 .defaultIfNull()
                 .insertInto(fieldMetaList)
                 .value(new BalanceAccount())
@@ -41,7 +40,6 @@ public class InsertTests {
 
         Insert insert = SQLS.insert(BalanceAccount_.T)
                 .commonValue(BalanceAccount_.balance, SQLS.constant(new BigDecimal(4)).add(new BigDecimal(4)))
-                .alwaysUseCommonValue()
                 .defaultIfNull()
                 .insertInto(fieldMetaList)
                 .values(valueList)
@@ -53,11 +51,10 @@ public class InsertTests {
     public void batchInsert() {
         List<BalanceAccount> valueList = new ArrayList<>();
 
-        Insert insert = SQLS.insert(BalanceAccount_.T)
+        /*Insert insert = SQLS.(BalanceAccount_.T)
                 .commonValue(BalanceAccount_.balance, SQLS.constant(new BigDecimal(4)).add(new BigDecimal(4)))
-                .alwaysUseCommonValue()
-                .batchInsert(valueList)
-                .asInsert();
+                .insert
+                .asInsert();*/
     }
 
     @Test

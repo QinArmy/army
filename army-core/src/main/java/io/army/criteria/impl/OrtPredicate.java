@@ -21,7 +21,7 @@ final class OrtPredicate extends AbstractPredicate implements IPredicate {
 
     @Override
     protected void afterSpace(SQLContext context) {
-        StringBuilder builder = context.stringBuilder()
+        StringBuilder builder = context.sqlBuilder()
                 .append("(");
         orIPredicate.appendSQL(context);
         builder.append(" OR (");

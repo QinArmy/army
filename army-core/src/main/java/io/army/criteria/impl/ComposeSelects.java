@@ -150,7 +150,7 @@ abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements Self
 
         @Override
         void beforePart(SQLContext context) {
-            StringBuilder builder = context.stringBuilder()
+            StringBuilder builder = context.sqlBuilder()
                     .append(" (");
             context.dql().select(this.enclosedSelect, context);
             builder.append(" )");
@@ -179,7 +179,7 @@ abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements Self
             DQL dql = context.dql();
             dql.select(leftSelect, context);
 
-            context.stringBuilder()
+            context.sqlBuilder()
                     .append(" ")
                     .append(modifier.render())
                     .append(" ");

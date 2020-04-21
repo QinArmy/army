@@ -30,13 +30,13 @@ final class UnaryExpression<E> extends AbstractExpression<E> {
     protected void afterSpace(SQLContext context) {
         switch (operator.position()) {
             case LEFT:
-                context.stringBuilder()
+                context.sqlBuilder()
                         .append(operator.rendered());
                 expression.appendSQL(context);
                 break;
             case RIGHT:
                 expression.appendSQL(context);
-                context.stringBuilder()
+                context.sqlBuilder()
                         .append(" ")
                         .append(operator.rendered());
                 break;

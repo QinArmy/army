@@ -237,7 +237,7 @@ abstract class AbstractSQLS {
 
         @Override
         protected void afterSpace(SQLContext context) {
-            context.stringBuilder()
+            context.sqlBuilder()
                     .append("1=1");
         }
 
@@ -257,7 +257,7 @@ abstract class AbstractSQLS {
 
         @Override
         protected void afterSpace(SQLContext context) {
-            context.stringBuilder()
+            context.sqlBuilder()
                     .append(" DEFAULT");
         }
 

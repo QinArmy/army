@@ -42,7 +42,7 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
     protected final void afterSpace(SQLContext context) {
         SQL sql = context.dml();
 
-        context.stringBuilder()
+        context.sqlBuilder()
                 .append(sql.quoteIfNeed(subQueryAlias))
                 .append(".")
                 .append(sql.quoteIfNeed(derivedFieldName()));

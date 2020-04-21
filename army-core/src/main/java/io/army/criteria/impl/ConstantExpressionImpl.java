@@ -121,7 +121,7 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
         @Override
         public void appendSQL(SQLContext context) {
             constant.appendSQL(context);
-            context.stringBuilder()
+            context.sqlBuilder()
                     .append(" AS ");
             context.appendText(this.alias);
 

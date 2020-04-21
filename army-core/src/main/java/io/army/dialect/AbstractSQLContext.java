@@ -6,22 +6,24 @@ import io.army.criteria.SQLContext;
 import io.army.criteria.TableAliasException;
 import io.army.meta.FieldMeta;
 import io.army.meta.mapping.MappingType;
+import io.army.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
 
-class DefaultSQLContext implements SQLContext {
+public abstract class AbstractSQLContext implements SQLContext {
 
+    protected final DML dml;
 
-    final DML dml;
+    protected final DQL dql;
 
-    final DQL dql;
+    protected final StringBuilder builder = new StringBuilder();
 
-    final StringBuilder builder = new StringBuilder();
+    protected final List<ParamWrapper> paramList = new ArrayList<>();
 
-    final List<ParamWrapper> paramWrapperList = new ArrayList<>();
+    boolean finished;
 
-    DefaultSQLContext(DML dml, DQL dql) {
+    AbstractSQLContext(DML dml, DQL dql) {
         this.dml = dml;
         this.dql = dql;
     }
@@ -55,23 +57,34 @@ class DefaultSQLContext implements SQLContext {
     }
 
     @Override
-    public final StringBuilder stringBuilder() {
+    public final StringBuilder sqlBuilder() {
         return builder;
     }
 
     @Override
     public final void appendParam(ParamWrapper paramWrapper) {
-        paramWrapperList.add(paramWrapper);
+        paramList.add(paramWrapper);
     }
 
     @Override
-    public final List<ParamWrapper> paramWrapper() {
-        return paramWrapperList;
+    public final List<ParamWrapper> paramList() {
+        return paramList;
     }
 
-    protected final void throwTableAliasError(String tableAlias,FieldMeta<?,?> fieldMeta){
-        throw new CriteriaException(ErrorCode.CRITERIA_ERROR,"field alias[%s] field[%s] error"
-                ,tableAlias
-                ,fieldMeta.propertyName());
+    @Override
+    public SQLWrapper build() {
+        Assert.state(!this.finished, "SQLContext finished.");
+
+        this.finished = true;
+        return SQLWrapper.build(
+                builder.toString()
+                , paramList
+        );
+    }
+
+    protected final void throwTableAliasError(String tableAlias, FieldMeta<?, ?> fieldMeta) {
+        throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "field alias[%s] field[%s] error"
+                , tableAlias
+                , fieldMeta.propertyName());
     }
 }

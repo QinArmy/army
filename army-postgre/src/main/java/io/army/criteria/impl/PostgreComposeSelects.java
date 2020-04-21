@@ -110,7 +110,7 @@ abstract class PostgreComposeSelects<C> implements ComposeSelect, PostgreSelect,
 
         @Override
         public final void appendSQL(SQLContext context) {
-            StringBuilder builder = context.stringBuilder()
+            StringBuilder builder = context.sqlBuilder()
                     .append(" (");
             context.dql().select(this.enclosedSelect, context);
             builder.append(" )");
@@ -138,7 +138,7 @@ abstract class PostgreComposeSelects<C> implements ComposeSelect, PostgreSelect,
         public final void appendSQL(SQLContext context) {
             context.dql().select(leftSelect, context);
 
-            context.stringBuilder()
+            context.sqlBuilder()
                     .append(" ")
                     .append(modifier.render())
                     .append(" ");

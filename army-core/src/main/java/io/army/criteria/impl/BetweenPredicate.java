@@ -19,7 +19,7 @@ final class BetweenPredicate extends AbstractPredicate {
 
     @Override
     protected void afterSpace(SQLContext context) {
-        StringBuilder builder = context.stringBuilder();
+        StringBuilder builder = context.sqlBuilder();
         left.appendSQL(context);
         builder.append(" BETWEEN ");
         center.appendSQL(context);

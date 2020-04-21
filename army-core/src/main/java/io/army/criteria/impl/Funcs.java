@@ -2,8 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
-import io.army.dialect.ParamWrapper;
-import io.army.dialect.SQL;
 import io.army.meta.mapping.MappingType;
 import io.army.util.ArrayUtils;
 import io.army.util.Assert;
@@ -28,11 +26,11 @@ abstract class Funcs<E> extends AbstractExpression<E> {
 
     @Override
     protected void afterSpace(SQLContext context) {
-        context.stringBuilder()
+        context.sqlBuilder()
                 .append(name)
                 .append("(");
         doAppendArgument(context);
-        context.stringBuilder().append(")");
+        context.sqlBuilder().append(")");
     }
 
     @Override
@@ -106,7 +104,7 @@ abstract class Funcs<E> extends AbstractExpression<E> {
 
         @Override
         protected void doAppendArgument(SQLContext context) {
-            StringBuilder builder = context.stringBuilder();
+            StringBuilder builder = context.sqlBuilder();
             builder.append(format.get(0));
             one.appendSQL(context);
             builder.append(format.get(1));
@@ -142,7 +140,7 @@ abstract class Funcs<E> extends AbstractExpression<E> {
 
         @Override
         protected void doAppendArgument(SQLContext context) {
-            StringBuilder builder = context.stringBuilder();
+            StringBuilder builder = context.sqlBuilder();
             builder.append(format.get(0));
             one.appendSQL(context);
             builder.append(format.get(1));

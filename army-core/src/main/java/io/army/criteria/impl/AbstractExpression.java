@@ -813,13 +813,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     @Override
     public final void appendSQL(SQLContext context) {
-        context.stringBuilder()
+        context.sqlBuilder()
                 .append(" ");
         // invoke descendant method
         afterSpace(context);
 
         if (this.alias != null) {
-            context.stringBuilder()
+            context.sqlBuilder()
                     .append(" AS ")
                     .append(context.dml().quoteIfNeed(this.alias))
             ;

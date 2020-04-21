@@ -27,8 +27,8 @@ final class CollectionExpression<E> extends AbstractNoNOperationExpression<E> {
 
     @Override
     protected void afterSpace(SQLContext context) {
-        StringBuilder builder = context.stringBuilder();
-        List<ParamWrapper> paramList = context.paramWrapper();
+        StringBuilder builder = context.sqlBuilder();
+        List<ParamWrapper> paramList = context.paramList();
         builder.append("(");
         Object value;
 

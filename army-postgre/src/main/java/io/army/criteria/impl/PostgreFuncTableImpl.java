@@ -65,7 +65,7 @@ class PostgreFuncTableImpl implements PostgreFuncTable {
     @Override
     public final void appendSQL(SQLContext context) {
         funcExp.appendSQL(context);
-        StringBuilder builder = context.stringBuilder();
+        StringBuilder builder = context.sqlBuilder();
 
 
         String tableAlias = tableAlias();

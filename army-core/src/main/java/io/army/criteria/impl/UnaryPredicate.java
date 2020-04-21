@@ -38,13 +38,13 @@ final class UnaryPredicate extends AbstractPredicate {
     protected void afterSpace(SQLContext context) {
         switch (operator.position()) {
             case LEFT:
-                context.stringBuilder()
+                context.sqlBuilder()
                         .append(operator.rendered());
                 expression.appendSQL(context);
                 break;
             case RIGHT:
                 expression.appendSQL(context);
-                context.stringBuilder().append(operator.rendered());
+                context.sqlBuilder().append(operator.rendered());
                 break;
             default:
                 throw new IllegalStateException(String.format("UnaryOperator[%s]'s position error.", operator));

@@ -39,7 +39,7 @@ final class PostgreFunColDefExpImpl<E> extends AbstractExpression<E> implements 
     @Override
     protected void afterSpace(SQLContext context) {
         DML dml = context.dml();
-        StringBuilder builder = context.stringBuilder()
+        StringBuilder builder = context.sqlBuilder()
                 .append(dml.quoteIfNeed(this.columnName))
                 .append(" ");
         if (sqlType == null) {

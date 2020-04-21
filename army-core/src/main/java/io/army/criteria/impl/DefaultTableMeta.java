@@ -280,7 +280,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     @Override
     public final void appendSQL(SQLContext context) {
-        context.stringBuilder()
+        context.sqlBuilder()
                 .append(" ")
                 .append(context.dml().quoteIfNeed(this.tableName));
     }

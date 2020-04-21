@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-class StandardInsertContext extends DefaultSQLContext implements InsertContext {
+class StandardInsertContext extends AbstractSQLContext implements InsertContext {
 
     private static final InnerInsert EMPTY_INSERT = new InnerInsert() {
         @Override

@@ -51,7 +51,7 @@ final class PostgreWindowImpl<C> implements PostgreWindow, PostgreSelect.Postgre
         DML dml = context.dml();
         boolean hasList = false;
         //1. below window_name clause
-        StringBuilder builder = context.stringBuilder()
+        StringBuilder builder = context.sqlBuilder()
                 .append(" ")
                 .append(dml.quoteIfNeed(this.windowName))
                 .append(" AS (");

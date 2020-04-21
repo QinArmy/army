@@ -37,7 +37,7 @@ final class NotPredicate extends AbstractPredicate {
     @Override
     protected void afterSpace(SQLContext context) {
         if (not) {
-            context.stringBuilder()
+            context.sqlBuilder()
                     .append(UnaryOperator.NOT.rendered())
                     .append(" ");
         }

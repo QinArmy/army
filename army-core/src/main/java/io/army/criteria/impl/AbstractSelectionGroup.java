@@ -27,7 +27,7 @@ abstract class AbstractSelectionGroup implements SelectionGroup {
         final String tableAlias = this.tableAlias();
         final List<Selection> selectionList = this.selectionList();
 
-        final StringBuilder builder = context.stringBuilder();
+        final StringBuilder builder = context.sqlBuilder();
         final DML dml = context.dml();
 
         builder.append(" ");

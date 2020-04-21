@@ -44,7 +44,7 @@ final class ColumnSubQueryPredicate extends AbstractPredicate {
     @Override
     protected void afterSpace(SQLContext context) {
         operand.appendSQL(context);
-        context.stringBuilder()
+        context.sqlBuilder()
                 .append(" ")
                 .append(operator.rendered())
                 .append(" ")

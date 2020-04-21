@@ -20,7 +20,7 @@ final class SortUsingOperatorExpressionImpl<E> extends AbstractNoNOperationExpre
     @Override
     protected void afterSpace(SQLContext context) {
         expression.appendSQL(context);
-        context.stringBuilder()
+        context.sqlBuilder()
                 .append(" USING ")
                 .append(operator.rendered())
         ;

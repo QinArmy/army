@@ -2,11 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
-import io.army.dialect.ParamWrapper;
-import io.army.dialect.SQL;
 import io.army.meta.mapping.MappingType;
-
-import java.util.List;
 
 final class BracketsExpression<E> extends AbstractExpression<E> {
 
@@ -18,7 +14,7 @@ final class BracketsExpression<E> extends AbstractExpression<E> {
 
     @Override
     protected void afterSpace(SQLContext context) {
-        StringBuilder builder = context.stringBuilder();
+        StringBuilder builder = context.sqlBuilder();
         builder.append("(");
         exp.appendSQL(context);
         builder.append(")");

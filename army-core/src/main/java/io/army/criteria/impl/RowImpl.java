@@ -25,7 +25,7 @@ final class RowImpl implements Row {
 
     @Override
     public void appendSQL(SQLContext context) {
-        StringBuilder builder = context.stringBuilder()
+        StringBuilder builder = context.sqlBuilder()
                 .append(" ")
                 .append("Row(");
 

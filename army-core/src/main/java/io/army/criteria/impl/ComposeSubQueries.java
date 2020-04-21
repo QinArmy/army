@@ -147,7 +147,7 @@ abstract class ComposeSubQueries<C> extends AbstractComposeQuery<C> implements C
 
         @Override
         void beforePart(SQLContext context) {
-            StringBuilder builder = context.stringBuilder()
+            StringBuilder builder = context.sqlBuilder()
                     .append(" (");
             context.dql().subQuery(this.encloseSubQuery, context);
             builder.append(" )");
@@ -184,7 +184,7 @@ abstract class ComposeSubQueries<C> extends AbstractComposeQuery<C> implements C
             DQL dql = context.dql();
             dql.subQuery(leftSubQuery, context);
 
-            context.stringBuilder().append(" ")
+            context.sqlBuilder().append(" ")
                     .append(modifier.render());
 
             dql.subQuery(rightSubQuery, context);

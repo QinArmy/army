@@ -18,7 +18,7 @@ final class NullsOrderExpressionImpl<E> extends AbstractNoNOperationExpression<E
     @Override
     protected void afterSpace(SQLContext context) {
         expression.appendSQL(context);
-        context.stringBuilder()
+        context.sqlBuilder()
                 .append(" NULLS ")
                 .append(nulls.name())
         ;

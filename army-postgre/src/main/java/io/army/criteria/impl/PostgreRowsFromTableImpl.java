@@ -112,7 +112,7 @@ final class PostgreRowsFromTableImpl implements PostgreRowsFromTable {
 
     @Override
     public void appendSQL(SQLContext context) {
-        StringBuilder builder = context.stringBuilder()
+        StringBuilder builder = context.sqlBuilder()
                 .append(" ROWS FROM ( ");
         for (Iterator<PostgreFuncTable> iterator = this.tableList.iterator(); iterator.hasNext(); ) {
             iterator.next().appendSQL(context);

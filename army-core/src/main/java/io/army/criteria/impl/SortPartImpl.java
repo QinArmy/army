@@ -21,10 +21,10 @@ final class SortPartImpl implements SortPart {
         sortPart.appendSortPart(context);
 
         if (this.ascExp) {
-            context.stringBuilder()
+            context.sqlBuilder()
                     .append(" ASC");
         } else {
-            context.stringBuilder()
+            context.sqlBuilder()
                     .append(" DESC");
         }
     }

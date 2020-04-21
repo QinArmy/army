@@ -1,16 +1,22 @@
 package io.army.dialect;
 
+import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
 import io.army.beans.BeanWrapper;
+import io.army.beans.PropertyAccessorFactory;
 import io.army.beans.ReadonlyWrapper;
 import io.army.boot.FieldValuesGenerator;
 import io.army.criteria.*;
+import io.army.criteria.impl.SQLS;
 import io.army.criteria.impl.inner.InnerStandardBatchInsert;
+import io.army.criteria.impl.inner.InnerStandardDomainUpdate;
 import io.army.domain.IDomain;
+import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
+import io.army.meta.IndexFieldMeta;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
+import io.army.util.BeanUtils;
 
 import java.util.*;
 
@@ -32,6 +38,33 @@ abstract class DMLUtils {
         return count;
     }
 
+    static List<SQLWrapper> createDomainUpdateSQLWrapperList(SQLWrapper childSql, List<SQLWrapper> parentSqlList) {
+        List<SQLWrapper> sqlWrapperList;
+        if (parentSqlList.size() == 2) {
+            final SQLWrapper queryChildSql = parentSqlList.get(0);
+            if (!(queryChildSql instanceof BeanSQLWrapper)) {
+                throw new ArmyRuntimeException(ErrorCode.NONE, "DomainUpdate sql error.");
+            }
+            sqlWrapperList = new ArrayList<>(3);
+            // 1. query child table sql.
+            sqlWrapperList.add(queryChildSql);
+            // 2. update child table sql.
+            sqlWrapperList.add(childSql);
+            // 3. update parent table sql.
+            sqlWrapperList.add(parentSqlList.get(1));
+
+        } else if (parentSqlList.size() == 1) {
+            sqlWrapperList = new ArrayList<>(2);
+            // 1. update child table sql.
+            sqlWrapperList.add(childSql);
+            // 2. update parent table sql.
+            sqlWrapperList.add(parentSqlList.get(0));
+        } else {
+            throw new ArmyRuntimeException(ErrorCode.NONE, "DomainUpdate sql error.");
+        }
+        return Collections.unmodifiableList(sqlWrapperList);
+    }
+
     static void assertSingleUpdateSetClauseField(FieldMeta<?, ?> fieldMeta, TableMeta<?> tableMeta) {
         if (fieldMeta.tableMeta() == tableMeta) {
             throw new IllegalArgumentException(String.format(
@@ -39,6 +72,37 @@ abstract class DMLUtils {
         }
 
         assertSetClauseField(fieldMeta);
+    }
+
+    @SuppressWarnings("unchecked")
+    static BeanSQLWrapper createQueryChildBeanSQLWrapper(InnerStandardDomainUpdate update
+            , List<FieldMeta<?, ?>> childFieldList, Dialect dialect) {
+
+        final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) update.tableMata();
+        final IndexFieldMeta<?, Object> primaryField = (IndexFieldMeta<?, Object>) childMeta.primaryKey();
+        final Object primaryKeyValue = update.primaryKeyValue();
+
+        Assert.isInstanceOf(primaryField.javaType(), primaryKeyValue);
+
+        final ParamExpression<Object> paramExp = SQLS.param(primaryKeyValue, primaryField.mappingType());
+
+        Select select = SQLS.multiSelect()
+                .select(childFieldList)
+                .from(childMeta, "child")
+                .where(primaryField.eq(paramExp))
+                .asSelect();
+        // parse query child table sql.
+        List<SQLWrapper> sqlWrapperList = dialect.select(select);
+
+        Assert.isTrue(sqlWrapperList.size() == 1, "DomainUpdate query child sql error.");
+        SQLWrapper sqlWrapper = sqlWrapperList.get(0);
+
+        return BeanSQLWrapper.build(
+                sqlWrapper.sql()
+                , sqlWrapper.paramList()
+                , PropertyAccessorFactory.forBeanPropertyAccess(
+                        BeanUtils.instantiateClass(childMeta.javaType()))
+        );
     }
 
     static void assertSetClauseField(FieldMeta<?, ?> fieldMeta) {
@@ -57,7 +121,7 @@ abstract class DMLUtils {
             , ReadonlyWrapper entityWrapper, InsertContext context) {
 
         StringBuilder fieldBuilder = context.fieldStringBuilder().append("INSERT INTO ");
-        StringBuilder valueBuilder = context.stringBuilder().append(" VALUE (");
+        StringBuilder valueBuilder = context.sqlBuilder().append(" VALUE (");
 
         final SQL sql = context.dql();
         final boolean defaultIfNull = context.defaultIfNull();
@@ -105,7 +169,7 @@ abstract class DMLUtils {
     static void createBatchInsertForSimple(TableMeta<?> tableMeta, InsertContext context) {
 
         StringBuilder fieldBuilder = context.fieldStringBuilder().append("INSERT INTO ");
-        StringBuilder valueBuilder = context.stringBuilder().append(" VALUE ( ");
+        StringBuilder valueBuilder = context.sqlBuilder().append(" VALUE ( ");
         context.appendTable(tableMeta);
         fieldBuilder.append(" ( ");
 
@@ -130,7 +194,7 @@ abstract class DMLUtils {
                 commonExp.appendSQL(context);
             } else {
                 valueBuilder.append("?");
-                context.appendParam(new EmptyParamWrapper(fieldMeta));
+                context.appendParam(FieldParamWrapper.build(fieldMeta));
             }
             index++;
         }
@@ -165,12 +229,12 @@ abstract class DMLUtils {
 
                 List<ParamWrapper> paramWrapperList = new ArrayList<>(sqlWrapper.paramList().size());
                 for (ParamWrapper paramWrapper : sqlWrapper.paramList()) {
-                    if (paramWrapper instanceof EmptyParamWrapper) {
-                        EmptyParamWrapper wrapper = (EmptyParamWrapper) paramWrapper;
+                    if (paramWrapper instanceof FieldParamWrapper) {
+                        FieldParamWrapper wrapper = (FieldParamWrapper) paramWrapper;
                         paramWrapperList.add(
                                 ParamWrapper.build(
-                                        wrapper.fieldMeta.mappingType()
-                                        , beanWrapper.getPropertyValue(wrapper.fieldMeta.propertyName())
+                                        wrapper.fieldMeta().mappingType()
+                                        , beanWrapper.getPropertyValue(wrapper.fieldMeta().propertyName())
                                 )
                         );
                     } else {
@@ -192,16 +256,16 @@ abstract class DMLUtils {
 
     static SQLWrapper createSQLWrapper(InsertContext context) {
         return SQLWrapper.build(
-                context.fieldStringBuilder().toString() + context.stringBuilder().toString()
-                , context.paramWrapper()
+                context.fieldStringBuilder().toString() + context.sqlBuilder().toString()
+                , context.paramList()
         );
     }
 
 
     static BeanSQLWrapper createSQLWrapper(InsertContext context, BeanWrapper beanWrapper) {
         return BeanSQLWrapper.build(
-                context.fieldStringBuilder().toString() + context.stringBuilder().toString()
-                , context.paramWrapper()
+                context.fieldStringBuilder().toString() + context.sqlBuilder().toString()
+                , context.paramList()
                 , beanWrapper
         );
     }
@@ -226,23 +290,24 @@ abstract class DMLUtils {
         return value;
     }
 
-    private static final class EmptyParamWrapper implements ParamWrapper {
+    @SuppressWarnings("unchecked")
+    static List<IPredicate> mergeDomainUpdatePredicateList(List<IPredicate> originalPredicateList
+            , IndexFieldMeta<?, ?> primaryField, Object primaryKeyValue) {
 
-        private final FieldMeta<?, ?> fieldMeta;
+        List<IPredicate> mergedPredicateList = new ArrayList<>(originalPredicateList.size() + 1);
+        final IndexFieldMeta<?, Object> primaryKey = (IndexFieldMeta<?, Object>) primaryField;
+        Assert.isInstanceOf(primaryKey.javaType(), primaryKeyValue);
 
-        private EmptyParamWrapper(FieldMeta<?, ?> fieldMeta) {
-            this.fieldMeta = fieldMeta;
-        }
+        // firstly ,add predicate sql fragment 'id = ?'
+        mergedPredicateList.add(
+                primaryKey.eq(
+                        SQLS.param(primaryKeyValue, primaryKey.mappingType())
+                )
+        );
+        // secondly, add update.predicateList()
+        mergedPredicateList.addAll(originalPredicateList);
 
-        @Override
-        public MappingType mappingType() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Object value() {
-            throw new UnsupportedOperationException();
-        }
+        return mergedPredicateList;
     }
 
 }

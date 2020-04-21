@@ -710,7 +710,7 @@ abstract class AbstractNoNOperationExpression<E> implements Expression<E> {
 
     @Override
     public final void appendSQL(SQLContext context) {
-        context.stringBuilder()
+        context.sqlBuilder()
                 .append(" ");
         this.afterSpace(context);
     }

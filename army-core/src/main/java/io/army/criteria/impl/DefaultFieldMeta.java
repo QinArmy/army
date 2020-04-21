@@ -173,7 +173,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     @Override
     public final Selection as(String alias) {
-        if (propertyName.equals(alias)) {
+        if (this.propertyName.equals(alias)) {
             return this;
         } else {
             return new FieldSelection<>(this, alias);
@@ -289,7 +289,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     @Override
     protected final void afterSpace(SQLContext context) {
-        context.appendField(this.table.tableName(), this);
+        context.appendField(this);
     }
 
 

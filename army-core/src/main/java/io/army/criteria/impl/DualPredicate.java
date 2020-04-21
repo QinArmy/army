@@ -39,7 +39,7 @@ final class DualPredicate extends AbstractPredicate {
     @Override
     protected void afterSpace(SQLContext context) {
         left.appendSQL(context);
-        context.stringBuilder()
+        context.sqlBuilder()
                 .append(" ")
                 .append(operator.rendered());
         right.appendSQL(context);

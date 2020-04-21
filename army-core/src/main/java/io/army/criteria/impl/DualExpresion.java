@@ -3,11 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.DualOperator;
 import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
-import io.army.dialect.ParamWrapper;
-import io.army.dialect.SQL;
 import io.army.meta.mapping.MappingType;
-
-import java.util.List;
 
 final class DualExpresion<E> extends AbstractExpression<E> {
 
@@ -32,7 +28,7 @@ final class DualExpresion<E> extends AbstractExpression<E> {
     @Override
     protected void afterSpace(SQLContext context) {
         left.appendSQL(context);
-        context.stringBuilder()
+        context.sqlBuilder()
                 .append(" ")
                 .append(operator.rendered())
                 .append(" ");

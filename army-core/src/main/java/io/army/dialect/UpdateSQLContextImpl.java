@@ -9,7 +9,7 @@ import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
 
-class UpdateSQLContextImpl extends DefaultSQLContext implements UpdateSQLContext {
+class UpdateSQLContextImpl extends AbstractSQLContext implements UpdateSQLContext {
 
     protected final TableMeta<?> updateTable;
 
