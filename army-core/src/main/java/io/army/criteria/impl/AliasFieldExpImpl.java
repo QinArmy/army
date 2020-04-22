@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.AliasFieldExp;
+import io.army.criteria.AliasField;
 import io.army.criteria.SQLContext;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
@@ -13,7 +13,7 @@ import java.sql.JDBCType;
 
 
 final class AliasFieldExpImpl<T extends IDomain, F> extends AbstractExpression<F>
-        implements AliasFieldExp<T, F> {
+        implements AliasField<T, F> {
 
     private final FieldMeta<T, F> fieldMeta;
 

@@ -1,9 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.QueryAfterSet;
-import io.army.criteria.SQLContext;
-import io.army.criteria.SelfDescribed;
-import io.army.criteria.SortPart;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerQueryAfterSet;
 import io.army.util.Pair;
 
@@ -13,7 +10,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class AbstractComposeQuery<C> implements QueryAfterSet, InnerQueryAfterSet, SelfDescribed {
+abstract class AbstractComposeQuery<C> implements SQLStatement, QueryAfterSet, InnerQueryAfterSet, SelfDescribed {
 
 
     final C criteria;
@@ -23,6 +20,8 @@ abstract class AbstractComposeQuery<C> implements QueryAfterSet, InnerQueryAfter
     private int offset = -1;
 
     private int rowCount = -1;
+
+    private boolean prepared;
 
     AbstractComposeQuery(C criteria) {
         this.criteria = criteria;
@@ -104,6 +103,13 @@ abstract class AbstractComposeQuery<C> implements QueryAfterSet, InnerQueryAfter
         } else {
             this.orderPartList = Collections.unmodifiableList(this.orderPartList);
         }
+    }
+
+    /*################################## blow SQLStatement method ##################################*/
+
+    @Override
+    public final boolean prepared() {
+        return this.prepared;
     }
 
     /*################################## blow SelfDescribed method ##################################*/

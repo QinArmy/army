@@ -3,6 +3,7 @@ package io.army.dialect.mysql;
 
 import io.army.SessionFactory;
 import io.army.dialect.*;
+import io.army.meta.mapping.MappingType;
 
 import java.util.Set;
 
@@ -31,6 +32,11 @@ class MySQL57Dialect extends AbstractDialect {
         return false;
     }
 
+    @Override
+    public String mapping(MappingType mappingType) {
+        throw new UnsupportedOperationException();
+    }
+
     /*####################################### below AbstractDialect template  method #################################*/
 
     @Override
@@ -55,7 +61,7 @@ class MySQL57Dialect extends AbstractDialect {
 
     @Override
     protected DQL createDQL() {
-        return null;
+        return new MySQL57DQL(this);
     }
 
 }

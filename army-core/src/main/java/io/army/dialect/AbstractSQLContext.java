@@ -1,8 +1,8 @@
 package io.army.dialect;
 
 import io.army.ErrorCode;
+import io.army.beans.BeanWrapper;
 import io.army.criteria.CriteriaException;
-import io.army.criteria.SQLContext;
 import io.army.criteria.TableAliasException;
 import io.army.criteria.Visible;
 import io.army.meta.FieldMeta;
@@ -12,7 +12,12 @@ import io.army.util.Assert;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractSQLContext implements SQLContext {
+public abstract class AbstractSQLContext implements ClauseSQLContext {
+
+    static ClauseSQLContext buildDefault(Dialect dialect, final Visible visible) {
+        return new AbstractSQLContext(dialect, visible) {
+        };
+    }
 
     protected final Dialect dialect;
 
@@ -53,11 +58,6 @@ public abstract class AbstractSQLContext implements SQLContext {
     }
 
     @Override
-    public final DML dml() {
-        return this.dialect;
-    }
-
-    @Override
     public final DQL dql() {
         return this.dialect;
     }
@@ -89,8 +89,18 @@ public abstract class AbstractSQLContext implements SQLContext {
     }
 
     @Override
+    public BeanSQLWrapper build(BeanWrapper beanWrapper) {
+        return null;
+    }
+
+    @Override
     public final Visible visible() {
         return this.visible;
+    }
+
+    @Override
+    public void currentClause(Clause clause) {
+
     }
 
     protected final void throwTableAliasError(String tableAlias, FieldMeta<?, ?> fieldMeta) {

@@ -79,10 +79,6 @@ public abstract class AbstractDialect implements Dialect {
         return sessionFactory;
     }
 
-    @Override
-    public boolean supportZoneId() {
-        return false;
-    }
 
     /*################################## blow TableDDL method ##################################*/
 

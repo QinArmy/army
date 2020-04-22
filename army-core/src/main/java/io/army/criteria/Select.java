@@ -8,7 +8,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 @SuppressWarnings("unused")
-public interface Select extends SQLDebug, SQLAble, QueryAble {
+public interface Select extends SQLStatement, SQLDebug, SQLAble, QueryAble {
 
     /*################################## blow select method ##################################*/
 

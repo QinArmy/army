@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public interface Update extends SQLAble, SQLDebug, QueryAble {
+public interface Update extends SQLStatement, SQLAble, SQLDebug, QueryAble {
 
     interface UpdateSQLAble extends SQLAble {
 

@@ -155,7 +155,14 @@ final class StandardContextualDomainUpdate<T extends IDomain, C> extends Abstrac
         return this;
     }
 
-    /*################################## blow private method ##################################*/
+    /*################################## blow SQLStatement method ##################################*/
+
+    @Override
+    public final boolean prepared() {
+        return this.prepared;
+    }
+
+    /*################################## blow UpdateAble method ##################################*/
 
     @Override
     public final Update asUpdate() {

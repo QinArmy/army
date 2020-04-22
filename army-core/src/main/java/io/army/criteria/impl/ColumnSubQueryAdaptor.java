@@ -350,6 +350,13 @@ final class ColumnSubQueryAdaptor<E, C> implements ColumnSubQuery<E>, ColumnSubQ
         return this;
     }
 
+    /*################################## blow SQLStatement method ##################################*/
+
+    @Override
+    public final boolean prepared() {
+        return this.actualSelect.prepared();
+    }
+
     /*################################## blow InnerSubQueryAble method ##################################*/
 
     @Override

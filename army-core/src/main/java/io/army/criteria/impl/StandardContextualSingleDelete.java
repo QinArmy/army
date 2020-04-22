@@ -2,8 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Delete;
 import io.army.criteria.IPredicate;
+import io.army.criteria.impl.inner.InnerStandardDelete;
 import io.army.criteria.impl.inner.InnerStandardDomainDelete;
-import io.army.criteria.impl.inner.InnerStandardSingleDelete;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
@@ -18,7 +18,7 @@ import java.util.function.Predicate;
 
 class StandardContextualSingleDelete<C> extends AbstractSQLDebug implements Delete
         , Delete.SingleDeleteAble<C>, Delete.SingleDeleteWhereAble<C>, Delete.SingleDeleteWhereAndAble<C>
-        , InnerStandardSingleDelete {
+        , InnerStandardDelete {
 
     static <C> StandardContextualSingleDelete<C> buildDelete(C criteria) {
         return new StandardContextualSingleDelete<>(criteria);
@@ -97,6 +97,13 @@ class StandardContextualSingleDelete<C> extends AbstractSQLDebug implements Dele
             this.predicateList.add(function.apply(this.criteria));
         }
         return this;
+    }
+
+    /*################################## blow SQLStatement method ##################################*/
+
+    @Override
+    public final boolean prepared() {
+        return this.prepared;
     }
 
     /*################################## blow DeleteAble method ##################################*/

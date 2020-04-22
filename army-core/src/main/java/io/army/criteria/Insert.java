@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-public interface Insert extends SQLAble, SQLDebug, QueryAble {
+public interface Insert extends SQLStatement, SQLAble, SQLDebug, QueryAble {
 
 
     /*################################## blow interfaces  ##################################*/

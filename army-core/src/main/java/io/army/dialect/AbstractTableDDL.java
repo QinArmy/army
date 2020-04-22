@@ -1,49 +1,24 @@
 package io.army.dialect;
 
-import io.army.SessionFactory;
 import io.army.domain.IDomain;
 import io.army.meta.*;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
 
 import javax.annotation.Nonnull;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.function.Supplier;
 
-public abstract class AbstractTableDDL implements TableDDL {
+public abstract class AbstractTableDDL extends AbstractSQL implements TableDDL {
 
     private static final EnumSet<MappingMode> REQUIRED_MAPPING_MODE = EnumSet.of(
             MappingMode.SIMPLE,
             MappingMode.PARENT
     );
 
-    protected final SQL sql;
-
-    public AbstractTableDDL(SQL sql) {
-        this.sql = sql;
+    public AbstractTableDDL(Dialect dialect) {
+        super(dialect);
     }
-
-    @Override
-    public final String quoteIfNeed(String identifier) {
-        return sql.quoteIfNeed(identifier);
-    }
-
-    @Override
-    public final boolean isKeyWord(String identifier) {
-        return sql.isKeyWord(identifier);
-    }
-
-    @Override
-    public final ZoneId zoneId() {
-        return sql.zoneId();
-    }
-
-    @Override
-    public final SessionFactory sessionFactory() {
-        return sql.sessionFactory();
-    }
-
 
     /*################################## blow interfaces method ##################################*/
 

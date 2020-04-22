@@ -6,7 +6,7 @@ import io.army.meta.TableMeta;
 import java.util.List;
 
 @DeveloperForbid
-public interface InnerStandardSingleUpdate extends InnerUpdate {
+public interface InnerStandardUpdate extends InnerUpdate {
 
     TableMeta<?> tableMeta();
 

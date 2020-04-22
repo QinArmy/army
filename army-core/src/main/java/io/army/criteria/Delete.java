@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public interface Delete extends SQLAble, SQLDebug, QueryAble {
+public interface Delete extends SQLStatement, SQLAble, SQLDebug, QueryAble {
 
     interface DeleteSQLAble extends SQLAble {
 

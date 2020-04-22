@@ -113,7 +113,7 @@ public abstract class SQLS extends AbstractSQLS {
 
     /*################################## blow sql reference method ##################################*/
 
-    public static <T extends IDomain, F> AliasFieldExp<T, F> field(String tableAlias, FieldMeta<T, F> fieldMeta) {
+    public static <T extends IDomain, F> AliasField<T, F> field(String tableAlias, FieldMeta<T, F> fieldMeta) {
         return CriteriaContextHolder.getContext()
                 .aliasField(tableAlias, fieldMeta);
     }

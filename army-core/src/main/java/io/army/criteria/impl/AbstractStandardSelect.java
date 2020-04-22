@@ -539,7 +539,7 @@ abstract class AbstractStandardSelect<C> extends AbstractSQL implements Select
     /*################################## blow package method ##################################*/
 
     @Override
-    final boolean prepared() {
+    public final boolean prepared() {
         return this.prepared;
     }
 

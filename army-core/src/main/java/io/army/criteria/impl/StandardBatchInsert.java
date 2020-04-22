@@ -93,6 +93,13 @@ final class StandardBatchInsert<T extends IDomain> extends AbstractSQLDebug impl
         return this;
     }
 
+    /*################################## blow SQLStatement method ##################################*/
+
+    @Override
+    public final boolean prepared() {
+        return this.prepared;
+    }
+
     /*################################## blow InnerStandardBatchInsert method ##################################*/
 
     @Override

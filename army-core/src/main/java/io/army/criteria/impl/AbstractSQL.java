@@ -275,7 +275,7 @@ abstract class AbstractSQL extends AbstractSQLDebug implements QueryAble, InnerS
 
         private Map<String, SubQuery> subQueryMap = new HashMap<>();
 
-        private Map<String, AliasFieldExp<?, ?>> aliasTableFieldCache = new HashMap<>();
+        private Map<String, AliasField<?, ?>> aliasTableFieldCache = new HashMap<>();
 
         private Map<String, RefSelection<?>> refSelectionCache = new HashMap<>();
 
@@ -289,9 +289,9 @@ abstract class AbstractSQL extends AbstractSQLDebug implements QueryAble, InnerS
 
         @SuppressWarnings("unchecked")
         @Override
-        public final <T extends IDomain, F> AliasFieldExp<T, F> aliasField(
+        public final <T extends IDomain, F> AliasField<T, F> aliasField(
                 String tableAlias, FieldMeta<T, F> fieldMeta) {
-            AliasFieldExp<T, F> aliasField = (AliasFieldExp<T, F>) aliasTableFieldCache.computeIfAbsent(
+            AliasField<T, F> aliasField = (AliasField<T, F>) aliasTableFieldCache.computeIfAbsent(
                     tableAlias + fieldMeta.fieldName()
                     , k -> new AliasFieldExpImpl<>(fieldMeta, tableAlias)
             );

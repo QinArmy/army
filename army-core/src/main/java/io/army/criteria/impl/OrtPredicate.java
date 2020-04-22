@@ -28,7 +28,7 @@ final class OrtPredicate extends AbstractPredicate implements IPredicate {
         for (Iterator<IPredicate> iterator = andIPredicateList.iterator(); iterator.hasNext(); ) {
             iterator.next().appendSQL(context);
             if(iterator.hasNext()){
-                builder.append(" AND ");
+                builder.append(" AND");
             }
         }
         builder.append(" ) )");

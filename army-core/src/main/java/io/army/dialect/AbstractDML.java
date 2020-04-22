@@ -17,40 +17,13 @@ import io.army.util.ClassUtils;
 import io.army.util.CollectionUtils;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 
-public abstract class AbstractDML implements DML {
-
-    protected final Dialect dialect;
-
-    private Collection<FieldMeta<?, ?>> childFields;
+public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
     public AbstractDML(Dialect dialect) {
-        this.dialect = dialect;
-    }
-
-    /*################################## blow SQL interface method ##################################*/
-
-    @Override
-    public final String quoteIfNeed(String identifier) {
-        return dialect.quoteIfNeed(identifier);
-    }
-
-    @Override
-    public final boolean isKeyWord(String identifier) {
-        return dialect.isKeyWord(identifier);
-    }
-
-    @Override
-    public final ZoneId zoneId() {
-        return dialect.zoneId();
-    }
-
-    @Override
-    public final SessionFactory sessionFactory() {
-        return dialect.sessionFactory();
+        super(dialect);
     }
 
     /*################################## blow DML batchInsert method ##################################*/
@@ -115,11 +88,11 @@ public abstract class AbstractDML implements DML {
                     standardDomainUpdate((InnerStandardDomainUpdate) update, visible)
             );
 
-        } else if (update instanceof InnerStandardSingleUpdate) {
+        } else if (update instanceof InnerStandardUpdate) {
 
-            CriteriaCounselor.assertStandardUpdate((InnerStandardSingleUpdate) update);
+            CriteriaCounselor.assertStandardUpdate((InnerStandardUpdate) update);
             list = Collections.singletonList(
-                    standardSingleUpdate((InnerStandardSingleUpdate) update, visible)
+                    standardSingleUpdate((InnerStandardUpdate) update, visible)
             );
         } else if (update instanceof InnerSpecialUpdate) {
             list = Collections.unmodifiableList(
@@ -138,10 +111,10 @@ public abstract class AbstractDML implements DML {
             CriteriaCounselor.assertStandardDelete((InnerStandardDomainDelete) delete);
             list = standardDomainDeleteDispatcher((InnerStandardDomainDelete) delete, visible);
 
-        } else if (delete instanceof InnerStandardSingleDelete) {
-            CriteriaCounselor.assertStandardDelete((InnerStandardSingleDelete) delete);
+        } else if (delete instanceof InnerStandardDelete) {
+            CriteriaCounselor.assertStandardDelete((InnerStandardDelete) delete);
             list = Collections.singletonList(
-                    standardSingleDelete((InnerStandardSingleDelete) delete, visible)
+                    standardSingleDelete((InnerStandardDelete) delete, visible)
             );
 
         } else if (delete instanceof InnerSpecialDelete) {
@@ -160,7 +133,7 @@ public abstract class AbstractDML implements DML {
 
 
     protected UpdateContext createUpdateContext(InnerUpdate update, final Visible visible) {
-        return new StandardUpdateContext(this.dialect, visible, (InnerStandardSingleUpdate) update);
+        return new StandardUpdateContext(this.dialect, visible, (InnerStandardUpdate) update);
     }
 
     protected StandardChildDomainUpdateContext createChildDomainUpdateContext(InnerDomainUpdate update
@@ -188,7 +161,7 @@ public abstract class AbstractDML implements DML {
     }
 
     protected DeleteContext createDeleteContext(InnerDelete delete, final Visible visible) {
-        return new StandardSingleDeleteContext(this.dialect, visible, (InnerStandardSingleDelete) delete);
+        return new StandardSingleDeleteContext(this.dialect, visible, (InnerStandardDelete) delete);
     }
 
 
@@ -215,12 +188,7 @@ public abstract class AbstractDML implements DML {
                 .append(" ");
     }
 
-    protected String subQueryParentAlias(String parentTableName) {
-        Random random = new Random();
-        return "_" + parentTableName + random.nextInt(4) + "_";
-    }
 
-    protected abstract boolean tableAliasAfterAs();
 
 
 
@@ -262,7 +230,7 @@ public abstract class AbstractDML implements DML {
         return sqlWrapperList;
     }
 
-    private List<SQLWrapper> standardSubQueryInsert(InnerStandardSubQueryInsert insert, Visible visible) {
+    private List<SQLWrapper> standardSubQueryInsert(InnerStandardSubQueryInsert insert, final Visible visible) {
         CriteriaCounselor.assertInsert(insert);
 
         TableMeta<?> tableMeta = insert.tableMeta();
@@ -290,7 +258,7 @@ public abstract class AbstractDML implements DML {
         }
         builder.append(" )");
         insert.subQuery().appendSQL(context);
-        return Collections.singletonList(DMLUtils.createSQLWrapper(context));
+        return Collections.singletonList(context.build());
     }
 
 
@@ -361,8 +329,7 @@ public abstract class AbstractDML implements DML {
 
         InsertContext context = createInsertContext(innerInsert, visible);
         DMLUtils.createInsertForSimple(childMeta, childFields, beanWrapper, context);
-        sqlWrapperList.add(DMLUtils.createSQLWrapper(context));
-
+        sqlWrapperList.add(context.build());
         return sqlWrapperList;
     }
 
@@ -392,9 +359,9 @@ public abstract class AbstractDML implements DML {
 
         if (generatorMeta != null
                 && ClassUtils.isAssignable(PostMultiGenerator.class, generatorMeta.type())) {
-            sqlWrapper = DMLUtils.createSQLWrapper(context, beanWrapper);
+            sqlWrapper = context.build(beanWrapper);
         } else {
-            sqlWrapper = DMLUtils.createSQLWrapper(context);
+            sqlWrapper = context.build();
         }
         return sqlWrapper;
     }
@@ -434,7 +401,7 @@ public abstract class AbstractDML implements DML {
     private SQLWrapper standardBatchInsertForSimple(InnerStandardBatchInsert insert, final Visible visible) {
         InsertContext context = createInsertContext(insert, visible);
         DMLUtils.createBatchInsertForSimple(insert.tableMeta(), context);
-        return DMLUtils.createSQLWrapper(context);
+        return context.build();
     }
 
     private SQLWrapper standardBatchInsertForParent(InnerStandardBatchInsert insert, final Visible visible) {
@@ -454,14 +421,14 @@ public abstract class AbstractDML implements DML {
         InsertContext context = createInsertContext(insert, visible);
         DMLUtils.createBatchInsertForSimple(insert.tableMeta(), context);
         sqlWrapperList.add(
-                DMLUtils.createSQLWrapper(context)
+                context.build()
         );
         return Collections.unmodifiableList(sqlWrapperList);
     }
 
     /*################################## blow update private method ##################################*/
 
-    private SQLWrapper standardSingleUpdate(InnerStandardSingleUpdate update, Visible visible) {
+    private SQLWrapper standardSingleUpdate(InnerStandardUpdate update, Visible visible) {
         UpdateContext context = createUpdateContext(update, visible);
 
         StringBuilder builder = context.sqlBuilder().append("UPDATE");
@@ -594,99 +561,14 @@ public abstract class AbstractDML implements DML {
         switch (tableMeta.mappingMode()) {
             case SIMPLE:
             case PARENT:
-                visibleConstantPredicateForSimple(context, tableMeta, tableAlias, visible);
+                visibleConstantPredicate(context, tableMeta, tableAlias);
                 break;
             case CHILD:
-                visibleSubQueryPredicateForChild(context, (ChildTableMeta<?>) tableMeta, tableAlias, visible);
+                visibleSubQueryPredicateForChild(context, (ChildTableMeta<?>) tableMeta, tableAlias);
                 break;
             default:
                 throw new IllegalArgumentException(String.format("unknown MappingMode[%s].", tableMeta.mappingMode()));
         }
-    }
-
-    private void visibleConstantPredicateForSimple(SQLContext context
-            , TableMeta<?> tableMeta, String tableAlias, Visible visible) {
-
-        switch (visible) {
-            case ONLY_VISIBLE:
-                visibleConstantPredicate(context, Boolean.TRUE, tableMeta, tableAlias);
-                break;
-            case ONLY_NON_VISIBLE:
-                visibleConstantPredicate(context, Boolean.FALSE, tableMeta, tableAlias);
-                break;
-            case BOTH:
-                break;
-            default:
-                throw new IllegalArgumentException(String.format("unknown Visible[%s]", visible));
-        }
-    }
-
-    private void visibleSubQueryPredicateForChild(SQLContext context
-            , ChildTableMeta<?> childMeta, String childAlias, Visible visible) {
-        if (visible == Visible.BOTH) {
-            return;
-        }
-
-        ParentTableMeta<?> parentMeta = childMeta.parentMeta();
-
-        final String parentAlias = subQueryParentAlias(parentMeta.tableName());
-        // append exists SubQuery
-        StringBuilder builder = context.sqlBuilder()
-                .append(" AND EXISTS ( SELECT");
-
-        context.appendField(parentAlias, parentMeta.primaryKey());
-        // from clause
-        builder.append(" FROM");
-        context.appendParentTableOf(childMeta);
-
-        if (tableAliasAfterAs()) {
-            builder.append(" AS");
-        }
-        context.appendText(parentAlias);
-        // where clause
-        builder.append(" WHERE");
-        context.appendField(parentAlias, parentMeta.primaryKey());
-        builder.append(" =");
-
-        if ((context instanceof DeleteContext) && !singleDeleteHasTableAlias()) {
-            context.appendField(childMeta.primaryKey());
-        } else {
-            context.appendField(childAlias, childMeta.primaryKey());
-        }
-
-        // visible predicate
-        switch (visible) {
-            case ONLY_VISIBLE:
-                visibleConstantPredicate(context, Boolean.TRUE, parentMeta, parentAlias);
-                break;
-            case ONLY_NON_VISIBLE:
-                visibleConstantPredicate(context, Boolean.FALSE, parentMeta, parentAlias);
-                break;
-            default:
-                throw new IllegalArgumentException(String.format("unknown Visible[%s]", visible));
-
-        }
-        builder.append(" )");
-    }
-
-    private void visibleConstantPredicate(SQLContext context, Boolean visible
-            , TableMeta<?> tableMeta, String tableAlias) {
-
-        final FieldMeta<?, ?> visibleField = tableMeta.getField(TableMeta.VISIBLE);
-
-        StringBuilder builder = context.sqlBuilder()
-                .append(" AND");
-
-        if ((context instanceof DeleteContext) && !singleDeleteHasTableAlias()) {
-            context.appendField(visibleField);
-        } else {
-            context.appendField(tableAlias, visibleField);
-        }
-
-        builder.append(" =");
-        SQLS.constant(visible, visibleField.mappingType())
-                .appendSQL(context);
-
     }
 
     private List<SQLWrapper> standardDomainUpdateDispatcher(InnerStandardDomainUpdate update, final Visible visible) {
@@ -828,7 +710,7 @@ public abstract class AbstractDML implements DML {
 
     /*################################## blow delete private method ##################################*/
 
-    private SQLWrapper standardSingleDelete(InnerStandardSingleDelete delete, final Visible visible) {
+    private SQLWrapper standardSingleDelete(InnerStandardDelete delete, final Visible visible) {
         DeleteContext context = createDeleteContext(delete, visible);
         StringBuilder builder = context.sqlBuilder().append("DELETE FROM");
         tableOnlyModifier(context);

@@ -8,7 +8,9 @@ public interface Dialect extends TableDDL, DML, DQL {
 
     SQLDialect sqlDialect();
 
+    String format(SQLWrapper sqlWrapper);
 
-    boolean supportZoneId();
+    String format(BatchSQLWrapper sqlWrapper);
+
 
 }

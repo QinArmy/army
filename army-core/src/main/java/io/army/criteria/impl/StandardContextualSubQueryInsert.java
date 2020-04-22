@@ -103,4 +103,11 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
         this.prepared = true;
         return this;
     }
+
+    /*################################## blow SQLStatement method ##################################*/
+
+    @Override
+    public final boolean prepared() {
+        return this.prepared;
+    }
 }

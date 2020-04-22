@@ -13,10 +13,10 @@ public interface SQL {
 
     ZoneId zoneId();
 
+    boolean supportZoneId();
+
     SessionFactory sessionFactory();
 
-    default String mapping(MappingType mappingType) {
-        throw new UnsupportedOperationException();
-    }
+    String mapping(MappingType mappingType);
 
 }

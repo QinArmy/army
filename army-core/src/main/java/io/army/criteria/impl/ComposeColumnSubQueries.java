@@ -121,6 +121,7 @@ abstract class ComposeColumnSubQueries<E, C> extends AbstractComposeQuery<C> imp
         return this;
     }
 
+
     /*################################## blow ColumnSubQueryAble method ##################################*/
 
     @Override

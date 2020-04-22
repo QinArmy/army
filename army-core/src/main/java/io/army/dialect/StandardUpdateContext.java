@@ -1,14 +1,14 @@
 package io.army.dialect;
 
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner.InnerStandardSingleUpdate;
+import io.army.criteria.impl.inner.InnerStandardUpdate;
 import io.army.criteria.impl.inner.InnerUpdate;
 
 final class StandardUpdateContext extends AbstractSQLContext implements UpdateContext {
 
-    private final InnerStandardSingleUpdate innerUpdate;
+    private final InnerStandardUpdate innerUpdate;
 
-    StandardUpdateContext(Dialect dialect, Visible visible, InnerStandardSingleUpdate update) {
+    StandardUpdateContext(Dialect dialect, Visible visible, InnerStandardUpdate update) {
         super(dialect, visible);
         this.innerUpdate = update;
     }

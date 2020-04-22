@@ -4,7 +4,7 @@ import io.army.domain.IDomain;
 import io.army.meta.FieldExp;
 import io.army.meta.FieldMeta;
 
-public interface AliasFieldExp<T extends IDomain, F> extends FieldExp<T, F> {
+public interface AliasField<T extends IDomain, F> extends FieldExp<T, F> {
 
     String tableAlias();
 

@@ -229,7 +229,7 @@ abstract class DMLUtils {
                 List<ParamWrapper> paramWrapperList = new ArrayList<>(sqlWrapper.paramList().size());
                 for (ParamWrapper paramWrapper : sqlWrapper.paramList()) {
                     if (paramWrapper instanceof FieldParamWrapper) {
-                        FieldParamWrapper wrapper = (FieldParamWrapper) paramWrapper;
+                        FieldParamWrapperImpl wrapper = (FieldParamWrapperImpl) paramWrapper;
                         paramWrapperList.add(
                                 ParamWrapper.build(
                                         wrapper.fieldMeta().mappingType()
@@ -253,7 +253,7 @@ abstract class DMLUtils {
     }
 
 
-    static SQLWrapper createSQLWrapper(InsertContext context) {
+    private static SQLWrapper createSQLWrapper(InsertContext context) {
         return SQLWrapper.build(
                 context.fieldStringBuilder().toString() + context.sqlBuilder().toString()
                 , context.paramList()
@@ -261,7 +261,7 @@ abstract class DMLUtils {
     }
 
 
-    static BeanSQLWrapper createSQLWrapper(InsertContext context, BeanWrapper beanWrapper) {
+    private static BeanSQLWrapper createSQLWrapper(InsertContext context, BeanWrapper beanWrapper) {
         return BeanSQLWrapper.build(
                 context.fieldStringBuilder().toString() + context.sqlBuilder().toString()
                 , context.paramList()

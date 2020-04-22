@@ -899,7 +899,7 @@ abstract class AbstractPostgreMultiSelect<C> extends AbstractSQL implements Post
     /*################################## blow package method ##################################*/
 
     @Override
-    final boolean prepared() {
+    public final boolean prepared() {
         return this.prepared;
     }
 

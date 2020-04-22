@@ -1,9 +1,7 @@
 package io.army.criteria;
 
-import io.army.dialect.DML;
 import io.army.dialect.DQL;
 import io.army.dialect.ParamWrapper;
-import io.army.dialect.SQLWrapper;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
@@ -40,7 +38,11 @@ public interface SQLContext {
     void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException;
 
     default void appendField(FieldMeta<?, ?> fieldMeta) {
+        throw new UnsupportedOperationException();
+    }
 
+    default void appendFieldPair(FieldPairDualPredicate predicate) {
+        throw new UnsupportedOperationException();
     }
 
     void appendText(String textValue);
@@ -50,9 +52,7 @@ public interface SQLContext {
      */
     void appendTextValue(MappingType mappingType, Object value);
 
-    DML dml();
-
-     DQL dql();
+    DQL dql();
 
     StringBuilder sqlBuilder();
 
@@ -60,10 +60,7 @@ public interface SQLContext {
 
     List<ParamWrapper> paramList();
 
-    default SQLWrapper build() {
-        throw new UnsupportedOperationException();
-    }
-
     Visible visible();
+
 
 }

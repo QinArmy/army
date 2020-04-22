@@ -307,6 +307,12 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
         return this;
     }
 
+    /*################################## blow SQLStatement method ##################################*/
+
+    @Override
+    public final boolean prepared() {
+        return this.actualSelect.prepared();
+    }
 
     /*################################## blow InnerSubQueryAble method ##################################*/
 

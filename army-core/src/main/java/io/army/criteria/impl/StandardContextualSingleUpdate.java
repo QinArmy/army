@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Update;
-import io.army.criteria.impl.inner.InnerStandardSingleUpdate;
+import io.army.criteria.impl.inner.InnerStandardUpdate;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -16,7 +16,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 final class StandardContextualSingleUpdate<T extends IDomain, C> extends AbstractSQLDebug implements Update
-        , InnerStandardSingleUpdate, Update.SingleUpdateAble<T, C>, Update.SingleSetAble<T, C>
+        , InnerStandardUpdate, Update.SingleUpdateAble<T, C>, Update.SingleSetAble<T, C>
         , Update.SingleWhereAble<T, C>, Update.WhereAndAble<T, C> {
 
     private final C criteria;
@@ -147,6 +147,13 @@ final class StandardContextualSingleUpdate<T extends IDomain, C> extends Abstrac
             this.predicateList.add(function.apply(this.criteria));
         }
         return this;
+    }
+
+    /*################################## blow SQLStatement method ##################################*/
+
+    @Override
+    public final boolean prepared() {
+        return this.prepared;
     }
 
     /*################################## blow UpdateAble method ##################################*/

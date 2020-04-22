@@ -31,6 +31,8 @@ abstract class PostgreComposeSelects<C> implements ComposeSelect, PostgreSelect,
 
     private final C criteria;
 
+    private boolean prepared;
+
     private PostgreComposeSelects(C criteria) {
         this.criteria = criteria;
     }
@@ -94,6 +96,11 @@ abstract class PostgreComposeSelects<C> implements ComposeSelect, PostgreSelect,
     @Override
     public final <S extends Select> PostgreComposeAble<C> exceptDistinct(Function<C, S> function) {
         return null;
+    }
+
+    @Override
+    public final boolean prepared() {
+        return this.prepared;
     }
 
 

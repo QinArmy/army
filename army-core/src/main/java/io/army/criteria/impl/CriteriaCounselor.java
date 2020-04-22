@@ -8,7 +8,14 @@ public abstract class CriteriaCounselor {
         throw new UnsupportedOperationException();
     }
 
-    public static void assertStandardUpdate(InnerStandardSingleUpdate update) {
+    public static void assertStandardSelect(InnerStandardSelect select) {
+        if (!(select instanceof StandardContextualMultiSelect)) {
+            throw new IllegalArgumentException(String.format("%s isn't instance of %s", select
+                    , StandardContextualMultiSelect.class.getName()));
+        }
+    }
+
+    public static void assertStandardUpdate(InnerStandardUpdate update) {
         if (update instanceof InnerStandardDomainUpdate) {
             if (!(update instanceof StandardContextualDomainUpdate)) {
                 throw new IllegalArgumentException(String.format("%s isn't instance of %s", update
@@ -20,7 +27,7 @@ public abstract class CriteriaCounselor {
         }
     }
 
-    public static void assertStandardDelete(InnerStandardSingleDelete delete) {
+    public static void assertStandardDelete(InnerStandardDelete delete) {
         if (!(delete instanceof StandardContextualSingleDelete)) {
             throw new IllegalArgumentException(String.format("%s isn't instance of %s", delete
                     , StandardContextualSingleDelete.class.getName()));

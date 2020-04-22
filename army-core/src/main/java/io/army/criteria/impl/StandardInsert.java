@@ -172,5 +172,10 @@ final class StandardInsert<T extends IDomain, C> extends AbstractSQLDebug implem
         return this;
     }
 
+    /*################################## blow SQLStatement method ##################################*/
 
+    @Override
+    public final boolean prepared() {
+        return this.prepared;
+    }
 }

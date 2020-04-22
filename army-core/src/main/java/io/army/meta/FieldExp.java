@@ -1,6 +1,6 @@
 package io.army.meta;
 
-import io.army.criteria.AliasFieldExp;
+import io.army.criteria.AliasField;
 import io.army.criteria.Expression;
 import io.army.criteria.Selection;
 import io.army.domain.IDomain;
@@ -13,7 +13,7 @@ import java.sql.JDBCType;
  * @param <T>
  * @param <F>
  * @see FieldMeta
- * @see AliasFieldExp
+ * @see AliasField
  */
 public interface FieldExp<T extends IDomain, F> extends Expression<F>, Selection {
 
