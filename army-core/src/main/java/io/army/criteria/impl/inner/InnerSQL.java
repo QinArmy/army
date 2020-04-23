@@ -1,29 +1,7 @@
 package io.army.criteria.impl.inner;
 
-import io.army.criteria.IPredicate;
-import io.army.criteria.SQLAble;
-import io.army.meta.TableMeta;
-
-import java.util.List;
-import java.util.Map;
-
 @DeveloperForbid
-public interface InnerSQL extends SQLAble {
-
-    /**
-     * @return a unmodifiable list
-     */
-    List<TableWrapper> tableWrapperList();
-
-    /**
-     * @return a unmodifiable list
-     */
-    List<IPredicate> predicateList();
-
-    /**
-     * @return a unmodifiable map
-     */
-    Map<TableMeta<?>, Integer> tablePresentCountMap();
+public interface InnerSQL {
 
     void clear();
 }

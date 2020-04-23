@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.List;
 
 @DeveloperForbid
-public interface InnerInsert {
+public interface InnerInsert extends InnerSQL {
 
     TableMeta<?> tableMeta();
 
@@ -19,6 +19,5 @@ public interface InnerInsert {
      */
     List<FieldMeta<?, ?>> fieldList();
 
-    void clear();
 
 }

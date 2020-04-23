@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.InnerQueryAfterSet;
 import io.army.util.Pair;
 
 import java.util.ArrayList;
@@ -10,7 +9,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class AbstractComposeQuery<C> implements SQLStatement, QueryAfterSet, InnerQueryAfterSet, SelfDescribed {
+abstract class AbstractComposeQuery<C> implements SQLStatement, PartQuery, InnerQueryAfterSet, SelfDescribed {
 
 
     final C criteria;
@@ -117,7 +116,7 @@ abstract class AbstractComposeQuery<C> implements SQLStatement, QueryAfterSet, I
     @Override
     public final void appendSQL(SQLContext context) {
         beforePart(context);
-        context.dql().partQuery(this, context);
+        context.dql().partSelect(this, context);
     }
 
     /*################################## blow InnerQueryAfterSet method ##################################*/

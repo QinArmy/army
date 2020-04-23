@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-public interface SQLFormat {
+public interface Keywords {
 
     String SELECT = "SELECT";
 
@@ -28,7 +28,11 @@ public interface SQLFormat {
 
     String ORDER_BY = "ORDER BY";
 
-    String format(SQLWrapper sqlWrapper);
+    String EXISTS = "EXISTS";
 
-    String format(BatchSQLWrapper sqlWrapper);
+    String NOT_EXISTS = "NOT EXISTS";
+
+    String AS = "AS";
+
+
 }

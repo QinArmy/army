@@ -15,6 +15,13 @@ public abstract class CriteriaCounselor {
         }
     }
 
+    public static void assertStandardComposeSelect(InnerStandardComposeQuery select) {
+        if (!(select instanceof ComposeSelects)) {
+            throw new IllegalArgumentException(String.format("%s isn't instance of %s", select
+                    , ComposeSelects.class.getName()));
+        }
+    }
+
     public static void assertStandardUpdate(InnerStandardUpdate update) {
         if (update instanceof InnerStandardDomainUpdate) {
             if (!(update instanceof StandardContextualDomainUpdate)) {

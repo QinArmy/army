@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 @DeveloperForbid
-public interface InnerStandardBatchInsert extends InnerInsert {
+public interface InnerStandardBatchInsert extends InnerBatchInsert {
 
     /**
      * @return a unmodifiable list

@@ -1,14 +1,14 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.ComposeSelect;
 import io.army.criteria.SQLContext;
 import io.army.criteria.SQLModifier;
 import io.army.criteria.Select;
+import io.army.criteria.SelfDescribed;
 import io.army.criteria.postgre.PostgreSelect;
 
 import java.util.function.Function;
 
-abstract class PostgreComposeSelects<C> implements ComposeSelect, PostgreSelect, PostgreSelect.PostgreComposeAble<C> {
+abstract class PostgreComposeSelects<C> implements PostgreSelect, PostgreSelect.PostgreComposeAble<C>, Select, SelfDescribed {
 
     static <C> PostgreSelect.PostgreComposeAble<C> brackets(C criteria, Select enclosedSelect) {
         return new BracketsSelect<>(criteria, enclosedSelect);

@@ -1,6 +1,5 @@
 package io.army.dialect;
 
-import io.army.criteria.SQLContext;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.SQLS;
 import io.army.meta.ChildTableMeta;
@@ -26,7 +25,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
 
     /*################################## blow final protected method ##################################*/
 
-    protected final void visibleConstantPredicate(SQLContext context
+    protected final void visibleConstantPredicate(ClauseSQLContext context
             , TableMeta<?> tableMeta, String tableAlias) {
 
         switch (context.visible()) {
@@ -44,7 +43,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     }
 
 
-    protected final void visibleSubQueryPredicateForChild(SQLContext context
+    protected final void visibleSubQueryPredicateForChild(ClauseSQLContext context
             , ChildTableMeta<?> childMeta, String childAlias) {
         if (context.visible() == Visible.BOTH) {
             return;
@@ -55,19 +54,27 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         final String parentAlias = subQueryParentAlias(parentMeta.tableName());
         // append exists SubQuery
         StringBuilder builder = context.sqlBuilder()
-                .append(" AND EXISTS ( SELECT");
+                .append(" ")
+                .append(Keywords.AND)
+                .append(" ")
+                .append(Keywords.EXISTS)
+                .append(" ( ")
+                .append(Keywords.SELECT);
 
         context.appendField(parentAlias, parentMeta.primaryKey());
         // from clause
-        builder.append(" ").append(SQLFormat.FROM);
+        builder.append(" ")
+                .append(Keywords.FROM);
         context.appendParentTableOf(childMeta);
 
         if (tableAliasAfterAs()) {
-            builder.append(" AS");
+            builder.append(" ")
+                    .append(Keywords.AS);
         }
         context.appendText(parentAlias);
         // where clause
-        builder.append(" ").append(SQLFormat.WHERE);
+        builder.append(" ")
+                .append(Keywords.WHERE);
         context.appendField(parentAlias, parentMeta.primaryKey());
         builder.append(" =");
 
@@ -76,11 +83,10 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         // visible predicate
         visibleConstantPredicate(context, childMeta, childAlias);
         builder.append(" )");
-
     }
 
 
-    private void doVisibleConstantPredicate(SQLContext context, Boolean visible
+    private void doVisibleConstantPredicate(ClauseSQLContext context, Boolean visible
             , TableMeta<?> tableMeta, String tableAlias) {
 
         final FieldMeta<?, ?> visibleField = tableMeta.getField(TableMeta.VISIBLE);

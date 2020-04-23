@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements SelfDescribedSelect, Select.UnionAble<C> {
+abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements Select.UnionAble<C>, Select, SelfDescribed {
 
     static <C> UnionAble<C> brackets(C criteria, Select enclosedSelect) {
         return new BracketsSelect<>(criteria, enclosedSelect);
@@ -159,7 +159,7 @@ abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements Self
 
     }
 
-    private static final class ComposeSelectImpl<C> extends ComposeSelects<C> implements ComposeSelect {
+    private static final class ComposeSelectImpl<C> extends ComposeSelects<C> implements Select, SelfDescribed {
 
         private final Select leftSelect;
 

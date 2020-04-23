@@ -58,9 +58,7 @@ public interface SQLContext {
 
     void appendParam(ParamWrapper paramWrapper);
 
+
     List<ParamWrapper> paramList();
-
-    Visible visible();
-
 
 }

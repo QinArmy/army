@@ -1,6 +1,9 @@
 package io.army.dialect;
 
-import io.army.criteria.*;
+import io.army.criteria.SQLContext;
+import io.army.criteria.Select;
+import io.army.criteria.SubQuery;
+import io.army.criteria.Visible;
 
 import java.util.List;
 
@@ -14,7 +17,11 @@ public interface DQL extends SQL {
         throw new UnsupportedOperationException();
     }
 
-    default void partQuery(QueryAfterSet select, SQLContext context) {
+    default void partSelect(Select select, SQLContext context) {
+        throw new UnsupportedOperationException();
+    }
+
+    default void partSubQuery(SubQuery subQuery, SQLContext context) {
         throw new UnsupportedOperationException();
     }
 

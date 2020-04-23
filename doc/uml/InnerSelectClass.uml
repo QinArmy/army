@@ -1,0 +1,496 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>io.army.criteria.impl.inner.InnerStandardSelect</OriginalElement>
+  <nodes>
+    <node x="1871.3692255996698" y="0.0">io.army.criteria.impl.inner.DeveloperForbid</node>
+    <node x="623.625" y="476.0">io.army.criteria.impl.inner.InnerStandardInsert</node>
+    <node x="2401.757237386269" y="588.0">io.army.criteria.impl.inner.InnerStandardUpdate</node>
+    <node x="1871.7442255996698" y="588.0">io.army.criteria.impl.inner.InnerSpecialDomainUpdate</node>
+    <node x="0.0" y="588.0">io.army.criteria.impl.inner.InnerSpecialBatchInsert</node>
+    <node x="2560.007237386269" y="476.0">io.army.criteria.impl.inner.InnerStandardComposeQuery</node>
+    <node x="1735.0102512406943" y="354.0">io.army.criteria.impl.inner.InnerDomainDML</node>
+    <node x="2028.5775589330033" y="242.0">io.army.criteria.impl.inner.InnerSQL</node>
+    <node x="248.0" y="588.0">io.army.criteria.impl.inner.InnerStandardBatchInsert</node>
+    <node x="857.6264629859386" y="588.0">io.army.criteria.impl.inner.InnerSpecialDomainDelete</node>
+    <node x="3432.1846567411076" y="588.0">io.army.criteria.impl.inner.InnerSpecialSubQuery</node>
+    <node x="1050.625" y="476.0">io.army.criteria.impl.inner.InnerDomainDelete</node>
+    <node x="3223.1846567411076" y="588.0">io.army.criteria.impl.inner.InnerSpecialSelect</node>
+    <node x="3657.1846567411076" y="588.0">io.army.criteria.impl.inner.InnerStandardSelect</node>
+    <node x="1082.7083333333335" y="354.0">io.army.criteria.impl.inner.InnerDelete</node>
+    <node x="3407.554383788255" y="476.0">io.army.criteria.impl.inner.InnerSelect</node>
+    <node x="414.625" y="476.0">io.army.criteria.impl.inner.InnerSpecialInsert</node>
+    <node x="2192.757237386269" y="588.0">io.army.criteria.impl.inner.InnerSpecialUpdate</node>
+    <node x="2722.507237386269" y="354.0">io.army.criteria.impl.inner.InnerComposeQuery</node>
+    <node x="2054.7025589330033" y="476.0">io.army.criteria.impl.inner.InnerUpdate</node>
+    <node x="403.375" y="354.0">io.army.criteria.impl.inner.InnerInsert</node>
+    <node x="1469.625" y="476.0">io.army.criteria.impl.inner.InnerStandardDomainDML</node>
+    <node x="3125.929383788255" y="476.0">io.army.criteria.impl.inner.InnerSubQuery</node>
+    <node x="3304.762215674111" y="354.0">io.army.criteria.impl.inner.InnerQuery</node>
+    <node x="2824.007237386269" y="476.0">io.army.criteria.impl.inner.InnerSpecialComposeQuery</node>
+    <node x="152.5" y="476.0">io.army.criteria.impl.inner.InnerBatchInsert</node>
+    <node x="1607.7442255996698" y="588.0">io.army.criteria.impl.inner.InnerStandardDomainUpdate</node>
+    <node x="2208.7025589330033" y="476.0">io.army.criteria.impl.inner.InnerSpecialDomainDML</node>
+    <node x="1252.625" y="476.0">io.army.criteria.impl.inner.InnerStandardDelete</node>
+    <node x="841.625" y="476.0">io.army.criteria.impl.inner.InnerSpecialDelete</node>
+    <node x="2991.1846567411076" y="588.0">io.army.criteria.impl.inner.InnerStandardSubQuery</node>
+    <node x="1199.6322373862688" y="588.0">io.army.criteria.impl.inner.InnerStandardDomainDelete</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="io.army.criteria.impl.inner.InnerSpecialUpdate" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="47.25" y="-26.0" />
+      <point x="2334.507237386269" y="568.0" />
+      <point x="2431.2025589330033" y="568.0" />
+      <point x="2431.2025589330033" y="182.0" />
+      <point x="1975.7885804383795" y="182.0" />
+      <point x="21.41935483870975" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerDelete" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="-33.5" y="-26.0" />
+      <point x="1116.2083333333335" y="172.0" />
+      <point x="1922.2401933416054" y="172.0" />
+      <point x="-32.1290322580644" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSpecialDelete" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="-47.25" y="-26.0" />
+      <point x="888.875" y="152.0" />
+      <point x="1911.5305159222505" y="152.0" />
+      <point x="-42.838709677419274" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSpecialDomainDelete" target="io.army.criteria.impl.inner.InnerDomainDelete">
+      <point x="59.0" y="-26.0" />
+      <point x="1034.6264629859386" y="568.0" />
+      <point x="1095.875" y="568.0" />
+      <point x="-45.25" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSubQuery" target="io.army.criteria.impl.inner.InnerQuery">
+      <point x="37.5" y="-26.0" />
+      <point x="3238.429383788255" y="456.0" />
+      <point x="3320.512215674111" y="456.0" />
+      <point x="-47.25" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerUpdate" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="33.5" y="-26.0" />
+      <point x="2155.2025589330033" y="456.0" />
+      <point x="2150.0775589330033" y="456.0" />
+      <point x="2150.0775589330033" y="202.0" />
+      <point x="1965.0789030190247" y="202.0" />
+      <point x="10.709677419354875" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardDomainDelete" target="io.army.criteria.impl.inner.InnerDomainDelete">
+      <point x="-91.5" y="-26.0" />
+      <point x="1230.1322373862688" y="568.0" />
+      <point x="1186.375" y="568.0" />
+      <point x="45.25" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardBatchInsert" target="io.army.criteria.impl.inner.InnerBatchInsert">
+      <point x="-59.0" y="-26.0" />
+      <point x="307.0" y="568.0" />
+      <point x="282.25" y="568.0" />
+      <point x="43.25" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerQuery" target="io.army.criteria.impl.inner.InnerSQL">
+      <point x="-31.5" y="-26.0" />
+      <point x="3336.262215674111" y="324.0" />
+      <point x="2130.3275589330033" y="324.0" />
+      <point x="46.25" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerComposeQuery" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="45.25" y="-26.0" />
+      <point x="2858.257237386269" y="152.0" />
+      <point x="1991.8530965674117" y="152.0" />
+      <point x="37.48387096774195" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSpecialDomainDML" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="53.0" y="-26.0" />
+      <point x="2367.7025589330033" y="192.0" />
+      <point x="1970.433741728702" y="192.0" />
+      <point x="16.0645161290322" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardInsert" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="49.25" y="-26.0" />
+      <point x="771.375" y="132.0" />
+      <point x="1900.8208385028956" y="132.0" />
+      <point x="-53.54838709677415" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardComposeQuery" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="-61.0" y="-26.0" />
+      <point x="2621.007237386269" y="456.0" />
+      <point x="2654.132237386269" y="456.0" />
+      <point x="2654.132237386269" y="162.0" />
+      <point x="1986.4982578577344" y="162.0" />
+      <point x="32.129032258064626" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardBatchInsert" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="59.0" y="-26.0" />
+      <point x="425.0" y="568.0" />
+      <point x="392.875" y="568.0" />
+      <point x="392.875" y="102.0" />
+      <point x="1884.7563223738634" y="102.0" />
+      <point x="-69.61290322580635" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSpecialInsert" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="47.25" y="-26.0" />
+      <point x="556.375" y="456.0" />
+      <point x="547.875" y="456.0" />
+      <point x="547.875" y="122.0" />
+      <point x="1895.465999793218" y="122.0" />
+      <point x="-58.9032258064517" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSpecialDomainUpdate" target="io.army.criteria.impl.inner.InnerDomainDML">
+      <point x="-78.66666666666674" y="-26.0" />
+      <point x="1911.0775589330033" y="548.0" />
+      <point x="1895.0916666666667" y="548.0" />
+      <point x="1895.0916666666667" y="456.0" />
+      <point x="1845.6102512406942" y="456.0" />
+      <point x="31.59999999999991" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerInsert" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="-33.5" y="-26.0" />
+      <point x="436.875" y="112.0" />
+      <point x="1890.1111610835408" y="112.0" />
+      <point x="-64.25806451612902" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSpecialDomainUpdate" target="io.army.criteria.impl.inner.InnerUpdate">
+      <point x="78.66666666666652" y="-26.0" />
+      <point x="2068.4108922663363" y="568.0" />
+      <point x="2104.9525589330033" y="568.0" />
+      <point x="-16.75" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardUpdate" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="49.25" y="-26.0" />
+      <point x="2549.507237386269" y="172.0" />
+      <point x="1981.1434191480569" y="172.0" />
+      <point x="26.774193548387075" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerDomainDML" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="-39.5" y="-26.0" />
+      <point x="1774.5102512406943" y="222.0" />
+      <point x="1949.0143868899925" y="222.0" />
+      <point x="-5.354838709677324" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardSelect" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="65.66666666666652" y="-26.0" />
+      <point x="3821.351323407774" y="568.0" />
+      <point x="3766.6846567411076" y="568.0" />
+      <point x="3766.6846567411076" y="72.0" />
+      <point x="2034.691806244831" y="72.0" />
+      <point x="80.32258064516122" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerDomainDML" target="io.army.criteria.impl.inner.InnerSQL">
+      <point x="39.5" y="-26.0" />
+      <point x="1853.5102512406943" y="334.0" />
+      <point x="2074.8275589330033" y="334.0" />
+      <point x="-9.25" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerQuery" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="31.5" y="-26.0" />
+      <point x="3399.262215674111" y="102.0" />
+      <point x="2018.6272901157988" y="102.0" />
+      <point x="64.25806451612902" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerBatchInsert" target="io.army.criteria.impl.inner.InnerInsert">
+      <point x="43.25" y="-26.0" />
+      <point x="282.25" y="456.0" />
+      <point x="425.70833333333326" y="456.0" />
+      <point x="-44.666666666666686" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSpecialSubQuery" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="51.25" y="-26.0" />
+      <point x="3585.9346567411076" y="568.0" />
+      <point x="3610.762215674111" y="568.0" />
+      <point x="3610.762215674111" y="82.0" />
+      <point x="2029.3369675351537" y="82.0" />
+      <point x="74.9677419354839" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSpecialComposeQuery" target="io.army.criteria.impl.inner.InnerComposeQuery">
+      <point x="-59.0" y="-26.0" />
+      <point x="2883.007237386269" y="456.0" />
+      <point x="2858.257237386269" y="456.0" />
+      <point x="45.25" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerComposeQuery" target="io.army.criteria.impl.inner.InnerSQL">
+      <point x="-45.25" y="-26.0" />
+      <point x="2767.757237386269" y="334.0" />
+      <point x="2111.8275589330033" y="334.0" />
+      <point x="27.75" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSpecialSelect" target="io.army.criteria.impl.inner.InnerSelect">
+      <point x="63.0" y="-26.0" />
+      <point x="3380.6846567411076" y="568.0" />
+      <point x="3441.054383788255" y="568.0" />
+      <point x="-33.5" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardSelect" target="io.army.criteria.impl.inner.InnerSelect">
+      <point x="-65.66666666666652" y="-26.0" />
+      <point x="3690.017990074441" y="558.0" />
+      <point x="3508.054383788255" y="558.0" />
+      <point x="33.5" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSubQuery" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="-37.5" y="-26.0" />
+      <point x="3163.429383788255" y="112.0" />
+      <point x="2013.2724514061215" y="112.0" />
+      <point x="58.9032258064517" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardDomainUpdate" target="io.army.criteria.impl.inner.InnerDomainDML">
+      <point x="30.5" y="-26.0" />
+      <point x="1760.2442255996698" y="568.0" />
+      <point x="1776.7442255996698" y="568.0" />
+      <point x="1776.7442255996698" y="456.0" />
+      <point x="1814.0102512406943" y="456.0" />
+      <point x="0.0" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSpecialComposeQuery" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="59.000000000000114" y="-26.0" />
+      <point x="3001.007237386269" y="456.0" />
+      <point x="2969.882237386269" y="456.0" />
+      <point x="2969.882237386269" y="142.0" />
+      <point x="1997.2079352770893" y="142.0" />
+      <point x="42.8387096774195" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSelect" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="33.5" y="-26.0" />
+      <point x="3508.054383788255" y="92.0" />
+      <point x="2023.9821288254761" y="92.0" />
+      <point x="69.61290322580635" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardDelete" target="io.army.criteria.impl.inner.InnerDelete">
+      <point x="-49.25" y="-26.0" />
+      <point x="1301.875" y="426.0" />
+      <point x="1194.375" y="426.0" />
+      <point x="44.66666666666674" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardDomainDelete" target="io.army.criteria.impl.inner.InnerStandardDelete">
+      <point x="30.5" y="-26.0" />
+      <point x="1352.1322373862688" y="568.0" />
+      <point x="1351.125" y="568.0" />
+      <point x="0.0" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerInsert" target="io.army.criteria.impl.inner.InnerSQL">
+      <point x="33.5" y="-26.0" />
+      <point x="503.875" y="314.0" />
+      <point x="2037.8275589330033" y="314.0" />
+      <point x="-46.25" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSpecialBatchInsert" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="-57.0" y="-26.0" />
+      <point x="57.0" y="568.0" />
+      <point x="87.125" y="568.0" />
+      <point x="87.125" y="82.0" />
+      <point x="1874.0466449545086" y="82.0" />
+      <point x="-80.32258064516122" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSpecialSelect" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="-63.0" y="-26.0" />
+      <point x="3254.6846567411076" y="558.0" />
+      <point x="3115.429383788255" y="558.0" />
+      <point x="3115.429383788255" y="122.0" />
+      <point x="2007.917612696444" y="122.0" />
+      <point x="53.54838709677415" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSpecialSelect" target="io.army.criteria.impl.inner.InnerQuery">
+      <point x="0.0" y="-26.0" />
+      <point x="3317.6846567411076" y="568.0" />
+      <point x="3352.012215674111" y="568.0" />
+      <point x="-15.75" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardInsert" target="io.army.criteria.impl.inner.InnerInsert">
+      <point x="-49.25" y="-26.0" />
+      <point x="672.875" y="446.0" />
+      <point x="515.0416666666665" y="446.0" />
+      <point x="44.66666666666663" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardDomainDelete" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="-30.5" y="-26.0" />
+      <point x="1291.1322373862688" y="568.0" />
+      <point x="1242.125" y="568.0" />
+      <point x="1242.125" y="182.0" />
+      <point x="1927.5950320512827" y="182.0" />
+      <point x="-26.774193548387075" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardDomainUpdate" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="-30.5" y="-26.0" />
+      <point x="1700.125" y="212.0" />
+      <point x="1943.659548180315" y="212.0" />
+      <point x="-10.709677419354875" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSpecialDomainDelete" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="-59.0" y="-26.0" />
+      <point x="916.6264629859386" y="568.0" />
+      <point x="831.125" y="568.0" />
+      <point x="831.125" y="142.0" />
+      <point x="1906.175677212573" y="142.0" />
+      <point x="-48.193548387096826" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardDomainDelete" target="io.army.criteria.impl.inner.InnerStandardDomainDML">
+      <point x="91.5" y="-26.0" />
+      <point x="1413.1322373862688" y="568.0" />
+      <point x="1524.625" y="568.0" />
+      <point x="-55.0" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardDomainUpdate" target="io.army.criteria.impl.inner.InnerStandardDomainDML">
+      <point x="-91.5" y="-26.0" />
+      <point x="1638.2442255996698" y="568.0" />
+      <point x="1634.625" y="568.0" />
+      <point x="55.0" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerDomainDelete" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="-60.33333333333326" y="-26.0" />
+      <point x="1080.7916666666667" y="446.0" />
+      <point x="1051.3662117452443" y="446.0" />
+      <point x="1051.3662117452443" y="162.0" />
+      <point x="1916.8853546319278" y="162.0" />
+      <point x="-37.48387096774195" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardComposeQuery" target="io.army.criteria.impl.inner.InnerComposeQuery">
+      <point x="61.0" y="-26.0" />
+      <point x="2743.007237386269" y="456.0" />
+      <point x="2767.757237386269" y="456.0" />
+      <point x="-45.25" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSpecialDomainDML" target="io.army.criteria.impl.inner.InnerDomainDML">
+      <point x="-53.0" y="-26.0" />
+      <point x="2261.7025589330033" y="446.0" />
+      <point x="1877.2102512406943" y="446.0" />
+      <point x="63.200000000000045" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSpecialBatchInsert" target="io.army.criteria.impl.inner.InnerBatchInsert">
+      <point x="57.0" y="-26.0" />
+      <point x="171.0" y="568.0" />
+      <point x="195.75" y="568.0" />
+      <point x="-43.25" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardSubQuery" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="-53.0" y="-26.0" />
+      <point x="3044.1846567411076" y="568.0" />
+      <point x="3070.507237386269" y="568.0" />
+      <point x="3070.507237386269" y="132.0" />
+      <point x="2002.5627739867666" y="132.0" />
+      <point x="48.193548387096826" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerDelete" target="io.army.criteria.impl.inner.InnerSQL">
+      <point x="33.5" y="-26.0" />
+      <point x="1183.2083333333335" y="324.0" />
+      <point x="2056.3275589330033" y="324.0" />
+      <point x="-27.75" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerUpdate" target="io.army.criteria.impl.inner.InnerSQL">
+      <point x="-33.5" y="-26.0" />
+      <point x="2088.2025589330033" y="456.0" />
+      <point x="2093.3275589330033" y="456.0" />
+      <point x="9.25" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSpecialSubQuery" target="io.army.criteria.impl.inner.InnerSubQuery">
+      <point x="-51.25" y="-26.0" />
+      <point x="3483.4346567411076" y="548.0" />
+      <point x="3238.429383788255" y="548.0" />
+      <point x="37.5" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSQL" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="0.0" y="-26.0" />
+      <point x="2084.0775589330033" y="212.0" />
+      <point x="1959.7240643093473" y="212.0" />
+      <point x="5.354838709677551" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardDomainDML" target="io.army.criteria.impl.inner.InnerDomainDML">
+      <point x="55.0" y="-26.0" />
+      <point x="1634.625" y="446.0" />
+      <point x="1782.4102512406944" y="446.0" />
+      <point x="-31.59999999999991" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSpecialDelete" target="io.army.criteria.impl.inner.InnerDelete">
+      <point x="47.25" y="-26.0" />
+      <point x="983.375" y="456.0" />
+      <point x="1105.0416666666665" y="456.0" />
+      <point x="-44.66666666666674" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardDomainDML" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="-55.0" y="-26.0" />
+      <point x="1524.625" y="202.0" />
+      <point x="1938.3047094706376" y="202.0" />
+      <point x="-16.0645161290322" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSpecialInsert" target="io.army.criteria.impl.inner.InnerInsert">
+      <point x="-47.25" y="-26.0" />
+      <point x="461.875" y="456.0" />
+      <point x="470.375" y="456.0" />
+      <point x="0.0" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardSelect" target="io.army.criteria.impl.inner.InnerQuery">
+      <point x="0.0" y="-26.0" />
+      <point x="3755.6846567411076" y="446.0" />
+      <point x="3415.012215674111" y="446.0" />
+      <point x="47.25" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardDelete" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="49.25" y="-26.0" />
+      <point x="1400.375" y="192.0" />
+      <point x="1932.94987076096" y="192.0" />
+      <point x="-21.41935483870975" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardSubQuery" target="io.army.criteria.impl.inner.InnerSubQuery">
+      <point x="53.0" y="-26.0" />
+      <point x="3150.1846567411076" y="568.0" />
+      <point x="3163.429383788255" y="568.0" />
+      <point x="-37.5" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSpecialDomainUpdate" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="0.0" y="-26.0" />
+      <point x="1989.7442255996698" y="548.0" />
+      <point x="1966.0745450785776" y="548.0" />
+      <point x="1966.0745450785776" y="222.0" />
+      <point x="1954.3692255996698" y="222.0" />
+      <point x="0.0" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerDomainDelete" target="io.army.criteria.impl.inner.InnerDomainDML">
+      <point x="60.33333333333326" y="-26.0" />
+      <point x="1201.4583333333333" y="436.0" />
+      <point x="1750.8102512406942" y="436.0" />
+      <point x="-63.200000000000045" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSelect" target="io.army.criteria.impl.inner.InnerQuery">
+      <point x="-33.5" y="-26.0" />
+      <point x="3441.054383788255" y="456.0" />
+      <point x="3383.512215674111" y="456.0" />
+      <point x="15.75" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerSpecialUpdate" target="io.army.criteria.impl.inner.InnerUpdate">
+      <point x="-47.25" y="-26.0" />
+      <point x="2240.007237386269" y="568.0" />
+      <point x="2138.4525589330033" y="568.0" />
+      <point x="16.75" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardUpdate" target="io.army.criteria.impl.inner.InnerUpdate">
+      <point x="-49.25" y="-26.0" />
+      <point x="2451.007237386269" y="558.0" />
+      <point x="2171.9525589330033" y="558.0" />
+      <point x="50.25" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerStandardDomainUpdate" target="io.army.criteria.impl.inner.InnerUpdate">
+      <point x="91.5" y="-26.0" />
+      <point x="1821.2442255996698" y="558.0" />
+      <point x="2071.4525589330033" y="558.0" />
+      <point x="-50.25" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerDomainDelete" target="io.army.criteria.impl.inner.InnerDelete">
+      <point x="0.0" y="-26.0" />
+      <point x="1141.125" y="456.0" />
+      <point x="1149.7083333333335" y="456.0" />
+      <point x="0.0" y="26.0" />
+    </edge>
+    <edge source="io.army.criteria.impl.inner.InnerBatchInsert" target="io.army.criteria.impl.inner.DeveloperForbid">
+      <point x="-43.25" y="-26.0" />
+      <point x="195.75" y="92.0" />
+      <point x="1879.401483664186" y="92.0" />
+      <point x="-74.9677419354839" y="26.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="2265.0" y="320.0000000000001" />
+  <SelectedNodes />
+  <Categories />
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+

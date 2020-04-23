@@ -6,7 +6,7 @@ import io.army.meta.FieldMeta;
 import java.util.List;
 
 @DeveloperForbid
-public interface InnerUpdate {
+public interface InnerUpdate extends InnerSQL {
 
 
     /**
