@@ -10,7 +10,7 @@ import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 
 
-final class StandardParentDomainDeleteContext extends AbstractSQLContext implements ParentDomainDeleteContext {
+final class StandardParentDomainDeleteContext extends AbstractClauseContext implements ParentDomainDeleteContext {
 
     private final InnerStandardDomainDelete innerDelete;
 

@@ -4,7 +4,7 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.InnerDelete;
 import io.army.criteria.impl.inner.InnerStandardDelete;
 
-final class StandardSingleDeleteContext extends AbstractSQLContext implements DeleteContext {
+final class StandardSingleDeleteContext extends AbstractClauseContext implements DeleteContext {
 
     private final InnerStandardDelete innerDelete;
 

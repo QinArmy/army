@@ -8,7 +8,7 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 
 
-final class StandardChildDomainDeleteContext extends AbstractSQLContext implements ChildDomainDeleteContext {
+final class StandardChildDomainDeleteContext extends AbstractClauseContext implements ChildDomainDeleteContext {
 
     private final InnerStandardDomainDelete innerDelete;
 

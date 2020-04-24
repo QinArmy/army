@@ -53,7 +53,7 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
     ParentTableMeta<? super T> parentMeta();
 
     @Nullable
-    <E extends Enum<E> & CodeEnum> FieldMeta<T, E> discriminator();
+    <E extends Enum<E> & CodeEnum> FieldMeta<? super T, E> discriminator();
 
     /**
      * contain primary key

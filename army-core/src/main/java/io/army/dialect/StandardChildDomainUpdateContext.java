@@ -9,7 +9,7 @@ import io.army.meta.FieldMeta;
 
 import java.util.Collection;
 
-final class StandardChildDomainUpdateContext extends AbstractSQLContext implements ChildDomainUpdateContext {
+final class StandardChildDomainUpdateContext extends AbstractClauseContext implements ChildDomainUpdateContext {
 
     private final InnerStandardDomainUpdate innerUpdate;
 

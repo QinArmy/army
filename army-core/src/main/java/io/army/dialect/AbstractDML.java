@@ -1,7 +1,9 @@
 package io.army.dialect;
 
 import io.army.ErrorCode;
+import io.army.ShardingMode;
 import io.army.beans.BeanWrapper;
+import io.army.beans.ReadonlyWrapper;
 import io.army.boot.FieldValuesGenerator;
 import io.army.criteria.*;
 import io.army.criteria.impl.CriteriaCounselor;
@@ -25,6 +27,19 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     }
 
     /*################################## blow DML batchInsert method ##################################*/
+
+    @Override
+    public final List<SQLWrapper> insert(IDomain domain) {
+        TableMeta<?> tableMeta = this.dialect.sessionFactory().tableMetaMap().get(domain.getClass());
+        Assert.notNull(tableMeta, () -> String.format("not found TableMeta of domain[%s]", domain));
+        Assert.state(tableMeta.javaType() == domain.getClass(), "");
+
+        return Collections.unmodifiableList(
+                standardInsert(
+                        DMLUtils.wrapperDomainAsInsert(tableMeta, domain)
+                        , Visible.ONLY_VISIBLE)
+        );
+    }
 
     @Override
     public final List<SQLWrapper> insert(Insert insert, final Visible visible) {
@@ -58,6 +73,9 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
     @Override
     public final List<BatchSQLWrapper> batchInsert(Insert insert, final Visible visible) {
+        Assert.state(this.dialect.sessionFactory().shardingMode() == ShardingMode.NO_SHARDING
+                , "not support batchInsert without NO_SHARDING");
+
         Assert.isTrue(insert.prepared(), "Insert don't invoke asInsert() method.");
 
         List<BatchSQLWrapper> list;
@@ -81,8 +99,9 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
     @Override
     public final List<SQLWrapper> update(Update update, final Visible visible) {
-        List<SQLWrapper> list;
+        Assert.isTrue(update.prepared(), "Update don't invoke asUpdate() method.");
 
+        List<SQLWrapper> list;
         if (update instanceof InnerStandardDomainUpdate) {
             InnerStandardDomainUpdate domainUpdate = (InnerStandardDomainUpdate) update;
             CriteriaCounselor.assertStandardDomainUpdate(domainUpdate);
@@ -120,6 +139,8 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
     @Override
     public final List<SQLWrapper> delete(Delete delete, final Visible visible) {
+        Assert.isTrue(delete.prepared(), "Delete don't invoke asDelete() method.");
+
         List<SQLWrapper> list;
         if (delete instanceof InnerStandardDomainDelete) {
             InnerStandardDomainDelete domainDelete = (InnerStandardDomainDelete) delete;
@@ -200,8 +221,24 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         );
     }
 
-    protected InsertContext createInsertContext(InnerInsert insert, final Visible visible) {
-        return new StandardInsertContext(this.dialect, visible, insert);
+    protected InsertContext createBeanInsertContext(InnerInsert insert, ReadonlyWrapper readonlyWrapper
+            , final Visible visible) {
+        InsertContext context;
+        if (insert instanceof InnerStandardInsert) {
+            context = AbstractStandardInsertContext.buildGeneral(this.dialect, visible, readonlyWrapper
+                    , (InnerStandardInsert) insert);
+        } else {
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "unknown InnerInsert[%s] type.", insert);
+        }
+        return context;
+    }
+
+    protected InsertContext createBatchInsertContext(InnerBatchInsert insert, Visible visible) {
+        return AbstractStandardInsertContext.buildBatch(this.dialect, visible, (InnerStandardBatchInsert) insert);
+    }
+
+    protected InsertContext createSubQueryInsertContext(InnerSubQueryInsert insert, Visible visible) {
+        throw new UnsupportedOperationException();
     }
 
     /*################################## blow update template method ##################################*/
@@ -307,12 +344,9 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
      */
     private List<SQLWrapper> standardInsert(InnerStandardInsert insert, final Visible visible) {
 
-        TableMeta<?> tableMeta = insert.tableMeta();
-        // 1. get target fields.
-        Collection<FieldMeta<?, ?>> fieldMetas = insert.fieldList();
-        if (CollectionUtils.isEmpty(fieldMetas)) {
-            fieldMetas = Collections.unmodifiableCollection(tableMeta.fieldCollection());
-        }
+        final TableMeta<?> tableMeta = insert.tableMeta();
+        // 1. merge target fields.
+        Set<FieldMeta<?, ?>> fieldMetaSet = DMLUtils.mergeInsertFields(tableMeta, this.dialect, insert.fieldList());
 
         List<IDomain> domainList = insert.valueList();
         List<SQLWrapper> sqlWrapperList;
@@ -329,17 +363,17 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
             // 2. create required values.
             beanWrapper = valuesGenerator.createValues(tableMeta, domain);
             sqlWrapperList.addAll(
-                    insertDomain(tableMeta, beanWrapper, fieldMetas, insert, visible)
+                    // 3. create sql of domain
+                    insertDomain(tableMeta, beanWrapper, fieldMetaSet, insert, visible)
             );
         }
         return sqlWrapperList;
     }
 
     private List<SQLWrapper> standardSubQueryInsert(InnerStandardSubQueryInsert insert, final Visible visible) {
-        CriteriaCounselor.assertStandardSubQueryInsert(insert);
 
         TableMeta<?> tableMeta = insert.tableMeta();
-        List<FieldMeta<?, ?>> fieldMetaList = insert.fieldList();
+        final List<FieldMeta<?, ?>> fieldMetaList = insert.fieldList();
         int subQuerySelectionCount = DMLUtils.selectionCount(insert.subQuery());
 
         if (subQuerySelectionCount != fieldMetaList.size()) {
@@ -348,8 +382,8 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
                     , subQuerySelectionCount, fieldMetaList.size());
         }
 
-        DMLContext context = createInsertContext(insert, visible);
-        StringBuilder builder = context.sqlBuilder().append("INSERT INTO ");
+        InsertContext context = createSubQueryInsertContext(insert, visible);
+        StringBuilder builder = context.sqlBuilder().append(Keywords.INSERT_INTO);
         context.appendTable(tableMeta);
         builder.append(" ( ");
 
@@ -358,7 +392,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
             if (index > 0) {
                 builder.append(",");
             }
-            builder.append(this.dialect.quoteIfNeed(fieldMeta.fieldName()));
+            context.appendField(fieldMeta);
             index++;
         }
         builder.append(" )");
@@ -373,14 +407,10 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
         List<SQLWrapper> sqlWrapperList;
         switch (tableMeta.mappingMode()) {
+            case PARENT:
             case SIMPLE:
                 sqlWrapperList = Collections.singletonList(
                         createInsertForSimple(tableMeta, entityWrapper, fieldMetas, innerInsert, visible)
-                );
-                break;
-            case PARENT:
-                sqlWrapperList = Collections.singletonList(
-                        createInsertForParent(tableMeta, entityWrapper, fieldMetas, innerInsert, visible)
                 );
                 break;
             case CHILD:
@@ -394,60 +424,46 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         return sqlWrapperList;
     }
 
-
-    private List<SQLWrapper> createInsertForChild(ChildTableMeta<?> childMeta
-            , BeanWrapper beanWrapper, Collection<FieldMeta<?, ?>> fieldMetas
+    /**
+     * @param mergedFields merged by {@link DMLUtils#mergeInsertFields(TableMeta, Dialect, Collection)}
+     */
+    private List<SQLWrapper> createInsertForChild(final ChildTableMeta<?> childMeta
+            , BeanWrapper beanWrapper, Collection<FieldMeta<?, ?>> mergedFields
             , InnerInsert insert, final Visible visible) {
 
-        TableMeta<?> parentMeta = childMeta.parentMeta();
-        Collection<FieldMeta<?, ?>> childFields, parentFields;
+        Assert.notEmpty(mergedFields, "mergedFields must not empty.");
 
-        Set<FieldMeta<?, ?>> parentFieldSet = new HashSet<>(parentMeta.fieldCollection());
-        Set<FieldMeta<?, ?>> childFieldSet = new HashSet<>(childMeta.fieldCollection());
-
-        childFields = new ArrayList<>();
-        parentFields = new ArrayList<>();
-
-        for (FieldMeta<?, ?> fieldMeta : fieldMetas) {
-            if (childFieldSet.contains(fieldMeta)) {
-                childFields.add(fieldMeta);
-            } else if (parentFieldSet.contains(fieldMeta)) {
-                parentFields.add(fieldMeta);
-            } else {
-                throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "FieldMeta[%s] and ChildTableMeta[%s] not match."
-                        , fieldMeta, childMeta);
-            }
-        }
+        final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
+        final Set<FieldMeta<?, ?>> parentFields = new HashSet<>(), childFields = new HashSet<>();
+        // 1.separate fields
+        DialectUtils.separateFields(childMeta, mergedFields, parentFields, childFields);
 
         List<SQLWrapper> sqlWrapperList = new ArrayList<>(2);
-        // firstly, add parent sql.
-        sqlWrapperList.add(
-                createInsertForParent(parentMeta, beanWrapper, parentFields, insert, visible)
-        );
+        if (!parentFields.isEmpty()) {
+            //2.  add parent sql.
+            InsertContext context = createBeanInsertContext(insert, beanWrapper, visible);
+            DMLUtils.createInsertForSimple(parentMeta, parentFields, beanWrapper, context);
+            sqlWrapperList.add(context.build());
+        }
 
-        InsertContext context = createInsertContext(insert, visible);
-        DMLUtils.createInsertForSimple(childMeta, childFields, beanWrapper, context);
-        // secondly,add child sql.
-        sqlWrapperList.add(context.build());
+        if (!childFields.isEmpty()) {
+            InsertContext context = createBeanInsertContext(insert, beanWrapper, visible);
+            DMLUtils.createInsertForSimple(childMeta, childFields, beanWrapper, context);
+            //3. add child sql.
+            sqlWrapperList.add(context.build());
+        }
         return sqlWrapperList;
     }
 
-
     /**
-     * @return a modifiable list
+     * @param mergedFields merged by {@link DMLUtils#mergeInsertFields(TableMeta, Dialect, Collection)}
      */
-    private SQLWrapper createInsertForParent(TableMeta<?> tableMeta, BeanWrapper beanWrapper
-            , Collection<FieldMeta<?, ?>> fieldMetas, InnerInsert innerInsert
-            , Visible visible) {
-        return createInsertForSimple(tableMeta, beanWrapper, fieldMetas, innerInsert, visible);
-    }
-
     private SQLWrapper createInsertForSimple(TableMeta<?> tableMeta, BeanWrapper beanWrapper
-            , Collection<FieldMeta<?, ?>> fieldMetas, InnerInsert innerInsert
+            , Collection<FieldMeta<?, ?>> mergedFields, InnerInsert insert
             , final Visible visible) {
 
-        InsertContext context = createInsertContext(innerInsert, visible);
-        DMLUtils.createInsertForSimple(tableMeta, fieldMetas, beanWrapper, context);
+        InsertContext context = createBeanInsertContext(insert, beanWrapper, visible);
+        DMLUtils.createInsertForSimple(tableMeta, mergedFields, beanWrapper, context);
 
         SQLWrapper sqlWrapper;
         GeneratorMeta generatorMeta = tableMeta.primaryKey().generator();
@@ -462,19 +478,14 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     }
 
     private List<BatchSQLWrapper> standardBatchInsert(InnerStandardBatchInsert insert, final Visible visible) {
-        CriteriaCounselor.assertStandardBatchInsert(insert);
 
         TableMeta<?> tableMeta = insert.tableMeta();
         List<SQLWrapper> sqlWrapperList;
         switch (tableMeta.mappingMode()) {
             case SIMPLE:
-                sqlWrapperList = Collections.singletonList(
-                        standardBatchInsertForSimple(insert, visible)
-                );
-                break;
             case PARENT:
                 sqlWrapperList = Collections.singletonList(
-                        standardBatchInsertForParent(insert, visible)
+                        standardBatchInsertForSimple(insert, visible)
                 );
                 break;
             case CHILD:
@@ -494,30 +505,38 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
 
     private SQLWrapper standardBatchInsertForSimple(InnerStandardBatchInsert insert, final Visible visible) {
-        InsertContext context = createInsertContext(insert, visible);
-        DMLUtils.createBatchInsertForSimple(insert.tableMeta(), context);
-        return context.build();
-    }
+        TableMeta<?> tableMeta = insert.tableMeta();
+        // 1.merge fields
+        Set<FieldMeta<?, ?>> fieldMetaSet = DMLUtils.mergeInsertFields(tableMeta, this.dialect, insert.fieldList());
 
-    private SQLWrapper standardBatchInsertForParent(InnerStandardBatchInsert insert, final Visible visible) {
-        return standardBatchInsertForSimple(insert, visible);
+        InsertContext context = createBatchInsertContext(insert, visible);
+        // single table insert sql
+        DMLUtils.createBatchInsertForSimple(tableMeta, fieldMetaSet, context);
+        return context.build();
     }
 
     private List<SQLWrapper> standardBatchInsertForChild(InnerStandardBatchInsert insert, final Visible visible) {
         ChildTableMeta<?> childMeta = (ChildTableMeta<?>) insert.tableMeta();
-        TableMeta<?> parentMeta = childMeta.parentMeta();
+        ParentTableMeta<?> parentMeta = childMeta.parentMeta();
+
+        Set<FieldMeta<?, ?>> parentFieldSet = new HashSet<>(), childFieldSet = new HashSet<>();
+        // 1.  separate target fields
+        DialectUtils.separateFields(childMeta, insert.fieldList(), parentFieldSet, childFieldSet);
+        // 2. merge fields
+        parentFieldSet = DMLUtils.mergeInsertFields(parentMeta, this.dialect, parentFieldSet);
+        childFieldSet = DMLUtils.mergeInsertFields(childMeta, this.dialect, childFieldSet);
+        // separate fields end.
 
         List<SQLWrapper> sqlWrapperList = new ArrayList<>(2);
-        // 1. parent sql wrapper
-        sqlWrapperList.add(
-                standardBatchInsertForParent(insert, visible)
-        );
-        //2. child sql wrapper
-        InsertContext context = createInsertContext(insert, visible);
-        DMLUtils.createBatchInsertForSimple(insert.tableMeta(), context);
-        sqlWrapperList.add(
-                context.build()
-        );
+        // 3. parent sql wrapper
+        final InsertContext parentContext = createBatchInsertContext(insert, visible);
+        DMLUtils.createBatchInsertForSimple(parentMeta, parentFieldSet, parentContext);
+        sqlWrapperList.add(parentContext.build());
+
+        //4. child sql wrapper
+        final InsertContext childContext = createBatchInsertContext(insert, visible);
+        DMLUtils.createBatchInsertForSimple(childMeta, childFieldSet, childContext);
+        sqlWrapperList.add(childContext.build());
         return Collections.unmodifiableList(sqlWrapperList);
     }
 
@@ -527,7 +546,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
             , final Visible visible) {
         UpdateContext context = createUpdateContext(update, visible);
 
-        StringBuilder builder = context.sqlBuilder().append("UPDATE");
+        StringBuilder builder = context.sqlBuilder().append(Keywords.UPDATE);
         tableOnlyModifier(context);
         // append table name and alias
         context.appendTable(tableMeta);
@@ -540,7 +559,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
                 , update.targetFieldList(), update.valueExpList());
         // where clause
         simpleTableWhereClause(context, tableMeta, tableAlias
-                , update.predicateList(), visible);
+                , update.predicateList());
 
         return context.build();
     }
@@ -577,7 +596,8 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         Expression<?> valueExp;
 
         StringBuilder builder = context.sqlBuilder()
-                .append(" SET");
+                .append(" ")
+                .append(Keywords.SET);
         for (int i = 0; i < size; i++) {
             if (i > 0) {
                 builder.append(",");
@@ -621,37 +641,41 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         context.appendField(tableAlias, updateTimeField);
         builder.append(" =");
 
-        final ZonedDateTime now = ZonedDateTime.now(context.dql().zoneId());
+        final ZonedDateTime now = ZonedDateTime.now(this.dialect.zoneId());
 
         if (updateTimeField.javaType() == LocalDateTime.class) {
             SQLS.param(now.toLocalDateTime(), updateTimeField.mappingType())
                     .appendSQL(context);
         } else if (updateTimeField.javaType() == ZonedDateTime.class) {
+            if (!this.dialect.supportZoneId()) {
+                throw new MetaException(ErrorCode.META_ERROR
+                        , "dialec[%s]t not supported zone.", this.dialect.sqlDialect());
+            }
             SQLS.param(now, updateTimeField.mappingType())
                     .appendSQL(context);
         } else {
             throw new MetaException(ErrorCode.META_ERROR
-                    , "createTime or updateTime only support LocalDateTime or ZonedDateTime");
+                    , "createTime or updateTime only support LocalDateTime or ZonedDateTime,please check.");
         }
     }
 
     private void simpleTableWhereClause(ClauseSQLContext context, TableMeta<?> tableMeta, String tableAlias
-            , List<IPredicate> predicateList
-            , Visible visible) {
+            , List<IPredicate> predicateList) {
 
         if (CollectionUtils.isEmpty(predicateList)) {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "update or delete must have where clause.");
         }
-
-        StringBuilder builder = context.sqlBuilder()
-                .append(" WHERE");
-
-        for (Iterator<IPredicate> iterator = predicateList.iterator(); iterator.hasNext(); ) {
-            // predicate self-describe
-            iterator.next().appendSQL(context);
-            if (iterator.hasNext()) {
-                builder.append(" AND");
+        context.currentClause(Clause.WHERE);
+        StringBuilder builder = context.sqlBuilder();
+        int index = 0;
+        for (IPredicate predicate : predicateList) {
+            if (index > 0) {
+                builder.append(" ")
+                        .append(Keywords.AND);
             }
+            // predicate self-describe
+            predicate.appendSQL(context);
+            index++;
         }
 
         switch (tableMeta.mappingMode()) {
@@ -680,10 +704,10 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         Assert.notEmpty(targetFieldList, "set clause must not empty");
         Assert.isTrue(targetFieldList.size() == valueList.size(), "field list size and value list size not match");
 
-
+        //1. separate target FieldMeta and value Expression.
         List<FieldMeta<?, ?>> parentFieldList = new ArrayList<>(), childFieldList = new ArrayList<>();
         List<Expression<?>> parentValueList = new ArrayList<>(), childValueList = new ArrayList<>();
-        // separate target FieldMeta and value Expression.
+
         FieldMeta<?, ?> fieldMeta;
         Expression<?> valueExp;
         final int size = targetFieldList.size();
@@ -702,16 +726,17 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
                         , "FieldMeta[%s] don't belong to TableMeta[%s] or its parent.", fieldMeta, childMeta);
             }
         }
+        // separate target FieldMeta and value Expression end.
 
-        //  parent table update sql,maybe contains select
+        //2.  parent table update sql,maybe contains select
         final List<SQLWrapper> parentSqlList = standardDomainUpdateForParent(update, parentFieldList
                 , parentValueList, childFieldList, visible);
 
-        //   child table update sql
+        //3.  child table update sql
         final SQLWrapper childSqlWrapper = standardDomainUpdateForChild(update, childFieldList
                 , childValueList, parentFieldList, visible);
         // merge childSqlWrapper and parentSqlList
-        return DMLUtils.createDomainSQLWrapperList(childSqlWrapper, parentSqlList);
+        return DMLUtils.mergeDomainSQLWrappers(childSqlWrapper, parentSqlList);
     }
 
     private List<SQLWrapper> standardDomainUpdateForParent(InnerStandardDomainUpdate update
@@ -737,7 +762,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
         // where clause with mergedPredicateList
         simpleTableWhereClause(context, context.tableMeta(), update.tableAlias()
-                , mergedPredicateList, visible);
+                , mergedPredicateList);
 
         SQLWrapper parentSQLWrapper = context.build();
 
@@ -782,7 +807,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
         // where clause with mergedPredicateList
         simpleTableWhereClause(context, context.tableMeta(), context.tableAlias()
-                , mergedPredicateList, visible);
+                , mergedPredicateList);
 
         return context.build();
     }
@@ -804,7 +829,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
             context.appendText(tableAlias);
         }
         // where clause
-        simpleTableWhereClause(context, tableMeta, tableAlias, delete.predicateList(), visible);
+        simpleTableWhereClause(context, tableMeta, tableAlias, delete.predicateList());
         return context.build();
     }
 
@@ -824,7 +849,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
                 if (parentSqlList.size() != 2) {
                     throw DialectUtils.createArmyCriteriaException();
                 }
-                sqlWrapperList = DMLUtils.createDomainSQLWrapperList(childSql, parentSqlList);
+                sqlWrapperList = DMLUtils.mergeDomainSQLWrappers(childSql, parentSqlList);
                 break;
             default:
                 throw DialectUtils.createMappingModeUnknownException(delete.tableMeta().mappingMode());
@@ -876,7 +901,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
         // where clause with mergedPredicateList
         simpleTableWhereClause(context, context.tableMeta(), context.tableAlias()
-                , mergedPredicateList, visible);
+                , mergedPredicateList);
     }
 
 

@@ -10,7 +10,7 @@ import io.army.meta.ParentTableMeta;
 
 import java.util.Collection;
 
-final class StandardParentDomainUpdateContext extends AbstractSQLContext implements ParentDomainUpdateContext {
+final class StandardParentDomainUpdateContext extends AbstractClauseContext implements ParentDomainUpdateContext {
 
 
     private final InnerStandardDomainUpdate innerUpdate;

@@ -4,6 +4,8 @@ public interface Keywords {
 
     String SELECT = "SELECT";
 
+    String UPDATE = "UPDATE";
+
     String FROM = "FROM";
 
     String JOIN = "JOIN";
@@ -30,8 +32,6 @@ public interface Keywords {
 
     String EXISTS = "EXISTS";
 
-    String NOT_EXISTS = "NOT EXISTS";
-
     String AS = "AS";
 
     String INSERT_INTO = "INSERT INTO";
@@ -40,5 +40,8 @@ public interface Keywords {
 
     String VALUES = "VALUES";
 
+    String DEFAULT = "DEFAULT";
+
+    String SET = "SET";
 
 }

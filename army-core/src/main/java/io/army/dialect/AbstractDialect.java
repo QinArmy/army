@@ -3,7 +3,6 @@ package io.army.dialect;
 
 import io.army.SessionFactory;
 import io.army.criteria.Delete;
-import io.army.criteria.Insert;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
 import io.army.domain.IDomain;
@@ -115,15 +114,6 @@ public abstract class AbstractDialect implements Dialect {
         return this.dml.insert(domain);
     }
 
-    @Override
-    public final List<SQLWrapper> insert(Insert insert) {
-        return this.dml.insert(insert);
-    }
-
-    @Override
-    public final List<BatchSQLWrapper> batchInsert(Insert insert) {
-        return this.dml.batchInsert(insert);
-    }
 
     @Override
     public final List<SQLWrapper> update(Update update, Visible visible) {
@@ -135,10 +125,6 @@ public abstract class AbstractDialect implements Dialect {
         return this.dml.delete(delete, visible);
     }
 
-    @Override
-    public final boolean singleDeleteHasTableAlias() {
-        return this.dml.singleDeleteHasTableAlias();
-    }
 
     @Override
     public SQLDialect sqlDialect() {

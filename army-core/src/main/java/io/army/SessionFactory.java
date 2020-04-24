@@ -5,7 +5,6 @@ import io.army.dialect.Dialect;
 import io.army.dialect.SQLDialect;
 import io.army.env.Environment;
 import io.army.generator.MultiGenerator;
-import io.army.generator.PreMultiGenerator;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
@@ -56,6 +55,8 @@ public interface SessionFactory extends AutoCloseable{
      * @throws ArmyRuntimeException Indicates an issue closing the factory.
      */
     void close() throws ArmyRuntimeException;
+
+    ShardingMode shardingMode();
 
     /**
      * Is this factory already closed?

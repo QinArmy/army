@@ -19,9 +19,7 @@ public interface SQLContext {
      *
      * @param tableMeta {@link TableMeta} that will be append table name .
      */
-    default void appendTable(TableMeta<?> tableMeta) {
-        throw new UnsupportedOperationException();
-    }
+    void appendTable(TableMeta<?> tableMeta);
 
     /**
      * <p>
@@ -31,19 +29,13 @@ public interface SQLContext {
      * @param childTableMeta {@link io.army.meta.ChildTableMeta}'s {@link io.army.meta.ParentTableMeta}
      *                       that will be append table name .
      */
-    default void appendParentTableOf(ChildTableMeta<?> childTableMeta) {
-        throw new UnsupportedOperationException();
-    }
+    void appendParentTableOf(ChildTableMeta<?> childTableMeta);
 
     void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException;
 
-    default void appendField(FieldMeta<?, ?> fieldMeta) {
-        throw new UnsupportedOperationException();
-    }
+    void appendField(FieldMeta<?, ?> fieldMeta);
 
-    default void appendFieldPair(FieldPairDualPredicate predicate) {
-        throw new UnsupportedOperationException();
-    }
+    void appendFieldPair(FieldPairDualPredicate predicate);
 
     void appendText(String textValue);
 

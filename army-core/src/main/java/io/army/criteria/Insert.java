@@ -24,26 +24,11 @@ public interface Insert extends SQLStatement, SQLAble, SQLDebug, QueryAble {
 
     /*################################## blow insert interfaces ##################################*/
 
-    interface InsertOptionAble<T extends IDomain, C> extends InsertIntoAble<T> {
-
-        <F> InsertOptionAble<T, C> commonValue(FieldMeta<? super T, F> fieldMeta, Expression<F> valueExp);
-
-        <F> InsertOptionAble<T, C> commonValue(FieldMeta<? super T, F> fieldMeta, Function<C, Expression<F>> function);
-
-        InsertOptionAble<T, C> ignoreGeneratorIfCrash();
-
-        InsertIntoAble<T> defaultIfNull();
-    }
-
     interface InsertIntoAble<T extends IDomain> extends InsertSQLAble {
 
         InsertValuesAble<T> insertInto(Collection<FieldMeta<? super T, ?>> fieldMetaList);
 
         InsertValuesAble<T> insertInto(TableMeta<T> tableMeta);
-
-        InsertAble insert(T domain);
-
-        Insert insert(List<T> domainList);
     }
 
     interface InsertValuesAble<T extends IDomain> extends InsertSQLAble {
@@ -55,12 +40,6 @@ public interface Insert extends SQLStatement, SQLAble, SQLDebug, QueryAble {
 
     /*################################## blow batchInsert method ##################################*/
 
-    interface BatchInsertOptionAble<T extends IDomain> extends BatchInsertIntoAble<T> {
-
-        <F> BatchInsertOptionAble<T> commonValue(FieldMeta<? super T, F> fieldMeta, Expression<F> valueExp);
-
-        BatchInsertOptionAble<T> ignoreGeneratorIfCrash();
-    }
 
     interface BatchInsertIntoAble<T extends IDomain> extends InsertSQLAble {
 

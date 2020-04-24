@@ -4,6 +4,9 @@ public enum Clause {
 
     SELECT,
     SELECT_LIST,
+    INSERT_INTO,
+    VALUE,
+    VALUES,
     FROM,
     ON,
     WHERE,

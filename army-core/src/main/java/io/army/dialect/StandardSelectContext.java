@@ -4,7 +4,7 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.InnerSelect;
 import io.army.criteria.impl.inner.InnerStandardSelect;
 
-final class StandardSelectContext extends AbstractSQLContext implements SelectContext {
+final class StandardSelectContext extends AbstractClauseContext implements SelectContext {
 
     private final InnerStandardSelect innerSelect;
 

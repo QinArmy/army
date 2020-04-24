@@ -3,7 +3,7 @@ package io.army.dialect;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.InnerStandardUpdate;
 
-final class StandardUpdateContext extends AbstractSQLContext implements UpdateContext {
+final class StandardUpdateContext extends AbstractClauseContext implements UpdateContext {
 
     private final InnerStandardUpdate innerUpdate;
 

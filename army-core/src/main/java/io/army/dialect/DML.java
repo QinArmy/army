@@ -4,11 +4,13 @@ import io.army.criteria.Delete;
 import io.army.criteria.Insert;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
+import io.army.domain.IDomain;
 
 import java.util.List;
 
 public interface DML extends SQL {
 
+    List<SQLWrapper> insert(IDomain domain);
 
     /**
      * @return a unmodifiable list

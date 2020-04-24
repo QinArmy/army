@@ -232,7 +232,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <E extends Enum<E> & CodeEnum> FieldMeta<T, E> discriminator() {
+    public <E extends Enum<E> & CodeEnum> FieldMeta<? super T, E> discriminator() {
         return (FieldMeta<T, E>) this.discriminator;
     }
 
@@ -280,9 +280,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     @Override
     public final void appendSQL(SQLContext context) {
-        context.sqlBuilder()
-                .append(" ")
-                .append(context.dml().quoteIfNeed(this.tableName));
+        context.appendTable(this);
     }
 
     @Override
@@ -333,9 +331,10 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             super(null, entityClass);
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public final <E extends Enum<E> & CodeEnum> FieldMeta<T, E> discriminator() {
-            FieldMeta<T, E> fieldMeta = super.discriminator();
+            FieldMeta<T, E> fieldMeta = (FieldMeta<T, E>) super.discriminator();
             Assert.state(fieldMeta != null, "discriminator is null,state error.");
             return fieldMeta;
         }

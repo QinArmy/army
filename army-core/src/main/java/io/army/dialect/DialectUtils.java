@@ -7,12 +7,12 @@ import io.army.criteria.IPredicate;
 import io.army.criteria.ParentChildJoinPredicate;
 import io.army.criteria.TableAble;
 import io.army.lang.Nullable;
-import io.army.meta.MappingMode;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 import io.army.meta.mapping.MappingType;
 import io.army.util.StringUtils;
 
 import java.sql.JDBCType;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -66,6 +66,36 @@ public abstract class DialectUtils {
     public static boolean childJoinParent(List<IPredicate> onPredicateList, TableMeta<?> parentMeta) {
         ParentChildJoinPredicate joinPredicate = findParentChildJoinPredicate(onPredicateList);
         return joinPredicate != null && joinPredicate.childMeta().parentMeta() == parentMeta;
+    }
+
+    public static CriteriaException createTableFiledNoMatchException(TableMeta<?> tableMeta
+            , FieldMeta<?, ?> fieldMeta) {
+        throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                , "TableMeta[%s] and FieldMeta[%s] not match.", tableMeta, fieldMeta);
+    }
+
+    public static void separateFields(ChildTableMeta<?> childMeta, Collection<FieldMeta<?, ?>> fieldMetas
+            , Collection<FieldMeta<?, ?>> parentFields, Collection<FieldMeta<?, ?>> childFields) {
+
+        final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
+
+        for (FieldMeta<?, ?> fieldMeta : fieldMetas) {
+            if (TableMeta.ID.equals(fieldMeta.propertyName())) {
+                childFields.add(childMeta.primaryKey());
+                parentFields.add(parentMeta.primaryKey());
+            } else if (fieldMeta.tableMeta() == parentMeta) {
+                parentFields.add(fieldMeta);
+            } else if (fieldMeta.tableMeta() == childMeta) {
+                childFields.add(fieldMeta);
+            } else {
+                throw DialectUtils.createTableFiledNoMatchException(childMeta, fieldMeta);
+            }
+        }
+    }
+
+    public static ArmyRuntimeException createNotSupportClauseException(ClauseSQLContext context, Clause clause) {
+        return new ArmyRuntimeException(ErrorCode.NONE, "%s not support %s clause."
+                , context.getClass().getName(), clause);
     }
 
     @Nullable

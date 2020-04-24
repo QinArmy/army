@@ -406,7 +406,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
     }
 
     private ClauseSQLContext createComposeSQLContext(InnerComposeQuery select, Visible visible) {
-        return AbstractSQLContext.buildDefault(this.dialect, visible);
+        return AbstractClauseContext.buildDefault(this.dialect, visible);
     }
 
 

@@ -7,11 +7,10 @@ class BeanWrapperImpl implements BeanWrapper {
 
     private final org.springframework.beans.BeanWrapper actualWrapper;
 
-    private final ReadonlyWrapper readonlyWrapper;
+    private ReadonlyWrapper readonlyWrapper;
 
     BeanWrapperImpl(Object target) {
         this.actualWrapper = PropertyAccessorFactory.forBeanPropertyAccess(target);
-        this.readonlyWrapper = new ReadonlyWrapperImpl(actualWrapper);
     }
 
 
@@ -74,6 +73,9 @@ class BeanWrapperImpl implements BeanWrapper {
 
     @Override
     public ReadonlyWrapper getReadonlyWrapper() {
+        if (this.readonlyWrapper == null) {
+            this.readonlyWrapper = new ReadonlyWrapperImpl(this);
+        }
         return readonlyWrapper;
     }
 }
