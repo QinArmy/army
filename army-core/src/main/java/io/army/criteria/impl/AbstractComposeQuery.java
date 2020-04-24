@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner.InnerComposeQuery;
 import io.army.util.Pair;
 
 import java.util.ArrayList;
@@ -9,7 +10,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class AbstractComposeQuery<C> implements SQLStatement, PartQuery, InnerQueryAfterSet, SelfDescribed {
+abstract class AbstractComposeQuery<C> implements SQLStatement, PartQuery, SelfDescribed
+        , InnerComposeQuery {
 
 
     final C criteria;

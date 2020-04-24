@@ -17,13 +17,10 @@ public abstract class SQLS extends AbstractSQLS {
 
     }
 
-    public static <T extends IDomain> Insert.InsertOptionAble<T, EmptyObject> insert(TableMeta<T> targetTable) {
-        return new StandardInsert<>(targetTable, EmptyObject.getInstance());
+    public static <T extends IDomain> Insert.InsertIntoAble<T> insert(TableMeta<T> targetTable) {
+        return new StandardInsert<>(targetTable);
     }
 
-    public static <T extends IDomain, C> Insert.InsertOptionAble<T, C> insert(TableMeta<T> targetTable, C criteria) {
-        return new StandardInsert<>(targetTable, criteria);
-    }
 
     public static <T extends IDomain> Insert.SubQueryTargetFieldAble<T, EmptyObject> subQueryInsert(
             TableMeta<T> targetTable) {

@@ -1,31 +1,19 @@
 package io.army.dialect;
 
-import io.army.criteria.SQLContext;
-import io.army.criteria.Select;
-import io.army.criteria.SubQuery;
-import io.army.criteria.Visible;
+import io.army.criteria.*;
 
 import java.util.List;
 
 public interface DQL extends SQL {
 
-    default List<SQLWrapper> select(Select select, Visible visible) {
-        throw new UnsupportedOperationException();
-    }
+    List<SQLWrapper> select(Select select, Visible visible);
 
-    default void select(Select select, SQLContext originalContext) {
-        throw new UnsupportedOperationException();
-    }
+    void select(Select select, SQLContext originalContext);
 
-    default void partSelect(Select select, SQLContext originalContext) {
-        throw new UnsupportedOperationException();
-    }
+    void partSelect(PartQuery select, SQLContext originalContext);
 
-    default void partSubQuery(SubQuery subQuery, SQLContext originalContext) {
-        throw new UnsupportedOperationException();
-    }
+    void partSubQuery(PartQuery subQuery, SQLContext originalContext);
 
-    default void subQuery(SubQuery subQuery, SQLContext originalContext) {
-        throw new UnsupportedOperationException();
-    }
+    void subQuery(SubQuery subQuery, SQLContext originalContext);
+
 }

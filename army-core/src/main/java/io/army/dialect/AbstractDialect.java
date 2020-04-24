@@ -2,9 +2,7 @@ package io.army.dialect;
 
 
 import io.army.SessionFactory;
-import io.army.criteria.Delete;
-import io.army.criteria.Update;
-import io.army.criteria.Visible;
+import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
@@ -106,6 +104,32 @@ public abstract class AbstractDialect implements Dialect {
         return tableDDL.dropIndex(tableMeta, indexNames);
     }
 
+    /*################################## blow DQL method ##################################*/
+
+    @Override
+    public final List<SQLWrapper> select(Select select, Visible visible) {
+        return this.dql.select(select, visible);
+    }
+
+    @Override
+    public final void select(Select select, SQLContext originalContext) {
+        this.dql.select(select, originalContext);
+    }
+
+    @Override
+    public final void partSelect(PartQuery select, SQLContext originalContext) {
+        this.dql.partSelect(select, originalContext);
+    }
+
+    @Override
+    public final void partSubQuery(PartQuery subQuery, SQLContext originalContext) {
+        this.dql.partSubQuery(subQuery, originalContext);
+    }
+
+    @Override
+    public final void subQuery(SubQuery subQuery, SQLContext originalContext) {
+        this.dql.subQuery(subQuery, originalContext);
+    }
 
     /*################################## blow DML method ##################################*/
 
@@ -114,6 +138,15 @@ public abstract class AbstractDialect implements Dialect {
         return this.dml.insert(domain);
     }
 
+    @Override
+    public final List<SQLWrapper> insert(Insert insert, Visible visible) {
+        return this.dml.insert(insert, visible);
+    }
+
+    @Override
+    public final List<BatchSQLWrapper> batchInsert(Insert insert, Visible visible) {
+        return this.dml.batchInsert(insert, visible);
+    }
 
     @Override
     public final List<SQLWrapper> update(Update update, Visible visible) {
@@ -130,6 +163,8 @@ public abstract class AbstractDialect implements Dialect {
     public SQLDialect sqlDialect() {
         throw new UnsupportedOperationException();
     }
+
+
 
     /*####################################### below DQL  method #################################*/
 

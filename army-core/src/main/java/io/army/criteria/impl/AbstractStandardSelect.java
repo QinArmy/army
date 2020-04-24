@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.InnerSelect;
+import io.army.criteria.impl.inner.InnerQuery;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
@@ -18,7 +18,7 @@ import java.util.function.Predicate;
 abstract class AbstractStandardSelect<C> extends AbstractSQL implements Select
         , Select.WhereAble<C>, Select.WhereAndAble<C>, Select.HavingAble<C>
         , Select.UnionClause<C>, Select.SelectPartAble<C>, Select.FromAble<C>
-        , Select.JoinAble<C>, Select.OnAble<C>, InnerSelect {
+        , Select.JoinAble<C>, Select.OnAble<C>, InnerQuery {
 
     static final String NOT_PREPARED_MSG = "Select criteria don't haven invoke asSelect() method.";
 
@@ -27,7 +27,6 @@ abstract class AbstractStandardSelect<C> extends AbstractSQL implements Select
     private List<SQLModifier> modifierList;
 
     private List<SelectPart> selectPartList = new LinkedList<>();
-
 
     private List<IPredicate> predicateList = new ArrayList<>();
 
@@ -475,6 +474,7 @@ abstract class AbstractStandardSelect<C> extends AbstractSQL implements Select
 
     /*################################## blow InnerQueryAble method ##################################*/
 
+
     @Override
     public final List<SQLModifier> modifierList() {
         return this.modifierList;
@@ -516,7 +516,6 @@ abstract class AbstractStandardSelect<C> extends AbstractSQL implements Select
         return this.rowCount;
     }
 
-    @Override
     public final LockMode lockMode() {
         return this.lockMode;
     }

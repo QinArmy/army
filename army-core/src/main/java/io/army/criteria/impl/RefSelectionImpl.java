@@ -40,7 +40,7 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
 
     @Override
     protected final void afterSpace(SQLContext context) {
-        SQL sql = context.dml();
+        SQL sql = context.dql();
 
         context.sqlBuilder()
                 .append(sql.quoteIfNeed(subQueryAlias))

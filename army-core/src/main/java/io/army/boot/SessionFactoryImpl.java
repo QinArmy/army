@@ -11,7 +11,6 @@ import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.Pair;
-import io.army.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
@@ -20,7 +19,9 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.StringJoiner;
 
 class SessionFactoryImpl implements InnerSessionFactory {
 
@@ -137,6 +138,11 @@ class SessionFactoryImpl implements InnerSessionFactory {
     @Override
     public final Environment environment() {
         return env;
+    }
+
+    @Override
+    public final ShardingMode shardingMode() {
+        return ShardingMode.NO_SHARDING;
     }
 
     @Override

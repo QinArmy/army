@@ -130,8 +130,10 @@ abstract class ComposeSubQueries<C> extends AbstractComposeQuery<C> implements C
         return this;
     }
 
+    @Override
+    public void clear() {
 
-
+    }
 
 
     /*################################## blow static inner class ##################################*/

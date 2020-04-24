@@ -37,6 +37,16 @@ class MySQL57Dialect extends AbstractDialect {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public String format(SQLWrapper sqlWrapper) {
+        return null;
+    }
+
+    @Override
+    public String format(BatchSQLWrapper sqlWrapper) {
+        return null;
+    }
+
     /*####################################### below AbstractDialect template  method #################################*/
 
     @Override

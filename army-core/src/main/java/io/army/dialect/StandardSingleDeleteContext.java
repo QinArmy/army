@@ -1,7 +1,6 @@
 package io.army.dialect;
 
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner.InnerDelete;
 import io.army.criteria.impl.inner.InnerStandardDelete;
 
 final class StandardSingleDeleteContext extends AbstractClauseContext implements DeleteContext {
@@ -15,7 +14,7 @@ final class StandardSingleDeleteContext extends AbstractClauseContext implements
     }
 
     @Override
-    public final InnerDelete innerDelete() {
-        return this.innerDelete;
+    public void currentClause(Clause clause) {
+
     }
 }

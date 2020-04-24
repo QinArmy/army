@@ -1,9 +1,6 @@
 package io.army.boot;
 
-import io.army.ArmyRuntimeException;
-import io.army.Session;
-import io.army.SessionBuilder;
-import io.army.SessionFactory;
+import io.army.*;
 import io.army.dialect.Dialect;
 import io.army.dialect.SQLDialect;
 import io.army.dialect.mysql.MySQLDialectFactory;
@@ -13,7 +10,6 @@ import io.army.generator.MultiGenerator;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
-import org.springframework.lang.Nullable;
 
 import javax.sql.DataSource;
 import java.time.ZoneId;
@@ -154,6 +150,11 @@ public class MockSessionFactoryBuilder implements SessionFactoryBuilder {
         @Override
         public boolean isClosed() {
             return this.closed;
+        }
+
+        @Override
+        public ShardingMode shardingMode() {
+            return null;
         }
     }
 

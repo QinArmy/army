@@ -821,7 +821,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
         if (this.alias != null) {
             context.sqlBuilder()
                     .append(" AS ")
-                    .append(context.dml().quoteIfNeed(this.alias))
+                    .append(context.dql().quoteIfNeed(this.alias))
             ;
         }
     }

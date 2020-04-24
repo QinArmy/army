@@ -8,7 +8,7 @@ import io.army.criteria.Selection;
 import io.army.criteria.postgre.PostgreFuncColExp;
 import io.army.criteria.postgre.PostgreFuncTable;
 import io.army.criteria.postgre.PostgreRowsFromTable;
-import io.army.dialect.DML;
+import io.army.dialect.SQL;
 import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingType;
 
@@ -126,16 +126,16 @@ final class PostgreRowsFromTableImpl implements PostgreRowsFromTable {
             builder.append(" WITH ORDINALITY");
         }
 
-        DML dml = context.dml();
+        SQL sql = context.dql();
         builder.append(" AS ")
-                .append(dml.quoteIfNeed(this.tableAlias))
+                .append(sql.quoteIfNeed(this.tableAlias))
                 .append(" ( ")
         ;
 
         for (Iterator<SelectPart> iterator = selectPartList.iterator(); iterator.hasNext(); ) {
             SelectPart selectPart = iterator.next();
             if (selectPart instanceof Selection) {
-                builder.append(dml.quoteIfNeed(((Selection) selectPart).alias()));
+                builder.append(sql.quoteIfNeed(((Selection) selectPart).alias()));
             } else {
                 throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "PostgreRowsFromTableImpl column[%s] error."
                         , selectPart);

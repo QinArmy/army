@@ -71,7 +71,7 @@ class PostgreFuncTableImpl implements PostgreFuncTable {
         String tableAlias = tableAlias();
         if (StringUtils.hasText(tableAlias)) {
             builder.append(" AS ")
-                    .append(context.dml().quoteIfNeed(tableAlias));
+                    .append(context.dql().quoteIfNeed(tableAlias));
         }
         if (colDefExpList.isEmpty()) {
             return;

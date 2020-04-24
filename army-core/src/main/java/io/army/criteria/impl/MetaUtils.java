@@ -444,7 +444,7 @@ abstract class MetaUtils {
 
     private static <E extends Enum<E> & CodeEnum, T extends IDomain> void assertDiscriminatorValueIsEnumCode(
             TableMeta<T> tableMeta, int value) {
-        FieldMeta<T, E> fieldMeta = tableMeta.discriminator();
+        FieldMeta<?, E> fieldMeta = tableMeta.discriminator();
         Assert.notNull(fieldMeta,()-> String.format("entity[%s] no discriminator",tableMeta.javaType().getName()));
         Map<Integer, E> codeMap = CodeEnum.getCodeMap(fieldMeta.javaType());
         if (!codeMap.containsKey(value)) {

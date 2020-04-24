@@ -132,7 +132,7 @@ final class FieldValuesGeneratorImpl implements FieldValuesGenerator {
 
     private <T extends IDomain, E extends Enum<E> & CodeEnum> void createDiscriminatorValue(
             TableMeta<T> tableMeta, BeanWrapper entityWrapper) {
-        FieldMeta<T, E> discriminator = tableMeta.discriminator();
+        FieldMeta<?, E> discriminator = tableMeta.discriminator();
 
         if (discriminator == null) {
             return;

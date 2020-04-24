@@ -48,6 +48,7 @@ class StandardContextualSingleDelete<C> extends AbstractSQLDebug implements Dele
 
     /*################################## blow SingleDeleteAble method ##################################*/
 
+
     @Override
     public final SingleDeleteWhereAble<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias) {
         this.tableMeta = tableMeta;
@@ -126,6 +127,11 @@ class StandardContextualSingleDelete<C> extends AbstractSQLDebug implements Dele
 
         this.prepared = true;
         return this;
+    }
+
+    @Override
+    public final void clear() {
+        this.predicateList = null;
     }
 
     /*################################## blow InnerStandardSingleDelete method ##################################*/

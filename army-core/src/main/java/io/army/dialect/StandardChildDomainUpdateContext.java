@@ -2,7 +2,6 @@ package io.army.dialect;
 
 import io.army.criteria.TableAliasException;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner.InnerDomainUpdate;
 import io.army.criteria.impl.inner.InnerStandardDomainUpdate;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
@@ -48,9 +47,10 @@ final class StandardChildDomainUpdateContext extends AbstractClauseContext imple
         }
     }
 
+
     @Override
-    public final InnerDomainUpdate innerUpdate() {
-        return this.innerUpdate;
+    public void currentClause(Clause clause) {
+
     }
 
     @Override

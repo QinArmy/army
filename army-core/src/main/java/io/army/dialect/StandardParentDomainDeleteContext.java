@@ -2,7 +2,6 @@ package io.army.dialect;
 
 import io.army.criteria.TableAliasException;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner.InnerDomainDelete;
 import io.army.criteria.impl.inner.InnerStandardDomainDelete;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
@@ -30,8 +29,8 @@ final class StandardParentDomainDeleteContext extends AbstractClauseContext impl
     }
 
     @Override
-    public final InnerDomainDelete innerDelete() {
-        return this.innerDelete;
+    public void currentClause(Clause clause) {
+
     }
 
     @Override

@@ -12,7 +12,7 @@ import io.army.util.CollectionUtils;
 import java.util.*;
 
 final class StandardBatchInsert<T extends IDomain> extends AbstractSQLDebug implements Insert, Insert.InsertAble
-        , Insert.BatchInsertOptionAble<T>, Insert.BatchInsertIntoAble<T>, Insert.BatchInsertValuesAble<T>
+        , Insert.BatchInsertIntoAble<T>, Insert.BatchInsertValuesAble<T>
         , InnerStandardBatchInsert {
 
     private final TableMeta<T> tableMeta;
@@ -32,22 +32,6 @@ final class StandardBatchInsert<T extends IDomain> extends AbstractSQLDebug impl
         this.tableMeta = tableMeta;
     }
 
-    /*################################## blow BatchInsertOptionAble method ##################################*/
-
-    @Override
-    public final <F> BatchInsertOptionAble<T> commonValue(FieldMeta<? super T, F> fieldMeta, Expression<F> valueExp) {
-        if (this.commonValueMap == null) {
-            this.commonValueMap = new HashMap<>();
-        }
-        this.commonValueMap.put(fieldMeta, valueExp);
-        return this;
-    }
-
-    @Override
-    public final BatchInsertOptionAble<T> ignoreGeneratorIfCrash() {
-        this.ignoreGenerateValueIfCrash = true;
-        return this;
-    }
 
     /*################################## blow BatchInsertIntoAble method ##################################*/
 

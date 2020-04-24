@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,8 +23,6 @@ public class InsertTests {
         fieldMetaList.add(BalanceAccount_.balance);
 
         Insert insert = SQLS.insert(BalanceAccount_.T)
-                .commonValue(BalanceAccount_.balance, SQLS.constant(new BigDecimal(4)).add(new BigDecimal(4)))
-                .defaultIfNull()
                 .insertInto(fieldMetaList)
                 .value(new BalanceAccount())
                 .asInsert();
@@ -39,8 +36,6 @@ public class InsertTests {
         List<BalanceAccount> valueList = new ArrayList<>();
 
         Insert insert = SQLS.insert(BalanceAccount_.T)
-                .commonValue(BalanceAccount_.balance, SQLS.constant(new BigDecimal(4)).add(new BigDecimal(4)))
-                .defaultIfNull()
                 .insertInto(fieldMetaList)
                 .values(valueList)
                 .asInsert();

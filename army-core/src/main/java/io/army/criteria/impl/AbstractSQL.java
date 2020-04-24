@@ -41,16 +41,17 @@ abstract class AbstractSQL extends AbstractSQLDebug implements QueryAble, InnerS
 
     /*################################## blow InnerSQL method ##################################*/
 
-    @Override
     public final List<TableWrapper> tableWrapperList() {
-        Assert.state(prepared(), "sql no prepared.");
         return this.tableWrapperList;
     }
 
-    @Override
     public final Map<TableMeta<?>, Integer> tablePresentCountMap() {
-        Assert.state(prepared(), "sql no prepared.");
         return this.tablePresentCountMap;
+    }
+
+    @Override
+    public void clear() {
+
     }
 
     /*################################## blow package method ##################################*/

@@ -13,6 +13,10 @@ final class StandardSelectContext extends AbstractClauseContext implements Selec
         this.innerSelect = select;
     }
 
+    @Override
+    public void currentClause(Clause clause) {
+
+    }
 
     @Override
     public final InnerSelect innerSelect() {

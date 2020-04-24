@@ -135,7 +135,10 @@ abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements Sele
         return this;
     }
 
+    @Override
+    public void clear() {
 
+    }
 
     /*################################## blow static inner class ##################################*/
 

@@ -5,7 +5,6 @@ import com.example.domain.account.BalanceAccount_;
 import io.army.criteria.Expression;
 import io.army.criteria.Select;
 import io.army.criteria.impl.Postgres;
-import io.army.criteria.impl.SQLS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -29,7 +28,6 @@ public class PostgreSelectTests {
                 .tableSampleAfterFrom(this::tableSampleList)
                 .join(BalanceAccount_.T, "b")
                 .on(Account_.id.eq(BalanceAccount_.id))
-                .where(SQLS.always())
                 .groupBy(Account_.id)
                 .having(Account_.id.ge(3L))
                 .window(this::windowList)

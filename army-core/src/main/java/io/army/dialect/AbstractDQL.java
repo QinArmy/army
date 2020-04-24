@@ -104,7 +104,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
     }
 
     @Override
-    public final void partSelect(Select select, SQLContext originalContext) {
+    public final void partSelect(PartQuery select, SQLContext originalContext) {
         if (select instanceof InnerStandardComposeQuery) {
             InnerStandardComposeQuery composeSelect = (InnerStandardComposeQuery) select;
             CriteriaCounselor.assertStandardComposeSelect(composeSelect);
@@ -126,7 +126,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
     }
 
     @Override
-    public final void partSubQuery(SubQuery subQuery, SQLContext originalContext) {
+    public final void partSubQuery(PartQuery subQuery, SQLContext originalContext) {
         if (subQuery instanceof InnerStandardComposeQuery) {
             InnerStandardComposeQuery composeQuery = (InnerStandardComposeQuery) subQuery;
             ClauseSQLContext context = adaptSelectContext(composeQuery, originalContext);
@@ -406,7 +406,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
     }
 
     private ClauseSQLContext createComposeSQLContext(InnerComposeQuery select, Visible visible) {
-        return AbstractClauseContext.buildDefault(this.dialect, visible);
+        return new ComposeQuerySQLContext(visible);
     }
 
 

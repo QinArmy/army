@@ -1000,7 +1000,7 @@ abstract class AbstractPostgreMultiSelect<C> extends AbstractSQL implements Post
         public void appendSQL(SQLContext context) {
             context.sqlBuilder()
                     .append(" ")
-                    .append(context.dml().quoteIfNeed(this.withQueryName))
+                    .append(context.dql().quoteIfNeed(this.withQueryName))
             ;
         }
 
