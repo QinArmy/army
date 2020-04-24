@@ -9,9 +9,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 
-public interface SubQuery extends SelfDescribed, DerivedTable, QueryAble {
+public interface SubQuery extends SQLStatement, SelfDescribed, DerivedTable, QueryAble {
 
-    boolean prepared();
 
 
     /*################################## blow interfaces ##################################*/

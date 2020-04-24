@@ -6,7 +6,7 @@ import io.army.criteria.SortPart;
 import java.util.List;
 
 @DeveloperForbid
-public interface InnerComposeQuery extends SelfDescribed, InnerSQL {
+public interface InnerComposeQuery extends SelfDescribed, InnerGeneralQuery {
 
     /**
      * @return a unmodifiable list

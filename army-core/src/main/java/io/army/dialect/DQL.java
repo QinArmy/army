@@ -13,19 +13,19 @@ public interface DQL extends SQL {
         throw new UnsupportedOperationException();
     }
 
-    default void select(Select select, SQLContext context) {
+    default void select(Select select, SQLContext originalContext) {
         throw new UnsupportedOperationException();
     }
 
-    default void partSelect(Select select, SQLContext context) {
+    default void partSelect(Select select, SQLContext originalContext) {
         throw new UnsupportedOperationException();
     }
 
-    default void partSubQuery(SubQuery subQuery, SQLContext context) {
+    default void partSubQuery(SubQuery subQuery, SQLContext originalContext) {
         throw new UnsupportedOperationException();
     }
 
-    default void subQuery(SubQuery subQuery, SQLContext context) {
+    default void subQuery(SubQuery subQuery, SQLContext originalContext) {
         throw new UnsupportedOperationException();
     }
 }

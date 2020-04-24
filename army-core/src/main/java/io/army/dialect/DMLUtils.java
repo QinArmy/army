@@ -116,14 +116,18 @@ abstract class DMLUtils {
         }
     }
 
-    static void createInsertForSimple(TableMeta<?> tableMeta, Collection<? extends FieldMeta<?, ?>> fieldMetas
-            , ReadonlyWrapper entityWrapper, InsertContext context) {
+    static void createInsertForSimple(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> fieldMetas
+            , ReadonlyWrapper domainWrapper, InsertContext context) {
 
-        StringBuilder fieldBuilder = context.fieldStringBuilder().append("INSERT INTO ");
-        StringBuilder valueBuilder = context.sqlBuilder().append(" VALUE (");
+        StringBuilder fieldBuilder = context.fieldStringBuilder().append(Keywords.INSERT_INTO);
+        StringBuilder valueBuilder = context.sqlBuilder()
+                .append(" ")
+                .append(Keywords.VALUE)
+                .append(" (");
 
-        final SQL sql = context.dql();
+        final DQL dql = context.dql();
         final boolean defaultIfNull = context.defaultIfNull();
+        // append table name
         context.appendTable(tableMeta);
         fieldBuilder.append("(");
 
@@ -134,22 +138,26 @@ abstract class DMLUtils {
             if (!fieldMeta.insertalbe()) {
                 continue;
             }
-            value = entityWrapper.getPropertyValue(fieldMeta.propertyName());
+            value = domainWrapper.getPropertyValue(fieldMeta.propertyName());
 
             if (value == null && !fieldMeta.nullable() && !defaultIfNull) {
                 continue;
             }
-            if (count != 0) {
+            if (count > 0) {
                 fieldBuilder.append(",");
                 valueBuilder.append(",");
             }
             // field
-            fieldBuilder.append(sql.quoteIfNeed(fieldMeta.fieldName()));
+            fieldBuilder.append(dql.quoteIfNeed(fieldMeta.fieldName()));
             // value
             commonExp = context.commonExp(fieldMeta);
             if (isConstant(fieldMeta)) {
                 valueBuilder.append(createConstant(fieldMeta));
             } else if (commonExp != null) {
+                if (fieldMeta.generator() != null) {
+                    throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                            , "FieldMeta[%s] has Generator,can't specify common expression.", fieldMeta);
+                }
                 commonExp.appendSQL(context);
             } else if (value == null && defaultIfNull) {
                 valueBuilder.append("DEFAULT");

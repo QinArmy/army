@@ -5,7 +5,7 @@ import io.army.criteria.impl.inner.InnerInsert;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 
-public interface InsertContext extends ClauseSQLContext {
+public interface InsertContext extends DMLContext {
 
     StringBuilder fieldStringBuilder();
 

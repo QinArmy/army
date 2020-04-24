@@ -1,9 +1,7 @@
 package io.army.criteria.impl.inner;
 
-import io.army.criteria.LockMode;
-
 @DeveloperForbid
-public interface InnerSelect extends InnerQuery {
+public interface InnerSelect extends InnerGeneralQuery {
 
-    LockMode lockMode();
+
 }

@@ -19,4 +19,6 @@ public interface SQL {
 
     String mapping(MappingType mappingType);
 
+    SQLDialect sqlDialect();
+
 }

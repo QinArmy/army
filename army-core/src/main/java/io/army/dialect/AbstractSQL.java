@@ -44,5 +44,8 @@ public abstract class AbstractSQL implements SQL {
         return this.dialect.mapping(mappingType);
     }
 
-
+    @Override
+    public final SQLDialect sqlDialect() {
+        return this.dialect.sqlDialect();
+    }
 }

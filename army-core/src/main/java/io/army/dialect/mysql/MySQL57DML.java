@@ -1,14 +1,7 @@
 package io.army.dialect.mysql;
 
-import io.army.criteria.Visible;
-import io.army.criteria.impl.inner.InnerSpecialDelete;
-import io.army.criteria.impl.inner.InnerSpecialInsert;
-import io.army.criteria.impl.inner.InnerSpecialUpdate;
+import io.army.criteria.SQLContext;
 import io.army.dialect.AbstractDML;
-import io.army.dialect.BatchSQLWrapper;
-import io.army.dialect.SQLWrapper;
-
-import java.util.List;
 
 class MySQL57DML extends AbstractDML {
 
@@ -16,20 +9,14 @@ class MySQL57DML extends AbstractDML {
         super(sql);
     }
 
-    @Override
-    protected List<SQLWrapper> specialInsert(InnerSpecialInsert insert) {
-        return null;
-    }
+    /*################################## blow DML method ##################################*/
 
     @Override
-    protected List<BatchSQLWrapper> specialBatchInsert(InnerSpecialInsert insert) {
-        return null;
+    public final boolean singleDeleteHasTableAlias() {
+        return false;
     }
 
-    @Override
-    protected List<SQLWrapper> specialUpdate(InnerSpecialUpdate update, Visible visible) {
-        return null;
-    }
+    /*################################## blow AbstractDML method ##################################*/
 
     @Override
     protected final boolean tableAliasAfterAs() {
@@ -37,12 +24,9 @@ class MySQL57DML extends AbstractDML {
     }
 
     @Override
-    protected List<SQLWrapper> specialDelete(InnerSpecialDelete delete, Visible visible) {
-        return null;
+    protected final void tableOnlyModifier(SQLContext context) {
+        // do nothing .
     }
 
-    @Override
-    public final boolean singleDeleteHasTableAlias() {
-        return false;
-    }
+
 }

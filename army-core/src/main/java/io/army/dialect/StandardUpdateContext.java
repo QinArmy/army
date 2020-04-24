@@ -2,7 +2,6 @@ package io.army.dialect;
 
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.InnerStandardUpdate;
-import io.army.criteria.impl.inner.InnerUpdate;
 
 final class StandardUpdateContext extends AbstractSQLContext implements UpdateContext {
 
@@ -13,10 +12,6 @@ final class StandardUpdateContext extends AbstractSQLContext implements UpdateCo
         this.innerUpdate = update;
     }
 
-    @Override
-    public final InnerUpdate innerUpdate() {
-        return this.innerUpdate;
-    }
 
 
 }

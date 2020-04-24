@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 @DeveloperForbid
-public interface InnerQuery extends InnerSQL {
+public interface InnerQuery extends InnerGeneralQuery {
 
     /**
      * @return a unmodifiable list

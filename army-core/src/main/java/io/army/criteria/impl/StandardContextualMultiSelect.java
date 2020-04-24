@@ -4,7 +4,7 @@ import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner.InnerStandardSelect;
 import io.army.meta.TableMeta;
 
-class StandardContextualMultiSelect<C> extends AbstractStandardSelect<C> implements InnerStandardSelect {
+final class StandardContextualMultiSelect<C> extends AbstractStandardSelect<C> implements InnerStandardSelect {
 
     private final CriteriaContext criteriaContext;
 

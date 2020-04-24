@@ -34,5 +34,11 @@ public interface Keywords {
 
     String AS = "AS";
 
+    String INSERT_INTO = "INSERT INTO";
+
+    String VALUE = "VALUE";
+
+    String VALUES = "VALUES";
+
 
 }

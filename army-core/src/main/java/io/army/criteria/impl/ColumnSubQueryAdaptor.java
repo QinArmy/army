@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.InnerSubQuery;
+import io.army.criteria.impl.inner.InnerStandardSubQuery;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
@@ -16,7 +16,8 @@ import java.util.function.Predicate;
 final class ColumnSubQueryAdaptor<E, C> implements ColumnSubQuery<E>, ColumnSubQuery.ColumnSubQuerySelectionAble<E, C>
         , ColumnSubQuery.ColumnSubQueryFromAble<E, C>, ColumnSubQuery.ColumnSubQueryOnAble<E, C>
         , ColumnSubQuery.ColumnSubQueryWhereAndAble<E, C>, ColumnSubQuery.ColumnSubQueryJoinAble<E, C>
-        , ColumnSubQuery.ColumnSubQueryHavingAble<E, C>, ColumnSubQuery.ColumnSubQueryUnionAble<E, C>, InnerSubQuery {
+        , ColumnSubQuery.ColumnSubQueryHavingAble<E, C>, ColumnSubQuery.ColumnSubQueryUnionAble<E, C>
+        , InnerStandardSubQuery {
 
     private final SubQuerySelect<C> actualSelect;
 

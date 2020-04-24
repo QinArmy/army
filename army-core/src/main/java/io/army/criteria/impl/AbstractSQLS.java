@@ -1,6 +1,9 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.ConstantExpression;
+import io.army.criteria.Expression;
+import io.army.criteria.ParamExpression;
+import io.army.criteria.SQLContext;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
@@ -58,11 +61,6 @@ abstract class AbstractSQLS {
     public static TableMeta<Dual> dual() {
         return Dual.DualTableMeta.INSTANCE;
     }
-
-    public static IPredicate always() {
-        return AlwaysPredicate.INSTANCE;
-    }
-
 
     /*################################## blow number function method ##################################*/
 
@@ -215,38 +213,6 @@ abstract class AbstractSQLS {
     }
 
     /*################################## blow static inner class  ##################################*/
-
-
-
-
-    /*################################## blow static inner class  ##################################*/
-
-    private static final class AlwaysPredicate extends AbstractPredicate {
-
-        private static final AlwaysPredicate INSTANCE = new AlwaysPredicate();
-
-        private AlwaysPredicate() {
-        }
-
-
-        @Override
-        public Selection as(String alias) {
-            throw new UnsupportedOperationException(
-                    String.format("%s not support as(String alias) method.", AlwaysPredicate.class.getName()));
-        }
-
-        @Override
-        protected void afterSpace(SQLContext context) {
-            context.sqlBuilder()
-                    .append("1=1");
-        }
-
-        @Override
-        protected String beforeAs() {
-            return "1=1";
-        }
-
-    }
 
     private static final class DefaultValueExpression<E> extends AbstractNoNOperationExpression<E> {
 
