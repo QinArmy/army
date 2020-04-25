@@ -16,10 +16,6 @@ final class Dual implements IDomain {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public Boolean getVisible() {
-        throw new UnsupportedOperationException();
-    }
 
     static final class DualTableMeta implements TableMeta<Dual> {
 

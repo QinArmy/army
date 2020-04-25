@@ -26,7 +26,7 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
 
     String VISIBLE = "visible";
 
-    Set<String> DOMAIN_PROPS = ArrayUtils.asUnmodifiableSet(ID, CREATE_TIME, VISIBLE);
+    Set<String> DOMAIN_PROPS = ArrayUtils.asUnmodifiableSet(ID, CREATE_TIME);
 
     String UPDATE_TIME = "updateTime";
 
@@ -34,6 +34,8 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
 
     Set<String> VERSION_PROPS = ArrayUtils.asUnmodifiableSet(
             DOMAIN_PROPS, UPDATE_TIME, VERSION);
+
+    Set<String> RESERVED_PROPS = ArrayUtils.asUnmodifiableSet(VERSION_PROPS, VISIBLE);
 
     Class<T> javaType();
 

@@ -9,9 +9,6 @@ import io.army.util.AnnotationUtils;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 import io.army.util.StringUtils;
-import org.jooq.Meta;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
 
 import javax.lang.model.element.Element;
@@ -123,7 +120,7 @@ abstract class MetaUtils {
 
         }
 
-        if (!TableMeta.VERSION_PROPS.contains(propName)
+        if (!TableMeta.RESERVED_PROPS.contains(propName)
                 && (discriminatorColumn != null && !columnName.equals(discriminatorColumn))) {
             // check comment
             if (!StringUtils.hasText(column.comment())) {

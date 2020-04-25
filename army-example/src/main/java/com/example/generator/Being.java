@@ -6,7 +6,6 @@ import io.army.generator.PreMultiGenerator;
 import io.army.util.JsonUtils;
 
 import java.time.LocalDateTime;
-import java.util.StringJoiner;
 
 @Table(name = "being", comment = "生物表")
 @Inheritance("being_type")
@@ -136,7 +135,6 @@ public class Being implements IDomain {
         this.version = version;
     }
 
-    @Override
     public Boolean getVisible() {
         return visible;
     }
