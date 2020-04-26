@@ -131,6 +131,11 @@ class SessionFactoryImpl implements InnerSessionFactory {
     }
 
     @Override
+    public ProxySession getProxySession() {
+        return null;
+    }
+
+    @Override
     public final DataSource getDataSource() {
         return this.dataSource;
     }

@@ -166,9 +166,10 @@ abstract class FieldMetaUtils extends MetaUtils {
         return insertable;
     }
 
-    static boolean columnUpdatable(String propName, Column column, boolean isDiscriminator) {
+    static boolean columnUpdatable(TableMeta<?> tableMeta, String propName, Column column, boolean isDiscriminator) {
         boolean updatable = column.updatable();
-        if (TableMeta.ID.equals(propName)
+        if (tableMeta.immutable()
+                || TableMeta.ID.equals(propName)
                 || TableMeta.CREATE_TIME.equals(propName)
                 || isDiscriminator) {
             updatable = false;

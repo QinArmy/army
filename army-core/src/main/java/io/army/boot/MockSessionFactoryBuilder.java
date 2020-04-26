@@ -143,6 +143,11 @@ public class MockSessionFactoryBuilder implements SessionFactoryBuilder {
         }
 
         @Override
+        public ProxySession getProxySession() {
+            return null;
+        }
+
+        @Override
         public void close() throws ArmyRuntimeException {
             this.closed = true;
         }

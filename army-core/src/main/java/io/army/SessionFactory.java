@@ -36,11 +36,13 @@ public interface SessionFactory extends AutoCloseable{
 
     SchemaMeta schemaMeta();
 
-    Map<Class<?>,TableMeta<?>> tableMetaMap();
+    Map<Class<?>, TableMeta<?>> tableMetaMap();
 
     Map<FieldMeta<?, ?>, MultiGenerator> fieldGeneratorMap();
 
-    Map<TableMeta<?>, List<FieldMeta<?,?>>> tableGeneratorChain();
+    Map<TableMeta<?>, List<FieldMeta<?, ?>>> tableGeneratorChain();
+
+    ProxySession getProxySession();
 
     /**
      * Destroy this <tt>SessionFactory</tt> then release all resources (caches,

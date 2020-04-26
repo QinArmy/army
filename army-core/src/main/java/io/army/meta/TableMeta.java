@@ -45,7 +45,7 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
 
     String comment();
 
-    IndexFieldMeta<? super T, ?> primaryKey();
+    IndexFieldMeta<? super T, Object> primaryKey();
 
     MappingMode mappingMode();
 
@@ -70,7 +70,7 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
 
     boolean isMappingProp(String propName);
 
-    FieldMeta<T, ?> getField(String propName) throws MetaException;
+    FieldMeta<T, Object> getField(String propName) throws MetaException;
 
     <F> FieldMeta<T, F> getField(String propName, Class<F> propClass) throws MetaException;
 

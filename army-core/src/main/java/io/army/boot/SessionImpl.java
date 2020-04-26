@@ -2,10 +2,10 @@ package io.army.boot;
 
 import io.army.SessionFactory;
 import io.army.SessionOptions;
-import io.army.criteria.Update;
-import io.army.criteria.Visible;
+import io.army.criteria.*;
 import io.army.dialect.SQLWrapper;
 import io.army.domain.IDomain;
+import io.army.meta.TableMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,6 +83,26 @@ class SessionImpl implements InnerSession {
     }
 
     @Override
+    public <T extends IDomain> T get(TableMeta<T> tableMeta, Object id) {
+        return null;
+    }
+
+    @Override
+    public <T extends IDomain> T get(TableMeta<T> tableMeta, Object id, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public <T extends IDomain> List<T> select(Select select) {
+        return null;
+    }
+
+    @Override
+    public <T extends IDomain> List<T> select(Select select, Visible visible) {
+        return null;
+    }
+
+    @Override
     public List<Integer> update(Update update) {
         return update(update, Visible.ONLY_VISIBLE);
     }
@@ -94,6 +114,15 @@ class SessionImpl implements InnerSession {
             LOG.info("wrapper:{}", wrapper);
         }
         return Collections.emptyList();
+    }
+
+    @Override
+    public void insert(Insert insert) {
+    }
+
+    @Override
+    public int delete(Delete delete) {
+        return 0;
     }
 
     @Override

@@ -146,10 +146,10 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
             this.fieldName = FieldMetaUtils.columnName(column, field);
             this.mappingType = FieldMetaUtils.columnMappingType(field);
 
-            boolean isDiscriminator = FieldMetaUtils.isDiscriminator(this);
+            final boolean isDiscriminator = FieldMetaUtils.isDiscriminator(this);
 
             this.insertable = FieldMetaUtils.columnInsertable(this.propertyName, column, isDiscriminator);
-            this.updatable = FieldMetaUtils.columnUpdatable(this.propertyName, column, isDiscriminator);
+            this.updatable = FieldMetaUtils.columnUpdatable(table, this.propertyName, column, isDiscriminator);
 
             this.comment = FieldMetaUtils.columnComment(column, this, isDiscriminator);
             this.nullable = FieldMetaUtils.columnNullable(column, this, isDiscriminator);

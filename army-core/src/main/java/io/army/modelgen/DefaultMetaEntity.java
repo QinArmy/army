@@ -7,16 +7,13 @@ import io.army.annotation.Table;
 import io.army.criteria.MetaException;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
-import io.army.util.ClassUtils;
 import io.army.util.StringUtils;
-import io.army.util.TimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import java.time.ZonedDateTime;
 import java.util.*;
 
 /**
@@ -43,7 +40,6 @@ class DefaultMetaEntity implements MetaEntity {
     DefaultMetaEntity(@NonNull List<TypeElement> entityMappedElementList,
                       @NonNull List<TypeElement> parentMappedElementList) throws MetaException {
         this.entityElement = SourceCreateUtils.entityElement(entityMappedElementList);
-        LOG.trace("entityElement : {}", entityMappedElementList);
 
         if (this.entityElement == null) {
             throw new MetaException(ErrorCode.META_ERROR, "entityMappedElementList error");

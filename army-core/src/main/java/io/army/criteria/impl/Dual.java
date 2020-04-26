@@ -61,7 +61,7 @@ final class Dual implements IDomain {
         }
 
         @Override
-        public IndexFieldMeta<? super Dual, ?> primaryKey() {
+        public IndexFieldMeta<? super Dual, Object> primaryKey() {
             throw new UnsupportedOperationException();
         }
 
@@ -106,7 +106,7 @@ final class Dual implements IDomain {
         }
 
         @Override
-        public FieldMeta<Dual, ?> getField(String propName) throws MetaException {
+        public FieldMeta<Dual, Object> getField(String propName) throws MetaException {
             throw new MetaException(ErrorCode.META_ERROR, "no field[%s]", propName);
         }
 

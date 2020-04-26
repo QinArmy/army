@@ -6,7 +6,6 @@ import java.lang.annotation.*;
 
 
 /**
- * created  on 2018/9/27.
  *
  * @see DiscriminatorValue
  */
