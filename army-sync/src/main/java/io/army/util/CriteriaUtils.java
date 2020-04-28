@@ -1,7 +1,7 @@
 package io.army.util;
 
-import io.army.GenericSession;
 import io.army.NonUniqueException;
+import io.army.Session;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Insert;
 import io.army.criteria.Select;
@@ -41,17 +41,17 @@ public abstract class CriteriaUtils {
     }
 
     @Nullable
-    public static <T extends IDomain> T getByUnique(GenericSession genericSession, Class<T> domainClass, List<String> propNameList
+    public static <T extends IDomain> T getByUnique(Session session, Class<T> domainClass, List<String> propNameList
             , List<Object> valueList) {
-        return getByUnique(genericSession, domainClass, propNameList, valueList, Visible.ONLY_VISIBLE);
+        return getByUnique(session, domainClass, propNameList, valueList, Visible.ONLY_VISIBLE);
     }
 
     @Nullable
-    public static <T extends IDomain> T getByUnique(GenericSession genericSession, Class<T> domainClass, List<String> propNameList
+    public static <T extends IDomain> T getByUnique(Session session, Class<T> domainClass, List<String> propNameList
             , List<Object> valueList, Visible visible) {
 
         Select select = createSelectByUnique(domainClass, propNameList, valueList);
-        List<T> list = genericSession.select(select, visible);
+        List<T> list = session.select(select, visible);
 
         T domain;
         if (list.size() == 1) {

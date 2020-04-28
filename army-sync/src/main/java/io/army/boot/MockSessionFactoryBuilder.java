@@ -10,6 +10,7 @@ import io.army.dialect.mysql.MySQLDialectFactory;
 final class MockSessionFactoryBuilder extends AbstractSessionFactoryBuilder {
 
 
+
     @Override
     public SessionFactory build() throws SessionFactoryException {
         throw new UnsupportedOperationException();

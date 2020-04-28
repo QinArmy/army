@@ -34,6 +34,7 @@ public enum ErrorCode implements CodeEnum {
     NOT_FOUND_DOMAIN(700, "", NONE),
 
 
+
     NOT_FOUND_META_CLASS(701, "", NONE),
     META_CLASS_NOT_MATCH(702, "", NONE),
     SQL_TYPE_NOT_MATCH(703, "", NONE),

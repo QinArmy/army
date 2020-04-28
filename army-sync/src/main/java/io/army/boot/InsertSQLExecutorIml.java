@@ -55,7 +55,7 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
 
         for (SQLWrapper wrapper : sqlWrapperList) {
             if (showSql) {
-                LOG.info("{}", wrapper.toString(session.sessionFactory().dialect()));
+                //LOG.info("{}", wrapper.toString(session.sessionFactory().dialect()));
             }
             if (wrapper instanceof BeanSQLWrapper) {
                 beanWrapper = ((BeanSQLWrapper) wrapper).beanWrapper();
@@ -74,7 +74,7 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
 
             } catch (SQLException e) {
                 throw new InsertException(ErrorCode.INSERT_ERROR, e, "dml execute error:\n%s"
-                        , wrapper.toString(session.sessionFactory().dialect()));
+                        , wrapper.toString(null));
             }
 
             if (traceEnabled) {
@@ -106,7 +106,7 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
 
             } catch (SQLException e) {
                 throw new InsertException(ErrorCode.INSERT_ERROR, e, "dml execute error:\n%s"
-                        , sqlWrapper.toString(session.sessionFactory().dialect()));
+                        , sqlWrapper.toString(null));
             }
         }
     }

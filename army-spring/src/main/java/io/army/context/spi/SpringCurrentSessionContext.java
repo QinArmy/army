@@ -2,9 +2,9 @@ package io.army.context.spi;
 
 import io.army.ArmyAccessException;
 import io.army.NoCurrentSessionException;
+import io.army.Session;
 import io.army.SessionFactory;
 import io.army.util.Assert;
-import org.hibernate.Session;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 public final class SpringCurrentSessionContext implements CurrentSessionContext {

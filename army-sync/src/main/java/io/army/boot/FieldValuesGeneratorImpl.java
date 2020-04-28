@@ -166,10 +166,10 @@ final class FieldValuesGeneratorImpl implements FieldValuesGenerator {
     }
 
     private void assertDialectSupportedZone() {
-        if (!sessionFactory.dialect().supportZoneId()) {
+/*        if (!sessionFactory.dialect().supportZoneId()) {
             throw new MetaException(ErrorCode.META_ERROR, "dialect[%s] unsupported zoneId"
                     , sessionFactory.dialect().sqlDialect());
-        }
+        }*/
     }
 
 

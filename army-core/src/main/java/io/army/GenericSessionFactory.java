@@ -57,7 +57,7 @@ public interface GenericSessionFactory extends AutoCloseable {
 
     boolean hasCurrentSession();
 
-    boolean readOnly();
+    boolean readonly();
 
     boolean currentSessionContextIsInstanceOf(Class<?> currentSessionContextClass);
 }

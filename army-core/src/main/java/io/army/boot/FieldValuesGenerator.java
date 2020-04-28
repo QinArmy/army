@@ -14,6 +14,6 @@ public interface FieldValuesGenerator {
             throws FieldValuesCreateException;
 
     static FieldValuesGenerator build(GenericSessionFactory sessionFactory) {
-        return FieldValuesGeneratorImpl.build(sessionFactory);
+        return null;
     }
 }

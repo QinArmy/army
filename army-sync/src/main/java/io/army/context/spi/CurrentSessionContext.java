@@ -14,7 +14,7 @@ public interface CurrentSessionContext {
      *
      * @return The current session.
      * @throws ArmyAccessException Typically indicates an issue
-     *                             locating or creating the current session.
+     * locating or creating the current session.
      */
     Session currentSession() throws NoCurrentSessionException;
 

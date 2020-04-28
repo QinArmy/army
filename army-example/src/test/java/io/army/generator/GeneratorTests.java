@@ -1,17 +1,8 @@
 package io.army.generator;
 
-import io.army.GenericSessionFactory;
-import io.army.boot.BootstrapTests;
-import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 public class GeneratorTests {
 
@@ -19,7 +10,7 @@ public class GeneratorTests {
 
     @Test
     public void generatorMapping() {
-        final long startTime = System.currentTimeMillis();
+/*        final long startTime = System.currentTimeMillis();
         Map<String, Object> map = new HashMap<>();
 
         map.put(GenericSessionFactory.PACKAGE_TO_SCAN, "com.example.generator");
@@ -46,6 +37,6 @@ public class GeneratorTests {
             builder.append("\n\n");
             LOG.info("{}", builder.toString());
         }
-        LOG.info("cost {} ms", System.currentTimeMillis() - startTime);
+        LOG.info("cost {} ms", System.currentTimeMillis() - startTime);*/
     }
 }

@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.GenericSessionFactory;
-import io.army.boot.SessionFactoryBuilder;
 import io.army.criteria.SQLAble;
 import io.army.criteria.SQLDebug;
 import io.army.criteria.Visible;
@@ -29,11 +28,7 @@ abstract class AbstractSQLDebug implements SQLAble, SQLDebug {
 
 
     GenericSessionFactory createSessionFactory(SchemaMeta schemaMeta, SQLDialect sqlDialect) {
-        return SessionFactoryBuilder.mockBuilder()
-                .catalog(schemaMeta.catalog())
-                .schema(schemaMeta.schema())
-                .sqlDialect(sqlDialect)
-                .build();
+        return null;
     }
 
     String printSQL(List<SQLWrapper> sqlWrapperList, Dialect dialect) {

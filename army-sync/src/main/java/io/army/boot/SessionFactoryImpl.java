@@ -109,7 +109,7 @@ class SessionFactoryImpl implements InnerSessionFactory {
     }
 
     @Override
-    public boolean readOnly() {
+    public boolean readonly() {
         return this.readOnly;
     }
 

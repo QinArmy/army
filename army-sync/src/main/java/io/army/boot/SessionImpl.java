@@ -42,7 +42,7 @@ class SessionImpl implements InnerSession {
         this.sessionFactory = sessionFactory;
         this.connection = connection;
         this.currentSession = currentSession;
-        this.readonly = sessionFactory.readOnly();
+        this.readonly = sessionFactory.readonly();
 
         try {
             this.connInitParam = new ConnInitParam(

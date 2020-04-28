@@ -1,12 +1,6 @@
 package io.army.boot;
 
-import io.army.DataSourceUtils;
 import io.army.GenericSessionFactory;
-import io.army.env.StandardEnvironment;
-import io.army.generator.snowflake.SingleApplicationSnowflakeClient;
-import io.army.generator.snowflake.SnowflakeClient;
-import io.army.generator.snowflake.SnowflakeGenerator;
-import io.army.util.NetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -20,23 +14,23 @@ public class BootstrapTests {
 
     @Test
     public void bootstrap() {
-        final  long startTime = System.currentTimeMillis();
+        final long startTime = System.currentTimeMillis();
         Map<String, Object> map = new HashMap<>();
 
         map.put(GenericSessionFactory.PACKAGE_TO_SCAN, "com.example.domain");
 
-        GenericSessionFactory sessionFactory = builder(map)
-                .build();
+       /* GenericSessionFactory sessionFactory = builder(map)
+                .build();*/
 
-       LOG.info("cost {} ms",System.currentTimeMillis() - startTime);
+        LOG.info("cost {} ms", System.currentTimeMillis() - startTime);
     }
 
     @Test//(expectedExceptions = {Throwable.class})
     public void bootstrapWithMultiInheritanceError() {
-        Map<String, Object> map = new HashMap<>();
+      /*  Map<String, Object> map = new HashMap<>();
         map.put(GenericSessionFactory.PACKAGE_TO_SCAN, "com.example.error.inheritance.multi");
         builder(map)
-                .build();
+                .build();*/
 
     }
 
@@ -46,7 +40,7 @@ public class BootstrapTests {
     }
 
 
-    public static SessionFactoryBuilder builder(Map<String, Object> map) {
+ /*  public static SessionFactoryBuilder builder(Map<String, Object> map) {
         final String hostIp = NetUtils.getPrivateAsString();
 
         StandardEnvironment env = new StandardEnvironment();
@@ -60,11 +54,11 @@ public class BootstrapTests {
 
         // init worker
         snowflakeClient.askAssignWorker();
-        return SessionFactoryBuilder.builder()
+        return  SessionFactoryBuilder.builder()
                 .datasource(DataSourceUtils.createDataSource("army", "army", "army123"))
                 .catalog("")
                 .schema("")
                 .environment(env)
                 ;
-    }
+    }*/
 }

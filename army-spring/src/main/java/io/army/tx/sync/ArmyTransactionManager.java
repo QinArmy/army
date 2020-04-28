@@ -201,7 +201,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             if (sessionFactory.hasCurrentSession()) {
                 session = sessionFactory.currentSession();
             } else {
-                session = sessionFactory.createCurrentSession();
+                session = null;
             }
         } catch (ArmyAccessException e) {
             throw new DataAccessResourceFailureException(
