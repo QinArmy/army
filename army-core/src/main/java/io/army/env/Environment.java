@@ -1,6 +1,7 @@
 package io.army.env;
 
 
+import io.army.GenericSessionFactory;
 import io.army.lang.Nullable;
 
 import java.util.Collections;
@@ -10,7 +11,7 @@ import java.util.Set;
 /**
  * Interface representing the environment in which Army is running.
  *
- * @see io.army.SessionFactory
+ * @see GenericSessionFactory
  * @since 1.0
  */
 public interface Environment {

@@ -1,7 +1,7 @@
 package io.army.dialect;
 
 
-import io.army.SessionFactory;
+import io.army.GenericSessionFactory;
 import io.army.meta.mapping.MappingType;
 
 import java.time.ZoneId;
@@ -35,7 +35,7 @@ public abstract class AbstractSQL implements SQL {
     }
 
     @Override
-    public final SessionFactory sessionFactory() {
+    public final GenericSessionFactory sessionFactory() {
         return this.dialect.sessionFactory();
     }
 

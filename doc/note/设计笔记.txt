@@ -47,4 +47,11 @@
 12. 为什么 IPredicate 不支持 and 操作符?
 (1) 因为 IPredicate 是自我描述的,如果支持 and ,生成的 SQL 会有很多不必要的 () ,这样的 SQL 很难看.
 
+13. START TRANSACTION 语法可以减少网络操作,为什么 没有使用 START TRANSACTION 来控制事务?
+(1) 因为 MySQL 的 START TRANSACTION 文档中有一句话让我觉得很可怕
+,"Beginning a transaction causes any pending transaction to be committed.".这个语法设计可以说是史上最糟糕的设计，
+甚至可以说是愚蠢的，因为一旦开发者在没有提交的情况下开始一个新的事务，这个结果可能是开发者无法承受，安全意识高的开发者是不会选择这个语句的。
+
+
+
 

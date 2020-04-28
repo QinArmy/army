@@ -5,10 +5,7 @@ import io.army.annotation.*;
 import io.army.criteria.MetaException;
 import io.army.meta.TableMeta;
 import io.army.struct.CodeEnum;
-import io.army.util.AnnotationUtils;
-import io.army.util.Assert;
-import io.army.util.CollectionUtils;
-import io.army.util.StringUtils;
+import io.army.util.*;
 import org.springframework.lang.Nullable;
 
 import javax.lang.model.element.Element;
@@ -18,11 +15,33 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.LocalTime;
 import java.util.*;
 
 abstract class MetaUtils {
 
     private static final Map<String, Map<Integer, String>> DISCRIMINATOR_MAP = new HashMap<>();
+
+    private static final Set<String> WITHOUT_DEFAULT_TYPES = ArrayUtils.asUnmodifiableSet(
+            String.class.getName(),
+            Long.class.getName(),
+            Integer.class.getName(),
+            BigDecimal.class.getName(),
+
+            BigInteger.class.getName(),
+            InputStream.class.getName(),
+            byte[].class.getName(),
+            Byte.class.getName(),
+
+            Short.class.getName(),
+            Double.class.getName(),
+            Float.class.getName(),
+            LocalTime.class.getName()
+
+    );
 
 
     static void throwInheritanceDuplication(TypeElement entityElement) throws MetaException {
@@ -108,11 +127,11 @@ abstract class MetaUtils {
         final String propName = mappedProp.getSimpleName().toString();
 
         // check nullable
-        if (TableMeta.VERSION_PROPS.contains(propName)
+        if (TableMeta.RESERVED_PROPS.contains(propName)
                 || (discriminatorColumn != null && !columnName.equals(discriminatorColumn))) {
 
             if (column.nullable()) {
-                throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] column[%s] nullable must be false.",
+                throw new MetaException(ErrorCode.META_ERROR, "Domain[%s] column[%s] nullable must be false.",
                         entityElement.getQualifiedName(),
                         columnName
                 );
@@ -121,17 +140,17 @@ abstract class MetaUtils {
         }
 
         if (!TableMeta.RESERVED_PROPS.contains(propName)
-                && (discriminatorColumn != null && !columnName.equals(discriminatorColumn))) {
+                && !columnName.equals(discriminatorColumn)) {
             // check comment
             if (!StringUtils.hasText(column.comment())) {
-                throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] column[%s] no comment.",
+                throw new MetaException(ErrorCode.META_ERROR, "Domain[%s] column[%s] no comment.",
                         entityElement.getQualifiedName(),
                         columnName
                 );
             }
-            if (!isStringType(mappedProp)
+            if (!isSpecifyTypeWithoutDefaultValue(mappedProp)
                     && !StringUtils.hasText(column.defaultValue())) {
-                throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] column[%s] no defaultValue.",
+                throw new MetaException(ErrorCode.META_ERROR, "Domain[%s] column[%s] no defaultValue.",
                         entityElement.getQualifiedName(),
                         columnName
                 );
@@ -199,11 +218,11 @@ abstract class MetaUtils {
                 , mappedElement.getQualifiedName(), columnName));
     }
 
-    static void assertRequiredColumnName(TypeElement entityElement, VariableElement mappedProp, Column column) {
-        if (TableMeta.VERSION_PROPS.contains(mappedProp.getSimpleName().toString())
+    static void assertReservedColumnName(TypeElement entityElement, VariableElement mappedProp, Column column) {
+        if (TableMeta.RESERVED_PROPS.contains(mappedProp.getSimpleName().toString())
                 && StringUtils.hasText(column.name())) {
             throw new MetaException(ErrorCode.META_ERROR,
-                    "entity[%s] required prop[%s] column name must use default value .",
+                    "domain[%s] reserved prop[%s] column name must use default value .",
                     entityElement.getQualifiedName(),
                     mappedProp.getSimpleName()
             );
@@ -233,8 +252,8 @@ abstract class MetaUtils {
         return match;
     }
 
-    static boolean isManagedByArmy(VariableElement mappingPropElement){
-        return TableMeta.VERSION_PROPS.contains(mappingPropElement.getSimpleName().toString())
+    static boolean isReservedProp(VariableElement mappingPropElement) {
+        return TableMeta.RESERVED_PROPS.contains(mappingPropElement.getSimpleName().toString())
                 ;
     }
 
@@ -258,8 +277,11 @@ abstract class MetaUtils {
                 missPropNameSet);
     }
 
-    private static boolean isStringType(VariableElement mappedProp) {
-        return String.class.getName().equals(mappedProp.asType().toString());
+    private static boolean isSpecifyTypeWithoutDefaultValue(VariableElement mappedProp) {
+        String className = mappedProp.asType().toString();
+        return WITHOUT_DEFAULT_TYPES.contains(className)
+                || isCodeEnum(mappedProp)
+                ;
     }
 
     private static void assertMapping(TypeElement entityElement, VariableElement mappedProp) {

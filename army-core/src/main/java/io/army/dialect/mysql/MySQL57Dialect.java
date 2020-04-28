@@ -1,7 +1,7 @@
 package io.army.dialect.mysql;
 
 
-import io.army.SessionFactory;
+import io.army.GenericSessionFactory;
 import io.army.dialect.*;
 import io.army.meta.mapping.MappingType;
 
@@ -14,7 +14,7 @@ import java.util.Set;
 class MySQL57Dialect extends AbstractDialect {
 
 
-    MySQL57Dialect(SessionFactory sessionFactory) {
+    MySQL57Dialect(GenericSessionFactory sessionFactory) {
         super(sessionFactory);
 
     }

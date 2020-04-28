@@ -24,6 +24,7 @@
         <module>army-mysql</module>
         <module>army-orcale</module>
         <module>army-postgre</module>
+        <module>army-sync</module>
     </modules>
 
     <properties>
@@ -75,7 +76,11 @@
                 <artifactId>army-postgre</artifactId>
                 <version>${army.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>io.army</groupId>
+                <artifactId>army-sync</artifactId>
+                <version>${army.version}</version>
+            </dependency>
             <!-- 模块 end  -->
             <dependency>
                 <groupId>org.hibernate</groupId>

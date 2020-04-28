@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.boot.SessionTests;
+import io.army.boot.GenericSessionTests;
 import io.army.meta.mapping.MappingFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +12,7 @@ import java.util.List;
 
 public class SQLWrapperTests {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SessionTests.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GenericSessionTests.class);
 
 
     @Test

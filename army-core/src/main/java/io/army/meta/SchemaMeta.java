@@ -1,7 +1,5 @@
 package io.army.meta;
 
-import java.util.Map;
-
 /**
  * represent a schema.
  * <ul>
@@ -20,8 +18,6 @@ public interface SchemaMeta extends Meta {
     String schema();
 
     boolean defaultSchema();
-
-    Map<Class<?>, TableMeta<?>> tables();
 
     @Override
     boolean equals(Object o);

@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.SessionFactory;
+import io.army.GenericSessionFactory;
 import io.army.boot.SessionFactoryBuilder;
 import io.army.criteria.SQLAble;
 import io.army.criteria.SQLDebug;
@@ -28,7 +28,7 @@ abstract class AbstractSQLDebug implements SQLAble, SQLDebug {
     /*################################## blow protected template method ##################################*/
 
 
-    SessionFactory createSessionFactory(SchemaMeta schemaMeta, SQLDialect sqlDialect) {
+    GenericSessionFactory createSessionFactory(SchemaMeta schemaMeta, SQLDialect sqlDialect) {
         return SessionFactoryBuilder.mockBuilder()
                 .catalog(schemaMeta.catalog())
                 .schema(schemaMeta.schema())

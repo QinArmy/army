@@ -1,7 +1,7 @@
 package io.army.dialect;
 
 
-import io.army.SessionFactory;
+import io.army.GenericSessionFactory;
 import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
@@ -28,7 +28,7 @@ public abstract class AbstractDialect implements Dialect {
      */
     private final Set<String> keywords;
 
-    protected final SessionFactory sessionFactory;
+    protected final GenericSessionFactory sessionFactory;
 
     private final TableDDL tableDDL;
 
@@ -37,7 +37,7 @@ public abstract class AbstractDialect implements Dialect {
     private final DQL dql;
 
 
-    public AbstractDialect(SessionFactory sessionFactory) {
+    public AbstractDialect(GenericSessionFactory sessionFactory) {
         Assert.notNull(sessionFactory, "sessionFactory required");
 
         this.keywords = Collections.unmodifiableSet(createKeywordsSet());
@@ -72,7 +72,7 @@ public abstract class AbstractDialect implements Dialect {
     }
 
     @Override
-    public final SessionFactory sessionFactory() {
+    public final GenericSessionFactory sessionFactory() {
         return sessionFactory;
     }
 

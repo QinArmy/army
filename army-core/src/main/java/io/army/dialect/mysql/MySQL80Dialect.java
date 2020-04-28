@@ -1,6 +1,6 @@
 package io.army.dialect.mysql;
 
-import io.army.SessionFactory;
+import io.army.GenericSessionFactory;
 import io.army.dialect.DML;
 import io.army.dialect.DQL;
 import io.army.dialect.SQLDialect;
@@ -11,7 +11,7 @@ import java.util.Set;
 class MySQL80Dialect extends MySQL57Dialect {
 
 
-    MySQL80Dialect(SessionFactory sessionFactory) {
+    MySQL80Dialect(GenericSessionFactory sessionFactory) {
         super(sessionFactory);
     }
 

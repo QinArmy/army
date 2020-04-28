@@ -1,6 +1,6 @@
 package io.army.generator;
 
-import io.army.SessionFactory;
+import io.army.GenericSessionFactory;
 import io.army.boot.BootstrapTests;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -22,9 +22,9 @@ public class GeneratorTests {
         final long startTime = System.currentTimeMillis();
         Map<String, Object> map = new HashMap<>();
 
-        map.put(SessionFactory.PACKAGE_TO_SCAN, "com.example.generator");
+        map.put(GenericSessionFactory.PACKAGE_TO_SCAN, "com.example.generator");
 
-        SessionFactory sessionFactory = BootstrapTests.builder(map)
+        GenericSessionFactory sessionFactory = BootstrapTests.builder(map)
                 .build();
         LOG.info("tableMeta generator chain:");
 

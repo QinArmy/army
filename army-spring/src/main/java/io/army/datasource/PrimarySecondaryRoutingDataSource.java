@@ -1,6 +1,6 @@
 package io.army.datasource;
 
-import io.army.tx.TransactionDefinitionHolder;
+import io.army.tx.sync.TransactionDefinitionHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
@@ -17,18 +17,13 @@ public class PrimarySecondaryRoutingDataSource extends AbstractRoutingDataSource
      */
     public static final String SECONDARY = DataSourceRole.SECONDARY.toString();
 
-    public static final String TIMEOUT_SECONDARY = DataSourceRole.TIMEOUT.toString();
+    public static final String TIMEOUT_SECONDARY = DataSourceRole.TIMEOUT_SECONDARY.toString();
 
     /**
      * transaction timeout boundary seconds
      */
     private int timeoutBoundary = 10;
 
-
-    @Override
-    public void afterPropertiesSet() {
-        super.afterPropertiesSet();
-    }
 
     @Override
     protected Object determineCurrentLookupKey() {

@@ -1,20 +1,16 @@
 package io.army.boot;
 
 import io.army.DataSourceUtils;
-import io.army.SessionFactory;
-import io.army.criteria.MetaException;
+import io.army.GenericSessionFactory;
 import io.army.env.StandardEnvironment;
 import io.army.generator.snowflake.SingleApplicationSnowflakeClient;
 import io.army.generator.snowflake.SnowflakeClient;
 import io.army.generator.snowflake.SnowflakeGenerator;
-import io.army.meta.TableMeta;
 import io.army.util.NetUtils;
-import io.army.util.TimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,9 +23,9 @@ public class BootstrapTests {
         final  long startTime = System.currentTimeMillis();
         Map<String, Object> map = new HashMap<>();
 
-        map.put(SessionFactory.PACKAGE_TO_SCAN, "com.example.domain");
+        map.put(GenericSessionFactory.PACKAGE_TO_SCAN, "com.example.domain");
 
-        SessionFactory sessionFactory = builder(map)
+        GenericSessionFactory sessionFactory = builder(map)
                 .build();
 
        LOG.info("cost {} ms",System.currentTimeMillis() - startTime);
@@ -38,7 +34,7 @@ public class BootstrapTests {
     @Test//(expectedExceptions = {Throwable.class})
     public void bootstrapWithMultiInheritanceError() {
         Map<String, Object> map = new HashMap<>();
-        map.put(SessionFactory.PACKAGE_TO_SCAN, "com.example.error.inheritance.multi");
+        map.put(GenericSessionFactory.PACKAGE_TO_SCAN, "com.example.error.inheritance.multi");
         builder(map)
                 .build();
 

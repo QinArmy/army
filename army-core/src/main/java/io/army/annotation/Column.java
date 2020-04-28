@@ -2,15 +2,16 @@ package io.army.annotation;
 
 import io.army.meta.TableMeta;
 
+import java.io.InputStream;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.time.LocalTime;
 
 import static java.lang.annotation.ElementType.FIELD;
 
 /**
- * created  on 2018/9/19.
  */
 @Target({FIELD})
 @Retention(RetentionPolicy.RUNTIME)
@@ -75,6 +76,13 @@ public @interface Column {
      *         <li>mapping field java type is {@link java.math.BigDecimal} ,because army specify default 0.00 or 0</li>
      *         <li>mapping field java type is {@link java.math.BigInteger},because army specify default 0</li>
      *         <li>mapping field java type is {@link io.army.struct.CodeEnum},because army specify default 0</li>
+     *         <li>mapping field java type is {@link InputStream},because can't specify</li>
+     *         <li>mapping field java type is {@code byte[]},because can't specify</li>
+     *         <li>mapping field java type is {@link Byte},because army specify default 0</li>
+     *         <li>mapping field java type is {@link Short},because army specify default 0</li>
+     *         <li>mapping field java type is {@link Double},because army specify default 0</li>
+     *         <li>mapping field java type is {@link Float},because army specify default 0</li>
+     *         <li>mapping field java type is {@link LocalTime},because army specify default {@link LocalTime#MIDNIGHT}</li>
      *     </ol>
      * </p>
      */

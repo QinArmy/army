@@ -233,7 +233,7 @@ abstract class SourceCreateUtils {
 
 
     static String columnName(TypeElement entityElement, VariableElement mappedProp, Column column) {
-        MetaUtils.assertRequiredColumnName(entityElement, mappedProp, column);
+        MetaUtils.assertReservedColumnName(entityElement, mappedProp, column);
         return StringUtils.hasText(column.name())
                 ? column.name()
                 : StringUtils.camelToLowerCase(mappedProp.getSimpleName().toString());

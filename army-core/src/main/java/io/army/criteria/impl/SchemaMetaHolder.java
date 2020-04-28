@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentMap;
 
 abstract class SchemaMetaHolder {
 
-    private static ConcurrentMap<String, SchemaMeta> SCHEMA_META_HOLDER = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, SchemaMeta> SCHEMA_META_HOLDER = new ConcurrentHashMap<>();
 
     static SchemaMeta getSchema(String catalog, String schema) {
         Assert.notNull(catalog,"catalog required");

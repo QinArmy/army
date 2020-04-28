@@ -97,7 +97,7 @@ class DefaultMetaAttribute implements MetaAttribute {
         String actualComment;
         if (StringUtils.hasText(comment)) {
             actualComment = comment;
-        } else if (MetaUtils.isManagedByArmy(mappingPropElement)
+        } else if (MetaUtils.isReservedProp(mappingPropElement)
                 || MetaUtils.isCodeEnum(mappingPropElement)) {
             actualComment = commentManagedByArmy(mappingPropElement);
         } else {
@@ -116,7 +116,7 @@ class DefaultMetaAttribute implements MetaAttribute {
                 comment = "create time";
                 break;
             case TableMeta.UPDATE_TIME:
-                comment = "singleUpdate time";
+                comment = "update time";
                 break;
             case TableMeta.VERSION:
                 comment = "version for optimistic lock";
