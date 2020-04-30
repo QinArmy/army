@@ -9,6 +9,10 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 public final class SpringCurrentSessionContext implements CurrentSessionContext {
 
+    public static SpringCurrentSessionContext build(SessionFactory sessionFactory) {
+        return new SpringCurrentSessionContext(sessionFactory);
+    }
+
     private final SessionFactory sessionFactory;
 
     public SpringCurrentSessionContext(SessionFactory sessionFactory) {

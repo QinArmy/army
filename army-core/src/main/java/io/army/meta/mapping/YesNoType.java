@@ -2,6 +2,7 @@ package io.army.meta.mapping;
 
 import io.army.domain.IDomain;
 import io.army.util.Assert;
+import io.army.util.StringUtils;
 
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -43,7 +44,7 @@ public final class YesNoType implements MappingType {
         } else {
             text = IDomain.N;
         }
-        return text;
+        return StringUtils.quote(text);
     }
 
     @Override

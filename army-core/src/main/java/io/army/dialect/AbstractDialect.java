@@ -30,7 +30,7 @@ public abstract class AbstractDialect implements Dialect {
 
     protected final GenericSessionFactory sessionFactory;
 
-    private final TableDDL tableDDL;
+    private final DDL tableDDL;
 
     private final DML dml;
 
@@ -80,8 +80,8 @@ public abstract class AbstractDialect implements Dialect {
     /*################################## blow TableDDL method ##################################*/
 
     @Override
-    public final List<String> tableDefinition(TableMeta<?> tableMeta) {
-        return tableDDL.tableDefinition(tableMeta);
+    public final List<String> createTable(TableMeta<?> tableMeta) {
+        return tableDDL.createTable(tableMeta);
     }
 
     @Override
@@ -178,7 +178,7 @@ public abstract class AbstractDialect implements Dialect {
 
     protected abstract String doQuote(String identifier);
 
-    protected abstract TableDDL createTableDDL();
+    protected abstract DDL createTableDDL();
 
     protected abstract DML createDML();
 

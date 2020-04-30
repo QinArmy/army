@@ -1,5 +1,6 @@
 package io.army;
 
+import io.army.lang.Nullable;
 import org.springframework.lang.NonNull;
 
 import java.io.PrintWriter;
@@ -15,6 +16,7 @@ public interface IArmyExpression {
     /**
      * @see Throwable#getMessage()
      */
+    @Nullable
     String getMessage();
 
     /**

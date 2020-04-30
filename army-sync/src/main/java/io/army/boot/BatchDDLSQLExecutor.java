@@ -11,7 +11,7 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
 
-class BatchDDLSQLExecutor implements DDLSQLExecutor {
+final class BatchDDLSQLExecutor implements DDLSQLExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(BatchDDLSQLExecutor.class);
 

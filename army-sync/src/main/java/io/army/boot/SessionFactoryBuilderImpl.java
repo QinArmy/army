@@ -25,10 +25,12 @@ final class SessionFactoryBuilderImpl extends AbstractSessionFactoryBuilder {
         if (actualSQLDialect == null) {
             actualSQLDialect = SQLDialect.MySQL57;
         }
-        CurrentSessionContext actualCurrentSessionContext = this.currentSessionContext;
+        Class<?> actualCurrentSessionContext = this.currentSessionContextClass;
 
         if (actualCurrentSessionContext == null) {
-            actualCurrentSessionContext = new DefaultCurrentSessionContext();
+            actualCurrentSessionContext = DefaultCurrentSessionContext.class;
+        } else {
+            Assert.isAssignable(CurrentSessionContext.class, actualCurrentSessionContext);
         }
         try {
             SessionFactoryImpl sessionFactory = new SessionFactoryImpl(environment, dataSource, schemaMeta
@@ -42,12 +44,15 @@ final class SessionFactoryBuilderImpl extends AbstractSessionFactoryBuilder {
             // init session factory
             sessionFactory.initSessionFactory();
 
+
             if (!CollectionUtils.isEmpty(this.interceptorList)) {
                 for (SessionFactoryInterceptor interceptor : interceptorList) {
                     interceptor.afterInit(sessionFactory);
                 }
             }
             return sessionFactory;
+        } catch (SessionFactoryException e) {
+            throw e;
         } catch (Throwable e) {
             throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
                     , e, "create session factory error.");

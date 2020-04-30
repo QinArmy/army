@@ -2,7 +2,7 @@ package io.army.dialect.mysql;
 
 import io.army.meta.FieldMeta;
 
-class MySQL80TableDDL extends MySQL57TableDDL {
+class MySQL80TableDDL extends MySQL57DDL {
 
     public MySQL80TableDDL(MySQL80Dialect mysql) {
         super(mysql);

@@ -7,6 +7,8 @@ import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.tx.NoSessionTransactionException;
 import io.army.tx.Transaction;
+import io.army.util.Pair;
+import io.army.util.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,7 +90,8 @@ class SessionImpl implements InnerSession {
     }
 
     @Override
-    public <T extends IDomain> T getByUnique(TableMeta<T> tableMeta, List<String> propNameList, List<Object> valueList) {
+    public <T extends IDomain> T getByUnique(TableMeta<T> tableMeta, List<String> propNameList
+            , List<Object> valueList) {
         return getByUnique(tableMeta, propNameList, valueList, Visible.ONLY_VISIBLE);
     }
 
@@ -99,12 +102,45 @@ class SessionImpl implements InnerSession {
     }
 
     @Override
-    public <T extends IDomain> List<T> select(Select select) {
+    public <T> T selectOne(Select select, Class<T> resultClass) {
         return null;
     }
 
     @Override
-    public <T extends IDomain> List<T> select(Select select, Visible visible) {
+    public <T> T selectOne(Select select, Class<T> resultClass, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public <T> List<T> select(Select select, Class<T> resultClass) {
+        return null;
+    }
+
+    @Override
+    public <T> List<T> select(Select select, Class<T> resultClass, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public <F, S> List<Pair<F, S>> selectPair(Select select, Class<F> firstClass, Class<S> secondClass) {
+        return null;
+    }
+
+    @Override
+    public <F, S> List<Pair<F, S>> selectPair(Select select, Class<F> firstClass, Class<S> secondClass
+            , Visible visible) {
+        return null;
+    }
+
+    @Override
+    public <F, S, T> List<Triple<F, S, T>> selectTriple(Select select, Class<F> firstClass, Class<S> secondClass
+            , Class<T> thirdClass, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public <F, S, T> List<Triple<F, S, T>> selectTriple(Select select, Class<F> firstClass, Class<S> secondClass
+            , Class<T> thirdClass) {
         return null;
     }
 
@@ -127,18 +163,24 @@ class SessionImpl implements InnerSession {
     }
 
     @Override
-    public int delete(Delete delete) {
-        return 0;
+    public void insert(Insert insert, Visible visible) {
+
     }
 
     @Override
-    public boolean showSql() {
-        return false;
+    public void delete(Delete delete) {
+
     }
 
     @Override
-    public GenericSessionFactory sessionFactory() {
-        return sessionFactory;
+    public void delete(Delete delete, Visible visible) {
+
+    }
+
+
+    @Override
+    public final SessionFactory sessionFactory() {
+        return this.sessionFactory;
     }
 
     @Override

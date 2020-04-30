@@ -2,7 +2,6 @@ package io.army.boot;
 
 import io.army.ArmyAccessException;
 import io.army.ErrorCode;
-import io.army.GenericSession;
 import io.army.beans.BeanWrapper;
 import io.army.dialect.*;
 import io.army.generator.GeneratorException;
@@ -46,7 +45,7 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
     public final void insert(InnerSession session, List<SQLWrapper> sqlWrapperList)
             throws InsertException {
 
-        final boolean showSql = session.showSql();
+        final boolean showSql = session.sessionFactory().readonly();
         GeneratorWrapper generatorWrapper = null;
         BeanWrapper beanWrapper = null;
         final int[] updateCount = new int[sqlWrapperList.size()];
@@ -162,8 +161,8 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
     }
 
     @Nullable
-    private static GeneratorWrapper getAutoGeneratorWrapper(GenericSession genericSession, BeanWrapper beanWrapper) {
-        TableMeta<?> tableMeta = genericSession.sessionFactory().tableMetaMap().get(beanWrapper.getWrappedClass());
+    private static GeneratorWrapper getAutoGeneratorWrapper(InnerSession session, BeanWrapper beanWrapper) {
+        TableMeta<?> tableMeta = session.sessionFactory().tableMetaMap().get(beanWrapper.getWrappedClass());
 
         TableMeta<?> parentMeta = tableMeta.parentMeta();
         FieldMeta<?, ?> primaryField;
@@ -173,7 +172,7 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
             primaryField = parentMeta.primaryKey();
         }
 
-        MultiGenerator multiGenerator = genericSession.sessionFactory().fieldGeneratorMap().get(primaryField);
+        MultiGenerator multiGenerator = session.sessionFactory().fieldGeneratorMap().get(primaryField);
         GeneratorWrapper wrapper = null;
         if (multiGenerator instanceof PostMultiGenerator) {
             wrapper = new GeneratorWrapper(primaryField, (PostMultiGenerator) multiGenerator);

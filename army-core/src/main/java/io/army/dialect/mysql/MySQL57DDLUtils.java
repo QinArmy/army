@@ -1,7 +1,8 @@
 package io.army.dialect.mysql;
 
+import io.army.ErrorCode;
+import io.army.criteria.MetaException;
 import io.army.dialect.DDLUtils;
-import io.army.dialect.func.SQLFuncDescribe;
 import io.army.meta.FieldMeta;
 import io.army.sqltype.MySQLDataType;
 import io.army.util.StringUtils;
@@ -218,6 +219,18 @@ abstract class MySQL57DDLUtils extends DDLUtils {
                 ZonedDateTime.ofInstant(Instant.EPOCH, zoneId)
                         .format(formatter)
         );
+    }
+
+    static void nowFunc(FieldMeta<?, ?> fieldMeta, StringBuilder tableBuilder) {
+        int precision = fieldMeta.precision();
+        tableBuilder.append("CURRENT_TIMESTAMP");
+        if (precision > 0 && precision < 7) {
+            tableBuilder.append("(")
+                    .append(fieldMeta.precision())
+                    .append(")");
+        } else if (precision > 6) {
+            throw new MetaException(ErrorCode.META_ERROR, "MySQL NOW/CURRENT_TIMESTAMP func precision must in [0,6]");
+        }
     }
 
     static String zeroDate(FieldMeta<?, ?> fieldMeta, ZoneId zoneId) {

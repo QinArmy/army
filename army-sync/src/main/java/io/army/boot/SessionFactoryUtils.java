@@ -1,9 +1,8 @@
 package io.army.boot;
 
-import io.army.ArmyAccessException;
-import io.army.ErrorCode;
-import io.army.GenericSessionFactory;
+import io.army.*;
 import io.army.asm.TableMetaLoader;
+import io.army.context.spi.CurrentSessionContext;
 import io.army.criteria.MetaException;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectNotMatchException;
@@ -26,6 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -129,7 +130,7 @@ abstract class SessionFactoryUtils {
     }
 
 
-    static ZoneId createZoneId(Environment env,SchemaMeta schemaMeta) {
+    static ZoneId createZoneId(Environment env, SchemaMeta schemaMeta) {
         String zoneIdText = env.getProperty(String.format(schemaMeta.catalog(), schemaMeta.schema()));
         ZoneId zoneId;
         if (StringUtils.hasText(zoneIdText)) {
@@ -138,6 +139,28 @@ abstract class SessionFactoryUtils {
             zoneId = ZoneId.systemDefault();
         }
         return zoneId;
+    }
+
+    static CurrentSessionContext buildCurrentSessionContext(SessionFactory sessionFactory
+            , Class<?> currentSessionContextClass) {
+        if (currentSessionContextClass == DefaultCurrentSessionContext.class) {
+            return DefaultCurrentSessionContext.build(sessionFactory);
+        }
+        try {
+            Method method = currentSessionContextClass.getMethod("build", SessionFactory.class);
+            if (!currentSessionContextClass.isAssignableFrom(method.getReturnType())) {
+                throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
+                        , "%s return type isn't %s", currentSessionContextClass.getName()
+                        , currentSessionContextClass.getName());
+            }
+            return (CurrentSessionContext) method.invoke(null, sessionFactory);
+        } catch (NoSuchMethodException e) {
+            throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR, e
+                    , "%s no [public static %s build(SessionFactory)] method.", currentSessionContextClass.getName()
+                    , currentSessionContextClass.getName());
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR, e, e.getMessage());
+        }
     }
 
 
@@ -285,9 +308,8 @@ abstract class SessionFactoryUtils {
     }
 
     /**
-     *
      * @param dependLevelList  a modifiable list
-     * @param propGeneratorMap  a unmodifiable map
+     * @param propGeneratorMap a unmodifiable map
      */
     private static void appendChildLevel(List<Set<String>> dependLevelList
             , Map<String, GeneratorMeta> propGeneratorMap) {

@@ -14,7 +14,7 @@ public interface MappingType {
 
 
     /**
-     * @return value's text without quote
+     * @return value's text with quote (if need)
      * @throws IllegalArgumentException value error
      */
     default String nonNullTextValue(Object value) {

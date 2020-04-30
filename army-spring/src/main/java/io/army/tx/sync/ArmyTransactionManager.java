@@ -199,7 +199,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         }
         try {
             if (sessionFactory.hasCurrentSession()) {
-                session = sessionFactory.currentSession();
+                session = null;
             } else {
                 session = null;
             }

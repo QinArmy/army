@@ -11,7 +11,6 @@ import java.util.List;
 
 /**
  * @see Meta2Schema
- * @see SchemaExtractor
  */
 interface MetaSchemaComparator {
 

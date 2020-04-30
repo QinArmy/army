@@ -3,6 +3,11 @@ package io.army.generator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.util.Collections;
+import java.util.List;
 
 public class GeneratorTests {
 
@@ -38,5 +43,32 @@ public class GeneratorTests {
             LOG.info("{}", builder.toString());
         }
         LOG.info("cost {} ms", System.currentTimeMillis() - startTime);*/
+    }
+
+    @Test
+    public void flux() {
+        List<String> list = Collections.emptyList();
+        Object result = Flux.fromIterable(list)
+                .map(this::numMap)
+                .concatMap(this::mapObj)
+                .next()
+                .switchIfEmpty(Mono.defer(() -> Mono.just("simonyi")))
+                .block();
+        LOG.info("result:{}", result);
+    }
+
+    private String numMap(String s) {
+        LOG.info("first " + s);
+        return s;
+    }
+
+    private Mono<Object> mapObj(String num) {
+        LOG.info("mapObj" + num);
+        if (num.equals("3")) {
+            return Mono.just("army" + num);
+        } else {
+            return Mono.empty();
+        }
+
     }
 }

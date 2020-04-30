@@ -1,5 +1,8 @@
 package io.army;
 
-public interface ProxySession extends Session {
+public interface ProxySession extends GenericSyncSession {
+
+    boolean hasCurrentSession();
+
 
 }

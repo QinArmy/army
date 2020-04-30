@@ -1,7 +1,6 @@
 package io.army.boot.migratioin;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import io.army.dialect.SQLDialect;
 import io.army.schema.util.DataSourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,26 +17,6 @@ public class ExtractorTests {
 
     private static DruidDataSource createDataSource() {
         return DataSourceUtils.createDataSource("army", "army", "army1234");
-    }
-
-    @Test
-    public void getCatalogs() throws Exception {
-        DruidDataSource dataSource = createDataSource();
-        SchemaInfo schemaInfo = SchemaExtractor.newInstance().extractor(dataSource.getConnection());
-        LOG.info("schema:{}", schemaInfo);
-
-        for (TableInfo table : schemaInfo.tableMap().values()) {
-            LOG.info("tableMeta:{}", table);
-            for (ColumnInfo column : table.columnMap().values()) {
-                LOG.info("column:{}", column);
-            }
-            for (IndexInfo index : table.indexMap().values()) {
-                LOG.info("indexMap:{}", index);
-            }
-        }
-
-        LOG.info("closing datasource ");
-        dataSource.close();
     }
 
     @Test

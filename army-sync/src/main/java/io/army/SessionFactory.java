@@ -2,8 +2,8 @@ package io.army;
 
 public interface SessionFactory extends GenericSessionFactory {
 
-    Session currentSession() throws NoCurrentSessionException;
 
+    ProxySession proxySession();
 
     SessionBuilder builder();
 

@@ -60,8 +60,8 @@ class MySQL57Dialect extends AbstractDialect {
     }
 
     @Override
-    protected TableDDL createTableDDL() {
-        return new MySQL57TableDDL(this);
+    protected DDL createTableDDL() {
+        return new MySQL57DDL(this);
     }
 
     @Override

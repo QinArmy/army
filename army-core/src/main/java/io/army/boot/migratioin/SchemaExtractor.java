@@ -1,21 +1,9 @@
 package io.army.boot.migratioin;
 
-import java.sql.Connection;
-
-
 /**
- * <p>
- *      a inner interface , extract schema info from database's current schema.
- * </p>
- * @see  MetaSchemaComparator
- * @see Meta2Schema
+ * extract {@link SchemaInfo} from database. eg:{@link java.sql.Connection}
  */
-interface SchemaExtractor {
+public interface SchemaExtractor {
 
-    SchemaInfo extractor(Connection connection);
-
-
-    static SchemaExtractor newInstance() {
-        return new SchemaExtractorImpl();
-    }
+    SchemaInfo extract();
 }

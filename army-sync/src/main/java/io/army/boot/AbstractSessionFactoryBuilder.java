@@ -1,7 +1,6 @@
 package io.army.boot;
 
 import io.army.ShardingMode;
-import io.army.context.spi.CurrentSessionContext;
 import io.army.criteria.impl.SchemaMetaFactory;
 import io.army.dialect.SQLDialect;
 import io.army.env.Environment;
@@ -24,7 +23,9 @@ abstract class AbstractSessionFactoryBuilder implements SessionFactoryBuilder {
 
     Environment environment;
 
-    CurrentSessionContext currentSessionContext;
+    Class<?> currentSessionContextClass;
+
+    String name;
 
     List<SessionFactoryInterceptor> interceptorList;
 
@@ -69,8 +70,14 @@ abstract class AbstractSessionFactoryBuilder implements SessionFactoryBuilder {
     }
 
     @Override
-    public final SessionFactoryBuilder currentSessionContext(CurrentSessionContext currentSessionContext) {
-        this.currentSessionContext = currentSessionContext;
+    public final SessionFactoryBuilder currentSessionContext(Class<?> clazz) {
+        this.currentSessionContextClass = clazz;
+        return this;
+    }
+
+    @Override
+    public final SessionFactoryBuilder name(String sessionFactoryName) {
+        this.name = sessionFactoryName;
         return this;
     }
 

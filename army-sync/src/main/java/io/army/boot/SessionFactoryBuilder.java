@@ -4,7 +4,6 @@ package io.army.boot;
 import io.army.SessionFactory;
 import io.army.SessionFactoryException;
 import io.army.ShardingMode;
-import io.army.context.spi.CurrentSessionContext;
 import io.army.dialect.SQLDialect;
 import io.army.env.Environment;
 
@@ -31,9 +30,11 @@ public interface SessionFactoryBuilder {
 
     SessionFactoryBuilder shardingMode(ShardingMode shardingMode);
 
-    SessionFactoryBuilder currentSessionContext(CurrentSessionContext currentSessionContext);
+    SessionFactoryBuilder currentSessionContext(Class<?> clazz);
 
     SessionFactoryBuilder interceptor(SessionFactoryInterceptor interceptor);
+
+    SessionFactoryBuilder name(String sessionFactoryName);
 
     SessionFactoryBuilder interceptorList(List<SessionFactoryInterceptor> interceptorList);
 

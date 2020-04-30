@@ -22,6 +22,11 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <groupId>io.army</groupId>
+            <artifactId>army-mono</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid</artifactId>
             <version>${ali.druid.version}</version>

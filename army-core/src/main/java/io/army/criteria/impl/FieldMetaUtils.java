@@ -13,6 +13,7 @@ import io.army.meta.GeneratorMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingType;
+import io.army.modelgen.MetaConstant;
 import io.army.struct.CodeEnum;
 import io.army.util.AnnotationUtils;
 import io.army.util.ClassUtils;
@@ -181,7 +182,7 @@ abstract class FieldMetaUtils extends MetaUtils {
     @NonNull
     static String columnComment(Column column, FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
         String comment = column.comment();
-        if (TableMeta.VERSION_PROPS.contains(fieldMeta.propertyName())
+        if (TableMeta.RESERVED_PROPS.contains(fieldMeta.propertyName())
                 || isDiscriminator) {
 
             if (!StringUtils.hasText(comment)) {
@@ -211,7 +212,9 @@ abstract class FieldMetaUtils extends MetaUtils {
 
     static String columnDefault(Column column, FieldMeta<?, ?> fieldMeta) {
         if (!fieldMeta.nullable()
-                && String.class != fieldMeta.javaType()
+                && !TableMeta.RESERVED_PROPS.contains(fieldMeta.propertyName())
+                && !MetaConstant.WITHOUT_DEFAULT_TYPES.contains(fieldMeta.javaType())
+                && !CodeEnum.class.isAssignableFrom(fieldMeta.javaType())
                 && !StringUtils.hasText(column.defaultValue())
                 && !isManagedByArmy(fieldMeta)) {
             // TODO zoro optimize

@@ -39,6 +39,4 @@ public abstract class AbstractNetSnowflakeClient extends AbstractSnowflakeClient
     protected final AtomicInteger workerUpdateCount = new AtomicInteger(0);
 
 
-
-
 }

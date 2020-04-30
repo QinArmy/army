@@ -1,5 +1,6 @@
 package io.army.env;
 
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 
 import java.util.Map;
@@ -10,9 +11,12 @@ public class StandardEnvironment extends AbstractEnvironment {
 
 
     public StandardEnvironment() {
-       this.env = new org.springframework.core.env.StandardEnvironment();
+        this(new org.springframework.core.env.StandardEnvironment());
     }
 
+    StandardEnvironment(ConfigurableEnvironment env) {
+        this.env = env;
+    }
 
     @Override
     public final boolean containsProperty(String key) {

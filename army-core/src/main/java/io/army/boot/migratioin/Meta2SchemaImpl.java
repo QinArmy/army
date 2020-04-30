@@ -8,22 +8,20 @@ import io.army.schema.SchemaInfoException;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 
-import java.sql.Connection;
 import java.util.*;
 
 class Meta2SchemaImpl implements Meta2Schema {
 
     @Override
-    public Map<String, List<String>> migrate(Collection<TableMeta<?>> tableMetas, Connection connection
+    public Map<String, List<String>> migrate(Collection<TableMeta<?>> tableMetas, SchemaExtractor schemaExtractor
             , Dialect dialect) throws SchemaInfoException, MetaException {
-        Assert.notNull(tableMetas,"tableMetas required");
-        Assert.notNull(connection,"connection required");
-        Assert.notNull(dialect,"dialect required");
+        Assert.notNull(tableMetas, "tableMetas required");
+        Assert.notNull(schemaExtractor, "schemaExtractor required");
+        Assert.notNull(dialect, "dialect required");
 
         // 1. extract schema from database's current schema.
-        SchemaInfo schemaInfo;
-        schemaInfo = SchemaExtractor.newInstance().extractor(connection);
-        // 2. compare meta then schema .
+        SchemaInfo schemaInfo = schemaExtractor.extract();
+        // 2. compare meta and schema .
         List<Migration> migrationList;
         migrationList = MetaSchemaComparator.build(dialect.sqlDialect())
                 .compare(tableMetas, schemaInfo, dialect);
@@ -46,7 +44,7 @@ class Meta2SchemaImpl implements Meta2Schema {
 
             if (migration.newTable()) {
                 // invoke  dialect generate debugSQL SQL
-                sqlList.addAll(dialect.tableDefinition(migration.table()));
+                sqlList.addAll(dialect.createTable(migration.table()));
             } else {
                 // invoke  dialect generate DML SQL
                 generateDML(migration,dialect,sqlList);

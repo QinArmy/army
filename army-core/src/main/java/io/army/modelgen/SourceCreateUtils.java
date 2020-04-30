@@ -65,7 +65,7 @@ abstract class SourceCreateUtils {
             Set<String> entityPropNameSet = new HashSet<>();
             Map<String,VariableElement> parentPropMap ,entityPropMap;
             //1.check parentMeta mapping then  add super entity props to entityPropNameSet to avoid child class duplicate prop
-            parentPropMap =   generateEntityAttributes(parentMappedElementList, entityPropNameSet, indexColumnNameSet);
+            parentPropMap = generateEntityAttributes(parentMappedElementList, entityPropNameSet, Collections.emptySet());
             // 2. extract entity property elements then check entity mapping
            entityPropMap = generateEntityAttributes(entityMappedElementList,
                     entityPropNameSet, indexColumnNameSet);
@@ -358,13 +358,13 @@ abstract class SourceCreateUtils {
                                                                  Set<String> entityPropNameSet,
                                                                  Set<String> indexColumnNameSet)
             throws MetaException {
-        Map<String,VariableElement> mappedPropMap = new HashMap<>();
+        Map<String, VariableElement> mappedPropMap = new HashMap<>();
         // column name set to avoid duplication
         Set<String> columnNameSet = new HashSet<>();
         List<String> discriminatorColumnList = new ArrayList<>(1);
 
-        final TypeElement entityElement = entityElement(mappedClassElementList);
-        final String discriminatorColumn = discriminatorColumnName(entityElement);
+        final TypeElement domainElement = entityElement(mappedClassElementList);
+        final String discriminatorColumn = discriminatorColumnName(domainElement);
         Column column;
         VariableElement mappedProp;
         String columnName;
@@ -380,27 +380,27 @@ abstract class SourceCreateUtils {
                     continue;
                 }
                 // assert prop name not duplication
-                MetaUtils.assertMappingPropNotDuplication(entityElement, mappedProp.getSimpleName().toString()
+                MetaUtils.assertMappingPropNotDuplication(domainElement, mappedProp.getSimpleName().toString()
                         , entityPropNameSet);
 
-                columnName = columnName(entityElement, mappedProp, column);
+                columnName = columnName(domainElement, mappedProp, column);
                 // make column name lower case
                 columnName = StringUtils.toLowerCase(columnName);
                 if (columnNameSet.contains(columnName)) {
                     throw MetaUtils.createColumnDuplication(mappedElement, columnName);
                 }
                 // assert io.army.annotation.Column
-                MetaUtils.assertColumn(entityElement, mappedProp, column, columnName, discriminatorColumn);
+                MetaUtils.assertColumn(domainElement, mappedProp, column, columnName, discriminatorColumn);
                 // assert io.army.annotation.DiscriminatorValue , io.army.annotation.Inheritance
-                addDiscriminator(entityElement, mappedProp, columnName, discriminatorColumnList);
+                addDiscriminator(domainElement, mappedProp, columnName, discriminatorColumnList);
 
                 columnNameSet.add(columnName);
 
-                mappedPropMap.put(mappedProp.getSimpleName().toString(),mappedProp);
+                mappedPropMap.put(mappedProp.getSimpleName().toString(), mappedProp);
             }
         }
-        MetaUtils.assertIndexColumnNameSet(entityElement, columnNameSet, indexColumnNameSet);
-        MetaUtils.assertInheritance(entityElement, discriminatorColumnList);
+        MetaUtils.assertIndexColumnNameSet(domainElement, columnNameSet, indexColumnNameSet);
+        MetaUtils.assertInheritance(domainElement, discriminatorColumnList);
         return Collections.unmodifiableMap(mappedPropMap);
     }
 

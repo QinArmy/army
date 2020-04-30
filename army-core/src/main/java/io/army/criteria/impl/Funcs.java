@@ -1,14 +1,17 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
+import io.army.criteria.FuncExpression;
 import io.army.criteria.SQLContext;
 import io.army.meta.mapping.MappingType;
 import io.army.util.ArrayUtils;
 import io.army.util.Assert;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-abstract class Funcs<E> extends AbstractExpression<E> {
+abstract class Funcs<E> extends AbstractExpression<E> implements FuncExpression<E> {
 
     private final String name;
 
@@ -25,6 +28,11 @@ abstract class Funcs<E> extends AbstractExpression<E> {
     }
 
     @Override
+    public final String name() {
+        return this.name;
+    }
+
+    @Override
     protected void afterSpace(SQLContext context) {
         context.sqlBuilder()
                 .append(name)
@@ -35,7 +43,7 @@ abstract class Funcs<E> extends AbstractExpression<E> {
 
     @Override
     public final String beforeAs() {
-        return String.format("%s(%s)",name,argumentToString());
+        return String.format("%s(%s)", name, argumentToString());
     }
 
     protected abstract void doAppendArgument(SQLContext context);
@@ -44,7 +52,7 @@ abstract class Funcs<E> extends AbstractExpression<E> {
 
     /*################################## blow static class  ##################################*/
 
-    static class NoArgumentFunc<E> extends Funcs<E> {
+    static final class NoArgumentFunc<E> extends Funcs<E> {
 
         NoArgumentFunc(String name, MappingType returnType) {
             super(name, returnType);
@@ -59,15 +67,23 @@ abstract class Funcs<E> extends AbstractExpression<E> {
         protected String argumentToString() {
             return "";
         }
+
+        @Override
+        public List<MappingType> argumentTypeList() {
+            return Collections.emptyList();
+        }
     }
 
-    static class OneArgumentFunc<E> extends Funcs<E> {
+    static final class OneArgumentFunc<E> extends Funcs<E> {
 
-        protected final Expression<?> one;
+        private final Expression<?> one;
+
+        private final List<MappingType> argumentTypeList;
 
         OneArgumentFunc(String name, MappingType returnType, Expression<?> one) {
             super(name, returnType);
             this.one = one;
+            this.argumentTypeList = Collections.singletonList(one.mappingType());
         }
 
         @Override
@@ -79,23 +95,37 @@ abstract class Funcs<E> extends AbstractExpression<E> {
         protected String argumentToString() {
             return one.toString();
         }
+
+        @Override
+        public List<MappingType> argumentTypeList() {
+            return this.argumentTypeList;
+        }
     }
 
-    static class TwoArgumentFunc<E> extends OneArgumentFunc<E> {
+    static class TwoArgumentFunc<E> extends Funcs<E> {
 
         private static final List<String> FORMAT_LIST = ArrayUtils.asUnmodifiableList("", ",", "");
 
-        protected final List<String> format;
+        private final List<String> format;
 
+        private final Expression<?> one;
 
-        protected final Expression<?> two;
+        private final Expression<?> two;
+
+        private final List<MappingType> argumentTypeList;
 
         TwoArgumentFunc(String name, MappingType returnType, List<String> format, Expression<?> one
                 , Expression<?> two) {
-            super(name, returnType, one);
+            super(name, returnType);
             Assert.isTrue(format.size() >= 3, "");
             this.format = format;
+            this.one = one;
             this.two = two;
+
+            List<MappingType> typeList = new ArrayList<>(2);
+            typeList.add(one.mappingType());
+            typeList.add(two.mappingType());
+            this.argumentTypeList = Collections.unmodifiableList(typeList);
         }
 
         TwoArgumentFunc(String name, MappingType returnType, Expression<?> one, Expression<?> two) {
@@ -116,25 +146,46 @@ abstract class Funcs<E> extends AbstractExpression<E> {
         protected String argumentToString() {
             return format.get(0) + one + format.get(1) + two + format.get(2);
         }
+
+        @Override
+        public List<MappingType> argumentTypeList() {
+            return this.argumentTypeList;
+        }
     }
 
-    static class ThreeArgumentFunc<E> extends TwoArgumentFunc<E> {
+    static final class ThreeArgumentFunc<E> extends Funcs<E> {
 
         private static final List<String> FORMAT_LIST = ArrayUtils.asUnmodifiableList("", ",", ",", "");
 
+        private final List<String> format;
+
+        private final Expression<?> one;
+
+        private final Expression<?> two;
+
         protected final Expression<?> three;
+
+        private final List<MappingType> argumentTypeList;
 
         ThreeArgumentFunc(String name, MappingType returnType, List<String> format, Expression<?> one
                 , Expression<?> two, Expression<?> three) {
-            super(name, returnType, format, one, two);
-            Assert.isTrue(format.size() >= 4,"format error");
+            super(name, returnType);
+            Assert.isTrue(format.size() >= 4, "format error");
+            this.format = format;
+            this.one = one;
+            this.two = two;
             this.three = three;
+
+            List<MappingType> typeList = new ArrayList<>(3);
+            typeList.add(one.mappingType());
+            typeList.add(two.mappingType());
+            typeList.add(three.mappingType());
+            this.argumentTypeList = Collections.unmodifiableList(typeList);
         }
 
         ThreeArgumentFunc(String name, MappingType returnType, Expression<?> one
                 , Expression<?> two, Expression<?> three) {
-            super(name, returnType, FORMAT_LIST, one, two);
-            this.three = three;
+            this(name, returnType, FORMAT_LIST, one, two, three);
         }
 
 
@@ -153,6 +204,11 @@ abstract class Funcs<E> extends AbstractExpression<E> {
         @Override
         protected String argumentToString() {
             return format.get(0) + one + format.get(1) + two + format.get(2) + three + format.get(3);
+        }
+
+        @Override
+        public List<MappingType> argumentTypeList() {
+            return this.argumentTypeList;
         }
     }
 

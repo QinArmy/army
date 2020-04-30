@@ -1,7 +1,9 @@
 package io.army.boot;
 
-import io.army.*;
-import io.army.boot.migratioin.Meta2Schema;
+import io.army.ArmyAccessException;
+import io.army.ArmyRuntimeException;
+import io.army.ProxySession;
+import io.army.ShardingMode;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.dialect.Dialect;
 import io.army.dialect.SQLDialect;
@@ -16,8 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +41,8 @@ class SessionFactoryImpl implements InnerSessionFactory {
 
     private final ZoneId zoneId;
 
+    private final ProxySession proxySession;
+
     final CurrentSessionContext currentSessionContext;
 
     private final Map<FieldMeta<?, ?>, MultiGenerator> fieldGeneratorMap;
@@ -53,7 +55,7 @@ class SessionFactoryImpl implements InnerSessionFactory {
 
 
     SessionFactoryImpl(Environment env, DataSource dataSource, SchemaMeta schemaMeta,
-                       CurrentSessionContext currentSessionContext,
+                       Class<?> currentSessionContextClass,
                        SQLDialect sqlDialect)
             throws ArmyRuntimeException {
         Assert.notNull(env, "env required");
@@ -63,8 +65,9 @@ class SessionFactoryImpl implements InnerSessionFactory {
         this.env = env;
         this.dataSource = dataSource;
         this.schemaMeta = schemaMeta;
-        this.currentSessionContext = currentSessionContext;
+        this.currentSessionContext = SessionFactoryUtils.buildCurrentSessionContext(this, currentSessionContextClass);
 
+        this.proxySession = new ProxySessionImpl(this.currentSessionContext);
         this.readOnly = env.getProperty(Environment.READONLY, Boolean.class, Boolean.FALSE);
 
         this.zoneId = SessionFactoryUtils.createZoneId(this.env, this.schemaMeta);
@@ -89,8 +92,8 @@ class SessionFactoryImpl implements InnerSessionFactory {
     }
 
     @Override
-    public final Session currentSession() throws NoCurrentSessionException {
-        return this.currentSessionContext.currentSession();
+    public ProxySession proxySession() {
+        return this.proxySession;
     }
 
     @Override
@@ -105,7 +108,7 @@ class SessionFactoryImpl implements InnerSessionFactory {
 
     @Override
     public boolean currentSessionContextIsInstanceOf(Class<?> currentSessionContextClass) {
-        return false;
+        return currentSessionContextClass.isInstance(this.currentSessionContext);
     }
 
     @Override
@@ -160,7 +163,7 @@ class SessionFactoryImpl implements InnerSessionFactory {
 
 
     @Override
-    public final DataSource getDataSource() {
+    public final DataSource dataSource() {
         return this.dataSource;
     }
 
@@ -185,51 +188,14 @@ class SessionFactoryImpl implements InnerSessionFactory {
 
     void initSessionFactory() throws ArmyAccessException {
         // 1.  migration meta
-        migrationIfNeed();
-
-
+        SessionFactoryInitializer initializer = new DefaultSessionFactoryInitializer(this);
+        initializer.onStartup();
     }
 
     /*################################## blow private method ##################################*/
 
 
-    private void migrationIfNeed() throws ArmyAccessException {
-        try {
-            // 1. generate dml
-            Map<String, List<String>> tableSqlMap;
-            tableSqlMap = Meta2Schema.build().migrate(classTableMetaMap.values(), dataSource.getConnection(), dialect);
 
-            if (LOG.isDebugEnabled()) {
-                printMigrationSql(tableSqlMap);
-            }
-            // 2. execute dml
-            executeDDL(tableSqlMap);
-        } catch (SQLException e) {
-            throw new ArmyAccessException(ErrorCode.ACCESS_ERROR, e, e.getMessage());
-        }
-    }
-
-    private void executeDDL(Map<String, List<String>> tableSqlMap) {
-        if (tableSqlMap.isEmpty()) {
-            return;
-        }
-        try (Connection connection = dataSource.getConnection()) {
-            DDLSQLExecutor ddlsqlExecutor = new BatchDDLSQLExecutor(connection);
-            ddlsqlExecutor.executeDDL(tableSqlMap);
-        } catch (SQLException e) {
-            throw new ArmyAccessException(ErrorCode.ACCESS_ERROR, e, e.getMessage());
-        }
-    }
-
-    private void printMigrationSql(Map<String, List<String>> tableSqlMap) {
-        for (Map.Entry<String, List<String>> e : tableSqlMap.entrySet()) {
-            LOG.debug("\ntableMeta:{}\n", e.getKey());
-            for (String sql : e.getValue()) {
-                LOG.debug("{}", sql);
-            }
-            LOG.debug("\n");
-        }
-    }
 
 
 }

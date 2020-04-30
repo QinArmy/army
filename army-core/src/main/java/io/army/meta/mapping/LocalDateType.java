@@ -1,6 +1,7 @@
 package io.army.meta.mapping;
 
 import io.army.util.Assert;
+import io.army.util.StringUtils;
 import io.army.util.TimeUtils;
 
 import java.sql.*;
@@ -30,8 +31,9 @@ public final class LocalDateType implements MappingType {
 
     @Override
     public String nonNullTextValue(Object value) {
-        LocalDate date = (LocalDate) value;
-        return date.format(TimeUtils.DATE_FORMATTER);
+        return StringUtils.quote(
+                ((LocalDate) value).format(TimeUtils.DATE_FORMATTER)
+        );
     }
 
 

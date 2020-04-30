@@ -1,7 +1,7 @@
 package io.army.tx.sync;
 
 
-import io.army.datasource.PrimarySecondaryRoutingDataSource;
+import io.army.datasource.sync.PrimarySecondaryRoutingDataSource;
 import org.springframework.core.NamedThreadLocal;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;

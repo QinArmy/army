@@ -5,7 +5,10 @@ import io.army.annotation.*;
 import io.army.criteria.MetaException;
 import io.army.meta.TableMeta;
 import io.army.struct.CodeEnum;
-import io.army.util.*;
+import io.army.util.AnnotationUtils;
+import io.army.util.Assert;
+import io.army.util.CollectionUtils;
+import io.army.util.StringUtils;
 import org.springframework.lang.Nullable;
 
 import javax.lang.model.element.Element;
@@ -15,33 +18,21 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.time.LocalTime;
 import java.util.*;
 
 abstract class MetaUtils {
 
     private static final Map<String, Map<Integer, String>> DISCRIMINATOR_MAP = new HashMap<>();
 
-    private static final Set<String> WITHOUT_DEFAULT_TYPES = ArrayUtils.asUnmodifiableSet(
-            String.class.getName(),
-            Long.class.getName(),
-            Integer.class.getName(),
-            BigDecimal.class.getName(),
+    private static final Set<String> WITHOUT_DEFAULT_TYPE_NAMES = createWithoutDefaultTypeNameSet();
 
-            BigInteger.class.getName(),
-            InputStream.class.getName(),
-            byte[].class.getName(),
-            Byte.class.getName(),
-
-            Short.class.getName(),
-            Double.class.getName(),
-            Float.class.getName(),
-            LocalTime.class.getName()
-
-    );
+    private static Set<String> createWithoutDefaultTypeNameSet() {
+        Set<String> set = new HashSet<>(MetaConstant.WITHOUT_DEFAULT_TYPES.size() + 4);
+        for (Class<?> clazz : MetaConstant.WITHOUT_DEFAULT_TYPES) {
+            set.add(clazz.getName());
+        }
+        return Collections.unmodifiableSet(set);
+    }
 
 
     static void throwInheritanceDuplication(TypeElement entityElement) throws MetaException {
@@ -279,7 +270,7 @@ abstract class MetaUtils {
 
     private static boolean isSpecifyTypeWithoutDefaultValue(VariableElement mappedProp) {
         String className = mappedProp.asType().toString();
-        return WITHOUT_DEFAULT_TYPES.contains(className)
+        return WITHOUT_DEFAULT_TYPE_NAMES.contains(className)
                 || isCodeEnum(mappedProp)
                 ;
     }
