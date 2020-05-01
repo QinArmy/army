@@ -1,16 +1,12 @@
 package io.army.boot;
 
 import io.army.codec.FieldCodec;
-import io.army.criteria.impl.SchemaMetaFactory;
 import io.army.env.Environment;
 import io.army.interceptor.DomainInterceptor;
-import io.army.meta.SchemaMeta;
-import io.army.util.StringUtils;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 abstract class AbstractSessionFactoryBuilder implements SessionFactoryBuilder {
 
@@ -20,7 +16,7 @@ abstract class AbstractSessionFactoryBuilder implements SessionFactoryBuilder {
 
     String name;
 
-    List<SessionFactoryInterceptor> interceptorList;
+    Collection<SessionFactoryInterceptor> interceptors;
 
     Collection<DomainInterceptor> domainInterceptors;
 
@@ -62,24 +58,13 @@ abstract class AbstractSessionFactoryBuilder implements SessionFactoryBuilder {
     }
 
     @Override
-    public final SessionFactoryBuilder interceptorList(List<SessionFactoryInterceptor> interceptorList) {
-        if (this.interceptorList == null) {
-            this.interceptorList = new ArrayList<>(interceptorList.size());
+    public final SessionFactoryBuilder interceptorList(Collection<SessionFactoryInterceptor> interceptorList) {
+        if (this.interceptors == null) {
+            this.interceptors = new ArrayList<>(interceptorList.size());
         }
-        this.interceptorList.addAll(interceptorList);
+        this.interceptors.addAll(interceptorList);
         return this;
     }
 
-
-    static SchemaMeta createSchema(String catalog, String schema) {
-        String actualCatalog = catalog, actualSchema = schema;
-        if (!StringUtils.hasText(actualCatalog)) {
-            actualCatalog = "";
-        }
-        if (!StringUtils.hasText(actualSchema)) {
-            actualSchema = "";
-        }
-        return SchemaMetaFactory.getSchema(actualCatalog, actualSchema);
-    }
 
 }

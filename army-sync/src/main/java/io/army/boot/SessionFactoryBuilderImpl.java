@@ -6,10 +6,8 @@ import io.army.SessionFactoryException;
 import io.army.codec.FieldCodec;
 import io.army.interceptor.DomainInterceptor;
 import io.army.util.Assert;
-import io.army.util.CollectionUtils;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 
 final class SessionFactoryBuilderImpl extends AbstractSessionFactoryBuilder {
 
@@ -30,20 +28,22 @@ final class SessionFactoryBuilderImpl extends AbstractSessionFactoryBuilder {
         if (actualFieldCodecs == null) {
             actualFieldCodecs = Collections.emptyList();
         }
+
+        final List<SessionFactoryInterceptor> factoryInterceptorList = createFactoryInterceptorList();
         try {
             SessionFactoryImpl sessionFactory = new SessionFactoryImpl(this.name, environment, dataSource
                     , actualDomainInterceptors, actualFieldCodecs);
 
-            if (!CollectionUtils.isEmpty(this.interceptorList)) {
-                for (SessionFactoryInterceptor interceptor : interceptorList) {
+            if (!factoryInterceptorList.isEmpty()) {
+                for (SessionFactoryInterceptor interceptor : interceptors) {
                     interceptor.beforeInit(sessionFactory);
                 }
             }
             // init session factory
             sessionFactory.initSessionFactory();
 
-            if (!CollectionUtils.isEmpty(this.interceptorList)) {
-                for (SessionFactoryInterceptor interceptor : interceptorList) {
+            if (!factoryInterceptorList.isEmpty()) {
+                for (SessionFactoryInterceptor interceptor : interceptors) {
                     interceptor.afterInit(sessionFactory);
                 }
             }
@@ -60,5 +60,10 @@ final class SessionFactoryBuilderImpl extends AbstractSessionFactoryBuilder {
 
     /*################################## blow private method ##################################*/
 
+    List<SessionFactoryInterceptor> createFactoryInterceptorList() {
+        List<SessionFactoryInterceptor> list = new ArrayList<>(this.interceptors);
+        list.sort(Comparator.comparingInt(SessionFactoryInterceptor::order));
+        return Collections.unmodifiableList(list);
+    }
 
 }

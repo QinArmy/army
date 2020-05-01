@@ -9,7 +9,6 @@ import io.army.interceptor.DomainInterceptor;
 
 import javax.sql.DataSource;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * 设计为接口的原因
@@ -29,7 +28,7 @@ public interface SessionFactoryBuilder {
 
     SessionFactoryBuilder name(String sessionFactoryName);
 
-    SessionFactoryBuilder interceptorList(List<SessionFactoryInterceptor> interceptorList);
+    SessionFactoryBuilder interceptorList(Collection<SessionFactoryInterceptor> interceptorList);
 
     SessionFactory build() throws SessionFactoryException;
 
