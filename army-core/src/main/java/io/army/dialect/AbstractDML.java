@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.*;
 
+//@SuppressWarnings("unused")
 public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
     public AbstractDML(Dialect dialect) {
@@ -27,19 +28,6 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     }
 
     /*################################## blow DML batchInsert method ##################################*/
-
-    @Override
-    public final List<SQLWrapper> insert(IDomain domain) {
-        TableMeta<?> tableMeta = this.dialect.sessionFactory().tableMetaMap().get(domain.getClass());
-        Assert.notNull(tableMeta, () -> String.format("not found TableMeta of domain[%s]", domain));
-        Assert.state(tableMeta.javaType() == domain.getClass(), "");
-
-        return Collections.unmodifiableList(
-                standardInsert(
-                        DMLUtils.wrapperDomainAsInsert(tableMeta, domain)
-                        , Visible.ONLY_VISIBLE)
-        );
-    }
 
     @Override
     public final List<SQLWrapper> insert(Insert insert, final Visible visible) {

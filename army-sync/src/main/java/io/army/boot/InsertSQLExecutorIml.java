@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 
 final class InsertSQLExecutorIml implements InsertSQLExecutor {
@@ -42,7 +43,7 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
     }
 
     @Override
-    public final void insert(InnerSession session, List<SQLWrapper> sqlWrapperList)
+    public final List<Integer> insert(InnerSession session, List<SQLWrapper> sqlWrapperList)
             throws InsertException {
 
         final boolean showSql = session.sessionFactory().readonly();
@@ -64,7 +65,7 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
             try (PreparedStatement st = session.createStatement(wrapper.sql(), generatorWrapper != null)) {
                 // 2. set params
                 setParams(st, wrapper.paramList());
-                //3. execute dml
+                //3. start dml
                 updateCount[sqlNum] = st.executeUpdate();
                 if (generatorWrapper != null) {
                     // 4. extract generated key (optional)
@@ -72,7 +73,7 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
                 }
 
             } catch (SQLException e) {
-                throw new InsertException(ErrorCode.INSERT_ERROR, e, "dml execute error:\n%s"
+                throw new InsertException(ErrorCode.INSERT_ERROR, e, "dml start error:\n%s"
                         , wrapper.toString(null));
             }
 
@@ -85,12 +86,12 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
             sqlNum++;
 
         }
-
+        return Collections.emptyList();
     }
 
 
     @Override
-    public final void batchInsert(InnerSession session, List<BatchSQLWrapper> batchSQLWrapperList) {
+    public final List<Integer> batchInsert(InnerSession session, List<BatchSQLWrapper> batchSQLWrapperList) {
         for (BatchSQLWrapper sqlWrapper : batchSQLWrapperList) {
             // 1. create PreparedStatement
             try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
@@ -100,14 +101,15 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
                     // 3. add param group to batch.
                     st.addBatch();
                 }
-                //3. execute batch.
+                //3. start batch.
                 st.executeBatch();
 
             } catch (SQLException e) {
-                throw new InsertException(ErrorCode.INSERT_ERROR, e, "dml execute error:\n%s"
+                throw new InsertException(ErrorCode.INSERT_ERROR, e, "dml start error:\n%s"
                         , sqlWrapper.toString(null));
             }
         }
+        return Collections.emptyList();
     }
 
     private static void setParams(PreparedStatement st, List<ParamWrapper> paramWrapperList)

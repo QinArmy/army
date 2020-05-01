@@ -3,11 +3,12 @@ package io.army.boot;
 
 import io.army.SessionFactory;
 import io.army.SessionFactoryException;
-import io.army.ShardingMode;
-import io.army.dialect.SQLDialect;
+import io.army.codec.FieldCodec;
 import io.army.env.Environment;
+import io.army.interceptor.DomainInterceptor;
 
 import javax.sql.DataSource;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -20,19 +21,11 @@ public interface SessionFactoryBuilder {
 
     SessionFactoryBuilder datasource(DataSource dataSource);
 
-    SessionFactoryBuilder sqlDialect(SQLDialect sqlDialect);
-
-    SessionFactoryBuilder catalog(String catalog);
-
-    SessionFactoryBuilder schema(String schema);
-
     SessionFactoryBuilder environment(Environment environment);
 
-    SessionFactoryBuilder shardingMode(ShardingMode shardingMode);
+    SessionFactoryBuilder domainInterceptor(Collection<DomainInterceptor> domainInterceptors);
 
-    SessionFactoryBuilder currentSessionContext(Class<?> clazz);
-
-    SessionFactoryBuilder interceptor(SessionFactoryInterceptor interceptor);
+    SessionFactoryBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs);
 
     SessionFactoryBuilder name(String sessionFactoryName);
 

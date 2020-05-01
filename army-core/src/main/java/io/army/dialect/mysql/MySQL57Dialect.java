@@ -74,4 +74,5 @@ class MySQL57Dialect extends AbstractDialect {
         return new MySQL57DQL(this);
     }
 
+
 }

@@ -1,12 +1,8 @@
 package io.army.boot;
 
-import io.army.GenericSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class BootstrapTests {
 
@@ -15,9 +11,7 @@ public class BootstrapTests {
     @Test
     public void bootstrap() {
         final long startTime = System.currentTimeMillis();
-        Map<String, Object> map = new HashMap<>();
 
-        map.put(GenericSessionFactory.PACKAGE_TO_SCAN, "com.example.domain");
 
        /* GenericSessionFactory sessionFactory = builder(map)
                 .build();*/

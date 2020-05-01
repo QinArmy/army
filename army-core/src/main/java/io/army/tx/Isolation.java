@@ -10,7 +10,7 @@ public enum Isolation {
      *
      * @see java.sql.Connection
      */
-    DEFAULT(-1),
+    DEFAULT(-1, ""),
 
     /**
      * A constant indicating that dirty reads, non-repeatable reads and phantom reads
@@ -21,7 +21,7 @@ public enum Isolation {
      *
      * @see java.sql.Connection#TRANSACTION_READ_UNCOMMITTED
      */
-    READ_UNCOMMITTED(Connection.TRANSACTION_READ_UNCOMMITTED),
+    READ_UNCOMMITTED(Connection.TRANSACTION_READ_UNCOMMITTED, "READ UNCOMMITTED"),
 
     /**
      * A constant indicating that dirty reads are prevented; non-repeatable reads
@@ -30,7 +30,7 @@ public enum Isolation {
      *
      * @see java.sql.Connection#TRANSACTION_READ_COMMITTED
      */
-    READ_COMMITTED(Connection.TRANSACTION_READ_COMMITTED),
+    READ_COMMITTED(Connection.TRANSACTION_READ_COMMITTED, "READ COMMITTED"),
 
     /**
      * A constant indicating that dirty reads and non-repeatable reads are
@@ -42,7 +42,7 @@ public enum Isolation {
      *
      * @see java.sql.Connection#TRANSACTION_REPEATABLE_READ
      */
-    REPEATABLE_READ(Connection.TRANSACTION_REPEATABLE_READ),
+    REPEATABLE_READ(Connection.TRANSACTION_REPEATABLE_READ, "READ UNCOMMITTED"),
 
     /**
      * A constant indicating that dirty reads, non-repeatable reads and phantom
@@ -55,12 +55,15 @@ public enum Isolation {
      *
      * @see java.sql.Connection#TRANSACTION_SERIALIZABLE
      */
-    SERIALIZABLE(Connection.TRANSACTION_SERIALIZABLE);
+    SERIALIZABLE(Connection.TRANSACTION_SERIALIZABLE, "SERIALIZABLE");
 
     public final int level;
 
-    Isolation(int level) {
+    public final String command;
+
+    Isolation(int level, String command) {
         this.level = level;
+        this.command = command;
     }
 
 }

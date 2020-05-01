@@ -1,5 +1,6 @@
 package io.army;
 
+import io.army.codec.FieldCodec;
 import io.army.dialect.SQLDialect;
 import io.army.env.Environment;
 import io.army.generator.MultiGenerator;
@@ -13,13 +14,12 @@ import java.util.Map;
 
 public interface GenericSessionFactory extends AutoCloseable {
 
-    String PACKAGE_TO_SCAN = "io.army.packageToScan";
 
-    String ZONE_ID_OF_SCHEMA = "io.army.%s.%s.zoneId";
+    String name();
 
     Environment environment();
 
-    SQLDialect databaseActualSqlDialect();
+    SQLDialect actualSQLDialect();
 
     ZoneId zoneId();
 
@@ -31,20 +31,8 @@ public interface GenericSessionFactory extends AutoCloseable {
 
     Map<TableMeta<?>, List<FieldMeta<?, ?>>> tableGeneratorChain();
 
+    Map<TableMeta<?>, Map<FieldMeta<?, ?>, FieldCodec>> tableFieldCodecMap();
 
-    /**
-     * Destroy this <tt>SessionFactory</tt> then release all resources (caches,
-     * connection pools, etc).
-     * <p/>
-     * It is the responsibility of the application to ensure that there are no
-     * open {@link GenericSessionFactory sessions} before calling this method asType the impact
-     * on those {@link GenericSession sessions} is indeterminate.
-     * <p/>
-     * No-ops if already {@link #isClosed closed}.
-     *
-     * @throws ArmyRuntimeException Indicates an issue closing the factory.
-     */
-    void close() throws ArmyRuntimeException;
 
     ShardingMode shardingMode();
 
@@ -53,7 +41,7 @@ public interface GenericSessionFactory extends AutoCloseable {
      *
      * @return True if this factory is already closed; false otherwise.
      */
-    boolean isClosed();
+    boolean closed();
 
     boolean hasCurrentSession();
 

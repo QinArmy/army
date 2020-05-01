@@ -3,11 +3,13 @@ package io.army.boot;
 import io.army.ErrorCode;
 import io.army.SessionFactory;
 import io.army.SessionFactoryException;
-import io.army.context.spi.CurrentSessionContext;
-import io.army.dialect.SQLDialect;
-import io.army.meta.SchemaMeta;
+import io.army.codec.FieldCodec;
+import io.army.interceptor.DomainInterceptor;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
+
+import java.util.Collection;
+import java.util.Collections;
 
 final class SessionFactoryBuilderImpl extends AbstractSessionFactoryBuilder {
 
@@ -20,21 +22,17 @@ final class SessionFactoryBuilderImpl extends AbstractSessionFactoryBuilder {
         Assert.notNull(this.dataSource, "dataSource required");
         Assert.notNull(this.environment, "environment required");
 
-        SchemaMeta schemaMeta = createSchema(catalog, schema);
-        SQLDialect actualSQLDialect = this.sqlDialect;
-        if (actualSQLDialect == null) {
-            actualSQLDialect = SQLDialect.MySQL57;
+        Collection<DomainInterceptor> actualDomainInterceptors = this.domainInterceptors;
+        if (actualDomainInterceptors == null) {
+            actualDomainInterceptors = Collections.emptyList();
         }
-        Class<?> actualCurrentSessionContext = this.currentSessionContextClass;
-
-        if (actualCurrentSessionContext == null) {
-            actualCurrentSessionContext = DefaultCurrentSessionContext.class;
-        } else {
-            Assert.isAssignable(CurrentSessionContext.class, actualCurrentSessionContext);
+        Collection<FieldCodec> actualFieldCodecs = this.fieldCodecs;
+        if (actualFieldCodecs == null) {
+            actualFieldCodecs = Collections.emptyList();
         }
         try {
-            SessionFactoryImpl sessionFactory = new SessionFactoryImpl(environment, dataSource, schemaMeta
-                    , actualCurrentSessionContext, actualSQLDialect);
+            SessionFactoryImpl sessionFactory = new SessionFactoryImpl(this.name, environment, dataSource
+                    , actualDomainInterceptors, actualFieldCodecs);
 
             if (!CollectionUtils.isEmpty(this.interceptorList)) {
                 for (SessionFactoryInterceptor interceptor : interceptorList) {
@@ -43,7 +41,6 @@ final class SessionFactoryBuilderImpl extends AbstractSessionFactoryBuilder {
             }
             // init session factory
             sessionFactory.initSessionFactory();
-
 
             if (!CollectionUtils.isEmpty(this.interceptorList)) {
                 for (SessionFactoryInterceptor interceptor : interceptorList) {

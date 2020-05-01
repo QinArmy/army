@@ -1,16 +1,12 @@
 package io.army.boot;
 
-import io.army.ArmyAccessException;
-import io.army.ArmyRuntimeException;
-import io.army.ProxySession;
-import io.army.ShardingMode;
+import io.army.*;
+import io.army.codec.FieldCodec;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.dialect.Dialect;
 import io.army.dialect.SQLDialect;
 import io.army.env.Environment;
-import io.army.generator.MultiGenerator;
-import io.army.meta.FieldMeta;
-import io.army.meta.SchemaMeta;
+import io.army.interceptor.DomainInterceptor;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.Pair;
@@ -18,77 +14,56 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
-import java.time.ZoneId;
+import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
 
-class SessionFactoryImpl implements InnerSessionFactory {
+class SessionFactoryImpl extends AbstractGenericSessionFactory implements InnerSessionFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(SessionFactoryImpl.class);
 
-    private final Environment env;
-
     private final DataSource dataSource;
 
-    private final Map<Class<?>, TableMeta<?>> classTableMetaMap;
+    private final SQLDialect actualSQLDialect;
 
     private final Dialect dialect;
 
-    private final SQLDialect databaseActualSqlDialect;
-
-    private final SchemaMeta schemaMeta;
-
-    private final ZoneId zoneId;
-
     private final ProxySession proxySession;
 
-    final CurrentSessionContext currentSessionContext;
+    private final CurrentSessionContext currentSessionContext;
 
-    private final Map<FieldMeta<?, ?>, MultiGenerator> fieldGeneratorMap;
-
-    private final Map<TableMeta<?>, List<FieldMeta<?, ?>>> tableGeneratorChain;
-
-    private final boolean readOnly;
+    private final Map<TableMeta<?>, List<DomainInterceptor>> domainInterceptorMap;
 
     private boolean closed;
 
 
-    SessionFactoryImpl(Environment env, DataSource dataSource, SchemaMeta schemaMeta,
-                       Class<?> currentSessionContextClass,
-                       SQLDialect sqlDialect)
-            throws ArmyRuntimeException {
-        Assert.notNull(env, "env required");
-        Assert.notNull(schemaMeta, "schemaMeta required");
+    SessionFactoryImpl(String name, Environment env, DataSource dataSource
+            , Collection<DomainInterceptor> domainInterceptors, Collection<FieldCodec> fieldCodecs)
+            throws SessionFactoryException {
+        super(name, env, fieldCodecs);
+
         Assert.notNull(dataSource, "dataSource required");
 
-        this.env = env;
         this.dataSource = dataSource;
-        this.schemaMeta = schemaMeta;
-        this.currentSessionContext = SessionFactoryUtils.buildCurrentSessionContext(this, currentSessionContextClass);
+        this.currentSessionContext = SyncSessionFactoryUtils.buildCurrentSessionContext(this, this.env);
+        this.proxySession = new ProxySessionImpl(this, this.currentSessionContext);
+        this.domainInterceptorMap = SyncSessionFactoryUtils.createDomainInterceptorMap(domainInterceptors);
 
-        this.proxySession = new ProxySessionImpl(this.currentSessionContext);
-        this.readOnly = env.getProperty(Environment.READONLY, Boolean.class, Boolean.FALSE);
-
-        this.zoneId = SessionFactoryUtils.createZoneId(this.env, this.schemaMeta);
-
-        List<String> packagesToScan = env.getRequiredPropertyList(PACKAGE_TO_SCAN, String[].class);
-        this.classTableMetaMap = SessionFactoryUtils.scanPackagesForMeta(this.schemaMeta, packagesToScan);
-
-        Pair<Dialect, SQLDialect> pair = SessionFactoryUtils.createDialect(sqlDialect, dataSource, this);
+        Pair<Dialect, SQLDialect> pair = SyncSessionFactoryUtils.createDialect(dataSource, this);
         this.dialect = pair.getFirst();
-        this.databaseActualSqlDialect = pair.getSecond();
-
-        SessionFactoryUtils.GeneratorWrapper generatorWrapper =
-                SessionFactoryUtils.createGeneratorWrapper(this.classTableMetaMap.values(), this.env);
-        this.fieldGeneratorMap = generatorWrapper.getGeneratorChain();
-        this.tableGeneratorChain = generatorWrapper.getTableGeneratorChain();
+        this.actualSQLDialect = pair.getSecond();
     }
 
 
     @Override
-    public void close() throws ArmyRuntimeException {
+    public void close() throws SessionFactoryException {
         this.closed = true;
+    }
+
+    @Override
+    public Map<TableMeta<?>, List<DomainInterceptor>> domainInterceptorMap() {
+        return this.domainInterceptorMap;
     }
 
     @Override
@@ -97,12 +72,12 @@ class SessionFactoryImpl implements InnerSessionFactory {
     }
 
     @Override
-    public final SessionBuilder builder() {
+    public SessionBuilder builder() {
         return new SessionBuilderImpl();
     }
 
     @Override
-    public final boolean hasCurrentSession() {
+    public boolean hasCurrentSession() {
         return this.currentSessionContext.hasCurrentSession();
     }
 
@@ -112,90 +87,80 @@ class SessionFactoryImpl implements InnerSessionFactory {
     }
 
     @Override
-    public boolean readonly() {
-        return this.readOnly;
-    }
-
-    @Override
     public CurrentSessionContext currentSessionContext() {
         return this.currentSessionContext;
     }
 
     @Override
-    public final boolean isClosed() {
+    public boolean closed() {
         return this.closed;
     }
 
     @Override
-    public final Dialect dialect() {
+    public Dialect dialect() {
         return dialect;
     }
 
     @Override
-    public final SQLDialect databaseActualSqlDialect() {
-        return databaseActualSqlDialect;
+    public SQLDialect actualSQLDialect() {
+        return this.actualSQLDialect;
     }
 
     @Override
-    public final ZoneId zoneId() {
-        return zoneId;
-    }
-
-    @Override
-    public final SchemaMeta schemaMeta() {
-        return schemaMeta;
-    }
-
-    @Override
-    public final Map<Class<?>, TableMeta<?>> tableMetaMap() {
-        return this.classTableMetaMap;
-    }
-
-    @Override
-    public Map<FieldMeta<?, ?>, MultiGenerator> fieldGeneratorMap() {
-        return fieldGeneratorMap;
-    }
-
-    @Override
-    public Map<TableMeta<?>, List<FieldMeta<?, ?>>> tableGeneratorChain() {
-        return tableGeneratorChain;
-    }
-
-
-    @Override
-    public final DataSource dataSource() {
+    public DataSource dataSource() {
         return this.dataSource;
     }
 
-    @Override
-    public final Environment environment() {
-        return env;
-    }
-
-    @Override
-    public final ShardingMode shardingMode() {
-        return ShardingMode.NO_SHARDING;
-    }
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", SessionFactoryImpl.class.getSimpleName() + "[", "]")
-                .add("classTableMetaMap=" + classTableMetaMap.entrySet())
-                .add("dialect=" + dialect)
-                .add("closed=" + closed)
-                .toString();
+        return "SessionFactory[" + this.name + "]";
     }
 
     void initSessionFactory() throws ArmyAccessException {
         // 1.  migration meta
-        SessionFactoryInitializer initializer = new DefaultSessionFactoryInitializer(this);
-        initializer.onStartup();
+        new DefaultSessionFactoryInitializer(this).onStartup();
+
     }
 
-    /*################################## blow private method ##################################*/
+    /*################################## blow instance inner class  ##################################*/
 
+    private final class SessionBuilderImpl implements SessionBuilder {
 
+        private boolean currentSession;
 
+        @Override
+        public SessionBuilder currentSession() {
+            this.currentSession = true;
+            return this;
+        }
+
+        @Override
+        public Session build() throws SessionException {
+            final boolean current = this.currentSession;
+            try {
+                final Session session = new SessionImpl(SessionFactoryImpl.this
+                        , SessionFactoryImpl.this.dataSource.getConnection()
+                        , current);
+                if (current) {
+                    SessionFactoryImpl.this.currentSessionContext.currentSession(session);
+                }
+                return session;
+            } catch (SQLException e) {
+                throw new CreateSessionException(ErrorCode.CANNOT_GET_CONN, e
+                        , "Could not create Army-managed session,because can't get connection.");
+            } catch (IllegalStateException e) {
+                if (current) {
+                    throw new CreateSessionException(ErrorCode.DUPLICATION_CURRENT_SESSION, e
+                            , "Could not create Army-managed session,because duplication current session.");
+                } else {
+                    throw new CreateSessionException(ErrorCode.ACCESS_ERROR, e
+                            , "Could not create Army-managed session.");
+                }
+
+            }
+        }
+    }
 
 
 }

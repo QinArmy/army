@@ -2,34 +2,22 @@ package io.army.boot;
 
 import io.army.*;
 import io.army.asm.TableMetaLoader;
-import io.army.context.spi.CurrentSessionContext;
+import io.army.codec.FieldCodec;
 import io.army.criteria.MetaException;
-import io.army.dialect.Dialect;
-import io.army.dialect.DialectNotMatchException;
-import io.army.dialect.SQLDialect;
-import io.army.dialect.UnSupportedDialectException;
-import io.army.dialect.mysql.MySQLDialectFactory;
+import io.army.criteria.impl.SchemaMetaFactory;
 import io.army.env.Environment;
 import io.army.generator.GeneratorFactory;
 import io.army.generator.MultiGenerator;
 import io.army.generator.PreMultiGenerator;
-import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
-import io.army.util.Pair;
 import io.army.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.sql.DataSource;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
 import java.time.ZoneId;
 import java.util.*;
 
@@ -38,7 +26,7 @@ import java.util.*;
  */
 abstract class SessionFactoryUtils {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SessionFactoryUtils.class);
+    static final Logger LOG = LoggerFactory.getLogger(SessionFactoryUtils.class);
 
     static final class GeneratorWrapper {
 
@@ -68,33 +56,15 @@ abstract class SessionFactoryUtils {
     }
 
 
-    static Pair<Dialect, SQLDialect> createDialect(final @Nullable SQLDialect sqlDialect, DataSource dataSource,
-                                                   GenericSessionFactory sessionFactory) {
-        final SQLDialect databaseSqlDialect = getSQLDialect(dataSource);
-
-        SQLDialect actualSqlDialect = decideSQLDialect(sqlDialect, databaseSqlDialect);
-
-        Dialect dialect;
-        switch (actualSqlDialect) {
-            case MySQL:
-            case MySQL57:
-            case MySQL80:
-                dialect = MySQLDialectFactory.createMySQLDialect(actualSqlDialect, sessionFactory);
-                break;
-            case Db2:
-            case Oracle:
-            case Postgre:
-            case OceanBase:
-            case SQL_Server:
-            default:
-                throw new RuntimeException(String.format("unknown SQLDialect[%s]", actualSqlDialect));
-        }
-        return new Pair<>(dialect, databaseSqlDialect);
-    }
-
-    static Map<Class<?>, TableMeta<?>> scanPackagesForMeta(SchemaMeta schemaMeta, List<String> packagesToScan) {
+    static Map<Class<?>, TableMeta<?>> scanPackagesForMeta(SchemaMeta schemaMeta, Environment env) {
+        List<String> packagesToScan = env.getRequiredPropertyList(ArmyConfigConstant.PACKAGE_TO_SCAN, String[].class);
         return TableMetaLoader.build()
                 .scanTableMeta(schemaMeta, packagesToScan);
+    }
+
+    static ShardingMode shardingMode(String factoryName, Environment env) {
+        return env.getProperty(String.format(ArmyConfigConstant.SHARDING_MODE, factoryName)
+                , ShardingMode.class, ShardingMode.NO_SHARDING);
     }
 
     static GeneratorWrapper createGeneratorWrapper(Collection<TableMeta<?>> tableMetas, Environment environment) {
@@ -129,9 +99,14 @@ abstract class SessionFactoryUtils {
         return new GeneratorWrapper(generatorMap, tableGeneratorChain);
     }
 
+    static SchemaMeta obtainSchemaMeta(String factoryName, Environment env) {
+        String catalog = env.getProperty(String.format("army.sessionFactory.%s.catalog", factoryName), "");
+        String schema = env.getProperty(String.format("army.sessionFactory.%s.schema", factoryName), "");
+        return SchemaMetaFactory.getSchema(catalog, schema);
+    }
 
-    static ZoneId createZoneId(Environment env, SchemaMeta schemaMeta) {
-        String zoneIdText = env.getProperty(String.format(schemaMeta.catalog(), schemaMeta.schema()));
+    static ZoneId createZoneId(Environment env, String factoryName) {
+        String zoneIdText = env.getProperty(String.format(ArmyConfigConstant.ZONE_ID, factoryName));
         ZoneId zoneId;
         if (StringUtils.hasText(zoneIdText)) {
             zoneId = ZoneId.of(zoneIdText);
@@ -141,103 +116,36 @@ abstract class SessionFactoryUtils {
         return zoneId;
     }
 
-    static CurrentSessionContext buildCurrentSessionContext(SessionFactory sessionFactory
-            , Class<?> currentSessionContextClass) {
-        if (currentSessionContextClass == DefaultCurrentSessionContext.class) {
-            return DefaultCurrentSessionContext.build(sessionFactory);
-        }
-        try {
-            Method method = currentSessionContextClass.getMethod("build", SessionFactory.class);
-            if (!currentSessionContextClass.isAssignableFrom(method.getReturnType())) {
-                throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
-                        , "%s return type isn't %s", currentSessionContextClass.getName()
-                        , currentSessionContextClass.getName());
-            }
-            return (CurrentSessionContext) method.invoke(null, sessionFactory);
-        } catch (NoSuchMethodException e) {
-            throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR, e
-                    , "%s no [public static %s build(SessionFactory)] method.", currentSessionContextClass.getName()
-                    , currentSessionContextClass.getName());
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR, e, e.getMessage());
-        }
+    static boolean readOnly(String factoryName, Environment env) {
+        return env.getProperty(String.format(ArmyConfigConstant.READ_ONLY, factoryName), Boolean.class, Boolean.FALSE);
     }
+
+    static Map<TableMeta<?>, Map<FieldMeta<?, ?>, FieldCodec>> createTableFieldCodecMap(
+            Collection<FieldCodec> fieldCodecs) {
+
+        Map<TableMeta<?>, Map<FieldMeta<?, ?>, FieldCodec>> tableCodecMap = new HashMap<>();
+
+        Map<FieldMeta<?, ?>, FieldCodec> fieldCodecMap;
+        for (FieldCodec codec : fieldCodecs) {
+
+            for (FieldMeta<?, ?> fieldMeta : codec.fieldMetaSet()) {
+                fieldCodecMap = tableCodecMap.computeIfAbsent(fieldMeta.tableMeta(), table -> new HashMap<>());
+                if (fieldCodecMap.putIfAbsent(fieldMeta, codec) != codec) {
+                    throw new SessionFactoryException(ErrorCode.FIELD_CODEC_DUPLICATION
+                            , "FieldMeta[%s]'s FieldCodec[%s] duplication.", fieldMeta, codec);
+                }
+            }
+        }
+
+        tableCodecMap.replaceAll((k, v) -> Collections.unmodifiableMap(v));
+
+        return Collections.unmodifiableMap(tableCodecMap);
+    }
+
+
 
 
     /*################################## blow private method ##################################*/
-
-    private static SQLDialect oracleDialect(int major, int minor) {
-        throw new UnSupportedDialectException(ErrorCode.UNSUPPORT_DIALECT
-                , "%s is unsupported by army.", "Oracle");
-    }
-
-    private static SQLDialect mysqlDialect(int major, int minor) {
-        SQLDialect sqlDialect;
-        switch (major) {
-            case 5:
-                if (minor < 7) {
-                    throw createUnSupportedDialectException(major, minor);
-                }
-                sqlDialect = SQLDialect.MySQL57;
-                break;
-            case 8:
-                switch (minor) {
-                    case 0:
-                        sqlDialect = SQLDialect.MySQL80;
-                        break;
-                    default:
-                        throw createUnSupportedDialectException(major, minor);
-                }
-                break;
-            default:
-                throw createUnSupportedDialectException(major, minor);
-        }
-        return sqlDialect;
-    }
-
-    private static SQLDialect decideSQLDialect(@Nullable SQLDialect dialect, SQLDialect databaseSqlDialect) {
-        SQLDialect actual = dialect;
-        if (actual == null) {
-            LOG.debug("extract dml dialect from database");
-            actual = databaseSqlDialect;
-        } else if (!SQLDialect.sameFamily(dialect, databaseSqlDialect)
-                || dialect.ordinal() > databaseSqlDialect.ordinal()) {
-            throw new DialectNotMatchException(ErrorCode.META_ERROR, "SQLDialect[%s] then database not match.", actual);
-        }
-        return actual;
-    }
-
-    private static SQLDialect getSQLDialect(DataSource dataSource) {
-        try (Connection conn = dataSource.getConnection()) {
-            DatabaseMetaData metaData = conn.getMetaData();
-
-            String productName = metaData.getDatabaseProductName();
-            int major = metaData.getDatabaseMajorVersion();
-            int minor = metaData.getDatabaseMinorVersion();
-
-            SQLDialect sqlDialect;
-            switch (productName) {
-                case "MySQL":
-                    sqlDialect = mysqlDialect(major, minor);
-                    break;
-                case "Oracle":
-                    sqlDialect = oracleDialect(major, minor);
-                    break;
-                default:
-                    throw new UnSupportedDialectException(ErrorCode.UNSUPPORT_DIALECT
-                            , "%s is unsupported by army.", productName);
-            }
-            return sqlDialect;
-        } catch (SQLException e) {
-            throw new ArmyAccessException(ErrorCode.ACCESS_ERROR, e, e.getMessage());
-        }
-    }
-
-
-    private static UnSupportedDialectException createUnSupportedDialectException(int major, int minor) {
-        return new UnSupportedDialectException(ErrorCode.UNSUPPORTED_DIALECT
-                , "MySQL %s.%s.x is supported by army", major, minor);
-    }
 
 
     /**

@@ -6,6 +6,7 @@ import io.army.boot.migratioin.Meta2Schema;
 import io.army.boot.migratioin.SchemaExtractor;
 import io.army.boot.migratioin.SyncSchemaExtractorFactory;
 import io.army.util.ClassUtils;
+import io.army.util.ReflectionUtils;
 
 import javax.sql.DataSource;
 import java.lang.reflect.Method;
@@ -45,25 +46,28 @@ final class DefaultSessionFactoryInitializer implements SessionFactoryInitialize
         if (tableSqlMap.isEmpty()) {
             return;
         }
+        // try to obtain primary datasource
         DataSource dataSource = obtainDataSource(sessionFactory.dataSource());
         try (Connection connection = dataSource.getConnection()) {
             DDLSQLExecutor ddlsqlExecutor = new BatchDDLSQLExecutor(connection);
             ddlsqlExecutor.executeDDL(tableSqlMap);
         } catch (SQLException e) {
-            throw new ArmyAccessException(ErrorCode.ACCESS_ERROR, e, e.getMessage());
+            throw new ArmyAccessException(ErrorCode.ACCESS_ERROR, e, "SessionFactoryInitializer failure.");
         }
     }
 
     private DataSource obtainDataSource(DataSource dataSource) {
-        String className = "io.army.datasource.sync.PrimarySecondaryRoutingDataSource";
+        String className = "org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource";
 
         DataSource primary = dataSource;
         try {
             if (ClassUtils.isPresent(className, ClassUtils.getDefaultClassLoader())) {
                 Class<?> routingDataSourceClass = Class.forName(className);
                 if (routingDataSourceClass.isInstance(dataSource)) {
-                    Method method = routingDataSourceClass.getMethod("getPrimaryDataSource");
-                    primary = (DataSource) method.invoke(dataSource);
+                    Method method = ReflectionUtils.findMethod(dataSource.getClass(), "getPrimaryDataSource");
+                    if (method != null) {
+                        primary = (DataSource) method.invoke(dataSource);
+                    }
                 }
                 if (primary == null) {
                     primary = dataSource;

@@ -12,9 +12,9 @@ import java.util.List;
 interface InsertSQLExecutor extends DMLSQLExecutor {
 
 
-    void insert(InnerSession session, List<SQLWrapper> sqlWrapperList) throws InsertException;
+    List<Integer> insert(InnerSession session, List<SQLWrapper> sqlWrapperList) throws InsertException;
 
-    void batchInsert(InnerSession session, List<BatchSQLWrapper> batchSQLWrapperList);
+    List<Integer> batchInsert(InnerSession session, List<BatchSQLWrapper> batchSQLWrapperList);
 
 
     static InsertSQLExecutor build() {

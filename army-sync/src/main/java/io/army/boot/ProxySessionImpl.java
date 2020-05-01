@@ -1,6 +1,7 @@
 package io.army.boot;
 
 import io.army.ProxySession;
+import io.army.SessionFactory;
 import io.army.SessionOptions;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.criteria.*;
@@ -13,9 +14,12 @@ import java.util.List;
 
 class ProxySessionImpl implements ProxySession {
 
+    private final SessionFactory sessionFactory;
+
     private final CurrentSessionContext sessionContext;
 
-    ProxySessionImpl(CurrentSessionContext sessionContext) {
+    ProxySessionImpl(SessionFactory sessionFactory, CurrentSessionContext sessionContext) {
+        this.sessionFactory = sessionFactory;
         this.sessionContext = sessionContext;
     }
 
@@ -26,8 +30,8 @@ class ProxySessionImpl implements ProxySession {
     }
 
     @Override
-    public void save(IDomain entity) {
-        this.sessionContext.currentSession().save(entity);
+    public <T extends IDomain> void save(T domain) {
+        this.sessionContext.currentSession().save(domain);
     }
 
     @Override
@@ -73,25 +77,48 @@ class ProxySessionImpl implements ProxySession {
     }
 
     @Override
-    public <F, S> List<Pair<F, S>> selectPair(Select select, Class<F> firstClass, Class<S> secondClass) {
-        return this.sessionContext.currentSession().selectPair(select, firstClass, secondClass);
+    public SessionFactory sessionFactory() {
+        return this.sessionFactory;
     }
 
     @Override
-    public <F, S> List<Pair<F, S>> selectPair(Select select, Class<F> firstClass, Class<S> secondClass, Visible visible) {
-        return this.sessionContext.currentSession().selectPair(select, firstClass, secondClass, visible);
+    public <F, S> Pair<F, S> selectOnePair(Select select) {
+        return this.sessionContext.currentSession().selectOnePair(select);
     }
 
     @Override
-    public <F, S, T> List<Triple<F, S, T>> selectTriple(Select select, Class<F> firstClass, Class<S> secondClass
-            , Class<T> thirdClass) {
-        return this.sessionContext.currentSession().selectTriple(select, firstClass, secondClass, thirdClass);
+    public <F, S> Pair<F, S> selectOnePair(Select select, Visible visible) {
+        return this.sessionContext.currentSession().selectOnePair(select, visible);
     }
 
     @Override
-    public <F, S, T> List<Triple<F, S, T>> selectTriple(Select select, Class<F> firstClass, Class<S> secondClass
-            , Class<T> thirdClass, Visible visible) {
-        return this.sessionContext.currentSession().selectTriple(select, firstClass, secondClass, thirdClass, visible);
+    public <F, S> List<Pair<F, S>> selectPair(Select select) {
+        return this.sessionContext.currentSession().selectPair(select);
+    }
+
+    @Override
+    public <F, S> List<Pair<F, S>> selectPair(Select select, Visible visible) {
+        return this.sessionContext.currentSession().selectPair(select, visible);
+    }
+
+    @Override
+    public <F, S, T> Triple<F, S, T> selectOneTriple(Select select) {
+        return this.sessionContext.currentSession().selectOneTriple(select);
+    }
+
+    @Override
+    public <F, S, T> Triple<F, S, T> selectOneTriple(Select select, Visible visible) {
+        return this.sessionContext.currentSession().selectOneTriple(select, visible);
+    }
+
+    @Override
+    public <F, S, T> List<Triple<F, S, T>> selectTriple(Select select) {
+        return this.sessionContext.currentSession().selectTriple(select);
+    }
+
+    @Override
+    public <F, S, T> List<Triple<F, S, T>> selectTriple(Select select, Visible visible) {
+        return this.sessionContext.currentSession().selectTriple(select, visible);
     }
 
     @Override

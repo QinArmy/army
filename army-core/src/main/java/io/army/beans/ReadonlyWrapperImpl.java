@@ -38,10 +38,6 @@ final class ReadonlyWrapperImpl implements ReadonlyWrapper {
         }
     }
 
-    @Override
-    public Object getWrappedInstance() {
-        return beanWrapper.getWrappedInstance();
-    }
 
     @Override
     public Class<?> getWrappedClass() {

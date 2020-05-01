@@ -1,8 +1,17 @@
 package io.army.tx;
 
-import java.io.Flushable;
 
-public interface GenericTransaction extends Flushable, AutoCloseable {
+public interface GenericTransaction {
+
+    TransactionStatus status();
+
+    String name();
+
+    Isolation isolation();
+
+    boolean readOnly();
+
+    long getTimeToLiveInMillis() throws TransactionTimeOutException;
 
 
 }

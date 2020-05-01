@@ -37,7 +37,7 @@ final class BatchDDLSQLExecutor implements DDLSQLExecutor {
                 builder.append("\n\n");
                 sqlCount += e.getValue().size();
             }
-            LOG.info("army will execute {} ddl(s):\n\n{}",sqlCount,builder);
+            LOG.info("army will start {} ddl(s):\n\n{}", sqlCount, builder);
             statement.executeBatch();
         } catch (SQLException e) {
             throw new DDLSQLExecuteException(ErrorCode.DDL_EXECUTE_ERROR, e, e.getMessage());

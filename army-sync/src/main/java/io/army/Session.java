@@ -5,12 +5,11 @@ import io.army.tx.Isolation;
 import io.army.tx.NoSessionTransactionException;
 import io.army.tx.Transaction;
 
+import javax.transaction.TransactionalException;
 import java.io.Flushable;
 import java.sql.Connection;
 
 public interface Session extends GenericSyncSession, AutoCloseable, Flushable {
-
-    SessionFactory sessionFactory();
 
 
     Transaction sessionTransaction() throws NoSessionTransactionException;
@@ -30,19 +29,13 @@ public interface Session extends GenericSyncSession, AutoCloseable, Flushable {
     @Override
     void flush() throws SessionException;
 
-    TransactionBuilder builder() throws SessionException;
+    TransactionBuilder builder(boolean readOnly, Isolation isolation, int timeoutSeconds) throws TransactionalException;
 
     interface TransactionBuilder {
 
-        TransactionBuilder readOnly(boolean readOnly);
-
-        TransactionBuilder isolation(Isolation isolation);
-
-        TransactionBuilder timeout(int seconds);
-
         TransactionBuilder name(@Nullable String txName);
 
-        Transaction build();
+        Transaction build() throws TransactionalException;
 
     }
 }

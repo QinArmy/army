@@ -7,7 +7,7 @@ import java.util.List;
 
 
 @DeveloperForbid
-public interface InnerStandardInsert extends InnerInsert {
+public interface InnerStandardInsert extends InnerValuesInsert {
 
     /**
      * @see Insert.InsertValuesAble

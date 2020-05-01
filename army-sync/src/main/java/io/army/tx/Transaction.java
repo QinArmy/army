@@ -2,9 +2,10 @@ package io.army.tx;
 
 import io.army.Session;
 
+import java.io.Flushable;
 import java.sql.Savepoint;
 
-public interface Transaction extends GenericTransaction {
+public interface Transaction extends GenericTransaction, Flushable, AutoCloseable {
 
     Session session();
 
@@ -16,7 +17,7 @@ public interface Transaction extends GenericTransaction {
 
     boolean rollbackOnly();
 
-    boolean readOnly();
+    boolean supportsSavePoints();
 
     void start() throws TransactionException;
 
@@ -24,7 +25,7 @@ public interface Transaction extends GenericTransaction {
 
     void commit() throws TransactionException;
 
-    void rollbackOnly(boolean rollbackOnly) throws TransactionException;
+    void markRollbackOnly() throws TransactionException;
 
     @Override
     void flush() throws TransactionException;

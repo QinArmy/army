@@ -1,33 +1,30 @@
 package io.army.boot;
 
-import io.army.ShardingMode;
+import io.army.codec.FieldCodec;
 import io.army.criteria.impl.SchemaMetaFactory;
-import io.army.dialect.SQLDialect;
 import io.army.env.Environment;
+import io.army.interceptor.DomainInterceptor;
 import io.army.meta.SchemaMeta;
 import io.army.util.StringUtils;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 abstract class AbstractSessionFactoryBuilder implements SessionFactoryBuilder {
 
     DataSource dataSource;
 
-    SQLDialect sqlDialect;
-
-    String catalog;
-
-    String schema;
-
     Environment environment;
-
-    Class<?> currentSessionContextClass;
 
     String name;
 
     List<SessionFactoryInterceptor> interceptorList;
+
+    Collection<DomainInterceptor> domainInterceptors;
+
+    Collection<FieldCodec> fieldCodecs;
 
     AbstractSessionFactoryBuilder() {
 
@@ -41,20 +38,14 @@ abstract class AbstractSessionFactoryBuilder implements SessionFactoryBuilder {
     }
 
     @Override
-    public final SessionFactoryBuilder sqlDialect(SQLDialect sqlDialect) {
-        this.sqlDialect = sqlDialect;
+    public final SessionFactoryBuilder domainInterceptor(Collection<DomainInterceptor> domainInterceptors) {
+        this.domainInterceptors = domainInterceptors;
         return this;
     }
 
     @Override
-    public final SessionFactoryBuilder catalog(String catalog) {
-        this.catalog = catalog;
-        return this;
-    }
-
-    @Override
-    public final SessionFactoryBuilder schema(String schema) {
-        this.schema = schema;
+    public final SessionFactoryBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs) {
+        this.fieldCodecs = fieldCodecs;
         return this;
     }
 
@@ -65,28 +56,8 @@ abstract class AbstractSessionFactoryBuilder implements SessionFactoryBuilder {
     }
 
     @Override
-    public SessionFactoryBuilder shardingMode(ShardingMode shardingMode) {
-        throw new UnsupportedOperationException("");
-    }
-
-    @Override
-    public final SessionFactoryBuilder currentSessionContext(Class<?> clazz) {
-        this.currentSessionContextClass = clazz;
-        return this;
-    }
-
-    @Override
     public final SessionFactoryBuilder name(String sessionFactoryName) {
         this.name = sessionFactoryName;
-        return this;
-    }
-
-    @Override
-    public final SessionFactoryBuilder interceptor(SessionFactoryInterceptor interceptor) {
-        if (this.interceptorList == null) {
-            this.interceptorList = new ArrayList<>(1);
-        }
-        this.interceptorList.add(interceptor);
         return this;
     }
 

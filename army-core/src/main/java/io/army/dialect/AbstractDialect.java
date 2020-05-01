@@ -3,7 +3,6 @@ package io.army.dialect;
 
 import io.army.GenericSessionFactory;
 import io.army.criteria.*;
-import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
@@ -76,8 +75,7 @@ public abstract class AbstractDialect implements Dialect {
         return sessionFactory;
     }
 
-
-    /*################################## blow TableDDL method ##################################*/
+    /*################################## blow DDL method ##################################*/
 
     @Override
     public final List<String> createTable(TableMeta<?> tableMeta) {
@@ -132,11 +130,6 @@ public abstract class AbstractDialect implements Dialect {
     }
 
     /*################################## blow DML method ##################################*/
-
-    @Override
-    public final List<SQLWrapper> insert(IDomain domain) {
-        return this.dml.insert(domain);
-    }
 
     @Override
     public final List<SQLWrapper> insert(Insert insert, Visible visible) {

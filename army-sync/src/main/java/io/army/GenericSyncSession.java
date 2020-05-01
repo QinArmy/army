@@ -10,8 +10,9 @@ import java.util.List;
 
 public interface GenericSyncSession extends GenericSession {
 
+    SessionFactory sessionFactory();
 
-    void save(IDomain entity);
+    <T extends IDomain> void save(T domain);
 
     <T extends IDomain> T get(TableMeta<T> tableMeta, Object id);
 
@@ -30,18 +31,25 @@ public interface GenericSyncSession extends GenericSession {
 
     <T> List<T> select(Select select, Class<T> resultClass, Visible visible);
 
-    <F, S> List<Pair<F, S>> selectPair(Select select, Class<F> firstClass, Class<S> secondClass);
+    <F, S> Pair<F, S> selectOnePair(Select select);
 
-    <F, S> List<Pair<F, S>> selectPair(Select select, Class<F> firstClass, Class<S> secondClass, Visible visible);
+    <F, S> Pair<F, S> selectOnePair(Select select, Visible visible);
 
-    <F, S, T> List<Triple<F, S, T>> selectTriple(Select select, Class<F> firstClass, Class<S> secondClass
-            , Class<T> thirdClass);
+    <F, S> List<Pair<F, S>> selectPair(Select select);
 
-    <F, S, T> List<Triple<F, S, T>> selectTriple(Select select, Class<F> firstClass, Class<S> secondClass
-            , Class<T> thirdClass, Visible visible);
+    <F, S> List<Pair<F, S>> selectPair(Select select, Visible visible);
+
+    <F, S, T> Triple<F, S, T> selectOneTriple(Select select);
+
+    <F, S, T> Triple<F, S, T> selectOneTriple(Select select, Visible visible);
+
+    <F, S, T> List<Triple<F, S, T>> selectTriple(Select select);
+
+    <F, S, T> List<Triple<F, S, T>> selectTriple(Select select, Visible visible);
+
 
     /**
-     * @param update will execute singleUpdate dml instance.
+     * @param update will start singleUpdate dml instance.
      * @return a unmodifiable list, at most two element.
      */
     List<Integer> update(Update update);

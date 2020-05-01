@@ -42,6 +42,11 @@ public interface BeanWrapper  extends ReadonlyWrapper {
      */
     void setPropertyValue(String propertyName, @Nullable Object value) throws BeansException;
 
+    /**
+     * Return the bean instance wrapped by this object.
+     */
+    Object getWrappedInstance();
+
 
     ReadonlyWrapper getReadonlyWrapper();
 }
