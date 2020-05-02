@@ -1,4 +1,4 @@
-package io.army.dialect;
+package io.army.wrapper;
 
 import java.util.List;
 
@@ -18,14 +18,10 @@ final class BatchSQLWrapperImpl implements BatchSQLWrapper {
         return this.sql;
     }
 
-    @Override
-    public String toString(Dialect dialect) {
-        //TODO zoro implement sql parse.
-        return "";
-    }
 
     @Override
     public final List<List<ParamWrapper>> paramGroupList() {
         return this.paramGroupList;
     }
+
 }

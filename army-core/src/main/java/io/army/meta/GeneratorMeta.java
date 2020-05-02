@@ -1,5 +1,7 @@
 package io.army.meta;
 
+import io.army.generator.PreFieldGenerator;
+
 import java.util.Map;
 
 public interface GeneratorMeta extends Meta {
@@ -10,7 +12,7 @@ public interface GeneratorMeta extends Meta {
 
     /**
      * @return prop name or empty.
-     * @see io.army.generator.PreMultiGenerator#DEPEND_PROP_NAME
+     * @see PreFieldGenerator#DEPEND_PROP_NAME
      */
     String dependPropName();
 

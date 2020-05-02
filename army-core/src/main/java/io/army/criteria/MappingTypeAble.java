@@ -1,8 +1,8 @@
 package io.army.criteria;
 
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
 
 public interface MappingTypeAble {
 
-    MappingType mappingType();
+    MappingMeta mappingType();
 }

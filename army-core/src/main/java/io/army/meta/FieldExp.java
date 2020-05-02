@@ -5,7 +5,7 @@ import io.army.criteria.Expression;
 import io.army.criteria.Selection;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
 
 import java.sql.JDBCType;
 
@@ -46,7 +46,7 @@ public interface FieldExp<T extends IDomain, F> extends Expression<F>, Selection
     Class<F> javaType();
 
 
-    MappingType mappingType();
+    MappingMeta mappingType();
 
     boolean insertalbe();
 

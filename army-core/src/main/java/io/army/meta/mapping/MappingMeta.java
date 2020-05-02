@@ -1,12 +1,14 @@
 package io.army.meta.mapping;
 
+import io.army.meta.ParamMeta;
+
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 
-public interface MappingType {
+public interface MappingMeta extends ParamMeta {
 
     Class<?> javaType();
 

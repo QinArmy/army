@@ -1,17 +1,11 @@
-package io.army.dialect;
+package io.army.wrapper;
 
 import io.army.meta.FieldMeta;
-import io.army.meta.mapping.MappingType;
 
 public interface FieldParamWrapper extends ParamWrapper {
 
-    FieldMeta<?, ?> fieldMeta();
-
-    /**
-     * @throws UnsupportedOperationException always throw.
-     */
     @Override
-    MappingType mappingType() throws UnsupportedOperationException;
+    FieldMeta<?, ?> paramMeta();
 
     /**
      * @throws UnsupportedOperationException always throw.

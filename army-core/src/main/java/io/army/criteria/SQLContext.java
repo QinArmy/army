@@ -1,12 +1,12 @@
 package io.army.criteria;
 
 import io.army.dialect.DQL;
-import io.army.dialect.ParamWrapper;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
+import io.army.wrapper.ParamWrapper;
 
 import java.util.List;
 
@@ -42,7 +42,7 @@ public interface SQLContext {
     /**
      * @see ConstantExpression
      */
-    void appendTextValue(MappingType mappingType, Object value);
+    void appendTextValue(MappingMeta mappingType, Object value);
 
     DQL dql();
 

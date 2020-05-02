@@ -1,6 +1,6 @@
 package io.army.meta.mapping;
 
-public abstract class AbstractMappingType implements MappingType {
+public abstract class AbstractMappingType implements MappingMeta {
 
     @Override
     public final int hashCode() {

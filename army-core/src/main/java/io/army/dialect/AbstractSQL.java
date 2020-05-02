@@ -2,7 +2,7 @@ package io.army.dialect;
 
 
 import io.army.GenericSessionFactory;
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
 
 import java.time.ZoneId;
 
@@ -40,7 +40,7 @@ public abstract class AbstractSQL implements SQL {
     }
 
     @Override
-    public final String mapping(MappingType mappingType) {
+    public final String mapping(MappingMeta mappingType) {
         return this.dialect.mapping(mappingType);
     }
 

@@ -7,8 +7,11 @@ import io.army.criteria.Visible;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
 import io.army.util.Assert;
+import io.army.wrapper.DomainSQLWrapper;
+import io.army.wrapper.ParamWrapper;
+import io.army.wrapper.SQLWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +87,7 @@ public abstract class AbstractClauseContext implements ClauseSQLContext {
     }
 
     @Override
-    public final void appendTextValue(MappingType mappingType, Object value) {
+    public final void appendTextValue(MappingMeta mappingType, Object value) {
         sqlBuilder.append(
                 DialectUtils.quoteIfNeed(
                         mappingType
@@ -122,7 +125,7 @@ public abstract class AbstractClauseContext implements ClauseSQLContext {
     }
 
     @Override
-    public final BeanSQLWrapper build(BeanWrapper beanWrapper) {
+    public final DomainSQLWrapper build(BeanWrapper beanWrapper) {
         Assert.state(!this.finished, "SQLContext finished.");
         this.finished = true;
         clauseStack.clear();
@@ -142,8 +145,8 @@ public abstract class AbstractClauseContext implements ClauseSQLContext {
         );
     }
 
-    protected BeanSQLWrapper doBuild(BeanWrapper beanWrapper) {
-        return BeanSQLWrapper.build(
+    protected DomainSQLWrapper doBuild(BeanWrapper beanWrapper) {
+        return DomainSQLWrapper.build(
                 sqlBuilder.toString()
                 , paramList
                 , beanWrapper

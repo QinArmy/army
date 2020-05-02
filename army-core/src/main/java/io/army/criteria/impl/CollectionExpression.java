@@ -1,9 +1,9 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.SQLContext;
-import io.army.dialect.ParamWrapper;
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
 import io.army.util.Assert;
+import io.army.wrapper.ParamWrapper;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -11,16 +11,16 @@ import java.util.List;
 
 final class CollectionExpression<E> extends AbstractNoNOperationExpression<E> {
 
-    static <E> CollectionExpression<E> build(MappingType mappingType, Collection<E> collection) {
+    static <E> CollectionExpression<E> build(MappingMeta mappingType, Collection<E> collection) {
         Assert.notEmpty(collection, "collection must not empty.");
         return new CollectionExpression<>(mappingType, collection);
     }
 
-    private final MappingType mappingType;
+    private final MappingMeta mappingType;
 
     private final Collection<E> collection;
 
-    private CollectionExpression(MappingType mappingType, Collection<E> collection) {
+    private CollectionExpression(MappingMeta mappingType, Collection<E> collection) {
         this.mappingType = mappingType;
         this.collection = collection;
     }
@@ -46,7 +46,7 @@ final class CollectionExpression<E> extends AbstractNoNOperationExpression<E> {
     }
 
     @Override
-    public MappingType mappingType() {
+    public MappingMeta mappingType() {
         return this.mappingType;
     }
 

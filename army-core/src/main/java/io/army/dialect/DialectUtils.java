@@ -8,7 +8,7 @@ import io.army.criteria.ParentChildJoinPredicate;
 import io.army.criteria.TableAble;
 import io.army.lang.Nullable;
 import io.army.meta.*;
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
 import io.army.util.StringUtils;
 
 import java.sql.JDBCType;
@@ -36,7 +36,7 @@ public abstract class DialectUtils {
     );
 
 
-    public static String quoteIfNeed(MappingType mappingType, String textValue) {
+    public static String quoteIfNeed(MappingMeta mappingType, String textValue) {
         if (TEXT_JDBC_TYPE.contains(mappingType.jdbcType())) {
             return StringUtils.quote(textValue);
         }

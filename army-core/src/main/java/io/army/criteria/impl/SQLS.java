@@ -5,7 +5,7 @@ import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
 
 import java.util.List;
 import java.util.function.Function;
@@ -94,7 +94,7 @@ public abstract class SQLS extends AbstractSQLS {
     }
 
     public static <E, C> ScalarSubQuery.ScalarSubQuerySelectionAble<E, C> scalarSubQuery(
-            Class<E> columnType, MappingType mappingType) {
+            Class<E> columnType, MappingMeta mappingType) {
         return new ScalarSubQueryAdaptor<>(columnType
                 , mappingType
                 , CriteriaContextHolder.getContext().criteria()

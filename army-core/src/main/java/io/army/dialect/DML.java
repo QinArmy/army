@@ -4,6 +4,8 @@ import io.army.criteria.Delete;
 import io.army.criteria.Insert;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
+import io.army.wrapper.BatchSQLWrapper;
+import io.army.wrapper.SQLWrapper;
 
 import java.util.List;
 

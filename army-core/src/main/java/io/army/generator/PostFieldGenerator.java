@@ -1,15 +1,13 @@
 package io.army.generator;
 
-import io.army.dialect.SQLDialect;
 import io.army.meta.FieldMeta;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 /**
  * this interface create value for the mapping property of Entity when persist a entity after persistence.
- * if you want creation before persistence ,use {@link PreMultiGenerator}
+ * if you want creation before persistence ,use {@link PreFieldGenerator}
  * <p>
  * there is two ways for implementation of MultiGenerator:
  * <pre>
@@ -20,11 +18,11 @@ import java.sql.Statement;
  *        private MyMultiGenerator(){}
  *
  *        &#047;&#042;&#042;
- *         &#042; &#064;mappingType not null
+ *         &#042; &#064;paramMeta not null
  *         &#042; &#064;paramMap not null,a unmodifiable map
  *         &#042;
  *         &#042;&#047;
- *        public static MyMultiGenerator debugSQL(FieldMeta&lt;?,?&gt; mappingType, Map&lt;String,String&gt; paramMap){
+ *        public static MyMultiGenerator debugSQL(FieldMeta&lt;?,?&gt; paramMeta, Map&lt;String,String&gt; paramMap){
  *           ...
  *        }
  *
@@ -37,23 +35,23 @@ import java.sql.Statement;
  *    public class MyMultiGenerator implements PostMultiGenerator {
  *
  *        &#047;&#042;&#042;
- *         &#042; &#064;mappingType not null
+ *         &#042; &#064;paramMeta not null
  *         &#042; &#064;paramMap not null,a unmodifiable map
  *         &#042;
  *         &#042;&#047;
- *        public MyMultiGenerator(FieldMeta&lt;?,?&gt; mappingType,  Map&lt;String,String&gt; paramMap){...}
+ *        public MyMultiGenerator(FieldMeta&lt;?,?&gt; paramMeta,  Map&lt;String,String&gt; paramMap){...}
  *
  *     }
  * </pre>
  * </p>
  *
  * @see io.army.annotation.Generator
- * @see PreMultiGenerator
+ * @see PreFieldGenerator
  * @since Army 1.0
  */
-public interface PostMultiGenerator extends MultiGenerator {
+public interface PostFieldGenerator extends FieldGenerator {
 
 
-    Object apply(FieldMeta<?,?> fieldMeta,ResultSet resultSet) throws SQLException;
+    Object apply(FieldMeta<?, ?> fieldMeta, ResultSet resultSet) throws SQLException;
 
 }

@@ -1,7 +1,6 @@
-package io.army.dialect;
+package io.army.wrapper;
 
 import io.army.meta.FieldMeta;
-import io.army.meta.mapping.MappingType;
 
 final class FieldParamWrapperImpl implements FieldParamWrapper {
 
@@ -11,13 +10,10 @@ final class FieldParamWrapperImpl implements FieldParamWrapper {
         this.fieldMeta = fieldMeta;
     }
 
-    public final FieldMeta<?, ?> fieldMeta() {
-        return this.fieldMeta;
-    }
 
     @Override
-    public final MappingType mappingType() {
-        throw new UnsupportedOperationException();
+    public final FieldMeta<?, ?> paramMeta() {
+        return this.fieldMeta;
     }
 
     @Override

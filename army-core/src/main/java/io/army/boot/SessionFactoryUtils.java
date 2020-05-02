@@ -6,9 +6,9 @@ import io.army.codec.FieldCodec;
 import io.army.criteria.MetaException;
 import io.army.criteria.impl.SchemaMetaFactory;
 import io.army.env.Environment;
+import io.army.generator.FieldGenerator;
 import io.army.generator.GeneratorFactory;
-import io.army.generator.MultiGenerator;
-import io.army.generator.PreMultiGenerator;
+import io.army.generator.PreFieldGenerator;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 import io.army.meta.SchemaMeta;
@@ -30,11 +30,11 @@ abstract class SessionFactoryUtils {
 
     static final class GeneratorWrapper {
 
-        private final Map<FieldMeta<?, ?>, MultiGenerator> generatorChain;
+        private final Map<FieldMeta<?, ?>, FieldGenerator> generatorChain;
 
         private final Map<TableMeta<?>, List<FieldMeta<?, ?>>> tableGeneratorChain;
 
-        public GeneratorWrapper(Map<FieldMeta<?, ?>, MultiGenerator> generatorChain
+        public GeneratorWrapper(Map<FieldMeta<?, ?>, FieldGenerator> generatorChain
                 , Map<TableMeta<?>, List<FieldMeta<?, ?>>> tableGeneratorChain) {
             this.generatorChain = Collections.unmodifiableMap(generatorChain);
             this.tableGeneratorChain = Collections.unmodifiableMap(tableGeneratorChain);
@@ -43,7 +43,7 @@ abstract class SessionFactoryUtils {
         /**
          * @return a modifiable map
          */
-        public Map<FieldMeta<?, ?>, MultiGenerator> getGeneratorChain() {
+        public Map<FieldMeta<?, ?>, FieldGenerator> getGeneratorChain() {
             return generatorChain;
         }
 
@@ -67,8 +67,9 @@ abstract class SessionFactoryUtils {
                 , ShardingMode.class, ShardingMode.NO_SHARDING);
     }
 
-    static GeneratorWrapper createGeneratorWrapper(Collection<TableMeta<?>> tableMetas, Environment environment) {
-        final Map<FieldMeta<?, ?>, MultiGenerator> generatorMap = new HashMap<>();
+    static GeneratorWrapper createGeneratorWrapper(Collection<TableMeta<?>> tableMetas, ShardingMode shardingMode
+            , Environment environment) {
+        final Map<FieldMeta<?, ?>, FieldGenerator> generatorMap = new HashMap<>();
         final Map<TableMeta<?>, List<FieldMeta<?, ?>>> tableGeneratorChain = new HashMap<>();
 
         for (TableMeta<?> tableMeta : tableMetas) {
@@ -79,13 +80,18 @@ abstract class SessionFactoryUtils {
                 if (generatorMeta == null) {
                     continue;
                 }
+                if (shardingMode != ShardingMode.NO_SHARDING
+                        && PreFieldGenerator.class.isAssignableFrom(generatorMeta.type())) {
+                    throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
+                            , "%s not supported by %s.", PreFieldGenerator.class.getName(), shardingMode);
+                }
                 assertPreGenerator(generatorMeta);
 
-                MultiGenerator generator = GeneratorFactory.getGenerator(fieldMeta, environment);
+                FieldGenerator generator = GeneratorFactory.getGenerator(fieldMeta, environment);
                 // create generator
                 generatorMap.put(fieldMeta, generator);
 
-                if (generator instanceof PreMultiGenerator) {
+                if (generator instanceof PreFieldGenerator) {
                     propGeneratorMap.put(fieldMeta.propertyName(), generatorMeta);
                 }
             }
@@ -151,7 +157,7 @@ abstract class SessionFactoryUtils {
     /**
      * @param thisGeneratorMap a modifiable map
      * @return a unmodifiable list
-     * @see PreMultiGenerator
+     * @see PreFieldGenerator
      */
     private static List<FieldMeta<?, ?>> createTablePreGeneratorChain(TableMeta<?> tableMeta
             , Map<String, GeneratorMeta> thisGeneratorMap) {
@@ -191,7 +197,7 @@ abstract class SessionFactoryUtils {
 
     /**
      * @param thisGeneratorMap a modifiable map
-     * @see PreMultiGenerator
+     * @see PreFieldGenerator
      */
     private static void appendPrentTableGeneratorMap(TableMeta<?> tableMeta
             , Map<String, GeneratorMeta> thisGeneratorMap) {

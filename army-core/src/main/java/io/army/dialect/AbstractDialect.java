@@ -8,6 +8,8 @@ import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
+import io.army.wrapper.BatchSQLWrapper;
+import io.army.wrapper.SQLWrapper;
 
 import java.time.ZoneId;
 import java.util.Collection;

@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.meta.FieldMeta;
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
 
 import java.math.BigInteger;
 import java.util.Collection;
@@ -654,7 +654,7 @@ abstract class AbstractNoNOperationExpression<E> implements Expression<E> {
     }
 
     @Override
-    public final <O> Expression<O> asType(Class<O> convertType, MappingType longMapping) {
+    public final <O> Expression<O> asType(Class<O> convertType, MappingMeta longMapping) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 

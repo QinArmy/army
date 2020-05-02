@@ -2,6 +2,8 @@ package io.army.dialect;
 
 import io.army.boot.GenericSessionTests;
 import io.army.meta.mapping.MappingFactory;
+import io.army.wrapper.ParamWrapper;
+import io.army.wrapper.SQLWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;

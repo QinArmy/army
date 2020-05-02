@@ -13,14 +13,14 @@ import java.lang.reflect.Modifier;
 
 public abstract class GeneratorFactory {
 
-    public static MultiGenerator getGenerator(FieldMeta<?, ?> fieldMeta, Environment env) {
+    public static FieldGenerator getGenerator(FieldMeta<?, ?> fieldMeta, Environment env) {
         GeneratorMeta generatorMeta = fieldMeta.generator();
         Assert.notNull(generatorMeta, "generatorMeta required");
 
         Method method = getBuilder(generatorMeta);
 
         try {
-            MultiGenerator generator = (MultiGenerator) ReflectionUtils.invokeMethod(method, null, fieldMeta, env);
+            FieldGenerator generator = (FieldGenerator) ReflectionUtils.invokeMethod(method, null, fieldMeta, env);
             if (generator == null) {
                 throw new GeneratorException(ErrorCode.GENERATOR_ERROR, "Method[%s] return null"
                         , method);

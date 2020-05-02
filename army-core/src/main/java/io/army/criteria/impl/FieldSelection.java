@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.AliasField;
 import io.army.criteria.SQLContext;
 import io.army.meta.FieldMeta;
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
 
 /**
  * created  on 2019-02-22.
@@ -18,7 +18,7 @@ final class FieldSelection<E> extends AbstractExpression<E> {
     }
 
     @Override
-    public MappingType mappingType() {
+    public MappingMeta mappingType() {
         return fieldMeta.mappingType();
     }
 

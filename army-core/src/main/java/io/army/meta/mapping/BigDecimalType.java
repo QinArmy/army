@@ -8,12 +8,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public final class BigDecimalType implements MappingType {
+public final class BigDecimalType implements MappingMeta {
 
     private static final BigDecimalType INSTANCE = new BigDecimalType();
 
     public static BigDecimalType build(Class<?> typeClass) {
-        Assert.isTrue(BigDecimal.class == typeClass,"");
+        Assert.isTrue(BigDecimal.class == typeClass, "");
         return INSTANCE;
     }
 

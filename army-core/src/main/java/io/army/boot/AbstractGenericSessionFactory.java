@@ -1,12 +1,9 @@
 package io.army.boot;
 
-import io.army.ErrorCode;
-import io.army.GenericSessionFactory;
-import io.army.SessionFactoryException;
-import io.army.ShardingMode;
+import io.army.*;
 import io.army.codec.FieldCodec;
 import io.army.env.Environment;
-import io.army.generator.MultiGenerator;
+import io.army.generator.FieldGenerator;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
@@ -14,6 +11,7 @@ import io.army.util.Assert;
 
 import java.time.ZoneId;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,7 +31,7 @@ abstract class AbstractGenericSessionFactory implements GenericSessionFactory {
 
     final Map<Class<?>, TableMeta<?>> tableMetaMap;
 
-    final Map<FieldMeta<?, ?>, MultiGenerator> fieldGeneratorMap;
+    final Map<FieldMeta<?, ?>, FieldGenerator> fieldGeneratorMap;
 
     final Map<TableMeta<?>, List<FieldMeta<?, ?>>> tableGeneratorChain;
 
@@ -57,11 +55,11 @@ abstract class AbstractGenericSessionFactory implements GenericSessionFactory {
         this.zoneId = SessionFactoryUtils.createZoneId(env, this.name);
 
         this.tableMetaMap = SessionFactoryUtils.scanPackagesForMeta(this.schemaMeta, env);
+        this.shardingMode = SessionFactoryUtils.shardingMode(this.name, env);
         SessionFactoryUtils.GeneratorWrapper generatorWrapper =
-                SessionFactoryUtils.createGeneratorWrapper(this.tableMetaMap.values(), this.env);
+                SessionFactoryUtils.createGeneratorWrapper(this.tableMetaMap.values(), this.shardingMode, this.env);
         this.fieldGeneratorMap = generatorWrapper.getGeneratorChain();
         this.tableGeneratorChain = generatorWrapper.getTableGeneratorChain();
-        this.shardingMode = SessionFactoryUtils.shardingMode(this.name, env);
 
         this.readOnly = SessionFactoryUtils.readOnly(this.name, this.env);
         this.tableFieldCodecMap = SessionFactoryUtils.createTableFieldCodecMap(fieldCodecs);
@@ -94,7 +92,7 @@ abstract class AbstractGenericSessionFactory implements GenericSessionFactory {
     }
 
     @Override
-    public Map<FieldMeta<?, ?>, MultiGenerator> fieldGeneratorMap() {
+    public Map<FieldMeta<?, ?>, FieldGenerator> fieldGeneratorMap() {
         return this.fieldGeneratorMap;
     }
 
@@ -108,16 +106,32 @@ abstract class AbstractGenericSessionFactory implements GenericSessionFactory {
         return this.tableFieldCodecMap;
     }
 
+    @Override
+    public Map<FieldMeta<?, ?>, FieldCodec> fieldCodecMap(TableMeta<?> tableMeta) {
+        Map<FieldMeta<?, ?>, FieldCodec> codecMap = this.tableFieldCodecMap.get(tableMeta);
+        if (codecMap == null) {
+            codecMap = Collections.emptyMap();
+        }
+        return codecMap;
+    }
 
     @Override
     public ShardingMode shardingMode() {
         return this.shardingMode;
     }
 
-
     @Override
     public boolean readonly() {
         return this.readOnly;
     }
 
+    @Override
+    public boolean showSQL() {
+        return env.getProperty(String.format(ArmyConfigConstant.SHOW_SQL, this.name), Boolean.class, Boolean.FALSE);
+    }
+
+    @Override
+    public boolean formatSQL() {
+        return env.getProperty(String.format(ArmyConfigConstant.FORMAT_SQL, this.name), Boolean.class, Boolean.FALSE);
+    }
 }

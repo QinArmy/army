@@ -1,6 +1,6 @@
 package io.army.annotation;
 
-import io.army.generator.PreMultiGenerator;
+import io.army.generator.PreFieldGenerator;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 import static java.lang.annotation.ElementType.FIELD;
 
 /**
- * @see PreMultiGenerator
+ * @see PreFieldGenerator
  */
 @Target({FIELD})
 @Retention(RetentionPolicy.RUNTIME)

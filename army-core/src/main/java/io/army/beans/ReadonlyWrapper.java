@@ -45,4 +45,5 @@ public interface ReadonlyWrapper {
      * Return the type of the wrapped bean instance.
      */
     Class<?> getWrappedClass();
+
 }

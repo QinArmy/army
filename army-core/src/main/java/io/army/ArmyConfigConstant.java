@@ -14,4 +14,8 @@ public interface ArmyConfigConstant {
 
     String SQL_DIALECT = "army.%s.sqlDialect";
 
+    String SHOW_SQL = "army.%s.showSQL";
+
+    String FORMAT_SQL = "army.%s.formatSQL";
+
 }

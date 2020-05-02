@@ -3,19 +3,15 @@ package io.army.criteria.impl;
 import io.army.criteria.ConvertExpression;
 import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
-import io.army.dialect.ParamWrapper;
-import io.army.dialect.SQL;
-import io.army.meta.mapping.MappingType;
-
-import java.util.List;
+import io.army.meta.mapping.MappingMeta;
 
 final class ConvertExpressionImpl<E> extends AbstractExpression<E> implements ConvertExpression<E> {
 
     private final Expression<?> original;
 
-    private final MappingType convertType;
+    private final MappingMeta convertType;
 
-    ConvertExpressionImpl(Expression<?> original, MappingType convertType) {
+    ConvertExpressionImpl(Expression<?> original, MappingMeta convertType) {
         this.original = original;
         this.convertType = convertType;
     }
@@ -27,7 +23,7 @@ final class ConvertExpressionImpl<E> extends AbstractExpression<E> implements Co
 
 
     @Override
-    public MappingType mappingType() {
+    public MappingMeta mappingType() {
         return convertType;
     }
 

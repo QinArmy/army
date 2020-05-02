@@ -5,7 +5,7 @@ import io.army.criteria.SQLContext;
 import io.army.criteria.Selection;
 import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingFactory;
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -37,9 +37,9 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
     }
 
     @SuppressWarnings("unchecked")
-    static <E> ConstantExpression<E> build(final @Nullable MappingType mappingType, final E constant) {
+    static <E> ConstantExpression<E> build(final @Nullable MappingMeta mappingType, final E constant) {
 
-        MappingType type;
+        MappingMeta type;
         if (mappingType == null) {
             type = MappingFactory.getDefaultMapping(constant.getClass());
         } else {
@@ -60,11 +60,11 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
         return exp;
     }
 
-    private final MappingType mappingType;
+    private final MappingMeta mappingType;
 
     private final E constant;
 
-    private ConstantExpressionImpl(MappingType mappingType, E constant) {
+    private ConstantExpressionImpl(MappingMeta mappingType, E constant) {
         this.mappingType = mappingType;
         this.constant = constant;
     }
@@ -81,7 +81,7 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
     }
 
     @Override
-    public MappingType mappingType() {
+    public MappingMeta mappingType() {
         return mappingType;
     }
 
@@ -114,7 +114,7 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
         }
 
         @Override
-        public MappingType mappingType() {
+        public MappingMeta mappingType() {
             return constant.mappingType();
         }
 

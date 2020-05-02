@@ -17,13 +17,13 @@ class DefaultMappingFactory implements MappingFactory {
 
     private static final DefaultMappingFactory INSTANCE = new DefaultMappingFactory();
 
-    private static final Map<Class<?>, MappingType> DEFAULT_MAPPING = createDefaultMapping();
+    private static final Map<Class<?>, MappingMeta> DEFAULT_MAPPING = createDefaultMapping();
 
-    private static final ConcurrentMap<Class<?>, MappingType> CUSTOM_MAPPING = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<?>, MappingMeta> CUSTOM_MAPPING = new ConcurrentHashMap<>();
 
 
-    private static Map<Class<?>, MappingType> createDefaultMapping() {
-        Map<Class<?>, MappingType> map = new HashMap<>();
+    private static Map<Class<?>, MappingMeta> createDefaultMapping() {
+        Map<Class<?>, MappingMeta> map = new HashMap<>();
 
         map.put(Long.class, LongType.build(Long.class));
         map.put(Integer.class, IntegerType.build(Integer.class));
@@ -52,8 +52,8 @@ class DefaultMappingFactory implements MappingFactory {
     }
 
 
-    static MappingType getDefaultMapping(Class<?> javaType) throws MappingException {
-        MappingType mappingType;
+    static MappingMeta getDefaultMapping(Class<?> javaType) throws MappingException {
+        MappingMeta mappingType;
         if (javaType.isEnum()) {
             mappingType = CodeEnumType.build(javaType);
         } else {
@@ -66,16 +66,16 @@ class DefaultMappingFactory implements MappingFactory {
     }
 
     @Override
-    public MappingType getMapping(Class<?> javaType, Class<?> mappingClass) throws MappingException {
+    public MappingMeta getMapping(Class<?> javaType, Class<?> mappingClass) throws MappingException {
         return null;
     }
 
     @Override
-    public MappingType getMapping(Class<?> javaType) throws MappingException {
+    public MappingMeta getMapping(Class<?> javaType) throws MappingException {
         if (javaType.isEnum()) {
             return CodeEnumType.build(javaType);
         }
-        MappingType mappingType = CUSTOM_MAPPING.get(javaType);
+        MappingMeta mappingType = CUSTOM_MAPPING.get(javaType);
         if (mappingType == null) {
             mappingType = DEFAULT_MAPPING.get(javaType);
         }
@@ -87,7 +87,7 @@ class DefaultMappingFactory implements MappingFactory {
     }
 
     @Override
-    public MappingType getMapping(Class<?> javaType, String mappingType) throws MappingException {
+    public MappingMeta getMapping(Class<?> javaType, String mappingType) throws MappingException {
         try {
             Class<?> mappingTypeClass = ClassUtils.forName(mappingType, getClass().getClassLoader());
 

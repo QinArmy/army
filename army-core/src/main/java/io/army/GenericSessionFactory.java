@@ -3,7 +3,7 @@ package io.army;
 import io.army.codec.FieldCodec;
 import io.army.dialect.SQLDialect;
 import io.army.env.Environment;
-import io.army.generator.MultiGenerator;
+import io.army.generator.FieldGenerator;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
@@ -27,12 +27,13 @@ public interface GenericSessionFactory extends AutoCloseable {
 
     Map<Class<?>, TableMeta<?>> tableMetaMap();
 
-    Map<FieldMeta<?, ?>, MultiGenerator> fieldGeneratorMap();
+    Map<FieldMeta<?, ?>, FieldGenerator> fieldGeneratorMap();
 
     Map<TableMeta<?>, List<FieldMeta<?, ?>>> tableGeneratorChain();
 
     Map<TableMeta<?>, Map<FieldMeta<?, ?>, FieldCodec>> tableFieldCodecMap();
 
+    Map<FieldMeta<?, ?>, FieldCodec> fieldCodecMap(TableMeta<?> tableMeta);
 
     ShardingMode shardingMode();
 
@@ -46,6 +47,10 @@ public interface GenericSessionFactory extends AutoCloseable {
     boolean hasCurrentSession();
 
     boolean readonly();
+
+    boolean showSQL();
+
+    boolean formatSQL();
 
     boolean currentSessionContextIsInstanceOf(Class<?> currentSessionContextClass);
 }

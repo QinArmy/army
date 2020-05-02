@@ -46,8 +46,17 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
 
     @Override
     public void afterPropertiesSet() {
+        // drop SessionFactory suffix.
+        String factoryName;
+        int index = this.beanName.lastIndexOf(SessionFactory.class.getSimpleName());
+        if (index > 0) {
+            factoryName = this.beanName.substring(0, index);
+        } else {
+            factoryName = this.beanName;
+        }
+
         this.sessionFactory = this.sessionFactoryBuilder
-                .name(beanName)
+                .name(factoryName)
                 .environment(new SpringEnvironmentAdaptor(applicationContext.getEnvironment()))
                 .domainInterceptor(applicationContext.getBeansOfType(DomainInterceptor.class).values())
                 .fieldCodecs(applicationContext.getBeansOfType(FieldCodec.class).values())

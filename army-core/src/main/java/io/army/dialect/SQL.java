@@ -1,7 +1,7 @@
 package io.army.dialect;
 
 import io.army.GenericSessionFactory;
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
 
 import java.time.ZoneId;
 
@@ -17,7 +17,7 @@ public interface SQL {
 
     GenericSessionFactory sessionFactory();
 
-    String mapping(MappingType mappingType);
+    String mapping(MappingMeta mappingType);
 
     SQLDialect sqlDialect();
 

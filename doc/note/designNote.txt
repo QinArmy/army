@@ -54,6 +54,10 @@
 
 14. 为什么要设计  io.army.boot.sync.LocalSessionFactoryBean ?
 (1) 相要利用 org.springframework.beans.factory.DisposableBean .
+(2) 充分利用 spring 容器特性,简化配置.
+
+15. 为什么 DomainBatchSQLWrapper 的 domainWrapperList 类型是 BeanWrapper 而不是 DomainWrapper ,因为批量操作
+使用底层的 java.sql.PreparedStatement.addBatch 实现,所以只能是对于同一表的批量操作.
 
 
 

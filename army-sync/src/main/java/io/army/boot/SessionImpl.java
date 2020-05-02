@@ -3,9 +3,7 @@ package io.army.boot;
 import io.army.*;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
-import io.army.dialect.BatchSQLWrapper;
 import io.army.dialect.Dialect;
-import io.army.dialect.SQLWrapper;
 import io.army.dialect.TransactionOption;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
@@ -16,6 +14,8 @@ import io.army.util.Assert;
 import io.army.util.CriteriaUtils;
 import io.army.util.Pair;
 import io.army.util.Triple;
+import io.army.wrapper.BatchSQLWrapper;
+import io.army.wrapper.SQLWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -371,7 +371,7 @@ final class SessionImpl implements InnerSession, InnerTxSession {
 
         final int domainCount = insert.valueList().size();
         if (insertedDomainList.size() != domainCount) {
-            throw new InsertNotMatchException("actual insert domain count[%s] and domain count[%s] not match."
+            throw new InsertRowsNotMatchException("actual insert domain count[%s] and domain count[%s] not match."
                     , insertedDomainList.size(), domainCount);
         }
     }

@@ -13,11 +13,11 @@ package io.army.generator;
  *        private MyMultiGenerator(){}
  *
  *        &#047;&#042;&#042;
- *         &#042; &#064;mappingType not null
+ *         &#042; &#064;paramMeta not null
  *         &#042; &#064;paramMap not null,a unmodifiable map
  *         &#042;
  *         &#042;&#047;
- *        public static MyMultiGenerator debugSQL(FieldMeta&lt;?,?&gt; mappingType, Map&lt;String,String&gt; paramMap){
+ *        public static MyMultiGenerator debugSQL(FieldMeta&lt;?,?&gt; paramMeta, Map&lt;String,String&gt; paramMap){
  *           ...
  *        }
  *
@@ -30,11 +30,11 @@ package io.army.generator;
  *    public class MyMultiGenerator implements MultiGenerator {
  *
  *        &#047;&#042;&#042;
- *         &#042; &#064;mappingType not null
+ *         &#042; &#064;paramMeta not null
  *         &#042; &#064;paramMap not null,a unmodifiable map
  *         &#042;
  *         &#042;&#047;
- *        public MyMultiGenerator(FieldMeta&lt;?,?&gt; mappingType,  Map&lt;String,String&gt; paramMap){...}
+ *        public MyMultiGenerator(FieldMeta&lt;?,?&gt; paramMeta,  Map&lt;String,String&gt; paramMap){...}
  *
  *     }
  * </pre>
@@ -43,9 +43,9 @@ package io.army.generator;
  * </p>
  *
  * @see io.army.annotation.Generator
- * @see PreMultiGenerator
- * @see PostMultiGenerator
+ * @see PreFieldGenerator
+ * @see PostFieldGenerator
  */
-public interface MultiGenerator {
+public interface FieldGenerator {
 
 }

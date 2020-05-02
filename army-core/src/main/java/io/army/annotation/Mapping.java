@@ -1,6 +1,6 @@
 package io.army.annotation;
 
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
 
 import java.lang.annotation.*;
 
@@ -14,5 +14,5 @@ public @interface Mapping {
      */
     String value() default "";
 
-    Class<? extends MappingType> mapping() default MappingType.class;
+    Class<? extends MappingMeta> mapping() default MappingMeta.class;
 }

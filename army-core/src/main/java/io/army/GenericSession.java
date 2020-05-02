@@ -11,7 +11,6 @@ public interface GenericSession {
 
     boolean closed();
 
-
     boolean hasTransaction();
 
 

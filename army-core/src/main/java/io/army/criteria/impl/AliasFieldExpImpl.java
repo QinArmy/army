@@ -6,7 +6,7 @@ import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
 import io.army.util.Assert;
 
 import java.sql.JDBCType;
@@ -129,7 +129,7 @@ final class AliasFieldExpImpl<T extends IDomain, F> extends AbstractExpression<F
     }
 
     @Override
-    public MappingType mappingType() {
+    public MappingMeta mappingType() {
         return fieldMeta.mappingType();
     }
 }

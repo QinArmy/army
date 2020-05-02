@@ -74,7 +74,7 @@ abstract class MetaUtils {
         }
 
         if (!CollectionUtils.isEmpty(missPropNameSet)) {
-            // throw new MetaException(ErrorCode.META_ERROR,String.format("entityMappedElementList:%s",entityElement));
+            // throw new MetaException(ErrorCode.META_ERROR,String.showSQL("entityMappedElementList:%s",entityElement));
             throw createMissingPropException(entityElement, missPropNameSet);
         }
     }

@@ -7,7 +7,7 @@ import io.army.criteria.SQLContext;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
 import io.army.meta.mapping.StringType;
 
 import java.time.LocalDate;
@@ -25,7 +25,7 @@ abstract class AbstractSQLS {
         return ParamExpressionImp.build(MappingFactory.getDefaultMapping(nullTypeClass), null);
     }
 
-    public static <E> ParamExpression<E> asNull(MappingType mappingType) {
+    public static <E> ParamExpression<E> asNull(MappingMeta mappingType) {
         return ParamExpressionImp.build(mappingType, null);
     }
 
@@ -33,7 +33,7 @@ abstract class AbstractSQLS {
         return ParamExpressionImp.build(null, param);
     }
 
-    public static <E> ParamExpression<E> param(E param, MappingType mappingType) {
+    public static <E> ParamExpression<E> param(E param, MappingMeta mappingType) {
         return ParamExpressionImp.build(mappingType, param);
     }
 
@@ -45,7 +45,7 @@ abstract class AbstractSQLS {
         return ConstantExpressionImpl.build(null, value);
     }
 
-    public static <E> ConstantExpression<E> constant(E value, @Nullable MappingType mappingType) {
+    public static <E> ConstantExpression<E> constant(E value, @Nullable MappingMeta mappingType) {
         return ConstantExpressionImpl.build(mappingType, value);
     }
 
@@ -228,7 +228,7 @@ abstract class AbstractSQLS {
         }
 
         @Override
-        public MappingType mappingType() {
+        public MappingMeta mappingType() {
             return StringType.build(String.class);
         }
     }

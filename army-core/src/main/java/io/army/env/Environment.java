@@ -29,7 +29,7 @@ public interface Environment {
     boolean containsProperty(String key);
 
     /**
-     * the the property value format:{@code value1,value2,...,valuen}
+     * the the property value showSQL:{@code value1,value2,...,valuen}
      */
     boolean containsValue(String key, String targetValue);
 
@@ -101,7 +101,7 @@ public interface Environment {
     <T> T getProperty(String key, Class<T> targetType);
 
     /**
-     * Return the property value associated with the given key,but not {@link String} ,the the property value format:
+     * Return the property value associated with the given key,but not {@link String} ,the the property value showSQL:
      * {@code value1,value2,...,valuen}
      * or empty list the key cannot be resolved.
      *
@@ -125,7 +125,7 @@ public interface Environment {
     <T> List<T> getPropertyList(String key, Class<T[]> targetArrayType, List<T> defaultList);
 
     /**
-     * Return the property value associated with the given key,but not {@link String} ,the the property value format:
+     * Return the property value associated with the given key,but not {@link String} ,the the property value showSQL:
      * {@code value1,value2,...,valuen}
      * or empty set the key cannot be resolved.
      *
@@ -137,7 +137,7 @@ public interface Environment {
     <T> Set<T> getPropertySet(String key, Class<T[]> targetArrayType);
 
     /**
-     * Return the property value associated with the given key,but not {@link String} ,the the property value format:
+     * Return the property value associated with the given key,but not {@link String} ,the the property value showSQL:
      * {@code value1,value2,...,valuen}
      * or empty set the key cannot be resolved.
      *
@@ -177,7 +177,7 @@ public interface Environment {
     <T> T getRequiredProperty(String key, Class<T> targetType) throws IllegalStateException;
 
     /**
-     * Return the property value associated with the given key,but not {@link String} ,the the property value format:
+     * Return the property value associated with the given key,but not {@link String} ,the the property value showSQL:
      * {@code value1,value2,...,valuen}
      * or empty list the key cannot be resolved.
      *
@@ -190,7 +190,7 @@ public interface Environment {
     <T> List<T> getRequiredPropertyList(String key, Class<T[]> targetArrayType) throws IllegalStateException;
 
     /**
-     * Return the property value associated with the given key,but not {@link String} ,the the property value format:
+     * Return the property value associated with the given key,but not {@link String} ,the the property value showSQL:
      * {@code value1,value2,...,valuen}
      * or empty set the key cannot be resolved.
      *

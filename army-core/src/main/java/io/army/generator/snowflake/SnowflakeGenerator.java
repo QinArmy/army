@@ -3,7 +3,8 @@ package io.army.generator.snowflake;
 import io.army.annotation.Params;
 import io.army.beans.ReadonlyWrapper;
 import io.army.env.Environment;
-import io.army.generator.PreMultiGenerator;
+import io.army.generator.FieldGenerator;
+import io.army.generator.PreFieldGenerator;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
@@ -37,7 +38,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @see Snowflake
  * @see SnowflakeClient
  */
-public final class SnowflakeGenerator implements PreMultiGenerator {
+public final class SnowflakeGenerator implements PreFieldGenerator {
 
     /*################################## blow static properties ##################################*/
 
@@ -113,7 +114,7 @@ public final class SnowflakeGenerator implements PreMultiGenerator {
     /*################################## blow static method ##################################*/
 
     /**
-     * @see io.army.generator.MultiGenerator
+     * @see FieldGenerator
      */
     public static SnowflakeGenerator build(FieldMeta<?, ?> fieldMeta, Environment env) {
 
@@ -125,7 +126,7 @@ public final class SnowflakeGenerator implements PreMultiGenerator {
     }
 
     /**
-     * @see io.army.generator.MultiGenerator
+     * @see FieldGenerator
      */
     public static boolean isSupported(Class<?> dependType) {
         return dependType == Long.class
@@ -351,14 +352,14 @@ public final class SnowflakeGenerator implements PreMultiGenerator {
 
     private String nextAsStringWithDepend(FieldMeta<?, ?> fieldMeta, ReadonlyWrapper entityWrapper) {
         GeneratorMeta generatorMeta = fieldMeta.generator();
-        Assert.notNull(generatorMeta, "mappingType must have generator");
+        Assert.notNull(generatorMeta, "paramMeta must have generator");
 
         String dependOnProp = generatorMeta.dependPropName();
         if (!StringUtils.hasText(dependOnProp)) {
             return snowflake.nextAsString();
         }
         Assert.isTrue(entityWrapper.isReadableProperty(dependOnProp)
-                , () -> String.format("mappingType[%s.%s] depend not readable"
+                , () -> String.format("paramMeta[%s.%s] depend not readable"
                         , fieldMeta.javaType().getName(), fieldMeta.propertyName()));
 
         Object dependValue = entityWrapper.getPropertyValue(dependOnProp);

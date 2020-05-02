@@ -1,12 +1,6 @@
 package io.army.criteria;
 
-import io.army.dialect.ParamWrapper;
-import io.army.lang.Nullable;
-import io.army.meta.FieldMeta;
-import io.army.meta.mapping.MappingType;
-
-import java.math.BigInteger;
-import java.util.Collection;
+import io.army.wrapper.ParamWrapper;
 
 /**
  * extends {@link ParamWrapper} to avoid new instance of {@link ParamWrapper}

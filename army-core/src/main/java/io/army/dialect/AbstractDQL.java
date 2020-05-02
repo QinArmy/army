@@ -9,6 +9,7 @@ import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
+import io.army.wrapper.SQLWrapper;
 
 import java.util.Collections;
 import java.util.HashMap;

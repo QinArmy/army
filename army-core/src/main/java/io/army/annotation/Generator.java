@@ -1,8 +1,8 @@
 package io.army.annotation;
 
-import io.army.generator.MultiGenerator;
-import io.army.generator.PostMultiGenerator;
-import io.army.generator.PreMultiGenerator;
+import io.army.generator.FieldGenerator;
+import io.army.generator.PostFieldGenerator;
+import io.army.generator.PreFieldGenerator;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 import static java.lang.annotation.ElementType.FIELD;
 
 /**
- * Specifies the {@link PreMultiGenerator} for the mapping property of Entity.
+ * Specifies the {@link PreFieldGenerator} for the mapping property of Entity.
  *
  * <p>
  * <pre>
@@ -46,9 +46,9 @@ import static java.lang.annotation.ElementType.FIELD;
  * </p>
  *
  * @see Column
- * @see MultiGenerator
- * @see PreMultiGenerator
- * @see PostMultiGenerator
+ * @see FieldGenerator
+ * @see PreFieldGenerator
+ * @see PostFieldGenerator
  * @since Army 1.0
  */
 @Target({FIELD})
@@ -57,12 +57,12 @@ import static java.lang.annotation.ElementType.FIELD;
 public @interface Generator {
 
     /**
-     * Specifies the class name of {@link MultiGenerator}.
+     * Specifies the class name of {@link FieldGenerator}.
      */
     String value() ;
 
     /**
-     * Specifies the creation value(s) of {@link MultiGenerator}.
+     * Specifies the creation value(s) of {@link FieldGenerator}.
      */
     Params[] params() default {};
 }

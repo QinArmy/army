@@ -4,7 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerSubQuery;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
 import io.army.util.Assert;
 
 import java.util.Collections;
@@ -26,12 +26,12 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
         , InnerSubQuery {
 
 
-    private final MappingType mappingType;
+    private final MappingMeta mappingType;
 
     private final SubQuerySelect<C> actualSelect;
 
-    ScalarSubQueryAdaptor(Class<E> javaType, MappingType mappingType, C criteria) {
-        Assert.isAssignable(javaType, mappingType.javaType(), "javaType and mappingType not match.");
+    ScalarSubQueryAdaptor(Class<E> javaType, MappingMeta mappingType, C criteria) {
+        Assert.isAssignable(javaType, mappingType.javaType(), "javaType and paramMeta not match.");
         this.mappingType = mappingType;
         this.actualSelect = SubQuerySelect.build(criteria);
     }
@@ -50,7 +50,7 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
     }
 
     @Override
-    public final MappingType mappingType() {
+    public final MappingMeta mappingType() {
         return mappingType;
     }
 

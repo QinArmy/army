@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
 
 final class BracketsExpression<E> extends AbstractExpression<E> {
 
@@ -22,7 +22,7 @@ final class BracketsExpression<E> extends AbstractExpression<E> {
 
 
     @Override
-    public MappingType mappingType() {
+    public MappingMeta mappingType() {
         return exp.mappingType();
     }
 

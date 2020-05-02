@@ -43,8 +43,8 @@ public class BootstrapTests {
         SnowflakeClient snowflakeClient = new SingleApplicationSnowflakeClient(env);
         map.put(SnowflakeGenerator.SNOWFLAKE_CLIENT_NAME,snowflakeClient);
         map.put(SnowflakeGenerator.DEFAULT_START_TIME_KEY,"1580533269983");
-        map.put(String.format(SingleApplicationSnowflakeClient.DATA_CENTER_FORMAT,hostIp),"1");
-        map.put(String.format(SingleApplicationSnowflakeClient.WORKER_FORMAT,hostIp),"1");
+        map.put(String.showSQL(SingleApplicationSnowflakeClient.DATA_CENTER_FORMAT,hostIp),"1");
+        map.put(String.showSQL(SingleApplicationSnowflakeClient.WORKER_FORMAT,hostIp),"1");
 
         // init worker
         snowflakeClient.askAssignWorker();

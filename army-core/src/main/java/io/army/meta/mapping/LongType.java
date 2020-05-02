@@ -7,13 +7,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public final class LongType implements MappingType {
+public final class LongType implements MappingMeta {
 
     private static final LongType INSTANCE = new LongType();
 
 
-    public static LongType build(Class<?> typeClass){
-        Assert.isTrue(Long.class ==typeClass,"");
+    public static LongType build(Class<?> typeClass) {
+        Assert.isTrue(Long.class == typeClass, "");
         return INSTANCE;
     }
 

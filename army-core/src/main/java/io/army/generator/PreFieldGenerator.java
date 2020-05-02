@@ -1,15 +1,12 @@
 package io.army.generator;
 
-import io.army.beans.BeanWrapper;
 import io.army.beans.ReadonlyWrapper;
-import io.army.dialect.SQLDialect;
-import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 
 /**
  * this interface create value for the mapping property of Entity when persist a entity before persistence.
- * if you want creation before persistence ,use {@link PostMultiGenerator}
+ * if you want creation before persistence ,use {@link PostFieldGenerator}
  * <p>
  * there is two ways for implementation of MultiGenerator:
  * <pre>
@@ -20,11 +17,11 @@ import io.army.meta.GeneratorMeta;
  *        private MyMultiGenerator(){}
  *
  *        &#047;&#042;&#042;
- *         &#042; &#064;mappingType not null
+ *         &#042; &#064;paramMeta not null
  *         &#042; &#064;paramMap not null,a unmodifiable map
  *         &#042;
  *         &#042;&#047;
- *        public static MyMultiGenerator debugSQL(FieldMeta&lt;?,?&gt; mappingType, Map&lt;String,String&gt; paramMap){
+ *        public static MyMultiGenerator debugSQL(FieldMeta&lt;?,?&gt; paramMeta, Map&lt;String,String&gt; paramMap){
  *           ...
  *        }
  *
@@ -37,21 +34,21 @@ import io.army.meta.GeneratorMeta;
  *    public class MyMultiGenerator implements PreMultiGenerator {
  *
  *        &#047;&#042;&#042;
- *         &#042; &#064;mappingType not null
+ *         &#042; &#064;paramMeta not null
  *         &#042; &#064;paramMap not null,a unmodifiable map
  *         &#042;
  *         &#042;&#047;
- *        public MyMultiGenerator(FieldMeta&lt;?,?&gt; mappingType,  Map&lt;String,String&gt; paramMap){...}
+ *        public MyMultiGenerator(FieldMeta&lt;?,?&gt; paramMeta,  Map&lt;String,String&gt; paramMap){...}
  *
  *     }
  * </pre>
  * </p>
  *
  * @see io.army.annotation.Generator
- * @see PostMultiGenerator
+ * @see PostFieldGenerator
  * @since Army 1.0
  */
-public interface PreMultiGenerator extends MultiGenerator {
+public interface PreFieldGenerator extends FieldGenerator {
 
     /**
      * @see GeneratorMeta#dependPropName()

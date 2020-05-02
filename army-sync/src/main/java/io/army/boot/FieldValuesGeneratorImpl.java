@@ -7,8 +7,8 @@ import io.army.beans.PropertyAccessorFactory;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.MetaException;
 import io.army.domain.IDomain;
-import io.army.generator.MultiGenerator;
-import io.army.generator.PreMultiGenerator;
+import io.army.generator.FieldGenerator;
+import io.army.generator.PreFieldGenerator;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 import io.army.meta.MappingMode;
@@ -68,16 +68,16 @@ final class FieldValuesGeneratorImpl implements FieldValuesGenerator {
         if (CollectionUtils.isEmpty(chain)) {
             return;
         }
-        Map<FieldMeta<?, ?>, MultiGenerator> generatorMap = sessionFactory.fieldGeneratorMap();
+        Map<FieldMeta<?, ?>, FieldGenerator> generatorMap = sessionFactory.fieldGeneratorMap();
         int index = 0;
         for (FieldMeta<?, ?> fieldMeta : chain) {
             if (index == 0 && ignoreAndAbort(fieldMeta, entityWrapper, noDependValueAbort)) {
                 return;
             }
-            MultiGenerator generator = generatorMap.get(fieldMeta);
-            Assert.isInstanceOf(PreMultiGenerator.class, generator);
+            FieldGenerator generator = generatorMap.get(fieldMeta);
+            Assert.isInstanceOf(PreFieldGenerator.class, generator);
 
-            doCreateValueWithGenerator(fieldMeta, (PreMultiGenerator) generator, entityWrapper);
+            doCreateValueWithGenerator(fieldMeta, (PreFieldGenerator) generator, entityWrapper);
             index++;
         }
     }
@@ -103,7 +103,7 @@ final class FieldValuesGeneratorImpl implements FieldValuesGenerator {
         return ignoreAndAbort;
     }
 
-    private void doCreateValueWithGenerator(FieldMeta<?, ?> fieldMeta, PreMultiGenerator generator
+    private void doCreateValueWithGenerator(FieldMeta<?, ?> fieldMeta, PreFieldGenerator generator
             , BeanWrapper entityWrapper) {
         Object value = generator.next(fieldMeta, entityWrapper);
 

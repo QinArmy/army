@@ -1,6 +1,9 @@
 package io.army.beans;
 
 
+import io.army.criteria.impl.TableMetaFactory;
+import io.army.domain.IDomain;
+
 /**
  * Simple factory facade for obtaining {@link BeanWrapper} instances,
  * in particular for {@link BeanWrapper} instances. Conceals the actual
@@ -23,8 +26,16 @@ public abstract class PropertyAccessorFactory {
         return new BeanWrapperImpl(target);
     }
 
-    public static ReadonlyWrapper forReadonlyPropertyAccess(Object target){
+    public static DomainWrapper forDomainPropertyAccess(IDomain domain) {
+        return new DomainWrapperImpl(domain);
+    }
+
+    public static ReadonlyWrapper forReadonlyPropertyAccess(Object target) {
         return new ReadonlyWrapperImpl(target);
+    }
+
+    public static DomainReadonlyWrapper forDomainReadonlyPropertyAccess(IDomain domain) {
+        return new DomainReadonlyWrapperImpl(domain, TableMetaFactory.getTableMeta(domain.getClass()));
     }
 
 

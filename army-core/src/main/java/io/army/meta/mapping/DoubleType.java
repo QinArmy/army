@@ -7,12 +7,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public final class DoubleType implements MappingType {
+public final class DoubleType implements MappingMeta {
 
     private static final DoubleType INSTANCE = new DoubleType();
 
     public static DoubleType build(Class<?> typeClass) {
-        Assert.isTrue(Double.class == typeClass,"");
+        Assert.isTrue(Double.class == typeClass, "");
         return INSTANCE;
     }
 

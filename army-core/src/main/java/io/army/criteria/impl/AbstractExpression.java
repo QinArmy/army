@@ -4,7 +4,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.meta.FieldMeta;
 import io.army.meta.mapping.MappingFactory;
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
 
@@ -791,7 +791,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
-    public final <O> Expression<O> asType(Class<O> convertType, MappingType longMapping) {
+    public final <O> Expression<O> asType(Class<O> convertType, MappingMeta longMapping) {
         return new ConvertExpressionImpl<>(this, longMapping);
     }
 

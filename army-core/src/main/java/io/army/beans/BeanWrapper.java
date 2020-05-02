@@ -3,31 +3,18 @@ package io.army.beans;
 
 import io.army.lang.Nullable;
 
-public interface BeanWrapper  extends ReadonlyWrapper {
-
+public interface BeanWrapper extends ReadonlyWrapper {
 
 
     /**
      * Determine whether the specified property is writable.
      * <p>Returns {@code false} if the property doesn'field exist.
+     *
      * @param propertyName the property to check
-     * (may be a nested path then/or an indexed/mapped property)
+     *                     (may be a nested path then/or an indexed/mapped property)
      * @return whether the property is writable
      */
     boolean isWritableProperty(String propertyName);
-
-    /**
-     * Specify a limit for array then collection auto-growing.
-     * <p>Default is unlimited on a plain BeanWrapper.
-     * @since 4.1
-     */
-    void setAutoGrowCollectionLimit(int autoGrowCollectionLimit);
-
-    /**
-     * Return the limit for array then collection auto-growing.
-     * @since 4.1
-     */
-    int getAutoGrowCollectionLimit();
 
 
     /**

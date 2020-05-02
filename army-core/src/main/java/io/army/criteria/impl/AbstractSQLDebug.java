@@ -6,8 +6,8 @@ import io.army.criteria.SQLDebug;
 import io.army.criteria.Visible;
 import io.army.dialect.Dialect;
 import io.army.dialect.SQLDialect;
-import io.army.dialect.SQLWrapper;
 import io.army.meta.SchemaMeta;
+import io.army.wrapper.SQLWrapper;
 
 import java.util.List;
 

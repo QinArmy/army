@@ -2,7 +2,7 @@ package com.example.generator;
 
 import io.army.annotation.*;
 import io.army.domain.IDomain;
-import io.army.generator.PreMultiGenerator;
+import io.army.generator.PreFieldGenerator;
 import io.army.util.JsonUtils;
 
 import java.time.LocalDateTime;
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class Being implements IDomain {
 
     @Generator(value = "io.army.generator.snowflake.SnowflakeGenerator"
-            ,params = {@Params(name = PreMultiGenerator.DEPEND_PROP_NAME,value = "")})
+            , params = {@Params(name = PreFieldGenerator.DEPEND_PROP_NAME, value = "")})
     @Column
     private Long id;
 
@@ -39,66 +39,66 @@ public class Being implements IDomain {
     private String scientificName;
 
     @Generator(value = "io.army.generator.snowflake.SnowflakeGenerator"
-            ,params = {@Params(name = PreMultiGenerator.DEPEND_PROP_NAME,value = "id")})
+            , params = {@Params(name = PreFieldGenerator.DEPEND_PROP_NAME, value = "id")})
     @Column(comment = "生物编号")
     private String beingNumber;
 
     @Generator(value = "io.army.generator.snowflake.SnowflakeGenerator"
-            ,params = {@Params(name = PreMultiGenerator.DEPEND_PROP_NAME,value = "beingNumber")})
+            , params = {@Params(name = PreFieldGenerator.DEPEND_PROP_NAME, value = "beingNumber")})
     @Column(comment = "物体编号")
     private String thingNumber;
 
     @Generator(value = "io.army.generator.snowflake.SnowflakeGenerator"
-            ,params = {@Params(name = PreMultiGenerator.DEPEND_PROP_NAME,value = "thingNumber")})
+            , params = {@Params(name = PreFieldGenerator.DEPEND_PROP_NAME, value = "thingNumber")})
     @Column(comment = "1编号")
     private String oneNumber;
 
 
     @Generator(value = "io.army.generator.snowflake.SnowflakeGenerator"
-            ,params = {@Params(name = PreMultiGenerator.DEPEND_PROP_NAME,value = "oneNumber")})
+            , params = {@Params(name = PreFieldGenerator.DEPEND_PROP_NAME, value = "oneNumber")})
     @Column(comment = "2编号")
     private String twoNumber;
 
     @Generator(value = "io.army.generator.snowflake.SnowflakeGenerator"
-            ,params = {@Params(name = PreMultiGenerator.DEPEND_PROP_NAME,value = "twoNumber")})
+            , params = {@Params(name = PreFieldGenerator.DEPEND_PROP_NAME, value = "twoNumber")})
     @Column(comment = "3编号")
     private String threeNumber;
 
 
     @Generator(value = "io.army.generator.snowflake.SnowflakeGenerator"
-            ,params = {@Params(name = PreMultiGenerator.DEPEND_PROP_NAME,value = "threeNumber")})
+            , params = {@Params(name = PreFieldGenerator.DEPEND_PROP_NAME, value = "threeNumber")})
     @Column(comment = "4编号")
     private String fourNumber;
 
 
     @Generator(value = "io.army.generator.snowflake.SnowflakeGenerator"
-            ,params = {@Params(name = PreMultiGenerator.DEPEND_PROP_NAME,value = "fourNumber")})
+            , params = {@Params(name = PreFieldGenerator.DEPEND_PROP_NAME, value = "fourNumber")})
     @Column(comment = "5编号")
     private String fiveNumber;
 
     @Generator(value = "io.army.generator.snowflake.SnowflakeGenerator"
-            ,params = {@Params(name = PreMultiGenerator.DEPEND_PROP_NAME,value = "fiveNumber")})
+            , params = {@Params(name = PreFieldGenerator.DEPEND_PROP_NAME, value = "fiveNumber")})
     @Column(comment = "6编号")
     private String sixNumber;
 
     @Generator(value = "io.army.generator.snowflake.SnowflakeGenerator"
-            ,params = {@Params(name = PreMultiGenerator.DEPEND_PROP_NAME,value = "sixNumber")})
+            , params = {@Params(name = PreFieldGenerator.DEPEND_PROP_NAME, value = "sixNumber")})
     @Column(comment = "7编号")
     private String sevenNumber;
 
     @Generator(value = "io.army.generator.snowflake.SnowflakeGenerator"
-            ,params = {@Params(name = PreMultiGenerator.DEPEND_PROP_NAME,value = "sevenNumber")})
+            , params = {@Params(name = PreFieldGenerator.DEPEND_PROP_NAME, value = "sevenNumber")})
     @Column(comment = "8编号")
     private String eightNumber;
 
 
     @Generator(value = "io.army.generator.snowflake.SnowflakeGenerator"
-            ,params = {@Params(name = PreMultiGenerator.DEPEND_PROP_NAME,value = "eightNumber")})
+            , params = {@Params(name = PreFieldGenerator.DEPEND_PROP_NAME, value = "eightNumber")})
     @Column(comment = "9编号")
     private String nineNumber;
 
     @Generator(value = "io.army.generator.snowflake.SnowflakeGenerator"
-            ,params = {@Params(name = PreMultiGenerator.DEPEND_PROP_NAME,value = "nineNumber")})
+            , params = {@Params(name = PreFieldGenerator.DEPEND_PROP_NAME, value = "nineNumber")})
     @Column(comment = "10编号")
     private String tenNumber;
 

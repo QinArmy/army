@@ -3,7 +3,10 @@ package io.army.dialect.mysql;
 
 import io.army.GenericSessionFactory;
 import io.army.dialect.*;
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
+import io.army.wrapper.BatchSQLWrapper;
+import io.army.wrapper.DomainBatchSQLWrapper;
+import io.army.wrapper.SQLWrapper;
 
 import java.util.Set;
 
@@ -33,17 +36,22 @@ class MySQL57Dialect extends AbstractDialect {
     }
 
     @Override
-    public String mapping(MappingType mappingType) {
+    public String mapping(MappingMeta mappingType) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public String format(SQLWrapper sqlWrapper) {
+    public String showSQL(SQLWrapper sqlWrapper) {
         return null;
     }
 
     @Override
-    public String format(BatchSQLWrapper sqlWrapper) {
+    public String showSQL(BatchSQLWrapper sqlWrapper) {
+        return null;
+    }
+
+    @Override
+    public String showSQL(DomainBatchSQLWrapper sqlWrapper) {
         return null;
     }
 

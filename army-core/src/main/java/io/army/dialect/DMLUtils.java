@@ -5,20 +5,20 @@ import io.army.beans.BeanWrapper;
 import io.army.beans.PropertyAccessorFactory;
 import io.army.beans.ReadonlyWrapper;
 import io.army.boot.FieldValuesGenerator;
+import io.army.codec.FieldCodec;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLS;
 import io.army.criteria.impl.inner.InnerStandardBatchInsert;
 import io.army.criteria.impl.inner.InnerStandardDomainDML;
 import io.army.criteria.impl.inner.InnerStandardInsert;
 import io.army.domain.IDomain;
-import io.army.generator.PostMultiGenerator;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.FieldMeta;
-import io.army.meta.IndexFieldMeta;
-import io.army.meta.TableMeta;
+import io.army.generator.PostFieldGenerator;
+import io.army.lang.Nullable;
+import io.army.meta.*;
 import io.army.util.Assert;
 import io.army.util.BeanUtils;
 import io.army.util.CollectionUtils;
+import io.army.wrapper.*;
 
 import java.util.*;
 
@@ -44,7 +44,7 @@ abstract class DMLUtils {
         List<SQLWrapper> sqlWrapperList;
         if (parentSqlList.size() == 2) {
             final SQLWrapper queryChildSql = parentSqlList.get(0);
-            if (!(queryChildSql instanceof BeanSQLWrapper)) {
+            if (!(queryChildSql instanceof DomainSQLWrapper)) {
                 throw DialectUtils.createArmyCriteriaException();
             }
             sqlWrapperList = new ArrayList<>(3);
@@ -77,7 +77,7 @@ abstract class DMLUtils {
     }
 
     @SuppressWarnings("unchecked")
-    static BeanSQLWrapper createQueryChildBeanSQLWrapper(InnerStandardDomainDML domainDML
+    static DomainSQLWrapper createQueryChildBeanSQLWrapper(InnerStandardDomainDML domainDML
             , List<FieldMeta<?, ?>> childFieldList, Dialect dialect, final Visible visible) {
 
         final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) domainDML.tableMeta();
@@ -99,7 +99,7 @@ abstract class DMLUtils {
         Assert.isTrue(sqlWrapperList.size() == 1, "DomainUpdate query child sql error.");
         SQLWrapper sqlWrapper = sqlWrapperList.get(0);
 
-        return BeanSQLWrapper.build(
+        return DomainSQLWrapper.build(
                 sqlWrapper.sql()
                 , sqlWrapper.paramList()
                 , PropertyAccessorFactory.forBeanPropertyAccess(
@@ -132,7 +132,7 @@ abstract class DMLUtils {
 
         if (!CollectionUtils.isEmpty(chain)) {
             for (FieldMeta<?, ?> fieldMeta : chain) {
-                if (fieldMeta.generator() instanceof PostMultiGenerator) {
+                if (fieldMeta.generator() instanceof PostFieldGenerator) {
                     continue;
                 }
                 fieldMetaSet.add(fieldMeta);
@@ -155,8 +155,10 @@ abstract class DMLUtils {
         return Collections.unmodifiableSet(fieldMetaSet);
     }
 
-    static void createInsertForSimple(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> fieldMetas
+    static void createStandardInsertForSimple(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> fieldMetas
             , ReadonlyWrapper domainWrapper, InsertContext context) {
+
+        final Map<FieldMeta<?, ?>, FieldCodec> codecMap = context.dialect().sessionFactory().fieldCodecMap(tableMeta);
 
         context.currentClause(Clause.INSERT_INTO);
         // append table name
@@ -174,7 +176,7 @@ abstract class DMLUtils {
             if (!fieldMeta.insertalbe()) {
                 continue;
             }
-            value = domainWrapper.getPropertyValue(fieldMeta.propertyName());
+            value = obtainInsertValue(fieldMeta, domainWrapper);
 
             if (value == null && !fieldMeta.nullable()) {
                 continue;
@@ -190,7 +192,12 @@ abstract class DMLUtils {
                 valueBuilder.append(createConstant(fieldMeta));
             } else {
                 valueBuilder.append("?");
-                context.appendParam(ParamWrapper.build(fieldMeta.mappingType(), value));
+                if (codecMap.containsKey(fieldMeta)) {
+                    context.appendParam(ParamWrapper.build(fieldMeta, value));
+                } else {
+                    context.appendParam(ParamWrapper.build(fieldMeta.mappingType(), value));
+                }
+
             }
             count++;
         }
@@ -199,6 +206,7 @@ abstract class DMLUtils {
         valueBuilder.append(" )");
 
     }
+
 
     static void createBatchInsertForSimple(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> fieldMetas
             , InsertContext context) {
@@ -335,9 +343,28 @@ abstract class DMLUtils {
 
     /*################################## blow private method ##################################*/
 
-    private static CriteriaException createCommonAndGeneratorCrash(FieldMeta<?, ?> fieldMeta) {
-        return new CriteriaException(ErrorCode.CRITERIA_ERROR
-                , "FieldMeta[%s] has Generator,can't specify common expression.", fieldMeta);
+    @Nullable
+    private static Object obtainInsertValue(FieldMeta<?, ?> fieldMeta, ReadonlyWrapper domainWrapper) {
+        Object value = null;
+        if ((fieldMeta.tableMeta() instanceof ChildTableMeta)
+                && parentPrimaryKeyIsAutoGenerated((ChildTableMeta<?>) fieldMeta.tableMeta())) {
+            // parent primary key is AutoGenerator ,@see io.army.boot.InsertSQLExecutorIml.tryGetParentIdValue
+            value = domainWrapper;
+        }
+        if (value == null) {
+            value = domainWrapper.getPropertyValue(fieldMeta.propertyName());
+        }
+        return value;
+    }
+
+    /**
+     * @return true ,childMeta parent's primary key is  generated  by {@link PostFieldGenerator}
+     * @see PostFieldGenerator
+     */
+    private static boolean parentPrimaryKeyIsAutoGenerated(ChildTableMeta<?> childMeta) {
+        FieldMeta<?, ?> parentPrimary = childMeta.parentMeta().primaryKey();
+        GeneratorMeta parentKeyGenerator = parentPrimary.generator();
+        return parentKeyGenerator != null && PostFieldGenerator.class.isAssignableFrom(parentKeyGenerator.type());
     }
 
     private static final class DomainInsert implements InnerStandardInsert {

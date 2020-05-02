@@ -4,15 +4,15 @@ import io.army.ErrorCode;
 import io.army.annotation.*;
 import io.army.criteria.MetaException;
 import io.army.domain.IDomain;
-import io.army.generator.PostMultiGenerator;
-import io.army.generator.PreMultiGenerator;
+import io.army.generator.PostFieldGenerator;
+import io.army.generator.PreFieldGenerator;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
 import io.army.modelgen.MetaConstant;
 import io.army.struct.CodeEnum;
 import io.army.util.AnnotationUtils;
@@ -53,8 +53,8 @@ abstract class FieldMetaUtils extends MetaUtils {
                 this.params = Collections.unmodifiableMap(params);
             }
 
-            if (PreMultiGenerator.class.isAssignableFrom(type)) {
-                this.dependPropName = this.params.getOrDefault(PreMultiGenerator.DEPEND_PROP_NAME, "");
+            if (PreFieldGenerator.class.isAssignableFrom(type)) {
+                this.dependPropName = this.params.getOrDefault(PreFieldGenerator.DEPEND_PROP_NAME, "");
             } else {
                 this.dependPropName = "";
             }
@@ -121,8 +121,7 @@ abstract class FieldMetaUtils extends MetaUtils {
     }
 
 
-
-    static MappingType columnMappingType(@NonNull Field field) {
+    static MappingMeta columnMappingType(@NonNull Field field) {
         Mapping mapping = AnnotationUtils.getAnnotation(field, Mapping.class);
 
         Class<?> mappingClass;
@@ -136,13 +135,13 @@ abstract class FieldMetaUtils extends MetaUtils {
             } catch (ClassNotFoundException e) {
                 throw new MetaException(ErrorCode.META_ERROR, "%s.value() not a %s type."
                         , Mapping.class.getName()
-                        , MappingType.class.getName()
+                        , MappingMeta.class.getName()
                 );
             }
         }
 
         MappingFactory mappingFactory = mappingFactory();
-        MappingType mappingType;
+        MappingMeta mappingType;
         if (mappingClass == null) {
             mappingType = mappingFactory.getMapping(field.getType());
         } else {
@@ -277,24 +276,24 @@ abstract class FieldMetaUtils extends MetaUtils {
             , Class<?> generatorClass) {
 
         // assert DEPEND_PROP_NAME value
-        if (paramMap.containsKey(PreMultiGenerator.DEPEND_PROP_NAME)
-                && !ClassUtils.isAssignable(PreMultiGenerator.class, generatorClass)) {
+        if (paramMap.containsKey(PreFieldGenerator.DEPEND_PROP_NAME)
+                && !ClassUtils.isAssignable(PreFieldGenerator.class, generatorClass)) {
             throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] prop[%s] generator cannot have %s value"
                     , fieldMeta.tableMeta().javaType().getName()
                     , fieldMeta.propertyName()
-                    , PreMultiGenerator.DEPEND_PROP_NAME);
+                    , PreFieldGenerator.DEPEND_PROP_NAME);
         }
     }
 
     private static void assertGeneratorPreOrPost(Class<?> generatorClass, FieldMeta<?, ?> fieldMeta) {
         // assert Generator
-        if (ClassUtils.isAssignable(PreMultiGenerator.class, generatorClass)
-                && ClassUtils.isAssignable(PostMultiGenerator.class, generatorClass)) {
+        if (ClassUtils.isAssignable(PreFieldGenerator.class, generatorClass)
+                && ClassUtils.isAssignable(PostFieldGenerator.class, generatorClass)) {
             throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] prop[%s] generator error, cannot be %s then %s"
                     , fieldMeta.tableMeta().javaType().getName()
                     , fieldMeta.propertyName()
-                    , PreMultiGenerator.class.getName()
-                    , PostMultiGenerator.class.getName());
+                    , PreFieldGenerator.class.getName()
+                    , PostFieldGenerator.class.getName());
         }
     }
 

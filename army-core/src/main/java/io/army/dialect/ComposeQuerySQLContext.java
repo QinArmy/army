@@ -6,7 +6,8 @@ import io.army.criteria.Visible;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
+import io.army.wrapper.ParamWrapper;
 
 import java.util.List;
 
@@ -41,7 +42,7 @@ final class ComposeQuerySQLContext implements ClauseSQLContext {
     }
 
     @Override
-    public void appendTextValue(MappingType mappingType, Object value) {
+    public void appendTextValue(MappingMeta mappingType, Object value) {
         throw new UnsupportedOperationException();
     }
 

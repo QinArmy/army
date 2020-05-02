@@ -7,12 +7,12 @@ import io.army.util.TimeUtils;
 import java.sql.*;
 import java.time.LocalDate;
 
-public final class LocalDateType implements MappingType {
+public final class LocalDateType implements MappingMeta {
 
     private static final LocalDateType INSTANCE = new LocalDateType();
 
-    public static LocalDateType build(Class<?> typeClass){
-        Assert.isTrue(LocalDate.class == typeClass,"");
+    public static LocalDateType build(Class<?> typeClass) {
+        Assert.isTrue(LocalDate.class == typeClass, "");
         return INSTANCE;
     }
 

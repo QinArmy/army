@@ -1,4 +1,4 @@
-package io.army.dialect;
+package io.army.wrapper;
 
 import java.util.List;
 
@@ -11,16 +11,8 @@ public interface SQLWrapper {
      */
     List<ParamWrapper> paramList();
 
-    String toString(Dialect dialect);
-
-    @Override
-    String toString();
-
     static SQLWrapper build(String sql, List<ParamWrapper> paramList) {
         return new SQLWrapperImpl(sql, paramList);
     }
 
-    static SQLWrapper build(String sql, List<ParamWrapper> paramList,boolean hasVersion) {
-        return new SQLWrapperImpl(sql, paramList,hasVersion);
-    }
 }

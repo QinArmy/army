@@ -10,11 +10,13 @@ import io.army.criteria.impl.CriteriaCounselor;
 import io.army.criteria.impl.SQLS;
 import io.army.criteria.impl.inner.*;
 import io.army.domain.IDomain;
-import io.army.generator.PostMultiGenerator;
+import io.army.generator.PostFieldGenerator;
 import io.army.meta.*;
 import io.army.util.Assert;
 import io.army.util.ClassUtils;
 import io.army.util.CollectionUtils;
+import io.army.wrapper.BatchSQLWrapper;
+import io.army.wrapper.SQLWrapper;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -430,13 +432,13 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         if (!parentFields.isEmpty()) {
             //2.  add parent sql.
             InsertContext context = createBeanInsertContext(insert, beanWrapper, visible);
-            DMLUtils.createInsertForSimple(parentMeta, parentFields, beanWrapper, context);
+            DMLUtils.createStandardInsertForSimple(parentMeta, parentFields, beanWrapper, context);
             sqlWrapperList.add(context.build());
         }
 
         if (!childFields.isEmpty()) {
             InsertContext context = createBeanInsertContext(insert, beanWrapper, visible);
-            DMLUtils.createInsertForSimple(childMeta, childFields, beanWrapper, context);
+            DMLUtils.createStandardInsertForSimple(childMeta, childFields, beanWrapper, context);
             //3. add child sql.
             sqlWrapperList.add(context.build());
         }
@@ -451,13 +453,13 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
             , final Visible visible) {
 
         InsertContext context = createBeanInsertContext(insert, beanWrapper, visible);
-        DMLUtils.createInsertForSimple(tableMeta, mergedFields, beanWrapper, context);
+        DMLUtils.createStandardInsertForSimple(tableMeta, mergedFields, beanWrapper, context);
 
         SQLWrapper sqlWrapper;
         GeneratorMeta generatorMeta = tableMeta.primaryKey().generator();
 
         if (generatorMeta != null
-                && ClassUtils.isAssignable(PostMultiGenerator.class, generatorMeta.type())) {
+                && ClassUtils.isAssignable(PostFieldGenerator.class, generatorMeta.type())) {
             sqlWrapper = context.build(beanWrapper);
         } else {
             sqlWrapper = context.build();

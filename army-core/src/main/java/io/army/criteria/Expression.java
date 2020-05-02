@@ -1,7 +1,7 @@
 package io.army.criteria;
 
 import io.army.meta.FieldMeta;
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
 
 import java.math.BigInteger;
 import java.util.Collection;
@@ -267,7 +267,7 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingType
 
     <O> Expression<O> asType(Class<O> convertType);
 
-    <O> Expression<O> asType(Class<O> convertType, MappingType longMapping);
+    <O> Expression<O> asType(Class<O> convertType, MappingMeta longMapping);
 
     Expression<E> brackets();
 

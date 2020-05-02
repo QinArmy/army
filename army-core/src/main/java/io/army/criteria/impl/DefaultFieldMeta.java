@@ -10,7 +10,7 @@ import io.army.domain.IDomain;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.*;
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
 import io.army.util.Assert;
 
 import java.lang.reflect.Field;
@@ -108,7 +108,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     private final String defaultValue;
 
-    private final MappingType mappingType;
+    private final MappingMeta mappingType;
 
     private final boolean nullable;
 
@@ -217,7 +217,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     }
 
     @Override
-    public final MappingType mappingType() {
+    public final MappingMeta mappingType() {
         return mappingType;
     }
 

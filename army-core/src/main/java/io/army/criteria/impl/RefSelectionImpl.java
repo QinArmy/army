@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.SQLContext;
 import io.army.criteria.Selection;
 import io.army.dialect.SQL;
-import io.army.meta.mapping.MappingType;
+import io.army.meta.mapping.MappingMeta;
 import io.army.util.Assert;
 
 import java.sql.JDBCType;
@@ -74,7 +74,7 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
         }
 
         @Override
-        public MappingType mappingType() {
+        public MappingMeta mappingType() {
             return this.selection.mappingType();
         }
 
@@ -106,7 +106,7 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
         }
 
         @Override
-        public MappingType mappingType() {
+        public MappingMeta mappingType() {
             return proxyMappingType;
         }
 
@@ -124,7 +124,7 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
     }
 
 
-    private static final class ProxyMappingType implements MappingType {
+    private static final class ProxyMappingType implements MappingMeta {
 
         private Selection selection;
 
