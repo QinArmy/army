@@ -86,4 +86,8 @@ final class ComposeQuerySQLContext implements ClauseSQLContext {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public Dialect dialect() {
+        return null;
+    }
 }

@@ -7,4 +7,9 @@ public interface ChildBatchSQLWrapper extends BatchSQLWrapper {
 
     SimpleBatchSQLWrapper childWrapper();
 
+
+    static ChildBatchSQLWrapper build(SimpleBatchSQLWrapper parent, SimpleBatchSQLWrapper child) {
+        return new ChildBatchSQLWrapperImpl(parent, child);
+    }
+
 }

@@ -75,7 +75,7 @@ public abstract class DialectUtils {
                 , "TableMeta[%s] and FieldMeta[%s] not match.", tableMeta, fieldMeta);
     }
 
-    public static void separateFields(ChildTableMeta<?> childMeta, Collection<FieldMeta<?, ?>> fieldMetas
+    public static void divideFields(ChildTableMeta<?> childMeta, Collection<FieldMeta<?, ?>> fieldMetas
             , Collection<FieldMeta<?, ?>> parentFields, Collection<FieldMeta<?, ?>> childFields) {
 
         final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
@@ -94,9 +94,9 @@ public abstract class DialectUtils {
         }
     }
 
-    public static boolean hasParentIdPostFieldGenerator(FieldMeta<?, ?> fieldMeta) {
-        return TableMeta.ID.equals(fieldMeta.propertyName())
-                && hasIdPostFieldGenerator(((ChildTableMeta<?>) fieldMeta.tableMeta()).parentMeta());
+    public static boolean hasParentIdPostFieldGenerator(TableMeta<?> tableMeta) {
+        return (tableMeta instanceof ChildTableMeta)
+                && hasIdPostFieldGenerator(((ChildTableMeta<?>) tableMeta).parentMeta());
     }
 
     public static boolean hasIdPostFieldGenerator(TableMeta<?> tableMeta) {

@@ -14,6 +14,7 @@ import io.army.util.Assert;
 import io.army.util.CriteriaUtils;
 import io.army.util.Pair;
 import io.army.util.Triple;
+import io.army.wrapper.SQLWrapper;
 import io.army.wrapper.SimpleBatchSQLWrapper;
 import io.army.wrapper.SimpleSQLWrapper;
 import org.slf4j.Logger;
@@ -355,8 +356,8 @@ final class SessionImpl implements InnerSession, InnerTxSession {
     /*################################## blow private multiInsert method ##################################*/
 
     private void executeSubQueryInsert(InnerSubQueryInsert insert, final Visible visible) {
-        List<SimpleSQLWrapper> wrapperList = this.dialect.insert((Insert) insert, visible);
-        InsertSQLExecutor.build().multiInsert(this, wrapperList);
+        /*List<SimpleSQLWrapper> wrapperList = this.dialect.insert((Insert) insert, visible);
+        InsertSQLExecutor.build().multiInsert(this, wrapperList);*/
     }
 
     private void executeValuesInsert(InnerValuesInsert insert, final Visible visible) {
@@ -378,12 +379,12 @@ final class SessionImpl implements InnerSession, InnerTxSession {
 
     private List<Integer> executeBatchInsert(InnerBatchInsert insert, final Visible visible) {
         List<SimpleBatchSQLWrapper> wrapperList = this.dialect.batchInsert((Insert) insert, visible);
-        return InsertSQLExecutor.build().batchInsert(this, wrapperList);
+        return this.sessionFactory.insertSQLExecutor().batchInsert(this, Collections.emptyList());
     }
 
     private List<Integer> executeGenericInsert(InnerGenericInsert insert, final Visible visible) {
-        List<SimpleSQLWrapper> wrapperList = this.dialect.insert((Insert) insert, visible);
-        return InsertSQLExecutor.build().multiInsert(this, wrapperList);
+        List<SQLWrapper> wrapperList = this.dialect.insert((Insert) insert, visible);
+        return this.sessionFactory.insertSQLExecutor().multiInsert(this, wrapperList);
     }
 
 

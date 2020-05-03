@@ -223,7 +223,7 @@ abstract class SourceCreateUtils {
                 .append(",()->\n")
                 .append(MEMBER_PRE)
                 .append("\t\t")
-                .append("String.showSQL(\"entity[%s] field count[%s] error.\",")
+                .append("String.format(\"domain[%s] field count[%s] error.\",")
                 .append(entityElement.getSimpleName())
                 .append(".class.getName(),")
                 .append(MetaConstant.FIELD_COUNT)

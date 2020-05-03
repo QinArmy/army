@@ -7,7 +7,6 @@ import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingMeta;
 import io.army.util.Assert;
-import io.army.wrapper.ParamWrapper;
 
 final class ParamExpressionImp<E> extends AbstractNoNOperationExpression<E> implements ParamExpression<E> {
 
@@ -48,12 +47,12 @@ final class ParamExpressionImp<E> extends AbstractNoNOperationExpression<E> impl
 
 
     @Override
-    public E value() {
+    public final E value() {
         return value;
     }
 
     @Override
-    public MappingMeta paramMeta() {
+    public final MappingMeta paramMeta() {
         return mappingType;
     }
 
@@ -65,7 +64,12 @@ final class ParamExpressionImp<E> extends AbstractNoNOperationExpression<E> impl
     @Override
     protected void afterSpace(SQLContext context) {
         context.sqlBuilder().append("?");
-        context.appendParam(ParamWrapper.build(mappingType, value));
+        context.appendParam(this);
+    }
+
+    @Override
+    public final MappingMeta mappingType() {
+        return this.mappingType;
     }
 
     @Override

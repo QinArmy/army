@@ -9,7 +9,7 @@ import io.army.util.Assert;
 
 abstract class AbstractStandardInsertContext extends AbstractClauseContext implements InsertContext {
 
-    static AbstractStandardInsertContext buildGeneral(Dialect dialect, Visible visible, ReadonlyWrapper readonlyWrapper
+    static AbstractStandardInsertContext buildGeneric(Dialect dialect, Visible visible, ReadonlyWrapper readonlyWrapper
             , InnerStandardInsert insert) {
         return new StandardInsertContext(dialect, visible, insert.tableMeta(), readonlyWrapper);
     }

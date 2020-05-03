@@ -153,7 +153,7 @@ abstract class DMLUtils {
     }
 
     static void createStandardInsertForSimple(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> fieldMetas
-            , ReadonlyWrapper domainWrapper, InsertContext context) {
+            , ReadonlyWrapper domainWrapper, AbstractStandardInsertContext context) {
 
         final Map<FieldMeta<?, ?>, FieldCodec> codecMap = context.dialect().sessionFactory().fieldCodecMap(tableMeta);
 
@@ -173,9 +173,11 @@ abstract class DMLUtils {
             if (!fieldMeta.insertalbe()) {
                 continue;
             }
-            value = obtainInsertValue(fieldMeta, domainWrapper);
-
-            if (value == null && !fieldMeta.nullable()) {
+            value = domainWrapper.getPropertyValue(fieldMeta.propertyName());
+            if (fieldMeta == tableMeta.primaryKey()
+                    && DialectUtils.hasParentIdPostFieldGenerator(fieldMeta.tableMeta())) {
+                value = domainWrapper;
+            } else if (value == null && !fieldMeta.nullable()) {
                 continue;
             }
             if (count > 0) {
@@ -189,8 +191,10 @@ abstract class DMLUtils {
                 valueBuilder.append(createConstant(fieldMeta));
             } else {
                 valueBuilder.append("?");
-                if (codecMap.containsKey(fieldMeta)) {
-                    context.appendParam(ParamWrapper.build(fieldMeta, value));
+                if (value == domainWrapper) {
+                    context.appendParam(ParamWrapper.build(fieldMeta, domainWrapper));
+                } else if (codecMap.containsKey(fieldMeta)) {
+                    context.appendParam(ParamWrapper.build(fieldMeta, domainWrapper));
                 } else {
                     context.appendParam(ParamWrapper.build(fieldMeta.mappingType(), value));
                 }
@@ -288,6 +292,7 @@ abstract class DMLUtils {
                     SimpleBatchSQLWrapper.build(
                             sqlWrapper.sql()
                             , Collections.unmodifiableList(paramGroupList)
+                            , tableMeta
                     )
             );
         }
@@ -334,9 +339,6 @@ abstract class DMLUtils {
         return mergedPredicateList;
     }
 
-    static InnerStandardInsert wrapperDomainAsInsert(TableMeta<?> tableMeta, IDomain domain) {
-        return new DomainInsert(tableMeta, domain);
-    }
 
     /*################################## blow private method ##################################*/
 
