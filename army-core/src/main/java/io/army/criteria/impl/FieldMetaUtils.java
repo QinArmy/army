@@ -3,11 +3,13 @@ package io.army.criteria.impl;
 import io.army.ErrorCode;
 import io.army.annotation.*;
 import io.army.criteria.MetaException;
+import io.army.dialect.DialectUtils;
 import io.army.domain.IDomain;
 import io.army.generator.PostFieldGenerator;
 import io.army.generator.PreFieldGenerator;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
+import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 import io.army.meta.TableMeta;
@@ -100,9 +102,9 @@ abstract class FieldMetaUtils extends MetaUtils {
         if (generator == null) {
             return null;
         }
-        assertManagedByArmyForGenerator(fieldMeta,isDiscriminator);
+        assertManagedByArmyForGenerator(fieldMeta, isDiscriminator);
 
-        Class<?> generatorClass = loadGeneratorClass(fieldMeta,generator.value());
+        Class<?> generatorClass = loadGeneratorClass(fieldMeta, generator.value());
 
         assertGeneratorPreOrPost(generatorClass, fieldMeta);
 
@@ -157,11 +159,17 @@ abstract class FieldMetaUtils extends MetaUtils {
                 && fieldMeta.fieldName().equalsIgnoreCase(inheritance.value());
     }
 
-    static boolean columnInsertable(String propName, Column column, boolean isDiscriminator) {
+    static boolean columnInsertable(FieldMeta<?, ?> fieldMeta, Column column, boolean isDiscriminator) {
         boolean insertable = column.insertable();
-        if (TableMeta.VERSION_PROPS.contains(propName)
+        if (TableMeta.RESERVED_PROPS.contains(fieldMeta.propertyName())
                 || isDiscriminator) {
-            insertable = true;
+            if (TableMeta.ID.equals(fieldMeta.propertyName())) {
+                insertable = (fieldMeta.tableMeta() instanceof ChildTableMeta)
+                        || !DialectUtils.hasParentIdPostFieldGenerator(fieldMeta.tableMeta());
+            } else {
+                insertable = true;
+            }
+
         }
         return insertable;
     }
@@ -308,16 +316,16 @@ abstract class FieldMetaUtils extends MetaUtils {
         }
     }
 
-    private static  Class<?> loadGeneratorClass(FieldMeta<?, ?> fieldMeta,String className){
-        if(!StringUtils.hasText(className)){
-            throw new MetaException(ErrorCode.META_ERROR,"entity[%s] prop[%s] generator no class name"
-                    ,fieldMeta.tableMeta().javaType().getName(),fieldMeta.propertyName());
+    private static Class<?> loadGeneratorClass(FieldMeta<?, ?> fieldMeta, String className) {
+        if (!StringUtils.hasText(className)) {
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] prop[%s] generator no class name"
+                    , fieldMeta.tableMeta().javaType().getName(), fieldMeta.propertyName());
         }
         try {
             return ClassUtils.forName(className, ClassUtils.getDefaultClassLoader());
         } catch (ClassNotFoundException e) {
-            throw new MetaException(ErrorCode.META_ERROR,e,"entity[%s] prop[%s] generator class not found."
-                    ,fieldMeta.tableMeta().javaType().getName(),fieldMeta.propertyName());
+            throw new MetaException(ErrorCode.META_ERROR, e, "entity[%s] prop[%s] generator class not found."
+                    , fieldMeta.tableMeta().javaType().getName(), fieldMeta.propertyName());
         }
 
     }

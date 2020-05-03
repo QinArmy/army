@@ -1,6 +1,9 @@
 package io.army.boot;
 
-import io.army.*;
+import io.army.ArmyAccessException;
+import io.army.ErrorCode;
+import io.army.InsertRowsNotMatchException;
+import io.army.UnKnownTypeException;
 import io.army.beans.BeanWrapper;
 import io.army.beans.DomainReadonlyWrapper;
 import io.army.beans.DomainWrapper;
@@ -175,6 +178,11 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
     }
 
     private int assertAndSumTotal(SimpleBatchSQLWrapper sqlWrapper, int[] domainRows) {
+        if (domainRows.length != sqlWrapper.paramGroupList().size()) {
+            throw new InsertRowsNotMatchException(
+                    "TableMeta[%s] multiInsert batch count error,sql[%s]"
+                    , sqlWrapper.tableMeta(), sqlWrapper.sql());
+        }
         int totalRow = 0, row;
         for (int i = 0; i < domainRows.length; i++) {
             row = domainRows[i];
@@ -206,10 +214,14 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
         parentRows = doExecuteBatch(session, parentWrapper, beanWrapperList, tableMeta);
 
         // secondly,child multiInsert sql
-
         childRows = doExecuteBatch(session, childWrapper, Collections.emptyList(), null);
 
-        if (parentRows.length != childRows.length) {
+        return assertAndSumTotal(parentWrapper, childWrapper, parentRows, childRows);
+    }
+
+    private int assertAndSumTotal(SimpleBatchSQLWrapper parentWrapper, SimpleBatchSQLWrapper childWrapper
+            , int[] parentRows, int[] childRows) {
+        if (parentRows.length != childRows.length || childRows.length != childWrapper.paramGroupList().size()) {
             throw new InsertRowsNotMatchException(
                     "child sql[%s] multiInsert batch count[%s] and parent sql [%s] batch count[%s] not match."
                     , childWrapper.sql(), childRows.length, parentWrapper.sql(), parentRows.length);
@@ -284,30 +296,20 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
 
     }
 
-    private void setParams(PreparedStatement st, List<ParamWrapper> paramList) {
+    private void setParams(PreparedStatement st, List<ParamWrapper> paramList) throws SQLException {
 
-        ParamWrapper wrapper = null;
-        try {
+        ParamWrapper wrapper;
+        final int size = paramList.size();
+        for (int i = 0; i < size; i++) {
+            wrapper = paramList.get(i);
+            Object value = wrapper.value();
+            if (value == null) {
+                st.setNull(i + 1, obtainVendorTypeNumber(wrapper.paramMeta()));
+            } else {
+                setNonNullValue(st, i + 1, wrapper.paramMeta(), value);
 
-            final int size = paramList.size();
-            for (int i = 0; i < size; i++) {
-                wrapper = paramList.get(i);
-                Object value = wrapper.value();
-                if (value == null) {
-                    st.setNull(i + 1, obtainVendorTypeNumber(wrapper.paramMeta()));
-                } else {
-                    setNonNullValue(st, i + 1, wrapper.paramMeta(), value);
-
-                }
             }
-        } catch (SQLException e) {
-            throw new ArmyAccessException(ErrorCode.ACCESS_ERROR, e
-                    , "army set param occur error.ParamMetaAndValue[%s]", wrapper);
-        } catch (Throwable e) {
-            throw new ArmyRuntimeException(ErrorCode.ACCESS_ERROR, e
-                    , "army set param occur error.ParamMetaAndValue[%s]", wrapper);
         }
-
 
     }
 

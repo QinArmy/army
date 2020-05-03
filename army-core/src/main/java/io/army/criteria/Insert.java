@@ -22,7 +22,7 @@ public interface Insert extends SQLStatement, SQLAble, SQLDebug, QueryAble {
         Insert asInsert();
     }
 
-    /*################################## blow insert interfaces ##################################*/
+    /*################################## blow multiInsert interfaces ##################################*/
 
     interface InsertIntoAble<T extends IDomain> extends InsertSQLAble {
 

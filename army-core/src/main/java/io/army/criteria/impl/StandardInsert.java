@@ -89,13 +89,10 @@ final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implement
         if (this.prepared) {
             return this;
         }
+        Assert.state(!CollectionUtils.isEmpty(this.fieldList), "fieldList is empty,error.");
         Assert.state(!CollectionUtils.isEmpty(this.valueList), "valueList is empty,error.");
 
-        if (this.fieldList == null) {
-            this.fieldList = Collections.emptyList();
-        } else {
-            this.fieldList = Collections.unmodifiableList(this.fieldList);
-        }
+        this.fieldList = Collections.unmodifiableList(this.fieldList);
         this.valueList = Collections.unmodifiableList(this.valueList);
 
         this.prepared = true;

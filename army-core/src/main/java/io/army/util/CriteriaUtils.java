@@ -63,7 +63,7 @@ public abstract class CriteriaUtils {
 
     public static <T extends IDomain> Insert createSingleInsert(Class<T> domainClass, T domain) {
         TableMeta<T> tableMeta = TableMetaFactory.getTableMeta(domainClass);
-        return SQLS.insert(tableMeta)
+        return SQLS.multiInsert(tableMeta)
                 .insertInto(tableMeta)
                 .value(domain)
                 .asInsert();
@@ -71,7 +71,7 @@ public abstract class CriteriaUtils {
 
     public static <T extends IDomain> Insert createMultiInsert(Class<T> domainClass, List<T> domainList) {
         TableMeta<T> tableMeta = TableMetaFactory.getTableMeta(domainClass);
-        return SQLS.insert(tableMeta)
+        return SQLS.multiInsert(tableMeta)
                 .insertInto(tableMeta)
                 .values(domainList)
                 .asInsert();

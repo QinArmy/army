@@ -22,7 +22,7 @@ public class InsertTests {
         List<FieldMeta<? super BalanceAccount, ?>> fieldMetaList = new ArrayList<>();
         fieldMetaList.add(BalanceAccount_.balance);
 
-        Insert insert = SQLS.insert(BalanceAccount_.T)
+        Insert insert = SQLS.multiInsert(BalanceAccount_.T)
                 .insertInto(fieldMetaList)
                 .value(new BalanceAccount())
                 .asInsert();
@@ -35,7 +35,7 @@ public class InsertTests {
 
         List<BalanceAccount> valueList = new ArrayList<>();
 
-        Insert insert = SQLS.insert(BalanceAccount_.T)
+        Insert insert = SQLS.multiInsert(BalanceAccount_.T)
                 .insertInto(fieldMetaList)
                 .values(valueList)
                 .asInsert();
@@ -46,9 +46,9 @@ public class InsertTests {
     public void batchInsert() {
         List<BalanceAccount> valueList = new ArrayList<>();
 
-        /*Insert insert = SQLS.(BalanceAccount_.T)
+        /*Insert multiInsert = SQLS.(BalanceAccount_.T)
                 .commonValue(BalanceAccount_.balance, SQLS.constant(new BigDecimal(4)).add(new BigDecimal(4)))
-                .insert
+                .multiInsert
                 .asInsert();*/
     }
 

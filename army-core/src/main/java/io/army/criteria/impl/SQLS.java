@@ -6,6 +6,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingMeta;
+import io.army.tx.Isolation;
 
 import java.util.List;
 import java.util.function.Function;
@@ -17,7 +18,21 @@ public abstract class SQLS extends AbstractSQLS {
 
     }
 
-    public static <T extends IDomain> Insert.InsertIntoAble<T> insert(TableMeta<T> targetTable) {
+    /**
+     * create a standard insert api object.
+     * <p>
+     * a standard insert api support blow {@link io.army.meta.MappingMode}:
+     *     <ul>
+     *         <li>{@link io.army.meta.MappingMode#SIMPLE}</li>
+     *         <li>{@link io.army.meta.MappingMode#PARENT}</li>
+     *        <li>{@link io.army.meta.MappingMode#CHILD},but must in {@link Isolation#READ_COMMITTED }+ level environment.</li>
+     *     </ul>
+     * </p>
+     *
+     * @param targetTable will insert to table meta
+     * @return a standard insert api object.
+     */
+    public static <T extends IDomain> Insert.InsertIntoAble<T> multiInsert(TableMeta<T> targetTable) {
         return new StandardInsert<>(targetTable);
     }
 

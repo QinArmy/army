@@ -8,6 +8,7 @@ import io.army.dialect.TransactionOption;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
+import io.army.meta.MappingMode;
 import io.army.meta.TableMeta;
 import io.army.tx.*;
 import io.army.util.Assert;
@@ -199,12 +200,25 @@ final class SessionImpl implements InnerSession, InnerTxSession {
         //firstly, check
         checkTransactionForInsert(insert);
 
-        if (insert instanceof InnerValuesInsert) {
-            executeValuesInsert((InnerValuesInsert) insert, visible);
-        } else if (insert instanceof InnerSubQueryInsert) {
-            executeSubQueryInsert((InnerSubQueryInsert) insert, visible);
-        } else {
-            throw new IllegalStatementException(insert);
+        final boolean insertChild = ((InnerInsert) insert).tableMeta().mappingMode() == MappingMode.CHILD;
+        try {
+            if (insert instanceof InnerValuesInsert) {
+                executeValuesInsert((InnerValuesInsert) insert, visible);
+            } else if (insert instanceof InnerSubQueryInsert) {
+                executeSubQueryInsert((InnerSubQueryInsert) insert, visible);
+            } else {
+                throw new IllegalStatementException(insert);
+            }
+        } catch (ArmyRuntimeException e) {
+            if (insertChild && this.transaction != null) {
+                this.transaction.markRollbackOnly();
+            }
+            throw e;
+        } catch (Throwable e) {
+            if (insertChild && this.transaction != null) {
+                this.transaction.markRollbackOnly();
+            }
+            throw new ArmyAccessException(ErrorCode.ACCESS_ERROR, e, e.getMessage());
         }
         // finally, clear
         ((InnerInsert) insert).clear();
@@ -356,24 +370,30 @@ final class SessionImpl implements InnerSession, InnerTxSession {
     /*################################## blow private multiInsert method ##################################*/
 
     private void executeSubQueryInsert(InnerSubQueryInsert insert, final Visible visible) {
-        /*List<SimpleSQLWrapper> wrapperList = this.dialect.insert((Insert) insert, visible);
+        /*List<SimpleSQLWrapper> wrapperList = this.dialect.multiInsert((Insert) multiInsert, visible);
         InsertSQLExecutor.build().multiInsert(this, wrapperList);*/
     }
 
     private void executeValuesInsert(InnerValuesInsert insert, final Visible visible) {
-        List<Integer> insertedDomainList;
-        if (insert instanceof InnerBatchInsert) {
-            insertedDomainList = executeBatchInsert((InnerBatchInsert) insert, visible);
-        } else if (insert instanceof InnerGenericInsert) {
-            insertedDomainList = executeGenericInsert((InnerGenericInsert) insert, visible);
-        } else {
-            throw new IllegalStatementException((SQLStatement) insert);
-        }
 
-        final int domainCount = insert.valueList().size();
-        if (insertedDomainList.size() != domainCount) {
-            throw new InsertRowsNotMatchException("actual multiInsert domain count[%s] and domain count[%s] not match."
-                    , insertedDomainList.size(), domainCount);
+
+        try {
+            List<Integer> insertedDomainList;
+            if (insert instanceof InnerBatchInsert) {
+                insertedDomainList = executeBatchInsert((InnerBatchInsert) insert, visible);
+            } else if (insert instanceof InnerGenericInsert) {
+                insertedDomainList = executeGenericInsert((InnerGenericInsert) insert, visible);
+            } else {
+                throw new IllegalStatementException((SQLStatement) insert);
+            }
+
+            final int domainCount = insert.valueList().size();
+            if (insertedDomainList.size() != domainCount) {
+                throw new InsertRowsNotMatchException("actual multiInsert domain count[%s] and domain count[%s] not match."
+                        , insertedDomainList.size(), domainCount);
+            }
+        } catch (Throwable e) {
+
         }
     }
 

@@ -148,7 +148,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
             final boolean isDiscriminator = FieldMetaUtils.isDiscriminator(this);
 
-            this.insertable = FieldMetaUtils.columnInsertable(this.propertyName, column, isDiscriminator);
+            this.insertable = FieldMetaUtils.columnInsertable(this, column, isDiscriminator);
             this.updatable = FieldMetaUtils.columnUpdatable(table, this.propertyName, column, isDiscriminator);
 
             this.comment = FieldMetaUtils.columnComment(column, this, isDiscriminator);

@@ -173,40 +173,40 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
     protected abstract boolean singleDeleteHasTableAlias();
 
-    /*################################## blow insert template method ##################################*/
+    /*################################## blow multiInsert template method ##################################*/
 
     protected void assertSpecialGeneralInsert(InnerSpecialGeneralInsert insert) {
-        throw new UnsupportedOperationException(String.format("dialect [%s] not support special general insert."
+        throw new UnsupportedOperationException(String.format("dialect [%s] not support special general multiInsert."
                 , sqlDialect())
         );
     }
 
     protected void assertSpecialBatchInsert(InnerSpecialBatchInsert insert) {
-        throw new UnsupportedOperationException(String.format("dialect [%s] not support special abstract insert."
+        throw new UnsupportedOperationException(String.format("dialect [%s] not support special abstract multiInsert."
                 , sqlDialect())
         );
     }
 
     protected void assertSpecialSubQueryInsert(InnerSpecialSubQueryInsert insert) {
-        throw new UnsupportedOperationException(String.format("dialect [%s] not support special sub query insert."
+        throw new UnsupportedOperationException(String.format("dialect [%s] not support special sub query multiInsert."
                 , sqlDialect())
         );
     }
 
     protected List<SQLWrapper> specialGeneralInsert(InnerSpecialGeneralInsert insert, Visible visible) {
-        throw new UnsupportedOperationException(String.format("dialect[%s] not support special general insert."
+        throw new UnsupportedOperationException(String.format("dialect[%s] not support special general multiInsert."
                 , sqlDialect())
         );
     }
 
     protected List<SimpleBatchSQLWrapper> specialBatchInsert(InnerSpecialBatchInsert insert, Visible visible) {
-        throw new UnsupportedOperationException(String.format("dialect[%s] not support special batch insert."
+        throw new UnsupportedOperationException(String.format("dialect[%s] not support special batch multiInsert."
                 , sqlDialect())
         );
     }
 
     protected List<SQLWrapper> specialSubQueryInsert(InnerSpecialSubQueryInsert insert, Visible visible) {
-        throw new UnsupportedOperationException(String.format("dialect[%s] not support special sub query insert."
+        throw new UnsupportedOperationException(String.format("dialect[%s] not support special sub query multiInsert."
                 , sqlDialect())
         );
     }
@@ -427,7 +427,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         DialectUtils.divideFields(childMeta, mergedFields, parentFields, childFields);
         if (parentFields.isEmpty() || childFields.isEmpty()) {
             throw new ArmyCriteriaException(ErrorCode.CRITERIA_ERROR
-                    , "insert sql error,ChildMeta[%s] parent fields[%s] or child fields[%s]  is empty."
+                    , "multiInsert sql error,ChildMeta[%s] parent fields[%s] or child fields[%s]  is empty."
                     , childMeta, parentFields, childFields);
         }
 
@@ -506,7 +506,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         Set<FieldMeta<?, ?>> fieldMetaSet = DMLUtils.mergeInsertFields(tableMeta, this.dialect, insert.fieldList());
 
         InsertContext context = createBatchInsertContext(insert, visible);
-        // single table insert sql
+        // single table multiInsert sql
         DMLUtils.createBatchInsertForSimple(tableMeta, fieldMetaSet, context);
         return context.build();
     }
