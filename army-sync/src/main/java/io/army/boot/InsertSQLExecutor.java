@@ -2,7 +2,7 @@ package io.army.boot;
 
 import io.army.dialect.InsertException;
 import io.army.generator.PostFieldGenerator;
-import io.army.wrapper.DomainBatchSQLWrapper;
+import io.army.wrapper.BatchSQLWrapper;
 import io.army.wrapper.SQLWrapper;
 
 import java.util.List;
@@ -13,13 +13,13 @@ import java.util.List;
 interface InsertSQLExecutor extends DMLSQLExecutor {
 
 
-    List<Integer> insert(InnerSession session, List<SQLWrapper> sqlWrapperList) throws InsertException;
+    List<Integer> multiInsert(InnerSession session, List<SQLWrapper> sqlWrapperList) throws InsertException;
 
-    List<Integer> batchInsert(InnerSession session, List<DomainBatchSQLWrapper> batchSQLWrapperList);
+    List<Integer> batchInsert(InnerSession session, List<BatchSQLWrapper> sqlWrapperList);
 
 
-    static InsertSQLExecutor build() {
-        return InsertSQLExecutorIml.INSTANCE;
+    static InsertSQLExecutor build(InnerSessionFactory sessionFactory) {
+        return new InsertSQLExecutorIml(sessionFactory);
     }
 
 }

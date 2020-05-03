@@ -8,8 +8,9 @@ import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
-import io.army.wrapper.BatchSQLWrapper;
 import io.army.wrapper.SQLWrapper;
+import io.army.wrapper.SimpleBatchSQLWrapper;
+import io.army.wrapper.SimpleSQLWrapper;
 
 import java.time.ZoneId;
 import java.util.Collection;
@@ -107,7 +108,7 @@ public abstract class AbstractDialect implements Dialect {
     /*################################## blow DQL method ##################################*/
 
     @Override
-    public final List<SQLWrapper> select(Select select, Visible visible) {
+    public final List<SimpleSQLWrapper> select(Select select, Visible visible) {
         return this.dql.select(select, visible);
     }
 
@@ -139,17 +140,17 @@ public abstract class AbstractDialect implements Dialect {
     }
 
     @Override
-    public final List<BatchSQLWrapper> batchInsert(Insert insert, Visible visible) {
+    public final List<SimpleBatchSQLWrapper> batchInsert(Insert insert, Visible visible) {
         return this.dml.batchInsert(insert, visible);
     }
 
     @Override
-    public final List<SQLWrapper> update(Update update, Visible visible) {
+    public final List<SimpleSQLWrapper> update(Update update, Visible visible) {
         return this.dml.update(update, visible);
     }
 
     @Override
-    public final List<SQLWrapper> delete(Delete delete, Visible visible) {
+    public final List<SimpleSQLWrapper> delete(Delete delete, Visible visible) {
         return this.dml.delete(delete, visible);
     }
 

@@ -1,13 +1,13 @@
 package io.army.dialect;
 
 import io.army.criteria.*;
-import io.army.wrapper.SQLWrapper;
+import io.army.wrapper.SimpleSQLWrapper;
 
 import java.util.List;
 
 public interface DQL extends SQL {
 
-    List<SQLWrapper> select(Select select, Visible visible);
+    List<SimpleSQLWrapper> select(Select select, Visible visible);
 
     void select(Select select, SQLContext originalContext);
 

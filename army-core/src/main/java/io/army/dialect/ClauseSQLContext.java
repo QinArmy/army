@@ -1,10 +1,10 @@
 package io.army.dialect;
 
-import io.army.beans.BeanWrapper;
+import io.army.beans.DomainWrapper;
 import io.army.criteria.SQLContext;
 import io.army.criteria.Visible;
 import io.army.wrapper.DomainSQLWrapper;
-import io.army.wrapper.SQLWrapper;
+import io.army.wrapper.SimpleSQLWrapper;
 
 public interface ClauseSQLContext extends SQLContext {
 
@@ -12,11 +12,13 @@ public interface ClauseSQLContext extends SQLContext {
 
     Visible visible();
 
-    default SQLWrapper build() {
+    Dialect dialect();
+
+    default SimpleSQLWrapper build() {
         throw new UnsupportedOperationException();
     }
 
-    default DomainSQLWrapper build(BeanWrapper beanWrapper) {
+    default DomainSQLWrapper build(DomainWrapper beanWrapper) {
         throw new UnsupportedOperationException();
     }
 }

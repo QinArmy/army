@@ -3,7 +3,7 @@ package io.army.wrapper;
 
 import java.util.List;
 
-class SQLWrapperImpl implements SQLWrapper {
+class SQLWrapperImpl implements SimpleSQLWrapper {
 
     private final String sql;
 

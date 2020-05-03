@@ -9,7 +9,7 @@ import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
-import io.army.wrapper.SQLWrapper;
+import io.army.wrapper.SimpleSQLWrapper;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,10 +25,10 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
     /*################################## blow DQL method ##################################*/
 
     @Override
-    public final List<SQLWrapper> select(Select select, final Visible visible) {
+    public final List<SimpleSQLWrapper> select(Select select, final Visible visible) {
         Assert.isTrue(select.prepared(), "select not prepared");
 
-        SQLWrapper sqlWrapper;
+        SimpleSQLWrapper sqlWrapper;
         if (select instanceof InnerStandardComposeQuery) {
             InnerStandardComposeQuery composeSelect = (InnerStandardComposeQuery) select;
             CriteriaCounselor.assertStandardComposeSelect(composeSelect);

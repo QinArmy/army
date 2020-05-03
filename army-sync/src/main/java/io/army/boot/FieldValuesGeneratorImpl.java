@@ -3,6 +3,7 @@ package io.army.boot;
 import io.army.ErrorCode;
 import io.army.GenericSessionFactory;
 import io.army.beans.BeanWrapper;
+import io.army.beans.DomainWrapper;
 import io.army.beans.PropertyAccessorFactory;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.MetaException;
@@ -41,29 +42,21 @@ final class FieldValuesGeneratorImpl implements FieldValuesGenerator {
     }
 
     @Override
-    public final BeanWrapper createValues(TableMeta<?> tableMeta, IDomain entity) throws FieldValuesCreateException {
-        return createValues(tableMeta, entity, false);
-    }
+    public final DomainWrapper createValues(TableMeta<?> tableMeta, IDomain domain) throws FieldValuesCreateException {
 
-    @Override
-    public final BeanWrapper createValues(TableMeta<?> tableMeta, IDomain entity, boolean noDependValueAbort)
-            throws FieldValuesCreateException {
-        Assert.notNull(tableMeta, "tableMeta required");
-        Assert.notNull(entity, "entity required");
-        Assert.isTrue(tableMeta.javaType() == entity.getClass(), "tableMeta then entity not match");
+        Assert.isTrue(tableMeta.javaType() == domain.getClass(), "tableMeta then entity not match");
 
-        final BeanWrapper entityWrapper = PropertyAccessorFactory.forBeanPropertyAccess(entity);
+        final DomainWrapper entityWrapper = PropertyAccessorFactory.forDomainPropertyAccess(domain);
 
         createValuesManagedByArmy(tableMeta, entityWrapper);
 
-        createValuesWithGenerator(tableMeta, entityWrapper, noDependValueAbort);
+        createValuesWithGenerator(tableMeta, entityWrapper);
         return entityWrapper;
     }
 
     /*################################## blow private method ##################################*/
 
-    private void createValuesWithGenerator(TableMeta<?> tableMeta, BeanWrapper entityWrapper
-            , boolean noDependValueAbort) {
+    private void createValuesWithGenerator(TableMeta<?> tableMeta, BeanWrapper domainWrapper) {
         List<FieldMeta<?, ?>> chain = sessionFactory.tableGeneratorChain().get(tableMeta);
         if (CollectionUtils.isEmpty(chain)) {
             return;
@@ -71,47 +64,44 @@ final class FieldValuesGeneratorImpl implements FieldValuesGenerator {
         Map<FieldMeta<?, ?>, FieldGenerator> generatorMap = sessionFactory.fieldGeneratorMap();
         int index = 0;
         for (FieldMeta<?, ?> fieldMeta : chain) {
-            if (index == 0 && ignoreAndAbort(fieldMeta, entityWrapper, noDependValueAbort)) {
-                return;
+            if (index == 0) {
+                assertFirstDependency(fieldMeta, domainWrapper);
             }
             FieldGenerator generator = generatorMap.get(fieldMeta);
-            Assert.isInstanceOf(PreFieldGenerator.class, generator);
-
-            doCreateValueWithGenerator(fieldMeta, (PreFieldGenerator) generator, entityWrapper);
+            if (!(generator instanceof PreFieldGenerator)) {
+                continue;
+            }
+            doCreateValueWithGenerator(fieldMeta, (PreFieldGenerator) generator, domainWrapper);
             index++;
         }
     }
 
-    private boolean ignoreAndAbort(FieldMeta<?, ?> fieldMeta, BeanWrapper entityWrapper, boolean noDependValueAbort) {
+    private void assertFirstDependency(FieldMeta<?, ?> fieldMeta, BeanWrapper domainWrapper) {
         GeneratorMeta generatorMeta = fieldMeta.generator();
 
-        boolean ignoreAndAbort = false;
         Assert.state(generatorMeta != null
                 , () -> String.format("GeneratorMeta of FieldMeta[%s] error.", fieldMeta));
-        if (StringUtils.hasText(generatorMeta.dependPropName())
-                && entityWrapper.getPropertyValue(fieldMeta.propertyName()) == null) {
+        String dependencyName = generatorMeta.dependPropName();
+        if (StringUtils.hasText(dependencyName) && (!domainWrapper.isReadableProperty(dependencyName)
+                || domainWrapper.getPropertyValue(dependencyName) == null)) {
 
-            if (noDependValueAbort) {
-                ignoreAndAbort = true;
-            } else {
-                throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                        , "Entity[%s].%s is null,MultiGenerator can't work."
-                        , fieldMeta.tableMeta().javaType().getName()
-                        , generatorMeta.dependPropName());
-            }
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                    , "Domain[%s].%s is null,FieldGenerator can't work."
+                    , fieldMeta.tableMeta().javaType().getName()
+                    , generatorMeta.dependPropName());
         }
-        return ignoreAndAbort;
     }
 
     private void doCreateValueWithGenerator(FieldMeta<?, ?> fieldMeta, PreFieldGenerator generator
             , BeanWrapper entityWrapper) {
+        // invoke generator
         Object value = generator.next(fieldMeta, entityWrapper);
 
         Assert.state(fieldMeta.javaType().isInstance(value)
-                , () -> String.format("entity[%s].field[%s] PreMultiGenerator[%s] return error value."
-                        , fieldMeta.tableMeta().javaType().getName()
-                        , fieldMeta.propertyName()
-                        , generator.getClass().getName()));
+                , () -> String.format("TableMeta[%s].FieldMeta[%s] FieldGenerator[%s] return error value."
+                        , fieldMeta.tableMeta()
+                        , fieldMeta
+                        , generator));
 
         entityWrapper.setPropertyValue(fieldMeta.propertyName(), value);
     }
@@ -154,11 +144,12 @@ final class FieldValuesGeneratorImpl implements FieldValuesGenerator {
     }
 
     private void createCreateOrUpdateTime(FieldMeta<?, ?> fieldMeta, BeanWrapper entityWrapper) {
+        ZonedDateTime now = ZonedDateTime.now(this.sessionFactory.zoneId());
         if (fieldMeta.javaType() == LocalDateTime.class) {
-            entityWrapper.setPropertyValue(fieldMeta.propertyName(), LocalDateTime.now());
+            entityWrapper.setPropertyValue(fieldMeta.propertyName(), now.toLocalDateTime());
         } else if (fieldMeta.javaType() == ZonedDateTime.class) {
             assertDialectSupportedZone();
-            entityWrapper.setPropertyValue(fieldMeta.propertyName(), ZonedDateTime.now(sessionFactory.zoneId()));
+            entityWrapper.setPropertyValue(fieldMeta.propertyName(), now);
         } else {
             throw new MetaException(ErrorCode.META_ERROR
                     , "createTime or updateTime only support LocalDateTime or ZonedDateTime");
@@ -166,10 +157,10 @@ final class FieldValuesGeneratorImpl implements FieldValuesGenerator {
     }
 
     private void assertDialectSupportedZone() {
-/*        if (!sessionFactory.dialect().supportZoneId()) {
+        if (!this.sessionFactory.supportZoneId()) {
             throw new MetaException(ErrorCode.META_ERROR, "dialect[%s] unsupported zoneId"
-                    , sessionFactory.dialect().sqlDialect());
-        }*/
+                    , this.sessionFactory.actualSQLDialect());
+        }
     }
 
 

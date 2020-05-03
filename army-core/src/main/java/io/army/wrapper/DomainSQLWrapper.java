@@ -4,7 +4,7 @@ import io.army.beans.DomainWrapper;
 
 import java.util.List;
 
-public interface DomainSQLWrapper extends SQLWrapper {
+public interface DomainSQLWrapper extends SimpleSQLWrapper {
 
     DomainWrapper domainWrapper();
 

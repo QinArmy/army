@@ -4,8 +4,9 @@ import io.army.criteria.Delete;
 import io.army.criteria.Insert;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
-import io.army.wrapper.BatchSQLWrapper;
 import io.army.wrapper.SQLWrapper;
+import io.army.wrapper.SimpleBatchSQLWrapper;
+import io.army.wrapper.SimpleSQLWrapper;
 
 import java.util.List;
 
@@ -20,17 +21,17 @@ public interface DML extends SQL {
     /**
      * @return a unmodifiable list
      */
-    List<BatchSQLWrapper> batchInsert(Insert insert, Visible visible);
+    List<SimpleBatchSQLWrapper> batchInsert(Insert insert, Visible visible);
 
     /**
      * @return a unmodifiable list
      */
-    List<SQLWrapper> update(Update update, Visible visible);
+    List<SimpleSQLWrapper> update(Update update, Visible visible);
 
     /**
      * @return a unmodifiable list
      */
-    List<SQLWrapper> delete(Delete delete, Visible visible);
+    List<SimpleSQLWrapper> delete(Delete delete, Visible visible);
 
 
 }

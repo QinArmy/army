@@ -14,8 +14,8 @@ import io.army.util.Assert;
 import io.army.util.CriteriaUtils;
 import io.army.util.Pair;
 import io.army.util.Triple;
-import io.army.wrapper.BatchSQLWrapper;
-import io.army.wrapper.SQLWrapper;
+import io.army.wrapper.SimpleBatchSQLWrapper;
+import io.army.wrapper.SimpleSQLWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -181,8 +181,8 @@ final class SessionImpl implements InnerSession, InnerTxSession {
 
     @Override
     public List<Integer> update(Update update, Visible visible) {
-        List<SQLWrapper> sqlWrapperList = sessionFactory.dialect().update(update, visible);
-        for (SQLWrapper wrapper : sqlWrapperList) {
+        List<SimpleSQLWrapper> sqlWrapperList = sessionFactory.dialect().update(update, visible);
+        for (SimpleSQLWrapper wrapper : sqlWrapperList) {
             LOG.info("wrapper:{}", wrapper);
         }
         return Collections.emptyList();
@@ -339,24 +339,24 @@ final class SessionImpl implements InnerSession, InnerTxSession {
     private void checkTransactionForInsert(Insert insert) {
         checkSessionForUpdate();
         if (!(insert instanceof InnerInsert)) {
-            throw new IllegalArgumentException(String.format("insert[%S] is error instance.", insert));
+            throw new IllegalArgumentException(String.format("multiInsert[%S] is error instance.", insert));
         }
         InnerInsert innerInsert = (InnerInsert) insert;
         if (innerInsert.tableMeta() instanceof ChildTableMeta) {
             if (this.transaction == null
                     || this.transaction.isolation().level < Isolation.READ_COMMITTED.level) {
                 throw new DenyBatchInsertException(
-                        "ChildTableMeta insert must be executed in transaction with READ_COMMITTED(or +).");
+                        "ChildTableMeta multiInsert must be executed in transaction with READ_COMMITTED(or +).");
             }
         }
 
     }
 
-    /*################################## blow private insert method ##################################*/
+    /*################################## blow private multiInsert method ##################################*/
 
     private void executeSubQueryInsert(InnerSubQueryInsert insert, final Visible visible) {
-        List<SQLWrapper> wrapperList = this.dialect.insert((Insert) insert, visible);
-        InsertSQLExecutor.build().insert(this, wrapperList);
+        List<SimpleSQLWrapper> wrapperList = this.dialect.insert((Insert) insert, visible);
+        InsertSQLExecutor.build().multiInsert(this, wrapperList);
     }
 
     private void executeValuesInsert(InnerValuesInsert insert, final Visible visible) {
@@ -371,19 +371,19 @@ final class SessionImpl implements InnerSession, InnerTxSession {
 
         final int domainCount = insert.valueList().size();
         if (insertedDomainList.size() != domainCount) {
-            throw new InsertRowsNotMatchException("actual insert domain count[%s] and domain count[%s] not match."
+            throw new InsertRowsNotMatchException("actual multiInsert domain count[%s] and domain count[%s] not match."
                     , insertedDomainList.size(), domainCount);
         }
     }
 
     private List<Integer> executeBatchInsert(InnerBatchInsert insert, final Visible visible) {
-        List<BatchSQLWrapper> wrapperList = this.dialect.batchInsert((Insert) insert, visible);
+        List<SimpleBatchSQLWrapper> wrapperList = this.dialect.batchInsert((Insert) insert, visible);
         return InsertSQLExecutor.build().batchInsert(this, wrapperList);
     }
 
     private List<Integer> executeGenericInsert(InnerGenericInsert insert, final Visible visible) {
-        List<SQLWrapper> wrapperList = this.dialect.insert((Insert) insert, visible);
-        return InsertSQLExecutor.build().insert(this, wrapperList);
+        List<SimpleSQLWrapper> wrapperList = this.dialect.insert((Insert) insert, visible);
+        return InsertSQLExecutor.build().multiInsert(this, wrapperList);
     }
 
 

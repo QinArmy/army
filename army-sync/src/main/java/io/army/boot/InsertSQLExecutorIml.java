@@ -2,9 +2,14 @@ package io.army.boot;
 
 import io.army.*;
 import io.army.beans.BeanWrapper;
+import io.army.beans.DomainReadonlyWrapper;
+import io.army.beans.DomainWrapper;
 import io.army.beans.ReadonlyWrapper;
 import io.army.codec.FieldCodec;
+import io.army.criteria.ArmyCriteriaException;
+import io.army.criteria.CriteriaException;
 import io.army.dialect.Dialect;
+import io.army.dialect.DialectUtils;
 import io.army.dialect.InsertException;
 import io.army.generator.FieldGenerator;
 import io.army.generator.GeneratorException;
@@ -28,9 +33,6 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(InsertSQLExecutorIml.class);
 
-    static final InsertSQLExecutorIml INSTANCE = new InsertSQLExecutorIml();
-
-
     private static class GeneratorWrapper {
 
         private final FieldMeta<?, ?> fieldMeta;
@@ -43,11 +45,14 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
         }
     }
 
-    private InsertSQLExecutorIml() {
+    private final InnerSessionFactory sessionFactory;
+
+    InsertSQLExecutorIml(InnerSessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
     }
 
     @Override
-    public final List<Integer> insert(InnerSession session, List<SQLWrapper> sqlWrapperList)
+    public final List<Integer> multiInsert(InnerSession session, List<SQLWrapper> sqlWrapperList)
             throws InsertException {
 
         List<Integer> sqlWrapperUpdateRowList = new ArrayList<>(sqlWrapperList.size());
@@ -66,24 +71,25 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
                 sqlWrapperUpdateRowList.add(
                         doExecuteDomain(session, (DomainSQLWrapper) sqlWrapper)
                 );
-            } else {
+            } else if (sqlWrapper instanceof SimpleSQLWrapper) {
                 sqlWrapperUpdateRowList.add(
-                        doExecute(session, Collections.emptyMap(), null, sqlWrapper.sql()
-                                , sqlWrapper.paramList(), null)
+                        doExecuteSimple(session, (SimpleSQLWrapper) sqlWrapper)
                 );
+            } else {
+                throw new IllegalArgumentException(String.format("%s supported by multiInsert", sqlWrapper));
             }
         }
         return Collections.unmodifiableList(sqlWrapperUpdateRowList);
     }
 
     @Override
-    public final List<Integer> batchInsert(InnerSession session, List<DomainBatchSQLWrapper> batchSQLWrapperList) {
-        List<Integer> sqlWrapperInsertRowList = new ArrayList<>(batchSQLWrapperList.size());
+    public final List<Integer> batchInsert(InnerSession session, List<BatchSQLWrapper> sqlWrapperList) {
+        List<Integer> sqlWrapperInsertRowList = new ArrayList<>(sqlWrapperList.size());
 
         final boolean showSQL = session.sessionFactory().showSQL();
         final Dialect dialect = session.dialect();
 
-        for (DomainBatchSQLWrapper sqlWrapper : batchSQLWrapperList) {
+        for (BatchSQLWrapper sqlWrapper : sqlWrapperList) {
             if (showSQL) {
                 LOG.info("{}", dialect.showSQL(sqlWrapper));
             }
@@ -91,10 +97,16 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
                 sqlWrapperInsertRowList.add(
                         doExecuteChildBatch(session, (ChildBatchSQLWrapper) sqlWrapper)
                 );
-            } else {
+            } else if (sqlWrapper instanceof DomainBatchSQLWrapper) {
                 sqlWrapperInsertRowList.add(
-                        doExecuteSimpleBatch(session, sqlWrapper)
+                        doExecuteDomainBatch(session, (DomainBatchSQLWrapper) sqlWrapper)
                 );
+            } else if (sqlWrapper instanceof SimpleBatchSQLWrapper) {
+                sqlWrapperInsertRowList.add(
+                        doExecuteSimpleBatch(session, (SimpleBatchSQLWrapper) sqlWrapper)
+                );
+            } else {
+                throw new IllegalArgumentException(String.format("%s supported by batchInsert", sqlWrapper));
             }
         }
         return Collections.unmodifiableList(sqlWrapperInsertRowList);
@@ -102,64 +114,74 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
 
     /*################################## blow private method ##################################*/
 
-    private int doExecuteDomain(InnerSession session, DomainSQLWrapper sqlWrapper) {
-        TableMeta<?> tableMeta = sqlWrapper.domainWrapper().tableMeta();
-        Map<FieldMeta<?, ?>, FieldCodec> codecMap = session.sessionFactory().fieldCodecMap(tableMeta);
-        GeneratorWrapper generatorWrapper = obtainAutoGeneratorWrapper(session, tableMeta);
-
+    private int doExecuteSimple(InnerSession session, SimpleSQLWrapper sqlWrapper) {
+        DomainWrapper domainWrapper = null;
+        if (sqlWrapper instanceof DomainSQLWrapper) {
+            domainWrapper = ((DomainSQLWrapper) sqlWrapper).domainWrapper();
+        }
         int rows;
-        rows = doExecute(session, codecMap, generatorWrapper, sqlWrapper.sql(), sqlWrapper.paramList()
-                , sqlWrapper.domainWrapper());
+        rows = doExecute(session, sqlWrapper, domainWrapper);
         if (rows != 1) {
-            throw new InsertException(ErrorCode.INSERT_ERROR, "TableMeta[%s] insert rows[%s] error.", tableMeta, rows);
+            throw new InsertException(ErrorCode.INSERT_ERROR
+                    , "sql[%s] multiInsert rows[%s] error.", sqlWrapper.sql(), rows);
+        }
+        return rows;
+    }
+
+    private int doExecuteDomain(InnerSession session, DomainSQLWrapper sqlWrapper) {
+        int rows;
+        rows = doExecute(session, sqlWrapper, sqlWrapper.domainWrapper());
+        if (rows != 1) {
+            throw new InsertException(ErrorCode.INSERT_ERROR, "sql[%s] multiInsert rows[%s] error."
+                    , sqlWrapper.sql(), rows);
         }
         return rows;
     }
 
     private int doExecuteChild(InnerSession session, ChildSQLWrapper childSQLWrapper) {
 
-        final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) childSQLWrapper.domainWrapper().tableMeta();
-        final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
+        final SimpleSQLWrapper parentWrapper = childSQLWrapper.parentWrapper();
+        final SimpleSQLWrapper childWrapper = childSQLWrapper.childWrapper();
 
-        Map<FieldMeta<?, ?>, FieldCodec> codecMap;
+        DomainWrapper domainWrapper = null;
+        if (childWrapper instanceof DomainSQLWrapper) {
+            domainWrapper = ((DomainSQLWrapper) childWrapper).domainWrapper();
+        }
         int childRows, parentRows;
+        // firstly,execute parent multiInsert sql
+        parentRows = doExecute(session, parentWrapper, domainWrapper);
 
-        // firstly, execute parent insert sql
-        codecMap = session.sessionFactory().fieldCodecMap(parentMeta);
-        final GeneratorWrapper generatorWrapper = obtainAutoGeneratorWrapper(session, parentMeta);
-
-        parentRows = doExecute(session, codecMap, generatorWrapper, childSQLWrapper.parentSql()
-                , childSQLWrapper.parentParamList(), childSQLWrapper.domainWrapper());
-
-        // secondly, execute child insert sql
-        codecMap = session.sessionFactory().fieldCodecMap(childMeta);
-
-        childRows = doExecute(session, codecMap, null, childSQLWrapper.sql()
-                , childSQLWrapper.paramList(), childSQLWrapper.domainWrapper());
+        // secondly, execute child multiInsert sql
+        childRows = doExecute(session, childWrapper, null);
 
         if (parentRows != childRows || parentRows != 1) {
-            throw new InsertRowsNotMatchException("ChildMeta[%s] insert rows[%s] and ParentMeta[%s] rows[%s] not match."
-                    , childMeta, childRows, parentMeta, parentRows);
+            throw new InsertRowsNotMatchException(
+                    "child sql [%s] multiInsert rows[%s] and parent sql[%s] rows[%s] not match."
+                    , childWrapper.sql(), childRows, parentWrapper.sql(), parentRows);
         }
-
         return childRows;
     }
 
-    private int doExecuteSimpleBatch(InnerSession session, DomainBatchSQLWrapper sqlWrapper) {
-        Map<FieldMeta<?, ?>, FieldCodec> codecMap = session.sessionFactory().fieldCodecMap(sqlWrapper.tableMeta());
-        GeneratorWrapper generatorWrapper = obtainAutoGeneratorWrapper(session, sqlWrapper.tableMeta());
-
-        int[] domainRows;
-        domainRows = doExecuteBatch(session, codecMap, generatorWrapper
-                , sqlWrapper.sql(), sqlWrapper.paramGroupList(), sqlWrapper.domainWrapperList()
+    private int doExecuteSimpleBatch(InnerSession session, SimpleBatchSQLWrapper sqlWrapper) {
+        return assertAndSumTotal(sqlWrapper
+                , doExecuteBatch(session, sqlWrapper, Collections.emptyList(), null)
         );
-        int totalRow = 0, row;
+    }
 
+    private int doExecuteDomainBatch(InnerSession session, DomainBatchSQLWrapper sqlWrapper) {
+        return assertAndSumTotal(sqlWrapper
+                , doExecuteBatch(session, sqlWrapper, sqlWrapper.beanWrapperList(), sqlWrapper.tableMeta())
+        );
+    }
+
+    private int assertAndSumTotal(SimpleBatchSQLWrapper sqlWrapper, int[] domainRows) {
+        int totalRow = 0, row;
         for (int i = 0; i < domainRows.length; i++) {
             row = domainRows[i];
             if (row != 1) {
                 throw new InsertRowsNotMatchException(
-                        "TableMeta[%s] insert index[%s] actual row count[%s] not 1 .", sqlWrapper.tableMeta(), i, row);
+                        "TableMeta[%s] multiInsert index[%s] actual row count[%s] not 1 ."
+                        , sqlWrapper.tableMeta(), i, row);
             }
             totalRow += row;
         }
@@ -167,94 +189,102 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
     }
 
     private int doExecuteChildBatch(InnerSession session, ChildBatchSQLWrapper sqlWrapper) {
-        final ChildTableMeta<?> childMeta = sqlWrapper.tableMeta();
-        final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
+        List<BeanWrapper> beanWrapperList = Collections.emptyList();
+        TableMeta<?> tableMeta = null;
 
-        final Map<FieldMeta<?, ?>, FieldCodec> parentCodecMap = session.sessionFactory().fieldCodecMap(parentMeta);
-        final GeneratorWrapper generatorWrapper = obtainAutoGeneratorWrapper(session, parentMeta);
+        final SimpleBatchSQLWrapper parentWrapper = sqlWrapper.parentWrapper();
+        final SimpleBatchSQLWrapper childWrapper = sqlWrapper.childWrapper();
+
+        if (childWrapper instanceof DomainBatchSQLWrapper) {
+            DomainBatchSQLWrapper domainSQLWrapper = (DomainBatchSQLWrapper) childWrapper;
+            beanWrapperList = domainSQLWrapper.beanWrapperList();
+            tableMeta = domainSQLWrapper.tableMeta();
+        }
 
         int[] parentRows, childRows;
-        // firstly, parent insert sql
-        parentRows = doExecuteBatch(session, parentCodecMap, generatorWrapper
-                , sqlWrapper.parentSql(), sqlWrapper.parentParamGroupList(), sqlWrapper.domainWrapperList());
+        // firstly, parent multiInsert sql
+        parentRows = doExecuteBatch(session, parentWrapper, beanWrapperList, tableMeta);
 
-        // secondly,child insert sql
-        final Map<FieldMeta<?, ?>, FieldCodec> childCodecMap = session.sessionFactory().fieldCodecMap(childMeta);
-        childRows = doExecuteBatch(session, childCodecMap, null
-                , sqlWrapper.sql(), sqlWrapper.paramGroupList(), sqlWrapper.domainWrapperList());
+        // secondly,child multiInsert sql
+
+        childRows = doExecuteBatch(session, childWrapper, Collections.emptyList(), null);
 
         if (parentRows.length != childRows.length) {
             throw new InsertRowsNotMatchException(
-                    "ChildMeta[%s] insert batch count[%s] and ParentMeta[%s] batch count[%s] not match."
-                    , childMeta, childRows.length, parentMeta, parentRows.length);
+                    "child sql[%s] multiInsert batch count[%s] and parent sql [%s] batch count[%s] not match."
+                    , childWrapper.sql(), childRows.length, parentWrapper.sql(), parentRows.length);
         }
         int totalRows = 0, parentRow;
         for (int i = 0; i < parentRows.length; i++) {
             parentRow = parentRows[i];
             if (parentRow != childRows[i] || parentRow != 1) {
                 throw new InsertRowsNotMatchException(
-                        "ChildMeta[%s] insert batch[%s] rows[%s] and ParentMeta[%s] batch[%s] rows[%s] not match."
-                        , childMeta, i, childRows[i], parentMeta, i, parentRows[i]);
+                        "child sql[%s] multiInsert batch[%s] rows[%s] and parent sql [%s] batch[%s] rows[%s] not match."
+                        , childWrapper.sql(), i, childRows[i], parentWrapper.sql(), i, parentRows[i]);
             }
             totalRows += parentRow;
         }
         return totalRows;
     }
 
-    private int[] doExecuteBatch(InnerSession session, Map<FieldMeta<?, ?>, FieldCodec> codecMap
-            , @Nullable GeneratorWrapper generatorWrapper, String sql, List<List<ParamWrapper>> paramGroupList
-            , List<BeanWrapper> domainWrapperList) {
+    private int[] doExecuteBatch(InnerSession session, SimpleBatchSQLWrapper sqlWrapper
+            , List<BeanWrapper> beanWrapperList, @Nullable TableMeta<?> tableMeta) {
 
-        int[] insertRows;
-        try (PreparedStatement st = session.createStatement(sql, false)) {
+        GeneratorWrapper generatorWrapper = null;
+        if (tableMeta != null && !beanWrapperList.isEmpty()) {
+            generatorWrapper = obtainAutoGeneratorWrapper(session, tableMeta);
+        }
+        try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), generatorWrapper != null)) {
 
-            for (List<ParamWrapper> paramList : paramGroupList) {
+            for (List<ParamWrapper> paramList : sqlWrapper.paramGroupList()) {
                 // 1. set params
-                setParams(st, paramList, codecMap);
+                setParams(st, paramList);
                 // 2. add to batch
                 st.addBatch();
             }
+            int[] insertRows;
             // 3. execute batch
             insertRows = st.executeBatch();
             if (generatorWrapper != null) {
                 // 4. extract generated key (optional)
-                extractBatchGenerateKey(st, generatorWrapper, domainWrapperList);
+                extractBatchGenerateKey(st, generatorWrapper, beanWrapperList);
             }
             return insertRows;
         } catch (SQLException e) {
             throw new ArmyAccessException(ErrorCode.ACCESS_ERROR, e
-                    , "army set param occur error ,sql[%s]", sql);
+                    , "army set param occur error ,sql[%s]", sqlWrapper.sql());
         }
     }
 
-    private int doExecute(InnerSession session, Map<FieldMeta<?, ?>, FieldCodec> codecMap
-            , @Nullable GeneratorWrapper generatorWrapper
-            , String sql, List<ParamWrapper> paramList, @Nullable BeanWrapper beanWrapper) {
-
-        try (PreparedStatement st = session.createStatement(sql, generatorWrapper != null)) {
-            int updateRows;
+    private int doExecute(InnerSession session, SimpleSQLWrapper sqlWrapper, @Nullable DomainWrapper domainWrapper) {
+        GeneratorWrapper generatorWrapper = null;
+        if (domainWrapper != null) {
+            generatorWrapper = obtainAutoGeneratorWrapper(session, domainWrapper);
+        }
+        try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), generatorWrapper != null)) {
             // 1. set params
-            setParams(st, paramList, codecMap);
+            setParams(st, sqlWrapper.paramList());
+            int updateRows;
             // 2. execute
             updateRows = st.executeUpdate();
+
             if (generatorWrapper != null) {
-                if (beanWrapper == null) {
-                    throw new IllegalArgumentException("beanWrapper not null.");
-                }
                 // 3. extract generated key (optional)
-                doExtractGeneratedKey(st.getGeneratedKeys(), generatorWrapper.fieldMeta, generatorWrapper.postGenerator
-                        , beanWrapper);
+                try (ResultSet resultSet = st.getGeneratedKeys()) {
+                    doExtractGeneratedKey(resultSet, generatorWrapper.fieldMeta, generatorWrapper.postGenerator
+                            , domainWrapper);
+                }
+
             }
             return updateRows;
         } catch (SQLException e) {
             throw new ArmyAccessException(ErrorCode.ACCESS_ERROR, e
-                    , "army set param occur error ,sql[%s]", sql);
+                    , "army set param occur error ,sql[%s]", sqlWrapper.sql());
         }
 
     }
 
-    private static void setParams(PreparedStatement st, List<ParamWrapper> paramList
-            , Map<FieldMeta<?, ?>, FieldCodec> codecMap) {
+    private void setParams(PreparedStatement st, List<ParamWrapper> paramList) {
 
         ParamWrapper wrapper = null;
         try {
@@ -266,7 +296,7 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
                 if (value == null) {
                     st.setNull(i + 1, obtainVendorTypeNumber(wrapper.paramMeta()));
                 } else {
-                    setNonNullValue(st, i + 1, wrapper.paramMeta(), value, codecMap);
+                    setNonNullValue(st, i + 1, wrapper.paramMeta(), value);
 
                 }
             }
@@ -281,17 +311,17 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
 
     }
 
-    private static void setNonNullValue(PreparedStatement st, int index, ParamMeta paramMeta, Object value
-            , Map<FieldMeta<?, ?>, FieldCodec> codecMap) throws SQLException {
+    private void setNonNullValue(PreparedStatement st, final int index, ParamMeta paramMeta, Object value)
+            throws SQLException {
 
         MappingMeta mappingMeta;
         if (paramMeta instanceof FieldMeta) {
             FieldMeta<?, ?> fieldMeta = (FieldMeta<?, ?>) paramMeta;
-            if (value instanceof ReadonlyWrapper) {
+            if (DialectUtils.hasParentIdPostFieldGenerator(fieldMeta)) {
                 // parent id generator is PostMultiGenerator,eg : AutoGeneratedKeyGenerator
-                value = tryGetParentIdValue((ReadonlyWrapper) value, fieldMeta.tableMeta());
+                value = obtainParentIdValue(fieldMeta, value);
             } else {
-                value = doEncodeFieldValue(fieldMeta, value, codecMap);
+                value = doEncodeFieldValue(fieldMeta, value);
             }
             mappingMeta = fieldMeta.mappingType();
         } else if (paramMeta instanceof MappingMeta) {
@@ -303,13 +333,25 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
         mappingMeta.nonNullSet(st, value, index);
     }
 
-    private static Object doEncodeFieldValue(FieldMeta<?, ?> fieldMeta, final Object value
-            , Map<FieldMeta<?, ?>, FieldCodec> codecMap) {
+    private Object doEncodeFieldValue(FieldMeta<?, ?> fieldMeta, final Object value) {
+        Map<FieldMeta<?, ?>, FieldCodec> codecMap = this.sessionFactory.fieldCodecMap(fieldMeta.tableMeta());
+
         FieldCodec fieldCodec = codecMap.get(fieldMeta);
         Object encodedValue;
         if (fieldCodec != null) {
+            if (!(value instanceof DomainReadonlyWrapper)) {
+                throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                        , "FieldMeta[%s] criteria error,value isn't DomainReadonlyWrapper.", fieldMeta);
+            }
             // obtain encoded value before setParameter() method.
-            encodedValue = fieldCodec.encode(fieldMeta, value);
+            DomainReadonlyWrapper readonlyWrapper = (DomainReadonlyWrapper) value;
+            Object plantObject = readonlyWrapper.getPropertyValue(fieldMeta.propertyName());
+            if (plantObject == null) {
+                throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                        , "FieldMeta[%s] property value is null,can't invoke FieldCodec.", fieldMeta);
+            }
+            // invoke fieldCodec
+            encodedValue = fieldCodec.encode(fieldMeta, plantObject, readonlyWrapper);
             if (!fieldMeta.javaType().isInstance(value)) {
                 throw ExecutorUtils.createCodecReturnTypeException(fieldCodec, fieldMeta, value);
             }
@@ -319,31 +361,21 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
         return encodedValue;
     }
 
-    private static Object tryGetParentIdValue(ReadonlyWrapper beanWrapper, TableMeta<?> tableMeta) {
-        if (!(tableMeta instanceof ChildTableMeta)) {
-            throw new ArmyRuntimeException(ErrorCode.CRITERIA_ERROR, "tableMeta isn't ChildTableMeta");
+    private static Object obtainParentIdValue(FieldMeta<?, ?> fieldMeta, Object value) {
+        if (!(value instanceof ReadonlyWrapper)) {
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                    , "FieldMeta[%s] criteria error,value object isn't ReadonlyWrapper", fieldMeta);
         }
-        ChildTableMeta<?> childMeta = (ChildTableMeta<?>) tableMeta;
-        ParentTableMeta<?> parentMeta = childMeta.parentMeta();
-        GeneratorMeta parentPrimaryKeyGenerator = parentMeta.primaryKey().generator();
-
-        Object parentPrimaryKeyValue;
-        if (parentPrimaryKeyGenerator != null
-                && PostFieldGenerator.class.isAssignableFrom(parentPrimaryKeyGenerator.type())) {
-            // get parent primary key value.
-            parentPrimaryKeyValue = beanWrapper.getPropertyValue(parentMeta.primaryKey().propertyName());
-
-            if (parentPrimaryKeyValue == null) {
-                throw new ArmyRuntimeException(ErrorCode.CRITERIA_ERROR
-                        , "tableMeta[%s] insert sql parse error.", tableMeta);
-            }
-        } else {
-            throw new ArmyRuntimeException(ErrorCode.CRITERIA_ERROR
-                    , "tableMeta[%s] insert sql parse error.", tableMeta);
+        ReadonlyWrapper readonlyWrapper = (ReadonlyWrapper) value;
+        ParentTableMeta<?> parentMeta = ((ChildTableMeta<?>) fieldMeta.tableMeta()).parentMeta();
+        Object idValue = readonlyWrapper.getPropertyValue(parentMeta.primaryKey().propertyName());
+        if (idValue == null) {
+            throw new ArmyCriteriaException(ErrorCode.CRITERIA_ERROR
+                    , "ChildTable[%s] inset parse error,parent id value is null."
+                    , fieldMeta.tableMeta());
         }
-        return parentPrimaryKeyValue;
+        return idValue;
     }
-
 
     private static Integer obtainVendorTypeNumber(ParamMeta paramMeta) {
         MappingMeta mappingMeta;
@@ -359,15 +391,15 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
 
 
     private static void extractBatchGenerateKey(PreparedStatement st, GeneratorWrapper generatorWrapper
-            , List<BeanWrapper> domainWrapperList)
+            , List<BeanWrapper> beanWrapperList)
             throws SQLException {
 
         final FieldMeta<?, ?> fieldMeta = generatorWrapper.fieldMeta;
         final PostFieldGenerator postMultiGenerator = generatorWrapper.postGenerator;
 
         try (ResultSet resultSet = st.getGeneratedKeys()) {
-            for (BeanWrapper domain : domainWrapperList) {
-                doExtractGeneratedKey(resultSet, fieldMeta, postMultiGenerator, domain);
+            for (BeanWrapper beanWrapper : beanWrapperList) {
+                doExtractGeneratedKey(resultSet, fieldMeta, postMultiGenerator, beanWrapper);
             }
 
         }
@@ -400,6 +432,16 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
                 , fieldMeta.tableMeta().javaType().getName()
                 , fieldMeta.propertyName()
         );
+    }
+
+    @Nullable
+    private static GeneratorWrapper obtainAutoGeneratorWrapper(InnerSession session, DomainWrapper domainWrapper) {
+        TableMeta<?> tableMeta = domainWrapper.tableMeta();
+        if (tableMeta instanceof ChildTableMeta) {
+            ChildTableMeta<?> childMeta = (ChildTableMeta<?>) tableMeta;
+            tableMeta = childMeta.parentMeta();
+        }
+        return obtainAutoGeneratorWrapper(session, tableMeta);
     }
 
     @Nullable

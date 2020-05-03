@@ -35,6 +35,8 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory implements InnerS
 
     private final Map<TableMeta<?>, List<DomainInterceptor>> domainInterceptorMap;
 
+    private final InsertSQLExecutor insertSQLExecutor = InsertSQLExecutor.build(this);
+
     private boolean closed;
 
 
@@ -92,6 +94,11 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory implements InnerS
     }
 
     @Override
+    public InsertSQLExecutor insertSQLExecutor() {
+        return insertSQLExecutor;
+    }
+
+    @Override
     public boolean closed() {
         return this.closed;
     }
@@ -99,6 +106,11 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory implements InnerS
     @Override
     public Dialect dialect() {
         return dialect;
+    }
+
+    @Override
+    public boolean supportZoneId() {
+        return this.dialect.supportZoneId();
     }
 
     @Override

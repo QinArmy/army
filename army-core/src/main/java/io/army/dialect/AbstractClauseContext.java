@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.beans.BeanWrapper;
+import io.army.beans.DomainWrapper;
 import io.army.criteria.FieldPairDualPredicate;
 import io.army.criteria.TableAliasException;
 import io.army.criteria.Visible;
@@ -11,7 +11,7 @@ import io.army.meta.mapping.MappingMeta;
 import io.army.util.Assert;
 import io.army.wrapper.DomainSQLWrapper;
 import io.army.wrapper.ParamWrapper;
-import io.army.wrapper.SQLWrapper;
+import io.army.wrapper.SimpleSQLWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,6 +76,11 @@ public abstract class AbstractClauseContext implements ClauseSQLContext {
     }
 
     @Override
+    public Dialect dialect() {
+        return this.dialect;
+    }
+
+    @Override
     public void appendParentTableOf(ChildTableMeta<?> childTableMeta) {
         appendTable(childTableMeta.parentMeta());
     }
@@ -117,7 +122,7 @@ public abstract class AbstractClauseContext implements ClauseSQLContext {
     }
 
     @Override
-    public final SQLWrapper build() {
+    public final SimpleSQLWrapper build() {
         Assert.state(!this.finished, "SQLContext finished.");
         this.finished = true;
         clauseStack.clear();
@@ -125,7 +130,7 @@ public abstract class AbstractClauseContext implements ClauseSQLContext {
     }
 
     @Override
-    public final DomainSQLWrapper build(BeanWrapper beanWrapper) {
+    public final DomainSQLWrapper build(DomainWrapper beanWrapper) {
         Assert.state(!this.finished, "SQLContext finished.");
         this.finished = true;
         clauseStack.clear();
@@ -138,14 +143,14 @@ public abstract class AbstractClauseContext implements ClauseSQLContext {
     }
 
 
-    protected SQLWrapper doBuild() {
-        return SQLWrapper.build(
+    protected SimpleSQLWrapper doBuild() {
+        return SimpleSQLWrapper.build(
                 sqlBuilder.toString()
                 , paramList
         );
     }
 
-    protected DomainSQLWrapper doBuild(BeanWrapper beanWrapper) {
+    protected DomainSQLWrapper doBuild(DomainWrapper beanWrapper) {
         return DomainSQLWrapper.build(
                 sqlBuilder.toString()
                 , paramList

@@ -23,6 +23,8 @@ public interface GenericSessionFactory extends AutoCloseable {
 
     ZoneId zoneId();
 
+    boolean supportZoneId();
+
     SchemaMeta schemaMeta();
 
     Map<Class<?>, TableMeta<?>> tableMetaMap();
@@ -30,6 +32,8 @@ public interface GenericSessionFactory extends AutoCloseable {
     Map<FieldMeta<?, ?>, FieldGenerator> fieldGeneratorMap();
 
     Map<TableMeta<?>, List<FieldMeta<?, ?>>> tableGeneratorChain();
+
+    List<FieldMeta<?, ?>> generatorChain(TableMeta<?> tableMeta);
 
     Map<TableMeta<?>, Map<FieldMeta<?, ?>, FieldCodec>> tableFieldCodecMap();
 

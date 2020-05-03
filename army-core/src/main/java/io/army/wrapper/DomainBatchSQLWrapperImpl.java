@@ -5,45 +5,23 @@ import io.army.meta.TableMeta;
 
 import java.util.List;
 
-class DomainBatchSQLWrapperImpl implements DomainBatchSQLWrapper {
-
-    private final String sql;
-
-    private final List<List<ParamWrapper>> paramGroupList;
+final class DomainBatchSQLWrapperImpl extends BatchSQLWrapperImpl implements DomainBatchSQLWrapper {
 
     private final List<BeanWrapper> domainWrapperList;
 
-    final TableMeta<?> tableMeta;
 
     DomainBatchSQLWrapperImpl(String sql, List<List<ParamWrapper>> paramGroupList
-            , List<BeanWrapper> domainWrapperList, TableMeta<?> tableMeta) {
-        this.sql = sql;
+            , TableMeta<?> tableMet, List<BeanWrapper> domainWrapperList) {
+        super(sql, paramGroupList, tableMet);
         if (paramGroupList.size() != domainWrapperList.size()) {
-            throw new IllegalArgumentException("paramGroupList size and domainWrapperList size not match.");
+            throw new IllegalArgumentException("paramGroupList size and beanWrapperList size not match.");
         }
-
-        this.paramGroupList = paramGroupList;
         this.domainWrapperList = domainWrapperList;
-        this.tableMeta = tableMeta;
     }
 
     @Override
-    public final String sql() {
-        return this.sql;
-    }
-
-    @Override
-    public final List<List<ParamWrapper>> paramGroupList() {
-        return this.paramGroupList;
-    }
-
-    @Override
-    public final List<BeanWrapper> domainWrapperList() {
+    public final List<BeanWrapper> beanWrapperList() {
         return this.domainWrapperList;
     }
 
-    @Override
-    public TableMeta<?> tableMeta() {
-        return this.tableMeta;
-    }
 }

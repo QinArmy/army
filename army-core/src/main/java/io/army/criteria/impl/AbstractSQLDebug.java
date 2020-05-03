@@ -7,7 +7,7 @@ import io.army.criteria.Visible;
 import io.army.dialect.Dialect;
 import io.army.dialect.SQLDialect;
 import io.army.meta.SchemaMeta;
-import io.army.wrapper.SQLWrapper;
+import io.army.wrapper.SimpleSQLWrapper;
 
 import java.util.List;
 
@@ -31,9 +31,9 @@ abstract class AbstractSQLDebug implements SQLAble, SQLDebug {
         return null;
     }
 
-    String printSQL(List<SQLWrapper> sqlWrapperList, Dialect dialect) {
+    String printSQL(List<SimpleSQLWrapper> sqlWrapperList, Dialect dialect) {
         StringBuilder builder = new StringBuilder();
-        for (SQLWrapper wrapper : sqlWrapperList) {
+        for (SimpleSQLWrapper wrapper : sqlWrapperList) {
             builder.append(wrapper)
                     .append("\n")
             ;

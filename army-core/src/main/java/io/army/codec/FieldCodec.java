@@ -1,5 +1,6 @@
 package io.army.codec;
 
+import io.army.beans.DomainReadonlyWrapper;
 import io.army.meta.FieldMeta;
 
 import java.util.Set;
@@ -11,8 +12,8 @@ public interface FieldCodec {
 
     Set<FieldMeta<?, ?>> fieldMetaSet();
 
-    Object encode(FieldMeta<?, ?> fieldMeta, Object fieldValue);
+    Object encode(FieldMeta<?, ?> fieldMeta, Object fieldValue, DomainReadonlyWrapper readonlyWrapper);
 
-    Object decode(FieldMeta<?, ?> fieldMeta, Object valueFromDB);
+    Object decode(FieldMeta<?, ?> fieldMeta, Object valueFromDB, DomainReadonlyWrapper readonlyWrapper);
 
 }

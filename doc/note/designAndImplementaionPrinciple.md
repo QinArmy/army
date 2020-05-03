@@ -26,3 +26,5 @@ Army 设计了一系列的特性,Army 的开发者在每次发布前要检查特
     * 只能使用 domain 插入
     * DomainBatchSQLWrapper's domainWrapperList 为 BeanWrapper 即可,不必为 DomainWrapper.
     * DomainBatchSQLWrapper's BeanWrapper 的底层对象必须为 DomainBatchSQLWrapper's tableMeta 的对应实例.
+
+5. standard insert 不支持 字段的子查询,但支持整体的子查询.

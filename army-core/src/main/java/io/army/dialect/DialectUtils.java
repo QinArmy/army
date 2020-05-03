@@ -6,6 +6,7 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.IPredicate;
 import io.army.criteria.ParentChildJoinPredicate;
 import io.army.criteria.TableAble;
+import io.army.generator.PostFieldGenerator;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.meta.mapping.MappingMeta;
@@ -93,6 +94,16 @@ public abstract class DialectUtils {
         }
     }
 
+    public static boolean hasParentIdPostFieldGenerator(FieldMeta<?, ?> fieldMeta) {
+        return TableMeta.ID.equals(fieldMeta.propertyName())
+                && hasIdPostFieldGenerator(((ChildTableMeta<?>) fieldMeta.tableMeta()).parentMeta());
+    }
+
+    public static boolean hasIdPostFieldGenerator(TableMeta<?> tableMeta) {
+        GeneratorMeta generatorMeta = tableMeta.primaryKey().generator();
+        return generatorMeta != null && PostFieldGenerator.class.isAssignableFrom(generatorMeta.type());
+    }
+
     public static ArmyRuntimeException createNotSupportClauseException(ClauseSQLContext context, Clause clause) {
         return new ArmyRuntimeException(ErrorCode.NONE, "%s not support %s clause."
                 , context.getClass().getName(), clause);
@@ -107,6 +118,5 @@ public abstract class DialectUtils {
         }
         return null;
     }
-
 
 }

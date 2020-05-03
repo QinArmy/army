@@ -8,9 +8,11 @@ import javax.sql.DataSource;
 
 interface InnerSessionFactory extends SessionFactory {
 
-  DataSource dataSource();
+    DataSource dataSource();
 
-  Dialect dialect();
+    Dialect dialect();
 
-  CurrentSessionContext currentSessionContext();
+    CurrentSessionContext currentSessionContext();
+
+    InsertSQLExecutor insertSQLExecutor();
 }

@@ -102,6 +102,11 @@ abstract class AbstractGenericSessionFactory implements GenericSessionFactory {
     }
 
     @Override
+    public List<FieldMeta<?, ?>> generatorChain(TableMeta<?> tableMeta) {
+        return this.tableGeneratorChain.getOrDefault(tableMeta, Collections.emptyList());
+    }
+
+    @Override
     public Map<TableMeta<?>, Map<FieldMeta<?, ?>, FieldCodec>> tableFieldCodecMap() {
         return this.tableFieldCodecMap;
     }

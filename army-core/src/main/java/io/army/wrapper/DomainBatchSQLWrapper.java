@@ -5,23 +5,17 @@ import io.army.meta.TableMeta;
 
 import java.util.List;
 
-public interface DomainBatchSQLWrapper {
+public interface DomainBatchSQLWrapper extends SimpleBatchSQLWrapper {
 
-    String sql();
-
-    List<List<ParamWrapper>> paramGroupList();
-
-    List<BeanWrapper> domainWrapperList();
-
-    TableMeta<?> tableMeta();
+    List<BeanWrapper> beanWrapperList();
 
 
     static DomainBatchSQLWrapper build(String sql
             , List<List<ParamWrapper>> paramGroupList
-            , List<BeanWrapper> domainWrapperList
-            , TableMeta<?> tableMeta) {
+            , TableMeta<?> tableMeta
+            , List<BeanWrapper> domainWrapperList) {
 
-        return new DomainBatchSQLWrapperImpl(sql, paramGroupList, domainWrapperList, tableMeta);
+        return new DomainBatchSQLWrapperImpl(sql, paramGroupList, tableMeta, domainWrapperList);
     }
 
 

@@ -4,8 +4,6 @@ package io.army.dialect.mysql;
 import io.army.GenericSessionFactory;
 import io.army.dialect.*;
 import io.army.meta.mapping.MappingMeta;
-import io.army.wrapper.BatchSQLWrapper;
-import io.army.wrapper.DomainBatchSQLWrapper;
 import io.army.wrapper.SQLWrapper;
 
 import java.util.Set;
@@ -45,15 +43,6 @@ class MySQL57Dialect extends AbstractDialect {
         return null;
     }
 
-    @Override
-    public String showSQL(BatchSQLWrapper sqlWrapper) {
-        return null;
-    }
-
-    @Override
-    public String showSQL(DomainBatchSQLWrapper sqlWrapper) {
-        return null;
-    }
 
     /*####################################### below AbstractDialect template  method #################################*/
 

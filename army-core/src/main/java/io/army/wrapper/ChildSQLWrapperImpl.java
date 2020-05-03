@@ -1,29 +1,23 @@
 package io.army.wrapper;
 
-import io.army.beans.DomainWrapper;
+final class ChildSQLWrapperImpl implements ChildSQLWrapper {
 
-import java.util.List;
+    private SimpleSQLWrapper parentWrapper;
 
-final class ChildSQLWrapperImpl extends DomainSQLWrapperImpl implements ChildSQLWrapper {
+    private SimpleSQLWrapper childWrapper;
 
-    private final String parentSQL;
-
-    private final List<ParamWrapper> parentParamList;
-
-    ChildSQLWrapperImpl(String sql, List<ParamWrapper> paramList, DomainWrapper domainWrapper
-            , String parentSQL, List<ParamWrapper> parentParamList) {
-        super(sql, paramList, domainWrapper);
-        this.parentSQL = parentSQL;
-        this.parentParamList = parentParamList;
+    ChildSQLWrapperImpl(SimpleSQLWrapper parentWrapper, SimpleSQLWrapper childWrapper) {
+        this.parentWrapper = parentWrapper;
+        this.childWrapper = childWrapper;
     }
 
     @Override
-    public final String parentSql() {
-        return this.parentSQL;
+    public final SimpleSQLWrapper parentWrapper() {
+        return this.parentWrapper;
     }
 
     @Override
-    public final List<ParamWrapper> parentParamList() {
-        return this.parentParamList;
+    public final SimpleSQLWrapper childWrapper() {
+        return this.childWrapper;
     }
 }

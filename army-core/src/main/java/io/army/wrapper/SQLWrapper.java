@@ -1,18 +1,12 @@
 package io.army.wrapper;
 
-import java.util.List;
-
+/**
+ * @see SimpleSQLWrapper
+ * @see DomainSQLWrapper
+ * @see ChildSQLWrapper
+ * @see SimpleBatchSQLWrapper
+ * @see DomainSQLWrapper
+ */
 public interface SQLWrapper {
-
-    String sql();
-
-    /**
-     * @return a unmodifiable list
-     */
-    List<ParamWrapper> paramList();
-
-    static SQLWrapper build(String sql, List<ParamWrapper> paramList) {
-        return new SQLWrapperImpl(sql, paramList);
-    }
 
 }
