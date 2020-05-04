@@ -12,11 +12,7 @@ import io.army.criteria.impl.inner.*;
 import io.army.domain.IDomain;
 import io.army.meta.*;
 import io.army.util.Assert;
-import io.army.util.CollectionUtils;
-import io.army.wrapper.ChildSQLWrapper;
-import io.army.wrapper.SQLWrapper;
-import io.army.wrapper.SimpleBatchSQLWrapper;
-import io.army.wrapper.SimpleSQLWrapper;
+import io.army.wrapper.*;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -62,7 +58,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     }
 
     @Override
-    public final List<SimpleBatchSQLWrapper> batchInsert(Insert insert, final Visible visible) {
+    public final List<BatchSQLWrapper> batchInsert(Insert insert, final Visible visible) {
         Assert.state(this.dialect.sessionFactory().shardingMode() == ShardingMode.NO_SHARDING
                 , "not support batchInsert without NO_SHARDING");
 
@@ -167,9 +163,6 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
     /*################################## blow protected template method ##################################*/
 
-    protected void tableOnlyModifier(SQLContext context) {
-
-    }
 
     protected abstract boolean singleDeleteHasTableAlias();
 
@@ -658,32 +651,16 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     private void simpleTableWhereClause(ClauseSQLContext context, TableMeta<?> tableMeta, String tableAlias
             , List<IPredicate> predicateList) {
 
-        if (CollectionUtils.isEmpty(predicateList)) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "update or delete must have where clause.");
-        }
-        context.currentClause(Clause.WHERE);
-        StringBuilder builder = context.sqlBuilder();
-        int index = 0;
-        for (IPredicate predicate : predicateList) {
-            if (index > 0) {
-                builder.append(" ")
-                        .append(Keywords.AND);
-            }
-            // predicate self-describe
-            predicate.appendSQL(context);
-            index++;
+        final boolean needAppendVisible = DialectUtils.needAppendVisible(tableMeta);
+        if (!predicateList.isEmpty() || needAppendVisible) {
+            context.currentClause(Clause.WHERE);
         }
 
-        switch (tableMeta.mappingMode()) {
-            case SIMPLE:
-            case PARENT:
-                visibleConstantPredicate(context, tableMeta, tableAlias);
-                break;
-            case CHILD:
-                visibleSubQueryPredicateForChild(context, (ChildTableMeta<?>) tableMeta, tableAlias);
-                break;
-            default:
-                throw new IllegalArgumentException(String.format("unknown MappingMode[%s].", tableMeta.mappingMode()));
+        if (!predicateList.isEmpty()) {
+            doAppendWherePredicate(predicateList, context);
+        }
+        if (needAppendVisible) {
+            appendVisiblePredicate(tableMeta, tableAlias, context);
         }
     }
 

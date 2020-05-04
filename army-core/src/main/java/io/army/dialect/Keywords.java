@@ -44,5 +44,9 @@ public interface Keywords {
 
     String SET = "SET";
 
+    String LOCK = "LOCK";
+
+    String LIMIT = "LIMIT";
+
 
 }

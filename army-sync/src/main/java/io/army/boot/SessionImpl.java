@@ -15,8 +15,8 @@ import io.army.util.Assert;
 import io.army.util.CriteriaUtils;
 import io.army.util.Pair;
 import io.army.util.Triple;
+import io.army.wrapper.BatchSQLWrapper;
 import io.army.wrapper.SQLWrapper;
-import io.army.wrapper.SimpleBatchSQLWrapper;
 import io.army.wrapper.SimpleSQLWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -201,6 +201,7 @@ final class SessionImpl implements InnerSession, InnerTxSession {
         checkTransactionForInsert(insert);
 
         final boolean insertChild = ((InnerInsert) insert).tableMeta().mappingMode() == MappingMode.CHILD;
+
         try {
             if (insert instanceof InnerValuesInsert) {
                 executeValuesInsert((InnerValuesInsert) insert, visible);
@@ -397,10 +398,46 @@ final class SessionImpl implements InnerSession, InnerTxSession {
         }
     }
 
-    private List<Integer> executeBatchInsert(InnerBatchInsert insert, final Visible visible) {
-        List<SimpleBatchSQLWrapper> wrapperList = this.dialect.batchInsert((Insert) insert, visible);
-        return this.sessionFactory.insertSQLExecutor().batchInsert(this, Collections.emptyList());
+    private List<Integer> executeBatchInsert(InnerBatchInsert insert, final Visible visible
+            /* , List<DomainInterceptor> parentInterceptors, List<DomainInterceptor> interceptors*/) {
+        // 1. parse batch insert sql
+        List<BatchSQLWrapper> wrapperList = this.dialect.batchInsert((Insert) insert, visible);
+
+       /* if (!parentInterceptors.isEmpty() || !interceptors.isEmpty()) {
+            invokeBeforePersist(wrapperList, parentInterceptors, interceptors);
+        }*/
+
+        return this.sessionFactory.insertSQLExecutor().batchInsert(this, wrapperList);
     }
+
+    /*private void invokeBeforePersist(List<DomainBatchSQLWrapper> wrapperList
+            , List<DomainInterceptor> parentInterceptors, List<DomainInterceptor> interceptors) {
+
+        for (DomainBatchSQLWrapper wrapper : wrapperList) {
+            TableMeta<?> parentMeta = null;
+            if (wrapper.tableMeta() instanceof ChildTableMeta) {
+                parentMeta = ((ChildTableMeta<?>) wrapper.tableMeta()).parentMeta();
+            }
+            for (BeanWrapper beanWrapper : wrapper.beanWrapperList()) {
+                if (parentMeta != null) {
+                    for (DomainInterceptor interceptor : parentInterceptors) {
+
+                        interceptor.beforeInsert(parentMeta, beanWrapper.getReadonlyWrapper()
+                                , this.sessionFactory.proxySession());
+                    }
+                }
+
+                for (DomainInterceptor interceptor : interceptors) {
+
+                    interceptor.beforeInsert(wrapper.tableMeta(), beanWrapper.getReadonlyWrapper()
+                            , this.sessionFactory.proxySession());
+                }
+
+            }
+        }
+
+
+    }*/
 
     private List<Integer> executeGenericInsert(InnerGenericInsert insert, final Visible visible) {
         List<SQLWrapper> wrapperList = this.dialect.insert((Insert) insert, visible);

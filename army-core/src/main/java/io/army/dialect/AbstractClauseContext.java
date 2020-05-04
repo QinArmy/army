@@ -4,6 +4,7 @@ import io.army.beans.DomainWrapper;
 import io.army.criteria.FieldPairDualPredicate;
 import io.army.criteria.TableAliasException;
 import io.army.criteria.Visible;
+import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -140,6 +141,12 @@ public abstract class AbstractClauseContext implements ClauseSQLContext {
     @Override
     public final Visible visible() {
         return this.visible;
+    }
+
+
+    @Nullable
+    protected final Clause currentClause() {
+        return this.clauseStack.isEmpty() ? null : this.clauseStack.peek();
     }
 
 

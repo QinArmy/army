@@ -11,13 +11,13 @@ import io.army.wrapper.ParamWrapper;
 
 import java.util.List;
 
-final class ComposeQuerySQLContext implements ClauseSQLContext {
+final class ComposeQueryContext implements ClauseSQLContext {
 
     protected final StringBuilder sqlBuilder = new StringBuilder();
 
     protected final Visible visible;
 
-    ComposeQuerySQLContext(Visible visible) {
+    ComposeQueryContext(Visible visible) {
         this.visible = visible;
     }
 
@@ -88,6 +88,6 @@ final class ComposeQuerySQLContext implements ClauseSQLContext {
 
     @Override
     public Dialect dialect() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 }

@@ -2,10 +2,9 @@ package io.army.dialect;
 
 import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
-import io.army.criteria.CriteriaException;
-import io.army.criteria.IPredicate;
-import io.army.criteria.ParentChildJoinPredicate;
-import io.army.criteria.TableAble;
+import io.army.criteria.*;
+import io.army.criteria.impl.SQLS;
+import io.army.criteria.impl.inner.TableWrapper;
 import io.army.generator.PostFieldGenerator;
 import io.army.lang.Nullable;
 import io.army.meta.*;
@@ -80,10 +79,12 @@ public abstract class DialectUtils {
 
         final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
 
+        boolean appendedId = false;
         for (FieldMeta<?, ?> fieldMeta : fieldMetas) {
-            if (TableMeta.ID.equals(fieldMeta.propertyName())) {
+            if (!appendedId && TableMeta.ID.equals(fieldMeta.propertyName())) {
                 childFields.add(childMeta.primaryKey());
                 parentFields.add(parentMeta.primaryKey());
+                appendedId = true;
             } else if (fieldMeta.tableMeta() == parentMeta) {
                 parentFields.add(fieldMeta);
             } else if (fieldMeta.tableMeta() == childMeta) {
@@ -92,6 +93,61 @@ public abstract class DialectUtils {
                 throw DialectUtils.createTableFiledNoMatchException(childMeta, fieldMeta);
             }
         }
+    }
+
+    public static void appendPredicateList(List<IPredicate> predicateList, ClauseSQLContext context) {
+
+        StringBuilder builder = context.sqlBuilder();
+        int count = 0;
+        for (IPredicate predicate : predicateList) {
+            if (count > 0) {
+                builder.append(" ").append(Keywords.AND);
+            }
+            predicate.appendSQL(context);
+            count++;
+        }
+    }
+
+    public static void appendSortPartList(List<SortPart> sortPartList, ClauseSQLContext context) {
+        StringBuilder builder = context.sqlBuilder();
+
+        int count = 0;
+        for (SortPart sortPart : sortPartList) {
+            if (count > 0) {
+                builder.append(",");
+            }
+            sortPart.appendSortPart(context);
+            count++;
+        }
+    }
+
+    public static boolean needAppendVisible(TableMeta<?> tableMeta) {
+        TableMeta<?> temp = tableMeta;
+        if (temp instanceof ChildTableMeta) {
+            temp = ((ChildTableMeta<?>) temp).parentMeta();
+        }
+        return temp.isMappingProp(TableMeta.VISIBLE);
+    }
+
+    public static boolean needAppendVisible(List<TableWrapper> tableWrapperList) {
+        final TableMeta<?> dual = SQLS.dual();
+        boolean need = false;
+        for (TableWrapper tableWrapper : tableWrapperList) {
+            TableAble tableAble = tableWrapper.tableAble();
+
+            if ((tableAble instanceof TableMeta) && tableAble != dual) {
+
+                TableMeta<?> temp = (TableMeta<?>) tableAble;
+                if (tableAble instanceof ChildTableMeta) {
+                    temp = ((ChildTableMeta<?>) temp).parentMeta();
+                }
+                if (temp.isMappingProp(TableMeta.VISIBLE)) {
+                    need = true;
+                    break;
+                }
+            }
+        }
+        return need;
     }
 
     public static boolean hasParentIdPostFieldGenerator(TableMeta<?> tableMeta) {

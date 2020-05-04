@@ -10,6 +10,8 @@ public interface SessionFactory extends GenericSessionFactory {
 
     Map<TableMeta<?>, List<DomainInterceptor>> domainInterceptorMap();
 
+    List<DomainInterceptor> domainInterceptorList(TableMeta<?> tableMeta);
+
     /**
      * Destroy this <tt>SessionFactory</tt> then release all resources (caches,
      * connection pools, etc).

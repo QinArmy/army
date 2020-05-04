@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -66,6 +67,11 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory implements InnerS
     @Override
     public Map<TableMeta<?>, List<DomainInterceptor>> domainInterceptorMap() {
         return this.domainInterceptorMap;
+    }
+
+    @Override
+    public List<DomainInterceptor> domainInterceptorList(TableMeta<?> tableMeta) {
+        return this.domainInterceptorMap.getOrDefault(tableMeta, Collections.emptyList());
     }
 
     @Override

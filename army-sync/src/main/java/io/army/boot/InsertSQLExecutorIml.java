@@ -183,7 +183,7 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
                     "TableMeta[%s] multiInsert batch count error,sql[%s]"
                     , sqlWrapper.tableMeta(), sqlWrapper.sql());
         }
-        int totalRow = 0, row;
+        int row;
         for (int i = 0; i < domainRows.length; i++) {
             row = domainRows[i];
             if (row != 1) {
@@ -191,9 +191,8 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
                         "TableMeta[%s] multiInsert index[%s] actual row count[%s] not 1 ."
                         , sqlWrapper.tableMeta(), i, row);
             }
-            totalRow += row;
         }
-        return totalRow;
+        return domainRows.length;
     }
 
     private int doExecuteChildBatch(InnerSession session, ChildBatchSQLWrapper sqlWrapper) {
@@ -226,7 +225,7 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
                     "child sql[%s] multiInsert batch count[%s] and parent sql [%s] batch count[%s] not match."
                     , childWrapper.sql(), childRows.length, parentWrapper.sql(), parentRows.length);
         }
-        int totalRows = 0, parentRow;
+        int parentRow;
         for (int i = 0; i < parentRows.length; i++) {
             parentRow = parentRows[i];
             if (parentRow != childRows[i] || parentRow != 1) {
@@ -234,9 +233,8 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
                         "child sql[%s] multiInsert batch[%s] rows[%s] and parent sql [%s] batch[%s] rows[%s] not match."
                         , childWrapper.sql(), i, childRows[i], parentWrapper.sql(), i, parentRows[i]);
             }
-            totalRows += parentRow;
         }
-        return totalRows;
+        return childRows.length;
     }
 
     private int[] doExecuteBatch(InnerSession session, SimpleBatchSQLWrapper sqlWrapper
