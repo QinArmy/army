@@ -13,7 +13,9 @@ public enum Clause {
     GROUP_BY(Keywords.GROUP_BY),
     HAVING(Keywords.HAVING),
     ORDER_BY(Keywords.ORDER_BY),
-    SUB_QUERY("");
+    SUB_QUERY(""),
+    PART_START(""),
+    PART_END("");
 
     private final String keywords;
 

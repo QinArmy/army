@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner.InnerStandardComposeQuery;
 import io.army.dialect.DQL;
 import io.army.util.Pair;
 
@@ -9,7 +10,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 abstract class ComposeSubQueries<C> extends AbstractComposeQuery<C> implements ComposeSubQuery,
-        SubQuery.SubQueryUnionAble<C> {
+        SubQuery.SubQueryUnionAble<C>, InnerStandardComposeQuery {
 
     static <C> SubQuery.SubQueryUnionAble<C> brackets(C criteria, SubQuery encloseSubQuery) {
         return new ComposeSubQueries.BracketsSubQuery<>(criteria, encloseSubQuery);
@@ -148,12 +149,18 @@ abstract class ComposeSubQueries<C> extends AbstractComposeQuery<C> implements C
         }
 
         @Override
-        void beforePart(SQLContext context) {
+        public boolean requiredBrackets() {
+            return false;
+        }
+
+        @Override
+        public void appendSQL(SQLContext context) {
             StringBuilder builder = context.sqlBuilder()
                     .append(" (");
             context.dql().subQuery(this.encloseSubQuery, context);
             builder.append(" )");
         }
+
 
         @Override
         public List<SelectPart> selectPartList() {
@@ -174,7 +181,7 @@ abstract class ComposeSubQueries<C> extends AbstractComposeQuery<C> implements C
 
         private final SubQuery rightSubQuery;
 
-        public ComposeSubQueryImpl(C criteria, SubQuery leftSubQuery, SQLModifier modifier, SubQuery rightSubQuery) {
+        ComposeSubQueryImpl(C criteria, SubQuery leftSubQuery, SQLModifier modifier, SubQuery rightSubQuery) {
             super(criteria);
             this.leftSubQuery = leftSubQuery;
             this.modifier = modifier;
@@ -182,15 +189,21 @@ abstract class ComposeSubQueries<C> extends AbstractComposeQuery<C> implements C
         }
 
         @Override
-        void beforePart(SQLContext context) {
+        public boolean requiredBrackets() {
+            return true;
+        }
+
+        @Override
+        public void appendSQL(SQLContext context) {
             DQL dql = context.dql();
             dql.subQuery(leftSubQuery, context);
 
-            context.sqlBuilder().append(" ")
-                    .append(modifier.render());
+            context.sqlBuilder()
+                    .append(" ")
+                    .append(modifier.render())
+                    .append(" ");
 
             dql.subQuery(rightSubQuery, context);
-
         }
 
         @Override

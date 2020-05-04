@@ -1,23 +1,12 @@
 package io.army.dialect;
 
-import io.army.criteria.Visible;
-
-public class StandardSubQueryContext extends AbstractClauseContext {
+public class StandardSubQueryContext extends AbstractStandardDQLContext implements SubQueryContext {
 
     static StandardSubQueryContext build(ClauseSQLContext original) {
-        return null;
+        return new StandardSubQueryContext(original);
     }
 
-    private StandardSubQueryContext(Dialect dialect, Visible visible) {
-        super(dialect, visible);
-    }
-
-    private StandardSubQueryContext(Dialect dialect, Visible visible, StringBuilder sqlBuilder) {
-        super(dialect, visible, sqlBuilder);
-    }
-
-    @Override
-    public void currentClause(Clause clause) {
-
+    StandardSubQueryContext(ClauseSQLContext original) {
+        super(original);
     }
 }

@@ -6,8 +6,6 @@ import io.army.util.Assert;
 import io.army.wrapper.ParamWrapper;
 
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 
 final class CollectionExpression<E> extends AbstractNoNOperationExpression<E> {
 
@@ -28,19 +26,17 @@ final class CollectionExpression<E> extends AbstractNoNOperationExpression<E> {
     @Override
     protected void afterSpace(SQLContext context) {
         StringBuilder builder = context.sqlBuilder();
-        List<ParamWrapper> paramList = context.paramList();
         builder.append("(");
-        Object value;
 
-        for (Iterator<?> iterator = collection.iterator(); iterator.hasNext(); ) {
-            value = iterator.next();
-            Assert.notNull(value, "param must not null.");
-            builder.append("?");
-            paramList.add(ParamWrapper.build(mappingType, value));
-            if (iterator.hasNext()) {
+        int index = 0;
+        for (E value : collection) {
+            if (index > 0) {
                 builder.append(",");
             }
-
+            Assert.notNull(value, "param must not null.");
+            builder.append("?");
+            context.appendParam(ParamWrapper.build(mappingType, value));
+            index++;
         }
         builder.append(")");
     }

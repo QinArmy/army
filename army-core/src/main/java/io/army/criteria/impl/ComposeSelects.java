@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner.InnerStandardComposeQuery;
 import io.army.dialect.DQL;
 import io.army.util.Pair;
 
@@ -8,7 +9,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements Select.UnionAble<C>, Select, SelfDescribed {
+abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements
+        Select.UnionAble<C>, Select, SelfDescribed, InnerStandardComposeQuery {
 
     static <C> UnionAble<C> brackets(C criteria, Select enclosedSelect) {
         return new BracketsSelect<>(criteria, enclosedSelect);
@@ -31,11 +33,6 @@ abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements Sele
         super(criteria);
     }
 
-
-    @Override
-    public final boolean requiredBrackets() {
-        return false;
-    }
 
     @Override
     public final UnionAble<C> brackets() {
@@ -146,18 +143,22 @@ abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements Sele
 
         private final Select enclosedSelect;
 
-        public BracketsSelect(C criteria, Select enclosedSelect) {
+        BracketsSelect(C criteria, Select enclosedSelect) {
             super(criteria);
             this.enclosedSelect = enclosedSelect;
         }
 
         @Override
-        void beforePart(SQLContext context) {
+        public boolean requiredBrackets() {
+            return false;
+        }
+
+        @Override
+        public void appendSQL(SQLContext context) {
             StringBuilder builder = context.sqlBuilder()
                     .append(" (");
             context.dql().select(this.enclosedSelect, context);
             builder.append(" )");
-
         }
 
     }
@@ -170,7 +171,7 @@ abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements Sele
 
         private final Select rightSelect;
 
-        public ComposeSelectImpl(C criteria, Select leftSelect, SQLModifier modifier, Select rightSelect) {
+        ComposeSelectImpl(C criteria, Select leftSelect, SQLModifier modifier, Select rightSelect) {
             super(criteria);
             this.leftSelect = leftSelect;
             this.modifier = modifier;
@@ -178,7 +179,12 @@ abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements Sele
         }
 
         @Override
-        void beforePart(SQLContext context) {
+        public boolean requiredBrackets() {
+            return true;
+        }
+
+        @Override
+        public void appendSQL(SQLContext context) {
             DQL dql = context.dql();
             dql.select(leftSelect, context);
 
@@ -188,9 +194,7 @@ abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements Sele
                     .append(" ");
 
             dql.select(rightSelect, context);
-
         }
-
 
     }
 

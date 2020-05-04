@@ -1,4 +1,4 @@
-package io.army.criteria;
+package io.army.dialect;
 
 import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;

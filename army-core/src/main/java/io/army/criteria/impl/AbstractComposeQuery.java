@@ -1,6 +1,8 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.PartQuery;
+import io.army.criteria.SelfDescribed;
+import io.army.criteria.SortPart;
 import io.army.criteria.impl.inner.InnerComposeQuery;
 import io.army.util.Pair;
 
@@ -10,7 +12,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class AbstractComposeQuery<C> implements SQLStatement, PartQuery, SelfDescribed
+abstract class AbstractComposeQuery<C> implements PartQuery, SelfDescribed
         , InnerComposeQuery {
 
 
@@ -104,6 +106,7 @@ abstract class AbstractComposeQuery<C> implements SQLStatement, PartQuery, SelfD
         } else {
             this.orderPartList = Collections.unmodifiableList(this.orderPartList);
         }
+        this.prepared = true;
     }
 
     /*################################## blow SQLStatement method ##################################*/
@@ -113,13 +116,7 @@ abstract class AbstractComposeQuery<C> implements SQLStatement, PartQuery, SelfD
         return this.prepared;
     }
 
-    /*################################## blow SelfDescribed method ##################################*/
 
-    @Override
-    public final void appendSQL(SQLContext context) {
-        beforePart(context);
-        context.dql().partSelect(this, context);
-    }
 
     /*################################## blow InnerQueryAfterSet method ##################################*/
 
@@ -138,8 +135,5 @@ abstract class AbstractComposeQuery<C> implements SQLStatement, PartQuery, SelfD
         return this.rowCount;
     }
 
-    /*################################## blow package template method ##################################*/
-
-    abstract void beforePart(SQLContext context);
 
 }

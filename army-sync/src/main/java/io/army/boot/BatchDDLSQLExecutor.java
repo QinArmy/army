@@ -1,7 +1,7 @@
 package io.army.boot;
 
 import io.army.ErrorCode;
-import io.army.criteria.DDLSQLExecuteException;
+import io.army.dialect.DDLSQLExecuteException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,6 +1,6 @@
 package io.army.boot;
 
-import io.army.criteria.DDLSQLExecuteException;
+import io.army.dialect.DDLSQLExecuteException;
 
 import java.util.List;
 import java.util.Map;

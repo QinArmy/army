@@ -8,6 +8,8 @@ import java.util.List;
 @DeveloperForbid
 public interface InnerComposeQuery extends SelfDescribed, InnerGeneralQuery {
 
+    boolean requiredBrackets();
+
     /**
      * @return a unmodifiable list
      */

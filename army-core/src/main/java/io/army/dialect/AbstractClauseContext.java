@@ -26,7 +26,7 @@ public abstract class AbstractClauseContext implements ClauseSQLContext {
 
     protected final StringBuilder sqlBuilder;
 
-    protected final List<ParamWrapper> paramList = new ArrayList<>();
+    protected final List<ParamWrapper> paramList;
 
     protected final Stack<Clause> clauseStack = new Stack<>();
 
@@ -36,13 +36,16 @@ public abstract class AbstractClauseContext implements ClauseSQLContext {
         this.dialect = dialect;
         this.visible = visible;
         this.sqlBuilder = new StringBuilder();
+        this.paramList = new ArrayList<>();
     }
 
-    protected AbstractClauseContext(Dialect dialect, Visible visible, StringBuilder sqlBuilder) {
-        this.dialect = dialect;
-        this.visible = visible;
-        this.sqlBuilder = sqlBuilder;
+    protected AbstractClauseContext(ClauseSQLContext original) {
+        this.dialect = original.dialect();
+        this.visible = original.visible();
+        this.sqlBuilder = original.sqlBuilder();
+        this.paramList = original.paramList();
     }
+
 
     @Override
     public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException {

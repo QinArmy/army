@@ -4,7 +4,10 @@ import io.army.beans.DomainWrapper;
 import io.army.criteria.SQLContext;
 import io.army.criteria.Visible;
 import io.army.wrapper.DomainSQLWrapper;
+import io.army.wrapper.ParamWrapper;
 import io.army.wrapper.SimpleSQLWrapper;
+
+import java.util.List;
 
 public interface ClauseSQLContext extends SQLContext {
 
@@ -14,11 +17,9 @@ public interface ClauseSQLContext extends SQLContext {
 
     Dialect dialect();
 
-    default SimpleSQLWrapper build() {
-        throw new UnsupportedOperationException();
-    }
+    List<ParamWrapper> paramList();
 
-    default DomainSQLWrapper build(DomainWrapper beanWrapper) {
-        throw new UnsupportedOperationException();
-    }
+    SimpleSQLWrapper build();
+
+    DomainSQLWrapper build(DomainWrapper domainWrapper);
 }

@@ -147,12 +147,18 @@ abstract class ComposeColumnSubQueries<E, C> extends AbstractComposeQuery<C> imp
         }
 
         @Override
-        final void beforePart(SQLContext context) {
+        public boolean requiredBrackets() {
+            return false;
+        }
+
+        @Override
+        public void appendSQL(SQLContext context) {
             StringBuilder builder = context.sqlBuilder()
                     .append(" (");
             context.dql().subQuery(this.encloseSubQuery, context);
             builder.append(" )");
         }
+
 
         @Override
         public final List<SelectPart> selectPartList() {
@@ -187,8 +193,12 @@ abstract class ComposeColumnSubQueries<E, C> extends AbstractComposeQuery<C> imp
         }
 
         @Override
-        final void beforePart(SQLContext context) {
+        public boolean requiredBrackets() {
+            return true;
+        }
 
+        @Override
+        public void appendSQL(SQLContext context) {
             context.dql().subQuery(leftSubQuery, context);
 
             context.sqlBuilder().append(" ")
@@ -196,8 +206,8 @@ abstract class ComposeColumnSubQueries<E, C> extends AbstractComposeQuery<C> imp
                     .append(" ");
 
             context.dql().subQuery(rightSubQuery, context);
-
         }
+
 
         @Override
         public final List<SelectPart> selectPartList() {

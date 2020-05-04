@@ -657,7 +657,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         }
 
         if (!predicateList.isEmpty()) {
-            doAppendWherePredicate(predicateList, context);
+            DialectUtils.appendPredicateList(predicateList, context);
         }
         if (needAppendVisible) {
             appendVisiblePredicate(tableMeta, tableAlias, context);

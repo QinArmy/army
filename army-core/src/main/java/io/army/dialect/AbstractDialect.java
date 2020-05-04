@@ -113,23 +113,14 @@ public abstract class AbstractDialect implements Dialect {
     }
 
     @Override
-    public final void select(Select select, SQLContext originalContext) {
-        this.dql.select(select, originalContext);
+    public final void select(Select select, SQLContext original) {
+        this.dql.select(select, original);
     }
 
-    @Override
-    public final void partSelect(PartQuery select, SQLContext originalContext) {
-        this.dql.partSelect(select, originalContext);
-    }
 
     @Override
-    public final void partSubQuery(PartQuery subQuery, SQLContext originalContext) {
-        this.dql.partSubQuery(subQuery, originalContext);
-    }
-
-    @Override
-    public final void subQuery(SubQuery subQuery, SQLContext originalContext) {
-        this.dql.subQuery(subQuery, originalContext);
+    public final void subQuery(SubQuery subQuery, SQLContext original) {
+        this.dql.subQuery(subQuery, original);
     }
 
     /*################################## blow DML method ##################################*/

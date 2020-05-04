@@ -1,5 +1,6 @@
 package io.army.criteria;
 
-public interface PartQuery extends SQLAble {
+public interface PartQuery extends SQLStatement, SQLAble {
+
 
 }

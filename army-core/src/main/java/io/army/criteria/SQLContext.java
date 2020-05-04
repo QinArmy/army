@@ -8,8 +8,6 @@ import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
 import io.army.wrapper.ParamWrapper;
 
-import java.util.List;
-
 public interface SQLContext {
 
     /**
@@ -50,7 +48,5 @@ public interface SQLContext {
 
     void appendParam(ParamWrapper paramWrapper);
 
-
-    List<ParamWrapper> paramList();
 
 }
