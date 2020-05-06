@@ -126,26 +126,22 @@ abstract class SessionFactoryUtils {
         return env.getProperty(String.format(ArmyConfigConstant.READ_ONLY, factoryName), Boolean.class, Boolean.FALSE);
     }
 
-    static Map<TableMeta<?>, Map<FieldMeta<?, ?>, FieldCodec>> createTableFieldCodecMap(
+    static Map<FieldMeta<?, ?>, FieldCodec> createTableFieldCodecMap(
             Collection<FieldCodec> fieldCodecs) {
 
-        Map<TableMeta<?>, Map<FieldMeta<?, ?>, FieldCodec>> tableCodecMap = new HashMap<>();
+        Map<FieldMeta<?, ?>, FieldCodec> fieldCodecMap = new HashMap<>();
 
-        Map<FieldMeta<?, ?>, FieldCodec> fieldCodecMap;
         for (FieldCodec codec : fieldCodecs) {
 
             for (FieldMeta<?, ?> fieldMeta : codec.fieldMetaSet()) {
-                fieldCodecMap = tableCodecMap.computeIfAbsent(fieldMeta.tableMeta(), table -> new HashMap<>());
+
                 if (fieldCodecMap.putIfAbsent(fieldMeta, codec) != codec) {
                     throw new SessionFactoryException(ErrorCode.FIELD_CODEC_DUPLICATION
                             , "FieldMeta[%s]'s FieldCodec[%s] duplication.", fieldMeta, codec);
                 }
             }
         }
-
-        tableCodecMap.replaceAll((k, v) -> Collections.unmodifiableMap(v));
-
-        return Collections.unmodifiableMap(tableCodecMap);
+        return Collections.unmodifiableMap(fieldCodecMap);
     }
 
 

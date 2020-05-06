@@ -59,4 +59,6 @@
 15. 为什么 DomainBatchSQLWrapper 的 domainWrapperList 类型是 BeanWrapper 而不是 DomainWrapper ,因为批量操作
 使用底层的 java.sql.PreparedStatement.addBatch 实现,所以只能是对于同一表的批量操作.
 
-16. 为什么删除对 PostFieldGenerator 的支持,因为 army 天生支持分片,PostFieldGenerator 创建的 id 不能分片.
+16. 为什么删除对 PostFieldGenerator 的支持?
+(1)因为 army 天生支持分片,PostFieldGenerator 创建的 id 不能分片.
+(2)PostFieldGenerator 删除后,army 设计简洁很多.

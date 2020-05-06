@@ -4,9 +4,7 @@ import io.army.ArmyAccessException;
 import io.army.ErrorCode;
 import io.army.InsertRowsNotMatchException;
 import io.army.UnKnownTypeException;
-import io.army.beans.DomainReadonlyWrapper;
 import io.army.codec.FieldCodec;
-import io.army.criteria.CriteriaException;
 import io.army.dialect.Dialect;
 import io.army.dialect.InsertException;
 import io.army.meta.FieldMeta;
@@ -271,20 +269,9 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
         FieldCodec fieldCodec = this.sessionFactory.fieldCodec(fieldMeta);
         Object encodedValue;
         if (fieldCodec != null) {
-            if (!(value instanceof DomainReadonlyWrapper)) {
-                throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                        , "FieldMeta[%s] criteria error,value isn't DomainReadonlyWrapper.", fieldMeta);
-            }
-            // obtain encoded value before setParameter() method.
-            DomainReadonlyWrapper readonlyWrapper = (DomainReadonlyWrapper) value;
-            Object plantObject = readonlyWrapper.getPropertyValue(fieldMeta.propertyName());
-            if (plantObject == null) {
-                throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                        , "FieldMeta[%s] property value is null,can't invoke FieldCodec.", fieldMeta);
-            }
             // invoke fieldCodec
-            encodedValue = fieldCodec.encode(fieldMeta, plantObject);
-            if (!fieldMeta.javaType().isInstance(value)) {
+            encodedValue = fieldCodec.encode(fieldMeta, value);
+            if (!fieldMeta.javaType().isInstance(encodedValue)) {
                 throw ExecutorUtils.createCodecReturnTypeException(fieldCodec, fieldMeta, value);
             }
         } else {

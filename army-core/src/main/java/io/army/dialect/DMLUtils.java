@@ -123,30 +123,31 @@ abstract class DMLUtils {
     /**
      * @return a unmodifiable set
      */
-    static Set<FieldMeta<?, ?>> mergeInsertFields(TableMeta<?> tableMeta, Dialect dialect
+    static Set<FieldMeta<?, ?>> mergeInsertFields(TableMeta<?> logicalTable, Dialect dialect
             , Collection<FieldMeta<?, ?>> targetFields) {
-
 
         Set<FieldMeta<?, ?>> fieldMetaSet = new HashSet<>(targetFields);
 
-        appendGeneratorFields(fieldMetaSet, tableMeta, dialect.sessionFactory());
-        if (tableMeta instanceof ChildTableMeta) {
-            ChildTableMeta<?> childMeta = (ChildTableMeta<?>) tableMeta;
-            appendGeneratorFields(fieldMetaSet, childMeta.parentMeta(), dialect.sessionFactory());
+        TableMeta<?> parentMeta = logicalTable;
+        if (logicalTable instanceof ChildTableMeta) {
+            ChildTableMeta<?> childMeta = (ChildTableMeta<?>) logicalTable;
+            parentMeta = childMeta.parentMeta();
+            appendGeneratorFields(fieldMetaSet, parentMeta, dialect.sessionFactory());
         }
+        appendGeneratorFields(fieldMetaSet, logicalTable, dialect.sessionFactory());
 
-        FieldMeta<?, ?> discriminator = tableMeta.discriminator();
-        if (discriminator != null && discriminator.tableMeta() == tableMeta) {
+        FieldMeta<?, ?> discriminator = logicalTable.discriminator();
+        if (discriminator != null) {
             fieldMetaSet.add(discriminator);
         }
-        if (tableMeta.isMappingProp(TableMeta.CREATE_TIME)) {
-            fieldMetaSet.add(tableMeta.getField(TableMeta.CREATE_TIME));
+        if (parentMeta.isMappingProp(TableMeta.CREATE_TIME)) {
+            fieldMetaSet.add(logicalTable.getField(TableMeta.CREATE_TIME));
         }
-        if (tableMeta.isMappingProp(TableMeta.UPDATE_TIME)) {
-            fieldMetaSet.add(tableMeta.getField(TableMeta.UPDATE_TIME));
+        if (parentMeta.isMappingProp(TableMeta.UPDATE_TIME)) {
+            fieldMetaSet.add(logicalTable.getField(TableMeta.UPDATE_TIME));
         }
-        if (tableMeta.isMappingProp(TableMeta.VERSION)) {
-            fieldMetaSet.add(tableMeta.getField(TableMeta.VERSION));
+        if (parentMeta.isMappingProp(TableMeta.VERSION)) {
+            fieldMetaSet.add(logicalTable.getField(TableMeta.VERSION));
         }
         return Collections.unmodifiableSet(fieldMetaSet);
     }
@@ -335,10 +336,10 @@ abstract class DMLUtils {
 
     /*################################## blow private method ##################################*/
 
-    private static void appendGeneratorFields(Set<FieldMeta<?, ?>> fieldMetaSet, TableMeta<?> tableMeta
+    private static void appendGeneratorFields(Set<FieldMeta<?, ?>> fieldMetaSet, TableMeta<?> physicalTable
             , GenericSessionFactory factory) {
 
-        List<FieldMeta<?, ?>> chain = factory.generatorChain(tableMeta);
+        List<FieldMeta<?, ?>> chain = factory.generatorChain(physicalTable);
         FieldGenerator fieldGenerator;
         for (FieldMeta<?, ?> fieldMeta : chain) {
             fieldGenerator = factory.fieldGenerator(fieldMeta);

@@ -77,14 +77,40 @@ public abstract class CriteriaUtils {
                 .asInsert();
     }
 
+    public static <T extends IDomain> Select createSelectDomainById(final TableMeta<T> tableMeta, Object id) {
+        Select select;
+        if (tableMeta instanceof ChildTableMeta) {
+            final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) tableMeta;
+            final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
+
+            select = SQLS.multiSelect()
+                    .select(Arrays.asList(SQLS.group(parentMeta, "p"), SQLS.group(childMeta, "c")))
+                    .from(childMeta, "c") // small table first
+                    .join(parentMeta, "p").on(childMeta.primaryKey().eq(parentMeta.primaryKey()))
+                    .where(childMeta.primaryKey().eq(id))
+                    .asSelect();
+        } else {
+            select = SQLS.multiSelect()
+                    .select(SQLS.group(tableMeta, "t"))
+                    .from(tableMeta, "t")
+                    .where(tableMeta.primaryKey().eq(id))
+                    .asSelect();
+        }
+        return select;
+    }
 
     public static <T extends IDomain> Select createSelectDomainByUnique(Class<T> domainClass, List<String> propNameList
             , List<Object> valueList) {
         TableMeta<T> tableMeta = TableMetaFactory.getTableMeta(domainClass);
+        return createSelectDomainByUnique(tableMeta, propNameList, valueList);
+    }
+
+    public static <T extends IDomain> Select createSelectDomainByUnique(TableMeta<T> tableMeta
+            , List<String> propNameList, List<Object> valueList) {
         Select select;
         if (tableMeta instanceof ChildTableMeta) {
-            ChildTableMeta<T> childMeta = (ChildTableMeta<T>) tableMeta;
-            ParentTableMeta<?> parentMeta = childMeta.parentMeta();
+            final ChildTableMeta<T> childMeta = (ChildTableMeta<T>) tableMeta;
+            final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
 
             select = SQLS.multiSelect()
                     .select(Arrays.asList(SQLS.group(parentMeta, "p"), SQLS.group(childMeta, "c")))
@@ -104,6 +130,7 @@ public abstract class CriteriaUtils {
         }
         return select;
     }
+
 
     protected static <T extends IDomain> List<IPredicate> createPredicateList(TableMeta<T> tableMeta
             , List<String> propNameList, List<Object> valueList) {

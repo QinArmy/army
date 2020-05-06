@@ -3,6 +3,7 @@ package io.army;
 import io.army.boot.FieldValuesGenerator;
 import io.army.codec.FieldCodec;
 import io.army.dialect.SQLDialect;
+import io.army.domain.IDomain;
 import io.army.env.Environment;
 import io.army.generator.FieldGenerator;
 import io.army.lang.Nullable;
@@ -32,15 +33,14 @@ public interface GenericSessionFactory {
     Map<Class<?>, TableMeta<?>> tableMetaMap();
 
     @Nullable
+    <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass);
+
+    @Nullable
     FieldGenerator fieldGenerator(FieldMeta<?, ?> fieldMeta);
 
     Map<TableMeta<?>, List<FieldMeta<?, ?>>> tableGeneratorChain();
 
     List<FieldMeta<?, ?>> generatorChain(TableMeta<?> tableMeta);
-
-    Map<TableMeta<?>, Map<FieldMeta<?, ?>, FieldCodec>> tableFieldCodecMap();
-
-    Map<FieldMeta<?, ?>, FieldCodec> fieldCodecMap(TableMeta<?> tableMeta);
 
     FieldValuesGenerator fieldValuesGenerator();
 

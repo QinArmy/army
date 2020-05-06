@@ -339,7 +339,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
             sqlWrapperList = new ArrayList<>(domainList.size());
         }
 
-        FieldValuesGenerator valuesGenerator = this.dialect.sessionFactory().fieldValuesGenerator();
+        final FieldValuesGenerator valuesGenerator = this.dialect.sessionFactory().fieldValuesGenerator();
         DomainWrapper domainWrapper;
 
         for (IDomain domain : domainList) {

@@ -17,6 +17,7 @@ import io.army.util.Pair;
 import io.army.util.Triple;
 import io.army.wrapper.BatchSQLWrapper;
 import io.army.wrapper.SQLWrapper;
+import io.army.wrapper.SelectSQLWrapper;
 import io.army.wrapper.SimpleSQLWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,8 +40,6 @@ final class SessionImpl implements InnerSession, InnerTxSession {
     private final Connection connection;
 
     private final ConnInitParam connInitParam;
-
-    private final FieldValuesGenerator fieldValuesGenerator;
 
     private final boolean readonly;
 
@@ -70,8 +69,7 @@ final class SessionImpl implements InnerSession, InnerTxSession {
         } catch (SQLException e) {
             throw new CreateSessionException(ErrorCode.SESSION_CREATE_ERROR, e, "connection query occur error.");
         }
-
-        this.fieldValuesGenerator = FieldValuesGenerator.build(this.sessionFactory);
+        ;
     }
 
     @Override
@@ -94,86 +92,122 @@ final class SessionImpl implements InnerSession, InnerTxSession {
         this.insert(insert, Visible.ONLY_VISIBLE);
     }
 
+    @Nullable
     @Override
     public final <T extends IDomain> T get(TableMeta<T> tableMeta, Object id) {
         return get(tableMeta, id, Visible.ONLY_VISIBLE);
     }
 
+    @Nullable
     @Override
     public <T extends IDomain> T get(TableMeta<T> tableMeta, Object id, Visible visible) {
-        return null;
+        Select select = CriteriaUtils.createSelectDomainById(tableMeta, id);
+        return this.selectOne(select, tableMeta.javaType(), visible);
     }
 
+    @Nullable
     @Override
     public <T extends IDomain> T getByUnique(TableMeta<T> tableMeta, List<String> propNameList
             , List<Object> valueList) {
         return getByUnique(tableMeta, propNameList, valueList, Visible.ONLY_VISIBLE);
     }
 
+    @Nullable
     @Override
     public <T extends IDomain> T getByUnique(TableMeta<T> tableMeta, List<String> propNameList
             , List<Object> valueList, Visible visible) {
-        return null;
+        Select select = CriteriaUtils.createSelectDomainByUnique(tableMeta, propNameList, valueList);
+        return this.selectOne(select, tableMeta.javaType(), visible);
     }
 
+    @Nullable
     @Override
     public <T> T selectOne(Select select, Class<T> resultClass) {
-        return null;
+        return this.selectOne(select, resultClass, Visible.ONLY_VISIBLE);
     }
 
+    @Nullable
     @Override
     public <T> T selectOne(Select select, Class<T> resultClass, Visible visible) {
-        return null;
+        List<T> list = select(select, resultClass, visible);
+        T t;
+        if (list.size() == 1) {
+            t = list.get(0);
+        } else if (list.size() == 0) {
+            t = null;
+        } else {
+            throw new NonUniqueException("select result more than 1.");
+        }
+        return t;
     }
 
     @Override
     public <T> List<T> select(Select select, Class<T> resultClass) {
-        return null;
+        return this.select(select, resultClass, Visible.ONLY_VISIBLE);
     }
 
     @Override
     public <T> List<T> select(Select select, Class<T> resultClass, Visible visible) {
-        return null;
+
+        List<SelectSQLWrapper> wrapperList = this.dialect.select(select, visible);
+
+        if (wrapperList.size() != 1) {
+            // never this
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "dialect parse error.");
+        }
+        final SelectSQLExecutor executor = this.sessionFactory.selectSQLExecutor();
+
+        List<T> resultList;
+        // execute sql and extract result
+        resultList = executor.select(this, wrapperList.get(0), resultClass);
+        ((InnerSQL) select).clear();
+        return resultList;
     }
 
     @Override
     public <F, S> Pair<F, S> selectOnePair(Select select) {
-        return null;
+        return this.selectOnePair(select, Visible.ONLY_VISIBLE);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <F, S> Pair<F, S> selectOnePair(Select select, Visible visible) {
-        return null;
+        return (Pair<F, S>) this.selectOne(select, Pair.class, visible);
     }
 
     @Override
     public <F, S> List<Pair<F, S>> selectPair(Select select) {
-        return null;
+        return this.selectPair(select, Visible.ONLY_VISIBLE);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <F, S> List<Pair<F, S>> selectPair(Select select, Visible visible) {
-        return null;
+        List<?> list = this.select(select, Pair.class, Visible.ONLY_VISIBLE);
+        return (List<Pair<F, S>>) list;
     }
 
     @Override
     public <F, S, T> Triple<F, S, T> selectOneTriple(Select select) {
-        return null;
+        return this.selectOneTriple(select, Visible.ONLY_VISIBLE);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <F, S, T> Triple<F, S, T> selectOneTriple(Select select, Visible visible) {
-        return null;
+        return (Triple<F, S, T>) this.selectOne(select, Triple.class, visible);
     }
 
     @Override
     public <F, S, T> List<Triple<F, S, T>> selectTriple(Select select) {
-        return null;
+        return this.selectTriple(select, Visible.ONLY_VISIBLE);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <F, S, T> List<Triple<F, S, T>> selectTriple(Select select, Visible visible) {
-        return null;
+        List<?> list = this.select(select, Triple.class, Visible.ONLY_VISIBLE);
+        return (List<Triple<F, S, T>>) list;
     }
 
     @Override
@@ -382,24 +416,19 @@ final class SessionImpl implements InnerSession, InnerTxSession {
 
     private void executeValuesInsert(InnerValuesInsert insert, final Visible visible) {
 
+        List<Integer> insertedDomainList;
+        if (insert instanceof InnerBatchInsert) {
+            insertedDomainList = executeBatchInsert((InnerBatchInsert) insert, visible);
+        } else if (insert instanceof InnerGenericInsert) {
+            insertedDomainList = executeGenericInsert((InnerGenericInsert) insert, visible);
+        } else {
+            throw new IllegalStatementException((SQLStatement) insert);
+        }
 
-        try {
-            List<Integer> insertedDomainList;
-            if (insert instanceof InnerBatchInsert) {
-                insertedDomainList = executeBatchInsert((InnerBatchInsert) insert, visible);
-            } else if (insert instanceof InnerGenericInsert) {
-                insertedDomainList = executeGenericInsert((InnerGenericInsert) insert, visible);
-            } else {
-                throw new IllegalStatementException((SQLStatement) insert);
-            }
-
-            final int domainCount = insert.valueList().size();
-            if (insertedDomainList.size() != domainCount) {
-                throw new InsertRowsNotMatchException("actual multiInsert domain count[%s] and domain count[%s] not match."
-                        , insertedDomainList.size(), domainCount);
-            }
-        } catch (Throwable e) {
-
+        final int domainCount = insert.valueList().size();
+        if (insertedDomainList.size() != domainCount) {
+            throw new InsertRowsNotMatchException("actual multiInsert domain count[%s] and domain count[%s] not match."
+                    , insertedDomainList.size(), domainCount);
         }
     }
 

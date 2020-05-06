@@ -2,6 +2,7 @@ package io.army.boot;
 
 import io.army.*;
 import io.army.codec.FieldCodec;
+import io.army.domain.IDomain;
 import io.army.env.Environment;
 import io.army.generator.FieldGenerator;
 import io.army.lang.Nullable;
@@ -36,9 +37,11 @@ abstract class AbstractGenericSessionFactory implements GenericSessionFactory {
 
     final Map<TableMeta<?>, List<FieldMeta<?, ?>>> tableGeneratorChain;
 
-    final Map<TableMeta<?>, Map<FieldMeta<?, ?>, FieldCodec>> tableFieldCodecMap;
+    final Map<FieldMeta<?, ?>, FieldCodec> fieldCodecMap;
 
     final ShardingMode shardingMode;
+
+    final FieldValuesGenerator fieldValuesGenerator = FieldValuesGenerator.build(this);
 
     final boolean readOnly;
 
@@ -63,7 +66,7 @@ abstract class AbstractGenericSessionFactory implements GenericSessionFactory {
         this.tableGeneratorChain = generatorWrapper.getTableGeneratorChain();
 
         this.readOnly = SessionFactoryUtils.readOnly(this.name, this.env);
-        this.tableFieldCodecMap = SessionFactoryUtils.createTableFieldCodecMap(fieldCodecs);
+        this.fieldCodecMap = SessionFactoryUtils.createTableFieldCodecMap(fieldCodecs);
     }
 
 
@@ -92,6 +95,13 @@ abstract class AbstractGenericSessionFactory implements GenericSessionFactory {
         return this.tableMetaMap;
     }
 
+    @SuppressWarnings("unchecked")
+    @Nullable
+    @Override
+    public <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass) {
+        return (TableMeta<T>) tableMetaMap.get(domainClass);
+    }
+
     @Nullable
     @Override
     public FieldGenerator fieldGenerator(FieldMeta<?, ?> fieldMeta) {
@@ -108,28 +118,16 @@ abstract class AbstractGenericSessionFactory implements GenericSessionFactory {
         return this.tableGeneratorChain.getOrDefault(tableMeta, Collections.emptyList());
     }
 
-    @Override
-    public Map<TableMeta<?>, Map<FieldMeta<?, ?>, FieldCodec>> tableFieldCodecMap() {
-        return this.tableFieldCodecMap;
-    }
-
-    @Override
-    public Map<FieldMeta<?, ?>, FieldCodec> fieldCodecMap(TableMeta<?> tableMeta) {
-        Map<FieldMeta<?, ?>, FieldCodec> codecMap = this.tableFieldCodecMap.get(tableMeta);
-        if (codecMap == null) {
-            codecMap = Collections.emptyMap();
-        }
-        return codecMap;
-    }
 
     @Override
     public FieldValuesGenerator fieldValuesGenerator() {
-        return null;
+        return this.fieldValuesGenerator;
     }
 
+    @Nullable
     @Override
     public FieldCodec fieldCodec(FieldMeta<?, ?> fieldMeta) {
-        return null;
+        return this.fieldCodecMap.get(fieldMeta);
     }
 
     @Override

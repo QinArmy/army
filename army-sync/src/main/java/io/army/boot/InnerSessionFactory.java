@@ -12,4 +12,6 @@ interface InnerSessionFactory extends SessionFactory, InnerGenericSessionFaction
     CurrentSessionContext currentSessionContext();
 
     InsertSQLExecutor insertSQLExecutor();
+
+    SelectSQLExecutor selectSQLExecutor();
 }
