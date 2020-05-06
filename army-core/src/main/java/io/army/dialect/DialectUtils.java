@@ -2,19 +2,18 @@ package io.army.dialect;
 
 import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
+import io.army.UnKnownTypeException;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLS;
+import io.army.criteria.impl.inner.InnerGeneralQuery;
 import io.army.criteria.impl.inner.TableWrapper;
-import io.army.generator.PostFieldGenerator;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.meta.mapping.MappingMeta;
 import io.army.util.StringUtils;
 
 import java.sql.JDBCType;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 public abstract class DialectUtils {
 
@@ -150,19 +149,23 @@ public abstract class DialectUtils {
         return need;
     }
 
-    public static boolean hasParentIdPostFieldGenerator(TableMeta<?> tableMeta) {
-        return (tableMeta instanceof ChildTableMeta)
-                && hasIdPostFieldGenerator(((ChildTableMeta<?>) tableMeta).parentMeta());
-    }
-
-    public static boolean hasIdPostFieldGenerator(TableMeta<?> tableMeta) {
-        GeneratorMeta generatorMeta = tableMeta.primaryKey().generator();
-        return generatorMeta != null && PostFieldGenerator.class.isAssignableFrom(generatorMeta.type());
-    }
-
     public static ArmyRuntimeException createNotSupportClauseException(ClauseSQLContext context, Clause clause) {
         return new ArmyRuntimeException(ErrorCode.NONE, "%s not support %s clause."
                 , context.getClass().getName(), clause);
+    }
+
+    static List<Selection> extractSelectionList(Select select) {
+        List<Selection> selectionList = new ArrayList<>();
+        for (SelectPart selectPart : ((InnerGeneralQuery) select).selectPartList()) {
+            if (selectPart instanceof Selection) {
+                selectionList.add((Selection) selectPart);
+            } else if (selectPart instanceof SelectionGroup) {
+                selectionList.addAll(((SelectionGroup) selectPart).selectionList());
+            } else {
+                throw new UnKnownTypeException(selectPart);
+            }
+        }
+        return Collections.unmodifiableList(selectionList);
     }
 
     @Nullable

@@ -2,7 +2,7 @@ package io.army.dialect;
 
 import io.army.ErrorCode;
 import io.army.GenericSessionFactory;
-import io.army.beans.BeanWrapper;
+import io.army.beans.ObjectWrapper;
 import io.army.beans.PropertyAccessorFactory;
 import io.army.beans.ReadonlyWrapper;
 import io.army.boot.FieldValuesGenerator;
@@ -11,10 +11,9 @@ import io.army.criteria.*;
 import io.army.criteria.impl.SQLS;
 import io.army.criteria.impl.inner.InnerStandardBatchInsert;
 import io.army.criteria.impl.inner.InnerStandardDomainDML;
-import io.army.criteria.impl.inner.InnerStandardInsert;
 import io.army.domain.IDomain;
-import io.army.generator.PostFieldGenerator;
-import io.army.lang.Nullable;
+import io.army.generator.FieldGenerator;
+import io.army.generator.PreFieldGenerator;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexFieldMeta;
@@ -96,7 +95,7 @@ abstract class DMLUtils {
                 .where(primaryField.eq(paramExp))
                 .asSelect();
         // parse query child table sql.
-        List<SimpleSQLWrapper> sqlWrapperList = dialect.select(select, visible);
+        List<SelectSQLWrapper> sqlWrapperList = dialect.select(select, visible);
 
         Assert.isTrue(sqlWrapperList.size() == 1, "DomainUpdate query child sql error.");
         SimpleSQLWrapper sqlWrapper = sqlWrapperList.get(0);
@@ -152,14 +151,14 @@ abstract class DMLUtils {
         return Collections.unmodifiableSet(fieldMetaSet);
     }
 
-    static void createStandardInsertForSimple(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> fieldMetas
-            , ReadonlyWrapper domainWrapper, AbstractStandardInsertContext context) {
+    static void createStandardInsertForSimple(TableMeta<?> physicalTable, TableMeta<?> logicalTable
+            , Collection<FieldMeta<?, ?>> fieldMetas, ReadonlyWrapper domainWrapper
+            , AbstractStandardInsertContext context) {
 
-        final Map<FieldMeta<?, ?>, FieldCodec> codecMap = context.dialect().sessionFactory().fieldCodecMap(tableMeta);
-
+        final GenericSessionFactory sessionFactory = context.dialect.sessionFactory();
         context.currentClause(Clause.INSERT_INTO);
         // append table name
-        context.appendTable(tableMeta);
+        context.appendTable(physicalTable);
         StringBuilder fieldBuilder = context.fieldsBuilder().append(" (");
 
         StringBuilder valueBuilder = context.sqlBuilder();
@@ -174,12 +173,7 @@ abstract class DMLUtils {
                 continue;
             }
             value = domainWrapper.getPropertyValue(fieldMeta.propertyName());
-            if (fieldMeta == tableMeta.primaryKey()
-                    && DialectUtils.hasParentIdPostFieldGenerator(fieldMeta.tableMeta())) {
-                value = domainWrapper;
-            } else if (value == null && !fieldMeta.nullable()) {
-                continue;
-            }
+
             if (count > 0) {
                 fieldBuilder.append(",");
                 valueBuilder.append(",");
@@ -188,13 +182,12 @@ abstract class DMLUtils {
             fieldBuilder.append(sql.quoteIfNeed(fieldMeta.fieldName()));
 
             if (isConstant(fieldMeta)) {
-                valueBuilder.append(createConstant(fieldMeta));
+                valueBuilder.append(createConstant(fieldMeta, logicalTable));
             } else {
                 valueBuilder.append("?");
-                if (value == domainWrapper) {
-                    context.appendParam(ParamWrapper.build(fieldMeta, domainWrapper));
-                } else if (codecMap.containsKey(fieldMeta)) {
-                    context.appendParam(ParamWrapper.build(fieldMeta, domainWrapper));
+                FieldCodec fieldCodec = sessionFactory.fieldCodec(fieldMeta);
+                if (fieldCodec != null) {
+                    context.appendParam(ParamWrapper.build(fieldMeta, value));
                 } else {
                     context.appendParam(ParamWrapper.build(fieldMeta.mappingType(), value));
                 }
@@ -236,7 +229,7 @@ abstract class DMLUtils {
             fieldBuilder.append(sql.quoteIfNeed(fieldMeta.fieldName()));
 
             if (isConstant(fieldMeta)) {
-                valueBuilder.append(createConstant(fieldMeta));
+                valueBuilder.append(createConstant(fieldMeta, tableMeta));
             } else {
                 valueBuilder.append("?");
                 context.appendParam(FieldParamWrapper.build(fieldMeta));
@@ -256,10 +249,10 @@ abstract class DMLUtils {
         List<IDomain> domainList = insert.valueList();
         final TableMeta<?> tableMeta = insert.tableMeta();
 
-        BeanWrapper beanWrapper;
+        ObjectWrapper beanWrapper;
 
         List<SimpleBatchSQLWrapper> batchWrapperList = new ArrayList<>(domainList.size() * sqlWrapperList.size());
-        Map<IDomain, BeanWrapper> beanWrapperMap = new HashMap<>();
+        Map<IDomain, ObjectWrapper> beanWrapperMap = new HashMap<>();
         for (SimpleSQLWrapper sqlWrapper : sqlWrapperList) {
             List<List<ParamWrapper>> paramGroupList = new ArrayList<>(fieldList.size());
 
@@ -305,12 +298,12 @@ abstract class DMLUtils {
                 ;
     }
 
-    static Object createConstant(FieldMeta<?, ?> fieldMeta) {
+    static Object createConstant(FieldMeta<?, ?> fieldMeta, TableMeta<?> logicalTable) {
         Object value;
         if (TableMeta.VERSION.equals(fieldMeta.propertyName())) {
             value = 0;
-        } else if (fieldMeta == fieldMeta.tableMeta().discriminator()) {
-            value = fieldMeta.tableMeta().discriminatorValue();
+        } else if (fieldMeta == logicalTable.discriminator()) {
+            value = logicalTable.discriminatorValue();
         } else {
             throw new IllegalArgumentException(String.format("Entity[%s] prop[%s] cannot create constant value"
                     , fieldMeta.tableMeta().javaType().getName()
@@ -342,71 +335,18 @@ abstract class DMLUtils {
 
     /*################################## blow private method ##################################*/
 
-    @Nullable
-    private static Object obtainInsertValue(FieldMeta<?, ?> fieldMeta, ReadonlyWrapper domainWrapper) {
-        Object value = null;
-        TableMeta<?> tableMeta = fieldMeta.tableMeta();
-        if ((tableMeta instanceof ChildTableMeta)
-                && DialectUtils.hasIdPostFieldGenerator(((ChildTableMeta<?>) tableMeta).parentMeta())) {
-            // parent primary key is AutoGenerator ,@see io.army.boot.InsertSQLExecutorIml.tryGetParentIdValue
-            value = domainWrapper;
-        }
-        if (value == null) {
-            value = domainWrapper.getPropertyValue(fieldMeta.propertyName());
-        }
-        return value;
-    }
-
-
     private static void appendGeneratorFields(Set<FieldMeta<?, ?>> fieldMetaSet, TableMeta<?> tableMeta
             , GenericSessionFactory factory) {
 
         List<FieldMeta<?, ?>> chain = factory.generatorChain(tableMeta);
-        if (!chain.isEmpty()) {
-            for (FieldMeta<?, ?> fieldMeta : chain) {
-                if (fieldMeta.generator() instanceof PostFieldGenerator) {
-                    continue;
-                }
+        FieldGenerator fieldGenerator;
+        for (FieldMeta<?, ?> fieldMeta : chain) {
+            fieldGenerator = factory.fieldGenerator(fieldMeta);
+            if (fieldGenerator instanceof PreFieldGenerator) {
                 fieldMetaSet.add(fieldMeta);
             }
-        }
 
+        }
 
     }
-
-    private static final class DomainInsert implements InnerStandardInsert {
-
-        private final TableMeta<?> tableMeta;
-
-        private final List<FieldMeta<?, ?>> fieldList;
-
-        private final List<IDomain> valueList;
-
-        private DomainInsert(TableMeta<?> tableMeta, IDomain domain) {
-            this.tableMeta = tableMeta;
-            this.valueList = Collections.singletonList(domain);
-            this.fieldList = Collections.unmodifiableList(new ArrayList<>(tableMeta.fieldCollection()));
-        }
-
-        @Override
-        public List<IDomain> valueList() {
-            return this.valueList;
-        }
-
-        @Override
-        public TableMeta<?> tableMeta() {
-            return this.tableMeta;
-        }
-
-        @Override
-        public List<FieldMeta<?, ?>> fieldList() {
-            return this.fieldList;
-        }
-
-        @Override
-        public void clear() {
-
-        }
-    }
-
 }

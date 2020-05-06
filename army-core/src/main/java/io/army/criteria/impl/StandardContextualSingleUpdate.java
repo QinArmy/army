@@ -42,7 +42,7 @@ final class StandardContextualSingleUpdate<T extends IDomain, C> extends Abstrac
         this.tableMeta = tableMeta;
         this.criteria = criteria;
 
-        this.criteriaContext = new AbstractStandardSelect.CriteriaContextImpl<>(criteria);
+        this.criteriaContext = new CriteriaContextImpl<>(criteria);
         CriteriaContextHolder.setContext(this.criteriaContext);
     }
     /*################################## blow SingleUpdateAble  method ##################################*/

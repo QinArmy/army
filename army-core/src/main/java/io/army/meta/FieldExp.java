@@ -2,7 +2,7 @@ package io.army.meta;
 
 import io.army.criteria.AliasField;
 import io.army.criteria.Expression;
-import io.army.criteria.Selection;
+import io.army.criteria.FieldSelection;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingMeta;
@@ -15,7 +15,7 @@ import java.sql.JDBCType;
  * @see FieldMeta
  * @see AliasField
  */
-public interface FieldExp<T extends IDomain, F> extends Expression<F>, Selection {
+public interface FieldExp<T extends IDomain, F> extends Expression<F>, FieldSelection {
 
 
     boolean primary();
@@ -37,6 +37,7 @@ public interface FieldExp<T extends IDomain, F> extends Expression<F>, Selection
      */
     @Nullable
     GeneratorMeta generator();
+
 
     JDBCType jdbcType();
 

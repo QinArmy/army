@@ -6,7 +6,7 @@ import io.army.meta.TableMeta;
 import java.util.List;
 import java.util.Map;
 
-public interface SessionFactory extends GenericSessionFactory {
+public interface SessionFactory extends GenericSessionFactory, AutoCloseable {
 
     Map<TableMeta<?>, List<DomainInterceptor>> domainInterceptorMap();
 
@@ -24,6 +24,7 @@ public interface SessionFactory extends GenericSessionFactory {
      *
      * @throws ArmyRuntimeException Indicates an issue closing the factory.
      */
+    @Override
     void close() throws SessionFactoryException;
 
     ProxySession proxySession();

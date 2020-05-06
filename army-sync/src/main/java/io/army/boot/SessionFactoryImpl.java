@@ -80,7 +80,7 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory implements InnerS
     }
 
     @Override
-    public SessionBuilder builder() {
+    public SessionFactory.SessionBuilder builder() {
         return new SessionBuilderImpl();
     }
 
@@ -143,12 +143,12 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory implements InnerS
 
     /*################################## blow instance inner class  ##################################*/
 
-    private final class SessionBuilderImpl implements SessionBuilder {
+    private final class SessionBuilderImpl implements SessionFactory.SessionBuilder {
 
         private boolean currentSession;
 
         @Override
-        public SessionBuilder currentSession() {
+        public SessionFactory.SessionBuilder currentSession() {
             this.currentSession = true;
             return this;
         }

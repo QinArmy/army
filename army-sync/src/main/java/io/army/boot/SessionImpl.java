@@ -302,6 +302,11 @@ final class SessionImpl implements InnerSession, InnerTxSession {
         return connection.prepareStatement(sql, type);
     }
 
+    @Override
+    public PreparedStatement createStatement(String sql) throws SQLException {
+        return this.connection.prepareStatement(sql);
+    }
+
     /*################################## blow InnerTxSession method ##################################*/
 
     @Override

@@ -2,8 +2,8 @@ package io.army.boot;
 
 import io.army.ErrorCode;
 import io.army.GenericSessionFactory;
-import io.army.beans.BeanWrapper;
 import io.army.beans.DomainWrapper;
+import io.army.beans.ObjectWrapper;
 import io.army.beans.PropertyAccessorFactory;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.MetaException;
@@ -23,20 +23,12 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 final class FieldValuesGeneratorImpl implements FieldValuesGenerator {
 
-    private static final ConcurrentMap<GenericSessionFactory, FieldValuesGeneratorImpl> CACHE = new ConcurrentHashMap<>();
-
-    static FieldValuesGeneratorImpl build(GenericSessionFactory sessionFactory) {
-        return CACHE.computeIfAbsent(sessionFactory, FieldValuesGeneratorImpl::new);
-    }
-
     private final GenericSessionFactory sessionFactory;
 
-    private FieldValuesGeneratorImpl(GenericSessionFactory sessionFactory) {
+    FieldValuesGeneratorImpl(GenericSessionFactory sessionFactory) {
         Assert.notNull(sessionFactory, "sessionFactory required");
         this.sessionFactory = sessionFactory;
     }
@@ -56,18 +48,17 @@ final class FieldValuesGeneratorImpl implements FieldValuesGenerator {
 
     /*################################## blow private method ##################################*/
 
-    private void createValuesWithGenerator(TableMeta<?> tableMeta, BeanWrapper domainWrapper) {
+    private void createValuesWithGenerator(TableMeta<?> tableMeta, ObjectWrapper domainWrapper) {
         List<FieldMeta<?, ?>> chain = sessionFactory.tableGeneratorChain().get(tableMeta);
         if (CollectionUtils.isEmpty(chain)) {
             return;
         }
-        Map<FieldMeta<?, ?>, FieldGenerator> generatorMap = sessionFactory.fieldGeneratorMap();
         int index = 0;
         for (FieldMeta<?, ?> fieldMeta : chain) {
             if (index == 0) {
                 assertFirstDependency(fieldMeta, domainWrapper);
             }
-            FieldGenerator generator = generatorMap.get(fieldMeta);
+            FieldGenerator generator = this.sessionFactory.fieldGenerator(fieldMeta);
             if (!(generator instanceof PreFieldGenerator)) {
                 continue;
             }
@@ -76,7 +67,7 @@ final class FieldValuesGeneratorImpl implements FieldValuesGenerator {
         }
     }
 
-    private void assertFirstDependency(FieldMeta<?, ?> fieldMeta, BeanWrapper domainWrapper) {
+    private void assertFirstDependency(FieldMeta<?, ?> fieldMeta, ObjectWrapper domainWrapper) {
         GeneratorMeta generatorMeta = fieldMeta.generator();
 
         Assert.state(generatorMeta != null
@@ -93,7 +84,7 @@ final class FieldValuesGeneratorImpl implements FieldValuesGenerator {
     }
 
     private void doCreateValueWithGenerator(FieldMeta<?, ?> fieldMeta, PreFieldGenerator generator
-            , BeanWrapper entityWrapper) {
+            , ObjectWrapper entityWrapper) {
         // invoke generator
         Object value = generator.next(fieldMeta, entityWrapper);
 
@@ -110,7 +101,7 @@ final class FieldValuesGeneratorImpl implements FieldValuesGenerator {
      * create required value for entity,eg : prop annotated by @Generator ,createTime,updateTime,version
      */
     private void createValuesManagedByArmy(
-            TableMeta<?> tableMeta, BeanWrapper entityWrapper) {
+            TableMeta<?> tableMeta, ObjectWrapper entityWrapper) {
 
         createCreateOrUpdateTime(tableMeta.getField(TableMeta.CREATE_TIME), entityWrapper);
         createCreateOrUpdateTime(tableMeta.getField(TableMeta.UPDATE_TIME), entityWrapper);
@@ -121,7 +112,7 @@ final class FieldValuesGeneratorImpl implements FieldValuesGenerator {
     }
 
     private <T extends IDomain, E extends Enum<E> & CodeEnum> void createDiscriminatorValue(
-            TableMeta<T> tableMeta, BeanWrapper entityWrapper) {
+            TableMeta<T> tableMeta, ObjectWrapper entityWrapper) {
         FieldMeta<?, E> discriminator = tableMeta.discriminator();
 
         if (discriminator == null) {
@@ -143,7 +134,7 @@ final class FieldValuesGeneratorImpl implements FieldValuesGenerator {
         entityWrapper.setPropertyValue(discriminator.propertyName(), e);
     }
 
-    private void createCreateOrUpdateTime(FieldMeta<?, ?> fieldMeta, BeanWrapper entityWrapper) {
+    private void createCreateOrUpdateTime(FieldMeta<?, ?> fieldMeta, ObjectWrapper entityWrapper) {
         ZonedDateTime now = ZonedDateTime.now(this.sessionFactory.zoneId());
         if (fieldMeta.javaType() == LocalDateTime.class) {
             entityWrapper.setPropertyValue(fieldMeta.propertyName(), now.toLocalDateTime());

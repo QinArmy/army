@@ -48,7 +48,7 @@ final class StandardContextualDomainUpdate<T extends IDomain, C> extends Abstrac
         this.primaryKeyValue = primaryKeyValue;
         this.criteria = criteria;
 
-        this.criteriaContext = new AbstractStandardSelect.CriteriaContextImpl<>(criteria);
+        this.criteriaContext = new CriteriaContextImpl<>(criteria);
         CriteriaContextHolder.setContext(this.criteriaContext);
     }
 

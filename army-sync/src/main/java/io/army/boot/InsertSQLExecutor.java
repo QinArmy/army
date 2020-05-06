@@ -1,7 +1,6 @@
 package io.army.boot;
 
 import io.army.dialect.InsertException;
-import io.army.generator.PostFieldGenerator;
 import io.army.wrapper.BatchSQLWrapper;
 import io.army.wrapper.SQLWrapper;
 

@@ -10,6 +10,7 @@ import io.army.util.Assert;
 import io.army.util.StringUtils;
 import io.army.wrapper.BatchSQLWrapper;
 import io.army.wrapper.SQLWrapper;
+import io.army.wrapper.SelectSQLWrapper;
 import io.army.wrapper.SimpleSQLWrapper;
 
 import java.time.ZoneId;
@@ -23,7 +24,7 @@ import java.util.Set;
  * this class is abstract implementation of {@link Dialect} .
  * created  on 2018/10/21.
  */
-public abstract class AbstractDialect implements Dialect {
+public abstract class AbstractDialect implements InnerDialect {
 
     /**
      * a unmodifiable Set, every element is uppercase .
@@ -108,7 +109,7 @@ public abstract class AbstractDialect implements Dialect {
     /*################################## blow DQL method ##################################*/
 
     @Override
-    public final List<SimpleSQLWrapper> select(Select select, Visible visible) {
+    public final List<SelectSQLWrapper> select(Select select, Visible visible) {
         return this.dql.select(select, visible);
     }
 

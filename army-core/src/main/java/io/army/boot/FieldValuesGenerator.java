@@ -12,6 +12,6 @@ public interface FieldValuesGenerator {
 
 
     static FieldValuesGenerator build(GenericSessionFactory sessionFactory) {
-        return null;
+        return new FieldValuesGeneratorImpl(sessionFactory);
     }
 }

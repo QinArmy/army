@@ -21,7 +21,7 @@ import java.util.*;
 //@SuppressWarnings("unused")
 public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
-    public AbstractDML(Dialect dialect) {
+    public AbstractDML(InnerDialect dialect) {
         super(dialect);
     }
 
@@ -339,7 +339,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
             sqlWrapperList = new ArrayList<>(domainList.size());
         }
 
-        FieldValuesGenerator valuesGenerator = FieldValuesGenerator.build(this.dialect.sessionFactory());
+        FieldValuesGenerator valuesGenerator = this.dialect.sessionFactory().fieldValuesGenerator();
         DomainWrapper domainWrapper;
 
         for (IDomain domain : domainList) {
@@ -427,20 +427,14 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         //2.  create parent sql.
         final AbstractStandardInsertContext parentContext = AbstractStandardInsertContext.buildGeneric(
                 this.dialect, visible, beanWrapper, insert);
-        DMLUtils.createStandardInsertForSimple(parentMeta, parentFields, beanWrapper, parentContext);
+        DMLUtils.createStandardInsertForSimple(parentMeta, childMeta, parentFields, beanWrapper, parentContext);
 
         //3. create child sql.
         final AbstractStandardInsertContext childContext = AbstractStandardInsertContext.buildGeneric(
                 this.dialect, visible, beanWrapper, insert);
-        DMLUtils.createStandardInsertForSimple(childMeta, childFields, beanWrapper, childContext);
+        DMLUtils.createStandardInsertForSimple(childMeta, childMeta, childFields, beanWrapper, childContext);
 
-        SimpleSQLWrapper childSQLWrapper;
-        if (DialectUtils.hasIdPostFieldGenerator(parentMeta)) {
-            childSQLWrapper = childContext.build(beanWrapper);
-        } else {
-            childSQLWrapper = childContext.build();
-        }
-        return ChildSQLWrapper.build(parentContext.build(), childSQLWrapper);
+        return ChildSQLWrapper.build(parentContext.build(), childContext.build());
     }
 
     /**
@@ -453,16 +447,9 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         AbstractStandardInsertContext context = AbstractStandardInsertContext.buildGeneric(
                 this.dialect, visible, beanWrapper, insert);
 
-        DMLUtils.createStandardInsertForSimple(tableMeta, mergedFields, beanWrapper, context);
+        DMLUtils.createStandardInsertForSimple(tableMeta, tableMeta, mergedFields, beanWrapper, context);
 
-        SimpleSQLWrapper sqlWrapper;
-
-        if (DialectUtils.hasIdPostFieldGenerator(tableMeta)) {
-            sqlWrapper = context.build(beanWrapper);
-        } else {
-            sqlWrapper = context.build();
-        }
-        return sqlWrapper;
+        return context.build();
     }
 
 
@@ -488,7 +475,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         return DMLUtils.createBatchInsertWrapper(
                 insert
                 , sqlWrapperList
-                , FieldValuesGenerator.build(this.dialect.sessionFactory())
+                , this.dialect.sessionFactory().fieldValuesGenerator()
         );
     }
 

@@ -304,21 +304,25 @@ final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectPartAble<C>
 
     @Override
     public final SubQuery.SubQueryUnionAble<C> brackets() {
+        this.asSubQuery();
         return ComposeSubQueries.brackets(this.actualSelect.criteria(), thisSubQuery());
     }
 
     @Override
     public final <S extends SubQuery> SubQuery.SubQueryUnionAble<C> union(Function<C, S> function) {
+        this.asSubQuery();
         return ComposeSubQueries.compose(this.actualSelect.criteria(), thisSubQuery(), UnionType.UNION, function);
     }
 
     @Override
     public final <S extends SubQuery> SubQuery.SubQueryUnionAble<C> unionAll(Function<C, S> function) {
+        this.asSubQuery();
         return ComposeSubQueries.compose(this.actualSelect.criteria(), thisSubQuery(), UnionType.UNION_ALL, function);
     }
 
     @Override
     public final <S extends SubQuery> SubQuery.SubQueryUnionAble<C> unionDistinct(Function<C, S> function) {
+        this.asSubQuery();
         return ComposeSubQueries.compose(this.actualSelect.criteria(), thisSubQuery()
                 , UnionType.UNION_DISTINCT, function);
     }

@@ -20,7 +20,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     private Map<Class<?>, BiFunction<FieldMeta<?, ?>, ZoneId, String>> defaultFunctionMap;
 
 
-    public AbstractDDL(Dialect dialect) {
+    public AbstractDDL(InnerDialect dialect) {
         super(dialect);
     }
 

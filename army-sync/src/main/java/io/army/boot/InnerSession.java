@@ -10,5 +10,7 @@ interface InnerSession extends Session {
 
     PreparedStatement createStatement(String sql, boolean generatedKey) throws SQLException;
 
+    PreparedStatement createStatement(String sql) throws SQLException;
+
     Dialect dialect();
 }

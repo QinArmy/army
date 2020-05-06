@@ -16,6 +16,7 @@ public interface Select extends SQLStatement, SQLDebug, SQLAble, QueryAble {
     boolean requiredBrackets();
 
 
+
     /*################################## blow select clause  interfaces ##################################*/
 
 

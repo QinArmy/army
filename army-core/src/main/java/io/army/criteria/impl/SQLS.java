@@ -140,6 +140,16 @@ public abstract class SQLS extends AbstractSQLS {
                 .ref(subQueryAlias, derivedFieldName, selectionType);
     }
 
+    /**
+     * <p>
+     * eg: {@link Select.UnionAble#orderBy(SortPart)}
+     * </p>
+     */
+    public static <E> Expression<E> composeRef(String selectionAlias) {
+        return CriteriaContextHolder.getContext()
+                .composeRef(selectionAlias);
+    }
+
     public static SelectionGroup group(TableMeta<?> tableMeta, String alias) {
         return AbstractSelectionGroup.build(tableMeta, alias);
     }

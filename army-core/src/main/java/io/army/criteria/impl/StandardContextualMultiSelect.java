@@ -10,7 +10,6 @@ final class StandardContextualMultiSelect<C> extends AbstractStandardSelect<C> i
 
     StandardContextualMultiSelect(C criteria) {
         super(criteria);
-
         this.criteriaContext = new CriteriaContextImpl<>(criteria);
         CriteriaContextHolder.setContext(this.criteriaContext);
     }

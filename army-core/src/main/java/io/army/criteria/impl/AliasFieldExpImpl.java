@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.AliasField;
 import io.army.criteria.SQLContext;
+import io.army.criteria.Selection;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
@@ -32,6 +33,17 @@ final class AliasFieldExpImpl<T extends IDomain, F> extends AbstractExpression<F
     protected void afterSpace(SQLContext context) {
         context.appendField(tableAlias, fieldMeta);
     }
+
+
+    @Override
+    public Selection as(String alias) {
+        if (this.fieldMeta.propertyName().equals(alias)) {
+            return this;
+        } else {
+            return new FieldSelectionImpl<>(this, alias);
+        }
+    }
+
 
     @Override
     public String beforeAs() {

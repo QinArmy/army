@@ -16,6 +16,8 @@ interface CriteriaContext {
 
     void onAddSubQuery(SubQuery subQuery, String subQueryAlias);
 
+    <E> Expression<E> composeRef(String selectionAlias);
+
     <C> C criteria();
 
     void clear();

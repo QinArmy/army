@@ -1,7 +1,6 @@
 package io.army.annotation;
 
 import io.army.generator.FieldGenerator;
-import io.army.generator.PostFieldGenerator;
 import io.army.generator.PreFieldGenerator;
 
 import java.lang.annotation.Documented;

@@ -1,9 +1,11 @@
 package io.army;
 
+import io.army.boot.FieldValuesGenerator;
 import io.army.codec.FieldCodec;
 import io.army.dialect.SQLDialect;
 import io.army.env.Environment;
 import io.army.generator.FieldGenerator;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
@@ -12,7 +14,7 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 
-public interface GenericSessionFactory extends AutoCloseable {
+public interface GenericSessionFactory {
 
 
     String name();
@@ -29,7 +31,8 @@ public interface GenericSessionFactory extends AutoCloseable {
 
     Map<Class<?>, TableMeta<?>> tableMetaMap();
 
-    Map<FieldMeta<?, ?>, FieldGenerator> fieldGeneratorMap();
+    @Nullable
+    FieldGenerator fieldGenerator(FieldMeta<?, ?> fieldMeta);
 
     Map<TableMeta<?>, List<FieldMeta<?, ?>>> tableGeneratorChain();
 
@@ -38,6 +41,11 @@ public interface GenericSessionFactory extends AutoCloseable {
     Map<TableMeta<?>, Map<FieldMeta<?, ?>, FieldCodec>> tableFieldCodecMap();
 
     Map<FieldMeta<?, ?>, FieldCodec> fieldCodecMap(TableMeta<?> tableMeta);
+
+    FieldValuesGenerator fieldValuesGenerator();
+
+    @Nullable
+    FieldCodec fieldCodec(FieldMeta<?, ?> fieldMeta);
 
     ShardingMode shardingMode();
 

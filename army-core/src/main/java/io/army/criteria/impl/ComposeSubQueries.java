@@ -23,8 +23,8 @@ abstract class ComposeSubQueries<C> extends AbstractComposeQuery<C> implements C
     }
 
 
-    private ComposeSubQueries(C criteria) {
-        super(criteria);
+    private ComposeSubQueries(C criteria, SubQuery firstSubQuery) {
+        super(criteria, firstSubQuery);
     }
 
     @Override
@@ -144,7 +144,7 @@ abstract class ComposeSubQueries<C> extends AbstractComposeQuery<C> implements C
         private final SubQuery encloseSubQuery;
 
         public BracketsSubQuery(C criteria, SubQuery encloseSubQuery) {
-            super(criteria);
+            super(criteria, encloseSubQuery);
             this.encloseSubQuery = encloseSubQuery;
         }
 
@@ -182,7 +182,7 @@ abstract class ComposeSubQueries<C> extends AbstractComposeQuery<C> implements C
         private final SubQuery rightSubQuery;
 
         ComposeSubQueryImpl(C criteria, SubQuery leftSubQuery, SQLModifier modifier, SubQuery rightSubQuery) {
-            super(criteria);
+            super(criteria, leftSubQuery);
             this.leftSubQuery = leftSubQuery;
             this.modifier = modifier;
             this.rightSubQuery = rightSubQuery;

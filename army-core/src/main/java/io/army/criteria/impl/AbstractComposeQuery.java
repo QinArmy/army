@@ -1,14 +1,14 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.PartQuery;
-import io.army.criteria.SelfDescribed;
-import io.army.criteria.SortPart;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerComposeQuery;
+import io.army.criteria.impl.inner.InnerGeneralQuery;
 import io.army.util.Pair;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -18,7 +18,11 @@ abstract class AbstractComposeQuery<C> implements PartQuery, SelfDescribed
 
     final C criteria;
 
+    final CriteriaContext criteriaContext;
+
     private List<SortPart> orderPartList;
+
+    private final InnerGeneralQuery generalQuery;
 
     private int offset = -1;
 
@@ -26,9 +30,14 @@ abstract class AbstractComposeQuery<C> implements PartQuery, SelfDescribed
 
     private boolean prepared;
 
-    AbstractComposeQuery(C criteria) {
+    AbstractComposeQuery(C criteria, QueryAble query) {
         this.criteria = criteria;
+        this.generalQuery = (InnerGeneralQuery) query;
+        Map<String, Selection> selectionMap = CriteriaUtils.createSelectionMap(this.generalQuery.selectPartList());
+        this.criteriaContext = new CriteriaContextImpl<>(criteria, selectionMap);
+        CriteriaContextHolder.setContext(this.criteriaContext);
     }
+
 
     final void doOrderBy(SortPart sortPart) {
         if (this.orderPartList == null) {
@@ -116,8 +125,10 @@ abstract class AbstractComposeQuery<C> implements PartQuery, SelfDescribed
         return this.prepared;
     }
 
-
-
+    @Override
+    public List<SelectPart> selectPartList() {
+        return this.generalQuery.selectPartList();
+    }
     /*################################## blow InnerQueryAfterSet method ##################################*/
 
     @Override

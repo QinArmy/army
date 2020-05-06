@@ -5,6 +5,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.CriteriaCounselor;
 import io.army.criteria.impl.inner.*;
 import io.army.util.Assert;
+import io.army.wrapper.SelectSQLWrapper;
 import io.army.wrapper.SimpleSQLWrapper;
 
 import java.util.Collections;
@@ -14,14 +15,14 @@ import java.util.Map;
 
 public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
 
-    public AbstractDQL(Dialect dialect) {
+    public AbstractDQL(InnerDialect dialect) {
         super(dialect);
     }
 
     /*################################## blow DQL method ##################################*/
 
     @Override
-    public final List<SimpleSQLWrapper> select(Select select, final Visible visible) {
+    public final List<SelectSQLWrapper> select(Select select, final Visible visible) {
         Assert.isTrue(select.prepared(), "select not prepared");
 
         SimpleSQLWrapper sqlWrapper;
@@ -72,7 +73,11 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
         } else {
             throw new IllegalArgumentException(String.format("Select[%s] type unknown.", select.getClass().getName()));
         }
-        return Collections.singletonList(sqlWrapper);
+
+
+        return Collections.singletonList(SelectSQLWrapper.build(
+                sqlWrapper.sql(), sqlWrapper.paramList(), DialectUtils.extractSelectionList(select)
+        ));
     }
 
 

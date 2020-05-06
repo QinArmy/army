@@ -42,7 +42,7 @@ class StandardContextualSingleDelete<C> extends AbstractSQLDebug implements Dele
 
     private StandardContextualSingleDelete(C criteria) {
         this.criteria = criteria;
-        this.criteriaContext = new AbstractSQL.CriteriaContextImpl<>(this.criteria);
+        this.criteriaContext = new CriteriaContextImpl<>(this.criteria);
         CriteriaContextHolder.setContext(criteriaContext);
     }
 

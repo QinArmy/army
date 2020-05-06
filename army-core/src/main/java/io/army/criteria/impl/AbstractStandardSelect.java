@@ -56,9 +56,9 @@ abstract class AbstractStandardSelect<C> extends AbstractSQL implements Select
 
     @Override
     public final boolean requiredBrackets() {
-        return CollectionUtils.isEmpty(this.orderByList)
+        return !CollectionUtils.isEmpty(this.orderByList)
                 || this.offset > -1
-                || this.rowCount > 0
+                || this.rowCount > -1
                 || this.lockMode != null
                 ;
     }
@@ -427,21 +427,25 @@ abstract class AbstractStandardSelect<C> extends AbstractSQL implements Select
 
     @Override
     public final UnionAble<C> brackets() {
+        this.asSelect();
         return ComposeSelects.brackets(this.criteria, thisSelect());
     }
 
     @Override
     public final <S extends Select> UnionAble<C> union(Function<C, S> function) {
+        this.asSelect();
         return ComposeSelects.compose(this.criteria, thisSelect(), UnionType.UNION, function);
     }
 
     @Override
     public final <S extends Select> UnionAble<C> unionAll(Function<C, S> function) {
+        this.asSelect();
         return ComposeSelects.compose(this.criteria, thisSelect(), UnionType.UNION_ALL, function);
     }
 
     @Override
     public final <S extends Select> UnionAble<C> unionDistinct(Function<C, S> function) {
+        this.asSelect();
         return ComposeSelects.compose(this.criteria, thisSelect(), UnionType.UNION_DISTINCT, function);
     }
 
@@ -456,17 +460,15 @@ abstract class AbstractStandardSelect<C> extends AbstractSQL implements Select
         processSelectPartList(this.selectPartList);
 
         this.asSQL();
-        this.modifierList = Collections.unmodifiableList(this.modifierList);
+        this.modifierList = CriteriaUtils.unmodifiableList(this.modifierList);
         this.selectPartList = Collections.unmodifiableList(this.selectPartList);
         this.predicateList = Collections.unmodifiableList(this.predicateList);
 
-        this.groupExpList = Collections.unmodifiableList(this.groupExpList);
-        this.havingList = Collections.unmodifiableList(this.havingList);
-        this.orderByList = Collections.unmodifiableList(this.orderByList);
-
+        this.groupExpList = CriteriaUtils.unmodifiableList(this.groupExpList);
+        this.havingList = CriteriaUtils.unmodifiableList(this.havingList);
+        this.orderByList = CriteriaUtils.unmodifiableList(this.orderByList);
 
         doAsSelect();
-
         this.prepared = true;
         return this;
     }

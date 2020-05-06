@@ -176,10 +176,14 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
         if (this.propertyName.equals(alias)) {
             return this;
         } else {
-            return new FieldSelection<>(this, alias);
+            return new FieldSelectionImpl<>(this, alias);
         }
     }
 
+    @Override
+    public final FieldMeta<?, ?> fieldMeta() {
+        return this;
+    }
 
     @Override
     public final boolean primary() {

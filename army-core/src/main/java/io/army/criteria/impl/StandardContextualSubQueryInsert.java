@@ -37,7 +37,7 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
         }
         this.criteria = criteria;
         this.tableMeta = tableMeta;
-        this.criteriaContext = new AbstractSQL.CriteriaContextImpl<>(this.criteria);
+        this.criteriaContext = new CriteriaContextImpl<>(this.criteria);
         CriteriaContextHolder.setContext(this.criteriaContext);
     }
 

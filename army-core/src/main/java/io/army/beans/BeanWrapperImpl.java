@@ -2,9 +2,9 @@ package io.army.beans;
 
 import org.springframework.beans.PropertyAccessorFactory;
 
-class BeanWrapperImpl implements BeanWrapper {
+class BeanWrapperImpl implements ObjectWrapper {
 
-     final org.springframework.beans.BeanWrapper actualWrapper;
+    final org.springframework.beans.BeanWrapper actualWrapper;
 
     ReadonlyWrapper readonlyWrapper;
 

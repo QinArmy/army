@@ -4,6 +4,7 @@ import io.army.*;
 import io.army.codec.FieldCodec;
 import io.army.env.Environment;
 import io.army.generator.FieldGenerator;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
@@ -91,9 +92,10 @@ abstract class AbstractGenericSessionFactory implements GenericSessionFactory {
         return this.tableMetaMap;
     }
 
+    @Nullable
     @Override
-    public Map<FieldMeta<?, ?>, FieldGenerator> fieldGeneratorMap() {
-        return this.fieldGeneratorMap;
+    public FieldGenerator fieldGenerator(FieldMeta<?, ?> fieldMeta) {
+        return this.fieldGeneratorMap.get(fieldMeta);
     }
 
     @Override
@@ -118,6 +120,16 @@ abstract class AbstractGenericSessionFactory implements GenericSessionFactory {
             codecMap = Collections.emptyMap();
         }
         return codecMap;
+    }
+
+    @Override
+    public FieldValuesGenerator fieldValuesGenerator() {
+        return null;
+    }
+
+    @Override
+    public FieldCodec fieldCodec(FieldMeta<?, ?> fieldMeta) {
+        return null;
     }
 
     @Override

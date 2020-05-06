@@ -29,8 +29,8 @@ abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements
         return new ComposeSelectImpl<>(criteria, left, modifier, right);
     }
 
-    private ComposeSelects(C criteria) {
-        super(criteria);
+    private ComposeSelects(C criteria, Select firstSelect) {
+        super(criteria, firstSelect);
     }
 
 
@@ -144,7 +144,7 @@ abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements
         private final Select enclosedSelect;
 
         BracketsSelect(C criteria, Select enclosedSelect) {
-            super(criteria);
+            super(criteria, enclosedSelect);
             this.enclosedSelect = enclosedSelect;
         }
 
@@ -172,7 +172,7 @@ abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements
         private final Select rightSelect;
 
         ComposeSelectImpl(C criteria, Select leftSelect, SQLModifier modifier, Select rightSelect) {
-            super(criteria);
+            super(criteria, leftSelect);
             this.leftSelect = leftSelect;
             this.modifier = modifier;
             this.rightSelect = rightSelect;

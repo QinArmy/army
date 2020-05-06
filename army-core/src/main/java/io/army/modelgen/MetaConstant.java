@@ -26,7 +26,7 @@ public interface MetaConstant {
 
     String META_CLASS_NAME_SUFFIX = "_";
 
-    Set<Class<?>> MAYBE_NO_DEFAULT_TYPES = ArrayUtils.asUnmodifiableSet(
+    Set<Class<?>> SIMPLE_JAVA_TYPE_SET = ArrayUtils.asUnmodifiableSet(
             String.class,
             Long.class,
             Integer.class,
@@ -44,6 +44,8 @@ public interface MetaConstant {
 
             ZonedDateTime.class
     );
+
+    Set<Class<?>> MAYBE_NO_DEFAULT_TYPES = SIMPLE_JAVA_TYPE_SET;
 
     Set<Class<?>> WITHOUT_DEFAULT_TYPES = ArrayUtils.asUnmodifiableSet(
             MAYBE_NO_DEFAULT_TYPES,
