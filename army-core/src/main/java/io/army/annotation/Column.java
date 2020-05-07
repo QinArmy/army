@@ -41,7 +41,7 @@ public @interface Column {
      * blow ,army modify to false. see {@code io.army.criteria.impl.FieldMetaUtils#columnUpdatable(io.army.meta.TableMeta, java.lang.String, io.army.annotation.Column, boolean)}
      * <ol>
      *     <li>{@link TableMeta#immutable()}</li>
-     *     <li>{@link TableMeta#primaryKey()}</li>
+     *     <li>{@link TableMeta#id()}</li>
      *     <li>{@link TableMeta#CREATE_TIME}</li>
      *     <li>{@link TableMeta#discriminator()}</li>
      * </ol>

@@ -34,7 +34,7 @@ final class ParamWrapperImpl implements ParamWrapper {
 
         MappingMeta mappingMeta;
         if (this.paramMeta instanceof FieldMeta) {
-            mappingMeta = ((FieldMeta<?, ?>) this.paramMeta).mappingType();
+            mappingMeta = ((FieldMeta<?, ?>) this.paramMeta).mappingMeta();
         } else {
             mappingMeta = (MappingMeta) this.paramMeta;
         }

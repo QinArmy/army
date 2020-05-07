@@ -82,7 +82,7 @@ public abstract class TransactionDefinitionHolder {
 
 
     @Nullable
-    public static TransactionAttribute get() {
+    static TransactionDefinition get() {
         TxDefinitionHolder holder = HOLDER.get();
 
         TransactionAttribute attribute = null;

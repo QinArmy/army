@@ -1,7 +1,7 @@
 package io.army.criteria.impl.inner;
 
 @DeveloperForbid
-public interface InnerSelect extends InnerGeneralQuery {
+public interface InnerSelect extends InnerGeneralQuery, InnerQuery {
 
 
 }

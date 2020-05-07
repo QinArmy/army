@@ -23,7 +23,7 @@ abstract class Funcs<E> extends AbstractExpression<E> implements FuncExpression<
     }
 
     @Override
-    public final MappingMeta mappingType() {
+    public final MappingMeta mappingMeta() {
         return returnType;
     }
 
@@ -83,7 +83,7 @@ abstract class Funcs<E> extends AbstractExpression<E> implements FuncExpression<
         OneArgumentFunc(String name, MappingMeta returnType, Expression<?> one) {
             super(name, returnType);
             this.one = one;
-            this.argumentTypeList = Collections.singletonList(one.mappingType());
+            this.argumentTypeList = Collections.singletonList(one.mappingMeta());
         }
 
         @Override
@@ -123,8 +123,8 @@ abstract class Funcs<E> extends AbstractExpression<E> implements FuncExpression<
             this.two = two;
 
             List<MappingMeta> typeList = new ArrayList<>(2);
-            typeList.add(one.mappingType());
-            typeList.add(two.mappingType());
+            typeList.add(one.mappingMeta());
+            typeList.add(two.mappingMeta());
             this.argumentTypeList = Collections.unmodifiableList(typeList);
         }
 
@@ -177,9 +177,9 @@ abstract class Funcs<E> extends AbstractExpression<E> implements FuncExpression<
             this.three = three;
 
             List<MappingMeta> typeList = new ArrayList<>(3);
-            typeList.add(one.mappingType());
-            typeList.add(two.mappingType());
-            typeList.add(three.mappingType());
+            typeList.add(one.mappingMeta());
+            typeList.add(two.mappingMeta());
+            typeList.add(three.mappingMeta());
             this.argumentTypeList = Collections.unmodifiableList(typeList);
         }
 

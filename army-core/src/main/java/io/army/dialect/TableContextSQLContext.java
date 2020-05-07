@@ -9,13 +9,13 @@ import io.army.wrapper.SimpleSQLWrapper;
 
 import java.util.List;
 
-public interface ClauseSQLContext extends SQLContext {
-
-    void currentClause(Clause clause);
+public interface TableContextSQLContext extends SQLContext {
 
     Visible visible();
 
     Dialect dialect();
+
+    TableContext tableContext();
 
     List<ParamWrapper> paramList();
 

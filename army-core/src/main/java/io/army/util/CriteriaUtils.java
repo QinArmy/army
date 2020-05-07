@@ -40,9 +40,9 @@ public abstract class CriteriaUtils {
 
     public static <T extends IDomain> Select createExistsById(TableMeta<T> tableMeta, Object id) {
         return SQLS.multiSelect()
-                .select(tableMeta.primaryKey())
+                .select(tableMeta.id())
                 .from(tableMeta, "t")
-                .where(tableMeta.primaryKey().eq(id))
+                .where(tableMeta.id().eq(id))
                 .asSelect();
     }
 
@@ -54,7 +54,7 @@ public abstract class CriteriaUtils {
     public static <T extends IDomain> Select createSelectIdByUnique(TableMeta<T> tableMeta, List<String> propNameList
             , List<Object> valueList) {
         return SQLS.multiSelect()
-                .select(tableMeta.primaryKey())
+                .select(tableMeta.id())
                 .from(tableMeta, "t")
                 .where(createPredicateList(tableMeta, propNameList, valueList))
                 .limit(2)
@@ -86,14 +86,14 @@ public abstract class CriteriaUtils {
             select = SQLS.multiSelect()
                     .select(Arrays.asList(SQLS.group(parentMeta, "p"), SQLS.group(childMeta, "c")))
                     .from(childMeta, "c") // small table first
-                    .join(parentMeta, "p").on(childMeta.primaryKey().eq(parentMeta.primaryKey()))
-                    .where(childMeta.primaryKey().eq(id))
+                    .join(parentMeta, "p").on(childMeta.id().eq(parentMeta.id()))
+                    .where(childMeta.id().eq(id))
                     .asSelect();
         } else {
             select = SQLS.multiSelect()
                     .select(SQLS.group(tableMeta, "t"))
                     .from(tableMeta, "t")
-                    .where(tableMeta.primaryKey().eq(id))
+                    .where(tableMeta.id().eq(id))
                     .asSelect();
         }
         return select;
@@ -115,7 +115,7 @@ public abstract class CriteriaUtils {
             select = SQLS.multiSelect()
                     .select(Arrays.asList(SQLS.group(parentMeta, "p"), SQLS.group(childMeta, "c")))
                     .from(childMeta, "c")
-                    .join(parentMeta, "p").on(parentMeta.primaryKey().eq(childMeta.primaryKey()))
+                    .join(parentMeta, "p").on(parentMeta.id().eq(childMeta.id()))
                     .where(createPredicateList(tableMeta, propNameList, valueList))
                     .limit(2)
                     .asSelect();
@@ -145,7 +145,7 @@ public abstract class CriteriaUtils {
         for (int i = 0; i < size; i++) {
             propName = propNameList.get(i);
             if (TableMeta.ID.equals(propName)) {
-                list.add(tableMeta.primaryKey().eq(valueList.get(i)));
+                list.add(tableMeta.id().eq(valueList.get(i)));
             } else if (tableMeta.isMappingProp(propName)) {
                 list.add(tableMeta.getField(propName).eq(valueList.get(i)));
             } else if (parentMeta != null && parentMeta.isMappingProp(propName)) {

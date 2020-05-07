@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-public interface DMLContext extends ClauseSQLContext {
+public interface DMLContext extends TableContextSQLContext {
 
 
 }

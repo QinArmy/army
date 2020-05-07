@@ -56,7 +56,7 @@ class MySQL57DDL extends AbstractDDL {
             this.jdbcTypeFunctionMap = funcMap;
         }
 
-        Function<FieldMeta<?, ?>, String> function = funcMap.get(fieldMeta.mappingType().jdbcType());
+        Function<FieldMeta<?, ?>, String> function = funcMap.get(fieldMeta.mappingMeta().jdbcType());
         if (function == null) {
             throw new MetaException(ErrorCode.META_ERROR, "Entity[%s].column[%s] not found jdbc function"
                     , fieldMeta.tableMeta().tableName()

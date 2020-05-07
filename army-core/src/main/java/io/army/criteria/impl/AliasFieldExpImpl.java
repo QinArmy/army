@@ -141,7 +141,7 @@ final class AliasFieldExpImpl<T extends IDomain, F> extends AbstractExpression<F
     }
 
     @Override
-    public MappingMeta mappingType() {
-        return fieldMeta.mappingType();
+    public MappingMeta mappingMeta() {
+        return fieldMeta.mappingMeta();
     }
 }

@@ -14,8 +14,6 @@ final class StandardContextualMultiSelect<C> extends AbstractStandardSelect<C> i
         CriteriaContextHolder.setContext(this.criteriaContext);
     }
 
-
-
     /*################################## blow package method ##################################*/
 
     @Override
@@ -35,7 +33,7 @@ final class StandardContextualMultiSelect<C> extends AbstractStandardSelect<C> i
 
     @Override
     void onAddTable(TableMeta<?> table, String tableAlias) {
-
+        this.criteriaContext.onAddTable(table, tableAlias);
     }
 
 }

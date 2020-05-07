@@ -2,9 +2,12 @@ package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.criteria.*;
+import io.army.dialect.SQL;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
+import io.army.meta.TableMeta;
+import io.army.meta.mapping.MappingMeta;
 import io.army.util.CollectionUtils;
 
 import java.util.*;
@@ -17,7 +20,11 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
 
     private Map<String, Selection> composeSelectMap;
 
+    private Map<String, Expression<?>> composeRefSelectionMap;
+
     private Map<String, SubQuery> subQueryMap = new HashMap<>();
+
+    private Map<String, TableMeta<?>> tableMetaMap = new HashMap<>();
 
     private Map<String, AliasField<?, ?>> aliasTableFieldCache = new HashMap<>();
 
@@ -28,11 +35,13 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
     CriteriaContextImpl(C criteria) {
         this.criteria = criteria;
         this.composeSelectMap = Collections.emptyMap();
+        this.composeRefSelectionMap = Collections.emptyMap();
     }
 
     CriteriaContextImpl(C criteria, Map<String, Selection> composeSelectMap) {
         this.criteria = criteria;
         this.composeSelectMap = composeSelectMap;
+        this.composeRefSelectionMap = new HashMap<>();
     }
 
     /*################################## blow CriteriaContext method ##################################*/
@@ -72,21 +81,30 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
 
     @Override
     public void onAddSubQuery(SubQuery subQuery, String subQueryAlias) {
-        if (subQueryMap.putIfAbsent(subQueryAlias, subQuery) != subQuery) {
+        if (this.subQueryMap.putIfAbsent(subQueryAlias, subQuery) != subQuery) {
             throw new CriteriaException(ErrorCode.TABLE_ALIAS_DUPLICATION
                     , "SubQuery alias[%s] duplication.", subQueryAlias);
         }
-        doOnceChangeRefSelection(subQuery, subQueryAlias);
+        handleOnceChangeRefSelection(subQuery, subQueryAlias);
     }
 
     @Override
+    public void onAddTable(TableMeta<?> tableMeta, String tableAlias) {
+        if (this.tableMetaMap.putIfAbsent(tableAlias, tableMeta) != tableMeta) {
+            throw new CriteriaException(ErrorCode.TABLE_ALIAS_DUPLICATION
+                    , "Table alias[%s] duplication.", tableAlias);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
     public <E> Expression<E> composeRef(String selectionAlias) {
-        @SuppressWarnings("unchecked")
-        Expression<E> exp = (Expression<E>) this.composeSelectMap.get(selectionAlias);
-        if (exp == null) {
+        Selection selection = this.composeSelectMap.get(selectionAlias);
+        if (selection == null) {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "not found compose selection[%s]", selectionAlias);
         }
-        return exp;
+        return (Expression<E>) this.composeRefSelectionMap.computeIfAbsent(
+                selectionAlias, key -> new ComposeRefSelection<>(selection));
     }
 
     @SuppressWarnings("unchecked")
@@ -109,7 +127,10 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
         this.refSelectionCache.clear();
         this.refSelectionCache = null;
         this.onceChangeRefCache = null;
+        this.composeSelectMap = null;
 
+        this.composeRefSelectionMap = null;
+        this.tableMetaMap = null;
     }
 
 
@@ -131,20 +152,21 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
             // 2-2. add RefSelection that only change once.
             refSelectionSet.add(refSelection);
         } else {
-            refSelection = RefSelectionImpl.buildImmutable(subQueryAlias, targetSelection);
+            refSelection = RefSelectionImpl.buildImmutable(subQueryAlias, derivedFieldName
+                    , targetSelection.mappingMeta());
         }
         // 3. cache refSelection
         this.refSelectionCache.putIfAbsent(subQueryAlias + derivedFieldName, refSelection);
         return refSelection;
     }
 
-    private void doOnceChangeRefSelection(SubQuery subQuery, String subQueryAlias) {
+    private void handleOnceChangeRefSelection(SubQuery subQuery, String subQueryAlias) {
         Set<RefSelection<?>> refSet = this.onceChangeRefCache.get(subQueryAlias);
         if (CollectionUtils.isEmpty(refSet)) {
             return;
         }
         for (RefSelection<?> refSelection : refSet) {
-            refSelection.selection(subQuery.selection(refSelection.derivedFieldName()));
+            refSelection.selection(subQueryAlias, subQuery.selection(refSelection.derivedFieldName()));
         }
         refSet.clear();
         this.onceChangeRefCache.remove(subQueryAlias);
@@ -166,6 +188,39 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
         }
         builder.append("] not found from select query.");
         return builder.toString();
+    }
+
+
+    private static final class ComposeRefSelection<E> extends AbstractExpression<E> {
+
+        private final Selection selection;
+
+        private ComposeRefSelection(Selection selection) {
+            this.selection = selection;
+        }
+
+        @Override
+        public Selection as(String alias) {
+            return new DefaultSelection(this, this.selection.alias());
+        }
+
+        @Override
+        protected void afterSpace(SQLContext context) {
+            SQL sql = context.dql();
+            context.sqlBuilder()
+                    .append(sql.quoteIfNeed(this.selection.alias()));
+
+        }
+
+        @Override
+        protected String beforeAs() {
+            return this.selection.alias();
+        }
+
+        @Override
+        public MappingMeta mappingMeta() {
+            return this.selection.mappingMeta();
+        }
     }
 
 }

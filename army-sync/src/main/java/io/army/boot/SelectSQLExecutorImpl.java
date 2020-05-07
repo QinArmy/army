@@ -68,10 +68,10 @@ final class SelectSQLExecutorImpl implements SelectSQLExecutor {
             if (selectionList.size() != 1) {
                 throw new CriteriaException(ErrorCode.CRITERIA_ERROR
                         , "selection size[%s] error,for resultClass[%s]", selectionList.size(), resultClass.getName());
-            } else if (selectionList.get(0).mappingType().javaType() != resultClass) {
+            } else if (selectionList.get(0).mappingMeta().javaType() != resultClass) {
                 throw new CriteriaException(ErrorCode.CRITERIA_ERROR
                         , "selection java type[%s] and  resultClass[%s] not match."
-                        , selectionList.get(0).mappingType().javaType().getName(), resultClass.getName());
+                        , selectionList.get(0).mappingMeta().javaType().getName(), resultClass.getName());
             }
         } else if (resultClass == Pair.class) {
             if (selectionList.size() != 2) {
@@ -98,7 +98,7 @@ final class SelectSQLExecutorImpl implements SelectSQLExecutor {
             fieldMeta = ((FieldSelection) selection).fieldMeta();
             fieldCodec = this.sessionFactory.fieldCodec(fieldMeta);
         }
-        final MappingMeta mappingMeta = selection.mappingType();
+        final MappingMeta mappingMeta = selection.mappingMeta();
         while (resultSet.next()) {
             Object value = mappingMeta.nullSafeGet(resultSet, selection.alias());
 
@@ -123,7 +123,7 @@ final class SelectSQLExecutorImpl implements SelectSQLExecutor {
             objectWrapper = PropertyAccessorFactory.forBeanPropertyAccess(resultClass);
 
             for (Selection selection : selectionList) {
-                Object value = selection.mappingType().nullSafeGet(resultSet, selection.alias());
+                Object value = selection.mappingMeta().nullSafeGet(resultSet, selection.alias());
                 if (value == null) {
                     continue;
                 }
@@ -171,7 +171,7 @@ final class SelectSQLExecutorImpl implements SelectSQLExecutor {
             if (fieldCodec != null) {
                 paramValue = fieldCodec.encode(fieldMeta, paramValue);
             }
-            mappingMeta = fieldMeta.mappingType();
+            mappingMeta = fieldMeta.mappingMeta();
         } else if (paramMeta instanceof MappingMeta) {
             mappingMeta = (MappingMeta) paramMeta;
         } else {

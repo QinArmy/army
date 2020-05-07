@@ -50,7 +50,7 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
     }
 
     @Override
-    public final MappingMeta mappingType() {
+    public final MappingMeta mappingMeta() {
         return mappingType;
     }
 

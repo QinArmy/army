@@ -61,7 +61,7 @@ final class Dual implements IDomain {
         }
 
         @Override
-        public IndexFieldMeta<? super Dual, Object> primaryKey() {
+        public IndexFieldMeta<? super Dual, Object> id() {
             throw new UnsupportedOperationException();
         }
 

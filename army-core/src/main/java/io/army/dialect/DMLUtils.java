@@ -82,12 +82,12 @@ abstract class DMLUtils {
             , List<FieldMeta<?, ?>> childFieldList, Dialect dialect, final Visible visible) {
 
         final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) domainDML.tableMeta();
-        final IndexFieldMeta<?, Object> primaryField = childMeta.primaryKey();
+        final IndexFieldMeta<?, Object> primaryField = childMeta.id();
         final Object primaryKeyValue = domainDML.primaryKeyValue();
 
         Assert.isInstanceOf(primaryField.javaType(), primaryKeyValue);
 
-        final ParamExpression<Object> paramExp = SQLS.param(primaryKeyValue, primaryField.mappingType());
+        final ParamExpression<Object> paramExp = SQLS.param(primaryKeyValue, primaryField.mappingMeta());
 
         Select select = SQLS.multiSelect()
                 .select(childFieldList)
@@ -157,14 +157,13 @@ abstract class DMLUtils {
             , AbstractStandardInsertContext context) {
 
         final GenericSessionFactory sessionFactory = context.dialect.sessionFactory();
-        context.currentClause(Clause.INSERT_INTO);
+        final StringBuilder fieldBuilder = context.fieldsBuilder().append("INSERT INTO");
         // append table name
         context.appendTable(physicalTable);
-        StringBuilder fieldBuilder = context.fieldsBuilder().append(" (");
+        context.fieldsBuilder().append(" (");
 
-        StringBuilder valueBuilder = context.sqlBuilder();
-        context.currentClause(Clause.VALUE);
-        valueBuilder.append(" (");
+        final StringBuilder valueBuilder = context.sqlBuilder()
+                .append(" VALUE (");
         final SQL sql = context.dql();
 
         Object value;
@@ -190,7 +189,7 @@ abstract class DMLUtils {
                 if (fieldCodec != null) {
                     context.appendParam(ParamWrapper.build(fieldMeta, value));
                 } else {
-                    context.appendParam(ParamWrapper.build(fieldMeta.mappingType(), value));
+                    context.appendParam(ParamWrapper.build(fieldMeta.mappingMeta(), value));
                 }
 
             }
@@ -206,16 +205,15 @@ abstract class DMLUtils {
     static void createBatchInsertForSimple(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> fieldMetas
             , InsertContext context) {
 
-        StringBuilder fieldBuilder = context.fieldsBuilder();
-        context.currentClause(Clause.INSERT_INTO);
+        StringBuilder fieldBuilder = context.fieldsBuilder()
+                .append("INSERT INTO");
         // append table name
         context.appendTable(tableMeta);
         fieldBuilder.append(" ( ");
 
         /// VALUE clause
-        context.currentClause(Clause.VALUE);
         StringBuilder valueBuilder = context.sqlBuilder()
-                .append(" ( ");
+                .append(" VALUE ( ");
 
         final SQL sql = context.dql();
         int index = 0;
@@ -272,7 +270,7 @@ abstract class DMLUtils {
                         FieldParamWrapper wrapper = (FieldParamWrapper) paramWrapper;
                         paramWrapperList.add(
                                 ParamWrapper.build(
-                                        wrapper.paramMeta().mappingType()
+                                        wrapper.paramMeta().mappingMeta()
                                         , beanWrapper.getPropertyValue(wrapper.paramMeta().propertyName())
                                 )
                         );
@@ -324,7 +322,7 @@ abstract class DMLUtils {
         // firstly ,add predicate sql fragment 'id = ?'
         mergedPredicateList.add(
                 primaryKey.eq(
-                        SQLS.param(primaryKeyValue, primaryKey.mappingType())
+                        SQLS.param(primaryKeyValue, primaryKey.mappingMeta())
                 )
         );
         // secondly, add update.predicateList()

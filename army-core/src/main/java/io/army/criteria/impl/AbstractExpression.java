@@ -46,7 +46,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     @Override
     public final IPredicate eq(E constant) {
-        return DualPredicate.build(this, DualOperator.EQ, SQLS.param(constant, this.mappingType()));
+        return DualPredicate.build(this, DualOperator.EQ, SQLS.param(constant, this.mappingMeta()));
     }
 
     @Override
@@ -94,7 +94,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     @Override
     public final IPredicate lt(Comparable<E> constant) {
-        return DualPredicate.build(this, DualOperator.LT, SQLS.param(constant, this.mappingType()));
+        return DualPredicate.build(this, DualOperator.LT, SQLS.param(constant, this.mappingMeta()));
     }
 
     @Override
@@ -142,7 +142,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     @Override
     public final IPredicate le(Comparable<E> constant) {
-        return DualPredicate.build(this, DualOperator.LE, SQLS.param(constant, this.mappingType()));
+        return DualPredicate.build(this, DualOperator.LE, SQLS.param(constant, this.mappingMeta()));
     }
 
     @Override
@@ -190,7 +190,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     @Override
     public final IPredicate gt(Comparable<E> constant) {
-        return DualPredicate.build(this, DualOperator.GT, SQLS.param(constant, this.mappingType()));
+        return DualPredicate.build(this, DualOperator.GT, SQLS.param(constant, this.mappingMeta()));
     }
 
     @Override
@@ -238,7 +238,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     @Override
     public final IPredicate ge(Comparable<E> constant) {
-        return DualPredicate.build(this, DualOperator.GE, SQLS.param(constant, this.mappingType()));
+        return DualPredicate.build(this, DualOperator.GE, SQLS.param(constant, this.mappingMeta()));
     }
 
     @Override
@@ -287,7 +287,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     @Override
     public final IPredicate notEq(Comparable<E> constant) {
-        return DualPredicate.build(this, DualOperator.NOT_EQ, SQLS.param(constant, this.mappingType()));
+        return DualPredicate.build(this, DualOperator.NOT_EQ, SQLS.param(constant, this.mappingMeta()));
     }
 
     @Override
@@ -345,7 +345,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     @Override
     public final IPredicate between(Expression<E> first, E second) {
-        return new BetweenPredicate(this, first, SQLS.param(second, this.mappingType()));
+        return new BetweenPredicate(this, first, SQLS.param(second, this.mappingMeta()));
     }
 
     @Override
@@ -373,7 +373,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     @Override
     public final IPredicate in(Collection<E> values) {
-        return DualPredicate.build(this, DualOperator.IN, CollectionExpression.build(mappingType(), values));
+        return DualPredicate.build(this, DualOperator.IN, CollectionExpression.build(mappingMeta(), values));
     }
 
     @Override
@@ -390,7 +390,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     @Override
     public final IPredicate notIn(Collection<E> values) {
-        return DualPredicate.build(this, DualOperator.NOT_IN, CollectionExpression.build(mappingType(), values));
+        return DualPredicate.build(this, DualOperator.NOT_IN, CollectionExpression.build(mappingMeta(), values));
     }
 
     @Override
@@ -407,7 +407,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     @Override
     public final IPredicate like(String pattern) {
-        return DualPredicate.build(this, DualOperator.LIKE, SQLS.constant(pattern, this.mappingType()));
+        return DualPredicate.build(this, DualOperator.LIKE, SQLS.constant(pattern, this.mappingMeta()));
     }
 
     @Override
@@ -424,7 +424,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
 
     @Override
     public final IPredicate notLike(String pattern) {
-        return DualPredicate.build(this, DualOperator.NOT_LIKE, SQLS.param(pattern, this.mappingType()));
+        return DualPredicate.build(this, DualOperator.NOT_LIKE, SQLS.param(pattern, this.mappingMeta()));
     }
 
     @Override

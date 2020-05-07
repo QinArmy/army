@@ -14,7 +14,7 @@ import java.util.List;
 abstract class AbstractPredicate extends AbstractExpression<Boolean> implements IPredicate {
 
     @Override
-    public final MappingMeta mappingType() {
+    public final MappingMeta mappingMeta() {
         return MappingFactory.getDefaultMapping(Boolean.class);
     }
 

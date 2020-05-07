@@ -33,7 +33,7 @@ abstract class ExecutorUtils {
     static int obtainVendorTypeNumber(ParamMeta paramMeta) {
         MappingMeta mappingMeta;
         if (paramMeta instanceof FieldMeta) {
-            mappingMeta = ((FieldMeta<?, ?>) paramMeta).mappingType();
+            mappingMeta = ((FieldMeta<?, ?>) paramMeta).mappingMeta();
         } else if (paramMeta instanceof MappingMeta) {
             mappingMeta = (MappingMeta) paramMeta;
         } else {

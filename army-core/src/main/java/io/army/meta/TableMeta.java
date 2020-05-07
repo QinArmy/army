@@ -45,7 +45,7 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
 
     String comment();
 
-    IndexFieldMeta<? super T, Object> primaryKey();
+    IndexFieldMeta<? super T, Object> id();
 
     MappingMode mappingMode();
 

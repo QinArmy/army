@@ -2,7 +2,6 @@ package io.army.dialect;
 
 import io.army.ErrorCode;
 import io.army.criteria.MetaException;
-import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
@@ -72,24 +71,12 @@ public abstract class DDLUtils {
     }
 
 
-    protected static String ascOrDesc(@Nullable Boolean asc) {
-        String text;
-        if (asc == null) {
-            text = "";
-        } else if (asc) {
-            text = "ASC";
-        } else {
-            text = "DESC";
-        }
-        return text;
-    }
-
     static List<FieldMeta<?, ?>> sortFieldMetaCollection(TableMeta<?> tableMeta) {
         Set<FieldMeta<?, ?>> fieldMetas = new HashSet<>(tableMeta.fieldCollection());
 
         List<FieldMeta<?, ?>> fieldMetaList = new ArrayList<>(fieldMetas.size());
 
-        fieldMetaList.add(tableMeta.primaryKey());
+        fieldMetaList.add(tableMeta.id());
         if (tableMeta.isMappingProp(TableMeta.CREATE_TIME)) {
             fieldMetaList.add(tableMeta.getField(TableMeta.CREATE_TIME));
         }

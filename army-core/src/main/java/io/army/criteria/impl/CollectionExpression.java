@@ -42,7 +42,7 @@ final class CollectionExpression<E> extends AbstractNoNOperationExpression<E> {
     }
 
     @Override
-    public MappingMeta mappingType() {
+    public MappingMeta mappingMeta() {
         return this.mappingType;
     }
 

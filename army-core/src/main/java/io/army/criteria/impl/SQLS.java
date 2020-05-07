@@ -8,6 +8,7 @@ import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingMeta;
 import io.army.tx.Isolation;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -150,29 +151,20 @@ public abstract class SQLS extends AbstractSQLS {
                 .composeRef(selectionAlias);
     }
 
-    public static SelectionGroup group(TableMeta<?> tableMeta, String alias) {
-        return AbstractSelectionGroup.build(tableMeta, alias);
+    public static <T extends IDomain> SelectionGroup group(TableMeta<T> tableMeta, String alias) {
+        return SelectionGroups.buildTableGroup(alias, new ArrayList<>(tableMeta.fieldCollection()));
     }
 
-    public static SelectionGroup group(String tableAlias, List<FieldMeta<?, ?>> fieldMetaList) {
-        return AbstractSelectionGroup.buildForFieldList(tableAlias, fieldMetaList);
-    }
-
-    /**
-     * package method.
-     * package develop guarantee each element of fieldMetaList is {@link FieldMeta}
-     * and elements belong to same {@link TableMeta}.
-     */
-    static SelectionGroup fieldGroup(String tableAlias, List<Selection> fieldMetaLis) {
-        return AbstractSelectionGroup.buildForFields(tableAlias, fieldMetaLis);
+    public static <T extends IDomain> SelectionGroup group(String tableAlias, List<FieldMeta<T, ?>> fieldMetaList) {
+        return SelectionGroups.buildTableGroup(tableAlias, fieldMetaList);
     }
 
     public static SelectionGroup derivedGroup(String subQueryAlias) {
-        return AbstractSelectionGroup.build(subQueryAlias);
+        return SelectionGroups.buildDerivedGroup(subQueryAlias);
     }
 
     public static SelectionGroup derivedGroup(String subQueryAlias, List<String> derivedFieldNameList) {
-        return AbstractSelectionGroup.build(subQueryAlias, derivedFieldNameList);
+        return SelectionGroups.buildDerivedGroup(subQueryAlias, derivedFieldNameList);
     }
 
 

@@ -597,7 +597,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         }
     }
 
-    private void setClauseFieldsManagedByArmy(ClauseSQLContext context, TableMeta<?> tableMeta, String tableAlias) {
+    private void setClauseFieldsManagedByArmy(TableContextSQLContext context, TableMeta<?> tableMeta, String tableAlias) {
         //1. version field
         final FieldMeta<?, ?> versionField = tableMeta.getField(TableMeta.VERSION);
         StringBuilder builder = context.sqlBuilder();
@@ -620,14 +620,14 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         final ZonedDateTime now = ZonedDateTime.now(this.dialect.zoneId());
 
         if (updateTimeField.javaType() == LocalDateTime.class) {
-            SQLS.param(now.toLocalDateTime(), updateTimeField.mappingType())
+            SQLS.param(now.toLocalDateTime(), updateTimeField.mappingMeta())
                     .appendSQL(context);
         } else if (updateTimeField.javaType() == ZonedDateTime.class) {
             if (!this.dialect.supportZoneId()) {
                 throw new MetaException(ErrorCode.META_ERROR
                         , "dialec[%s]t not supported zone.", this.dialect.sqlDialect());
             }
-            SQLS.param(now, updateTimeField.mappingType())
+            SQLS.param(now, updateTimeField.mappingMeta())
                     .appendSQL(context);
         } else {
             throw new MetaException(ErrorCode.META_ERROR
@@ -635,12 +635,13 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         }
     }
 
-    private void simpleTableWhereClause(ClauseSQLContext context, TableMeta<?> tableMeta, String tableAlias
+    private void simpleTableWhereClause(TableContextSQLContext context, TableMeta<?> tableMeta, String tableAlias
             , List<IPredicate> predicateList) {
 
         final boolean needAppendVisible = DialectUtils.needAppendVisible(tableMeta);
         if (!predicateList.isEmpty() || needAppendVisible) {
-            context.currentClause(Clause.WHERE);
+            context.sqlBuilder()
+                    .append(" WHERE");
         }
 
         if (!predicateList.isEmpty()) {
@@ -718,7 +719,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
                 , parentFieldList, parentValueList);
         // merge sql fragment 'id = ?' and update.predicateList()
         List<IPredicate> mergedPredicateList = DMLUtils.mergeDomainUpdatePredicateList(
-                update.predicateList(), context.tableMeta().primaryKey(), update.primaryKeyValue());
+                update.predicateList(), context.tableMeta().id(), update.primaryKeyValue());
 
         // where clause with mergedPredicateList
         simpleTableWhereClause(context, context.tableMeta(), update.tableAlias()
@@ -763,7 +764,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
         // merge sql fragment 'id = ?' and update.predicateList()
         List<IPredicate> mergedPredicateList = DMLUtils.mergeDomainUpdatePredicateList(
-                update.predicateList(), context.tableMeta().primaryKey(), update.primaryKeyValue());
+                update.predicateList(), context.tableMeta().id(), update.primaryKeyValue());
 
         // where clause with mergedPredicateList
         simpleTableWhereClause(context, context.tableMeta(), context.tableAlias()
@@ -857,7 +858,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         }
         // merge sql fragment 'id = ?' and update.predicateList()
         List<IPredicate> mergedPredicateList = DMLUtils.mergeDomainUpdatePredicateList(
-                delete.predicateList(), context.tableMeta().primaryKey(), delete.primaryKeyValue());
+                delete.predicateList(), context.tableMeta().id(), delete.primaryKeyValue());
 
         // where clause with mergedPredicateList
         simpleTableWhereClause(context, context.tableMeta(), context.tableAlias()

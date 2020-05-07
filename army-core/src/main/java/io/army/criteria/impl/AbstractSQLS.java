@@ -38,7 +38,7 @@ abstract class AbstractSQLS {
     }
 
     static <E> ParamExpression<E> param(E param, Expression<E> expression) {
-        return ParamExpressionImp.build(expression.mappingType(), param);
+        return ParamExpressionImp.build(expression.mappingMeta(), param);
     }
 
     public static <E> ConstantExpression<E> constant(E value) {
@@ -50,7 +50,7 @@ abstract class AbstractSQLS {
     }
 
     static <E> ConstantExpression<E> constant(E value, Expression<E> expression) {
-        return ConstantExpressionImpl.build(expression.mappingType(), value);
+        return ConstantExpressionImpl.build(expression.mappingMeta(), value);
     }
 
     @SuppressWarnings("unchecked")
@@ -69,7 +69,7 @@ abstract class AbstractSQLS {
      * MySQL ABS function</a>
      */
     public static <E extends Number> Expression<E> abs(Expression<E> x) {
-        return new Funcs.OneArgumentFunc<>("ABS", x.mappingType(), x);
+        return new Funcs.OneArgumentFunc<>("ABS", x.mappingMeta(), x);
     }
 
     public static <E extends Number> Expression<Double> acos(Expression<E> x) {
@@ -193,7 +193,7 @@ abstract class AbstractSQLS {
 
     public static <E extends Number> Expression<E> mod(Expression<E> dividend
             , Expression<E> divisor) {
-        return new Funcs.TwoArgumentFunc<>("MOD", dividend.mappingType(), dividend, divisor);
+        return new Funcs.TwoArgumentFunc<>("MOD", dividend.mappingMeta(), dividend, divisor);
     }
 
 
@@ -228,7 +228,7 @@ abstract class AbstractSQLS {
         }
 
         @Override
-        public MappingMeta mappingType() {
+        public MappingMeta mappingMeta() {
             return StringType.build(String.class);
         }
     }

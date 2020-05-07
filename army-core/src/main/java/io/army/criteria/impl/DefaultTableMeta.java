@@ -12,7 +12,6 @@ import io.army.struct.CodeEnum;
 import io.army.util.Assert;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -131,7 +130,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
 
-    private final Class<T> entityClass;
+    private final Class<T> domainClass;
 
     private final String tableName;
 
@@ -164,7 +163,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         Assert.state(!INSTANCE_MAP.containsKey(domainClass),
                 () -> String.format("entityClass[%s] duplication", domainClass.getName()));
 
-        this.entityClass = domainClass;
+        this.domainClass = domainClass;
         this.parentTableMeta = parentTableMeta;
         try {
 
@@ -200,7 +199,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     @Override
     public Class<T> javaType() {
-        return this.entityClass;
+        return this.domainClass;
     }
 
     @Override
@@ -220,7 +219,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     @Override
-    public IndexFieldMeta<? super T, Object> primaryKey() {
+    public IndexFieldMeta<? super T, Object> id() {
         return this.primaryField;
     }
 
@@ -327,30 +326,8 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder(this.javaType().getName());
-        builder.append(" mapping ");
-        if (!schemaMeta.defaultSchema()) {
-            builder.append(this.schema())
-                    .append(".")
-            ;
-        }
-        builder.append(this.tableName())
-                .append("[\n");
-        Iterator<FieldMeta<T, ?>> iterator = propNameToFieldMeta.values().iterator();
-        for (FieldMeta<T, ?> fieldMeta; iterator.hasNext(); ) {
-            fieldMeta = iterator.next();
-            builder.append(fieldMeta.propertyName())
-                    .append(" mapping ")
-                    .append(fieldMeta.fieldName())
-            ;
-            if (iterator.hasNext()) {
-                builder.append(",\n");
-            }
-        }
-        return builder.append("\n]")
-                .toString()
-                ;
+    public final String toString() {
+        return this.domainClass.getName();
     }
 
 

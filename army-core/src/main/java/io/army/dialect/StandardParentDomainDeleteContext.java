@@ -1,15 +1,12 @@
 package io.army.dialect;
 
-import io.army.criteria.TableAliasException;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.InnerStandardDomainDelete;
 import io.army.meta.ChildTableMeta;
-import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
-import io.army.meta.TableMeta;
 
 
-final class StandardParentDomainDeleteContext extends AbstractClauseContext implements ParentDomainDeleteContext {
+final class StandardParentDomainDeleteContext extends AbstractTableContextSQLContext implements ParentDomainDeleteContext {
 
     private final InnerStandardDomainDelete innerDelete;
 
@@ -17,7 +14,7 @@ final class StandardParentDomainDeleteContext extends AbstractClauseContext impl
 
     StandardParentDomainDeleteContext(Dialect dialect, Visible visible
             , InnerStandardDomainDelete delete) {
-        super(dialect, visible);
+        super(dialect, visible, null);
         this.innerDelete = delete;
         ChildTableMeta<?> childMeta = (ChildTableMeta<?>) delete.tableMeta();
         this.tableMeta = childMeta.parentMeta();
@@ -28,26 +25,6 @@ final class StandardParentDomainDeleteContext extends AbstractClauseContext impl
         return this.tableMeta;
     }
 
-    @Override
-    public void currentClause(Clause clause) {
-
-    }
-
-    @Override
-    public void appendTable(TableMeta<?> tableMeta) {
-
-    }
-
-
-    @Override
-    public final void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException {
-
-    }
-
-    @Override
-    public final void appendField(FieldMeta<?, ?> fieldMeta) {
-
-    }
 
     @Override
     public final String tableAlias() {

@@ -31,7 +31,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
 
     }
 
-    protected void doTableWrapper(TableWrapper tableWrapper, ClauseSQLContext context) {
+    protected void doTableWrapper(TableWrapper tableWrapper, TableContextSQLContext context) {
 
         final StringBuilder builder = context.sqlBuilder();
         //1. append ONLY keyword ,eg: postgre,oracle.(optional)
@@ -39,8 +39,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         //2. append table able
         tableWrapper.tableAble().appendSQL(context);
         if (tableAliasAfterAs()) {
-            builder.append(" ")
-                    .append(Keywords.AS);
+            builder.append(" AS");
         }
         // 3. table alias
         context.appendText(tableWrapper.alias());
@@ -56,12 +55,11 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         }
 
         //5.  on clause
-        context.currentClause(Clause.ON);
+        builder.append(" ON");
         int index = 0;
         for (IPredicate predicate : predicateList) {
             if (index > 0) {
-                builder.append(" ")
-                        .append(Keywords.AND);
+                builder.append(" AND");
             }
             predicate.appendSQL(context);
             index++;
@@ -73,7 +71,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     /*################################## blow final protected method ##################################*/
 
 
-    protected final void appendVisiblePredicate(TableMeta<?> tableMeta, String tableAlias, ClauseSQLContext context) {
+    protected final void appendVisiblePredicate(TableMeta<?> tableMeta, String tableAlias, TableContextSQLContext context) {
         switch (tableMeta.mappingMode()) {
             case SIMPLE:
             case PARENT:
@@ -87,7 +85,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         }
     }
 
-    protected final void appendVisiblePredicate(List<TableWrapper> tableWrapperList, ClauseSQLContext context) {
+    protected final void appendVisiblePredicate(List<TableWrapper> tableWrapperList, TableContextSQLContext context) {
         // append visible predicates
         final TableMeta<?> dual = SQLS.dual();
         Map<String, ChildTableMeta<?>> childMap = new HashMap<>();
@@ -116,7 +114,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         }
     }
 
-    protected final void visibleConstantPredicate(ClauseSQLContext context
+    protected final void visibleConstantPredicate(TableContextSQLContext context
             , TableMeta<?> tableMeta, String tableAlias) {
         switch (context.visible()) {
             case ONLY_VISIBLE:
@@ -133,7 +131,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     }
 
 
-    protected final void visibleSubQueryPredicateForChild(ClauseSQLContext context
+    protected final void visibleSubQueryPredicateForChild(TableContextSQLContext context
             , ChildTableMeta<?> childMeta, String childAlias) {
         if (context.visible() == Visible.BOTH) {
             return;
@@ -144,31 +142,25 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         final String parentAlias = subQueryParentAlias(parentMeta.tableName());
         // append exists SubQuery
         StringBuilder builder = context.sqlBuilder()
-                .append(" ")
-                .append(Keywords.AND)
-                .append(" ")
-                .append(Keywords.EXISTS)
-                .append(" ( ")
-                .append(Keywords.SELECT);
+                .append(" AND")
+                .append(" EXISTS")
+                .append(" ( SELECT");
 
-        context.appendField(parentAlias, parentMeta.primaryKey());
+        context.appendField(parentAlias, parentMeta.id());
         // from clause
-        builder.append(" ")
-                .append(Keywords.FROM);
+        builder.append(" FROM");
         context.appendParentTableOf(childMeta);
 
         if (tableAliasAfterAs()) {
-            builder.append(" ")
-                    .append(Keywords.AS);
+            builder.append(" AS");
         }
         context.appendText(parentAlias);
         // where clause
-        builder.append(" ")
-                .append(Keywords.WHERE);
-        context.appendField(parentAlias, parentMeta.primaryKey());
+        builder.append(" WHERE");
+        context.appendField(parentAlias, parentMeta.id());
         builder.append(" =");
 
-        context.appendField(childAlias, childMeta.primaryKey());
+        context.appendField(childAlias, childMeta.id());
 
         // visible predicate
         visibleConstantPredicate(context, childMeta, childAlias);
@@ -176,25 +168,24 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     }
 
 
-    private void doVisibleConstantPredicate(ClauseSQLContext context, Boolean visible
+    private void doVisibleConstantPredicate(TableContextSQLContext context, Boolean visible
             , TableMeta<?> tableMeta, String tableAlias) {
 
         final FieldMeta<?, ?> visibleField = tableMeta.getField(TableMeta.VISIBLE);
 
         StringBuilder builder = context.sqlBuilder()
-                .append(" ")
-                .append(Keywords.AND);
+                .append(" AND");
 
         context.appendField(tableAlias, visibleField);
 
         builder.append(" =");
-        SQLS.constant(visible, visibleField.mappingType())
+        SQLS.constant(visible, visibleField.mappingMeta())
                 .appendSQL(context);
 
     }
 
     private void appendVisibleIfNeed(TableWrapper tableWrapper, @Nullable TableWrapper preTableWrapper
-            , ClauseSQLContext context, Map<String, ChildTableMeta<?>> childMap) {
+            , TableContextSQLContext context, Map<String, ChildTableMeta<?>> childMap) {
 
         final TableMeta<?> tableMeta = (TableMeta<?>) tableWrapper.tableAble();
         switch (tableMeta.mappingMode()) {

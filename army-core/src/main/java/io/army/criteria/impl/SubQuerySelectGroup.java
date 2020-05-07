@@ -6,5 +6,5 @@ import io.army.criteria.SubQuery;
 
 interface SubQuerySelectGroup extends SelectionGroup, SQLPart.SemiFinished {
 
-    void finish(SubQuery subQuery);
+    void finish(SubQuery subQuery, String subQueryAlias);
 }

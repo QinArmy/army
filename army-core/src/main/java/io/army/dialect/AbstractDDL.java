@@ -309,7 +309,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
                 break;
             case TableMeta.VISIBLE:
                 tableBuilder.append(
-                        fieldMeta.mappingType().nonNullTextValue(Boolean.TRUE)
+                        fieldMeta.mappingMeta().nonNullTextValue(Boolean.TRUE)
                 );
                 break;
             case TableMeta.VERSION:

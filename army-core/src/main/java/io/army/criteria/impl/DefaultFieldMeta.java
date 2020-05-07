@@ -173,11 +173,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     @Override
     public final Selection as(String alias) {
-        if (this.propertyName.equals(alias)) {
-            return this;
-        } else {
-            return new FieldSelectionImpl<>(this, alias);
-        }
+        return new FieldSelectionImpl<>(this, alias);
     }
 
     @Override
@@ -221,7 +217,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     }
 
     @Override
-    public final MappingMeta mappingType() {
+    public final MappingMeta mappingMeta() {
         return mappingType;
     }
 

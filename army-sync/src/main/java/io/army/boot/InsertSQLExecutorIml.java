@@ -254,7 +254,7 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
         if (paramMeta instanceof FieldMeta) {
             FieldMeta<?, ?> fieldMeta = (FieldMeta<?, ?>) paramMeta;
             value = doEncodeFieldValue(fieldMeta, value);
-            mappingMeta = fieldMeta.mappingType();
+            mappingMeta = fieldMeta.mappingMeta();
         } else if (paramMeta instanceof MappingMeta) {
             mappingMeta = (MappingMeta) paramMeta;
         } else {

@@ -47,7 +47,7 @@ public interface FieldExp<T extends IDomain, F> extends Expression<F>, FieldSele
     Class<F> javaType();
 
 
-    MappingMeta mappingType();
+    MappingMeta mappingMeta();
 
     boolean insertalbe();
 

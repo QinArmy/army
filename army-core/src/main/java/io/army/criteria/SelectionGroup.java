@@ -7,7 +7,7 @@ public interface SelectionGroup extends SelectPart {
 
     String tableAlias();
 
-    List<Selection> selectionList();
+    List<? extends Selection> selectionList();
 
 
 }

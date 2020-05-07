@@ -11,7 +11,7 @@ import java.util.function.Function;
  * created  on 2018/10/8.
  */
 @SuppressWarnings("unused")
-public interface Expression<E> extends SelectionAble, SelfDescribed, MappingTypeAble, SortPart {
+public interface Expression<E> extends SelectionAble, SelfDescribed, MappingMetaAble, SortPart {
 
     IPredicate eq(Expression<E> expression);
 

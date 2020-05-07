@@ -176,7 +176,7 @@ class StandardContextualSingleDelete<C> extends AbstractSQLDebug implements Dele
 
         @Override
         void assertPrimaryKeyValue(TableMeta<?> tableMeta) {
-            Assert.isInstanceOf(tableMeta.primaryKey().javaType(), this.primaryKeyValue);
+            Assert.isInstanceOf(tableMeta.id().javaType(), this.primaryKeyValue);
         }
 
 

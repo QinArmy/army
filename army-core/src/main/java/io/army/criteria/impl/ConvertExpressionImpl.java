@@ -23,7 +23,7 @@ final class ConvertExpressionImpl<E> extends AbstractExpression<E> implements Co
 
 
     @Override
-    public MappingMeta mappingType() {
+    public MappingMeta mappingMeta() {
         return convertType;
     }
 

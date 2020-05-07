@@ -5,6 +5,7 @@ import io.army.criteria.Expression;
 import io.army.criteria.SubQuery;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
+import io.army.meta.TableMeta;
 
 interface CriteriaContext {
 
@@ -15,6 +16,8 @@ interface CriteriaContext {
     <E> Expression<E> ref(String subQueryAlias, String derivedFieldName, Class<E> selectionType);
 
     void onAddSubQuery(SubQuery subQuery, String subQueryAlias);
+
+    void onAddTable(TableMeta<?> tableMeta, String tableAlias);
 
     <E> Expression<E> composeRef(String selectionAlias);
 

@@ -49,7 +49,7 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
         final ConstantExpression<E> cacheExp = (ConstantExpression<E>) CONSTANT_EXP_CACHE.get(constant);
 
         ConstantExpression<E> exp;
-        if (cacheExp != null && cacheExp.mappingType() == type) {
+        if (cacheExp != null && cacheExp.mappingMeta() == type) {
             exp = cacheExp;
         } else {
             exp = new ConstantExpressionImpl<>(type, constant);
@@ -72,7 +72,7 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
 
     @Override
     public Selection as(String alias) {
-        return new ConstantSelection<>(this, alias);
+        return new DefaultSelection(this, alias);
     }
 
     @Override
@@ -81,7 +81,7 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
     }
 
     @Override
-    public MappingMeta mappingType() {
+    public MappingMeta mappingMeta() {
         return mappingType;
     }
 
@@ -95,46 +95,4 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
         return mappingType.nonNullTextValue(constant);
     }
 
-    /*################################## blow static inner method ##################################*/
-
-    private static final class ConstantSelection<E> implements Selection {
-
-        private final ConstantExpression<E> constant;
-
-        private final String alias;
-
-        private ConstantSelection(ConstantExpression<E> constant, String alias) {
-            this.constant = constant;
-            this.alias = alias;
-        }
-
-        @Override
-        public String alias() {
-            return this.alias;
-        }
-
-        @Override
-        public MappingMeta mappingType() {
-            return constant.mappingType();
-        }
-
-        @Override
-        public void appendSQL(SQLContext context) {
-            constant.appendSQL(context);
-            context.sqlBuilder()
-                    .append(" AS ");
-            context.appendText(this.alias);
-
-        }
-
-        @Override
-        public void appendSortPart(SQLContext context) {
-            context.appendText(this.alias);
-        }
-
-        @Override
-        public String toString() {
-            return this.constant.constant() + " AS " + this.alias;
-        }
-    }
 }

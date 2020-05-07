@@ -30,8 +30,8 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             InnerStandardComposeQuery composeSelect = (InnerStandardComposeQuery) select;
             //1. assert composeQuery legal
             CriteriaCounselor.assertStandardComposeSelect(composeSelect);
-            // 2. create standard select context
-            StandardSelectContext context = StandardSelectContext.build(this.dialect, visible);
+            // 2. create compose select context
+            SelectContext context = ComposeSelectContext.build(this.dialect, visible);
             // 3. append composeQuery
             composeSelect.appendSQL(context);
             // 4. append part query ,eg: order by ,limit
@@ -42,8 +42,8 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             InnerSpecialComposeQuery composeSelect = (InnerSpecialComposeQuery) select;
             //1. assert composeQuery legal
             assertSpecialComposeSelect(composeSelect);
-            // 2. create special context
-            ClauseSQLContext context = createSpecialContext(visible);
+            // 2. create compose select context
+            SelectContext context = ComposeSelectContext.build(this.dialect, visible);
             // 3. append composeQuery
             composeSelect.appendSQL(context);
             // 4. append part query ,eg: order by ,limit
@@ -55,7 +55,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             //1. assert standardSubQuery legal
             CriteriaCounselor.assertStandardSelect(standardSelect);
             // 2. create standard select context
-            StandardSelectContext context = StandardSelectContext.build(this.dialect, visible);
+            SelectContext context = SelectContextImpl.build(this.dialect, visible, standardSelect);
             // 3. parse standard select
             standardSelect(standardSelect, context);
             sqlWrapper = context.build();
@@ -65,7 +65,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             //1. assert specialSubQuery legal
             assertSpecialSelect(specialSelect);
             // 2. create special context
-            ClauseSQLContext context = createSpecialContext(visible);
+            SelectContext context = SelectContextImpl.build(this.dialect, visible, specialSelect);
             // 3. parse special select
             specialSelect(specialSelect, context);
             sqlWrapper = context.build();
@@ -90,7 +90,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             //1. assert composeQuery legal
             CriteriaCounselor.assertStandardComposeSelect(composeSelect);
             // 2. adapt context
-            ClauseSQLContext context = adaptContext(composeSelect, original);
+            TableContextSQLContext context = adaptContext(composeSelect, original);
             // 3. append composeQuery
             composeSelect.appendSQL(context);
             // 4. append part query ,eg: order by ,limit
@@ -100,7 +100,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             //1. assert composeQuery legal
             assertSpecialComposeSelect(composeSelect);
             // 2. adapt context
-            ClauseSQLContext context = adaptContext(composeSelect, original);
+            TableContextSQLContext context = adaptContext(composeSelect, original);
             // 3. append composeQuery
             composeSelect.appendSQL(context);
             // 4. append part query ,eg: order by ,limit
@@ -110,7 +110,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             //1. assert standardSubQuery legal
             CriteriaCounselor.assertStandardSelect(standardSelect);
             // 2. adapt context
-            ClauseSQLContext context = adaptContext(standardSelect, original);
+            TableContextSQLContext context = adaptContext(standardSelect, original);
             // 3. parse standard select
             standardSelect(standardSelect, context);
 
@@ -119,7 +119,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             //1. assert specialSubQuery legal
             assertSpecialSelect(specialSelect);
             // 2. adapt context
-            ClauseSQLContext context = adaptContext(specialSelect, original);
+            TableContextSQLContext context = adaptContext(specialSelect, original);
             // 3. parse special select
             specialSelect(specialSelect, context);
 
@@ -137,7 +137,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             //1. assert composeQuery legal
             CriteriaCounselor.assertStandardComposeSubQuery(composeQuery);
             // 2. adapt context
-            ClauseSQLContext context = adaptContext(composeQuery, original);
+            TableContextSQLContext context = adaptContext(composeQuery, original);
             // 3. append composeQuery
             composeQuery.appendSQL(context);
             // 4. append part query ,eg: order by ,limit
@@ -147,7 +147,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             //1. assert composeQuery legal
             assertSpecialComposeSubQuery(composeQuery);
             // 2. adapt context
-            ClauseSQLContext context = adaptContext(composeQuery, original);
+            TableContextSQLContext context = adaptContext(composeQuery, original);
             // 3. append composeQuery
             composeQuery.appendSQL(context);
             // 4. append part query ,eg: order by ,limit
@@ -157,7 +157,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             //1. assert standardSubQuery legal
             CriteriaCounselor.assertStandardSubQuery(standardSubQuery);
             // 2. adapt context
-            ClauseSQLContext context = adaptContext(standardSubQuery, original);
+            TableContextSQLContext context = adaptContext(standardSubQuery, original);
             // 3. parse standard sub query
             standardSubQuery(standardSubQuery, context);
 
@@ -166,7 +166,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             //1. assert specialSubQuery legal
             assertSpecialSubQuery(specialSubQuery);
             // 2. adapt context
-            ClauseSQLContext context = adaptContext(specialSubQuery, original);
+            TableContextSQLContext context = adaptContext(specialSubQuery, original);
             // 3. parse special sub query
             specialSubQuery(specialSubQuery, context);
 
@@ -188,24 +188,20 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
 
     protected abstract void assertSpecialSelect(InnerSpecialSelect select);
 
-    protected abstract void specialPartSelect(InnerSpecialComposeQuery select, ClauseSQLContext context);
+    protected abstract void specialPartSelect(InnerSpecialComposeQuery select, TableContextSQLContext context);
 
-    protected abstract void specialSelect(InnerSpecialSelect specialSelect, ClauseSQLContext context);
+    protected abstract void specialSelect(InnerSpecialSelect specialSelect, TableContextSQLContext context);
 
-    protected abstract void specialSubQuery(InnerSpecialSubQuery composeQuery, ClauseSQLContext context);
+    protected abstract void specialSubQuery(InnerSpecialSubQuery composeQuery, TableContextSQLContext context);
 
-    protected ClauseSQLContext createSpecialContext(final Visible visible) {
-        return new StandardSelectContext(this.dialect, visible);
-    }
-
-    protected final ClauseSQLContext adaptContext(InnerGeneralQuery query, SQLContext context) {
-        ClauseSQLContext adaptedContext;
+    protected final TableContextSQLContext adaptContext(InnerGeneralQuery query, SQLContext context) {
+        TableContextSQLContext adaptedContext;
         if (query instanceof InnerComposeQuery) {
-            adaptedContext = (ClauseSQLContext) context;
+            adaptedContext = (TableContextSQLContext) context;
         } else if (query instanceof InnerSelect) {
-            adaptedContext = adaptSelectContext((InnerSelect) query, context);
+            adaptedContext = SelectContextImpl.build((TableContextSQLContext) context, (InnerSelect) query);
         } else if (query instanceof InnerSubQuery) {
-            adaptedContext = adaptSubQueryContext((InnerSubQuery) query, context);
+            adaptedContext = SubQueryContextImpl.build((TableContextSQLContext) context, (InnerSubQuery) query);
         } else {
             throw new UnKnownTypeException(query);
         }
@@ -213,31 +209,30 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
     }
 
 
-    protected abstract ClauseSQLContext createSpecialSelectContext(ClauseSQLContext original);
+    protected abstract TableContextSQLContext createSpecialSelectContext(TableContextSQLContext original);
 
-    protected abstract ClauseSQLContext createSpecialSubQueryContext(ClauseSQLContext original);
+    protected abstract TableContextSQLContext createSpecialSubQueryContext(TableContextSQLContext original);
 
 
-    protected abstract void limitClause(int offset, int rowCount, ClauseSQLContext context);
+    protected abstract void limitClause(int offset, int rowCount, TableContextSQLContext context);
 
-    protected abstract void lockClause(LockMode lockMode, ClauseSQLContext context);
+    protected abstract void lockClause(LockMode lockMode, TableContextSQLContext context);
 
 
 
     /*################################## blow final protected method ##################################*/
 
-    protected final void selectClause(List<SQLModifier> modifierList, ClauseSQLContext context) {
-        context.currentClause(Clause.SELECT);
+    protected final void selectClause(List<SQLModifier> modifierList, TableContextSQLContext context) {
 
-        StringBuilder builder = context.sqlBuilder();
+        StringBuilder builder = context.sqlBuilder()
+                .append(" SELECT");
         for (SQLModifier sqlModifier : modifierList) {
             builder.append(" ")
                     .append(sqlModifier.render());
         }
     }
 
-    protected final void selectListClause(List<SelectPart> selectPartList, ClauseSQLContext context) {
-        context.currentClause(Clause.SELECT_LIST);
+    protected final void selectListClause(List<SelectPart> selectPartList, TableContextSQLContext context) {
 
         for (SelectPart selectPart : selectPartList) {
             if ((selectPart instanceof Selection) || (selectPart instanceof SelectionGroup)) {
@@ -248,9 +243,9 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
         }
     }
 
-    protected final void fromClause(List<TableWrapper> tableWrapperList, ClauseSQLContext context) {
-        context.currentClause(Clause.FROM);
-
+    protected final void fromClause(List<TableWrapper> tableWrapperList, TableContextSQLContext context) {
+        context.sqlBuilder()
+                .append(" FROM");
         Map<String, TableWrapper> aliasMap = new HashMap<>();
         for (TableWrapper tableWrapper : tableWrapperList) {
 
@@ -265,12 +260,13 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
     }
 
     protected final void whereClause(List<TableWrapper> tableWrapperList, List<IPredicate> predicateList
-            , ClauseSQLContext context) {
+            , TableContextSQLContext context) {
 
         final boolean needAppendVisible = DialectUtils.needAppendVisible(tableWrapperList);
 
         if (!predicateList.isEmpty() || needAppendVisible) {
-            context.currentClause(Clause.WHERE);
+            context.sqlBuilder()
+                    .append(" WHERE");
         }
 
         if (!predicateList.isEmpty()) {
@@ -282,23 +278,26 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
         }
     }
 
-    protected final void groupByClause(List<SortPart> sortPartList, ClauseSQLContext context) {
+    protected final void groupByClause(List<SortPart> sortPartList, TableContextSQLContext context) {
         if (!sortPartList.isEmpty()) {
-            context.currentClause(Clause.GROUP_BY);
+            context.sqlBuilder()
+                    .append(" GROUP BY");
             DialectUtils.appendSortPartList(sortPartList, context);
         }
     }
 
-    protected final void havingClause(List<IPredicate> havingList, ClauseSQLContext context) {
+    protected final void havingClause(List<IPredicate> havingList, TableContextSQLContext context) {
         if (!havingList.isEmpty()) {
-            context.currentClause(Clause.HAVING);
+            context.sqlBuilder()
+                    .append(" HAVING");
             DialectUtils.appendPredicateList(havingList, context);
         }
     }
 
-    protected final void orderByClause(List<SortPart> orderPartList, ClauseSQLContext context) {
+    protected final void orderByClause(List<SortPart> orderPartList, TableContextSQLContext context) {
         if (!orderPartList.isEmpty()) {
-            context.currentClause(Clause.ORDER_BY);
+            context.sqlBuilder()
+                    .append(" ORDER BY");
             DialectUtils.appendSortPartList(orderPartList, context);
         }
     }
@@ -306,14 +305,14 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
     /*################################## blow private method ##################################*/
 
 
-    private void standardSelect(InnerStandardSelect select, ClauseSQLContext context) {
+    private void standardSelect(InnerStandardSelect select, TableContextSQLContext context) {
         genericQuery(select, context);
         // lock clause
         lockClause(select.lockMode(), context);
 
     }
 
-    private void standardSubQuery(InnerStandardSubQuery subQuery, ClauseSQLContext context) {
+    private void standardSubQuery(InnerStandardSubQuery subQuery, TableContextSQLContext context) {
         StringBuilder builder = context.sqlBuilder()
                 .append(" ( ");
         genericQuery(subQuery, context);
@@ -322,7 +321,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
     }
 
 
-    private void genericQuery(InnerQuery query, ClauseSQLContext context) {
+    private void genericQuery(InnerQuery query, TableContextSQLContext context) {
         // select clause
         selectClause(query.modifierList(), context);
         // select list clause
@@ -342,43 +341,11 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
     }
 
 
-    private void partQuery(InnerComposeQuery query, ClauseSQLContext context) {
-        context.currentClause(Clause.PART_START);
+    private void partQuery(InnerComposeQuery query, TableContextSQLContext context) {
         // order by clause
         orderByClause(query.orderPartList(), context);
         // limit clause
         limitClause(query.offset(), query.rowCount(), context);
-
-        context.currentClause(Clause.PART_END);
-    }
-
-
-    private ClauseSQLContext adaptSelectContext(InnerSelect select, SQLContext context) {
-        ClauseSQLContext adaptedContext;
-        if (select instanceof InnerStandardSelect) {
-            if (context instanceof StandardSelectContext) {
-                adaptedContext = (ClauseSQLContext) context;
-            } else if (select instanceof InnerSpecialSelect) {
-                adaptedContext = createSpecialSelectContext((ClauseSQLContext) context);
-            } else {
-                throw new UnKnownTypeException(select);
-            }
-        } else if (select instanceof InnerSpecialSelect) {
-            adaptedContext = createSpecialSelectContext((ClauseSQLContext) context);
-        } else {
-            throw new UnKnownTypeException(select);
-        }
-        return adaptedContext;
-    }
-
-    private ClauseSQLContext adaptSubQueryContext(InnerSubQuery subQuery, SQLContext context) {
-        ClauseSQLContext adaptedContext;
-        if (subQuery instanceof InnerStandardSubQuery) {
-            adaptedContext = StandardSubQueryContext.build((ClauseSQLContext) context);
-        } else {
-            adaptedContext = createSpecialSubQueryContext((ClauseSQLContext) context);
-        }
-        return adaptedContext;
     }
 
 

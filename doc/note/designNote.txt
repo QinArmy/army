@@ -62,3 +62,7 @@
 16. 为什么删除对 PostFieldGenerator 的支持?
 (1)因为 army 天生支持分片,PostFieldGenerator 创建的 id 不能分片.
 (2)PostFieldGenerator 删除后,army 设计简洁很多.
+
+17. 为什么 FieldMeta , ComposeRefSelection 和 RefSelection 的 as() 方法每次都要返回新的实例?
+(1) 因为 FieldMeta ,ComposeRefSelection 和 RefSelection 都是对字段的引用,在它的上下文中逻辑上必须是唯一的,否则阄产生 bug.
+

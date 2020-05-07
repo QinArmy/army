@@ -68,7 +68,7 @@ final class ParamExpressionImp<E> extends AbstractNoNOperationExpression<E> impl
     }
 
     @Override
-    public final MappingMeta mappingType() {
+    public final MappingMeta mappingMeta() {
         return this.mappingType;
     }
 

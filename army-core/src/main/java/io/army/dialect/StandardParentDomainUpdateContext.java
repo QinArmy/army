@@ -1,6 +1,5 @@
 package io.army.dialect;
 
-import io.army.criteria.TableAliasException;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.InnerStandardDomainUpdate;
 import io.army.meta.ChildTableMeta;
@@ -9,7 +8,7 @@ import io.army.meta.ParentTableMeta;
 
 import java.util.Collection;
 
-final class StandardParentDomainUpdateContext extends AbstractClauseContext implements ParentDomainUpdateContext {
+final class StandardParentDomainUpdateContext extends AbstractTableContextSQLContext implements ParentDomainUpdateContext {
 
 
     private final InnerStandardDomainUpdate innerUpdate;
@@ -24,7 +23,7 @@ final class StandardParentDomainUpdateContext extends AbstractClauseContext impl
 
     StandardParentDomainUpdateContext(Dialect dialect, Visible visible, InnerStandardDomainUpdate update
             , Collection<FieldMeta<?, ?>> childFields) {
-        super(dialect, visible);
+        super(dialect, visible, null);
         this.innerUpdate = update;
         this.childFields = childFields;
         ChildTableMeta<?> childMeta = (ChildTableMeta<?>) update.tableMeta();
@@ -32,31 +31,6 @@ final class StandardParentDomainUpdateContext extends AbstractClauseContext impl
         this.tableAlias = update.tableAlias();
     }
 
-
-    @Override
-    public final void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException {
-        if (childFields.contains(fieldMeta)) {
-            this.needQueryChild = true;
-            //
-        } else {
-
-        }
-    }
-
-    @Override
-    public final void appendField(FieldMeta<?, ?> fieldMeta) {
-        if (childFields.contains(fieldMeta)) {
-            this.needQueryChild = true;
-            //
-        } else {
-
-        }
-    }
-
-    @Override
-    public void currentClause(Clause clause) {
-
-    }
 
     @Override
     public final ParentTableMeta<?> tableMeta() {

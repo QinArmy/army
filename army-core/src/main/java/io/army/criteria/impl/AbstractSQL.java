@@ -7,7 +7,6 @@ import io.army.criteria.impl.inner.TableWrapper;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
-import io.army.util.CollectionUtils;
 
 import java.util.*;
 
@@ -152,53 +151,33 @@ abstract class AbstractSQL extends AbstractSQLDebug implements QueryAble, InnerS
      */
     final void processSelectPartList(final List<SelectPart> selectPartList) {
 
-        Map<TableMeta<?>, List<Selection>> tableFieldListMap = new HashMap<>();
         Map<String, SubQuerySelectGroup> subQuerySelectGroupMap = new LinkedHashMap<>();
 
         // 1. find FieldMata/SubQuerySelectGroup from selectPart as tableSelectionMap/subQuerySelectGroupMap.
-        for (Iterator<SelectPart> iterator = selectPartList.iterator(); iterator.hasNext(); ) {
-            SelectPart selectPart = iterator.next();
-
-            if (selectPart instanceof FieldMeta) {
-                // process fieldMeta
-                processSelectFieldMeta((FieldMeta<?, ?>) selectPart, tableFieldListMap);
-                // remove FieldMeta from selectPartList.
-                iterator.remove();
-            } else if (selectPart instanceof SubQuerySelectGroup) {
+        for (SelectPart selectPart : selectPartList) {
+            if (selectPart instanceof SubQuerySelectGroup) {
                 SubQuerySelectGroup group = (SubQuerySelectGroup) selectPart;
-                subQuerySelectGroupMap.put(group.tableAlias(), group);
+                if (subQuerySelectGroupMap.putIfAbsent(group.tableAlias(), group) != group) {
+                    throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "derived group[%s] duplication"
+                            , group.tableAlias());
+                }
             }
-
         }
 
         // 2. find table alias to create SelectionGroup .
         for (TableWrapper tableWrapper : this.tableWrapperList) {
             TableAble tableAble = tableWrapper.tableAble();
 
-            if (tableAble instanceof TableMeta) {
-
-                TableMeta<?> tableMeta = (TableMeta<?>) tableAble;
-                List<Selection> fieldMetaList = tableFieldListMap.remove(tableMeta);
-
-                if (!CollectionUtils.isEmpty(fieldMetaList)) {
-                    // create SelectGroup for alias table and add to selectPartList.
-                    selectPartList.add(SQLS.fieldGroup(tableWrapper.alias(), fieldMetaList));
-                }
-
-            } else if (tableAble instanceof SubQuery) {
+            if (tableAble instanceof SubQuery) {
                 SubQuerySelectGroup group = subQuerySelectGroupMap.remove(tableWrapper.alias());
                 if (group != null) {
                     // finish SubQuerySelectGroup
-                    group.finish((SubQuery) tableAble);
+                    group.finish((SubQuery) tableAble, tableWrapper.alias());
                 }
             }
         }
 
         // 3. assert tableFieldListMap and subQuerySelectGroupMap all is empty.
-        if (!tableFieldListMap.isEmpty()) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                    , "the table of FieldMeta not found form criteria context,please check from clause.");
-        }
         if (!subQuerySelectGroupMap.isEmpty()) {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR
                     , "SelectGroup of SubQuery[%s] no found from criteria context,please check from clause.");

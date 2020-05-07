@@ -15,15 +15,14 @@ final class BracketsExpression<E> extends AbstractExpression<E> {
     @Override
     protected void afterSpace(SQLContext context) {
         StringBuilder builder = context.sqlBuilder();
-        builder.append("(");
+        builder.append("( ");
         exp.appendSQL(context);
-        builder.append(")");
+        builder.append(" )");
     }
 
-
     @Override
-    public MappingMeta mappingType() {
-        return exp.mappingType();
+    public MappingMeta mappingMeta() {
+        return exp.mappingMeta();
     }
 
     @Override

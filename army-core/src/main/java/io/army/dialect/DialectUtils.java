@@ -81,8 +81,8 @@ public abstract class DialectUtils {
         boolean appendedId = false;
         for (FieldMeta<?, ?> fieldMeta : fieldMetas) {
             if (!appendedId && TableMeta.ID.equals(fieldMeta.propertyName())) {
-                childFields.add(childMeta.primaryKey());
-                parentFields.add(parentMeta.primaryKey());
+                childFields.add(childMeta.id());
+                parentFields.add(parentMeta.id());
                 appendedId = true;
             } else if (fieldMeta.tableMeta() == parentMeta) {
                 parentFields.add(fieldMeta);
@@ -94,7 +94,7 @@ public abstract class DialectUtils {
         }
     }
 
-    public static void appendPredicateList(List<IPredicate> predicateList, ClauseSQLContext context) {
+    public static void appendPredicateList(List<IPredicate> predicateList, TableContextSQLContext context) {
 
         StringBuilder builder = context.sqlBuilder();
         int count = 0;
@@ -107,7 +107,7 @@ public abstract class DialectUtils {
         }
     }
 
-    public static void appendSortPartList(List<SortPart> sortPartList, ClauseSQLContext context) {
+    public static void appendSortPartList(List<SortPart> sortPartList, TableContextSQLContext context) {
         StringBuilder builder = context.sqlBuilder();
 
         int count = 0;
@@ -149,9 +149,24 @@ public abstract class DialectUtils {
         return need;
     }
 
-    public static ArmyRuntimeException createNotSupportClauseException(ClauseSQLContext context, Clause clause) {
+    public static ArmyRuntimeException createNotSupportClauseException(TableContextSQLContext context, Clause clause) {
         return new ArmyRuntimeException(ErrorCode.NONE, "%s not support %s clause."
                 , context.getClass().getName(), clause);
+    }
+
+    public static CriteriaException createNoLogicalTableException(FieldMeta<?, ?> fieldMeta) {
+        throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                , "not found logical table for [%s], please use SQLS.field(String,FieldMeta) method.", fieldMeta);
+    }
+
+    public static CriteriaException createUnKnownFieldException(FieldMeta<?, ?> fieldMeta) {
+        throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                , "unknown logical table for FieldMeta[%s] in current context,please check criteria code.", fieldMeta);
+    }
+
+    public static CriteriaException createUnKnownTableException(TableMeta<?> tableMeta) {
+        throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                , "unknown TableMeta[%s] in current context,please check criteria code.", tableMeta);
     }
 
     static List<Selection> extractSelectionList(Select select) {

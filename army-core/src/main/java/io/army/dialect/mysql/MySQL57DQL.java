@@ -7,8 +7,8 @@ import io.army.criteria.impl.inner.InnerSpecialComposeQuery;
 import io.army.criteria.impl.inner.InnerSpecialSelect;
 import io.army.criteria.impl.inner.InnerSpecialSubQuery;
 import io.army.dialect.AbstractDQL;
-import io.army.dialect.ClauseSQLContext;
 import io.army.dialect.Keywords;
+import io.army.dialect.TableContextSQLContext;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingMeta;
 import io.army.wrapper.ParamWrapper;
@@ -44,32 +44,32 @@ class MySQL57DQL extends AbstractDQL {
     }
 
     @Override
-    protected void specialPartSelect(InnerSpecialComposeQuery select, ClauseSQLContext context) {
+    protected void specialPartSelect(InnerSpecialComposeQuery select, TableContextSQLContext context) {
 
     }
 
     @Override
-    protected void specialSelect(InnerSpecialSelect specialSelect, ClauseSQLContext context) {
+    protected void specialSelect(InnerSpecialSelect specialSelect, TableContextSQLContext context) {
 
     }
 
     @Override
-    protected void specialSubQuery(InnerSpecialSubQuery composeQuery, ClauseSQLContext context) {
+    protected void specialSubQuery(InnerSpecialSubQuery composeQuery, TableContextSQLContext context) {
 
     }
 
     @Override
-    protected ClauseSQLContext createSpecialSelectContext(ClauseSQLContext original) {
+    protected TableContextSQLContext createSpecialSelectContext(TableContextSQLContext original) {
         return null;
     }
 
     @Override
-    protected ClauseSQLContext createSpecialSubQueryContext(ClauseSQLContext original) {
+    protected TableContextSQLContext createSpecialSubQueryContext(TableContextSQLContext original) {
         return null;
     }
 
     @Override
-    protected final void limitClause(int offset, int rowCount, ClauseSQLContext context) {
+    protected final void limitClause(int offset, int rowCount, TableContextSQLContext context) {
 
         if (offset > -1 || rowCount > -1) {
             StringBuilder builder = context.sqlBuilder();
@@ -90,7 +90,7 @@ class MySQL57DQL extends AbstractDQL {
     }
 
     @Override
-    protected void lockClause(LockMode lockMode, ClauseSQLContext context) {
+    protected void lockClause(LockMode lockMode, TableContextSQLContext context) {
         switch (lockMode) {
             case READ:
                 context.sqlBuilder().append(" LOCK IN SHARE MODE");

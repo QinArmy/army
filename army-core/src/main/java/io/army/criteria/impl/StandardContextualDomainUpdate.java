@@ -42,7 +42,7 @@ final class StandardContextualDomainUpdate<T extends IDomain, C> extends Abstrac
         Assert.notNull(tableMeta, "tableMeta required");
         Assert.notNull(criteria, "criteria required");
 
-        Assert.isInstanceOf(tableMeta.primaryKey().javaType(), primaryKeyValue);
+        Assert.isInstanceOf(tableMeta.id().javaType(), primaryKeyValue);
 
         this.tableMeta = tableMeta;
         this.primaryKeyValue = primaryKeyValue;

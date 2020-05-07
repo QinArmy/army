@@ -1,9 +1,9 @@
 package io.army.dialect;
 
+import io.army.ErrorCode;
 import io.army.beans.DomainWrapper;
-import io.army.criteria.FieldPairDualPredicate;
-import io.army.criteria.TableAliasException;
-import io.army.criteria.Visible;
+import io.army.criteria.*;
+import io.army.criteria.impl.inner.TableWrapper;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
@@ -14,11 +14,46 @@ import io.army.wrapper.DomainSQLWrapper;
 import io.army.wrapper.ParamWrapper;
 import io.army.wrapper.SimpleSQLWrapper;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
-public abstract class AbstractClauseContext implements ClauseSQLContext {
+public abstract class AbstractTableContextSQLContext implements TableContextSQLContext {
+
+
+    protected static TableContext createFromContext(List<TableWrapper> tableWrapperList) {
+        Map<TableMeta<?>, Integer> tableCountMap = new HashMap<>();
+        Map<String, TableMeta<?>> aliasTableMap = new HashMap<>();
+
+        for (TableWrapper tableWrapper : tableWrapperList) {
+            TableAble tableAble = tableWrapper.tableAble();
+            if (tableAble instanceof TableMeta) {
+                TableMeta<?> tableMeta = (TableMeta<?>) tableAble;
+                Integer count = tableCountMap.computeIfAbsent(tableMeta, key -> 0);
+                tableCountMap.replace(tableMeta, count, count + 1);
+                if (aliasTableMap.putIfAbsent(tableWrapper.alias(), tableMeta) != tableMeta) {
+                    throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "TableMeta[%s] alias[%s] duplication."
+                            , tableMeta, tableWrapper.alias());
+                }
+            }
+        }
+
+        Map<TableMeta<?>, String> tableAliasMap = new HashMap<>();
+
+        final Integer one = 1;
+        for (TableWrapper tableWrapper : tableWrapperList) {
+            TableAble tableAble = tableWrapper.tableAble();
+            if (tableAble instanceof TableMeta) {
+                TableMeta<?> tableMeta = (TableMeta<?>) tableAble;
+                if (one.equals(tableCountMap.get(tableMeta))) {
+
+                    tableAliasMap.putIfAbsent(tableMeta, tableWrapper.alias());
+                }
+            }
+
+        }
+
+        return new TableContext(tableCountMap, aliasTableMap, tableAliasMap);
+    }
+
 
     protected final Dialect dialect;
 
@@ -30,25 +65,29 @@ public abstract class AbstractClauseContext implements ClauseSQLContext {
 
     protected final Stack<Clause> clauseStack = new Stack<>();
 
+    protected final TableContext tableContext;
+
     boolean finished;
 
-    protected AbstractClauseContext(Dialect dialect, Visible visible) {
+    protected AbstractTableContextSQLContext(Dialect dialect, Visible visible, TableContext tableContext) {
         this.dialect = dialect;
         this.visible = visible;
         this.sqlBuilder = new StringBuilder();
         this.paramList = new ArrayList<>();
+        this.tableContext = tableContext;
     }
 
-    protected AbstractClauseContext(ClauseSQLContext original) {
+    protected AbstractTableContextSQLContext(TableContextSQLContext original, TableContext tableContext) {
         this.dialect = original.dialect();
         this.visible = original.visible();
         this.sqlBuilder = original.sqlBuilder();
         this.paramList = original.paramList();
+        this.tableContext = tableContext;
     }
 
 
     @Override
-    public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException {
+    public final void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException {
         sqlBuilder.append(" ")
                 .append(this.dialect.quoteIfNeed(tableAlias))
                 .append(".")
@@ -56,14 +95,12 @@ public abstract class AbstractClauseContext implements ClauseSQLContext {
     }
 
     @Override
-    public void appendField(FieldMeta<?, ?> fieldMeta) {
-        appendTable(fieldMeta.tableMeta());
-        sqlBuilder.append(".")
-                .append(this.dialect.quoteIfNeed(fieldMeta.fieldName()));
+    public final void appendField(FieldMeta<?, ?> fieldMeta) {
+        this.appendField(findTableAlias(fieldMeta), fieldMeta);
     }
 
     @Override
-    public void appendFieldPair(FieldPairDualPredicate predicate) {
+    public final void appendFieldPair(FieldPairDualPredicate predicate) {
         predicate.left().appendSQL(this);
         this.sqlBuilder
                 .append(" ")
@@ -73,15 +110,23 @@ public abstract class AbstractClauseContext implements ClauseSQLContext {
     }
 
     @Override
-    public void appendTable(TableMeta<?> tableMeta) {
+    public final void appendTable(TableMeta<?> tableMeta) {
+        if (this.tableContext.tableCountMap.containsKey(tableMeta)) {
+            throw DialectUtils.createUnKnownTableException(tableMeta);
+        }
         this.sqlBuilder
                 .append(" ")
                 .append(this.dialect.quoteIfNeed(tableMeta.tableName()));
     }
 
     @Override
-    public Dialect dialect() {
+    public final Dialect dialect() {
         return this.dialect;
+    }
+
+    @Override
+    public final TableContext tableContext() {
+        return this.tableContext;
     }
 
     @Override
@@ -152,6 +197,26 @@ public abstract class AbstractClauseContext implements ClauseSQLContext {
         return this.clauseStack.isEmpty() ? null : this.clauseStack.peek();
     }
 
+    protected final String findTableAlias(FieldMeta<?, ?> fieldMeta) throws CriteriaException {
+        Integer count = this.tableContext.tableCountMap.get(fieldMeta.tableMeta());
+        String tableAlias;
+        if (count == null) {
+            tableAlias = findTableAliasFromParent(fieldMeta);
+        } else if (count.equals(1)) {
+            tableAlias = this.tableContext.tableAliasMap.get(fieldMeta.tableMeta());
+        } else {
+            throw DialectUtils.createNoLogicalTableException(fieldMeta);
+        }
+        if (tableAlias == null) {
+            // fromContext or parentFromContext error.
+            throw DialectUtils.createArmyCriteriaException();
+        }
+        return tableAlias;
+    }
+
+    protected String findTableAliasFromParent(FieldMeta<?, ?> fieldMeta) throws CriteriaException {
+        throw DialectUtils.createUnKnownFieldException(fieldMeta);
+    }
 
     protected SimpleSQLWrapper doBuild() {
         return SimpleSQLWrapper.build(

@@ -21,8 +21,8 @@ final class DualExpresion<E> extends AbstractExpression<E> {
     }
 
     @Override
-    public MappingMeta mappingType() {
-        return left.mappingType();
+    public MappingMeta mappingMeta() {
+        return left.mappingMeta();
     }
 
     @Override

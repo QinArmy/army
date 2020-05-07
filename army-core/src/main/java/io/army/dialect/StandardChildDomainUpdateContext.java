@@ -1,6 +1,5 @@
 package io.army.dialect;
 
-import io.army.criteria.TableAliasException;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.InnerStandardDomainUpdate;
 import io.army.meta.ChildTableMeta;
@@ -8,7 +7,7 @@ import io.army.meta.FieldMeta;
 
 import java.util.Collection;
 
-final class StandardChildDomainUpdateContext extends AbstractClauseContext implements ChildDomainUpdateContext {
+final class StandardChildDomainUpdateContext extends AbstractTableContextSQLContext implements ChildDomainUpdateContext {
 
     private final InnerStandardDomainUpdate innerUpdate;
 
@@ -20,7 +19,7 @@ final class StandardChildDomainUpdateContext extends AbstractClauseContext imple
 
     StandardChildDomainUpdateContext(Dialect dialect, Visible visible, InnerStandardDomainUpdate update
             , Collection<FieldMeta<?, ?>> parentFields) {
-        super(dialect, visible);
+        super(dialect, visible, null);
 
         this.innerUpdate = update;
         this.parentFields = parentFields;
@@ -29,29 +28,6 @@ final class StandardChildDomainUpdateContext extends AbstractClauseContext imple
     }
 
 
-    @Override
-    public final void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException {
-        if (parentFields.contains(fieldMeta)) {
-            //
-        } else {
-
-        }
-    }
-
-    @Override
-    public final void appendField(FieldMeta<?, ?> fieldMeta) {
-        if (parentFields.contains(fieldMeta)) {
-            //
-        } else {
-
-        }
-    }
-
-
-    @Override
-    public void currentClause(Clause clause) {
-
-    }
 
     @Override
     public final ChildTableMeta<?> tableMeta() {
