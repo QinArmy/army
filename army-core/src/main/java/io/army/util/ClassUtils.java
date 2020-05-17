@@ -1,7 +1,7 @@
 package io.army.util;
 
+import io.army.lang.NonNull;
 import io.army.modelgen.MetaConstant;
-import org.springframework.lang.NonNull;
 
 import javax.persistence.metamodel.StaticMetamodel;
 import java.lang.reflect.Modifier;

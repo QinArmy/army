@@ -55,9 +55,14 @@ abstract class SessionFactoryUtils {
         }
     }
 
+    static boolean sessionCache(Environment env, String factoryName) {
+        return env.getProperty(String.format(ArmyConfigConstant.SESSION_CACHE, factoryName)
+                , Boolean.class, Boolean.FALSE);
+    }
 
-    static Map<Class<?>, TableMeta<?>> scanPackagesForMeta(SchemaMeta schemaMeta, Environment env) {
-        List<String> packagesToScan = env.getRequiredPropertyList(ArmyConfigConstant.PACKAGE_TO_SCAN, String[].class);
+    static Map<Class<?>, TableMeta<?>> scanPackagesForMeta(SchemaMeta schemaMeta, String factoryName, Environment env) {
+        List<String> packagesToScan = env.getRequiredPropertyList(
+                String.format(ArmyConfigConstant.PACKAGE_TO_SCAN, factoryName), String[].class);
         return TableMetaLoader.build()
                 .scanTableMeta(schemaMeta, packagesToScan);
     }
@@ -67,8 +72,8 @@ abstract class SessionFactoryUtils {
                 , ShardingMode.class, ShardingMode.NO_SHARDING);
     }
 
-    static GeneratorWrapper createGeneratorWrapper(Collection<TableMeta<?>> tableMetas, ShardingMode shardingMode
-            , Environment environment) {
+    static GeneratorWrapper createGeneratorWrapper(Collection<TableMeta<?>> tableMetas
+            , GenericSessionFactory sessionFactory) {
         final Map<FieldMeta<?, ?>, FieldGenerator> generatorMap = new HashMap<>();
         final Map<TableMeta<?>, List<FieldMeta<?, ?>>> tableGeneratorChain = new HashMap<>();
 
@@ -80,14 +85,15 @@ abstract class SessionFactoryUtils {
                 if (generatorMeta == null) {
                     continue;
                 }
-                if (shardingMode != ShardingMode.NO_SHARDING
+                if (sessionFactory.shardingMode() != ShardingMode.NO_SHARDING
                         && PreFieldGenerator.class.isAssignableFrom(generatorMeta.type())) {
                     throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
-                            , "%s not supported by %s.", PreFieldGenerator.class.getName(), shardingMode);
+                            , "%s not supported by %s.", PreFieldGenerator.class.getName()
+                            , sessionFactory.shardingMode());
                 }
                 assertPreGenerator(generatorMeta);
 
-                FieldGenerator generator = GeneratorFactory.getGenerator(fieldMeta, environment);
+                FieldGenerator generator = GeneratorFactory.getGenerator(fieldMeta, sessionFactory);
                 // create generator
                 generatorMap.put(fieldMeta, generator);
 
@@ -135,7 +141,7 @@ abstract class SessionFactoryUtils {
 
             for (FieldMeta<?, ?> fieldMeta : codec.fieldMetaSet()) {
 
-                if (fieldCodecMap.putIfAbsent(fieldMeta, codec) != codec) {
+                if (fieldCodecMap.putIfAbsent(fieldMeta, codec) != null) {
                     throw new SessionFactoryException(ErrorCode.FIELD_CODEC_DUPLICATION
                             , "FieldMeta[%s]'s FieldCodec[%s] duplication.", fieldMeta, codec);
                 }
@@ -250,9 +256,9 @@ abstract class SessionFactoryUtils {
         if (StringUtils.hasText(generatorMeta.dependPropName())) {
             TableMeta<?> tableMeta = generatorMeta.fieldMeta().tableMeta();
 
-            if (!tableMeta.isMappingProp(generatorMeta.dependPropName())) {
+            if (!tableMeta.mappingProp(generatorMeta.dependPropName())) {
                 TableMeta<?> parentMeta = tableMeta.parentMeta();
-                if (parentMeta == null || !parentMeta.isMappingProp(generatorMeta.dependPropName())) {
+                if (parentMeta == null || !parentMeta.mappingProp(generatorMeta.dependPropName())) {
                     throw createDependException(generatorMeta.fieldMeta());
                 }
             }

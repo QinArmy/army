@@ -101,7 +101,7 @@ final class Dual implements IDomain {
         }
 
         @Override
-        public boolean isMappingProp(String propName) {
+        public boolean mappingProp(String propName) {
             return false;
         }
 

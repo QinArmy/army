@@ -6,35 +6,34 @@ import io.army.criteria.Selection;
 import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingMeta;
+import io.army.util.ArrayUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 
 final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements ConstantExpression<E> {
 
-    private static final ConcurrentMap<Object, ConstantExpression<?>> CONSTANT_EXP_CACHE = createConstantExpCache();
+    private static final ConcurrentMap<Object, ConstantExpression<?>> CONSTANT_EXP_CACHE = new ConcurrentHashMap<>();
 
-    private static ConcurrentMap<Object, ConstantExpression<?>> createConstantExpCache() {
-        ConcurrentMap<Object, ConstantExpression<?>> map = new ConcurrentHashMap<>();
+    private static final Set<Object> CONSTANT_KEYS = ArrayUtils.asUnmodifiableSet(
+            0,
+            1,
+            0L,
+            1L,
 
-        map.put(0, null);
-        map.put(1, null);
+            BigDecimal.ONE,
+            BigDecimal.ZERO,
+            new BigDecimal("0.00"),
+            new BigDecimal("1.00"),
 
-        map.put(0L, null);
-        map.put(1L, null);
+            new BigInteger("0"),
+            new BigInteger("1")
+    );
 
-        map.put(BigDecimal.ZERO, null);
-        map.put(BigDecimal.ONE, null);
-        map.put(new BigDecimal("0.00"), null);
-        map.put(new BigDecimal("1.00"), null);
-
-        map.put(new BigInteger("0"), null);
-        map.put(new BigInteger("1"), null);
-        return map;
-    }
 
     @SuppressWarnings("unchecked")
     static <E> ConstantExpression<E> build(final @Nullable MappingMeta mappingType, final E constant) {
@@ -53,7 +52,7 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
             exp = cacheExp;
         } else {
             exp = new ConstantExpressionImpl<>(type, constant);
-            if (cacheExp == null && CONSTANT_EXP_CACHE.containsKey(constant)) {
+            if (cacheExp == null && CONSTANT_KEYS.contains(constant)) {
                 CONSTANT_EXP_CACHE.put(constant, exp);
             }
         }

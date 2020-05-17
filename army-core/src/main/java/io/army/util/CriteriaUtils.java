@@ -63,6 +63,10 @@ public abstract class CriteriaUtils {
 
     public static <T extends IDomain> Insert createSingleInsert(Class<T> domainClass, T domain) {
         TableMeta<T> tableMeta = TableMetaFactory.getTableMeta(domainClass);
+        return createSingleInsert(tableMeta, domain);
+    }
+
+    public static <T extends IDomain> Insert createSingleInsert(TableMeta<T> tableMeta, T domain) {
         return SQLS.multiInsert(tableMeta)
                 .insertInto(tableMeta)
                 .value(domain)
@@ -146,9 +150,9 @@ public abstract class CriteriaUtils {
             propName = propNameList.get(i);
             if (TableMeta.ID.equals(propName)) {
                 list.add(tableMeta.id().eq(valueList.get(i)));
-            } else if (tableMeta.isMappingProp(propName)) {
+            } else if (tableMeta.mappingProp(propName)) {
                 list.add(tableMeta.getField(propName).eq(valueList.get(i)));
-            } else if (parentMeta != null && parentMeta.isMappingProp(propName)) {
+            } else if (parentMeta != null && parentMeta.mappingProp(propName)) {
                 list.add(parentMeta.getField(propName).eq(valueList.get(i)));
             } else {
                 throw new IllegalArgumentException(String.format("propName[%s] isn't prop of TableMeta[%s]"

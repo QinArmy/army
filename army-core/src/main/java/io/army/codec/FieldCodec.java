@@ -11,8 +11,8 @@ public interface FieldCodec {
 
     Set<FieldMeta<?, ?>> fieldMetaSet();
 
-    Object encode(FieldMeta<?, ?> fieldMeta, Object fieldValue);
+    Object encode(FieldMeta<?, ?> fieldMeta, Object nonNullFieldValue);
 
-    Object decode(FieldMeta<?, ?> fieldMeta, Object valueFromDB);
+    Object decode(FieldMeta<?, ?> fieldMeta, Object nonNullValueFromDB);
 
 }

@@ -99,7 +99,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
                 if (tableAble instanceof ChildTableMeta) {
                     temp = ((ChildTableMeta<?>) temp).parentMeta();
                 }
-                if (temp.isMappingProp(TableMeta.VISIBLE)) {
+                if (temp.mappingProp(TableMeta.VISIBLE)) {
                     appendVisibleIfNeed(tableWrapper, preTableWrapper, context, childMap);
                 }
             }
@@ -178,10 +178,8 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
 
         context.appendField(tableAlias, visibleField);
 
-        builder.append(" =");
-        SQLS.constant(visible, visibleField.mappingMeta())
-                .appendSQL(context);
-
+        builder.append(" = ")
+                .append(visibleField.mappingMeta().nonNullTextValue(visible));
     }
 
     private void appendVisibleIfNeed(TableWrapper tableWrapper, @Nullable TableWrapper preTableWrapper

@@ -34,7 +34,10 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
     @Override
     protected Object doGetTransaction() throws TransactionException {
         ArmyTransactionObject txObject = new ArmyTransactionObject();
-        txObject.reset(obtainSession());
+        Session session = obtainCurrentSession(null);
+        if (session != null) {
+            txObject.reset(session);
+        }
         return txObject;
     }
 
@@ -165,10 +168,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
     @Override
     protected boolean isExistingTransaction(Object transaction) throws TransactionException {
         ArmyTransactionObject txObject = (ArmyTransactionObject) transaction;
-        if (txObject.session == null) {
-            throw new IllegalTransactionStateException("transaction no army session.");
-        }
-        return txObject.session.hasTransaction();
+        return txObject.session != null && txObject.session.hasTransaction();
     }
 
     /*################################## blow custom method ##################################*/
@@ -193,14 +193,23 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         return sessionFactory;
     }
 
+
     protected final Session obtainSession() {
         SessionFactory sessionFactory = obtainSessionFactory();
-        Session session;
-        session = (Session) TransactionSynchronizationManager.getResource(sessionFactory);
-        if (session != null) {
-            return session;
+        Session session = obtainCurrentSession(sessionFactory);
+        if (session == null) {
+            session = createNewSession(sessionFactory);
         }
-        return createNewSession(sessionFactory);
+        return session;
+    }
+
+    @Nullable
+    protected final Session obtainCurrentSession(@Nullable SessionFactory sessionFactory) {
+        SessionFactory factory = sessionFactory;
+        if (factory == null) {
+            factory = obtainSessionFactory();
+        }
+        return (Session) TransactionSynchronizationManager.getResource(factory);
     }
 
     protected final Session createNewSession(@Nullable SessionFactory sessionFactory)

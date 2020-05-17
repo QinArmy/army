@@ -2,7 +2,10 @@ package io.army.beans;
 
 
 import io.army.ErrorCode;
+import io.army.util.BeanUtils;
 import io.army.util.Pair;
+
+import java.lang.reflect.Constructor;
 
 final class PairBeanWrapperImpl implements PairWrapper {
 
@@ -10,10 +13,15 @@ final class PairBeanWrapperImpl implements PairWrapper {
 
     static final String SECOND = "second";
 
+    private final Class<?> pairClass;
+
     private Object first;
 
     private Object second;
 
+    PairBeanWrapperImpl(Class<?> pairClass) {
+        this.pairClass = pairClass;
+    }
 
     @Override
     public boolean isWritableProperty(String propertyName) {
@@ -33,8 +41,15 @@ final class PairBeanWrapperImpl implements PairWrapper {
     }
 
     @Override
-    public Object getWrappedInstance() {
-        return new Pair<>(first, second);
+    public Object getWrappedInstance() throws BeansException {
+        try {
+            Constructor<?> constructor = pairClass.getConstructor(Object.class, Object.class);
+            constructor.newInstance(this.first, this.second);
+
+            return BeanUtils.instantiateClass(constructor, this.first, this.second);
+        } catch (Exception e) {
+            throw new BeansException(ErrorCode.BEAN_ACCESS_ERROR, e, "can't create instance of %s", pairClass.getName());
+        }
     }
 
     @Override
@@ -81,6 +96,6 @@ final class PairBeanWrapperImpl implements PairWrapper {
 
     @Override
     public Class<?> getWrappedClass() {
-        return Pair.class;
+        return pairClass;
     }
 }

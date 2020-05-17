@@ -157,7 +157,7 @@ abstract class AbstractSQL extends AbstractSQLDebug implements QueryAble, InnerS
         for (SelectPart selectPart : selectPartList) {
             if (selectPart instanceof SubQuerySelectGroup) {
                 SubQuerySelectGroup group = (SubQuerySelectGroup) selectPart;
-                if (subQuerySelectGroupMap.putIfAbsent(group.tableAlias(), group) != group) {
+                if (subQuerySelectGroupMap.putIfAbsent(group.tableAlias(), group) != null) {
                     throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "derived group[%s] duplication"
                             , group.tableAlias());
                 }

@@ -25,69 +25,69 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     private static final String ID = TableMeta.ID;
 
-    private static final ConcurrentMap<Field, FieldMeta<?, ?>> INSTANCE_MAP = new ConcurrentHashMap<>();
-
-    private static final ConcurrentMap<Class<?>, IndexFieldMeta<?, ?>> ID_INSTANCE_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, FieldMeta<?, ?>> INSTANCE_MAP = new ConcurrentHashMap<>();
 
     @SuppressWarnings("unchecked")
     static <T extends IDomain> FieldMeta<T, ?> createFieldMeta(final @NonNull TableMeta<T> table
             , final @NonNull Field field) {
+        final String fieldMetaKey = table.javaType().getName() + "." + field.getName();
         FieldMeta<T, ?> fieldMeta;
-        if (INSTANCE_MAP.containsKey(field)) {
-            fieldMeta = (FieldMeta<T, ?>) INSTANCE_MAP.get(field);
+        fieldMeta = (FieldMeta<T, ?>) INSTANCE_MAP.get(fieldMetaKey);
+        if (fieldMeta != null) {
             return fieldMeta;
         }
 
+        assertNotParentFiled(table, field);
+
         fieldMeta = new DefaultFieldMeta<>(table, field, false, false);
-        FieldMeta<?, ?> actualFieldMeta = INSTANCE_MAP.putIfAbsent(field, fieldMeta);
+        FieldMeta<?, ?> actualFieldMeta = INSTANCE_MAP.putIfAbsent(fieldMetaKey, fieldMeta);
 
         if (actualFieldMeta != null && actualFieldMeta != fieldMeta) {
-            fieldMeta = (FieldMeta<T, ?>) actualFieldMeta;
+            throw new MetaException(ErrorCode.META_ERROR, "domain[%s] property[%s] is duplication."
+                    , table.javaType().getName(), field.getName());
         }
         return fieldMeta;
     }
 
     @SuppressWarnings("unchecked")
-    static <T extends IDomain, F> IndexFieldMeta<T, F> createFieldMeta(final @NonNull TableMeta<T> table
+    static <T extends IDomain, F> IndexFieldMeta<T, F> createIndexFieldMeta(final @NonNull TableMeta<T> table
             , final @NonNull Field field, IndexMeta<T> indexMeta, final boolean fieldUnique
             , @Nullable Boolean fieldAsc) {
 
-        final boolean isId = TableMeta.ID.equals(field.getName());
+        final String fieldMetaKey = table.javaType().getName() + "." + field.getName();
         IndexFieldMeta<T, F> fieldMeta;
-
-        if (isId) {
-            if (ID_INSTANCE_MAP.containsKey(table.javaType())) {
-                fieldMeta = (IndexFieldMeta<T, F>) ID_INSTANCE_MAP.get(table.javaType());
-                return fieldMeta;
-            }
-
-        } else {
-            if (INSTANCE_MAP.containsKey(field)) {
-                fieldMeta = (IndexFieldMeta<T, F>) INSTANCE_MAP.get(field);
-                return fieldMeta;
-            }
+        fieldMeta = (IndexFieldMeta<T, F>) INSTANCE_MAP.get(fieldMetaKey);
+        if (fieldMeta != null) {
+            return fieldMeta;
         }
+        assertNotParentFiled(table, field);
+
         // create new IndexFieldMeta
         fieldMeta = new DefaultIndexFieldMeta<>(table, field, indexMeta, fieldUnique, fieldAsc);
+        FieldMeta<?, ?> actualFieldMeta = INSTANCE_MAP.putIfAbsent(fieldMetaKey, fieldMeta);
 
-        FieldMeta<?, ?> actualFieldMeta;
-        if (isId) {
-            actualFieldMeta = ID_INSTANCE_MAP.putIfAbsent(table.javaType(), fieldMeta);
-        } else {
-            actualFieldMeta = INSTANCE_MAP.putIfAbsent(field, fieldMeta);
-        }
         if (actualFieldMeta != null && actualFieldMeta != fieldMeta) {
-            fieldMeta = (IndexFieldMeta<T, F>) actualFieldMeta;
+            throw new MetaException(ErrorCode.META_ERROR, "domain[%s] property[%s] is duplication."
+                    , table.javaType().getName(), field.getName());
         }
         return fieldMeta;
     }
 
-    private static void assertNotDuplication(Field field, Class<?> entityClass) {
-        if (field.getName().equals(TableMeta.ID)) {
-            Assert.state(!ID_INSTANCE_MAP.containsKey(entityClass)
-                    , () -> String.format("field[%s] entity[%s] duplication", field.getName(), entityClass.getName()));
-        } else {
-            Assert.state(!INSTANCE_MAP.containsKey(field), () -> String.format("field[%s] duplication", field));
+    private static void assertNotParentFiled(TableMeta<?> table, Field field) {
+        if ((table instanceof ChildTableMeta)
+                && !TableMeta.ID.equals(field.getName())) {
+            ChildTableMeta<?> childMeta = (ChildTableMeta<?>) table;
+            if (childMeta.parentMeta().mappingProp(field.getName())) {
+                throw new MetaException(ErrorCode.META_ERROR, "mapping property belong to ParentTableMeta[%s]"
+                        , childMeta.parentMeta());
+            }
+        }
+    }
+
+    private static void assertNotDuplication(Field field, Class<?> domainClass) {
+        if (INSTANCE_MAP.containsKey(domainClass)) {
+            throw new IllegalStateException(String.format("domain[%s] FieldMeta[%s] duplication."
+                    , domainClass.getName(), field.getName()));
         }
     }
 

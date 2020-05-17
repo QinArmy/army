@@ -16,7 +16,7 @@ final class SessionFactoryBuilderImpl extends AbstractSessionFactoryBuilder {
 
     @Override
     public SessionFactory build() throws SessionFactoryException {
-
+        Assert.notNull(this.name, "name required");
         Assert.notNull(this.dataSource, "dataSource required");
         Assert.notNull(this.environment, "environment required");
 
@@ -29,21 +29,28 @@ final class SessionFactoryBuilderImpl extends AbstractSessionFactoryBuilder {
             actualFieldCodecs = Collections.emptyList();
         }
 
-        final List<SessionFactoryInterceptor> factoryInterceptorList = createFactoryInterceptorList();
+        final List<SessionFactoryAdvice> factoryAdviceList = createFactoryInterceptorList();
         try {
+
+            if (!factoryAdviceList.isEmpty()) {
+                for (SessionFactoryAdvice sessionFactoryAdvice : factoryAdviceList) {
+                    sessionFactoryAdvice.beforeInstance(this.environment);
+                }
+            }
+
             SessionFactoryImpl sessionFactory = new SessionFactoryImpl(this.name, environment, dataSource
                     , actualDomainInterceptors, actualFieldCodecs);
 
-            if (!factoryInterceptorList.isEmpty()) {
-                for (SessionFactoryInterceptor interceptor : interceptors) {
+            if (!factoryAdviceList.isEmpty()) {
+                for (SessionFactoryAdvice interceptor : interceptors) {
                     interceptor.beforeInit(sessionFactory);
                 }
             }
             // init session factory
             sessionFactory.initSessionFactory();
 
-            if (!factoryInterceptorList.isEmpty()) {
-                for (SessionFactoryInterceptor interceptor : interceptors) {
+            if (!factoryAdviceList.isEmpty()) {
+                for (SessionFactoryAdvice interceptor : interceptors) {
                     interceptor.afterInit(sessionFactory);
                 }
             }
@@ -60,9 +67,9 @@ final class SessionFactoryBuilderImpl extends AbstractSessionFactoryBuilder {
 
     /*################################## blow private method ##################################*/
 
-    List<SessionFactoryInterceptor> createFactoryInterceptorList() {
-        List<SessionFactoryInterceptor> list = new ArrayList<>(this.interceptors);
-        list.sort(Comparator.comparingInt(SessionFactoryInterceptor::order));
+    List<SessionFactoryAdvice> createFactoryInterceptorList() {
+        List<SessionFactoryAdvice> list = new ArrayList<>(this.interceptors);
+        list.sort(Comparator.comparingInt(SessionFactoryAdvice::order));
         return Collections.unmodifiableList(list);
     }
 

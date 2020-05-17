@@ -6,15 +6,19 @@ import io.army.util.NetUtils;
 
 import java.net.InetAddress;
 
+import static io.army.ArmyConfigConstant.DATA_CENTER_FORMAT;
+import static io.army.ArmyConfigConstant.WORKER_FORMAT;
+
 public final class SingleApplicationSnowflakeClient extends AbstractSnowflakeClient {
 
-    public static final String DATA_CENTER_FORMAT = "io.army.single.%s.dataCenterId";
 
-    public static final String WORKER_FORMAT = "io.army.single.%s.workerId";
+    public static SingleApplicationSnowflakeClient build(Environment env) {
+        return new SingleApplicationSnowflakeClient(env);
+    }
 
     private final Environment env;
 
-    public SingleApplicationSnowflakeClient(Environment env) {
+    private SingleApplicationSnowflakeClient(Environment env) {
         this.env = env;
     }
 
@@ -34,7 +38,7 @@ public final class SingleApplicationSnowflakeClient extends AbstractSnowflakeCli
 
         if (workerHolder.compareAndSet(null, worker)) {
             LOG.info("init worker accomplished:{}", worker);
-        }else {
+        } else {
             LOG.info("worker set by other thread");
         }
 

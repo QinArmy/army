@@ -233,13 +233,14 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
     }
 
     protected final void selectListClause(List<SelectPart> selectPartList, TableContextSQLContext context) {
-
+        StringBuilder builder = context.sqlBuilder();
+        int index = 0;
         for (SelectPart selectPart : selectPartList) {
-            if ((selectPart instanceof Selection) || (selectPart instanceof SelectionGroup)) {
-                selectPart.appendSQL(context);
-            } else {
-                throw new UnKnownTypeException(selectPart);
+            if (index > 0) {
+                builder.append(",");
             }
+            selectPart.appendSQL(context);
+            index++;
         }
     }
 
@@ -249,7 +250,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
         Map<String, TableWrapper> aliasMap = new HashMap<>();
         for (TableWrapper tableWrapper : tableWrapperList) {
 
-            if (aliasMap.putIfAbsent(tableWrapper.alias(), tableWrapper) != tableWrapper) {
+            if (aliasMap.putIfAbsent(tableWrapper.alias(), tableWrapper) != null) {
                 // avoid table alias duplication
                 throw DialectUtils.createTableAliasDuplicationException(
                         tableWrapper.alias(), tableWrapper.tableAble());
@@ -308,7 +309,10 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
     private void standardSelect(InnerStandardSelect select, TableContextSQLContext context) {
         genericQuery(select, context);
         // lock clause
-        lockClause(select.lockMode(), context);
+        LockMode lockMode = select.lockMode();
+        if (lockMode != null) {
+            lockClause(lockMode, context);
+        }
 
     }
 

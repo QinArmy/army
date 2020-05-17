@@ -16,7 +16,7 @@ abstract class AbstractSessionFactoryBuilder implements SessionFactoryBuilder {
 
     String name;
 
-    Collection<SessionFactoryInterceptor> interceptors;
+    Collection<SessionFactoryAdvice> interceptors;
 
     Collection<DomainInterceptor> domainInterceptors;
 
@@ -58,7 +58,7 @@ abstract class AbstractSessionFactoryBuilder implements SessionFactoryBuilder {
     }
 
     @Override
-    public final SessionFactoryBuilder interceptorList(Collection<SessionFactoryInterceptor> interceptorList) {
+    public final SessionFactoryBuilder factoryAdvice(Collection<SessionFactoryAdvice> interceptorList) {
         if (this.interceptors == null) {
             this.interceptors = new ArrayList<>(interceptorList.size());
         }

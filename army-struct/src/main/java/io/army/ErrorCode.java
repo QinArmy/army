@@ -75,7 +75,8 @@ public enum ErrorCode implements CodeEnum {
     FIELD_CODEC_DUPLICATION(1020, "", NONE),
     UNKNOWN_TYPE(1021, "", NONE),
     ERROR_CODEC_RETURN(1022, "", NONE),
-    NOT_SUPPORTED_TYP(1023, "", NONE);
+    NOT_SUPPORTED_TYP(1023, "", NONE),
+    PROXY_ERROR(1024, "", NONE);
 
 
     private final int code;

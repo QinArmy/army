@@ -121,6 +121,7 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory implements InnerS
         return dialect;
     }
 
+
     @Override
     public boolean supportZoneId() {
         return this.dialect.supportZoneId();

@@ -1,7 +1,12 @@
 package io.army.generator.snowflake;
 
+import io.army.ArmyConfigConstant;
+import io.army.ArmyRuntimeException;
+import io.army.ErrorCode;
+import io.army.GenericSessionFactory;
 import io.army.annotation.Params;
 import io.army.beans.ReadonlyWrapper;
+import io.army.criteria.MetaException;
 import io.army.env.Environment;
 import io.army.generator.FieldGenerator;
 import io.army.generator.PreFieldGenerator;
@@ -45,32 +50,9 @@ public final class SnowflakeGenerator implements PreFieldGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(SnowflakeGenerator.class);
 
     /**
-     * (optional) Specifies the implementation class name of {@link Snowflake}
-     * , if absent the default is {@link FiveBitWorkerSnowflake}.
-     *
-     * @see Environment#getProperty(String, Class)
-     */
-    public static final String SNOWFLAKE_CLASS_NAME_KEY = SnowflakeGenerator.class.getName().concat("snowflakeClassName");
-
-    /**
-     * (required) Specifies the default start time of {@link Snowflake}
-     *
-     * @see Environment#getProperty(String, Class)
-     */
-    public static final String DEFAULT_START_TIME_KEY = SnowflakeGenerator.class.getName().concat("defaultStartTime");
-
-    /**
      * @see Params
      */
     public static final String START_TIME = "startTime";
-
-    /**
-     * (optional) Specifies the {@link SnowflakeClient} for SnowflakeGenerator
-     * , if absent {@link Worker} always is {@link Worker#ZERO}
-     *
-     * @see Environment#getBean(String, Class)
-     */
-    public static final String SNOWFLAKE_CLIENT_NAME = SnowflakeGenerator.class.getName().concat("snowflakeClient");
 
     /**
      * {@link #defaultSnowflake}'s default start time
@@ -100,7 +82,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator {
     private static final AtomicLong DEFAULT_START_TIME = new AtomicLong(-1);
 
     /**
-     * @see #build(FieldMeta, Environment)
+     * @see #build(FieldMeta, GenericSessionFactory)
      */
     private static final ConcurrentMap<Long, SnowflakeGenerator> INSTANCE_HOLDER = new ConcurrentHashMap<>();
 
@@ -116,8 +98,8 @@ public final class SnowflakeGenerator implements PreFieldGenerator {
     /**
      * @see FieldGenerator
      */
-    public static SnowflakeGenerator build(FieldMeta<?, ?> fieldMeta, Environment env) {
-
+    public static SnowflakeGenerator build(FieldMeta<?, ?> fieldMeta, GenericSessionFactory sessionFactory) {
+        Environment env = sessionFactory.environment();
         SnowflakeGenerator generator = INSTANCE_HOLDER.computeIfAbsent(
                 doGetStartTime(env, fieldMeta)
                 , key -> new SnowflakeGenerator(createSnowflake(env, fieldMeta)));
@@ -218,7 +200,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator {
         GeneratorMeta generatorMeta = fieldMeta.generator();
 
         if (generatorMeta == null) {
-            return doGetDefaultSnowflake(env);
+            throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] GeneratorMeta is null,meta error.");
         }
 
         long startTime = -1;
@@ -231,17 +213,18 @@ public final class SnowflakeGenerator implements PreFieldGenerator {
             }
         }
         if (startTime < 0) {
-            startTime = doGetDefaultSnowflake(env);
+            startTime = doGetDefaultSnowflakeStartTime(env);
         }
         return startTime;
     }
 
-    private static long doGetDefaultSnowflake(Environment env) {
+    private static long doGetDefaultSnowflakeStartTime(Environment env) {
         long startTime = DEFAULT_START_TIME.get();
         if (startTime >= 0) {
             return startTime;
         }
-        startTime = env.getRequiredProperty(DEFAULT_START_TIME_KEY, Long.class);
+        startTime = env.getProperty(ArmyConfigConstant.SNOWFLAKE_DEFAULT_TIME, Long.class
+                , DEFAULT_START_TIME_OF_DEFAULT);
         if (startTime < 0 || startTime > SystemClock.now()) {
             throw new IllegalStateException(String.format("default snowflake start time[%s] config error", startTime));
         }
@@ -255,7 +238,8 @@ public final class SnowflakeGenerator implements PreFieldGenerator {
     private static SnowflakeClient getSnowflakeClient(Environment env) {
         SnowflakeClient client = SNOWFLAKE_CLIENT.get();
         if (client == null) {
-            SNOWFLAKE_CLIENT.compareAndSet(null, env.getRequiredBean(SNOWFLAKE_CLIENT_NAME, SnowflakeClient.class));
+            SNOWFLAKE_CLIENT.compareAndSet(null, env.getRequiredBean(
+                    ArmyConfigConstant.SNOWFLAKE_CLIENT_NAME, SnowflakeClient.class));
             client = SNOWFLAKE_CLIENT.get();
         }
         return client;
@@ -267,19 +251,28 @@ public final class SnowflakeGenerator implements PreFieldGenerator {
         if (method != null) {
             return method;
         }
-        Class<?> snowflakeClass = env.getProperty(SNOWFLAKE_CLASS_NAME_KEY, Class.class, FiveBitWorkerSnowflake.class);
-
-        method = ReflectionUtils.findMethod(snowflakeClass, "debugSQL", long.class, Worker.class);
-        if (method == null
-                || !Modifier.isPublic(method.getModifiers())
-                || !Modifier.isStatic(method.getModifiers())) {
-            throw new IllegalStateException(String.format("snowflake implementation[%s] class no debugSQL method"
-                    , snowflakeClass.getName()));
+        final String className = env.getProperty(ArmyConfigConstant.SNOWFLAKE_CLASS
+                , FiveBitWorkerSnowflake.class.getName());
+        try {
+            Class<?> snowflakeClass = Class.forName(className);
+            if (!Snowflake.class.isAssignableFrom(snowflakeClass)) {
+                throw new ArmyRuntimeException(ErrorCode.META_ERROR, "snowflakeClass[%s] isn't %s type.", className);
+            }
+            method = ReflectionUtils.findMethod(snowflakeClass, "build", long.class, Worker.class);
+            if (method == null
+                    || !Modifier.isPublic(method.getModifiers())
+                    || !Modifier.isStatic(method.getModifiers())
+                    || !snowflakeClass.isAssignableFrom(method.getReturnType())) {
+                throw new IllegalStateException(String.format("snowflake implementation[%s] class no build method"
+                        , snowflakeClass.getName()));
+            }
+            if (SNOWFLAKE_BUILDER.compareAndSet(null, method)) {
+                LOG.info("snowflake implementation class is {}", className);
+            }
+            return SNOWFLAKE_BUILDER.get();
+        } catch (ClassNotFoundException e) {
+            throw new ArmyRuntimeException(ErrorCode.META_ERROR, "not found snowflakeClass[%s]", className);
         }
-        if (SNOWFLAKE_BUILDER.compareAndSet(null, method)) {
-            LOG.info("snowflake implementation class is {}", snowflakeClass.getName());
-        }
-        return SNOWFLAKE_BUILDER.get();
     }
 
     private static void doUpdateDefaultSnowflake(Worker worker, boolean clientInvoker) {
@@ -298,11 +291,15 @@ public final class SnowflakeGenerator implements PreFieldGenerator {
             startTime = DEFAULT_START_TIME_OF_DEFAULT;
         }
 
+        Snowflake newSnowflake;
         final Method method = SNOWFLAKE_BUILDER.get();
-        Assert.state(method != null, "SnowflakeGenerator not init.");
-        final Snowflake newSnowflake = (Snowflake) ReflectionUtils.invokeMethod(
-                method, null, startTime, worker);
-        Assert.state(newSnowflake != null, () -> String.format("method[%s] return null", method));
+        if (method == null) {
+            newSnowflake = FiveBitWorkerSnowflake.build(startTime, worker);
+        } else {
+            newSnowflake = (Snowflake) ReflectionUtils.invokeMethod(
+                    method, null, startTime, worker);
+            Assert.state(newSnowflake != null, () -> String.format("method[%s] return null", method));
+        }
 
         if (DEFAULT_SNOWFLAKE_HOLDER.compareAndSet(oldSnowflake, newSnowflake)) {
             LOG.info("default snowflake singleUpdate,worker[{}],Snowflake[{}]", worker, newSnowflake.getClass().getName());
@@ -332,7 +329,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator {
         if (fieldMeta.javaType() == Long.class) {
             identifier = snowflake.next();
         } else if (fieldMeta.javaType() == String.class) {
-            if (fieldMeta.precision() >=0 && fieldMeta.precision() <= 19) {
+            if (fieldMeta.precision() >= 0 && fieldMeta.precision() <= 19) {
                 identifier = snowflake.nextAsString();
             } else {
                 identifier = nextAsStringWithDepend(fieldMeta, entityWrapper);

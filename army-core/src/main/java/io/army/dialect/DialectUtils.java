@@ -125,7 +125,7 @@ public abstract class DialectUtils {
         if (temp instanceof ChildTableMeta) {
             temp = ((ChildTableMeta<?>) temp).parentMeta();
         }
-        return temp.isMappingProp(TableMeta.VISIBLE);
+        return temp.mappingProp(TableMeta.VISIBLE);
     }
 
     public static boolean needAppendVisible(List<TableWrapper> tableWrapperList) {
@@ -140,7 +140,7 @@ public abstract class DialectUtils {
                 if (tableAble instanceof ChildTableMeta) {
                     temp = ((ChildTableMeta<?>) temp).parentMeta();
                 }
-                if (temp.isMappingProp(TableMeta.VISIBLE)) {
+                if (temp.mappingProp(TableMeta.VISIBLE)) {
                     need = true;
                     break;
                 }

@@ -81,7 +81,7 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
 
     @Override
     public void onAddSubQuery(SubQuery subQuery, String subQueryAlias) {
-        if (this.subQueryMap.putIfAbsent(subQueryAlias, subQuery) != subQuery) {
+        if (this.subQueryMap.putIfAbsent(subQueryAlias, subQuery) != null) {
             throw new CriteriaException(ErrorCode.TABLE_ALIAS_DUPLICATION
                     , "SubQuery alias[%s] duplication.", subQueryAlias);
         }
@@ -90,7 +90,7 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
 
     @Override
     public void onAddTable(TableMeta<?> tableMeta, String tableAlias) {
-        if (this.tableMetaMap.putIfAbsent(tableAlias, tableMeta) != tableMeta) {
+        if (this.tableMetaMap.putIfAbsent(tableAlias, tableMeta) != null) {
             throw new CriteriaException(ErrorCode.TABLE_ALIAS_DUPLICATION
                     , "Table alias[%s] duplication.", tableAlias);
         }

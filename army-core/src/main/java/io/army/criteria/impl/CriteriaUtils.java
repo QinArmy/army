@@ -30,7 +30,7 @@ abstract class CriteriaUtils {
 
             if (selectPart instanceof Selection) {
                 Selection selection = (Selection) selectPart;
-                if (selectionMap.putIfAbsent(selection.alias(), selection) != selection) {
+                if (selectionMap.putIfAbsent(selection.alias(), selection) != null) {
                     throw new CriteriaException(ErrorCode.SELECTION_DUPLICATION, "selection[%s] duplication"
                             , selection);
                 }
@@ -38,7 +38,7 @@ abstract class CriteriaUtils {
                 SelectionGroup group = (SelectionGroup) selectPart;
                 String tableAlias = group.tableAlias();
                 for (Selection selection : group.selectionList()) {
-                    if (selectionMap.putIfAbsent(tableAlias, selection) != selection) {
+                    if (selectionMap.putIfAbsent(tableAlias, selection) != null) {
                         throw new CriteriaException(ErrorCode.SELECTION_DUPLICATION, "selection[%s] duplication"
                                 , selection);
                     }

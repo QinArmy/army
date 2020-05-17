@@ -1,6 +1,9 @@
 package io.army.boot;
 
-import io.army.*;
+import io.army.ArmyConfigConstant;
+import io.army.ErrorCode;
+import io.army.SessionFactoryException;
+import io.army.ShardingMode;
 import io.army.codec.FieldCodec;
 import io.army.domain.IDomain;
 import io.army.env.Environment;
@@ -18,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-abstract class AbstractGenericSessionFactory implements GenericSessionFactory {
+abstract class AbstractGenericSessionFactory implements InnerGenericSessionFaction {
 
     private static final Map<String, AbstractGenericSessionFactory> FACTORY_MAP = new ConcurrentHashMap<>(3);
 
@@ -45,12 +48,14 @@ abstract class AbstractGenericSessionFactory implements GenericSessionFactory {
 
     final boolean readOnly;
 
+    final boolean supportSessionCache;
+
+    final DomainProxyFactory domainProxyFactory;
 
     AbstractGenericSessionFactory(String name, Environment env, Collection<FieldCodec> fieldCodecs) {
         Assert.hasText(name, "name required");
         Assert.notNull(env, "env required");
-
-        if (FACTORY_MAP.putIfAbsent(name, this) != this) {
+        if (FACTORY_MAP.putIfAbsent(name, this) != null) {
             throw new SessionFactoryException(ErrorCode.FACTORY_NAME_DUPLICATION, "factory name[%s] duplication", name);
         }
         this.name = name;
@@ -58,15 +63,17 @@ abstract class AbstractGenericSessionFactory implements GenericSessionFactory {
         this.schemaMeta = SessionFactoryUtils.obtainSchemaMeta(this.name, env);
         this.zoneId = SessionFactoryUtils.createZoneId(env, this.name);
 
-        this.tableMetaMap = SessionFactoryUtils.scanPackagesForMeta(this.schemaMeta, env);
+        this.tableMetaMap = SessionFactoryUtils.scanPackagesForMeta(this.schemaMeta, this.name, env);
         this.shardingMode = SessionFactoryUtils.shardingMode(this.name, env);
         SessionFactoryUtils.GeneratorWrapper generatorWrapper =
-                SessionFactoryUtils.createGeneratorWrapper(this.tableMetaMap.values(), this.shardingMode, this.env);
+                SessionFactoryUtils.createGeneratorWrapper(this.tableMetaMap.values(), this);
         this.fieldGeneratorMap = generatorWrapper.getGeneratorChain();
         this.tableGeneratorChain = generatorWrapper.getTableGeneratorChain();
 
         this.readOnly = SessionFactoryUtils.readOnly(this.name, this.env);
         this.fieldCodecMap = SessionFactoryUtils.createTableFieldCodecMap(fieldCodecs);
+        this.supportSessionCache = SessionFactoryUtils.sessionCache(this.env, this.name);
+        this.domainProxyFactory = DomainProxyFactory.build(this);
     }
 
 
@@ -133,6 +140,16 @@ abstract class AbstractGenericSessionFactory implements GenericSessionFactory {
     @Override
     public ShardingMode shardingMode() {
         return this.shardingMode;
+    }
+
+    @Override
+    public boolean supportSessionCache() {
+        return this.supportSessionCache;
+    }
+
+    @Override
+    public DomainProxyFactory domainProxyFactory() {
+        return this.domainProxyFactory;
     }
 
     @Override

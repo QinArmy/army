@@ -140,13 +140,13 @@ abstract class DMLUtils {
         if (discriminator != null) {
             fieldMetaSet.add(discriminator);
         }
-        if (parentMeta.isMappingProp(TableMeta.CREATE_TIME)) {
+        if (parentMeta.mappingProp(TableMeta.CREATE_TIME)) {
             fieldMetaSet.add(logicalTable.getField(TableMeta.CREATE_TIME));
         }
-        if (parentMeta.isMappingProp(TableMeta.UPDATE_TIME)) {
+        if (parentMeta.mappingProp(TableMeta.UPDATE_TIME)) {
             fieldMetaSet.add(logicalTable.getField(TableMeta.UPDATE_TIME));
         }
-        if (parentMeta.isMappingProp(TableMeta.VERSION)) {
+        if (parentMeta.mappingProp(TableMeta.VERSION)) {
             fieldMetaSet.add(logicalTable.getField(TableMeta.VERSION));
         }
         return Collections.unmodifiableSet(fieldMetaSet);
@@ -154,7 +154,7 @@ abstract class DMLUtils {
 
     static void createStandardInsertForSimple(TableMeta<?> physicalTable, TableMeta<?> logicalTable
             , Collection<FieldMeta<?, ?>> fieldMetas, ReadonlyWrapper domainWrapper
-            , AbstractStandardInsertContext context) {
+            , StandardInsertContext context) {
 
         final GenericSessionFactory sessionFactory = context.dialect.sessionFactory();
         final StringBuilder fieldBuilder = context.fieldsBuilder().append("INSERT INTO");
@@ -164,7 +164,6 @@ abstract class DMLUtils {
 
         final StringBuilder valueBuilder = context.sqlBuilder()
                 .append(" VALUE (");
-        final SQL sql = context.dql();
 
         Object value;
         int count = 0;
@@ -173,13 +172,15 @@ abstract class DMLUtils {
                 continue;
             }
             value = domainWrapper.getPropertyValue(fieldMeta.propertyName());
-
+            if (value == null) {
+                continue;
+            }
             if (count > 0) {
                 fieldBuilder.append(",");
                 valueBuilder.append(",");
             }
             // field
-            fieldBuilder.append(sql.quoteIfNeed(fieldMeta.fieldName()));
+            context.appendField(fieldMeta);
 
             if (isConstant(fieldMeta)) {
                 valueBuilder.append(createConstant(fieldMeta, logicalTable));

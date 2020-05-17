@@ -3,9 +3,8 @@ package io.army.beans;
 
 import io.army.criteria.impl.TableMetaFactory;
 import io.army.domain.IDomain;
+import io.army.meta.TableMeta;
 import io.army.util.BeanUtils;
-import io.army.util.Pair;
-import io.army.util.Triple;
 
 /**
  * Simple factory facade for obtaining {@link ObjectWrapper} instances,
@@ -33,16 +32,21 @@ public abstract class PropertyAccessorFactory {
         return new DomainWrapperImpl(domain);
     }
 
+    public static DomainWrapper forDomainPropertyAccess(IDomain domain, TableMeta<?> tableMeta) {
+        return new DomainWrapperImpl(domain, tableMeta);
+    }
+
     static ObjectWrapper forSimplePropertyAccess(Class<?> simpleType, String propertyName) {
         return new SimpleTypeWrapper(simpleType, propertyName);
     }
 
     public static ObjectWrapper forBeanPropertyAccess(Class<?> beanClass) {
         ObjectWrapper objectWrapper;
-        if (beanClass == Pair.class) {
-            objectWrapper = new PairBeanWrapperImpl();
-        } else if (beanClass == Triple.class) {
-            objectWrapper = new TripeWrapperImpl();
+        final String simpleName = beanClass.getSimpleName();
+        if (simpleName.equals("Pair")) {
+            objectWrapper = new PairBeanWrapperImpl(beanClass);
+        } else if (simpleName.equals("Tripe")) {
+            objectWrapper = new TripeWrapperImpl(beanClass);
         } else {
             objectWrapper = new BeanWrapperImpl(BeanUtils.instantiateClass(beanClass));
         }

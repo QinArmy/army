@@ -2,11 +2,13 @@ package io.army.boot.sync;
 
 
 import io.army.SessionFactory;
+import io.army.boot.SessionFactoryAdvice;
 import io.army.boot.SessionFactoryBuilder;
-import io.army.boot.SessionFactoryInterceptor;
 import io.army.codec.FieldCodec;
+import io.army.env.Environment;
 import io.army.env.SpringEnvironmentAdaptor;
 import io.army.interceptor.DomainInterceptor;
+import io.army.util.Assert;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
@@ -14,6 +16,8 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import javax.sql.DataSource;
 
 /**
  * {@link FactoryBean} that creates a Army {@link SessionFactory}. This is the usual
@@ -27,7 +31,9 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
 
     private String beanName;
 
-    private SessionFactoryBuilder sessionFactoryBuilder;
+    private DataSource dataSource;
+
+    private Environment environment;
 
     private SessionFactory sessionFactory;
 
@@ -46,22 +52,21 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
 
     @Override
     public void afterPropertiesSet() {
-        // drop SessionFactory suffix.
-        String factoryName;
-        int index = this.beanName.lastIndexOf(SessionFactory.class.getSimpleName());
-        if (index > 0) {
-            factoryName = this.beanName.substring(0, index);
-        } else {
-            factoryName = this.beanName;
+        Assert.state(this.dataSource != null, "dataSource is null");
+
+        Environment environment = this.environment;
+        if (environment == null) {
+            environment = new SpringEnvironmentAdaptor(applicationContext.getEnvironment());
         }
 
-        this.sessionFactory = this.sessionFactoryBuilder
-                .name(factoryName)
-                .environment(new SpringEnvironmentAdaptor(applicationContext.getEnvironment()))
+        this.sessionFactory = SessionFactoryBuilder.builder()
+                .name(getSessionFactoryName())
+                .datasource(this.dataSource)
+                .environment(environment)
                 .domainInterceptor(applicationContext.getBeansOfType(DomainInterceptor.class).values())
                 .fieldCodecs(applicationContext.getBeansOfType(FieldCodec.class).values())
 
-                .interceptorList(applicationContext.getBeansOfType(SessionFactoryInterceptor.class).values())
+                .factoryAdvice(applicationContext.getBeansOfType(SessionFactoryAdvice.class).values())
                 .build();
     }
 
@@ -90,8 +95,27 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
 
     /*################################## blow setter method ##################################*/
 
-    public LocalSessionFactoryBean setSessionFactoryBuilder(SessionFactoryBuilder sessionFactoryBuilder) {
-        this.sessionFactoryBuilder = sessionFactoryBuilder;
+    public LocalSessionFactoryBean setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
         return this;
+    }
+
+    public LocalSessionFactoryBean setEnvironment(Environment environment) {
+        this.environment = environment;
+        return this;
+    }
+
+    /*################################## blow private method ##################################*/
+
+    private String getSessionFactoryName() {
+        // drop SessionFactory suffix.
+        String factoryName;
+        int index = this.beanName.lastIndexOf(SessionFactory.class.getSimpleName());
+        if (index > 0) {
+            factoryName = this.beanName.substring(0, index);
+        } else {
+            factoryName = this.beanName;
+        }
+        return factoryName;
     }
 }

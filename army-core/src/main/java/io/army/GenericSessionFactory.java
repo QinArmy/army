@@ -49,6 +49,8 @@ public interface GenericSessionFactory {
 
     ShardingMode shardingMode();
 
+    boolean supportSessionCache();
+
     /**
      * Is this factory already closed?
      *

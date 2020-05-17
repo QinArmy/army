@@ -425,13 +425,13 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         }
 
         //2.  create parent sql.
-        final AbstractStandardInsertContext parentContext = AbstractStandardInsertContext.buildGeneric(
-                this.dialect, visible, beanWrapper, insert);
+        StandardInsertContext parentContext = StandardInsertContext.build(this.dialect, visible
+                , beanWrapper, parentMeta);
         DMLUtils.createStandardInsertForSimple(parentMeta, childMeta, parentFields, beanWrapper, parentContext);
 
         //3. create child sql.
-        final AbstractStandardInsertContext childContext = AbstractStandardInsertContext.buildGeneric(
-                this.dialect, visible, beanWrapper, insert);
+        StandardInsertContext childContext = StandardInsertContext.build(this.dialect, visible
+                , beanWrapper, childMeta);
         DMLUtils.createStandardInsertForSimple(childMeta, childMeta, childFields, beanWrapper, childContext);
 
         return ChildSQLWrapper.build(parentContext.build(), childContext.build());
@@ -444,8 +444,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
             , Collection<FieldMeta<?, ?>> mergedFields, InnerStandardInsert insert
             , final Visible visible) {
 
-        AbstractStandardInsertContext context = AbstractStandardInsertContext.buildGeneric(
-                this.dialect, visible, beanWrapper, insert);
+        StandardInsertContext context = StandardInsertContext.build(this.dialect, visible, beanWrapper, tableMeta);
 
         DMLUtils.createStandardInsertForSimple(tableMeta, tableMeta, mergedFields, beanWrapper, context);
 

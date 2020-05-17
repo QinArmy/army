@@ -7,8 +7,6 @@ import io.army.context.spi.CurrentSessionContext;
 import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
-import io.army.util.Pair;
-import io.army.util.Triple;
 
 import java.util.List;
 
@@ -79,46 +77,6 @@ class ProxySessionImpl implements ProxySession {
     @Override
     public SessionFactory sessionFactory() {
         return this.sessionFactory;
-    }
-
-    @Override
-    public <F, S> Pair<F, S> selectOnePair(Select select) {
-        return this.sessionContext.currentSession().selectOnePair(select);
-    }
-
-    @Override
-    public <F, S> Pair<F, S> selectOnePair(Select select, Visible visible) {
-        return this.sessionContext.currentSession().selectOnePair(select, visible);
-    }
-
-    @Override
-    public <F, S> List<Pair<F, S>> selectPair(Select select) {
-        return this.sessionContext.currentSession().selectPair(select);
-    }
-
-    @Override
-    public <F, S> List<Pair<F, S>> selectPair(Select select, Visible visible) {
-        return this.sessionContext.currentSession().selectPair(select, visible);
-    }
-
-    @Override
-    public <F, S, T> Triple<F, S, T> selectOneTriple(Select select) {
-        return this.sessionContext.currentSession().selectOneTriple(select);
-    }
-
-    @Override
-    public <F, S, T> Triple<F, S, T> selectOneTriple(Select select, Visible visible) {
-        return this.sessionContext.currentSession().selectOneTriple(select, visible);
-    }
-
-    @Override
-    public <F, S, T> List<Triple<F, S, T>> selectTriple(Select select) {
-        return this.sessionContext.currentSession().selectTriple(select);
-    }
-
-    @Override
-    public <F, S, T> List<Triple<F, S, T>> selectTriple(Select select, Visible visible) {
-        return this.sessionContext.currentSession().selectTriple(select, visible);
     }
 
     @Override

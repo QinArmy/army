@@ -1,8 +1,10 @@
 package io.army.beans;
 
 import io.army.ErrorCode;
+import io.army.util.BeanUtils;
 import io.army.util.Pair;
-import io.army.util.Triple;
+
+import java.lang.reflect.Constructor;
 
 final class TripeWrapperImpl implements TripeWrapper {
 
@@ -12,16 +14,28 @@ final class TripeWrapperImpl implements TripeWrapper {
 
     private static final String THIRD = "third";
 
+    private final Class<?> tripeClass;
+
     private Object first;
 
     private Object second;
 
     private Object third;
 
+    public TripeWrapperImpl(Class<?> tripeClass) {
+        this.tripeClass = tripeClass;
+    }
 
     @Override
-    public Object getWrappedInstance() {
-        return new Triple<>(this.first, this.second, this.third);
+    public Object getWrappedInstance() throws BeansException {
+        try {
+            Constructor<?> constructor = tripeClass.getConstructor(Object.class, Object.class, Object.class);
+            constructor.newInstance(this.first, this.second, this.third);
+
+            return BeanUtils.instantiateClass(constructor, this.first, this.second, this.third);
+        } catch (Exception e) {
+            throw new BeansException(ErrorCode.BEAN_ACCESS_ERROR, e, "can't create instance of %s", tripeClass.getName());
+        }
     }
 
     @Override
@@ -93,6 +107,6 @@ final class TripeWrapperImpl implements TripeWrapper {
 
     @Override
     public Class<?> getWrappedClass() {
-        return Triple.class;
+        return tripeClass;
     }
 }

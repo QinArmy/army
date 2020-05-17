@@ -47,7 +47,6 @@ import static java.lang.annotation.ElementType.FIELD;
  * @see Column
  * @see FieldGenerator
  * @see PreFieldGenerator
- * @see PostFieldGenerator
  * @since Army 1.0
  */
 @Target({FIELD})

@@ -1,6 +1,9 @@
 package io.army.boot;
 
 import io.army.*;
+import io.army.aop.DomainUpdateAdvice;
+import io.army.beans.DomainWrapper;
+import io.army.beans.PropertyAccessorFactory;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.Dialect;
@@ -14,7 +17,6 @@ import io.army.tx.*;
 import io.army.util.Assert;
 import io.army.util.CriteriaUtils;
 import io.army.util.Pair;
-import io.army.util.Triple;
 import io.army.wrapper.BatchSQLWrapper;
 import io.army.wrapper.SQLWrapper;
 import io.army.wrapper.SelectSQLWrapper;
@@ -27,8 +29,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 final class SessionImpl implements InnerSession, InnerTxSession {
 
@@ -46,6 +47,15 @@ final class SessionImpl implements InnerSession, InnerTxSession {
     private final boolean currentSession;
 
     private final Dialect dialect;
+
+    private final Map<Object, Object> cacheById;
+
+    private final Map<UniqueKey, Object> cacheByUnique;
+
+    private final Map<Object, UniqueKey> idUniqueMap;
+
+    private final Map<Object, DomainUpdateAdvice> adviceCacheById;
+
 
     private Transaction transaction;
 
@@ -69,7 +79,17 @@ final class SessionImpl implements InnerSession, InnerTxSession {
         } catch (SQLException e) {
             throw new CreateSessionException(ErrorCode.SESSION_CREATE_ERROR, e, "connection query occur error.");
         }
-        ;
+        if (sessionFactory.supportSessionCache()) {
+            this.cacheById = new HashMap<>();
+            this.cacheByUnique = new HashMap<>();
+            this.idUniqueMap = new HashMap<>();
+            this.adviceCacheById = new HashMap<>();
+        } else {
+            this.cacheById = Collections.emptyMap();
+            this.cacheByUnique = Collections.emptyMap();
+            this.idUniqueMap = Collections.emptyMap();
+            this.adviceCacheById = Collections.emptyMap();
+        }
     }
 
     @Override
@@ -88,8 +108,15 @@ final class SessionImpl implements InnerSession, InnerTxSession {
     public <T extends IDomain> void save(T domain) {
         @SuppressWarnings("unchecked")
         Class<T> javaType = (Class<T>) domain.getClass();
-        Insert insert = CriteriaUtils.createSingleInsert(javaType, domain);
+        TableMeta<T> tableMeta = this.sessionFactory.tableMeta(javaType);
+        if (tableMeta == null) {
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "domain[%s] not load TableMeta.", javaType.getName());
+        }
+        // 1. create sql
+        Insert insert = CriteriaUtils.createSingleInsert(tableMeta, domain);
+        // 2. execute insert sql
         this.insert(insert, Visible.ONLY_VISIBLE);
+
     }
 
     @Nullable
@@ -98,11 +125,25 @@ final class SessionImpl implements InnerSession, InnerTxSession {
         return get(tableMeta, id, Visible.ONLY_VISIBLE);
     }
 
+    @SuppressWarnings("unchecked")
     @Nullable
     @Override
-    public <T extends IDomain> T get(TableMeta<T> tableMeta, Object id, Visible visible) {
+    public <T extends IDomain> T get(TableMeta<T> tableMeta, final Object id, Visible visible) {
+        // 1. create sql
         Select select = CriteriaUtils.createSelectDomainById(tableMeta, id);
-        return this.selectOne(select, tableMeta.javaType(), visible);
+        // 2. execute sql
+        T domain = this.selectOne(select, tableMeta.javaType(), visible);
+        T actualReturn = domain;
+        if (this.sessionFactory.supportSessionCache()) {
+            // 3. cache
+            DomainWrapper domainWrapper = PropertyAccessorFactory.forDomainPropertyAccess(domain, tableMeta);
+            Pair<Object, DomainUpdateAdvice> pair = this.sessionFactory.domainProxyFactory()
+                    .createDomainProxy(domainWrapper);
+            actualReturn = (T) pair.getFirst();
+            this.cacheById.put(id, actualReturn);
+            this.adviceCacheById.put(id, pair.getSecond());
+        }
+        return actualReturn;
     }
 
     @Nullable
@@ -112,12 +153,35 @@ final class SessionImpl implements InnerSession, InnerTxSession {
         return getByUnique(tableMeta, propNameList, valueList, Visible.ONLY_VISIBLE);
     }
 
+    @SuppressWarnings("unchecked")
     @Nullable
     @Override
     public <T extends IDomain> T getByUnique(TableMeta<T> tableMeta, List<String> propNameList
             , List<Object> valueList, Visible visible) {
+        final UniqueKey uniqueKey = new UniqueKey(propNameList, valueList);
+        T actualReturn = (T) this.cacheByUnique.get(uniqueKey);
+
+        // 1. create sql
         Select select = CriteriaUtils.createSelectDomainByUnique(tableMeta, propNameList, valueList);
-        return this.selectOne(select, tableMeta.javaType(), visible);
+        // 2. execute sql
+        T domain = this.selectOne(select, tableMeta.javaType(), visible);
+
+        actualReturn = domain;
+        if (this.sessionFactory.supportSessionCache()) {
+            // 3. cache
+            DomainWrapper domainWrapper = PropertyAccessorFactory.forDomainPropertyAccess(domain, tableMeta);
+            Pair<Object, DomainUpdateAdvice> pair = this.sessionFactory.domainProxyFactory()
+                    .createDomainProxy(domainWrapper);
+            actualReturn = (T) pair.getFirst();
+
+            final Object id = domainWrapper.getPropertyValue(tableMeta.id().propertyName());
+
+            this.cacheById.put(id, actualReturn);
+            this.adviceCacheById.put(id, pair.getSecond());
+            this.cacheByUnique.put(uniqueKey, actualReturn);
+            this.idUniqueMap.put(id, uniqueKey);
+        }
+        return actualReturn;
     }
 
     @Nullable
@@ -162,52 +226,6 @@ final class SessionImpl implements InnerSession, InnerTxSession {
         resultList = executor.select(this, wrapperList.get(0), resultClass);
         ((InnerSQL) select).clear();
         return resultList;
-    }
-
-    @Override
-    public <F, S> Pair<F, S> selectOnePair(Select select) {
-        return this.selectOnePair(select, Visible.ONLY_VISIBLE);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public <F, S> Pair<F, S> selectOnePair(Select select, Visible visible) {
-        return (Pair<F, S>) this.selectOne(select, Pair.class, visible);
-    }
-
-    @Override
-    public <F, S> List<Pair<F, S>> selectPair(Select select) {
-        return this.selectPair(select, Visible.ONLY_VISIBLE);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public <F, S> List<Pair<F, S>> selectPair(Select select, Visible visible) {
-        List<?> list = this.select(select, Pair.class, Visible.ONLY_VISIBLE);
-        return (List<Pair<F, S>>) list;
-    }
-
-    @Override
-    public <F, S, T> Triple<F, S, T> selectOneTriple(Select select) {
-        return this.selectOneTriple(select, Visible.ONLY_VISIBLE);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public <F, S, T> Triple<F, S, T> selectOneTriple(Select select, Visible visible) {
-        return (Triple<F, S, T>) this.selectOne(select, Triple.class, visible);
-    }
-
-    @Override
-    public <F, S, T> List<Triple<F, S, T>> selectTriple(Select select) {
-        return this.selectTriple(select, Visible.ONLY_VISIBLE);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public <F, S, T> List<Triple<F, S, T>> selectTriple(Select select, Visible visible) {
-        List<?> list = this.select(select, Triple.class, Visible.ONLY_VISIBLE);
-        return (List<Triple<F, S, T>>) list;
     }
 
     @Override
@@ -550,5 +568,38 @@ final class SessionImpl implements InnerSession, InnerTxSession {
         }
 
 
+    }
+
+    private static class UniqueKey {
+
+        private final List<String> propNameList;
+
+        private final List<Object> valueList;
+
+        private final int hash;
+
+        private UniqueKey(List<String> propNameList, List<Object> valueList) {
+            this.propNameList = Collections.unmodifiableList(propNameList);
+            this.valueList = Collections.unmodifiableList(valueList);
+            this.hash = Objects.hash(propNameList, valueList);
+        }
+
+        @Override
+        public int hashCode() {
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof UniqueKey)) {
+                return false;
+            }
+            UniqueKey key = (UniqueKey) obj;
+            return this.propNameList.equals(key.propNameList)
+                    && this.valueList.equals(key.valueList);
+        }
     }
 }

@@ -28,7 +28,7 @@ public interface SessionFactoryBuilder {
 
     SessionFactoryBuilder name(String sessionFactoryName);
 
-    SessionFactoryBuilder interceptorList(Collection<SessionFactoryInterceptor> interceptorList);
+    SessionFactoryBuilder factoryAdvice(Collection<SessionFactoryAdvice> interceptorList);
 
     SessionFactory build() throws SessionFactoryException;
 

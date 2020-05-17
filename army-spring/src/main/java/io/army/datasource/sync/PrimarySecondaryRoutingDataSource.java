@@ -71,10 +71,13 @@ public class PrimarySecondaryRoutingDataSource extends AbstractRoutingDataSource
             return null;
         }
         Object primary = this.targetDataSources.get(PRIMARY);
+        DataSource dataSource;
         if (primary instanceof DataSource) {
-            return (DataSource) primary;
+            dataSource = (DataSource) primary;
+        } else {
+            dataSource = null;
         }
-        return null;
+        return dataSource;
     }
 
 }

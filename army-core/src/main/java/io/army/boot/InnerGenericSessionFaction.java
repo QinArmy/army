@@ -7,4 +7,5 @@ public interface InnerGenericSessionFaction extends GenericSessionFactory {
 
     Dialect dialect();
 
+    DomainProxyFactory domainProxyFactory();
 }

@@ -102,11 +102,11 @@ abstract class MetaUtils {
         // this tableMeta's column to filed map, contains id ,key is lower case
         final Map<String, Field> columnToFieldMap = columnToFieldMap(table, mappedClassList);
 
-        // 1. debugSQL indexMap meta
+        // 1.  indexMap meta
         final List<IndexMeta<T>> indexMetaList = indexMetaList(table, tableMeta, columnToFieldMap);
 
         // exclude indexMetaList column part
-        final Map<String, Field> subMap = notIndexColumnToField(indexMetaList, columnToFieldMap);
+        final Map<String, Field> subMap = new HashMap<>(columnToFieldMap);
 
         Map<String, FieldMeta<T, ?>> propNameToFieldMeta = new HashMap<>((int) (columnToFieldMap.size() / 0.75f));
 
@@ -119,7 +119,9 @@ abstract class MetaUtils {
                 assertFieldMetaNotDuplication(lowerCaseColumnName, fieldMeta, columnNameSet, propNameSet);
                 propNameToFieldMeta.put(fieldMeta.propertyName(), fieldMeta);
                 columnNameSet.add(lowerCaseColumnName);
+
                 propNameSet.add(fieldMeta.propertyName());
+                subMap.remove(lowerCaseColumnName);
             }
         }
         //3. appendText rest field meta to propNameToFieldMeta
@@ -183,8 +185,7 @@ abstract class MetaUtils {
 
 
     static String columnName(Column column, Field field) throws MetaException {
-        if (TableMeta.VERSION_PROPS.contains(field.getName())
-                && StringUtils.hasText(column.name())) {
+        if (TableMeta.RESERVED_PROPS.contains(field.getName()) && StringUtils.hasText(column.name())) {
             throw new MetaException(ErrorCode.META_ERROR,
                     "mapped class [%s] required prop[%s] column name must use default value.",
                     field.getDeclaringClass().getName(),
@@ -286,7 +287,7 @@ abstract class MetaUtils {
                     );
                 }
                 if (fieldNameSet.contains(field.getName())) {
-                    throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] mapping property[%s] duplication"
+                    throw new MetaException(ErrorCode.META_ERROR, "Domain[%s] mapping property[%s] duplication"
                             , mappingClass.getName()
                             , field.getName()
                     );
@@ -314,14 +315,12 @@ abstract class MetaUtils {
             } catch (NoSuchFieldException e) {
                 continue;
             }
-            if (field != null) {
-                Column column = AnnotationUtils.getAnnotation(field, Column.class);
-                if (column == null) {
-                    throw new MetaException(ErrorCode.META_ERROR, "tableMeta[%s] not found primary column definition",
-                            tableMeta.tableName());
-                }
-                return field;
+            Column column = AnnotationUtils.getAnnotation(field, Column.class);
+            if (column == null) {
+                throw new MetaException(ErrorCode.META_ERROR, "tableMeta[%s] not found primary column definition",
+                        tableMeta.tableName());
             }
+            return field;
         }
         throw new MetaException(ErrorCode.META_ERROR, "entity[%s] not found primary key column definition",
                 tableMeta.javaType());
@@ -341,13 +340,13 @@ abstract class MetaUtils {
             , Set<String> propNameSet) {
 
         if (columnNameSet.contains(lowerColumnName)) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] column[%s] debugSQL duplication",
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] column[%s]  duplication",
                     fieldMeta.tableMeta().javaType(),
                     fieldMeta.fieldName()
             );
         }
         if (propNameSet.contains(fieldMeta.propertyName())) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] property[%s] debugSQL duplication",
+            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] property[%s]  duplication",
                     fieldMeta.tableMeta().javaType(),
                     fieldMeta.propertyName()
             );
@@ -529,7 +528,8 @@ abstract class MetaUtils {
             }
             field = indexField(lowerCaseColumnName, tableMeta, columnToFieldMap);
             uniqueColumn = indexMeta.isUnique() && indexColumns.length == 1;
-            indexFieldMeta = DefaultFieldMeta.createFieldMeta(tableMeta, field, indexMeta, uniqueColumn, columnAsc);
+            indexFieldMeta = DefaultFieldMeta.createIndexFieldMeta(tableMeta, field, indexMeta
+                    , uniqueColumn, columnAsc);
 
             list.add(indexFieldMeta);
             createdColumnSet.add(lowerCaseColumnName);

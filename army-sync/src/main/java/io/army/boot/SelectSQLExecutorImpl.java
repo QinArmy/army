@@ -17,6 +17,8 @@ import io.army.util.Pair;
 import io.army.util.Triple;
 import io.army.wrapper.ParamWrapper;
 import io.army.wrapper.SelectSQLWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,6 +29,7 @@ import java.util.Map;
 
 final class SelectSQLExecutorImpl implements SelectSQLExecutor {
 
+    private static final Logger LOG = LoggerFactory.getLogger(SelectSQLExecutorImpl.class);
 
     private final SessionFactory sessionFactory;
 
@@ -38,7 +41,9 @@ final class SelectSQLExecutorImpl implements SelectSQLExecutor {
     @Override
     public <T> List<T> select(InnerSession session, SelectSQLWrapper wrapper, Class<T> resultClass) {
         assertSelectList(wrapper.selectionList(), resultClass);
-
+        if (session.sessionFactory().showSQL()) {
+            LOG.info("will execute select sql:{}", session.dialect().showSQL(wrapper));
+        }
         try (PreparedStatement st = session.createStatement(wrapper.sql())) {
             // 1. set params
             setParams(st, wrapper.paramList());

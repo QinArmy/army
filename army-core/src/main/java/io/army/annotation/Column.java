@@ -12,6 +12,7 @@ import java.time.LocalTime;
 import static java.lang.annotation.ElementType.FIELD;
 
 /**
+ *
  */
 @Target({FIELD})
 @Retention(RetentionPolicy.RUNTIME)
@@ -48,6 +49,8 @@ public @interface Column {
      * </p>
      */
     boolean updatable() default true;
+
+    UpdateMode updateMode() default UpdateMode.ALWAYS;
 
 
     /**
