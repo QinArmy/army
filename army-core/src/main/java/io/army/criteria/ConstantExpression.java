@@ -1,6 +1,5 @@
 package io.army.criteria;
 
-public interface ConstantExpression<E> extends Expression<E> {
+public interface ConstantExpression<E> extends ValueExpression<E> {
 
-    E constant();
 }

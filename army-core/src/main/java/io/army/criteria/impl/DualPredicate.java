@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldExp;
+import io.army.meta.PrimaryFieldMeta;
 import io.army.meta.TableMeta;
 
 /**
@@ -19,6 +20,10 @@ abstract class DualPredicate extends AbstractPredicate {
             predicate = new GenericDualPredicate(left, operator, right);
         }
         return predicate;
+    }
+
+    static PrimaryValueEqualPredicateImpl buildPrimaryValueEqual(FieldExp<?, ?> primary, ValueExpression<?> valueExp) {
+        return new PrimaryValueEqualPredicateImpl(primary, valueExp);
     }
 
     static DualPredicate build(Expression<?> left, SubQueryOperator operator, SubQuery subQuery) {
@@ -155,6 +160,65 @@ abstract class DualPredicate extends AbstractPredicate {
         @Override
         protected String beforeAs() {
             return String.format("%s %s %s", this.left, this.operator, this.right);
+        }
+    }
+
+    private static class FieldValuePredicateImpl extends DualPredicate implements FieldValuePredicate {
+
+        private final FieldExp<?, ?> fieldExp;
+
+        private final DualOperator operator;
+
+        private final ValueExpression<?> valueExp;
+
+        private FieldValuePredicateImpl(FieldExp<?, ?> fieldExp, DualOperator operator, ValueExpression<?> valueExp) {
+            this.fieldExp = fieldExp;
+            this.operator = operator;
+            this.valueExp = valueExp;
+        }
+
+        @Override
+        public final FieldExp<?, ?> fieldExp() {
+            return this.fieldExp;
+        }
+
+        @Override
+        public final DualOperator operator() {
+            return this.operator;
+        }
+
+        @Override
+        public final Object value() {
+            return this.valueExp.value();
+        }
+
+        @Override
+        public final void appendPredicate(SQLContext context) {
+            this.fieldExp.appendSQL(context);
+            context.sqlBuilder()
+                    .append(" ")
+                    .append(this.operator.rendered());
+            this.valueExp.appendSQL(context);
+        }
+
+        @Override
+        protected final void afterSpace(SQLContext context) {
+            context.appendPredicate(this);
+        }
+
+        @Override
+        protected String beforeAs() {
+            return this.fieldExp + operator().rendered() + valueExp.value();
+        }
+    }
+
+    private static final class PrimaryValueEqualPredicateImpl extends FieldValuePredicateImpl
+            implements PrimaryValueEqualPredicate {
+        private PrimaryValueEqualPredicateImpl(FieldExp<?, ?> fieldExp, ValueExpression<?> valueExp) {
+            super(fieldExp, DualOperator.EQ, valueExp);
+            if (!(fieldExp.fieldMeta() instanceof PrimaryFieldMeta)) {
+                throw new IllegalArgumentException(String.format("FieldExp[%s] isn't PrimaryFieldMeta.", fieldExp));
+            }
         }
     }
 

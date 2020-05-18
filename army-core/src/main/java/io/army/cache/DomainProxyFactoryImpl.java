@@ -1,15 +1,15 @@
-package io.army.boot;
+package io.army.cache;
 
 import io.army.GenericSessionFactory;
-import io.army.aop.DomainUpdateAdvice;
 import io.army.beans.DomainWrapper;
+import io.army.beans.PropertyAccessorFactory;
+import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.util.ClassUtils;
 import io.army.util.Pair;
 import org.springframework.aop.framework.ProxyCreatorSupport;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,18 +22,25 @@ final class DomainProxyFactoryImpl implements DomainProxyFactory {
                 tableSetterPointcutMap.put(tableMeta, SetterMethodMatcherPointcut.build(tableMeta));
             }
         }
-        return new DomainProxyFactoryImpl(tableSetterPointcutMap);
+        return new DomainProxyFactoryImpl(sessionFactory, tableSetterPointcutMap);
     }
+
+
+    private final GenericSessionFactory sessionFactory;
 
     private final Map<TableMeta<?>, DomainSetterPointcut> tableSetterPointcutMap;
 
-    private DomainProxyFactoryImpl(Map<TableMeta<?>, DomainSetterPointcut> tableSetterPointcutMap) {
-        this.tableSetterPointcutMap = Collections.unmodifiableMap(tableSetterPointcutMap);
+    private DomainProxyFactoryImpl(GenericSessionFactory sessionFactory
+            , Map<TableMeta<?>, DomainSetterPointcut> tableSetterPointcutMap) {
+        this.sessionFactory = sessionFactory;
+        this.tableSetterPointcutMap = tableSetterPointcutMap;
     }
 
-
     @Override
-    public Pair<Object, DomainUpdateAdvice> createDomainProxy(DomainWrapper domainWrapper) {
+    public Pair<IDomain, DomainUpdateAdvice> createDomainProxy(IDomain domain) {
+        DomainWrapper domainWrapper = PropertyAccessorFactory.forDomainPropertyAccess(
+                domain, this.sessionFactory.tableMeta(domain.getClass()));
+
         // 1. obtain pointcut
         final DomainSetterPointcut pointcut = this.tableSetterPointcutMap.get(domainWrapper.tableMeta());
         if (pointcut == null) {
@@ -56,7 +63,7 @@ final class DomainProxyFactoryImpl implements DomainProxyFactory {
         config.setFrozen(true);
 
         // 5. create proxy object
-        final Object proxy = config.getAopProxyFactory().createAopProxy(config)
+        final IDomain proxy = (IDomain) config.getAopProxyFactory().createAopProxy(config)
                 .getProxy(ClassUtils.getDefaultClassLoader());
 
         return new Pair<>(proxy, advice);

@@ -1,9 +1,9 @@
 package io.army.boot;
 
 import io.army.*;
-import io.army.aop.DomainUpdateAdvice;
-import io.army.beans.DomainWrapper;
-import io.army.beans.PropertyAccessorFactory;
+import io.army.cache.DomainUpdateAdvice;
+import io.army.cache.SessionCache;
+import io.army.cache.UniqueKey;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.Dialect;
@@ -16,7 +16,6 @@ import io.army.meta.TableMeta;
 import io.army.tx.*;
 import io.army.util.Assert;
 import io.army.util.CriteriaUtils;
-import io.army.util.Pair;
 import io.army.wrapper.BatchSQLWrapper;
 import io.army.wrapper.SQLWrapper;
 import io.army.wrapper.SelectSQLWrapper;
@@ -29,7 +28,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 
 final class SessionImpl implements InnerSession, InnerTxSession {
 
@@ -46,16 +46,9 @@ final class SessionImpl implements InnerSession, InnerTxSession {
 
     private final boolean currentSession;
 
+    private final SessionCache sessionCache;
+
     private final Dialect dialect;
-
-    private final Map<Object, Object> cacheById;
-
-    private final Map<UniqueKey, Object> cacheByUnique;
-
-    private final Map<Object, UniqueKey> idUniqueMap;
-
-    private final Map<Object, DomainUpdateAdvice> adviceCacheById;
-
 
     private Transaction transaction;
 
@@ -79,17 +72,13 @@ final class SessionImpl implements InnerSession, InnerTxSession {
         } catch (SQLException e) {
             throw new CreateSessionException(ErrorCode.SESSION_CREATE_ERROR, e, "connection query occur error.");
         }
+
         if (sessionFactory.supportSessionCache()) {
-            this.cacheById = new HashMap<>();
-            this.cacheByUnique = new HashMap<>();
-            this.idUniqueMap = new HashMap<>();
-            this.adviceCacheById = new HashMap<>();
+            this.sessionCache = sessionFactory.sessionCacheFactory().createSessionCache(this);
         } else {
-            this.cacheById = Collections.emptyMap();
-            this.cacheByUnique = Collections.emptyMap();
-            this.idUniqueMap = Collections.emptyMap();
-            this.adviceCacheById = Collections.emptyMap();
+            this.sessionCache = null;
         }
+
     }
 
     @Override
@@ -125,23 +114,28 @@ final class SessionImpl implements InnerSession, InnerTxSession {
         return get(tableMeta, id, Visible.ONLY_VISIBLE);
     }
 
-    @SuppressWarnings("unchecked")
     @Nullable
     @Override
     public <T extends IDomain> T get(TableMeta<T> tableMeta, final Object id, Visible visible) {
+        T actualReturn;
+        if (this.sessionCache != null) {
+            // try obtain cache
+            actualReturn = this.sessionCache.getDomain(tableMeta, id);
+            if (actualReturn != null) {
+                return actualReturn;
+            }
+        }
+
         // 1. create sql
         Select select = CriteriaUtils.createSelectDomainById(tableMeta, id);
         // 2. execute sql
         T domain = this.selectOne(select, tableMeta.javaType(), visible);
-        T actualReturn = domain;
-        if (this.sessionFactory.supportSessionCache()) {
+
+        if (domain != null && this.sessionCache != null) {
             // 3. cache
-            DomainWrapper domainWrapper = PropertyAccessorFactory.forDomainPropertyAccess(domain, tableMeta);
-            Pair<Object, DomainUpdateAdvice> pair = this.sessionFactory.domainProxyFactory()
-                    .createDomainProxy(domainWrapper);
-            actualReturn = (T) pair.getFirst();
-            this.cacheById.put(id, actualReturn);
-            this.adviceCacheById.put(id, pair.getSecond());
+            actualReturn = this.sessionCache.cacheDomainById(tableMeta, domain, id);
+        } else {
+            actualReturn = domain;
         }
         return actualReturn;
     }
@@ -153,33 +147,28 @@ final class SessionImpl implements InnerSession, InnerTxSession {
         return getByUnique(tableMeta, propNameList, valueList, Visible.ONLY_VISIBLE);
     }
 
-    @SuppressWarnings("unchecked")
     @Nullable
     @Override
     public <T extends IDomain> T getByUnique(TableMeta<T> tableMeta, List<String> propNameList
             , List<Object> valueList, Visible visible) {
         final UniqueKey uniqueKey = new UniqueKey(propNameList, valueList);
-        T actualReturn = (T) this.cacheByUnique.get(uniqueKey);
-
+        T actualReturn;
+        if (this.sessionCache != null) {
+            // try obtain cache
+            actualReturn = this.sessionCache.getDomain(tableMeta, uniqueKey);
+            if (actualReturn != null) {
+                return actualReturn;
+            }
+        }
         // 1. create sql
         Select select = CriteriaUtils.createSelectDomainByUnique(tableMeta, propNameList, valueList);
         // 2. execute sql
         T domain = this.selectOne(select, tableMeta.javaType(), visible);
-
-        actualReturn = domain;
-        if (this.sessionFactory.supportSessionCache()) {
+        if (domain != null && this.sessionCache != null) {
             // 3. cache
-            DomainWrapper domainWrapper = PropertyAccessorFactory.forDomainPropertyAccess(domain, tableMeta);
-            Pair<Object, DomainUpdateAdvice> pair = this.sessionFactory.domainProxyFactory()
-                    .createDomainProxy(domainWrapper);
-            actualReturn = (T) pair.getFirst();
-
-            final Object id = domainWrapper.getPropertyValue(tableMeta.id().propertyName());
-
-            this.cacheById.put(id, actualReturn);
-            this.adviceCacheById.put(id, pair.getSecond());
-            this.cacheByUnique.put(uniqueKey, actualReturn);
-            this.idUniqueMap.put(id, uniqueKey);
+            actualReturn = this.sessionCache.cacheDomainByUnique(tableMeta, domain, uniqueKey);
+        } else {
+            actualReturn = domain;
         }
         return actualReturn;
     }
@@ -337,7 +326,14 @@ final class SessionImpl implements InnerSession, InnerTxSession {
 
     @Override
     public void flush() throws SessionException {
-        // no-op
+        if (this.sessionCache != null) {
+            for (DomainUpdateAdvice advice : this.sessionCache.updateAdvices()) {
+                if (advice.hasUpdate()) {
+                    executeDomainUpdateAdvice(advice);
+                }
+            }
+        }
+
     }
 
     /*################################## blow InnerSession method ##################################*/
@@ -357,6 +353,11 @@ final class SessionImpl implements InnerSession, InnerTxSession {
     @Override
     public PreparedStatement createStatement(String sql) throws SQLException {
         return this.connection.prepareStatement(sql);
+    }
+
+    @Override
+    public PreparedStatement createStatement(String sql, String[] columnNames) throws SQLException {
+        return this.connection.prepareStatement(sql, columnNames);
     }
 
     /*################################## blow InnerTxSession method ##################################*/
@@ -462,38 +463,16 @@ final class SessionImpl implements InnerSession, InnerTxSession {
         return this.sessionFactory.insertSQLExecutor().batchInsert(this, wrapperList);
     }
 
-    /*private void invokeBeforePersist(List<DomainBatchSQLWrapper> wrapperList
-            , List<DomainInterceptor> parentInterceptors, List<DomainInterceptor> interceptors) {
-
-        for (DomainBatchSQLWrapper wrapper : wrapperList) {
-            TableMeta<?> parentMeta = null;
-            if (wrapper.tableMeta() instanceof ChildTableMeta) {
-                parentMeta = ((ChildTableMeta<?>) wrapper.tableMeta()).parentMeta();
-            }
-            for (BeanWrapper beanWrapper : wrapper.beanWrapperList()) {
-                if (parentMeta != null) {
-                    for (DomainInterceptor interceptor : parentInterceptors) {
-
-                        interceptor.beforeInsert(parentMeta, beanWrapper.getReadonlyWrapper()
-                                , this.sessionFactory.proxySession());
-                    }
-                }
-
-                for (DomainInterceptor interceptor : interceptors) {
-
-                    interceptor.beforeInsert(wrapper.tableMeta(), beanWrapper.getReadonlyWrapper()
-                            , this.sessionFactory.proxySession());
-                }
-
-            }
-        }
-
-
-    }*/
 
     private List<Integer> executeGenericInsert(InnerGenericInsert insert, final Visible visible) {
         List<SQLWrapper> wrapperList = this.dialect.insert((Insert) insert, visible);
         return this.sessionFactory.insertSQLExecutor().multiInsert(this, wrapperList);
+    }
+
+    private void executeDomainUpdateAdvice(DomainUpdateAdvice advice) {
+        CacheDomainUpdate update = CacheDomainUpdate.build(advice);
+        List<SimpleSQLWrapper> list = this.dialect.update(update, Visible.ONLY_VISIBLE);
+        update.clear();
     }
 
 
@@ -570,36 +549,4 @@ final class SessionImpl implements InnerSession, InnerTxSession {
 
     }
 
-    private static class UniqueKey {
-
-        private final List<String> propNameList;
-
-        private final List<Object> valueList;
-
-        private final int hash;
-
-        private UniqueKey(List<String> propNameList, List<Object> valueList) {
-            this.propNameList = Collections.unmodifiableList(propNameList);
-            this.valueList = Collections.unmodifiableList(valueList);
-            this.hash = Objects.hash(propNameList, valueList);
-        }
-
-        @Override
-        public int hashCode() {
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (!(obj instanceof UniqueKey)) {
-                return false;
-            }
-            UniqueKey key = (UniqueKey) obj;
-            return this.propNameList.equals(key.propNameList)
-                    && this.valueList.equals(key.valueList);
-        }
-    }
 }

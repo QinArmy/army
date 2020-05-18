@@ -61,7 +61,7 @@ final class Dual implements IDomain {
         }
 
         @Override
-        public IndexFieldMeta<? super Dual, Object> id() {
+        public PrimaryFieldMeta<? super Dual, Object> id() {
             throw new UnsupportedOperationException();
         }
 
@@ -120,6 +120,15 @@ final class Dual implements IDomain {
             throw new MetaException(ErrorCode.META_ERROR, "no field[%s]", propName);
         }
 
+        @Override
+        public <F> UniqueFieldMeta<Dual, F> getUniqueField(String propName, Class<F> propClass) throws MetaException {
+            throw new MetaException(ErrorCode.META_ERROR, "no field[%s]", propName);
+        }
+
+        @Override
+        public <F> PrimaryFieldMeta<Dual, F> getPrimaryField(Class<F> propClass) throws MetaException {
+            throw new MetaException(ErrorCode.META_ERROR, "no field[%s]", TableMeta.ID);
+        }
     }
 
 

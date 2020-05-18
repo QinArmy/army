@@ -11,13 +11,33 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-abstract class Funcs<E> extends AbstractExpression<E> implements FuncExpression<E> {
+abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpression<E> {
+
+
+    static <E> FuncExpression<E> noArgumentFunc(String name, MappingMeta returnType) {
+        return new NoArgumentFunc<>(name, returnType);
+    }
+
+    static <E> FuncExpression<E> oneArgumentFunc(String name, MappingMeta returnType, Expression<?> one) {
+        return new OneArgumentFunc<>(name, returnType, one);
+    }
+
+    static <E> FuncExpression<E> twoArgumentFunc(String name, MappingMeta returnType, Expression<?> one
+            , Expression<?> two) {
+        return new TwoArgumentFunc<>(name, returnType, one, two);
+    }
+
+    static <E> FuncExpression<E> twoArgumentFunc(String name, MappingMeta returnType, List<String> format
+            , Expression<?> one, Expression<?> two) {
+        return new TwoArgumentFunc<>(name, returnType, format, one, two);
+    }
+
 
     private final String name;
 
     protected final MappingMeta returnType;
 
-    Funcs(String name, MappingMeta returnType) {
+    private AbstractFunc(String name, MappingMeta returnType) {
         this.name = name;
         this.returnType = returnType;
     }
@@ -35,7 +55,7 @@ abstract class Funcs<E> extends AbstractExpression<E> implements FuncExpression<
     @Override
     protected void afterSpace(SQLContext context) {
         context.sqlBuilder()
-                .append(name)
+                .append(this.name)
                 .append("(");
         doAppendArgument(context);
         context.sqlBuilder().append(")");
@@ -52,7 +72,7 @@ abstract class Funcs<E> extends AbstractExpression<E> implements FuncExpression<
 
     /*################################## blow static class  ##################################*/
 
-    static final class NoArgumentFunc<E> extends Funcs<E> {
+    private static final class NoArgumentFunc<E> extends AbstractFunc<E> {
 
         NoArgumentFunc(String name, MappingMeta returnType) {
             super(name, returnType);
@@ -74,13 +94,13 @@ abstract class Funcs<E> extends AbstractExpression<E> implements FuncExpression<
         }
     }
 
-    static final class OneArgumentFunc<E> extends Funcs<E> {
+    static final class OneArgumentFunc<E> extends AbstractFunc<E> {
 
         private final Expression<?> one;
 
         private final List<MappingMeta> argumentTypeList;
 
-        OneArgumentFunc(String name, MappingMeta returnType, Expression<?> one) {
+        private OneArgumentFunc(String name, MappingMeta returnType, Expression<?> one) {
             super(name, returnType);
             this.one = one;
             this.argumentTypeList = Collections.singletonList(one.mappingMeta());
@@ -102,7 +122,7 @@ abstract class Funcs<E> extends AbstractExpression<E> implements FuncExpression<
         }
     }
 
-    static class TwoArgumentFunc<E> extends Funcs<E> {
+    static class TwoArgumentFunc<E> extends AbstractFunc<E> {
 
         private static final List<String> FORMAT_LIST = ArrayUtils.asUnmodifiableList("", ",", "");
 
@@ -114,7 +134,7 @@ abstract class Funcs<E> extends AbstractExpression<E> implements FuncExpression<
 
         private final List<MappingMeta> argumentTypeList;
 
-        TwoArgumentFunc(String name, MappingMeta returnType, List<String> format, Expression<?> one
+        private TwoArgumentFunc(String name, MappingMeta returnType, List<String> format, Expression<?> one
                 , Expression<?> two) {
             super(name, returnType);
             Assert.isTrue(format.size() >= 3, "");
@@ -128,7 +148,7 @@ abstract class Funcs<E> extends AbstractExpression<E> implements FuncExpression<
             this.argumentTypeList = Collections.unmodifiableList(typeList);
         }
 
-        TwoArgumentFunc(String name, MappingMeta returnType, Expression<?> one, Expression<?> two) {
+        private TwoArgumentFunc(String name, MappingMeta returnType, Expression<?> one, Expression<?> two) {
             this(name, returnType, FORMAT_LIST, one, two);
         }
 
@@ -153,7 +173,7 @@ abstract class Funcs<E> extends AbstractExpression<E> implements FuncExpression<
         }
     }
 
-    static final class ThreeArgumentFunc<E> extends Funcs<E> {
+    static final class ThreeArgumentFunc<E> extends AbstractFunc<E> {
 
         private static final List<String> FORMAT_LIST = ArrayUtils.asUnmodifiableList("", ",", ",", "");
 

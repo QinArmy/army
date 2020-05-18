@@ -1,4 +1,4 @@
-package io.army.aop;
+package io.army.cache;
 
 import io.army.beans.DomainReadonlyWrapper;
 import io.army.criteria.IPredicate;

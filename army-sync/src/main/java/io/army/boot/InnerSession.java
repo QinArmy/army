@@ -12,5 +12,8 @@ interface InnerSession extends Session {
 
     PreparedStatement createStatement(String sql) throws SQLException;
 
+    PreparedStatement createStatement(String sql, String[] columnNames) throws SQLException;
+
+
     Dialect dialect();
 }

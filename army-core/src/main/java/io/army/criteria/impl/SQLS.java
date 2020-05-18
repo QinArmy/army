@@ -57,14 +57,13 @@ public abstract class SQLS extends AbstractSQLS {
         return new StandardContextualSingleUpdate<>(targetTable, criteria);
     }
 
-    public static <T extends IDomain> Update.DomainUpdateAble<T, EmptyObject> domainUpdate(TableMeta<T> targetTable
-            , Object primaryKeyValue) {
-        return new StandardContextualDomainUpdate<>(targetTable, primaryKeyValue, EmptyObject.getInstance());
+    public static <T extends IDomain> Update.DomainUpdateAble<T, EmptyObject> domainUpdate(TableMeta<T> targetTable) {
+        return new StandardContextualDomainUpdate<>(targetTable, EmptyObject.getInstance());
     }
 
     public static <T extends IDomain, C> Update.DomainUpdateAble<T, C> domainUpdate(TableMeta<T> targetTable
-            , Object primaryKeyValue, C criteria) {
-        return new StandardContextualDomainUpdate<>(targetTable, primaryKeyValue, criteria);
+            , C criteria) {
+        return new StandardContextualDomainUpdate<>(targetTable, criteria);
     }
 
     public static Delete.SingleDeleteAble<EmptyObject> singleDelete() {

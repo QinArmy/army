@@ -1,21 +1,15 @@
 package io.army.boot;
 
 import io.army.ErrorCode;
-import io.army.SessionFactory;
-import io.army.UnKnownTypeException;
-import io.army.beans.ObjectWrapper;
-import io.army.beans.PropertyAccessorFactory;
 import io.army.codec.FieldCodec;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.FieldSelection;
 import io.army.criteria.Selection;
 import io.army.meta.FieldMeta;
-import io.army.meta.ParamMeta;
 import io.army.meta.mapping.MappingMeta;
 import io.army.modelgen.MetaConstant;
 import io.army.util.Pair;
 import io.army.util.Triple;
-import io.army.wrapper.ParamWrapper;
 import io.army.wrapper.SelectSQLWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,16 +19,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-final class SelectSQLExecutorImpl implements SelectSQLExecutor {
+final class SelectSQLExecutorImpl extends SQLExecutorSupport implements SelectSQLExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(SelectSQLExecutorImpl.class);
 
-    private final SessionFactory sessionFactory;
 
-    SelectSQLExecutorImpl(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
+    SelectSQLExecutorImpl(InnerSessionFactory sessionFactory) {
+        super(sessionFactory);
     }
 
 
@@ -115,76 +107,6 @@ final class SelectSQLExecutorImpl implements SelectSQLExecutor {
         return resultList;
     }
 
-    @SuppressWarnings("unchecked")
-    private <T> List<T> extractResult(ResultSet resultSet, List<Selection> selectionList
-            , Class<T> resultClass) throws SQLException {
-        List<T> resultList = new ArrayList<>();
-
-        final Map<FieldMeta<?, ?>, FieldCodec> codecMap = ExecutorUtils.createCodecMap(
-                selectionList, this.sessionFactory);
-
-        ObjectWrapper objectWrapper;
-        while (resultSet.next()) {
-            objectWrapper = PropertyAccessorFactory.forBeanPropertyAccess(resultClass);
-
-            for (Selection selection : selectionList) {
-                Object value = selection.mappingMeta().nullSafeGet(resultSet, selection.alias());
-                if (value == null) {
-                    continue;
-                }
-                if (selection instanceof FieldSelection) {
-                    FieldMeta<?, ?> fieldMeta = ((FieldSelection) selection).fieldMeta();
-                    FieldCodec fieldCodec = codecMap.get(fieldMeta);
-                    if (fieldCodec != null) {
-                        value = fieldCodec.decode(fieldMeta, value);
-                    }
-                }
-                objectWrapper.setPropertyValue(selection.alias(), value);
-            }
-
-            // result add to resultList
-            resultList.add((T) objectWrapper.getWrappedInstance());
-        }
-        return resultList;
-    }
-
-    private void setParams(PreparedStatement st, List<ParamWrapper> paramList) throws SQLException {
-        ParamWrapper paramWrapper;
-        Object value;
-
-        final int size = paramList.size();
-        for (int i = 0; i < size; i++) {
-            paramWrapper = paramList.get(i);
-            value = paramWrapper.value();
-            if (value == null) {
-                st.setNull(i + 1, ExecutorUtils.obtainVendorTypeNumber(paramWrapper.paramMeta()));
-            } else {
-                setNonNullValue(st, i + 1, paramWrapper.paramMeta(), value);
-            }
-        }
-
-    }
-
-
-    private void setNonNullValue(PreparedStatement st, final int index, ParamMeta paramMeta, final Object value)
-            throws SQLException {
-        Object paramValue = value;
-        MappingMeta mappingMeta;
-        if (paramMeta instanceof FieldMeta) {
-            FieldMeta<?, ?> fieldMeta = (FieldMeta<?, ?>) paramMeta;
-            FieldCodec fieldCodec = this.sessionFactory.fieldCodec(fieldMeta);
-            if (fieldCodec != null) {
-                paramValue = fieldCodec.encode(fieldMeta, paramValue);
-            }
-            mappingMeta = fieldMeta.mappingMeta();
-        } else if (paramMeta instanceof MappingMeta) {
-            mappingMeta = (MappingMeta) paramMeta;
-        } else {
-            throw new UnKnownTypeException(paramMeta);
-        }
-        // set param
-        mappingMeta.nonNullSet(st, paramValue, index);
-    }
 
 
 }

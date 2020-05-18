@@ -4,6 +4,8 @@ import io.army.criteria.ConstantExpression;
 import io.army.criteria.SQLContext;
 import io.army.criteria.Selection;
 import io.army.lang.Nullable;
+import io.army.meta.FieldMeta;
+import io.army.meta.ParamMeta;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingMeta;
 import io.army.util.ArrayUtils;
@@ -36,13 +38,13 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
 
 
     @SuppressWarnings("unchecked")
-    static <E> ConstantExpression<E> build(final @Nullable MappingMeta mappingType, final E constant) {
+    static <E> ConstantExpression<E> build(final @Nullable ParamMeta paramMeta, final E constant) {
 
-        MappingMeta type;
-        if (mappingType == null) {
+        ParamMeta type;
+        if (paramMeta == null) {
             type = MappingFactory.getDefaultMapping(constant.getClass());
         } else {
-            type = mappingType;
+            type = paramMeta;
         }
 
         final ConstantExpression<E> cacheExp = (ConstantExpression<E>) CONSTANT_EXP_CACHE.get(constant);
@@ -59,12 +61,12 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
         return exp;
     }
 
-    private final MappingMeta mappingType;
+    private final ParamMeta paramMeta;
 
     private final E constant;
 
-    private ConstantExpressionImpl(MappingMeta mappingType, E constant) {
-        this.mappingType = mappingType;
+    private ConstantExpressionImpl(ParamMeta paramMeta, E constant) {
+        this.paramMeta = paramMeta;
         this.constant = constant;
     }
 
@@ -76,22 +78,34 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
 
     @Override
     protected void afterSpace(SQLContext context) {
-        context.appendTextValue(mappingType, constant);
+        context.appendTextValue(obtainMappingMeta(), this.constant);
     }
 
     @Override
-    public MappingMeta mappingMeta() {
-        return mappingType;
+    public ParamMeta mappingMeta() {
+        return this.paramMeta;
     }
 
     @Override
-    public E constant() {
+    public E value() {
         return constant;
     }
 
     @Override
     public String beforeAs() {
-        return mappingType.nonNullTextValue(constant);
+        return obtainMappingMeta().nonNullTextValue(constant);
+    }
+
+    private MappingMeta obtainMappingMeta() {
+        MappingMeta mappingMeta;
+        if (this.paramMeta instanceof FieldMeta) {
+            mappingMeta = ((FieldMeta<?, ?>) this.paramMeta).mappingMeta();
+        } else if (this.paramMeta instanceof MappingMeta) {
+            mappingMeta = (MappingMeta) this.paramMeta;
+        } else {
+            throw new IllegalStateException(String.format("paramMeta[%s] unknown.", this.paramMeta));
+        }
+        return mappingMeta;
     }
 
 }

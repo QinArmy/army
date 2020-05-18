@@ -4,6 +4,7 @@ import io.army.ArmyConfigConstant;
 import io.army.ErrorCode;
 import io.army.SessionFactoryException;
 import io.army.ShardingMode;
+import io.army.cache.SessionCacheFactory;
 import io.army.codec.FieldCodec;
 import io.army.domain.IDomain;
 import io.army.env.Environment;
@@ -50,7 +51,7 @@ abstract class AbstractGenericSessionFactory implements InnerGenericSessionFacti
 
     final boolean supportSessionCache;
 
-    final DomainProxyFactory domainProxyFactory;
+    final SessionCacheFactory sessionCacheFactory;
 
     AbstractGenericSessionFactory(String name, Environment env, Collection<FieldCodec> fieldCodecs) {
         Assert.hasText(name, "name required");
@@ -73,7 +74,7 @@ abstract class AbstractGenericSessionFactory implements InnerGenericSessionFacti
         this.readOnly = SessionFactoryUtils.readOnly(this.name, this.env);
         this.fieldCodecMap = SessionFactoryUtils.createTableFieldCodecMap(fieldCodecs);
         this.supportSessionCache = SessionFactoryUtils.sessionCache(this.env, this.name);
-        this.domainProxyFactory = DomainProxyFactory.build(this);
+        this.sessionCacheFactory = SessionCacheFactory.build(this);
     }
 
 
@@ -148,8 +149,8 @@ abstract class AbstractGenericSessionFactory implements InnerGenericSessionFacti
     }
 
     @Override
-    public DomainProxyFactory domainProxyFactory() {
-        return this.domainProxyFactory;
+    public SessionCacheFactory sessionCacheFactory() {
+        return this.sessionCacheFactory;
     }
 
     @Override

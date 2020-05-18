@@ -17,8 +17,9 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 /**
+ *
  */
-abstract class MetaUtils {
+abstract class TableMetaUtils {
 
     private static final String PRIMARY_FIELD = TableMeta.ID;
 
@@ -28,7 +29,7 @@ abstract class MetaUtils {
 
     static Map<Class<?>, Map<Integer, Class<?>>> discriminatorCodeMap = new HashMap<>();
 
-    protected MetaUtils() {
+    protected TableMetaUtils() {
 
     }
 
@@ -527,7 +528,7 @@ abstract class MetaUtils {
                 assertPrimaryKeyIndex(indexMeta, indexColumnDefinition, indexColumns.length);
             }
             field = indexField(lowerCaseColumnName, tableMeta, columnToFieldMap);
-            uniqueColumn = indexMeta.isUnique() && indexColumns.length == 1;
+            uniqueColumn = indexMeta.unique() && indexColumns.length == 1;
             indexFieldMeta = DefaultFieldMeta.createIndexFieldMeta(tableMeta, field, indexMeta
                     , uniqueColumn, columnAsc);
 
@@ -539,7 +540,7 @@ abstract class MetaUtils {
 
     private static <T extends IDomain> void assertPrimaryKeyIndex(IndexMeta<T> indexMeta, String indexColumn,
                                                                   final int columnCount) {
-        if (!indexMeta.isUnique() || columnCount != 1) {
+        if (!indexMeta.unique() || columnCount != 1) {
             throw new MetaException(ErrorCode.META_ERROR,
                     "entity[%s] indexMap[%s] indexMap column[%s] is error primary key,or not unique .",
                     indexMeta.table().javaType(), indexMeta.name(), indexColumn);
@@ -647,7 +648,7 @@ abstract class MetaUtils {
         }
 
         @Override
-        public boolean isUnique() {
+        public boolean unique() {
             return this.unique;
         }
 

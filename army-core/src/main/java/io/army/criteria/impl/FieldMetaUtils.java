@@ -27,7 +27,7 @@ import java.util.Map;
  * @see io.army.meta.FieldMeta
  * @see DefaultFieldMeta
  */
-abstract class FieldMetaUtils extends MetaUtils {
+abstract class FieldMetaUtils extends TableMetaUtils {
 
     static final class GeneratorMetaImpl implements GeneratorMeta {
 
@@ -318,6 +318,8 @@ abstract class FieldMetaUtils extends MetaUtils {
         }
 
     }
+
+    /*################################## blow static inner class ##################################*/
 
 
 }

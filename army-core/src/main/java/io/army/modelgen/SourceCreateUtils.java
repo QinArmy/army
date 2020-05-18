@@ -475,6 +475,14 @@ abstract class SourceCreateUtils {
                 .append(";\n")
 
                 .append("import ")
+                .append(UniqueFieldMeta.class.getName())
+                .append(";\n")
+
+                .append("import ")
+                .append(PrimaryFieldMeta.class.getName())
+                .append(";\n")
+
+                .append("import ")
                 .append(Assert.class.getName())
                 .append(";\n\n")
         ;

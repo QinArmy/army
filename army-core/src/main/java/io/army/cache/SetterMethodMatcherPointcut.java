@@ -1,4 +1,4 @@
-package io.army.boot;
+package io.army.cache;
 
 import io.army.ErrorCode;
 import io.army.criteria.MetaException;

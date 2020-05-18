@@ -35,9 +35,9 @@ public abstract class TableMetaFactory {
     }
 
     public static void cleanCache() {
-        if (MetaUtils.discriminatorCodeMap != null) {
-            MetaUtils.discriminatorCodeMap.clear();
-            MetaUtils.discriminatorCodeMap = null;
+        if (TableMetaUtils.discriminatorCodeMap != null) {
+            TableMetaUtils.discriminatorCodeMap.clear();
+            TableMetaUtils.discriminatorCodeMap = null;
         }
     }
 

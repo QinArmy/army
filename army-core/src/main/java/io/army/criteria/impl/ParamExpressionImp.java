@@ -4,18 +4,20 @@ import io.army.criteria.ParamExpression;
 import io.army.criteria.SQLContext;
 import io.army.criteria.Selection;
 import io.army.lang.Nullable;
+import io.army.meta.ParamMeta;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingMeta;
 import io.army.util.Assert;
 
 final class ParamExpressionImp<E> extends AbstractNoNOperationExpression<E> implements ParamExpression<E> {
 
-    static <E> ParamExpressionImp<E> build(@Nullable MappingMeta mappingType, @Nullable E value) {
+
+    static <E> ParamExpressionImp<E> build(@Nullable ParamMeta paramMeta, @Nullable E value) {
         ParamExpressionImp<E> paramExpression;
-        if (mappingType != null && value != null) {
-            paramExpression = new ParamExpressionImp<>(mappingType, value);
-        } else if (mappingType != null) {
-            paramExpression = new ParamExpressionImp<>(mappingType);
+        if (paramMeta != null && value != null) {
+            paramExpression = new ParamExpressionImp<>(paramMeta, value);
+        } else if (paramMeta != null) {
+            paramExpression = new ParamExpressionImp<>(paramMeta);
         } else if (value != null) {
             paramExpression = new ParamExpressionImp<>(value);
         } else {
@@ -24,25 +26,25 @@ final class ParamExpressionImp<E> extends AbstractNoNOperationExpression<E> impl
         return paramExpression;
     }
 
-    private final MappingMeta mappingType;
+    private final ParamMeta paramMeta;
 
     private final E value;
 
-    private ParamExpressionImp(MappingMeta mappingType, E value) {
-        this.mappingType = mappingType;
+    private ParamExpressionImp(ParamMeta paramMeta, E value) {
+        this.paramMeta = paramMeta;
         this.value = value;
     }
 
-    private ParamExpressionImp(MappingMeta mappingType) {
-        Assert.notNull(mappingType, "");
-        this.mappingType = mappingType;
+    private ParamExpressionImp(ParamMeta paramMeta) {
+        Assert.notNull(paramMeta, "");
+        this.paramMeta = paramMeta;
         this.value = null;
     }
 
     private ParamExpressionImp(E value) {
         Assert.notNull(value, "");
         this.value = value;
-        this.mappingType = MappingFactory.getDefaultMapping(this.value.getClass());
+        this.paramMeta = MappingFactory.getDefaultMapping(this.value.getClass());
     }
 
 
@@ -52,8 +54,13 @@ final class ParamExpressionImp<E> extends AbstractNoNOperationExpression<E> impl
     }
 
     @Override
-    public final MappingMeta paramMeta() {
-        return mappingType;
+    public ParamMeta paramMeta() {
+        return this.paramMeta;
+    }
+
+    @Override
+    public final MappingMeta mappingMeta() {
+        return this.paramMeta.mappingMeta();
     }
 
     @Override
@@ -65,11 +72,6 @@ final class ParamExpressionImp<E> extends AbstractNoNOperationExpression<E> impl
     protected void afterSpace(SQLContext context) {
         context.sqlBuilder().append("?");
         context.appendParam(this);
-    }
-
-    @Override
-    public final MappingMeta mappingMeta() {
-        return this.mappingType;
     }
 
     @Override

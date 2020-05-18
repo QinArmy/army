@@ -150,7 +150,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     private final List<IndexMeta<T>> indexMetaList;
 
-    private final IndexFieldMeta<T, Object> primaryField;
+    private final PrimaryFieldMeta<T, Object> primaryField;
 
     final ParentTableMeta<? super T> parentTableMeta;
 
@@ -159,7 +159,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     @SuppressWarnings("unchecked")
     private DefaultTableMeta(@Nullable ParentTableMeta<? super T> parentTableMeta, Class<T> domainClass) {
         Assert.notNull(domainClass, "entityClass required");
-        MetaUtils.assertParentTableMeta(parentTableMeta, domainClass);
+        TableMetaUtils.assertParentTableMeta(parentTableMeta, domainClass);
         Assert.state(!INSTANCE_MAP.containsKey(domainClass),
                 () -> String.format("entityClass[%s] duplication", domainClass.getName()));
 
@@ -167,25 +167,25 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         this.parentTableMeta = parentTableMeta;
         try {
 
-            Table table = MetaUtils.tableMeta(domainClass);
+            Table table = TableMetaUtils.tableMeta(domainClass);
 
-            this.tableName = MetaUtils.tableName(table, domainClass);
-            this.comment = MetaUtils.tableComment(table, domainClass);
+            this.tableName = TableMetaUtils.tableName(table, domainClass);
+            this.comment = TableMetaUtils.tableComment(table, domainClass);
             this.immutable = table.immutable();
-            this.schemaMeta = MetaUtils.schemaMeta(table);
+            this.schemaMeta = TableMetaUtils.schemaMeta(table);
 
-            this.mappingMode = MetaUtils.tableMappingMode(domainClass);
+            this.mappingMode = TableMetaUtils.tableMappingMode(domainClass);
             this.charset = table.charset();
 
-            MetaUtils.FieldBean<T> fieldBean = MetaUtils.fieldMetaList(this, table);
+            TableMetaUtils.FieldBean<T> fieldBean = TableMetaUtils.fieldMetaList(this, table);
             this.propNameToFieldMeta = fieldBean.getPropNameToFieldMeta();
             this.indexMetaList = fieldBean.getIndexMetaList();
             this.discriminator = fieldBean.getDiscriminator();
 
 
-            this.discriminatorValue = MetaUtils.discriminatorValue(this.mappingMode, this);
+            this.discriminatorValue = TableMetaUtils.discriminatorValue(this.mappingMode, this);
 
-            this.primaryField = (IndexFieldMeta<T, Object>) this.propNameToFieldMeta.get(TableMeta.ID);
+            this.primaryField = (PrimaryFieldMeta<T, Object>) this.propNameToFieldMeta.get(TableMeta.ID);
             Assert.state(this.primaryField != null, () -> String.format(
                     "domain[%s] primary field meta debugSQL error.", domainClass.getName()));
 
@@ -219,7 +219,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     @Override
-    public IndexFieldMeta<? super T, Object> id() {
+    public PrimaryFieldMeta<? super T, Object> id() {
         return this.primaryField;
     }
 
@@ -307,6 +307,24 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
         }
         return (IndexFieldMeta<T, F>) fieldMeta;
+    }
+
+    @Override
+    public <F> UniqueFieldMeta<T, F> getUniqueField(String propName, Class<F> propClass) throws MetaException {
+        FieldMeta<T, F> fieldMeta = getField(propName, propClass);
+        if (!(fieldMeta instanceof UniqueFieldMeta)) {
+            throw new MetaException(ErrorCode.META_ERROR, "UniqueFieldMeta[%s] not found", propName);
+        }
+        return (UniqueFieldMeta<T, F>) fieldMeta;
+    }
+
+    @Override
+    public <F> PrimaryFieldMeta<T, F> getPrimaryField(Class<F> propClass) throws MetaException {
+        FieldMeta<T, F> fieldMeta = getField(ID, propClass);
+        if (!(fieldMeta instanceof PrimaryFieldMeta)) {
+            throw new MetaException(ErrorCode.META_ERROR, "PrimaryFieldMeta not found");
+        }
+        return (PrimaryFieldMeta<T, F>) fieldMeta;
     }
 
     @Override

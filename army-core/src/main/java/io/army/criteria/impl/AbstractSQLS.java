@@ -1,10 +1,8 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.ConstantExpression;
-import io.army.criteria.Expression;
-import io.army.criteria.ParamExpression;
-import io.army.criteria.SQLContext;
+import io.army.criteria.*;
 import io.army.lang.Nullable;
+import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingMeta;
@@ -33,8 +31,8 @@ abstract class AbstractSQLS {
         return ParamExpressionImp.build(null, param);
     }
 
-    public static <E> ParamExpression<E> param(E param, MappingMeta mappingType) {
-        return ParamExpressionImp.build(mappingType, param);
+    public static <E> ParamExpression<E> param(E param, ParamMeta paramMeta) {
+        return ParamExpressionImp.build(paramMeta, param);
     }
 
     static <E> ParamExpression<E> param(E param, Expression<E> expression) {
@@ -68,113 +66,113 @@ abstract class AbstractSQLS {
      * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/mathematical-functions.html#function_abs">
      * MySQL ABS function</a>
      */
-    public static <E extends Number> Expression<E> abs(Expression<E> x) {
-        return new Funcs.OneArgumentFunc<>("ABS", x.mappingMeta(), x);
+    public static <E extends Number> FuncExpression<E> abs(Expression<E> x) {
+        return AbstractFunc.oneArgumentFunc("ABS", x.mappingMeta(), x);
     }
 
     public static <E extends Number> Expression<Double> acos(Expression<E> x) {
-        return new Funcs.OneArgumentFunc<>("ACOS", MappingFactory.getDefaultMapping(Double.class), x);
+        return AbstractFunc.oneArgumentFunc("ACOS", MappingFactory.getDefaultMapping(Double.class), x);
     }
 
 
     public static <E extends Number> Expression<Double> asin(Expression<E> x) {
-        return new Funcs.OneArgumentFunc<>("ASIN", MappingFactory.getDefaultMapping(Double.class), x);
+        return AbstractFunc.oneArgumentFunc("ASIN", MappingFactory.getDefaultMapping(Double.class), x);
     }
 
     public static <E extends Number> Expression<Double> atan(Expression<E> x) {
-        return new Funcs.OneArgumentFunc<>("ATAN", MappingFactory.getDefaultMapping(Double.class), x);
+        return AbstractFunc.oneArgumentFunc("ATAN", MappingFactory.getDefaultMapping(Double.class), x);
     }
 
     public static <E extends Number> Expression<Double> atan(Expression<E> one, Expression<E> two) {
-        return new Funcs.TwoArgumentFunc<>("ATAN", MappingFactory.getDefaultMapping(Double.class), one, two);
+        return AbstractFunc.twoArgumentFunc("ATAN", MappingFactory.getDefaultMapping(Double.class), one, two);
     }
 
     public static <E extends Number> Expression<Integer> cell(Expression<E> x) {
-        return new Funcs.OneArgumentFunc<>("CELL", MappingFactory.getDefaultMapping(Integer.class), x);
+        return AbstractFunc.oneArgumentFunc("CELL", MappingFactory.getDefaultMapping(Integer.class), x);
     }
 
     public static <E extends Number> Expression<Long> cellAsLong(Expression<E> x) {
-        return new Funcs.OneArgumentFunc<>("CELL", MappingFactory.getDefaultMapping(Long.class), x);
+        return AbstractFunc.oneArgumentFunc("CELL", MappingFactory.getDefaultMapping(Long.class), x);
     }
 
     public static <E extends Number> Expression<String> conv(Expression<E> number, int fromBase, int toBase) {
-        return new Funcs.ThreeArgumentFunc<>("CONV", MappingFactory.getDefaultMapping(String.class), number
+        return new AbstractFunc.ThreeArgumentFunc<>("CONV", MappingFactory.getDefaultMapping(String.class), number
                 , constant(fromBase), constant(toBase));
     }
 
     public static <E extends Number> Expression<Double> cos(Expression<E> x) {
-        return new Funcs.OneArgumentFunc<>("COS", MappingFactory.getDefaultMapping(Double.class), x);
+        return AbstractFunc.oneArgumentFunc("COS", MappingFactory.getDefaultMapping(Double.class), x);
     }
 
     public static <E extends Number> Expression<Double> cot(Expression<E> x) {
-        return new Funcs.OneArgumentFunc<>("COT", MappingFactory.getDefaultMapping(Double.class), x);
+        return AbstractFunc.oneArgumentFunc("COT", MappingFactory.getDefaultMapping(Double.class), x);
     }
 
     public static <E extends Number> Expression<Long> crc32(Expression<E> expression) {
-        return new Funcs.OneArgumentFunc<>("CRC32", MappingFactory.getDefaultMapping(Long.class), expression);
+        return AbstractFunc.oneArgumentFunc("CRC32", MappingFactory.getDefaultMapping(Long.class), expression);
     }
 
     public static <E extends Number> Expression<Double> degrees(Expression<E> radian) {
-        return new Funcs.OneArgumentFunc<>("DEGREES", MappingFactory.getDefaultMapping(Double.class), radian);
+        return AbstractFunc.oneArgumentFunc("DEGREES", MappingFactory.getDefaultMapping(Double.class), radian);
     }
 
     /**
      * @see #ln(Expression)
      */
     public static <E extends Number> Expression<Double> exp(Expression<E> index) {
-        return new Funcs.OneArgumentFunc<>("EXP", MappingFactory.getDefaultMapping(Double.class), index);
+        return AbstractFunc.oneArgumentFunc("EXP", MappingFactory.getDefaultMapping(Double.class), index);
     }
 
     public static <E extends Number> Expression<Integer> floor(Expression<E> number) {
-        return new Funcs.OneArgumentFunc<>("FLOOR", MappingFactory.getDefaultMapping(Integer.class), number);
+        return AbstractFunc.oneArgumentFunc("FLOOR", MappingFactory.getDefaultMapping(Integer.class), number);
     }
 
     public static <E extends Number> Expression<Long> floorAsLong(Expression<E> number) {
-        return new Funcs.OneArgumentFunc<>("FLOOR", MappingFactory.getDefaultMapping(Long.class), number);
+        return AbstractFunc.oneArgumentFunc("FLOOR", MappingFactory.getDefaultMapping(Long.class), number);
     }
 
     public static <E extends Number> Expression<String> format(Expression<E> number, Expression<E> decimal) {
-        return new Funcs.TwoArgumentFunc<>("FORMAT", MappingFactory.getDefaultMapping(String.class), number, decimal);
+        return AbstractFunc.twoArgumentFunc("FORMAT", MappingFactory.getDefaultMapping(String.class), number, decimal);
     }
 
     public static <E extends Number> Expression<String> format(Expression<E> number, int decimal) {
-        return new Funcs.TwoArgumentFunc<>("FORMAT", MappingFactory.getDefaultMapping(String.class)
+        return AbstractFunc.twoArgumentFunc("FORMAT", MappingFactory.getDefaultMapping(String.class)
                 , number, constant(decimal));
     }
 
     public static <E extends Number> Expression<String> hex(Expression<E> number) {
-        return new Funcs.OneArgumentFunc<>("HEX", MappingFactory.getDefaultMapping(String.class), number);
+        return AbstractFunc.oneArgumentFunc("HEX", MappingFactory.getDefaultMapping(String.class), number);
     }
 
     public static Expression<String> hex(Number number) {
-        return new Funcs.OneArgumentFunc<>("HEX", MappingFactory.getDefaultMapping(String.class), constant(number));
+        return AbstractFunc.oneArgumentFunc("HEX", MappingFactory.getDefaultMapping(String.class), constant(number));
     }
 
     public static Expression<String> hex(String numberText) {
-        return new Funcs.OneArgumentFunc<>("HEX", MappingFactory.getDefaultMapping(String.class), constant(numberText));
+        return AbstractFunc.oneArgumentFunc("HEX", MappingFactory.getDefaultMapping(String.class), constant(numberText));
     }
 
     public static Expression<String> hexForText(Expression<String> numberText) {
-        return new Funcs.OneArgumentFunc<>("HEX", MappingFactory.getDefaultMapping(String.class), numberText);
+        return AbstractFunc.oneArgumentFunc("HEX", MappingFactory.getDefaultMapping(String.class), numberText);
     }
 
     /**
      * @see #exp(Expression)
      */
     public static <E extends Number> Expression<Double> ln(Expression<E> power) {
-        return new Funcs.OneArgumentFunc<>("LN", MappingFactory.getDefaultMapping(Double.class), power);
+        return AbstractFunc.oneArgumentFunc("LN", MappingFactory.getDefaultMapping(Double.class), power);
     }
 
     /**
      * @see #ln(Expression)
      */
     public static <E extends Number> Expression<Double> log(Expression<E> power) {
-        return new Funcs.OneArgumentFunc<>("LOG", MappingFactory.getDefaultMapping(Double.class), power);
+        return AbstractFunc.oneArgumentFunc("LOG", MappingFactory.getDefaultMapping(Double.class), power);
     }
 
     public static <B extends Number, P extends Number> Expression<Double> log(Expression<B> bottomNumber
             , Expression<P> power) {
-        return new Funcs.TwoArgumentFunc<>("LOG", MappingFactory.getDefaultMapping(Double.class), bottomNumber, power);
+        return AbstractFunc.twoArgumentFunc("LOG", MappingFactory.getDefaultMapping(Double.class), bottomNumber, power);
     }
 
     /**
@@ -193,23 +191,23 @@ abstract class AbstractSQLS {
 
     public static <E extends Number> Expression<E> mod(Expression<E> dividend
             , Expression<E> divisor) {
-        return new Funcs.TwoArgumentFunc<>("MOD", dividend.mappingMeta(), dividend, divisor);
+        return AbstractFunc.twoArgumentFunc("MOD", dividend.mappingMeta(), dividend, divisor);
     }
 
 
     public static Expression<Double> pi() {
-        return new Funcs.NoArgumentFunc<>("PI", MappingFactory.getDefaultMapping(Double.class));
+        return AbstractFunc.noArgumentFunc("PI", MappingFactory.getDefaultMapping(Double.class));
     }
 
 
     /*################################## blow date time function method ##################################*/
 
     public static Expression<LocalDateTime> now() {
-        return new Funcs.NoArgumentFunc<>("NOW", MappingFactory.getDefaultMapping(LocalDateTime.class));
+        return AbstractFunc.noArgumentFunc("NOW", MappingFactory.getDefaultMapping(LocalDateTime.class));
     }
 
     public static Expression<LocalDate> currentDate() {
-        return new Funcs.NoArgumentFunc<>("CURRENT_DATE", MappingFactory.getDefaultMapping(LocalDate.class));
+        return AbstractFunc.noArgumentFunc("CURRENT_DATE", MappingFactory.getDefaultMapping(LocalDate.class));
     }
 
     /*################################## blow static inner class  ##################################*/

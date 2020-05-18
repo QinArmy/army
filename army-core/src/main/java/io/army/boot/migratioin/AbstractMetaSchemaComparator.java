@@ -11,8 +11,6 @@ import io.army.schema.SchemaInfoException;
 import io.army.util.Assert;
 import io.army.util.ObjectUtils;
 import io.army.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
 
 import java.util.*;
@@ -147,12 +145,12 @@ public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparat
             return false;
         }
         boolean need ;
-        if (indexMeta.isUnique() != indexInfo.unique()) {
+        if (indexMeta.unique() != indexInfo.unique()) {
             need = true;
         } else if (indexMeta.fieldList().size() != indexInfo.columnMap().size()) {
             need = true;
         } else {
-           need = indexOrderMatch(indexMeta,indexInfo);
+            need = indexOrderMatch(indexMeta, indexInfo);
         }
         return need;
     }

@@ -6,7 +6,6 @@ import io.army.annotation.Index;
 import io.army.annotation.Table;
 import io.army.criteria.MetaException;
 import io.army.meta.TableMeta;
-import io.army.util.ArrayUtils;
 import io.army.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,12 +44,12 @@ class DefaultMetaEntity implements MetaEntity {
             throw new MetaException(ErrorCode.META_ERROR, "entityMappedElementList error");
         }
         // indexColumnNameSet help then step
-        final Set<String> indexColumnNameSet = createIndexColumnNameSet(this.entityElement);
+        final Map<String, IndexMode> indexMetaMap = createIndexColumnNameSet(this.entityElement);
         // prepare mapping prop element
         final Set<VariableElement> mappingPropSet = SourceCreateUtils.generateAttributes(
                 entityMappedElementList,
                 parentMappedElementList,
-                indexColumnNameSet
+                indexMetaMap.keySet()
         );
 
         final TypeElement parentEntityElement = SourceCreateUtils.entityElement(parentMappedElementList);
@@ -63,8 +62,7 @@ class DefaultMetaEntity implements MetaEntity {
         // 3. generate body of class part
         this.body = SourceCreateUtils.generateBody(this.entityElement,
                 parentEntityElement,
-                generateMappingPropList(mappingPropSet,
-                        ArrayUtils.asUnmodifiableSet(indexColumnNameSet, TableMeta.ID)));
+                generateMappingPropList(mappingPropSet, indexMetaMap));
     }
 
     @Override
@@ -91,11 +89,10 @@ class DefaultMetaEntity implements MetaEntity {
     }
 
     /**
-     *
      * @return a unmodifiable List
      */
     private List<MetaAttribute> generateMappingPropList(Set<VariableElement> mappingPropSet,
-                                                        Set<String> columnNameSet) {
+                                                        Map<String, IndexMode> indexMetaMa) {
 
         List<MetaAttribute> list = new ArrayList<>(mappingPropSet.size());
         Column column;
@@ -107,16 +104,16 @@ class DefaultMetaEntity implements MetaEntity {
             // make column name lower case
             columnName = StringUtils.toLowerCase(columnName);
             attribute = new DefaultMetaAttribute(this.entityElement, mappingProp, column
-                    ,columnNameSet.contains(columnName));
+                    , indexMetaMa.get(columnName));
             list.add(attribute);
         }
         return Collections.unmodifiableList(list);
     }
 
-    private static Set<String> createIndexColumnNameSet(TypeElement entityElement) {
+    private static Map<String, IndexMode> createIndexColumnNameSet(TypeElement entityElement) {
         Table table = entityElement.getAnnotation(Table.class);
         Index[] indexArray = table.indexes();
-        Set<String> columnNameSet = new HashSet<>();
+        Map<String, IndexMode> indexMetaMap = new HashMap<>();
 
         Set<String> indexNameSet = new HashSet<>(indexArray.length + 3);
 
@@ -128,14 +125,17 @@ class DefaultMetaEntity implements MetaEntity {
                 throw new MetaException(ErrorCode.META_ERROR, "entity[%s] indexMap name[%s] duplication",
                         entityElement.getQualifiedName());
             }
+            IndexMode indexMode = IndexMode.resolve(index);
             indexNameSet.add(indexName);
             for (String columnName : index.columnList()) {
                 tokenizer = new StringTokenizer(columnName.trim(), " ", false);
                 // make index field name lower case
-                columnNameSet.add(StringUtils.toLowerCase(tokenizer.nextToken()));
+                indexMetaMap.put(StringUtils.toLowerCase(tokenizer.nextToken()), indexMode);
             }
         }
-        return Collections.unmodifiableSet(columnNameSet);
+        // add id index
+        indexMetaMap.put(TableMeta.ID, IndexMode.PRIMARY);
+        return Collections.unmodifiableMap(indexMetaMap);
     }
 
 

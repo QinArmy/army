@@ -22,8 +22,6 @@ final class StandardContextualDomainUpdate<T extends IDomain, C> extends Abstrac
 
     private final TableMeta<?> tableMeta;
 
-    private final Object primaryKeyValue;
-
     private final C criteria;
 
     private final CriteriaContext criteriaContext;
@@ -38,14 +36,11 @@ final class StandardContextualDomainUpdate<T extends IDomain, C> extends Abstrac
 
     private boolean prepared;
 
-    StandardContextualDomainUpdate(TableMeta<?> tableMeta, Object primaryKeyValue, C criteria) {
+    StandardContextualDomainUpdate(TableMeta<?> tableMeta, C criteria) {
         Assert.notNull(tableMeta, "tableMeta required");
         Assert.notNull(criteria, "criteria required");
 
-        Assert.isInstanceOf(tableMeta.id().javaType(), primaryKeyValue);
-
         this.tableMeta = tableMeta;
-        this.primaryKeyValue = primaryKeyValue;
         this.criteria = criteria;
 
         this.criteriaContext = new CriteriaContextImpl<>(criteria);
@@ -194,10 +189,6 @@ final class StandardContextualDomainUpdate<T extends IDomain, C> extends Abstrac
         return this.tableAlias;
     }
 
-    @Override
-    public final Object primaryKeyValue() {
-        return this.primaryKeyValue;
-    }
 
     @Override
     public final List<IPredicate> predicateList() {

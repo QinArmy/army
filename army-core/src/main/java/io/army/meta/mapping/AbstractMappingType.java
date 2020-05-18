@@ -12,6 +12,12 @@ public abstract class AbstractMappingType implements MappingMeta {
         return this == obj;
     }
 
+
+    @Override
+    public final MappingMeta mappingMeta() {
+        return this;
+    }
+
     @Override
     public final String toString() {
         return javaType().getName() + "#" + jdbcType().name();

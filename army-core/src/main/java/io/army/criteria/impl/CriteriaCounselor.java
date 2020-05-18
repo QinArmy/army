@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.boot.BootCounselor;
 import io.army.criteria.ColumnSubQuery;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner.*;
@@ -70,9 +71,9 @@ public abstract class CriteriaCounselor {
     }
 
     public static void assertStandardDomainUpdate(InnerStandardDomainUpdate update) {
-        if (!(update instanceof StandardContextualDomainUpdate)) {
-            throw new IllegalArgumentException(String.format("%s isn't instance of %s", update
-                    , StandardContextualDomainUpdate.class.getName()));
+        if (!(update instanceof StandardContextualDomainUpdate)
+                && !BootCounselor.cacheDomainUpdate(update)) {
+            throw new IllegalArgumentException(String.format("%s isn't instance of army", update));
         }
     }
 

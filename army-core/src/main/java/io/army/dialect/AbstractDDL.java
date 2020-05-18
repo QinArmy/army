@@ -267,7 +267,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
         StringBuilder builder = context.sqlBuilder();
         if (indexMeta.isPrimaryKey()) {
             builder.append("PRIMARY KEY ");
-        } else if (indexMeta.isUnique()) {
+        } else if (indexMeta.unique()) {
             builder.append("UNIQUE ");
             builder.append(this.dialect.quoteIfNeed(indexMeta.name()));
         } else {

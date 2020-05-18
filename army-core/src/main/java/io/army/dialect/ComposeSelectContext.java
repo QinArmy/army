@@ -2,6 +2,7 @@ package io.army.dialect;
 
 import io.army.beans.DomainWrapper;
 import io.army.criteria.FieldPairDualPredicate;
+import io.army.criteria.SpecialPredicate;
 import io.army.criteria.TableAliasException;
 import io.army.criteria.Visible;
 import io.army.meta.ChildTableMeta;
@@ -105,6 +106,11 @@ final class ComposeSelectContext implements SelectContext {
 
     @Override
     public void appendField(FieldMeta<?, ?> fieldMeta) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void appendPredicate(SpecialPredicate predicate) {
         throw new UnsupportedOperationException();
     }
 

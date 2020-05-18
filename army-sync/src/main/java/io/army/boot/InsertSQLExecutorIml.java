@@ -3,13 +3,8 @@ package io.army.boot;
 import io.army.ArmyAccessException;
 import io.army.ErrorCode;
 import io.army.InsertRowsNotMatchException;
-import io.army.UnKnownTypeException;
-import io.army.codec.FieldCodec;
 import io.army.dialect.Dialect;
 import io.army.dialect.InsertException;
-import io.army.meta.FieldMeta;
-import io.army.meta.ParamMeta;
-import io.army.meta.mapping.MappingMeta;
 import io.army.wrapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,15 +15,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-final class InsertSQLExecutorIml implements InsertSQLExecutor {
+final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQLExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(InsertSQLExecutorIml.class);
 
 
-    private final InnerSessionFactory sessionFactory;
-
     InsertSQLExecutorIml(InnerSessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
+        super(sessionFactory);
     }
 
     @Override
@@ -230,55 +223,7 @@ final class InsertSQLExecutorIml implements InsertSQLExecutor {
 
     }
 
-    private void setParams(PreparedStatement st, List<ParamWrapper> paramList) throws SQLException {
 
-        ParamWrapper wrapper;
-        final int size = paramList.size();
-        for (int i = 0; i < size; i++) {
-            wrapper = paramList.get(i);
-            Object value = wrapper.value();
-            if (value == null) {
-                st.setNull(i + 1, ExecutorUtils.obtainVendorTypeNumber(wrapper.paramMeta()));
-            } else {
-                setNonNullValue(st, i + 1, wrapper.paramMeta(), value);
-
-            }
-        }
-
-    }
-
-    private void setNonNullValue(PreparedStatement st, final int index, ParamMeta paramMeta, Object value)
-            throws SQLException {
-
-        MappingMeta mappingMeta;
-        if (paramMeta instanceof FieldMeta) {
-            FieldMeta<?, ?> fieldMeta = (FieldMeta<?, ?>) paramMeta;
-            value = doEncodeFieldValue(fieldMeta, value);
-            mappingMeta = fieldMeta.mappingMeta();
-        } else if (paramMeta instanceof MappingMeta) {
-            mappingMeta = (MappingMeta) paramMeta;
-        } else {
-            throw new UnKnownTypeException(paramMeta);
-        }
-        // set param
-        mappingMeta.nonNullSet(st, value, index);
-    }
-
-    private Object doEncodeFieldValue(FieldMeta<?, ?> fieldMeta, final Object value) {
-
-        FieldCodec fieldCodec = this.sessionFactory.fieldCodec(fieldMeta);
-        Object encodedValue;
-        if (fieldCodec != null) {
-            // invoke fieldCodec
-            encodedValue = fieldCodec.encode(fieldMeta, value);
-            if (!fieldMeta.javaType().isInstance(encodedValue)) {
-                throw ExecutorUtils.createCodecReturnTypeException(fieldCodec, fieldMeta, value);
-            }
-        } else {
-            encodedValue = value;
-        }
-        return encodedValue;
-    }
 
 
 }

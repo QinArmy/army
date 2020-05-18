@@ -14,7 +14,7 @@ public interface IndexMeta<T extends IDomain> extends Meta {
 
     boolean isPrimaryKey();
 
-    boolean isUnique();
+    boolean unique();
 
     String type();
 

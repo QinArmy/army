@@ -7,9 +7,9 @@ import io.army.wrapper.SQLWrapper;
 import java.util.List;
 
 /**
- * @see PostFieldGenerator
+ *
  */
-interface InsertSQLExecutor extends DMLSQLExecutor {
+interface InsertSQLExecutor {
 
 
     List<Integer> multiInsert(InnerSession session, List<SQLWrapper> sqlWrapperList) throws InsertException;

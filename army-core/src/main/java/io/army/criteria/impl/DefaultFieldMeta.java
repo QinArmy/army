@@ -50,9 +50,8 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     }
 
     @SuppressWarnings("unchecked")
-    static <T extends IDomain, F> IndexFieldMeta<T, F> createIndexFieldMeta(final @NonNull TableMeta<T> table
-            , final @NonNull Field field, IndexMeta<T> indexMeta, final boolean fieldUnique
-            , @Nullable Boolean fieldAsc) {
+    static <T extends IDomain, F> IndexFieldMeta<T, F> createIndexFieldMeta(TableMeta<T> table, Field field
+            , IndexMeta<T> indexMeta, @Nullable Boolean fieldAsc) {
 
         final String fieldMetaKey = table.javaType().getName() + "." + field.getName();
         IndexFieldMeta<T, F> fieldMeta;
@@ -63,7 +62,16 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
         assertNotParentFiled(table, field);
 
         // create new IndexFieldMeta
-        fieldMeta = new DefaultIndexFieldMeta<>(table, field, indexMeta, fieldUnique, fieldAsc);
+        if (indexMeta.unique() && indexMeta.fieldList().size() == 1) {
+            if (ID.equals(field.getName())) {
+                fieldMeta = new DefaultPrimaryFieldMeta<>(table, field, indexMeta, fieldAsc);
+            } else {
+                fieldMeta = new DefaultUniqueFieldMeta<>(table, field, indexMeta, fieldAsc);
+            }
+        } else {
+            fieldMeta = new DefaultIndexFieldMeta<>(table, field, indexMeta, fieldAsc);
+        }
+
         FieldMeta<?, ?> actualFieldMeta = INSTANCE_MAP.putIfAbsent(fieldMetaKey, fieldMeta);
 
         if (actualFieldMeta != null && actualFieldMeta != fieldMeta) {
@@ -85,7 +93,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     }
 
     private static void assertNotDuplication(Field field, Class<?> domainClass) {
-        if (INSTANCE_MAP.containsKey(domainClass)) {
+        if (INSTANCE_MAP.containsKey(domainClass.getName() + "." + field.getName())) {
             throw new IllegalStateException(String.format("domain[%s] FieldMeta[%s] duplication."
                     , domainClass.getName(), field.getName()));
         }
@@ -295,16 +303,16 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     /*################################## blow private method ##################################*/
 
-    private static final class DefaultIndexFieldMeta<T extends IDomain, F> extends DefaultFieldMeta<T, F>
+    private static class DefaultIndexFieldMeta<T extends IDomain, F> extends DefaultFieldMeta<T, F>
             implements IndexFieldMeta<T, F> {
 
         private final IndexMeta<T> indexMeta;
 
         private final Boolean fieldAsc;
 
-        private DefaultIndexFieldMeta(TableMeta<T> table, Field field, IndexMeta<T> indexMeta, boolean fieldUnique,
-                                      @Nullable Boolean fieldAsc) throws MetaException {
-            super(table, field, fieldUnique, true);
+        private DefaultIndexFieldMeta(TableMeta<T> table, Field field, IndexMeta<T> indexMeta
+                , @Nullable Boolean fieldAsc) throws MetaException {
+            super(table, field, indexMeta.unique() && indexMeta.fieldList().size() == 1, true);
             Assert.notNull(indexMeta, "");
 
             this.indexMeta = indexMeta;
@@ -320,6 +328,31 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
         @Override
         public Boolean fieldAsc() {
             return this.fieldAsc;
+        }
+    }
+
+    private static class DefaultUniqueFieldMeta<T extends IDomain, F> extends DefaultIndexFieldMeta<T, F>
+            implements UniqueFieldMeta<T, F> {
+
+        private DefaultUniqueFieldMeta(TableMeta<T> table, Field field, IndexMeta<T> indexMeta
+                , @Nullable Boolean fieldAsc) throws MetaException {
+            super(table, field, indexMeta, fieldAsc);
+            if (!indexMeta.unique() || indexMeta.fieldList().size() != 1) {
+                throw new MetaException(ErrorCode.META_ERROR, "indexMeta[%s] not unique.", indexMeta);
+            }
+        }
+    }
+
+    private static final class DefaultPrimaryFieldMeta<T extends IDomain, F> extends DefaultUniqueFieldMeta<T, F>
+            implements PrimaryFieldMeta<T, F> {
+
+        private DefaultPrimaryFieldMeta(TableMeta<T> table, Field field, IndexMeta<T> indexMeta
+                , @Nullable Boolean fieldAsc)
+                throws MetaException {
+            super(table, field, indexMeta, fieldAsc);
+            if (!ID.equals(field.getName())) {
+                throw new MetaException(ErrorCode.META_ERROR, "indexMeta[%s] not primary.", indexMeta);
+            }
         }
     }
 

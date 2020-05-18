@@ -5,7 +5,7 @@ import io.army.wrapper.SelectSQLWrapper;
 
 import java.util.List;
 
-interface SelectSQLExecutor extends SQLExecutor {
+interface SelectSQLExecutor {
 
     <T> List<T> select(InnerSession session, SelectSQLWrapper wrapper, Class<T> resultClass);
 

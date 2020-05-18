@@ -1,15 +1,11 @@
-package io.army.boot;
+package io.army.cache;
 
 import io.army.ErrorCode;
-import io.army.aop.DomainProxyException;
-import io.army.aop.DomainUpdateAdvice;
 import io.army.beans.DomainReadonlyWrapper;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.IPredicate;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.FieldMeta;
-import io.army.meta.ParentTableMeta;
-import io.army.meta.TableMeta;
+import io.army.criteria.impl.Predicates;
+import io.army.meta.*;
 import io.army.util.Assert;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -32,10 +28,10 @@ final class DomainSetterInterceptor implements MethodInterceptor, DomainUpdateAd
         List<IPredicate> predicateList = new ArrayList<>(2);
 
         // 1. id predicate
-        final FieldMeta<?, Object> idMeta = tableMeta.id();
+        final PrimaryFieldMeta<?, Object> idMeta = tableMeta.id();
         final Object idValue = readonlyWrapper.getPropertyValue(idMeta.propertyName());
         Assert.notNull(idValue, "Domain Id is null");
-        predicateList.add(idMeta.eq(idValue));
+        predicateList.add(Predicates.primaryValueEquals(idMeta, idValue));
 
         FieldMeta<?, Object> versionMeta = null;
         if (tableMeta instanceof ChildTableMeta) {

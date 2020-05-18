@@ -25,38 +25,59 @@ class DefaultMetaAttribute implements MetaAttribute {
 
     private final VariableElement mappingPropElement;
 
-    private final boolean indexColumn;
+    private final IndexMode indexMode;
 
     private final String commentLine;
 
 
     DefaultMetaAttribute(TypeElement entityElement, VariableElement mappingPropElement
-            , Column column, boolean indexColumn) {
+            , Column column, @Nullable IndexMode indexMode) {
         this.entityElement = entityElement;
         this.mappingPropElement = mappingPropElement;
         this.commentLine = SourceCreateUtils.COMMENT_PRE + "/**  "
                 + createComment(mappingPropElement, column.comment()) + " */";
-        this.indexColumn = indexColumn;
+        this.indexMode = indexMode;
     }
 
 
     @Override
     public String getDefinition() {
-        String format = "%s\n%s %s<%s%s> %s = %s.%s(%s,%s.class);";
+        String format = "%s\n%s %s<%s%s> %s = %s.%s(%s%s.class);";
         String qualifiedName = mappingPropElement.asType().toString();
         final String typeSimpleName = ClassUtils.getShortName(qualifiedName);
         String typeParameter = "," + typeSimpleName;
         String propName = getName();
 
-        String methodName, fieldMetaTypeName;
-        if (indexColumn) {
-            methodName = "getIndexField";
-            fieldMetaTypeName = "IndexFieldMeta";
+        String methodName, fieldMetaTypeName, propRef = null;
 
-        } else {
+        if (indexMode == null) {
             methodName = "getField";
             fieldMetaTypeName = "FieldMeta";
+        } else {
+            switch (indexMode) {
+                case GENERIC:
+                    methodName = "getIndexField";
+                    fieldMetaTypeName = "IndexFieldMeta";
+                    break;
+                case UNIQUE:
+                    methodName = "getUniqueField";
+                    fieldMetaTypeName = "UniqueFieldMeta";
+                    break;
+                case PRIMARY:
+                    methodName = "getPrimaryField";
+                    fieldMetaTypeName = "PrimaryFieldMeta";
+                    propRef = "";
+                    break;
+                default:
+                    throw new IllegalArgumentException(String.format("IndexMode[%s] unknown", indexMode));
+
+            }
         }
+
+        if (propRef == null) {
+            propRef = StringUtils.camelToUpperCase(propName) + ",";
+        }
+
         return String.format(format,
                 commentLine, // comment part
                 SourceCreateUtils.PROP_PRE, // prop prefix (whitespace)
@@ -67,7 +88,7 @@ class DefaultMetaAttribute implements MetaAttribute {
                 propName,
                 MetaConstant.TABLE_META,
                 methodName,
-                StringUtils.camelToUpperCase(propName),
+                propRef,
 
                 typeSimpleName
         );

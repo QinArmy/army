@@ -1,10 +1,7 @@
 package io.army.dialect;
 
 import io.army.ErrorCode;
-import io.army.criteria.CriteriaException;
-import io.army.criteria.TableAble;
-import io.army.criteria.TableAliasException;
-import io.army.criteria.Visible;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
@@ -81,6 +78,10 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         this.appendField(findTableAlias(fieldMeta), fieldMeta);
     }
 
+    @Override
+    public void appendPredicate(SpecialPredicate predicate) {
+
+    }
 
     @Override
     public final void appendTable(TableMeta<?> tableMeta) {
