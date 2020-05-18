@@ -3,12 +3,12 @@ package io.army.wrapper;
 
 public interface ChildBatchSQLWrapper extends BatchSQLWrapper {
 
-    SimpleBatchSQLWrapper parentWrapper();
+    BatchSimpleSQLWrapper parentWrapper();
 
-    SimpleBatchSQLWrapper childWrapper();
+    BatchSimpleSQLWrapper childWrapper();
 
 
-    static ChildBatchSQLWrapper build(SimpleBatchSQLWrapper parent, SimpleBatchSQLWrapper child) {
+    static ChildBatchSQLWrapper build(BatchSimpleSQLWrapper parent, BatchSimpleSQLWrapper child) {
         return new ChildBatchSQLWrapperImpl(parent, child);
     }
 

@@ -35,7 +35,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     public int update(InnerSession session, UpdateSQLWrapper sqlWrapper) {
         int updateRows;
         if (sqlWrapper instanceof ChildUpdateSQLWrapper) {
-            updateRows = doChildUpdate(session, (ChildUpdateSQLWrapper) sqlWrapper);
+            updateRows = childUpdate(session, (ChildUpdateSQLWrapper) sqlWrapper);
         } else if (sqlWrapper instanceof SimpleUpdateSQLWrapper) {
             updateRows = doSimpleUpdate(session, (SimpleUpdateSQLWrapper) sqlWrapper);
         } else {
@@ -58,13 +58,68 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     }
 
     @Override
-    public List<Integer> batchUpdate(InnerSession session, BatchUpdateSQLWrapper sqlWrapper) {
-        return null;
+    public List<Integer> batchUpdate(InnerSession session, BatchSQLWrapper sqlWrapper) {
+        List<Integer> rowsList;
+        if (sqlWrapper instanceof ChildBatchUpdateSQLWrapper) {
+            rowsList = childBatchUpdate(session, (ChildBatchUpdateSQLWrapper) sqlWrapper);
+        } else if (sqlWrapper instanceof BatchSimpleUpdateSQLWrapper) {
+            rowsList = simpleBatchUpdate(session, (BatchSimpleUpdateSQLWrapper) sqlWrapper);
+        } else {
+            throw new IllegalArgumentException(String.format("%s supported by batchUpdate", sqlWrapper));
+        }
+        return Collections.unmodifiableList(rowsList);
     }
 
     /*################################## blow private method ##################################*/
 
-    private int doChildUpdate(InnerSession session, ChildUpdateSQLWrapper sqlWrapper) {
+    private List<Integer> childBatchUpdate(InnerSession session, ChildBatchUpdateSQLWrapper sqlWrapper) {
+        int[] childRows, parentRows;
+        // firstly, execute child update sql
+        childRows = doBatchSimpleUpdate(session, sqlWrapper.childWrapper());
+        // secondly,execute parent update sql
+        parentRows = doBatchSimpleUpdate(session, sqlWrapper.parentWrapper());
+        if (parentRows.length != childRows.length) {
+            // check domain update batch match.
+            throw new DomainUpdateException(
+                    "Domain update,parent sql[%s] update batch[%s] and child sql[%s] update batch[%s] not match."
+                    , sqlWrapper.parentWrapper().sql()
+                    , parentRows.length
+                    , sqlWrapper.childWrapper().sql()
+                    , childRows.length
+            );
+        }
+        final int len = childRows.length;
+        for (int i = 0; i < len; i++) {
+            if (parentRows[i] != childRows[i]) {
+                throw new DomainUpdateException(
+                        "Domain update,parent sql[%s] update index[%s] and child sql[%s] update index [%s] not match."
+                        , sqlWrapper.parentWrapper().sql()
+                        , parentRows[i]
+                        , sqlWrapper.childWrapper().sql()
+                        , childRows[i]
+                );
+            }
+        }
+        return convertAndCheckOptimisticLock(childRows, sqlWrapper.childWrapper());
+    }
+
+    private List<Integer> simpleBatchUpdate(InnerSession session, BatchSimpleUpdateSQLWrapper sqlWrapper) {
+        return convertAndCheckOptimisticLock(doBatchSimpleUpdate(session, sqlWrapper), sqlWrapper);
+    }
+
+    private List<Integer> convertAndCheckOptimisticLock(int[] updateRows, BatchSimpleUpdateSQLWrapper sqlWrapper) {
+        List<Integer> rowList = new ArrayList<>(updateRows.length);
+        final boolean hasVersion = sqlWrapper.hasVersion();
+        for (int updateRow : updateRows) {
+            if (updateRow < 1 && hasVersion) {
+                throw createOptimisticLockException(sqlWrapper.sql());
+            }
+            rowList.add(updateRow);
+        }
+        return rowList;
+    }
+
+    private int childUpdate(InnerSession session, ChildUpdateSQLWrapper sqlWrapper) {
 
         int childRows, parentRows;
         childRows = doSimpleUpdate(session, sqlWrapper.childWrapper());
@@ -171,7 +226,6 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), aliasArray)) {
             // 2. set params
             setParams(st, sqlWrapper.paramList());
-            int updateRows;
             // 3. execute sql
             try (ResultSet resultSet = st.executeQuery()) {
                 Map<Object, ObjectWrapper> wrapperMap;
@@ -225,7 +279,6 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
             }
             // 2. set params
             setParams(st, sqlWrapper.paramList());
-            int updateRows;
             // 3. execute sql
             try (ResultSet resultSet = st.executeQuery()) {
                 List<T> resultList;
@@ -256,6 +309,24 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
                 throw createOptimisticLockException(sqlWrapper.sql());
             }
             return updateRows;
+        } catch (SQLException e) {
+            throw SQLExceptionUtils.convert(e, sqlWrapper.sql());
+        }
+    }
+
+    private int[] doBatchSimpleUpdate(InnerSession session, BatchSimpleUpdateSQLWrapper sqlWrapper) {
+        // 1. create statement
+        try (PreparedStatement st = session.createStatement(sqlWrapper.sql())) {
+            if (session.sessionFactory().showSQL()) {
+                LOG.info("army will execute update sql:\n{}", session.dialect().showSQL(sqlWrapper));
+            }
+            // 2. set params
+            for (List<ParamWrapper> paramWrappers : sqlWrapper.paramGroupList()) {
+                setParams(st, paramWrappers);
+                st.addBatch();
+            }
+            // 3. execute sql
+            return st.executeBatch();
         } catch (SQLException e) {
             throw SQLExceptionUtils.convert(e, sqlWrapper.sql());
         }

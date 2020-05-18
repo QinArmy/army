@@ -64,7 +64,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
         Assert.isTrue(insert.prepared(), "Insert don't invoke asInsert() method.");
 
-        List<SimpleBatchSQLWrapper> list;
+        List<BatchSimpleSQLWrapper> list;
         if (insert instanceof InnerStandardBatchInsert) {
             InnerStandardBatchInsert batchInsert = (InnerStandardBatchInsert) insert;
             CriteriaCounselor.assertStandardBatchInsert(batchInsert);
@@ -192,7 +192,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         );
     }
 
-    protected List<SimpleBatchSQLWrapper> specialBatchInsert(InnerSpecialBatchInsert insert, Visible visible) {
+    protected List<BatchSimpleSQLWrapper> specialBatchInsert(InnerSpecialBatchInsert insert, Visible visible) {
         throw new UnsupportedOperationException(String.format("dialect[%s] not support special batch multiInsert."
                 , sqlDialect())
         );
@@ -452,7 +452,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     }
 
 
-    private List<SimpleBatchSQLWrapper> standardBatchInsert(InnerStandardBatchInsert insert, final Visible visible) {
+    private List<BatchSimpleSQLWrapper> standardBatchInsert(InnerStandardBatchInsert insert, final Visible visible) {
 
         TableMeta<?> tableMeta = insert.tableMeta();
         List<SimpleSQLWrapper> sqlWrapperList;

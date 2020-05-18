@@ -2,22 +2,22 @@ package io.army.wrapper;
 
 final class ChildBatchSQLWrapperImpl implements ChildBatchSQLWrapper {
 
-    private final SimpleBatchSQLWrapper parent;
+    private final BatchSimpleSQLWrapper parent;
 
-    private final SimpleBatchSQLWrapper child;
+    private final BatchSimpleSQLWrapper child;
 
-    ChildBatchSQLWrapperImpl(SimpleBatchSQLWrapper parent, SimpleBatchSQLWrapper child) {
+    ChildBatchSQLWrapperImpl(BatchSimpleSQLWrapper parent, BatchSimpleSQLWrapper child) {
         this.parent = parent;
         this.child = child;
     }
 
     @Override
-    public final SimpleBatchSQLWrapper parentWrapper() {
+    public final BatchSimpleSQLWrapper parentWrapper() {
         return this.parent;
     }
 
     @Override
-    public final SimpleBatchSQLWrapper childWrapper() {
+    public final BatchSimpleSQLWrapper childWrapper() {
         return this.child;
     }
 }

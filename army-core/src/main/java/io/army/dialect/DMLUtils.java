@@ -240,7 +240,7 @@ abstract class DMLUtils {
         valueBuilder.append(" )");
     }
 
-    static List<SimpleBatchSQLWrapper> createBatchInsertWrapper(InnerStandardBatchInsert insert
+    static List<BatchSimpleSQLWrapper> createBatchInsertWrapper(InnerStandardBatchInsert insert
             , List<SimpleSQLWrapper> sqlWrapperList, final FieldValuesGenerator valuesGenerator) {
         if (sqlWrapperList.size() < 3) {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "sqlWrapperList size must less than 3.");
@@ -251,7 +251,7 @@ abstract class DMLUtils {
 
         ObjectWrapper beanWrapper;
 
-        List<SimpleBatchSQLWrapper> batchWrapperList = new ArrayList<>(domainList.size() * sqlWrapperList.size());
+        List<BatchSimpleSQLWrapper> batchWrapperList = new ArrayList<>(domainList.size() * sqlWrapperList.size());
         Map<IDomain, ObjectWrapper> beanWrapperMap = new HashMap<>();
         for (SimpleSQLWrapper sqlWrapper : sqlWrapperList) {
             List<List<ParamWrapper>> paramGroupList = new ArrayList<>(fieldList.size());
@@ -282,7 +282,7 @@ abstract class DMLUtils {
                 paramGroupList.add(paramWrapperList);
             }
             batchWrapperList.add(
-                    SimpleBatchSQLWrapper.build(
+                    BatchSimpleSQLWrapper.build(
                             sqlWrapper.sql()
                             , Collections.unmodifiableList(paramGroupList)
                             , tableMeta

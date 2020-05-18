@@ -74,9 +74,9 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
                 sqlWrapperInsertRowList.add(
                         doExecuteDomainBatch(session, (DomainBatchSQLWrapper) sqlWrapper)
                 );
-            } else if (sqlWrapper instanceof SimpleBatchSQLWrapper) {
+            } else if (sqlWrapper instanceof BatchSimpleSQLWrapper) {
                 sqlWrapperInsertRowList.add(
-                        doExecuteSimpleBatch(session, (SimpleBatchSQLWrapper) sqlWrapper)
+                        doExecuteSimpleBatch(session, (BatchSimpleSQLWrapper) sqlWrapper)
                 );
             } else {
                 throw new IllegalArgumentException(String.format("%s supported by batchInsert", sqlWrapper));
@@ -127,7 +127,7 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
         return childRows;
     }
 
-    private int doExecuteSimpleBatch(InnerSession session, SimpleBatchSQLWrapper sqlWrapper) {
+    private int doExecuteSimpleBatch(InnerSession session, BatchSimpleSQLWrapper sqlWrapper) {
         return assertAndSumTotal(sqlWrapper
                 , doExecuteBatch(session, sqlWrapper)
         );
@@ -139,7 +139,7 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
         );
     }
 
-    private int assertAndSumTotal(SimpleBatchSQLWrapper sqlWrapper, int[] domainRows) {
+    private int assertAndSumTotal(BatchSimpleSQLWrapper sqlWrapper, int[] domainRows) {
         if (domainRows.length != sqlWrapper.paramGroupList().size()) {
             throw new InsertRowsNotMatchException(
                     "TableMeta[%s] multiInsert batch count error,sql[%s]"
@@ -159,8 +159,8 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
 
     private int doExecuteChildBatch(InnerSession session, ChildBatchSQLWrapper sqlWrapper) {
 
-        final SimpleBatchSQLWrapper parentWrapper = sqlWrapper.parentWrapper();
-        final SimpleBatchSQLWrapper childWrapper = sqlWrapper.childWrapper();
+        final BatchSimpleSQLWrapper parentWrapper = sqlWrapper.parentWrapper();
+        final BatchSimpleSQLWrapper childWrapper = sqlWrapper.childWrapper();
 
         int[] parentRows, childRows;
         // firstly, parent multiInsert sql
@@ -172,7 +172,7 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
         return assertAndSumTotal(parentWrapper, childWrapper, parentRows, childRows);
     }
 
-    private int assertAndSumTotal(SimpleBatchSQLWrapper parentWrapper, SimpleBatchSQLWrapper childWrapper
+    private int assertAndSumTotal(BatchSimpleSQLWrapper parentWrapper, BatchSimpleSQLWrapper childWrapper
             , int[] parentRows, int[] childRows) {
         if (parentRows.length != childRows.length || childRows.length != childWrapper.paramGroupList().size()) {
             throw new InsertRowsNotMatchException(
@@ -191,7 +191,7 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
         return childRows.length;
     }
 
-    private int[] doExecuteBatch(InnerSession session, SimpleBatchSQLWrapper sqlWrapper) {
+    private int[] doExecuteBatch(InnerSession session, BatchSimpleSQLWrapper sqlWrapper) {
 
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
 

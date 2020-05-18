@@ -4,7 +4,7 @@ import io.army.meta.TableMeta;
 
 import java.util.List;
 
-class BatchSQLWrapperImpl implements SimpleBatchSQLWrapper {
+class BatchSQLWrapperImpl implements BatchSimpleSQLWrapper {
 
     private final String sql;
 

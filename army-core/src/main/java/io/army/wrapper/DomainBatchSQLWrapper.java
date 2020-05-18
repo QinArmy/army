@@ -5,7 +5,7 @@ import io.army.meta.TableMeta;
 
 import java.util.List;
 
-public interface DomainBatchSQLWrapper extends SimpleBatchSQLWrapper {
+public interface DomainBatchSQLWrapper extends BatchSimpleSQLWrapper {
 
     List<ObjectWrapper> beanWrapperList();
 

@@ -4,7 +4,7 @@ package io.army.wrapper;
  * @see SimpleSQLWrapper
  * @see DomainSQLWrapper
  * @see ChildSQLWrapper
- * @see SimpleBatchSQLWrapper
+ * @see BatchSimpleSQLWrapper
  * @see DomainSQLWrapper
  */
 public interface SQLWrapper {
