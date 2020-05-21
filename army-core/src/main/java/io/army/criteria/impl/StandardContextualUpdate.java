@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Update;
-import io.army.criteria.impl.inner.InnerStandardDomainUpdate;
+import io.army.criteria.impl.inner.InnerUpdate;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -15,9 +15,9 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-final class StandardContextualDomainUpdate<T extends IDomain, C> extends AbstractSQLDebug implements
-        InnerStandardDomainUpdate, Update, Update.UpdateAble, Update.DomainWhereAble<T, C>
-        , Update.WhereAndAble<T, C>, Update.DomainUpdateAble<T, C> {
+final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug implements
+        Update, Update.UpdateAble, Update.SingleWhereAble<T, C>
+        , Update.WhereAndAble<T, C>, Update.SingleUpdateAble<T, C>, InnerDomainDML, InnerUpdate {
 
 
     private final TableMeta<?> tableMeta;
@@ -36,7 +36,7 @@ final class StandardContextualDomainUpdate<T extends IDomain, C> extends Abstrac
 
     private boolean prepared;
 
-    StandardContextualDomainUpdate(TableMeta<?> tableMeta, C criteria) {
+    StandardContextualUpdate(TableMeta<?> tableMeta, C criteria) {
         Assert.notNull(tableMeta, "tableMeta required");
         Assert.notNull(criteria, "criteria required");
 
@@ -50,7 +50,7 @@ final class StandardContextualDomainUpdate<T extends IDomain, C> extends Abstrac
     /*################################## blow DomainUpdateAble method ##################################*/
 
     @Override
-    public final DomainSetAble<T, C> update(TableMeta<T> tableMeta, String tableAlias) {
+    public final SingleSetAble<T, C> update(TableMeta<T> tableMeta, String tableAlias) {
         Assert.isTrue(this.tableMeta == tableMeta, "tableMeta not match.");
         Assert.hasText(tableAlias, "tableAlias required");
         this.tableAlias = tableAlias;
@@ -60,21 +60,21 @@ final class StandardContextualDomainUpdate<T extends IDomain, C> extends Abstrac
     /*################################## blow DomainSetAble method ##################################*/
 
     @Override
-    public final <F> DomainWhereAble<T, C> set(FieldMeta<? super T, F> target, F value) {
+    public final <F> SingleWhereAble<T, C> set(FieldMeta<? super T, F> target, F value) {
         this.targetFieldList.add(target);
         this.valueExpList.add(SQLS.param(value));
         return this;
     }
 
     @Override
-    public final <F> DomainWhereAble<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp) {
+    public final <F> SingleWhereAble<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp) {
         this.targetFieldList.add(target);
         this.valueExpList.add(valueExp);
         return this;
     }
 
     @Override
-    public final <F> DomainWhereAble<T, C> set(FieldMeta<? super T, F> target, Function<C, Expression<F>> function) {
+    public final <F> SingleWhereAble<T, C> set(FieldMeta<? super T, F> target, Function<C, Expression<F>> function) {
         this.targetFieldList.add(target);
         this.valueExpList.add(function.apply(this.criteria));
         return this;
@@ -83,7 +83,7 @@ final class StandardContextualDomainUpdate<T extends IDomain, C> extends Abstrac
     /*################################## blow DomainWhereAble method ##################################*/
 
     @Override
-    public final <F> DomainWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value) {
+    public final <F> SingleWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value) {
         if (predicate.test(this.criteria)) {
             set(target, value);
         }
@@ -91,7 +91,7 @@ final class StandardContextualDomainUpdate<T extends IDomain, C> extends Abstrac
     }
 
     @Override
-    public final <F> DomainWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target
+    public final <F> SingleWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target
             , Expression<F> valueExp) {
         if (predicate.test(this.criteria)) {
             set(target, valueExp);
@@ -100,7 +100,7 @@ final class StandardContextualDomainUpdate<T extends IDomain, C> extends Abstrac
     }
 
     @Override
-    public final <F> DomainWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target
+    public final <F> SingleWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target
             , Function<C, Expression<F>> valueExpFunction) {
         if (predicate.test(this.criteria)) {
             set(target, valueExpFunction);

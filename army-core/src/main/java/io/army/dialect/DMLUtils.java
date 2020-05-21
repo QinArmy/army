@@ -3,25 +3,27 @@ package io.army.dialect;
 import io.army.ErrorCode;
 import io.army.GenericSessionFactory;
 import io.army.beans.ObjectWrapper;
-import io.army.beans.PropertyAccessorFactory;
 import io.army.beans.ReadonlyWrapper;
 import io.army.boot.FieldValuesGenerator;
 import io.army.codec.FieldCodec;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLS;
 import io.army.criteria.impl.inner.InnerStandardBatchInsert;
-import io.army.criteria.impl.inner.InnerStandardDomainDML;
+import io.army.criteria.impl.inner.InnerUpdate;
 import io.army.domain.IDomain;
 import io.army.generator.FieldGenerator;
 import io.army.generator.PreFieldGenerator;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.FieldMeta;
-import io.army.meta.IndexFieldMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
+import io.army.struct.CodeEnum;
 import io.army.util.Assert;
-import io.army.util.BeanUtils;
-import io.army.wrapper.*;
+import io.army.util.CollectionUtils;
+import io.army.wrapper.BatchSimpleSQLWrapper;
+import io.army.wrapper.FieldParamWrapper;
+import io.army.wrapper.ParamWrapper;
+import io.army.wrapper.SimpleSQLWrapper;
 
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 abstract class DMLUtils {
@@ -42,32 +44,6 @@ abstract class DMLUtils {
         return count;
     }
 
-    static List<SimpleSQLWrapper> mergeDomainSQLWrappers(SimpleSQLWrapper childSql, List<SimpleSQLWrapper> parentSqlList) {
-        List<SimpleSQLWrapper> sqlWrapperList;
-        if (parentSqlList.size() == 2) {
-            final SimpleSQLWrapper queryChildSql = parentSqlList.get(0);
-            if (!(queryChildSql instanceof DomainSQLWrapper)) {
-                throw DialectUtils.createArmyCriteriaException();
-            }
-            sqlWrapperList = new ArrayList<>(3);
-            // 1. query child table sql.
-            sqlWrapperList.add(queryChildSql);
-            // 2. update child table sql.
-            sqlWrapperList.add(childSql);
-            // 3. update parent table sql.
-            sqlWrapperList.add(parentSqlList.get(1));
-
-        } else if (parentSqlList.size() == 1) {
-            sqlWrapperList = new ArrayList<>(2);
-            // 1. update child table sql.
-            sqlWrapperList.add(childSql);
-            // 2. update parent table sql.
-            sqlWrapperList.add(parentSqlList.get(0));
-        } else {
-            throw DialectUtils.createArmyCriteriaException();
-        }
-        return sqlWrapperList;
-    }
 
     static void assertSingleUpdateSetClauseField(FieldMeta<?, ?> fieldMeta, TableMeta<?> tableMeta) {
         if (fieldMeta.tableMeta() == tableMeta) {
@@ -78,38 +54,143 @@ abstract class DMLUtils {
         assertSetClauseField(fieldMeta);
     }
 
-    static DomainSQLWrapper createQueryChildBeanSQLWrapper(InnerStandardDomainDML domainDML
-            , List<FieldMeta<?, ?>> childFieldList, Dialect dialect, final Visible visible) {
 
-        final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) domainDML.tableMeta();
-        final IndexFieldMeta<?, Object> primaryField = childMeta.id();
-        final Object primaryKeyValue = domainDML.primaryKeyValue();
+    static List<IPredicate> extractParentPredicateList(ChildTableMeta<?> childMeta, List<FieldMeta<?, ?>> childFieldList
+            , List<IPredicate> predicateList) {
 
-        Assert.isInstanceOf(primaryField.javaType(), primaryKeyValue);
+        List<IPredicate> parentPredicates;
+        // 1. extract parent predicate from where predicate list
+        if (childFieldList.isEmpty()) {
+            parentPredicates = new ArrayList<>(predicateList.size() + 1);
+            parentPredicates.addAll(predicateList);
+        } else {
+            final boolean firstIsPrimary = predicateList.get(0) instanceof PrimaryValueEqualPredicate;
+            final Collection<FieldMeta<?, ?>> childFields = childFieldList.size() > 5
+                    ? new HashSet<>(childFieldList) : childFieldList;
 
-        final ParamExpression<Object> paramExp = SQLS.param(primaryKeyValue, primaryField.mappingMeta());
+            parentPredicates = new ArrayList<>();
+            doExtractParentPredicate(predicateList, childFields, parentPredicates, firstIsPrimary);
+        }
 
-        Select select = SQLS.multiSelect()
-                .select(childFieldList)
-                .from(childMeta, "child")
-                .where(primaryField.eq(paramExp))
-                .asSelect();
-        // parse query child table sql.
-        List<SelectSQLWrapper> sqlWrapperList = dialect.select(select, visible);
+        // 2. append discriminator predicate
+        FieldMeta<?, ? extends CodeEnum> fieldMeta = childMeta.discriminator();
+        @SuppressWarnings("unchecked")
+        FieldMeta<?, CodeEnum> enumFieldMeta = (FieldMeta<?, CodeEnum>) fieldMeta;
+        CodeEnum codeEnum = CodeEnum.resolve(enumFieldMeta.javaType(), childMeta.discriminatorValue());
 
-        Assert.isTrue(sqlWrapperList.size() == 1, "DomainUpdate query child sql error.");
-        SimpleSQLWrapper sqlWrapper = sqlWrapperList.get(0);
-
-        return DomainSQLWrapper.build(
-                sqlWrapper.sql()
-                , sqlWrapper.paramList()
-                , PropertyAccessorFactory.forDomainPropertyAccess(
-                        BeanUtils.instantiateClass(childMeta.javaType()))
-        );
+        if (codeEnum == null) {
+            throw new MetaException(ErrorCode.META_ERROR
+                    , "ChildTableMeta[%s] discriminatorValue[%s] can't resolve CodeEnum."
+                    , childMeta, childMeta.discriminatorValue());
+        }
+        parentPredicates.add(enumFieldMeta.eq(codeEnum));
+        return parentPredicates;
     }
 
+
+    static void assertUpdateSetAndWhereClause(InnerUpdate update) {
+        if (CollectionUtils.isEmpty(update.targetFieldList())) {
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "update must have where clause.");
+        }
+        List<FieldMeta<?, ?>> targetFieldList = update.targetFieldList();
+        if (CollectionUtils.isEmpty(targetFieldList)) {
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "update must have set clause.");
+        }
+        List<Expression<?>> valueExpList = update.valueExpList();
+        if (CollectionUtils.isEmpty(valueExpList)) {
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "update must have set clause.");
+        }
+        if (targetFieldList.size() != valueExpList.size()) {
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                    , "update set clause target field list size and value expression list size not match.");
+        }
+    }
+
+
+    static void standardSimpleUpdateSetClause(UpdateContext context, TableMeta<?> tableMeta, String tableAlias
+            , List<FieldMeta<?, ?>> fieldMetaList, List<Expression<?>> valueExpList) {
+        if (tableMeta.immutable()) {
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "TableMeta[%s] is immutable.", tableAlias);
+        }
+        final MappingMode mappingMode = tableMeta.mappingMode();
+
+        if (mappingMode != MappingMode.PARENT) {
+            Assert.notEmpty(fieldMetaList, "set clause must not empty");
+            Assert.isTrue(fieldMetaList.size() == valueExpList.size()
+                    , "field list ifAnd value exp list size not match");
+        }
+
+        StringBuilder builder = context.sqlBuilder()
+                .append(" SET");
+
+        final int size = fieldMetaList.size();
+        for (int i = 0; i < size; i++) {
+            if (i > 0) {
+                builder.append(",");
+            }
+            FieldMeta<?, ?> fieldMeta = fieldMetaList.get(i);
+            Expression<?> valueExp = valueExpList.get(i);
+
+            DMLUtils.assertSingleUpdateSetClauseField(fieldMeta, tableMeta);
+
+            // fieldMeta self-describe
+            context.appendField(tableAlias, fieldMeta);
+            builder.append(" =");
+            // expression self-describe
+            valueExp.appendSQL(context);
+
+        }
+        if (mappingMode != MappingMode.CHILD) {
+            if (!fieldMetaList.isEmpty()) {
+                builder.append(",");
+            }
+            // appendText version And updateTime
+            DMLUtils.setClauseFieldsManagedByArmy(context, tableMeta, tableAlias);
+        }
+    }
+
+    static void setClauseFieldsManagedByArmy(TableContextSQLContext context, TableMeta<?> tableMeta
+            , String tableAlias) {
+        //1. version field
+        final FieldMeta<?, ?> versionField = tableMeta.getField(TableMeta.VERSION);
+        StringBuilder builder = context.sqlBuilder();
+
+        context.appendField(tableAlias, versionField);
+
+        builder.append(" =");
+        context.appendField(tableAlias, versionField);
+        builder.append(" + 1 ");
+
+        //2. updateTime field
+        final FieldMeta<?, ?> updateTimeField = tableMeta.getField(TableMeta.UPDATE_TIME);
+
+        builder.append(",");
+        // updateTime field self-describe
+        context.appendField(tableAlias, updateTimeField);
+        builder.append(" =");
+
+        final Dialect dialect = context.dialect();
+        final ZonedDateTime now = ZonedDateTime.now(dialect.zoneId());
+
+        if (updateTimeField.javaType() == LocalDateTime.class) {
+            SQLS.param(now.toLocalDateTime(), updateTimeField.mappingMeta())
+                    .appendSQL(context);
+        } else if (updateTimeField.javaType() == ZonedDateTime.class) {
+            if (dialect.supportZoneId()) {
+                throw new MetaException(ErrorCode.META_ERROR
+                        , "dialec[%s]t not supported zone.", dialect.sqlDialect());
+            }
+            SQLS.param(now, updateTimeField.mappingMeta())
+                    .appendSQL(context);
+        } else {
+            throw new MetaException(ErrorCode.META_ERROR
+                    , "createTime or updateTime only support LocalDateTime or ZonedDateTime,please check.");
+        }
+    }
+
+
     static void assertSetClauseField(FieldMeta<?, ?> fieldMeta) {
-        if (!fieldMeta.updatable() || fieldMeta == fieldMeta.tableMeta().discriminator()) {
+        if (!fieldMeta.updatable()) {
             throw new NonUpdateAbleException(ErrorCode.NON_UPDATABLE
                     , String.format("domain[%s] field[%s] is non-updatable."
                     , fieldMeta.tableMeta().javaType(), fieldMeta.propertyName()));
@@ -118,6 +199,20 @@ abstract class DMLUtils {
                 || TableMeta.UPDATE_TIME.equals(fieldMeta.propertyName())) {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "version or updateTime is managed by army.");
         }
+    }
+
+    static boolean hasVersionPredicate(List<IPredicate> predicateList) {
+        boolean hasVersion = false;
+        for (IPredicate predicate : predicateList) {
+            if (predicate instanceof FieldValuePredicate) {
+                FieldExp<?, ?> fieldExp = ((FieldValuePredicate) predicate).fieldExp();
+                if (TableMeta.VERSION.equals(fieldExp.propertyName())) {
+                    hasVersion = true;
+                    break;
+                }
+            }
+        }
+        return hasVersion;
     }
 
     /**
@@ -348,5 +443,61 @@ abstract class DMLUtils {
 
         }
 
+    }
+
+    private static void doExtractParentPredicate(List<IPredicate> predicateList, Collection<FieldMeta<?, ?>> childFields
+            , List<IPredicate> newPredicates, final boolean firstIsPrimary) {
+        for (IPredicate predicate : predicateList) {
+            if (predicate instanceof OrPredicate) {
+                doExtractParentPredicatesFromOrPredicate((OrPredicate) predicate
+                        , childFields, newPredicates, firstIsPrimary);
+            } else if (predicate.containsField(childFields)) {
+                if (!firstIsPrimary) {
+                    throw createNoPrimaryPredicateException(childFields);
+                }
+            } else {
+                newPredicates.add(predicate);
+            }
+        }
+    }
+
+    private static void doExtractParentPredicatesFromOrPredicate(OrPredicate orPredicate
+            , Collection<FieldMeta<?, ?>> childFields, List<IPredicate> newPredicates
+            , final boolean firstIsPrimary) {
+
+        IPredicate left = orPredicate.leftPredicate(), newLeft = null;
+        if (left instanceof OrPredicate) {
+            List<IPredicate> newLeftList = new ArrayList<>();
+            doExtractParentPredicatesFromOrPredicate((OrPredicate) left, childFields, newLeftList, firstIsPrimary);
+            if (newLeftList.size() == 1) {
+                newLeft = newLeftList.get(0);
+            } else if (newLeftList.size() > 1) {
+                // here ,left is drop for contains childField
+                newPredicates.addAll(newLeftList);
+            }
+        } else if (left.containsField(childFields)) {
+            if (!firstIsPrimary) {
+                throw createNoPrimaryPredicateException(childFields);
+            }
+        } else {
+            newLeft = left;
+        }
+        List<IPredicate> newRightPredicates = new ArrayList<>();
+        doExtractParentPredicate(orPredicate.rightPredicate(), childFields, newRightPredicates, firstIsPrimary);
+
+        if (newLeft == null) {
+            newPredicates.addAll(newRightPredicates);
+        } else if (newRightPredicates.isEmpty()) {
+            newPredicates.add(newLeft);
+        } else {
+            newPredicates.add(newLeft.or(newRightPredicates));
+        }
+    }
+
+    private static CriteriaException createNoPrimaryPredicateException(Collection<FieldMeta<?, ?>> childFields) {
+        throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                , "detect ChildTableMeta set clause FieldMetas[%s] present where clause," +
+                "but first predicate isn't primary field predicate."
+                , childFields);
     }
 }

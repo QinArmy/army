@@ -21,4 +21,6 @@ public interface SQL {
 
     SQLDialect sqlDialect();
 
+    boolean tableAliasAfterAs();
+
 }

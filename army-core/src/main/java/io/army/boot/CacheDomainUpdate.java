@@ -6,7 +6,7 @@ import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Update;
 import io.army.criteria.impl.SQLS;
-import io.army.criteria.impl.inner.InnerStandardDomainUpdate;
+import io.army.criteria.impl.inner.InnerUpdate;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
@@ -15,7 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-final class CacheDomainUpdate implements InnerStandardDomainUpdate, Update {
+final class CacheDomainUpdate implements Update, InnerDomainDML, InnerUpdate {
 
     static CacheDomainUpdate build(DomainUpdateAdvice advice) {
 

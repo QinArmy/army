@@ -704,6 +704,11 @@ abstract class AbstractNoNOperationExpression<E> implements Expression<E> {
     }
 
     @Override
+    public final boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
+        return false;
+    }
+
+    @Override
     public Selection as(String alias) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }

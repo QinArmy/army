@@ -25,7 +25,6 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         return "_" + parentTableName + random.nextInt(4) + "_";
     }
 
-    protected abstract boolean tableAliasAfterAs();
 
     protected void tableOnlyModifier(SQLContext context) {
 

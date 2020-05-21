@@ -287,4 +287,6 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingMeta
 
     <C, S extends Expression<String>> IPredicate notLike(Function<C, S> expOrSubQuery);
 
+    boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas);
+
 }

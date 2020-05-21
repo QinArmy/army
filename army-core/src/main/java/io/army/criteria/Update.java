@@ -22,42 +22,6 @@ public interface Update extends SQLStatement, SQLAble, SQLDebug, QueryAble {
     }
 
 
-    interface DomainUpdateAble<T extends IDomain, C> extends UpdateSQLAble {
-
-        DomainSetAble<T, C> update(TableMeta<T> tableMeta, String tableAlias);
-    }
-
-
-    interface DomainSetAble<T extends IDomain, C> extends UpdateSQLAble {
-
-        <F> DomainWhereAble<T, C> set(FieldMeta<? super T, F> target, F value);
-
-        /**
-         * @see SQLS#defaultValue()
-         */
-        <F> DomainWhereAble<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp);
-
-        <F> DomainWhereAble<T, C> set(FieldMeta<? super T, F> target, Function<C, Expression<F>> function);
-    }
-
-
-    interface DomainWhereAble<T extends IDomain, C> extends DomainSetAble<T, C> {
-
-        <F> DomainWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value);
-
-        <F> DomainWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target
-                , Expression<F> valueExp);
-
-        <F> DomainWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target
-                , Function<C, Expression<F>> valueExpFunction);
-
-        UpdateAble where(List<IPredicate> predicateList);
-
-        UpdateAble where(Function<C, List<IPredicate>> function);
-
-        WhereAndAble<T, C> where(IPredicate predicate);
-    }
-
     interface SingleUpdateAble<T extends IDomain, C> extends UpdateSQLAble {
 
         SingleSetAble<T, C> update(TableMeta<T> tableMeta, String tableAlias);
@@ -66,25 +30,25 @@ public interface Update extends SQLStatement, SQLAble, SQLDebug, QueryAble {
 
     interface SingleSetAble<T extends IDomain, C> extends UpdateSQLAble {
 
-        <F> SingleWhereAble<T, C> set(FieldMeta<T, F> target, F value);
+        <F> SingleWhereAble<T, C> set(FieldMeta<? super T, F> target, F value);
 
         /**
          * @see SQLS#defaultValue()
          */
-        <F> SingleWhereAble<T, C> set(FieldMeta<T, F> target, Expression<F> valueExp);
+        <F> SingleWhereAble<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp);
 
-        <F> SingleWhereAble<T, C> set(FieldMeta<T, F> target, Function<C, Expression<F>> function);
+        <F> SingleWhereAble<T, C> set(FieldMeta<? super T, F> target, Function<C, Expression<F>> function);
     }
 
 
     interface SingleWhereAble<T extends IDomain, C> extends SingleSetAble<T, C> {
 
-        <F> SingleWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<T, F> target, F value);
+        <F> SingleWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value);
 
-        <F> SingleWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<T, F> target
+        <F> SingleWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target
                 , Expression<F> valueExp);
 
-        <F> SingleWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<T, F> target
+        <F> SingleWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target
                 , Function<C, Expression<F>> valueExpFunction);
 
         UpdateAble where(List<IPredicate> predicateList);

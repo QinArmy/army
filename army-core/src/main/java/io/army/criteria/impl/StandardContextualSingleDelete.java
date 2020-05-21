@@ -2,8 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Delete;
 import io.army.criteria.IPredicate;
+import io.army.criteria.impl.inner.InnerDelete;
 import io.army.criteria.impl.inner.InnerStandardDelete;
-import io.army.criteria.impl.inner.InnerStandardDomainDelete;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
@@ -159,7 +159,7 @@ class StandardContextualSingleDelete<C> extends AbstractSQLDebug implements Dele
     /*################################## blow static inner class ##################################*/
 
     static final class StandardContextualDomainDelete<C> extends StandardContextualSingleDelete<C>
-            implements InnerStandardDomainDelete {
+            implements InnerDomainDML, InnerDelete {
 
         private final Object primaryKeyValue;
 

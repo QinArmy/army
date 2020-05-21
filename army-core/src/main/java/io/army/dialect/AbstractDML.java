@@ -7,18 +7,17 @@ import io.army.beans.ReadonlyWrapper;
 import io.army.boot.FieldValuesGenerator;
 import io.army.criteria.*;
 import io.army.criteria.impl.CriteriaCounselor;
-import io.army.criteria.impl.SQLS;
 import io.army.criteria.impl.inner.*;
 import io.army.domain.IDomain;
-import io.army.meta.*;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.FieldMeta;
+import io.army.meta.ParentTableMeta;
+import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.wrapper.*;
 
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.util.*;
 
-//@SuppressWarnings("unused")
 public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
     public AbstractDML(InnerDialect dialect) {
@@ -84,43 +83,28 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     /*################################## blow update method ##################################*/
 
     @Override
-    public final List<SimpleSQLWrapper> update(Update update, final Visible visible) {
+    public final SQLWrapper update(Update update, final Visible visible) {
         Assert.isTrue(update.prepared(), "Update don't invoke asUpdate() method.");
 
-        List<SimpleSQLWrapper> list;
-        if (update instanceof InnerStandardDomainUpdate) {
-            InnerStandardDomainUpdate domainUpdate = (InnerStandardDomainUpdate) update;
-            CriteriaCounselor.assertStandardDomainUpdate(domainUpdate);
-            list = Collections.unmodifiableList(
-                    standardDomainUpdate(domainUpdate, visible)
-            );
-
-        } else if (update instanceof InnerSpecialDomainUpdate) {
-            InnerSpecialDomainUpdate domainUpdate = (InnerSpecialDomainUpdate) update;
-            assertSpecialDomainUpdate(domainUpdate);
-            list = Collections.unmodifiableList(
-                    specialDomainUpdate(domainUpdate, visible)
-            );
-
-        } else if (update instanceof InnerStandardUpdate) {
+        SQLWrapper sqlWrapper;
+        if (update instanceof InnerStandardUpdate) {
             InnerStandardUpdate standardUpdate = (InnerStandardUpdate) update;
             CriteriaCounselor.assertStandardUpdate(standardUpdate);
-            list = Collections.singletonList(
-                    standardSimpleUpdate(standardUpdate, standardUpdate.tableMeta()
-                            , standardUpdate.tableAlias(), visible)
-            );
-
+            DMLUtils.assertUpdateSetAndWhereClause(standardUpdate);
+            if (update instanceof InnerStandardBatchUpdate) {
+                sqlWrapper = standardBatchUpdate((InnerStandardBatchUpdate) standardUpdate, visible);
+            } else {
+                sqlWrapper = standardGenericUpdate(standardUpdate, visible);
+            }
         } else if (update instanceof InnerSpecialUpdate) {
             InnerSpecialUpdate specialUpdate = (InnerSpecialUpdate) update;
             assertSpecialUpdate(specialUpdate);
-            list = Collections.unmodifiableList(
-                    specialUpdate(specialUpdate, visible)
-            );
-
+            DMLUtils.assertUpdateSetAndWhereClause(specialUpdate);
+            sqlWrapper = specialUpdate(specialUpdate, visible);
         } else {
             throw new IllegalArgumentException(String.format("Update[%s] type unknown.", update));
         }
-        return list;
+        return sqlWrapper;
     }
 
     @Override
@@ -128,19 +112,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         Assert.isTrue(delete.prepared(), "Delete don't invoke asDelete() method.");
 
         List<SimpleSQLWrapper> list;
-        if (delete instanceof InnerStandardDomainDelete) {
-            InnerStandardDomainDelete domainDelete = (InnerStandardDomainDelete) delete;
-            CriteriaCounselor.assertStandardDomainDelete(domainDelete);
-            list = standardDomainDeleteDispatcher(domainDelete, visible);
-
-        } else if (delete instanceof InnerSpecialDomainDelete) {
-            InnerSpecialDomainDelete domainDelete = (InnerSpecialDomainDelete) delete;
-            assertSpecialDomainDelete(domainDelete);
-            list = Collections.unmodifiableList(
-                    specialDomainDeleteDispatcher(domainDelete, visible)
-            );
-
-        } else if (delete instanceof InnerStandardDelete) {
+        if (delete instanceof InnerStandardDelete) {
             InnerStandardDelete standardDelete = (InnerStandardDelete) delete;
             CriteriaCounselor.assertStandardDelete(standardDelete);
             list = Collections.singletonList(
@@ -226,11 +198,6 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
     /*################################## blow update template method ##################################*/
 
-    protected void assertSpecialDomainUpdate(InnerSpecialDomainUpdate domainUpdate) {
-        throw new UnsupportedOperationException(String.format("dialect[%s] not support special domain update."
-                , sqlDialect())
-        );
-    }
 
     protected void assertSpecialUpdate(InnerSpecialUpdate update) {
         throw new UnsupportedOperationException(String.format("dialect[%s] not support special domain update."
@@ -238,44 +205,10 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         );
     }
 
-    protected List<SimpleSQLWrapper> specialDomainUpdate(InnerSpecialDomainUpdate domainUpdate, Visible visible) {
-        throw new UnsupportedOperationException(String.format("dialect [%s] not support special domain update."
-                , sqlDialect())
-        );
-    }
-
-    protected List<SimpleSQLWrapper> specialUpdate(InnerSpecialUpdate update, Visible visible) {
+    protected SQLWrapper specialUpdate(InnerSpecialUpdate update, Visible visible) {
         throw new UnsupportedOperationException(String.format("dialect [%s] not support special update."
                 , sqlDialect())
         );
-    }
-
-    protected UpdateContext createUpdateContext(InnerUpdate update, final Visible visible) {
-        return new StandardUpdateContext(this.dialect, visible, (InnerStandardUpdate) update);
-    }
-
-    protected ChildDomainUpdateContext createChildDomainUpdateContext(InnerDomainUpdate update
-            , List<FieldMeta<?, ?>> parentFieldList, final Visible visible) {
-        Collection<FieldMeta<?, ?>> parentFields;
-        if (parentFieldList.size() < 3) {
-            parentFields = parentFieldList;
-        } else {
-            parentFields = new HashSet<>(parentFieldList);
-        }
-        return new StandardChildDomainUpdateContext(this.dialect, visible
-                , (InnerStandardDomainUpdate) update, parentFields);
-    }
-
-    protected ParentDomainUpdateContext createParentDomainUpdateContext(InnerDomainUpdate update
-            , List<FieldMeta<?, ?>> childFieldList, Visible visible) {
-        Collection<FieldMeta<?, ?>> parentFields;
-        if (childFieldList.size() < 3) {
-            parentFields = childFieldList;
-        } else {
-            parentFields = new HashSet<>(childFieldList);
-        }
-        return new StandardParentDomainUpdateContext(this.dialect, visible
-                , (InnerStandardDomainUpdate) update, parentFields);
     }
 
     /*################################## blow delete template method ##################################*/
@@ -286,36 +219,10 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         );
     }
 
-    protected void assertSpecialDomainDelete(InnerSpecialDomainDelete delete) {
-        throw new UnsupportedOperationException(String.format("dialect[%s] not support special domain delete."
-                , sqlDialect())
-        );
-    }
-
-    protected List<SimpleSQLWrapper> specialDomainDeleteDispatcher(InnerSpecialDomainDelete delete, Visible visible) {
-        throw new UnsupportedOperationException(String.format("dialect[%s] not support special domain delete."
-                , sqlDialect())
-        );
-    }
-
     protected List<SimpleSQLWrapper> specialDelete(InnerSpecialDelete delete, Visible visible) {
         throw new UnsupportedOperationException(String.format("dialect[%s] not support special delete."
                 , sqlDialect())
         );
-    }
-
-    protected ParentDomainDeleteContext createParentDomainDeleteContext(InnerDomainDelete delete
-            , final Visible visible) {
-        return new StandardParentDomainDeleteContext(this.dialect, visible, (InnerStandardDomainDelete) delete);
-    }
-
-    protected ChildDomainDeleteContext createChildDomainDeleteContext(InnerDomainDelete delete
-            , final Visible visible) {
-        return new StandardChildDomainDeleteContext(this.dialect, visible, (InnerStandardDomainDelete) delete);
-    }
-
-    protected DeleteContext createDeleteContext(InnerDelete delete, final Visible visible) {
-        return new StandardSingleDeleteContext(this.dialect, visible, (InnerStandardDelete) delete);
     }
 
     /*################################## blow protected method ##################################*/
@@ -517,11 +424,77 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
     /*################################## blow update private method ##################################*/
 
-    private SimpleSQLWrapper standardSimpleUpdate(InnerUpdate update, TableMeta<?> tableMeta, String tableAlias
-            , final Visible visible) {
-        UpdateContext context = createUpdateContext(update, visible);
+    private SQLWrapper standardGenericUpdate(InnerStandardUpdate update, final Visible visible) {
 
-        StringBuilder builder = context.sqlBuilder().append(Keywords.UPDATE);
+        SQLWrapper sqlWrapper;
+        switch (update.tableMeta().mappingMode()) {
+            case SIMPLE:
+            case PARENT:
+                sqlWrapper = standardSimpleUpdate(update, visible);
+                break;
+            case CHILD:
+                sqlWrapper = standardChildUpdate(update, visible);
+                break;
+            default:
+                throw DialectUtils.createMappingModeUnknownException(update.tableMeta().mappingMode());
+        }
+        return sqlWrapper;
+    }
+
+    private SQLWrapper standardChildUpdate(InnerStandardUpdate update, final Visible visible) {
+        List<FieldMeta<?, ?>> targetFieldList = update.targetFieldList();
+        List<Expression<?>> valueExpList = update.valueExpList();
+
+        final List<FieldMeta<?, ?>> parentFieldList = new ArrayList<>(), childFieldList = new ArrayList<>();
+        final List<Expression<?>> parentExpList = new ArrayList<>(), childExpList = new ArrayList<>();
+
+        final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) update.tableMeta();
+        final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
+        // 1. divide target fields and value expressions with parentMeta and childMeta.
+        final int size = targetFieldList.size();
+        for (int i = 0; i < size; i++) {
+            FieldMeta<?, ?> fieldMeta = targetFieldList.get(i);
+            if (fieldMeta.tableMeta() == parentMeta) {
+                parentFieldList.add(fieldMeta);
+                parentExpList.add(valueExpList.get(i));
+            } else if (fieldMeta.tableMeta() == childMeta) {
+                childFieldList.add(fieldMeta);
+                childExpList.add(valueExpList.get(i));
+            } else {
+                throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "FieldMeta[%s] error for ChildTableMeta[%s]"
+                        , fieldMeta, childMeta);
+            }
+        }
+
+        // 2. extract parent predicate lists
+        final List<IPredicate> parentPredicates = DMLUtils.extractParentPredicateList(childMeta, childFieldList
+                , update.predicateList());
+        //3. parse parent update sql
+        StandardUpdateContext parentContext = StandardUpdateContext.buildParent(update, this.dialect, visible);
+        parseStandardUpdate(parentContext, parentMeta, update.tableAlias()
+                , parentFieldList, parentExpList, parentPredicates);
+
+        SQLWrapper sqlWrapper;
+        if (childFieldList.isEmpty()) {
+            sqlWrapper = parentContext.build();
+        } else {
+            //4. parse child update sql ,optional
+            StandardUpdateContext childContext = StandardUpdateContext.buildChild(update, this.dialect, visible);
+            parseStandardUpdate(childContext, childMeta, update.tableAlias()
+                    , childFieldList, childExpList, update.predicateList());
+
+            sqlWrapper = ChildUpdateSQLWrapper.build(
+                    (SimpleUpdateSQLWrapper) parentContext.build()
+                    , (SimpleUpdateSQLWrapper) childContext.build());
+        }
+        return sqlWrapper;
+    }
+
+
+    private void parseStandardUpdate(StandardUpdateContext context, TableMeta<?> tableMeta, String tableAlias
+            , List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueExpList, List<IPredicate> predicateList) {
+
+        StringBuilder builder = context.sqlBuilder().append("UPDATE");
         tableOnlyModifier(context);
         // append table name and alias
         context.appendTable(tableMeta);
@@ -530,108 +503,25 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         }
         context.appendText(tableAlias);
         // set clause
-        standardSimpleUpdateSetClause(context, tableMeta, tableAlias
-                , update.targetFieldList(), update.valueExpList());
+        DMLUtils.standardSimpleUpdateSetClause(context, tableMeta, tableAlias
+                , fieldList, valueExpList);
         // where clause
         simpleTableWhereClause(context, tableMeta, tableAlias
-                , update.predicateList());
+                , predicateList);
+
+    }
+
+    private SQLWrapper standardBatchUpdate(InnerStandardBatchUpdate update, final Visible visible) {
+        return null;
+    }
+
+    private SimpleSQLWrapper standardSimpleUpdate(InnerStandardUpdate update, final Visible visible) {
+        StandardUpdateContext context = StandardUpdateContext.build(update, this.dialect, visible);
+
+        parseStandardUpdate(context, update.tableMeta(), update.tableAlias()
+                , update.targetFieldList(), update.valueExpList(), update.predicateList());
 
         return context.build();
-    }
-
-    private List<SimpleSQLWrapper> standardDomainUpdate(InnerStandardDomainUpdate update, Visible visible) {
-        List<SimpleSQLWrapper> list;
-        switch (update.tableMeta().mappingMode()) {
-            case SIMPLE:
-            case PARENT:
-                list = Collections.singletonList(
-                        standardSimpleUpdate(update, update.tableMeta(), update.tableAlias(), visible)
-                );
-                break;
-            case CHILD:
-                list = standardDomainUpdateChildDispatcher(update, visible);
-                break;
-            default:
-                throw new IllegalArgumentException(String.format("unknown MappingMode[%s]"
-                        , update.tableMeta().mappingMode()));
-
-        }
-        return list;
-    }
-
-
-    private void standardSimpleUpdateSetClause(DMLContext context, TableMeta<?> tableMeta, String tableAlias
-            , List<FieldMeta<?, ?>> fieldMetaList, List<Expression<?>> valueExpList) {
-
-        Assert.notEmpty(fieldMetaList, "set clause must not empty");
-        Assert.isTrue(fieldMetaList.size() == valueExpList.size(), "field list ifAnd value exp list size not match");
-
-        final int size = fieldMetaList.size();
-        FieldMeta<?, ?> fieldMeta;
-        Expression<?> valueExp;
-
-        StringBuilder builder = context.sqlBuilder()
-                .append(" ")
-                .append(Keywords.SET);
-        for (int i = 0; i < size; i++) {
-            if (i > 0) {
-                builder.append(",");
-            }
-
-            fieldMeta = fieldMetaList.get(i);
-            valueExp = valueExpList.get(i);
-
-            DMLUtils.assertSingleUpdateSetClauseField(fieldMeta, tableMeta);
-
-            // fieldMeta self-describe
-            context.appendField(tableAlias, fieldMeta);
-            builder.append(" =");
-            // expression self-describe
-            valueExp.appendSQL(context);
-
-        }
-        if (tableMeta.mappingMode() != MappingMode.CHILD) {
-            // appendText version And updateTime
-            setClauseFieldsManagedByArmy(context, tableMeta, tableAlias);
-        }
-    }
-
-    private void setClauseFieldsManagedByArmy(TableContextSQLContext context, TableMeta<?> tableMeta, String tableAlias) {
-        //1. version field
-        final FieldMeta<?, ?> versionField = tableMeta.getField(TableMeta.VERSION);
-        StringBuilder builder = context.sqlBuilder();
-
-        builder.append(",");
-        context.appendField(tableAlias, versionField);
-
-        builder.append(" =");
-        context.appendField(tableAlias, versionField);
-        builder.append(" + 1 ");
-
-        //2. updateTime field
-        final FieldMeta<?, ?> updateTimeField = tableMeta.getField(TableMeta.UPDATE_TIME);
-
-        builder.append(",");
-        // updateTime field self-describe
-        context.appendField(tableAlias, updateTimeField);
-        builder.append(" =");
-
-        final ZonedDateTime now = ZonedDateTime.now(this.dialect.zoneId());
-
-        if (updateTimeField.javaType() == LocalDateTime.class) {
-            SQLS.param(now.toLocalDateTime(), updateTimeField.mappingMeta())
-                    .appendSQL(context);
-        } else if (updateTimeField.javaType() == ZonedDateTime.class) {
-            if (!this.dialect.supportZoneId()) {
-                throw new MetaException(ErrorCode.META_ERROR
-                        , "dialec[%s]t not supported zone.", this.dialect.sqlDialect());
-            }
-            SQLS.param(now, updateTimeField.mappingMeta())
-                    .appendSQL(context);
-        } else {
-            throw new MetaException(ErrorCode.META_ERROR
-                    , "createTime or updateTime only support LocalDateTime or ZonedDateTime,please check.");
-        }
     }
 
     private void simpleTableWhereClause(TableContextSQLContext context, TableMeta<?> tableMeta, String tableAlias
@@ -642,7 +532,6 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
             context.sqlBuilder()
                     .append(" WHERE");
         }
-
         if (!predicateList.isEmpty()) {
             DialectUtils.appendPredicateList(predicateList, context);
         }
@@ -651,126 +540,6 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         }
     }
 
-
-    private List<SimpleSQLWrapper> standardDomainUpdateChildDispatcher(InnerStandardDomainUpdate update
-            , final Visible visible) {
-
-        ChildTableMeta<?> childMeta = (ChildTableMeta<?>) update.tableMeta();
-        ParentTableMeta<?> parentMeta = childMeta.parentMeta();
-
-        final List<FieldMeta<?, ?>> targetFieldList = update.targetFieldList();
-        final List<Expression<?>> valueList = update.valueExpList();
-
-        Assert.notEmpty(targetFieldList, "set clause must not empty");
-        Assert.isTrue(targetFieldList.size() == valueList.size(), "field list size and value list size not match");
-
-        //1. separate target FieldMeta and value Expression.
-        List<FieldMeta<?, ?>> parentFieldList = new ArrayList<>(), childFieldList = new ArrayList<>();
-        List<Expression<?>> parentValueList = new ArrayList<>(), childValueList = new ArrayList<>();
-
-        FieldMeta<?, ?> fieldMeta;
-        Expression<?> valueExp;
-        final int size = targetFieldList.size();
-        for (int i = 0; i < size; i++) {
-            fieldMeta = targetFieldList.get(i);
-            valueExp = valueList.get(i);
-
-            if (fieldMeta.tableMeta() == parentMeta) {
-                parentFieldList.add(fieldMeta);
-                parentValueList.add(valueExp);
-            } else if (fieldMeta.tableMeta() == childMeta) {
-                childFieldList.add(fieldMeta);
-                childValueList.add(valueExp);
-            } else {
-                throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                        , "FieldMeta[%s] don't belong to TableMeta[%s] or its parent.", fieldMeta, childMeta);
-            }
-        }
-        // separate target FieldMeta and value Expression end.
-
-        //2.  parent table update sql,maybe contains select
-        final List<SimpleSQLWrapper> parentSqlList = standardDomainUpdateForParent(update, parentFieldList
-                , parentValueList, childFieldList, visible);
-
-        //3.  child table update sql
-        final SimpleSQLWrapper childSqlWrapper = standardDomainUpdateForChild(update, childFieldList
-                , childValueList, parentFieldList, visible);
-        // merge childSqlWrapper and parentSqlList
-        return DMLUtils.mergeDomainSQLWrappers(childSqlWrapper, parentSqlList);
-    }
-
-    private List<SimpleSQLWrapper> standardDomainUpdateForParent(InnerStandardDomainUpdate update
-            , List<FieldMeta<?, ?>> parentFieldList, List<Expression<?>> parentValueList,
-                                                                 List<FieldMeta<?, ?>> childFieldList, final Visible visible) {
-
-        ParentDomainUpdateContext context = createParentDomainUpdateContext(update, childFieldList, visible);
-
-        StringBuilder builder = context.sqlBuilder().append("UPDATE");
-        tableOnlyModifier(context);
-        // append table name and alias
-        context.appendTable(update.tableMeta());
-        if (tableAliasAfterAs()) {
-            builder.append(" AS");
-        }
-        context.appendText(update.tableAlias());
-        // set clause
-        standardSimpleUpdateSetClause(context, update.tableMeta(), update.tableAlias()
-                , parentFieldList, parentValueList);
-        // merge sql fragment 'id = ?' and update.predicateList()
-        List<IPredicate> mergedPredicateList = DMLUtils.mergeDomainUpdatePredicateList(
-                update.predicateList(), context.tableMeta().id(), update.primaryKeyValue());
-
-        // where clause with mergedPredicateList
-        simpleTableWhereClause(context, context.tableMeta(), update.tableAlias()
-                , mergedPredicateList);
-
-        SimpleSQLWrapper parentSQLWrapper = context.build();
-
-        List<SimpleSQLWrapper> sqlWrapperList;
-        if (context.needQueryChild()) {
-            sqlWrapperList = new ArrayList<>(2);
-            // firstly, add query child sql
-            sqlWrapperList.add(
-                    // create sql that query child's updated fields for update parent
-                    DMLUtils.createQueryChildBeanSQLWrapper(update, childFieldList, this.dialect, visible)
-            );
-            // secondly, add parent update sql.
-            sqlWrapperList.add(parentSQLWrapper);
-        } else {
-            sqlWrapperList = Collections.singletonList(parentSQLWrapper);
-        }
-        return sqlWrapperList;
-    }
-
-    private SimpleSQLWrapper standardDomainUpdateForChild(InnerStandardDomainUpdate update
-            , List<FieldMeta<?, ?>> childFieldList, List<Expression<?>> childValueList
-            , List<FieldMeta<?, ?>> parentFieldList, final Visible visible) {
-
-        ChildDomainUpdateContext context = createChildDomainUpdateContext(update, parentFieldList, visible);
-        // update clause
-        StringBuilder builder = context.sqlBuilder().append("UPDATE");
-        // eg: oracle need add 'ONLY' prefix.
-        tableOnlyModifier(context);
-        // append table name and alias
-        context.appendTable(update.tableMeta());
-        if (tableAliasAfterAs()) {
-            builder.append(" AS");
-        }
-        context.appendText(update.tableAlias());
-        // set clause
-        standardSimpleUpdateSetClause(context, update.tableMeta(), update.tableAlias()
-                , childFieldList, childValueList);
-
-        // merge sql fragment 'id = ?' and update.predicateList()
-        List<IPredicate> mergedPredicateList = DMLUtils.mergeDomainUpdatePredicateList(
-                update.predicateList(), context.tableMeta().id(), update.primaryKeyValue());
-
-        // where clause with mergedPredicateList
-        simpleTableWhereClause(context, context.tableMeta(), context.tableAlias()
-                , mergedPredicateList);
-
-        return context.build();
-    }
 
     /*################################## blow delete private method ##################################*/
 
@@ -794,75 +563,6 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     }
 
 
-    private List<SimpleSQLWrapper> standardDomainDeleteDispatcher(InnerStandardDomainDelete delete, final Visible visible) {
-        List<SimpleSQLWrapper> sqlWrapperList;
-        switch (delete.tableMeta().mappingMode()) {
-            case PARENT:
-            case SIMPLE:
-                sqlWrapperList = Collections.singletonList(
-                        standardSingleDelete(delete, delete.tableMeta(), delete.tableAlias(), visible)
-                );
-                break;
-            case CHILD:
-                final SimpleSQLWrapper childSql = standardDomainDeleteForChild(delete, visible);
-                final List<SimpleSQLWrapper> parentSqlList = standardDomainDeleteForParent(delete, visible);
-                if (parentSqlList.size() != 2) {
-                    throw DialectUtils.createArmyCriteriaException();
-                }
-                sqlWrapperList = DMLUtils.mergeDomainSQLWrappers(childSql, parentSqlList);
-                break;
-            default:
-                throw DialectUtils.createMappingModeUnknownException(delete.tableMeta().mappingMode());
-        }
-        return sqlWrapperList;
-    }
-
-
-    private SimpleSQLWrapper standardDomainDeleteForChild(InnerStandardDomainDelete delete, final Visible visible) {
-        ChildDomainDeleteContext context = createChildDomainDeleteContext(delete, visible);
-        doStandardDomainDelete(context, delete, visible);
-        return context.build();
-    }
-
-    private List<SimpleSQLWrapper> standardDomainDeleteForParent(InnerStandardDomainDelete delete, final Visible visible) {
-        List<SimpleSQLWrapper> parentSqlList = new ArrayList<>(2);
-        ChildTableMeta<?> childMeta = (ChildTableMeta<?>) delete.tableMeta();
-
-        List<FieldMeta<?, ?>> childFieldList = new ArrayList<>(childMeta.fieldCollection());
-        // firstly, add query child sql.
-        parentSqlList.add(
-                DMLUtils.createQueryChildBeanSQLWrapper(delete, childFieldList, this.dialect, visible)
-        );
-
-        ParentDomainDeleteContext context = createParentDomainDeleteContext(delete, visible);
-        doStandardDomainDelete(context, delete, visible);
-        // secondly, add parent delete sql.
-        parentSqlList.add(context.build());
-        return parentSqlList;
-    }
-
-    private void doStandardDomainDelete(DomainDeleteContext context
-            , InnerStandardDomainDelete delete, final Visible visible) {
-
-        StringBuilder builder = context.sqlBuilder().append("DELETE FROM");
-        tableOnlyModifier(context);
-        // append table name
-        context.appendTable(context.tableMeta());
-
-        if (this.singleDeleteHasTableAlias()) {
-            if (this.tableAliasAfterAs()) {
-                builder.append(" AS");
-            }
-            context.appendText(context.tableAlias());
-        }
-        // merge sql fragment 'id = ?' and update.predicateList()
-        List<IPredicate> mergedPredicateList = DMLUtils.mergeDomainUpdatePredicateList(
-                delete.predicateList(), context.tableMeta().id(), delete.primaryKeyValue());
-
-        // where clause with mergedPredicateList
-        simpleTableWhereClause(context, context.tableMeta(), context.tableAlias()
-                , mergedPredicateList);
-    }
 
 
 }

@@ -2,6 +2,7 @@ package io.army.struct;
 
 
 import io.army.lang.NonNull;
+import io.army.lang.Nullable;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,6 +53,13 @@ public interface CodeEnum extends Compare<CodeEnum> {
 
     static CompareResult compare(CodeEnum codeEnum1, CodeEnum codeEnum2) {
         return CompareResult.resolve(codeEnum1.code() - codeEnum2.code());
+    }
+
+
+    @SuppressWarnings("unchecked")
+    @Nullable
+    static <T extends Enum<T> & CodeEnum> CodeEnum resolve(Class<?> enumClass, int code) {
+        return getCodeMap((Class<T>) enumClass).get(code);
     }
 
 

@@ -71,7 +71,7 @@ public abstract class CriteriaCounselor {
     }
 
     public static void assertStandardDomainUpdate(InnerStandardDomainUpdate update) {
-        if (!(update instanceof StandardContextualDomainUpdate)
+        if (!(update instanceof StandardContextualUpdate)
                 && !BootCounselor.cacheDomainUpdate(update)) {
             throw new IllegalArgumentException(String.format("%s isn't instance of army", update));
         }

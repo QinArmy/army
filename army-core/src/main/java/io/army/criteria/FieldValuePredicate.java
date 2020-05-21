@@ -1,13 +1,10 @@
 package io.army.criteria;
 
-import io.army.meta.FieldExp;
 
-public interface FieldValuePredicate extends SpecialPredicate {
 
-    FieldExp<?, ?> fieldExp();
+public interface FieldValuePredicate extends FieldPredicate {
 
     DualOperator operator();
-
 
     Object value();
 }

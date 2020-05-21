@@ -32,7 +32,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     }
 
     @Override
-    public int update(InnerSession session, UpdateSQLWrapper sqlWrapper) {
+    public int update(InnerSession session, SQLWrapper sqlWrapper) {
         int updateRows;
         if (sqlWrapper instanceof ChildUpdateSQLWrapper) {
             updateRows = childUpdate(session, (ChildUpdateSQLWrapper) sqlWrapper);
@@ -45,7 +45,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     }
 
     @Override
-    public <T> List<T> returningUpdate(InnerSession session, UpdateSQLWrapper sqlWrapper, Class<T> resultClass) {
+    public <T> List<T> returningUpdate(InnerSession session, SQLWrapper sqlWrapper, Class<T> resultClass) {
         List<T> resultList;
         if (sqlWrapper instanceof ChildReturningUpdateSQLWrapper) {
             resultList = childReturningUpdate(session, (ChildReturningUpdateSQLWrapper) sqlWrapper, resultClass);
@@ -58,7 +58,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     }
 
     @Override
-    public List<Integer> batchUpdate(InnerSession session, BatchSQLWrapper sqlWrapper) {
+    public List<Integer> batchUpdate(InnerSession session, SQLWrapper sqlWrapper) {
         List<Integer> rowsList;
         if (sqlWrapper instanceof ChildBatchUpdateSQLWrapper) {
             rowsList = childBatchUpdate(session, (ChildBatchUpdateSQLWrapper) sqlWrapper);
@@ -78,28 +78,8 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
         childRows = doBatchSimpleUpdate(session, sqlWrapper.childWrapper());
         // secondly,execute parent update sql
         parentRows = doBatchSimpleUpdate(session, sqlWrapper.parentWrapper());
-        if (parentRows.length != childRows.length) {
-            // check domain update batch match.
-            throw new DomainUpdateException(
-                    "Domain update,parent sql[%s] update batch[%s] and child sql[%s] update batch[%s] not match."
-                    , sqlWrapper.parentWrapper().sql()
-                    , parentRows.length
-                    , sqlWrapper.childWrapper().sql()
-                    , childRows.length
-            );
-        }
-        final int len = childRows.length;
-        for (int i = 0; i < len; i++) {
-            if (parentRows[i] != childRows[i]) {
-                throw new DomainUpdateException(
-                        "Domain update,parent sql[%s] update index[%s] and child sql[%s] update index [%s] not match."
-                        , sqlWrapper.parentWrapper().sql()
-                        , parentRows[i]
-                        , sqlWrapper.childWrapper().sql()
-                        , childRows[i]
-                );
-            }
-        }
+        // assert childRows, parentRows
+        assertBatchParentUpdateRows(childRows, parentRows, sqlWrapper);
         return convertAndCheckOptimisticLock(childRows, sqlWrapper.childWrapper());
     }
 
@@ -107,17 +87,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
         return convertAndCheckOptimisticLock(doBatchSimpleUpdate(session, sqlWrapper), sqlWrapper);
     }
 
-    private List<Integer> convertAndCheckOptimisticLock(int[] updateRows, BatchSimpleUpdateSQLWrapper sqlWrapper) {
-        List<Integer> rowList = new ArrayList<>(updateRows.length);
-        final boolean hasVersion = sqlWrapper.hasVersion();
-        for (int updateRow : updateRows) {
-            if (updateRow < 1 && hasVersion) {
-                throw createOptimisticLockException(sqlWrapper.sql());
-            }
-            rowList.add(updateRow);
-        }
-        return rowList;
-    }
+
 
     private int childUpdate(InnerSession session, ChildUpdateSQLWrapper sqlWrapper) {
 
@@ -323,6 +293,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
             // 2. set params
             for (List<ParamWrapper> paramWrappers : sqlWrapper.paramGroupList()) {
                 setParams(st, paramWrappers);
+                // add to batch
                 st.addBatch();
             }
             // 3. execute sql
@@ -334,6 +305,53 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
 
     private static OptimisticLockException createOptimisticLockException(String sql) {
         return new OptimisticLockException("record maybe be updated or deleted by transaction,sql:%s", sql);
+    }
+
+    private static List<Integer> convertAndCheckOptimisticLock(int[] updateRows
+            , BatchSimpleUpdateSQLWrapper sqlWrapper) {
+        List<Integer> rowList = new ArrayList<>(updateRows.length);
+        final boolean hasVersion = sqlWrapper.hasVersion();
+        for (int updateRow : updateRows) {
+            if (updateRow < 1 && hasVersion) {
+                throw createOptimisticLockException(sqlWrapper.sql());
+            }
+            rowList.add(updateRow);
+        }
+        return rowList;
+    }
+
+    private static void assertBatchParentUpdateRows(int[] childRows, int[] parentRows
+            , ChildBatchUpdateSQLWrapper sqlWrapper) {
+
+        if (parentRows.length != childRows.length) {
+            // check domain update batch match.
+            throw new DomainUpdateException(
+                    "Domain update,parent sql[%s] update batch[%s] and child sql[%s] update batch[%s] not match."
+                    , sqlWrapper.parentWrapper().sql()
+                    , parentRows.length
+                    , sqlWrapper.childWrapper().sql()
+                    , childRows.length
+            );
+        }
+
+        final int len = childRows.length;
+        final boolean hasVersion = sqlWrapper.parentWrapper().hasVersion();
+        int parentRow;
+        for (int i = 0; i < len; i++) {
+            parentRow = parentRows[i];
+            if (parentRow < 1 && hasVersion) {
+                throw createOptimisticLockException(sqlWrapper.parentWrapper().sql());
+            }
+            if (parentRow != childRows[i]) {
+                throw new DomainUpdateException(
+                        "Domain update,parent sql[%s] update index[%s] and child sql[%s] update index [%s] not match."
+                        , sqlWrapper.parentWrapper().sql()
+                        , parentRow
+                        , sqlWrapper.childWrapper().sql()
+                        , childRows[i]
+                );
+            }
+        }
     }
 
 }

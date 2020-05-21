@@ -33,7 +33,7 @@ public interface SQLContext {
 
     void appendField(FieldMeta<?, ?> fieldMeta);
 
-    void appendPredicate(SpecialPredicate predicate);
+    void appendPredicate(FieldPredicate predicate);
 
     void appendFieldPair(FieldPairDualPredicate predicate);
 

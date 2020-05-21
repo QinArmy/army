@@ -100,7 +100,7 @@ public abstract class DialectUtils {
         int count = 0;
         for (IPredicate predicate : predicateList) {
             if (count > 0) {
-                builder.append(" ").append(Keywords.AND);
+                builder.append(" AND");
             }
             predicate.appendSQL(context);
             count++;
@@ -157,6 +157,11 @@ public abstract class DialectUtils {
     public static CriteriaException createNoLogicalTableException(FieldMeta<?, ?> fieldMeta) {
         throw new CriteriaException(ErrorCode.CRITERIA_ERROR
                 , "not found logical table for [%s], please use SQLS.field(String,FieldMeta) method.", fieldMeta);
+    }
+
+    public static CriteriaException createNoLogicalTableException(String tableAlias) {
+        throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                , "not found logical table[%s], please check criteria.", tableAlias);
     }
 
     public static CriteriaException createUnKnownFieldException(FieldMeta<?, ?> fieldMeta) {

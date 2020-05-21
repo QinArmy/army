@@ -827,6 +827,11 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection {
     }
 
     @Override
+    public boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
+        return false;
+    }
+
+    @Override
     public void appendSortPart(SQLContext context) {
         if (this.alias == null) {
             this.appendSQL(context);

@@ -23,12 +23,12 @@ abstract class AbstractPredicate extends AbstractExpression<Boolean> implements 
         if (andIPredicates == null) {
             return this;
         }
-        return new OrtPredicate(this, ArrayUtils.asList(andIPredicates));
+        return new OrtPredicateImpl(this, ArrayUtils.asList(andIPredicates));
     }
 
     @Override
     public final IPredicate or(List<IPredicate> andIPredicateList) {
-        return new OrtPredicate(this, andIPredicateList);
+        return new OrtPredicateImpl(this, andIPredicateList);
     }
 
 

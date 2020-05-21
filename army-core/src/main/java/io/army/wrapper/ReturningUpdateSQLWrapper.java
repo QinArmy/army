@@ -4,7 +4,7 @@ import io.army.criteria.Selection;
 
 import java.util.List;
 
-public interface ReturningUpdateSQLWrapper extends SimpleUpdateSQLWrapper, UpdateSQLWrapper {
+public interface ReturningUpdateSQLWrapper extends SimpleUpdateSQLWrapper, SQLWrapper {
 
     List<Selection> selectionList();
 }

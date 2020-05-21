@@ -1,54 +1,18 @@
 package io.army.dialect;
 
-import io.army.ErrorCode;
-import io.army.criteria.*;
-import io.army.criteria.impl.inner.TableWrapper;
+import io.army.criteria.CriteriaException;
+import io.army.criteria.FieldPredicate;
+import io.army.criteria.TableAliasException;
+import io.army.criteria.Visible;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public abstract class AbstractTableContextSQLContext extends AbstractSQLContext implements TableContextSQLContext {
 
 
-    protected static TableContext createFromContext(List<TableWrapper> tableWrapperList) {
-        Map<TableMeta<?>, Integer> tableCountMap = new HashMap<>();
-        Map<String, TableMeta<?>> aliasTableMap = new HashMap<>();
 
-        for (TableWrapper tableWrapper : tableWrapperList) {
-            TableAble tableAble = tableWrapper.tableAble();
-            if (tableAble instanceof TableMeta) {
-                TableMeta<?> tableMeta = (TableMeta<?>) tableAble;
-                Integer count = tableCountMap.computeIfAbsent(tableMeta, key -> 0);
-                tableCountMap.replace(tableMeta, count, count + 1);
-                if (aliasTableMap.putIfAbsent(tableWrapper.alias(), tableMeta) != null) {
-                    throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "TableMeta[%s] alias[%s] duplication."
-                            , tableMeta, tableWrapper.alias());
-                }
-            }
-        }
-
-        Map<TableMeta<?>, String> tableAliasMap = new HashMap<>();
-
-        final Integer one = 1;
-        for (TableWrapper tableWrapper : tableWrapperList) {
-            TableAble tableAble = tableWrapper.tableAble();
-            if (tableAble instanceof TableMeta) {
-                TableMeta<?> tableMeta = (TableMeta<?>) tableAble;
-                if (one.equals(tableCountMap.get(tableMeta))) {
-
-                    tableAliasMap.putIfAbsent(tableMeta, tableWrapper.alias());
-                }
-            }
-
-        }
-
-        return new TableContext(tableCountMap, aliasTableMap, tableAliasMap);
-    }
 
 
     protected final TableContext tableContext;
@@ -66,7 +30,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
 
 
     @Override
-    public final void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException {
+    public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException {
         sqlBuilder.append(" ")
                 .append(this.dialect.quoteIfNeed(tableAlias))
                 .append(".")
@@ -74,12 +38,12 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
     }
 
     @Override
-    public final void appendField(FieldMeta<?, ?> fieldMeta) {
+    public void appendField(FieldMeta<?, ?> fieldMeta) {
         this.appendField(findTableAlias(fieldMeta), fieldMeta);
     }
 
     @Override
-    public void appendPredicate(SpecialPredicate predicate) {
+    public void appendPredicate(FieldPredicate predicate) {
 
     }
 

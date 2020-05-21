@@ -44,11 +44,9 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
 
     @Override
     public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException {
-        sqlBuilder.append(" ")
-                .append(this.dialect.quoteIfNeed(tableAlias))
-                .append(".")
-                .append(this.dialect.quoteIfNeed(fieldMeta.fieldName()));
+        doAppendFiled(tableAlias, fieldMeta);
     }
+
 
     @Override
     public void appendFieldPair(FieldPairDualPredicate predicate) {
@@ -125,7 +123,14 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
         return doBuild(beanWrapper);
     }
 
+    /*################################## blow protected final method ##################################*/
 
+    protected final void doAppendFiled(String tableAlias, FieldMeta<?, ?> fieldMeta) {
+        this.sqlBuilder.append(" ")
+                .append(this.dialect.quoteIfNeed(tableAlias))
+                .append(".")
+                .append(this.dialect.quoteIfNeed(fieldMeta.fieldName()));
+    }
 
     /*################################## blow protected template method ##################################*/
 

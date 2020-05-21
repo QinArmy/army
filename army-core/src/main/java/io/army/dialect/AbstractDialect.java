@@ -137,7 +137,7 @@ public abstract class AbstractDialect implements InnerDialect {
     }
 
     @Override
-    public final List<SimpleSQLWrapper> update(Update update, Visible visible) {
+    public final SQLWrapper update(Update update, Visible visible) {
         return this.dml.update(update, visible);
     }
 

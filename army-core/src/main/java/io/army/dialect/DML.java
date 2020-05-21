@@ -26,7 +26,7 @@ public interface DML extends SQL {
     /**
      * @return a unmodifiable list
      */
-    List<SimpleSQLWrapper> update(Update update, Visible visible);
+    SQLWrapper update(Update update, Visible visible);
 
     /**
      * @return a unmodifiable list
