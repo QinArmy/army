@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class ComposeColumnSubQueries<E, C> extends AbstractComposeQuery<C> implements ComposeSubQuery
-        , ColumnSubQuery<E>, ColumnSubQuery.ColumnSubQueryUnionAble<E, C> {
+abstract class ComposeColumnSubQueries<E, C> extends AbstractComposeQuery<C> implements
+        ColumnSubQuery<E>, ColumnSubQuery.ColumnSubQueryUnionAble<E, C>, SubQuery {
 
     static <E, C> ColumnSubQuery.ColumnSubQueryUnionAble<E, C> brackets(C criteria, ColumnSubQuery<E> encloseSubQuery) {
         return new BracketsColumnSubQuery<>(criteria, encloseSubQuery);

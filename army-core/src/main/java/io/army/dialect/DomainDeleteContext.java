@@ -1,6 +1,5 @@
 package io.army.dialect;
 
-import io.army.criteria.TableAliasException;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 

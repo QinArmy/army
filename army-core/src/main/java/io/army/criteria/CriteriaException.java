@@ -4,7 +4,6 @@ import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
 
 /**
- * created  on 2018/11/25.
  */
 public class CriteriaException extends ArmyRuntimeException {
 

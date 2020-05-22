@@ -1,8 +1,8 @@
 package io.army.meta;
 
-import io.army.criteria.AliasField;
-import io.army.criteria.Expression;
 import io.army.criteria.FieldSelection;
+import io.army.criteria.LogicalField;
+import io.army.criteria.SpecialExpression;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingMeta;
@@ -10,12 +10,12 @@ import io.army.meta.mapping.MappingMeta;
 import java.sql.JDBCType;
 
 /**
- * @param <T>
- * @param <F>
+ * @param <T> Domain Java Type
+ * @param <F> Domain property Java Type
  * @see FieldMeta
- * @see AliasField
+ * @see LogicalField
  */
-public interface FieldExp<T extends IDomain, F> extends Expression<F>, FieldSelection {
+public interface FieldExpression<T extends IDomain, F> extends SpecialExpression<F>, FieldSelection {
 
 
     boolean primary();

@@ -2,13 +2,14 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.meta.FieldMeta;
+import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
 
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.function.Function;
 
-abstract class AbstractNoNOperationExpression<E> implements Expression<E> {
+abstract class AbstractNoNOperationExpression<E> implements Expression<E>, ExpressionCounselor {
 
     final String ERROR_MSG = "Non Expression not support this method.";
 
@@ -17,248 +18,243 @@ abstract class AbstractNoNOperationExpression<E> implements Expression<E> {
 
 
     @Override
-    public final IPredicate eq(Expression<E> expression) {
+    public final IPredicate equal(Expression<E> expression) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public final IPredicate eq(String subQueryAlias, String fieldAlias) {
+    public final IPredicate equal(String subQueryAlias, String fieldAlias) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate eq(String tableAlias, FieldMeta<?, E> fieldMeta) {
+    public final IPredicate equal(String tableAlias, FieldMeta<?, E> fieldMeta) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate eq(E constant) {
+    public final IPredicate equal(E constant) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
 
     @Override
-    public final <C, S extends Expression<E>> IPredicate eq(Function<C, S> expOrSubQuery) {
+    public final <C, S extends Expression<E>> IPredicate equal(Function<C, S> expOrSubQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, S extends ColumnSubQuery<E>> IPredicate eqSome(Function<C, S> subQuery) {
+    public final <C, S extends ColumnSubQuery<E>> IPredicate equalSome(Function<C, S> subQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, S extends ColumnSubQuery<E>> IPredicate eqAny(Function<C, S> subQuery) {
+    public final <C, S extends ColumnSubQuery<E>> IPredicate equalAny(Function<C, S> subQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, S extends ColumnSubQuery<E>> IPredicate eqAll(Function<C, S> subQuery) {
+    public final <C, S extends ColumnSubQuery<E>> IPredicate equalAll(Function<C, S> subQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate lt(Expression<? extends Comparable<E>> expression) {
+    public final IPredicate lessThan(Expression<? extends Comparable<E>> expression) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate lt(Comparable<E> constant) {
+    public final IPredicate lessThan(Comparable<E> constant) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate lt(String subQueryAlias, String fieldAlias) {
+    public final IPredicate lessThan(String subQueryAlias, String fieldAlias) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate lt(String tableAlias, FieldMeta<?, E> fieldMeta) {
+    public final IPredicate lessThan(String tableAlias, FieldMeta<?, E> fieldMeta) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, S extends Expression<E>> IPredicate lt(Function<C, S> expOrSubQuery) {
+    public final <C, S extends Expression<E>> IPredicate lessThan(Function<C, S> expOrSubQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, S extends ColumnSubQuery<E>> IPredicate ltAny(Function<C, S> subQuery) {
+    public final <C, S extends ColumnSubQuery<E>> IPredicate lessThanAny(Function<C, S> subQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, S extends ColumnSubQuery<E>> IPredicate ltSome(Function<C, S> subQuery) {
+    public final <C, S extends ColumnSubQuery<E>> IPredicate lessThanSome(Function<C, S> subQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, S extends ColumnSubQuery<E>> IPredicate ltAll(Function<C, S> subQuery) {
+    public final <C, S extends ColumnSubQuery<E>> IPredicate lessThanAll(Function<C, S> subQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate le(Expression<? extends Comparable<E>> expression) {
+    public final IPredicate lessEqual(Expression<? extends Comparable<E>> expression) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate le(Comparable<E> constant) {
+    public final IPredicate lessEqual(Comparable<E> constant) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate le(String subQueryAlias, String fieldAlias) {
+    public final IPredicate lessEqual(String subQueryAlias, String fieldAlias) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate le(String tableAlias, FieldMeta<?, E> fieldMeta) {
+    public final IPredicate lessEqual(String tableAlias, FieldMeta<?, E> fieldMeta) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, S extends Expression<E>> IPredicate le(Function<C, S> expOrSubQuery) {
+    public final <C, S extends Expression<E>> IPredicate lessEqual(Function<C, S> expOrSubQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, S extends ColumnSubQuery<E>> IPredicate leAny(Function<C, S> subQuery) {
+    public final <C, S extends ColumnSubQuery<E>> IPredicate lessEqualAny(Function<C, S> subQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, S extends ColumnSubQuery<E>> IPredicate leSome(Function<C, S> subQuery) {
+    public final <C, S extends ColumnSubQuery<E>> IPredicate lessEqualSome(Function<C, S> subQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, S extends ColumnSubQuery<E>> IPredicate leAll(Function<C, S> subQuery) {
+    public final <C, S extends ColumnSubQuery<E>> IPredicate lessEqualAll(Function<C, S> subQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate gt(Expression<? extends Comparable<E>> expression) {
+    public final IPredicate greatThan(Expression<? extends Comparable<E>> expression) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate gt(Comparable<E> constant) {
+    public final IPredicate greatThan(Comparable<E> constant) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate gt(String subQueryAlias, String fieldAlias) {
+    public final IPredicate greatThan(String subQueryAlias, String fieldAlias) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate gt(String tableAlias, FieldMeta<?, E> fieldMeta) {
+    public final IPredicate greatThan(String tableAlias, FieldMeta<?, E> fieldMeta) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, S extends Expression<E>> IPredicate gt(Function<C, S> expOrSubQuery) {
+    public final <C, S extends Expression<E>> IPredicate greatThan(Function<C, S> expOrSubQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, S extends ColumnSubQuery<E>> IPredicate gtAny(Function<C, S> subQuery) {
+    public final <C, S extends ColumnSubQuery<E>> IPredicate greatThanAny(Function<C, S> subQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, S extends ColumnSubQuery<E>> IPredicate gtSome(Function<C, S> subQuery) {
+    public final <C, S extends ColumnSubQuery<E>> IPredicate greatThanSome(Function<C, S> subQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, S extends ColumnSubQuery<E>> IPredicate gtAll(Function<C, S> subQuery) {
+    public final <C, S extends ColumnSubQuery<E>> IPredicate greatThanAll(Function<C, S> subQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate ge(Expression<? extends Comparable<E>> expression) {
+    public final IPredicate greatEqual(Expression<? extends Comparable<E>> expression) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate ge(Comparable<E> constant) {
+    public final IPredicate greatEqual(Comparable<E> constant) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate ge(String subQueryAlias, String fieldAlias) {
+    public final IPredicate greatEqual(String subQueryAlias, String fieldAlias) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate ge(String tableAlias, FieldMeta<?, E> fieldMeta) {
+    public final IPredicate greatEqual(String tableAlias, FieldMeta<?, E> fieldMeta) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, S extends Expression<E>> IPredicate ge(Function<C, S> expOrSubQuery) {
+    public final <C, S extends Expression<E>> IPredicate greatEqual(Function<C, S> expOrSubQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, S extends ColumnSubQuery<E>> IPredicate geAny(Function<C, S> subQuery) {
+    public final <C, S extends ColumnSubQuery<E>> IPredicate greatEqualAny(Function<C, S> subQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, S extends ColumnSubQuery<E>> IPredicate geSome(Function<C, S> subQuery) {
+    public final <C, S extends ColumnSubQuery<E>> IPredicate greatEqualSome(Function<C, S> subQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, S extends ColumnSubQuery<E>> IPredicate geAll(Function<C, S> subQuery) {
+    public final <C, S extends ColumnSubQuery<E>> IPredicate greatEqualAll(Function<C, S> subQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate notEq(Expression<E> expression) {
+    public final IPredicate notEqual(Expression<E> expression) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate notEq(Comparable<E> constant) {
+    public final IPredicate notEqual(Comparable<E> constant) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate notEq(String subQueryAlias, String fieldAlias) {
+    public final IPredicate notEqual(String subQueryAlias, String fieldAlias) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate notEq(String tableAlias, FieldMeta<?, E> fieldMeta) {
+    public final IPredicate notEqual(String tableAlias, FieldMeta<?, E> fieldMeta) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, S extends Expression<E>> IPredicate notEq(Function<C, S> expOrSubQuery) {
+    public final <C, S extends Expression<E>> IPredicate notEqual(Function<C, S> expOrSubQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, S extends ColumnSubQuery<E>> IPredicate notEqAny(Function<C, S> subQuery) {
+    public final <C, S extends ColumnSubQuery<E>> IPredicate notEqualAny(Function<C, S> subQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, S extends ColumnSubQuery<E>> IPredicate notEqSome(Function<C, S> subQuery) {
+    public final <C, S extends ColumnSubQuery<E>> IPredicate notEqualSome(Function<C, S> subQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, S extends ColumnSubQuery<E>> IPredicate notEqAll(Function<C, S> subQuery) {
-        throw new UnsupportedOperationException(ERROR_MSG);
-    }
-
-    @Override
-    public final IPredicate not() {
+    public final <C, S extends ColumnSubQuery<E>> IPredicate notEqualAll(Function<C, S> subQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -283,7 +279,7 @@ abstract class AbstractNoNOperationExpression<E> implements Expression<E> {
     }
 
     @Override
-    public final <C> IPredicate between(Function<C, BetweenExp<E>> function) {
+    public <C> IPredicate between(Function<C, BetweenWrapper<E>> function) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -459,12 +455,12 @@ abstract class AbstractNoNOperationExpression<E> implements Expression<E> {
     }
 
     @Override
-    public final <O> Expression<BigInteger> and(Expression<O> operator) {
+    public final <O> Expression<BigInteger> and(Expression<O> operand) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final Expression<BigInteger> and(Long operator) {
+    public final Expression<BigInteger> and(Long operand) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -484,12 +480,12 @@ abstract class AbstractNoNOperationExpression<E> implements Expression<E> {
     }
 
     @Override
-    public final <O> Expression<BigInteger> or(Expression<O> operator) {
+    public final <O> Expression<BigInteger> or(Expression<O> operand) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final Expression<BigInteger> or(Long operator) {
+    public final Expression<BigInteger> or(Long operand) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -509,12 +505,12 @@ abstract class AbstractNoNOperationExpression<E> implements Expression<E> {
     }
 
     @Override
-    public final <O> Expression<BigInteger> xor(Expression<O> operator) {
+    public final <O> Expression<BigInteger> xor(Expression<O> operand) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final Expression<BigInteger> xor(Long operator) {
+    public final Expression<BigInteger> xor(Long operand) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -534,12 +530,12 @@ abstract class AbstractNoNOperationExpression<E> implements Expression<E> {
     }
 
     @Override
-    public final <O> Expression<BigInteger> inversion(Expression<O> operator) {
+    public final <O> Expression<BigInteger> inversion(Expression<O> operand) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final Expression<BigInteger> inversion(Long operator) {
+    public final Expression<BigInteger> inversion(Long operand) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -709,8 +705,23 @@ abstract class AbstractNoNOperationExpression<E> implements Expression<E> {
     }
 
     @Override
+    public final boolean containsFieldOf(TableMeta<?> tableMeta) {
+        return false;
+    }
+
+    @Override
     public Selection as(String alias) {
         throw new UnsupportedOperationException(ERROR_MSG);
+    }
+
+    @Override
+    public boolean containsSubQuery() {
+        return false;
+    }
+
+    @Override
+    public final int containsFieldCount(TableMeta<?> tableMeta) {
+        return 0;
     }
 
     @Override

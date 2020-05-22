@@ -14,8 +14,20 @@ public enum Visible {
         this.visible = visible;
     }
 
+    public static Visible resolve(@Nullable Boolean visible) {
+        Visible visibleEnm;
+        if (visible == null) {
+            visibleEnm = Visible.BOTH;
+        } else if (Boolean.TRUE.equals(visible)) {
+            visibleEnm = Visible.ONLY_VISIBLE;
+        } else {
+            visibleEnm = Visible.ONLY_NON_VISIBLE;
+        }
+        return visibleEnm;
+    }
+
     @Nullable
-    public Boolean getValue() {
+    public Boolean value() {
         return visible;
     }
 }

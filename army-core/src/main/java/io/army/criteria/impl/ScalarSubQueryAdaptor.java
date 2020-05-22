@@ -54,6 +54,11 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
         return mappingType;
     }
 
+    @Override
+    public final boolean containsSubQuery() {
+        return true;
+    }
+
     /*################################## blow ScalarSubQuery<E> method ##################################*/
 
     @Override

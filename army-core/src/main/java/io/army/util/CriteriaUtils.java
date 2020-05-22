@@ -42,7 +42,7 @@ public abstract class CriteriaUtils {
         return SQLS.multiSelect()
                 .select(tableMeta.id())
                 .from(tableMeta, "t")
-                .where(tableMeta.id().eq(id))
+                .where(tableMeta.id().equal(id))
                 .asSelect();
     }
 
@@ -90,14 +90,14 @@ public abstract class CriteriaUtils {
             select = SQLS.multiSelect()
                     .select(Arrays.asList(SQLS.group(parentMeta, "p"), SQLS.group(childMeta, "c")))
                     .from(childMeta, "c") // small table first
-                    .join(parentMeta, "p").on(childMeta.id().eq(parentMeta.id()))
-                    .where(childMeta.id().eq(id))
+                    .join(parentMeta, "p").on(childMeta.id().equal(parentMeta.id()))
+                    .where(childMeta.id().equal(id))
                     .asSelect();
         } else {
             select = SQLS.multiSelect()
                     .select(SQLS.group(tableMeta, "t"))
                     .from(tableMeta, "t")
-                    .where(tableMeta.id().eq(id))
+                    .where(tableMeta.id().equal(id))
                     .asSelect();
         }
         return select;
@@ -119,7 +119,7 @@ public abstract class CriteriaUtils {
             select = SQLS.multiSelect()
                     .select(Arrays.asList(SQLS.group(parentMeta, "p"), SQLS.group(childMeta, "c")))
                     .from(childMeta, "c")
-                    .join(parentMeta, "p").on(parentMeta.id().eq(childMeta.id()))
+                    .join(parentMeta, "p").on(parentMeta.id().equal(childMeta.id()))
                     .where(createPredicateList(tableMeta, propNameList, valueList))
                     .limit(2)
                     .asSelect();
@@ -149,11 +149,11 @@ public abstract class CriteriaUtils {
         for (int i = 0; i < size; i++) {
             propName = propNameList.get(i);
             if (TableMeta.ID.equals(propName)) {
-                list.add(tableMeta.id().eq(valueList.get(i)));
+                list.add(tableMeta.id().equal(valueList.get(i)));
             } else if (tableMeta.mappingProp(propName)) {
-                list.add(tableMeta.getField(propName).eq(valueList.get(i)));
+                list.add(tableMeta.getField(propName).equal(valueList.get(i)));
             } else if (parentMeta != null && parentMeta.mappingProp(propName)) {
-                list.add(parentMeta.getField(propName).eq(valueList.get(i)));
+                list.add(parentMeta.getField(propName).equal(valueList.get(i)));
             } else {
                 throw new IllegalArgumentException(String.format("propName[%s] isn't prop of TableMeta[%s]"
                         , propName, tableMeta));

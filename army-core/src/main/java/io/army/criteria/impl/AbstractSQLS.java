@@ -10,6 +10,7 @@ import io.army.meta.mapping.StringType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
 
 abstract class AbstractSQLS {
 
@@ -58,6 +59,10 @@ abstract class AbstractSQLS {
 
     public static TableMeta<Dual> dual() {
         return Dual.DualTableMeta.INSTANCE;
+    }
+
+    public static <E> Expression<Collection<E>> collection(MappingMeta mappingMeta, Collection<E> collection) {
+        return CollectionExpressionImpl.build(mappingMeta, collection);
     }
 
     /*################################## blow number function method ##################################*/

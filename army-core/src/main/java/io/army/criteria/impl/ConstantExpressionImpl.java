@@ -4,7 +4,6 @@ import io.army.criteria.ConstantExpression;
 import io.army.criteria.SQLContext;
 import io.army.criteria.Selection;
 import io.army.lang.Nullable;
-import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingMeta;
@@ -78,12 +77,12 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
 
     @Override
     protected void afterSpace(SQLContext context) {
-        context.appendTextValue(obtainMappingMeta(), this.constant);
+        context.appendTextValue(this.paramMeta.mappingMeta(), this.constant);
     }
 
     @Override
-    public ParamMeta mappingMeta() {
-        return this.paramMeta;
+    public MappingMeta mappingMeta() {
+        return this.paramMeta.mappingMeta();
     }
 
     @Override
@@ -93,19 +92,8 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
 
     @Override
     public String beforeAs() {
-        return obtainMappingMeta().nonNullTextValue(constant);
+        return this.paramMeta.mappingMeta().nonNullTextValue(constant);
     }
 
-    private MappingMeta obtainMappingMeta() {
-        MappingMeta mappingMeta;
-        if (this.paramMeta instanceof FieldMeta) {
-            mappingMeta = ((FieldMeta<?, ?>) this.paramMeta).mappingMeta();
-        } else if (this.paramMeta instanceof MappingMeta) {
-            mappingMeta = (MappingMeta) this.paramMeta;
-        } else {
-            throw new IllegalStateException(String.format("paramMeta[%s] unknown.", this.paramMeta));
-        }
-        return mappingMeta;
-    }
 
 }

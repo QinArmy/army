@@ -1,8 +1,8 @@
 package io.army.dialect;
 
 import io.army.beans.DomainWrapper;
-import io.army.criteria.FieldPairDualPredicate;
-import io.army.criteria.TableAliasException;
+import io.army.criteria.ExpressionCounselor;
+import io.army.criteria.SpecialPredicate;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.InnerStandardUpdate;
 import io.army.meta.ChildTableMeta;
@@ -26,20 +26,22 @@ class StandardUpdateContext extends AbstractTableContextSQLContext implements Up
     static StandardUpdateContext buildParent(InnerStandardUpdate update, Dialect dialect, final Visible visible) {
         ChildTableMeta<?> childMeta = (ChildTableMeta<?>) update.tableMeta();
 
-        return new ParentUpdateContext(dialect, visible
+        return new DomainUpdateContext(dialect, visible
                 , TableContext.singleTable(childMeta.parentMeta(), update.tableAlias())
                 , DMLUtils.hasVersionPredicate(update.predicateList())
                 , childMeta
+                , true
         );
     }
 
     static StandardUpdateContext buildChild(InnerStandardUpdate update, Dialect dialect, final Visible visible) {
         ChildTableMeta<?> childMeta = (ChildTableMeta<?>) update.tableMeta();
 
-        return new ChildUpdateContext(dialect, visible
+        return new DomainUpdateContext(dialect, visible
                 , TableContext.singleTable(childMeta, update.tableAlias())
                 , DMLUtils.hasVersionPredicate(update.predicateList())
                 , childMeta
+                , false
         );
     }
 
@@ -63,217 +65,143 @@ class StandardUpdateContext extends AbstractTableContextSQLContext implements Up
         throw new UnsupportedOperationException();
     }
 
-    /**
-     * design for {@link ParentUpdateContext} and {@link ChildUpdateContext}
-     */
-    final void doReplaceRelationFieldAsSubQuery(TableMeta<?> primaryTable, String primaryTableAlias
-            , FieldMeta<?, ?> relationField) {
-        final TableMeta<?> tableOfField = relationField.tableMeta();
-        // replace parent field as sub query.
-        final Dialect dialect = this.dialect;
-        final String safeRelationAlias = dialect.quoteIfNeed(obtainRelationTableAlias(tableOfField, primaryTableAlias));
 
-        StringBuilder builder = this.sqlBuilder.append(" ( SELECT ")
-                .append(safeRelationAlias)
-                .append(".")
-                .append(dialect.quoteIfNeed(relationField.fieldName()))
-                .append(" FROM");
-        appendTable(tableOfField);
-        if (dialect.tableAliasAfterAs()) {
-            builder.append(" AS");
-        }
-        builder.append(" ")
-                .append(safeRelationAlias)
-                .append(" WHERE ")
-                .append(safeRelationAlias)
-                .append(".")
-                .append(dialect.quoteIfNeed(tableOfField.id().fieldName()))
-                .append(" = ")
-                .append(dialect.quoteIfNeed(primaryTableAlias))
-                .append(".")
-                .append(dialect.quoteIfNeed(primaryTable.id().fieldName()))
-                .append(" )")
-        ;
-    }
+    private static final class DomainUpdateContext extends StandardUpdateContext {
 
-    /**
-     * design for {@link ParentUpdateContext} and {@link ChildUpdateContext}
-     */
-    final void doAppendFieldPair(TableMeta<?> primaryTable, String primaryTableAlias
-            , FieldPairDualPredicate predicate) {
-        TableMeta<?> relationTable;
-        if (primaryTable instanceof ChildTableMeta) {
-            relationTable = ((ChildTableMeta<?>) primaryTable).parentMeta();
-        } else {
-            ChildTableMeta<?> childMeta = obtainChildMeta();
-            Assert.state(primaryTable == childMeta.parentMeta(), "obtainChildMeta return error");
-            relationTable = childMeta;
+        final TableMeta<?> primaryTable;
+
+        final TableMeta<?> relationTable;
+
+        final String primaryAlias;
+
+        boolean existsClauseContext = false;
+
+        private DomainUpdateContext(Dialect dialect, Visible visible, TableContext tableContext
+                , boolean hasVersion, ChildTableMeta<?> childMeta, boolean parent) {
+            super(dialect, visible, tableContext, hasVersion);
+
+            if (parent) {
+                this.primaryTable = childMeta.parentMeta();
+                this.relationTable = childMeta;
+            } else {
+                this.primaryTable = childMeta;
+                this.relationTable = childMeta.parentMeta();
+            }
+            this.primaryAlias = tableContext.tableAliasMap.get(this.primaryTable);
+            Assert.hasText(this.primaryAlias, "tableContext error.");
         }
-        if (predicate.left().tableMeta() == relationTable
-                && predicate.right().tableMeta() == relationTable) {
-            // replace pair with exists clause
-            doReplaceFieldPairWithExistsClause(relationTable, primaryTable, primaryTableAlias, predicate);
-        } else {
+
+        @Override
+        public final void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException {
+            if (!this.primaryAlias.equals(tableAlias)) {
+                throw DialectUtils.createNoLogicalTableException(tableAlias);
+            }
+            this.appendField(fieldMeta);
+        }
+
+        @Override
+        public final void appendField(FieldMeta<?, ?> fieldMeta) {
+            TableMeta<?> tableOfField = fieldMeta.tableMeta();
+            if (tableOfField == this.primaryTable) {
+                doAppendFiled(this.primaryAlias, fieldMeta);
+            } else if (tableOfField == this.relationTable) {
+                if (this.existsClauseContext) {
+                    doAppendFiled(obtainRelationTableAlias(), fieldMeta);
+                } else {
+                    doReplaceRelationFieldAsScalarSubQuery(fieldMeta);
+                }
+            } else {
+                throw DialectUtils.createUnKnownFieldException(fieldMeta);
+            }
+        }
+
+        @Override
+        public final void appendFieldPredicate(SpecialPredicate predicate) {
+            ExpressionCounselor counselor = (ExpressionCounselor) predicate;
+            if (!counselor.containsSubQuery()
+                    && counselor.containsFieldCount(this.relationTable) > 1) {
+                this.existsClauseContext = true;
+                doReplaceFieldPairWithExistsClause(predicate);
+                this.existsClauseContext = false;
+            } else {
+                predicate.appendPredicate(this);
+            }
+        }
+
+        private void doReplaceRelationFieldAsScalarSubQuery(FieldMeta<?, ?> relationField) {
+            Assert.isTrue(relationField.tableMeta() == this.relationTable, "");
+
+            final TableMeta<?> relationTable = this.relationTable;
+            // replace parent field as sub query.
+            final Dialect dialect = this.dialect;
+            final String safeRelationAlias = dialect.quoteIfNeed(obtainRelationTableAlias());
+
+            StringBuilder builder = this.sqlBuilder.append(" ( SELECT ")
+                    .append(safeRelationAlias)
+                    .append(".")
+                    .append(dialect.quoteIfNeed(relationField.fieldName()))
+                    .append(" FROM");
+            appendTable(relationTable);
+            if (dialect.tableAliasAfterAs()) {
+                builder.append(" AS");
+            }
+            builder.append(" ")
+                    .append(safeRelationAlias)
+                    .append(" WHERE ")
+                    .append(safeRelationAlias)
+                    .append(".")
+                    .append(dialect.quoteIfNeed(relationTable.id().fieldName()))
+                    .append(" = ")
+                    .append(dialect.quoteIfNeed(this.primaryAlias))
+                    .append(".")
+                    .append(dialect.quoteIfNeed(this.primaryTable.id().fieldName()))
+                    .append(" )")
+            ;
+        }
+
+        private void doReplaceFieldPairWithExistsClause(SpecialPredicate predicate) {
+
+            final Dialect dialect = this.dialect;
+            final String safeRelationAlias = dialect.quoteIfNeed(obtainRelationTableAlias());
+
+            final String safeRelationId = dialect.quoteIfNeed(this.relationTable.id().fieldName());
+            final StringBuilder builder = this.sqlBuilder
+                    .append(" EXISTS ( SELECT ")
+                    .append(safeRelationAlias)
+                    .append(".")
+                    .append(safeRelationId)
+                    .append(" FROM");
+            appendTable(this.relationTable);
+            if (dialect.tableAliasAfterAs()) {
+                builder.append(" AS");
+            }
+            builder.append(" ")
+                    .append(safeRelationAlias)
+                    .append(" WHERE ")
+                    .append(safeRelationAlias)
+                    .append(".")
+                    .append(safeRelationId)
+                    .append(" = ")
+                    .append(dialect.quoteIfNeed(this.primaryAlias))
+                    .append(".")
+                    .append(dialect.quoteIfNeed(this.primaryTable.id().fieldName()))
+                    .append(" ADN");
+            // append special predicate
             predicate.appendPredicate(this);
-        }
-    }
 
-    /**
-     * design for {@link ParentUpdateContext} and {@link ChildUpdateContext}
-     */
-    private void doReplaceFieldPairWithExistsClause(TableMeta<?> relationTable, TableMeta<?> primaryTable
-            , String primaryTableAlias, FieldPairDualPredicate predicate) {
-
-        final Dialect dialect = this.dialect;
-        final String safeRelationAlias = dialect.quoteIfNeed(obtainRelationTableAlias(relationTable
-                , primaryTableAlias));
-
-        final String safeRelationId = dialect.quoteIfNeed(relationTable.id().fieldName());
-        final StringBuilder builder = this.sqlBuilder
-                .append(" EXISTS ( SELECT ")
-                .append(safeRelationAlias)
-                .append(".")
-                .append(safeRelationId)
-                .append(" FROM");
-        appendTable(relationTable);
-        if (dialect.tableAliasAfterAs()) {
-            builder.append(" AS");
-        }
-        builder.append(" ")
-                .append(safeRelationAlias)
-                .append(" WHERE ")
-                .append(safeRelationAlias)
-                .append(".")
-                .append(safeRelationId)
-                .append(" = ")
-                .append(dialect.quoteIfNeed(primaryTableAlias))
-                .append(".")
-                .append(dialect.quoteIfNeed(primaryTable.id().fieldName()))
-                .append(" ADN ")
-                .append(safeRelationAlias)
-                .append(".")
-                .append(dialect.quoteIfNeed(predicate.left().fieldName()))
-                .append(" ")
-                .append(predicate.operator().rendered())
-                .append(" ")
-                .append(safeRelationAlias)
-                .append(".")
-                .append(dialect.quoteIfNeed(predicate.right().fieldName()))
-                .append(" )");
-    }
-
-    /**
-     * design for {@link ParentUpdateContext} and {@link ChildUpdateContext}
-     */
-    ChildTableMeta<?> obtainChildMeta() {
-        throw new UnsupportedOperationException();
-    }
-
-
-    /**
-     * design for {@link ParentUpdateContext} and {@link ChildUpdateContext}
-     */
-    private String obtainRelationTableAlias(TableMeta<?> relationTable, String primaryTableAlias) {
-        String relationTableAlias = primaryTableAlias;
-        if (relationTable instanceof ChildTableMeta) {
-            relationTableAlias += "_p";
-        } else {
-            relationTableAlias += "_c";
-        }
-        return relationTableAlias;
-    }
-
-
-    private static final class ParentUpdateContext extends StandardUpdateContext {
-
-        private final ChildTableMeta<?> childMeta;
-
-        private final String parentAlias;
-
-        private ParentUpdateContext(Dialect dialect, Visible visible, TableContext tableContext, boolean hasVersion
-                , ChildTableMeta<?> childMeta) {
-            super(dialect, visible, tableContext, hasVersion);
-            this.childMeta = childMeta;
-            this.parentAlias = this.tableContext.tableAliasMap.get(this.childMeta.parentMeta());
-            Assert.hasText(this.parentAlias, "tableContext error.");
+            builder.append(" )");
         }
 
-        @Override
-        public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException {
-            if (!this.parentAlias.equals(tableAlias)) {
-                throw DialectUtils.createNoLogicalTableException(tableAlias);
-            }
-            this.appendField(fieldMeta);
-        }
-
-        @Override
-        public void appendField(FieldMeta<?, ?> fieldMeta) {
-            TableMeta<?> tableOfField = fieldMeta.tableMeta();
-            if (tableOfField == this.childMeta.parentMeta()) {
-                doAppendFiled(this.parentAlias, fieldMeta);
-            } else if (tableOfField == this.childMeta) {
-                doReplaceRelationFieldAsSubQuery(this.childMeta.parentMeta(), this.parentAlias, fieldMeta);
+        private String obtainRelationTableAlias() {
+            String relationTableAlias = this.primaryAlias;
+            if (this.relationTable instanceof ChildTableMeta) {
+                relationTableAlias += "_p";
             } else {
-                throw DialectUtils.createUnKnownFieldException(fieldMeta);
+                relationTableAlias += "_c";
             }
+            return relationTableAlias;
         }
 
-        @Override
-        public void appendFieldPair(FieldPairDualPredicate predicate) {
-            doAppendFieldPair(this.childMeta.parentMeta(), this.parentAlias, predicate);
-        }
-
-        @Override
-        final ChildTableMeta<?> obtainChildMeta() {
-            return this.childMeta;
-        }
     }
 
-    private static final class ChildUpdateContext extends StandardUpdateContext {
-
-        private final ChildTableMeta<?> childMeta;
-
-        private final String childAlias;
-
-        private ChildUpdateContext(Dialect dialect, Visible visible, TableContext tableContext, boolean hasVersion
-                , ChildTableMeta<?> childMeta) {
-            super(dialect, visible, tableContext, hasVersion);
-            this.childMeta = childMeta;
-            this.childAlias = this.tableContext.tableAliasMap.get(this.childMeta);
-            Assert.hasText(this.childAlias, "tableContext error.");
-        }
-
-        @Override
-        public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException {
-            if (!this.childAlias.equals(tableAlias)) {
-                throw DialectUtils.createNoLogicalTableException(tableAlias);
-            }
-            this.appendField(fieldMeta);
-        }
-
-        @Override
-        public void appendField(FieldMeta<?, ?> fieldMeta) {
-            TableMeta<?> tableOfField = fieldMeta.tableMeta();
-            if (tableOfField == this.childMeta) {
-                doAppendFiled(this.childAlias, fieldMeta);
-            } else if (tableOfField == this.childMeta.parentMeta()) {
-                doReplaceRelationFieldAsSubQuery(this.childMeta, this.childAlias, fieldMeta);
-            } else {
-                throw DialectUtils.createUnKnownFieldException(fieldMeta);
-            }
-        }
-
-        @Override
-        public void appendFieldPair(FieldPairDualPredicate predicate) {
-            doAppendFieldPair(this.childMeta.parentMeta(), this.childAlias, predicate);
-        }
-
-        @Override
-        final ChildTableMeta<?> obtainChildMeta() {
-            return this.childMeta;
-        }
-
-        /*################################## blow private method ##################################*/
-
-    }
 }

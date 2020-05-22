@@ -1,117 +1,333 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.FieldExp;
-import io.army.meta.PrimaryFieldMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
+import io.army.util.Assert;
+
+import java.util.Collection;
 
 /**
  *
  */
-abstract class DualPredicate extends AbstractPredicate {
+class DualPredicate extends AbstractPredicate {
 
-    static DualPredicate build(Expression<?> left, DualOperator operator, Expression<?> right) {
+    static DualPredicate build(Expression<?> left, DualPredicateOperator operator, Expression<?> right) {
         DualPredicate predicate;
-
-        if (left instanceof FieldExp && right instanceof FieldExp) {
-            predicate = createFieldPairPredicate((FieldExp<?, ?>) left, operator, (FieldExp<?, ?>) right);
+        if (left instanceof SpecialExpression) {
+            predicate = buildLeftSpecial((SpecialExpression<?>) left, operator, right);
+        } else if (right instanceof SpecialExpression) {
+            predicate = buildRightSpecial(left, operator, (SpecialExpression<?>) right);
         } else {
-            predicate = new GenericDualPredicate(left, operator, right);
+            predicate = new DualPredicate(left, operator, right);
         }
         return predicate;
     }
 
-    static PrimaryValueEqualPredicateImpl buildPrimaryValueEqual(FieldExp<?, ?> primary, ValueExpression<?> valueExp) {
-        return new PrimaryValueEqualPredicateImpl(primary, valueExp);
-    }
-
-    static DualPredicate build(Expression<?> left, SubQueryOperator operator, SubQuery subQuery) {
-        switch (operator) {
-            case IN:
-            case NOT_IN:
-                break;
-            default:
-                throw new IllegalArgumentException(String.format("operator[%s] not in[EXISTS,NOT_EXISTS].", operator));
-        }
-        return new GenericDualPredicate(left, operator, subQuery);
-    }
-
-    private static DualPredicate createFieldPairPredicate(FieldExp<?, ?> left, DualOperator operator
-            , FieldExp<?, ?> right) {
-
+    private static DualPredicate buildLeftSpecial(SpecialExpression<?> left, DualPredicateOperator operator
+            , Expression<?> right) {
         DualPredicate predicate;
-
-        if (left.tableMeta() == right.tableMeta()) {
-            predicate = new FieldPairDualPredicateImpl(left, operator, right);
-        } else if (operator == DualOperator.EQ) {
-            predicate = createFieldPairEqualPredicate(left, right);
+        if (right instanceof SpecialExpression) {
+            predicate = buildSpecialPair(left, operator, (SpecialExpression<?>) right);
+        } else if (left instanceof FieldExpression) {
+            predicate = buildLeftField((FieldExpression<?, ?>) left, operator, right);
         } else {
-            predicate = new GenericDualPredicate(left, operator, right);
+            predicate = new SpecialPredicateImpl(left, operator, right);
         }
         return predicate;
     }
 
-    private static DualPredicate createFieldPairEqualPredicate(FieldExp<?, ?> left, FieldExp<?, ?> right) {
-        TableMeta<?> leftTable = left.tableMeta();
-        TableMeta<?> rightTable = right.tableMeta();
+    private static DualPredicate buildRightSpecial(Expression<?> left, DualPredicateOperator operator
+            , SpecialExpression<?> right) {
+        DualPredicate predicate;
+        if (left instanceof SpecialExpression) {
+            predicate = buildSpecialPair((SpecialExpression<?>) left, operator, right);
+        } else if (right instanceof FieldExpression) {
+            predicate = buildRightField(left, operator, (FieldExpression<?, ?>) right);
+        } else {
+            predicate = new SpecialPredicateImpl(left, operator, right);
+        }
+        return predicate;
+    }
 
+    private static DualPredicate buildSpecialPair(SpecialExpression<?> left, DualPredicateOperator operator
+            , SpecialExpression<?> right) {
+        DualPredicate predicate;
+        if (left instanceof FieldExpression && right instanceof FieldExpression) {
+            predicate = buildFieldPair((FieldExpression<?, ?>) left, operator, (FieldExpression<?, ?>) right);
+        } else if (left instanceof FieldExpression) {
+            predicate = buildLeftField((FieldExpression<?, ?>) left, operator, right);
+        } else if (right instanceof FieldExpression) {
+            predicate = buildRightField(left, operator, (FieldExpression<?, ?>) right);
+        } else {
+            predicate = new SpecialPredicateImpl(left, operator, right);
+        }
+        return predicate;
+    }
+
+    private static DualPredicate buildLeftField(FieldExpression<?, ?> left, DualPredicateOperator operator
+            , Expression<?> right) {
+        DualPredicate predicate;
+        if (right instanceof ValueExpression) {
+            if ((left instanceof PrimaryFieldMeta) && operator == DualPredicateOperator.EQ) {
+                predicate = new LeftPrimaryValueEqualPredicate((PrimaryFieldMeta<?, ?>) left, operator
+                        , (ValueExpression<?>) right);
+            } else {
+                predicate = new LeftFieldValuePredicate(left, operator, (ValueExpression<?>) right);
+            }
+
+        } else {
+            predicate = new SpecialPredicateImpl(left, operator, right);
+        }
+        return predicate;
+    }
+
+    private static DualPredicate buildRightField(Expression<?> left, DualPredicateOperator operator
+            , FieldExpression<?, ?> right) {
+        DualPredicate predicate;
+        if (left instanceof ValueExpression) {
+            if ((right instanceof PrimaryFieldMeta) && operator == DualPredicateOperator.EQ) {
+                predicate = new RightPrimaryValueEqualPredicate((ValueExpression<?>) left, operator
+                        , (PrimaryFieldMeta<?, ?>) right);
+            } else {
+                predicate = new RightFieldValuePredicate((ValueExpression<?>) left, operator, right);
+            }
+        } else {
+            predicate = new SpecialPredicateImpl(left, operator, right);
+        }
+        return predicate;
+    }
+
+    private static DualPredicate buildFieldPair(FieldExpression<?, ?> left, DualPredicateOperator operator
+            , FieldExpression<?, ?> right) {
+        DualPredicate predicate;
+        if (left.tableMeta().parentMeta() == right.tableMeta()) {
+            predicate = buildParentChild(left, operator, right, (ChildTableMeta<?>) left.tableMeta());
+        } else if (right.tableMeta().parentMeta() == left.tableMeta()) {
+            predicate = buildParentChild(left, operator, right, (ChildTableMeta<?>) right.tableMeta());
+        } else {
+            predicate = new SpecialPredicateImpl(left, operator, right);
+        }
+        return predicate;
+    }
+
+    private static DualPredicate buildParentChild(FieldExpression<?, ?> left, DualPredicateOperator operator
+            , FieldExpression<?, ?> right, ChildTableMeta<?> childMeta) {
         DualPredicate predicate = null;
-        if (TableMeta.ID.equals(left.propertyName()) && TableMeta.ID.equals(right.propertyName())) {
-            if (leftTable.parentMeta() == rightTable) {
-                predicate = new ParentChildJoinPredicateImpl(left, right, (ChildTableMeta<?>) leftTable);
-            } else if (rightTable.parentMeta() == leftTable) {
-                predicate = new ParentChildJoinPredicateImpl(left, right, (ChildTableMeta<?>) rightTable);
+        if (operator == DualPredicateOperator.EQ) {
+            if (TableMeta.ID.equals(left.propertyName()) && TableMeta.ID.equals(right.propertyName())) {
+                predicate = new ParentChildJoinPredicateImpl(left, operator, right, childMeta);
             }
         }
         if (predicate == null) {
-            predicate = new GenericDualPredicate(left, DualOperator.EQ, right);
+            predicate = new SpecialPredicateImpl(left, operator, right);
         }
         return predicate;
     }
 
+    /*################################## blow instance member ##################################*/
 
-    private static class GenericDualPredicate extends DualPredicate {
+    final Expression<?> left;
 
-        private final SelfDescribed left;
+    final DualPredicateOperator operator;
 
-        private final SQLOperator operator;
+    final Expression<?> right;
 
-        private final SelfDescribed right;
+    private DualPredicate(Expression<?> left, DualPredicateOperator operator, Expression<?> right) {
+        this.left = left;
+        this.operator = operator;
+        this.right = right;
+    }
+
+    @Override
+    protected void afterSpace(SQLContext context) {
+        doAppendSQL(context);
+    }
+
+    final void doAppendSQL(SQLContext context) {
+        left.appendSQL(context);
+        context.sqlBuilder()
+                .append(" ")
+                .append(operator.rendered());
+        right.appendSQL(context);
+    }
+
+    @Override
+    public boolean containsSubQuery() {
+        return this.left.containsSubQuery()
+                || this.right.containsSubQuery();
+    }
+
+    @Override
+    public final String beforeAs() {
+        return String.format("%s %s %s", left, operator, right);
+    }
+
+    /*################################## blow private static inner class ##################################*/
 
 
-        private GenericDualPredicate(SelfDescribed left, SQLOperator operator, SelfDescribed right) {
-            this.left = left;
-            this.operator = operator;
-            this.right = right;
+    private static class SpecialPredicateImpl extends DualPredicate
+            implements SpecialPredicate {
+
+        private SpecialPredicateImpl(Expression<?> left, DualPredicateOperator operator, Expression<?> right) {
+            super(left, operator, right);
         }
-
 
         @Override
-        protected void afterSpace(SQLContext context) {
-            left.appendSQL(context);
-            context.sqlBuilder()
-                    .append(" ")
-                    .append(operator.rendered());
-            right.appendSQL(context);
+        protected final void afterSpace(SQLContext context) {
+            context.appendFieldPredicate(this);
         }
 
         @Override
-        public String beforeAs() {
-            return String.format("%s %s %s", left, operator, right);
+        public final void appendPredicate(SQLContext context) {
+            doAppendSQL(context);
         }
+
+        @Override
+        public boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
+            return this.left.containsField(fieldMetas)
+                    || this.right.containsField(fieldMetas);
+        }
+
+        @Override
+        public boolean containsFieldOf(TableMeta<?> tableMeta) {
+            return this.left.containsFieldOf(tableMeta)
+                    || this.right.containsFieldOf(tableMeta);
+        }
+
+        @Override
+        public int containsFieldCount(TableMeta<?> tableMeta) {
+            return this.left.containsFieldCount(tableMeta)
+                    + this.right.containsFieldCount(tableMeta);
+        }
+
 
     }
 
 
-    private static final class ParentChildJoinPredicateImpl extends GenericDualPredicate
+    private static class LeftFieldValuePredicate extends SpecialPredicateImpl implements FieldValuePredicate {
+
+        private LeftFieldValuePredicate(FieldExpression<?, ?> left, DualPredicateOperator operator
+                , ValueExpression<?> right) {
+            super(left, operator, right);
+        }
+
+        @Override
+        public final DualPredicateOperator operator() {
+            return this.operator;
+        }
+
+        @Override
+        public final Object value() {
+            return ((ValueExpression<?>) this.right).value();
+        }
+
+        @Override
+        public FieldExpression<?, ?> fieldExp() {
+            return (FieldExpression<?, ?>) this.left;
+        }
+
+        @Override
+        public final boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
+            return this.left.containsField(fieldMetas);
+        }
+
+        @Override
+        public final boolean containsFieldOf(TableMeta<?> tableMeta) {
+            return this.left.containsFieldOf(tableMeta);
+        }
+
+        @Override
+        public final int containsFieldCount(TableMeta<?> tableMeta) {
+            return this.left.containsFieldCount(tableMeta);
+        }
+
+        @Override
+        public final boolean containsSubQuery() {
+            return false;
+        }
+    }
+
+    private static class RightFieldValuePredicate extends SpecialPredicateImpl implements FieldValuePredicate {
+
+        private RightFieldValuePredicate(ValueExpression<?> left, DualPredicateOperator operator
+                , FieldExpression<?, ?> right) {
+            super(left, operator, right);
+        }
+
+        @Override
+        public final DualPredicateOperator operator() {
+            return this.operator;
+        }
+
+        @Override
+        public final Object value() {
+            return ((ValueExpression<?>) this.left).value();
+        }
+
+        @Override
+        public FieldExpression<?, ?> fieldExp() {
+            return (FieldExpression<?, ?>) this.right;
+        }
+
+        @Override
+        public final boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
+            return this.right.containsField(fieldMetas);
+        }
+
+        @Override
+        public final boolean containsFieldOf(TableMeta<?> tableMeta) {
+            return this.right.containsFieldOf(tableMeta);
+        }
+
+        @Override
+        public final int containsFieldCount(TableMeta<?> tableMeta) {
+            return this.right.containsFieldCount(tableMeta);
+        }
+
+        @Override
+        public final boolean containsSubQuery() {
+            return false;
+        }
+    }
+
+    private static final class LeftPrimaryValueEqualPredicate extends LeftFieldValuePredicate
+            implements PrimaryValueEqualPredicate {
+
+        private LeftPrimaryValueEqualPredicate(PrimaryFieldMeta<?, ?> left, DualPredicateOperator operator
+                , ValueExpression<?> right) {
+            super(left, operator, right);
+            Assert.isTrue(operator == DualPredicateOperator.EQ, "");
+        }
+
+        @Override
+        public PrimaryFieldMeta<?, ?> fieldExp() {
+            return (PrimaryFieldMeta<?, ?>) this.left;
+        }
+    }
+
+    private static final class RightPrimaryValueEqualPredicate extends RightFieldValuePredicate
+            implements PrimaryValueEqualPredicate {
+
+        private RightPrimaryValueEqualPredicate(ValueExpression<?> left, DualPredicateOperator operator
+                , PrimaryFieldMeta<?, ?> right) {
+            super(left, operator, right);
+            Assert.isTrue(operator == DualPredicateOperator.EQ, "");
+        }
+
+        @Override
+        public PrimaryFieldMeta<?, ?> fieldExp() {
+            return (PrimaryFieldMeta<?, ?>) this.right;
+        }
+    }
+
+    private static final class ParentChildJoinPredicateImpl extends SpecialPredicateImpl
             implements ParentChildJoinPredicate {
 
         private final ChildTableMeta<?> childMeta;
 
-        public ParentChildJoinPredicateImpl(SelfDescribed left, SelfDescribed right
+        private ParentChildJoinPredicateImpl(Expression<?> left, DualPredicateOperator operator, Expression<?> right
                 , ChildTableMeta<?> childMeta) {
-            super(left, DualOperator.EQ, right);
+            super(left, operator, right);
             this.childMeta = childMeta;
         }
 
@@ -119,107 +335,12 @@ abstract class DualPredicate extends AbstractPredicate {
         public ChildTableMeta<?> childMeta() {
             return this.childMeta;
         }
-    }
-
-
-    private static final class FieldPairDualPredicateImpl extends DualPredicate
-            implements FieldPairDualPredicate {
-
-        private final FieldExp<?, ?> left;
-
-        private final DualOperator operator;
-
-        private final FieldExp<?, ?> right;
-
-        FieldPairDualPredicateImpl(FieldExp<?, ?> left, DualOperator operator, FieldExp<?, ?> right) {
-            this.left = left;
-            this.operator = operator;
-            this.right = right;
-        }
 
         @Override
-        public FieldExp<?, ?> left() {
-            return this.left;
-        }
-
-        @Override
-        public DualOperator operator() {
-            return this.operator;
-        }
-
-        @Override
-        public FieldExp<?, ?> right() {
-            return this.right;
-        }
-
-        @Override
-        protected void afterSpace(SQLContext context) {
-            context.appendFieldPair(this);
-        }
-
-        @Override
-        protected String beforeAs() {
-            return String.format("%s %s %s", this.left, this.operator, this.right);
+        public boolean containsSubQuery() {
+            return false;
         }
     }
 
-    private static class FieldValuePredicateImpl extends DualPredicate implements FieldValuePredicate {
-
-        private final FieldExp<?, ?> fieldExp;
-
-        private final DualOperator operator;
-
-        private final ValueExpression<?> valueExp;
-
-        private FieldValuePredicateImpl(FieldExp<?, ?> fieldExp, DualOperator operator, ValueExpression<?> valueExp) {
-            this.fieldExp = fieldExp;
-            this.operator = operator;
-            this.valueExp = valueExp;
-        }
-
-        @Override
-        public final FieldExp<?, ?> fieldExp() {
-            return this.fieldExp;
-        }
-
-        @Override
-        public final DualOperator operator() {
-            return this.operator;
-        }
-
-        @Override
-        public final Object value() {
-            return this.valueExp.value();
-        }
-
-        @Override
-        public final void appendPredicate(SQLContext context) {
-            this.fieldExp.appendSQL(context);
-            context.sqlBuilder()
-                    .append(" ")
-                    .append(this.operator.rendered());
-            this.valueExp.appendSQL(context);
-        }
-
-        @Override
-        protected final void afterSpace(SQLContext context) {
-            context.appendPredicate(this);
-        }
-
-        @Override
-        protected String beforeAs() {
-            return this.fieldExp + operator().rendered() + valueExp.value();
-        }
-    }
-
-    private static final class PrimaryValueEqualPredicateImpl extends FieldValuePredicateImpl
-            implements PrimaryValueEqualPredicate {
-        private PrimaryValueEqualPredicateImpl(FieldExp<?, ?> fieldExp, ValueExpression<?> valueExp) {
-            super(fieldExp, DualOperator.EQ, valueExp);
-            if (!(fieldExp.fieldMeta() instanceof PrimaryFieldMeta)) {
-                throw new IllegalArgumentException(String.format("FieldExp[%s] isn't PrimaryFieldMeta.", fieldExp));
-            }
-        }
-    }
 
 }

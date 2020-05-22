@@ -1,47 +1,64 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.AliasField;
 import io.army.criteria.FieldSelection;
 import io.army.criteria.SQLContext;
-import io.army.meta.FieldExp;
+import io.army.meta.FieldExpression;
 import io.army.meta.FieldMeta;
+import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
 
+import java.util.Collection;
+
 /**
- * created  on 2019-02-22.
+ *
  */
 final class FieldSelectionImpl<E> extends AbstractExpression<E> implements FieldSelection {
 
-    private final FieldExp<?, E> fieldExp;
+    private final FieldExpression<?, E> fieldExp;
 
-    FieldSelectionImpl(FieldExp<?, E> fieldExp, String alias) {
+    FieldSelectionImpl(FieldExpression<?, E> fieldExp, String alias) {
         this.fieldExp = fieldExp;
         this.as(alias);
     }
 
     @Override
     public FieldMeta<?, ?> fieldMeta() {
-        return fieldExp.fieldMeta();
+        return this.fieldExp.fieldMeta();
     }
 
     @Override
     public MappingMeta mappingMeta() {
-        return fieldExp.mappingMeta();
+        return this.fieldExp.mappingMeta();
     }
 
     @Override
-    protected void afterSpace(SQLContext context) {
+    protected final void afterSpace(SQLContext context) {
         this.fieldExp.appendSQL(context);
     }
 
     @Override
     public String beforeAs() {
-        String tableAlias;
-        if (fieldExp instanceof AliasField) {
-            tableAlias = ((AliasField<?, ?>) fieldExp).tableAlias();
-        } else {
-            tableAlias = "";
-        }
-        return tableAlias + "." + fieldExp.propertyName();
+        return this.fieldExp.toString();
+    }
+
+
+    @Override
+    public boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
+        return this.fieldExp.containsField(fieldMetas);
+    }
+
+    @Override
+    public boolean containsFieldOf(TableMeta<?> tableMeta) {
+        return this.fieldExp.containsFieldOf(tableMeta);
+    }
+
+    @Override
+    public int containsFieldCount(TableMeta<?> tableMeta) {
+        return this.fieldExp.containsFieldCount(tableMeta);
+    }
+
+    @Override
+    public boolean containsSubQuery() {
+        return this.fieldExp.containsSubQuery();
     }
 }

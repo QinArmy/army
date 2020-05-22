@@ -1,10 +1,7 @@
 package io.army.dialect;
 
 import io.army.criteria.CriteriaException;
-import io.army.criteria.FieldPredicate;
-import io.army.criteria.TableAliasException;
 import io.army.criteria.Visible;
-import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
@@ -42,10 +39,6 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         this.appendField(findTableAlias(fieldMeta), fieldMeta);
     }
 
-    @Override
-    public void appendPredicate(FieldPredicate predicate) {
-
-    }
 
     @Override
     public final void appendTable(TableMeta<?> tableMeta) {
@@ -57,15 +50,9 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
                 .append(this.dialect.quoteIfNeed(tableMeta.tableName()));
     }
 
-
     @Override
     public final TableContext tableContext() {
         return this.tableContext;
-    }
-
-    @Override
-    public void appendParentTableOf(ChildTableMeta<?> childTableMeta) {
-        appendTable(childTableMeta.parentMeta());
     }
 
     @Override

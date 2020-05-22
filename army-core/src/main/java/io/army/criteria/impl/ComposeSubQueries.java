@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class ComposeSubQueries<C> extends AbstractComposeQuery<C> implements ComposeSubQuery,
-        SubQuery.SubQueryUnionAble<C>, InnerStandardComposeQuery {
+abstract class ComposeSubQueries<C> extends AbstractComposeQuery<C> implements
+        SubQuery.SubQueryUnionAble<C>, InnerStandardComposeQuery, SubQuery {
 
     static <C> SubQuery.SubQueryUnionAble<C> brackets(C criteria, SubQuery encloseSubQuery) {
         return new ComposeSubQueries.BracketsSubQuery<>(criteria, encloseSubQuery);

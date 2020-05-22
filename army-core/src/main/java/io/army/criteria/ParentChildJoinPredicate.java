@@ -2,7 +2,10 @@ package io.army.criteria;
 
 import io.army.meta.ChildTableMeta;
 
-public interface ParentChildJoinPredicate extends IPredicate {
+/**
+ * design for select visible predicate
+ */
+public interface ParentChildJoinPredicate extends SpecialPredicate {
 
     ChildTableMeta<?> childMeta();
 }

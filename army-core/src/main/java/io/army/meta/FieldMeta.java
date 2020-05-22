@@ -8,6 +8,6 @@ import io.army.domain.IDomain;
  * @param <T> representing Domain Java Type
  * @param <F> representing Domain property Java Type
  */
-public interface FieldMeta<T extends IDomain, F> extends FieldExp<T, F>, ParamMeta {
+public interface FieldMeta<T extends IDomain, F> extends FieldExpression<T, F>, ParamMeta {
 
 }

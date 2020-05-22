@@ -2,17 +2,28 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
+import io.army.criteria.SpecialExpression;
+import io.army.meta.FieldMeta;
+import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
 
-final class UnaryExpression<E> extends AbstractExpression<E> {
+import java.util.Collection;
+
+class UnaryExpression<E> extends AbstractExpression<E> {
 
     static <E> UnaryExpression<E> build(Expression<E> expression, UnaryOperator unaryOperator) {
-        return new UnaryExpression<>(expression, unaryOperator);
+        UnaryExpression<E> unaryExpression;
+        if (expression instanceof SpecialExpression) {
+            unaryExpression = new SpecialUnaryExpression<>((SpecialExpression<E>) expression, unaryOperator);
+        } else {
+            unaryExpression = new UnaryExpression<>(expression, unaryOperator);
+        }
+        return unaryExpression;
     }
 
-    private final Expression<E> expression;
+    final Expression<E> expression;
 
-    private final UnaryOperator operator;
+    final UnaryOperator operator;
 
     private UnaryExpression(Expression<E> expression, UnaryOperator operator) {
         this.expression = expression;
@@ -21,24 +32,24 @@ final class UnaryExpression<E> extends AbstractExpression<E> {
 
 
     @Override
-    public MappingMeta mappingMeta() {
+    public final MappingMeta mappingMeta() {
         return expression.mappingMeta();
     }
 
 
     @Override
-    protected void afterSpace(SQLContext context) {
-        switch (operator.position()) {
+    protected final void afterSpace(SQLContext context) {
+        switch (this.operator.position()) {
             case LEFT:
                 context.sqlBuilder()
-                        .append(operator.rendered());
-                expression.appendSQL(context);
+                        .append(this.operator.rendered());
+                this.expression.appendSQL(context);
                 break;
             case RIGHT:
-                expression.appendSQL(context);
+                this.expression.appendSQL(context);
                 context.sqlBuilder()
                         .append(" ")
-                        .append(operator.rendered());
+                        .append(this.operator.rendered());
                 break;
             default:
                 throw new IllegalStateException(String.format("UnaryOperator[%s]'s position error.", operator));
@@ -46,7 +57,7 @@ final class UnaryExpression<E> extends AbstractExpression<E> {
     }
 
     @Override
-    public String beforeAs() {
+    public final String beforeAs() {
         StringBuilder builder = new StringBuilder();
         switch (operator.position()) {
             case LEFT:
@@ -62,5 +73,35 @@ final class UnaryExpression<E> extends AbstractExpression<E> {
                 throw new IllegalStateException(String.format("UnaryOperator[%s]'s position error.", operator));
         }
         return builder.toString();
+    }
+
+
+    @Override
+    public final boolean containsSubQuery() {
+        return this.expression.containsSubQuery();
+    }
+
+    /*################################## blow private static inner class ##################################*/
+
+    private static final class SpecialUnaryExpression<E> extends UnaryExpression<E> implements SpecialExpression<E> {
+
+        private SpecialUnaryExpression(SpecialExpression<E> expression, UnaryOperator operator) {
+            super(expression, operator);
+        }
+
+        @Override
+        public final boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
+            return this.expression.containsField(fieldMetas);
+        }
+
+        @Override
+        public final boolean containsFieldOf(TableMeta<?> tableMeta) {
+            return this.expression.containsFieldOf(tableMeta);
+        }
+
+        @Override
+        public final int containsFieldCount(TableMeta<?> tableMeta) {
+            return this.expression.containsFieldCount(tableMeta);
+        }
     }
 }

@@ -60,11 +60,11 @@ public final class TableContext {
                 , Collections.unmodifiableMap(tableAliasMap));
     }
 
-    protected final Map<TableMeta<?>, Integer> tableCountMap;
+    final Map<TableMeta<?>, Integer> tableCountMap;
 
-    protected final Map<String, TableMeta<?>> aliasTableMap;
+    final Map<String, TableMeta<?>> aliasTableMap;
 
-    protected final Map<TableMeta<?>, String> tableAliasMap;
+    final Map<TableMeta<?>, String> tableAliasMap;
 
     private TableContext(Map<TableMeta<?>, Integer> tableCountMap
             , Map<String, TableMeta<?>> aliasTableMap

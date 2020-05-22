@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.AliasField;
+import io.army.criteria.LogicalField;
 import io.army.criteria.SQLContext;
 import io.army.criteria.Selection;
 import io.army.domain.IDomain;
@@ -11,16 +11,17 @@ import io.army.meta.mapping.MappingMeta;
 import io.army.util.Assert;
 
 import java.sql.JDBCType;
+import java.util.Collection;
 
 
-final class AliasFieldExpImpl<T extends IDomain, F> extends AbstractExpression<F>
-        implements AliasField<T, F> {
+final class LogicalFieldExpImpl<T extends IDomain, F> extends AbstractExpression<F>
+        implements LogicalField<T, F> {
 
     private final FieldMeta<T, F> fieldMeta;
 
     private final String tableAlias;
 
-    AliasFieldExpImpl(FieldMeta<T, F> fieldMeta, String tableAlias) {
+    LogicalFieldExpImpl(String tableAlias, FieldMeta<T, F> fieldMeta) {
         Assert.notNull(fieldMeta, "fieldMeta required");
         Assert.hasText(tableAlias, "tableAlias required");
         Assert.isTrue(!tableAlias.contains("."), "tableAlias must no '.'");
@@ -30,18 +31,13 @@ final class AliasFieldExpImpl<T extends IDomain, F> extends AbstractExpression<F
     }
 
     @Override
-    protected void afterSpace(SQLContext context) {
-        context.appendField(tableAlias, fieldMeta);
+    protected final void afterSpace(SQLContext context) {
+        context.appendField(this.tableAlias, this.fieldMeta);
     }
 
-
     @Override
-    public Selection as(String alias) {
-        if (this.fieldMeta.propertyName().equals(alias)) {
-            return this;
-        } else {
-            return new FieldSelectionImpl<>(this, alias);
-        }
+    public final Selection as(String alias) {
+        return new FieldSelectionImpl<>(this, alias);
     }
 
 
@@ -143,5 +139,25 @@ final class AliasFieldExpImpl<T extends IDomain, F> extends AbstractExpression<F
     @Override
     public MappingMeta mappingMeta() {
         return fieldMeta.mappingMeta();
+    }
+
+    @Override
+    public final boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
+        return this.fieldMeta.containsField(fieldMetas);
+    }
+
+    @Override
+    public final boolean containsFieldOf(TableMeta<?> tableMeta) {
+        return this.fieldMeta.containsFieldOf(tableMeta);
+    }
+
+    @Override
+    public final int containsFieldCount(TableMeta<?> tableMeta) {
+        return this.fieldMeta.containsFieldCount(tableMeta);
+    }
+
+    @Override
+    public final boolean containsSubQuery() {
+        return false;
     }
 }

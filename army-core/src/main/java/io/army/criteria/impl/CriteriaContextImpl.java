@@ -26,7 +26,7 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
 
     private Map<String, TableMeta<?>> tableMetaMap = new HashMap<>();
 
-    private Map<String, AliasField<?, ?>> aliasTableFieldCache = new HashMap<>();
+    private Map<String, LogicalField<?, ?>> aliasTableFieldCache = new HashMap<>();
 
     private Map<String, RefSelection<?>> refSelectionCache = new HashMap<>();
 
@@ -48,11 +48,11 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <T extends IDomain, F> AliasField<T, F> aliasField(
+    public final <T extends IDomain, F> LogicalField<T, F> aliasField(
             String tableAlias, FieldMeta<T, F> fieldMeta) {
-        AliasField<T, F> aliasField = (AliasField<T, F>) aliasTableFieldCache.computeIfAbsent(
+        LogicalField<T, F> aliasField = (LogicalField<T, F>) aliasTableFieldCache.computeIfAbsent(
                 tableAlias + fieldMeta.fieldName()
-                , k -> new AliasFieldExpImpl<>(fieldMeta, tableAlias)
+                , k -> new LogicalFieldExpImpl<>(tableAlias, fieldMeta)
         );
         if (aliasField.fieldMeta() != fieldMeta) {
             throw new CriteriaException(ErrorCode.TABLE_ALIAS_DUPLICATION, "table alias[%s] duplication", tableAlias);

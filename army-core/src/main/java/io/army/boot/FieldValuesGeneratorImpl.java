@@ -104,9 +104,12 @@ final class FieldValuesGeneratorImpl implements FieldValuesGenerator {
             TableMeta<?> tableMeta, ObjectWrapper entityWrapper) {
 
         createCreateOrUpdateTime(tableMeta.getField(TableMeta.CREATE_TIME), entityWrapper);
-        createCreateOrUpdateTime(tableMeta.getField(TableMeta.UPDATE_TIME), entityWrapper);
-        // create version value
-        entityWrapper.setPropertyValue(TableMeta.VERSION, 0);
+
+        if (!tableMeta.immutable()) {
+            createCreateOrUpdateTime(tableMeta.getField(TableMeta.UPDATE_TIME), entityWrapper);
+            // create version value
+            entityWrapper.setPropertyValue(TableMeta.VERSION, 0);
+        }
         // discriminator
         createDiscriminatorValue(tableMeta, entityWrapper);
     }

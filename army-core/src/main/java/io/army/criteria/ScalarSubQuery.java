@@ -11,6 +11,12 @@ import java.util.function.Predicate;
  */
 public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expression<E> {
 
+    /**
+     * @return always true
+     */
+    @Override
+    boolean containsSubQuery();
+
     /*################################## blow  interfaces  ##################################*/
 
 

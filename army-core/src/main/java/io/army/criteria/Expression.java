@@ -8,108 +8,137 @@ import java.util.Collection;
 import java.util.function.Function;
 
 /**
- * created  on 2018/10/8.
+ * Interface representing the sql expression, eg: column,function.
+ * <p>
+ * the implementation of this interface must implement {@link ExpressionCounselor}
+ * </p>
+ *
+ * @see FieldMeta
+ * @see ExpressionCounselor
+ * @since 1.0
  */
 @SuppressWarnings("unused")
-public interface Expression<E> extends SelectionAble, SelfDescribed, MappingMetaAble, SortPart {
+public interface Expression<E> extends SelectionAble, SelfDescribed, MappingMetaAble, SortPart, ExpressionCounselor {
 
-    IPredicate eq(Expression<E> expression);
+    /**
+     * relational operate with {@code =}
+     */
+    IPredicate equal(Expression<E> expression);
 
-    IPredicate eq(String subQueryAlias, String fieldAlias);
+    /**
+     * relational operate with {@code =}
+     */
+    IPredicate equal(String subQueryAlias, String fieldAlias);
 
-    IPredicate eq(String tableAlias, FieldMeta<?, E> fieldMeta);
+    /**
+     * relational operate with {@code =}
+     */
+    IPredicate equal(String tableAlias, FieldMeta<?, E> fieldMeta);
 
-    IPredicate eq(E constant);
+    /**
+     * relational operate with {@code =}
+     */
+    IPredicate equal(E constant);
 
-    <C, S extends Expression<E>> IPredicate eq(Function<C, S> expOrSubQuery);
+    /**
+     * relational operate with {@code =}
+     */
+    <C, S extends Expression<E>> IPredicate equal(Function<C, S> expOrSubQuery);
 
-    <C, S extends ColumnSubQuery<E>> IPredicate eqAny(Function<C, S> subQuery);
+    /**
+     * relational operate with {@code = ANY}
+     */
+    <C, S extends ColumnSubQuery<E>> IPredicate equalAny(Function<C, S> subQuery);
 
-    <C, S extends ColumnSubQuery<E>> IPredicate eqSome(Function<C, S> subQuery);
+    /**
+     * relational operate with {@code = SOME}
+     */
+    <C, S extends ColumnSubQuery<E>> IPredicate equalSome(Function<C, S> subQuery);
 
-    <C, S extends ColumnSubQuery<E>> IPredicate eqAll(Function<C, S> subQuery);
+    /**
+     * relational operate with {@code = ALL}
+     */
+    <C, S extends ColumnSubQuery<E>> IPredicate equalAll(Function<C, S> subQuery);
 
-    IPredicate lt(Expression<? extends Comparable<E>> expression);
+    IPredicate lessThan(Expression<? extends Comparable<E>> expression);
 
-    IPredicate lt(Comparable<E> constant);
+    IPredicate lessThan(Comparable<E> constant);
 
-    IPredicate lt(String subQueryAlias, String fieldAlias);
+    IPredicate lessThan(String subQueryAlias, String fieldAlias);
 
-    IPredicate lt(String tableAlias, FieldMeta<?, E> fieldMeta);
+    IPredicate lessThan(String tableAlias, FieldMeta<?, E> fieldMeta);
 
-    <C, S extends Expression<E>> IPredicate lt(Function<C, S> expOrSubQuery);
+    <C, S extends Expression<E>> IPredicate lessThan(Function<C, S> expOrSubQuery);
 
-    <C, S extends ColumnSubQuery<E>> IPredicate ltAny(Function<C, S> subQuery);
+    <C, S extends ColumnSubQuery<E>> IPredicate lessThanAny(Function<C, S> subQuery);
 
-    <C, S extends ColumnSubQuery<E>> IPredicate ltSome(Function<C, S> subQuery);
+    <C, S extends ColumnSubQuery<E>> IPredicate lessThanSome(Function<C, S> subQuery);
 
-    <C, S extends ColumnSubQuery<E>> IPredicate ltAll(Function<C, S> subQuery);
+    <C, S extends ColumnSubQuery<E>> IPredicate lessThanAll(Function<C, S> subQuery);
 
-    IPredicate le(Expression<? extends Comparable<E>> expression);
+    IPredicate lessEqual(Expression<? extends Comparable<E>> expression);
 
-    IPredicate le(Comparable<E> constant);
+    IPredicate lessEqual(Comparable<E> constant);
 
-    IPredicate le(String subQueryAlias, String fieldAlias);
+    IPredicate lessEqual(String subQueryAlias, String fieldAlias);
 
-    IPredicate le(String tableAlias, FieldMeta<?, E> fieldMeta);
+    IPredicate lessEqual(String tableAlias, FieldMeta<?, E> fieldMeta);
 
-    <C, S extends Expression<E>> IPredicate le(Function<C, S> expOrSubQuery);
+    <C, S extends Expression<E>> IPredicate lessEqual(Function<C, S> expOrSubQuery);
 
-    <C, S extends ColumnSubQuery<E>> IPredicate leAny(Function<C, S> subQuery);
+    <C, S extends ColumnSubQuery<E>> IPredicate lessEqualAny(Function<C, S> subQuery);
 
-    <C, S extends ColumnSubQuery<E>> IPredicate leSome(Function<C, S> subQuery);
+    <C, S extends ColumnSubQuery<E>> IPredicate lessEqualSome(Function<C, S> subQuery);
 
-    <C, S extends ColumnSubQuery<E>> IPredicate leAll(Function<C, S> subQuery);
+    <C, S extends ColumnSubQuery<E>> IPredicate lessEqualAll(Function<C, S> subQuery);
 
-    IPredicate gt(Expression<? extends Comparable<E>> expression);
+    IPredicate greatThan(Expression<? extends Comparable<E>> expression);
 
-    IPredicate gt(Comparable<E> constant);
+    IPredicate greatThan(Comparable<E> constant);
 
-    IPredicate gt(String subQueryAlias, String fieldAlias);
+    IPredicate greatThan(String subQueryAlias, String fieldAlias);
 
-    IPredicate gt(String tableAlias, FieldMeta<?, E> fieldMeta);
+    IPredicate greatThan(String tableAlias, FieldMeta<?, E> fieldMeta);
 
-    <C, S extends Expression<E>> IPredicate gt(Function<C, S> expOrSubQuery);
+    <C, S extends Expression<E>> IPredicate greatThan(Function<C, S> expOrSubQuery);
 
-    <C, S extends ColumnSubQuery<E>> IPredicate gtAny(Function<C, S> subQuery);
+    <C, S extends ColumnSubQuery<E>> IPredicate greatThanAny(Function<C, S> subQuery);
 
-    <C, S extends ColumnSubQuery<E>> IPredicate gtSome(Function<C, S> subQuery);
+    <C, S extends ColumnSubQuery<E>> IPredicate greatThanSome(Function<C, S> subQuery);
 
-    <C, S extends ColumnSubQuery<E>> IPredicate gtAll(Function<C, S> subQuery);
+    <C, S extends ColumnSubQuery<E>> IPredicate greatThanAll(Function<C, S> subQuery);
 
-    IPredicate ge(Expression<? extends Comparable<E>> expression);
+    IPredicate greatEqual(Expression<? extends Comparable<E>> expression);
 
-    IPredicate ge(Comparable<E> constant);
+    IPredicate greatEqual(Comparable<E> constant);
 
-    IPredicate ge(String subQueryAlias, String fieldAlias);
+    IPredicate greatEqual(String subQueryAlias, String fieldAlias);
 
-    IPredicate ge(String tableAlias, FieldMeta<?, E> fieldMeta);
+    IPredicate greatEqual(String tableAlias, FieldMeta<?, E> fieldMeta);
 
-    <C, S extends Expression<E>> IPredicate ge(Function<C, S> expOrSubQuery);
+    <C, S extends Expression<E>> IPredicate greatEqual(Function<C, S> expOrSubQuery);
 
-    <C, S extends ColumnSubQuery<E>> IPredicate geAny(Function<C, S> subQuery);
+    <C, S extends ColumnSubQuery<E>> IPredicate greatEqualAny(Function<C, S> subQuery);
 
-    <C, S extends ColumnSubQuery<E>> IPredicate geSome(Function<C, S> subQuery);
+    <C, S extends ColumnSubQuery<E>> IPredicate greatEqualSome(Function<C, S> subQuery);
 
-    <C, S extends ColumnSubQuery<E>> IPredicate geAll(Function<C, S> subQuery);
+    <C, S extends ColumnSubQuery<E>> IPredicate greatEqualAll(Function<C, S> subQuery);
 
-    IPredicate notEq(Expression<E> expression);
+    IPredicate notEqual(Expression<E> expression);
 
-    IPredicate notEq(Comparable<E> constant);
+    IPredicate notEqual(Comparable<E> constant);
 
-    IPredicate notEq(String subQueryAlias, String fieldAlias);
+    IPredicate notEqual(String subQueryAlias, String fieldAlias);
 
-    IPredicate notEq(String tableAlias, FieldMeta<?, E> fieldMeta);
+    IPredicate notEqual(String tableAlias, FieldMeta<?, E> fieldMeta);
 
-    <C, S extends Expression<E>> IPredicate notEq(Function<C, S> expOrSubQuery);
+    <C, S extends Expression<E>> IPredicate notEqual(Function<C, S> expOrSubQuery);
 
-    <C, S extends ColumnSubQuery<E>> IPredicate notEqAny(Function<C, S> subQuery);
+    <C, S extends ColumnSubQuery<E>> IPredicate notEqualAny(Function<C, S> subQuery);
 
-    <C, S extends ColumnSubQuery<E>> IPredicate notEqSome(Function<C, S> subQuery);
+    <C, S extends ColumnSubQuery<E>> IPredicate notEqualSome(Function<C, S> subQuery);
 
-    <C, S extends ColumnSubQuery<E>> IPredicate notEqAll(Function<C, S> subQuery);
-
-    IPredicate not();
+    <C, S extends ColumnSubQuery<E>> IPredicate notEqualAll(Function<C, S> subQuery);
 
     IPredicate between(Expression<E> first, Expression<E> second);
 
@@ -119,7 +148,7 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingMeta
 
     IPredicate between(E first, Expression<E> second);
 
-    <C> IPredicate between(Function<C, BetweenExp<E>> function);
+    <C> IPredicate between(Function<C, BetweenWrapper<E>> function);
 
     IPredicate isNull();
 
@@ -189,64 +218,225 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingMeta
 
     Expression<E> negate();
 
-    <O> Expression<BigInteger> and(Expression<O> operator);
+    /**
+     * Bitwise AND
+     *
+     * @param <O> the type maybe different from this.
+     * @return {@link BigInteger} expression
+     */
+    <O> Expression<BigInteger> and(Expression<O> operand);
 
-    Expression<BigInteger> and(Long operator);
+    /**
+     * Bitwise AND
+     *
+     * @return {@link BigInteger} expression
+     */
+    Expression<BigInteger> and(Long operand);
 
+    /**
+     * Bitwise AND
+     *
+     * @return {@link BigInteger} expression
+     */
     Expression<BigInteger> and(String subQueryAlias, String derivedFieldName);
 
+    /**
+     * Bitwise AND
+     *
+     * @param <O> the type maybe different from this.
+     * @return {@link BigInteger} expression
+     */
     <O> Expression<BigInteger> and(String tableAlias, FieldMeta<?, O> fieldMeta);
 
+    /**
+     * Bitwise AND
+     *
+     * @param <O> the type maybe different from this.
+     * @return {@link BigInteger} expression
+     */
     <C, O, S extends Expression<O>> Expression<E> and(Function<C, S> expOrSubQuery);
 
-    <O> Expression<BigInteger> or(Expression<O> operator);
+    /**
+     * Bitwise OR
+     *
+     * @param <O> the type maybe different from this.
+     * @return {@link BigInteger} expression
+     */
+    <O> Expression<BigInteger> or(Expression<O> operand);
 
-    Expression<BigInteger> or(Long operator);
+    /**
+     * Bitwise OR
+     *
+     * @return {@link BigInteger} expression
+     */
+    Expression<BigInteger> or(Long operand);
 
+    /**
+     * Bitwise OR
+     *
+     * @return {@link BigInteger} expression
+     */
     Expression<BigInteger> or(String subQueryAlias, String derivedFieldName);
 
+    /**
+     * Bitwise OR
+     *
+     * @return {@link BigInteger} expression
+     */
     <O> Expression<BigInteger> or(String tableAlias, FieldMeta<?, O> fieldMeta);
 
+    /**
+     * Bitwise OR
+     *
+     * @return {@link BigInteger} expression
+     */
     <C, O, S extends Expression<O>> Expression<E> or(Function<C, S> expOrSubQuery);
 
-    <O> Expression<BigInteger> xor(Expression<O> operator);
+    /**
+     * Bitwise XOR
+     *
+     * @param <O> the type maybe different from this.
+     * @return {@link BigInteger} expression
+     */
+    <O> Expression<BigInteger> xor(Expression<O> operand);
 
-    Expression<BigInteger> xor(Long operator);
+    /**
+     * Bitwise XOR
+     *
+     * @return {@link BigInteger} expression
+     */
+    Expression<BigInteger> xor(Long operand);
 
+    /**
+     * Bitwise XOR
+     *
+     * @return {@link BigInteger} expression
+     */
     Expression<BigInteger> xor(String subQueryAlias, String derivedFieldName);
 
+    /**
+     * Bitwise XOR
+     *
+     * @return {@link BigInteger} expression
+     */
     <O> Expression<BigInteger> xor(String tableAlias, FieldMeta<?, O> fieldMeta);
 
+    /**
+     * Bitwise XOR
+     *
+     * @return {@link BigInteger} expression
+     */
     <C, O, S extends Expression<O>> Expression<E> xor(Function<C, S> expOrSubQuery);
 
-    <O> Expression<BigInteger> inversion(Expression<O> operator);
+    /**
+     * Bitwise Inversion
+     *
+     * @param <O> the type maybe different from this.
+     * @return {@link BigInteger} expression
+     */
+    <O> Expression<BigInteger> inversion(Expression<O> operand);
 
-    Expression<BigInteger> inversion(Long operator);
+    /**
+     * Bitwise Inversion
+     *
+     * @return {@link BigInteger} expression
+     */
+    Expression<BigInteger> inversion(Long operand);
 
+    /**
+     * Bitwise Inversion
+     *
+     * @return {@link BigInteger} expression
+     */
     Expression<BigInteger> inversion(String subQueryAlias, String derivedFieldName);
 
+    /**
+     * Bitwise Inversion
+     *
+     * @return {@link BigInteger} expression
+     */
     <O> Expression<BigInteger> inversion(String tableAlias, FieldMeta<?, O> fieldMeta);
 
+    /**
+     * Bitwise Inversion
+     *
+     * @return {@link BigInteger} expression
+     */
     <C, O, S extends Expression<O>> Expression<E> inversion(Function<C, S> expOrSubQuery);
 
+    /**
+     * Shifts a  number to the right.
+     *
+     * @return {@link BigInteger} expression
+     */
     Expression<BigInteger> rightShift(Integer bitNumber);
 
+    /**
+     * Shifts a  number to the right.
+     *
+     * @param <O> the type maybe different from this.
+     * @return {@link BigInteger} expression
+     */
     <O> Expression<BigInteger> rightShift(Expression<O> bitNumber);
 
+    /**
+     * Shifts a  number to the right.
+     *
+     * @return {@link BigInteger} expression
+     */
     <O> Expression<BigInteger> rightShift(String tableAlias, FieldMeta<?, O> fieldMeta);
 
+    /**
+     * Shifts a  number to the right.
+     *
+     * @return {@link BigInteger} expression
+     */
     Expression<BigInteger> rightShift(String subQueryAlias, String derivedFieldName);
 
+    /**
+     * Shifts a  number to the right.
+     *
+     * @param <O> the type maybe different from this.
+     * @return {@link BigInteger} expression
+     */
     <C, O, S extends Expression<O>> Expression<E> rightShift(Function<C, S> expOrSubQuery);
 
+    /**
+     * Shifts a  number to the left.
+     *
+     * @return {@link BigInteger} expression
+     */
     Expression<BigInteger> leftShift(Integer bitNumber);
 
+    /**
+     * Shifts a  number to the left.
+     *
+     * @param <O> the type maybe different from this.
+     * @return {@link BigInteger} expression
+     */
     <O> Expression<BigInteger> leftShift(Expression<O> bitNumber);
 
+    /**
+     * Shifts a  number to the left.
+     *
+     * @return {@link BigInteger} expression
+     */
     Expression<BigInteger> leftShift(String subQueryAlias, String derivedFieldName);
 
+    /**
+     * Shifts a  number to the left.
+     *
+     * @param <O> the type maybe different from this.
+     * @return {@link BigInteger} expression
+     */
     <O> Expression<BigInteger> leftShift(String tableAlias, FieldMeta<?, O> fieldMeta);
 
+    /**
+     * Shifts a  number to the left.
+     *
+     * @param <O> the type maybe different from this.
+     * @return {@link BigInteger} expression
+     */
     <C, O, S extends Expression<O>> Expression<E> leftShift(Function<C, S> expOrSubQuery);
 
     <O> Expression<E> plusOther(Expression<O> other);
@@ -287,6 +477,5 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingMeta
 
     <C, S extends Expression<String>> IPredicate notLike(Function<C, S> expOrSubQuery);
 
-    boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas);
 
 }

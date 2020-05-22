@@ -57,7 +57,7 @@ final class RowImpl implements Row {
 
     @Override
     public IPredicate eq(RowSubQuery rowSubQuery) {
-        return new RowPredicate(this, DualOperator.EQ, rowSubQuery);
+        return new RowPredicate(this, DualOperator.EQUAL, rowSubQuery);
     }
 
     @Override

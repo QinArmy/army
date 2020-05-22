@@ -1,22 +1,25 @@
 package io.army.criteria;
 
-import io.army.lang.Nullable;
 
 /**
- * created  on 2018/11/25.
+ * Interface representing sql  operator.
  */
 public interface SQLOperator {
 
 
     String rendered();
 
-   default boolean relational(){
-       return false;
-   }
+    default boolean relational() {
+        return false;
+    }
 
-   default Position position(){
-       return Position.CENTER;
-   }
+    default boolean bitOperator() {
+        return false;
+    }
+
+    default Position position() {
+        return Position.CENTER;
+    }
 
 
     enum Position {

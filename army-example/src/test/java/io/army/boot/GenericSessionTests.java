@@ -68,10 +68,10 @@ public class GenericSessionTests {
                                 .add(SQLS.constant(1L))
                                 .brackets()
                                 .multiply(3)
-                                .eq(2L)
+                                .equal(2L)
                 )
-                .and(SQLS.field("a", Account_.visible).eq(true))
-                .and(SQLS.field("a", Account_.createTime).eq(LocalDateTime.now()))
+                .and(SQLS.field("a", Account_.visible).equal(true))
+                .and(SQLS.field("a", Account_.createTime).equal(LocalDateTime.now()))
                 .asUpdate();
 
         LOG.info("dml:\n{}", update.debugSQL(SQLDialect.MySQL57));
@@ -101,9 +101,9 @@ public class GenericSessionTests {
 
         Delete delete = SQLS.singleDelete(criteria)
                 .deleteFrom(Account_.T, "a")
-                .where(Account_.id.le(1000L))
-                .and(Account_.debt.gt(BigDecimal.ONE))
-                .ifAnd(this::isUser, Account_.accountType.eq(AccountType.BALANCE))
+                .where(Account_.id.lessEqual(1000L))
+                .and(Account_.debt.greatThan(BigDecimal.ONE))
+                .ifAnd(this::isUser, Account_.accountType.equal(AccountType.BALANCE))
                 .asDelete();
 
         LOG.info("dml:\n{}", delete.debugSQL(SQLDialect.MySQL57));
@@ -119,11 +119,11 @@ public class GenericSessionTests {
         Select select = SQLS.multiSelect(criteria)
                 .select(Distinct.DISTINCT, SQLS.group(Account_.T, "a"))
                 .from(Account_.T, "a")
-                .join(User_.T, "u").on(Account_.id.eq(User_.id))
-                .where(Account_.id.eq(1L))
-                .and(Account_.debt.gt(BigDecimal.ZERO))
+                .join(User_.T, "u").on(Account_.id.equal(User_.id))
+                .where(Account_.id.equal(1L))
+                .and(Account_.debt.greatThan(BigDecimal.ZERO))
                 .ifGroupBy(this::isUser, Account_.id)
-                .having(Account_.id.gt(0L))
+                .having(Account_.id.greatThan(0L))
                 .orderBy(Account_.id)
                 .limit(10)
                 .lock(LockMode.READ)

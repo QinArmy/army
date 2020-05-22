@@ -1,26 +1,33 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.SQLContext;
-import io.army.criteria.SelfDescribed;
-import io.army.criteria.SubQuery;
+import io.army.criteria.*;
 import io.army.util.Assert;
 
-final class UnaryPredicate extends AbstractPredicate {
+class UnaryPredicate extends AbstractPredicate {
 
     static UnaryPredicate build(UnaryOperator operator, SubQuery subQuery) {
         switch (operator) {
             case NOT_EXISTS:
             case EXISTS:
-                break;
+                return new UnaryPredicate(operator, subQuery);
             default:
                 throw new IllegalArgumentException(
-                        String.format("operator[%s] not in[EXISTS,NOT_EXISTS]", operator));
+                        String.format("operator[%s] not in [EXISTS,NOT_EXISTS]", operator));
         }
-        return new UnaryPredicate(operator, subQuery);
+
     }
 
-    static UnaryPredicate build(UnaryOperator operator, SelfDescribed expression) {
-        return new UnaryPredicate(operator, expression);
+    static UnaryPredicate build(UnaryOperator operator, Expression<?> expression) {
+        UnaryPredicate predicate;
+        if (operator == UnaryOperator.NOT_EXISTS || operator == UnaryOperator.EXISTS) {
+            throw new IllegalArgumentException(
+                    String.format("operator[%s] can't in [EXISTS,NOT_EXISTS]", operator));
+        } else if (expression instanceof SpecialExpression) {
+            predicate = new SpecialUnaryPredicate(operator, (SpecialExpression<?>) expression);
+        } else {
+            predicate = new UnaryPredicate(operator, expression);
+        }
+        return predicate;
     }
 
     private final UnaryOperator operator;
@@ -36,6 +43,10 @@ final class UnaryPredicate extends AbstractPredicate {
 
     @Override
     protected void afterSpace(SQLContext context) {
+        doAppendSQL(context);
+    }
+
+    final void doAppendSQL(SQLContext context) {
         switch (operator.position()) {
             case LEFT:
                 context.sqlBuilder()
@@ -68,5 +79,32 @@ final class UnaryPredicate extends AbstractPredicate {
                 throw new IllegalStateException(String.format("UnaryOperator[%s]'s position error.", operator));
         }
         return builder.toString();
+    }
+
+    @Override
+    public final boolean containsSubQuery() {
+        return (this.expression instanceof SubQuery)
+                || ((Expression<?>) this.expression).containsSubQuery();
+    }
+
+    /*################################## blow private static inner class ##################################*/
+
+    private static final class SpecialUnaryPredicate extends UnaryPredicate implements SpecialPredicate {
+
+        private SpecialUnaryPredicate(UnaryOperator operator, SpecialExpression<?> expression) {
+            super(operator, expression);
+        }
+
+        @Override
+        protected void afterSpace(SQLContext context) {
+            context.appendFieldPredicate(this);
+        }
+
+        @Override
+        public void appendPredicate(SQLContext context) {
+            context.sqlBuilder()
+                    .append(" ");
+            doAppendSQL(context);
+        }
     }
 }

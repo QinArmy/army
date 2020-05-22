@@ -1,26 +1,33 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.SQLContext;
+import io.army.criteria.ValueExpression;
 import io.army.meta.mapping.MappingMeta;
 import io.army.util.Assert;
 import io.army.wrapper.ParamWrapper;
 
 import java.util.Collection;
 
-final class CollectionExpression<E> extends AbstractNoNOperationExpression<E> {
+final class CollectionExpressionImpl<E> extends AbstractNoNOperationExpression<Collection<E>>
+        implements ValueExpression<Collection<E>> {
 
-    static <E> CollectionExpression<E> build(MappingMeta mappingType, Collection<E> collection) {
+    static <E> CollectionExpressionImpl<E> build(MappingMeta mappingType, Collection<E> collection) {
         Assert.notEmpty(collection, "collection must not empty.");
-        return new CollectionExpression<>(mappingType, collection);
+        return new CollectionExpressionImpl<>(mappingType, collection);
     }
 
     private final MappingMeta mappingType;
 
     private final Collection<E> collection;
 
-    private CollectionExpression(MappingMeta mappingType, Collection<E> collection) {
+    private CollectionExpressionImpl(MappingMeta mappingType, Collection<E> collection) {
         this.mappingType = mappingType;
         this.collection = collection;
+    }
+
+    @Override
+    public Object value() {
+        return this.collection;
     }
 
     @Override
@@ -29,11 +36,11 @@ final class CollectionExpression<E> extends AbstractNoNOperationExpression<E> {
         builder.append("(");
 
         int index = 0;
-        for (E value : collection) {
+        for (E value : this.collection) {
             if (index > 0) {
                 builder.append(",");
             }
-            Assert.notNull(value, "param must not null.");
+            Assert.notNull(value, "value of collection can't be null.");
             builder.append("?");
             context.appendParam(ParamWrapper.build(mappingType, value));
             index++;

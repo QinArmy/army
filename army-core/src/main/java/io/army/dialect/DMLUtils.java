@@ -83,7 +83,7 @@ abstract class DMLUtils {
                     , "ChildTableMeta[%s] discriminatorValue[%s] can't resolve CodeEnum."
                     , childMeta, childMeta.discriminatorValue());
         }
-        parentPredicates.add(enumFieldMeta.eq(codeEnum));
+        parentPredicates.add(enumFieldMeta.equal(codeEnum));
         return parentPredicates;
     }
 
@@ -191,9 +191,8 @@ abstract class DMLUtils {
 
     static void assertSetClauseField(FieldMeta<?, ?> fieldMeta) {
         if (!fieldMeta.updatable()) {
-            throw new NonUpdateAbleException(ErrorCode.NON_UPDATABLE
-                    , String.format("domain[%s] field[%s] is non-updatable."
-                    , fieldMeta.tableMeta().javaType(), fieldMeta.propertyName()));
+            throw new NonUpdateAbleException("domain[%s] field[%s] is non-updatable."
+                    , fieldMeta.tableMeta().javaType(), fieldMeta.propertyName());
         }
         if (TableMeta.VERSION.equals(fieldMeta.propertyName())
                 || TableMeta.UPDATE_TIME.equals(fieldMeta.propertyName())) {
@@ -205,7 +204,7 @@ abstract class DMLUtils {
         boolean hasVersion = false;
         for (IPredicate predicate : predicateList) {
             if (predicate instanceof FieldValuePredicate) {
-                FieldExp<?, ?> fieldExp = ((FieldValuePredicate) predicate).fieldExp();
+                FieldExpression<?, ?> fieldExp = ((FieldValuePredicate) predicate).fieldExp();
                 if (TableMeta.VERSION.equals(fieldExp.propertyName())) {
                     hasVersion = true;
                     break;
@@ -405,26 +404,6 @@ abstract class DMLUtils {
                     , fieldMeta.propertyName()));
         }
         return value;
-    }
-
-    @SuppressWarnings("unchecked")
-    static List<IPredicate> mergeDomainUpdatePredicateList(List<IPredicate> originalPredicateList
-            , IndexFieldMeta<?, ?> primaryField, Object primaryKeyValue) {
-
-        List<IPredicate> mergedPredicateList = new ArrayList<>(originalPredicateList.size() + 1);
-        final IndexFieldMeta<?, Object> primaryKey = (IndexFieldMeta<?, Object>) primaryField;
-        Assert.isInstanceOf(primaryKey.javaType(), primaryKeyValue);
-
-        // firstly ,add predicate sql fragment 'id = ?'
-        mergedPredicateList.add(
-                primaryKey.eq(
-                        SQLS.param(primaryKeyValue, primaryKey.mappingMeta())
-                )
-        );
-        // secondly, add update.predicateList()
-        mergedPredicateList.addAll(originalPredicateList);
-
-        return mergedPredicateList;
     }
 
 

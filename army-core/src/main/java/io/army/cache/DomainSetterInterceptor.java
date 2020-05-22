@@ -48,7 +48,7 @@ final class DomainSetterInterceptor implements MethodInterceptor, DomainUpdateAd
             // 2. version predicate
             Object versionValue = readonlyWrapper.getPropertyValue(versionMeta.propertyName());
             Assert.notNull(versionValue, "Domain version is null");
-            predicateList.add(versionMeta.eq(versionValue));
+            predicateList.add(versionMeta.equal(versionValue));
         }
         return predicateList;
     }

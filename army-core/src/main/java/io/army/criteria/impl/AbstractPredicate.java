@@ -31,5 +31,8 @@ abstract class AbstractPredicate extends AbstractExpression<Boolean> implements 
         return new OrtPredicateImpl(this, andIPredicateList);
     }
 
-
+    @Override
+    public final IPredicate not(IPredicate predicate) {
+        return NotPredicateImpl.build(predicate);
+    }
 }

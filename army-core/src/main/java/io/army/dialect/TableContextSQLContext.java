@@ -1,9 +1,7 @@
 package io.army.dialect;
 
-import io.army.beans.DomainWrapper;
 import io.army.criteria.SQLContext;
 import io.army.criteria.Visible;
-import io.army.wrapper.DomainSQLWrapper;
 import io.army.wrapper.ParamWrapper;
 import io.army.wrapper.SimpleSQLWrapper;
 
@@ -21,5 +19,4 @@ public interface TableContextSQLContext extends SQLContext {
 
     SimpleSQLWrapper build();
 
-    DomainSQLWrapper build(DomainWrapper domainWrapper);
 }

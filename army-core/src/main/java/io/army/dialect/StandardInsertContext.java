@@ -2,10 +2,7 @@ package io.army.dialect;
 
 import io.army.beans.DomainWrapper;
 import io.army.beans.ReadonlyWrapper;
-import io.army.criteria.FieldPairDualPredicate;
-import io.army.criteria.TableAliasException;
 import io.army.criteria.Visible;
-import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.wrapper.DomainSQLWrapper;
@@ -50,17 +47,7 @@ final class StandardInsertContext extends AbstractSQLContext implements InsertCo
     }
 
     @Override
-    public void appendParentTableOf(ChildTableMeta<?> childTableMeta) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void appendFieldPair(FieldPairDualPredicate predicate) {
         throw new UnsupportedOperationException();
     }
 

@@ -4,7 +4,7 @@ import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
 
 /**
- * created  on 2018/11/19.
+ * throw when {@link io.army.meta.Meta} error.
  */
 public class MetaException extends ArmyRuntimeException {
 

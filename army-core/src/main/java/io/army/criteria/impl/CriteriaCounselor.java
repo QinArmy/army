@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.boot.BootCounselor;
 import io.army.criteria.ColumnSubQuery;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner.*;
@@ -70,26 +69,12 @@ public abstract class CriteriaCounselor {
         }
     }
 
-    public static void assertStandardDomainUpdate(InnerStandardDomainUpdate update) {
-        if (!(update instanceof StandardContextualUpdate)
-                && !BootCounselor.cacheDomainUpdate(update)) {
-            throw new IllegalArgumentException(String.format("%s isn't instance of army", update));
-        }
-    }
-
     public static void assertStandardDelete(InnerStandardDelete delete) {
         if (delete instanceof InnerStandardDomainDelete) {
             throw new IllegalArgumentException(String.format("%s isn't instance illegal.", delete));
         } else if (!(delete instanceof StandardContextualSingleDelete)) {
             throw new IllegalArgumentException(String.format("%s isn't instance of %s", delete
                     , StandardContextualSingleDelete.class.getName()));
-        }
-    }
-
-    public static void assertStandardDomainDelete(InnerStandardDomainDelete delete) {
-        if (!(delete instanceof StandardContextualSingleDelete.StandardContextualDomainDelete)) {
-            throw new IllegalArgumentException(String.format("%s isn't instance of %s", delete
-                    , StandardContextualSingleDelete.StandardContextualDomainDelete.class.getName()));
         }
     }
 

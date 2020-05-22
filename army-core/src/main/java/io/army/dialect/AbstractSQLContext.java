@@ -1,14 +1,10 @@
 package io.army.dialect;
 
-import io.army.beans.DomainWrapper;
-import io.army.criteria.FieldPairDualPredicate;
-import io.army.criteria.TableAliasException;
+import io.army.criteria.SpecialPredicate;
 import io.army.criteria.Visible;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
-import io.army.util.Assert;
-import io.army.wrapper.DomainSQLWrapper;
 import io.army.wrapper.ParamWrapper;
 import io.army.wrapper.SimpleSQLWrapper;
 
@@ -24,8 +20,6 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
     protected final StringBuilder sqlBuilder;
 
     protected final List<ParamWrapper> paramList;
-
-    boolean finished;
 
     protected AbstractSQLContext(Dialect dialect, Visible visible) {
         this.dialect = dialect;
@@ -47,14 +41,9 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
         doAppendFiled(tableAlias, fieldMeta);
     }
 
-
     @Override
-    public void appendFieldPair(FieldPairDualPredicate predicate) {
-        predicate.left().appendSQL(this);
-        this.sqlBuilder
-                .append(" ")
-                .append(predicate.operator().rendered());
-        predicate.right().appendSQL(this);
+    public void appendFieldPredicate(SpecialPredicate predicate) {
+        predicate.appendPredicate(this);
     }
 
     @Override
@@ -110,18 +99,10 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
 
 
     @Override
-    public final SimpleSQLWrapper build() {
-        Assert.state(!this.finished, "SQLContext finished.");
-        this.finished = true;
-        return doBuild();
+    public SimpleSQLWrapper build() {
+        return SimpleSQLWrapper.build(this.sqlBuilder.toString(), this.paramList);
     }
 
-    @Override
-    public final DomainSQLWrapper build(DomainWrapper beanWrapper) {
-        Assert.state(!this.finished, "SQLContext finished.");
-        this.finished = true;
-        return doBuild(beanWrapper);
-    }
 
     /*################################## blow protected final method ##################################*/
 
@@ -133,19 +114,4 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
     }
 
     /*################################## blow protected template method ##################################*/
-
-    protected SimpleSQLWrapper doBuild() {
-        return SimpleSQLWrapper.build(
-                sqlBuilder.toString()
-                , paramList
-        );
-    }
-
-    protected DomainSQLWrapper doBuild(DomainWrapper beanWrapper) {
-        return DomainSQLWrapper.build(
-                sqlBuilder.toString()
-                , paramList
-                , beanWrapper
-        );
-    }
 }

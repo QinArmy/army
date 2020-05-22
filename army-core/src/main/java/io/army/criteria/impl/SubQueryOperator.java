@@ -21,27 +21,7 @@ enum SubQueryOperator implements SQLOperator {
         public String rendered() {
             return "ALL";
         }
-    }, EXISTS {
-        @Override
-        public String rendered() {
-            return "EXISTS";
-        }
-    }, NOT_EXISTS {
-        @Override
-        public String rendered() {
-            return "NOT EXISTS";
-        }
-    }, IN {
-        @Override
-        public String rendered() {
-            return "IN";
-        }
-    }, NOT_IN {
-        @Override
-        public String rendered() {
-            return "NOT IN";
-        }
-    };
+    }
 
 }
 

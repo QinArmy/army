@@ -15,6 +15,7 @@ import io.army.util.Assert;
 
 import java.lang.reflect.Field;
 import java.sql.JDBCType;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -300,6 +301,30 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
         context.appendField(this);
     }
 
+    @Override
+    public final void appendExpression(SQLContext context) {
+        this.appendSQL(context);
+    }
+
+    @Override
+    public final boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
+        return fieldMetas.contains(this);
+    }
+
+    @Override
+    public final boolean containsFieldOf(TableMeta<?> tableMeta) {
+        return this.table == tableMeta;
+    }
+
+    @Override
+    public final int containsFieldCount(TableMeta<?> tableMeta) {
+        return this.table == tableMeta ? 1 : 0;
+    }
+
+    @Override
+    public final boolean containsSubQuery() {
+        return false;
+    }
 
     /*################################## blow private method ##################################*/
 

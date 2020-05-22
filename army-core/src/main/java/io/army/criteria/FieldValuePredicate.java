@@ -4,7 +4,7 @@ package io.army.criteria;
 
 public interface FieldValuePredicate extends FieldPredicate {
 
-    DualOperator operator();
+    DualPredicateOperator operator();
 
     Object value();
 }

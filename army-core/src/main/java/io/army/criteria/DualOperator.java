@@ -1,111 +1,10 @@
 package io.army.criteria;
 
 /**
- * created  on 2018/11/25.
+ * Interface representing sql dual operator.
  */
 public enum DualOperator implements SQLOperator {
 
-    EQ {
-
-        @Override
-        public String rendered() {
-            return "=";
-        }
-
-        @Override
-        public boolean relational() {
-            return true;
-        }
-    },
-    NOT_EQ {
-
-        @Override
-        public String rendered() {
-            return "!=";
-        }
-
-        @Override
-        public boolean relational() {
-            return true;
-        }
-    },
-
-    LT {
-
-        @Override
-        public String rendered() {
-            return "<";
-        }
-
-        @Override
-        public boolean relational() {
-            return true;
-        }
-    },
-    LE {
-
-        @Override
-        public String rendered() {
-            return "<=";
-        }
-
-        @Override
-        public boolean relational() {
-            return true;
-        }
-    },
-    GE {
-
-        @Override
-        public String rendered() {
-            return ">=";
-        }
-
-        @Override
-        public boolean relational() {
-            return true;
-        }
-    },
-    GT {
-
-        @Override
-        public String rendered() {
-            return ">";
-        }
-
-        @Override
-        public boolean relational() {
-            return true;
-        }
-    },
-    IN {
-
-        @Override
-        public String rendered() {
-            return "IN";
-        }
-    },
-    NOT_IN {
-
-        @Override
-        public String rendered() {
-            return "NOT IN";
-        }
-    },
-    LIKE {
-
-        @Override
-        public String rendered() {
-            return "LIKE";
-        }
-    },
-    NOT_LIKE {
-
-        @Override
-        public String rendered() {
-            return "NOT LIKE";
-        }
-    },
      ADD {
 
          @Override
@@ -137,39 +36,66 @@ public enum DualOperator implements SQLOperator {
             return "/";
         }
     },AND {
-
         @Override
         public String rendered() {
             return "&";
+        }
+
+        @Override
+        public boolean bitOperator() {
+            return true;
         }
     },OR {
         @Override
         public String rendered() {
             return "|";
         }
+
+        @Override
+        public boolean bitOperator() {
+            return true;
+        }
     },XOR {
         @Override
         public String rendered() {
             return "^";
         }
-    },LEFT_SHIFT{
 
+        @Override
+        public boolean bitOperator() {
+            return true;
+        }
+    },LEFT_SHIFT {
         @Override
         public String rendered() {
             return "<<";
         }
-    },RIGHT_SHIFT{
+
+        @Override
+        public boolean bitOperator() {
+            return true;
+        }
+    },RIGHT_SHIFT {
         @Override
         public String rendered() {
             return ">>";
         }
-    },INVERT{
+
+        @Override
+        public boolean bitOperator() {
+            return true;
+        }
+    },INVERT {
         @Override
         public String rendered() {
             return "~";
         }
-    }
 
+        @Override
+        public boolean bitOperator() {
+            return true;
+        }
+    }
 
 
 }

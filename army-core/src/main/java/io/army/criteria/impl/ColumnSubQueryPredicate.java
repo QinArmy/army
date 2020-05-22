@@ -1,42 +1,53 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.ColumnSubQuery;
-import io.army.criteria.DualOperator;
+import io.army.criteria.DualPredicateOperator;
 import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
+import io.army.lang.Nullable;
+import io.army.meta.FieldMeta;
+import io.army.meta.TableMeta;
 import io.army.util.Assert;
 
-final class ColumnSubQueryPredicate extends AbstractPredicate {
+import java.util.Collection;
 
-    static ColumnSubQueryPredicate build(Expression<?> operand, DualOperator operator
+class ColumnSubQueryPredicate extends AbstractPredicate {
+
+    static ColumnSubQueryPredicate build(Expression<?> operand, DualPredicateOperator operator
             , SubQueryOperator subQueryOperator, ColumnSubQuery<?> subQuery) {
+        Assert.isTrue(operator.relational(), "operator isn't relational.");
+
         switch (subQueryOperator) {
             case ALL:
             case ANY:
             case SOME:
-                break;
+                return new RelationColumnSubQueryPredicate(operand, operator, subQueryOperator, subQuery);
             default:
-                throw new IllegalArgumentException(String.format("subQueryOperator[%s] error.", subQuery));
+                throw new IllegalArgumentException(String.format("SubQueryOperator[%s] error.", subQueryOperator));
         }
-        return new ColumnSubQueryPredicate(operand, operator, subQueryOperator, subQuery);
+    }
+
+    static ColumnSubQueryPredicate build(Expression<?> operand, DualPredicateOperator operator
+            , ColumnSubQuery<?> subQuery) {
+        switch (operator) {
+            case IN:
+            case NOT_IN:
+                return new ColumnSubQueryPredicate(operand, operator, subQuery);
+            default:
+                throw new IllegalArgumentException(String.format("operator[%s] error.", operator));
+        }
     }
 
     private final Expression<?> operand;
 
-    private final DualOperator operator;
-
-    private final SubQueryOperator keyOperator;
+    private final DualPredicateOperator operator;
 
     private final ColumnSubQuery<?> subQuery;
 
-    private ColumnSubQueryPredicate(Expression<?> operand, DualOperator operator
-            , SubQueryOperator keyOperator, ColumnSubQuery<?> subQuery) {
-
-        Assert.isTrue(operator.relational(), "operator isn't relational operator.");
+    private ColumnSubQueryPredicate(Expression<?> operand, DualPredicateOperator operator, ColumnSubQuery<?> subQuery) {
 
         this.operand = operand;
         this.operator = operator;
-        this.keyOperator = keyOperator;
         this.subQuery = subQuery;
     }
 
@@ -44,29 +55,78 @@ final class ColumnSubQueryPredicate extends AbstractPredicate {
     @Override
     protected void afterSpace(SQLContext context) {
         operand.appendSQL(context);
-        context.sqlBuilder()
+        StringBuilder builder = context.sqlBuilder()
                 .append(" ")
-                .append(operator.rendered())
-                .append(" ")
-                .append(keyOperator.rendered())
-                .append(" ");
+                .append(operator.rendered());
+        SubQueryOperator subQueryOperator = subQueryOperator();
+        if (subQueryOperator != null) {
+            builder.append(" ")
+                    .append(subQueryOperator.rendered());
+        }
         subQuery.appendSQL(context);
     }
 
     @SuppressWarnings("all")
     @Override
     protected String beforeAs() {
-        return new StringBuilder()
+        StringBuilder builder = new StringBuilder()
                 .append("(")
                 .append(operand)
                 .append(" ")
-                .append(operator.rendered())
-                .append(" ")
-                .append(keyOperator.rendered())
-                .append(" ")
+                .append(operator.rendered());
+
+        SubQueryOperator subQueryOperator = subQueryOperator();
+        if (subQueryOperator != null) {
+            builder.append(" ")
+                    .append(subQueryOperator.rendered());
+        }
+        builder.append(" ")
                 .append(subQuery)
                 .append(")")
                 .toString();
 
+        return builder.toString();
+
+    }
+
+    @Nullable
+    SubQueryOperator subQueryOperator() {
+        return null;
+    }
+
+    @Override
+    public final boolean containsSubQuery() {
+        return true;
+    }
+
+    @Override
+    public final boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
+        return this.operand.containsField(fieldMetas);
+    }
+
+    @Override
+    public final boolean containsFieldOf(TableMeta<?> tableMeta) {
+        return this.operand.containsFieldOf(tableMeta);
+    }
+
+    @Override
+    public final int containsFieldCount(TableMeta<?> tableMeta) {
+        return this.operand.containsFieldCount(tableMeta);
+    }
+
+    private static final class RelationColumnSubQueryPredicate extends ColumnSubQueryPredicate {
+
+        private final SubQueryOperator subQueryOperator;
+
+        public RelationColumnSubQueryPredicate(Expression<?> operand, DualPredicateOperator operator
+                , SubQueryOperator subQueryOperator, ColumnSubQuery<?> subQuery) {
+            super(operand, operator, subQuery);
+            this.subQueryOperator = subQueryOperator;
+        }
+
+        @Override
+        SubQueryOperator subQueryOperator() {
+            return this.subQueryOperator;
+        }
     }
 }

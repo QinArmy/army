@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.AliasField;
 import io.army.criteria.Expression;
+import io.army.criteria.LogicalField;
 import io.army.criteria.SubQuery;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
@@ -9,7 +9,7 @@ import io.army.meta.TableMeta;
 
 interface CriteriaContext {
 
-    <T extends IDomain, F> AliasField<T, F> aliasField(String tableAlias, FieldMeta<T, F> fieldMeta);
+    <T extends IDomain, F> LogicalField<T, F> aliasField(String tableAlias, FieldMeta<T, F> fieldMeta);
 
     <E> Expression<E> ref(String subQueryAlias, String derivedFieldName);
 
