@@ -1,8 +1,8 @@
 package io.army.boot;
 
 import io.army.DomainUpdateException;
-import io.army.beans.ObjectWrapper;
-import io.army.beans.PropertyAccessorFactory;
+import io.army.beans.AccessorFactory;
+import io.army.beans.BeanWrapper;
 import io.army.codec.FieldCodec;
 import io.army.criteria.FieldSelection;
 import io.army.criteria.Selection;
@@ -67,12 +67,12 @@ abstract class SQLExecutorSupport {
             , Class<T> resultClass) throws SQLException {
         List<T> resultList = new ArrayList<>();
 
-        ObjectWrapper objectWrapper;
+        BeanWrapper beanWrapper;
         while (resultSet.next()) {
-            objectWrapper = PropertyAccessorFactory.forBeanPropertyAccess(resultClass);
-            extractRow(resultSet, selectionList, objectWrapper);
+            beanWrapper = AccessorFactory.forBeanPropertyAccess(resultClass);
+            extractRow(resultSet, selectionList, beanWrapper);
             // result add to resultList
-            resultList.add((T) objectWrapper.getWrappedInstance());
+            resultList.add((T) beanWrapper.getWrappedInstance());
         }
         return resultList;
     }
@@ -80,24 +80,24 @@ abstract class SQLExecutorSupport {
 
     @SuppressWarnings("unchecked")
     protected final <T> List<T> extractResultWithWrapper(ResultSet resultSet, List<Selection> selectionList
-            , List<ObjectWrapper> objectWrapperList) throws SQLException {
+            , List<BeanWrapper> beanWrapperList) throws SQLException {
         List<T> resultList = new ArrayList<>();
         int index = 0;
-        final int size = objectWrapperList.size();
-        ObjectWrapper objectWrapper;
+        final int size = beanWrapperList.size();
+        BeanWrapper beanWrapper;
         while (resultSet.next()) {
             if (index >= size) {
                 throw new DomainUpdateException("");
             }
-            objectWrapper = objectWrapperList.get(index);
-            extractRow(resultSet, selectionList, objectWrapper);
+            beanWrapper = beanWrapperList.get(index);
+            extractRow(resultSet, selectionList, beanWrapper);
             // result add to resultList
-            resultList.add((T) objectWrapper.getWrappedInstance());
+            resultList.add((T) beanWrapper.getWrappedInstance());
         }
         return resultList;
     }
 
-    protected final void extractRow(ResultSet resultSet, List<Selection> selectionList, ObjectWrapper objectWrapper)
+    protected final void extractRow(ResultSet resultSet, List<Selection> selectionList, BeanWrapper beanWrapper)
             throws SQLException {
 
         for (Selection selection : selectionList) {
@@ -112,7 +112,7 @@ abstract class SQLExecutorSupport {
                     value = fieldCodec.decode(fieldMeta, value);
                 }
             }
-            objectWrapper.setPropertyValue(selection.alias(), value);
+            beanWrapper.setPropertyValue(selection.alias(), value);
         }
     }
 

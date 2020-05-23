@@ -1,6 +1,5 @@
 package io.army.dialect.mysql;
 
-import io.army.ErrorCode;
 import io.army.criteria.MetaException;
 import io.army.dialect.AbstractDDL;
 import io.army.dialect.DDLContext;
@@ -58,7 +57,7 @@ class MySQL57DDL extends AbstractDDL {
 
         Function<FieldMeta<?, ?>, String> function = funcMap.get(fieldMeta.mappingMeta().jdbcType());
         if (function == null) {
-            throw new MetaException(ErrorCode.META_ERROR, "Entity[%s].column[%s] not found jdbc function"
+            throw new MetaException("Entity[%s].column[%s] not found jdbc function"
                     , fieldMeta.tableMeta().tableName()
                     , fieldMeta.fieldName()
             );

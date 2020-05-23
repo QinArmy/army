@@ -2,10 +2,10 @@ package io.army.dialect;
 
 import io.army.ErrorCode;
 import io.army.GenericSessionFactory;
-import io.army.beans.ObjectWrapper;
+import io.army.beans.AccessorFactory;
+import io.army.beans.BeanWrapper;
 import io.army.beans.ReadonlyWrapper;
 import io.army.boot.FieldValuesGenerator;
-import io.army.codec.FieldCodec;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLS;
 import io.army.criteria.impl.inner.InnerStandardBatchInsert;
@@ -17,10 +17,7 @@ import io.army.meta.*;
 import io.army.struct.CodeEnum;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
-import io.army.wrapper.BatchSimpleSQLWrapper;
-import io.army.wrapper.FieldParamWrapper;
-import io.army.wrapper.ParamWrapper;
-import io.army.wrapper.SimpleSQLWrapper;
+import io.army.wrapper.*;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -42,6 +39,38 @@ abstract class DMLUtils {
             }
         }
         return count;
+    }
+
+    /**
+     * @return a unmodifiable List
+     */
+    static List<Selection> selectionList(SubQuery subQuery) {
+        List<Selection> selectionList = new ArrayList<>();
+        for (SelectPart selectPart : subQuery.selectPartList()) {
+            if (selectPart instanceof SelectionGroup) {
+                selectionList.addAll(((SelectionGroup) selectPart).selectionList());
+            } else {
+                selectionList.add((Selection) selectPart);
+            }
+        }
+        return Collections.unmodifiableList(selectionList);
+    }
+
+    static void assertSubQueryInsert(List<FieldMeta<?, ?>> fieldMetaList, SubQuery subQuery) {
+        List<Selection> selectionList = selectionList(subQuery);
+        if (fieldMetaList.size() != selectionList.size()) {
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                    , "SubQuery Insert,target field list size[%s] and sub query selection list size[%s] not match."
+                    , fieldMetaList.size(), selectionList.size());
+        }
+        final int size = fieldMetaList.size();
+        for (int i = 0; i < size; i++) {
+            if (fieldMetaList.get(i).mappingMeta() != selectionList.get(i).mappingMeta()) {
+                throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                        , "SubQuery Insert,index[%s] field MappingMeta[%s] and sub query MappingMeta[%s] not match."
+                        , i, fieldMetaList.get(i).mappingMeta(), selectionList.get(i).mappingMeta());
+            }
+        }
     }
 
 
@@ -79,8 +108,7 @@ abstract class DMLUtils {
         CodeEnum codeEnum = CodeEnum.resolve(enumFieldMeta.javaType(), childMeta.discriminatorValue());
 
         if (codeEnum == null) {
-            throw new MetaException(ErrorCode.META_ERROR
-                    , "ChildTableMeta[%s] discriminatorValue[%s] can't resolve CodeEnum."
+            throw new MetaException("ChildTableMeta[%s] discriminatorValue[%s] can't resolve CodeEnum."
                     , childMeta, childMeta.discriminatorValue());
         }
         parentPredicates.add(enumFieldMeta.equal(codeEnum));
@@ -177,14 +205,12 @@ abstract class DMLUtils {
                     .appendSQL(context);
         } else if (updateTimeField.javaType() == ZonedDateTime.class) {
             if (dialect.supportZoneId()) {
-                throw new MetaException(ErrorCode.META_ERROR
-                        , "dialec[%s]t not supported zone.", dialect.sqlDialect());
+                throw new MetaException("dialec[%s]t not supported zone.", dialect.sqlDialect());
             }
             SQLS.param(now, updateTimeField.mappingMeta())
                     .appendSQL(context);
         } else {
-            throw new MetaException(ErrorCode.META_ERROR
-                    , "createTime or updateTime only support LocalDateTime or ZonedDateTime,please check.");
+            throw new MetaException("createTime or updateTime only support LocalDateTime or ZonedDateTime,please check.");
         }
     }
 
@@ -223,8 +249,8 @@ abstract class DMLUtils {
         Set<FieldMeta<?, ?>> fieldMetaSet = new HashSet<>(targetFields);
 
         TableMeta<?> parentMeta = logicalTable;
-        if (logicalTable instanceof ChildTableMeta) {
-            ChildTableMeta<?> childMeta = (ChildTableMeta<?>) logicalTable;
+        if (parentMeta instanceof ChildTableMeta) {
+            ChildTableMeta<?> childMeta = (ChildTableMeta<?>) parentMeta;
             parentMeta = childMeta.parentMeta();
             appendGeneratorFields(fieldMetaSet, parentMeta, dialect.sessionFactory());
         }
@@ -246,9 +272,8 @@ abstract class DMLUtils {
         return Collections.unmodifiableSet(fieldMetaSet);
     }
 
-    static void createStandardInsertForSimple(TableMeta<?> physicalTable, TableMeta<?> logicalTable
-            , Collection<FieldMeta<?, ?>> fieldMetas, ReadonlyWrapper domainWrapper
-            , StandardInsertContext context) {
+    static void createStandardInsertForSimple(TableMeta<?> physicalTable, Collection<FieldMeta<?, ?>> fieldMetas
+            , ReadonlyWrapper domainWrapper, StandardInsertContext context) {
 
         final GenericSessionFactory sessionFactory = context.dialect.sessionFactory();
         final StringBuilder fieldBuilder = context.fieldsBuilder().append("INSERT INTO");
@@ -277,11 +302,10 @@ abstract class DMLUtils {
             context.appendField(fieldMeta);
 
             if (isConstant(fieldMeta)) {
-                valueBuilder.append(createConstant(fieldMeta, logicalTable));
+                valueBuilder.append(fieldMeta.mappingMeta().nonNullTextValue(value));
             } else {
                 valueBuilder.append("?");
-                FieldCodec fieldCodec = sessionFactory.fieldCodec(fieldMeta);
-                if (fieldCodec != null) {
+                if (sessionFactory.fieldCodec(fieldMeta) != null) {
                     context.appendParam(ParamWrapper.build(fieldMeta, value));
                 } else {
                     context.appendParam(ParamWrapper.build(fieldMeta.mappingMeta(), value));
@@ -297,8 +321,8 @@ abstract class DMLUtils {
     }
 
 
-    static void createBatchInsertForSimple(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> fieldMetas
-            , InsertContext context) {
+    static void createStandardBatchInsertForSimple(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> fieldMetas
+            , StandardInsertContext context) {
 
         StringBuilder fieldBuilder = context.fieldsBuilder()
                 .append("INSERT INTO");
@@ -308,19 +332,21 @@ abstract class DMLUtils {
 
         /// VALUE clause
         StringBuilder valueBuilder = context.sqlBuilder()
-                .append(" VALUE ( ");
+                .append(" VALUES ( ");
 
         final SQL sql = context.dql();
         int index = 0;
         for (FieldMeta<?, ?> fieldMeta : fieldMetas) {
             if (!fieldMeta.insertalbe()) {
-                continue;
+                throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                        , "FieldMeta[%s] can't insert ,can't create batch insert template.", fieldMeta);
             }
             if (index > 0) {
                 fieldBuilder.append(",");
+                valueBuilder.append(",");
             }
             // field
-            fieldBuilder.append(sql.quoteIfNeed(fieldMeta.fieldName()));
+            context.appendField(fieldMeta);
 
             if (isConstant(fieldMeta)) {
                 valueBuilder.append(createConstant(fieldMeta, tableMeta));
@@ -334,57 +360,57 @@ abstract class DMLUtils {
         valueBuilder.append(" )");
     }
 
-    static List<BatchSimpleSQLWrapper> createBatchInsertWrapper(InnerStandardBatchInsert insert
-            , List<SimpleSQLWrapper> sqlWrapperList, final FieldValuesGenerator valuesGenerator) {
-        if (sqlWrapperList.size() < 3) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "sqlWrapperList size must less than 3.");
+    static SQLWrapper createBatchInsertWrapper(InnerStandardBatchInsert insert
+            , final SQLWrapper sqlWrapper, GenericSessionFactory sessionFactory) {
+
+        final List<IDomain> domainList = insert.valueList();
+
+        List<List<ParamWrapper>> parentParamGroupList, childParamGroupList = new ArrayList<>(domainList.size());
+        SimpleSQLWrapper parentWrapper, childWrapper;
+        // extract parentWrapper,childWrapper
+        if (sqlWrapper instanceof ChildSQLWrapper) {
+            ChildSQLWrapper childSQLWrapper = (ChildSQLWrapper) sqlWrapper;
+            parentWrapper = childSQLWrapper.parentWrapper();
+            childWrapper = childSQLWrapper.childWrapper();
+            parentParamGroupList = new ArrayList<>(domainList.size());
+        } else if (sqlWrapper instanceof SimpleSQLWrapper) {
+            parentWrapper = null;
+            parentParamGroupList = Collections.emptyList();
+            childWrapper = (SimpleSQLWrapper) sqlWrapper;
+        } else {
+            throw new IllegalArgumentException(String.format("SQLWrapper[%s] supported", sqlWrapper));
         }
-        List<FieldMeta<?, ?>> fieldList = insert.fieldList();
-        List<IDomain> domainList = insert.valueList();
-        final TableMeta<?> tableMeta = insert.tableMeta();
 
-        ObjectWrapper beanWrapper;
-
-        List<BatchSimpleSQLWrapper> batchWrapperList = new ArrayList<>(domainList.size() * sqlWrapperList.size());
-        Map<IDomain, ObjectWrapper> beanWrapperMap = new HashMap<>();
-        for (SimpleSQLWrapper sqlWrapper : sqlWrapperList) {
-            List<List<ParamWrapper>> paramGroupList = new ArrayList<>(fieldList.size());
-
-            for (IDomain domain : domainList) {
-
-                beanWrapper = beanWrapperMap.computeIfAbsent(domain
-                        // create required value
-                        , key -> valuesGenerator.createValues(tableMeta, key));
-
-                Assert.state(beanWrapper.getWrappedInstance() == domain
-                        , () -> String.format("IDomain[%s] hasCode() and equals() implementation error.", domain));
-
-                List<ParamWrapper> paramWrapperList = new ArrayList<>(sqlWrapper.paramList().size());
-                for (ParamWrapper paramWrapper : sqlWrapper.paramList()) {
-                    if (paramWrapper instanceof FieldParamWrapper) {
-                        FieldParamWrapper wrapper = (FieldParamWrapper) paramWrapper;
-                        paramWrapperList.add(
-                                ParamWrapper.build(
-                                        wrapper.paramMeta().mappingMeta()
-                                        , beanWrapper.getPropertyValue(wrapper.paramMeta().propertyName())
-                                )
-                        );
-                    } else {
-                        paramWrapperList.add(paramWrapper);
-                    }
-                }
-                paramGroupList.add(paramWrapperList);
+        final FieldValuesGenerator valuesGenerator = sessionFactory.fieldValuesGenerator();
+        final TableMeta<?> logicTable = insert.tableMeta();
+        for (IDomain domain : domainList) {
+            // 1. create value for a domain
+            BeanWrapper beanWrapper = valuesGenerator.createValues(logicTable, domain);
+            // 2. create paramWrapperList
+            if (sqlWrapper instanceof ChildSQLWrapper) {
+                // create paramWrapperList for parent
+                parentParamGroupList.add(
+                        createBatchInsertParamList(beanWrapper, sessionFactory, parentWrapper.paramList())
+                );
             }
-            batchWrapperList.add(
-                    BatchSimpleSQLWrapper.build(
-                            sqlWrapper.sql()
-                            , Collections.unmodifiableList(paramGroupList)
-                            , tableMeta
-                    )
+            // create paramWrapperList for child
+            childParamGroupList.add(
+                    createBatchInsertParamList(beanWrapper, sessionFactory, childWrapper.paramList())
             );
         }
-        return batchWrapperList;
+        // 4. create BatchSimpleSQLWrapper
+        BatchSimpleSQLWrapper childBatchWrapper = BatchSimpleSQLWrapper.build(childWrapper.sql(), childParamGroupList);
+        SQLWrapper batchSQLWrapper;
+        if (sqlWrapper instanceof ChildSQLWrapper) {
+            BatchSimpleSQLWrapper parentBatchWrapper = BatchSimpleSQLWrapper.build(
+                    parentWrapper.sql(), parentParamGroupList);
+            batchSQLWrapper = ChildBatchSQLWrapper.build(parentBatchWrapper, childBatchWrapper);
+        } else {
+            batchSQLWrapper = childBatchWrapper;
+        }
+        return batchSQLWrapper;
     }
+
 
     static boolean isConstant(FieldMeta<?, ?> fieldMeta) {
         return TableMeta.VERSION.equals(fieldMeta.propertyName())
@@ -397,7 +423,11 @@ abstract class DMLUtils {
         if (TableMeta.VERSION.equals(fieldMeta.propertyName())) {
             value = 0;
         } else if (fieldMeta == logicalTable.discriminator()) {
-            value = logicalTable.discriminatorValue();
+            value = CodeEnum.resolve(fieldMeta.javaType(), logicalTable.discriminatorValue());
+            if (value == null) {
+                throw new MetaException("CodeEnum[%s] not found enum for code[%s]"
+                        , fieldMeta.javaType().getName(), logicalTable.discriminatorValue());
+            }
         } else {
             throw new IllegalArgumentException(String.format("Entity[%s] prop[%s] cannot create constant value"
                     , fieldMeta.tableMeta().javaType().getName()
@@ -406,8 +436,98 @@ abstract class DMLUtils {
         return value;
     }
 
+    static SQLWrapper createStandardUpdateSQLWrapper(Collection<Object> namedParamList, final SQLWrapper sqlWrapper) {
+
+        List<List<ParamWrapper>> parentParamGroupList, childParamGroupList = new ArrayList<>(namedParamList.size());
+        SimpleSQLWrapper parentWrapper, childWrapper;
+        // extract parentWrapper,childWrapper
+        if (sqlWrapper instanceof ChildSQLWrapper) {
+            ChildSQLWrapper childSQLWrapper = (ChildSQLWrapper) sqlWrapper;
+            parentWrapper = childSQLWrapper.parentWrapper();
+            childWrapper = childSQLWrapper.childWrapper();
+            parentParamGroupList = new ArrayList<>(namedParamList.size());
+        } else if (sqlWrapper instanceof SimpleSQLWrapper) {
+            parentWrapper = null;
+            parentParamGroupList = Collections.emptyList();
+            childWrapper = (SimpleSQLWrapper) sqlWrapper;
+        } else {
+            throw new IllegalArgumentException(String.format("SQLWrapper[%s] supported", sqlWrapper));
+        }
+
+        for (Object paramObject : namedParamList) {
+            // 1. create access object
+            BeanWrapper beanWrapper = AccessorFactory.forObjectAccess(paramObject);
+            // 2. create param group list
+            if (sqlWrapper instanceof ChildSQLWrapper) {
+                parentParamGroupList.add(
+                        // create paramWrapperList for parent
+                        createBatchNamedParamList(beanWrapper, parentWrapper.paramList())
+                );
+            }
+
+            childParamGroupList.add(
+                    // create paramWrapperList for child
+                    createBatchNamedParamList(beanWrapper, childWrapper.paramList())
+            );
+        }
+        // 3. create BatchSimpleSQLWrapper
+        BatchSimpleSQLWrapper childBatchWrapper = BatchSimpleSQLWrapper.build(childWrapper.sql()
+                , childParamGroupList, childWrapper.hasVersion());
+        SQLWrapper batchSQLWrapper;
+        if (sqlWrapper instanceof ChildSQLWrapper) {
+            BatchSimpleSQLWrapper parentBatchWrapper = BatchSimpleSQLWrapper.build(
+                    parentWrapper.sql(), parentParamGroupList, parentWrapper.hasVersion());
+            batchSQLWrapper = ChildBatchSQLWrapper.build(parentBatchWrapper, childBatchWrapper);
+        } else {
+            batchSQLWrapper = childBatchWrapper;
+        }
+        return batchSQLWrapper;
+    }
+
 
     /*################################## blow private method ##################################*/
+
+    private static List<ParamWrapper> createBatchNamedParamList(BeanWrapper beanWrapper
+            , List<ParamWrapper> placeHolder) {
+
+        List<ParamWrapper> paramWrapperList = new ArrayList<>(placeHolder.size());
+        for (ParamWrapper paramWrapper : placeHolder) {
+            if (paramWrapper instanceof NamedParamExpression) {
+                Object value = beanWrapper.getPropertyValue(((NamedParamExpression<?>) paramWrapper).name());
+                paramWrapperList.add(ParamWrapper.build(paramWrapper.paramMeta(), value));
+            } else {
+                paramWrapperList.add(paramWrapper);
+            }
+        }
+        return paramWrapperList.isEmpty()
+                ? Collections.emptyList()
+                : Collections.unmodifiableList(paramWrapperList);
+    }
+
+    private static List<ParamWrapper> createBatchInsertParamList(BeanWrapper beanWrapper
+            , GenericSessionFactory sessionFactory, List<ParamWrapper> placeHolder) {
+
+        List<ParamWrapper> paramWrapperList = new ArrayList<>(placeHolder.size());
+        for (ParamWrapper paramWrapper : placeHolder) {
+            if (paramWrapper instanceof FieldParamWrapper) {
+                FieldMeta<?, ?> fieldMeta = ((FieldParamWrapper) paramWrapper).paramMeta();
+                ParamWrapper actualParamWrapper;
+                Object value = beanWrapper.getPropertyValue(fieldMeta.propertyName());
+                if (sessionFactory.fieldCodec(fieldMeta) != null) {
+                    actualParamWrapper = ParamWrapper.build(fieldMeta, value);
+                } else {
+                    actualParamWrapper = ParamWrapper.build(fieldMeta.mappingMeta(), value);
+                }
+                paramWrapperList.add(actualParamWrapper);
+            } else {
+                paramWrapperList.add(paramWrapper);
+            }
+        }
+        return paramWrapperList.isEmpty()
+                ? Collections.emptyList()
+                : Collections.unmodifiableList(paramWrapperList);
+    }
+
 
     private static void appendGeneratorFields(Set<FieldMeta<?, ?>> fieldMetaSet, TableMeta<?> physicalTable
             , GenericSessionFactory factory) {
@@ -421,16 +541,17 @@ abstract class DMLUtils {
             }
 
         }
-
+        fieldMetaSet.add(physicalTable.id());
     }
 
     private static void doExtractParentPredicate(List<IPredicate> predicateList, Collection<FieldMeta<?, ?>> childFields
             , List<IPredicate> newPredicates, final boolean firstIsPrimary) {
         for (IPredicate predicate : predicateList) {
+            ExpressionCounselor counselor = (ExpressionCounselor) predicate;
             if (predicate instanceof OrPredicate) {
                 doExtractParentPredicatesFromOrPredicate((OrPredicate) predicate
                         , childFields, newPredicates, firstIsPrimary);
-            } else if (predicate.containsField(childFields)) {
+            } else if (counselor.containsField(childFields)) {
                 if (!firstIsPrimary) {
                     throw createNoPrimaryPredicateException(childFields);
                 }
@@ -445,6 +566,7 @@ abstract class DMLUtils {
             , final boolean firstIsPrimary) {
 
         IPredicate left = orPredicate.leftPredicate(), newLeft = null;
+        ExpressionCounselor leftCounselor = (ExpressionCounselor) left;
         if (left instanceof OrPredicate) {
             List<IPredicate> newLeftList = new ArrayList<>();
             doExtractParentPredicatesFromOrPredicate((OrPredicate) left, childFields, newLeftList, firstIsPrimary);
@@ -454,7 +576,7 @@ abstract class DMLUtils {
                 // here ,left is drop for contains childField
                 newPredicates.addAll(newLeftList);
             }
-        } else if (left.containsField(childFields)) {
+        } else if (leftCounselor.containsField(childFields)) {
             if (!firstIsPrimary) {
                 throw createNoPrimaryPredicateException(childFields);
             }

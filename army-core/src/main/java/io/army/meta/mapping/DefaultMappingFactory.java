@@ -1,6 +1,6 @@
 package io.army.meta.mapping;
 
-import io.army.ErrorCode;
+import io.army.criteria.MetaException;
 import io.army.struct.CodeEnum;
 import io.army.util.ClassUtils;
 
@@ -52,7 +52,7 @@ class DefaultMappingFactory implements MappingFactory {
     }
 
 
-    static MappingMeta getDefaultMapping(Class<?> javaType) throws MappingException {
+    static MappingMeta getDefaultMapping(Class<?> javaType) throws MetaException {
         MappingMeta mappingType;
         if (javaType.isEnum()) {
             mappingType = CodeEnumType.build(javaType);
@@ -60,18 +60,18 @@ class DefaultMappingFactory implements MappingFactory {
             mappingType = DEFAULT_MAPPING.get(javaType);
         }
         if (mappingType == null) {
-            throw new MappingException(ErrorCode.META_ERROR, "not found MappingType for %s", javaType.getName());
+            throw new MetaException("not found MappingType for %s", javaType.getName());
         }
         return mappingType;
     }
 
     @Override
-    public MappingMeta getMapping(Class<?> javaType, Class<?> mappingClass) throws MappingException {
+    public MappingMeta getMapping(Class<?> javaType, Class<?> mappingClass) throws MetaException {
         return null;
     }
 
     @Override
-    public MappingMeta getMapping(Class<?> javaType) throws MappingException {
+    public MappingMeta getMapping(Class<?> javaType) throws MetaException {
         if (javaType.isEnum()) {
             return CodeEnumType.build(javaType);
         }
@@ -80,14 +80,14 @@ class DefaultMappingFactory implements MappingFactory {
             mappingType = DEFAULT_MAPPING.get(javaType);
         }
         if (mappingType == null) {
-            throw new MappingException(ErrorCode.META_ERROR,
+            throw new MetaException(
                     "not found MappingType for java type[%s]", javaType.getName());
         }
         return mappingType;
     }
 
     @Override
-    public MappingMeta getMapping(Class<?> javaType, String mappingType) throws MappingException {
+    public MappingMeta getMapping(Class<?> javaType, String mappingType) throws MetaException {
         try {
             Class<?> mappingTypeClass = ClassUtils.forName(mappingType, getClass().getClassLoader());
 

@@ -10,7 +10,7 @@ public interface DomainUpdateContext extends DMLContext {
     String tableAlias();
 
     @Override
-    void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException;
+    void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta);
 
     @Override
     void appendField(FieldMeta<?, ?> fieldMeta);

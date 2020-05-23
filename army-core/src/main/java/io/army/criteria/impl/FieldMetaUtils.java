@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.ErrorCode;
 import io.army.annotation.*;
 import io.army.criteria.MetaException;
 import io.army.domain.IDomain;
@@ -132,7 +131,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
             try {
                 mappingClass = ClassUtils.forName(mapping.value(), ClassUtils.getDefaultClassLoader());
             } catch (ClassNotFoundException e) {
-                throw new MetaException(ErrorCode.META_ERROR, "%s.value() not a %s type."
+                throw new MetaException("%s.value() not a %s type."
                         , Mapping.class.getName()
                         , MappingMeta.class.getName()
                 );
@@ -187,7 +186,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
                 comment = commentManagedByArmy(fieldMeta);
             }
         } else if (!StringUtils.hasText(comment)) {
-            throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] column[%s] no comment."
+            throw new MetaException("Entity[%s] column[%s] no comment."
                     , fieldMeta.tableMeta().javaType().getName()
                     , fieldMeta.fieldName());
         }
@@ -198,7 +197,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         if (TableMeta.VERSION_PROPS.contains(fieldMeta.propertyName())
                 || isDiscriminator) {
             if (column.nullable()) {
-                throw new MetaException(ErrorCode.META_ERROR, "mapped class[%s] column[%s] columnNullable must be false.",
+                throw new MetaException("mapped class[%s] column[%s] columnNullable must be false.",
                         fieldMeta.tableMeta().javaType(),
                         fieldMeta.fieldName()
                 );
@@ -216,7 +215,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
                 && !StringUtils.hasText(column.defaultValue())
                 && !isManagedByArmy(fieldMeta)) {
             // TODO zoro optimize
-            throw new MetaException(ErrorCode.META_ERROR, "mapped class[%s] column[%s] no defaultValue.",
+            throw new MetaException("mapped class[%s] column[%s] no defaultValue.",
                     fieldMeta.tableMeta().javaType(),
                     fieldMeta.fieldName()
             );
@@ -277,7 +276,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         // assert DEPEND_PROP_NAME value
         if (paramMap.containsKey(PreFieldGenerator.DEPEND_PROP_NAME)
                 && !ClassUtils.isAssignable(PreFieldGenerator.class, generatorClass)) {
-            throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] prop[%s] generator cannot have %s value"
+            throw new MetaException("Entity[%s] prop[%s] generator cannot have %s value"
                     , fieldMeta.tableMeta().javaType().getName()
                     , fieldMeta.propertyName()
                     , PreFieldGenerator.DEPEND_PROP_NAME);
@@ -287,7 +286,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
     private static void assertProGenerator(Class<?> generatorClass, FieldMeta<?, ?> fieldMeta) {
         // assert Generator
         if (!ClassUtils.isAssignable(PreFieldGenerator.class, generatorClass)) {
-            throw new MetaException(ErrorCode.META_ERROR, "Domain[%s] prop[%s] generator error, isn't %s"
+            throw new MetaException("Domain[%s] prop[%s] generator error, isn't %s"
                     , fieldMeta.tableMeta()
                     , fieldMeta.propertyName()
                     , PreFieldGenerator.class.getName());
@@ -298,7 +297,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         if (!TableMeta.ID.equals(fieldMeta.propertyName())) {
             if (TableMeta.RESERVED_PROPS.contains(fieldMeta.propertyName())
                     || isDiscriminator) {
-                throw new MetaException(ErrorCode.META_ERROR, "Domain[%s].prop[%s] must no Generator"
+                throw new MetaException("Domain[%s].prop[%s] must no Generator"
                         , fieldMeta.tableMeta().javaType().getName()
                         , fieldMeta.propertyName());
             }
@@ -307,13 +306,13 @@ abstract class FieldMetaUtils extends TableMetaUtils {
 
     private static Class<?> loadGeneratorClass(FieldMeta<?, ?> fieldMeta, String className) {
         if (!StringUtils.hasText(className)) {
-            throw new MetaException(ErrorCode.META_ERROR, "Domain[%s] prop[%s] generator no class name"
+            throw new MetaException("Domain[%s] prop[%s] generator no class name"
                     , fieldMeta.tableMeta().javaType().getName(), fieldMeta.propertyName());
         }
         try {
             return ClassUtils.forName(className, ClassUtils.getDefaultClassLoader());
         } catch (ClassNotFoundException e) {
-            throw new MetaException(ErrorCode.META_ERROR, e, "Domain[%s] prop[%s] generator class not found."
+            throw new MetaException(e, "Domain[%s] prop[%s] generator class not found."
                     , fieldMeta.tableMeta().javaType().getName(), fieldMeta.propertyName());
         }
 

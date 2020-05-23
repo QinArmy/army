@@ -1,21 +1,22 @@
 package io.army.wrapper;
 
-import io.army.meta.TableMeta;
-
 import java.util.List;
 
-public interface BatchSimpleSQLWrapper extends BatchSQLWrapper {
+public interface BatchSimpleSQLWrapper extends SQLWrapper {
 
     String sql();
 
     List<List<ParamWrapper>> paramGroupList();
 
-    TableMeta<?> tableMeta();
+    boolean hasVersion();
 
 
-    static BatchSimpleSQLWrapper build(String sql, List<List<ParamWrapper>> paramGroupList, TableMeta<?> tableMeta) {
-        return new BatchSQLWrapperImpl(sql, paramGroupList, tableMeta);
+    static BatchSimpleSQLWrapper build(String sql, List<List<ParamWrapper>> paramGroupList) {
+        return new BatchSimpleSQLWrapperImpl(sql, paramGroupList);
     }
 
+    static BatchSimpleSQLWrapper build(String sql, List<List<ParamWrapper>> paramGroupList, boolean hasVersion) {
+        return new BatchSimpleSQLWrapperImpl(sql, paramGroupList, hasVersion);
+    }
 
 }

@@ -37,7 +37,7 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
 
 
     @Override
-    public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException {
+    public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) {
         doAppendFiled(tableAlias, fieldMeta);
     }
 

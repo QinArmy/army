@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.ArmyRuntimeException;
-import io.army.ErrorCode;
 import io.army.annotation.Column;
 import io.army.criteria.MetaException;
 import io.army.criteria.SQLContext;
@@ -44,7 +43,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
         FieldMeta<?, ?> actualFieldMeta = INSTANCE_MAP.putIfAbsent(fieldMetaKey, fieldMeta);
 
         if (actualFieldMeta != null && actualFieldMeta != fieldMeta) {
-            throw new MetaException(ErrorCode.META_ERROR, "domain[%s] property[%s] is duplication."
+            throw new MetaException("domain[%s] property[%s] is duplication."
                     , table.javaType().getName(), field.getName());
         }
         return fieldMeta;
@@ -76,7 +75,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
         FieldMeta<?, ?> actualFieldMeta = INSTANCE_MAP.putIfAbsent(fieldMetaKey, fieldMeta);
 
         if (actualFieldMeta != null && actualFieldMeta != fieldMeta) {
-            throw new MetaException(ErrorCode.META_ERROR, "domain[%s] property[%s] is duplication."
+            throw new MetaException("domain[%s] property[%s] is duplication."
                     , table.javaType().getName(), field.getName());
         }
         return fieldMeta;
@@ -87,7 +86,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
                 && !TableMeta.ID.equals(field.getName())) {
             ChildTableMeta<?> childMeta = (ChildTableMeta<?>) table;
             if (childMeta.parentMeta().mappingProp(field.getName())) {
-                throw new MetaException(ErrorCode.META_ERROR, "mapping property belong to ParentTableMeta[%s]"
+                throw new MetaException("mapping property belong to ParentTableMeta[%s]"
                         , childMeta.parentMeta());
             }
         }
@@ -168,7 +167,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
         } catch (ArmyRuntimeException e) {
             throw e;
         } catch (RuntimeException e) {
-            throw new MetaException(ErrorCode.META_ERROR, e, "debugSQL entity[%s] mapping property[%s] meta error"
+            throw new MetaException(e, "debugSQL entity[%s] mapping property[%s] meta error"
                     , table.javaType().getName(), propertyName);
         }
     }
@@ -301,10 +300,6 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
         context.appendField(this);
     }
 
-    @Override
-    public final void appendExpression(SQLContext context) {
-        this.appendSQL(context);
-    }
 
     @Override
     public final boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
@@ -363,7 +358,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
                 , @Nullable Boolean fieldAsc) throws MetaException {
             super(table, field, indexMeta, fieldAsc);
             if (!indexMeta.unique() || indexMeta.fieldList().size() != 1) {
-                throw new MetaException(ErrorCode.META_ERROR, "indexMeta[%s] not unique.", indexMeta);
+                throw new MetaException("indexMeta[%s] not unique.", indexMeta);
             }
         }
     }
@@ -376,7 +371,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
                 throws MetaException {
             super(table, field, indexMeta, fieldAsc);
             if (!ID.equals(field.getName())) {
-                throw new MetaException(ErrorCode.META_ERROR, "indexMeta[%s] not primary.", indexMeta);
+                throw new MetaException("indexMeta[%s] not primary.", indexMeta);
             }
         }
     }

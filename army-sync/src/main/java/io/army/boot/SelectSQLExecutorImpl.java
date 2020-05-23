@@ -10,7 +10,6 @@ import io.army.meta.mapping.MappingMeta;
 import io.army.modelgen.MetaConstant;
 import io.army.util.Pair;
 import io.army.util.Triple;
-import io.army.wrapper.SelectSQLWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

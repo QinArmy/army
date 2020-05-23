@@ -1,6 +1,5 @@
 package io.army.modelgen;
 
-import io.army.ErrorCode;
 import io.army.annotation.DiscriminatorValue;
 import io.army.annotation.Inheritance;
 import io.army.annotation.MappedSuperclass;
@@ -112,7 +111,7 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
         Inheritance inheritance = domainElement.getAnnotation(Inheritance.class);
 
         if (discriminatorValue.value() < 0) {
-            throw new MetaException(ErrorCode.META_ERROR,
+            throw new MetaException(
                     "domain[%s] DiscriminatorValue.value() must great than or equals 0",
                     domainElement.getQualifiedName()
             );
@@ -120,14 +119,14 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
 
         if (inheritance == null) {
             if (discriminatorValue.value() == 0) {
-                throw new MetaException(ErrorCode.META_ERROR,
+                throw new MetaException(
                         "child domain[%s] DiscriminatorValue.value() cannot equals 0.",
                         domainElement.getQualifiedName()
                 );
             }
         } else {
             if (discriminatorValue.value() != 0) {
-                throw new MetaException(ErrorCode.META_ERROR,
+                throw new MetaException(
                         "parentMeta domain[%s] DiscriminatorValue.value() must equals 0.",
                         domainElement.getQualifiedName()
                 );
@@ -143,11 +142,11 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
     private static void assertDomainTable(TypeElement domainElement, Set<String> tableNameSet) {
         Table table = domainElement.getAnnotation(Table.class);
         if (!StringUtils.hasText(table.name())) {
-            throw new MetaException(ErrorCode.META_ERROR, "domain[%s] tableMeta name required."
+            throw new MetaException("domain[%s] tableMeta name required."
                     , domainElement.getQualifiedName());
         }
         if (domainElement.getNestingKind() != NestingKind.TOP_LEVEL) {
-            throw new MetaException(ErrorCode.META_ERROR, "domain[%s] must be top level class."
+            throw new MetaException("domain[%s] must be top level class."
                     , domainElement.getQualifiedName());
         }
 
@@ -155,7 +154,7 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
         // make qualifiedTableName lower case
         qualifiedTableName = StringUtils.toLowerCase(qualifiedTableName);
         if (tableNameSet.contains(qualifiedTableName)) {
-            throw new MetaException(ErrorCode.META_ERROR, "domain[%s] tableMeta name[%s] duplication.",
+            throw new MetaException("domain[%s] tableMeta name[%s] duplication.",
                     domainElement.getQualifiedName(),
                     table.name()
             );
@@ -164,7 +163,7 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
         }
 
         if (!StringUtils.hasText(table.comment())) {
-            throw new MetaException(ErrorCode.META_ERROR, "domain[%s] tableMeta comment required."
+            throw new MetaException("domain[%s] tableMeta comment required."
                     , domainElement.getQualifiedName(),
                     table.comment()
             );
@@ -262,7 +261,7 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
                 }
             }
         } catch (Exception e) {
-            throw new MetaException(ErrorCode.META_ERROR, e.getMessage(), e);
+            throw new MetaException(e.getMessage(), e);
         }
 
     }

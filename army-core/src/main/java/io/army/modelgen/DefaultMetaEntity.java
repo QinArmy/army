@@ -1,6 +1,5 @@
 package io.army.modelgen;
 
-import io.army.ErrorCode;
 import io.army.annotation.Column;
 import io.army.annotation.Index;
 import io.army.annotation.Table;
@@ -41,7 +40,7 @@ class DefaultMetaEntity implements MetaEntity {
         this.entityElement = SourceCreateUtils.entityElement(entityMappedElementList);
 
         if (this.entityElement == null) {
-            throw new MetaException(ErrorCode.META_ERROR, "entityMappedElementList error");
+            throw new MetaException("entityMappedElementList error");
         }
         // indexColumnNameSet help then step
         final Map<String, IndexMode> indexMetaMap = createIndexColumnNameSet(this.entityElement);
@@ -122,7 +121,7 @@ class DefaultMetaEntity implements MetaEntity {
             // make index name lower case
             String indexName = StringUtils.toLowerCase(index.name());
             if (indexNameSet.contains(indexName)) {
-                throw new MetaException(ErrorCode.META_ERROR, "entity[%s] indexMap name[%s] duplication",
+                throw new MetaException("entity[%s] indexMap name[%s] duplication",
                         entityElement.getQualifiedName());
             }
             IndexMode indexMode = IndexMode.resolve(index);

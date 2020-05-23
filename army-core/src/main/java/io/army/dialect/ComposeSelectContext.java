@@ -7,7 +7,6 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
-import io.army.wrapper.DomainSQLWrapper;
 import io.army.wrapper.ParamWrapper;
 import io.army.wrapper.SimpleSQLWrapper;
 

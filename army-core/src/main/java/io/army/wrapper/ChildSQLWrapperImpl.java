@@ -2,9 +2,9 @@ package io.army.wrapper;
 
 final class ChildSQLWrapperImpl implements ChildSQLWrapper {
 
-    private SimpleSQLWrapper parentWrapper;
+    private final SimpleSQLWrapper parentWrapper;
 
-    private SimpleSQLWrapper childWrapper;
+    private final SimpleSQLWrapper childWrapper;
 
     ChildSQLWrapperImpl(SimpleSQLWrapper parentWrapper, SimpleSQLWrapper childWrapper) {
         this.parentWrapper = parentWrapper;

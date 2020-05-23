@@ -1,7 +1,7 @@
 package io.army;
 
 /**
- * created  on 2018/11/19.
+ *
  */
 public class ArmyRuntimeException extends RuntimeException implements IArmyExpression {
 

@@ -1,6 +1,6 @@
 package io.army.beans;
 
-interface PairWrapper extends ObjectWrapper {
+interface PairWrapper extends BeanWrapper {
 
     /**
      * @return create new {@code Pair} every invoke.

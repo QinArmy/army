@@ -3,14 +3,15 @@ package io.army.boot;
 import io.army.DomainUpdateException;
 import io.army.ErrorCode;
 import io.army.OptimisticLockException;
-import io.army.beans.ObjectWrapper;
-import io.army.beans.PropertyAccessorFactory;
+import io.army.beans.AccessorFactory;
+import io.army.beans.BeanWrapper;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Selection;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util.SQLExceptionUtils;
-import io.army.wrapper.*;
+import io.army.wrapper.ParamWrapper;
+import io.army.wrapper.SQLWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,7 +109,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     private <T> List<T> childReturningUpdate(InnerSession session, ChildReturningUpdateSQLWrapper sqlWrapper
             , Class<T> resultClass) {
 
-        Map<Object, ObjectWrapper> wrapperMap;
+        Map<Object, BeanWrapper> wrapperMap;
         // firstly, execute child update sql.
         wrapperMap = doChildReturningUpdate(session, sqlWrapper.childWrapper(), resultClass);
 
@@ -128,19 +129,19 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
         return resultList;
     }
 
-    private Map<Object, ObjectWrapper> extractChildResult(ResultSet resultSet, List<Selection> selectionList
+    private Map<Object, BeanWrapper> extractChildResult(ResultSet resultSet, List<Selection> selectionList
             , Class<?> resultClass) throws SQLException {
-        Map<Object, ObjectWrapper> map = new HashMap<>();
+        Map<Object, BeanWrapper> map = new HashMap<>();
         // check selectionList
         obtainPrimaryField(selectionList.get(0));
-        ObjectWrapper objectWrapper;
+        BeanWrapper beanWrapper;
         while (resultSet.next()) {
-            objectWrapper = PropertyAccessorFactory.forBeanPropertyAccess(resultClass);
+            beanWrapper = AccessorFactory.forBeanPropertyAccess(resultClass);
             // extract one row
-            extractRow(resultSet, selectionList, objectWrapper);
+            extractRow(resultSet, selectionList, beanWrapper);
             Object idValue;
-            if (objectWrapper.isReadableProperty(TableMeta.ID)) {
-                idValue = objectWrapper.getPropertyValue(TableMeta.ID);
+            if (beanWrapper.isReadableProperty(TableMeta.ID)) {
+                idValue = beanWrapper.getPropertyValue(TableMeta.ID);
                 if (idValue == null) {
                     throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "Domain update id value is null.");
                 }
@@ -148,7 +149,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
                 throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "Domain update must have id property.");
             }
             // result add to result map
-            if (map.putIfAbsent(idValue, objectWrapper) != null) {
+            if (map.putIfAbsent(idValue, beanWrapper) != null) {
                 throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "Domain update duplication row.");
             }
         }
@@ -157,7 +158,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
 
     @SuppressWarnings("unchecked")
     private <T> List<T> extractParentResult(ResultSet resultSet, List<Selection> selectionList
-            , Map<Object, ObjectWrapper> wrapperMap) throws SQLException {
+            , Map<Object, BeanWrapper> wrapperMap) throws SQLException {
 
         final PrimaryFieldMeta<?, ?> primaryField = obtainPrimaryField(selectionList.get(0));
         List<Selection> subSelectionList;
@@ -169,12 +170,12 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
         List<T> resultList = new ArrayList<>(wrapperMap.size());
         while (resultSet.next()) {
             Object idValue = primaryField.mappingMeta().nullSafeGet(resultSet, primaryField.alias());
-            ObjectWrapper objectWrapper = wrapperMap.get(idValue);
-            if (objectWrapper == null) {
+            BeanWrapper beanWrapper = wrapperMap.get(idValue);
+            if (beanWrapper == null) {
                 throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "Domain update,parent criteria error.");
             }
-            extractRow(resultSet, subSelectionList, objectWrapper);
-            resultList.add((T) objectWrapper.getWrappedInstance());
+            extractRow(resultSet, subSelectionList, beanWrapper);
+            resultList.add((T) beanWrapper.getWrappedInstance());
         }
         return resultList;
     }
@@ -189,7 +190,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
         return primaryField;
     }
 
-    private Map<Object, ObjectWrapper> doChildReturningUpdate(InnerSession session, ReturningUpdateSQLWrapper sqlWrapper
+    private Map<Object, BeanWrapper> doChildReturningUpdate(InnerSession session, ReturningUpdateSQLWrapper sqlWrapper
             , Class<?> resultClass) {
         final String[] aliasArray = asSelectionAliasArray(sqlWrapper.selectionList());
         // 1. create statement
@@ -198,7 +199,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
             setParams(st, sqlWrapper.paramList());
             // 3. execute sql
             try (ResultSet resultSet = st.executeQuery()) {
-                Map<Object, ObjectWrapper> wrapperMap;
+                Map<Object, BeanWrapper> wrapperMap;
                 //4. extract result
                 wrapperMap = extractChildResult(resultSet, sqlWrapper.selectionList(), resultClass);
                 if (wrapperMap.isEmpty() && sqlWrapper.hasVersion()) {
@@ -212,7 +213,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     }
 
     private <T> List<T> doParentReturningUpdate(InnerSession session, ReturningUpdateSQLWrapper sqlWrapper
-            , Map<Object, ObjectWrapper> wrapperMap) {
+            , Map<Object, BeanWrapper> wrapperMap) {
         final String[] aliasArray = asSelectionAliasArray(sqlWrapper.selectionList());
         // 1. create statement
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), aliasArray)) {

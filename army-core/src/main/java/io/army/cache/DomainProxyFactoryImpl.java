@@ -1,8 +1,8 @@
 package io.army.cache;
 
 import io.army.GenericSessionFactory;
+import io.army.beans.AccessorFactory;
 import io.army.beans.DomainWrapper;
-import io.army.beans.PropertyAccessorFactory;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.util.ClassUtils;
@@ -38,7 +38,7 @@ final class DomainProxyFactoryImpl implements DomainProxyFactory {
 
     @Override
     public Pair<IDomain, DomainUpdateAdvice> createDomainProxy(IDomain domain) {
-        DomainWrapper domainWrapper = PropertyAccessorFactory.forDomainPropertyAccess(
+        DomainWrapper domainWrapper = AccessorFactory.forDomainPropertyAccess(
                 domain, this.sessionFactory.tableMeta(domain.getClass()));
 
         // 1. obtain pointcut

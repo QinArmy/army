@@ -48,4 +48,9 @@ public abstract class AbstractSQL implements SQL {
     public final SQLDialect sqlDialect() {
         return this.dialect.sqlDialect();
     }
+
+    @Override
+    public final boolean tableAliasAfterAs() {
+        return this.dialect.tableAliasAfterAs();
+    }
 }

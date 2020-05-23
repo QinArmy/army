@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.ArmyRuntimeException;
-import io.army.ErrorCode;
 import io.army.annotation.Table;
 import io.army.criteria.MetaException;
 import io.army.criteria.SQLContext;
@@ -103,8 +102,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         switch (tableMeta.mappingMode()) {
             case PARENT:
                 if (!(tableMeta instanceof DefaultParentTable)) {
-                    throw new MetaException(ErrorCode.META_ERROR
-                            , "domain[%s] can't invoke TableMetaFactory.createParentTableMta(Class) method"
+                    throw new MetaException("domain[%s] can't invoke TableMetaFactory.createParentTableMta(Class) method"
                             , tableMeta.javaType());
                 }
                 break;
@@ -112,20 +110,18 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
                 if (!(tableMeta instanceof DefaultChildTable)) {
                     String m;
                     m = "domain[%s] can't invoke TableMetaFactory.createChildTableMeta(ParentTableMeta,Class) method";
-                    throw new MetaException(ErrorCode.META_ERROR
-                            , m
+                    throw new MetaException(m
                             , tableMeta.javaType());
                 }
                 break;
             case SIMPLE:
                 if ((tableMeta instanceof DefaultParentTable) || (tableMeta instanceof DefaultChildTable)) {
-                    throw new MetaException(ErrorCode.META_ERROR
-                            , "domain[%s] can't invoke TableMetaFactory.createTableMeta(Class) method"
+                    throw new MetaException("domain[%s] can't invoke TableMetaFactory.createTableMeta(Class) method"
                             , tableMeta.javaType());
                 }
                 break;
             default:
-                throw new MetaException(ErrorCode.META_ERROR, "unknown MappingMode[%s]", tableMeta.mappingMode());
+                throw new MetaException("unknown MappingMode[%s]", tableMeta.mappingMode());
         }
     }
 
@@ -193,7 +189,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         } catch (ArmyRuntimeException e) {
             throw e;
         } catch (RuntimeException e) {
-            throw new MetaException(ErrorCode.META_ERROR, e, e.getMessage());
+            throw new MetaException(e, e.getMessage());
         }
     }
 
@@ -279,7 +275,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     public FieldMeta<T, Object> getField(String propName) throws MetaException {
         FieldMeta<?, ?> fieldMeta = propNameToFieldMeta.get(propName);
         if (fieldMeta == null) {
-            throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
+            throw new MetaException("FieldMeta[%s] not found", propName);
         }
         return (FieldMeta<T, Object>) fieldMeta;
     }
@@ -292,7 +288,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
         FieldMeta<T, ?> fieldMeta = propNameToFieldMeta.get(propName);
         if (fieldMeta == null || propClass != fieldMeta.javaType()) {
-            throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
+            throw new MetaException("FieldMeta[%s] not found", propName);
         }
         return (FieldMeta<T, F>) fieldMeta;
     }
@@ -304,7 +300,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
         FieldMeta<T, F> fieldMeta = getField(propName, propClass);
         if (!(fieldMeta instanceof IndexFieldMeta) || propClass != fieldMeta.javaType()) {
-            throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] not found", propName);
+            throw new MetaException("FieldMeta[%s] not found", propName);
         }
         return (IndexFieldMeta<T, F>) fieldMeta;
     }
@@ -313,7 +309,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     public <F> UniqueFieldMeta<T, F> getUniqueField(String propName, Class<F> propClass) throws MetaException {
         FieldMeta<T, F> fieldMeta = getField(propName, propClass);
         if (!(fieldMeta instanceof UniqueFieldMeta)) {
-            throw new MetaException(ErrorCode.META_ERROR, "UniqueFieldMeta[%s] not found", propName);
+            throw new MetaException("UniqueFieldMeta[%s] not found", propName);
         }
         return (UniqueFieldMeta<T, F>) fieldMeta;
     }
@@ -322,7 +318,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     public <F> PrimaryFieldMeta<T, F> getPrimaryField(Class<F> propClass) throws MetaException {
         FieldMeta<T, F> fieldMeta = getField(ID, propClass);
         if (!(fieldMeta instanceof PrimaryFieldMeta)) {
-            throw new MetaException(ErrorCode.META_ERROR, "PrimaryFieldMeta not found");
+            throw new MetaException("PrimaryFieldMeta not found");
         }
         return (PrimaryFieldMeta<T, F>) fieldMeta;
     }

@@ -9,9 +9,6 @@ import io.army.meta.mapping.MappingMeta;
 public abstract class AbstractTableContextSQLContext extends AbstractSQLContext implements TableContextSQLContext {
 
 
-
-
-
     protected final TableContext tableContext;
 
 
@@ -27,7 +24,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
 
 
     @Override
-    public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException {
+    public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) {
         sqlBuilder.append(" ")
                 .append(this.dialect.quoteIfNeed(tableAlias))
                 .append(".")
@@ -70,10 +67,6 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
                 )
         );
     }
-
-
-
-
 
     protected final String findTableAlias(FieldMeta<?, ?> fieldMeta) throws CriteriaException {
         Integer count = this.tableContext.tableCountMap.get(fieldMeta.tableMeta());

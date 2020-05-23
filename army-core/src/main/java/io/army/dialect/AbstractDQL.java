@@ -5,7 +5,6 @@ import io.army.criteria.*;
 import io.army.criteria.impl.CriteriaCounselor;
 import io.army.criteria.impl.inner.*;
 import io.army.util.Assert;
-import io.army.wrapper.SelectSQLWrapper;
 import io.army.wrapper.SimpleSQLWrapper;
 
 import java.util.Collections;

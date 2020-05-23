@@ -1,8 +1,9 @@
 package io.army.wrapper;
 
+import java.util.Collections;
 import java.util.List;
 
-final class BatchSimpleUpdateSQLWrapperImpl implements BatchSimpleUpdateSQLWrapper {
+final class BatchSimpleSQLWrapperImpl implements BatchSimpleSQLWrapper {
 
     private final String sql;
 
@@ -10,7 +11,14 @@ final class BatchSimpleUpdateSQLWrapperImpl implements BatchSimpleUpdateSQLWrapp
 
     private final boolean hasVersion;
 
-    BatchSimpleUpdateSQLWrapperImpl(String sql, List<List<ParamWrapper>> paramGroupList, boolean hasVersion) {
+
+    BatchSimpleSQLWrapperImpl(String sql, List<List<ParamWrapper>> paramGroupList) {
+        this.sql = sql;
+        this.paramGroupList = Collections.unmodifiableList(paramGroupList);
+        this.hasVersion = false;
+    }
+
+    BatchSimpleSQLWrapperImpl(String sql, List<List<ParamWrapper>> paramGroupList, boolean hasVersion) {
         this.sql = sql;
         this.paramGroupList = paramGroupList;
         this.hasVersion = hasVersion;

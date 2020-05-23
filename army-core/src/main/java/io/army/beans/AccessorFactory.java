@@ -6,14 +6,16 @@ import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.util.BeanUtils;
 
+import java.util.Map;
+
 /**
- * Simple factory facade for obtaining {@link ObjectWrapper} instances,
- * in particular for {@link ObjectWrapper} instances. Conceals the actual
+ * Simple factory facade for obtaining {@link BeanWrapper} instances,
+ * in particular for {@link BeanWrapper} instances. Conceals the actual
  * target implementation classes then their extended public signature.
  *
  * @since 1.0
  */
-public abstract class PropertyAccessorFactory {
+public abstract class AccessorFactory {
 
 
     /**
@@ -24,8 +26,19 @@ public abstract class PropertyAccessorFactory {
      * @return the property accessor
      * @see BeanWrapperImpl
      */
-    public static ObjectWrapper forBeanPropertyAccess(Object target) {
+    public static BeanWrapper forBeanPropertyAccess(Object target) {
         return new BeanWrapperImpl(target);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static BeanWrapper forObjectAccess(Object beanOrMap) {
+        BeanWrapper beanWrapper;
+        if (beanOrMap instanceof Map) {
+            beanWrapper = new MapObjectWrapper((Map<String, Object>) beanOrMap);
+        } else {
+            beanWrapper = new BeanWrapperImpl(beanOrMap);
+        }
+        return beanWrapper;
     }
 
     public static DomainWrapper forDomainPropertyAccess(IDomain domain) {
@@ -36,21 +49,21 @@ public abstract class PropertyAccessorFactory {
         return new DomainWrapperImpl(domain, tableMeta);
     }
 
-    static ObjectWrapper forSimplePropertyAccess(Class<?> simpleType, String propertyName) {
+    static BeanWrapper forSimplePropertyAccess(Class<?> simpleType, String propertyName) {
         return new SimpleTypeWrapper(simpleType, propertyName);
     }
 
-    public static ObjectWrapper forBeanPropertyAccess(Class<?> beanClass) {
-        ObjectWrapper objectWrapper;
+    public static BeanWrapper forBeanPropertyAccess(Class<?> beanClass) {
+        BeanWrapper beanWrapper;
         final String simpleName = beanClass.getSimpleName();
         if (simpleName.equals("Pair")) {
-            objectWrapper = new PairBeanWrapperImpl(beanClass);
+            beanWrapper = new PairBeanWrapperImpl(beanClass);
         } else if (simpleName.equals("Tripe")) {
-            objectWrapper = new TripeWrapperImpl(beanClass);
+            beanWrapper = new TripeWrapperImpl(beanClass);
         } else {
-            objectWrapper = new BeanWrapperImpl(BeanUtils.instantiateClass(beanClass));
+            beanWrapper = new BeanWrapperImpl(BeanUtils.instantiateClass(beanClass));
         }
-        return objectWrapper;
+        return beanWrapper;
     }
 
     public static ReadonlyWrapper forReadonlyPropertyAccess(Object target) {

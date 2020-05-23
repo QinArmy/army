@@ -1,7 +1,7 @@
 package io.army;
 
+import io.army.lang.NonNull;
 import io.army.lang.Nullable;
-import org.springframework.lang.NonNull;
 
 import java.io.PrintWriter;
 
@@ -22,11 +22,13 @@ public interface IArmyExpression {
     /**
      * @see Throwable#getLocalizedMessage()
      */
+    @Nullable
     String getLocalizedMessage();
 
     /**
      * @see Throwable#getCause() ()
      */
+    @Nullable
     Throwable getCause();
 
     /**
@@ -40,7 +42,7 @@ public interface IArmyExpression {
     void printStackTrace();
 
 
-    static String createMessage(@NonNull String format, Object... args) {
+    static String createMessage(@Nullable String format, @Nullable Object... args) {
         String msg;
         if (format != null && args != null && args.length > 0) {
             msg = String.format(format, args);

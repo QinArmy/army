@@ -1,7 +1,6 @@
 package io.army.boot;
 
 import io.army.SessionFactory;
-import io.army.wrapper.SelectSQLWrapper;
 
 import java.util.List;
 

@@ -1,7 +1,5 @@
 package io.army.dialect;
 
-import io.army.beans.DomainWrapper;
-import io.army.criteria.ExpressionCounselor;
 import io.army.criteria.SpecialPredicate;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.InnerStandardUpdate;
@@ -9,9 +7,7 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
-import io.army.wrapper.DomainSQLWrapper;
 import io.army.wrapper.SimpleSQLWrapper;
-import io.army.wrapper.SimpleUpdateSQLWrapper;
 
 class StandardUpdateContext extends AbstractTableContextSQLContext implements UpdateContext {
 
@@ -54,17 +50,10 @@ class StandardUpdateContext extends AbstractTableContextSQLContext implements Up
         this.hasVersion = hasVersion;
     }
 
-
     @Override
-    protected final SimpleSQLWrapper doBuild() {
+    public final SimpleSQLWrapper build() {
         return SimpleUpdateSQLWrapper.build(this.sqlBuilder.toString(), this.paramList, this.hasVersion);
     }
-
-    @Override
-    protected final DomainSQLWrapper doBuild(DomainWrapper beanWrapper) {
-        throw new UnsupportedOperationException();
-    }
-
 
     private static final class DomainUpdateContext extends StandardUpdateContext {
 
@@ -92,7 +81,7 @@ class StandardUpdateContext extends AbstractTableContextSQLContext implements Up
         }
 
         @Override
-        public final void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException {
+        public final void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) {
             if (!this.primaryAlias.equals(tableAlias)) {
                 throw DialectUtils.createNoLogicalTableException(tableAlias);
             }
@@ -117,9 +106,8 @@ class StandardUpdateContext extends AbstractTableContextSQLContext implements Up
 
         @Override
         public final void appendFieldPredicate(SpecialPredicate predicate) {
-            ExpressionCounselor counselor = (ExpressionCounselor) predicate;
-            if (!counselor.containsSubQuery()
-                    && counselor.containsFieldCount(this.relationTable) > 1) {
+            if (!predicate.containsSubQuery()
+                    && predicate.containsFieldCount(this.relationTable) > 1) {
                 this.existsClauseContext = true;
                 doReplaceFieldPairWithExistsClause(predicate);
                 this.existsClauseContext = false;

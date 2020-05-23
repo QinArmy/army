@@ -159,7 +159,7 @@ class StandardContextualSingleDelete<C> extends AbstractSQLDebug implements Dele
     /*################################## blow static inner class ##################################*/
 
     static final class StandardContextualDomainDelete<C> extends StandardContextualSingleDelete<C>
-            implements InnerDomainDML, InnerDelete {
+            implements InnerDelete {
 
         private final Object primaryKeyValue;
 
@@ -169,10 +169,7 @@ class StandardContextualSingleDelete<C> extends AbstractSQLDebug implements Dele
             this.primaryKeyValue = primaryKeyValue;
         }
 
-        @Override
-        public final Object primaryKeyValue() {
-            return this.primaryKeyValue;
-        }
+
 
         @Override
         void assertPrimaryKeyValue(TableMeta<?> tableMeta) {

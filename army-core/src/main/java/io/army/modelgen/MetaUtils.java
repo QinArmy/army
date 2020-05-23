@@ -1,6 +1,5 @@
 package io.army.modelgen;
 
-import io.army.ErrorCode;
 import io.army.annotation.*;
 import io.army.criteria.MetaException;
 import io.army.meta.TableMeta;
@@ -36,14 +35,14 @@ abstract class MetaUtils {
 
 
     static void throwInheritanceDuplication(TypeElement entityElement) throws MetaException {
-        throw new MetaException(ErrorCode.META_ERROR,
+        throw new MetaException(
                 "Entity[%s] extends link %s count great than 1 in link of extends",
                 entityElement.getQualifiedName(),
                 Inheritance.class.getName());
     }
 
     static void throwMultiLevelInheritance(TypeElement entityElement) throws MetaException {
-        throw new MetaException(ErrorCode.META_ERROR,
+        throw new MetaException(
                 "Entity[%s] inheritance level greater than 2,it's parentMeta's MappingMode is Child.",
                 entityElement.getQualifiedName());
     }
@@ -74,7 +73,7 @@ abstract class MetaUtils {
         }
 
         if (!CollectionUtils.isEmpty(missPropNameSet)) {
-            // throw new MetaException(ErrorCode.META_ERROR,String.showSQL("entityMappedElementList:%s",entityElement));
+            // throw new MetaException(String.showSQL("entityMappedElementList:%s",entityElement));
             throw createMissingPropException(entityElement, missPropNameSet);
         }
     }
@@ -105,7 +104,7 @@ abstract class MetaUtils {
     private static void assertMappingSimple(TypeElement entityElement) {
 
         if (entityElement.getAnnotation(DiscriminatorValue.class) != null) {
-            throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] couldn'field have %s"
+            throw new MetaException("Entity[%s] couldn'field have %s"
                     , entityElement.getQualifiedName()
                     , DiscriminatorValue.class.getName());
         }
@@ -122,7 +121,7 @@ abstract class MetaUtils {
                 || (discriminatorColumn != null && !columnName.equals(discriminatorColumn))) {
 
             if (column.nullable()) {
-                throw new MetaException(ErrorCode.META_ERROR, "Domain[%s] column[%s] nullable must be false.",
+                throw new MetaException("Domain[%s] column[%s] nullable must be false.",
                         entityElement.getQualifiedName(),
                         columnName
                 );
@@ -134,14 +133,14 @@ abstract class MetaUtils {
                 && !columnName.equals(discriminatorColumn)) {
             // check comment
             if (!StringUtils.hasText(column.comment())) {
-                throw new MetaException(ErrorCode.META_ERROR, "Domain[%s] column[%s] no comment.",
+                throw new MetaException("Domain[%s] column[%s] no comment.",
                         entityElement.getQualifiedName(),
                         columnName
                 );
             }
             if (!isSpecifyTypeWithoutDefaultValue(mappedProp)
                     && !StringUtils.hasText(column.defaultValue())) {
-                throw new MetaException(ErrorCode.META_ERROR, "Domain[%s] column[%s] no defaultValue.",
+                throw new MetaException("Domain[%s] column[%s] no defaultValue.",
                         entityElement.getQualifiedName(),
                         columnName
                 );
@@ -155,7 +154,7 @@ abstract class MetaUtils {
 
     static void throwDiscriminatorNotEnum(TypeElement entityElement, VariableElement mappedProp)
             throws MetaException {
-        throw new MetaException(ErrorCode.META_ERROR,
+        throw new MetaException(
                 "entity[%s] discriminator property[%s] isn'field a Enum that implements %s .",
                 entityElement.getQualifiedName(),
                 mappedProp.getSimpleName(),
@@ -166,7 +165,7 @@ abstract class MetaUtils {
     static void assertMappingPropNotDuplication(TypeElement mappedElement, String propName, Set<String> propNameSet) {
         if (propNameSet.contains(propName)) {
             // child class duplicate mapping prop allowed by army
-            throw new MetaException(ErrorCode.META_ERROR, String.format(
+            throw new MetaException(String.format(
                     "Mapped class[%s] mapping property[%s] duplication"
                     , mappedElement.getQualifiedName(), propName));
         } else {
@@ -188,7 +187,7 @@ abstract class MetaUtils {
             }
         }
         if (!missingColumnNameSet.isEmpty()) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] index map %s not exits.",
+            throw new MetaException("entity[%s] index map %s not exits.",
                     entityElement.getQualifiedName(),
                     missingColumnNameSet
             );
@@ -204,7 +203,7 @@ abstract class MetaUtils {
     }
 
     static MetaException createColumnDuplication(TypeElement mappedElement, String columnName) {
-        return new MetaException(ErrorCode.META_ERROR, String.format(
+        return new MetaException(String.format(
                 "Mapped class[%s] mapping column[%s] duplication"
                 , mappedElement.getQualifiedName(), columnName));
     }
@@ -212,7 +211,7 @@ abstract class MetaUtils {
     static void assertReservedColumnName(TypeElement entityElement, VariableElement mappedProp, Column column) {
         if (TableMeta.RESERVED_PROPS.contains(mappedProp.getSimpleName().toString())
                 && StringUtils.hasText(column.name())) {
-            throw new MetaException(ErrorCode.META_ERROR,
+            throw new MetaException(
                     "domain[%s] reserved prop[%s] column name must use default value .",
                     entityElement.getQualifiedName(),
                     mappedProp.getSimpleName()
@@ -263,7 +262,7 @@ abstract class MetaUtils {
 
     private static MetaException createMissingPropException(TypeElement entityElement,
                                                             Set<String> missPropNameSet) {
-        return new MetaException(ErrorCode.META_ERROR, "Entity[%s] missing required mapping properties %s",
+        return new MetaException("Entity[%s] missing required mapping properties %s",
                 entityElement.getQualifiedName(),
                 missPropNameSet);
     }
@@ -282,7 +281,7 @@ abstract class MetaUtils {
         }
         if (mapping.mapping() == AnnotationUtils.getDefaultValue(Mapping.class, "mapping")
                 && !StringUtils.hasText(mapping.value())) {
-            throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] mapping prop[%s] Mapping no value",
+            throw new MetaException("Entity[%s] mapping prop[%s] Mapping no value",
                     entityElement.getQualifiedName(),
                     mappedProp.getSimpleName());
         }
@@ -294,7 +293,7 @@ abstract class MetaUtils {
         Assert.notNull(childEntity, "entityMappedElementList error ");
         DiscriminatorValue discriminatorValue = childEntity.getAnnotation(DiscriminatorValue.class);
         if (discriminatorValue == null) {
-            throw new MetaException(ErrorCode.META_ERROR, "Entity[%s] no %s"
+            throw new MetaException("Entity[%s] no %s"
                     , childEntity.getQualifiedName()
                     , DiscriminatorValue.class.getName());
         }
@@ -303,7 +302,7 @@ abstract class MetaUtils {
         String actualClassName = codeMap.get(discriminatorValue.value());
         String className = childEntity.getQualifiedName().toString();
         if (actualClassName != null && !actualClassName.equals(className)) {
-            throw new MetaException(ErrorCode.META_ERROR, "child Entity[%s] discriminatorValue duplication", className);
+            throw new MetaException("child Entity[%s] discriminatorValue duplication", className);
         } else {
             codeMap.putIfAbsent(discriminatorValue.value(), className);
         }
@@ -313,13 +312,13 @@ abstract class MetaUtils {
         String className = parentEntity.getQualifiedName().toString();
         DiscriminatorValue discriminatorValue = parentEntity.getAnnotation(DiscriminatorValue.class);
         if (discriminatorValue != null && discriminatorValue.value() != 0) {
-            throw new MetaException(ErrorCode.META_ERROR, "parentMeta Entity[%s] discriminatorValue must be 0", className);
+            throw new MetaException("parentMeta Entity[%s] discriminatorValue must be 0", className);
         }
 
         Map<Integer, String> codeMap = DISCRIMINATOR_MAP.computeIfAbsent(className, key -> new HashMap<>());
         String actualClassName = codeMap.get(0);
         if (actualClassName != null && !actualClassName.equals(className)) {
-            throw new MetaException(ErrorCode.META_ERROR, "parentMeta Entity[%s] discriminatorValue duplication", className);
+            throw new MetaException("parentMeta Entity[%s] discriminatorValue duplication", className);
         } else {
             codeMap.putIfAbsent(0, className);
         }

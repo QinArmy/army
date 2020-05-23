@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.ErrorCode;
 import io.army.criteria.MetaException;
 import io.army.criteria.SQLContext;
 import io.army.domain.IDomain;
@@ -107,27 +106,27 @@ final class Dual implements IDomain {
 
         @Override
         public FieldMeta<Dual, Object> getField(String propName) throws MetaException {
-            throw new MetaException(ErrorCode.META_ERROR, "no field[%s]", propName);
+            throw new MetaException("no field[%s]", propName);
         }
 
         @Override
         public <F> FieldMeta<Dual, F> getField(String propName, Class<F> propClass) throws MetaException {
-            throw new MetaException(ErrorCode.META_ERROR, "no field[%s]", propName);
+            throw new MetaException("no field[%s]", propName);
         }
 
         @Override
         public <F> IndexFieldMeta<Dual, F> getIndexField(String propName, Class<F> propClass) throws MetaException {
-            throw new MetaException(ErrorCode.META_ERROR, "no field[%s]", propName);
+            throw new MetaException("no field[%s]", propName);
         }
 
         @Override
         public <F> UniqueFieldMeta<Dual, F> getUniqueField(String propName, Class<F> propClass) throws MetaException {
-            throw new MetaException(ErrorCode.META_ERROR, "no field[%s]", propName);
+            throw new MetaException("no field[%s]", propName);
         }
 
         @Override
         public <F> PrimaryFieldMeta<Dual, F> getPrimaryField(Class<F> propClass) throws MetaException {
-            throw new MetaException(ErrorCode.META_ERROR, "no field[%s]", TableMeta.ID);
+            throw new MetaException("no field[%s]", TableMeta.ID);
         }
     }
 

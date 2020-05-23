@@ -1,6 +1,6 @@
 package io.army.beans;
 
-interface TripeWrapper extends ObjectWrapper {
+interface TripeWrapper extends BeanWrapper {
 
     /**
      * @return create new {@code Triple} every invoke.

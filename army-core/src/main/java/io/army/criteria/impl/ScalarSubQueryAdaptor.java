@@ -370,4 +370,6 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
     public Map<TableMeta<?>, Integer> tablePresentCountMap() {
         return this.actualSelect.tablePresentCountMap();
     }
+
+
 }

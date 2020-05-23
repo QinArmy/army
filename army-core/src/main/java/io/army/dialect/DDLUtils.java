@@ -1,6 +1,5 @@
 package io.army.dialect;
 
-import io.army.ErrorCode;
 import io.army.criteria.MetaException;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
@@ -55,7 +54,7 @@ public abstract class DDLUtils {
     }
 
     public static void throwPrecisionException(FieldMeta<?, ?> fieldMeta) {
-        throw new MetaException(ErrorCode.META_ERROR, "Entity[%s].prop[%s]'s columnSize[%s] error."
+        throw new MetaException("Entity[%s].prop[%s]'s columnSize[%s] error."
                 , fieldMeta.tableMeta().javaType()
                 , fieldMeta.propertyName()
                 , fieldMeta.precision()
@@ -63,7 +62,7 @@ public abstract class DDLUtils {
     }
 
     protected static void throwScaleException(FieldMeta<?, ?> fieldMeta) {
-        throw new MetaException(ErrorCode.META_ERROR, "Entity[%s].prop[%s]'s scale[%s] error."
+        throw new MetaException("Entity[%s].prop[%s]'s scale[%s] error."
                 , fieldMeta.tableMeta().javaType()
                 , fieldMeta.propertyName()
                 , fieldMeta.scale()
@@ -110,8 +109,7 @@ public abstract class DDLUtils {
         for (IndexMeta<?> indexMeta : indexMetas) {
             if (indexMeta.isPrimaryKey()) {
                 if (primaryKey != null) {
-                    throw new MetaException(ErrorCode.META_ERROR
-                            , "TableMeta[%s] error,primary key duplicate", tableMeta);
+                    throw new MetaException("TableMeta[%s] error,primary key duplicate", tableMeta);
                 }
                 primaryKey = indexMeta;
             } else {
@@ -119,7 +117,7 @@ public abstract class DDLUtils {
             }
         }
         if (primaryKey == null) {
-            throw new MetaException(ErrorCode.META_ERROR, "TableMeta[%s] error,no primary key index.", tableMeta);
+            throw new MetaException("TableMeta[%s] error,no primary key index.", tableMeta);
         } else {
             indexMetaList.set(0, primaryKey);
         }

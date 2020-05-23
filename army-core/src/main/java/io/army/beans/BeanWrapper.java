@@ -3,7 +3,7 @@ package io.army.beans;
 
 import io.army.lang.Nullable;
 
-public interface ObjectWrapper extends ReadonlyWrapper {
+public interface BeanWrapper extends ReadonlyWrapper {
 
 
     /**

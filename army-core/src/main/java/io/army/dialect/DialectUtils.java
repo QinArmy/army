@@ -73,13 +73,13 @@ public abstract class DialectUtils {
                 , "TableMeta[%s] and FieldMeta[%s] not match.", tableMeta, fieldMeta);
     }
 
-    public static void divideFields(ChildTableMeta<?> childMeta, Collection<FieldMeta<?, ?>> fieldMetas
+    public static void divideFields(ChildTableMeta<?> childMeta, Collection<FieldMeta<?, ?>> mergedFields
             , Collection<FieldMeta<?, ?>> parentFields, Collection<FieldMeta<?, ?>> childFields) {
 
         final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
 
         boolean appendedId = false;
-        for (FieldMeta<?, ?> fieldMeta : fieldMetas) {
+        for (FieldMeta<?, ?> fieldMeta : mergedFields) {
             if (!appendedId && TableMeta.ID.equals(fieldMeta.propertyName())) {
                 childFields.add(childMeta.id());
                 parentFields.add(parentMeta.id());

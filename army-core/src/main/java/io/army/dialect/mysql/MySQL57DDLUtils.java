@@ -1,6 +1,5 @@
 package io.army.dialect.mysql;
 
-import io.army.ErrorCode;
 import io.army.criteria.MetaException;
 import io.army.dialect.DDLUtils;
 import io.army.meta.FieldMeta;
@@ -229,7 +228,7 @@ abstract class MySQL57DDLUtils extends DDLUtils {
                     .append(fieldMeta.precision())
                     .append(")");
         } else if (precision > 6) {
-            throw new MetaException(ErrorCode.META_ERROR, "MySQL NOW/CURRENT_TIMESTAMP func precision must in [0,6]");
+            throw new MetaException("MySQL NOW/CURRENT_TIMESTAMP func precision must in [0,6]");
         }
     }
 
