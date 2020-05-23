@@ -6,43 +6,23 @@ import io.army.util.BeanUtils;
 
 import java.util.Map;
 
-final class MapObjectWrapper implements BeanWrapper {
+final class MapReadonlyWrapper implements ReadonlyWrapper {
 
     private final Map<String, Object> map;
 
-    MapObjectWrapper(Map<String, Object> map) {
+    MapReadonlyWrapper(Map<String, Object> map) {
         this.map = map;
     }
 
     @SuppressWarnings("unchecked")
-    MapObjectWrapper(Class<?> mapClass) {
+    MapReadonlyWrapper(Class<?> mapClass) {
         Assert.isAssignable(Map.class, mapClass);
         this.map = (Map<String, Object>) BeanUtils.instantiateClass(mapClass);
     }
 
     @Override
-    public boolean isWritableProperty(String propertyName) {
-        return true;
-    }
-
-    @Override
-    public void setPropertyValue(String propertyName, Object value) throws BeansException {
-        this.map.put(propertyName, value);
-    }
-
-    @Override
-    public Object getWrappedInstance() {
-        return this.map;
-    }
-
-    @Override
-    public ReadonlyWrapper getReadonlyWrapper() {
-        return this;
-    }
-
-    @Override
     public boolean isReadableProperty(String propertyName) {
-        return true;
+        return map.containsKey(propertyName);
     }
 
     @Override

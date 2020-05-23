@@ -456,18 +456,17 @@ abstract class DMLUtils {
 
         for (Object paramObject : namedParamList) {
             // 1. create access object
-            BeanWrapper beanWrapper = AccessorFactory.forObjectAccess(paramObject);
+            ReadonlyWrapper readonlyWrapper = AccessorFactory.forReadonlyAccess(paramObject);
             // 2. create param group list
             if (sqlWrapper instanceof ChildSQLWrapper) {
                 parentParamGroupList.add(
                         // create paramWrapperList for parent
-                        createBatchNamedParamList(beanWrapper, parentWrapper.paramList())
+                        createBatchNamedParamList(readonlyWrapper, parentWrapper.paramList())
                 );
             }
-
             childParamGroupList.add(
                     // create paramWrapperList for child
-                    createBatchNamedParamList(beanWrapper, childWrapper.paramList())
+                    createBatchNamedParamList(readonlyWrapper, childWrapper.paramList())
             );
         }
         // 3. create BatchSimpleSQLWrapper
@@ -487,13 +486,13 @@ abstract class DMLUtils {
 
     /*################################## blow private method ##################################*/
 
-    private static List<ParamWrapper> createBatchNamedParamList(BeanWrapper beanWrapper
+    private static List<ParamWrapper> createBatchNamedParamList(ReadonlyWrapper readonlyWrapper
             , List<ParamWrapper> placeHolder) {
 
         List<ParamWrapper> paramWrapperList = new ArrayList<>(placeHolder.size());
         for (ParamWrapper paramWrapper : placeHolder) {
             if (paramWrapper instanceof NamedParamExpression) {
-                Object value = beanWrapper.getPropertyValue(((NamedParamExpression<?>) paramWrapper).name());
+                Object value = readonlyWrapper.getPropertyValue(((NamedParamExpression<?>) paramWrapper).name());
                 paramWrapperList.add(ParamWrapper.build(paramWrapper.paramMeta(), value));
             } else {
                 paramWrapperList.add(paramWrapper);

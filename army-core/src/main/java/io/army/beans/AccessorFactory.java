@@ -30,16 +30,6 @@ public abstract class AccessorFactory {
         return new BeanWrapperImpl(target);
     }
 
-    @SuppressWarnings("unchecked")
-    public static BeanWrapper forObjectAccess(Object beanOrMap) {
-        BeanWrapper beanWrapper;
-        if (beanOrMap instanceof Map) {
-            beanWrapper = new MapObjectWrapper((Map<String, Object>) beanOrMap);
-        } else {
-            beanWrapper = new BeanWrapperImpl(beanOrMap);
-        }
-        return beanWrapper;
-    }
 
     public static DomainWrapper forDomainPropertyAccess(IDomain domain) {
         return new DomainWrapperImpl(domain);
@@ -66,8 +56,16 @@ public abstract class AccessorFactory {
         return beanWrapper;
     }
 
-    public static ReadonlyWrapper forReadonlyPropertyAccess(Object target) {
-        return new ReadonlyWrapperImpl(target);
+    @SuppressWarnings("unchecked")
+    public static ReadonlyWrapper forReadonlyAccess(Object target) {
+        ReadonlyWrapper readonlyWrapper;
+        if (target instanceof Map) {
+            readonlyWrapper = new MapReadonlyWrapper((Map<String, Object>) target);
+        } else {
+            readonlyWrapper = new ReadonlyWrapperImpl(target);
+            ;
+        }
+        return readonlyWrapper;
     }
 
     public static DomainReadonlyWrapper forDomainReadonlyPropertyAccess(IDomain domain) {
