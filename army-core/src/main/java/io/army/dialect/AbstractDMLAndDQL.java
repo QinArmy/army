@@ -148,7 +148,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         context.appendField(parentAlias, parentMeta.id());
         // from clause
         builder.append(" FROM");
-        context.appendParentTableOf(childMeta);
+        context.appendParentOf(childMeta);
 
         if (tableAliasAfterAs()) {
             builder.append(" AS");

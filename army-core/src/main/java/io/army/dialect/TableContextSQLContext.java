@@ -2,6 +2,7 @@ package io.army.dialect;
 
 import io.army.criteria.SQLContext;
 import io.army.criteria.Visible;
+import io.army.meta.ChildTableMeta;
 import io.army.wrapper.ParamWrapper;
 import io.army.wrapper.SimpleSQLWrapper;
 
@@ -14,6 +15,8 @@ public interface TableContextSQLContext extends SQLContext {
     Dialect dialect();
 
     TableContext tableContext();
+
+    void appendParentOf(ChildTableMeta<?> tableMeta);
 
     List<ParamWrapper> paramList();
 

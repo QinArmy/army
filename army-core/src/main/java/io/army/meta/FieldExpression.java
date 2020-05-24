@@ -57,6 +57,8 @@ public interface FieldExpression<T extends IDomain, F> extends SpecialExpression
 
     String defaultValue();
 
+    boolean codec();
+
 
     /**
      * (Optional) The columnSize for a decimal (exact numeric)

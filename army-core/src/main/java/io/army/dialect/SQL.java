@@ -23,4 +23,6 @@ public interface SQL {
 
     boolean tableAliasAfterAs();
 
+    boolean singleDeleteHasTableAlias();
+
 }

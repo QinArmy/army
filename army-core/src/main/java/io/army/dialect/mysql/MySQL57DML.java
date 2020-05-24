@@ -11,17 +11,9 @@ class MySQL57DML extends AbstractDML {
 
     /*################################## blow DML method ##################################*/
 
-    @Override
-    public final boolean singleDeleteHasTableAlias() {
-        return false;
-    }
 
     /*################################## blow AbstractDML method ##################################*/
 
-    @Override
-    protected final boolean tableAliasAfterAs() {
-        return true;
-    }
 
     @Override
     protected final void tableOnlyModifier(SQLContext context) {

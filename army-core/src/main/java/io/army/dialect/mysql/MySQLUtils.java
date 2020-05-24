@@ -1,8 +1,7 @@
 package io.army.dialect.mysql;
 
-import io.army.dialect.func.SQLFuncDescribe;
-
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 abstract class MySQLUtils {
 
@@ -733,26 +732,6 @@ abstract class MySQLUtils {
         // 8.0 removed keywords
         createMySQL80RemovedKeywords(keywords);
         return keywords;
-    }
-
-
-    public static Map<String, SQLFuncDescribe> createMySQL8StandardFuncMap() {
-        Map<String, SQLFuncDescribe> map = new HashMap<>();
-        SQLFuncDescribe func;
-
-        func = SQLFuncDescribe.build("NOW", true);
-        map.put("NOW", func);
-        map.put("CURRENT_TIMESTAMP", func);
-
-        func = SQLFuncDescribe.build("CURDATE", false);
-        map.put("CURDATE", func);
-        map.put("CURRENT_DATE", func);
-
-        func = SQLFuncDescribe.build("CURTIME", false);
-        map.put("CURTIME", func);
-        map.put("CURRENT_TIM", func);
-
-        return map;
     }
 
 

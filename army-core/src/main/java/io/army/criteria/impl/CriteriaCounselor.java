@@ -63,18 +63,23 @@ public abstract class CriteriaCounselor {
 
 
     public static void assertStandardUpdate(InnerStandardUpdate update) {
-        if (!(update instanceof StandardContextualSingleUpdate)) {
+        if (update instanceof InnerStandardBatchUpdate) {
+
+        } else if (!(update instanceof StandardContextualUpdate)) {
             throw new IllegalArgumentException(String.format("%s isn't instance of %s", update
-                    , StandardContextualSingleUpdate.class.getName()));
+                    , StandardContextualUpdate.class.getName()));
         }
     }
 
     public static void assertStandardDelete(InnerStandardDelete delete) {
-        if (delete instanceof InnerStandardDomainDelete) {
-            throw new IllegalArgumentException(String.format("%s isn't instance illegal.", delete));
-        } else if (!(delete instanceof StandardContextualSingleDelete)) {
+        if (delete instanceof InnerStandardBatchDelete) {
+            if (!(delete instanceof StandardContextualBatchDelete)) {
+                throw new IllegalArgumentException(String.format("%s isn't instance of %s", delete
+                        , StandardContextualBatchDelete.class.getName()));
+            }
+        } else if (!(delete instanceof StandardContextualDelete)) {
             throw new IllegalArgumentException(String.format("%s isn't instance of %s", delete
-                    , StandardContextualSingleDelete.class.getName()));
+                    , StandardContextualDelete.class.getName()));
         }
     }
 
@@ -87,13 +92,6 @@ public abstract class CriteriaCounselor {
         } else if (!(insert instanceof StandardInsert)) {
             throw new IllegalArgumentException(String.format("%s isn't instance of %s", insert
                     , StandardInsert.class.getName()));
-        }
-    }
-
-    public static void assertStandardBatchInsert(InnerStandardBatchInsert insert) {
-        if (!(insert instanceof StandardBatchInsert)) {
-            throw new IllegalArgumentException(String.format("%s isn't instance of %s", insert
-                    , StandardBatchInsert.class.getName()));
         }
     }
 

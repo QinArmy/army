@@ -104,8 +104,4 @@ class MySQL57DQL extends AbstractDQL {
         }
     }
 
-    @Override
-    protected final boolean tableAliasAfterAs() {
-        return true;
-    }
 }

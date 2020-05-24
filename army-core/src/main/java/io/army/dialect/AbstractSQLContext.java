@@ -107,10 +107,17 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
     /*################################## blow protected final method ##################################*/
 
     protected final void doAppendFiled(String tableAlias, FieldMeta<?, ?> fieldMeta) {
-        this.sqlBuilder.append(" ")
-                .append(this.dialect.quoteIfNeed(tableAlias))
-                .append(".")
-                .append(this.dialect.quoteIfNeed(fieldMeta.fieldName()));
+        this.sqlBuilder.append(" ");
+        if (this instanceof DeleteContext) {
+            if (this.dialect.singleDeleteHasTableAlias()) {
+                this.sqlBuilder.append(this.dialect.quoteIfNeed(tableAlias))
+                        .append(".");
+            }
+        } else {
+            this.sqlBuilder.append(this.dialect.quoteIfNeed(tableAlias))
+                    .append(".");
+        }
+        this.sqlBuilder.append(this.dialect.quoteIfNeed(fieldMeta.fieldName()));
     }
 
     /*################################## blow protected template method ##################################*/

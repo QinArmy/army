@@ -7,7 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public final class LongType implements MappingMeta {
+public final class LongType extends AbstractMappingType {
 
     private static final LongType INSTANCE = new LongType();
 

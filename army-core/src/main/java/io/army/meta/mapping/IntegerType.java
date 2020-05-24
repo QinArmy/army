@@ -7,7 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public final class IntegerType implements MappingMeta {
+public final class IntegerType extends AbstractMappingType {
 
     private static final IntegerType INSTANCE = new IntegerType();
 

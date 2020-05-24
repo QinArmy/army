@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.SQLContext;
 import io.army.criteria.Selection;
 import io.army.dialect.SQL;
+import io.army.meta.mapping.AbstractMappingType;
 import io.army.meta.mapping.MappingMeta;
 import io.army.util.Assert;
 
@@ -125,7 +126,7 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
     }
 
 
-    private static final class ProxyMappingType implements MappingMeta {
+    private static final class ProxyMappingType extends AbstractMappingType {
 
         private MappingMeta mappingMeta;
 

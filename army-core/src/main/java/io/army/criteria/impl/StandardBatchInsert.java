@@ -17,8 +17,6 @@ final class StandardBatchInsert<T extends IDomain> extends AbstractSQLDebug impl
 
     private final TableMeta<T> tableMeta;
 
-    private boolean ignoreGenerateValueIfCrash;
-
     private Map<FieldMeta<?, ?>, Expression<?>> commonValueMap;
 
     private List<FieldMeta<?, ?>> fieldList;
@@ -85,16 +83,6 @@ final class StandardBatchInsert<T extends IDomain> extends AbstractSQLDebug impl
     }
 
     /*################################## blow InnerStandardBatchInsert method ##################################*/
-
-    @Override
-    public final Map<FieldMeta<?, ?>, Expression<?>> commonValueMap() {
-        return this.commonValueMap;
-    }
-
-    @Override
-    public final boolean ignoreGenerateValueIfCrash() {
-        return this.ignoreGenerateValueIfCrash;
-    }
 
     @Override
     public final List<IDomain> valueList() {

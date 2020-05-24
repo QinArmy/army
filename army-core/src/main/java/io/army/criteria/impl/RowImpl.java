@@ -57,41 +57,41 @@ final class RowImpl implements Row {
 
     @Override
     public IPredicate eq(RowSubQuery rowSubQuery) {
-        return new RowPredicate(this, DualOperator.EQUAL, rowSubQuery);
+        return new RowPredicate(this, DualPredicateOperator.EQ, rowSubQuery);
     }
 
     @Override
     public IPredicate notEq(RowSubQuery rowSubQuery) {
-        return new RowPredicate(this, DualOperator.NOT_EQ, rowSubQuery);
+        return new RowPredicate(this, DualPredicateOperator.NOT_EQ, rowSubQuery);
     }
 
     @Override
     public IPredicate lt(RowSubQuery rowSubQuery) {
-        return new RowPredicate(this, DualOperator.LT, rowSubQuery);
+        return new RowPredicate(this, DualPredicateOperator.LT, rowSubQuery);
     }
 
     @Override
     public IPredicate le(RowSubQuery rowSubQuery) {
-        return new RowPredicate(this, DualOperator.LE, rowSubQuery);
+        return new RowPredicate(this, DualPredicateOperator.LE, rowSubQuery);
     }
 
     @Override
     public IPredicate gt(RowSubQuery rowSubQuery) {
-        return new RowPredicate(this, DualOperator.GT, rowSubQuery);
+        return new RowPredicate(this, DualPredicateOperator.GT, rowSubQuery);
     }
 
     @Override
     public IPredicate ge(RowSubQuery rowSubQuery) {
-        return new RowPredicate(this, DualOperator.GE, rowSubQuery);
+        return new RowPredicate(this, DualPredicateOperator.GE, rowSubQuery);
     }
 
     @Override
     public IPredicate in(RowSubQuery rowSubQuery) {
-        return new RowPredicate(this, DualOperator.IN, rowSubQuery);
+        return new RowPredicate(this, DualPredicateOperator.IN, rowSubQuery);
     }
 
     @Override
     public IPredicate notIn(RowSubQuery rowSubQuery) {
-        return new RowPredicate(this, DualOperator.NOT_IN, rowSubQuery);
+        return new RowPredicate(this, DualPredicateOperator.NOT_IN, rowSubQuery);
     }
 }

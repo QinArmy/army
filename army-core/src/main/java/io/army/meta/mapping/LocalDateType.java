@@ -7,7 +7,7 @@ import io.army.util.TimeUtils;
 import java.sql.*;
 import java.time.LocalDate;
 
-public final class LocalDateType implements MappingMeta {
+public final class LocalDateType extends AbstractMappingType {
 
     private static final LocalDateType INSTANCE = new LocalDateType();
 

@@ -6,8 +6,6 @@ import io.army.annotation.Table;
 import io.army.criteria.MetaException;
 import io.army.meta.TableMeta;
 import io.army.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 
 import javax.lang.model.element.TypeElement;
@@ -19,8 +17,6 @@ import java.util.*;
  * created  on 2018/11/18.
  */
 class DefaultMetaEntity implements MetaEntity {
-
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultMetaEntity.class);
 
     private final TypeElement entityElement;
 

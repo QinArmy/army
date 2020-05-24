@@ -57,6 +57,15 @@ class MySQL57Dialect extends AbstractDialect {
         return sql;
     }
 
+    @Override
+    public final boolean tableAliasAfterAs() {
+        return true;
+    }
+
+    @Override
+    public final boolean singleDeleteHasTableAlias() {
+        return false;
+    }
 
     /*####################################### below AbstractDialect template  method #################################*/
 

@@ -142,6 +142,11 @@ final class LogicalFieldExpImpl<T extends IDomain, F> extends AbstractExpression
     }
 
     @Override
+    public boolean codec() {
+        return this.fieldMeta.codec();
+    }
+
+    @Override
     public final boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
         return this.fieldMeta.containsField(fieldMetas);
     }

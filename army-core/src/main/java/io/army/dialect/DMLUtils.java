@@ -84,18 +84,19 @@ abstract class DMLUtils {
     }
 
 
-    static List<IPredicate> extractParentPredicateList(ChildTableMeta<?> childMeta, List<FieldMeta<?, ?>> childFieldList
+    static List<IPredicate> extractParentPredicateList(ChildTableMeta<?> childMeta
+            , Collection<FieldMeta<?, ?>> childTargetField
             , List<IPredicate> predicateList) {
 
         List<IPredicate> parentPredicates;
         // 1. extract parent predicate from where predicate list
-        if (childFieldList.isEmpty()) {
+        if (childTargetField.isEmpty()) {
             parentPredicates = new ArrayList<>(predicateList.size() + 1);
             parentPredicates.addAll(predicateList);
         } else {
             final boolean firstIsPrimary = predicateList.get(0) instanceof PrimaryValueEqualPredicate;
-            final Collection<FieldMeta<?, ?>> childFields = childFieldList.size() > 5
-                    ? new HashSet<>(childFieldList) : childFieldList;
+            final Collection<FieldMeta<?, ?>> childFields = childTargetField.size() > 5
+                    ? new HashSet<>(childTargetField) : childTargetField;
 
             parentPredicates = new ArrayList<>();
             doExtractParentPredicate(predicateList, childFields, parentPredicates, firstIsPrimary);
@@ -436,7 +437,7 @@ abstract class DMLUtils {
         return value;
     }
 
-    static SQLWrapper createStandardUpdateSQLWrapper(Collection<Object> namedParamList, final SQLWrapper sqlWrapper) {
+    static SQLWrapper createBatchSQLWrapper(Collection<Object> namedParamList, final SQLWrapper sqlWrapper) {
 
         List<List<ParamWrapper>> parentParamGroupList, childParamGroupList = new ArrayList<>(namedParamList.size());
         SimpleSQLWrapper parentWrapper, childWrapper;
@@ -482,6 +483,7 @@ abstract class DMLUtils {
         }
         return batchSQLWrapper;
     }
+
 
 
     /*################################## blow private method ##################################*/

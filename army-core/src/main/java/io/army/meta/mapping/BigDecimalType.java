@@ -8,7 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public final class BigDecimalType implements MappingMeta {
+public final class BigDecimalType extends AbstractMappingType {
 
     private static final BigDecimalType INSTANCE = new BigDecimalType();
 

@@ -507,7 +507,6 @@ abstract class TableMetaUtils {
         IndexFieldMeta<T, ?> indexFieldMeta;
         Field field;
         String lowerCaseColumnName;
-        boolean uniqueColumn;
         Boolean columnAsc;
         for (String indexColumnDefinition : indexColumns) {
             tokenizer = new StringTokenizer(indexColumnDefinition.trim(), " ", false);
@@ -528,9 +527,7 @@ abstract class TableMetaUtils {
                 assertPrimaryKeyIndex(indexMeta, indexColumnDefinition, indexColumns.length);
             }
             field = indexField(lowerCaseColumnName, tableMeta, columnToFieldMap);
-            uniqueColumn = indexMeta.unique() && indexColumns.length == 1;
-            indexFieldMeta = DefaultFieldMeta.createIndexFieldMeta(tableMeta, field, indexMeta
-                    , uniqueColumn, columnAsc);
+            indexFieldMeta = DefaultFieldMeta.createIndexFieldMeta(tableMeta, field, indexMeta, columnAsc);
 
             list.add(indexFieldMeta);
             createdColumnSet.add(lowerCaseColumnName);

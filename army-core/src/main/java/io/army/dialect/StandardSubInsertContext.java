@@ -14,5 +14,4 @@ final class StandardSubInsertContext extends AbstractTableContextSQLContext {
         super(dialect, visible, tableContext);
     }
 
-
 }

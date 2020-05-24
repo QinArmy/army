@@ -1,7 +1,6 @@
 package io.army.dialect;
 
-import io.army.beans.DomainWrapper;
-import io.army.criteria.FieldPredicate;
+import io.army.criteria.SpecialPredicate;
 import io.army.criteria.Visible;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
@@ -70,15 +69,15 @@ final class ComposeSelectContext implements SelectContext {
     }
 
     @Override
-    public DomainSQLWrapper build(DomainWrapper domainWrapper) {
-        return DomainSQLWrapper.build(this.sqlBuilder.toString(), this.paramList, domainWrapper);
-    }
-
-    @Override
     public void appendText(String textValue) {
         this.sqlBuilder
                 .append(" ")
                 .append(this.dialect.quoteIfNeed(textValue));
+    }
+
+    @Override
+    public void appendFieldPredicate(SpecialPredicate predicate) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -92,27 +91,17 @@ final class ComposeSelectContext implements SelectContext {
     }
 
     @Override
-    public void appendParentTableOf(ChildTableMeta<?> childTableMeta) {
+    public void appendParentOf(ChildTableMeta<?> childTableMeta) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) throws TableAliasException {
+    public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public void appendField(FieldMeta<?, ?> fieldMeta) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void appendSpecialPredicate(FieldPredicate predicate) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void appendFieldPair(LeftFieldPairDualPredicate predicate) {
         throw new UnsupportedOperationException();
     }
 

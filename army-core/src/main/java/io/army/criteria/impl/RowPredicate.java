@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.DualOperator;
+import io.army.criteria.DualPredicateOperator;
 import io.army.criteria.Row;
 import io.army.criteria.RowSubQuery;
 import io.army.criteria.SQLContext;
@@ -9,11 +9,11 @@ final class RowPredicate extends AbstractPredicate {
 
     private final Row row;
 
-    private final DualOperator operator;
+    private final DualPredicateOperator operator;
 
     private final RowSubQuery rowSubQuery;
 
-    RowPredicate(Row row, DualOperator operator, RowSubQuery rowSubQuery) {
+    RowPredicate(Row row, DualPredicateOperator operator, RowSubQuery rowSubQuery) {
         this.row = row;
         this.operator = operator;
         this.rowSubQuery = rowSubQuery;

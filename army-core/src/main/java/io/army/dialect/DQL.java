@@ -4,12 +4,11 @@ import io.army.criteria.SQLContext;
 import io.army.criteria.Select;
 import io.army.criteria.SubQuery;
 import io.army.criteria.Visible;
-
-import java.util.List;
+import io.army.wrapper.SQLWrapper;
 
 public interface DQL extends SQL {
 
-    List<SelectSQLWrapper> select(Select select, Visible visible);
+    SQLWrapper select(Select select, Visible visible);
 
     void select(Select select, SQLContext original);
 

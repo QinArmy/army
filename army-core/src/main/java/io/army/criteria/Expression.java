@@ -18,7 +18,7 @@ import java.util.function.Function;
  * @since 1.0
  */
 @SuppressWarnings("unused")
-public interface Expression<E> extends SelectionAble, SelfDescribed, MappingMetaAble, SortPart {
+public interface Expression<E> extends SelectionAble, SelfDescribed, MappingMetaAble, SortPart, ExpressionCounselor {
 
     /**
      * relational operate with {@code =}

@@ -1,5 +1,5 @@
 package io.army.dialect;
 
-public interface DeleteContext extends DMLContext {
+public interface DeleteContext extends UpdateDeleteContext {
 
 }

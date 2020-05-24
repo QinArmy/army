@@ -337,7 +337,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
 
     @Override
     public final IPredicate between(E first, E second) {
-        return BetweenPredicate.build(this, SQLS.param(first, this), SQLS.param(second, this));
+        return BetweenPredicate.build(this, SQLS.paramWithExp(first, this), SQLS.paramWithExp(second, this));
     }
 
     @Override
@@ -347,7 +347,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
 
     @Override
     public final IPredicate between(E first, Expression<E> second) {
-        return BetweenPredicate.build(this, SQLS.param(first, this), second);
+        return BetweenPredicate.build(this, SQLS.paramWithExp(first, this), second);
     }
 
     @Override

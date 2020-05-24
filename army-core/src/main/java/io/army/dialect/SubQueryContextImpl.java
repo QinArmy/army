@@ -7,7 +7,7 @@ import io.army.meta.FieldMeta;
 class SubQueryContextImpl extends AbstractTableContextSQLContext implements SubQueryContext {
 
     static SubQueryContextImpl build(TableContextSQLContext parentContext, InnerSubQuery subQuery) {
-        TableContext tableContext = createFromContext(subQuery.tableWrapperList());
+        TableContext tableContext = TableContext.multiTable(subQuery.tableWrapperList());
         return new SubQueryContextImpl(parentContext, tableContext);
     }
 

@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.ArmyRuntimeException;
+import io.army.annotation.Codec;
 import io.army.annotation.Column;
 import io.army.criteria.MetaException;
 import io.army.criteria.SQLContext;
@@ -10,6 +11,7 @@ import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.meta.mapping.MappingMeta;
+import io.army.util.AnnotationUtils;
 import io.army.util.Assert;
 
 import java.lang.reflect.Field;
@@ -130,6 +132,8 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     private final GeneratorMeta generatorMeta;
 
+    private final boolean codec;
+
 
     @SuppressWarnings("unchecked")
     private DefaultFieldMeta(final @NonNull TableMeta<T> table, final @NonNull Field field, final boolean unique,
@@ -164,6 +168,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
             this.defaultValue = FieldMetaUtils.columnDefault(column, this);
             this.generatorMeta = FieldMetaUtils.columnGeneratorMeta(field, this, isDiscriminator);
 
+            this.codec = AnnotationUtils.getAnnotation(field, Codec.class) != null;
         } catch (ArmyRuntimeException e) {
             throw e;
         } catch (RuntimeException e) {
@@ -247,6 +252,11 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     @Override
     public final String defaultValue() {
         return defaultValue;
+    }
+
+    @Override
+    public final boolean codec() {
+        return this.codec;
     }
 
     @Override

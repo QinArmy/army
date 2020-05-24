@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Update;
+import io.army.criteria.impl.inner.InnerStandardUpdate;
 import io.army.criteria.impl.inner.InnerUpdate;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
@@ -17,10 +18,13 @@ import java.util.function.Predicate;
 
 final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug implements
         Update, Update.UpdateAble, Update.SingleWhereAble<T, C>
-        , Update.WhereAndAble<T, C>, Update.SingleUpdateAble<T, C>, InnerDomainDML, InnerUpdate {
+        , Update.WhereAndAble<T, C>, Update.SingleUpdateAble<T, C>, InnerStandardUpdate, InnerUpdate {
 
+    static <T extends IDomain, C> StandardContextualUpdate<T, C> build(TableMeta<T> tableMeta, C criteria) {
+        return new StandardContextualUpdate<>(tableMeta, criteria);
+    }
 
-    private final TableMeta<?> tableMeta;
+    private final TableMeta<T> tableMeta;
 
     private final C criteria;
 
@@ -36,7 +40,7 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
 
     private boolean prepared;
 
-    StandardContextualUpdate(TableMeta<?> tableMeta, C criteria) {
+    private StandardContextualUpdate(TableMeta<T> tableMeta, C criteria) {
         Assert.notNull(tableMeta, "tableMeta required");
         Assert.notNull(criteria, "criteria required");
 
@@ -164,7 +168,11 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
         if (this.prepared) {
             return this;
         }
-        Assert.hasText(this.tableAlias, "tableAlias has no text,state error.");
+        Assert.state(!this.targetFieldList.isEmpty(), "update no target field list");
+        Assert.state(this.valueExpList.size() == this.targetFieldList.size()
+                , "update target field and value exp size not match");
+        Assert.state(!this.predicateList.isEmpty(), "update no where clause.");
+        Assert.state(this.tableAlias != null, "no tableAlias");
 
         CriteriaContextHolder.clearContext(this.criteriaContext);
         this.criteriaContext.clear();

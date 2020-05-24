@@ -2,6 +2,7 @@ package io.army.dialect;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Visible;
+import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
@@ -36,6 +37,11 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         this.appendField(findTableAlias(fieldMeta), fieldMeta);
     }
 
+
+    @Override
+    public final void appendParentOf(ChildTableMeta<?> tableMeta) {
+
+    }
 
     @Override
     public final void appendTable(TableMeta<?> tableMeta) {

@@ -40,7 +40,7 @@ abstract class AbstractSQLS {
         return NamedParamExpressionImpl.build(name, paramMeta);
     }
 
-    static <E> ParamExpression<E> param(E param, Expression<E> expression) {
+    static <E> ParamExpression<E> paramWithExp(E param, Expression<E> expression) {
         return ParamExpressionImp.build(expression.mappingMeta(), param);
     }
 

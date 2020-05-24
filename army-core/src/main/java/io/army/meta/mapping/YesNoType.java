@@ -9,7 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public final class YesNoType implements MappingMeta {
+public final class YesNoType extends AbstractMappingType {
 
     private static final YesNoType INSTANCE = new YesNoType();
 

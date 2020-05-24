@@ -23,6 +23,12 @@ class DualPredicate extends AbstractPredicate {
         return predicate;
     }
 
+    static PrimaryValueEqualPredicate buildPrimaryValueEqual(PrimaryFieldMeta<?, ?> primary
+            , ValueExpression<?> valueExp) {
+        return new LeftPrimaryValueEqualPredicate(primary, DualPredicateOperator.EQ, valueExp);
+    }
+
+
     private static DualPredicate buildLeftSpecial(SpecialExpression<?> left, DualPredicateOperator operator
             , Expression<?> right) {
         DualPredicate predicate;

@@ -53,4 +53,9 @@ public abstract class AbstractSQL implements SQL {
     public final boolean tableAliasAfterAs() {
         return this.dialect.tableAliasAfterAs();
     }
+
+    @Override
+    public final boolean singleDeleteHasTableAlias() {
+        return this.dialect.singleDeleteHasTableAlias();
+    }
 }

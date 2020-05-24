@@ -49,28 +49,38 @@ public abstract class SQLS extends AbstractSQLS {
     }
 
     public static <T extends IDomain> Update.SingleUpdateAble<T, EmptyObject> singleUpdate(TableMeta<T> targetTable) {
-        return new StandardContextualUpdate<>(targetTable, EmptyObject.getInstance());
+        return StandardContextualUpdate.build(targetTable, EmptyObject.getInstance());
     }
 
     public static <T extends IDomain, C> Update.SingleUpdateAble<T, C> singleUpdate(TableMeta<T> targetTable
             , C criteria) {
-        return new StandardContextualUpdate<>(targetTable, criteria);
+        return StandardContextualUpdate.build(targetTable, criteria);
+    }
+
+    public static <T extends IDomain> Update.BatchUpdateAble<T, EmptyObject> batchSingleUpdate(
+            TableMeta<T> targetTable) {
+        return new StandardContextualBatchUpdate<>(targetTable, EmptyObject.getInstance());
+    }
+
+    public static <T extends IDomain, C> Update.BatchUpdateAble<T, C> batchSingleUpdate(TableMeta<T> targetTable
+            , C criteria) {
+        return new StandardContextualBatchUpdate<>(targetTable, criteria);
     }
 
     public static Delete.SingleDeleteAble<EmptyObject> singleDelete() {
-        return StandardContextualSingleDelete.buildDelete(EmptyObject.getInstance());
+        return StandardContextualDelete.buildDelete(EmptyObject.getInstance());
     }
 
     public static <C> Delete.SingleDeleteAble<C> singleDelete(C criteria) {
-        return StandardContextualSingleDelete.buildDelete(criteria);
+        return StandardContextualDelete.buildDelete(criteria);
     }
 
-    public static Delete.SingleDeleteAble<EmptyObject> domainDelete(Object primaryKeyValue) {
-        return StandardContextualSingleDelete.buildDomainDelete(primaryKeyValue, EmptyObject.getInstance());
+    public static Delete.BatchDeleteAble<EmptyObject> batchSingleDelete() {
+        return StandardContextualBatchDelete.build(EmptyObject.getInstance());
     }
 
-    public static <C> Delete.SingleDeleteAble<C> domainDelete(Object primaryKeyValue, C criteria) {
-        return StandardContextualSingleDelete.buildDomainDelete(primaryKeyValue, criteria);
+    public static <C> Delete.BatchDeleteAble<C> batchSingleDelete(C criteria) {
+        return StandardContextualBatchDelete.build(criteria);
     }
 
     public static Select.SelectPartAble<EmptyObject> multiSelect() {

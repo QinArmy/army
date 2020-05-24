@@ -7,7 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public final class DoubleType implements MappingMeta {
+public final class DoubleType extends AbstractMappingType {
 
     private static final DoubleType INSTANCE = new DoubleType();
 
