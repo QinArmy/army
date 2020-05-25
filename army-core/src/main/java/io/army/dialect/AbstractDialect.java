@@ -9,6 +9,7 @@ import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
 import io.army.wrapper.SQLWrapper;
+import io.army.wrapper.SimpleSQLWrapper;
 
 import java.time.ZoneId;
 import java.util.Collection;
@@ -106,7 +107,7 @@ public abstract class AbstractDialect implements InnerDialect {
     /*################################## blow DQL method ##################################*/
 
     @Override
-    public final SQLWrapper select(Select select, Visible visible) {
+    public final SimpleSQLWrapper select(Select select, Visible visible) {
         return this.dql.select(select, visible);
     }
 

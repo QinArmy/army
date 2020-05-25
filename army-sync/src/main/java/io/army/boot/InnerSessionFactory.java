@@ -14,4 +14,6 @@ interface InnerSessionFactory extends SessionFactory, InnerGenericSessionFaction
     InsertSQLExecutor insertSQLExecutor();
 
     SelectSQLExecutor selectSQLExecutor();
+
+    UpdateSQLExecutor updateSQLExecutor();
 }

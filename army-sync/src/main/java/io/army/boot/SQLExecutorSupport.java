@@ -2,7 +2,6 @@ package io.army.boot;
 
 import io.army.DomainUpdateException;
 import io.army.ErrorCode;
-import io.army.InsertRowsNotMatchException;
 import io.army.OptimisticLockException;
 import io.army.beans.AccessorFactory;
 import io.army.beans.BeanWrapper;
@@ -15,6 +14,8 @@ import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.meta.TableMeta;
+import io.army.meta.mapping.MappingMeta;
+import io.army.modelgen.MetaConstant;
 import io.army.wrapper.*;
 
 import java.sql.PreparedStatement;
@@ -28,17 +29,6 @@ abstract class SQLExecutorSupport {
 
     SQLExecutorSupport(InnerSessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
-    }
-
-
-    protected final long doSimpleUpdate(InnerSession session, SimpleSQLWrapper sqlWrapper, final boolean large) {
-        long updateRows;
-        if (large) {
-            updateRows = doExecuteLargeUpdate(session, sqlWrapper);
-        } else {
-            updateRows = doExecuteUpdate(session, sqlWrapper);
-        }
-        return updateRows;
     }
 
     protected final long doChildUpdate(InnerSession session, ChildSQLWrapper childSQLWrapper, final boolean large) {
@@ -199,7 +189,11 @@ abstract class SQLExecutorSupport {
             try (ResultSet resultSet = st.executeQuery()) {
                 List<T> resultList;
                 //4. extract result
-                resultList = extractResult(resultSet, sqlWrapper.selectionList(), resultClass);
+                if (MetaConstant.SIMPLE_JAVA_TYPE_SET.contains(resultClass)) {
+                    resultList = extractSimpleResult(resultSet, sqlWrapper.selectionList(), resultClass);
+                } else {
+                    resultList = extractResult(resultSet, sqlWrapper.selectionList(), resultClass);
+                }
                 if (resultList.isEmpty() && sqlWrapper.hasVersion()) {
                     throw createOptimisticLockException(sqlWrapper.sql());
                 }
@@ -222,6 +216,32 @@ abstract class SQLExecutorSupport {
         if (beanWrapperMap.size() != resultList.size()) {
             throw createBatchNotMatchException(sqlWrapper.parentWrapper().sql(), sqlWrapper.childWrapper().sql()
                     , beanWrapperMap.size(), resultList.size());
+        }
+        return resultList;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected final <T> List<T> extractSimpleResult(ResultSet resultSet, List<Selection> selectionList
+            , Class<T> resultClass)
+            throws SQLException {
+
+        assertSimpleResult(selectionList, resultClass);
+        final Selection selection = selectionList.get(0);
+        FieldMeta<?, ?> fieldMeta = null;
+        FieldCodec fieldCodec = null;
+        if (selection instanceof FieldSelection) {
+            fieldMeta = ((FieldSelection) selection).fieldMeta();
+            fieldCodec = this.sessionFactory.fieldCodec(fieldMeta);
+        }
+        List<T> resultList = new ArrayList<>();
+        final MappingMeta mappingMeta = selection.mappingMeta();
+        while (resultSet.next()) {
+            Object value = mappingMeta.nullSafeGet(resultSet, selection.alias());
+
+            if (value != null && fieldCodec != null) {
+                value = fieldCodec.decode(fieldMeta, value);
+            }
+            resultList.add((T) value);
         }
         return resultList;
     }
@@ -346,39 +366,6 @@ abstract class SQLExecutorSupport {
 
     }
 
-    protected final void assertBatchResult(BatchSimpleSQLWrapper sqlWrapper, int[] domainRows) {
-        if (domainRows.length != sqlWrapper.paramGroupList().size()) {
-            throw new InsertRowsNotMatchException("batch  sql[%s] batch[%s] error"
-                    , sqlWrapper.sql(), domainRows.length);
-        }
-        for (int i = 0; i < domainRows.length; i++) {
-            if (domainRows[i] != 1) {
-                throw new InsertRowsNotMatchException(
-                        "batch  sql[%s]  index[%s] actual row count[%s] not 1 ."
-                        , sqlWrapper.sql(), i, domainRows[i]);
-            }
-        }
-    }
-
-
-    protected final void assertBatchChildResult(BatchSimpleSQLWrapper parentWrapper, BatchSimpleSQLWrapper childWrapper
-            , int[] parentRows, int[] childRows) {
-        if (parentRows.length != childRows.length || childRows.length != childWrapper.paramGroupList().size()) {
-            throw new InsertRowsNotMatchException(
-                    "child sql[%s]  batch count[%s] and parent sql [%s] batch count[%s] not match."
-                    , childWrapper.sql(), childRows.length, parentWrapper.sql(), parentRows.length);
-        }
-        int parentRow;
-        for (int i = 0; i < parentRows.length; i++) {
-            parentRow = parentRows[i];
-            if (parentRow != childRows[i] || parentRow != 1) {
-                throw new InsertRowsNotMatchException(
-                        "child sql[%s]  batch[%s] rows[%s] and parent sql [%s] batch[%s] rows[%s] not match."
-                        , childWrapper.sql(), i, childRows[i], parentWrapper.sql(), i, parentRows[i]);
-            }
-        }
-    }
-
     protected final void setNonNullValue(PreparedStatement st, final int index, ParamMeta paramMeta
             , final Object value)
             throws SQLException {
@@ -397,8 +384,8 @@ abstract class SQLExecutorSupport {
     @SuppressWarnings("unchecked")
     protected final <T> List<T> extractResult(ResultSet resultSet, List<Selection> selectionList
             , Class<T> resultClass) throws SQLException {
-        List<T> resultList = new ArrayList<>();
 
+        List<T> resultList = new ArrayList<>();
         BeanWrapper beanWrapper;
         while (resultSet.next()) {
             beanWrapper = AccessorFactory.forBeanPropertyAccess(resultClass);
@@ -524,7 +511,21 @@ abstract class SQLExecutorSupport {
 
     }
 
-    private static DomainUpdateException createBatchNotMatchException(String parentSql, String childSql
+    private static void assertSimpleResult(List<Selection> selectionList, Class<?> resultClass) {
+        if (selectionList.size() != 1) {
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                    , "selection size must be one,when resultClass is simple java class");
+        }
+        Selection selection = selectionList.get(0);
+        if (selection.mappingMeta().javaType() != resultClass) {
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                    , "selection's MappingMeta[%s] and  resultClass[%s] not match."
+                    , selection.mappingMeta(), resultClass);
+        }
+    }
+
+
+    static DomainUpdateException createBatchNotMatchException(String parentSql, String childSql
             , int parentRowsLength, int childRowsLength) {
         throw new DomainUpdateException(
                 "Domain update,parent sql[%s] update batch[%s] and child sql[%s] update batch[%s] not match."

@@ -40,6 +40,8 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory implements InnerS
 
     private final SelectSQLExecutor selectSQLExecutor = SelectSQLExecutor.build(this);
 
+    private final UpdateSQLExecutor updateSQLExecutor = UpdateSQLExecutor.build(this);
+
     private boolean closed;
 
 
@@ -109,6 +111,11 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory implements InnerS
     @Override
     public SelectSQLExecutor selectSQLExecutor() {
         return this.selectSQLExecutor;
+    }
+
+    @Override
+    public UpdateSQLExecutor updateSQLExecutor() {
+        return this.updateSQLExecutor;
     }
 
     @Override

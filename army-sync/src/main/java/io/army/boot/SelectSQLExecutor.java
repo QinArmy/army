@@ -1,15 +1,14 @@
 package io.army.boot;
 
-import io.army.SessionFactory;
+import io.army.wrapper.SimpleSQLWrapper;
 
 import java.util.List;
 
 interface SelectSQLExecutor {
 
-    <T> List<T> select(InnerSession session, SelectSQLWrapper wrapper, Class<T> resultClass);
+    <T> List<T> select(InnerSession session, SimpleSQLWrapper wrapper, Class<T> resultClass);
 
-
-    static SelectSQLExecutor build(SessionFactory sessionFactory) {
+    static SelectSQLExecutor build(InnerSessionFactory sessionFactory) {
         return new SelectSQLExecutorImpl(sessionFactory);
     }
 }

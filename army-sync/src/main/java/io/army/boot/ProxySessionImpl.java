@@ -79,15 +79,6 @@ class ProxySessionImpl implements ProxySession {
         return this.sessionFactory;
     }
 
-    @Override
-    public List<Integer> update(Update update) {
-        return this.sessionContext.currentSession().update(update);
-    }
-
-    @Override
-    public List<Integer> update(Update update, Visible visible) {
-        return this.sessionContext.currentSession().update(update, visible);
-    }
 
     @Override
     public void insert(Insert insert) {
@@ -100,13 +91,133 @@ class ProxySessionImpl implements ProxySession {
     }
 
     @Override
-    public void delete(Delete delete) {
-        this.sessionContext.currentSession().delete(delete);
+    public int subQueryInsert(Insert insert) {
+        return this.sessionContext.currentSession().subQueryInsert(insert);
     }
 
     @Override
-    public void delete(Delete delete, Visible visible) {
-        this.sessionContext.currentSession().delete(delete, visible);
+    public int subQueryInsert(Insert insert, Visible visible) {
+        return this.sessionContext.currentSession().subQueryInsert(insert, visible);
+    }
+
+    @Override
+    public long subQueryLargeInsert(Insert insert) {
+        return this.sessionContext.currentSession().subQueryLargeInsert(insert);
+    }
+
+    @Override
+    public long subQueryLargeInsert(Insert insert, Visible visible) {
+        return this.sessionContext.currentSession().subQueryLargeInsert(insert, visible);
+    }
+
+    @Override
+    public <T> List<T> returningInsert(Insert insert, Class<T> resultClass) {
+        return this.sessionContext.currentSession().returningInsert(insert, resultClass);
+    }
+
+    @Override
+    public <T> List<T> returningInsert(Insert insert, Class<T> resultClass, Visible visible) {
+        return this.sessionContext.currentSession().returningInsert(insert, resultClass, visible);
+    }
+
+    @Override
+    public int update(Update update) {
+        return update(update, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public int update(Update update, Visible visible) {
+        return this.sessionContext.currentSession().update(update, visible);
+    }
+
+    @Override
+    public <T> List<T> returningUpdate(Update update, Class<T> resultClass) {
+        return this.sessionContext.currentSession().returningUpdate(update, resultClass);
+    }
+
+    @Override
+    public <T> List<T> returningUpdate(Update update, Class<T> resultClass, Visible visible) {
+        return this.sessionContext.currentSession().returningUpdate(update, resultClass, visible);
+    }
+
+    @Override
+    public int[] batchUpdate(Update update) {
+        return batchUpdate(update, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public int[] batchUpdate(Update update, Visible visible) {
+        return this.sessionContext.currentSession().batchUpdate(update, visible);
+    }
+
+    @Override
+    public long largeUpdate(Update update) {
+        return largeUpdate(update, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public long largeUpdate(Update update, Visible visible) {
+        return this.sessionContext.currentSession().largeUpdate(update, visible);
+    }
+
+    @Override
+    public long[] batchLargeUpdate(Update update) {
+        return batchLargeUpdate(update, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public long[] batchLargeUpdate(Update update, Visible visible) {
+        return this.sessionContext.currentSession().batchLargeUpdate(update, visible);
+    }
+
+    @Override
+    public int delete(Delete delete) {
+        return delete(delete, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public int delete(Delete delete, Visible visible) {
+        return this.sessionContext.currentSession().delete(delete, visible);
+    }
+
+    @Override
+    public <T> List<T> returningDelete(Delete delete, Class<T> resultClass) {
+        return returningDelete(delete, resultClass, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public <T> List<T> returningDelete(Delete delete, Class<T> resultClass, Visible visible) {
+        return this.sessionContext.currentSession().returningDelete(delete, resultClass, visible);
+    }
+
+    @Override
+    public int[] batchDelete(Delete delete) {
+        return batchDelete(delete, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public int[] batchDelete(Delete delete, Visible visible) {
+        return this.sessionContext.currentSession().batchDelete(delete, visible);
+    }
+
+    @Override
+    public long largeDelete(Delete delete) {
+        return largeDelete(delete, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public long largeDelete(Delete delete, Visible visible) {
+        return this.sessionContext.currentSession().largeDelete(delete, visible);
+    }
+
+    @Override
+    public long[] batchLargeDelete(Delete delete) {
+        return batchLargeDelete(delete, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public long[] batchLargeDelete(Delete delete, Visible visible) {
+        return this.sessionContext.currentSession().batchLargeDelete(delete, visible);
     }
 
     @Override

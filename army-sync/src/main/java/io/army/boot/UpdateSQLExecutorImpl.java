@@ -21,7 +21,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     @Override
     public final int update(InnerSession session, SQLWrapper sqlWrapper) {
         if (this.sessionFactory.showSQL()) {
-            LOG.info("army will execute update sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
+            LOG.info("army will execute sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
         }
         int updateRows;
         if (sqlWrapper instanceof SimpleSQLWrapper) {
@@ -35,9 +35,9 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     }
 
     @Override
-    public final long updateLarge(InnerSession session, SQLWrapper sqlWrapper) {
+    public final long largeUpdate(InnerSession session, SQLWrapper sqlWrapper) {
         if (this.sessionFactory.showSQL()) {
-            LOG.info("army will execute update sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
+            LOG.info("army will execute sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
         }
         long updateRows;
         if (sqlWrapper instanceof SimpleSQLWrapper) {
@@ -53,7 +53,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     @Override
     public final int[] batchUpdate(InnerSession session, SQLWrapper sqlWrapper) {
         if (this.sessionFactory.showSQL()) {
-            LOG.info("army will execute update sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
+            LOG.info("army will execute  sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
         }
         int[] updateRows;
         if (sqlWrapper instanceof BatchSimpleSQLWrapper) {
@@ -67,9 +67,9 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     }
 
     @Override
-    public final long[] batchUpdateLarge(InnerSession session, SQLWrapper sqlWrapper) {
+    public final long[] batchLargeUpdate(InnerSession session, SQLWrapper sqlWrapper) {
         if (this.sessionFactory.showSQL()) {
-            LOG.info("army will execute update sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
+            LOG.info("army will execute  sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
         }
         long[] updateRows;
         if (sqlWrapper instanceof BatchSimpleSQLWrapper) {
@@ -85,7 +85,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     @Override
     public final <T> List<T> returningUpdate(InnerSession session, SQLWrapper sqlWrapper, Class<T> resultClass) {
         if (this.sessionFactory.showSQL()) {
-            LOG.info("army will execute update sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
+            LOG.info("army will execute  sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
         }
         List<T> resultList;
         if (sqlWrapper instanceof SimpleSQLWrapper) {

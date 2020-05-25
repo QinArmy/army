@@ -40,16 +40,60 @@ public interface GenericSyncSession extends GenericSession {
      * @param update will start singleUpdate dml instance.
      * @return a unmodifiable list, at most two element.
      */
-    List<Integer> update(Update update);
+    int update(Update update);
 
-    List<Integer> update(Update update, Visible visible);
+    int update(Update update, Visible visible);
+
+    <T> List<T> returningUpdate(Update update, Class<T> resultClass);
+
+    <T> List<T> returningUpdate(Update update, Class<T> resultClass, Visible visible);
+
+    int[] batchUpdate(Update update);
+
+    int[] batchUpdate(Update update, Visible visible);
+
+    long largeUpdate(Update update);
+
+    long largeUpdate(Update update, Visible visible);
+
+    long[] batchLargeUpdate(Update update);
+
+    long[] batchLargeUpdate(Update update, Visible visible);
 
     void insert(Insert insert);
 
     void insert(Insert insert, Visible visible);
 
-    void delete(Delete delete);
+    int subQueryInsert(Insert insert);
 
-    void delete(Delete delete, Visible visible);
+    int subQueryInsert(Insert insert, Visible visible);
+
+    long subQueryLargeInsert(Insert insert);
+
+    long subQueryLargeInsert(Insert insert, Visible visible);
+
+    <T> List<T> returningInsert(Insert insert, Class<T> resultClass);
+
+    <T> List<T> returningInsert(Insert insert, Class<T> resultClass, Visible visible);
+
+    int delete(Delete delete);
+
+    int delete(Delete delete, Visible visible);
+
+    <T> List<T> returningDelete(Delete delete, Class<T> resultClass);
+
+    <T> List<T> returningDelete(Delete delete, Class<T> resultClass, Visible visible);
+
+    int[] batchDelete(Delete delete);
+
+    int[] batchDelete(Delete delete, Visible visible);
+
+    long largeDelete(Delete delete);
+
+    long largeDelete(Delete delete, Visible visible);
+
+    long[] batchLargeDelete(Delete delete);
+
+    long[] batchLargeDelete(Delete delete, Visible visible);
 
 }

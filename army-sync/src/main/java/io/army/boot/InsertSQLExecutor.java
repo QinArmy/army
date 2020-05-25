@@ -13,6 +13,10 @@ interface InsertSQLExecutor {
 
     void insert(InnerSession session, List<SQLWrapper> sqlWrapperList) throws InsertException;
 
+    int subQueryInsert(InnerSession session, SQLWrapper sqlWrapper) throws InsertException;
+
+    long subQueryLargeInsert(InnerSession session, SQLWrapper sqlWrapper) throws InsertException;
+
     <T> List<T> returningInsert(InnerSession session, SQLWrapper sqlWrapper, Class<T> resultClass)
             throws InsertException;
 

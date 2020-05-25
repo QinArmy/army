@@ -10,9 +10,9 @@ interface UpdateSQLExecutor {
 
     int[] batchUpdate(InnerSession session, SQLWrapper sqlWrapper);
 
-    long updateLarge(InnerSession session, SQLWrapper sqlWrapper);
+    long largeUpdate(InnerSession session, SQLWrapper sqlWrapper);
 
-    long[] batchUpdateLarge(InnerSession session, SQLWrapper sqlWrapper);
+    long[] batchLargeUpdate(InnerSession session, SQLWrapper sqlWrapper);
 
     <T> List<T> returningUpdate(InnerSession session, SQLWrapper sqlWrapper, Class<T> resultClass);
 

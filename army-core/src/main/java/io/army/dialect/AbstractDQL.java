@@ -5,7 +5,6 @@ import io.army.criteria.*;
 import io.army.criteria.impl.CriteriaCounselor;
 import io.army.criteria.impl.inner.*;
 import io.army.util.Assert;
-import io.army.wrapper.SQLWrapper;
 import io.army.wrapper.SimpleSQLWrapper;
 
 import java.util.HashMap;
@@ -21,7 +20,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
     /*################################## blow DQL method ##################################*/
 
     @Override
-    public final SQLWrapper select(Select select, final Visible visible) {
+    public final SimpleSQLWrapper select(Select select, final Visible visible) {
         Assert.isTrue(select.prepared(), "select not prepared");
 
         SimpleSQLWrapper sqlWrapper;
