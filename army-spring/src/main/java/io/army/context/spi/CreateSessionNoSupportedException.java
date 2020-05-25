@@ -1,9 +1,9 @@
 package io.army.context.spi;
 
-import io.army.ArmyAccessException;
+import io.army.DataAccessException;
 import io.army.ErrorCode;
 
-public class CreateSessionNoSupportedException extends ArmyAccessException {
+public class CreateSessionNoSupportedException extends DataAccessException {
 
     public CreateSessionNoSupportedException(ErrorCode errorCode, String format, Object... args) {
         super(errorCode, format, args);

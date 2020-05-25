@@ -1,6 +1,6 @@
 package io.army.context.spi;
 
-import io.army.ArmyAccessException;
+import io.army.DataAccessException;
 import io.army.NoCurrentSessionException;
 import io.army.Session;
 import io.army.SessionFactory;
@@ -20,7 +20,7 @@ public final class SpringCurrentSessionContext implements CurrentSessionContext 
     }
 
     @Override
-    public Session currentSession() throws ArmyAccessException {
+    public Session currentSession() throws DataAccessException {
         Session session = (Session) TransactionSynchronizationManager.getResource(sessionFactory);
         if (session == null) {
             throw new NoCurrentSessionException("no current session");

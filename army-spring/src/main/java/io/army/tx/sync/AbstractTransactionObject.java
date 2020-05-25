@@ -1,7 +1,7 @@
 package io.army.tx.sync;
 
 
-import io.army.ArmyAccessException;
+import io.army.DataAccessException;
 import io.army.Session;
 import org.springframework.transaction.SavepointManager;
 import org.springframework.transaction.TransactionException;
@@ -51,7 +51,7 @@ abstract class AbstractTransactionObject implements SavepointManager, SmartTrans
     public final boolean isRollbackOnly() {
         try {
             return session.sessionTransaction().rollbackOnly();
-        } catch (ArmyAccessException e) {
+        } catch (DataAccessException e) {
             throw SpringTxUtils.convertArmyAccessException(e);
         }
     }
@@ -60,7 +60,7 @@ abstract class AbstractTransactionObject implements SavepointManager, SmartTrans
     public final void flush() {
         try {
             session.flush();
-        } catch (ArmyAccessException e) {
+        } catch (DataAccessException e) {
             throw SpringTxUtils.convertArmyAccessException(e);
         }
     }

@@ -177,7 +177,7 @@ abstract class SyncSessionFactoryUtils extends SessionFactoryUtils {
             }
             return sqlDialect;
         } catch (SQLException e) {
-            throw new ArmyAccessException(ErrorCode.ACCESS_ERROR, e, e.getMessage());
+            throw new DataAccessException(ErrorCode.ACCESS_ERROR, e, e.getMessage());
         }
     }
 

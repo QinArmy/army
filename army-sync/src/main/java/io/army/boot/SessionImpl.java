@@ -258,7 +258,7 @@ final class SessionImpl implements InnerSession, InnerTxSession {
             if (insertChild && this.transaction != null) {
                 this.transaction.markRollbackOnly();
             }
-            throw new ArmyAccessException(ErrorCode.ACCESS_ERROR, e, e.getMessage());
+            throw new DataAccessException(ErrorCode.ACCESS_ERROR, e, e.getMessage());
         }
         // finally, clear
         ((InnerInsert) insert).clear();
@@ -464,7 +464,7 @@ final class SessionImpl implements InnerSession, InnerTxSession {
 
     private List<Integer> executeGenericInsert(InnerGenericInsert insert, final Visible visible) {
         List<SQLWrapper> wrapperList = this.dialect.insert((Insert) insert, visible);
-        return this.sessionFactory.insertSQLExecutor().multiInsert(this, wrapperList);
+        return this.sessionFactory.insertSQLExecutor().insert(this, wrapperList);
     }
 
     private void executeDomainUpdateAdvice(DomainUpdateAdvice advice) {

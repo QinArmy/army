@@ -1,6 +1,6 @@
 package io.army.boot;
 
-import io.army.ArmyAccessException;
+import io.army.DataAccessException;
 import io.army.ErrorCode;
 import io.army.boot.migratioin.Meta2Schema;
 import io.army.boot.migratioin.SchemaExtractor;
@@ -37,7 +37,7 @@ final class DefaultSessionFactoryInitializer implements SessionFactoryInitialize
             // 3. execute dml
             executeDDL(tableSqlMap);
         } catch (SQLException e) {
-            throw new ArmyAccessException(ErrorCode.ACCESS_ERROR, e, e.getMessage());
+            throw new DataAccessException(ErrorCode.ACCESS_ERROR, e, e.getMessage());
         }
     }
 
@@ -52,7 +52,7 @@ final class DefaultSessionFactoryInitializer implements SessionFactoryInitialize
             DDLSQLExecutor ddlsqlExecutor = new BatchDDLSQLExecutor(connection);
             ddlsqlExecutor.executeDDL(tableSqlMap);
         } catch (SQLException e) {
-            throw new ArmyAccessException(ErrorCode.ACCESS_ERROR, e, "SessionFactoryInitializer failure.");
+            throw new DataAccessException(ErrorCode.ACCESS_ERROR, e, "SessionFactoryInitializer failure.");
         }
     }
 

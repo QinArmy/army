@@ -2,6 +2,7 @@ package io.army.modelgen;
 
 import io.army.annotation.Column;
 import io.army.annotation.Index;
+import io.army.annotation.Inheritance;
 import io.army.annotation.Table;
 import io.army.criteria.MetaException;
 import io.army.meta.TableMeta;
@@ -128,8 +129,10 @@ class DefaultMetaEntity implements MetaEntity {
                 indexMetaMap.put(StringUtils.toLowerCase(tokenizer.nextToken()), indexMode);
             }
         }
-        // add id index
-        indexMetaMap.put(TableMeta.ID, IndexMode.PRIMARY);
+        if (entityElement.getAnnotation(Inheritance.class) != null) {
+            // add id index
+            indexMetaMap.put(TableMeta.ID, IndexMode.PRIMARY);
+        }
         return Collections.unmodifiableMap(indexMetaMap);
     }
 

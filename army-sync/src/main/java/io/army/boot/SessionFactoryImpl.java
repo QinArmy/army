@@ -143,7 +143,7 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory implements InnerS
         return "SessionFactory[" + this.name + "]";
     }
 
-    void initSessionFactory() throws ArmyAccessException {
+    void initSessionFactory() throws DataAccessException {
         // 1.  migration meta
         new DefaultSessionFactoryInitializer(this).onStartup();
 

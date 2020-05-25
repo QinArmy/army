@@ -191,7 +191,7 @@ abstract class SourceCreateUtils {
         appendMetaCount(entityElement, builder, parentEntityElement, mappingPropList);
 
         // 3. field count validate static method
-        appendFieldCountValidateMethod(entityElement, builder, mappingPropList);
+        appendFieldCountValidateMethod(entityElement, builder);
 
         //4. prop names  definition
         appendMappingPropNames(builder, mappingPropList);
@@ -206,8 +206,7 @@ abstract class SourceCreateUtils {
         return builder.toString();
     }
 
-    private static void appendFieldCountValidateMethod(TypeElement entityElement, StringBuilder builder,
-                                                       List<MetaAttribute> mappingPropList) {
+    private static void appendFieldCountValidateMethod(TypeElement entityElement, StringBuilder builder) {
         builder.append("\n")
                 .append(MEMBER_PRE)
                 .append("static {\n")

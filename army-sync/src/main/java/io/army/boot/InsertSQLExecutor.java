@@ -11,10 +11,10 @@ import java.util.List;
 interface InsertSQLExecutor {
 
 
-    List<Integer> multiInsert(InnerSession session, List<SQLWrapper> sqlWrapperList) throws InsertException;
+    void insert(InnerSession session, List<SQLWrapper> sqlWrapperList) throws InsertException;
 
-    List<Integer> batchInsert(InnerSession session, List<BatchSQLWrapper> sqlWrapperList);
-
+    <T> List<T> returningInsert(InnerSession session, SQLWrapper sqlWrapper, Class<T> resultClass)
+            throws InsertException;
 
     static InsertSQLExecutor build(InnerSessionFactory sessionFactory) {
         return new InsertSQLExecutorIml(sessionFactory);

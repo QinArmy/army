@@ -1,6 +1,6 @@
 package io.army.util;
 
-import io.army.ArmyAccessException;
+import io.army.DataAccessException;
 import io.army.ErrorCode;
 
 import java.sql.SQLException;
@@ -11,8 +11,8 @@ public abstract class SQLExceptionUtils {
         throw new UnsupportedOperationException();
     }
 
-    public static ArmyAccessException convert(SQLException e, String sql) {
-        return new ArmyAccessException(ErrorCode.ACCESS_ERROR, e
+    public static DataAccessException convert(SQLException e, String sql) {
+        return new DataAccessException(ErrorCode.ACCESS_ERROR, e
                 , "army set param occur error ,sql[%s]", sql);
     }
 }
