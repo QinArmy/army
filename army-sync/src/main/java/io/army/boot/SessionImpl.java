@@ -571,14 +571,15 @@ final class SessionImpl implements InnerSession, InnerTxSession {
 
     @Override
     public void flush() throws SessionException {
-        if (this.sessionCache != null) {
-            for (DomainUpdateAdvice advice : this.sessionCache.updateAdvices()) {
-                if (advice.hasUpdate()) {
-                    //
-                }
-            }
+        if (this.sessionCache == null) {
+            return;
         }
-
+        for (DomainUpdateAdvice advice : this.sessionCache.updateAdvices()) {
+            if (!advice.hasUpdate()) {
+                continue;
+            }
+            update(CacheDomainUpdate.build(advice), Visible.ONLY_VISIBLE);
+        }
     }
 
     /*################################## blow InnerSession method ##################################*/
