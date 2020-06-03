@@ -4,8 +4,8 @@ import io.army.criteria.Insert;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner.InnerStandardSubQueryInsert;
 import io.army.domain.IDomain;
-import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
+import io.army.meta.MappingMode;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
@@ -19,6 +19,10 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
         , Insert.InsertAble, Insert.SubQueryTargetFieldAble<T, C>, Insert.SubQueryValueAble<C>
         , InnerStandardSubQueryInsert {
 
+    static <T extends IDomain, C> StandardContextualSubQueryInsert<T, C> build(TableMeta<T> tableMeta, C criteria) {
+        return new StandardContextualSubQueryInsert<>(tableMeta, criteria);
+    }
+
     private final C criteria;
 
     private final CriteriaContext criteriaContext;
@@ -31,9 +35,9 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
 
     private boolean prepared;
 
-    StandardContextualSubQueryInsert(TableMeta<T> tableMeta, C criteria) {
-        if (tableMeta instanceof ChildTableMeta) {
-            throw new IllegalArgumentException("StandardContextualSubQueryInsert not support ChildTableMeta");
+    private StandardContextualSubQueryInsert(TableMeta<T> tableMeta, C criteria) {
+        if (tableMeta.mappingMode() != MappingMode.SIMPLE) {
+            throw new IllegalArgumentException("StandardContextualSubQueryInsert only support Simple Mapping Mode");
         }
         this.criteria = criteria;
         this.tableMeta = tableMeta;
@@ -50,12 +54,6 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
     }
 
     /*################################## blow SubQueryValueAble method ##################################*/
-
-    @Override
-    public final InsertAble values(SubQuery subQuery) {
-        this.subQuery = subQuery;
-        return this;
-    }
 
     @Override
     public final InsertAble values(Function<C, SubQuery> function) {
@@ -94,7 +92,6 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
         }
 
         CriteriaContextHolder.clearContext(this.criteriaContext);
-        this.criteriaContext.clear();
 
         Assert.state(!CollectionUtils.isEmpty(this.fieldList), "fieldList is empty,error.");
         Assert.state(this.subQuery != null, "values(SubQuery) or values(Function<C, SubQuery> ) must be invoked.");

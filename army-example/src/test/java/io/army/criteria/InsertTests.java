@@ -1,7 +1,5 @@
 package io.army.criteria;
 
-import com.example.domain.account.Account;
-import com.example.domain.account.Account_;
 import com.example.domain.account.BalanceAccount;
 import com.example.domain.account.BalanceAccount_;
 import io.army.criteria.impl.SQLS;
@@ -54,12 +52,12 @@ public class InsertTests {
 
     @Test
     public void subQueryInsert() {
-        List<FieldMeta<Account, ?>> fieldMetaList = new ArrayList<>();
+       /* List<FieldMeta<Account, ?>> fieldMetaList = new ArrayList<>();
         fieldMetaList.add(Account_.balance);
         Insert insert = SQLS.subQueryInsert(Account_.T)
                 .insertInto(fieldMetaList)
                 .values(this::valuesSubQuery)
-                .asInsert();
+                .asInsert();*/
     }
 
     private SubQuery valuesSubQuery(EmptyObject emptyObject) {

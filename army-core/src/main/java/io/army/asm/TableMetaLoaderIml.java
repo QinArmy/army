@@ -19,7 +19,6 @@ import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 
-
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -157,23 +156,6 @@ class TableMetaLoaderIml implements TableMetaLoader {
                     , metaClass);
         }
     }
-
-
-/*
-    @Nullable
-    private Class<?> loadParentEntityClass(Class<?> entityClass) {
-        Class<?> superClass = entityClass.getSuperclass();
-        Class<?> parentEntityClass = null;
-        Inheritance inheritance;
-        for (; superClass != Object.class; superClass = superClass.getSuperclass()) {
-            inheritance = AnnotationUtils.getAnnotation(superClass, Inheritance.class);
-            if (inheritance != null && AnnotationUtils.getAnnotation(superClass, Table.class) != null) {
-                parentEntityClass = superClass;
-                break;
-            }
-        }
-        return parentEntityClass;
-    }*/
 
     private void clean() {
         patternResolver = null;

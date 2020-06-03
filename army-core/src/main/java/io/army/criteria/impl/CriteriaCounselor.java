@@ -96,7 +96,12 @@ public abstract class CriteriaCounselor {
     }
 
     public static void assertStandardSubQueryInsert(InnerStandardSubQueryInsert insert) {
-        if (!(insert instanceof StandardContextualSubQueryInsert)) {
+        if (insert instanceof InnerStandardChildSubQueryInsert) {
+            if (!(insert instanceof StandardContextualChildSubQueryInsert)) {
+                throw new IllegalArgumentException(String.format("%s isn't instance of %s", insert
+                        , StandardContextualChildSubQueryInsert.class.getName()));
+            }
+        } else if (!(insert instanceof StandardContextualSubQueryInsert)) {
             throw new IllegalArgumentException(String.format("%s isn't instance of %s", insert
                     , StandardContextualSubQueryInsert.class.getName()));
         }

@@ -65,9 +65,36 @@ public interface Insert extends SQLStatement, SQLAble, SQLDebug, QueryAble {
 
     interface SubQueryValueAble<C> extends InsertSQLAble {
 
-        InsertAble values(SubQuery subQuery);
 
         InsertAble values(Function<C, SubQuery> function);
+    }
+
+    /*################################## blow child sub query insert interfaces ##################################*/
+
+    interface ParentSubQueryTargetFieldAble<T extends IDomain, C> extends InsertSQLAble {
+
+        ParentSubQueryAble<T, C> parentFields(List<FieldMeta<? super T, ?>> fieldMetaList);
+
+        ParentSubQueryAble<T, C> parentFields(Function<C, List<FieldMeta<? super T, ?>>> function);
+
+    }
+
+    interface ChildSubQueryTargetFieldAble<T extends IDomain, C> extends InsertSQLAble {
+
+        ChildSubQueryAble<C> childFields(List<FieldMeta<T, ?>> fieldMetaList);
+
+        ChildSubQueryAble<C> childFields(Function<C, List<FieldMeta<T, ?>>> function);
+
+    }
+
+    interface ParentSubQueryAble<T extends IDomain, C> extends InsertSQLAble {
+
+        ChildSubQueryTargetFieldAble<T, C> parentSubQuery(Function<C, SubQuery> function);
+    }
+
+    interface ChildSubQueryAble<C> extends InsertSQLAble {
+
+        InsertAble childSubQuery(Function<C, SubQuery> function);
     }
 
 

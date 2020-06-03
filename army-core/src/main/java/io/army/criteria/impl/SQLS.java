@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.domain.IDomain;
+import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
@@ -40,12 +41,22 @@ public abstract class SQLS extends AbstractSQLS {
 
     public static <T extends IDomain> Insert.SubQueryTargetFieldAble<T, EmptyObject> subQueryInsert(
             TableMeta<T> targetTable) {
-        return new StandardContextualSubQueryInsert<>(targetTable, EmptyObject.getInstance());
+        return StandardContextualSubQueryInsert.build(targetTable, EmptyObject.getInstance());
     }
 
     public static <T extends IDomain, C> Insert.SubQueryTargetFieldAble<T, C> subQueryInsert(
             TableMeta<T> targetTable, C criteria) {
-        return new StandardContextualSubQueryInsert<>(targetTable, criteria);
+        return StandardContextualSubQueryInsert.build(targetTable, criteria);
+    }
+
+    public static <T extends IDomain> Insert.ParentSubQueryTargetFieldAble<T, EmptyObject> subQueryInsert(
+            ChildTableMeta<T> tableMeta) {
+        return StandardContextualChildSubQueryInsert.build(tableMeta, EmptyObject.getInstance());
+    }
+
+    public static <T extends IDomain, C> Insert.ParentSubQueryTargetFieldAble<T, C> subQueryInsert(
+            ChildTableMeta<T> tableMeta, C criteria) {
+        return StandardContextualChildSubQueryInsert.build(tableMeta, criteria);
     }
 
     public static <T extends IDomain> Update.SingleUpdateAble<T, EmptyObject> singleUpdate(TableMeta<T> targetTable) {
