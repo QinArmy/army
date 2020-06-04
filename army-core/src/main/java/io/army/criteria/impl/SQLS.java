@@ -35,9 +35,12 @@ public abstract class SQLS extends AbstractSQLS {
      * @return a standard insert api object.
      */
     public static <T extends IDomain> Insert.InsertIntoAble<T> multiInsert(TableMeta<T> targetTable) {
-        return new StandardInsert<>(targetTable);
+        return StandardInsert.build(targetTable);
     }
 
+    public static <T extends IDomain> Insert.BatchInsertOptionAble<T> batchInsert(TableMeta<T> targetTable) {
+        return StandardBatchInsert.build(targetTable);
+    }
 
     public static <T extends IDomain> Insert.SubQueryTargetFieldAble<T, EmptyObject> subQueryInsert(
             TableMeta<T> targetTable) {

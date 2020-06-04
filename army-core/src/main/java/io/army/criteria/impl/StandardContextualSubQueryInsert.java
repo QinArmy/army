@@ -4,8 +4,8 @@ import io.army.criteria.Insert;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner.InnerStandardSubQueryInsert;
 import io.army.domain.IDomain;
+import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
-import io.army.meta.MappingMode;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
@@ -36,7 +36,7 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
     private boolean prepared;
 
     private StandardContextualSubQueryInsert(TableMeta<T> tableMeta, C criteria) {
-        if (tableMeta.mappingMode() != MappingMode.SIMPLE) {
+        if (tableMeta instanceof ChildTableMeta) {
             throw new IllegalArgumentException("StandardContextualSubQueryInsert only support Simple Mapping Mode");
         }
         this.criteria = criteria;
@@ -50,6 +50,12 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
     @Override
     public final SubQueryValueAble<C> insertInto(List<FieldMeta<T, ?>> fieldMetaList) {
         this.fieldList = new ArrayList<>(fieldMetaList);
+        return this;
+    }
+
+    @Override
+    public SubQueryValueAble<C> insertInto(Function<C, List<FieldMeta<T, ?>>> function) {
+        this.fieldList = new ArrayList<>(function.apply(this.criteria));
         return this;
     }
 
@@ -81,6 +87,8 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
     @Override
     public final void clear() {
         this.fieldList = null;
+        this.subQuery = null;
+        this.prepared = false;
     }
 
     /*################################## blow InsertAble method ##################################*/

@@ -85,7 +85,7 @@ public abstract class CriteriaCounselor {
 
     public static void assertStandardInsert(InnerStandardInsert insert) {
         if (insert instanceof InnerStandardBatchInsert) {
-            if (insert instanceof StandardBatchInsert) {
+            if (!(insert instanceof StandardBatchInsert)) {
                 throw new IllegalArgumentException(String.format("%s isn't instance of %s", insert
                         , StandardBatchInsert.class.getName()));
             }

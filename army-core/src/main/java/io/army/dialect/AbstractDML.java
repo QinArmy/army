@@ -200,28 +200,55 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         final List<SQLWrapper> sqlWrapperList = new ArrayList<>(domainList.size());
 
         final FieldValuesGenerator valuesGenerator = this.dialect.sessionFactory().fieldValuesGenerator();
+
+        final boolean migrationData = insert.migrationData();
         DomainWrapper domainWrapper;
 
         for (IDomain domain : domainList) {
             // 2. create required values.
-            domainWrapper = valuesGenerator.createValues(tableMeta, domain);
+            domainWrapper = valuesGenerator.createValues(tableMeta, domain, migrationData);
             sqlWrapperList.add(
                     // 3. create sql of domain
-                    insertDomain(tableMeta, domainWrapper, fieldMetaSet, insert, visible)
+                    insertDomain(domainWrapper, fieldMetaSet, insert, visible)
             );
         }
         return sqlWrapperList;
     }
 
-    private SimpleSQLWrapper standardSubQueryInsert(InnerStandardSubQueryInsert insert, final Visible visible) {
+    private SQLWrapper standardSubQueryInsert(InnerStandardSubQueryInsert insert, final Visible visible) {
+        SQLWrapper sqlWrapper;
+        if (insert instanceof InnerStandardChildSubQueryInsert) {
+            sqlWrapper = standardChildQueryInsert((InnerStandardChildSubQueryInsert) insert, visible);
+        } else {
+            StandardSubInsertContext context = StandardSubInsertContext.build(insert, this.dialect, visible);
+            parseStandardSimpleSubQueryInsert(context, insert.tableMeta(), insert.fieldList(), insert.subQuery());
+            sqlWrapper = context.build();
+        }
+        return sqlWrapper;
+    }
 
+    private ChildSQLWrapper standardChildQueryInsert(InnerStandardChildSubQueryInsert insert, final Visible visible) {
+        final ChildTableMeta<?> childMeta = insert.tableMeta();
+        final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
 
-        final List<FieldMeta<?, ?>> fieldMetaList = insert.fieldList();
-        DMLUtils.assertSubQueryInsert(fieldMetaList, insert.subQuery());
+        // firstly ,parse parent insert sql
+        StandardSubInsertContext parentContext = StandardSubInsertContext.buildParent(insert, this.dialect, visible);
+        parseStandardSimpleSubQueryInsert(parentContext, parentMeta, insert.parentFieldList(), insert.parentSubQuery());
 
-        final StandardSubInsertContext context = StandardSubInsertContext.build(insert, this.dialect, visible);
+        // secondly ,parse child insert sql
+        StandardSubInsertContext childContext = StandardSubInsertContext.buildChild(insert, this.dialect, visible);
+        parseStandardSimpleSubQueryInsert(childContext, childMeta, insert.fieldList(), insert.subQuery());
+
+        return ChildSQLWrapper.build(parentContext.build(), childContext.build());
+    }
+
+    private void parseStandardSimpleSubQueryInsert(StandardSubInsertContext context
+            , TableMeta<?> tableMeta, List<FieldMeta<?, ?>> fieldMetaList, SubQuery subQuery) {
+
+        DMLUtils.assertSubQueryInsert(fieldMetaList, subQuery);
+
         StringBuilder builder = context.sqlBuilder().append("INSERT INTO");
-        context.appendTable(insert.tableMeta());
+        context.appendTable(tableMeta);
         builder.append(" ( ");
 
         int index = 0;
@@ -229,31 +256,34 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
             if (index > 0) {
                 builder.append(",");
             }
+            if (fieldMeta.tableMeta() != tableMeta) {
+                throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                        , "Sub Query Insert FieldMeta[%s] and TableMeta[%s] not match.", fieldMeta, tableMeta);
+            }
             context.appendField(fieldMeta);
             index++;
         }
         builder.append(" )");
-        insert.subQuery().appendSQL(context);
-        return context.build();
+        subQuery.appendSQL(context);
+
     }
 
 
-    private SQLWrapper insertDomain(TableMeta<?> tableMeta, DomainWrapper domainWrapper
+    private SQLWrapper insertDomain(DomainWrapper domainWrapper
             , Collection<FieldMeta<?, ?>> fieldMetas
-            , InnerStandardInsert innerInsert, final Visible visible) {
+            , InnerStandardInsert insert, final Visible visible) {
 
         SQLWrapper sqlWrapper;
-        switch (tableMeta.mappingMode()) {
+        switch (insert.tableMeta().mappingMode()) {
             case PARENT:
             case SIMPLE:
-                sqlWrapper = createInsertForSimple(tableMeta, domainWrapper, fieldMetas, innerInsert, visible);
+                sqlWrapper = createInsertForSimple(domainWrapper, fieldMetas, insert, visible);
                 break;
             case CHILD:
-                sqlWrapper = createInsertForChild((ChildTableMeta<?>) tableMeta
-                        , domainWrapper, fieldMetas, innerInsert, visible);
+                sqlWrapper = createInsertForChild(domainWrapper, fieldMetas, insert, visible);
                 break;
             default:
-                throw DialectUtils.createMappingModeUnknownException(tableMeta.mappingMode());
+                throw DialectUtils.createMappingModeUnknownException(insert.tableMeta().mappingMode());
 
         }
         return sqlWrapper;
@@ -262,12 +292,12 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     /**
      * @param mergedFields merged by {@link DMLUtils#mergeInsertFields(TableMeta, Dialect, Collection)}
      */
-    private ChildSQLWrapper createInsertForChild(final ChildTableMeta<?> childMeta
-            , DomainWrapper beanWrapper, Collection<FieldMeta<?, ?>> mergedFields
+    private ChildSQLWrapper createInsertForChild(DomainWrapper beanWrapper, Collection<FieldMeta<?, ?>> mergedFields
             , InnerStandardInsert insert, final Visible visible) {
 
         Assert.notEmpty(mergedFields, "mergedFields must not empty.");
 
+        final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) insert.tableMeta();
         final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
         final Set<FieldMeta<?, ?>> parentFields = new HashSet<>(), childFields = new HashSet<>();
         // 1.divide fields
@@ -289,16 +319,17 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         return ChildSQLWrapper.build(parentContext.build(), childContext.build());
     }
 
+
     /**
      * @param mergedFields merged by {@link DMLUtils#mergeInsertFields(TableMeta, Dialect, Collection)}
      */
-    private SimpleSQLWrapper createInsertForSimple(TableMeta<?> tableMeta, DomainWrapper beanWrapper
+    private SimpleSQLWrapper createInsertForSimple(DomainWrapper beanWrapper
             , Collection<FieldMeta<?, ?>> mergedFields, InnerStandardInsert insert
             , final Visible visible) {
 
         StandardInsertContext context = StandardInsertContext.build(insert, this.dialect, visible);
 
-        DMLUtils.createStandardInsertForSimple(tableMeta, mergedFields, beanWrapper, context);
+        DMLUtils.createStandardInsertForSimple(insert.tableMeta(), mergedFields, beanWrapper, context);
 
         return context.build();
     }

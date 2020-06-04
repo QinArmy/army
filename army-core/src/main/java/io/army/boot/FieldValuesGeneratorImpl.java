@@ -37,18 +37,25 @@ final class FieldValuesGeneratorImpl implements FieldValuesGenerator {
     }
 
     @Override
-    public final DomainWrapper createValues(TableMeta<?> tableMeta, IDomain domain) throws FieldValuesCreateException {
+    public final DomainWrapper createValues(TableMeta<?> tableMeta, IDomain domain, boolean migrationData)
+            throws FieldValuesCreateException {
 
         Assert.isTrue(tableMeta.javaType() == domain.getClass(), "tableMeta then entity not match");
 
         final DomainWrapper entityWrapper = AccessorFactory.forDomainPropertyAccess(
                 domain, this.sessionFactory.tableMeta(domain.getClass()));
 
-        createValuesManagedByArmy(tableMeta, entityWrapper);
+        if (migrationData) {
+            // discriminator
+            createDiscriminatorValue(tableMeta, entityWrapper);
+        } else {
+            createValuesManagedByArmy(tableMeta, entityWrapper);
 
-        createValuesWithGenerator(tableMeta, entityWrapper);
+            createValuesWithGenerator(tableMeta, entityWrapper);
+        }
         return entityWrapper;
     }
+
 
     /*################################## blow private method ##################################*/
 

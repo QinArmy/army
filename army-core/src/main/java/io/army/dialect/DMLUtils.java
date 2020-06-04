@@ -292,7 +292,7 @@ abstract class DMLUtils {
                 continue;
             }
             value = domainWrapper.getPropertyValue(fieldMeta.propertyName());
-            if (value == null) {
+            if (value == null && !fieldMeta.nullable()) {
                 continue;
             }
             if (count > 0) {
@@ -335,7 +335,6 @@ abstract class DMLUtils {
         StringBuilder valueBuilder = context.sqlBuilder()
                 .append(" VALUES ( ");
 
-        final SQL sql = context.dql();
         int index = 0;
         for (FieldMeta<?, ?> fieldMeta : fieldMetas) {
             if (!fieldMeta.insertalbe()) {
@@ -353,7 +352,7 @@ abstract class DMLUtils {
                 valueBuilder.append(createConstant(fieldMeta, tableMeta));
             } else {
                 valueBuilder.append("?");
-                context.appendParam(FieldParamWrapper.build(fieldMeta));
+                context.appendParam(new FieldParamWrapperImpl(fieldMeta));
             }
             index++;
         }
@@ -384,9 +383,11 @@ abstract class DMLUtils {
 
         final FieldValuesGenerator valuesGenerator = sessionFactory.fieldValuesGenerator();
         final TableMeta<?> logicTable = insert.tableMeta();
+        final boolean migrationData = insert.migrationData();
+
         for (IDomain domain : domainList) {
             // 1. create value for a domain
-            BeanWrapper beanWrapper = valuesGenerator.createValues(logicTable, domain);
+            BeanWrapper beanWrapper = valuesGenerator.createValues(logicTable, domain, migrationData);
             // 2. create paramWrapperList
             if (sqlWrapper instanceof ChildSQLWrapper) {
                 // create paramWrapperList for parent
@@ -506,12 +507,12 @@ abstract class DMLUtils {
     }
 
     private static List<ParamWrapper> createBatchInsertParamList(BeanWrapper beanWrapper
-            , GenericSessionFactory sessionFactory, List<ParamWrapper> placeHolder) {
+            , GenericSessionFactory sessionFactory, List<ParamWrapper> placeHolderList) {
 
-        List<ParamWrapper> paramWrapperList = new ArrayList<>(placeHolder.size());
-        for (ParamWrapper paramWrapper : placeHolder) {
-            if (paramWrapper instanceof FieldParamWrapper) {
-                FieldMeta<?, ?> fieldMeta = ((FieldParamWrapper) paramWrapper).paramMeta();
+        List<ParamWrapper> paramWrapperList = new ArrayList<>(placeHolderList.size());
+        for (ParamWrapper placeHolder : placeHolderList) {
+            if (placeHolder instanceof FieldParamWrapper) {
+                FieldMeta<?, ?> fieldMeta = ((FieldParamWrapper) placeHolder).paramMeta();
                 ParamWrapper actualParamWrapper;
                 Object value = beanWrapper.getPropertyValue(fieldMeta.propertyName());
                 if (sessionFactory.fieldCodec(fieldMeta) != null) {
@@ -521,7 +522,7 @@ abstract class DMLUtils {
                 }
                 paramWrapperList.add(actualParamWrapper);
             } else {
-                paramWrapperList.add(paramWrapper);
+                paramWrapperList.add(placeHolder);
             }
         }
         return paramWrapperList.isEmpty()
@@ -567,7 +568,6 @@ abstract class DMLUtils {
             , final boolean firstIsPrimary) {
 
         IPredicate left = orPredicate.leftPredicate(), newLeft = null;
-        ExpressionCounselor leftCounselor = (ExpressionCounselor) left;
         if (left instanceof OrPredicate) {
             List<IPredicate> newLeftList = new ArrayList<>();
             doExtractParentPredicatesFromOrPredicate((OrPredicate) left, childFields, newLeftList, firstIsPrimary);
@@ -577,7 +577,7 @@ abstract class DMLUtils {
                 // here ,left is drop for contains childField
                 newPredicates.addAll(newLeftList);
             }
-        } else if (leftCounselor.containsField(childFields)) {
+        } else if (left.containsField(childFields)) {
             if (!firstIsPrimary) {
                 throw createNoPrimaryPredicateException(childFields);
             }
@@ -601,5 +601,26 @@ abstract class DMLUtils {
                 , "detect ChildTableMeta set clause FieldMetas[%s] present where clause," +
                 "but first predicate isn't primary field predicate."
                 , childFields);
+    }
+
+    private static final class FieldParamWrapperImpl implements FieldParamWrapper {
+
+
+        private final FieldMeta<?, ?> fieldMeta;
+
+        private FieldParamWrapperImpl(FieldMeta<?, ?> fieldMeta) {
+            this.fieldMeta = fieldMeta;
+        }
+
+
+        @Override
+        public final FieldMeta<?, ?> paramMeta() {
+            return this.fieldMeta;
+        }
+
+        @Override
+        public final Object value() {
+            throw new UnsupportedOperationException();
+        }
     }
 }

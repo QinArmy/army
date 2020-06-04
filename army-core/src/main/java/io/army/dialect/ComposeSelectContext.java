@@ -69,6 +69,11 @@ final class ComposeSelectContext implements SelectContext {
     }
 
     @Override
+    public TableContextSQLContext parentContext() {
+        return null;
+    }
+
+    @Override
     public void appendText(String textValue) {
         this.sqlBuilder
                 .append(" ")

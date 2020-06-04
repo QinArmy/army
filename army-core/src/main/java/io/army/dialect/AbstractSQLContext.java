@@ -21,11 +21,14 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
 
     protected final List<ParamWrapper> paramList;
 
+    private final TableContextSQLContext parentContext;
+
     protected AbstractSQLContext(Dialect dialect, Visible visible) {
         this.dialect = dialect;
         this.visible = visible;
         this.sqlBuilder = new StringBuilder();
         this.paramList = new ArrayList<>();
+        this.parentContext = null;
     }
 
     protected AbstractSQLContext(TableContextSQLContext original) {
@@ -33,6 +36,7 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
         this.visible = original.visible();
         this.sqlBuilder = original.sqlBuilder();
         this.paramList = original.paramList();
+        this.parentContext = original;
     }
 
 
@@ -103,6 +107,10 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
         return SimpleSQLWrapper.build(this.sqlBuilder.toString(), this.paramList);
     }
 
+    @Override
+    public final TableContextSQLContext parentContext() {
+        return this.parentContext;
+    }
 
     /*################################## blow protected final method ##################################*/
 

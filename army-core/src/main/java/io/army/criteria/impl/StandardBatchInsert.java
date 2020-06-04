@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Expression;
 import io.army.criteria.Insert;
 import io.army.criteria.impl.inner.InnerStandardBatchInsert;
 import io.army.domain.IDomain;
@@ -9,15 +8,23 @@ import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 final class StandardBatchInsert<T extends IDomain> extends AbstractSQLDebug implements Insert, Insert.InsertAble
-        , Insert.BatchInsertIntoAble<T>, Insert.BatchInsertValuesAble<T>
+        , Insert.BatchInsertIntoAble<T>, Insert.BatchInsertValuesAble<T>, Insert.BatchInsertOptionAble<T>
         , InnerStandardBatchInsert {
+
+
+    static <T extends IDomain> StandardBatchInsert<T> build(TableMeta<T> tableMeta) {
+        return new StandardBatchInsert<>(tableMeta);
+    }
 
     private final TableMeta<T> tableMeta;
 
-    private Map<FieldMeta<?, ?>, Expression<?>> commonValueMap;
+    private boolean dataMigration;
 
     private List<FieldMeta<?, ?>> fieldList;
 
@@ -25,11 +32,16 @@ final class StandardBatchInsert<T extends IDomain> extends AbstractSQLDebug impl
 
     private boolean prepared;
 
-    StandardBatchInsert(TableMeta<T> tableMeta) {
+    private StandardBatchInsert(TableMeta<T> tableMeta) {
         Assert.notNull(tableMeta, "tableMeta required");
         this.tableMeta = tableMeta;
     }
 
+    @Override
+    public BatchInsertOptionAble<T> dataMigration() {
+        this.dataMigration = true;
+        return this;
+    }
 
     /*################################## blow BatchInsertIntoAble method ##################################*/
 
@@ -63,11 +75,6 @@ final class StandardBatchInsert<T extends IDomain> extends AbstractSQLDebug impl
         Assert.state(!CollectionUtils.isEmpty(this.fieldList), "fieldList is empty,error.");
         Assert.state(!CollectionUtils.isEmpty(this.valueList), "valueList is empty,error.");
 
-        if (this.commonValueMap == null) {
-            this.commonValueMap = Collections.emptyMap();
-        } else {
-            this.commonValueMap = Collections.unmodifiableMap(this.commonValueMap);
-        }
         this.fieldList = Collections.unmodifiableList(this.fieldList);
         this.valueList = Collections.unmodifiableList(this.valueList);
 
@@ -100,10 +107,14 @@ final class StandardBatchInsert<T extends IDomain> extends AbstractSQLDebug impl
     }
 
     @Override
+    public boolean migrationData() {
+        return this.dataMigration;
+    }
+
+    @Override
     public final void clear() {
-        Assert.state(this.prepared, "");
-        this.commonValueMap = null;
         this.fieldList = null;
         this.valueList = null;
+        this.prepared = false;
     }
 }

@@ -7,7 +7,7 @@ import io.army.meta.TableMeta;
 
 public interface FieldValuesGenerator {
 
-    DomainWrapper createValues(TableMeta<?> tableMeta, IDomain domain)
+    DomainWrapper createValues(TableMeta<?> tableMeta, IDomain domain, boolean migrationData)
             throws FieldValuesCreateException;
 
 

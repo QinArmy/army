@@ -28,7 +28,7 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
         final Dialect dialect = session.dialect();
         for (SQLWrapper sqlWrapper : sqlWrapperList) {
             if (showSQL) {
-                LOG.info("army will execute select sql:\n{}", dialect.showSQL(sqlWrapper));
+                LOG.info("army will execute insert sql:\n{}", dialect.showSQL(sqlWrapper));
             }
             if (sqlWrapper instanceof SimpleSQLWrapper) {
                 this.doExecuteSimple(session, (SimpleSQLWrapper) sqlWrapper);
@@ -106,22 +106,19 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
 
     private int doExecuteChild(InnerSession session, ChildSQLWrapper childSQLWrapper, final boolean subQueryInsert) {
 
-        final SimpleSQLWrapper parentWrapper = childSQLWrapper.parentWrapper();
-        final SimpleSQLWrapper childWrapper = childSQLWrapper.childWrapper();
-
         int childRows, parentRows;
         // firstly,execute parent multiInsert sql
-        parentRows = doExecuteUpdate(session, parentWrapper);
+        parentRows = doExecuteUpdate(session, childSQLWrapper.parentWrapper());
         if (!subQueryInsert && parentRows != 1) {
             throw new InsertException(ErrorCode.INSERT_ERROR
-                    , "sql[%s] multiInsert rows[%s] error.", parentWrapper.sql(), parentRows);
+                    , "sql[%s] multiInsert rows[%s] error.", childSQLWrapper.parentWrapper(), parentRows);
         }
         // secondly, execute child multiInsert sql
-        childRows = doExecuteUpdate(session, childWrapper);
+        childRows = doExecuteUpdate(session, childSQLWrapper.childWrapper());
         if (parentRows != childRows) {
             throw new InsertRowsNotMatchException(
                     "child sql [%s] multiInsert rows[%s] and parent sql[%s] rows[%s] not match."
-                    , childWrapper.sql(), childRows, parentWrapper.sql(), parentRows);
+                    , childSQLWrapper.childWrapper().sql(), childRows, childSQLWrapper.parentWrapper(), parentRows);
         }
         return childRows;
     }
@@ -179,8 +176,6 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
         int[] parentRows, childRows;
         // firstly, parent multiInsert sql
         parentRows = doExecuteBatch(session, parentWrapper);
-        // assert parentRows
-        assertBatchResult(parentWrapper, parentRows);
         // secondly,child multiInsert sql
         childRows = doExecuteBatch(session, childWrapper);
 
@@ -211,6 +206,11 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
         int parentRow;
         for (int i = 0; i < parentRows.length; i++) {
             parentRow = parentRows[i];
+            if (parentRow != 1) {
+                throw new InsertRowsNotMatchException(
+                        "batch  sql[%s]  index[%s] actual row count[%s] not 1 ."
+                        , parentWrapper.sql(), i, parentRow);
+            }
             if (parentRow != childRows[i]) {
                 throw new InsertRowsNotMatchException(
                         "child sql[%s]  batch[%s] rows[%s] and parent sql [%s] batch[%s] rows[%s] not match."

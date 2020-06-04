@@ -12,6 +12,8 @@ import java.util.List;
 @DeveloperForbid
 public interface InnerStandardInsert extends InnerGenericInsert {
 
+    boolean migrationData();
+
     /**
      * @see Insert.InsertValuesAble
      */

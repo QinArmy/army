@@ -24,6 +24,11 @@ public interface Insert extends SQLStatement, SQLAble, SQLDebug, QueryAble {
 
     /*################################## blow multiInsert interfaces ##################################*/
 
+    interface InsertOptionAble<T extends IDomain> extends InsertIntoAble<T> {
+
+        InsertOptionAble<T> dataMigration();
+    }
+
     interface InsertIntoAble<T extends IDomain> extends InsertSQLAble {
 
         InsertValuesAble<T> insertInto(Collection<FieldMeta<? super T, ?>> fieldMetaList);
@@ -39,6 +44,11 @@ public interface Insert extends SQLStatement, SQLAble, SQLDebug, QueryAble {
     }
 
     /*################################## blow batchInsert method ##################################*/
+
+    interface BatchInsertOptionAble<T extends IDomain> extends BatchInsertIntoAble<T> {
+
+        BatchInsertOptionAble<T> dataMigration();
+    }
 
 
     interface BatchInsertIntoAble<T extends IDomain> extends InsertSQLAble {
@@ -61,6 +71,7 @@ public interface Insert extends SQLStatement, SQLAble, SQLDebug, QueryAble {
 
         SubQueryValueAble<C> insertInto(List<FieldMeta<T, ?>> fieldMetaList);
 
+        SubQueryValueAble<C> insertInto(Function<C, List<FieldMeta<T, ?>>> function);
     }
 
     interface SubQueryValueAble<C> extends InsertSQLAble {

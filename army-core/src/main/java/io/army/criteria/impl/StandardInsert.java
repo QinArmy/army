@@ -14,10 +14,16 @@ import java.util.Collections;
 import java.util.List;
 
 final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implements Insert
-        , Insert.InsertAble, Insert.InsertIntoAble<T>, Insert.InsertValuesAble<T>
+        , Insert.InsertAble, Insert.InsertIntoAble<T>, Insert.InsertValuesAble<T>, Insert.InsertOptionAble<T>
         , InnerStandardInsert {
 
+    static <T extends IDomain> StandardInsert<T> build(TableMeta<T> tableMeta) {
+        return new StandardInsert<>(tableMeta);
+    }
+
     private final TableMeta<T> tableMeta;
+
+    private boolean dataMigration;
 
     private List<FieldMeta<?, ?>> fieldList;
 
@@ -25,11 +31,19 @@ final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implement
 
     private boolean prepared;
 
-    StandardInsert(TableMeta<T> tableMeta) {
+    private StandardInsert(TableMeta<T> tableMeta) {
         this.tableMeta = tableMeta;
     }
 
-    /*################################## blow private method ##################################*/
+    /*################################## blow InsertOptionAble method ##################################*/
+
+    @Override
+    public InsertOptionAble<T> dataMigration() {
+        this.dataMigration = true;
+        return this;
+    }
+
+    /*################################## blow InsertIntoAble method ##################################*/
 
     @Override
     public final InsertValuesAble<T> insertInto(Collection<FieldMeta<? super T, ?>> fieldMetas) {
@@ -77,10 +91,15 @@ final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implement
     }
 
     @Override
+    public boolean migrationData() {
+        return this.dataMigration;
+    }
+
+    @Override
     public void clear() {
-        Assert.state(this.prepared, "not invoke asInsert(),state error.");
         this.fieldList = null;
         this.valueList = null;
+        this.prepared = false;
     }
     /*################################## blow InsertAble method ##################################*/
 

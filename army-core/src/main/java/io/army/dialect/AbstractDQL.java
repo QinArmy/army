@@ -311,11 +311,21 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
     }
 
     private void standardSubQuery(InnerStandardSubQuery subQuery, TableContextSQLContext context) {
-        StringBuilder builder = context.sqlBuilder()
-                .append(" ( ");
+        StringBuilder builder = context.sqlBuilder();
+
+        final boolean standardSubQueryInsert = context.parentContext() instanceof StandardSubInsertContext;
+        if (standardSubQueryInsert) {
+            builder.append(" ( ");
+        } else {
+            builder.append(" ");
+        }
+
         genericQuery(subQuery, context);
 
-        builder.append(" ) ");
+        if (standardSubQueryInsert) {
+            builder.append(" ) ");
+        }
+
     }
 
 
