@@ -112,12 +112,10 @@ final class StandardContextualDelete<C> extends AbstractSQLDebug implements Dele
         }
 
         CriteriaContextHolder.clearContext(this.criteriaContext);
-        this.criteriaContext.clear();
 
         Assert.state(this.tableMeta != null, "Delete must specify TableMeta.");
         Assert.state(StringUtils.hasText(this.tableAlias), "Delete must specify table alias.");
         Assert.state(!CollectionUtils.isEmpty(this.predicateList), "Delete must have where clause.");
-        assertPrimaryKeyValue(this.tableMeta);
 
         this.predicateList = Collections.unmodifiableList(this.predicateList);
 
@@ -127,14 +125,16 @@ final class StandardContextualDelete<C> extends AbstractSQLDebug implements Dele
 
     @Override
     public final void clear() {
+        this.tableMeta = null;
+        this.tableAlias = null;
         this.predicateList = null;
+        this.prepared = false;
     }
 
     /*################################## blow InnerStandardSingleDelete method ##################################*/
 
     @Override
     public final TableMeta<?> tableMeta() {
-        Assert.state(this.prepared, "Criteria state error.");
         return this.tableMeta;
     }
 
@@ -148,9 +148,6 @@ final class StandardContextualDelete<C> extends AbstractSQLDebug implements Dele
         return this.tableAlias;
     }
 
-    void assertPrimaryKeyValue(TableMeta<?> tableMeta) {
-
-    }
 
     /*################################## blow static inner class ##################################*/
 

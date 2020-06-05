@@ -84,7 +84,7 @@ abstract class DMLUtils {
     }
 
 
-    static List<IPredicate> extractParentPredicateList(ChildTableMeta<?> childMeta
+    static List<IPredicate> extractParentPredicatesForUpdate(ChildTableMeta<?> childMeta
             , Collection<FieldMeta<?, ?>> childUpdatedFieldList
             , List<IPredicate> predicateList) {
 
@@ -100,23 +100,25 @@ abstract class DMLUtils {
                     ? new HashSet<>(childUpdatedFieldList) : childUpdatedFieldList;
 
             parentPredicates = new ArrayList<>();
-            doExtractParentPredicate(predicateList, childUpdatedFields, parentPredicates, firstIsPrimary);
+            doExtractParentPredicatesForUpdate(predicateList, childUpdatedFields, parentPredicates, firstIsPrimary);
         }
 
         // 2. append discriminator predicate
-        FieldMeta<?, ? extends CodeEnum> fieldMeta = childMeta.discriminator();
-        @SuppressWarnings("unchecked")
-        FieldMeta<?, CodeEnum> enumFieldMeta = (FieldMeta<?, CodeEnum>) fieldMeta;
-        CodeEnum codeEnum = CodeEnum.resolve(enumFieldMeta.javaType(), childMeta.discriminatorValue());
-
-        if (codeEnum == null) {
-            throw new MetaException("ChildTableMeta[%s] discriminatorValue[%s] can't resolve CodeEnum."
-                    , childMeta, childMeta.discriminatorValue());
-        }
-        parentPredicates.add(enumFieldMeta.equal(codeEnum));
+        parentPredicates.add(createDiscriminatorPredicate(childMeta));
         return Collections.unmodifiableList(parentPredicates);
     }
 
+    static List<IPredicate> extractParentPredicateForDelete(ChildTableMeta<?> childMeta
+            , List<IPredicate> predicateList) {
+        // 1. extract parent predicate from where predicate list
+        boolean firstIsPrimary = predicateList.get(0) instanceof PrimaryValueEqualPredicate;
+        List<IPredicate> parentPredicates = new ArrayList<>();
+        doExtractParentPredicateForDelete(childMeta, predicateList, parentPredicates, firstIsPrimary);
+
+        // 2. append discriminator predicate
+        parentPredicates.add(createDiscriminatorPredicate(childMeta));
+        return Collections.unmodifiableList(parentPredicates);
+    }
 
     static void assertUpdateSetAndWhereClause(InnerUpdate update) {
         List<FieldMeta<?, ?>> targetFieldList = update.targetFieldList();
@@ -302,8 +304,9 @@ abstract class DMLUtils {
             }
             // field
             context.appendField(fieldMeta);
-
-            if (isConstant(fieldMeta)) {
+            if (value == null) {
+                context.appendParam(ParamWrapper.build(fieldMeta.mappingMeta(), null));
+            } else if (isConstant(fieldMeta)) {
                 valueBuilder.append(fieldMeta.mappingMeta().nonNullTextValue(value));
             } else {
                 valueBuilder.append("?");
@@ -547,12 +550,12 @@ abstract class DMLUtils {
         fieldMetaSet.add(physicalTable.id());
     }
 
-    private static void doExtractParentPredicate(List<IPredicate> predicateList
+    private static void doExtractParentPredicatesForUpdate(List<IPredicate> predicateList
             , Collection<FieldMeta<?, ?>> childUpdatedFields, List<IPredicate> newPredicates
             , final boolean firstIsPrimary) {
         for (IPredicate predicate : predicateList) {
             if (predicate instanceof OrPredicate) {
-                doExtractParentPredicatesFromOrPredicate((OrPredicate) predicate
+                extractParentPredicatesFromOrPredicateForDelete((OrPredicate) predicate
                         , childUpdatedFields, newPredicates, firstIsPrimary);
             } else if (predicate.containsField(childUpdatedFields)) {
                 if (!firstIsPrimary) {
@@ -564,7 +567,7 @@ abstract class DMLUtils {
         }
     }
 
-    private static void doExtractParentPredicatesFromOrPredicate(OrPredicate orPredicate
+    private static void extractParentPredicatesFromOrPredicateForDelete(OrPredicate orPredicate
             , Collection<FieldMeta<?, ?>> childUpdatedFields, List<IPredicate> newPredicates
             , final boolean firstIsPrimary) {
 
@@ -573,7 +576,7 @@ abstract class DMLUtils {
         IPredicate newLeft;
         if (left instanceof OrPredicate) {
             List<IPredicate> newLeftList = new ArrayList<>();
-            doExtractParentPredicatesFromOrPredicate((OrPredicate) left, childUpdatedFields, newLeftList
+            extractParentPredicatesFromOrPredicateForDelete((OrPredicate) left, childUpdatedFields, newLeftList
                     , firstIsPrimary);
             if (newLeftList.size() == 0) {
                 newLeft = ((OrPredicate) left).leftPredicate();
@@ -594,7 +597,65 @@ abstract class DMLUtils {
         }
         // secondly,handle right
         List<IPredicate> newRightPredicates = new ArrayList<>();
-        doExtractParentPredicate(orPredicate.rightPredicate(), childUpdatedFields, newRightPredicates, firstIsPrimary);
+        doExtractParentPredicatesForUpdate(orPredicate.rightPredicate(), childUpdatedFields, newRightPredicates, firstIsPrimary);
+
+        if (newLeft == null) {
+            newPredicates.addAll(newRightPredicates);
+        } else if (newRightPredicates.isEmpty()) {
+            newPredicates.add(newLeft);
+        } else {
+            newPredicates.add(newLeft.or(newRightPredicates));
+        }
+    }
+
+
+    private static void doExtractParentPredicateForDelete(ChildTableMeta<?> childMeta
+            , List<IPredicate> predicateList, List<IPredicate> newPredicates, boolean firstIsPrimary) {
+        for (IPredicate predicate : predicateList) {
+            if (predicate instanceof OrPredicate) {
+                extractParentPredicatesFromOrPredicateForDelete((OrPredicate) predicate
+                        , childMeta, newPredicates, firstIsPrimary);
+            } else if (predicate.containsFieldOf(childMeta)) {
+                if (!firstIsPrimary) {
+                    throw createNoPrimaryPredicateException(childMeta);
+                }
+            } else {
+                newPredicates.add(predicate);
+            }
+        }
+    }
+
+    private static void extractParentPredicatesFromOrPredicateForDelete(OrPredicate orPredicate
+            , ChildTableMeta<?> childMeta, List<IPredicate> newPredicates
+            , final boolean firstIsPrimary) {
+
+        //firstly, handle left
+        final IPredicate left = orPredicate.leftPredicate();
+        IPredicate newLeft;
+        if (left instanceof OrPredicate) {
+            List<IPredicate> newLeftList = new ArrayList<>();
+            extractParentPredicatesFromOrPredicateForDelete((OrPredicate) left, childMeta, newLeftList
+                    , firstIsPrimary);
+            if (newLeftList.size() == 0) {
+                newLeft = ((OrPredicate) left).leftPredicate();
+            } else if (newLeftList.size() == 1) {
+                newLeft = newLeftList.get(0);
+            } else {
+                // here ,left is drop for contains childField
+                newPredicates.addAll(newLeftList);
+                newLeft = null;
+            }
+        } else if (left.containsFieldOf(childMeta)) {
+            if (!firstIsPrimary) {
+                throw createNoPrimaryPredicateException(childMeta);
+            }
+            newLeft = null;
+        } else {
+            newLeft = left;
+        }
+        // secondly,handle right
+        List<IPredicate> newRightPredicates = new ArrayList<>();
+        doExtractParentPredicateForDelete(childMeta, orPredicate.rightPredicate(), newRightPredicates, firstIsPrimary);
 
         if (newLeft == null) {
             newPredicates.addAll(newRightPredicates);
@@ -610,6 +671,26 @@ abstract class DMLUtils {
                 , "detect ChildTableMeta set clause FieldMetas[%s] present where clause," +
                 "but first predicate isn't primary field predicate."
                 , childFields);
+    }
+
+    private static CriteriaException createNoPrimaryPredicateException(ChildTableMeta<?> childMeta) {
+        throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                , "detect ChildTableMeta[%s] but first predicate isn't primary field predicate."
+                , childMeta);
+    }
+
+
+    private static IPredicate createDiscriminatorPredicate(ChildTableMeta<?> tableMeta) {
+        FieldMeta<?, ? extends CodeEnum> fieldMeta = tableMeta.discriminator();
+        @SuppressWarnings("unchecked")
+        FieldMeta<?, CodeEnum> enumFieldMeta = (FieldMeta<?, CodeEnum>) fieldMeta;
+        CodeEnum codeEnum = CodeEnum.resolve(enumFieldMeta.javaType(), tableMeta.discriminatorValue());
+
+        if (codeEnum == null) {
+            throw new MetaException("ChildTableMeta[%s] discriminatorValue[%s] can't resolve CodeEnum."
+                    , tableMeta, tableMeta.discriminatorValue());
+        }
+        return enumFieldMeta.equal(codeEnum);
     }
 
     private static final class FieldParamWrapperImpl implements FieldParamWrapper {

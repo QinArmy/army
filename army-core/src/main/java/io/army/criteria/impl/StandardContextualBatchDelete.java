@@ -6,6 +6,7 @@ import io.army.criteria.impl.inner.InnerStandardBatchDelete;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
+import io.army.util.StringUtils;
 
 import java.util.*;
 import java.util.function.Function;
@@ -129,6 +130,8 @@ final class StandardContextualBatchDelete<C> implements Delete, InnerStandardBat
 
         CriteriaContextHolder.clearContext(this.criteriaContext);
 
+        Assert.state(this.tableMeta != null, "TableMeta must not null");
+        Assert.state(StringUtils.hasText(this.tableAlias), "Table alias must have text.");
         Assert.state(!this.predicateList.isEmpty(), "delete no where clause.");
         Assert.state(!this.namedParamList.isEmpty(), "delete no named params");
 
@@ -154,7 +157,6 @@ final class StandardContextualBatchDelete<C> implements Delete, InnerStandardBat
 
     @Override
     public TableMeta<?> tableMeta() {
-        Assert.state(this.prepared, "delete not prepared");
         return this.tableMeta;
     }
 
@@ -170,9 +172,11 @@ final class StandardContextualBatchDelete<C> implements Delete, InnerStandardBat
 
     @Override
     public void clear() {
+        this.tableMeta = null;
         this.tableAlias = null;
         this.predicateList = null;
         this.namedParamList = null;
+
         this.prepared = false;
     }
 }

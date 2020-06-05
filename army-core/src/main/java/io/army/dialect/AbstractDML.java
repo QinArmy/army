@@ -444,7 +444,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
             sqlWrapper = parentContext.build();
         } else {
             // 2. extract parent predicate lists
-            List<IPredicate> parentPredicates = DMLUtils.extractParentPredicateList(childMeta, childFieldList
+            List<IPredicate> parentPredicates = DMLUtils.extractParentPredicatesForUpdate(childMeta, childFieldList
                     , update.predicateList());
             //3. parse parent update sql
             StandardUpdateContext parentContext = StandardUpdateContext.buildParent(update, this.dialect, visible);
@@ -551,8 +551,8 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) delete.tableMeta();
         final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
         // 1. extract parent predicate list
-        List<IPredicate> parentPredicateList = DMLUtils.extractParentPredicateList(
-                childMeta, new HashSet<>(childMeta.fieldCollection()), delete.predicateList());
+        List<IPredicate> parentPredicateList = DMLUtils.extractParentPredicateForDelete(childMeta
+                , delete.predicateList());
 
         //2. create parent delete sql
         StandardDeleteContext parentContext = StandardDeleteContext.buildParent(delete, this.dialect, visible);
