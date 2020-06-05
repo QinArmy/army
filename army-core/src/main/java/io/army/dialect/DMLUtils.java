@@ -75,7 +75,7 @@ abstract class DMLUtils {
 
 
     static void assertSingleUpdateSetClauseField(FieldMeta<?, ?> fieldMeta, TableMeta<?> tableMeta) {
-        if (fieldMeta.tableMeta() == tableMeta) {
+        if (fieldMeta.tableMeta() != tableMeta) {
             throw new IllegalArgumentException(String.format(
                     "FieldMeta[%s] don't belong to TableMeta[%s]", fieldMeta, tableMeta));
         }
@@ -85,21 +85,22 @@ abstract class DMLUtils {
 
 
     static List<IPredicate> extractParentPredicateList(ChildTableMeta<?> childMeta
-            , Collection<FieldMeta<?, ?>> childTargetField
+            , Collection<FieldMeta<?, ?>> childUpdatedFieldList
             , List<IPredicate> predicateList) {
 
         List<IPredicate> parentPredicates;
         // 1. extract parent predicate from where predicate list
-        if (childTargetField.isEmpty()) {
+        if (childUpdatedFieldList.isEmpty()) {
             parentPredicates = new ArrayList<>(predicateList.size() + 1);
             parentPredicates.addAll(predicateList);
         } else {
-            final boolean firstIsPrimary = predicateList.get(0) instanceof PrimaryValueEqualPredicate;
-            final Collection<FieldMeta<?, ?>> childFields = childTargetField.size() > 5
-                    ? new HashSet<>(childTargetField) : childTargetField;
+            boolean firstIsPrimary = predicateList.get(0) instanceof PrimaryValueEqualPredicate;
+
+            final Collection<FieldMeta<?, ?>> childUpdatedFields = childUpdatedFieldList.size() > 5
+                    ? new HashSet<>(childUpdatedFieldList) : childUpdatedFieldList;
 
             parentPredicates = new ArrayList<>();
-            doExtractParentPredicate(predicateList, childFields, parentPredicates, firstIsPrimary);
+            doExtractParentPredicate(predicateList, childUpdatedFields, parentPredicates, firstIsPrimary);
         }
 
         // 2. append discriminator predicate
@@ -113,14 +114,11 @@ abstract class DMLUtils {
                     , childMeta, childMeta.discriminatorValue());
         }
         parentPredicates.add(enumFieldMeta.equal(codeEnum));
-        return parentPredicates;
+        return Collections.unmodifiableList(parentPredicates);
     }
 
 
     static void assertUpdateSetAndWhereClause(InnerUpdate update) {
-        if (CollectionUtils.isEmpty(update.targetFieldList())) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "update must have where clause.");
-        }
         List<FieldMeta<?, ?>> targetFieldList = update.targetFieldList();
         if (CollectionUtils.isEmpty(targetFieldList)) {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "update must have set clause.");
@@ -133,6 +131,9 @@ abstract class DMLUtils {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR
                     , "update set clause target field list size and value expression list size not match.");
         }
+        if (CollectionUtils.isEmpty(update.predicateList())) {
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "update must have where clause.");
+        }
     }
 
 
@@ -141,12 +142,12 @@ abstract class DMLUtils {
         if (tableMeta.immutable()) {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "TableMeta[%s] is immutable.", tableAlias);
         }
+        Assert.isTrue(fieldMetaList.size() == valueExpList.size()
+                , "field list ifAnd value exp list size not match");
         final MappingMode mappingMode = tableMeta.mappingMode();
 
         if (mappingMode != MappingMode.PARENT) {
             Assert.notEmpty(fieldMetaList, "set clause must not empty");
-            Assert.isTrue(fieldMetaList.size() == valueExpList.size()
-                    , "field list ifAnd value exp list size not match");
         }
 
         StringBuilder builder = context.sqlBuilder()
@@ -205,7 +206,7 @@ abstract class DMLUtils {
             SQLS.param(now.toLocalDateTime(), updateTimeField.mappingMeta())
                     .appendSQL(context);
         } else if (updateTimeField.javaType() == ZonedDateTime.class) {
-            if (dialect.supportZoneId()) {
+            if (!dialect.supportZoneId()) {
                 throw new MetaException("dialec[%s]t not supported zone.", dialect.sqlDialect());
             }
             SQLS.param(now, updateTimeField.mappingMeta())
@@ -546,16 +547,16 @@ abstract class DMLUtils {
         fieldMetaSet.add(physicalTable.id());
     }
 
-    private static void doExtractParentPredicate(List<IPredicate> predicateList, Collection<FieldMeta<?, ?>> childFields
-            , List<IPredicate> newPredicates, final boolean firstIsPrimary) {
+    private static void doExtractParentPredicate(List<IPredicate> predicateList
+            , Collection<FieldMeta<?, ?>> childUpdatedFields, List<IPredicate> newPredicates
+            , final boolean firstIsPrimary) {
         for (IPredicate predicate : predicateList) {
-            ExpressionCounselor counselor = (ExpressionCounselor) predicate;
             if (predicate instanceof OrPredicate) {
                 doExtractParentPredicatesFromOrPredicate((OrPredicate) predicate
-                        , childFields, newPredicates, firstIsPrimary);
-            } else if (counselor.containsField(childFields)) {
+                        , childUpdatedFields, newPredicates, firstIsPrimary);
+            } else if (predicate.containsField(childUpdatedFields)) {
                 if (!firstIsPrimary) {
-                    throw createNoPrimaryPredicateException(childFields);
+                    throw createNoPrimaryPredicateException(childUpdatedFields);
                 }
             } else {
                 newPredicates.add(predicate);
@@ -564,28 +565,36 @@ abstract class DMLUtils {
     }
 
     private static void doExtractParentPredicatesFromOrPredicate(OrPredicate orPredicate
-            , Collection<FieldMeta<?, ?>> childFields, List<IPredicate> newPredicates
+            , Collection<FieldMeta<?, ?>> childUpdatedFields, List<IPredicate> newPredicates
             , final boolean firstIsPrimary) {
 
-        IPredicate left = orPredicate.leftPredicate(), newLeft = null;
+        //firstly, handle left
+        final IPredicate left = orPredicate.leftPredicate();
+        IPredicate newLeft;
         if (left instanceof OrPredicate) {
             List<IPredicate> newLeftList = new ArrayList<>();
-            doExtractParentPredicatesFromOrPredicate((OrPredicate) left, childFields, newLeftList, firstIsPrimary);
-            if (newLeftList.size() == 1) {
+            doExtractParentPredicatesFromOrPredicate((OrPredicate) left, childUpdatedFields, newLeftList
+                    , firstIsPrimary);
+            if (newLeftList.size() == 0) {
+                newLeft = ((OrPredicate) left).leftPredicate();
+            } else if (newLeftList.size() == 1) {
                 newLeft = newLeftList.get(0);
-            } else if (newLeftList.size() > 1) {
+            } else {
                 // here ,left is drop for contains childField
                 newPredicates.addAll(newLeftList);
+                newLeft = null;
             }
-        } else if (left.containsField(childFields)) {
+        } else if (left.containsField(childUpdatedFields)) {
             if (!firstIsPrimary) {
-                throw createNoPrimaryPredicateException(childFields);
+                throw createNoPrimaryPredicateException(childUpdatedFields);
             }
+            newLeft = null;
         } else {
             newLeft = left;
         }
+        // secondly,handle right
         List<IPredicate> newRightPredicates = new ArrayList<>();
-        doExtractParentPredicate(orPredicate.rightPredicate(), childFields, newRightPredicates, firstIsPrimary);
+        doExtractParentPredicate(orPredicate.rightPredicate(), childUpdatedFields, newRightPredicates, firstIsPrimary);
 
         if (newLeft == null) {
             newPredicates.addAll(newRightPredicates);

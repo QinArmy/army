@@ -40,10 +40,6 @@ public interface Update extends SQLStatement, SQLAble, SQLDebug, QueryAble {
         <F> SingleWhereAble<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp);
 
         <F> SingleWhereAble<T, C> set(FieldMeta<? super T, F> target, Function<C, Expression<F>> function);
-    }
-
-
-    interface SingleWhereAble<T extends IDomain, C> extends SingleSetAble<T, C> {
 
         <F> SingleWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value);
 
@@ -52,6 +48,10 @@ public interface Update extends SQLStatement, SQLAble, SQLDebug, QueryAble {
 
         <F> SingleWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target
                 , Function<C, Expression<F>> valueExpFunction);
+    }
+
+
+    interface SingleWhereAble<T extends IDomain, C> extends SingleSetAble<T, C> {
 
         UpdateAble where(List<IPredicate> predicateList);
 
@@ -89,9 +89,6 @@ public interface Update extends SQLStatement, SQLAble, SQLDebug, QueryAble {
         <F> BatchWhereAble<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp);
 
         <F> BatchWhereAble<T, C> set(FieldMeta<? super T, F> target, Function<C, Expression<F>> function);
-    }
-
-    interface BatchWhereAble<T extends IDomain, C> extends BatchSetAble<T, C> {
 
         <F> BatchWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value);
 
@@ -100,6 +97,10 @@ public interface Update extends SQLStatement, SQLAble, SQLDebug, QueryAble {
 
         <F> BatchWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target
                 , Function<C, Expression<F>> valueExpFunction);
+    }
+
+    interface BatchWhereAble<T extends IDomain, C> extends BatchSetAble<T, C> {
+
 
         BatchNamedParamAble<C> where(List<IPredicate> predicateList);
 

@@ -45,20 +45,21 @@ class StandardUpdateContext extends AbstractStandardDomainContext implements Upd
 
     private final boolean hasVersion;
 
-    public StandardUpdateContext(Dialect dialect, Visible visible, TableContext tableContext
+    private StandardUpdateContext(Dialect dialect, Visible visible, TableContext tableContext
             , TableMeta<?> primaryTable, TableMeta<?> relationTable, boolean hasVersion) {
         super(dialect, visible, tableContext, primaryTable, relationTable);
         this.hasVersion = hasVersion;
     }
 
     @Override
-    public final SimpleSQLWrapper build() {
+    public SimpleSQLWrapper build() {
         return SimpleSQLWrapper.build(this.sqlBuilder.toString(), this.paramList, this.hasVersion);
     }
 
     private static final class DomainUpdateContext extends StandardUpdateContext {
 
-        public DomainUpdateContext(Dialect dialect, Visible visible, TableContext tableContext
+
+        private DomainUpdateContext(Dialect dialect, Visible visible, TableContext tableContext
                 , TableMeta<?> primaryTable, TableMeta<?> relationTable, boolean hasVersion) {
             super(dialect, visible, tableContext, primaryTable, relationTable, hasVersion);
         }
@@ -77,6 +78,7 @@ class StandardUpdateContext extends AbstractStandardDomainContext implements Upd
         public void appendFieldPredicate(SpecialPredicate predicate) {
             appendDomainFieldPredicate(predicate);
         }
+
     }
 
 

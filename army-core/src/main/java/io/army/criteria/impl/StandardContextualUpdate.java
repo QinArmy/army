@@ -21,6 +21,7 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
         , Update.WhereAndAble<T, C>, Update.SingleUpdateAble<T, C>, InnerStandardUpdate, InnerUpdate {
 
     static <T extends IDomain, C> StandardContextualUpdate<T, C> build(TableMeta<T> tableMeta, C criteria) {
+       Assert.isTrue(tableMeta.immutable(), "TableMeta[%s] immutable");
         return new StandardContextualUpdate<>(tableMeta, criteria);
     }
 
@@ -66,7 +67,7 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
     @Override
     public final <F> SingleWhereAble<T, C> set(FieldMeta<? super T, F> target, F value) {
         this.targetFieldList.add(target);
-        this.valueExpList.add(SQLS.param(value));
+        this.valueExpList.add(SQLS.param(value, target));
         return this;
     }
 
@@ -84,7 +85,6 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
         return this;
     }
 
-    /*################################## blow DomainWhereAble method ##################################*/
 
     @Override
     public final <F> SingleWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value) {
@@ -111,6 +111,9 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
         }
         return this;
     }
+
+    /*################################## blow DomainWhereAble method ##################################*/
+
 
     @Override
     public final UpdateAble where(List<IPredicate> predicateList) {
@@ -168,14 +171,13 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
         if (this.prepared) {
             return this;
         }
-        Assert.state(!this.targetFieldList.isEmpty(), "update no target field list");
+        CriteriaContextHolder.clearContext(this.criteriaContext);
+
+        Assert.state(!this.targetFieldList.isEmpty(), "update no set clause.");
         Assert.state(this.valueExpList.size() == this.targetFieldList.size()
                 , "update target field and value exp size not match");
         Assert.state(!this.predicateList.isEmpty(), "update no where clause.");
         Assert.state(this.tableAlias != null, "no tableAlias");
-
-        CriteriaContextHolder.clearContext(this.criteriaContext);
-        this.criteriaContext.clear();
 
         this.targetFieldList = Collections.unmodifiableList(this.targetFieldList);
         this.valueExpList = Collections.unmodifiableList(this.valueExpList);
@@ -215,11 +217,11 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
 
     @Override
     public final void clear() {
-        Assert.state(this.prepared, "Update not invoke asUpdate() method.");
 
         this.targetFieldList = null;
         this.valueExpList = null;
         this.predicateList = null;
+        this.prepared = false;
     }
 }
 

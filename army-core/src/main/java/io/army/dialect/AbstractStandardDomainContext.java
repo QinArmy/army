@@ -1,9 +1,11 @@
 package io.army.dialect;
 
+import io.army.criteria.PrimaryValueEqualPredicate;
 import io.army.criteria.SpecialPredicate;
 import io.army.criteria.Visible;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
+import io.army.meta.PrimaryFieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 
@@ -27,7 +29,9 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
     }
 
     final void appendDomainFieldPredicate(SpecialPredicate predicate) {
-        if (!predicate.containsSubQuery()
+        if (predicate instanceof PrimaryValueEqualPredicate) {
+            predicate.appendPredicate(this);
+        } else if (!predicate.containsSubQuery()
                 && predicate.containsFieldCount(this.relationTable) > 1) {
             this.existsClauseContext = true;
             doReplaceFieldPairWithExistsClause(predicate);
@@ -36,6 +40,7 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
             predicate.appendPredicate(this);
         }
     }
+
 
     final void appendDomainField(String tableAlias, FieldMeta<?, ?> fieldMeta) {
         if (!this.primaryAlias.equals(tableAlias)) {
@@ -49,7 +54,9 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
         if (tableOfField == this.primaryTable) {
             doAppendFiled(this.primaryAlias, fieldMeta);
         } else if (tableOfField == this.relationTable) {
-            if (this.existsClauseContext) {
+            if (fieldMeta instanceof PrimaryFieldMeta) {
+                doAppendFiled(this.primaryAlias, fieldMeta);
+            } else if (this.existsClauseContext) {
                 doAppendFiled(obtainRelationTableAlias(), fieldMeta);
             } else {
                 doReplaceRelationFieldAsScalarSubQuery(fieldMeta);

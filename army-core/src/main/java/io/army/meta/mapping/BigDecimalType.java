@@ -13,7 +13,8 @@ public final class BigDecimalType extends AbstractMappingType {
     private static final BigDecimalType INSTANCE = new BigDecimalType();
 
     public static BigDecimalType build(Class<?> typeClass) {
-        Assert.isTrue(BigDecimal.class == typeClass, "");
+        Assert.isTrue(typeClass == BigDecimal.class
+                , () -> String.format("typeClass[%s] isn't java.math.BigDecimal", typeClass.getName()));
         return INSTANCE;
     }
 

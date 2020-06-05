@@ -70,21 +70,23 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     /*################################## blow final protected method ##################################*/
 
 
-    protected final void appendVisiblePredicate(TableMeta<?> tableMeta, String tableAlias, TableContextSQLContext context) {
+    protected final void appendVisiblePredicate(TableMeta<?> tableMeta, String tableAlias
+            , TableContextSQLContext context, boolean hasPredicate) {
         switch (tableMeta.mappingMode()) {
             case SIMPLE:
             case PARENT:
-                visibleConstantPredicate(context, tableMeta, tableAlias);
+                visibleConstantPredicate(context, tableMeta, tableAlias, hasPredicate);
                 break;
             case CHILD:
-                visibleSubQueryPredicateForChild(context, (ChildTableMeta<?>) tableMeta, tableAlias);
+                visibleSubQueryPredicateForChild(context, (ChildTableMeta<?>) tableMeta, tableAlias, hasPredicate);
                 break;
             default:
                 throw new IllegalArgumentException(String.format("unknown MappingMode[%s].", tableMeta.mappingMode()));
         }
     }
 
-    protected final void appendVisiblePredicate(List<TableWrapper> tableWrapperList, TableContextSQLContext context) {
+    protected final void appendVisiblePredicate(List<TableWrapper> tableWrapperList, TableContextSQLContext context
+            , boolean hasPredicate) {
         // append visible predicates
         final TableMeta<?> dual = SQLS.dual();
         Map<String, ChildTableMeta<?>> childMap = new HashMap<>();
@@ -99,7 +101,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
                     temp = ((ChildTableMeta<?>) temp).parentMeta();
                 }
                 if (temp.mappingProp(TableMeta.VISIBLE)) {
-                    appendVisibleIfNeed(tableWrapper, preTableWrapper, context, childMap);
+                    appendVisibleIfNeed(tableWrapper, preTableWrapper, context, childMap, hasPredicate);
                 }
             }
             preTableWrapper = tableWrapper;
@@ -108,19 +110,19 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         if (!childMap.isEmpty()) {
             // child table append exists SubQuery
             for (Map.Entry<String, ChildTableMeta<?>> e : childMap.entrySet()) {
-                visibleSubQueryPredicateForChild(context, e.getValue(), e.getKey());
+                visibleSubQueryPredicateForChild(context, e.getValue(), e.getKey(), hasPredicate);
             }
         }
     }
 
     protected final void visibleConstantPredicate(TableContextSQLContext context
-            , TableMeta<?> tableMeta, String tableAlias) {
+            , TableMeta<?> tableMeta, String tableAlias, boolean hasPredicate) {
         switch (context.visible()) {
             case ONLY_VISIBLE:
-                doVisibleConstantPredicate(context, Boolean.TRUE, tableMeta, tableAlias);
+                doVisibleConstantPredicate(context, Boolean.TRUE, tableMeta, tableAlias, hasPredicate);
                 break;
             case ONLY_NON_VISIBLE:
-                doVisibleConstantPredicate(context, Boolean.FALSE, tableMeta, tableAlias);
+                doVisibleConstantPredicate(context, Boolean.FALSE, tableMeta, tableAlias, hasPredicate);
                 break;
             case BOTH:
                 break;
@@ -131,7 +133,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
 
 
     protected final void visibleSubQueryPredicateForChild(TableContextSQLContext context
-            , ChildTableMeta<?> childMeta, String childAlias) {
+            , ChildTableMeta<?> childMeta, String childAlias, boolean hasPredicate) {
         if (context.visible() == Visible.BOTH) {
             return;
         }
@@ -140,9 +142,11 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
 
         final String parentAlias = subQueryParentAlias(parentMeta.tableName());
         // append exists SubQuery
-        StringBuilder builder = context.sqlBuilder()
-                .append(" AND")
-                .append(" EXISTS")
+        StringBuilder builder = context.sqlBuilder();
+        if (hasPredicate) {
+            builder.append(" AND");
+        }
+        builder.append(" EXISTS")
                 .append(" ( SELECT");
 
         context.appendField(parentAlias, parentMeta.id());
@@ -162,19 +166,21 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         context.appendField(childAlias, childMeta.id());
 
         // visible predicate
-        visibleConstantPredicate(context, childMeta, childAlias);
+        visibleConstantPredicate(context, childMeta, childAlias, hasPredicate);
         builder.append(" )");
     }
 
 
     private void doVisibleConstantPredicate(TableContextSQLContext context, Boolean visible
-            , TableMeta<?> tableMeta, String tableAlias) {
+            , TableMeta<?> tableMeta, String tableAlias, boolean hasPredicate) {
 
         final FieldMeta<?, ?> visibleField = tableMeta.getField(TableMeta.VISIBLE);
 
-        StringBuilder builder = context.sqlBuilder()
-                .append(" AND");
+        StringBuilder builder = context.sqlBuilder();
 
+        if (hasPredicate) {
+            builder.append(" AND");
+        }
         context.appendField(tableAlias, visibleField);
 
         builder.append(" = ")
@@ -182,15 +188,15 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     }
 
     private void appendVisibleIfNeed(TableWrapper tableWrapper, @Nullable TableWrapper preTableWrapper
-            , TableContextSQLContext context, Map<String, ChildTableMeta<?>> childMap) {
+            , TableContextSQLContext context, Map<String, ChildTableMeta<?>> childMap, boolean hasPredicate) {
 
         final TableMeta<?> tableMeta = (TableMeta<?>) tableWrapper.tableAble();
         switch (tableMeta.mappingMode()) {
             case SIMPLE:
-                visibleConstantPredicate(context, tableMeta, tableWrapper.alias());
+                visibleConstantPredicate(context, tableMeta, tableWrapper.alias(), hasPredicate);
                 break;
             case PARENT:
-                visibleConstantPredicate(context, tableMeta, tableWrapper.alias());
+                visibleConstantPredicate(context, tableMeta, tableWrapper.alias(), hasPredicate);
                 if (DialectUtils.childJoinParent(tableWrapper.onPredicateList(), tableMeta)) {
                     if (preTableWrapper != null) {
                         // remove child that joined by parent with primary key

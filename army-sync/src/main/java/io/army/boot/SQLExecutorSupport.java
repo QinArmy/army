@@ -31,69 +31,6 @@ abstract class SQLExecutorSupport {
         this.sessionFactory = sessionFactory;
     }
 
-    protected final long doChildUpdate(InnerSession session, ChildSQLWrapper childSQLWrapper, final boolean large) {
-        final SimpleSQLWrapper parentWrapper = childSQLWrapper.parentWrapper();
-        final SimpleSQLWrapper childWrapper = childSQLWrapper.childWrapper();
-
-        long parentRows, childRows;
-        // firstly, execute child update sql.
-        if (large) {
-            childRows = doExecuteLargeUpdate(session, childWrapper);
-        } else {
-            childRows = doExecuteUpdate(session, childWrapper);
-        }
-        // secondly, execute parent update sql.
-        if (large) {
-            parentRows = doExecuteLargeUpdate(session, parentWrapper);
-        } else {
-            parentRows = doExecuteUpdate(session, parentWrapper);
-        }
-        if (parentRows != childRows) {
-            throw new DomainUpdateException("Domain update ,child rows[%s] parent rows[%s] not match."
-                    , childRows, parentRows);
-        }
-        return childRows;
-    }
-
-    protected final Object doBatchSimpleUpdate(InnerSession session, BatchSimpleSQLWrapper sqlWrapper
-            , final boolean large) {
-        Object updateRows;
-        if (large) {
-            updateRows = doExecuteLargeBatch(session, sqlWrapper);
-        } else {
-            updateRows = doExecuteBatch(session, sqlWrapper);
-        }
-        return updateRows;
-    }
-
-    protected final Object doBatchChildUpdate(InnerSession session, ChildBatchSQLWrapper sqlWrapper
-            , final boolean large) {
-
-        final BatchSimpleSQLWrapper parentWrapper = sqlWrapper.parentWrapper();
-        final BatchSimpleSQLWrapper childWrapper = sqlWrapper.childWrapper();
-
-        Object updateRows;
-
-        int[] parentRows, childRows = new int[0];
-        long[] parentLargeRows, childLargeRows = new long[0];
-        // firstly, execute child update sql.
-        if (large) {
-            childLargeRows = doExecuteLargeBatch(session, childWrapper);
-            updateRows = childLargeRows;
-        } else {
-            childRows = doExecuteBatch(session, childWrapper);
-            updateRows = childRows;
-        }
-        // secondly, execute parent update sql.
-        if (large) {
-            parentLargeRows = doExecuteLargeBatch(session, parentWrapper);
-            assertBatchLargeUpdateRows(childLargeRows, parentLargeRows, parentWrapper.sql(), childWrapper.sql());
-        } else {
-            parentRows = doExecuteBatch(session, parentWrapper);
-            assertBatchUpdateRows(childRows, parentRows, parentWrapper.sql(), childWrapper.sql());
-        }
-        return updateRows;
-    }
 
     protected final int doExecuteUpdate(InnerSession session, SimpleSQLWrapper sqlWrapper) {
 
@@ -142,14 +79,7 @@ abstract class SQLExecutorSupport {
                 // 2. add to batch
                 st.addBatch();
             }
-            int[] updateRows;
-            // 3. execute batch
-            updateRows = st.executeBatch();
-            if (sqlWrapper.hasVersion()) {
-                // 4. check optimistic lock
-                checkOptimisticLock(updateRows, sqlWrapper);
-            }
-            return updateRows;
+            return st.executeBatch();
         } catch (SQLException e) {
             throw ExecutorUtils.convertSQLException(e, sqlWrapper.sql());
         }
@@ -165,14 +95,7 @@ abstract class SQLExecutorSupport {
                 // 2. add to batch
                 st.addBatch();
             }
-            long[] updateRows;
-            // 3. execute large batch
-            updateRows = st.executeLargeBatch();
-            if (sqlWrapper.hasVersion()) {
-                // 4. check optimistic lock
-                checkLargeOptimisticLock(updateRows, sqlWrapper);
-            }
-            return updateRows;
+            return st.executeLargeBatch();
         } catch (SQLException e) {
             throw ExecutorUtils.convertSQLException(e, sqlWrapper.sql());
         }
@@ -419,9 +342,7 @@ abstract class SQLExecutorSupport {
         }
     }
 
-    protected static IllegalArgumentException createNotSupportedException(SQLWrapper sqlWrapper, String methodName) {
-        return new IllegalArgumentException(String.format("%s supported by %s", sqlWrapper, methodName));
-    }
+
 
     /*################################## blow private method ##################################*/
 
@@ -452,63 +373,43 @@ abstract class SQLExecutorSupport {
         return primaryField;
     }
 
-    private static MetaException createFieldCodecException(FieldMeta<?, ?> fieldMeta) {
-        return new MetaException("FieldMeta[%s] not found FieldCodec.", fieldMeta);
+    /*################################## blow package static method ##################################*/
+
+    static IllegalArgumentException createNotSupportedException(SQLWrapper sqlWrapper, String methodName) {
+        return new IllegalArgumentException(String.format("%s supported by %s", sqlWrapper, methodName));
+    }
+
+    static DomainUpdateException createBatchNotMatchException(String parentSql, String childSql
+            , int parentRowsLength, int childRowsLength) {
+        throw new DomainUpdateException(
+                "Domain update,parent sql[%s] update batch[%s] and child sql[%s] update batch[%s] not match."
+                , parentSql
+                , parentRowsLength
+                , childSql
+                , childRowsLength
+        );
     }
 
 
-    private static OptimisticLockException createOptimisticLockException(String sql) {
+    static String[] asSelectionAliasArray(List<Selection> selectionList) {
+        final int size = selectionList.size();
+        String[] aliasArray = new String[size];
+
+        for (int i = 0; i < size; i++) {
+            aliasArray[i] = selectionList.get(i).alias();
+        }
+        return aliasArray;
+    }
+
+
+    static OptimisticLockException createOptimisticLockException(String sql) {
         return new OptimisticLockException("record maybe be updated or deleted by transaction,sql:%s", sql);
     }
 
-    private static void checkOptimisticLock(int[] updateRows, BatchSimpleSQLWrapper sqlWrapper) {
-        final boolean hasVersion = sqlWrapper.hasVersion();
-        for (int updateRow : updateRows) {
-            if (updateRow < 1 && hasVersion) {
-                throw createOptimisticLockException(sqlWrapper.sql());
-            }
-        }
-    }
+    /*################################## blow private static method ##################################*/
 
-    private static void checkLargeOptimisticLock(long[] updateRows, BatchSimpleSQLWrapper sqlWrapper) {
-        final boolean hasVersion = sqlWrapper.hasVersion();
-        for (long updateRow : updateRows) {
-            if (updateRow < 1 && hasVersion) {
-                throw createOptimisticLockException(sqlWrapper.sql());
-            }
-        }
-    }
-
-    private static void assertBatchUpdateRows(int[] childRows, int[] parentRows, String parentSql, String childSql) {
-
-        if (parentRows.length != childRows.length) {
-            // check domain update batch match.
-            throw createBatchNotMatchException(parentSql, childSql, parentRows.length, childRows.length);
-        }
-
-        final int len = childRows.length;
-        for (int i = 0; i < len; i++) {
-            if (parentRows[i] != childRows[i]) {
-                throw createBatchItemNotMatchException(parentSql, childSql, i, parentRows[i], childRows[i]);
-            }
-        }
-    }
-
-    private static void assertBatchLargeUpdateRows(long[] childRows, long[] parentRows, String parentSql
-            , String childSql) {
-
-        if (parentRows.length != childRows.length) {
-            // check domain update batch match.
-            throw createBatchNotMatchException(parentSql, childSql, parentRows.length, childRows.length);
-        }
-
-        final int len = childRows.length;
-        for (int i = 0; i < len; i++) {
-            if (parentRows[i] != childRows[i]) {
-                throw createBatchItemNotMatchException(parentSql, childSql, i, parentRows[i], childRows[i]);
-            }
-        }
-
+    private static MetaException createFieldCodecException(FieldMeta<?, ?> fieldMeta) {
+        return new MetaException("FieldMeta[%s] not found FieldCodec.", fieldMeta);
     }
 
     private static void assertSimpleResult(List<Selection> selectionList, Class<?> resultClass) {
@@ -522,42 +423,6 @@ abstract class SQLExecutorSupport {
                     , "selection's MappingMeta[%s] and  resultClass[%s] not match."
                     , selection.mappingMeta(), resultClass);
         }
-    }
-
-
-    static DomainUpdateException createBatchNotMatchException(String parentSql, String childSql
-            , int parentRowsLength, int childRowsLength) {
-        throw new DomainUpdateException(
-                "Domain update,parent sql[%s] update batch[%s] and child sql[%s] update batch[%s] not match."
-                , parentSql
-                , parentRowsLength
-                , childSql
-                , childRowsLength
-        );
-    }
-
-    private static DomainUpdateException createBatchItemNotMatchException(String parentSql, String childSql, int index
-            , long parentRows, long childRows) {
-        throw new DomainUpdateException(
-                "Domain update,index[%s] parent sql[%s] update rows[%s] and" +
-                        " child sql[%s] update rows[%s] not match."
-                , index
-                , parentSql
-                , parentRows
-                , childSql
-                , childRows
-        );
-    }
-
-
-    static String[] asSelectionAliasArray(List<Selection> selectionList) {
-        final int size = selectionList.size();
-        String[] aliasArray = new String[size];
-
-        for (int i = 0; i < size; i++) {
-            aliasArray[i] = selectionList.get(i).alias();
-        }
-        return aliasArray;
     }
 
 }

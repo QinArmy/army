@@ -64,7 +64,10 @@ public abstract class CriteriaCounselor {
 
     public static void assertStandardUpdate(InnerStandardUpdate update) {
         if (update instanceof InnerStandardBatchUpdate) {
-
+            if (!(update instanceof StandardContextualBatchUpdate)) {
+                throw new IllegalArgumentException(String.format("%s isn't instance of %s", update
+                        , StandardContextualBatchUpdate.class.getName()));
+            }
         } else if (!(update instanceof StandardContextualUpdate)) {
             throw new IllegalArgumentException(String.format("%s isn't instance of %s", update
                     , StandardContextualUpdate.class.getName()));

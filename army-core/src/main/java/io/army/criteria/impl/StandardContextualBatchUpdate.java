@@ -18,6 +18,9 @@ final class StandardContextualBatchUpdate<T extends IDomain, C> extends Abstract
         , Update.BatchWhereAble<T, C>, Update.BatchWhereAndAble<T, C>, Update.BatchNamedParamAble<C>
         , Update.UpdateAble {
 
+    static <T extends IDomain, C> StandardContextualBatchUpdate<T, C> build(TableMeta<T> tableMeta, C criteria) {
+        return new StandardContextualBatchUpdate<>(tableMeta, criteria);
+    }
 
     private final TableMeta<T> tableMeta;
 
@@ -37,7 +40,7 @@ final class StandardContextualBatchUpdate<T extends IDomain, C> extends Abstract
 
     private boolean prepared;
 
-    StandardContextualBatchUpdate(TableMeta<T> tableMeta, C criteria) {
+    private StandardContextualBatchUpdate(TableMeta<T> tableMeta, C criteria) {
         this.tableMeta = tableMeta;
         this.criteria = criteria;
         this.criteriaContext = new CriteriaContextImpl<>(this.criteria);
@@ -81,8 +84,6 @@ final class StandardContextualBatchUpdate<T extends IDomain, C> extends Abstract
         return this;
     }
 
-    /*################################## blow BatchWhereAble method ##################################*/
-
     @Override
     public <F> BatchWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value) {
         if (predicate.test(this.criteria)) {
@@ -108,6 +109,9 @@ final class StandardContextualBatchUpdate<T extends IDomain, C> extends Abstract
         }
         return this;
     }
+
+    /*################################## blow BatchWhereAble method ##################################*/
+
 
     @Override
     public BatchNamedParamAble<C> where(List<IPredicate> predicateList) {
@@ -192,9 +196,8 @@ final class StandardContextualBatchUpdate<T extends IDomain, C> extends Abstract
             return this;
         }
         CriteriaContextHolder.clearContext(this.criteriaContext);
-        this.criteriaContext.clear();
 
-        Assert.state(!this.targetFieldList.isEmpty(), "update no target field list");
+        Assert.state(!this.targetFieldList.isEmpty(), "update no set clause.");
         Assert.state(this.valueExpList.size() == this.targetFieldList.size()
                 , "update target field and value exp size not match");
         Assert.state(!this.predicateList.isEmpty(), "update no where clause.");
@@ -230,7 +233,6 @@ final class StandardContextualBatchUpdate<T extends IDomain, C> extends Abstract
 
     @Override
     public List<FieldMeta<?, ?>> targetFieldList() {
-        Assert.state(this.prepared, "update no prepared");
         return this.targetFieldList;
     }
 
@@ -250,5 +252,6 @@ final class StandardContextualBatchUpdate<T extends IDomain, C> extends Abstract
         this.valueExpList = null;
         this.predicateList = null;
         this.namedParamList = null;
+        this.prepared = false;
     }
 }

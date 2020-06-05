@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.lang.Nullable;
+import io.army.meta.FieldExpression;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
@@ -36,12 +37,27 @@ abstract class AbstractSQLS {
         return ParamExpressionImp.build(paramMeta, param);
     }
 
+    /**
+     * @see SQLS#batchSingleUpdate(TableMeta)
+     * @see SQLS#batchSingleUpdate(TableMeta, Object)
+     * @see SQLS#batchSingleDelete()
+     * @see SQLS#batchSingleDelete(Object)
+     */
     public static <E> NamedParamExpression<E> namedParam(String name, ParamMeta paramMeta) {
         return NamedParamExpressionImpl.build(name, paramMeta);
     }
 
+    /**
+     * package method
+     */
     static <E> ParamExpression<E> paramWithExp(E param, Expression<E> expression) {
-        return ParamExpressionImp.build(expression.mappingMeta(), param);
+        ParamMeta paramMeta;
+        if (expression instanceof FieldExpression) {
+            paramMeta = ((FieldExpression<?, ?>) expression).fieldMeta();
+        } else {
+            paramMeta = expression.mappingMeta();
+        }
+        return ParamExpressionImp.build(paramMeta, param);
     }
 
     public static <E> ConstantExpression<E> constant(E value) {

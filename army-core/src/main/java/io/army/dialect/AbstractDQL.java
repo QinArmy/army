@@ -258,18 +258,18 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             , TableContextSQLContext context) {
 
         final boolean needAppendVisible = DialectUtils.needAppendVisible(tableWrapperList);
-
-        if (!predicateList.isEmpty() || needAppendVisible) {
+        final boolean hasPredicate = !predicateList.isEmpty();
+        if (hasPredicate || needAppendVisible) {
             context.sqlBuilder()
                     .append(" WHERE");
         }
 
-        if (!predicateList.isEmpty()) {
+        if (hasPredicate) {
             DialectUtils.appendPredicateList(predicateList, context);
         }
 
         if (needAppendVisible) {
-            appendVisiblePredicate(tableWrapperList, context);
+            appendVisiblePredicate(tableWrapperList, context, hasPredicate);
         }
     }
 

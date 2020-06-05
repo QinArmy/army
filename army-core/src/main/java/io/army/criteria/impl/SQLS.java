@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
+import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingMeta;
@@ -71,14 +72,20 @@ public abstract class SQLS extends AbstractSQLS {
         return StandardContextualUpdate.build(targetTable, criteria);
     }
 
+    /**
+     * @see #namedParam(String, ParamMeta)
+     */
     public static <T extends IDomain> Update.BatchUpdateAble<T, EmptyObject> batchSingleUpdate(
             TableMeta<T> targetTable) {
-        return new StandardContextualBatchUpdate<>(targetTable, EmptyObject.getInstance());
+        return StandardContextualBatchUpdate.build(targetTable, EmptyObject.getInstance());
     }
 
+    /**
+     * @see #namedParam(String, ParamMeta)
+     */
     public static <T extends IDomain, C> Update.BatchUpdateAble<T, C> batchSingleUpdate(TableMeta<T> targetTable
             , C criteria) {
-        return new StandardContextualBatchUpdate<>(targetTable, criteria);
+        return StandardContextualBatchUpdate.build(targetTable, criteria);
     }
 
     public static Delete.SingleDeleteAble<EmptyObject> singleDelete() {
@@ -89,10 +96,16 @@ public abstract class SQLS extends AbstractSQLS {
         return StandardContextualDelete.buildDelete(criteria);
     }
 
+    /**
+     * @see #namedParam(String, ParamMeta)
+     */
     public static Delete.BatchDeleteAble<EmptyObject> batchSingleDelete() {
         return StandardContextualBatchDelete.build(EmptyObject.getInstance());
     }
 
+    /**
+     * @see #namedParam(String, ParamMeta)
+     */
     public static <C> Delete.BatchDeleteAble<C> batchSingleDelete(C criteria) {
         return StandardContextualBatchDelete.build(criteria);
     }

@@ -435,18 +435,21 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
             }
         }
 
-        // 2. extract parent predicate lists
-        final List<IPredicate> parentPredicates = DMLUtils.extractParentPredicateList(childMeta, childFieldList
-                , update.predicateList());
-        //3. parse parent update sql
-        StandardUpdateContext parentContext = StandardUpdateContext.buildParent(update, this.dialect, visible);
-        parseStandardUpdate(parentContext, parentMeta, update.tableAlias()
-                , parentFieldList, parentExpList, parentPredicates);
-
         SQLWrapper sqlWrapper;
         if (childFieldList.isEmpty()) {
+            //2. parse parent update sql
+            StandardUpdateContext parentContext = StandardUpdateContext.buildParent(update, this.dialect, visible);
+            parseStandardUpdate(parentContext, parentMeta, update.tableAlias()
+                    , parentFieldList, parentExpList, update.predicateList());
             sqlWrapper = parentContext.build();
         } else {
+            // 2. extract parent predicate lists
+            List<IPredicate> parentPredicates = DMLUtils.extractParentPredicateList(childMeta, childFieldList
+                    , update.predicateList());
+            //3. parse parent update sql
+            StandardUpdateContext parentContext = StandardUpdateContext.buildParent(update, this.dialect, visible);
+            parseStandardUpdate(parentContext, parentMeta, update.tableAlias()
+                    , parentFieldList, parentExpList, parentPredicates);
             //4. parse child update sql ,optional
             StandardUpdateContext childContext = StandardUpdateContext.buildChild(update, this.dialect, visible);
             parseStandardUpdate(childContext, childMeta, update.tableAlias()
@@ -498,15 +501,16 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
             , List<IPredicate> predicateList) {
 
         final boolean needAppendVisible = DialectUtils.needAppendVisible(tableMeta);
-        if (!predicateList.isEmpty() || needAppendVisible) {
+        final boolean hasPredicate = !predicateList.isEmpty();
+        if (hasPredicate || needAppendVisible) {
             context.sqlBuilder()
                     .append(" WHERE");
         }
-        if (!predicateList.isEmpty()) {
+        if (hasPredicate) {
             DialectUtils.appendPredicateList(predicateList, context);
         }
         if (needAppendVisible) {
-            appendVisiblePredicate(tableMeta, tableAlias, context);
+            appendVisiblePredicate(tableMeta, tableAlias, context, hasPredicate);
         }
     }
 
