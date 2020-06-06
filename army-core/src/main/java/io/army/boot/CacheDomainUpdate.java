@@ -31,7 +31,7 @@ final class CacheDomainUpdate implements Update, InnerStandardUpdate {
             if (value == null) {
                 valueList.add(SQLS.asNull(fieldMeta.mappingMeta()));
             } else {
-                valueList.add(SQLS.param(value, fieldMeta.mappingMeta()));
+                valueList.add(SQLS.param(value, fieldMeta));
             }
         }
         return new CacheDomainUpdate(advice, targetList, valueList);
@@ -47,6 +47,8 @@ final class CacheDomainUpdate implements Update, InnerStandardUpdate {
 
     private List<IPredicate> predicateList;
 
+    private boolean prepared;
+
     private CacheDomainUpdate(DomainUpdateAdvice advice, List<FieldMeta<?, ?>> targetFieldList
             , List<Expression<?>> valueExpList) {
 
@@ -56,6 +58,8 @@ final class CacheDomainUpdate implements Update, InnerStandardUpdate {
         this.targetFieldList = Collections.unmodifiableList(targetFieldList);
         this.valueExpList = Collections.unmodifiableList(valueExpList);
         this.predicateList = advice.predicateList();
+
+        this.prepared = true;
     }
 
 
@@ -89,10 +93,11 @@ final class CacheDomainUpdate implements Update, InnerStandardUpdate {
         this.targetFieldList = null;
         this.valueExpList = null;
         this.predicateList = null;
+        this.prepared = false;
     }
 
     @Override
     public boolean prepared() {
-        return true;
+        return this.prepared;
     }
 }
