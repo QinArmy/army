@@ -5,6 +5,7 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.InnerStandardDelete;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
+import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 
 class StandardDeleteContext extends AbstractStandardDomainContext implements DeleteContext {
@@ -18,13 +19,12 @@ class StandardDeleteContext extends AbstractStandardDomainContext implements Del
     }
 
     static StandardDeleteContext buildParent(InnerStandardDelete delete, Dialect dialect, final Visible visible) {
-        ChildTableMeta<?> childMeta = (ChildTableMeta<?>) delete.tableMeta();
+        ParentTableMeta<?> parentMeta = ((ChildTableMeta<?>) delete.tableMeta()).parentMeta();
 
-        return new DomainDeleteContext(dialect, visible
-                , TableContext.singleTable(childMeta.parentMeta(), delete.tableAlias())
-                , childMeta.parentMeta()
-                , childMeta
-        );
+        return new StandardDeleteContext(dialect, visible
+                , TableContext.singleTable(parentMeta, delete.tableAlias())
+                , parentMeta
+                , parentMeta);
     }
 
     static StandardDeleteContext buildChild(InnerStandardDelete delete, Dialect dialect, final Visible visible) {
