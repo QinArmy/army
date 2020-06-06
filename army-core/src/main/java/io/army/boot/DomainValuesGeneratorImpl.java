@@ -27,11 +27,11 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-final class FieldValuesGeneratorImpl implements FieldValuesGenerator {
+final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
 
     private final GenericSessionFactory sessionFactory;
 
-    FieldValuesGeneratorImpl(GenericSessionFactory sessionFactory) {
+    DomainValuesGeneratorImpl(GenericSessionFactory sessionFactory) {
         Assert.notNull(sessionFactory, "sessionFactory required");
         this.sessionFactory = sessionFactory;
     }

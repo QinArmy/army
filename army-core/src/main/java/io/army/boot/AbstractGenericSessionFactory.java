@@ -45,7 +45,7 @@ abstract class AbstractGenericSessionFactory implements InnerGenericSessionFacti
 
     final ShardingMode shardingMode;
 
-    final FieldValuesGenerator fieldValuesGenerator = FieldValuesGenerator.build(this);
+    final DomainValuesGenerator domainValuesGenerator = DomainValuesGenerator.build(this);
 
     final boolean readOnly;
 
@@ -128,8 +128,8 @@ abstract class AbstractGenericSessionFactory implements InnerGenericSessionFacti
 
 
     @Override
-    public FieldValuesGenerator fieldValuesGenerator() {
-        return this.fieldValuesGenerator;
+    public DomainValuesGenerator DomainValuesGenerator() {
+        return this.domainValuesGenerator;
     }
 
     @Nullable

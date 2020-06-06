@@ -2,7 +2,7 @@ package io.army.dialect;
 
 import io.army.ErrorCode;
 import io.army.beans.DomainWrapper;
-import io.army.boot.FieldValuesGenerator;
+import io.army.boot.DomainValuesGenerator;
 import io.army.criteria.*;
 import io.army.criteria.impl.CriteriaCounselor;
 import io.army.criteria.impl.inner.*;
@@ -199,7 +199,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         final List<IDomain> domainList = insert.valueList();
         final List<SQLWrapper> sqlWrapperList = new ArrayList<>(domainList.size());
 
-        final FieldValuesGenerator valuesGenerator = this.dialect.sessionFactory().fieldValuesGenerator();
+        final DomainValuesGenerator valuesGenerator = this.dialect.sessionFactory().DomainValuesGenerator();
 
         final boolean migrationData = insert.migrationData();
         DomainWrapper domainWrapper;
@@ -398,8 +398,10 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         SQLWrapper sqlWrapper;
         switch (update.tableMeta().mappingMode()) {
             case SIMPLE:
-            case PARENT:
                 sqlWrapper = standardSimpleUpdate(update, visible);
+                break;
+            case PARENT:
+                sqlWrapper = standardParentUpdate(update, visible);
                 break;
             case CHILD:
                 sqlWrapper = standardChildUpdate(update, visible);
@@ -435,22 +437,19 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
             }
         }
 
+        //2. parse parent update sql
+        StandardUpdateContext parentContext = StandardUpdateContext.buildParent(update, this.dialect, visible);
+        // 2-1. create parent predicate
+        List<IPredicate> parentPredicateList = DMLUtils.extractParentPredicatesForUpdate(
+                childMeta, childFieldList, update.predicateList());
+        parseStandardUpdate(parentContext, parentMeta, update.tableAlias()
+                , parentFieldList, parentExpList, parentPredicateList);
+
         SQLWrapper sqlWrapper;
         if (childFieldList.isEmpty()) {
-            //2. parse parent update sql
-            StandardUpdateContext parentContext = StandardUpdateContext.buildParent(update, this.dialect, visible);
-            parseStandardUpdate(parentContext, parentMeta, update.tableAlias()
-                    , parentFieldList, parentExpList, update.predicateList());
             sqlWrapper = parentContext.build();
         } else {
-            // 2. extract parent predicate lists
-            List<IPredicate> parentPredicates = DMLUtils.extractParentPredicatesForUpdate(childMeta, childFieldList
-                    , update.predicateList());
-            //3. parse parent update sql
-            StandardUpdateContext parentContext = StandardUpdateContext.buildParent(update, this.dialect, visible);
-            parseStandardUpdate(parentContext, parentMeta, update.tableAlias()
-                    , parentFieldList, parentExpList, parentPredicates);
-            //4. parse child update sql ,optional
+            //3 parse child update sql (optional)
             StandardUpdateContext childContext = StandardUpdateContext.buildChild(update, this.dialect, visible);
             parseStandardUpdate(childContext, childMeta, update.tableAlias()
                     , childFieldList, childExpList, update.predicateList());
@@ -497,6 +496,18 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         return context.build();
     }
 
+    private SimpleSQLWrapper standardParentUpdate(InnerStandardUpdate update, final Visible visible) {
+        StandardUpdateContext context = StandardUpdateContext.build(update, this.dialect, visible);
+        final ParentTableMeta<?> parentMeta = (ParentTableMeta<?>) update.tableMeta();
+        // create parent predicate
+        List<IPredicate> parentPredicateList = DMLUtils.createParentPredicates(parentMeta, update.predicateList());
+
+        parseStandardUpdate(context, parentMeta, update.tableAlias()
+                , update.targetFieldList(), update.valueExpList(), parentPredicateList);
+
+        return context.build();
+    }
+
     private void simpleTableWhereClause(TableContextSQLContext context, TableMeta<?> tableMeta, String tableAlias
             , List<IPredicate> predicateList) {
 
@@ -528,8 +539,10 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         SQLWrapper sqlWrapper;
         switch (delete.tableMeta().mappingMode()) {
             case SIMPLE:
-            case PARENT:
                 sqlWrapper = standardSimpleDelete(delete, visible);
+                break;
+            case PARENT:
+                sqlWrapper = standardParentDelete(delete, visible);
                 break;
             case CHILD:
                 sqlWrapper = standardChildDelete(delete, visible);
@@ -544,6 +557,15 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     private SQLWrapper standardSimpleDelete(InnerStandardDelete delete, final Visible visible) {
         StandardDeleteContext context = StandardDeleteContext.build(delete, this.dialect, visible);
         parseStandardDelete(delete.tableMeta(), delete.tableAlias(), delete.predicateList(), context);
+        return context.build();
+    }
+
+    private SQLWrapper standardParentDelete(InnerStandardDelete delete, final Visible visible) {
+        StandardDeleteContext context = StandardDeleteContext.build(delete, this.dialect, visible);
+        final ParentTableMeta<?> parentMeta = (ParentTableMeta<?>) delete.tableMeta();
+        // create parent predicate list
+        List<IPredicate> parentPredicateList = DMLUtils.createParentPredicates(parentMeta, delete.predicateList());
+        parseStandardDelete(parentMeta, delete.tableAlias(), parentPredicateList, context);
         return context.build();
     }
 

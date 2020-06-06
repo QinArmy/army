@@ -52,7 +52,7 @@ class StandardUpdateContext extends AbstractStandardDomainContext implements Upd
     }
 
     @Override
-    public SimpleSQLWrapper build() {
+    public final SimpleSQLWrapper build() {
         return SimpleSQLWrapper.build(this.sqlBuilder.toString(), this.paramList, this.hasVersion);
     }
 

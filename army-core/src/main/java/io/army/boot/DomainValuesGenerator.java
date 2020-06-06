@@ -5,13 +5,13 @@ import io.army.beans.DomainWrapper;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 
-public interface FieldValuesGenerator {
+public interface DomainValuesGenerator {
 
     DomainWrapper createValues(TableMeta<?> tableMeta, IDomain domain, boolean migrationData)
             throws FieldValuesCreateException;
 
 
-    static FieldValuesGenerator build(GenericSessionFactory sessionFactory) {
-        return new FieldValuesGeneratorImpl(sessionFactory);
+    static DomainValuesGenerator build(GenericSessionFactory sessionFactory) {
+        return new DomainValuesGeneratorImpl(sessionFactory);
     }
 }
