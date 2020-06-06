@@ -1,13 +1,9 @@
 package io.army.util;
 
 import io.army.criteria.IPredicate;
-import io.army.criteria.Insert;
 import io.army.criteria.Select;
-import io.army.criteria.Visible;
 import io.army.criteria.impl.SQLS;
-import io.army.criteria.impl.TableMetaFactory;
 import io.army.domain.IDomain;
-import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
@@ -22,34 +18,8 @@ public abstract class CriteriaUtils {
         throw new UnsupportedOperationException();
     }
 
-    public static Visible convertVisible(@Nullable Boolean visible) {
-        Visible v;
-        if (visible == null) {
-            v = Visible.BOTH;
-        } else if (Boolean.TRUE.equals(visible)) {
-            v = Visible.ONLY_VISIBLE;
-        } else {
-            v = Visible.ONLY_NON_VISIBLE;
-        }
-        return v;
-    }
 
-    public static <T extends IDomain> Select createExistsById(Class<T> domainClass, Object id) {
-        return createExistsById(TableMetaFactory.getTableMeta(domainClass), id);
-    }
 
-    public static <T extends IDomain> Select createExistsById(TableMeta<T> tableMeta, Object id) {
-        return SQLS.multiSelect()
-                .select(tableMeta.id())
-                .from(tableMeta, "t")
-                .where(tableMeta.id().equal(id))
-                .asSelect();
-    }
-
-    public static <T extends IDomain> Select createSelectIdByUnique(Class<T> domainClass, List<String> propNameList
-            , List<Object> valueList) {
-        return createSelectIdByUnique(TableMetaFactory.getTableMeta(domainClass), propNameList, valueList);
-    }
 
     public static <T extends IDomain> Select createSelectIdByUnique(TableMeta<T> tableMeta, List<String> propNameList
             , List<Object> valueList) {
@@ -59,26 +29,6 @@ public abstract class CriteriaUtils {
                 .where(createPredicateList(tableMeta, propNameList, valueList))
                 .limit(2)
                 .asSelect();
-    }
-
-    public static <T extends IDomain> Insert createSingleInsert(Class<T> domainClass, T domain) {
-        TableMeta<T> tableMeta = TableMetaFactory.getTableMeta(domainClass);
-        return createSingleInsert(tableMeta, domain);
-    }
-
-    public static <T extends IDomain> Insert createSingleInsert(TableMeta<T> tableMeta, T domain) {
-        return SQLS.multiInsert(tableMeta)
-                .insertInto(tableMeta)
-                .value(domain)
-                .asInsert();
-    }
-
-    public static <T extends IDomain> Insert createMultiInsert(Class<T> domainClass, List<T> domainList) {
-        TableMeta<T> tableMeta = TableMetaFactory.getTableMeta(domainClass);
-        return SQLS.multiInsert(tableMeta)
-                .insertInto(tableMeta)
-                .values(domainList)
-                .asInsert();
     }
 
     public static <T extends IDomain> Select createSelectDomainById(final TableMeta<T> tableMeta, Object id) {
@@ -101,12 +51,6 @@ public abstract class CriteriaUtils {
                     .asSelect();
         }
         return select;
-    }
-
-    public static <T extends IDomain> Select createSelectDomainByUnique(Class<T> domainClass, List<String> propNameList
-            , List<Object> valueList) {
-        TableMeta<T> tableMeta = TableMetaFactory.getTableMeta(domainClass);
-        return createSelectDomainByUnique(tableMeta, propNameList, valueList);
     }
 
     public static <T extends IDomain> Select createSelectDomainByUnique(TableMeta<T> tableMeta

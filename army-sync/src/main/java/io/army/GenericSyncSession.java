@@ -11,8 +11,6 @@ public interface GenericSyncSession extends GenericSession {
 
     SessionFactory sessionFactory();
 
-    <T extends IDomain> void save(T domain);
-
     @Nullable
     <T extends IDomain> T get(TableMeta<T> tableMeta, Object id);
 

@@ -79,7 +79,12 @@ public enum ErrorCode implements CodeEnum {
     PROXY_ERROR(1024, "", NONE),
     CACHE_ERROR(1025, "", NONE),
     OPTIMISTIC_LOCK(1026, "", NONE),
-    DOMAIN_UPDATE_ERROR(1027, "", NONE);
+    DOMAIN_UPDATE_ERROR(1027, "", NONE),
+    ISOLATION_ERROR(1028, "", NONE),
+    CODEC_KEY_ERROR(1029, "", NONE),
+    CODEC_DATA_ERROR(1030, "", NONE),
+    NON_CODEC_FIELD(1031, "", NONE),
+    NO_FIELD_CODEC(1032, "", NONE);
 
 
     private final int code;

@@ -15,6 +15,10 @@ final class Dual implements IDomain {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public Object getId() {
+        throw new UnsupportedOperationException();
+    }
 
     static final class DualTableMeta implements TableMeta<Dual> {
 

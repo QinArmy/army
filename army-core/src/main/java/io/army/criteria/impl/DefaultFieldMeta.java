@@ -17,6 +17,7 @@ import io.army.util.Assert;
 import java.lang.reflect.Field;
 import java.sql.JDBCType;
 import java.util.Collection;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -28,6 +29,8 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     private static final String ID = TableMeta.ID;
 
     private static final ConcurrentMap<String, FieldMeta<?, ?>> INSTANCE_MAP = new ConcurrentHashMap<>();
+
+    private static final ConcurrentMap<FieldMeta<?, ?>, Boolean> CODEC_MAP = new ConcurrentHashMap<>();
 
     @SuppressWarnings("unchecked")
     static <T extends IDomain> FieldMeta<T, ?> createFieldMeta(final @NonNull TableMeta<T> table
@@ -81,6 +84,10 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
                     , table.javaType().getName(), field.getName());
         }
         return fieldMeta;
+    }
+
+    static Set<FieldMeta<?, ?>> codecFieldMetaSet() {
+        return CODEC_MAP.keySet();
     }
 
     private static void assertNotParentFiled(TableMeta<?> table, Field field) {
@@ -169,6 +176,9 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
             this.generatorMeta = FieldMetaUtils.columnGeneratorMeta(field, this, isDiscriminator);
 
             this.codec = AnnotationUtils.getAnnotation(field, Codec.class) != null;
+            if (this.codec) {
+                CODEC_MAP.put(this, Boolean.TRUE);
+            }
         } catch (ArmyRuntimeException e) {
             throw e;
         } catch (RuntimeException e) {

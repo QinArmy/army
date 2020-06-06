@@ -6,6 +6,7 @@ import io.army.SessionOptions;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.criteria.*;
 import io.army.domain.IDomain;
+import io.army.env.Environment;
 import io.army.meta.TableMeta;
 
 import java.util.List;
@@ -27,9 +28,15 @@ class ProxySessionImpl implements ProxySession {
         return this.sessionContext.hasCurrentSession();
     }
 
+
     @Override
-    public <T extends IDomain> void save(T domain) {
-        this.sessionContext.currentSession().save(domain);
+    public Environment environment() {
+        return this.sessionFactory.environment();
+    }
+
+    @Override
+    public <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass) {
+        return this.sessionFactory.tableMeta(domainClass);
     }
 
     @Override

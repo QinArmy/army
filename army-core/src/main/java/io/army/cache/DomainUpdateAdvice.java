@@ -11,7 +11,7 @@ public interface DomainUpdateAdvice {
 
     DomainReadonlyWrapper readonlyWrapper();
 
-    void updateFinished();
+    void updateFinish();
 
     boolean hasUpdate();
 

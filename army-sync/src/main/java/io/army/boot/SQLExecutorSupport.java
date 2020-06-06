@@ -295,9 +295,13 @@ abstract class SQLExecutorSupport {
         Object paramValue = value;
         if (paramMeta instanceof FieldMeta) {
             FieldMeta<?, ?> fieldMeta = (FieldMeta<?, ?>) paramMeta;
-            if (fieldMeta.codec()) {
+            FieldCodec fieldCodec = this.sessionFactory.fieldCodec(fieldMeta);
+            if (fieldCodec != null) {
                 // encode param
-                paramValue = doEncodeParam(fieldMeta, paramValue);
+                paramValue = fieldCodec.encode(fieldMeta, value);
+                if (!fieldMeta.javaType().isInstance(paramValue)) {
+                    throw ExecutorUtils.createCodecReturnTypeException(fieldCodec, fieldMeta, paramValue);
+                }
             }
         }
         // set param
@@ -329,12 +333,12 @@ abstract class SQLExecutorSupport {
             }
             if (selection instanceof FieldSelection) {
                 FieldMeta<?, ?> fieldMeta = ((FieldSelection) selection).fieldMeta();
-                if (fieldMeta.codec()) {
-                    FieldCodec fieldCodec = this.sessionFactory.fieldCodec(fieldMeta);
-                    if (fieldCodec == null) {
-                        throw createFieldCodecException(fieldMeta);
-                    } else {
-                        value = fieldCodec.decode(fieldMeta, value);
+                FieldCodec fieldCodec = this.sessionFactory.fieldCodec(fieldMeta);
+                if (fieldCodec != null) {
+                    // do decode
+                    value = fieldCodec.decode(fieldMeta, value);
+                    if (!fieldMeta.javaType().isInstance(value)) {
+                        throw ExecutorUtils.createCodecReturnTypeException(fieldCodec, fieldMeta, value);
                     }
                 }
             }
@@ -345,21 +349,6 @@ abstract class SQLExecutorSupport {
 
 
     /*################################## blow private method ##################################*/
-
-    private Object doEncodeParam(FieldMeta<?, ?> fieldMeta, final Object value) {
-        FieldCodec fieldCodec = this.sessionFactory.fieldCodec(fieldMeta);
-        Object paramValue = value;
-        if (fieldCodec == null) {
-            throw createFieldCodecException(fieldMeta);
-        } else {
-            // encode param
-            paramValue = fieldCodec.encode(fieldMeta, paramValue);
-            if (!fieldMeta.javaType().isInstance(paramValue)) {
-                throw ExecutorUtils.createCodecReturnTypeException(fieldCodec, fieldMeta, paramValue);
-            }
-        }
-        return paramValue;
-    }
 
     private PrimaryFieldMeta<?, ?> obtainPrimaryField(List<Selection> selectionList) {
         PrimaryFieldMeta<?, ?> primaryField;

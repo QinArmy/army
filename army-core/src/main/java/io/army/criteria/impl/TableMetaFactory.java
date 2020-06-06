@@ -2,8 +2,11 @@ package io.army.criteria.impl;
 
 import io.army.domain.IDomain;
 import io.army.meta.ChildTableMeta;
+import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
+
+import java.util.Set;
 
 public abstract class TableMetaFactory {
 
@@ -32,6 +35,10 @@ public abstract class TableMetaFactory {
     public static <T extends IDomain> ChildTableMeta<T> getChildTableMeta(Class<T> entityClass)
             throws IllegalArgumentException {
         return DefaultTableMeta.getChildTableMeta(entityClass);
+    }
+
+    public static Set<FieldMeta<?, ?>> codecFieldMetaSet() {
+        return DefaultFieldMeta.codecFieldMetaSet();
     }
 
     public static void cleanCache() {

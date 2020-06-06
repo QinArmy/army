@@ -105,7 +105,7 @@ final class DomainSetterInterceptor implements MethodInterceptor, DomainUpdateAd
     /*################################## blow DomainUpdateAdvice method ##################################*/
 
     @Override
-    public void updateFinished() {
+    public void updateFinish() {
         if (this.targetFieldSet != null) {
             this.targetFieldSet.clear();
         }

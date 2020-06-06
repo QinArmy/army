@@ -5,6 +5,7 @@ import io.army.asm.TableMetaLoader;
 import io.army.codec.FieldCodec;
 import io.army.criteria.MetaException;
 import io.army.criteria.impl.SchemaMetaFactory;
+import io.army.criteria.impl.TableMetaFactory;
 import io.army.env.Environment;
 import io.army.generator.FieldGenerator;
 import io.army.generator.GeneratorFactory;
@@ -57,7 +58,7 @@ abstract class SessionFactoryUtils {
 
     static boolean sessionCache(Environment env, String factoryName) {
         return env.getProperty(String.format(ArmyConfigConstant.SESSION_CACHE, factoryName)
-                , Boolean.class, Boolean.FALSE);
+                , Boolean.class, Boolean.TRUE);
     }
 
     static Map<Class<?>, TableMeta<?>> scanPackagesForMeta(SchemaMeta schemaMeta, String factoryName, Environment env) {
@@ -140,12 +141,22 @@ abstract class SessionFactoryUtils {
         for (FieldCodec codec : fieldCodecs) {
 
             for (FieldMeta<?, ?> fieldMeta : codec.fieldMetaSet()) {
-
+                if (!fieldMeta.codec()) {
+                    throw new SessionFactoryException(ErrorCode.NON_CODEC_FIELD
+                            , "FieldMeta[%s] don't support FieldCodec.", fieldMeta);
+                }
                 if (fieldCodecMap.putIfAbsent(fieldMeta, codec) != null) {
                     throw new SessionFactoryException(ErrorCode.FIELD_CODEC_DUPLICATION
                             , "FieldMeta[%s]'s FieldCodec[%s] duplication.", fieldMeta, codec);
                 }
             }
+        }
+        // check all codec field have FieldCodec
+        Set<FieldMeta<?, ?>> codecFieldSet = new HashSet<>(fieldCodecMap.keySet());
+        codecFieldSet.removeAll(TableMetaFactory.codecFieldMetaSet());
+        if (!codecFieldSet.isEmpty()) {
+            throw new SessionFactoryException(ErrorCode.NO_FIELD_CODEC
+                    , "FieldMeta set [%s] not found FieldCodec.", codecFieldSet);
         }
         return Collections.unmodifiableMap(fieldCodecMap);
     }

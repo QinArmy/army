@@ -1,5 +1,6 @@
 package io.army.meta.mapping;
 
+import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
 
 import java.sql.JDBCType;
@@ -27,6 +28,7 @@ public interface MappingMeta extends ParamMeta {
 
     void nonNullSet(PreparedStatement st, Object nonNullValue, int index) throws SQLException;
 
+    @Nullable
     Object nullSafeGet(ResultSet resultSet, String alias) throws SQLException;
 
     /**

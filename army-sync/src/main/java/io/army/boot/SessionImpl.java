@@ -89,17 +89,6 @@ final class SessionImpl implements InnerSession, InnerTxSession {
     }
 
 
-    @Override
-    public <T extends IDomain> void save(T domain) {
-        @SuppressWarnings("unchecked")
-        Class<T> javaType = (Class<T>) domain.getClass();
-        TableMeta<T> tableMeta = this.sessionFactory.tableMeta(javaType);
-        if (tableMeta == null) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "domain[%s] not load TableMeta.", javaType.getName());
-        }
-        //  execute insert sql
-        this.insert(CriteriaUtils.createSingleInsert(tableMeta, domain), Visible.ONLY_VISIBLE);
-    }
 
     @Nullable
     @Override
@@ -579,6 +568,7 @@ final class SessionImpl implements InnerSession, InnerTxSession {
                 continue;
             }
             update(CacheDomainUpdate.build(advice), Visible.ONLY_VISIBLE);
+            advice.updateFinish();
         }
     }
 
