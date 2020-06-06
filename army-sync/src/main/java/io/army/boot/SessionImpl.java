@@ -126,7 +126,7 @@ final class SessionImpl implements InnerSession, InnerTxSession {
 
         if (domain != null && this.sessionCache != null) {
             // 3. cache
-            actualReturn = this.sessionCache.cacheDomainById(tableMeta, domain, id);
+            actualReturn = this.sessionCache.cacheDomainById(tableMeta, domain);
         } else {
             actualReturn = domain;
         }

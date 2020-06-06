@@ -26,6 +26,8 @@ public interface IDomain {
 
     String UTF_8 = "UTF-8";
 
+    Object getId();
+
     @Override
     boolean equals(Object o);
 

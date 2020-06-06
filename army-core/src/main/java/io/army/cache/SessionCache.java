@@ -12,7 +12,7 @@ public interface SessionCache {
     @Nullable
     <T extends IDomain> T getDomain(TableMeta<T> tableMeta, Object key) throws SessionCacheException;
 
-    <T extends IDomain> T cacheDomainById(TableMeta<T> tableMeta, T domain, Object id)
+    <T extends IDomain> T cacheDomainById(TableMeta<T> tableMeta, T domain)
             throws SessionCacheException;
 
     <T extends IDomain> T cacheDomainByUnique(TableMeta<T> tableMeta, T domain, UniqueKey uniqueKey)

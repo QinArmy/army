@@ -38,4 +38,33 @@ public final class UniqueKey {
         return this.propNameList.equals(key.propNameList)
                 && this.valueList.equals(key.valueList);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("\nUniqueKey properties[");
+        int index = 0;
+        for (String propName : this.propNameList) {
+            if (index > 0) {
+                builder.append(",");
+            }
+            builder.append(index)
+                    .append(":")
+                    .append(propName);
+            index++;
+        }
+        builder.append("]\nvalues[");
+        index = 0;
+        for (Object value : this.valueList) {
+            if (index > 0) {
+                builder.append(",");
+            }
+            builder.append(index)
+                    .append(":")
+                    .append(value);
+            index++;
+        }
+        builder.append("]\n");
+        return builder.toString();
+    }
 }
