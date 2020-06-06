@@ -4,6 +4,7 @@ import io.army.*;
 import io.army.cache.DomainUpdateAdvice;
 import io.army.cache.SessionCache;
 import io.army.cache.UniqueKey;
+import io.army.codec.CodecContext;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerSQL;
 import io.army.dialect.Dialect;
@@ -45,6 +46,8 @@ final class SessionImpl implements InnerSession, InnerTxSession {
     private final SessionCache sessionCache;
 
     private final Dialect dialect;
+
+    private final CodecContext codecContext = new CodecContextImpl();
 
     private Transaction transaction;
 
@@ -594,6 +597,11 @@ final class SessionImpl implements InnerSession, InnerTxSession {
     @Override
     public PreparedStatement createStatement(String sql, String[] columnNames) throws SQLException {
         return this.connection.prepareStatement(sql, columnNames);
+    }
+
+    @Override
+    public CodecContext codecContext() {
+        return this.codecContext;
     }
 
     /*################################## blow InnerTxSession method ##################################*/

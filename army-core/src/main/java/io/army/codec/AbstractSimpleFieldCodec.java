@@ -6,13 +6,14 @@ import javax.crypto.NoSuchPaddingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
-public abstract class AbstractFieldCodec implements FieldCodec {
+public abstract class AbstractSimpleFieldCodec implements FieldCodec {
 
 
     @Override
-    public final Object encode(FieldMeta<?, ?> fieldMeta, Object nonNullFieldValue) throws FieldCodecException {
+    public final Object encode(FieldMeta<?, ?> fieldMeta, Object nonNullFieldValue, CodecContext codecContext)
+            throws FieldCodecException {
         try {
-            return doEncode(fieldMeta, nonNullFieldValue);
+            return doEncode(fieldMeta, nonNullFieldValue, codecContext);
         } catch (IllegalStateException e) {
             throw FieldCodecException.KeyError("not found key[%s]", getCodecKeyName());
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException e) {
@@ -24,14 +25,16 @@ public abstract class AbstractFieldCodec implements FieldCodec {
     }
 
     @Override
-    public final Object decode(FieldMeta<?, ?> fieldMeta, Object nonNullValueFromDB) throws FieldCodecException {
+    public final Object decode(FieldMeta<?, ?> fieldMeta, Object nonNullValueFromDB, CodecContext codecContext)
+            throws FieldCodecException {
         try {
-            return doDecode(fieldMeta, nonNullValueFromDB);
+            return doDecode(fieldMeta, nonNullValueFromDB, codecContext);
         } catch (IllegalStateException e) {
             throw FieldCodecException.KeyError("not found key[%s]", getCodecKeyName());
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException e) {
             throw FieldCodecException.KeyError("codec key[%s] error.", getCodecKeyName());
         } catch (Exception e) {
+
             throw FieldCodecException.dataError("FieldMeta[%s] cannot decode by %s", fieldMeta, getCodecKeyName());
         }
     }
@@ -39,8 +42,10 @@ public abstract class AbstractFieldCodec implements FieldCodec {
     protected abstract String getCodecKeyName();
 
 
-    protected abstract Object doEncode(FieldMeta<?, ?> fieldMeta, Object nonNullFieldValue) throws Exception;
+    protected abstract Object doEncode(FieldMeta<?, ?> fieldMeta, Object nonNullFieldValue, CodecContext codecContext)
+            throws Exception;
 
-    protected abstract Object doDecode(FieldMeta<?, ?> fieldMeta, Object nonNullValueFromDB) throws Exception;
+    protected abstract Object doDecode(FieldMeta<?, ?> fieldMeta, Object nonNullValueFromDB, CodecContext codecContext)
+            throws Exception;
 
 }

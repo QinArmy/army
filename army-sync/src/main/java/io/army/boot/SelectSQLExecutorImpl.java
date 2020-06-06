@@ -27,15 +27,17 @@ final class SelectSQLExecutorImpl extends SQLExecutorSupport implements SelectSQ
         }
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql())) {
             // 1. set params
-            setParams(st, sqlWrapper.paramList());
+            setParams(session.codecContext(), st, sqlWrapper.paramList());
             List<T> resultList;
             // 2. execute sql
             try (ResultSet resultSet = st.executeQuery()) {
                 // 3. extract result
                 if (MetaConstant.SIMPLE_JAVA_TYPE_SET.contains(resultClass)) {
-                    resultList = extractSimpleResult(resultSet, sqlWrapper.selectionList(), resultClass);
+                    resultList = extractSimpleResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
+                            , resultClass);
                 } else {
-                    resultList = extractResult(resultSet, sqlWrapper.selectionList(), resultClass);
+                    resultList = extractResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
+                            , resultClass);
                 }
             }
             return resultList;

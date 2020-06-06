@@ -5,6 +5,7 @@ import io.army.ErrorCode;
 import io.army.OptimisticLockException;
 import io.army.beans.AccessorFactory;
 import io.army.beans.BeanWrapper;
+import io.army.codec.CodecContext;
 import io.army.codec.FieldCodec;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.FieldSelection;
@@ -36,7 +37,7 @@ abstract class SQLExecutorSupport {
 
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
             // 1. set params
-            setParams(st, sqlWrapper.paramList());
+            setParams(session.codecContext(), st, sqlWrapper.paramList());
             // 2. execute
             int updateRows;
             //3. execute update
@@ -54,7 +55,7 @@ abstract class SQLExecutorSupport {
 
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
             // 1. set params
-            setParams(st, sqlWrapper.paramList());
+            setParams(session.codecContext(), st, sqlWrapper.paramList());
             // 2. execute
             long updateRows;
             // 3. execute large update
@@ -72,10 +73,10 @@ abstract class SQLExecutorSupport {
     protected final int[] doExecuteBatch(InnerSession session, BatchSimpleSQLWrapper sqlWrapper) {
 
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
-
+            CodecContext codecContext = session.codecContext();
             for (List<ParamWrapper> paramList : sqlWrapper.paramGroupList()) {
                 // 1. set params
-                setParams(st, paramList);
+                setParams(codecContext, st, paramList);
                 // 2. add to batch
                 st.addBatch();
             }
@@ -88,10 +89,10 @@ abstract class SQLExecutorSupport {
     protected final long[] doExecuteLargeBatch(InnerSession session, BatchSimpleSQLWrapper sqlWrapper) {
 
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
-
+            CodecContext codecContext = session.codecContext();
             for (List<ParamWrapper> paramList : sqlWrapper.paramGroupList()) {
                 // 1. set params
-                setParams(st, paramList);
+                setParams(codecContext, st, paramList);
                 // 2. add to batch
                 st.addBatch();
             }
@@ -107,15 +108,17 @@ abstract class SQLExecutorSupport {
         // 1. create statement
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), aliasArray)) {
             // 2. set params
-            setParams(st, sqlWrapper.paramList());
+            setParams(session.codecContext(), st, sqlWrapper.paramList());
             // 3. execute sql
             try (ResultSet resultSet = st.executeQuery()) {
                 List<T> resultList;
                 //4. extract result
                 if (MetaConstant.SIMPLE_JAVA_TYPE_SET.contains(resultClass)) {
-                    resultList = extractSimpleResult(resultSet, sqlWrapper.selectionList(), resultClass);
+                    resultList = extractSimpleResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
+                            , resultClass);
                 } else {
-                    resultList = extractResult(resultSet, sqlWrapper.selectionList(), resultClass);
+                    resultList = extractResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
+                            , resultClass);
                 }
                 if (resultList.isEmpty() && sqlWrapper.hasVersion()) {
                     throw createOptimisticLockException(sqlWrapper.sql());
@@ -144,9 +147,8 @@ abstract class SQLExecutorSupport {
     }
 
     @SuppressWarnings("unchecked")
-    protected final <T> List<T> extractSimpleResult(ResultSet resultSet, List<Selection> selectionList
-            , Class<T> resultClass)
-            throws SQLException {
+    protected final <T> List<T> extractSimpleResult(CodecContext codecContext, ResultSet resultSet
+            , List<Selection> selectionList, Class<T> resultClass) throws SQLException {
 
         assertSimpleResult(selectionList, resultClass);
         final Selection selection = selectionList.get(0);
@@ -154,7 +156,13 @@ abstract class SQLExecutorSupport {
         FieldCodec fieldCodec = null;
         if (selection instanceof FieldSelection) {
             fieldMeta = ((FieldSelection) selection).fieldMeta();
-            fieldCodec = this.sessionFactory.fieldCodec(fieldMeta);
+            if (fieldMeta.codec()) {
+                fieldCodec = this.sessionFactory.fieldCodec(fieldMeta);
+            }
+            if (fieldCodec == null) {
+                throw createFieldCodecException(fieldMeta);
+            }
+
         }
         List<T> resultList = new ArrayList<>();
         final MappingMeta mappingMeta = selection.mappingMeta();
@@ -162,7 +170,7 @@ abstract class SQLExecutorSupport {
             Object value = mappingMeta.nullSafeGet(resultSet, selection.alias());
 
             if (value != null && fieldCodec != null) {
-                value = fieldCodec.decode(fieldMeta, value);
+                value = fieldCodec.decode(fieldMeta, value, codecContext);
             }
             resultList.add((T) value);
         }
@@ -176,12 +184,13 @@ abstract class SQLExecutorSupport {
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), aliasArray)) {
 
             // 2. set params
-            setParams(st, sqlWrapper.paramList());
+            setParams(session.codecContext(), st, sqlWrapper.paramList());
             // 3. execute sql
             try (ResultSet resultSet = st.executeQuery()) {
                 Map<Object, BeanWrapper> wrapperMap;
                 //4. extract first result
-                wrapperMap = extractFirstSQLResult(resultSet, sqlWrapper.selectionList(), resultClass);
+                wrapperMap = extractFirstSQLResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
+                        , resultClass);
                 if (wrapperMap.isEmpty() && sqlWrapper.hasVersion()) {
                     throw createOptimisticLockException(sqlWrapper.sql());
                 }
@@ -198,12 +207,13 @@ abstract class SQLExecutorSupport {
         // 1. create statement
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), aliasArray)) {
             // 2. set params
-            setParams(st, sqlWrapper.paramList());
+            setParams(session.codecContext(), st, sqlWrapper.paramList());
             // 3. execute sql
             try (ResultSet resultSet = st.executeQuery()) {
                 List<T> resultList;
                 // 4. extract second result
-                resultList = extractSecondSQLResult(resultSet, sqlWrapper.selectionList(), wrapperMap);
+                resultList = extractSecondSQLResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
+                        , wrapperMap);
                 if (resultList.isEmpty() && sqlWrapper.hasVersion()) {
                     throw createOptimisticLockException(sqlWrapper.sql());
                 }
@@ -214,8 +224,8 @@ abstract class SQLExecutorSupport {
         }
     }
 
-    protected final Map<Object, BeanWrapper> extractFirstSQLResult(ResultSet resultSet, List<Selection> selectionList
-            , Class<?> resultClass) throws SQLException {
+    protected final Map<Object, BeanWrapper> extractFirstSQLResult(CodecContext codecContext, ResultSet resultSet
+            , List<Selection> selectionList, Class<?> resultClass) throws SQLException {
 
         final PrimaryFieldMeta<?, ?> primaryField = obtainPrimaryField(selectionList);
 
@@ -224,7 +234,7 @@ abstract class SQLExecutorSupport {
         while (resultSet.next()) {
             beanWrapper = AccessorFactory.forBeanPropertyAccess(resultClass);
             // extract one row
-            extractRow(resultSet, selectionList, beanWrapper);
+            extractRow(codecContext, resultSet, selectionList, beanWrapper);
             Object idValue;
             if (beanWrapper.isReadableProperty(primaryField.alias())) {
                 idValue = beanWrapper.getPropertyValue(TableMeta.ID);
@@ -246,8 +256,8 @@ abstract class SQLExecutorSupport {
     }
 
     @SuppressWarnings("unchecked")
-    protected final <T> List<T> extractSecondSQLResult(ResultSet resultSet, List<Selection> selectionList
-            , Map<Object, BeanWrapper> wrapperMap) throws SQLException {
+    protected final <T> List<T> extractSecondSQLResult(CodecContext codecContext, ResultSet resultSet
+            , List<Selection> selectionList, Map<Object, BeanWrapper> wrapperMap) throws SQLException {
 
         final PrimaryFieldMeta<?, ?> primaryField = obtainPrimaryField(selectionList);
         List<Selection> subSelectionList;
@@ -265,14 +275,15 @@ abstract class SQLExecutorSupport {
                         , "Domain returning insert/update/delete criteria error,not found BeanWrapper by id[%s]"
                         , idValue);
             }
-            extractRow(resultSet, subSelectionList, beanWrapper);
+            extractRow(codecContext, resultSet, subSelectionList, beanWrapper);
             resultList.add((T) beanWrapper.getWrappedInstance());
         }
         return resultList;
     }
 
 
-    protected final void setParams(PreparedStatement st, List<ParamWrapper> paramList) throws SQLException {
+    protected final void setParams(CodecContext codecContext, PreparedStatement st, List<ParamWrapper> paramList)
+            throws SQLException {
         ParamWrapper paramWrapper;
         Object value;
 
@@ -283,25 +294,20 @@ abstract class SQLExecutorSupport {
             if (value == null) {
                 st.setNull(i + 1, paramWrapper.paramMeta().mappingMeta().jdbcType().getVendorTypeNumber());
             } else {
-                setNonNullValue(st, i + 1, paramWrapper.paramMeta(), value);
+                setNonNullValue(codecContext, st, i + 1, paramWrapper.paramMeta(), value);
             }
         }
 
     }
 
-    protected final void setNonNullValue(PreparedStatement st, final int index, ParamMeta paramMeta
-            , final Object value)
+    protected final void setNonNullValue(CodecContext codecContext, PreparedStatement st, final int index
+            , ParamMeta paramMeta, final Object value)
             throws SQLException {
         Object paramValue = value;
         if (paramMeta instanceof FieldMeta) {
             FieldMeta<?, ?> fieldMeta = (FieldMeta<?, ?>) paramMeta;
-            FieldCodec fieldCodec = this.sessionFactory.fieldCodec(fieldMeta);
-            if (fieldCodec != null) {
-                // encode param
-                paramValue = fieldCodec.encode(fieldMeta, value);
-                if (!fieldMeta.javaType().isInstance(paramValue)) {
-                    throw ExecutorUtils.createCodecReturnTypeException(fieldCodec, fieldMeta, paramValue);
-                }
+            if (fieldMeta.codec()) {
+                paramValue = doEncodeParam(codecContext, fieldMeta, value);
             }
         }
         // set param
@@ -309,21 +315,22 @@ abstract class SQLExecutorSupport {
     }
 
     @SuppressWarnings("unchecked")
-    protected final <T> List<T> extractResult(ResultSet resultSet, List<Selection> selectionList
-            , Class<T> resultClass) throws SQLException {
+    protected final <T> List<T> extractResult(CodecContext codecContext, ResultSet resultSet
+            , List<Selection> selectionList, Class<T> resultClass) throws SQLException {
 
         List<T> resultList = new ArrayList<>();
         BeanWrapper beanWrapper;
         while (resultSet.next()) {
             beanWrapper = AccessorFactory.forBeanPropertyAccess(resultClass);
-            extractRow(resultSet, selectionList, beanWrapper);
+            extractRow(codecContext, resultSet, selectionList, beanWrapper);
             // result add to resultList
             resultList.add((T) beanWrapper.getWrappedInstance());
         }
         return resultList;
     }
 
-    protected final void extractRow(ResultSet resultSet, List<Selection> selectionList, BeanWrapper beanWrapper)
+    protected final void extractRow(CodecContext codecContext, ResultSet resultSet, List<Selection> selectionList
+            , BeanWrapper beanWrapper)
             throws SQLException {
 
         for (Selection selection : selectionList) {
@@ -333,13 +340,8 @@ abstract class SQLExecutorSupport {
             }
             if (selection instanceof FieldSelection) {
                 FieldMeta<?, ?> fieldMeta = ((FieldSelection) selection).fieldMeta();
-                FieldCodec fieldCodec = this.sessionFactory.fieldCodec(fieldMeta);
-                if (fieldCodec != null) {
-                    // do decode
-                    value = fieldCodec.decode(fieldMeta, value);
-                    if (!fieldMeta.javaType().isInstance(value)) {
-                        throw ExecutorUtils.createCodecReturnTypeException(fieldCodec, fieldMeta, value);
-                    }
+                if (fieldMeta.codec()) {
+                    value = doDecodeResult(codecContext, fieldMeta, value);
                 }
             }
             beanWrapper.setPropertyValue(selection.alias(), value);
@@ -349,6 +351,36 @@ abstract class SQLExecutorSupport {
 
 
     /*################################## blow private method ##################################*/
+
+    private Object doEncodeParam(CodecContext codecContext, FieldMeta<?, ?> fieldMeta, final Object value) {
+        FieldCodec fieldCodec = this.sessionFactory.fieldCodec(fieldMeta);
+        Object paramValue;
+        if (fieldCodec == null) {
+            throw createFieldCodecException(fieldMeta);
+        } else {
+            // encode param
+            paramValue = fieldCodec.encode(fieldMeta, value, codecContext);
+            if (!fieldMeta.javaType().isInstance(paramValue)) {
+                throw ExecutorUtils.createCodecReturnTypeException(fieldCodec, fieldMeta, paramValue);
+            }
+        }
+        return paramValue;
+    }
+
+    private Object doDecodeResult(CodecContext codecContext, FieldMeta<?, ?> fieldMeta, final Object resultFromDB) {
+        FieldCodec fieldCodec = this.sessionFactory.fieldCodec(fieldMeta);
+        Object result;
+        if (fieldCodec == null) {
+            throw createFieldCodecException(fieldMeta);
+        } else {
+            // decode result
+            result = fieldCodec.decode(fieldMeta, resultFromDB, codecContext);
+            if (!fieldMeta.javaType().isInstance(result)) {
+                throw ExecutorUtils.createCodecReturnTypeException(fieldCodec, fieldMeta, result);
+            }
+        }
+        return result;
+    }
 
     private PrimaryFieldMeta<?, ?> obtainPrimaryField(List<Selection> selectionList) {
         PrimaryFieldMeta<?, ?> primaryField;

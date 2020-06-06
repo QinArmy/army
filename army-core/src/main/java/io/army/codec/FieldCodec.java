@@ -11,8 +11,8 @@ public interface FieldCodec {
 
     Set<FieldMeta<?, ?>> fieldMetaSet();
 
-    Object encode(FieldMeta<?, ?> fieldMeta, Object nonNullFieldValue) throws FieldCodecException;
+    Object encode(FieldMeta<?, ?> fieldMeta, Object nonNullFieldValue, CodecContext context) throws FieldCodecException;
 
-    Object decode(FieldMeta<?, ?> fieldMeta, Object nonNullValueFromDB) throws FieldCodecException;
+    Object decode(FieldMeta<?, ?> fieldMeta, Object nonNullValueFromDB, CodecContext context) throws FieldCodecException;
 
 }
