@@ -6,7 +6,6 @@ import io.army.criteria.impl.inner.TableWrapper;
 import io.army.meta.TableMeta;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -312,7 +311,7 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery
     }
 
     @Override
-    public List<TableWrapper> tableWrapperList() {
+    public List<? extends TableWrapper> tableWrapperList() {
         return this.actualSelect.tableWrapperList();
     }
 
@@ -351,8 +350,5 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery
         this.actualSelect.clear();
     }
 
-    @Override
-    public Map<TableMeta<?>, Integer> tablePresentCountMap() {
-        return this.actualSelect.tablePresentCountMap();
-    }
+
 }

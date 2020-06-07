@@ -9,7 +9,6 @@ import io.army.util.Pair;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -366,7 +365,7 @@ final class ColumnSubQueryAdaptor<E, C> implements ColumnSubQuery<E>, ColumnSubQ
     }
 
     @Override
-    public List<TableWrapper> tableWrapperList() {
+    public List<? extends TableWrapper> tableWrapperList() {
         return this.actualSelect.tableWrapperList();
     }
 
@@ -403,11 +402,6 @@ final class ColumnSubQueryAdaptor<E, C> implements ColumnSubQuery<E>, ColumnSubQ
     @Override
     public void clear() {
         this.actualSelect.clear();
-    }
-
-    @Override
-    public Map<TableMeta<?>, Integer> tablePresentCountMap() {
-        return this.actualSelect.tablePresentCountMap();
     }
 
 

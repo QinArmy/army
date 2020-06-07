@@ -6,9 +6,13 @@ import io.army.meta.TableMeta;
 
 final class StandardContextualMultiSelect<C> extends AbstractStandardSelect<C> implements InnerStandardSelect {
 
+    static <C> StandardContextualMultiSelect<C> build(C criteria) {
+        return new StandardContextualMultiSelect<>(criteria);
+    }
+
     private final CriteriaContext criteriaContext;
 
-    StandardContextualMultiSelect(C criteria) {
+    private StandardContextualMultiSelect(C criteria) {
         super(criteria);
         this.criteriaContext = new CriteriaContextImpl<>(criteria);
         CriteriaContextHolder.setContext(this.criteriaContext);
@@ -17,11 +21,14 @@ final class StandardContextualMultiSelect<C> extends AbstractStandardSelect<C> i
     /*################################## blow package method ##################################*/
 
     @Override
-    final void doAsSelect() {
+    final void concreteAsSelect() {
         CriteriaContextHolder.clearContext(this.criteriaContext);
-        this.criteriaContext.clear();
     }
 
+    @Override
+    void concreteClear() {
+
+    }
 
     @Override
     final void onAddSubQuery(SubQuery subQuery, String subQueryAlias) {

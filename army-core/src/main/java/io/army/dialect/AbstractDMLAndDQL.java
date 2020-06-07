@@ -85,7 +85,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         }
     }
 
-    protected final void appendVisiblePredicate(List<TableWrapper> tableWrapperList, TableContextSQLContext context
+    protected final void appendVisiblePredicate(List<? extends TableWrapper> tableWrapperList, TableContextSQLContext context
             , boolean hasPredicate) {
         // append visible predicates
         final TableMeta<?> dual = SQLS.dual();

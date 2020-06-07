@@ -60,6 +60,11 @@ abstract class AbstractDDLContext implements DDLContext {
     }
 
     @Override
+    public void appendTable(TableMeta<?> tableMeta) {
+        this.sqlBuilder.append(this.dialect.quoteIfNeed(tableMeta.tableName()));
+    }
+
+    @Override
     public void append(String sql) {
         this.sqlList.add(sql);
     }

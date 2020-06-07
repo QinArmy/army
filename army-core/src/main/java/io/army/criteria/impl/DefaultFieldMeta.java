@@ -56,7 +56,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     @SuppressWarnings("unchecked")
     static <T extends IDomain, F> IndexFieldMeta<T, F> createIndexFieldMeta(TableMeta<T> table, Field field
-            , IndexMeta<T> indexMeta, @Nullable Boolean fieldAsc) {
+            , IndexMeta<T> indexMeta, int columnCount, @Nullable Boolean fieldAsc) {
 
         final String fieldMetaKey = table.javaType().getName() + "." + field.getName();
         IndexFieldMeta<T, F> fieldMeta;
@@ -67,14 +67,14 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
         assertNotParentFiled(table, field);
 
         // create new IndexFieldMeta
-        if (indexMeta.unique() && indexMeta.fieldList().size() == 1) {
+        if (indexMeta.unique() && columnCount == 1) {
             if (ID.equals(field.getName())) {
                 fieldMeta = new DefaultPrimaryFieldMeta<>(table, field, indexMeta, fieldAsc);
             } else {
                 fieldMeta = new DefaultUniqueFieldMeta<>(table, field, indexMeta, fieldAsc);
             }
         } else {
-            fieldMeta = new DefaultIndexFieldMeta<>(table, field, indexMeta, fieldAsc);
+            fieldMeta = new DefaultIndexFieldMeta<>(table, field, indexMeta, false, fieldAsc);
         }
 
         FieldMeta<?, ?> actualFieldMeta = INSTANCE_MAP.putIfAbsent(fieldMetaKey, fieldMeta);
@@ -310,9 +310,9 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     @Override
     public final String beforeAs() {
-        return table.tableName()
+        return this.table.toString()
                 .concat(".")
-                .concat(fieldName);
+                .concat(this.propertyName);
     }
 
     @Override
@@ -350,9 +350,9 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
         private final Boolean fieldAsc;
 
-        private DefaultIndexFieldMeta(TableMeta<T> table, Field field, IndexMeta<T> indexMeta
+        private DefaultIndexFieldMeta(TableMeta<T> table, Field field, IndexMeta<T> indexMeta, boolean uniqueField
                 , @Nullable Boolean fieldAsc) throws MetaException {
-            super(table, field, indexMeta.unique() && indexMeta.fieldList().size() == 1, true);
+            super(table, field, indexMeta.unique() && uniqueField, true);
             Assert.notNull(indexMeta, "");
 
             this.indexMeta = indexMeta;
@@ -376,8 +376,8 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
         private DefaultUniqueFieldMeta(TableMeta<T> table, Field field, IndexMeta<T> indexMeta
                 , @Nullable Boolean fieldAsc) throws MetaException {
-            super(table, field, indexMeta, fieldAsc);
-            if (!indexMeta.unique() || indexMeta.fieldList().size() != 1) {
+            super(table, field, indexMeta, true, fieldAsc);
+            if (!indexMeta.unique()) {
                 throw new MetaException("indexMeta[%s] not unique.", indexMeta);
             }
         }

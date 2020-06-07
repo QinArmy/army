@@ -1,8 +1,9 @@
 package io.army.boot;
 
 import io.army.Session;
-import io.army.codec.CodecContext;
+import io.army.codec.StatementType;
 import io.army.dialect.Dialect;
+import io.army.lang.Nullable;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -15,7 +16,9 @@ interface InnerSession extends Session {
 
     PreparedStatement createStatement(String sql, String[] columnNames) throws SQLException;
 
-    CodecContext codecContext();
+    InnerCodecContext codecContext();
+
+    void codecContextStatementType(@Nullable StatementType statementType);
 
     Dialect dialect();
 }

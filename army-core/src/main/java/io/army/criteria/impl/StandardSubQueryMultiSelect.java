@@ -48,32 +48,31 @@ final class StandardSubQueryMultiSelect<C> extends AbstractStandardSelect<C> imp
         context.dql().subQuery(this, context);
     }
 
-    @Override
-    public void clear() {
-        super.clear();
-        this.selectionMap = null;
-    }
+
+
 
     /*################################## blow package template method ##################################*/
 
     @Override
-    void onAddTable(TableMeta<?> table, String tableAlias) {
-
+    final void onAddTable(TableMeta<?> table, String tableAlias) {
+        CriteriaContextHolder.getContext()
+                .onAddTable(table, tableAlias);
     }
 
     @Override
-    void onAddSubQuery(SubQuery subQuery, String subQueryAlias) {
+    final void onAddSubQuery(SubQuery subQuery, String subQueryAlias) {
         CriteriaContextHolder.getContext()
                 .onAddSubQuery(subQuery, subQueryAlias);
     }
 
     @Override
-    void doAsSelect() {
+    final void concreteAsSelect() {
 
     }
 
     @Override
-    int tableWrapperCount() {
-        return 6;
+    final void concreteClear() {
+
     }
+
 }

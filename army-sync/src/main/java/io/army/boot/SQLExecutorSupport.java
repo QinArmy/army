@@ -114,7 +114,7 @@ abstract class SQLExecutorSupport {
                 List<T> resultList;
                 //4. extract result
                 if (MetaConstant.SIMPLE_JAVA_TYPE_SET.contains(resultClass)) {
-                    resultList = extractSimpleResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
+                    resultList = extractSimpleTypeResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
                             , resultClass);
                 } else {
                     resultList = extractResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
@@ -147,7 +147,7 @@ abstract class SQLExecutorSupport {
     }
 
     @SuppressWarnings("unchecked")
-    protected final <T> List<T> extractSimpleResult(CodecContext codecContext, ResultSet resultSet
+    protected final <T> List<T> extractSimpleTypeResult(CodecContext codecContext, ResultSet resultSet
             , List<Selection> selectionList, Class<T> resultClass) throws SQLException {
 
         assertSimpleResult(selectionList, resultClass);
@@ -158,9 +158,9 @@ abstract class SQLExecutorSupport {
             fieldMeta = ((FieldSelection) selection).fieldMeta();
             if (fieldMeta.codec()) {
                 fieldCodec = this.sessionFactory.fieldCodec(fieldMeta);
-            }
-            if (fieldCodec == null) {
-                throw createFieldCodecException(fieldMeta);
+                if (fieldCodec == null) {
+                    throw createFieldCodecException(fieldMeta);
+                }
             }
 
         }
@@ -436,7 +436,8 @@ abstract class SQLExecutorSupport {
     private static void assertSimpleResult(List<Selection> selectionList, Class<?> resultClass) {
         if (selectionList.size() != 1) {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                    , "selection size must be one,when resultClass is simple java class");
+                    , "selection size must be one but %s,when resultClass is simple java class"
+                    , selectionList.size());
         }
         Selection selection = selectionList.get(0);
         if (selection.mappingMeta().javaType() != resultClass) {

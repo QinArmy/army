@@ -43,6 +43,17 @@ final class StandardInsertContext extends AbstractTableContextSQLContext impleme
         return this.fieldBuilder;
     }
 
+    @Override
+    public void appendTable(TableMeta<?> tableMeta) {
+
+        if (tableMeta == this.physicalTable) {
+            this.fieldBuilder.append(" ")
+                    .append(this.dialect.quoteIfNeed(tableMeta.tableName()));
+        } else {
+            throw new IllegalArgumentException(String.format("%s isn't supported %s"
+                    , tableMeta, this.getClass().getName()));
+        }
+    }
 
     @Override
     public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) {

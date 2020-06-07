@@ -55,7 +55,7 @@ abstract class SelectionGroups implements SelectionGroup {
 
 
     private static final class TableFieldGroup<T extends IDomain> extends SelectionGroups
-            implements SelectionGroup {
+            implements TableSelectionGroup {
 
         private final String tableAlias;
 
@@ -97,7 +97,7 @@ abstract class SelectionGroups implements SelectionGroup {
     }
 
     private static final class SubQuerySelectionGroupImpl extends SelectionGroups
-            implements SubQuerySelectGroup {
+            implements SubQuerySelectionGroup {
 
         private final String subQueryAlias;
 
@@ -144,7 +144,7 @@ abstract class SelectionGroups implements SelectionGroup {
 
 
     private static final class SubQueryListSelectionGroup extends SelectionGroups
-            implements SubQuerySelectGroup {
+            implements SubQuerySelectionGroup {
 
         private final String subQueryAlias;
 

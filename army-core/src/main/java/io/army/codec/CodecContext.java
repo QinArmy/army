@@ -4,8 +4,14 @@ import io.army.meta.FieldMeta;
 
 public interface CodecContext {
 
-    int failCount(FieldMeta<?, ?> fieldMeta, Object keyTag);
+    int encodeFailCount(FieldMeta<?, ?> fieldMeta, Object keyTag);
 
-    void failIncrement(FieldMeta<?, ?> fieldMeta, Object keyTag);
+    void encodeFailIncrement(FieldMeta<?, ?> fieldMeta, Object keyTag);
+
+    int decodeFailCount(FieldMeta<?, ?> fieldMeta, Object keyTag);
+
+    void decodeFailIncrement(FieldMeta<?, ?> fieldMeta, Object keyTag);
+
+    StatementType statementType();
 
 }

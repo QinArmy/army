@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerQuery;
-import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
@@ -10,23 +9,17 @@ import io.army.util.Pair;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class AbstractStandardSelect<C> extends AbstractSQL implements Select
-        , Select.WhereAble<C>, Select.WhereAndAble<C>, Select.HavingAble<C>
+abstract class AbstractStandardSelect<C> extends AbstractSelect implements
+        Select.WhereAble<C>, Select.WhereAndAble<C>, Select.HavingAble<C>
         , Select.UnionClause<C>, Select.SelectPartAble<C>, Select.FromAble<C>
         , Select.JoinAble<C>, Select.OnAble<C>, InnerQuery {
 
-    static final String NOT_PREPARED_MSG = "Select criteria don't haven invoke asSelect() method.";
 
     final C criteria;
-
-    private List<SQLModifier> modifierList;
-
-    private List<SelectPart> selectPartList = new LinkedList<>();
 
     private List<IPredicate> predicateList = new ArrayList<>();
 
@@ -41,8 +34,6 @@ abstract class AbstractStandardSelect<C> extends AbstractSQL implements Select
     private int rowCount = -1;
 
     private LockMode lockMode;
-
-    private boolean prepared = false;
 
 
     AbstractStandardSelect(C criteria) {
@@ -67,31 +58,31 @@ abstract class AbstractStandardSelect<C> extends AbstractSQL implements Select
     /*################################## blow SelectPartAble method ##################################*/
 
     @Override
-    public <S extends SelectPart> FromAble<C> select(Distinct distinct, Function<C, List<S>> function) {
+    public final <S extends SelectPart> FromAble<C> select(Distinct distinct, Function<C, List<S>> function) {
         doSelect(distinct, function.apply(this.criteria));
         return this;
     }
 
     @Override
-    public FromAble<C> select(Distinct distinct, SelectPart selectPart) {
-        doSelect(distinct, selectPart);
+    public final FromAble<C> select(Distinct distinct, SelectPart selectPart) {
+        doSelectClause(distinct, selectPart);
         return this;
     }
 
     @Override
-    public FromAble<C> select(SelectPart selectPart) {
-        doSelect((Distinct) null, selectPart);
+    public final FromAble<C> select(SelectPart selectPart) {
+        doSelectClause((Distinct) null, selectPart);
         return this;
     }
 
     @Override
-    public <S extends SelectPart> FromAble<C> select(Distinct distinct, List<S> selectPartList) {
+    public final <S extends SelectPart> FromAble<C> select(Distinct distinct, List<S> selectPartList) {
         doSelect(distinct, selectPartList);
         return this;
     }
 
     @Override
-    public <S extends SelectPart> FromAble<C> select(List<S> selectPartList) {
+    public final <S extends SelectPart> FromAble<C> select(List<S> selectPartList) {
         doSelect((Distinct) null, selectPartList);
         return this;
     }
@@ -99,13 +90,13 @@ abstract class AbstractStandardSelect<C> extends AbstractSQL implements Select
     /*################################## blow FromAble method ##################################*/
 
     @Override
-    public JoinAble<C> from(TableMeta<?> tableMeta, String tableAlias) {
+    public final JoinAble<C> from(TableMeta<?> tableMeta, String tableAlias) {
         addTableAble(new TableWrapperImpl(tableMeta, tableAlias, JoinType.NONE));
         return this;
     }
 
     @Override
-    public JoinAble<C> from(Function<C, SubQuery> function, String subQueryAlia) {
+    public final JoinAble<C> from(Function<C, SubQuery> function, String subQueryAlia) {
         addTableAble(new TableWrapperImpl(function.apply(this.criteria), subQueryAlia, JoinType.NONE));
         return this;
     }
@@ -114,37 +105,37 @@ abstract class AbstractStandardSelect<C> extends AbstractSQL implements Select
     /*################################## blow JoinAble method ##################################*/
 
     @Override
-    public OnAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias) {
+    public final OnAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias) {
         addTableAble(new TableWrapperImpl(tableMeta, tableAlias, JoinType.LEFT));
         return this;
     }
 
     @Override
-    public OnAble<C> leftJoin(Function<C, SubQuery> function, String subQueryAlia) {
+    public final OnAble<C> leftJoin(Function<C, SubQuery> function, String subQueryAlia) {
         addTableAble(new TableWrapperImpl(function.apply(this.criteria), subQueryAlia, JoinType.LEFT));
         return this;
     }
 
     @Override
-    public OnAble<C> join(TableMeta<?> tableMeta, String tableAlias) {
+    public final OnAble<C> join(TableMeta<?> tableMeta, String tableAlias) {
         addTableAble(new TableWrapperImpl(tableMeta, tableAlias, JoinType.JOIN));
         return this;
     }
 
     @Override
-    public OnAble<C> join(Function<C, SubQuery> function, String subQueryAlia) {
+    public final OnAble<C> join(Function<C, SubQuery> function, String subQueryAlia) {
         addTableAble(new TableWrapperImpl(function.apply(this.criteria), subQueryAlia, JoinType.JOIN));
         return this;
     }
 
     @Override
-    public OnAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias) {
+    public final OnAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias) {
         addTableAble(new TableWrapperImpl(tableMeta, tableAlias, JoinType.RIGHT));
         return this;
     }
 
     @Override
-    public OnAble<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia) {
+    public final OnAble<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia) {
         addTableAble(new TableWrapperImpl(function.apply(this.criteria), subQueryAlia, JoinType.RIGHT));
         return this;
     }
@@ -153,19 +144,19 @@ abstract class AbstractStandardSelect<C> extends AbstractSQL implements Select
 
     @Override
     public final Select.JoinAble<C> on(List<IPredicate> predicateList) {
-        doOn(predicateList);
+        doOnClause(predicateList);
         return this;
     }
 
     @Override
     public final Select.JoinAble<C> on(IPredicate predicate) {
-        doOn(Collections.singletonList(predicate));
+        doOnClause(Collections.singletonList(predicate));
         return this;
     }
 
     @Override
     public final Select.JoinAble<C> on(Function<C, List<IPredicate>> function) {
-        doOn(function.apply(this.criteria));
+        doOnClause(function.apply(this.criteria));
         return this;
     }
 
@@ -267,7 +258,6 @@ abstract class AbstractStandardSelect<C> extends AbstractSQL implements Select
         if (this.groupExpList.isEmpty()) {
             return this;
         }
-        Assert.state(this.havingList.isEmpty(), "having clause ended.");
         this.havingList.addAll(function.apply(this.criteria));
         return this;
     }
@@ -452,41 +442,33 @@ abstract class AbstractStandardSelect<C> extends AbstractSQL implements Select
     /*################################## blow SelectAble method ##################################*/
 
     @Override
-    public final Select asSelect() {
-        if (prepared) {
-            return this;
-        }
-        // before unmodifiableList .
-        processSelectPartList(this.selectPartList);
-
-        this.asSQL();
-        this.modifierList = CriteriaUtils.unmodifiableList(this.modifierList);
-        this.selectPartList = Collections.unmodifiableList(this.selectPartList);
+    final void internalAsSelect() {
         this.predicateList = Collections.unmodifiableList(this.predicateList);
 
-        this.groupExpList = CriteriaUtils.unmodifiableList(this.groupExpList);
-        this.havingList = CriteriaUtils.unmodifiableList(this.havingList);
-        this.orderByList = CriteriaUtils.unmodifiableList(this.orderByList);
+        if (this.groupExpList == null) {
+            this.groupExpList = Collections.emptyList();
+        } else {
+            this.groupExpList = CriteriaUtils.unmodifiableList(this.groupExpList);
+        }
 
-        doAsSelect();
-        this.prepared = true;
-        return this;
+        if (this.havingList == null) {
+            this.havingList = Collections.emptyList();
+        } else {
+            this.havingList = CriteriaUtils.unmodifiableList(this.havingList);
+        }
+
+        if (this.orderByList == null) {
+            this.orderByList = Collections.emptyList();
+        } else {
+            this.orderByList = CriteriaUtils.unmodifiableList(this.orderByList);
+        }
+
+        concreteAsSelect();
     }
+
 
 
     /*################################## blow InnerQueryAble method ##################################*/
-
-
-    @Override
-    public final List<SQLModifier> modifierList() {
-        return this.modifierList;
-    }
-
-    @Override
-    public final List<SelectPart> selectPartList() {
-        return this.selectPartList;
-    }
-
 
     @Override
     public final List<IPredicate> predicateList() {
@@ -523,63 +505,23 @@ abstract class AbstractStandardSelect<C> extends AbstractSQL implements Select
     }
 
     @Override
-    public void clear() {
-        super.beforeClear(NOT_PREPARED_MSG);
-
-        this.modifierList = null;
-        this.selectPartList = null;
+    final void internalClear() {
         this.predicateList = null;
-        this.groupExpList = null;
 
+        this.groupExpList = null;
         this.havingList = null;
         this.orderByList = null;
         this.lockMode = null;
 
+        concreteClear();
     }
-
-    /*################################## blow package method ##################################*/
-
-    @Override
-    public final boolean prepared() {
-        return this.prepared;
-    }
-
-
-    final <S extends SelectPart> void doSelect(@Nullable Distinct distinct, List<S> selectPartList) {
-        if (distinct != null) {
-            this.modifierList.add(distinct);
-        }
-        Assert.notEmpty(selectPartList, "select clause must have SelectPart.");
-        this.selectPartList.addAll(selectPartList);
-    }
-
-    final <M extends SQLModifier, S extends SelectPart> void doSelect(List<M> modifierList, List<S> selectPartList) {
-        this.modifierList.addAll(modifierList);
-        Assert.notEmpty(selectPartList, "select clause must have SelectPart.");
-        this.selectPartList.addAll(selectPartList);
-    }
-
-    final <S extends SelectPart> void doSelect(@Nullable Distinct distinct, S selectPart) {
-        if (distinct != null) {
-            this.modifierList.add(distinct);
-        }
-        this.selectPartList.add(selectPart);
-    }
-
-    final <M extends SQLModifier, S extends SelectPart> void doSelect(List<M> modifierList, S selectPart) {
-        this.modifierList.addAll(modifierList);
-        this.selectPartList.add(selectPart);
-    }
-
-
-
 
 
     /*################################## blow package template method ##################################*/
 
+    abstract void concreteAsSelect();
 
-    abstract void doAsSelect();
-
+    abstract void concreteClear();
 
     /*################################## blow private method ##################################*/
 

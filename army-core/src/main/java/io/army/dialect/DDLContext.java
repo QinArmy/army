@@ -16,6 +16,8 @@ public interface DDLContext {
 
     TableMeta<?> tableMeta();
 
+    void appendTable(TableMeta<?> tableMeta);
+
     void append(String sql);
 
     void resetBuilder();

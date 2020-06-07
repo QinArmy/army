@@ -91,16 +91,19 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     @Override
     public final List<String> changeColumn(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> changeFieldMetas) {
         final DDLContext context = new ColumnDDLContext(this.dialect, tableMeta, defaultFunctionMap());
-
+        int index = 0;
         for (FieldMeta<?, ?> fieldMeta : changeFieldMetas) {
 
             Assert.isTrue(fieldMeta.tableMeta() == tableMeta, () -> String.format(
                     "TableMeta[%s] then FieldMeta[%s] not match."
                     , tableMeta, fieldMeta));
+            if (index > 0) {
+                context.resetBuilder();
+            }
 
             doChangeColumn(fieldMeta, context);
             context.append(context.sqlBuilder().toString());
-            context.resetBuilder();
+            index++;
         }
         return context.build();
     }
@@ -116,7 +119,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
             if (index > 0) {
                 context.resetBuilder();
             }
-            indexDefinitionClause(indexMeta, context);
+            createIndexDefinition(indexMeta, context);
             context.append(context.sqlBuilder().toString());
 
             index++;
@@ -185,10 +188,14 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     protected void doChangeColumn(FieldMeta<?, ?> fieldMeta, DDLContext context) {
         TableMeta<?> tableMeta = context.tableMeta();
         StringBuilder builder = context.sqlBuilder();
+        final String safeColumnName = this.dialect.quoteIfNeed(fieldMeta.fieldName());
         builder.append("ALTER TABLE ")
                 .append(this.dialect.quoteIfNeed(tableMeta.tableName()))
                 .append(" CHANGE COLUMN ")
-                .append(this.dialect.quoteIfNeed(fieldMeta.fieldName()));
+                .append(safeColumnName)
+                .append(" ")
+                .append(safeColumnName)
+        ;
 
         dataTypeClause(fieldMeta, context);
         nullableClause(fieldMeta, context);
@@ -261,6 +268,16 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
             nonReservedPropDefault(fieldMeta, context);
         }
 
+    }
+
+
+    protected void createIndexDefinition(IndexMeta<?> indexMeta, DDLContext context) {
+        StringBuilder builder = context.sqlBuilder()
+                .append("ALTER TABLE ");
+        context.appendTable(indexMeta.table());
+        builder.append(" ADD ");
+
+        indexDefinitionClause(indexMeta, context);
     }
 
     protected void indexDefinitionClause(IndexMeta<?> indexMeta, DDLContext context) {

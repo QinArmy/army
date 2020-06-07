@@ -111,11 +111,11 @@ public abstract class SQLS extends AbstractSQLS {
     }
 
     public static Select.SelectPartAble<EmptyObject> multiSelect() {
-        return new StandardContextualMultiSelect<>(EmptyObject.getInstance());
+        return StandardContextualMultiSelect.build(EmptyObject.getInstance());
     }
 
     public static <C> Select.SelectPartAble<C> multiSelect(C criteria) {
-        return new StandardContextualMultiSelect<>(criteria);
+        return StandardContextualMultiSelect.build(criteria);
     }
 
     public static <C> SubQuery.SubQuerySelectPartAble<C> subQuery() {

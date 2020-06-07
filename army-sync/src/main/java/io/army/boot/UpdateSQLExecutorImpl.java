@@ -1,6 +1,7 @@
 package io.army.boot;
 
 import io.army.DomainUpdateException;
+import io.army.codec.StatementType;
 import io.army.wrapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,82 +22,107 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
 
     @Override
     public final int update(InnerSession session, SQLWrapper sqlWrapper) {
-        if (this.sessionFactory.showSQL()) {
-            LOG.info("army will execute update sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
+        session.codecContextStatementType(StatementType.UPDATE);
+        try {
+            if (this.sessionFactory.showSQL()) {
+                LOG.info("army will execute update sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
+            }
+            int updateRows;
+            if (sqlWrapper instanceof SimpleSQLWrapper) {
+                updateRows = doExecuteUpdate(session, (SimpleSQLWrapper) sqlWrapper);
+            } else if (sqlWrapper instanceof ChildSQLWrapper) {
+                updateRows = (int) doChildUpdate(session, (ChildSQLWrapper) sqlWrapper, false);
+            } else {
+                throw createNotSupportedException(sqlWrapper, "update");
+            }
+            return updateRows;
+        } finally {
+            session.codecContextStatementType(null);
         }
-        int updateRows;
-        if (sqlWrapper instanceof SimpleSQLWrapper) {
-            updateRows = doExecuteUpdate(session, (SimpleSQLWrapper) sqlWrapper);
-        } else if (sqlWrapper instanceof ChildSQLWrapper) {
-            updateRows = (int) doChildUpdate(session, (ChildSQLWrapper) sqlWrapper, false);
-        } else {
-            throw createNotSupportedException(sqlWrapper, "update");
-        }
-        return updateRows;
     }
 
     @Override
     public final long largeUpdate(InnerSession session, SQLWrapper sqlWrapper) {
-        if (this.sessionFactory.showSQL()) {
-            LOG.info("army will execute update sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
+        session.codecContextStatementType(StatementType.UPDATE);
+        try {
+            if (this.sessionFactory.showSQL()) {
+                LOG.info("army will execute update sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
+            }
+            long updateRows;
+            if (sqlWrapper instanceof SimpleSQLWrapper) {
+                updateRows = doExecuteLargeUpdate(session, (SimpleSQLWrapper) sqlWrapper);
+            } else if (sqlWrapper instanceof ChildSQLWrapper) {
+                updateRows = doChildUpdate(session, (ChildSQLWrapper) sqlWrapper, true);
+            } else {
+                throw createNotSupportedException(sqlWrapper, "largeUpdate");
+            }
+            return updateRows;
+        } finally {
+            session.codecContextStatementType(null);
         }
-        long updateRows;
-        if (sqlWrapper instanceof SimpleSQLWrapper) {
-            updateRows = doExecuteLargeUpdate(session, (SimpleSQLWrapper) sqlWrapper);
-        } else if (sqlWrapper instanceof ChildSQLWrapper) {
-            updateRows = doChildUpdate(session, (ChildSQLWrapper) sqlWrapper, true);
-        } else {
-            throw createNotSupportedException(sqlWrapper, "largeUpdate");
-        }
-        return updateRows;
     }
 
     @Override
     public final int[] batchUpdate(InnerSession session, SQLWrapper sqlWrapper) {
-        if (this.sessionFactory.showSQL()) {
-            LOG.info("army will execute  sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
+        session.codecContextStatementType(StatementType.UPDATE);
+        try {
+            if (this.sessionFactory.showSQL()) {
+                LOG.info("army will execute  sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
+            }
+            int[] updateRows;
+            if (sqlWrapper instanceof BatchSimpleSQLWrapper) {
+                updateRows = doExecuteBatch(session, (BatchSimpleSQLWrapper) sqlWrapper);
+            } else if (sqlWrapper instanceof ChildBatchSQLWrapper) {
+                updateRows = doBatchChildUpdate(session, (ChildBatchSQLWrapper) sqlWrapper);
+            } else {
+                throw createNotSupportedException(sqlWrapper, "batchUpdate");
+            }
+            return updateRows;
+        } finally {
+            session.codecContextStatementType(null);
         }
-        int[] updateRows;
-        if (sqlWrapper instanceof BatchSimpleSQLWrapper) {
-            updateRows = doExecuteBatch(session, (BatchSimpleSQLWrapper) sqlWrapper);
-        } else if (sqlWrapper instanceof ChildBatchSQLWrapper) {
-            updateRows = doBatchChildUpdate(session, (ChildBatchSQLWrapper) sqlWrapper);
-        } else {
-            throw createNotSupportedException(sqlWrapper, "batchUpdate");
-        }
-        return updateRows;
     }
 
     @Override
     public final long[] batchLargeUpdate(InnerSession session, SQLWrapper sqlWrapper) {
-        if (this.sessionFactory.showSQL()) {
-            LOG.info("army will execute  sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
+        session.codecContextStatementType(StatementType.UPDATE);
+        try {
+            if (this.sessionFactory.showSQL()) {
+                LOG.info("army will execute  sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
+            }
+            long[] updateRows;
+            if (sqlWrapper instanceof BatchSimpleSQLWrapper) {
+                updateRows = doExecuteLargeBatch(session, (BatchSimpleSQLWrapper) sqlWrapper);
+            } else if (sqlWrapper instanceof ChildBatchSQLWrapper) {
+                updateRows = doBatchChildLargeUpdate(session, (ChildBatchSQLWrapper) sqlWrapper);
+            } else {
+                throw createNotSupportedException(sqlWrapper, "batchUpdateLarge");
+            }
+            return updateRows;
+        } finally {
+            session.codecContextStatementType(null);
         }
-        long[] updateRows;
-        if (sqlWrapper instanceof BatchSimpleSQLWrapper) {
-            updateRows = doExecuteLargeBatch(session, (BatchSimpleSQLWrapper) sqlWrapper);
-        } else if (sqlWrapper instanceof ChildBatchSQLWrapper) {
-            updateRows = doBatchChildLargeUpdate(session, (ChildBatchSQLWrapper) sqlWrapper);
-        } else {
-            throw createNotSupportedException(sqlWrapper, "batchUpdateLarge");
-        }
-        return updateRows;
     }
 
     @Override
     public final <T> List<T> returningUpdate(InnerSession session, SQLWrapper sqlWrapper, Class<T> resultClass) {
-        if (this.sessionFactory.showSQL()) {
-            LOG.info("army will execute  sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
+        session.codecContextStatementType(StatementType.UPDATE);
+        try {
+            if (this.sessionFactory.showSQL()) {
+                LOG.info("army will execute  sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
+            }
+            List<T> resultList;
+            if (sqlWrapper instanceof SimpleSQLWrapper) {
+                resultList = doExecuteSimpleReturning(session, (SimpleSQLWrapper) sqlWrapper, resultClass);
+            } else if (sqlWrapper instanceof ChildBatchSQLWrapper) {
+                resultList = doExecuteChildReturning(session, (ChildSQLWrapper) sqlWrapper, resultClass);
+            } else {
+                throw createNotSupportedException(sqlWrapper, "returningUpdate");
+            }
+            return resultList;
+        } finally {
+            session.codecContextStatementType(null);
         }
-        List<T> resultList;
-        if (sqlWrapper instanceof SimpleSQLWrapper) {
-            resultList = doExecuteSimpleReturning(session, (SimpleSQLWrapper) sqlWrapper, resultClass);
-        } else if (sqlWrapper instanceof ChildBatchSQLWrapper) {
-            resultList = doExecuteChildReturning(session, (ChildSQLWrapper) sqlWrapper, resultClass);
-        } else {
-            throw createNotSupportedException(sqlWrapper, "returningUpdate");
-        }
-        return resultList;
     }
 
     /*################################## blow private method ##################################*/

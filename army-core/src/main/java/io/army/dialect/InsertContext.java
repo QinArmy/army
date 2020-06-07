@@ -1,7 +1,16 @@
 package io.army.dialect;
 
+import io.army.meta.TableMeta;
+
 public interface InsertContext extends TableContextSQLContext {
 
     StringBuilder fieldsBuilder();
 
+    /**
+     * if tableMeta is target table , use fieldsBuilder
+     *
+     * @param tableMeta {@link TableMeta} that will be append table name .
+     */
+    @Override
+    void appendTable(TableMeta<?> tableMeta);
 }

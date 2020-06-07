@@ -3,6 +3,7 @@ package io.army.boot;
 import io.army.ErrorCode;
 import io.army.InsertRowsNotMatchException;
 import io.army.beans.BeanWrapper;
+import io.army.codec.StatementType;
 import io.army.dialect.Dialect;
 import io.army.dialect.InsertException;
 import io.army.wrapper.*;
@@ -24,73 +25,93 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
     @Override
     public final void insert(InnerSession session, List<SQLWrapper> sqlWrapperList)
             throws InsertException {
-        final boolean showSQL = session.sessionFactory().showSQL();
-        final Dialect dialect = session.dialect();
-        for (SQLWrapper sqlWrapper : sqlWrapperList) {
-            if (showSQL) {
-                LOG.info("army will execute insert sql:\n{}", dialect.showSQL(sqlWrapper));
+        session.codecContextStatementType(StatementType.INSERT);
+        try {
+            final boolean showSQL = session.sessionFactory().showSQL();
+            final Dialect dialect = session.dialect();
+            for (SQLWrapper sqlWrapper : sqlWrapperList) {
+                if (showSQL) {
+                    LOG.info("army will execute insert sql:\n{}", dialect.showSQL(sqlWrapper));
+                }
+                if (sqlWrapper instanceof SimpleSQLWrapper) {
+                    this.doExecuteSimple(session, (SimpleSQLWrapper) sqlWrapper);
+                } else if (sqlWrapper instanceof ChildSQLWrapper) {
+                    this.doExecuteChild(session, (ChildSQLWrapper) sqlWrapper, false);
+                } else if (sqlWrapper instanceof BatchSimpleSQLWrapper) {
+                    this.doExecuteSimpleBatch(session, (BatchSimpleSQLWrapper) sqlWrapper);
+                } else if (sqlWrapper instanceof ChildBatchSQLWrapper) {
+                    this.doExecuteChildBatch(session, (ChildBatchSQLWrapper) sqlWrapper);
+                } else {
+                    throw createNotSupportedException(sqlWrapper, "insert");
+                }
             }
-            if (sqlWrapper instanceof SimpleSQLWrapper) {
-                this.doExecuteSimple(session, (SimpleSQLWrapper) sqlWrapper);
-            } else if (sqlWrapper instanceof ChildSQLWrapper) {
-                this.doExecuteChild(session, (ChildSQLWrapper) sqlWrapper, false);
-            } else if (sqlWrapper instanceof BatchSimpleSQLWrapper) {
-                this.doExecuteSimpleBatch(session, (BatchSimpleSQLWrapper) sqlWrapper);
-            } else if (sqlWrapper instanceof ChildBatchSQLWrapper) {
-                this.doExecuteChildBatch(session, (ChildBatchSQLWrapper) sqlWrapper);
-            } else {
-                throw createNotSupportedException(sqlWrapper, "insert");
-            }
+        } finally {
+            session.codecContextStatementType(null);
         }
     }
 
     @Override
     public final int subQueryInsert(InnerSession session, SQLWrapper sqlWrapper) throws InsertException {
-        if (this.sessionFactory.showSQL()) {
-            LOG.info("army will execute select sql:\n{}", session.dialect().showSQL(sqlWrapper));
+        session.codecContextStatementType(StatementType.INSERT);
+        try {
+            if (this.sessionFactory.showSQL()) {
+                LOG.info("army will execute select sql:\n{}", session.dialect().showSQL(sqlWrapper));
+            }
+            int insertRows;
+            if (sqlWrapper instanceof SimpleSQLWrapper) {
+                insertRows = doExecuteUpdate(session, (SimpleSQLWrapper) sqlWrapper);
+            } else if (sqlWrapper instanceof ChildSQLWrapper) {
+                insertRows = doExecuteChild(session, (ChildSQLWrapper) sqlWrapper, true);
+            } else {
+                throw createNotSupportedException(sqlWrapper, "subQueryInsert");
+            }
+            return insertRows;
+        } finally {
+            session.codecContextStatementType(null);
         }
-        int insertRows;
-        if (sqlWrapper instanceof SimpleSQLWrapper) {
-            insertRows = doExecuteUpdate(session, (SimpleSQLWrapper) sqlWrapper);
-        } else if (sqlWrapper instanceof ChildSQLWrapper) {
-            insertRows = doExecuteChild(session, (ChildSQLWrapper) sqlWrapper, true);
-        } else {
-            throw createNotSupportedException(sqlWrapper, "subQueryInsert");
-        }
-        return insertRows;
     }
 
     @Override
     public final long subQueryLargeInsert(InnerSession session, SQLWrapper sqlWrapper) throws InsertException {
-        if (this.sessionFactory.showSQL()) {
-            LOG.info("army will execute select sql:\n{}", session.dialect().showSQL(sqlWrapper));
+        session.codecContextStatementType(StatementType.INSERT);
+        try {
+            if (this.sessionFactory.showSQL()) {
+                LOG.info("army will execute select sql:\n{}", session.dialect().showSQL(sqlWrapper));
+            }
+            long insertRows;
+            if (sqlWrapper instanceof SimpleSQLWrapper) {
+                insertRows = doExecuteLargeUpdate(session, (SimpleSQLWrapper) sqlWrapper);
+            } else if (sqlWrapper instanceof ChildSQLWrapper) {
+                insertRows = doExecuteLargeSubQueryChild(session, (ChildSQLWrapper) sqlWrapper);
+            } else {
+                throw createNotSupportedException(sqlWrapper, "subQueryLargeInsert");
+            }
+            return insertRows;
+        } finally {
+            session.codecContextStatementType(null);
         }
-        long insertRows;
-        if (sqlWrapper instanceof SimpleSQLWrapper) {
-            insertRows = doExecuteLargeUpdate(session, (SimpleSQLWrapper) sqlWrapper);
-        } else if (sqlWrapper instanceof ChildSQLWrapper) {
-            insertRows = doExecuteLargeSubQueryChild(session, (ChildSQLWrapper) sqlWrapper);
-        } else {
-            throw createNotSupportedException(sqlWrapper, "subQueryLargeInsert");
-        }
-        return insertRows;
     }
 
     @Override
     public final <T> List<T> returningInsert(InnerSession session, SQLWrapper sqlWrapper, Class<T> resultClass)
             throws InsertException {
-        if (this.sessionFactory.showSQL()) {
-            LOG.info("army will execute select sql:\n{}", session.dialect().showSQL(sqlWrapper));
+        session.codecContextStatementType(StatementType.INSERT);
+        try {
+            if (this.sessionFactory.showSQL()) {
+                LOG.info("army will execute select sql:\n{}", session.dialect().showSQL(sqlWrapper));
+            }
+            List<T> resultList;
+            if (sqlWrapper instanceof SimpleSQLWrapper) {
+                resultList = doExecuteSimpleReturning(session, (SimpleSQLWrapper) sqlWrapper, resultClass);
+            } else if (sqlWrapper instanceof ChildSQLWrapper) {
+                resultList = doExecuteInsertChildReturning(session, (ChildSQLWrapper) sqlWrapper, resultClass);
+            } else {
+                throw createNotSupportedException(sqlWrapper, "returningInsert");
+            }
+            return resultList;
+        } finally {
+            session.codecContextStatementType(null);
         }
-        List<T> resultList;
-        if (sqlWrapper instanceof SimpleSQLWrapper) {
-            resultList = doExecuteSimpleReturning(session, (SimpleSQLWrapper) sqlWrapper, resultClass);
-        } else if (sqlWrapper instanceof ChildSQLWrapper) {
-            resultList = doExecuteInsertChildReturning(session, (ChildSQLWrapper) sqlWrapper, resultClass);
-        } else {
-            throw createNotSupportedException(sqlWrapper, "returningInsert");
-        }
-        return resultList;
     }
 
     /*################################## blow private method ##################################*/

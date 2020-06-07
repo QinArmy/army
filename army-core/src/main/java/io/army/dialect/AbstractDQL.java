@@ -238,7 +238,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
         }
     }
 
-    protected final void fromClause(List<TableWrapper> tableWrapperList, TableContextSQLContext context) {
+    protected final void fromClause(List<? extends TableWrapper> tableWrapperList, TableContextSQLContext context) {
         context.sqlBuilder()
                 .append(" FROM");
         Map<String, TableWrapper> aliasMap = new HashMap<>();
@@ -254,7 +254,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
         }
     }
 
-    protected final void whereClause(List<TableWrapper> tableWrapperList, List<IPredicate> predicateList
+    protected final void whereClause(List<? extends TableWrapper> tableWrapperList, List<IPredicate> predicateList
             , TableContextSQLContext context) {
 
         final boolean needAppendVisible = DialectUtils.needAppendVisible(tableWrapperList);

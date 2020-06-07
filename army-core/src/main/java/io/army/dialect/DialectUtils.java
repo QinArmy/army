@@ -5,7 +5,6 @@ import io.army.ErrorCode;
 import io.army.UnKnownTypeException;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLS;
-import io.army.criteria.impl.inner.InnerGeneralQuery;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.lang.Nullable;
 import io.army.meta.*;
@@ -128,7 +127,7 @@ public abstract class DialectUtils {
         return temp.mappingProp(TableMeta.VISIBLE);
     }
 
-    public static boolean needAppendVisible(List<TableWrapper> tableWrapperList) {
+    public static boolean needAppendVisible(List<? extends TableWrapper> tableWrapperList) {
         final TableMeta<?> dual = SQLS.dual();
         boolean need = false;
         for (TableWrapper tableWrapper : tableWrapperList) {
@@ -174,9 +173,9 @@ public abstract class DialectUtils {
                 , "unknown TableMeta[%s] in current context,please check criteria code.", tableMeta);
     }
 
-    static List<Selection> extractSelectionList(Select select) {
+    static List<Selection> extractSelectionList(List<SelectPart> selectPartList) {
         List<Selection> selectionList = new ArrayList<>();
-        for (SelectPart selectPart : ((InnerGeneralQuery) select).selectPartList()) {
+        for (SelectPart selectPart : selectPartList) {
             if (selectPart instanceof Selection) {
                 selectionList.add((Selection) selectPart);
             } else if (selectPart instanceof SelectionGroup) {

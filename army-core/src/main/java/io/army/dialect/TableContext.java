@@ -23,7 +23,7 @@ public final class TableContext {
         );
     }
 
-    public static TableContext multiTable(List<TableWrapper> tableWrapperList) {
+    public static TableContext multiTable(List<? extends TableWrapper> tableWrapperList) {
         Map<TableMeta<?>, Integer> tableCountMap = new HashMap<>();
         Map<String, TableMeta<?>> aliasTableMap = new HashMap<>();
 

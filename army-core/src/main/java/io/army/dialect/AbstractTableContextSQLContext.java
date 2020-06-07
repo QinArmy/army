@@ -44,7 +44,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
     }
 
     @Override
-    public final void appendTable(TableMeta<?> tableMeta) {
+    public void appendTable(TableMeta<?> tableMeta) {
         if (!this.tableContext.tableCountMap.containsKey(tableMeta)) {
             throw DialectUtils.createUnKnownTableException(tableMeta);
         }

@@ -494,7 +494,7 @@ abstract class TableMetaUtils {
      * @param <T>              entity java class
      * @return value indexMap's {@link IndexFieldMeta}
      */
-    private static <T extends IDomain> List<IndexFieldMeta<T, ?>> indexFieldMetaList(
+    private static <T extends IDomain> List<IndexFieldMeta<T, ?>> createIndexFieldMetaList(
             final TableMeta<T> tableMeta,
             final String[] indexColumns,
             final IndexMeta<T> indexMeta,
@@ -519,7 +519,7 @@ abstract class TableMetaUtils {
             } else if (tokenCount == 2) {
                 columnAsc = isAscIndexColumn(tokenizer.nextToken(), indexMeta, indexColumnDefinition);
             } else {
-                throw new MetaException(ErrorCode.META_ERROR, "entity[%s] index map[%s] column definition[%s] error",
+                throw new MetaException("entity[%s] index map[%s] column definition[%s] error",
                         tableMeta.javaType().getName(), indexMeta.name(), indexColumnDefinition);
             }
 
@@ -527,7 +527,8 @@ abstract class TableMetaUtils {
                 assertPrimaryKeyIndex(indexMeta, indexColumnDefinition, indexColumns.length);
             }
             field = indexField(lowerCaseColumnName, tableMeta, columnToFieldMap);
-            indexFieldMeta = DefaultFieldMeta.createIndexFieldMeta(tableMeta, field, indexMeta, columnAsc);
+            indexFieldMeta = DefaultFieldMeta.createIndexFieldMeta(tableMeta, field, indexMeta, indexColumns.length
+                    , columnAsc);
 
             list.add(indexFieldMeta);
             createdColumnSet.add(lowerCaseColumnName);
@@ -620,7 +621,7 @@ abstract class TableMetaUtils {
                 columnArray = index.columnList();
                 primaryKey = columnArray.length == 1 && TableMeta.ID.equals(columnArray[0]);
             }
-            this.fieldList = indexFieldMetaList(table, columnArray, this, columnToFieldMap, createdColumnSet);
+            this.fieldList = createIndexFieldMetaList(table, columnArray, this, columnToFieldMap, createdColumnSet);
         }
 
 

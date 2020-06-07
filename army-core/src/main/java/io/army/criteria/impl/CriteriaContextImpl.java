@@ -32,6 +32,8 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
 
     private Map<String, Set<RefSelection<?>>> onceChangeRefCache = new HashMap<>();
 
+    private boolean clearFinished;
+
     CriteriaContextImpl(C criteria) {
         this.criteria = criteria;
         this.composeSelectMap = Collections.emptyMap();
@@ -115,6 +117,9 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
 
     @Override
     public void clear() {
+        if (this.clearFinished) {
+            return;
+        }
         if (!this.onceChangeRefCache.isEmpty()) {
             throw new CriteriaException(ErrorCode.REF_EXP_ERROR, createReferenceErrorMsg());
         }
@@ -131,6 +136,7 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
 
         this.composeRefSelectionMap = null;
         this.tableMetaMap = null;
+        this.clearFinished = true;
     }
 
 

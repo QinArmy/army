@@ -9,7 +9,6 @@ import io.army.util.Assert;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -327,7 +326,7 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
     }
 
     @Override
-    public List<TableWrapper> tableWrapperList() {
+    public List<? extends TableWrapper> tableWrapperList() {
         return this.actualSelect.tableWrapperList();
     }
 
@@ -366,10 +365,6 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
         this.actualSelect.clear();
     }
 
-    @Override
-    public Map<TableMeta<?>, Integer> tablePresentCountMap() {
-        return this.actualSelect.tablePresentCountMap();
-    }
 
 
 }
