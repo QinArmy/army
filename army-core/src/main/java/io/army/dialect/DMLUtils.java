@@ -2,8 +2,8 @@ package io.army.dialect;
 
 import io.army.ErrorCode;
 import io.army.GenericSessionFactory;
-import io.army.beans.AccessorFactory;
 import io.army.beans.BeanWrapper;
+import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ReadonlyWrapper;
 import io.army.boot.DomainValuesGenerator;
 import io.army.criteria.*;
@@ -270,13 +270,13 @@ abstract class DMLUtils {
             fieldMetaSet.add(discriminator);
         }
         if (parentMeta.mappingProp(TableMeta.CREATE_TIME)) {
-            fieldMetaSet.add(logicalTable.getField(TableMeta.CREATE_TIME));
+            fieldMetaSet.add(parentMeta.getField(TableMeta.CREATE_TIME));
         }
         if (parentMeta.mappingProp(TableMeta.UPDATE_TIME)) {
-            fieldMetaSet.add(logicalTable.getField(TableMeta.UPDATE_TIME));
+            fieldMetaSet.add(parentMeta.getField(TableMeta.UPDATE_TIME));
         }
         if (parentMeta.mappingProp(TableMeta.VERSION)) {
-            fieldMetaSet.add(logicalTable.getField(TableMeta.VERSION));
+            fieldMetaSet.add(parentMeta.getField(TableMeta.VERSION));
         }
         return Collections.unmodifiableSet(fieldMetaSet);
     }
@@ -467,7 +467,7 @@ abstract class DMLUtils {
 
         for (Object paramObject : namedParamList) {
             // 1. create access object
-            ReadonlyWrapper readonlyWrapper = AccessorFactory.forReadonlyAccess(paramObject);
+            ReadonlyWrapper readonlyWrapper = ObjectAccessorFactory.forReadonlyAccess(paramObject);
             // 2. create param group list
             if (sqlWrapper instanceof ChildSQLWrapper) {
                 parentParamGroupList.add(

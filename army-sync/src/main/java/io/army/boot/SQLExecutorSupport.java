@@ -3,8 +3,8 @@ package io.army.boot;
 import io.army.DomainUpdateException;
 import io.army.ErrorCode;
 import io.army.OptimisticLockException;
-import io.army.beans.AccessorFactory;
 import io.army.beans.BeanWrapper;
+import io.army.beans.ObjectAccessorFactory;
 import io.army.codec.CodecContext;
 import io.army.codec.FieldCodec;
 import io.army.criteria.CriteriaException;
@@ -117,7 +117,7 @@ abstract class SQLExecutorSupport {
                     resultList = extractSimpleTypeResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
                             , resultClass);
                 } else {
-                    resultList = extractResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
+                    resultList = extractBeanTypeResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
                             , resultClass);
                 }
                 if (resultList.isEmpty() && sqlWrapper.hasVersion()) {
@@ -232,7 +232,7 @@ abstract class SQLExecutorSupport {
         Map<Object, BeanWrapper> map = new HashMap<>();
         BeanWrapper beanWrapper;
         while (resultSet.next()) {
-            beanWrapper = AccessorFactory.forBeanPropertyAccess(resultClass);
+            beanWrapper = ObjectAccessorFactory.forBeanPropertyAccess(resultClass);
             // extract one row
             extractRow(codecContext, resultSet, selectionList, beanWrapper);
             Object idValue;
@@ -315,13 +315,13 @@ abstract class SQLExecutorSupport {
     }
 
     @SuppressWarnings("unchecked")
-    protected final <T> List<T> extractResult(CodecContext codecContext, ResultSet resultSet
+    protected final <T> List<T> extractBeanTypeResult(CodecContext codecContext, ResultSet resultSet
             , List<Selection> selectionList, Class<T> resultClass) throws SQLException {
 
         List<T> resultList = new ArrayList<>();
         BeanWrapper beanWrapper;
         while (resultSet.next()) {
-            beanWrapper = AccessorFactory.forBeanPropertyAccess(resultClass);
+            beanWrapper = ObjectAccessorFactory.forBeanPropertyAccess(resultClass);
             extractRow(codecContext, resultSet, selectionList, beanWrapper);
             // result add to resultList
             resultList.add((T) beanWrapper.getWrappedInstance());

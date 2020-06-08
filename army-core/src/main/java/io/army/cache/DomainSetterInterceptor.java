@@ -16,7 +16,9 @@ import java.util.*;
 final class DomainSetterInterceptor implements MethodInterceptor, DomainUpdateAdvice {
 
     static DomainSetterInterceptor build(DomainReadonlyWrapper readonlyWrapper, DomainSetterPointcut pointcut) {
-        Assert.isTrue(readonlyWrapper.tableMeta() != pointcut.tableMeta(), "readonlyWrapper and pointcut not match.");
+        Assert.isTrue(readonlyWrapper.tableMeta() == pointcut.tableMeta()
+                , () -> String.format("readonlyWrapper[%s] and pointcut[%s] not match."
+                        , readonlyWrapper.tableMeta(), pointcut.tableMeta()));
 
         return new DomainSetterInterceptor(readonlyWrapper, createPredicateList(readonlyWrapper)
                 , pointcut.setterFieldMap());

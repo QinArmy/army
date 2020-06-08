@@ -47,7 +47,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
 
     @Override
     public final IPredicate equal(E constant) {
-        return DualPredicate.build(this, DualPredicateOperator.EQ, SQLS.param(constant, this.mappingMeta()));
+        return DualPredicate.build(this, DualPredicateOperator.EQ, SQLS.paramWithExp(constant, this));
     }
 
     @Override
@@ -89,13 +89,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
     }
 
     @Override
-    public final IPredicate lessThan(Expression<? extends Comparable<E>> expression) {
+    public final IPredicate lessThan(Expression<E> expression) {
         return DualPredicate.build(this, DualPredicateOperator.LT, expression);
     }
 
     @Override
-    public final IPredicate lessThan(Comparable<E> constant) {
-        return DualPredicate.build(this, DualPredicateOperator.LT, SQLS.param(constant, this.mappingMeta()));
+    public final IPredicate lessThan(E constant) {
+        return DualPredicate.build(this, DualPredicateOperator.LT, SQLS.paramWithExp(constant, this));
     }
 
     @Override
@@ -137,13 +137,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
     }
 
     @Override
-    public final IPredicate lessEqual(Expression<? extends Comparable<E>> expression) {
+    public final IPredicate lessEqual(Expression<E> expression) {
         return DualPredicate.build(this, DualPredicateOperator.LE, expression);
     }
 
     @Override
-    public final IPredicate lessEqual(Comparable<E> constant) {
-        return DualPredicate.build(this, DualPredicateOperator.LE, SQLS.param(constant, this.mappingMeta()));
+    public final IPredicate lessEqual(E constant) {
+        return DualPredicate.build(this, DualPredicateOperator.LE, SQLS.paramWithExp(constant, this));
     }
 
     @Override
@@ -185,13 +185,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
     }
 
     @Override
-    public final IPredicate greatThan(Expression<? extends Comparable<E>> expression) {
+    public final IPredicate greatThan(Expression<E> expression) {
         return DualPredicate.build(this, DualPredicateOperator.GT, expression);
     }
 
     @Override
-    public final IPredicate greatThan(Comparable<E> constant) {
-        return DualPredicate.build(this, DualPredicateOperator.GT, SQLS.param(constant, this.mappingMeta()));
+    public final IPredicate greatThan(E constant) {
+        return DualPredicate.build(this, DualPredicateOperator.GT, SQLS.paramWithExp(constant, this));
     }
 
     @Override
@@ -233,13 +233,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
     }
 
     @Override
-    public final IPredicate greatEqual(Expression<? extends Comparable<E>> expression) {
+    public final IPredicate greatEqual(Expression<E> expression) {
         return DualPredicate.build(this, DualPredicateOperator.GE, expression);
     }
 
     @Override
-    public final IPredicate greatEqual(Comparable<E> constant) {
-        return DualPredicate.build(this, DualPredicateOperator.GE, SQLS.param(constant, this.mappingMeta()));
+    public final IPredicate greatEqual(E constant) {
+        return DualPredicate.build(this, DualPredicateOperator.GE, SQLS.paramWithExp(constant, this));
     }
 
     @Override
@@ -287,8 +287,8 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
     }
 
     @Override
-    public final IPredicate notEqual(Comparable<E> constant) {
-        return DualPredicate.build(this, DualPredicateOperator.NOT_EQ, SQLS.param(constant, this.mappingMeta()));
+    public final IPredicate notEqual(E constant) {
+        return DualPredicate.build(this, DualPredicateOperator.NOT_EQ, SQLS.paramWithExp(constant, this));
     }
 
     @Override
@@ -342,7 +342,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
 
     @Override
     public final IPredicate between(Expression<E> first, E second) {
-        return BetweenPredicate.build(this, first, SQLS.param(second, this.mappingMeta()));
+        return BetweenPredicate.build(this, first, SQLS.paramWithExp(second, this));
     }
 
     @Override
@@ -370,7 +370,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
 
     @Override
     public final IPredicate in(Collection<E> values) {
-        return DualPredicate.build(this, DualPredicateOperator.IN, CollectionExpressionImpl.build(this.mappingMeta(), values));
+        return DualPredicate.build(this, DualPredicateOperator.IN, SQLS.collectionWithExp(this, values));
     }
 
     @Override
@@ -387,7 +387,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
 
     @Override
     public final IPredicate notIn(Collection<E> values) {
-        return DualPredicate.build(this, DualPredicateOperator.NOT_IN, CollectionExpressionImpl.build(mappingMeta(), values));
+        return DualPredicate.build(this, DualPredicateOperator.NOT_IN, SQLS.collectionWithExp(this, values));
     }
 
     @Override
@@ -404,7 +404,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
 
     @Override
     public final IPredicate like(String pattern) {
-        return DualPredicate.build(this, DualPredicateOperator.LIKE, SQLS.constant(pattern, this.mappingMeta()));
+        return DualPredicate.build(this, DualPredicateOperator.LIKE, SQLS.param(pattern, SQLS.obtainParamMeta(this)));
     }
 
     @Override
@@ -421,7 +421,8 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
 
     @Override
     public final IPredicate notLike(String pattern) {
-        return DualPredicate.build(this, DualPredicateOperator.NOT_LIKE, SQLS.param(pattern, this.mappingMeta()));
+        return DualPredicate.build(this, DualPredicateOperator.NOT_LIKE
+                , SQLS.param(pattern, SQLS.obtainParamMeta(this)));
     }
 
     @Override
@@ -443,7 +444,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
 
     @Override
     public final <N extends Number> Expression<E> mod(N operator) {
-        return DualExpresion.build(this, DualOperator.MOD, SQLS.param(operator));
+        return DualExpresion.build(this, DualOperator.MOD, SQLS.param(operator, SQLS.obtainParamMeta(this)));
     }
 
     @Override
@@ -470,7 +471,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
 
     @Override
     public final <N extends Number> Expression<E> multiply(N multiplicand) {
-        return DualExpresion.build(this, DualOperator.MULTIPLY, SQLS.param(multiplicand));
+        return DualExpresion.build(this, DualOperator.MULTIPLY, SQLS.param(multiplicand, SQLS.obtainParamMeta(this)));
     }
 
     @Override
@@ -497,7 +498,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
 
     @Override
     public final <N extends Number> Expression<E> add(N augend) {
-        return DualExpresion.build(this, DualOperator.ADD, SQLS.param(augend));
+        return DualExpresion.build(this, DualOperator.ADD, SQLS.param(augend, SQLS.obtainParamMeta(this)));
     }
 
     @Override
@@ -524,7 +525,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
 
     @Override
     public final <N extends Number> Expression<E> subtract(N subtrahend) {
-        return DualExpresion.build(this, DualOperator.SUBTRACT, SQLS.param(subtrahend));
+        return DualExpresion.build(this, DualOperator.SUBTRACT, SQLS.param(subtrahend, SQLS.obtainParamMeta(this)));
     }
 
     @Override
@@ -551,7 +552,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
 
     @Override
     public final <N extends Number> Expression<E> divide(N divisor) {
-        return DualExpresion.build(this, DualOperator.DIVIDE, SQLS.param(divisor));
+        return DualExpresion.build(this, DualOperator.DIVIDE, SQLS.param(divisor, SQLS.obtainParamMeta(this)));
     }
 
     @Override
@@ -583,7 +584,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
 
     @Override
     public final Expression<BigInteger> and(Long operand) {
-        return DualExpresion.build(this, DualOperator.AND, SQLS.param(operand));
+        return DualExpresion.build(this, DualOperator.AND, SQLS.param(operand, SQLS.obtainParamMeta(this)));
     }
 
     @Override
@@ -610,7 +611,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
 
     @Override
     public final Expression<BigInteger> or(Long operand) {
-        return DualExpresion.build(this, DualOperator.OR, SQLS.param(operand));
+        return DualExpresion.build(this, DualOperator.OR, SQLS.param(operand, SQLS.obtainParamMeta(this)));
     }
 
     @Override
@@ -637,7 +638,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
 
     @Override
     public final Expression<BigInteger> xor(Long operand) {
-        return DualExpresion.build(this, DualOperator.XOR, SQLS.param(operand));
+        return DualExpresion.build(this, DualOperator.XOR, SQLS.param(operand, SQLS.obtainParamMeta(this)));
     }
 
     @Override
@@ -664,7 +665,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
 
     @Override
     public final Expression<BigInteger> inversion(Long operand) {
-        return DualExpresion.build(this, DualOperator.INVERT, SQLS.param(operand));
+        return DualExpresion.build(this, DualOperator.INVERT, SQLS.param(operand, SQLS.obtainParamMeta(this)));
     }
 
     @Override
@@ -686,7 +687,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
 
     @Override
     public final Expression<BigInteger> rightShift(Integer bitNumber) {
-        return DualExpresion.build(this, DualOperator.RIGHT_SHIFT, SQLS.param(bitNumber));
+        return DualExpresion.build(this, DualOperator.RIGHT_SHIFT, SQLS.param(bitNumber, SQLS.obtainParamMeta(this)));
     }
 
     @Override
@@ -713,7 +714,7 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
 
     @Override
     public final Expression<BigInteger> leftShift(Integer bitNumber) {
-        return DualExpresion.build(this, DualOperator.LEFT_SHIFT, SQLS.param(bitNumber));
+        return DualExpresion.build(this, DualOperator.LEFT_SHIFT, SQLS.param(bitNumber, SQLS.obtainParamMeta(this)));
     }
 
     @Override

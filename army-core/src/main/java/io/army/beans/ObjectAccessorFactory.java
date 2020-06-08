@@ -15,7 +15,7 @@ import java.util.Map;
  *
  * @since 1.0
  */
-public abstract class AccessorFactory {
+public abstract class ObjectAccessorFactory {
 
 
     /**
@@ -70,6 +70,10 @@ public abstract class AccessorFactory {
 
     public static DomainReadonlyWrapper forDomainReadonlyPropertyAccess(IDomain domain) {
         return new DomainReadonlyWrapperImpl(domain, TableMetaFactory.getTableMeta(domain.getClass()));
+    }
+
+    public static DomainReadonlyWrapper forDomainReadonlyPropertyAccess(IDomain domain, TableMeta<?> tableMeta) {
+        return new DomainReadonlyWrapperImpl(domain, tableMeta);
     }
 
 

@@ -31,38 +31,30 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     }
 
     protected void doTableWrapper(TableWrapper tableWrapper, TableContextSQLContext context) {
-
         final StringBuilder builder = context.sqlBuilder();
-        //1. append ONLY keyword ,eg: postgre,oracle.(optional)
-        tableOnlyModifier(context);
-        //2. append table able
-        tableWrapper.tableAble().appendSQL(context);
-        if (tableAliasAfterAs()) {
-            builder.append(" AS");
-        }
-        // 3. table alias
-        context.appendText(tableWrapper.alias());
-        // 4. join type
+        // 1. form/join type
         SQLModifier joinType = tableWrapper.jointType();
         if (!"".equals(joinType.render())) {
             builder.append(" ")
                     .append(joinType.render());
         }
+        //2. append ONLY keyword ,eg: postgre,oracle.(optional)
+        tableOnlyModifier(context);
+        //3. append table able
+        tableWrapper.tableAble().appendSQL(context);
+        if (tableAliasAfterAs()) {
+            builder.append(" AS");
+        }
+        // 4. table alias
+        context.appendText(tableWrapper.alias());
+
         List<IPredicate> predicateList = tableWrapper.onPredicateList();
         if (predicateList.isEmpty()) {
             return;
         }
-
         //5.  on clause
         builder.append(" ON");
-        int index = 0;
-        for (IPredicate predicate : predicateList) {
-            if (index > 0) {
-                builder.append(" AND");
-            }
-            predicate.appendSQL(context);
-            index++;
-        }
+        DialectUtils.appendPredicateList(tableWrapper.onPredicateList(), context);
 
     }
 

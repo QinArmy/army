@@ -1,10 +1,11 @@
 package io.army.cache;
 
 import io.army.GenericSessionFactory;
-import io.army.beans.AccessorFactory;
-import io.army.beans.DomainWrapper;
+import io.army.beans.DomainReadonlyWrapper;
+import io.army.beans.ObjectAccessorFactory;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
+import io.army.util.Assert;
 import io.army.util.ClassUtils;
 import io.army.util.Pair;
 import org.springframework.aop.framework.ProxyCreatorSupport;
@@ -37,32 +38,34 @@ final class DomainProxyFactoryImpl implements DomainProxyFactory {
     }
 
     @Override
-    public Pair<IDomain, DomainUpdateAdvice> createDomainProxy(IDomain domain) {
-        DomainWrapper domainWrapper = AccessorFactory.forDomainPropertyAccess(
-                domain, this.sessionFactory.tableMeta(domain.getClass()));
+    public Pair<IDomain, DomainUpdateAdvice> createDomainProxy(final IDomain domain) {
+        final TableMeta<?> tableMeta = this.sessionFactory.tableMeta(domain.getClass());
+        Assert.notNull(tableMeta, () -> String.format("not found TableMeta for domain[%s]", domain.getClass().getName()));
+        DomainReadonlyWrapper domainWrapper = ObjectAccessorFactory.forDomainReadonlyPropertyAccess(
+                domain, tableMeta);
 
         // 1. obtain pointcut
         final DomainSetterPointcut pointcut = this.tableSetterPointcutMap.get(domainWrapper.tableMeta());
         if (pointcut == null) {
-            throw new IllegalArgumentException(String.format("FieldMeta[%s] no DomainSetterPointcut"
+            throw new IllegalArgumentException(String.format("TableMeta[%s] no DomainSetterPointcut"
                     , domainWrapper.tableMeta()));
         }
-        //2. create advice
-        final DomainSetterInterceptor advice = DomainSetterInterceptor.build(domainWrapper, pointcut);
-        // 3. obtain target object
-        final Object target = domainWrapper.getWrappedInstance();
-        if (!pointcut.tableMeta().javaType().isInstance(target)) {
+        //  assert target object and pointcut match
+        if (pointcut.tableMeta().javaType() != domain.getClass()) {
             throw new IllegalArgumentException(String.format("domainWrapper[%s] wrapped instance isn't %s type."
                     , domainWrapper, pointcut.tableMeta().javaType().getName()));
         }
-        //4. create aop config
+        //2. create advice
+        final DomainSetterInterceptor advice = DomainSetterInterceptor.build(domainWrapper, pointcut);
+
+        //3. create aop config
         final ProxyCreatorSupport config = new ProxyCreatorSupport();
-        config.setTarget(target);
+        config.setTarget(domain);
         config.setProxyTargetClass(true);
         config.addAdvisor(new DefaultPointcutAdvisor(pointcut, advice));
         config.setFrozen(true);
 
-        // 5. create proxy object
+        // 4. create proxy object
         final IDomain proxy = (IDomain) config.getAopProxyFactory().createAopProxy(config)
                 .getProxy(ClassUtils.getDefaultClassLoader());
 

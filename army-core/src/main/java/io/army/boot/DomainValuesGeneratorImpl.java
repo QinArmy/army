@@ -2,17 +2,17 @@ package io.army.boot;
 
 import io.army.ErrorCode;
 import io.army.GenericSessionFactory;
-import io.army.beans.AccessorFactory;
 import io.army.beans.BeanWrapper;
 import io.army.beans.DomainWrapper;
+import io.army.beans.ObjectAccessorFactory;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.MetaException;
 import io.army.domain.IDomain;
 import io.army.generator.FieldGenerator;
 import io.army.generator.PreFieldGenerator;
+import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
-import io.army.meta.MappingMode;
 import io.army.meta.TableMeta;
 import io.army.struct.CodeEnum;
 import io.army.util.Assert;
@@ -42,18 +42,21 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
 
         Assert.isTrue(tableMeta.javaType() == domain.getClass(), "tableMeta then entity not match");
 
-        final DomainWrapper entityWrapper = AccessorFactory.forDomainPropertyAccess(
+        final DomainWrapper domainWrapper = ObjectAccessorFactory.forDomainPropertyAccess(
                 domain, this.sessionFactory.tableMeta(domain.getClass()));
 
         if (migrationData) {
             // discriminator
-            createDiscriminatorValue(tableMeta, entityWrapper);
+            createDiscriminatorValue(tableMeta, domainWrapper);
         } else {
-            createValuesManagedByArmy(tableMeta, entityWrapper);
-
-            createValuesWithGenerator(tableMeta, entityWrapper);
+            createValuesManagedByArmy(tableMeta, domainWrapper);
+            if (tableMeta instanceof ChildTableMeta) {
+                ChildTableMeta<?> childMeta = (ChildTableMeta<?>) tableMeta;
+                createValuesWithGenerator(childMeta.parentMeta(), domainWrapper);
+            }
+            createValuesWithGenerator(tableMeta, domainWrapper);
         }
-        return entityWrapper;
+        return domainWrapper;
     }
 
 
@@ -113,13 +116,21 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
      */
     private void createValuesManagedByArmy(
             TableMeta<?> tableMeta, BeanWrapper entityWrapper) {
-
-        createCreateOrUpdateTime(tableMeta.getField(TableMeta.CREATE_TIME), entityWrapper);
+        TableMeta<?> parentMeta;
+        if (tableMeta instanceof ChildTableMeta) {
+            parentMeta = ((ChildTableMeta<?>) tableMeta).parentMeta();
+        } else {
+            parentMeta = tableMeta;
+        }
+        ZonedDateTime now = ZonedDateTime.now(this.sessionFactory.zoneId());
+        createCreateOrUpdateTime(parentMeta.getField(TableMeta.CREATE_TIME), now, entityWrapper);
 
         if (!tableMeta.immutable()) {
-            createCreateOrUpdateTime(tableMeta.getField(TableMeta.UPDATE_TIME), entityWrapper);
-            // create version value
-            entityWrapper.setPropertyValue(TableMeta.VERSION, 0);
+            createCreateOrUpdateTime(parentMeta.getField(TableMeta.UPDATE_TIME), now, entityWrapper);
+            if (parentMeta.mappingProp(TableMeta.VERSION)) {
+                // create version value
+                entityWrapper.setPropertyValue(TableMeta.VERSION, 0);
+            }
         }
         // discriminator
         createDiscriminatorValue(tableMeta, entityWrapper);
@@ -132,10 +143,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
         if (discriminator == null) {
             return;
         }
-        if (tableMeta.mappingMode() != MappingMode.PARENT) {
-            throw new MetaException("entity[%s] discriminator meta error"
-                    , tableMeta.javaType().getName());
-        }
+
         Method method = ReflectionUtils.findMethod(discriminator.javaType(), "resolve", int.class);
         if (method == null
                 || !Modifier.isStatic(method.getModifiers())
@@ -157,8 +165,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
         }
     }
 
-    private void createCreateOrUpdateTime(FieldMeta<?, ?> fieldMeta, BeanWrapper entityWrapper) {
-        ZonedDateTime now = ZonedDateTime.now(this.sessionFactory.zoneId());
+    private void createCreateOrUpdateTime(FieldMeta<?, ?> fieldMeta, ZonedDateTime now, BeanWrapper entityWrapper) {
         if (fieldMeta.javaType() == LocalDateTime.class) {
             entityWrapper.setPropertyValue(fieldMeta.propertyName(), now.toLocalDateTime());
         } else if (fieldMeta.javaType() == ZonedDateTime.class) {

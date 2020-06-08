@@ -65,7 +65,7 @@ abstract class TableMetaUtils {
     }
 
 
-    static  int discriminatorValue(MappingMode mappingMode, TableMeta<?> tableMeta) {
+    static int discriminatorValue(MappingMode mappingMode, TableMeta<?> tableMeta) {
         int value;
         DiscriminatorValue discriminatorValue;
         discriminatorValue = AnnotationUtils.getAnnotation(tableMeta.javaType(), DiscriminatorValue.class);
@@ -73,16 +73,16 @@ abstract class TableMetaUtils {
             case CHILD:
                 value = extractModeChildDiscriminatorValue(tableMeta, discriminatorValue);
                 TableMeta<?> parentMeta = tableMeta.parentMeta();
-                Assert.notNull(parentMeta,()->String.format("entity[%s] no parentMeta.",tableMeta.javaType().getName()));
-                assertDiscriminatorValueIsEnumCode(parentMeta,value);
+                Assert.notNull(parentMeta, () -> String.format("domain[%s] no parentMeta.", tableMeta.javaType().getName()));
+                assertDiscriminatorValueIsEnumCode(parentMeta, value);
                 break;
             case PARENT:
                 if (discriminatorValue != null && discriminatorValue.value() != 0) {
-                    throw new MetaException(ErrorCode.META_ERROR, "parentMeta entity[%s] DiscriminatorValue must equals 0"
+                    throw new MetaException(ErrorCode.META_ERROR, "parentMeta domain[%s] DiscriminatorValue must equals 0"
                             , tableMeta.javaType().getName());
                 }
                 value = 0;
-                assertDiscriminatorValueIsEnumCode(tableMeta,value);
+                assertDiscriminatorValueIsEnumCode(tableMeta, value);
                 break;
             case SIMPLE:
                 value = 0;
@@ -249,22 +249,6 @@ abstract class TableMetaUtils {
         return stack;
     }
 
-    /**
-     * @param <T> entity java class
-     * @return map(unmodifiable)
-     */
-    private static <T extends IDomain> Map<String, Field> notIndexColumnToField(List<IndexMeta<T>> indexMetaList,
-                                                                                Map<String, Field> columnToFieldMap) {
-        Map<String, Field> map = new HashMap<>(columnToFieldMap);
-
-        for (IndexMeta<T> indexMeta : indexMetaList) {
-            for (IndexFieldMeta<T, ?> fieldMeta : indexMeta.fieldList()) {
-                //make key lower case
-                map.remove(StringUtils.toLowerCase(fieldMeta.fieldName()));
-            }
-        }
-        return Collections.unmodifiableMap(map);
-    }
 
     /**
      * @return map(unmodifiable) ,key: column name,value : {@link Field} ,
@@ -323,7 +307,7 @@ abstract class TableMetaUtils {
             }
             return field;
         }
-        throw new MetaException(ErrorCode.META_ERROR, "entity[%s] not found primary key column definition",
+        throw new MetaException(ErrorCode.META_ERROR, "domain[%s] not found primary key column definition",
                 tableMeta.javaType());
     }
 
@@ -341,13 +325,13 @@ abstract class TableMetaUtils {
             , Set<String> propNameSet) {
 
         if (columnNameSet.contains(lowerColumnName)) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] column[%s]  duplication",
+            throw new MetaException(ErrorCode.META_ERROR, "domain[%s] column[%s]  duplication",
                     fieldMeta.tableMeta().javaType(),
                     fieldMeta.fieldName()
             );
         }
         if (propNameSet.contains(fieldMeta.propertyName())) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] property[%s]  duplication",
+            throw new MetaException(ErrorCode.META_ERROR, "domain[%s] property[%s]  duplication",
                     fieldMeta.tableMeta().javaType(),
                     fieldMeta.propertyName()
             );
@@ -359,18 +343,18 @@ abstract class TableMetaUtils {
 
         int value;
         if (discriminatorValue == null) {
-            throw new MetaException(ErrorCode.META_ERROR, "child entity[%s] no %s"
+            throw new MetaException(ErrorCode.META_ERROR, "child domain[%s] no %s"
                     , tableMeta.javaType().getName()
                     , DiscriminatorValue.class.getName());
         }
         value = discriminatorValue.value();
         if (value == 0) {
-            throw new MetaException(ErrorCode.META_ERROR, "child entity[%s] DiscriminatorValue cannot equals 0"
+            throw new MetaException(ErrorCode.META_ERROR, "child domain[%s] DiscriminatorValue cannot equals 0"
                     , tableMeta.javaType().getName());
 
         }
         TableMeta<?> parentMeta = tableMeta.parentMeta();
-        Assert.notNull(parentMeta, () -> String.format("Entity[%s] parentMeta error", tableMeta.javaType().getName()));
+        Assert.notNull(parentMeta, () -> String.format("domain[%s] parentMeta error", tableMeta.javaType().getName()));
 
         Map<Integer, Class<?>> codeMap;
         if (discriminatorCodeMap == null) {
@@ -379,7 +363,7 @@ abstract class TableMetaUtils {
         codeMap = discriminatorCodeMap.computeIfAbsent(parentMeta.javaType(), key -> new HashMap<>());
         Class<?> actualClass = codeMap.get(value);
         if (actualClass != null && actualClass != tableMeta.javaType()) {
-            throw new MetaException(ErrorCode.META_ERROR, "child entity[%s] DiscriminatorValue duplication. ",
+            throw new MetaException(ErrorCode.META_ERROR, "child domain[%s] DiscriminatorValue duplication. ",
                     tableMeta.javaType().getName());
         } else {
             codeMap.putIfAbsent(value, tableMeta.javaType());
@@ -393,35 +377,42 @@ abstract class TableMetaUtils {
      * @param columnToFieldMap    a unmodifiable map
      * @return discriminator FieldMeta
      */
+    @SuppressWarnings("unchecked")
     @Nullable
-    private static <T extends IDomain> FieldMeta<T, ?> discriminator(TableMeta<T> tableMeta,
-                                                                     Map<String, FieldMeta<T, ?>> propNameToFieldMeta,
-                                                                     Map<String, Field> columnToFieldMap) {
+    private static <T extends IDomain> FieldMeta<? super T, ?> discriminator(TableMeta<T> tableMeta,
+                                                                             Map<String, FieldMeta<T, ?>> propNameToFieldMeta,
+                                                                             Map<String, Field> columnToFieldMap) {
 
-        Inheritance inheritance = AnnotationUtils.getAnnotation(tableMeta.javaType(), Inheritance.class);
+        Inheritance inheritance;
+        if (tableMeta instanceof ChildTableMeta) {
+            ChildTableMeta<?> childMeta = (ChildTableMeta<?>) tableMeta;
+            return (FieldMeta<? super T, ?>) childMeta.parentMeta().discriminator();
+        } else {
+            inheritance = AnnotationUtils.getAnnotation(tableMeta.javaType(), Inheritance.class);
+        }
         if (inheritance == null) {
             return null;
         }
         // make key lower case
         Field field = columnToFieldMap.get(StringUtils.toLowerCase(inheritance.value()));
         if (field == null) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] discriminator column[%s] not found",
+            throw new MetaException(ErrorCode.META_ERROR, "domain[%s] discriminator column[%s] not found",
                     tableMeta.javaType().getName(),
                     inheritance.value()
             );
         }
-        if (!field.getDeclaringClass().isAssignableFrom(tableMeta.javaType())) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] discriminator property[%s,%s] not match.",
+        if (field.getDeclaringClass() != tableMeta.javaType()) {
+            throw new MetaException(ErrorCode.META_ERROR, "domain[%s] discriminator property[%s.%s] not match.",
                     tableMeta.javaType().getName(),
                     field.getDeclaringClass().getName(),
-                    inheritance.value()
+                    field.getName()
             );
         }
         FieldMeta<T, ?> fieldMeta = propNameToFieldMeta.get(field.getName());
         if (fieldMeta == null
                 || !fieldMeta.fieldName().equals(inheritance.value())
                 || fieldMeta.tableMeta() != tableMeta) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] discriminator column[%s] not found",
+            throw new MetaException(ErrorCode.META_ERROR, "domain[%s] discriminator column[%s] not found",
                     tableMeta.javaType().getName(),
                     inheritance.value()
             );
@@ -429,7 +420,7 @@ abstract class TableMetaUtils {
         if (!fieldMeta.javaType().isEnum()
                 || !CodeEnum.class.isAssignableFrom(fieldMeta.javaType())) {
             throw new MetaException(ErrorCode.META_ERROR,
-                    "entity[%s] discriminator property java class[%s] isn'field a Enum that implements %s",
+                    "domain[%s] discriminator property java class[%s] isn'field a Enum that implements %s",
                     tableMeta.javaType().getName(),
                     fieldMeta.javaType().getName(),
                     CodeEnum.class.getName()
@@ -445,12 +436,12 @@ abstract class TableMetaUtils {
     private static <E extends Enum<E> & CodeEnum, T extends IDomain> void assertDiscriminatorValueIsEnumCode(
             TableMeta<T> tableMeta, int value) {
         FieldMeta<?, E> fieldMeta = tableMeta.discriminator();
-        Assert.notNull(fieldMeta,()-> String.format("entity[%s] no discriminator",tableMeta.javaType().getName()));
-        Map<Integer, E> codeMap = CodeEnum.getCodeMap(fieldMeta.javaType());
-        if (!codeMap.containsKey(value)) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] DiscriminatorValue not %s's code"
+        Assert.notNull(fieldMeta, () -> String.format("domain[%s] no discriminator", tableMeta.javaType().getName()));
+
+        if (CodeEnum.resolve(fieldMeta.javaType(), value) == null) {
+            throw new MetaException("domain[%s] DiscriminatorValue not %s's code"
                     , tableMeta.javaType().getName()
-                    ,fieldMeta.javaType().getName()
+                    , fieldMeta.javaType().getName()
             );
         }
     }
@@ -519,7 +510,7 @@ abstract class TableMetaUtils {
             } else if (tokenCount == 2) {
                 columnAsc = isAscIndexColumn(tokenizer.nextToken(), indexMeta, indexColumnDefinition);
             } else {
-                throw new MetaException("entity[%s] index map[%s] column definition[%s] error",
+                throw new MetaException("domain[%s] index map[%s] column definition[%s] error",
                         tableMeta.javaType().getName(), indexMeta.name(), indexColumnDefinition);
             }
 
@@ -540,7 +531,7 @@ abstract class TableMetaUtils {
                                                                   final int columnCount) {
         if (!indexMeta.unique() || columnCount != 1) {
             throw new MetaException(ErrorCode.META_ERROR,
-                    "entity[%s] indexMap[%s] indexMap column[%s] is error primary key,or not unique .",
+                    "domain[%s] indexMap[%s] indexMap column[%s] is error primary key,or not unique .",
                     indexMeta.table().javaType(), indexMeta.name(), indexColumn);
         }
 
@@ -553,7 +544,7 @@ abstract class TableMetaUtils {
         } else if (DESC.equalsIgnoreCase(order)) {
             asc = false;
         } else {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] indexMap[%s] column[%s] asSort error",
+            throw new MetaException(ErrorCode.META_ERROR, "domain[%s] indexMap[%s] column[%s] asSort error",
                     indexMeta.table().javaType(), indexMeta.name(), indexColumnDefinition);
         }
         return asc;
@@ -562,13 +553,13 @@ abstract class TableMetaUtils {
     private static Field indexField(String columnName, TableMeta<?> table, Map<String, Field> fieldMap) {
         Field field = fieldMap.get(columnName);
         if (field == null) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] not found indexMap column[%s]",
+            throw new MetaException(ErrorCode.META_ERROR, "domain[%s] not found indexMap column[%s]",
                     table.javaType().getName(),
                     columnName
             );
         }
         if (!field.getDeclaringClass().isAssignableFrom(table.javaType())) {
-            throw new MetaException(ErrorCode.META_ERROR, "mapping property[%s] not mapping in entity[%s]",
+            throw new MetaException(ErrorCode.META_ERROR, "mapping property[%s] not mapping in domain[%s]",
                     field.getName(),
                     table.javaType().getName()
             );
@@ -580,7 +571,7 @@ abstract class TableMetaUtils {
     private static void assertIndexColumnNotDuplication(IndexMeta<?> indexMeta,
                                                         Set<String> createdIndexColumnSet, String columnName) {
         if (createdIndexColumnSet.contains(columnName)) {
-            throw new MetaException(ErrorCode.META_ERROR, "entity[%s] indexMap[%s] column[%s] duplication",
+            throw new MetaException(ErrorCode.META_ERROR, "domain[%s] indexMap[%s] column[%s] duplication",
                     indexMeta, indexMeta.name(), columnName);
         }
     }
@@ -664,10 +655,10 @@ abstract class TableMetaUtils {
 
         private final List<IndexMeta<T>> indexMetaList;
 
-        private final FieldMeta<T, ?> discriminator;
+        private final FieldMeta<? super T, ?> discriminator;
 
         private FieldBean(Map<String, FieldMeta<T, ?>> propNameToFieldMeta, List<IndexMeta<T>> indexMetaList,
-                          @Nullable FieldMeta<T, ?> discriminator) {
+                          @Nullable FieldMeta<? super T, ?> discriminator) {
             this.propNameToFieldMeta = propNameToFieldMeta;
             this.indexMetaList = indexMetaList;
             this.discriminator = discriminator;
@@ -682,7 +673,7 @@ abstract class TableMetaUtils {
         }
 
         @Nullable
-        FieldMeta<T, ?> getDiscriminator() {
+        FieldMeta<? super T, ?> getDiscriminator() {
             return discriminator;
         }
     }

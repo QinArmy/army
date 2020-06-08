@@ -1,6 +1,5 @@
 package io.army.cache;
 
-import io.army.ErrorCode;
 import io.army.criteria.MetaException;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
@@ -33,7 +32,7 @@ final class SetterMethodMatcherPointcut extends StaticMethodMatcherPointcut
             if (fieldMeta == idMeta) {
                 setterFieldMap.putIfAbsent(method, fieldMeta);
             } else if (setterFieldMap.put(method, fieldMeta) != null) {
-                throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] duplication.", fieldMeta);
+                throw new MetaException("FieldMeta[%s] duplication.", fieldMeta);
             }
         }
 

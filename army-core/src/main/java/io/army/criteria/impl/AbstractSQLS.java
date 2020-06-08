@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.lang.Nullable;
 import io.army.meta.FieldExpression;
+import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
@@ -47,17 +48,26 @@ abstract class AbstractSQLS {
         return NamedParamExpressionImpl.build(name, paramMeta);
     }
 
+    public static ParamMeta obtainParamMeta(Expression<?> expression) {
+        ParamMeta paramMeta;
+        if (expression instanceof FieldExpression) {
+            FieldMeta<?, ?> fieldMeta = ((FieldExpression<?, ?>) expression).fieldMeta();
+            if (fieldMeta.codec()) {
+                paramMeta = fieldMeta;
+            } else {
+                paramMeta = fieldMeta.mappingMeta();
+            }
+        } else {
+            paramMeta = expression.mappingMeta();
+        }
+        return paramMeta;
+    }
+
     /**
      * package method
      */
     static <E> ParamExpression<E> paramWithExp(E param, Expression<E> expression) {
-        ParamMeta paramMeta;
-        if (expression instanceof FieldExpression) {
-            paramMeta = ((FieldExpression<?, ?>) expression).fieldMeta();
-        } else {
-            paramMeta = expression.mappingMeta();
-        }
-        return ParamExpressionImp.build(paramMeta, param);
+        return ParamExpressionImp.build(obtainParamMeta(expression), param);
     }
 
     public static <E> ConstantExpression<E> constant(E value) {
@@ -81,8 +91,12 @@ abstract class AbstractSQLS {
         return Dual.DualTableMeta.INSTANCE;
     }
 
-    public static <E> Expression<Collection<E>> collection(MappingMeta mappingMeta, Collection<E> collection) {
-        return CollectionExpressionImpl.build(mappingMeta, collection);
+    public static <E> Expression<Collection<E>> collection(ParamMeta paramMeta, Collection<E> collection) {
+        return CollectionExpressionImpl.build(paramMeta, collection);
+    }
+
+    public static <E> Expression<Collection<E>> collectionWithExp(Expression<E> expression, Collection<E> collection) {
+        return CollectionExpressionImpl.build(obtainParamMeta(expression), collection);
     }
 
     /*################################## blow number function method ##################################*/

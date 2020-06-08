@@ -27,18 +27,19 @@ final class SelectSQLExecutorImpl extends SQLExecutorSupport implements SelectSQ
             LOG.info("army will execute select sql:\n{}", session.dialect().showSQL(sqlWrapper));
         }
         session.codecContextStatementType(StatementType.SELECT);
+        // 1. create statement
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql())) {
-            // 1. set params
+            // 2. set params
             setParams(session.codecContext(), st, sqlWrapper.paramList());
             List<T> resultList;
-            // 2. execute sql
+            // 3. execute query sql
             try (ResultSet resultSet = st.executeQuery()) {
-                // 3. extract result
+                // 4. extract result
                 if (MetaConstant.SIMPLE_JAVA_TYPE_SET.contains(resultClass)) {
                     resultList = extractSimpleTypeResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
                             , resultClass);
                 } else {
-                    resultList = extractResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
+                    resultList = extractBeanTypeResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
                             , resultClass);
                 }
             }

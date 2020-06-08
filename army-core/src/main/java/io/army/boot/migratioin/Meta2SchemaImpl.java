@@ -25,7 +25,7 @@ class Meta2SchemaImpl implements Meta2Schema {
         List<Migration> migrationList;
         migrationList = MetaSchemaComparator.build(dialect.sqlDialect())
                 .compare(tableMetas, schemaInfo, dialect);
-        // 3. generate DDL(DML) SQL
+        // 3. generate DDL SQL
         return generateSQL(migrationList, dialect);
     }
 
@@ -43,18 +43,18 @@ class Meta2SchemaImpl implements Meta2Schema {
             List<String> sqlList = new ArrayList<>();
 
             if (migration.newTable()) {
-                // invoke  dialect generate debugSQL SQL
+                // invoke  dialect generate  SQL
                 sqlList.addAll(dialect.createTable(migration.table()));
             } else {
                 // invoke  dialect generate DML SQL
-                generateDML(migration,dialect,sqlList);
+                generateDDL(migration, dialect, sqlList);
             }
             map.put(tableName,Collections.unmodifiableList(sqlList));
         }
         return Collections.unmodifiableMap(map);
     }
 
-    private void generateDML(Migration migration,Dialect dialect,List<String> sqlList){
+    private void generateDDL(Migration migration, Dialect dialect, List<String> sqlList) {
         // 1. add column if need
         if (!CollectionUtils.isEmpty(migration.columnsToAdd())) {
             sqlList.addAll(dialect.addColumn(migration.table(), migration.columnsToAdd()));
@@ -63,25 +63,26 @@ class Meta2SchemaImpl implements Meta2Schema {
         if (!CollectionUtils.isEmpty(migration.columnsToChange())) {
             sqlList.addAll(dialect.changeColumn(migration.table(), migration.columnsToChange()));
         }
-        // 3. add index if need
+        // 3. drop index if need
+        if (!CollectionUtils.isEmpty(migration.indexesToDrop())) {
+            sqlList.addAll(dialect.dropIndex(migration.table(), migration.indexesToDrop()));
+        }
+        // 4. add index if need
         if (!CollectionUtils.isEmpty(migration.indexesToAdd())) {
             sqlList.addAll(dialect.addIndex(migration.table(), migration.indexesToAdd()));
         }
-        // 4. alter index if need
+        // 5. alter index if need
         if (!CollectionUtils.isEmpty(migration.indexesToAlter())) {
             List<String> dropList = new ArrayList<>(migration.indexesToAlter().size());
             for (IndexMeta<?> indexMeta : migration.indexesToAlter()) {
                 dropList.add(indexMeta.name());
             }
-            // 4.1 first drop index
+            // 5-1. first drop index
             sqlList.addAll(dialect.dropIndex(migration.table(), dropList));
-            // 4.2 then add index
+            // 5-2. then add index
             sqlList.addAll(dialect.addIndex(migration.table(), migration.indexesToAlter()));
         }
-        // 5. drop index if need
-        if (!CollectionUtils.isEmpty(migration.indexesToDrop())) {
-            sqlList.addAll(dialect.dropIndex(migration.table(), migration.indexesToDrop()));
-        }
+
     }
 
 

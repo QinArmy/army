@@ -186,6 +186,13 @@ public abstract class SQLS extends AbstractSQLS {
         return SelectionGroups.buildTableGroup(tableAlias, fieldMetaList);
     }
 
+    public static List<SelectionGroup> childGroup(ChildTableMeta<?> childMeta, String parentAlias, String childAlias) {
+        List<SelectionGroup> list = new ArrayList<>(2);
+        list.add(SQLS.group(childMeta.parentMeta(), parentAlias));
+        list.add(SQLS.group(childMeta, childAlias));
+        return list;
+    }
+
     public static SelectionGroup derivedGroup(String subQueryAlias) {
         return SelectionGroups.buildDerivedGroup(subQueryAlias);
     }

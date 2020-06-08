@@ -150,7 +150,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     final ParentTableMeta<? super T> parentTableMeta;
 
-    final FieldMeta<T, ?> discriminator;
+    final FieldMeta<? super T, ?> discriminator;
 
     @SuppressWarnings("unchecked")
     private DefaultTableMeta(@Nullable ParentTableMeta<? super T> parentTableMeta, Class<T> domainClass) {
@@ -275,7 +275,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     public FieldMeta<T, Object> getField(String propName) throws MetaException {
         FieldMeta<?, ?> fieldMeta = propNameToFieldMeta.get(propName);
         if (fieldMeta == null) {
-            throw new MetaException("FieldMeta[%s] not found", propName);
+            throw new MetaException("TableMeta[%s]'s FieldMeta[%s] not found", this, propName);
         }
         return (FieldMeta<T, Object>) fieldMeta;
     }
@@ -288,7 +288,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
         FieldMeta<T, ?> fieldMeta = propNameToFieldMeta.get(propName);
         if (fieldMeta == null || propClass != fieldMeta.javaType()) {
-            throw new MetaException("FieldMeta[%s] not found", propName);
+            throw new MetaException("TableMeta[%s]'s FieldMeta[%s] not found", this, propName);
         }
         return (FieldMeta<T, F>) fieldMeta;
     }
@@ -300,7 +300,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
         FieldMeta<T, F> fieldMeta = getField(propName, propClass);
         if (!(fieldMeta instanceof IndexFieldMeta) || propClass != fieldMeta.javaType()) {
-            throw new MetaException("FieldMeta[%s] not found", propName);
+            throw new MetaException("TableMeta[%s]'s FieldMeta[%s] not found", this, propName);
         }
         return (IndexFieldMeta<T, F>) fieldMeta;
     }
@@ -309,7 +309,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     public <F> UniqueFieldMeta<T, F> getUniqueField(String propName, Class<F> propClass) throws MetaException {
         FieldMeta<T, F> fieldMeta = getField(propName, propClass);
         if (!(fieldMeta instanceof UniqueFieldMeta)) {
-            throw new MetaException("UniqueFieldMeta[%s] not found", propName);
+            throw new MetaException("TableMeta[%s]'s UniqueFieldMeta[%s] not found", this, propName);
         }
         return (UniqueFieldMeta<T, F>) fieldMeta;
     }
@@ -318,7 +318,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     public <F> PrimaryFieldMeta<T, F> getPrimaryField(Class<F> propClass) throws MetaException {
         FieldMeta<T, F> fieldMeta = getField(ID, propClass);
         if (!(fieldMeta instanceof PrimaryFieldMeta)) {
-            throw new MetaException("PrimaryFieldMeta not found");
+            throw new MetaException("TableMeta[%s]'s PrimaryFieldMeta not found", this);
         }
         return (PrimaryFieldMeta<T, F>) fieldMeta;
     }

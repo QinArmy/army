@@ -16,6 +16,7 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
+import io.army.lang.Nullable;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -32,6 +33,10 @@ import static io.army.util.TimeUtils.*;
  * created  on 2018/4/18.
  */
 public abstract class JsonUtils {
+
+    protected JsonUtils() {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * 公用的 ObjectMapper 请不要在运行中修改 配置,若要修改配置请使用
@@ -88,9 +93,9 @@ public abstract class JsonUtils {
         OBJECT_MAPPER = createDefaultObjectMapper();
     }
 
-    private static Module createCustomModule(String moduleName) {
+    private static Module createCustomModule(@Nullable String moduleName) {
         // 自定义模块,重写部分序列化器
-        return new SimpleModule(moduleName == null ? "financeCustomModule" : moduleName)
+        return new SimpleModule(moduleName == null ? "armyCustomModule" : moduleName)
                 .addSerializer(Number.class, NUMBER_SERIALIZER)
                 ;
     }

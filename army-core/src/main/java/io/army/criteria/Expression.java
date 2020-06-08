@@ -60,9 +60,9 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingMeta
      */
     <C, S extends ColumnSubQuery<E>> IPredicate equalAll(Function<C, S> subQuery);
 
-    IPredicate lessThan(Expression<? extends Comparable<E>> expression);
+    IPredicate lessThan(Expression<E> expression);
 
-    IPredicate lessThan(Comparable<E> constant);
+    IPredicate lessThan(E constant);
 
     IPredicate lessThan(String subQueryAlias, String fieldAlias);
 
@@ -76,9 +76,9 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingMeta
 
     <C, S extends ColumnSubQuery<E>> IPredicate lessThanAll(Function<C, S> subQuery);
 
-    IPredicate lessEqual(Expression<? extends Comparable<E>> expression);
+    IPredicate lessEqual(Expression<E> expression);
 
-    IPredicate lessEqual(Comparable<E> constant);
+    IPredicate lessEqual(E constant);
 
     IPredicate lessEqual(String subQueryAlias, String fieldAlias);
 
@@ -92,9 +92,9 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingMeta
 
     <C, S extends ColumnSubQuery<E>> IPredicate lessEqualAll(Function<C, S> subQuery);
 
-    IPredicate greatThan(Expression<? extends Comparable<E>> expression);
+    IPredicate greatThan(Expression<E> expression);
 
-    IPredicate greatThan(Comparable<E> constant);
+    IPredicate greatThan(E constant);
 
     IPredicate greatThan(String subQueryAlias, String fieldAlias);
 
@@ -108,9 +108,9 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingMeta
 
     <C, S extends ColumnSubQuery<E>> IPredicate greatThanAll(Function<C, S> subQuery);
 
-    IPredicate greatEqual(Expression<? extends Comparable<E>> expression);
+    IPredicate greatEqual(Expression<E> expression);
 
-    IPredicate greatEqual(Comparable<E> constant);
+    IPredicate greatEqual(E constant);
 
     IPredicate greatEqual(String subQueryAlias, String fieldAlias);
 
@@ -126,7 +126,7 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingMeta
 
     IPredicate notEqual(Expression<E> expression);
 
-    IPredicate notEqual(Comparable<E> constant);
+    IPredicate notEqual(E constant);
 
     IPredicate notEqual(String subQueryAlias, String fieldAlias);
 

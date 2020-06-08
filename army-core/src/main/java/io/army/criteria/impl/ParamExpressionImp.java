@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.ParamExpression;
 import io.army.criteria.SQLContext;
-import io.army.criteria.Selection;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
 import io.army.meta.mapping.MappingFactory;
@@ -63,10 +62,6 @@ final class ParamExpressionImp<E> extends AbstractNoNOperationExpression<E> impl
         return this.paramMeta.mappingMeta();
     }
 
-    @Override
-    public Selection as(String alias) {
-        return super.as(alias);
-    }
 
     @Override
     protected void afterSpace(SQLContext context) {

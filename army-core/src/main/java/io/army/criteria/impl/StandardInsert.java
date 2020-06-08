@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.Insert;
 import io.army.criteria.impl.inner.InnerStandardInsert;
 import io.army.domain.IDomain;
+import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
@@ -25,7 +26,7 @@ final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implement
 
     private boolean dataMigration;
 
-    private List<FieldMeta<?, ?>> fieldList;
+    private List<FieldMeta<?, ?>> fieldList = new ArrayList<>();
 
     private List<IDomain> valueList;
 
@@ -47,13 +48,19 @@ final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implement
 
     @Override
     public final InsertValuesAble<T> insertInto(Collection<FieldMeta<? super T, ?>> fieldMetas) {
-        this.fieldList = new ArrayList<>(fieldMetas);
+        this.fieldList.addAll(fieldMetas);
         return this;
     }
 
     @Override
     public final InsertValuesAble<T> insertInto(TableMeta<T> tableMeta) {
-        this.fieldList = new ArrayList<>(tableMeta.fieldCollection());
+        Assert.isTrue(tableMeta == this.tableMeta
+                , () -> String.format("TableMeta[%s] and target[%s] not match.", tableMeta, this.tableMeta));
+
+        if (tableMeta instanceof ChildTableMeta) {
+            this.fieldList.addAll(((ChildTableMeta<?>) tableMeta).parentMeta().fieldCollection());
+        }
+        this.fieldList.addAll(tableMeta.fieldCollection());
         return this;
     }
 

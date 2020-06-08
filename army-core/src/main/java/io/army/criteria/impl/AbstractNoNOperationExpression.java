@@ -59,12 +59,12 @@ abstract class AbstractNoNOperationExpression<E> implements Expression<E>, Expre
     }
 
     @Override
-    public final IPredicate lessThan(Expression<? extends Comparable<E>> expression) {
+    public final IPredicate lessThan(Expression<E> expression) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate lessThan(Comparable<E> constant) {
+    public final IPredicate lessThan(E constant) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -99,12 +99,12 @@ abstract class AbstractNoNOperationExpression<E> implements Expression<E>, Expre
     }
 
     @Override
-    public final IPredicate lessEqual(Expression<? extends Comparable<E>> expression) {
+    public final IPredicate lessEqual(Expression<E> expression) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate lessEqual(Comparable<E> constant) {
+    public final IPredicate lessEqual(E constant) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -139,12 +139,12 @@ abstract class AbstractNoNOperationExpression<E> implements Expression<E>, Expre
     }
 
     @Override
-    public final IPredicate greatThan(Expression<? extends Comparable<E>> expression) {
+    public final IPredicate greatThan(Expression<E> expression) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate greatThan(Comparable<E> constant) {
+    public final IPredicate greatThan(E constant) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -179,12 +179,12 @@ abstract class AbstractNoNOperationExpression<E> implements Expression<E>, Expre
     }
 
     @Override
-    public final IPredicate greatEqual(Expression<? extends Comparable<E>> expression) {
+    public final IPredicate greatEqual(Expression<E> expression) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate greatEqual(Comparable<E> constant) {
+    public final IPredicate greatEqual(E constant) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -224,7 +224,7 @@ abstract class AbstractNoNOperationExpression<E> implements Expression<E>, Expre
     }
 
     @Override
-    public final IPredicate notEqual(Comparable<E> constant) {
+    public final IPredicate notEqual(E constant) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -279,7 +279,7 @@ abstract class AbstractNoNOperationExpression<E> implements Expression<E>, Expre
     }
 
     @Override
-    public <C> IPredicate between(Function<C, BetweenWrapper<E>> function) {
+    public final <C> IPredicate between(Function<C, BetweenWrapper<E>> function) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -340,7 +340,7 @@ abstract class AbstractNoNOperationExpression<E> implements Expression<E>, Expre
 
 
     @Override
-    public <N extends Number> Expression<E> mod(String tableAlias, FieldMeta<?, N> fieldMeta) {
+    public final <N extends Number> Expression<E> mod(String tableAlias, FieldMeta<?, N> fieldMeta) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -660,12 +660,12 @@ abstract class AbstractNoNOperationExpression<E> implements Expression<E>, Expre
     }
 
     @Override
-    public SortPart asc() {
+    public final SortPart asc() {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public SortPart desc() {
+    public final SortPart desc() {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -710,12 +710,12 @@ abstract class AbstractNoNOperationExpression<E> implements Expression<E>, Expre
     }
 
     @Override
-    public Selection as(String alias) {
+    public final Selection as(String alias) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public boolean containsSubQuery() {
+    public final boolean containsSubQuery() {
         return false;
     }
 

@@ -24,7 +24,7 @@ abstract class ExecutorUtils {
 
 
     static DataAccessException convertSQLException(SQLException e, String sql) {
-        return new DataAccessException(ErrorCode.ACCESS_ERROR, e, "army set param occur error ,sql[%s]", sql);
+        return new DataAccessException(ErrorCode.ACCESS_ERROR, e, "army execute sql occur error ,sql[%s]", sql);
     }
 
 }
