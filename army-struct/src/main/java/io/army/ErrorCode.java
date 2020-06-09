@@ -86,7 +86,8 @@ public enum ErrorCode implements CodeEnum {
     NO_FIELD_CODEC(1032, "", NONE),
     TRANSACTION_NOT_CLOSE(1033, "", NONE),
     TRANSACTION_CLOSED(1034, "", NONE),
-    READ_ONLY_TRANSACTION(1035, "", NONE);
+    READ_ONLY_TRANSACTION(1035, "", NONE),
+    TRANSACTION_ROLLBACK_ONLY(1036, "", NONE);
 
 
     private final int code;
