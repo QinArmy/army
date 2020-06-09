@@ -18,6 +18,11 @@ public abstract class AbstractArmyBaseDay implements ArmyBaseDao {
     protected ProxySession session;
 
     @Override
+    public boolean supportSessionCache() {
+        return session.sessionFactory().supportSessionCache();
+    }
+
+    @Override
     public <T extends IDomain> void save(T domain) {
         @SuppressWarnings("unchecked")
         TableMeta<T> tableMeta = obtainTableMeta((Class<T>) domain.getClass());

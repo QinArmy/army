@@ -17,12 +17,8 @@ import io.army.meta.TableMeta;
 import io.army.struct.CodeEnum;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
-import io.army.util.ReflectionUtils;
 import io.army.util.StringUtils;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -143,26 +139,8 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
         if (discriminator == null) {
             return;
         }
-
-        Method method = ReflectionUtils.findMethod(discriminator.javaType(), "resolve", int.class);
-        if (method == null
-                || !Modifier.isStatic(method.getModifiers())
-                || !Modifier.isPublic(method.getModifiers())
-                || method.getReturnType() != discriminator.javaType()) {
-            throw new MetaException("CodeEnum[%s] discriminator no resolve method."
-                    , discriminator.javaType());
-        }
-        try {
-            Object discriminatorValue = method.invoke(null, tableMeta.discriminatorValue());
-            if (discriminatorValue == null) {
-                throw new MetaException("TableMeta[%s] discriminator[%s]'s CodeEnum is null."
-                        , tableMeta, tableMeta.discriminatorValue());
-            }
-            entityWrapper.setPropertyValue(discriminator.propertyName(), discriminatorValue);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new MetaException(e, "TableMeta[%s] discriminator[%s] resolve method error."
-                    , tableMeta, discriminator.javaType());
-        }
+        CodeEnum codeEnum = CodeEnum.resolve(discriminator.javaType(), tableMeta.discriminatorValue());
+        entityWrapper.setPropertyValue(discriminator.propertyName(), codeEnum);
     }
 
     private void createCreateOrUpdateTime(FieldMeta<?, ?> fieldMeta, ZonedDateTime now, BeanWrapper entityWrapper) {

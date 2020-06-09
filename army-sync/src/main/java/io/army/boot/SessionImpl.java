@@ -526,12 +526,20 @@ final class SessionImpl implements InnerSession, InnerTxSession {
 
     @Override
     public void close() throws SessionException {
+        if (this.closed) {
+            return;
+        }
         try {
             if (this.currentSession) {
                 sessionFactory.currentSessionContext().removeCurrentSession(this);
             }
+            if (this.transaction != null) {
+                throw new TransactionNotCloseException("Transaction not close.");
+            }
             connection.close();
             this.closed = true;
+        } catch (SessionException e) {
+            throw e;
         } catch (Exception e) {
             throw new SessionCloseFailureException(e, "session close connection error.");
         }
@@ -615,15 +623,15 @@ final class SessionImpl implements InnerSession, InnerTxSession {
         return this.connection;
     }
 
+    /**
+     * invoke by {@link Transaction#close()}
+     */
     @Override
     public void closeTransaction(Transaction transaction) {
         if (this.transaction != transaction) {
             throw new IllegalArgumentException("transaction not match,can't close.");
         }
-        if (!TransactionImpl.END_ABLE_SET.contains(transaction.status())) {
-            throw new IllegalTransactionStateException("transaction status[%s] not in %s,can't close."
-                    , transaction.status(), TransactionImpl.END_ABLE_SET);
-        }
+        ((TransactionImpl) transaction).assertCanClose();
         try {
             // reset connection.
             this.connection.setReadOnly(connInitParam.readonly);
@@ -652,11 +660,6 @@ final class SessionImpl implements InnerSession, InnerTxSession {
         }
     }
 
-    private void checkSessionForUpdate() {
-        if (this.readonly) {
-            throw new ReadOnlySessionException("session[%s] is read only ,can't execute update.");
-        }
-    }
 
     /*################################## blow private multiInsert method ##################################*/
 

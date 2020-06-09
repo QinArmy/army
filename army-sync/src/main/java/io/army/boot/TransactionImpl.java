@@ -86,10 +86,13 @@ final class TransactionImpl implements Transaction {
 
     @Override
     public void start() throws TransactionException {
+        checkTransaction();
+
         if (this.status != TransactionStatus.NOT_ACTIVE) {
             throw new IllegalTransactionStateException("transaction status[%s] isn't %s,can't start transaction."
                     , this.status, TransactionStatus.NOT_ACTIVE);
         }
+
         try {
             final Connection connection = this.session.connection();
             if (this.readOnly) {
@@ -111,6 +114,8 @@ final class TransactionImpl implements Transaction {
 
     @Override
     public void rollback() throws TransactionException {
+        checkReadWrite("rollback");
+
         if (!ROLL_BACK_ABLE_SET.contains(this.status)) {
             throw new IllegalTransactionStateException("transaction status[%s] don't in %s,can't rollback."
                     , this.status, ROLL_BACK_ABLE_SET);
@@ -128,6 +133,8 @@ final class TransactionImpl implements Transaction {
 
     @Override
     public void commit() throws TransactionException {
+        checkReadWrite("commit");
+
         if (this.status != TransactionStatus.ACTIVE) {
             throw new IllegalTransactionStateException("transaction status[%s] isn't %s,can't commit."
                     , this.status, TransactionStatus.ACTIVE);
@@ -145,6 +152,8 @@ final class TransactionImpl implements Transaction {
 
     @Override
     public Savepoint createSavepoint() throws TransactionException {
+        checkReadWrite("createSavepoint");
+
         if (this.status != TransactionStatus.ACTIVE) {
             throw new IllegalTransactionStateException("transaction status[%s] isn't %s,can't create save point."
                     , this.status, TransactionStatus.ACTIVE);
@@ -161,6 +170,8 @@ final class TransactionImpl implements Transaction {
 
     @Override
     public void rollbackToSavepoint(final Savepoint savepoint) throws TransactionException {
+        checkReadWrite("rollbackToSavepoint");
+
         if (!ROLL_BACK_ABLE_SET.contains(this.status)) {
             throw new IllegalTransactionStateException("transaction status[%s] don't in %s,can't rollback."
                     , this.status, ROLL_BACK_ABLE_SET);
@@ -177,6 +188,8 @@ final class TransactionImpl implements Transaction {
 
     @Override
     public void releaseSavepoint(final Savepoint savepoint) throws TransactionException {
+        checkReadWrite("releaseSavepoint");
+
         if (!this.savepointSet.contains(savepoint)) {
             throw new UnKnownSavepointException("Savepoint[%s] not exists", savepoint);
         }
@@ -190,11 +203,13 @@ final class TransactionImpl implements Transaction {
 
     @Override
     public boolean rollbackOnly() {
+        checkTransaction();
         return this.rollbackOnly;
     }
 
     @Override
     public boolean supportsSavePoints() {
+        checkTransaction();
         try {
             return this.session.connection().getMetaData().supportsSavepoints();
         } catch (SQLException e) {
@@ -209,6 +224,8 @@ final class TransactionImpl implements Transaction {
 
     @Override
     public long getTimeToLiveInMillis() throws TransactionTimeOutException {
+        checkTransaction();
+
         long liveInMills = this.endMills - System.currentTimeMillis();
         if (liveInMills < 0) {
             throw new TransactionTimeOutException("transaction[name:%s] timeout,live in mills is %s ."
@@ -220,6 +237,8 @@ final class TransactionImpl implements Transaction {
 
     @Override
     public void markRollbackOnly() throws TransactionException {
+        checkReadWrite("markRollbackOnly");
+
         if (!ROLL_BACK_ONLY_ABLE_SET.contains(this.status)) {
             throw new IllegalTransactionStateException("transaction status[%s] not in %s,can't mark roll back only."
                     , this.status, ROLL_BACK_ONLY_ABLE_SET);
@@ -230,15 +249,40 @@ final class TransactionImpl implements Transaction {
 
     @Override
     public void flush() throws TransactionException {
-        // no-op
+        checkReadWrite("flush");
+        this.session.flush();
     }
 
     @Override
     public void close() throws TransactionException {
-        if (!END_ABLE_SET.contains(this.status)) {
-            throw new IllegalTransactionStateException("transaction status[%s] not in %s,can't close."
-                    , this.status, END_ABLE_SET);
+        if (this.session.hasTransaction() && this.session.sessionTransaction() == this) {
+            this.session.closeTransaction(this);
         }
-        this.session.closeTransaction(this);
+    }
+
+    /*################################## blow package method ##################################*/
+
+    final void assertCanClose() {
+        if (!this.readOnly() && !TransactionImpl.END_ABLE_SET.contains(this.status())) {
+            throw new IllegalTransactionStateException("transaction status[%s] not in %s,can't close."
+                    , this.status(), TransactionImpl.END_ABLE_SET);
+        }
+    }
+
+    /*################################## blow private method ##################################*/
+
+    private void checkTransaction() {
+        if (!this.session.hasTransaction()) {
+            throw new TransactionClosedException("transaction closed.");
+        }
+    }
+
+    private void checkReadWrite(String action) {
+        if (!this.session.hasTransaction()) {
+            throw new TransactionClosedException("transaction closed.");
+        }
+        if (this.status != TransactionStatus.NOT_ACTIVE && this.readOnly) {
+            throw new ReadOnlyTransactionException("transaction is read only,can't %s.", action);
+        }
     }
 }

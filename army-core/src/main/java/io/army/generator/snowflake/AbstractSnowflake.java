@@ -4,12 +4,9 @@ import io.army.util.Assert;
 import io.army.util.TimeUtils;
 
 import java.math.BigInteger;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Objects;
-
-import static io.army.util.TimeUtils.CLOSE_DATE_FORMATTER;
 
 public abstract class AbstractSnowflake implements Snowflake {
 
@@ -114,7 +111,7 @@ public abstract class AbstractSnowflake implements Snowflake {
 
     @Override
     public final String nextAsString() {
-        return String.valueOf(next());
+        return Long.toString(next());
     }
 
     @Override

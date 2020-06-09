@@ -16,7 +16,6 @@ import io.army.meta.ParamMeta;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
-import io.army.modelgen.MetaConstant;
 import io.army.wrapper.*;
 
 import java.sql.PreparedStatement;
@@ -113,7 +112,7 @@ abstract class SQLExecutorSupport {
             try (ResultSet resultSet = st.executeQuery()) {
                 List<T> resultList;
                 //4. extract result
-                if (MetaConstant.SIMPLE_JAVA_TYPE_SET.contains(resultClass)) {
+                if (simpleJavaType(sqlWrapper.selectionList(), resultClass)) {
                     resultList = extractSimpleTypeResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
                             , resultClass);
                 } else {
@@ -395,6 +394,12 @@ abstract class SQLExecutorSupport {
     }
 
     /*################################## blow package static method ##################################*/
+
+    static boolean simpleJavaType(List<Selection> selectionList, Class<?> resultClass) {
+        return selectionList.size() == 1
+                && resultClass.isAssignableFrom(selectionList.get(0).mappingMeta().javaType());
+
+    }
 
     static IllegalArgumentException createNotSupportedException(SQLWrapper sqlWrapper, String methodName) {
         return new IllegalArgumentException(String.format("%s supported by %s", sqlWrapper, methodName));

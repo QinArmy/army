@@ -34,7 +34,6 @@ public enum ErrorCode implements CodeEnum {
     NOT_FOUND_DOMAIN(700, "", NONE),
 
 
-
     NOT_FOUND_META_CLASS(701, "", NONE),
     META_CLASS_NOT_MATCH(702, "", NONE),
     SQL_TYPE_NOT_MATCH(703, "", NONE),
@@ -84,7 +83,10 @@ public enum ErrorCode implements CodeEnum {
     CODEC_KEY_ERROR(1029, "", NONE),
     CODEC_DATA_ERROR(1030, "", NONE),
     NON_CODEC_FIELD(1031, "", NONE),
-    NO_FIELD_CODEC(1032, "", NONE);
+    NO_FIELD_CODEC(1032, "", NONE),
+    TRANSACTION_NOT_CLOSE(1033, "", NONE),
+    TRANSACTION_CLOSED(1034, "", NONE),
+    READ_ONLY_TRANSACTION(1035, "", NONE);
 
 
     private final int code;

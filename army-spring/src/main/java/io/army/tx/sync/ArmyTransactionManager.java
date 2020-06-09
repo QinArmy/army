@@ -113,7 +113,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             throw new IllegalTransactionStateException("transaction no army session.");
         }
         if (status.isDebug()) {
-            logger.debug("Setting Hibernate transaction on Session [" + txObject.session + "] rollback-only");
+            logger.debug("Setting Army transaction on Session [" + txObject.session + "] rollback-only");
         }
         try {
             Transaction tx = txObject.session.sessionTransaction();
@@ -136,6 +136,12 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         }
         try {
             Session session = txObject.session;
+            if (session.hasTransaction()) {
+                Transaction tx = session.sessionTransaction();
+                if (tx.readOnly()) {
+                    tx.close();
+                }
+            }
             session.close();
         } catch (DataAccessException e) {
             throw SpringTxUtils.convertArmyAccessException(e);

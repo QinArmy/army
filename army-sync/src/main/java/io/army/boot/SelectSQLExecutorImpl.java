@@ -1,7 +1,6 @@
 package io.army.boot;
 
 import io.army.codec.StatementType;
-import io.army.modelgen.MetaConstant;
 import io.army.wrapper.SimpleSQLWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +34,7 @@ final class SelectSQLExecutorImpl extends SQLExecutorSupport implements SelectSQ
             // 3. execute query sql
             try (ResultSet resultSet = st.executeQuery()) {
                 // 4. extract result
-                if (MetaConstant.SIMPLE_JAVA_TYPE_SET.contains(resultClass)) {
+                if (simpleJavaType(sqlWrapper.selectionList(), resultClass)) {
                     resultList = extractSimpleTypeResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
                             , resultClass);
                 } else {

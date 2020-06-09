@@ -7,6 +7,9 @@ import java.util.List;
 
 public interface ArmyBaseDao {
 
+    boolean supportSessionCache();
+
+
     <T extends IDomain> void save(T domain);
 
     <T extends IDomain> void multiSave(Class<T> domainClass, List<T> domainList);

@@ -11,7 +11,9 @@ public abstract class SpringTxUtils {
     }
 
     public static org.springframework.dao.DataAccessException convertArmyAccessException(DataAccessException ex) {
-        throw new UnsupportedOperationException();
+        return new org.springframework.dao.DataAccessException(ex.getMessage(), ex) {
+
+        };
     }
 
 

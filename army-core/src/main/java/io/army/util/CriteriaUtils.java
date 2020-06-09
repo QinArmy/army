@@ -38,7 +38,7 @@ public abstract class CriteriaUtils {
             final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
 
             select = SQLS.multiSelect()
-                    .select(Arrays.asList(SQLS.group(parentMeta, "p"), SQLS.group(childMeta, "c")))
+                    .select(SQLS.childGroup(childMeta, "p", "c"))
                     .from(childMeta, "c") // small table first
                     .join(parentMeta, "p").on(childMeta.id().equal(parentMeta.id()))
                     .where(childMeta.id().equal(id))

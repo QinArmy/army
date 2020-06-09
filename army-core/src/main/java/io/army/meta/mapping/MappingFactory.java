@@ -15,6 +15,10 @@ public interface MappingFactory {
         return DefaultMappingFactory.getInstance();
     }
 
+    static boolean hasMappingMeta(Class<?> javaType) {
+        return DefaultMappingFactory.obtainDefaultMapping(javaType) != null;
+    }
+
     static MappingMeta getDefaultMapping(Class<?> javaType) throws MetaException {
         return DefaultMappingFactory.getDefaultMapping(javaType);
     }

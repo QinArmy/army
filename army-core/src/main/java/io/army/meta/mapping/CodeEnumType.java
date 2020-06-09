@@ -1,14 +1,12 @@
 package io.army.meta.mapping;
 
 import io.army.struct.CodeEnum;
-import io.army.struct.CodeEnumException;
 import io.army.util.Assert;
 
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -55,10 +53,8 @@ public final class CodeEnumType extends AbstractMappingType {
     public boolean isTextValue(String textValue) {
         boolean yes;
         try {
-            int code = Integer.parseInt(textValue);
-            CodeEnum codeEnum = getCodeEnum(code);
-            yes = codeEnum != null;
-        } catch (NumberFormatException | CodeEnumException e) {
+            yes = CodeEnum.resolve(enumClass, Integer.parseInt(textValue)) != null;
+        } catch (Exception e) {
             yes = false;
         }
         return yes;
@@ -74,12 +70,7 @@ public final class CodeEnumType extends AbstractMappingType {
     @Override
     public Object nullSafeGet(ResultSet resultSet, String alias) throws SQLException {
         int code = resultSet.getInt(alias);
-        Object value = getCodeEnum(code);
-        if (value == null) {
-            throw new SQLException(String.format("as[%s] corresponding value[%s] isn'field %s code"
-                    , alias, code, enumClass.getName()));
-        }
-        return value;
+        return CodeEnum.resolve(enumClass, code);
     }
 
     /*################################## blow private method ##################################*/
@@ -89,11 +80,5 @@ public final class CodeEnumType extends AbstractMappingType {
         CodeEnum.getCodeMap((Class<T>) enumClass);
     }
 
-    private <T extends Enum<T> & CodeEnum> CodeEnum getCodeEnum(int code) {
-        @SuppressWarnings("unchecked")
-        Map<Integer, T> codeMap = CodeEnum.getCodeMap((Class<T>) enumClass);
-        return codeMap.get(code);
-
-    }
 
 }

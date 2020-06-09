@@ -1,6 +1,7 @@
 package io.army.meta.mapping;
 
 import io.army.criteria.MetaException;
+import io.army.lang.Nullable;
 import io.army.struct.CodeEnum;
 import io.army.util.ClassUtils;
 
@@ -53,14 +54,20 @@ class DefaultMappingFactory implements MappingFactory {
 
 
     static MappingMeta getDefaultMapping(Class<?> javaType) throws MetaException {
+        MappingMeta mappingType = obtainDefaultMapping(javaType);
+        if (mappingType == null) {
+            throw new MetaException("not found MappingType for %s", javaType.getName());
+        }
+        return mappingType;
+    }
+
+    @Nullable
+    static MappingMeta obtainDefaultMapping(Class<?> javaType) {
         MappingMeta mappingType;
         if (javaType.isEnum()) {
             mappingType = CodeEnumType.build(javaType);
         } else {
             mappingType = DEFAULT_MAPPING.get(javaType);
-        }
-        if (mappingType == null) {
-            throw new MetaException("not found MappingType for %s", javaType.getName());
         }
         return mappingType;
     }
