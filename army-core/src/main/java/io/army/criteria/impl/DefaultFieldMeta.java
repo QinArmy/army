@@ -170,7 +170,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
             this.insertable = FieldMetaUtils.columnInsertable(this, column, isDiscriminator);
             this.updatable = FieldMetaUtils.columnUpdatable(table, this.propertyName, column, isDiscriminator);
 
-            this.comment = FieldMetaUtils.columnComment(column, this, isDiscriminator);
+            this.comment = FieldMetaUtils.columnComment(column, this);
             this.nullable = FieldMetaUtils.columnNullable(column, this, isDiscriminator);
             this.defaultValue = FieldMetaUtils.columnDefault(column, this);
             this.generatorMeta = FieldMetaUtils.columnGeneratorMeta(field, this, isDiscriminator);

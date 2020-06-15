@@ -55,27 +55,37 @@ final class SessionImpl implements InnerSession, InnerTxSession {
 
 
     SessionImpl(InnerSessionFactory sessionFactory, Connection connection,
-                boolean currentSession) throws SessionException {
+                boolean currentSession, boolean resetConnection) throws SessionException {
         this.sessionFactory = sessionFactory;
         this.connection = connection;
         this.currentSession = currentSession;
         this.readonly = sessionFactory.readonly();
 
         this.dialect = sessionFactory.dialect();
-
-        try {
-            this.connInitParam = new ConnInitParam(
-                    connection.getTransactionIsolation()
-                    , connection.getAutoCommit()
-                    , this.connection.isReadOnly());
-        } catch (SQLException e) {
-            throw new CreateSessionException(ErrorCode.SESSION_CREATE_ERROR, e, "connection query occur error.");
-        }
-
+        this.connInitParam = createConnInitParam(connection, resetConnection);
         if (sessionFactory.supportSessionCache()) {
             this.sessionCache = sessionFactory.sessionCacheFactory().createSessionCache(this);
         } else {
             this.sessionCache = null;
+        }
+
+    }
+
+    @Nullable
+    private ConnInitParam createConnInitParam(Connection conn, boolean resetConnection) {
+        try {
+            ConnInitParam initParam;
+            if (resetConnection) {
+                initParam = new ConnInitParam(
+                        conn.getTransactionIsolation()
+                        , conn.getAutoCommit()
+                        , conn.isReadOnly());
+            } else {
+                initParam = null;
+            }
+            return initParam;
+        } catch (SQLException e) {
+            throw new CreateSessionException(ErrorCode.SESSION_CREATE_ERROR, e, "connection query occur error.");
         }
 
     }
@@ -87,10 +97,8 @@ final class SessionImpl implements InnerSession, InnerTxSession {
 
     @Override
     public final boolean readonly() {
-        return this.readonly
-                || (this.transaction != null && this.transaction.readOnly());
+        return this.readonly || (this.transaction != null && this.transaction.readOnly());
     }
-
 
 
     @Nullable
@@ -574,11 +582,19 @@ final class SessionImpl implements InnerSession, InnerTxSession {
         if (this.sessionCache == null) {
             return;
         }
+        final boolean readOnly = this.readonly();
         for (DomainUpdateAdvice advice : this.sessionCache.updateAdvices()) {
             if (!advice.hasUpdate()) {
                 continue;
             }
-            update(CacheDomainUpdate.build(advice), Visible.ONLY_VISIBLE);
+            if (readOnly) {
+                throw new ReadOnlySessionException("Session is read only,can't update Domain cache.");
+            }
+            int updateCount;
+            updateCount = update(CacheDomainUpdate.build(advice), Visible.ONLY_VISIBLE);
+            if (updateCount != 1) {
+                throw new DomainUpdateException("cache update count[%s] error", updateCount);
+            }
             advice.updateFinish();
         }
     }
@@ -633,10 +649,12 @@ final class SessionImpl implements InnerSession, InnerTxSession {
         }
         ((TransactionImpl) transaction).assertCanClose();
         try {
-            // reset connection.
-            this.connection.setReadOnly(connInitParam.readonly);
-            this.connection.setTransactionIsolation(connInitParam.isolation);
-            this.connection.setAutoCommit(connInitParam.autoCommit);
+            if (this.connInitParam != null) {
+                // reset connection.
+                this.connection.setReadOnly(this.connInitParam.readonly);
+                this.connection.setTransactionIsolation(this.connInitParam.isolation);
+                this.connection.setAutoCommit(this.connInitParam.autoCommit);
+            }
             this.transaction = null;
         } catch (SQLException e) {
             throw new TransactionSystemException(e, "army reset connection failure after transaction end.");
@@ -691,6 +709,9 @@ final class SessionImpl implements InnerSession, InnerTxSession {
     }
 
     private SQLWrapper parseUpdate(Update update, Visible visible) {
+        if (this.readonly()) {
+            throw new ReadOnlySessionException("current session/session transaction is read only.");
+        }
         //1. parse update sql
         SQLWrapper sqlWrapper = this.dialect.update(update, visible);
         if (sqlWrapper instanceof ChildSQLWrapper
@@ -702,6 +723,9 @@ final class SessionImpl implements InnerSession, InnerTxSession {
     }
 
     private SQLWrapper parseDelete(Delete delete, Visible visible) {
+        if (this.readonly()) {
+            throw new ReadOnlySessionException("current session/session transaction is read only.");
+        }
         //1. parse update sql
         SQLWrapper sqlWrapper = this.dialect.delete(delete, visible);
         if (sqlWrapper instanceof ChildSQLWrapper
@@ -713,6 +737,9 @@ final class SessionImpl implements InnerSession, InnerTxSession {
     }
 
     private List<SQLWrapper> parseInsert(Insert insert, Visible visible) {
+        if (this.readonly()) {
+            throw new ReadOnlySessionException("current session/session transaction is read only.");
+        }
         //1. parse update sql
         List<SQLWrapper> sqlWrapperList = this.dialect.insert(insert, visible);
         for (SQLWrapper sqlWrapper : sqlWrapperList) {

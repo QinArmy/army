@@ -82,7 +82,6 @@ abstract class TableMetaUtils {
                             , tableMeta.javaType().getName());
                 }
                 value = 0;
-                assertDiscriminatorValueIsEnumCode(tableMeta, value);
                 break;
             case SIMPLE:
                 value = 0;

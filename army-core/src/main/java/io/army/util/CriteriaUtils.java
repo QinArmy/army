@@ -23,12 +23,27 @@ public abstract class CriteriaUtils {
 
     public static <T extends IDomain> Select createSelectIdByUnique(TableMeta<T> tableMeta, List<String> propNameList
             , List<Object> valueList) {
-        return SQLS.multiSelect()
-                .select(tableMeta.id())
-                .from(tableMeta, "t")
-                .where(createPredicateList(tableMeta, propNameList, valueList))
-                .limit(2)
-                .asSelect();
+        Select select;
+        if (tableMeta instanceof ChildTableMeta) {
+            final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) tableMeta;
+            final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
+
+            select = SQLS.multiSelect()
+                    .select(tableMeta.id())
+                    .from(childMeta, "c") // small table first
+                    .join(parentMeta, "p").on(childMeta.id().equal(parentMeta.id()))
+                    .where(createPredicateList(tableMeta, propNameList, valueList))
+                    .limit(2)
+                    .asSelect();
+        } else {
+            select = SQLS.multiSelect()
+                    .select(tableMeta.id())
+                    .from(tableMeta, "t")
+                    .where(createPredicateList(tableMeta, propNameList, valueList))
+                    .limit(2)
+                    .asSelect();
+        }
+        return select;
     }
 
     public static <T extends IDomain> Select createSelectDomainById(final TableMeta<T> tableMeta, Object id) {

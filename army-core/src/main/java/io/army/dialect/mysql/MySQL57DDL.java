@@ -125,7 +125,7 @@ class MySQL57DDL extends AbstractDDL {
      * handle default value .
      */
     String handleDefaultValue(FieldMeta<?, ?> fieldMeta) {
-        return MySQL57DDLUtils.quoteDefaultIfNeed(fieldMeta);
+        return MySQL57DDLUtils.quoteDefaultIfNeed(fieldMeta, escapeQuote(fieldMeta.defaultValue()));
     }
 
 

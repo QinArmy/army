@@ -66,8 +66,14 @@ abstract class AbstractSQLS {
     /**
      * package method
      */
-    static <E> ParamExpression<E> paramWithExp(E param, Expression<E> expression) {
-        return ParamExpressionImp.build(obtainParamMeta(expression), param);
+    static Expression<?> paramWithExp(Object value, Expression<?> expression) {
+        Expression<?> actualExp;
+        if (value instanceof Expression) {
+            actualExp = (Expression<?>) value;
+        } else {
+            actualExp = ParamExpressionImp.build(obtainParamMeta(expression), value);
+        }
+        return actualExp;
     }
 
     public static <E> ConstantExpression<E> constant(E value) {

@@ -228,9 +228,13 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
 
     protected final void columnCommentClause(FieldMeta<?, ?> fieldMeta, DDLContext context) {
         context.sqlBuilder().append(" COMMENT '")
-                .append(fieldMeta.comment())
+                .append(escapeQuote(fieldMeta.comment()))
                 .append("'")
         ;
+    }
+
+    protected String escapeQuote(String text) {
+        return text.replaceAll("'", "\\\\'");
     }
 
     protected void nullableClause(FieldMeta<?, ?> fieldMeta, DDLContext context) {

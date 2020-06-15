@@ -130,7 +130,7 @@ abstract class MetaUtils {
         }
 
         if (!TableMeta.RESERVED_PROPS.contains(propName)
-                && !columnName.equals(discriminatorColumn)) {
+                && !isCodeEnum(mappedProp)) {
             // check comment
             if (!StringUtils.hasText(column.comment())) {
                 throw new MetaException("Domain[%s] column[%s] no comment.",

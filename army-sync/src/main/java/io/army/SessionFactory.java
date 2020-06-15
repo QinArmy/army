@@ -34,7 +34,9 @@ public interface SessionFactory extends GenericSessionFactory, AutoCloseable {
 
     interface SessionBuilder {
 
-        SessionBuilder currentSession();
+        SessionBuilder currentSession(boolean current);
+
+        SessionBuilder resetConnection(boolean reset);
 
         Session build() throws SessionException;
 

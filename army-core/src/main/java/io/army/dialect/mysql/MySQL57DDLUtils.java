@@ -246,17 +246,17 @@ abstract class MySQL57DDLUtils extends DDLUtils {
         );
     }
 
-    static String quoteDefaultIfNeed(FieldMeta<?, ?> fieldMeta) {
-        String defaultValue = fieldMeta.defaultValue().trim();
-        if(QUOTE_JDBC_TYPE.contains(fieldMeta.jdbcType())){
-            defaultValue = StringUtils.quote(defaultValue);
+    static String quoteDefaultIfNeed(FieldMeta<?, ?> fieldMeta, String safeDefaultValue) {
+        String defaultValue = safeDefaultValue;
+        if (QUOTE_JDBC_TYPE.contains(fieldMeta.jdbcType())) {
+            defaultValue = StringUtils.quote(safeDefaultValue);
         }
         return defaultValue;
     }
 
-    static String tableCharset(String charset){
+    static String tableCharset(String charset) {
         String actualCharset = charset;
-        if(!StringUtils.hasText(actualCharset)){
+        if (!StringUtils.hasText(actualCharset)) {
             actualCharset = "utf8mb4";
         }
         return actualCharset;

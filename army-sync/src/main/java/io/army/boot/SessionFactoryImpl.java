@@ -162,9 +162,17 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory implements InnerS
 
         private boolean currentSession;
 
+        private boolean noResetConnection;
+
         @Override
-        public SessionFactory.SessionBuilder currentSession() {
-            this.currentSession = true;
+        public SessionFactory.SessionBuilder currentSession(boolean current) {
+            this.currentSession = current;
+            return this;
+        }
+
+        @Override
+        public SessionBuilder resetConnection(boolean reset) {
+            this.noResetConnection = reset;
             return this;
         }
 
@@ -174,7 +182,7 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory implements InnerS
             try {
                 final Session session = new SessionImpl(SessionFactoryImpl.this
                         , SessionFactoryImpl.this.dataSource.getConnection()
-                        , current);
+                        , current, noResetConnection);
                 if (current) {
                     SessionFactoryImpl.this.currentSessionContext.currentSession(session);
                 }

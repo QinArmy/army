@@ -38,6 +38,8 @@ public interface Select extends SQLStatement, SQLDebug, SQLAble, QueryAble {
 
         <S extends SelectPart> FromAble<C> select(Distinct distinct, Function<C, List<S>> function);
 
+        <S extends SelectPart> FromAble<C> select(Function<C, List<S>> function);
+
         FromAble<C> select(Distinct distinct, SelectPart selectPart);
 
         FromAble<C> select(SelectPart selectPart);

@@ -95,11 +95,9 @@ final class TransactionImpl implements Transaction {
 
         try {
             final Connection connection = this.session.connection();
-            if (this.readOnly) {
-                connection.setReadOnly(true);
-            } else {
+            connection.setReadOnly(this.readOnly);
+            if (!this.readOnly) {
                 connection.setAutoCommit(false);
-                connection.setReadOnly(false);
             }
             if (this.isolation != Isolation.DEFAULT) {
                 connection.setTransactionIsolation(isolation.level);
@@ -173,7 +171,8 @@ final class TransactionImpl implements Transaction {
         checkReadWrite("rollbackToSavepoint");
 
         if (!ROLL_BACK_ABLE_SET.contains(this.status)) {
-            throw new IllegalTransactionStateException("transaction status[%s] don't in %s,can't rollback."
+            throw new IllegalTransactionStateException(
+                    "transaction status[%s] don't in %s,can't rollback to save point."
                     , this.status, ROLL_BACK_ABLE_SET);
         }
         if (!this.savepointSet.contains(savepoint)) {

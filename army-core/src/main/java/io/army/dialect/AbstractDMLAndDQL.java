@@ -158,7 +158,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         context.appendField(childAlias, childMeta.id());
 
         // visible predicate
-        visibleConstantPredicate(context, childMeta, childAlias, hasPredicate);
+        visibleConstantPredicate(context, childMeta.parentMeta(), parentAlias, true);
         builder.append(" )");
     }
 

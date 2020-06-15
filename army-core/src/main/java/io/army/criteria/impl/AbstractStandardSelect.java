@@ -59,7 +59,13 @@ abstract class AbstractStandardSelect<C> extends AbstractSelect implements
 
     @Override
     public final <S extends SelectPart> FromAble<C> select(Distinct distinct, Function<C, List<S>> function) {
-        doSelect(distinct, function.apply(this.criteria));
+        doSelectClause(distinct, function.apply(this.criteria));
+        return this;
+    }
+
+    @Override
+    public <S extends SelectPart> FromAble<C> select(Function<C, List<S>> function) {
+        doSelectClause((Distinct) null, function.apply(this.criteria));
         return this;
     }
 
@@ -77,13 +83,13 @@ abstract class AbstractStandardSelect<C> extends AbstractSelect implements
 
     @Override
     public final <S extends SelectPart> FromAble<C> select(Distinct distinct, List<S> selectPartList) {
-        doSelect(distinct, selectPartList);
+        doSelectClause(distinct, selectPartList);
         return this;
     }
 
     @Override
     public final <S extends SelectPart> FromAble<C> select(List<S> selectPartList) {
-        doSelect((Distinct) null, selectPartList);
+        doSelectClause((Distinct) null, selectPartList);
         return this;
     }
 

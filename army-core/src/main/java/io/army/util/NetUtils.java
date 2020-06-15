@@ -3,13 +3,11 @@ package io.army.util;
 import io.army.lang.Nullable;
 
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 
 public abstract class NetUtils {
 
-    public static String getPrivateAsString(){
+    public static String getPrivateAsString() {
         return getPrivate().getHostAddress();
     }
 
@@ -37,8 +35,8 @@ public abstract class NetUtils {
     private static InetAddress doGetIp(@Nullable Class<? extends InetAddress> precedenceVersion
             , @Nullable PrivateType precedenceType) {
         try {
-            Enumeration<NetworkInterface> nfs = NetworkInterface.getNetworkInterfaces();
-            InetAddress target = doGetPrivateAddr(nfs, precedenceVersion, precedenceType);
+
+            InetAddress target = doGetPrivateAddr(obtainDefaultInterfaceList(), precedenceVersion, precedenceType);
 
             if (precedenceVersion != null && !precedenceVersion.isInstance(target)) {
                 target = null;
@@ -51,17 +49,13 @@ public abstract class NetUtils {
 
 
     @Nullable
-    private static InetAddress doGetPrivateAddr(Enumeration<NetworkInterface> nfs
+    private static InetAddress doGetPrivateAddr(List<NetworkInterface> nfs
             , @Nullable Class<? extends InetAddress> precedenceVersion
-            , @Nullable PrivateType precedenceType) throws SocketException {
+            , @Nullable PrivateType precedenceType) {
 
         List<InetAddress> addressList = new ArrayList<>(6);
 
-        for (NetworkInterface nf; nfs.hasMoreElements(); ) {
-            nf = nfs.nextElement();
-            if(nf.isLoopback() || !nf.isUp()){
-                 continue;
-            }
+        for (NetworkInterface nf : nfs) {
             for (Enumeration<InetAddress> addrs = nf.getInetAddresses(); addrs.hasMoreElements(); ) {
                 InetAddress addr = addrs.nextElement();
 
@@ -98,6 +92,45 @@ public abstract class NetUtils {
             }
         }
         return target;
+    }
+
+    private static List<NetworkInterface> obtainDefaultInterfaceList() throws SocketException {
+        Map<String, NetworkInterface> map = obtainNetworkInterfaces();
+        List<String> nameList = new ArrayList<>(map.keySet());
+        nameList.sort(null);
+        final String namePrefix = obtainDefaultInterfaceNamePrefix();
+        List<NetworkInterface> interfaceList = new ArrayList<>();
+        for (String name : nameList) {
+            if (name.startsWith(namePrefix)) {
+                interfaceList.add(map.get(name));
+            }
+        }
+        return Collections.unmodifiableList(interfaceList);
+    }
+
+    public static String obtainDefaultInterfaceNamePrefix() {
+        String osName = System.getProperty("os.name").toUpperCase();
+        String namePrefix;
+        if (osName.contains("WINDOWS")) {
+            namePrefix = "eth";
+        } else {
+            namePrefix = "en";
+        }
+        return namePrefix;
+    }
+
+
+    public static Map<String, NetworkInterface> obtainNetworkInterfaces() throws SocketException {
+        Enumeration<NetworkInterface> nfs = NetworkInterface.getNetworkInterfaces();
+        Map<String, NetworkInterface> map = new HashMap<>();
+        while (nfs.hasMoreElements()) {
+            NetworkInterface nf = nfs.nextElement();
+            if (!nf.isUp() || nf.isLoopback() || nf.isVirtual()) {
+                continue;
+            }
+            map.put(nf.getName(), nf);
+        }
+        return Collections.unmodifiableMap(map);
     }
 
 

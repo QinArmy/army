@@ -177,10 +177,10 @@ abstract class FieldMetaUtils extends TableMetaUtils {
 
 
     @NonNull
-    static String columnComment(Column column, FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
+    static String columnComment(Column column, FieldMeta<?, ?> fieldMeta) {
         String comment = column.comment();
         if (TableMeta.RESERVED_PROPS.contains(fieldMeta.propertyName())
-                || isDiscriminator) {
+                || CodeEnum.class.isAssignableFrom(fieldMeta.javaType())) {
 
             if (!StringUtils.hasText(comment)) {
                 comment = commentManagedByArmy(fieldMeta);

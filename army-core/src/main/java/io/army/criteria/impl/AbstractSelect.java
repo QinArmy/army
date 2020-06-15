@@ -78,7 +78,7 @@ abstract class AbstractSelect extends AbstractSQLDebug implements Select, Select
     }
 
 
-    final <S extends SelectPart> void doSelect(@Nullable Distinct distinct, List<S> selectPartList) {
+    final <S extends SelectPart> void doSelectClause(@Nullable Distinct distinct, List<S> selectPartList) {
         Assert.state(this.selectPartList.isEmpty(), "select clause ended.");
         if (distinct != null) {
             this.modifierList = Collections.singletonList(distinct);
@@ -87,7 +87,7 @@ abstract class AbstractSelect extends AbstractSQLDebug implements Select, Select
         this.selectPartList.addAll(selectPartList);
     }
 
-    final <M extends SQLModifier, S extends SelectPart> void doSelect(List<M> modifierList, List<S> selectPartList) {
+    final <M extends SQLModifier, S extends SelectPart> void doSelectClause(List<M> modifierList, List<S> selectPartList) {
         Assert.state(this.selectPartList.isEmpty(), "select clause ended.");
 
         this.modifierList = new ArrayList<>(modifierList);
@@ -103,7 +103,7 @@ abstract class AbstractSelect extends AbstractSQLDebug implements Select, Select
         this.selectPartList.add(selectPart);
     }
 
-    final <M extends SQLModifier, S extends SelectPart> void doSelect(List<M> modifierList, S selectPart) {
+    final <M extends SQLModifier, S extends SelectPart> void doSelectClause(List<M> modifierList, S selectPart) {
         Assert.state(this.selectPartList.isEmpty(), "select clause ended.");
         this.modifierList = new ArrayList<>(modifierList);
         this.selectPartList.add(selectPart);

@@ -1,10 +1,16 @@
 package com.example.simple;
 
 
+import io.army.util.NetUtils;
 import io.army.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
+
+import java.net.NetworkInterface;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * created  on 2018/11/18.
@@ -45,9 +51,11 @@ public class SimpleTests {
     }
 
     @Test
-    public void virtualMethod(){
-        System.out.println(String.class.getClassLoader());
-        System.out.println(getClass().getClassLoader());
+    public void virtualMethod() throws Exception {
+        Map<String, NetworkInterface> map = NetUtils.obtainNetworkInterfaces();
+        List<String> nameList = new ArrayList<>(map.keySet());
+        nameList.sort(null);
+        LOG.info("list:{}", nameList);
     }
 
 

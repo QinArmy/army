@@ -22,10 +22,14 @@ import org.springframework.util.Assert;
 
 public class ArmyTransactionManager extends AbstractPlatformTransactionManager implements InitializingBean {
 
-    private SessionFactory sessionFactory;
+    private final SessionFactory sessionFactory;
+
+    private boolean resetConnection = false;
 
 
-    public ArmyTransactionManager() {
+    public ArmyTransactionManager(SessionFactory sessionFactory) {
+        Assert.notNull(sessionFactory, "sessionFactory required");
+        this.sessionFactory = sessionFactory;
         setRollbackOnCommitFailure(true);
     }
 
@@ -62,7 +66,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         ArmyTransactionObject txObject = (ArmyTransactionObject) transaction;
 
         try {
-            final SessionFactory sessionFactory = obtainSessionFactory();
+            final SessionFactory sessionFactory = this.sessionFactory;
             txObject.reset(createNewSession(sessionFactory));
 
             final Transaction tx = txObject.session.builder(
@@ -103,8 +107,8 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             }
             if (!tx.readOnly()) {
                 // commit transaction
-                tx.commit();
                 txObject.flush();
+                tx.commit();
             }
         } catch (TransactionRollbackOnlyException | ArmyTransactionRollbackOnlyException e) {
             throw e;
@@ -159,14 +163,14 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         if (txObject.session == null) {
             throw new IllegalTransactionStateException("transaction no army session.");
         }
-        TransactionSynchronizationManager.unbindResource(obtainSessionFactory());
+        TransactionSynchronizationManager.unbindResource(this.sessionFactory);
         return txObject.suspend();
     }
 
     @Override
     protected void doResume(@Nullable Object transaction, Object suspendedResources) throws TransactionException {
 
-        SessionFactory sessionFactory = obtainSessionFactory();
+        SessionFactory sessionFactory = this.sessionFactory;
         if (TransactionSynchronizationManager.hasResource(sessionFactory)) {
             // From non-transactional code running in active transaction synchronization
             // -> can be safely removed, will be closed on transaction completion.
@@ -181,7 +185,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         ArmyTransactionObject txObject = (ArmyTransactionObject) transaction;
         Assert.state(txObject.session != null, "No Army session.");
 
-        SessionFactory sessionFactory = obtainSessionFactory();
+        SessionFactory sessionFactory = this.sessionFactory;
         if (TransactionSynchronizationManager.hasResource(sessionFactory)) {
             TransactionSynchronizationManager.unbindResource(sessionFactory);
         }
@@ -196,32 +200,21 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         }
     }
 
-    /*################################## blow custom method ##################################*/
+    /*################################## blow setter method ##################################*/
 
-    public SessionFactory getSessionFactory() {
-        return sessionFactory;
+    public boolean isResetConnection() {
+        return resetConnection;
     }
 
-    public void setSessionFactory(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
-    }
-
-    /**
-     * Obtain the SessionFactory for actual use.
-     *
-     * @return the SessionFactory (never {@code null})
-     * @throws IllegalStateException in case of no SessionFactory set
-     * @since 1.0
-     */
-    protected final SessionFactory obtainSessionFactory() {
-        Assert.state(this.sessionFactory != null, "No SessionFactory set");
-        return sessionFactory;
+    public ArmyTransactionManager setResetConnection(boolean resetConnection) {
+        this.resetConnection = resetConnection;
+        return this;
     }
 
 
     @Nullable
     protected final Session obtainCurrentSession() {
-        return (Session) TransactionSynchronizationManager.getResource(obtainSessionFactory());
+        return (Session) TransactionSynchronizationManager.getResource(this.sessionFactory);
     }
 
     protected final Session createNewSession(@Nullable SessionFactory sessionFactory)
@@ -229,9 +222,10 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         try {
             SessionFactory factory = sessionFactory;
             if (factory == null) {
-                factory = obtainSessionFactory();
+                factory = this.sessionFactory;
             }
             return factory.builder()
+                    .resetConnection(this.resetConnection)
                     .build();
         } catch (SessionException e) {
             throw new DataAccessResourceFailureException(
@@ -248,10 +242,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         }
 
         Session suspend() {
-            Session session = this.session;
-            Assert.state(session != null, "session is null,ArmyTransactionObject state error.");
-            this.session = null;
-            return session;
+            return this.session;
         }
 
         void reset(Session newSession) {

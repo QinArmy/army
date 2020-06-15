@@ -6,8 +6,6 @@ import io.army.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import static com.example.domain.account.Account.NONE_VALUE;
-
 
 /**
  * created  on 2018/9/27.
