@@ -36,11 +36,11 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory implements InnerS
 
     private final Map<TableMeta<?>, List<DomainInterceptor>> domainInterceptorMap;
 
-    private final InsertSQLExecutor insertSQLExecutor = InsertSQLExecutor.build(this);
+    private final InsertSQLExecutor insertSQLExecutor;
 
-    private final SelectSQLExecutor selectSQLExecutor = SelectSQLExecutor.build(this);
+    private final SelectSQLExecutor selectSQLExecutor;
 
-    private final UpdateSQLExecutor updateSQLExecutor = UpdateSQLExecutor.build(this);
+    private final UpdateSQLExecutor updateSQLExecutor;
 
     private boolean closed;
 
@@ -60,6 +60,10 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory implements InnerS
         Pair<Dialect, SQLDialect> pair = SyncSessionFactoryUtils.createDialect(dataSource, this);
         this.dialect = pair.getFirst();
         this.actualSQLDialect = pair.getSecond();
+        // executor after dialect
+        this.insertSQLExecutor = InsertSQLExecutor.build(this);
+        this.selectSQLExecutor = SelectSQLExecutor.build(this);
+        this.updateSQLExecutor = UpdateSQLExecutor.build(this);
     }
 
 

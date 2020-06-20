@@ -48,9 +48,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         if (!this.tableContext.tableCountMap.containsKey(tableMeta)) {
             throw DialectUtils.createUnKnownTableException(tableMeta);
         }
-        this.sqlBuilder
-                .append(" ")
-                .append(this.dialect.quoteIfNeed(tableMeta.tableName()));
+        doAppendTable(tableMeta);
     }
 
     @Override
@@ -91,10 +89,21 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         return tableAlias;
     }
 
+    protected final void doAppendTable(TableMeta<?> tableMeta) {
+        this.sqlBuilder
+                .append(" ")
+                .append(this.dialect.quoteIfNeed(tableMeta.tableName()));
+
+        doAppendTableSuffix(tableMeta);
+    }
+
+    private void doAppendTableSuffix(TableMeta<?> tableMeta) {
+
+    }
+
     protected String findTableAliasFromParent(FieldMeta<?, ?> fieldMeta) throws CriteriaException {
         throw DialectUtils.createUnKnownFieldException(fieldMeta);
     }
-
 
 
 }

@@ -19,6 +19,7 @@ final class StandardContextualBatchUpdate<T extends IDomain, C> extends Abstract
         , Update.UpdateAble {
 
     static <T extends IDomain, C> StandardContextualBatchUpdate<T, C> build(TableMeta<T> tableMeta, C criteria) {
+        Assert.isTrue(!tableMeta.immutable(), () -> String.format("TableMeta[%s] immutable", tableMeta));
         return new StandardContextualBatchUpdate<>(tableMeta, criteria);
     }
 

@@ -70,6 +70,11 @@ class StandardUpdateContext extends AbstractStandardDomainContext implements Upd
         }
 
         @Override
+        public void appendTable(TableMeta<?> tableMeta) {
+            appendDomainTable(tableMeta);
+        }
+
+        @Override
         public void appendField(FieldMeta<?, ?> fieldMeta) {
             appendDomainField(fieldMeta);
         }

@@ -95,10 +95,16 @@ abstract class DMLUtils {
     }
 
     static List<IPredicate> createParentPredicates(ParentTableMeta<?> parentMeta, List<IPredicate> predicateList) {
-        List<IPredicate> parentPredicateList = new ArrayList<>(predicateList.size() + 1);
-        parentPredicateList.addAll(predicateList);
-        parentPredicateList.add(createDiscriminatorPredicate(parentMeta));
-        return Collections.unmodifiableList(parentPredicateList);
+        List<IPredicate> parentPredicateList;
+        if (hasDiscriminatorPredicate(predicateList, parentMeta.discriminator())) {
+            parentPredicateList = predicateList;
+        } else {
+            parentPredicateList = new ArrayList<>(predicateList.size() + 1);
+            parentPredicateList.addAll(predicateList);
+            parentPredicateList.add(createDiscriminatorPredicate(parentMeta));
+            parentPredicateList = Collections.unmodifiableList(parentPredicateList);
+        }
+        return parentPredicateList;
     }
 
     static List<IPredicate> extractParentPredicateForDelete(ChildTableMeta<?> childMeta
@@ -596,6 +602,24 @@ abstract class DMLUtils {
                     , tableMeta, tableMeta.discriminatorValue());
         }
         return enumFieldMeta.equal(codeEnum);
+    }
+
+    private static boolean hasDiscriminatorPredicate(List<IPredicate> predicateList
+            , FieldMeta<?, ? extends CodeEnum> discriminator) {
+        final Class<?> discriminatorClass = discriminator.javaType();
+        boolean has = false;
+        for (IPredicate predicate : predicateList) {
+            if (predicate instanceof FieldValuePredicate) {
+                FieldValuePredicate valuePredicate = (FieldValuePredicate) predicate;
+                if (valuePredicate.operator() == DualPredicateOperator.EQ
+                        && valuePredicate.fieldExp().fieldMeta() == discriminator
+                        && discriminatorClass.isInstance(valuePredicate.value())) {
+                    has = true;
+                    break;
+                }
+            }
+        }
+        return has;
     }
 
     private static final class FieldParamWrapperImpl implements FieldParamWrapper {

@@ -22,7 +22,7 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
         , Update.WhereAndAble<T, C>, Update.SingleUpdateAble<T, C>, InnerStandardUpdate, InnerUpdate {
 
     static <T extends IDomain, C> StandardContextualUpdate<T, C> build(TableMeta<T> tableMeta, C criteria) {
-       Assert.isTrue(tableMeta.immutable(), "TableMeta[%s] immutable");
+       Assert.isTrue(!tableMeta.immutable(), () -> String.format("TableMeta[%s] immutable", tableMeta));
         return new StandardContextualUpdate<>(tableMeta, criteria);
     }
 

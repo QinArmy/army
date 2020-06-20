@@ -128,5 +128,7 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
         this.sqlBuilder.append(this.dialect.quoteIfNeed(fieldMeta.fieldName()));
     }
 
+
+
     /*################################## blow protected template method ##################################*/
 }

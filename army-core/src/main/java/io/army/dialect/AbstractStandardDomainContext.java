@@ -17,7 +17,9 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
 
     final String primaryAlias;
 
-    boolean existsClauseContext = false;
+    private boolean existsClauseContext = false;
+
+    private boolean relationSubQueryContext = false;
 
     AbstractStandardDomainContext(Dialect dialect, Visible visible, TableContext tableContext
             , TableMeta<?> primaryTable, TableMeta<?> relationTable) {
@@ -42,6 +44,17 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
     }
 
 
+    final void appendDomainTable(TableMeta<?> tableMeta) {
+        if (tableMeta == this.relationTable) {
+            if (!this.existsClauseContext && !this.relationSubQueryContext) {
+                throw DialectUtils.createUnKnownTableException(tableMeta);
+            }
+            doAppendTable(tableMeta);
+        } else {
+            super.appendTable(tableMeta);
+        }
+    }
+
     final void appendDomainField(String tableAlias, FieldMeta<?, ?> fieldMeta) {
         if (!this.primaryAlias.equals(tableAlias)) {
             throw DialectUtils.createNoLogicalTableException(tableAlias);
@@ -59,7 +72,9 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
             } else if (this.existsClauseContext) {
                 doAppendFiled(obtainRelationTableAlias(), fieldMeta);
             } else {
+                this.relationSubQueryContext = true;
                 doReplaceRelationFieldAsScalarSubQuery(fieldMeta);
+                this.relationSubQueryContext = false;
             }
         } else {
             throw DialectUtils.createUnKnownFieldException(fieldMeta);
@@ -133,9 +148,9 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
     private String obtainRelationTableAlias() {
         String relationTableAlias = this.primaryAlias;
         if (this.relationTable instanceof ChildTableMeta) {
-            relationTableAlias += "_p";
-        } else {
             relationTableAlias += "_c";
+        } else {
+            relationTableAlias += "_p";
         }
         return relationTableAlias;
     }

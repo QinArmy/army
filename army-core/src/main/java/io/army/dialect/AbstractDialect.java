@@ -20,7 +20,6 @@ import java.util.Set;
 
 /**
  * this class is abstract implementation of {@link Dialect} .
- * created  on 2018/10/21.
  */
 public abstract class AbstractDialect implements InnerDialect {
 
@@ -42,6 +41,9 @@ public abstract class AbstractDialect implements InnerDialect {
 
     public AbstractDialect(GenericSessionFactory sessionFactory) {
         Assert.notNull(sessionFactory, "sessionFactory required");
+        Assert.isTrue(sessionFactory.actualSQLDialect() != this.sqlDialect()
+                , () -> String.format("session actual SQLDialect[%s] and dialect SQLDialect[%s] not match."
+                        , sessionFactory.actualSQLDialect(), this.sqlDialect()));
 
         this.keywords = Collections.unmodifiableSet(createKeywordsSet());
         this.sessionFactory = sessionFactory;
@@ -83,7 +85,7 @@ public abstract class AbstractDialect implements InnerDialect {
 
     @Override
     public final MappingContext mappingContext() {
-        return null;
+        return this.mappingContext;
     }
 
     /*################################## blow DDL method ##################################*/
