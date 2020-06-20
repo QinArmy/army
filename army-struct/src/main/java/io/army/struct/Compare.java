@@ -17,15 +17,15 @@ public interface Compare<T> {
 
     interface Comparer {
 
-        boolean eq();
+        boolean equal();
 
-        boolean lt();
+        boolean lessThan();
 
-        boolean le();
+        boolean lessEqual();
 
-        boolean gt();
+        boolean greatThan();
 
-        boolean ge();
+        boolean greatEqual();
 
     }
 

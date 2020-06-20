@@ -4,7 +4,7 @@ import io.army.ArmyConfigConstant;
 import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
 import io.army.GenericSessionFactory;
-import io.army.annotation.Params;
+import io.army.annotation.Param;
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.MetaException;
 import io.army.env.Environment;
@@ -50,7 +50,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(SnowflakeGenerator.class);
 
     /**
-     * @see Params
+     * @see Param
      */
     public static final String START_TIME = "startTime";
 

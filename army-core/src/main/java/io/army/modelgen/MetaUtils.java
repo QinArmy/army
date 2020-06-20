@@ -8,6 +8,8 @@ import io.army.util.AnnotationUtils;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 import io.army.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
 
 import javax.lang.model.element.Element;
@@ -20,6 +22,9 @@ import javax.lang.model.type.TypeMirror;
 import java.util.*;
 
 abstract class MetaUtils {
+
+    private static final Logger LOG = LoggerFactory.getLogger(MetaUtils.class);
+
 
     private static final Map<String, Map<Integer, String>> DISCRIMINATOR_MAP = new HashMap<>();
 
@@ -34,8 +39,8 @@ abstract class MetaUtils {
     }
 
 
-    static void throwInheritanceDuplication(TypeElement entityElement) throws MetaException {
-        throw new MetaException(
+    static MetaException createInheritanceDuplication(TypeElement entityElement) throws MetaException {
+        return new MetaException(
                 "Entity[%s] extends link %s count great than 1 in link of extends",
                 entityElement.getQualifiedName(),
                 Inheritance.class.getName());
@@ -74,6 +79,7 @@ abstract class MetaUtils {
 
         if (!CollectionUtils.isEmpty(missPropNameSet)) {
             // throw new MetaException(String.showSQL("entityMappedElementList:%s",entityElement));
+            LOG.debug("entityMappedElementList:{}", entityMappedElementList);
             throw createMissingPropException(entityElement, missPropNameSet);
         }
     }

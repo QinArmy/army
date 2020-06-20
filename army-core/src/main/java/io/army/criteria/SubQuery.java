@@ -87,8 +87,6 @@ public interface SubQuery extends SQLStatement, SelfDescribed, DerivedTable, Que
 
         SubQueryWhereAndAble<C> and(Function<C, IPredicate> function);
 
-        SubQueryWhereAndAble<C> ifAnd(Predicate<C> testPredicate, IPredicate predicate);
-
         SubQueryWhereAndAble<C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function);
 
     }

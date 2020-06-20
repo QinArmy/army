@@ -13,6 +13,7 @@ import io.army.meta.mapping.StringType;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.function.Function;
 
 abstract class AbstractSQLS {
 
@@ -66,10 +67,13 @@ abstract class AbstractSQLS {
     /**
      * package method
      */
+    @SuppressWarnings("unchecked")
     static Expression<?> paramWithExp(Object value, Expression<?> expression) {
         Expression<?> actualExp;
         if (value instanceof Expression) {
             actualExp = (Expression<?>) value;
+        } else if (value instanceof Function) {
+            actualExp = ((Function<Object, Expression<?>>) value).apply(CriteriaContextHolder.getContext().criteria());
         } else {
             actualExp = ParamExpressionImp.build(obtainParamMeta(expression), value);
         }

@@ -37,6 +37,8 @@ public abstract class AbstractDialect implements InnerDialect {
 
     private final DQL dql;
 
+    private final MappingContext mappingContext;
+
 
     public AbstractDialect(GenericSessionFactory sessionFactory) {
         Assert.notNull(sessionFactory, "sessionFactory required");
@@ -47,6 +49,8 @@ public abstract class AbstractDialect implements InnerDialect {
         this.tableDDL = createTableDDL();
         this.dml = createDML();
         this.dql = createDQL();
+
+        this.mappingContext = new MappingContextImpl(this.sessionFactory.zoneId(), this.sqlDialect());
     }
 
     @Override
@@ -75,6 +79,11 @@ public abstract class AbstractDialect implements InnerDialect {
     @Override
     public final GenericSessionFactory sessionFactory() {
         return sessionFactory;
+    }
+
+    @Override
+    public final MappingContext mappingContext() {
+        return null;
     }
 
     /*################################## blow DDL method ##################################*/
@@ -170,5 +179,27 @@ public abstract class AbstractDialect implements InnerDialect {
     @Override
     public String toString() {
         return String.valueOf(sqlDialect());
+    }
+
+
+    private static final class MappingContextImpl implements MappingContext {
+
+        private final ZoneId zoneId;
+        private final SQLDialect sqlDialect;
+
+        private MappingContextImpl(ZoneId zoneId, SQLDialect sqlDialect) {
+            this.zoneId = zoneId;
+            this.sqlDialect = sqlDialect;
+        }
+
+        @Override
+        public ZoneId zoneId() {
+            return this.zoneId;
+        }
+
+        @Override
+        public SQLDialect sqlDialect() {
+            return sqlDialect;
+        }
     }
 }

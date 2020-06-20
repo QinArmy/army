@@ -6,6 +6,7 @@ import io.army.criteria.Update;
 import io.army.criteria.impl.inner.InnerStandardUpdate;
 import io.army.criteria.impl.inner.InnerUpdate;
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
@@ -136,8 +137,10 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
     /*################################## blow WhereAndAble method ##################################*/
 
     @Override
-    public final WhereAndAble<T, C> and(IPredicate predicate) {
-        this.predicateList.add(predicate);
+    public final WhereAndAble<T, C> and(@Nullable IPredicate predicate) {
+        if (predicate != null) {
+            this.predicateList.add(predicate);
+        }
         return this;
     }
 

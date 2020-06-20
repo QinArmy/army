@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerQuery;
+import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
@@ -189,22 +190,17 @@ abstract class AbstractStandardSelect<C> extends AbstractSelect implements
     /*################################## blow WhereAndAble method ##################################*/
 
     @Override
-    public final Select.WhereAndAble<C> and(IPredicate predicate) {
-        this.predicateList.add(predicate);
+    public final Select.WhereAndAble<C> and(@Nullable IPredicate predicate) {
+        if (predicate != null) {
+            this.predicateList.add(predicate);
+        }
         return this;
     }
+
 
     @Override
     public final Select.WhereAndAble<C> and(Function<C, IPredicate> function) {
         this.predicateList.add(function.apply(this.criteria));
-        return this;
-    }
-
-    @Override
-    public final Select.WhereAndAble<C> ifAnd(Predicate<C> testPredicate, IPredicate predicate) {
-        if (testPredicate.test(this.criteria)) {
-            this.predicateList.add(predicate);
-        }
         return this;
     }
 

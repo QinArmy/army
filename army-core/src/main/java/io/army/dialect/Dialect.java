@@ -10,5 +10,6 @@ public interface Dialect extends DDL, DML, DQL {
 
     String showSQL(SQLWrapper sqlWrapper);
 
+    MappingContext mappingContext();
 
 }

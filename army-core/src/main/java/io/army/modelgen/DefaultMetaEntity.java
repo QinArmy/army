@@ -40,7 +40,8 @@ class DefaultMetaEntity implements MetaEntity {
             throw new MetaException("entityMappedElementList error");
         }
         // indexColumnNameSet help then step
-        final Map<String, IndexMode> indexMetaMap = createIndexColumnNameSet(this.entityElement);
+        final Map<String, IndexMode> indexMetaMap = createIndexColumnNameSet(this.entityElement
+                , parentMappedElementList.isEmpty());
         // prepare mapping prop element
         final Set<VariableElement> mappingPropSet = SourceCreateUtils.generateAttributes(
                 entityMappedElementList,
@@ -99,15 +100,19 @@ class DefaultMetaEntity implements MetaEntity {
             columnName = SourceCreateUtils.columnName(this.entityElement, mappingProp, column);
             // make column name lower case
             columnName = StringUtils.toLowerCase(columnName);
+            IndexMode indexMode = indexMetaMa.get(columnName);
+            if (indexMode == null && mappingProp.getSimpleName().toString().equals(TableMeta.ID)) {
+                indexMode = IndexMode.PRIMARY;
+            }
             attribute = new DefaultMetaAttribute(this.entityElement, mappingProp, column
-                    , indexMetaMa.get(columnName));
+                    , indexMode);
             list.add(attribute);
         }
         return Collections.unmodifiableList(list);
     }
 
-    private static Map<String, IndexMode> createIndexColumnNameSet(TypeElement entityElement) {
-        Table table = entityElement.getAnnotation(Table.class);
+    private static Map<String, IndexMode> createIndexColumnNameSet(TypeElement domainElement, boolean noParent) {
+        Table table = domainElement.getAnnotation(Table.class);
         Index[] indexArray = table.indexes();
         Map<String, IndexMode> indexMetaMap = new HashMap<>();
 
@@ -119,7 +124,7 @@ class DefaultMetaEntity implements MetaEntity {
             String indexName = StringUtils.toLowerCase(index.name());
             if (indexNameSet.contains(indexName)) {
                 throw new MetaException("entity[%s] indexMap name[%s] duplication",
-                        entityElement.getQualifiedName());
+                        domainElement.getQualifiedName());
             }
             IndexMode indexMode = IndexMode.resolve(index);
             indexNameSet.add(indexName);
@@ -129,8 +134,7 @@ class DefaultMetaEntity implements MetaEntity {
                 indexMetaMap.put(StringUtils.toLowerCase(tokenizer.nextToken()), indexMode);
             }
         }
-        if (entityElement.getAnnotation(Inheritance.class) != null) {
-            // add id index
+        if (noParent || domainElement.getAnnotation(Inheritance.class) != null) {
             indexMetaMap.put(TableMeta.ID, IndexMode.PRIMARY);
         }
         return Collections.unmodifiableMap(indexMetaMap);

@@ -63,6 +63,7 @@ final class SessionImpl implements InnerSession, InnerTxSession {
 
         this.dialect = sessionFactory.dialect();
         this.connInitParam = createConnInitParam(connection, resetConnection);
+
         if (sessionFactory.supportSessionCache()) {
             this.sessionCache = sessionFactory.sessionCacheFactory().createSessionCache(this);
         } else {
@@ -225,6 +226,20 @@ final class SessionImpl implements InnerSession, InnerTxSession {
         } finally {
             // 3. clear
             ((InnerSQL) update).clear();
+        }
+    }
+
+    @Override
+    public void updateOne(Update update) {
+        updateOne(update, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public void updateOne(Update update, Visible visible) {
+        int updateCount;
+        updateCount = update(update, visible);
+        if (updateCount != 1) {
+            throw new DomainUpdateException("expected update 1,but %s", updateCount);
         }
     }
 
@@ -590,11 +605,7 @@ final class SessionImpl implements InnerSession, InnerTxSession {
             if (readOnly) {
                 throw new ReadOnlySessionException("Session is read only,can't update Domain cache.");
             }
-            int updateCount;
-            updateCount = update(CacheDomainUpdate.build(advice), Visible.ONLY_VISIBLE);
-            if (updateCount != 1) {
-                throw new DomainUpdateException("cache update count[%s] error", updateCount);
-            }
+            updateOne(CacheDomainUpdate.build(advice), Visible.ONLY_VISIBLE);
             advice.updateFinish();
         }
     }

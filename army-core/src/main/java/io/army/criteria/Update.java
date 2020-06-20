@@ -3,6 +3,7 @@ package io.army.criteria;
 
 import io.army.criteria.impl.SQLS;
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
@@ -63,7 +64,10 @@ public interface Update extends SQLStatement, SQLAble, SQLDebug, QueryAble {
 
     interface WhereAndAble<T extends IDomain, C> extends UpdateAble {
 
-        WhereAndAble<T, C> and(IPredicate predicate);
+        /**
+         * @see Expression#equalIfNonNull(Object)
+         */
+        WhereAndAble<T, C> and(@Nullable IPredicate predicate);
 
         WhereAndAble<T, C> ifAnd(Predicate<C> testPredicate, IPredicate predicate);
 

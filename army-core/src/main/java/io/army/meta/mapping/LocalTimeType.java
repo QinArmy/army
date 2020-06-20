@@ -1,5 +1,6 @@
 package io.army.meta.mapping;
 
+import io.army.dialect.MappingContext;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
 import io.army.util.TimeUtils;
@@ -46,12 +47,12 @@ public final class LocalTimeType extends AbstractMappingType {
     }
 
     @Override
-    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index) throws SQLException {
+    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context) throws SQLException {
         st.setTime(index, Time.valueOf((LocalTime) nonNullValue));
     }
 
     @Override
-    public Object nullSafeGet(ResultSet resultSet, String alias) throws SQLException {
+    public Object nullSafeGet(ResultSet resultSet, String alias, MappingContext context) throws SQLException {
         Time time = resultSet.getTime(alias);
         return time == null ? null : time.toLocalTime();
     }

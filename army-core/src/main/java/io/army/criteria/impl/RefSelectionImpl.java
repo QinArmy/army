@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.SQLContext;
 import io.army.criteria.Selection;
+import io.army.dialect.MappingContext;
 import io.army.dialect.SQL;
 import io.army.meta.mapping.AbstractMappingType;
 import io.army.meta.mapping.MappingMeta;
@@ -158,15 +159,15 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
         }
 
         @Override
-        public void nonNullSet(PreparedStatement st, Object nonNullValue, int index) throws SQLException {
+        public void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context) throws SQLException {
             Assert.state(this.mappingMeta != null, "no mappingMeta.");
-            this.mappingMeta.nonNullSet(st, nonNullValue, index);
+            this.mappingMeta.nonNullSet(st, nonNullValue, index, context);
         }
 
         @Override
-        public Object nullSafeGet(ResultSet resultSet, String alias) throws SQLException {
+        public Object nullSafeGet(ResultSet resultSet, String alias, MappingContext context) throws SQLException {
             Assert.state(this.mappingMeta != null, "no mappingMeta.");
-            return this.mappingMeta.nullSafeGet(resultSet, alias);
+            return this.mappingMeta.nullSafeGet(resultSet, alias, context);
         }
 
         @Override

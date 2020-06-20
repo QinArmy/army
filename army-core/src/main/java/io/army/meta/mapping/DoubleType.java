@@ -1,5 +1,6 @@
 package io.army.meta.mapping;
 
+import io.army.dialect.MappingContext;
 import io.army.util.Assert;
 
 import java.sql.JDBCType;
@@ -45,13 +46,13 @@ public final class DoubleType extends AbstractMappingType {
     }
 
     @Override
-    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index) throws SQLException {
+    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context) throws SQLException {
         Assert.isInstanceOf(Double.class, nonNullValue, "");
         st.setDouble(index, (Double) nonNullValue);
     }
 
     @Override
-    public Object nullSafeGet(ResultSet resultSet, String alias) throws SQLException {
+    public Object nullSafeGet(ResultSet resultSet, String alias, MappingContext context) throws SQLException {
         return resultSet.getDouble(alias);
     }
 }

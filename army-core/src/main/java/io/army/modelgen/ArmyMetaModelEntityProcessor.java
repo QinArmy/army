@@ -191,21 +191,24 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
         for (TypeElement parentMappedElement = domainElement; ; ) {
             // key is  parentMeta class name
             parentClassName = parentMappedElement.getSuperclass().toString();
-
+            int index = parentClassName.indexOf("<");
+            if (index > 0) {
+                parentClassName = parentClassName.substring(0, index);
+            }
             if (inheritanceMap.containsKey(parentClassName)) {
                 if (domainAnnotatedInheritance) {
-                    MetaUtils.throwInheritanceDuplication(domainElement);
+                    throw MetaUtils.createInheritanceDuplication(domainElement);
                 }
                 if (tableCount > 0) {
                     MetaUtils.throwMultiLevelInheritance(domainElement);
                 }
                 parentDomainElement = inheritanceMap.get(parentClassName);
                 break;
-            }
-            if (mappedSuperMap.containsKey(parentClassName)) {
+            } else if (mappedSuperMap.containsKey(parentClassName)) {
                 // get super class
                 parentMappedElement = mappedSuperMap.get(parentClassName);
                 domainMappedElementList.add(parentMappedElement);
+
             } else if (domainElementMap.containsKey(parentClassName)) {
                 // get super class
                 parentMappedElement = domainElementMap.get(parentClassName);

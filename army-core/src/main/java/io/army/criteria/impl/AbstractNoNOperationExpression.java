@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
@@ -37,6 +38,11 @@ abstract class AbstractNoNOperationExpression<E> implements Expression<E>, Expre
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
+    @Nullable
+    @Override
+    public final IPredicate equalIfNonNull(@Nullable E constant) {
+        throw new UnsupportedOperationException(ERROR_MSG);
+    }
 
     @Override
     public final <C, S extends Expression<E>> IPredicate equal(Function<C, S> expOrSubQuery) {

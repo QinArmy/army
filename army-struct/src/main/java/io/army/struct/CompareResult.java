@@ -4,7 +4,6 @@ import org.springframework.lang.NonNull;
 
 /**
  * replace {@link Comparable#compareTo(Object)} return value
- * created  on 2019-02-23.
  *
  * @see Comparable
  */
@@ -12,79 +11,79 @@ public enum CompareResult implements Compare.Comparer, CodeEnum {
 
     EQUAL(0, "equals") {
         @Override
-        public boolean eq() {
+        public boolean equal() {
             return true;
         }
 
         @Override
-        public boolean lt() {
+        public boolean lessThan() {
             return false;
         }
 
         @Override
-        public boolean le() {
+        public boolean lessEqual() {
             return true;
         }
 
         @Override
-        public boolean gt() {
+        public boolean greatThan() {
             return false;
         }
 
         @Override
-        public boolean ge() {
+        public boolean greatEqual() {
             return true;
         }
     },
     LESS(-1, "less than") {
         @Override
-        public boolean eq() {
+        public boolean equal() {
             return false;
         }
 
         @Override
-        public boolean lt() {
+        public boolean lessThan() {
             return true;
         }
 
         @Override
-        public boolean le() {
+        public boolean lessEqual() {
             return true;
         }
 
         @Override
-        public boolean gt() {
+        public boolean greatThan() {
             return false;
         }
 
         @Override
-        public boolean ge() {
+        public boolean greatEqual() {
             return false;
         }
     },
     GREAT(1, "great than") {
         @Override
-        public boolean eq() {
+        public boolean equal() {
             return false;
         }
 
         @Override
-        public boolean lt() {
+        public boolean lessThan() {
             return false;
         }
 
         @Override
-        public boolean le() {
+        public boolean lessEqual() {
             return false;
         }
 
         @Override
-        public boolean gt() {
+        public boolean greatThan() {
             return true;
         }
 
         @Override
-        public boolean ge() {
+        public boolean greatEqual() {
             return true;
         }
     };

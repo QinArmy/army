@@ -103,7 +103,7 @@ public class GenericSessionTests {
                 .deleteFrom(Account_.T, "a")
                 .where(Account_.id.lessEqual(1000L))
                 .and(Account_.debt.greatThan(BigDecimal.ONE))
-                .ifAnd(this::isUser, Account_.accountType.equal(AccountType.BALANCE))
+                .ifAnd(this::isUser, c -> Account_.accountType.equal(AccountType.BALANCE))
                 .asDelete();
 
         LOG.info("dml:\n{}", delete.debugSQL(SQLDialect.MySQL57));

@@ -129,12 +129,22 @@ class ProxySessionImpl implements ProxySession {
 
     @Override
     public int update(Update update) {
-        return update(update, Visible.ONLY_VISIBLE);
+        return this.sessionContext.currentSession().update(update);
     }
 
     @Override
     public int update(Update update, Visible visible) {
         return this.sessionContext.currentSession().update(update, visible);
+    }
+
+    @Override
+    public void updateOne(Update update) {
+        this.sessionContext.currentSession().updateOne(update);
+    }
+
+    @Override
+    public void updateOne(Update update, Visible visible) {
+        this.sessionContext.currentSession().updateOne(update, visible);
     }
 
     @Override

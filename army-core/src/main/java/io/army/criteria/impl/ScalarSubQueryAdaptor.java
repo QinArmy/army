@@ -192,11 +192,6 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
         return this;
     }
 
-    @Override
-    public ScalarSubQuery.ScalarSubQueryWhereAndAble<E, C> ifAnd(Predicate<C> testPredicate, IPredicate predicate) {
-        this.actualSelect.ifAnd(testPredicate, predicate);
-        return this;
-    }
 
     @Override
     public ScalarSubQuery.ScalarSubQueryWhereAndAble<E, C> ifAnd(Predicate<C> testPredicate

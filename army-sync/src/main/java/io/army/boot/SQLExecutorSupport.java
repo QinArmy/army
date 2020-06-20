@@ -11,6 +11,7 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.FieldSelection;
 import io.army.criteria.MetaException;
 import io.army.criteria.Selection;
+import io.army.dialect.MappingContext;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.PrimaryFieldMeta;
@@ -27,8 +28,12 @@ abstract class SQLExecutorSupport {
 
     final InnerSessionFactory sessionFactory;
 
+
+    final MappingContext mappingContext;
+
     SQLExecutorSupport(InnerSessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
+        this.mappingContext = sessionFactory.dialect().mappingContext();
     }
 
 
@@ -166,7 +171,7 @@ abstract class SQLExecutorSupport {
         List<T> resultList = new ArrayList<>();
         final MappingMeta mappingMeta = selection.mappingMeta();
         while (resultSet.next()) {
-            Object value = mappingMeta.nullSafeGet(resultSet, selection.alias());
+            Object value = mappingMeta.nullSafeGet(resultSet, selection.alias(), this.mappingContext);
 
             if (value != null && fieldCodec != null) {
                 value = fieldCodec.decode(fieldMeta, value, codecContext);
@@ -267,7 +272,7 @@ abstract class SQLExecutorSupport {
         }
         List<T> resultList = new ArrayList<>(wrapperMap.size());
         while (resultSet.next()) {
-            Object idValue = primaryField.mappingMeta().nullSafeGet(resultSet, primaryField.alias());
+            Object idValue = primaryField.mappingMeta().nullSafeGet(resultSet, primaryField.alias(), this.mappingContext);
             BeanWrapper beanWrapper = wrapperMap.get(idValue);
             if (beanWrapper == null) {
                 throw new CriteriaException(ErrorCode.CRITERIA_ERROR
@@ -310,7 +315,7 @@ abstract class SQLExecutorSupport {
             }
         }
         // set param
-        paramMeta.mappingMeta().nonNullSet(st, paramValue, index);
+        paramMeta.mappingMeta().nonNullSet(st, paramValue, index, this.mappingContext);
     }
 
     @SuppressWarnings("unchecked")
@@ -333,7 +338,7 @@ abstract class SQLExecutorSupport {
             throws SQLException {
 
         for (Selection selection : selectionList) {
-            Object value = selection.mappingMeta().nullSafeGet(resultSet, selection.alias());
+            Object value = selection.mappingMeta().nullSafeGet(resultSet, selection.alias(), this.mappingContext);
             if (value == null) {
                 continue;
             }

@@ -104,7 +104,7 @@ public abstract class AbstractSnowflake implements Snowflake {
     @Override
     public final String nextAsString(long suffixNumber) {
         Assert.isTrue(suffixNumber >= 0L, "suffixNumber must great than 0");
-        return LocalDateTime.now().format(TimeUtils.CLOSE_DATE_TIME_FORMATTER)
+        return LocalDateTime.now().format(TimeUtils.CLOSE_DATE_FORMATTER)
                 + this.next()
                 + suffixWithZero(suffixNumber);
     }
@@ -174,10 +174,13 @@ public abstract class AbstractSnowflake implements Snowflake {
     }
 
     private String suffixWithZero(long number) {
-        String str = String.valueOf(number % 10_0000);
-        char[] chars = new char[5 - str.length()];
-        Arrays.fill(chars, '0');
-        return new String(chars) + str;
+        String str = Long.toString(number % 10_0000);
+        if (str.length() < 5) {
+            char[] chars = new char[5 - str.length()];
+            Arrays.fill(chars, '0');
+            str = new String(chars) + str;
+        }
+        return str;
     }
 
 }

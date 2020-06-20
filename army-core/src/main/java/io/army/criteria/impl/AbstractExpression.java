@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
@@ -48,6 +49,12 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
     @Override
     public final IPredicate equal(E constant) {
         return DualPredicate.build(this, DualPredicateOperator.EQ, SQLS.paramWithExp(constant, this));
+    }
+
+    @Nullable
+    @Override
+    public final IPredicate equalIfNonNull(@Nullable E constant) {
+        return constant == null ? null : this.equal(constant);
     }
 
     @Override

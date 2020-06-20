@@ -1,5 +1,6 @@
 package io.army.meta.mapping;
 
+import io.army.dialect.MappingContext;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
 import io.army.util.TimeUtils;
@@ -50,13 +51,13 @@ public final class LocalDateType extends AbstractMappingType {
     }
 
     @Override
-    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index) throws SQLException {
+    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context) throws SQLException {
         Assert.isInstanceOf(LocalDate.class, nonNullValue, "");
         st.setDate(index, Date.valueOf((LocalDate) nonNullValue));
     }
 
     @Override
-    public Object nullSafeGet(ResultSet st, String alias) throws SQLException {
+    public Object nullSafeGet(ResultSet st, String alias, MappingContext context) throws SQLException {
         Date date = st.getDate(alias);
         LocalDate localDate = null;
         if (date != null) {

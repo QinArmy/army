@@ -42,6 +42,10 @@ public interface GenericSyncSession extends GenericSession {
 
     int update(Update update, Visible visible);
 
+    void updateOne(Update update);
+
+    void updateOne(Update update, Visible visible);
+
     <T> List<T> returningUpdate(Update update, Class<T> resultClass);
 
     <T> List<T> returningUpdate(Update update, Class<T> resultClass, Visible visible);

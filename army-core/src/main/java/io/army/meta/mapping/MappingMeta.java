@@ -1,5 +1,6 @@
 package io.army.meta.mapping;
 
+import io.army.dialect.MappingContext;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
 
@@ -26,26 +27,9 @@ public interface MappingMeta extends ParamMeta {
 
     boolean isTextValue(String textValue);
 
-    void nonNullSet(PreparedStatement st, Object nonNullValue, int index) throws SQLException;
+    void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context) throws SQLException;
 
     @Nullable
-    Object nullSafeGet(ResultSet resultSet, String alias) throws SQLException;
+    Object nullSafeGet(ResultSet resultSet, String alias, MappingContext context) throws SQLException;
 
-    /**
-     * @return java class name + {@code #} + {@link JDBCType#name()}
-     */
-    @Override
-    String toString();
-
-    /**
-     * Consistent with {@link Object#hashCode()}
-     */
-    @Override
-    int hashCode();
-
-    /**
-     * Consistent with {@link Object#equals(Object)}
-     */
-    @Override
-    boolean equals(Object o);
 }

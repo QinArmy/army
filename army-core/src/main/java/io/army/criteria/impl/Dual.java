@@ -129,7 +129,7 @@ final class Dual implements IDomain {
         }
 
         @Override
-        public <F> PrimaryFieldMeta<Dual, F> getPrimaryField(Class<F> propClass) throws MetaException {
+        public <F> PrimaryFieldMeta<Dual, F> id(Class<F> propClass) throws MetaException {
             throw new MetaException("no field[%s]", TableMeta.ID);
         }
     }

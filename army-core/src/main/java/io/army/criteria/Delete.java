@@ -1,6 +1,7 @@
 package io.army.criteria;
 
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 
 import java.util.Collection;
@@ -37,9 +38,10 @@ public interface Delete extends SQLStatement, SQLAble, SQLDebug, QueryAble {
 
     interface SingleWhereAndAble<C> extends DeleteAble {
 
-        SingleWhereAndAble<C> and(IPredicate predicate);
-
-        SingleWhereAndAble<C> ifAnd(Predicate<C> testPredicate, IPredicate predicate);
+        /**
+         * @see Expression#equalIfNonNull(Object)
+         */
+        SingleWhereAndAble<C> and(@Nullable IPredicate predicate);
 
         SingleWhereAndAble<C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function);
 

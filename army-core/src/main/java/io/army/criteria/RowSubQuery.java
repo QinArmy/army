@@ -80,8 +80,6 @@ public interface RowSubQuery extends SubQuery {
 
         RowSubQueryWhereAndAble<C> and(Function<C, IPredicate> function);
 
-        RowSubQueryWhereAndAble<C> ifAnd(Predicate<C> testPredicate, IPredicate predicate);
-
         RowSubQueryWhereAndAble<C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function);
 
     }

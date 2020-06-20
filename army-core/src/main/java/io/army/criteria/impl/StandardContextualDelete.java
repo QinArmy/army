@@ -4,6 +4,7 @@ import io.army.criteria.Delete;
 import io.army.criteria.IPredicate;
 import io.army.criteria.impl.inner.InnerStandardDelete;
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
@@ -75,14 +76,8 @@ final class StandardContextualDelete<C> extends AbstractSQLDebug implements Dele
     /*################################## blow private method ##################################*/
 
     @Override
-    public final SingleWhereAndAble<C> and(IPredicate predicate) {
-        this.predicateList.add(predicate);
-        return this;
-    }
-
-    @Override
-    public final SingleWhereAndAble<C> ifAnd(Predicate<C> testPredicate, IPredicate predicate) {
-        if (testPredicate.test(this.criteria)) {
+    public final SingleWhereAndAble<C> and(@Nullable IPredicate predicate) {
+        if (predicate != null) {
             this.predicateList.add(predicate);
         }
         return this;

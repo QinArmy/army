@@ -1,5 +1,6 @@
 package io.army.meta.mapping;
 
+import io.army.dialect.MappingContext;
 import io.army.util.Assert;
 
 import java.math.BigDecimal;
@@ -50,13 +51,13 @@ public final class BigDecimalType extends AbstractMappingType {
     }
 
     @Override
-    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index) throws SQLException {
+    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context) throws SQLException {
         Assert.isInstanceOf(BigDecimal.class, nonNullValue);
         st.setBigDecimal(index, (BigDecimal) nonNullValue);
     }
 
     @Override
-    public Object nullSafeGet(ResultSet resultSet, String alias) throws SQLException {
+    public Object nullSafeGet(ResultSet resultSet, String alias, MappingContext context) throws SQLException {
         return resultSet.getBigDecimal(alias);
     }
 }

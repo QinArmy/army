@@ -47,6 +47,8 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
 
     PrimaryFieldMeta<? super T, Object> id();
 
+    <F> PrimaryFieldMeta<T, F> id(Class<F> propClass) throws MetaException;
+
     MappingMode mappingMode();
 
     int discriminatorValue();
@@ -77,8 +79,6 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
     <F> IndexFieldMeta<T, F> getIndexField(String propName, Class<F> propClass) throws MetaException;
 
     <F> UniqueFieldMeta<T, F> getUniqueField(String propName, Class<F> propClass) throws MetaException;
-
-    <F> PrimaryFieldMeta<T, F> getPrimaryField(Class<F> propClass) throws MetaException;
 
     @Override
     boolean equals(Object o);

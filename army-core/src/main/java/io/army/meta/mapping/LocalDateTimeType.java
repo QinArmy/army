@@ -1,11 +1,14 @@
 package io.army.meta.mapping;
 
+import io.army.dialect.MappingContext;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
 import io.army.util.TimeUtils;
 
 import java.sql.*;
 import java.time.LocalDateTime;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 public final class LocalDateTimeType extends AbstractMappingType {
 
@@ -50,14 +53,18 @@ public final class LocalDateTimeType extends AbstractMappingType {
 
 
     @Override
-    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index) throws SQLException {
+    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context)
+            throws SQLException {
         Assert.isInstanceOf(LocalDateTime.class, nonNullValue, "");
-        st.setTimestamp(index, Timestamp.valueOf((LocalDateTime) nonNullValue));
+
+        st.setTimestamp(index, Timestamp.valueOf((LocalDateTime) nonNullValue)
+                , Calendar.getInstance(TimeZone.getTimeZone(context.zoneId())));
     }
 
     @Override
-    public Object nullSafeGet(ResultSet resultSet, String alias) throws SQLException {
-        Timestamp timestamp = resultSet.getTimestamp(alias);
+    public Object nullSafeGet(ResultSet resultSet, String alias, MappingContext context) throws SQLException {
+        Timestamp timestamp = resultSet.getTimestamp(alias
+                , Calendar.getInstance(TimeZone.getTimeZone(context.zoneId())));
         LocalDateTime dateTime = null;
         if (timestamp != null) {
             dateTime = timestamp.toLocalDateTime();

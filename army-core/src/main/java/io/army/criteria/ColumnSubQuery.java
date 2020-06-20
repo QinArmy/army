@@ -79,8 +79,6 @@ public interface ColumnSubQuery<E> extends SubQuery {
 
         ColumnSubQueryWhereAndAble<E, C> and(Function<C, IPredicate> function);
 
-        ColumnSubQueryWhereAndAble<E, C> ifAnd(Predicate<C> testPredicate, IPredicate predicate);
-
         ColumnSubQueryWhereAndAble<E, C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function);
 
     }

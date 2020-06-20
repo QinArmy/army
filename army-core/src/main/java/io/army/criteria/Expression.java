@@ -1,5 +1,6 @@
 package io.army.criteria;
 
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.mapping.MappingMeta;
 
@@ -39,6 +40,16 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingMeta
      * relational operate with {@code =}
      */
     IPredicate equal(E constant);
+
+    /**
+     * relational operate with {@code =}
+     *
+     * @see Select.WhereAndAble#and(IPredicate)
+     * @see Update.WhereAndAble#and(IPredicate)
+     * @see Delete.SingleWhereAndAble#and(IPredicate)
+     */
+    @Nullable
+    IPredicate equalIfNonNull(@Nullable E constant);
 
     /**
      * relational operate with {@code =}

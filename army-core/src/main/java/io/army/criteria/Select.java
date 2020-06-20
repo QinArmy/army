@@ -1,5 +1,6 @@
 package io.army.criteria;
 
+import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.Pair;
 
@@ -95,11 +96,12 @@ public interface Select extends SQLStatement, SQLDebug, SQLAble, QueryAble {
 
     interface WhereAndAble<C> extends GroupByAble<C> {
 
-        WhereAndAble<C> and(IPredicate predicate);
+        /**
+         * @see Expression#equalIfNonNull(Object)
+         */
+        WhereAndAble<C> and(@Nullable IPredicate predicate);
 
         WhereAndAble<C> and(Function<C, IPredicate> function);
-
-        WhereAndAble<C> ifAnd(Predicate<C> testPredicate, IPredicate predicate);
 
         WhereAndAble<C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function);
 

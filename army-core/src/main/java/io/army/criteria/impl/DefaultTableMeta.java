@@ -315,7 +315,7 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     @Override
-    public <F> PrimaryFieldMeta<T, F> getPrimaryField(Class<F> propClass) throws MetaException {
+    public <F> PrimaryFieldMeta<T, F> id(Class<F> propClass) throws MetaException {
         FieldMeta<T, F> fieldMeta = getField(ID, propClass);
         if (!(fieldMeta instanceof PrimaryFieldMeta)) {
             throw new MetaException("TableMeta[%s]'s PrimaryFieldMeta not found", this);

@@ -1,5 +1,6 @@
 package io.army.meta.mapping;
 
+import io.army.dialect.MappingContext;
 import io.army.struct.CodeEnum;
 import io.army.util.Assert;
 
@@ -61,14 +62,14 @@ public final class CodeEnumType extends AbstractMappingType {
     }
 
     @Override
-    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index) throws SQLException {
+    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context) throws SQLException {
         Assert.isInstanceOf(CodeEnum.class, nonNullValue);
         st.setInt(index, ((CodeEnum) nonNullValue).code());
 
     }
 
     @Override
-    public Object nullSafeGet(ResultSet resultSet, String alias) throws SQLException {
+    public Object nullSafeGet(ResultSet resultSet, String alias, MappingContext context) throws SQLException {
         int code = resultSet.getInt(alias);
         return CodeEnum.resolve(enumClass, code);
     }

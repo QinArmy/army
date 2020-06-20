@@ -105,12 +105,12 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         assertProGenerator(generatorClass, fieldMeta);
 
         Map<String, String> paramMap;
-        Params[] params = generator.params();
+        Param[] params = generator.params();
         if (params.length == 0) {
             paramMap = Collections.emptyMap();
         } else {
             paramMap = new HashMap<>((int) (params.length / 0.75f));
-            for (Params param : params) {
+            for (Param param : params) {
                 paramMap.put(param.name(), param.value());
             }
         }

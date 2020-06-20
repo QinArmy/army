@@ -1,8 +1,8 @@
 package io.army.struct;
 
 
-import io.army.lang.NonNull;
 import io.army.lang.Nullable;
+import org.springframework.lang.NonNull;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,7 +31,6 @@ public interface CodeEnum extends Compare<CodeEnum> {
     /**
      * @return 用于展示到前端的名称
      */
-    @NonNull
     String display();
 
     default String localizedDisplay() {
@@ -45,8 +44,9 @@ public interface CodeEnum extends Compare<CodeEnum> {
 
     /*################# static method ############################*/
 
+    @NonNull
     @Override
-    default CompareResult compare(CodeEnum o) {
+    default CompareResult compare(@NonNull CodeEnum o) {
         return compare(this, o);
     }
 

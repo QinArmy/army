@@ -62,5 +62,5 @@ public @interface Generator {
     /**
      * Specifies the creation value(s) of {@link FieldGenerator}.
      */
-    Params[] params() default {};
+    Param[] params() default {};
 }

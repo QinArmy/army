@@ -84,8 +84,6 @@ public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expre
 
         ScalarSubQueryWhereAndAble<E, C> and(IPredicate predicate);
 
-        ScalarSubQueryWhereAndAble<E, C> ifAnd(Predicate<C> testPredicate, IPredicate predicate);
-
         ScalarSubQueryWhereAndAble<E, C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function);
 
     }

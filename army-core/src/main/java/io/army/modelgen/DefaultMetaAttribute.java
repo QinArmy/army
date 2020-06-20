@@ -64,7 +64,7 @@ class DefaultMetaAttribute implements MetaAttribute {
                     fieldMetaTypeName = "UniqueFieldMeta";
                     break;
                 case PRIMARY:
-                    methodName = "getPrimaryField";
+                    methodName = "id";
                     fieldMetaTypeName = "PrimaryFieldMeta";
                     propRef = "";
                     break;

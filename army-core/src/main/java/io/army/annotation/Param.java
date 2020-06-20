@@ -15,9 +15,9 @@ import static java.lang.annotation.ElementType.FIELD;
 @Target({FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface Params {
+public @interface Param {
 
-    String name() ;
+    String name();
 
     String value();
 }
