@@ -18,7 +18,7 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
     private static final Logger LOG = LoggerFactory.getLogger(InsertSQLExecutorIml.class);
 
 
-    InsertSQLExecutorIml(InnerSessionFactory sessionFactory) {
+    InsertSQLExecutorIml(InnerSyncSessionFactory sessionFactory) {
         super(sessionFactory);
     }
 

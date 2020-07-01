@@ -29,6 +29,10 @@ abstract class SessionFactoryUtils {
 
     static final Logger LOG = LoggerFactory.getLogger(SessionFactoryUtils.class);
 
+    protected SessionFactoryUtils() {
+        throw new UnsupportedOperationException();
+    }
+
     static final class GeneratorWrapper {
 
         private final Map<FieldMeta<?, ?>, FieldGenerator> generatorChain;

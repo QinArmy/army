@@ -38,7 +38,7 @@ final class SessionFactoryBuilderImpl extends AbstractSessionFactoryBuilder {
                 }
             }
 
-            SessionFactoryImpl sessionFactory = new SessionFactoryImpl(this.name, environment, dataSource
+            SingleDataSourceSessionFactory sessionFactory = new SingleDataSourceSessionFactory(this.name, environment, dataSource
                     , actualDomainInterceptors, actualFieldCodecs);
 
             if (!factoryAdviceList.isEmpty()) {

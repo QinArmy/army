@@ -13,7 +13,7 @@ public interface SQL {
 
     ZoneId zoneId();
 
-    boolean supportZoneId();
+    boolean supportZone();
 
     GenericSessionFactory sessionFactory();
 

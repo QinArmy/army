@@ -1,8 +1,8 @@
 package io.army.boot;
 
+import io.army.GenericSyncSessionFactory;
 import io.army.NoCurrentSessionException;
 import io.army.Session;
-import io.army.SessionFactory;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.util.Assert;
 import org.springframework.core.NamedThreadLocal;
@@ -12,10 +12,10 @@ import java.util.concurrent.ConcurrentMap;
 
 final class DefaultCurrentSessionContext implements CurrentSessionContext {
 
-    private static final ConcurrentMap<SessionFactory, DefaultCurrentSessionContext> CONTEXT_CACHE =
+    private static final ConcurrentMap<GenericSyncSessionFactory, DefaultCurrentSessionContext> CONTEXT_CACHE =
             new ConcurrentHashMap<>(2);
 
-    static DefaultCurrentSessionContext build(SessionFactory sessionFactory) {
+    static DefaultCurrentSessionContext build(GenericSyncSessionFactory sessionFactory) {
         return CONTEXT_CACHE.computeIfAbsent(sessionFactory, key -> new DefaultCurrentSessionContext());
     }
 

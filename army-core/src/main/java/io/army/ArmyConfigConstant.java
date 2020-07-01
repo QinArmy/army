@@ -22,6 +22,11 @@ public interface ArmyConfigConstant {
     String FORMAT_SQL = "army.%s.formatSQL";
 
     /**
+     * value is {@code true} or {@code false}
+     */
+    String MIGRATION_META = "army.%s.migration.meta";
+
+    /**
      * @see io.army.generator.snowflake.SingleApplicationSnowflakeClient
      */
     String DATA_CENTER_FORMAT = "army.single.%s.dataCenterId";

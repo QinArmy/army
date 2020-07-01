@@ -1,7 +1,7 @@
 package io.army.boot;
 
+import io.army.GenericSyncSessionFactory;
 import io.army.ProxySession;
-import io.army.SessionFactory;
 import io.army.SessionOptions;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.criteria.*;
@@ -13,11 +13,11 @@ import java.util.List;
 
 class ProxySessionImpl implements ProxySession {
 
-    private final SessionFactory sessionFactory;
+    private final GenericSyncSessionFactory sessionFactory;
 
     private final CurrentSessionContext sessionContext;
 
-    ProxySessionImpl(SessionFactory sessionFactory, CurrentSessionContext sessionContext) {
+    ProxySessionImpl(GenericSyncSessionFactory sessionFactory, CurrentSessionContext sessionContext) {
         this.sessionFactory = sessionFactory;
         this.sessionContext = sessionContext;
     }
@@ -82,7 +82,7 @@ class ProxySessionImpl implements ProxySession {
     }
 
     @Override
-    public SessionFactory sessionFactory() {
+    public GenericSyncSessionFactory sessionFactory() {
         return this.sessionFactory;
     }
 

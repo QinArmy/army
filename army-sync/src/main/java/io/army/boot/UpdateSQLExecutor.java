@@ -16,7 +16,7 @@ interface UpdateSQLExecutor {
 
     <T> List<T> returningUpdate(InnerSession session, SQLWrapper sqlWrapper, Class<T> resultClass);
 
-    static UpdateSQLExecutor build(InnerSessionFactory sessionFactory) {
+    static UpdateSQLExecutor build(InnerSyncSessionFactory sessionFactory) {
         return UpdateSQLExecutorImpl.build(sessionFactory);
     }
 }

@@ -9,7 +9,7 @@ public abstract class SyncSchemaExtractorFactory {
     }
 
     /**
-     * @param connection after finished,{@link Connection#close()} is invoked.
+     * @param connection after finished,{@link Connection#close()} is'n invoked.
      */
     public static SchemaExtractor build(Connection connection) {
         return new SyncSchemaExtractorImpl(connection);

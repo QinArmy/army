@@ -30,8 +30,8 @@ public abstract class AbstractSQL implements SQL {
     }
 
     @Override
-    public final boolean supportZoneId() {
-        return this.dialect.supportZoneId();
+    public final boolean supportZone() {
+        return this.dialect.supportZone();
     }
 
     @Override

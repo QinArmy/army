@@ -32,7 +32,7 @@ class MySQL57Dialect extends AbstractDialect {
     }
 
     @Override
-    public final boolean supportZoneId() {
+    public final boolean supportZone() {
         return false;
     }
 

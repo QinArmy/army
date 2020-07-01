@@ -3,6 +3,6 @@ package io.army;
 public enum ShardingMode {
 
     NO_SHARDING,
-    ONLY_TABLE_SHARDING,
+    SAME_SCHEMA_SHARDING,
     SHARDING
 }

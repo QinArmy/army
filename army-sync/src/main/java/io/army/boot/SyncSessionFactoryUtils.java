@@ -11,7 +11,9 @@ import io.army.env.Environment;
 import io.army.interceptor.DomainInterceptor;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.util.ClassUtils;
 import io.army.util.Pair;
+import io.army.util.ReflectionUtils;
 import io.army.util.StringUtils;
 
 import javax.sql.DataSource;
@@ -24,8 +26,31 @@ import java.util.*;
 
 abstract class SyncSessionFactoryUtils extends SessionFactoryUtils {
 
+    static DataSource obtainPrimaryDataSource(final DataSource dataSource) {
+        final String className = "org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource";
+
+        DataSource primary = dataSource;
+        try {
+            if (ClassUtils.isPresent(className, ClassUtils.getDefaultClassLoader())) {
+                Class<?> routingDataSourceClass = Class.forName(className);
+                if (routingDataSourceClass.isInstance(dataSource)) {
+                    Method method = ReflectionUtils.findMethod(dataSource.getClass(), "getPrimaryDataSource");
+                    if (method != null) {
+                        primary = (DataSource) method.invoke(dataSource);
+                    }
+                }
+                if (primary == null) {
+                    primary = dataSource;
+                }
+            }
+        } catch (Exception e) {
+            // no -op,primary = dataSource
+        }
+        return primary;
+    }
+
     static Pair<Dialect, SQLDialect> createDialect(DataSource dataSource,
-                                                   SessionFactory sessionFactory) {
+                                                   RmSessionFactory sessionFactory) {
 
         SQLDialect sqlDialect = sessionFactory.environment().getProperty(
                 String.format(ArmyConfigConstant.SQL_DIALECT, sessionFactory.name()), SQLDialect.class);
@@ -52,9 +77,8 @@ abstract class SyncSessionFactoryUtils extends SessionFactoryUtils {
         return new Pair<>(dialect, databaseSqlDialect);
     }
 
-    static CurrentSessionContext buildCurrentSessionContext(SessionFactory sessionFactory
-            , Environment env) {
-
+    static CurrentSessionContext buildCurrentSessionContext(GenericSyncSessionFactory sessionFactory) {
+        Environment env = sessionFactory.environment();
 
         final String className = env.getProperty(
                 String.format(ArmyConfigConstant.CURRENT_SESSION_CONTEXT_CLASS, sessionFactory.name()));
@@ -65,7 +89,7 @@ abstract class SyncSessionFactoryUtils extends SessionFactoryUtils {
 
         try {
             Class<?> clazz = Class.forName(className);
-            Method method = clazz.getMethod("build", SessionFactory.class);
+            Method method = clazz.getMethod("build", GenericSyncSessionFactory.class);
 
             if (!CurrentSessionContext.class.isAssignableFrom(clazz)) {
                 throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR

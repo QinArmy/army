@@ -4,35 +4,41 @@ import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.tx.GenericSyncTransaction;
+import io.army.tx.NoSessionTransactionException;
 
+import java.io.Flushable;
+import java.sql.Connection;
 import java.util.List;
 
-public interface GenericSyncSession extends GenericSession {
+public interface GenericSyncSession extends GenericSession, AutoCloseable, Flushable {
 
-    SessionFactory sessionFactory();
+    GenericSyncSessionFactory sessionFactory();
 
-    @Nullable
-    <T extends IDomain> T get(TableMeta<T> tableMeta, Object id);
-
-    @Nullable
-    <T extends IDomain> T get(TableMeta<T> tableMeta, Object id, Visible visible);
+    GenericSyncTransaction sessionTransaction() throws NoSessionTransactionException;
 
     @Nullable
-    <T extends IDomain> T getByUnique(TableMeta<T> tableMeta, List<String> propNameList, List<Object> valueList);
+    <R extends IDomain> R get(TableMeta<R> tableMeta, Object id);
 
     @Nullable
-    <T extends IDomain> T getByUnique(TableMeta<T> tableMeta, List<String> propNameList
+    <R extends IDomain> R get(TableMeta<R> tableMeta, Object id, Visible visible);
+
+    @Nullable
+    <R extends IDomain> R getByUnique(TableMeta<R> tableMeta, List<String> propNameList, List<Object> valueList);
+
+    @Nullable
+    <R extends IDomain> R getByUnique(TableMeta<R> tableMeta, List<String> propNameList
             , List<Object> valueList, Visible visible);
 
     @Nullable
-    <T> T selectOne(Select select, Class<T> resultClass);
+    <R> R selectOne(Select select, Class<R> resultClass);
 
     @Nullable
-    <T> T selectOne(Select select, Class<T> resultClass, Visible visible);
+    <R> R selectOne(Select select, Class<R> resultClass, Visible visible);
 
-    <T> List<T> select(Select select, Class<T> resultClass);
+    <R> List<R> select(Select select, Class<R> resultClass);
 
-    <T> List<T> select(Select select, Class<T> resultClass, Visible visible);
+    <R> List<R> select(Select select, Class<R> resultClass, Visible visible);
 
     /**
      * @param update will start singleUpdate dml instance.
@@ -46,9 +52,9 @@ public interface GenericSyncSession extends GenericSession {
 
     void updateOne(Update update, Visible visible);
 
-    <T> List<T> returningUpdate(Update update, Class<T> resultClass);
+    <R> List<R> returningUpdate(Update update, Class<R> resultClass);
 
-    <T> List<T> returningUpdate(Update update, Class<T> resultClass, Visible visible);
+    <R> List<R> returningUpdate(Update update, Class<R> resultClass, Visible visible);
 
     int[] batchUpdate(Update update);
 
@@ -74,17 +80,17 @@ public interface GenericSyncSession extends GenericSession {
 
     long subQueryLargeInsert(Insert insert, Visible visible);
 
-    <T> List<T> returningInsert(Insert insert, Class<T> resultClass);
+    <R> List<R> returningInsert(Insert insert, Class<R> resultClass);
 
-    <T> List<T> returningInsert(Insert insert, Class<T> resultClass, Visible visible);
+    <R> List<R> returningInsert(Insert insert, Class<R> resultClass, Visible visible);
 
     int delete(Delete delete);
 
     int delete(Delete delete, Visible visible);
 
-    <T> List<T> returningDelete(Delete delete, Class<T> resultClass);
+    <R> List<R> returningDelete(Delete delete, Class<R> resultClass);
 
-    <T> List<T> returningDelete(Delete delete, Class<T> resultClass, Visible visible);
+    <R> List<R> returningDelete(Delete delete, Class<R> resultClass, Visible visible);
 
     int[] batchDelete(Delete delete);
 
@@ -97,5 +103,21 @@ public interface GenericSyncSession extends GenericSession {
     long[] batchLargeDelete(Delete delete);
 
     long[] batchLargeDelete(Delete delete, Visible visible);
+
+
+    /**
+     * <o>
+     * <li>invoke {@link io.army.context.spi.CurrentSessionContext#removeCurrentSession(Session)},if need</li>
+     * <li>invoke {@link Connection#close()}</li>
+     * </o>
+     *
+     * @throws SessionException close session occur error.
+     */
+    @Override
+    void close() throws SessionException;
+
+
+    @Override
+    void flush() throws SessionException;
 
 }

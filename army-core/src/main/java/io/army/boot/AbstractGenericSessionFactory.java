@@ -16,7 +16,6 @@ import io.army.meta.TableMeta;
 import io.army.util.Assert;
 
 import java.time.ZoneId;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +52,9 @@ abstract class AbstractGenericSessionFactory implements InnerGenericSessionFacti
 
     final SessionCacheFactory sessionCacheFactory;
 
-    AbstractGenericSessionFactory(String name, Environment env, Collection<FieldCodec> fieldCodecs) {
+    AbstractGenericSessionFactory(GenericSessionFactoryParams factoryParams) {
+        String name = factoryParams.getName();
+        Environment env = factoryParams.getEnvironment();
         Assert.hasText(name, "name required");
         Assert.notNull(env, "env required");
         if (FACTORY_MAP.putIfAbsent(name, this) != null) {
@@ -72,11 +73,29 @@ abstract class AbstractGenericSessionFactory implements InnerGenericSessionFacti
         this.tableGeneratorChain = generatorWrapper.getTableGeneratorChain();
 
         this.readOnly = SessionFactoryUtils.readOnly(this.name, this.env);
-        this.fieldCodecMap = SessionFactoryUtils.createTableFieldCodecMap(fieldCodecs);
+        this.fieldCodecMap = SessionFactoryUtils.createTableFieldCodecMap(factoryParams.getFieldCodecs());
         this.supportSessionCache = SessionFactoryUtils.sessionCache(this.env, this.name);
         this.sessionCacheFactory = SessionCacheFactory.build(this);
     }
 
+    AbstractGenericSessionFactory(AbstractGenericSessionFactory shardingSessionFactory) {
+        Assert.isTrue(shardingSessionFactory.shardingMode != ShardingMode.NO_SHARDING, "ShardingMode error");
+
+        this.name = shardingSessionFactory.name;
+        this.env = shardingSessionFactory.env;
+        this.schemaMeta = shardingSessionFactory.schemaMeta;
+        this.zoneId = shardingSessionFactory.zoneId;
+
+        this.tableMetaMap = shardingSessionFactory.tableMetaMap;
+        this.shardingMode = shardingSessionFactory.shardingMode;
+        this.fieldGeneratorMap = shardingSessionFactory.fieldGeneratorMap;
+        this.tableGeneratorChain = shardingSessionFactory.tableGeneratorChain;
+
+        this.readOnly = shardingSessionFactory.readOnly;
+        this.fieldCodecMap = shardingSessionFactory.fieldCodecMap;
+        this.supportSessionCache = shardingSessionFactory.supportSessionCache;
+        this.sessionCacheFactory = shardingSessionFactory.sessionCacheFactory;
+    }
 
     @Override
     public String name() {

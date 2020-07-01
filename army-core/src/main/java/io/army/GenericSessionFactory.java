@@ -2,7 +2,6 @@ package io.army;
 
 import io.army.boot.DomainValuesGenerator;
 import io.army.codec.FieldCodec;
-import io.army.dialect.SQLDialect;
 import io.army.domain.IDomain;
 import io.army.env.Environment;
 import io.army.generator.FieldGenerator;
@@ -17,16 +16,11 @@ import java.util.Map;
 
 public interface GenericSessionFactory {
 
-
     String name();
 
     Environment environment();
 
-    SQLDialect actualSQLDialect();
-
     ZoneId zoneId();
-
-    boolean supportZoneId();
 
     SchemaMeta schemaMeta();
 
@@ -58,13 +52,11 @@ public interface GenericSessionFactory {
      */
     boolean closed();
 
-    boolean hasCurrentSession();
-
     boolean readonly();
 
     boolean showSQL();
 
     boolean formatSQL();
 
-    boolean currentSessionContextIsInstanceOf(Class<?> currentSessionContextClass);
+
 }

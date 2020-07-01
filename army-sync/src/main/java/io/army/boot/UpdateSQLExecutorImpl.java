@@ -12,11 +12,11 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
 
     private static final Logger LOG = LoggerFactory.getLogger(UpdateSQLExecutorImpl.class);
 
-    static UpdateSQLExecutorImpl build(InnerSessionFactory sessionFactory) {
+    static UpdateSQLExecutorImpl build(InnerSyncSessionFactory sessionFactory) {
         return new UpdateSQLExecutorImpl(sessionFactory);
     }
 
-    UpdateSQLExecutorImpl(InnerSessionFactory sessionFactory) {
+    UpdateSQLExecutorImpl(InnerSyncSessionFactory sessionFactory) {
         super(sessionFactory);
     }
 

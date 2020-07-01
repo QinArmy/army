@@ -4,10 +4,8 @@ import io.army.*;
 import io.army.cache.DomainUpdateAdvice;
 import io.army.cache.SessionCache;
 import io.army.cache.UniqueKey;
-import io.army.codec.StatementType;
-import io.army.criteria.*;
-import io.army.criteria.impl.inner.InnerSQL;
-import io.army.dialect.Dialect;
+import io.army.criteria.Select;
+import io.army.criteria.Visible;
 import io.army.dialect.TransactionOption;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
@@ -15,61 +13,42 @@ import io.army.meta.TableMeta;
 import io.army.tx.*;
 import io.army.util.Assert;
 import io.army.util.CriteriaUtils;
-import io.army.wrapper.ChildBatchSQLWrapper;
-import io.army.wrapper.ChildSQLWrapper;
-import io.army.wrapper.SQLWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.transaction.TransactionalException;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 
-final class SessionImpl implements InnerSession, InnerTxSession {
+final class SessionImpl extends AbstractSession {
 
     private static final Logger LOG = LoggerFactory.getLogger(SessionImpl.class);
-
-
-    private final InnerSessionFactory sessionFactory;
-
-    private final Connection connection;
-
-    private final ConnInitParam connInitParam;
-
-    private final boolean readonly;
 
     private final boolean currentSession;
 
     private final SessionCache sessionCache;
 
-    private final Dialect dialect;
+    private final ConnInitParam connInitParam;
 
-    private final InnerCodecContext codecContext = new CodecContextImpl();
+    private final boolean readonly;
 
     private Transaction transaction;
 
     private boolean closed;
 
+    SessionImpl(InnerSyncSessionFactory sessionFactory, Connection connection
+            , boolean currentSession, boolean resetConnection) throws SessionException {
+        super(sessionFactory, connection);
 
-    SessionImpl(InnerSessionFactory sessionFactory, Connection connection,
-                boolean currentSession, boolean resetConnection) throws SessionException {
-        this.sessionFactory = sessionFactory;
-        this.connection = connection;
         this.currentSession = currentSession;
-        this.readonly = sessionFactory.readonly();
-
-        this.dialect = sessionFactory.dialect();
         this.connInitParam = createConnInitParam(connection, resetConnection);
-
+        this.readonly = sessionFactory.readonly();
         if (sessionFactory.supportSessionCache()) {
             this.sessionCache = sessionFactory.sessionCacheFactory().createSessionCache(this);
         } else {
             this.sessionCache = null;
         }
-
     }
 
     @Nullable
@@ -91,10 +70,6 @@ final class SessionImpl implements InnerSession, InnerTxSession {
 
     }
 
-    @Override
-    public SessionOptions options() {
-        return null;
-    }
 
     @Override
     public final boolean readonly() {
@@ -167,380 +142,7 @@ final class SessionImpl implements InnerSession, InnerTxSession {
         return actualReturn;
     }
 
-    @Nullable
-    @Override
-    public <T> T selectOne(Select select, Class<T> resultClass) {
-        return this.selectOne(select, resultClass, Visible.ONLY_VISIBLE);
-    }
 
-    @Nullable
-    @Override
-    public <T> T selectOne(Select select, Class<T> resultClass, Visible visible) {
-        List<T> list = select(select, resultClass, visible);
-        T t;
-        if (list.size() == 1) {
-            t = list.get(0);
-        } else if (list.size() == 0) {
-            t = null;
-        } else {
-            throw new NonUniqueException("select result more than 1.");
-        }
-        return t;
-    }
-
-    @Override
-    public <T> List<T> select(Select select, Class<T> resultClass) {
-        return this.select(select, resultClass, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public <T> List<T> select(Select select, Class<T> resultClass, Visible visible) {
-        try {
-            List<T> resultList;
-            // execute sql and extract result
-            resultList = this.sessionFactory.selectSQLExecutor()
-                    .select(this, this.dialect.select(select, visible), resultClass);
-
-            return resultList;
-        } finally {
-            ((InnerSQL) select).clear();
-        }
-    }
-
-    @Override
-    public int update(Update update) {
-        return update(update, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public int update(Update update, Visible visible) {
-        //1. parse update sql
-        final SQLWrapper sqlWrapper = parseUpdate(update, visible);
-        try {
-            //2. execute sql by connection
-            return this.sessionFactory.updateSQLExecutor()
-                    .update(this, sqlWrapper);
-        } catch (Exception e) {
-            markRollbackOnlyForChildUpdate(sqlWrapper);
-            throw e;
-        } finally {
-            // 3. clear
-            ((InnerSQL) update).clear();
-        }
-    }
-
-    @Override
-    public void updateOne(Update update) {
-        updateOne(update, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public void updateOne(Update update, Visible visible) {
-        int updateCount;
-        updateCount = update(update, visible);
-        if (updateCount != 1) {
-            throw new DomainUpdateException("expected update 1,but %s", updateCount);
-        }
-    }
-
-    @Override
-    public <T> List<T> returningUpdate(Update update, Class<T> resultClass) {
-        return returningUpdate(update, resultClass, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public <T> List<T> returningUpdate(Update update, Class<T> resultClass, Visible visible) {
-        //1. parse update sql
-        final SQLWrapper sqlWrapper = parseUpdate(update, visible);
-        try {   //2. execute sql by connection
-            return this.sessionFactory.updateSQLExecutor()
-                    .returningUpdate(this, sqlWrapper, resultClass);
-        } catch (Exception e) {
-            markRollbackOnlyForChildUpdate(sqlWrapper);
-            throw e;
-        } finally {
-            // 3. clear
-            ((InnerSQL) update).clear();
-        }
-    }
-
-    @Override
-    public int[] batchUpdate(Update update) {
-        return batchUpdate(update, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public int[] batchUpdate(Update update, Visible visible) {
-        //1. parse update sql
-        final SQLWrapper sqlWrapper = parseUpdate(update, visible);
-        try {
-            //2. execute sql by connection
-            return this.sessionFactory.updateSQLExecutor()
-                    .batchUpdate(this, sqlWrapper);
-        } catch (Exception e) {
-            markRollbackOnlyForChildUpdate(sqlWrapper);
-            throw e;
-        } finally {
-            // 3. clear
-            ((InnerSQL) update).clear();
-        }
-    }
-
-    @Override
-    public long largeUpdate(Update update) {
-        return largeUpdate(update, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public long largeUpdate(Update update, Visible visible) {
-        //1. parse update sql
-        final SQLWrapper sqlWrapper = parseUpdate(update, visible);
-        try {
-            //2. execute sql by connection
-            return this.sessionFactory.updateSQLExecutor()
-                    .largeUpdate(this, sqlWrapper);
-        } catch (Exception e) {
-            markRollbackOnlyForChildUpdate(sqlWrapper);
-            throw e;
-        } finally {
-            // 3. clear
-            ((InnerSQL) update).clear();
-        }
-    }
-
-    @Override
-    public long[] batchLargeUpdate(Update update) {
-        return batchLargeUpdate(update, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public long[] batchLargeUpdate(Update update, Visible visible) {
-        //1. parse update sql
-        final SQLWrapper sqlWrapper = parseUpdate(update, visible);
-        try {
-            //2. execute sql by connection
-            return this.sessionFactory.updateSQLExecutor()
-                    .batchLargeUpdate(this, sqlWrapper);
-        } catch (Exception e) {
-            markRollbackOnlyForChildUpdate(sqlWrapper);
-            throw e;
-        } finally {
-            // 3. clear
-            ((InnerSQL) update).clear();
-        }
-    }
-
-    @Override
-    public void insert(Insert insert) {
-        insert(insert, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public void insert(Insert insert, final Visible visible) {
-        //1. parse update sql
-        final List<SQLWrapper> sqlWrapperList = parseInsert(insert, visible);
-        try {
-            //2. execute sql by connection
-            this.sessionFactory.insertSQLExecutor()
-                    .insert(this, sqlWrapperList);
-        } catch (Exception e) {
-            markRollbackOnlyForChildInsert(sqlWrapperList);
-            throw e;
-        } finally {
-            // 3. clear
-            ((InnerSQL) insert).clear();
-        }
-    }
-
-    @Override
-    public int subQueryInsert(Insert insert) {
-        return subQueryInsert(insert, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public int subQueryInsert(Insert insert, Visible visible) {
-        //1. parse update sql
-        final List<SQLWrapper> sqlWrapperList = parseInsert(insert, visible);
-        if (sqlWrapperList.size() != 1) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "insert isn't sub query insert.");
-        }
-        try {
-            //2. execute sql by connection
-            return this.sessionFactory.insertSQLExecutor()
-                    .subQueryInsert(this, sqlWrapperList.get(0));
-        } catch (Exception e) {
-            markRollbackOnlyForChildInsert(sqlWrapperList);
-            throw e;
-        } finally {
-            // 3. clear
-            ((InnerSQL) insert).clear();
-        }
-    }
-
-    @Override
-    public long subQueryLargeInsert(Insert insert) {
-        return subQueryLargeInsert(insert, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public long subQueryLargeInsert(Insert insert, Visible visible) {
-        //1. parse update sql
-        final List<SQLWrapper> sqlWrapperList = parseInsert(insert, visible);
-        if (sqlWrapperList.size() != 1) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "insert isn't sub query insert.");
-        }
-        try {
-            //2. execute sql by connection
-            return this.sessionFactory.insertSQLExecutor()
-                    .subQueryLargeInsert(this, sqlWrapperList.get(0));
-        } catch (Exception e) {
-            markRollbackOnlyForChildInsert(sqlWrapperList);
-            throw e;
-        } finally {
-            // 3. clear
-            ((InnerSQL) insert).clear();
-        }
-    }
-
-    @Override
-    public <T> List<T> returningInsert(Insert insert, Class<T> resultClass) {
-        return returningInsert(insert, resultClass, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public <T> List<T> returningInsert(Insert insert, Class<T> resultClass, Visible visible) {
-        //1. parse update sql
-        final List<SQLWrapper> sqlWrapperList = parseInsert(insert, visible);
-        if (sqlWrapperList.size() != 1) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "insert isn't returning");
-        }
-        try {
-            //2. execute sql by connection
-            return this.sessionFactory.insertSQLExecutor()
-                    .returningInsert(this, sqlWrapperList.get(0), resultClass);
-        } catch (Exception e) {
-            markRollbackOnlyForChildInsert(sqlWrapperList);
-            throw e;
-        } finally {
-            // 3. clear
-            ((InnerSQL) insert).clear();
-        }
-    }
-
-    @Override
-    public int delete(Delete delete) {
-        return delete(delete, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public int delete(Delete delete, Visible visible) {
-        //1. parse update sql
-        final SQLWrapper sqlWrapper = parseDelete(delete, visible);
-        try {
-            //2. execute sql by connection
-            return this.sessionFactory.updateSQLExecutor()
-                    .update(this, sqlWrapper);
-        } catch (Exception e) {
-            markRollbackOnlyForChildUpdate(sqlWrapper);
-            throw e;
-        } finally {
-            // 3. clear
-            ((InnerSQL) delete).clear();
-        }
-    }
-
-    @Override
-    public <T> List<T> returningDelete(Delete delete, Class<T> resultClass) {
-        return returningDelete(delete, resultClass, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public <T> List<T> returningDelete(Delete delete, Class<T> resultClass, Visible visible) {
-        //1. parse update sql
-        final SQLWrapper sqlWrapper = parseDelete(delete, visible);
-        try {
-            //2. execute sql by connection
-            return this.sessionFactory.updateSQLExecutor()
-                    .returningUpdate(this, sqlWrapper, resultClass);
-        } catch (Exception e) {
-            markRollbackOnlyForChildUpdate(sqlWrapper);
-            throw e;
-        } finally {
-            // 3. clear
-            ((InnerSQL) delete).clear();
-        }
-    }
-
-    @Override
-    public int[] batchDelete(Delete delete) {
-        return batchDelete(delete, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public int[] batchDelete(Delete delete, Visible visible) {
-        //1. parse update sql
-        final SQLWrapper sqlWrapper = parseDelete(delete, visible);
-        try {
-            //2. execute sql by connection
-            return this.sessionFactory.updateSQLExecutor()
-                    .batchUpdate(this, sqlWrapper);
-        } catch (Exception e) {
-            markRollbackOnlyForChildUpdate(sqlWrapper);
-            throw e;
-        } finally {
-            // 3. clear
-            ((InnerSQL) delete).clear();
-        }
-    }
-
-    @Override
-    public long largeDelete(Delete delete) {
-        return largeDelete(delete, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public long largeDelete(Delete delete, Visible visible) {
-        //1. parse update sql
-        final SQLWrapper sqlWrapper = parseDelete(delete, visible);
-        try {
-            //2. execute sql by connection
-            return this.sessionFactory.updateSQLExecutor()
-                    .largeUpdate(this, sqlWrapper);
-        } catch (Exception e) {
-            markRollbackOnlyForChildUpdate(sqlWrapper);
-            throw e;
-        } finally {
-            // 3. clear
-            ((InnerSQL) delete).clear();
-        }
-    }
-
-    @Override
-    public long[] batchLargeDelete(Delete delete) {
-        return batchLargeDelete(delete, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public long[] batchLargeDelete(Delete delete, Visible visible) {
-        //1. parse update sql
-        final SQLWrapper sqlWrapper = parseDelete(delete, visible);
-        try {
-            //2. execute sql by connection
-            return this.sessionFactory.updateSQLExecutor()
-                    .batchLargeUpdate(this, sqlWrapper);
-        } catch (Exception e) {
-            markRollbackOnlyForChildUpdate(sqlWrapper);
-            throw e;
-        } finally {
-            // 3. clear
-            ((InnerSQL) delete).clear();
-        }
-    }
-
-    @Override
-    public final SessionFactory sessionFactory() {
-        return this.sessionFactory;
-    }
 
     @Override
     public boolean closed() {
@@ -610,55 +212,24 @@ final class SessionImpl implements InnerSession, InnerTxSession {
         }
     }
 
-    /*################################## blow InnerSession method ##################################*/
+    /*################################## blow package method ##################################*/
 
+    @Nullable
     @Override
-    public PreparedStatement createStatement(String sql, boolean generatedKey)
-            throws SQLException {
-        int type;
-        if (generatedKey) {
-            type = Statement.RETURN_GENERATED_KEYS;
-        } else {
-            type = Statement.NO_GENERATED_KEYS;
-        }
-        return connection.prepareStatement(sql, type);
+    Transaction obtainSessionTransaction() {
+        return this.transaction;
     }
 
-    @Override
-    public PreparedStatement createStatement(String sql) throws SQLException {
-        return this.connection.prepareStatement(sql);
-    }
-
-    @Override
-    public PreparedStatement createStatement(String sql, String[] columnNames) throws SQLException {
-        return this.connection.prepareStatement(sql, columnNames);
-    }
-
-    @Override
-    public InnerCodecContext codecContext() {
-        return this.codecContext;
-    }
-
-    @Override
-    public void codecContextStatementType(@Nullable StatementType statementType) {
-        this.codecContext.statementType(statementType);
-    }
-    /*################################## blow InnerTxSession method ##################################*/
-
-    @Override
-    public Connection connection() {
-        return this.connection;
-    }
 
     /**
      * invoke by {@link Transaction#close()}
      */
     @Override
-    public void closeTransaction(Transaction transaction) {
+    public void closeTransaction(GenericSyncTransaction transaction) {
         if (this.transaction != transaction) {
             throw new IllegalArgumentException("transaction not match,can't close.");
         }
-        ((TransactionImpl) transaction).assertCanClose();
+        ((LocalTransaction) transaction).assertCanClose();
         try {
             if (this.connInitParam != null) {
                 // reset connection.
@@ -672,10 +243,6 @@ final class SessionImpl implements InnerSession, InnerTxSession {
         }
     }
 
-    @Override
-    public Dialect dialect() {
-        return this.dialect;
-    }
 
     private void setSessionTransaction(Transaction transaction) throws TransactionalException {
         checkSessionTransaction();
@@ -692,75 +259,6 @@ final class SessionImpl implements InnerSession, InnerTxSession {
 
     /*################################## blow private multiInsert method ##################################*/
 
-
-    private void assertChildDomain() {
-        if (this.transaction == null
-                || this.transaction.isolation().level < Isolation.READ_COMMITTED.level) {
-            throw new DomainUpdateException("Child domain update must in READ_COMMITTED transaction.");
-        }
-    }
-
-    private void markRollbackOnlyForChildUpdate(SQLWrapper sqlWrapper) {
-        if (sqlWrapper instanceof ChildSQLWrapper || sqlWrapper instanceof ChildBatchSQLWrapper) {
-            if (this.transaction != null) {
-                this.transaction.markRollbackOnly();
-            }
-        }
-    }
-
-    private void markRollbackOnlyForChildInsert(List<SQLWrapper> sqlWrapperList) {
-        for (SQLWrapper sqlWrapper : sqlWrapperList) {
-            if (sqlWrapper instanceof ChildSQLWrapper || sqlWrapper instanceof ChildBatchSQLWrapper) {
-                if (this.transaction != null) {
-                    this.transaction.markRollbackOnly();
-                }
-                break;
-            }
-        }
-    }
-
-    private SQLWrapper parseUpdate(Update update, Visible visible) {
-        if (this.readonly()) {
-            throw new ReadOnlySessionException("current session/session transaction is read only.");
-        }
-        //1. parse update sql
-        SQLWrapper sqlWrapper = this.dialect.update(update, visible);
-        if (sqlWrapper instanceof ChildSQLWrapper
-                || sqlWrapper instanceof ChildBatchSQLWrapper) {
-            // 2. assert child update
-            assertChildDomain();
-        }
-        return sqlWrapper;
-    }
-
-    private SQLWrapper parseDelete(Delete delete, Visible visible) {
-        if (this.readonly()) {
-            throw new ReadOnlySessionException("current session/session transaction is read only.");
-        }
-        //1. parse update sql
-        SQLWrapper sqlWrapper = this.dialect.delete(delete, visible);
-        if (sqlWrapper instanceof ChildSQLWrapper
-                || sqlWrapper instanceof ChildBatchSQLWrapper) {
-            // 2. assert child update
-            assertChildDomain();
-        }
-        return sqlWrapper;
-    }
-
-    private List<SQLWrapper> parseInsert(Insert insert, Visible visible) {
-        if (this.readonly()) {
-            throw new ReadOnlySessionException("current session/session transaction is read only.");
-        }
-        //1. parse update sql
-        List<SQLWrapper> sqlWrapperList = this.dialect.insert(insert, visible);
-        for (SQLWrapper sqlWrapper : sqlWrapperList) {
-            if (sqlWrapper instanceof ChildSQLWrapper || sqlWrapper instanceof ChildBatchSQLWrapper) {
-                assertChildDomain();
-                break;
-            }
-        }
-        return sqlWrapperList;
-    }
 
 
     /*################################## blow instance inner class  ##################################*/
@@ -810,7 +308,7 @@ final class SessionImpl implements InnerSession, InnerTxSession {
 
         @Override
         public Transaction build() throws TransactionalException {
-            Transaction tx = new TransactionImpl(SessionImpl.this, TransactionBuilderImpl.this);
+            Transaction tx = new LocalTransaction(SessionImpl.this, TransactionBuilderImpl.this);
             SessionImpl.this.setSessionTransaction(tx);
             return tx;
         }

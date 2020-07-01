@@ -219,7 +219,7 @@ abstract class DMLUtils {
             SQLS.param(now.toLocalDateTime(), updateTimeField.mappingMeta())
                     .appendSQL(context);
         } else if (updateTimeField.javaType() == ZonedDateTime.class) {
-            if (!dialect.supportZoneId()) {
+            if (!dialect.supportZone()) {
                 throw new MetaException("dialec[%s]t not supported zone.", dialect.sqlDialect());
             }
             SQLS.param(now, updateTimeField.mappingMeta())

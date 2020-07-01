@@ -18,10 +18,10 @@ final class SyncSchemaExtractorImpl implements SchemaExtractor {
 
     @Override
     public SchemaInfo extract() {
-        try (Connection conn = connection) {
-            SchemaInfo schemaInfo = new SchemaInfo(conn.getCatalog(), conn.getSchema());
+        try {
+            SchemaInfo schemaInfo = new SchemaInfo(connection.getCatalog(), connection.getSchema());
             // extract schema's tableMeta info
-            schemaInfo.tableMap(extractTableInfo(schemaInfo, conn.getMetaData()));
+            schemaInfo.tableMap(extractTableInfo(schemaInfo, connection.getMetaData()));
             return schemaInfo;
         } catch (SQLException e) {
             throw new SchemaExtractException(ErrorCode.ACCESS_ERROR, e, e.getMessage());

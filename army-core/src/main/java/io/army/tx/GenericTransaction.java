@@ -1,17 +1,15 @@
 package io.army.tx;
 
 
-public interface GenericTransaction {
+ interface GenericTransaction {
 
-    TransactionStatus status();
+     String name();
 
-    String name();
+     Isolation isolation();
 
-    Isolation isolation();
+     boolean readOnly();
 
-    boolean readOnly();
-
-    long getTimeToLiveInMillis() throws TransactionTimeOutException;
+     long getTimeToLiveInMillis() throws TransactionTimeOutException;
 
 
 }

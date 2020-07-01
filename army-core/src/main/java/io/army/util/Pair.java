@@ -4,7 +4,7 @@ package io.army.util;
 /**
  * created  on 2018/9/12.
  */
-public final class Pair<F, S> {
+public final class Pair<F, S> implements PairBean<F, S> {
 
 
     private final F first;

@@ -8,7 +8,7 @@ interface SelectSQLExecutor {
 
     <T> List<T> select(InnerSession session, SimpleSQLWrapper wrapper, Class<T> resultClass);
 
-    static SelectSQLExecutor build(InnerSessionFactory sessionFactory) {
+    static SelectSQLExecutor build(InnerSyncSessionFactory sessionFactory) {
         return new SelectSQLExecutorImpl(sessionFactory);
     }
 }

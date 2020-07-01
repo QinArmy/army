@@ -24,6 +24,7 @@
         <module>army-mysql</module>
         <module>army-sync</module>
         <module>army-reactive</module>
+        <module>army-sharding</module>
     </modules>
 
     <properties>
@@ -38,7 +39,12 @@
         <hibernate-validator.version>6.0.9.Final</hibernate-validator.version>
 
         <testng.version>6.14.3</testng.version>
+
         <mysql.version>8.0.18</mysql.version>
+        <postgresql.version>42.2.14</postgresql.version>
+        <mssql-jdbc.version>8.2.2.jre13</mssql-jdbc.version>
+        <db2-jdbc.version>11.5.0.0</db2-jdbc.version>
+
         <ali.druid.version>1.1.20</ali.druid.version>
         <!-- javax  -->
         <jsr305.version>3.0.2</jsr305.version>
@@ -83,7 +89,7 @@
             </dependency>
             <dependency>
                 <groupId>io.army</groupId>
-                <artifactId>army-mono</artifactId>
+                <artifactId>army-reactive</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
@@ -158,6 +164,21 @@
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
                 <version>${mysql.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${postgresql.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.sqlserver</groupId>
+                <artifactId>mssql-jdbc</artifactId>
+                <version>${mssql-jdbc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ibm.db2</groupId>
+                <artifactId>jcc</artifactId>
+                <version>${db2-jdbc.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.alibaba</groupId>

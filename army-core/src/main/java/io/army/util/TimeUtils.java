@@ -9,7 +9,6 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 /**
- * created  on 2018/4/18.
  */
 public abstract class TimeUtils {
 

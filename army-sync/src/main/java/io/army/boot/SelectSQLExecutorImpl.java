@@ -15,7 +15,7 @@ final class SelectSQLExecutorImpl extends SQLExecutorSupport implements SelectSQ
     private static final Logger LOG = LoggerFactory.getLogger(SelectSQLExecutorImpl.class);
 
 
-    SelectSQLExecutorImpl(InnerSessionFactory sessionFactory) {
+    SelectSQLExecutorImpl(InnerSyncSessionFactory sessionFactory) {
         super(sessionFactory);
     }
 
