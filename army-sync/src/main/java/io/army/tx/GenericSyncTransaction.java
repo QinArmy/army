@@ -8,7 +8,6 @@ public interface GenericSyncTransaction extends GenericTransaction, Flushable, A
 
     GenericSyncSession session();
 
-    TransactionStatus status();
 
     void start() throws TransactionException;
 

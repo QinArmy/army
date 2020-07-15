@@ -14,6 +14,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+
+/**
+ * <p>
+ * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
+ * </p>
+ */
 public abstract class AbstractDMLAndDQL extends AbstractSQL {
 
     protected AbstractDMLAndDQL(InnerDialect dialect) {

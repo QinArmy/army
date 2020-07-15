@@ -1,6 +1,5 @@
 package io.army;
 
-import io.army.tx.NoSessionTransactionException;
 import io.army.tx.TmTransaction;
 
 public interface TmSession extends GenericSyncSession {
@@ -9,7 +8,7 @@ public interface TmSession extends GenericSyncSession {
     TmSessionFactory sessionFactory();
 
     @Override
-    TmTransaction sessionTransaction() throws NoSessionTransactionException;
+    TmTransaction sessionTransaction();
 
 
 }

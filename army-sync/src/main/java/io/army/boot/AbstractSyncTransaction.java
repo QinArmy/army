@@ -78,10 +78,12 @@ abstract class AbstractSyncTransaction implements GenericSyncTransaction {
         return this.status() == TransactionStatus.MARKED_ROLLBACK;
     }
 
+    /*################################## blow package template method ##################################*/
 
-
+    abstract TransactionStatus status();
 
     /*################################## blow package method ##################################*/
+
 
     final void checkTransaction() {
         if (END_ABLE_SET.contains(this.status())) {

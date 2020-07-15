@@ -41,8 +41,6 @@ public enum XATransactionStatus {
      */
     FAILED_ROLLBACK,
 
-    MARKED_ROLLBACK,
-
     IDLING,
 
     PREPARING,

@@ -79,12 +79,6 @@ final class SessionImpl extends AbstractSession {
 
     @Nullable
     @Override
-    public final <T extends IDomain> T get(TableMeta<T> tableMeta, Object id) {
-        return get(tableMeta, id, Visible.ONLY_VISIBLE);
-    }
-
-    @Nullable
-    @Override
     public <T extends IDomain> T get(TableMeta<T> tableMeta, final Object id, Visible visible) {
         T actualReturn;
         if (this.sessionCache != null) {
@@ -107,13 +101,6 @@ final class SessionImpl extends AbstractSession {
             actualReturn = domain;
         }
         return actualReturn;
-    }
-
-    @Nullable
-    @Override
-    public <T extends IDomain> T getByUnique(TableMeta<T> tableMeta, List<String> propNameList
-            , List<Object> valueList) {
-        return getByUnique(tableMeta, propNameList, valueList, Visible.ONLY_VISIBLE);
     }
 
     @Nullable

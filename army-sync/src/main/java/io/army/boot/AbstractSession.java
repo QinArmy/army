@@ -18,7 +18,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-abstract class AbstractSession implements InnerSession, InnerTxSession {
+abstract class AbstractSession extends AbstractGenericSession implements InnerSession, InnerTxSession {
 
     final InnerSyncSessionFactory sessionFactory;
 
@@ -41,11 +41,6 @@ abstract class AbstractSession implements InnerSession, InnerTxSession {
     }
 
 
-    @Nullable
-    @Override
-    public <T> T selectOne(Select select, Class<T> resultClass) {
-        return this.selectOne(select, resultClass, Visible.ONLY_VISIBLE);
-    }
 
     @Nullable
     @Override
@@ -62,10 +57,6 @@ abstract class AbstractSession implements InnerSession, InnerTxSession {
         return t;
     }
 
-    @Override
-    public <T> List<T> select(Select select, Class<T> resultClass) {
-        return this.select(select, resultClass, Visible.ONLY_VISIBLE);
-    }
 
     @Override
     public <T> List<T> select(Select select, Class<T> resultClass, Visible visible) {
@@ -79,11 +70,6 @@ abstract class AbstractSession implements InnerSession, InnerTxSession {
         } finally {
             ((InnerSQL) select).clear();
         }
-    }
-
-    @Override
-    public int update(Update update) {
-        return update(update, Visible.ONLY_VISIBLE);
     }
 
     @Override
@@ -104,22 +90,12 @@ abstract class AbstractSession implements InnerSession, InnerTxSession {
     }
 
     @Override
-    public void updateOne(Update update) {
-        updateOne(update, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
     public void updateOne(Update update, Visible visible) {
         int updateCount;
         updateCount = update(update, visible);
         if (updateCount != 1) {
             throw new DomainUpdateException("expected update 1,but %s", updateCount);
         }
-    }
-
-    @Override
-    public <T> List<T> returningUpdate(Update update, Class<T> resultClass) {
-        return returningUpdate(update, resultClass, Visible.ONLY_VISIBLE);
     }
 
     @Override
@@ -136,11 +112,6 @@ abstract class AbstractSession implements InnerSession, InnerTxSession {
             // 3. clear
             ((InnerSQL) update).clear();
         }
-    }
-
-    @Override
-    public int[] batchUpdate(Update update) {
-        return batchUpdate(update, Visible.ONLY_VISIBLE);
     }
 
     @Override
@@ -161,11 +132,6 @@ abstract class AbstractSession implements InnerSession, InnerTxSession {
     }
 
     @Override
-    public long largeUpdate(Update update) {
-        return largeUpdate(update, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
     public long largeUpdate(Update update, Visible visible) {
         //1. parse update sql
         final SQLWrapper sqlWrapper = parseUpdate(update, visible);
@@ -182,10 +148,6 @@ abstract class AbstractSession implements InnerSession, InnerTxSession {
         }
     }
 
-    @Override
-    public long[] batchLargeUpdate(Update update) {
-        return batchLargeUpdate(update, Visible.ONLY_VISIBLE);
-    }
 
     @Override
     public long[] batchLargeUpdate(Update update, Visible visible) {
@@ -205,11 +167,6 @@ abstract class AbstractSession implements InnerSession, InnerTxSession {
     }
 
     @Override
-    public void insert(Insert insert) {
-        insert(insert, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
     public void insert(Insert insert, final Visible visible) {
         //1. parse update sql
         final List<SQLWrapper> sqlWrapperList = parseInsert(insert, visible);
@@ -226,10 +183,6 @@ abstract class AbstractSession implements InnerSession, InnerTxSession {
         }
     }
 
-    @Override
-    public int subQueryInsert(Insert insert) {
-        return subQueryInsert(insert, Visible.ONLY_VISIBLE);
-    }
 
     @Override
     public int subQueryInsert(Insert insert, Visible visible) {
@@ -252,11 +205,6 @@ abstract class AbstractSession implements InnerSession, InnerTxSession {
     }
 
     @Override
-    public long subQueryLargeInsert(Insert insert) {
-        return subQueryLargeInsert(insert, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
     public long subQueryLargeInsert(Insert insert, Visible visible) {
         //1. parse update sql
         final List<SQLWrapper> sqlWrapperList = parseInsert(insert, visible);
@@ -276,10 +224,6 @@ abstract class AbstractSession implements InnerSession, InnerTxSession {
         }
     }
 
-    @Override
-    public <T> List<T> returningInsert(Insert insert, Class<T> resultClass) {
-        return returningInsert(insert, resultClass, Visible.ONLY_VISIBLE);
-    }
 
     @Override
     public <T> List<T> returningInsert(Insert insert, Class<T> resultClass, Visible visible) {
@@ -302,11 +246,6 @@ abstract class AbstractSession implements InnerSession, InnerTxSession {
     }
 
     @Override
-    public int delete(Delete delete) {
-        return delete(delete, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
     public int delete(Delete delete, Visible visible) {
         //1. parse update sql
         final SQLWrapper sqlWrapper = parseDelete(delete, visible);
@@ -321,11 +260,6 @@ abstract class AbstractSession implements InnerSession, InnerTxSession {
             // 3. clear
             ((InnerSQL) delete).clear();
         }
-    }
-
-    @Override
-    public <T> List<T> returningDelete(Delete delete, Class<T> resultClass) {
-        return returningDelete(delete, resultClass, Visible.ONLY_VISIBLE);
     }
 
     @Override
@@ -345,10 +279,6 @@ abstract class AbstractSession implements InnerSession, InnerTxSession {
         }
     }
 
-    @Override
-    public int[] batchDelete(Delete delete) {
-        return batchDelete(delete, Visible.ONLY_VISIBLE);
-    }
 
     @Override
     public int[] batchDelete(Delete delete, Visible visible) {
@@ -368,11 +298,6 @@ abstract class AbstractSession implements InnerSession, InnerTxSession {
     }
 
     @Override
-    public long largeDelete(Delete delete) {
-        return largeDelete(delete, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
     public long largeDelete(Delete delete, Visible visible) {
         //1. parse update sql
         final SQLWrapper sqlWrapper = parseDelete(delete, visible);
@@ -387,11 +312,6 @@ abstract class AbstractSession implements InnerSession, InnerTxSession {
             // 3. clear
             ((InnerSQL) delete).clear();
         }
-    }
-
-    @Override
-    public long[] batchLargeDelete(Delete delete) {
-        return batchLargeDelete(delete, Visible.ONLY_VISIBLE);
     }
 
     @Override

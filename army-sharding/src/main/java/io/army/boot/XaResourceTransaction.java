@@ -12,28 +12,29 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.EnumSet;
 
+/**
+ * this class is a implementation of {@link XATransaction},use {@link XAResource} implement XA transaction.
+ * <P>
+ * this class used by {@link SyncCommitTransactionManager}
+ * </P>
+ * <p>
+ * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
+ * </p>
+ *
+ * @see SyncCommitTransactionManager
+ * @see XAResource
+ */
 final class XaResourceTransaction implements XATransaction {
 
-    static final EnumSet<XATransactionStatus> ROLL_BACK_ABLE_SET = EnumSet.of(
-            XATransactionStatus.ACTIVE,
-            XATransactionStatus.MARKED_ROLLBACK,
+    private static final EnumSet<XATransactionStatus> ROLL_BACK_ABLE_SET = EnumSet.of(
+            XATransactionStatus.PREPARED,
             XATransactionStatus.FAILED_COMMIT
     );
 
-    static final EnumSet<XATransactionStatus> END_SET = EnumSet.of(
-            XATransactionStatus.COMMITTED,
-            XATransactionStatus.ROLLED_BACK,
-            XATransactionStatus.FORGOT
-    );
 
-    static final EnumSet<XATransactionStatus> ROLL_BACK_ONLY_ABLE_SET = EnumSet.of(
-            XATransactionStatus.ACTIVE,
-            XATransactionStatus.MARKED_ROLLBACK
-    );
-
-    static final EnumSet<XATransactionStatus> FORGET_ABLE_SET = EnumSet.of(
+    private static final EnumSet<XATransactionStatus> FORGET_ABLE_SET = EnumSet.of(
             XATransactionStatus.COMMITTED,
-            XATransactionStatus.MARKED_ROLLBACK
+            XATransactionStatus.ROLLED_BACK
     );
 
     private final InnerRmSession session;
@@ -58,6 +59,8 @@ final class XaResourceTransaction implements XATransaction {
      * @see SyncCommitTransactionManager#rollback()
      */
     private XATransactionStatus status = XATransactionStatus.NOT_ACTIVE;
+
+    private boolean rollBackOnly = false;
 
     XaResourceTransaction(InnerRmSession session, Xid xid, TransactionOption option) {
         this.session = session;
@@ -107,7 +110,7 @@ final class XaResourceTransaction implements XATransaction {
 
     @Override
     public boolean rollbackOnly() {
-        return this.status == XATransactionStatus.MARKED_ROLLBACK;
+        return this.rollBackOnly;
     }
 
     @Override
@@ -152,11 +155,11 @@ final class XaResourceTransaction implements XATransaction {
     public void markRollbackOnly() throws TransactionException {
         checkReadWrite("markRollbackOnly");
 
-        if (!ROLL_BACK_ONLY_ABLE_SET.contains(this.status)) {
+        if (this.status != XATransactionStatus.ACTIVE) {
             throw new IllegalTransactionStateException("transaction status[%s] not in %s,can't mark roll back only."
-                    , this.status, ROLL_BACK_ONLY_ABLE_SET);
+                    , this.status, XATransactionStatus.ACTIVE);
         }
-        this.status = XATransactionStatus.MARKED_ROLLBACK;
+        this.rollBackOnly = true;
     }
 
 
@@ -252,12 +255,12 @@ final class XaResourceTransaction implements XATransaction {
 
     @Override
     public void flush() throws TransactionException {
-
+        //no-op
     }
 
     @Override
     public void close() throws TransactionException {
-
+        //no-op
     }
 
     /*################################## blow package template method ##################################*/
@@ -275,14 +278,22 @@ final class XaResourceTransaction implements XATransaction {
     private void doCommit(final boolean onePhase) throws TransactionException {
         if (onePhase) {
             checkReadWrite("commitOnePhase");
+            if (this.status != XATransactionStatus.IDLE) {
+                throw new IllegalTransactionStateException("transaction status[%s] isn't %s,can't commit transaction."
+                        , this.status, XATransactionStatus.IDLE);
+            }
         } else {
             checkReadWrite("commit");
+            if (this.status != XATransactionStatus.PREPARED) {
+                throw new IllegalTransactionStateException("transaction status[%s] isn't %s,can't commit transaction."
+                        , this.status, XATransactionStatus.PREPARED);
+            }
+        }
+        if (this.rollBackOnly) {
+            throw new TransactionRollbackOnlyException("transaction[xid:%s] marked rollback,can't commit transaction."
+                    , this.xid);
         }
 
-        if (this.status != XATransactionStatus.PREPARED) {
-            throw new IllegalTransactionStateException("transaction status[%s] isn't %s,can't commit transaction."
-                    , this.status, XATransactionStatus.PREPARED);
-        }
         try {
             if (!this.readOnly) {
                 this.status = XATransactionStatus.COMMITTING;

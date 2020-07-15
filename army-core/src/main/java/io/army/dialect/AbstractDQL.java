@@ -11,6 +11,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
+/**
+ * <p>
+ * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
+ * </p>
+ */
 public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
 
     public AbstractDQL(InnerDialect dialect) {
