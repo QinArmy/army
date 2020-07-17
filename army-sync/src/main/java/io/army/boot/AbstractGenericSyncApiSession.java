@@ -1,7 +1,8 @@
 package io.army.boot;
 
 
-import io.army.GenericSyncSession;
+import io.army.GenericSyncApiSession;
+import io.army.NonUniqueException;
 import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
@@ -9,7 +10,10 @@ import io.army.meta.TableMeta;
 
 import java.util.List;
 
-abstract class AbstractGenericSession implements GenericSyncSession {
+/**
+ *
+ */
+abstract class AbstractGenericSyncApiSession implements GenericSyncApiSession {
 
     @Nullable
     @Override
@@ -30,6 +34,21 @@ abstract class AbstractGenericSession implements GenericSyncSession {
         return this.selectOne(select, resultClass, Visible.ONLY_VISIBLE);
     }
 
+
+    @Override
+    public final <R> R selectOne(Select select, Class<R> resultClass, Visible visible) {
+        List<R> list = select(select, resultClass, visible);
+        R r;
+        if (list.size() == 1) {
+            r = list.get(0);
+        } else if (list.size() == 0) {
+            r = null;
+        } else {
+            throw new NonUniqueException("select result[%s] more than 1.", list.size());
+        }
+        return r;
+    }
+
     @Override
     public final <R> List<R> select(Select select, Class<R> resultClass) {
         return this.select(select, resultClass, Visible.ONLY_VISIBLE);
@@ -38,11 +57,6 @@ abstract class AbstractGenericSession implements GenericSyncSession {
     @Override
     public final int update(Update update) {
         return this.update(update, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final void updateOne(Update update) {
-        this.updateOne(update, Visible.ONLY_VISIBLE);
     }
 
     @Override
@@ -65,9 +79,8 @@ abstract class AbstractGenericSession implements GenericSyncSession {
         return this.batchLargeUpdate(update, Visible.ONLY_VISIBLE);
     }
 
-    @Override
-    public final void insert(Insert insert) {
-        this.insert(insert, Visible.ONLY_VISIBLE);
+    public final void valueInsert(Insert insert) {
+        this.valueInsert(insert, Visible.ONLY_VISIBLE);
     }
 
     @Override

@@ -30,7 +30,7 @@ public abstract class AbstractArmyBaseDay implements ArmyBaseDao {
                 .insertInto(tableMeta)
                 .value(domain)
                 .asInsert();
-        session.insert(insert, Visible.ONLY_VISIBLE);
+        session.valueInsert(insert, Visible.ONLY_VISIBLE);
     }
 
 
@@ -41,7 +41,7 @@ public abstract class AbstractArmyBaseDay implements ArmyBaseDao {
                 .insertInto(tableMeta)
                 .values(domainList)
                 .asInsert();
-        session.insert(insert, Visible.ONLY_VISIBLE);
+        session.valueInsert(insert, Visible.ONLY_VISIBLE);
     }
 
     @Override
@@ -51,7 +51,7 @@ public abstract class AbstractArmyBaseDay implements ArmyBaseDao {
                 .insertInto(tableMeta)
                 .values(domainList)
                 .asInsert();
-        session.insert(insert, Visible.ONLY_VISIBLE);
+        session.valueInsert(insert, Visible.ONLY_VISIBLE);
     }
 
     @Override

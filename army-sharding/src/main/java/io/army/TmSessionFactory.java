@@ -14,7 +14,6 @@ public interface TmSessionFactory extends GenericSyncSessionFactory {
 
     SessionBuilder builder();
 
-
     interface SessionBuilder {
 
         SessionBuilder currentSession(boolean current);

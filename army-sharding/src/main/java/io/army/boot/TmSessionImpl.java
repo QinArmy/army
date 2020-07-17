@@ -1,26 +1,34 @@
 package io.army.boot;
 
-import io.army.RmSession;
 import io.army.SessionException;
 import io.army.TmSession;
 import io.army.TmSessionFactory;
+import io.army.beans.DomainWrapper;
+import io.army.beans.ReadonlyWrapper;
 import io.army.cache.SessionCache;
 import io.army.cache.UniqueKey;
 import io.army.criteria.*;
+import io.army.criteria.impl.inner.InnerValuesInsert;
 import io.army.dialect.TransactionOption;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
+import io.army.sharding.DataSourceRoute;
 import io.army.tx.TmTransaction;
 import io.army.tx.TransactionNotCloseException;
 import io.army.tx.TransactionStatus;
+import io.army.util.Assert;
+import io.army.util.CollectionUtils;
 import io.army.util.CriteriaUtils;
 
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-final class TmSessionImpl extends AbstractGenericSession implements TmSession {
+
+/**
+ * <p>
+ * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
+ * </p>
+ */
+final class TmSessionImpl extends AbstractSyncApiSession implements TmSession {
 
     private static final EnumSet<TransactionStatus> TX_END_STATUS = EnumSet.of(
             TransactionStatus.COMMITTED
@@ -130,30 +138,48 @@ final class TmSessionImpl extends AbstractGenericSession implements TmSession {
     }
 
     @Override
-    public <R> R selectOne(Select select, Class<R> resultClass, Visible visible) {
-        return routeRmSession(select)
-                .selectOne(select, resultClass, visible);
-    }
-
-
-    @Override
     public <R> List<R> select(Select select, Class<R> resultClass, Visible visible) {
         return routeRmSession(select)
                 .select(select, resultClass, visible);
+    }
+
+    @Override
+    public void valueInsert(Insert insert, final Visible visible) {
+        if (insert instanceof InnerValuesInsert) {
+            InnerValuesInsert valuesInsert = (InnerValuesInsert) insert;
+            if (valuesInsert.valueList().size() == 1) {
+                processSingleInsert(valuesInsert, visible);
+            } else {
+                processMultiInsert(valuesInsert, visible);
+            }
+        } else {
+            throw new IllegalArgumentException(String.format("Insert[%s] not supported by valueInsert method.", insert));
+        }
+    }
+
+    @Override
+    public int subQueryInsert(Insert insert, Visible visible) {
+        return routeRmSession(insert)
+                .subQueryInsert(insert, visible);
+    }
+
+    @Override
+    public long subQueryLargeInsert(Insert insert, Visible visible) {
+        return routeRmSession(insert)
+                .subQueryLargeInsert(insert, visible);
+    }
+
+    @Override
+    public <R> List<R> returningInsert(Insert insert, Class<R> resultClass, Visible visible) {
+        // TODO if have with clause.
+        throw new UnsupportedOperationException();
     }
 
 
     @Override
     public int update(Update update, Visible visible) {
         return routeRmSession(update)
-                .update(update, visible);
-    }
-
-
-    @Override
-    public void updateOne(Update update, Visible visible) {
-        routeRmSession(update)
-                .updateOne(update, visible);
+                .update(update, null, visible);
     }
 
     @Override
@@ -178,30 +204,6 @@ final class TmSessionImpl extends AbstractGenericSession implements TmSession {
     public long[] batchLargeUpdate(Update update, Visible visible) {
         return routeRmSession(update)
                 .batchLargeUpdate(update, visible);
-    }
-
-    @Override
-    public void insert(Insert insert, Visible visible) {
-        routeRmSession(insert)
-                .insert(insert, visible);
-    }
-
-    @Override
-    public int subQueryInsert(Insert insert, Visible visible) {
-        return routeRmSession(insert)
-                .subQueryInsert(insert, visible);
-    }
-
-    @Override
-    public long subQueryLargeInsert(Insert insert, Visible visible) {
-        return routeRmSession(insert)
-                .subQueryLargeInsert(insert, visible);
-    }
-
-    @Override
-    public <R> List<R> returningInsert(Insert insert, Class<R> resultClass, Visible visible) {
-        return routeRmSession(insert)
-                .returningInsert(insert, resultClass, visible);
     }
 
     @Override
@@ -242,8 +244,19 @@ final class TmSessionImpl extends AbstractGenericSession implements TmSession {
         if (!TX_END_STATUS.contains(this.tmTransaction.status())) {
             throw new TransactionNotCloseException("Transaction[%s] not close.", this.tmTransaction.name());
         }
-        for (RmSession session : rmSessionMap.values()) {
-            session.close();
+        Map<RmSession, SessionException> failSessionMap = null;
+        for (RmSession session : this.rmSessionMap.values()) {
+            try {
+                session.close();
+            } catch (SessionException e) {
+                if (failSessionMap == null) {
+                    failSessionMap = new HashMap<>();
+                }
+                failSessionMap.put(session, e);
+            }
+        }
+        if (!CollectionUtils.isEmpty(failSessionMap)) {
+            //TODO throw exception
         }
         this.closed = true;
     }
@@ -253,10 +266,74 @@ final class TmSessionImpl extends AbstractGenericSession implements TmSession {
 
     }
 
+
+
     /*################################## blow private method ##################################*/
 
     private RmSession routeRmSession(Insert insert) {
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * process single insert.
+     * <p>
+     * Single insert is High frequency operation, this method is for avoid create redundant object.
+     * </p>
+     *
+     * @see #processMultiInsert(InnerValuesInsert, Visible)
+     */
+    private void processSingleInsert(final InnerValuesInsert insert, final Visible visible) {
+
+        final List<IDomain> domainList = insert.valueList();
+        Assert.isTrue(domainList.size() == 1, "domain size isn't 1 .");
+        final TableMeta<?> tableMeta = insert.tableMeta();
+
+        // 1. create required properties value.
+        ReadonlyWrapper wrapper = this.sessionFactory.domainValuesGenerator().createValues(tableMeta
+                , domainList.get(0)
+                , insert.migrationData());
+        // 2. route target data source index.
+        int dataSourceIndex = this.sessionFactory.dataSourceRoute(tableMeta)
+                .dataSourceRoute(obtainRouteKeyValueForInsert(tableMeta, wrapper, true));
+        // 3. obtain target rm session by data source index.
+        obtainRmSession(dataSourceIndex)
+                // 4. execute insert sql with domain index set .
+                .valueInsert((Insert) insert, null, visible);
+    }
+
+    /**
+     * process multi insert.
+     *
+     * @see #processSingleInsert(InnerValuesInsert, Visible)
+     */
+    private void processMultiInsert(final InnerValuesInsert insert, final Visible visible) {
+
+        final DomainValuesGenerator generator = this.sessionFactory.domainValuesGenerator();
+        final TableMeta<?> tableMeta = insert.tableMeta();
+        final List<IDomain> domainList = insert.valueList();
+        final int size = domainList.size();
+
+        final boolean migrationData = insert.migrationData();
+        final DataSourceRoute route = this.sessionFactory.dataSourceRoute(tableMeta);
+
+        final Map<Integer, Set<Integer>> domainIndexSetMap = new HashMap<>();
+        for (int i = 0; i < size; i++) {
+            // 1. create required properties value.
+            DomainWrapper wrapper = generator.createValues(tableMeta, domainList.get(i), migrationData);
+            // 2. route target data source index.
+            int dataSourceIndex = route.dataSourceRoute(obtainRouteKeyValueForInsert(tableMeta, wrapper, true));
+            // 3. cache data source index and domain index
+            Set<Integer> domainIndexSet = domainIndexSetMap.computeIfAbsent(dataSourceIndex, k -> new HashSet<>());
+            domainIndexSet.add(i);
+        }
+
+        for (Map.Entry<Integer, Set<Integer>> e : domainIndexSetMap.entrySet()) {
+            // 4. obtain target rm session by data source index.
+            obtainRmSession(e.getKey())
+                    // 5. execute insert sql with domain index set .
+                    .valueInsert((Insert) insert, Collections.unmodifiableSet(e.getValue()), visible);
+        }
+
     }
 
     private RmSession routeRmSession(Update update) {
@@ -270,4 +347,10 @@ final class TmSessionImpl extends AbstractGenericSession implements TmSession {
     private RmSession routeRmSession(Select select) {
         throw new UnsupportedOperationException();
     }
+
+    private RmSession obtainRmSession(int dataSourceIndex) {
+        throw new UnsupportedOperationException();
+    }
+
+
 }

@@ -5,7 +5,7 @@ import io.army.env.Environment;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 
-public interface ProxySession extends GenericSyncSession {
+public interface ProxySession extends GenericSyncApiSession {
 
     boolean hasCurrentSession();
 

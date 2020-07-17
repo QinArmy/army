@@ -7,6 +7,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.CriteriaCounselor;
 import io.army.criteria.impl.inner.*;
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
@@ -33,7 +34,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     /*################################## blow DML batchInsert method ##################################*/
 
     @Override
-    public final List<SQLWrapper> insert(Insert insert, final Visible visible) {
+    public final List<SQLWrapper> subQueryInsert(Insert insert, final Visible visible) {
         Assert.isTrue(insert.prepared(), "Insert don't invoke asInsert() method.");
 
         List<SQLWrapper> list;
@@ -54,8 +55,8 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
                     standardSubQueryInsert(subQueryInsert, visible)
             );
 
-        } else if (insert instanceof InnerSpecialGeneralInsert) {
-            InnerSpecialGeneralInsert generalInsert = (InnerSpecialGeneralInsert) insert;
+        } else if (insert instanceof InnerSpecialValueInsert) {
+            InnerSpecialValueInsert generalInsert = (InnerSpecialValueInsert) insert;
             assertSpecialGeneralInsert(generalInsert);
             if (generalInsert instanceof InnerSpecialBatchInsert) {
                 list = specialBatchInsert((InnerSpecialBatchInsert) generalInsert, visible);
@@ -72,10 +73,15 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         return list;
     }
 
+    @Override
+    public List<SQLWrapper> valueInsert(Insert insert, @Nullable Set<Integer> domainIndexSet, Visible visible) {
+        return null;
+    }
+
     /*################################## blow update method ##################################*/
 
     @Override
-    public final SQLWrapper update(Update update, final Visible visible) {
+    public final SQLWrapper simpleUpdate(Update update, final Visible visible) {
         Assert.isTrue(update.prepared(), "Update don't invoke asUpdate() method.");
 
         SQLWrapper sqlWrapper;
@@ -100,7 +106,12 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     }
 
     @Override
-    public final SQLWrapper delete(Delete delete, final Visible visible) {
+    public SQLWrapper batchUpdate(Update update, @Nullable Set<Integer> namedParamIexSet, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public final SQLWrapper simpleDelete(Delete delete, final Visible visible) {
         Assert.isTrue(delete.prepared(), "Delete don't invoke asDelete() method.");
 
         SQLWrapper sqlWrapper;
@@ -123,12 +134,18 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         return sqlWrapper;
     }
 
+    @Override
+    public SQLWrapper batchDelete(Delete delete, @Nullable Set<Integer> namedParamIexSet, Visible visible) {
+        return null;
+    }
+
+
     /*################################## blow protected template method ##################################*/
 
 
     /*################################## blow multiInsert template method ##################################*/
 
-    protected void assertSpecialGeneralInsert(InnerSpecialGeneralInsert insert) {
+    protected void assertSpecialGeneralInsert(InnerSpecialValueInsert insert) {
         throw new UnsupportedOperationException(String.format("dialect [%s] not support special general multiInsert."
                 , sqlDialect())
         );
@@ -140,7 +157,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         );
     }
 
-    protected List<SQLWrapper> specialGeneralInsert(InnerSpecialGeneralInsert insert, Visible visible) {
+    protected List<SQLWrapper> specialGeneralInsert(InnerSpecialValueInsert insert, Visible visible) {
         throw new UnsupportedOperationException(String.format("dialect[%s] not support special general multiInsert."
                 , sqlDialect())
         );

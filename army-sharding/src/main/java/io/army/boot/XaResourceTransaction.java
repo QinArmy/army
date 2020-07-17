@@ -1,7 +1,6 @@
 package io.army.boot;
 
 import io.army.ErrorCode;
-import io.army.RmSession;
 import io.army.dialect.TransactionOption;
 import io.army.tx.*;
 

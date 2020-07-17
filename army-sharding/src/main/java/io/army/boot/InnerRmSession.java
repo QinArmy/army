@@ -1,7 +1,5 @@
 package io.army.boot;
 
-import io.army.RmSession;
-
 import javax.transaction.xa.XAResource;
 import java.sql.Connection;
 

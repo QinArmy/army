@@ -18,7 +18,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-abstract class AbstractSession extends AbstractGenericSession implements InnerSession, InnerTxSession {
+abstract class AbstractSession extends AbstractGenericSyncApiSession implements InnerSession, InnerTxSession {
 
     final InnerSyncSessionFactory sessionFactory;
 
@@ -86,15 +86,6 @@ abstract class AbstractSession extends AbstractGenericSession implements InnerSe
         } finally {
             // 3. clear
             ((InnerSQL) update).clear();
-        }
-    }
-
-    @Override
-    public void updateOne(Update update, Visible visible) {
-        int updateCount;
-        updateCount = update(update, visible);
-        if (updateCount != 1) {
-            throw new DomainUpdateException("expected update 1,but %s", updateCount);
         }
     }
 
@@ -167,7 +158,7 @@ abstract class AbstractSession extends AbstractGenericSession implements InnerSe
     }
 
     @Override
-    public void insert(Insert insert, final Visible visible) {
+    public void valueInsert(Insert insert, final Visible visible) {
         //1. parse update sql
         final List<SQLWrapper> sqlWrapperList = parseInsert(insert, visible);
         try {
@@ -425,7 +416,7 @@ abstract class AbstractSession extends AbstractGenericSession implements InnerSe
             throw new ReadOnlySessionException("current session/session transaction is read only.");
         }
         //1. parse update sql
-        SQLWrapper sqlWrapper = this.dialect.update(update, visible);
+        SQLWrapper sqlWrapper = this.dialect.simpleUpdate(update, visible);
         if (sqlWrapper instanceof ChildSQLWrapper
                 || sqlWrapper instanceof ChildBatchSQLWrapper) {
             // 2. assert child update
@@ -439,7 +430,7 @@ abstract class AbstractSession extends AbstractGenericSession implements InnerSe
             throw new ReadOnlySessionException("current session/session transaction is read only.");
         }
         //1. parse update sql
-        SQLWrapper sqlWrapper = this.dialect.delete(delete, visible);
+        SQLWrapper sqlWrapper = this.dialect.simpleDelete(delete, visible);
         if (sqlWrapper instanceof ChildSQLWrapper
                 || sqlWrapper instanceof ChildBatchSQLWrapper) {
             // 2. assert child update
@@ -453,7 +444,7 @@ abstract class AbstractSession extends AbstractGenericSession implements InnerSe
             throw new ReadOnlySessionException("current session/session transaction is read only.");
         }
         //1. parse update sql
-        List<SQLWrapper> sqlWrapperList = this.dialect.insert(insert, visible);
+        List<SQLWrapper> sqlWrapperList = this.dialect.subQueryInsert(insert, visible);
         for (SQLWrapper sqlWrapper : sqlWrapperList) {
             if (sqlWrapper instanceof ChildSQLWrapper || sqlWrapper instanceof ChildBatchSQLWrapper) {
                 assertChildDomain();

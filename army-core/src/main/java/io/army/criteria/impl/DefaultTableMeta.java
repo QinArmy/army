@@ -230,6 +230,17 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         return discriminatorValue;
     }
 
+
+    @Override
+    public final FieldMeta<T, ?> dataSourceRouteField() {
+        return null;
+    }
+
+    @Override
+    public final FieldMeta<T, ?> tableRouteField() {
+        return null;
+    }
+
     @Override
     public List<IndexMeta<T>> indexCollection() {
         return this.indexMetaList;

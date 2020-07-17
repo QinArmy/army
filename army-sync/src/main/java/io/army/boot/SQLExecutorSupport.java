@@ -24,6 +24,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
+
+/**
+ * This class is a base class of sql executor implementation. This class provide common method.
+ * <p>
+ * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
+ * </p>
+ *
+ * @see InsertSQLExecutorIml
+ * @see UpdateSQLExecutorImpl
+ * @see SelectSQLExecutorImpl
+ */
 abstract class SQLExecutorSupport {
 
     final InnerSyncSessionFactory sessionFactory;
@@ -124,6 +135,7 @@ abstract class SQLExecutorSupport {
                     resultList = extractBeanTypeResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
                             , resultClass);
                 }
+                //5.check Optimistic Lock
                 if (resultList.isEmpty() && sqlWrapper.hasVersion()) {
                     throw createOptimisticLockException(sqlWrapper.sql());
                 }

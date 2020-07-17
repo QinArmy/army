@@ -1,6 +1,6 @@
 package io.army.tx;
 
-import io.army.RmSession;
+import io.army.boot.RmSession;
 
 public interface XATransaction extends GenericSyncTransaction {
 

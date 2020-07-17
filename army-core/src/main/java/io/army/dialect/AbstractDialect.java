@@ -3,6 +3,7 @@ package io.army.dialect;
 
 import io.army.GenericSessionFactory;
 import io.army.criteria.*;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
@@ -136,20 +137,34 @@ public abstract class AbstractDialect implements InnerDialect {
     /*################################## blow DML method ##################################*/
 
     @Override
-    public final List<SQLWrapper> insert(Insert insert, Visible visible) {
-        return this.dml.insert(insert, visible);
+    public final List<SQLWrapper> subQueryInsert(Insert insert, Visible visible) {
+        return this.dml.subQueryInsert(insert, visible);
     }
 
     @Override
-    public final SQLWrapper update(Update update, Visible visible) {
-        return this.dml.update(update, visible);
+    public final List<SQLWrapper> valueInsert(Insert insert, @Nullable Set<Integer> domainIndexSet, Visible visible) {
+        return this.dml.valueInsert(insert, domainIndexSet, visible);
     }
 
     @Override
-    public final SQLWrapper delete(Delete delete, Visible visible) {
-        return this.dml.delete(delete, visible);
+    public final SQLWrapper simpleUpdate(Update update, Visible visible) {
+        return this.dml.simpleUpdate(update, visible);
     }
 
+    @Override
+    public final SQLWrapper batchUpdate(Update update, @Nullable Set<Integer> namedParamIexSet, Visible visible) {
+        return this.dml.batchUpdate(update, namedParamIexSet, visible);
+    }
+
+    @Override
+    public final SQLWrapper simpleDelete(Delete delete, Visible visible) {
+        return this.dml.simpleDelete(delete, visible);
+    }
+
+    @Override
+    public final SQLWrapper batchDelete(Delete delete, @Nullable Set<Integer> namedParamIexSet, Visible visible) {
+        return this.dml.batchDelete(delete, namedParamIexSet, visible);
+    }
 
     @Override
     public SQLDialect sqlDialect() {

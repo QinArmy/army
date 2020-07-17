@@ -2,7 +2,6 @@ package io.army.boot;
 
 import io.army.GenericSyncSessionFactory;
 import io.army.ProxySession;
-import io.army.SessionOptions;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.criteria.*;
 import io.army.domain.IDomain;
@@ -88,13 +87,13 @@ class ProxySessionImpl implements ProxySession {
 
 
     @Override
-    public void insert(Insert insert) {
-        this.sessionContext.currentSession().insert(insert);
+    public void valueInsert(Insert insert) {
+        this.sessionContext.currentSession().valueInsert(insert);
     }
 
     @Override
-    public void insert(Insert insert, Visible visible) {
-        this.sessionContext.currentSession().insert(insert, visible);
+    public void valueInsert(Insert insert, Visible visible) {
+        this.sessionContext.currentSession().valueInsert(insert, visible);
     }
 
     @Override
@@ -238,11 +237,6 @@ class ProxySessionImpl implements ProxySession {
     }
 
     @Override
-    public SessionOptions options() {
-        return this.sessionContext.currentSession().options();
-    }
-
-    @Override
     public boolean readonly() {
         return this.sessionContext.currentSession().readonly();
     }
@@ -252,9 +246,10 @@ class ProxySessionImpl implements ProxySession {
         return this.sessionContext.currentSession().closed();
     }
 
-
     @Override
     public boolean hasTransaction() {
         return this.sessionContext.currentSession().hasTransaction();
     }
+
+
 }

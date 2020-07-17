@@ -10,9 +10,7 @@ import java.util.List;
  * @see io.army.criteria.impl.SQLS#multiInsert(TableMeta)
  */
 @DeveloperForbid
-public interface InnerStandardInsert extends InnerGenericInsert {
-
-    boolean migrationData();
+public interface InnerStandardInsert extends InnerMultiInsert {
 
     /**
      * @see Insert.InsertValuesAble

@@ -84,6 +84,16 @@ final class Dual implements IDomain {
         }
 
         @Override
+        public FieldMeta<Dual, ?> dataSourceRouteField() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public FieldMeta<Dual, ?> tableRouteField() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public Collection<IndexMeta<Dual>> indexCollection() {
             return Collections.emptyList();
         }
