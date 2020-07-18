@@ -6,6 +6,7 @@ import io.army.criteria.Update;
 import io.army.criteria.Visible;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -22,13 +23,25 @@ import java.util.List;
  */
 public interface GenericSyncApiSession extends GenericSyncSession {
 
-    int[] batchUpdate(Update update);
+    /**
+     * @return a unmodifiable map
+     */
+    Map<Integer, Integer> batchUpdate(Update update);
 
-    int[] batchUpdate(Update update, Visible visible);
+    /**
+     * @return a unmodifiable map
+     */
+    Map<Integer, Integer> batchUpdate(Update update, Visible visible);
 
-    long[] batchLargeUpdate(Update update);
+    /**
+     * @return a unmodifiable map
+     */
+    Map<Integer, Long> batchLargeUpdate(Update update);
 
-    long[] batchLargeUpdate(Update update, Visible visible);
+    /**
+     * @return a unmodifiable map
+     */
+    Map<Integer, Long> batchLargeUpdate(Update update, Visible visible);
 
     void valueInsert(Insert insert);
 
@@ -38,12 +51,24 @@ public interface GenericSyncApiSession extends GenericSyncSession {
 
     <R> List<R> returningInsert(Insert insert, Class<R> resultClass, Visible visible);
 
-    int[] batchDelete(Delete delete);
+    /**
+     * @return a unmodifiable map
+     */
+    Map<Integer, Integer> batchDelete(Delete delete);
 
-    int[] batchDelete(Delete delete, Visible visible);
+    /**
+     * @return a unmodifiable map
+     */
+    Map<Integer, Integer> batchDelete(Delete delete, Visible visible);
 
-    long[] batchLargeDelete(Delete delete);
+    /**
+     * @return a unmodifiable map
+     */
+    Map<Integer, Long> batchLargeDelete(Delete delete);
 
-    long[] batchLargeDelete(Delete delete, Visible visible);
+    /**
+     * @return a unmodifiable map
+     */
+    Map<Integer, Long> batchLargeDelete(Delete delete, Visible visible);
 
 }

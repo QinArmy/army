@@ -9,6 +9,7 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -65,7 +66,7 @@ abstract class AbstractGenericSyncApiSession implements GenericSyncApiSession {
     }
 
     @Override
-    public final int[] batchUpdate(Update update) {
+    public final Map<Integer, Integer> batchUpdate(Update update) {
         return this.batchUpdate(update, Visible.ONLY_VISIBLE);
     }
 
@@ -75,7 +76,7 @@ abstract class AbstractGenericSyncApiSession implements GenericSyncApiSession {
     }
 
     @Override
-    public final long[] batchLargeUpdate(Update update) {
+    public final Map<Integer, Long> batchLargeUpdate(Update update) {
         return this.batchLargeUpdate(update, Visible.ONLY_VISIBLE);
     }
 
@@ -90,7 +91,7 @@ abstract class AbstractGenericSyncApiSession implements GenericSyncApiSession {
 
     @Override
     public final long subQueryLargeInsert(Insert insert) {
-        return this.subQueryLargeInsert(insert, Visible.ONLY_VISIBLE);
+        return this.largeSubQueryInsert(insert, Visible.ONLY_VISIBLE);
     }
 
     @Override
@@ -109,7 +110,7 @@ abstract class AbstractGenericSyncApiSession implements GenericSyncApiSession {
     }
 
     @Override
-    public final int[] batchDelete(Delete delete) {
+    public final Map<Integer, Integer> batchDelete(Delete delete) {
         return this.batchDelete(delete, Visible.ONLY_VISIBLE);
     }
 
@@ -119,7 +120,7 @@ abstract class AbstractGenericSyncApiSession implements GenericSyncApiSession {
     }
 
     @Override
-    public final long[] batchLargeDelete(Delete delete) {
+    public final Map<Integer, Long> batchLargeDelete(Delete delete) {
         return this.batchLargeDelete(delete, Visible.ONLY_VISIBLE);
     }
 }

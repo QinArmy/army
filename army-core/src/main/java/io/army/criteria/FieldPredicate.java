@@ -1,9 +1,9 @@
 package io.army.criteria;
 
-import io.army.meta.FieldExpression;
+import io.army.meta.FieldMeta;
 
 public interface FieldPredicate extends SpecialPredicate {
 
-    FieldExpression<?, ?> fieldExp();
+    FieldMeta<?, ?> fieldExp();
 
 }

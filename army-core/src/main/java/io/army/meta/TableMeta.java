@@ -1,6 +1,5 @@
 package io.army.meta;
 
-import io.army.GenericSessionFactory;
 import io.army.criteria.MetaException;
 import io.army.criteria.TableAble;
 import io.army.domain.IDomain;
@@ -53,24 +52,7 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
 
     int discriminatorValue();
 
-    /**
-     * <ul>
-     *     <li>when {@link GenericSessionFactory#shardingMode()} is {@link io.army.ShardingMode#NO_SHARDING} ,always return {@link #id()}.</li>
-     *     <li>when {@link GenericSessionFactory#shardingMode()} is  {@link io.army.ShardingMode#SAME_SCHEMA_SHARDING},always return {@link #id()}.</li>
-     *     <li>when {@link #mappingMode()} is {@link io.army.ShardingMode#SHARDING},return data source route field.</li>
-     * </ul>
-     */
-    List<FieldMeta<?, ?>> dataSourceRouteField();
-
-    /**
-     * <ul>
-     *     <li>when {@link GenericSessionFactory#shardingMode()} is {@link io.army.ShardingMode#NO_SHARDING} ,always return {@link #id()}.</li>
-     *     <li>when {@link GenericSessionFactory#shardingMode()} is  {@link io.army.ShardingMode#SAME_SCHEMA_SHARDING},return table route field.</li>
-     *     <li>when {@link #mappingMode()} is {@link io.army.ShardingMode#SHARDING},return table route field.</li>
-     * </ul>
-     */
-    List<FieldMeta<?, ?>> tableRouteField();
-
+    List<FieldMeta<?, ?>> routeFieldList(boolean dataSource);
 
     @Nullable
     ParentTableMeta<? super T> parentMeta();

@@ -51,7 +51,7 @@ public interface GenericSyncSession extends GenericSession {
 
     long subQueryLargeInsert(Insert insert);
 
-    long subQueryLargeInsert(Insert insert, Visible visible);
+    long largeSubQueryInsert(Insert insert, Visible visible);
 
     /**
      * @param update will start singleUpdate dml instance.

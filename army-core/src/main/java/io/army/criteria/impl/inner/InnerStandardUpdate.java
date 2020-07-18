@@ -1,12 +1,7 @@
 package io.army.criteria.impl.inner;
 
-import io.army.meta.TableMeta;
-
 @DeveloperForbid
-public interface InnerStandardUpdate extends InnerUpdate {
+public interface InnerStandardUpdate extends InnerSingleUpdate {
 
-    TableMeta<?> tableMeta();
-
-    String tableAlias();
 
 }

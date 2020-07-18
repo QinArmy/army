@@ -196,7 +196,7 @@ abstract class AbstractSession extends AbstractGenericSyncApiSession implements 
     }
 
     @Override
-    public long subQueryLargeInsert(Insert insert, Visible visible) {
+    public long largeSubQueryInsert(Insert insert, Visible visible) {
         //1. parse update sql
         final List<SQLWrapper> sqlWrapperList = parseInsert(insert, visible);
         if (sqlWrapperList.size() != 1) {

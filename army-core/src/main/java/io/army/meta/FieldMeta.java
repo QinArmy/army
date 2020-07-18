@@ -1,6 +1,7 @@
 package io.army.meta;
 
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
 
 /**
  * <p> this interface representing a Java class then tableMeta column mapping.</p>
@@ -9,5 +10,8 @@ import io.army.domain.IDomain;
  * @param <F> representing Domain property Java Type
  */
 public interface FieldMeta<T extends IDomain, F> extends FieldExpression<T, F>, ParamMeta {
+
+    @Nullable
+    RouteMeta routeMeta();
 
 }

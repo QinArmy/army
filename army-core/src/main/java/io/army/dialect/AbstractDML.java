@@ -505,7 +505,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
     private SQLWrapper standardBatchUpdate(InnerStandardBatchUpdate update, final Visible visible) {
         return DMLUtils.createBatchSQLWrapper(
-                update.namedParams()
+                update.namedParamList()
                 , standardGenericUpdate(update, visible)
         );
     }

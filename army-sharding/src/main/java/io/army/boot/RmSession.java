@@ -11,7 +11,7 @@ import io.army.tx.GenericSyncTransaction;
 import io.army.tx.NoSessionTransactionException;
 
 import java.io.Flushable;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -23,31 +23,19 @@ interface RmSession extends GenericSyncSession, AutoCloseable, Flushable {
 
     GenericSyncTransaction sessionTransaction() throws NoSessionTransactionException;
 
-    int update(Update update, @Nullable Set<Integer> domainIndexSet, Visible visible);
-
-    <R> List<R> returningUpdate(Update update, Class<R> resultClass, @Nullable Set<Integer> domainIndexSet
-            , Visible visible);
-
-    int[] batchUpdate(Update update, @Nullable Set<Integer> domainIndexSet, Visible visible);
-
-    long largeUpdate(Update update, @Nullable Set<Integer> domainIndexSet, Visible visible);
-
-    long[] batchLargeUpdate(Update update, @Nullable Set<Integer> domainIndexSet, Visible visible);
+    /**
+     * @return a unmodifiable map
+     */
+    <V extends Number> Map<Integer, V> batchUpdate(Update update, @Nullable Set<Integer> domainIndexSet
+            , Class<V> valueType, Visible visible);
 
     void valueInsert(Insert insert, @Nullable Set<Integer> domainIndexSet, Visible visible);
 
-    <R> List<R> returningInsert(Insert insert, Class<R> resultClass, @Nullable Set<Integer> domainIndexSet
-            , Visible visible);
+    /**
+     * @return a unmodifiable map
+     */
+    <V extends Number> Map<Integer, V> batchDelete(Delete delete, @Nullable Set<Integer> domainIndexSet
+            , Class<V> valueType, Visible visible);
 
-    int delete(Delete delete, @Nullable Set<Integer> domainIndexSet, Visible visible);
-
-    <R> List<R> returningDelete(Delete delete, Class<R> resultClass, @Nullable Set<Integer> domainIndexSet
-            , Visible visible);
-
-    int[] batchDelete(Delete delete, @Nullable Set<Integer> domainIndexSet, Visible visible);
-
-    long largeDelete(Delete delete, @Nullable Set<Integer> domainIndexSet, Visible visible);
-
-    long[] batchLargeDelete(Delete delete, @Nullable Set<Integer> domainIndexSet, Visible visible);
 
 }

@@ -214,7 +214,7 @@ final class StandardContextualBatchUpdate<T extends IDomain, C> extends Abstract
     /*################################## blow InnerStandardBatchUpdate method ##################################*/
 
     @Override
-    public Collection<Object> namedParams() {
+    public Collection<Object> namedParamList() {
         return this.namedParamList;
     }
 

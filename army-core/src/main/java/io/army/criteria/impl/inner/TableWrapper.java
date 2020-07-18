@@ -16,4 +16,8 @@ public interface TableWrapper {
     SQLModifier jointType();
 
     List<IPredicate> onPredicateList();
+
+    int dataSourceIndex();
+
+    int tableIndex();
 }

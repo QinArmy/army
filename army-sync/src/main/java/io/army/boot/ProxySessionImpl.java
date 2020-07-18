@@ -112,8 +112,8 @@ class ProxySessionImpl implements ProxySession {
     }
 
     @Override
-    public long subQueryLargeInsert(Insert insert, Visible visible) {
-        return this.sessionContext.currentSession().subQueryLargeInsert(insert, visible);
+    public long largeSubQueryInsert(Insert insert, Visible visible) {
+        return this.sessionContext.currentSession().largeSubQueryInsert(insert, visible);
     }
 
     @Override

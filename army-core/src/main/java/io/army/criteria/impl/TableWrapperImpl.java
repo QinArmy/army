@@ -20,6 +20,10 @@ class TableWrapperImpl implements TableWrapper {
 
     private List<IPredicate> onPredicateList = new ArrayList<>();
 
+    private int dataSourceIndex = -1;
+
+    private int tableIndex = -1;
+
     TableWrapperImpl(TableAble tableAble, String alias, JoinType jointType) {
         this.tableAble = tableAble;
         this.alias = alias;
@@ -30,6 +34,15 @@ class TableWrapperImpl implements TableWrapper {
         Assert.state(this.onPredicateList.isEmpty(), "on clause ended.");
         this.onPredicateList.addAll(predicateList);
         this.onPredicateList = Collections.unmodifiableList(this.onPredicateList);
+    }
+
+    final void route(int dataSourceIndex, int tableIndex) {
+        this.dataSourceIndex = dataSourceIndex;
+        this.tableIndex = tableIndex;
+    }
+
+    final void route(int tableIndex) {
+        this.tableIndex = tableIndex;
     }
 
     public final TableAble tableAble() {
@@ -46,5 +59,15 @@ class TableWrapperImpl implements TableWrapper {
 
     public final List<IPredicate> onPredicateList() {
         return onPredicateList;
+    }
+
+    @Override
+    public final int dataSourceIndex() {
+        return this.dataSourceIndex;
+    }
+
+    @Override
+    public final int tableIndex() {
+        return this.tableIndex;
     }
 }
