@@ -15,34 +15,57 @@ import java.util.List;
  *         <li>{@code io.army.boot.RmSession}</li>
  *     </ul>
  * </p>
- *
  * @see GenericSyncApiSession
  */
 public interface GenericSyncSession extends GenericSession {
 
     GenericSyncSessionFactory sessionFactory();
 
+    /**
+     * @param <R> representing select result Java Type.
+     */
     @Nullable
     <R extends IDomain> R get(TableMeta<R> tableMeta, Object id);
 
+    /**
+     * @param <R> representing select result Java Type.
+     */
     @Nullable
     <R extends IDomain> R get(TableMeta<R> tableMeta, Object id, Visible visible);
 
+    /**
+     * @param <R> representing select result Java Type.
+     */
     @Nullable
     <R extends IDomain> R getByUnique(TableMeta<R> tableMeta, List<String> propNameList, List<Object> valueList);
 
+    /**
+     * @param <R> representing select result Java Type.
+     */
     @Nullable
     <R extends IDomain> R getByUnique(TableMeta<R> tableMeta, List<String> propNameList
             , List<Object> valueList, Visible visible);
 
+    /**
+     * @param <R> representing select result Java Type.
+     */
     @Nullable
     <R> R selectOne(Select select, Class<R> resultClass);
 
+    /**
+     * @param <R> representing select result Java Type.
+     */
     @Nullable
     <R> R selectOne(Select select, Class<R> resultClass, Visible visible);
 
+    /**
+     * @param <R> representing select result Java Type.
+     */
     <R> List<R> select(Select select, Class<R> resultClass);
 
+    /**
+     * @param <R> representing select result Java Type.
+     */
     <R> List<R> select(Select select, Class<R> resultClass, Visible visible);
 
     int subQueryInsert(Insert insert);
@@ -65,8 +88,14 @@ public interface GenericSyncSession extends GenericSession {
 
     long largeUpdate(Update update, Visible visible);
 
+    /**
+     * @param <R> representing returning result Java Type.
+     */
     <R> List<R> returningUpdate(Update update, Class<R> resultClass);
 
+    /**
+     * @param <R> representing returning result Java Type.
+     */
     <R> List<R> returningUpdate(Update update, Class<R> resultClass, Visible visible);
 
     int delete(Delete delete);
@@ -77,8 +106,14 @@ public interface GenericSyncSession extends GenericSession {
 
     long largeDelete(Delete delete, Visible visible);
 
+    /**
+     * @param <R> representing returning result Java Type.
+     */
     <R> List<R> returningDelete(Delete delete, Class<R> resultClass);
 
+    /**
+     * @param <R> representing returning result Java Type.
+     */
     <R> List<R> returningDelete(Delete delete, Class<R> resultClass, Visible visible);
 
 }

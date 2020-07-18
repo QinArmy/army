@@ -11,7 +11,7 @@ import java.util.List;
 interface InsertSQLExecutor {
 
 
-    void insert(InnerSession session, List<SQLWrapper> sqlWrapperList) throws InsertException;
+    void valueInsert(InnerSession session, List<SQLWrapper> sqlWrapperList) throws InsertException;
 
     int subQueryInsert(InnerSession session, SQLWrapper sqlWrapper) throws InsertException;
 

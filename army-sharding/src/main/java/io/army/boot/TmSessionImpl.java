@@ -20,11 +20,13 @@ import io.army.tx.TransactionStatus;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 import io.army.util.CriteriaUtils;
+import io.army.wrapper.SQLWrapper;
 
 import java.util.*;
 
 
 /**
+ * This class is a implementation of {@linkplain TmSession}.
  * <p>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
@@ -414,6 +416,7 @@ final class TmSessionImpl extends AbstractSyncApiSession implements TmSession {
      * @return a unmodifiable map. key : index of {@linkplain InnerBatchSingleDML#namedParamList()}
      * ,value : batch update rows of named param. if empty ,then not found route.
      * @see #batchUpdate(Update, Visible)
+     * @see io.army.boot.UpdateSQLExecutor#batchUpdate(InnerSession, SQLWrapper, Class, boolean)
      */
     private <V extends Number> Map<Integer, V> doBatchSingleDml(InnerBatchSingleDML dml, Class<V> valueType
             , final Visible visible) {
@@ -446,6 +449,7 @@ final class TmSessionImpl extends AbstractSyncApiSession implements TmSession {
      * @return a unmodifiable map, key : index of {@linkplain InnerBatchSingleDML#namedParamList()}
      * ,value : batch update rows of named param. if empty ,then not found route.
      * @see #doBatchSingleDml(InnerBatchSingleDML, Class, Visible)
+     * @see io.army.boot.UpdateSQLExecutor#batchUpdate(InnerSession, SQLWrapper, Class, boolean)
      */
     private <V extends Number> Map<Integer, V> doBatchSingleDmlWithNonNamedPredicates(InnerBatchSingleDML dml
             , DataSourceRoute route, Class<V> valueType, final Visible visible) {
@@ -466,6 +470,7 @@ final class TmSessionImpl extends AbstractSyncApiSession implements TmSession {
      * @return a unmodifiable map, key : index of {@linkplain InnerBatchSingleDML#namedParamList()}
      * ,value : batch update rows of named param. if empty ,then not found route.
      * @see #doBatchSingleDml(InnerBatchSingleDML, Class, Visible)
+     * @see io.army.boot.UpdateSQLExecutor#batchUpdate(InnerSession, SQLWrapper, Class, boolean)
      */
     private <V extends Number> Map<Integer, V> doBatchSingleDmlWithNamedPredicate(InnerBatchSingleDML dml
             , DataSourceRoute route, Class<V> valueType, final Visible visible) {
@@ -496,6 +501,7 @@ final class TmSessionImpl extends AbstractSyncApiSession implements TmSession {
      * @see #doBatchSingleDmlWithNamedPredicate(InnerBatchSingleDML, DataSourceRoute, Class, Visible)
      * @see #doBatchSingleDmlWithNonNamedPredicates(InnerBatchSingleDML, DataSourceRoute, Class, Visible)
      * @see #doBatchSingleDml(InnerBatchSingleDML, Class, Visible)
+     * @see io.army.boot.UpdateSQLExecutor#batchUpdate(InnerSession, SQLWrapper, Class, boolean)
      */
     private <V extends Number> Map<Integer, V> executeSingleDml(InnerBatchSingleDML dml, int dataSourceIndex
             , @Nullable Set<Integer> paramIndexSet, Class<V> valueType, final Visible visible) {

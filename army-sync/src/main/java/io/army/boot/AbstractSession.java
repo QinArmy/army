@@ -164,7 +164,7 @@ abstract class AbstractSession extends AbstractGenericSyncApiSession implements 
         try {
             //2. execute sql by connection
             this.sessionFactory.insertSQLExecutor()
-                    .insert(this, sqlWrapperList);
+                    .valueInsert(this, sqlWrapperList);
         } catch (Exception e) {
             markRollbackOnlyForChildInsert(sqlWrapperList);
             throw e;

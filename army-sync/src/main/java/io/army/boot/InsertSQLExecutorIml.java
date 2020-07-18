@@ -23,7 +23,7 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
     }
 
     @Override
-    public final void insert(InnerSession session, List<SQLWrapper> sqlWrapperList)
+    public final void valueInsert(InnerSession session, List<SQLWrapper> sqlWrapperList)
             throws InsertException {
         session.codecContextStatementType(StatementType.INSERT);
         try {
@@ -38,11 +38,14 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
                 } else if (sqlWrapper instanceof ChildSQLWrapper) {
                     this.doExecuteChild(session, (ChildSQLWrapper) sqlWrapper, false);
                 } else if (sqlWrapper instanceof BatchSimpleSQLWrapper) {
-                    this.doExecuteSimpleBatch(session, (BatchSimpleSQLWrapper) sqlWrapper);
+
+                    BatchSimpleSQLWrapper simpleSQLWrapper = (BatchSimpleSQLWrapper) sqlWrapper;
+                    assertBatchResult(simpleSQLWrapper, doExecuteBatch(session, simpleSQLWrapper));
+
                 } else if (sqlWrapper instanceof ChildBatchSQLWrapper) {
                     this.doExecuteChildBatch(session, (ChildBatchSQLWrapper) sqlWrapper);
                 } else {
-                    throw createNotSupportedException(sqlWrapper, "insert");
+                    throw createNotSupportedException(sqlWrapper, "valueInsert");
                 }
             }
         } finally {
@@ -121,7 +124,8 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
         rows = doExecuteUpdate(session, sqlWrapper);
         if (rows != 1) {
             throw new InsertException(ErrorCode.INSERT_ERROR
-                    , "sql[%s] multiInsert rows[%s] error.", sqlWrapper.sql(), rows);
+                    , "SessionFactory[%s] sql[%s] multiInsert rows[%s] error."
+                    , this.sessionFactory.name(), sqlWrapper.sql(), rows);
         }
     }
 
@@ -132,14 +136,16 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
         parentRows = doExecuteUpdate(session, childSQLWrapper.parentWrapper());
         if (!subQueryInsert && parentRows != 1) {
             throw new InsertException(ErrorCode.INSERT_ERROR
-                    , "sql[%s] multiInsert rows[%s] error.", childSQLWrapper.parentWrapper(), parentRows);
+                    , "SessionFactory[%s] sql[%s] multiInsert rows[%s] error."
+                    , this.sessionFactory.name(), childSQLWrapper.parentWrapper(), parentRows);
         }
         // secondly, execute child multiInsert sql
         childRows = doExecuteUpdate(session, childSQLWrapper.childWrapper());
         if (parentRows != childRows) {
             throw new InsertRowsNotMatchException(
-                    "child sql [%s] multiInsert rows[%s] and parent sql[%s] rows[%s] not match."
-                    , childSQLWrapper.childWrapper().sql(), childRows, childSQLWrapper.parentWrapper(), parentRows);
+                    "SessionFactory[%s] child sql [%s] multiInsert rows[%s] and parent sql[%s] rows[%s] not match."
+                    , this.sessionFactory.name(), childSQLWrapper.childWrapper().sql()
+                    , childRows, childSQLWrapper.parentWrapper(), parentRows);
         }
         return childRows;
     }
@@ -179,65 +185,69 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
         resultList = doExecuteSecondReturning(session, sqlWrapper.childWrapper(), beanWrapperMap);
 
         if (beanWrapperMap.size() != resultList.size()) {
-            throw createBatchNotMatchException(sqlWrapper.parentWrapper().sql(), sqlWrapper.childWrapper().sql()
-                    , beanWrapperMap.size(), resultList.size());
+            throw createBatchNotMatchException(this.sessionFactory.name(), sqlWrapper.parentWrapper().sql()
+                    , sqlWrapper.childWrapper().sql(), beanWrapperMap.size(), resultList.size());
         }
         return resultList;
     }
 
-    private void doExecuteSimpleBatch(InnerSession session, BatchSimpleSQLWrapper sqlWrapper) {
-        assertBatchResult(sqlWrapper, doExecuteBatch(session, sqlWrapper));
-    }
 
     private void doExecuteChildBatch(InnerSession session, ChildBatchSQLWrapper sqlWrapper) {
 
         final BatchSimpleSQLWrapper parentWrapper = sqlWrapper.parentWrapper();
         final BatchSimpleSQLWrapper childWrapper = sqlWrapper.childWrapper();
 
-        int[] parentRows, childRows;
+        Map<Integer, Integer> parenResultMap, childResultMap;
         // firstly, parent multiInsert sql
-        parentRows = doExecuteBatch(session, parentWrapper);
+        parenResultMap = doExecuteBatch(session, parentWrapper);
         // secondly,child multiInsert sql
-        childRows = doExecuteBatch(session, childWrapper);
+        childResultMap = doExecuteBatch(session, childWrapper);
 
-        assertBatchChildResult(parentWrapper, childWrapper, parentRows, childRows);
+        assertBatchChildResult(parentWrapper, childWrapper, parenResultMap, childResultMap);
     }
 
-    private void assertBatchResult(BatchSimpleSQLWrapper sqlWrapper, int[] domainRows) {
-        if (domainRows.length != sqlWrapper.paramGroupList().size()) {
-            throw new InsertRowsNotMatchException("batch  sql[%s] batch[%s] error"
-                    , sqlWrapper.sql(), domainRows.length);
+    private void assertBatchResult(BatchSimpleSQLWrapper sqlWrapper, Map<Integer, Integer> batchResultMap) {
+
+        if (batchResultMap.size() != sqlWrapper.paramGroupMap().size()) {
+            throw new InsertRowsNotMatchException("batch sql[%s] batch count , expected %s but %s ."
+                    , sqlWrapper.sql(), sqlWrapper.paramGroupMap().size(), batchResultMap.size());
         }
-        for (int i = 0; i < domainRows.length; i++) {
-            if (domainRows[i] != 1) {
+
+        for (Map.Entry<Integer, Integer> e : batchResultMap.entrySet()) {
+            if (e.getValue() != 1) {
                 throw new InsertRowsNotMatchException(
                         "batch  sql[%s]  index[%s] actual row count[%s] not 1 ."
-                        , sqlWrapper.sql(), i, domainRows[i]);
+                        , sqlWrapper.sql(), e.getKey(), e.getValue());
             }
         }
+
     }
 
     private void assertBatchChildResult(BatchSimpleSQLWrapper parentWrapper, BatchSimpleSQLWrapper childWrapper
-            , int[] parentRows, int[] childRows) {
-        if (parentRows.length != childRows.length || childRows.length != childWrapper.paramGroupList().size()) {
+            , Map<Integer, Integer> parenResultMap, Map<Integer, Integer> childResultMap) {
+        if (parenResultMap.size() != childResultMap.size()
+                || childResultMap.size() != childWrapper.paramGroupMap().size()) {
+
             throw new InsertRowsNotMatchException(
-                    "child sql[%s]  batch count[%s] and parent sql [%s] batch count[%s] not match."
-                    , childWrapper.sql(), childRows.length, parentWrapper.sql(), parentRows.length);
+                    "SessionFactory[%s] child sql[%s]  batch count[%s] and parent sql [%s] batch count[%s] not match."
+                    , this.sessionFactory.name(), childWrapper.sql(), childResultMap.size()
+                    , parentWrapper.sql(), parenResultMap.size());
         }
-        int parentRow;
-        for (int i = 0; i < parentRows.length; i++) {
-            parentRow = parentRows[i];
+        for (Map.Entry<Integer, Integer> p : parenResultMap.entrySet()) {
+            Integer parentRow = p.getValue();
             if (parentRow != 1) {
                 throw new InsertRowsNotMatchException(
-                        "batch  sql[%s]  index[%s] actual row count[%s] not 1 ."
-                        , parentWrapper.sql(), i, parentRow);
+                        "SessionFactory[%s] batch  sql[%s]  index[%s] actual row count[%s] not 1 ."
+                        , this.sessionFactory.name(), parentWrapper.sql(), p.getKey(), parentRow);
             }
-            if (parentRow != childRows[i]) {
+            if (!parentRow.equals(childResultMap.get(p.getKey()))) {
                 throw new InsertRowsNotMatchException(
-                        "child sql[%s]  batch[%s] rows[%s] and parent sql [%s] batch[%s] rows[%s] not match."
-                        , childWrapper.sql(), i, childRows[i], parentWrapper.sql(), i, parentRows[i]);
+                        "SessionFactory[%s] child sql[%s] index[%s] rows[%s] and parent sql [%s] rows[%s] not match."
+                        , this.sessionFactory.name(), childWrapper.sql(), p.getKey(), childResultMap.get(p.getKey())
+                        , parentWrapper.sql(), parentRow);
             }
         }
+
     }
 
 

@@ -7,8 +7,8 @@ import io.army.criteria.Insert;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
 import io.army.lang.Nullable;
-import io.army.tx.GenericSyncTransaction;
 import io.army.tx.NoSessionTransactionException;
+import io.army.tx.XATransaction;
 
 import java.io.Flushable;
 import java.util.Map;
@@ -21,7 +21,10 @@ import java.util.Set;
  */
 interface RmSession extends GenericSyncSession, AutoCloseable, Flushable {
 
-    GenericSyncTransaction sessionTransaction() throws NoSessionTransactionException;
+    @Override
+    RmSessionFactory sessionFactory();
+
+    XATransaction sessionTransaction() throws NoSessionTransactionException;
 
     /**
      * @return a unmodifiable map

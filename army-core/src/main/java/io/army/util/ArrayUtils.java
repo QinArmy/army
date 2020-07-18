@@ -3,33 +3,9 @@ package io.army.util;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 
-import java.time.*;
 import java.util.*;
 
 public abstract class ArrayUtils {
-
-
-    public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
-
-    public static final String[] EMPTY_STRING_ARRAY = new String[0];
-
-    public static final Integer[] EMPTY_INTEGER_ARRAY = new Integer[0];
-
-    public static final Long[] EMPTY_LONG_ARRAY = new Long[0];
-
-    public static final int[] EMPTY_INT_ARRAY = new int[0];
-
-    public static final LocalTime[] EMPTY_TIME = new LocalTime[0];
-
-    public static final LocalDate[] EMPTY_DATE = new LocalDate[0];
-
-    public static final YearMonth[] EMPTY_YEAR_MONTH = new YearMonth[0];
-
-    public static final MonthDay[] EMPTY_MONTH_DAY = new MonthDay[0];
-
-    public static final LocalDateTime[] EMPTY_DATE_TIME = new LocalDateTime[0];
-
-    public static final ZonedDateTime[] EMPTY_ZONE_DATE_TIME = new ZonedDateTime[0];
 
 
     @NonNull
@@ -116,5 +92,43 @@ public abstract class ArrayUtils {
             return Collections.unmodifiableList((List<T>) collection);
         }
         return Collections.unmodifiableList(asList(collection, addElements));
+    }
+
+    public static Map<Integer, Integer> asUnmodifiableMap(int[] array) {
+        Map<Integer, Integer> map;
+        switch (array.length) {
+            case 0:
+                map = Collections.emptyMap();
+                break;
+            case 1:
+                map = Collections.singletonMap(0, array[0]);
+                break;
+            default:
+                map = new HashMap<>((int) (array.length / 0.75f));
+                for (int i = 0; i < array.length; i++) {
+                    map.put(i, array[i]);
+                }
+                map = Collections.unmodifiableMap(map);
+        }
+        return map;
+    }
+
+    public static Map<Integer, Long> asUnmodifiableMap(long[] array) {
+        Map<Integer, Long> map;
+        switch (array.length) {
+            case 0:
+                map = Collections.emptyMap();
+                break;
+            case 1:
+                map = Collections.singletonMap(0, array[0]);
+                break;
+            default:
+                map = new HashMap<>((int) (array.length / 0.75f));
+                for (int i = 0; i < array.length; i++) {
+                    map.put(i, array[i]);
+                }
+                map = Collections.unmodifiableMap(map);
+        }
+        return map;
     }
 }

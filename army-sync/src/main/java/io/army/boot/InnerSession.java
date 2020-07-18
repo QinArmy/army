@@ -1,6 +1,6 @@
 package io.army.boot;
 
-import io.army.Session;
+import io.army.GenericSyncSession;
 import io.army.codec.StatementType;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
@@ -8,7 +8,7 @@ import io.army.lang.Nullable;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-interface InnerSession extends Session {
+interface InnerSession extends GenericSyncSession {
 
     PreparedStatement createStatement(String sql, boolean generatedKey) throws SQLException;
 

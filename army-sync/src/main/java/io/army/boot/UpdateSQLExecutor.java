@@ -1,22 +1,29 @@
 package io.army.boot;
 
+import io.army.wrapper.BatchSimpleSQLWrapper;
 import io.army.wrapper.SQLWrapper;
 
 import java.util.List;
+import java.util.Map;
 
 interface UpdateSQLExecutor {
 
-    int update(InnerSession session, SQLWrapper sqlWrapper);
+    int update(InnerSession session, SQLWrapper sqlWrapper, boolean updateStatement);
 
-    int[] batchUpdate(InnerSession session, SQLWrapper sqlWrapper);
+    long largeUpdate(InnerSession session, SQLWrapper sqlWrapper, boolean updateStatement);
 
-    long largeUpdate(InnerSession session, SQLWrapper sqlWrapper);
+    /**
+     * @param <V> return map's value java type.
+     * @return a unmodifiable map, key : key of {@linkplain BatchSimpleSQLWrapper#paramGroupMap()}
+     * * ,value : batch update rows of named param.
+     */
+    <V extends Number> Map<Integer, V> batchUpdate(InnerSession session, SQLWrapper sqlWrapper
+            , Class<V> mapValueClass, boolean updateStatement);
 
-    long[] batchLargeUpdate(InnerSession session, SQLWrapper sqlWrapper);
-
-    <T> List<T> returningUpdate(InnerSession session, SQLWrapper sqlWrapper, Class<T> resultClass);
+    <T> List<T> returningUpdate(InnerSession session, SQLWrapper sqlWrapper, Class<T> resultClass
+            , boolean updateStatement);
 
     static UpdateSQLExecutor build(InnerSyncSessionFactory sessionFactory) {
-        return UpdateSQLExecutorImpl.build(sessionFactory);
+        return new UpdateSQLExecutorImpl(sessionFactory);
     }
 }

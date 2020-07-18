@@ -4,5 +4,6 @@ public enum StatementType {
 
     INSERT,
     UPDATE,
+    DELETE,
     SELECT
 }

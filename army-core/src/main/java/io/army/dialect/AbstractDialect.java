@@ -137,13 +137,13 @@ public abstract class AbstractDialect implements InnerDialect {
     /*################################## blow DML method ##################################*/
 
     @Override
-    public final List<SQLWrapper> subQueryInsert(Insert insert, Visible visible) {
-        return this.dml.subQueryInsert(insert, visible);
+    public final List<SQLWrapper> valueInsert(Insert insert, @Nullable Set<Integer> domainIndexSet, Visible visible) {
+        return this.dml.valueInsert(insert, domainIndexSet, visible);
     }
 
     @Override
-    public final List<SQLWrapper> valueInsert(Insert insert, @Nullable Set<Integer> domainIndexSet, Visible visible) {
-        return this.dml.valueInsert(insert, domainIndexSet, visible);
+    public final List<SQLWrapper> subQueryInsert(Insert insert, Visible visible) {
+        return this.dml.subQueryInsert(insert, visible);
     }
 
     @Override

@@ -7,22 +7,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 
+/**
+ * <p>
+ * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
+ * </p>
+ */
 final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQLExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(UpdateSQLExecutorImpl.class);
 
-    static UpdateSQLExecutorImpl build(InnerSyncSessionFactory sessionFactory) {
-        return new UpdateSQLExecutorImpl(sessionFactory);
-    }
 
     UpdateSQLExecutorImpl(InnerSyncSessionFactory sessionFactory) {
         super(sessionFactory);
     }
 
     @Override
-    public final int update(InnerSession session, SQLWrapper sqlWrapper) {
-        session.codecContextStatementType(StatementType.UPDATE);
+    public final int update(InnerSession session, SQLWrapper sqlWrapper, boolean updateStatement) {
+        session.codecContextStatementType(updateStatement ? StatementType.UPDATE : StatementType.DELETE);
         try {
             if (this.sessionFactory.showSQL()) {
                 LOG.info("army will execute update sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
@@ -42,8 +45,8 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     }
 
     @Override
-    public final long largeUpdate(InnerSession session, SQLWrapper sqlWrapper) {
-        session.codecContextStatementType(StatementType.UPDATE);
+    public final long largeUpdate(InnerSession session, SQLWrapper sqlWrapper, boolean updateStatement) {
+        session.codecContextStatementType(updateStatement ? StatementType.UPDATE : StatementType.DELETE);
         try {
             if (this.sessionFactory.showSQL()) {
                 LOG.info("army will execute update sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
@@ -63,50 +66,9 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     }
 
     @Override
-    public final int[] batchUpdate(InnerSession session, SQLWrapper sqlWrapper) {
-        session.codecContextStatementType(StatementType.UPDATE);
-        try {
-            if (this.sessionFactory.showSQL()) {
-                LOG.info("army will execute  sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
-            }
-            int[] updateRows;
-            if (sqlWrapper instanceof BatchSimpleSQLWrapper) {
-                updateRows = doExecuteBatch(session, (BatchSimpleSQLWrapper) sqlWrapper);
-            } else if (sqlWrapper instanceof ChildBatchSQLWrapper) {
-                updateRows = doBatchChildUpdate(session, (ChildBatchSQLWrapper) sqlWrapper);
-            } else {
-                throw createNotSupportedException(sqlWrapper, "batchUpdate");
-            }
-            return updateRows;
-        } finally {
-            session.codecContextStatementType(null);
-        }
-    }
-
-    @Override
-    public final long[] batchLargeUpdate(InnerSession session, SQLWrapper sqlWrapper) {
-        session.codecContextStatementType(StatementType.UPDATE);
-        try {
-            if (this.sessionFactory.showSQL()) {
-                LOG.info("army will execute  sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
-            }
-            long[] updateRows;
-            if (sqlWrapper instanceof BatchSimpleSQLWrapper) {
-                updateRows = doExecuteLargeBatch(session, (BatchSimpleSQLWrapper) sqlWrapper);
-            } else if (sqlWrapper instanceof ChildBatchSQLWrapper) {
-                updateRows = doBatchChildLargeUpdate(session, (ChildBatchSQLWrapper) sqlWrapper);
-            } else {
-                throw createNotSupportedException(sqlWrapper, "batchUpdateLarge");
-            }
-            return updateRows;
-        } finally {
-            session.codecContextStatementType(null);
-        }
-    }
-
-    @Override
-    public final <T> List<T> returningUpdate(InnerSession session, SQLWrapper sqlWrapper, Class<T> resultClass) {
-        session.codecContextStatementType(StatementType.UPDATE);
+    public final <T> List<T> returningUpdate(InnerSession session, SQLWrapper sqlWrapper, Class<T> resultClass
+            , boolean updateStatement) {
+        session.codecContextStatementType(updateStatement ? StatementType.UPDATE : StatementType.DELETE);
         try {
             if (this.sessionFactory.showSQL()) {
                 LOG.info("army will execute  sql:\n{}", this.sessionFactory.dialect().showSQL(sqlWrapper));
@@ -125,7 +87,40 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
         }
     }
 
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public final <V extends Number> Map<Integer, V> batchUpdate(InnerSession session, SQLWrapper sqlWrapper
+            , Class<V> mapValueClass, boolean updateStatement) {
+
+        session.codecContextStatementType(updateStatement ? StatementType.UPDATE : StatementType.DELETE);
+        try {
+            if (this.sessionFactory.showSQL()) {
+                LOG.info("army will execute batch update/delete sql:\n{}"
+                        , this.sessionFactory.dialect().showSQL(sqlWrapper));
+            }
+            Map<Integer, V> batchResultMap;
+            if (sqlWrapper instanceof BatchSimpleSQLWrapper) {
+                if (mapValueClass == Integer.class) {
+                    batchResultMap = (Map<Integer, V>) doExecuteBatch(session, (BatchSimpleSQLWrapper) sqlWrapper);
+                } else if (mapValueClass == Long.class) {
+                    batchResultMap = (Map<Integer, V>) doExecuteLargeBatch(session, (BatchSimpleSQLWrapper) sqlWrapper);
+                } else {
+                    throw new IllegalArgumentException("mapValueClass error.");
+                }
+            } else if (sqlWrapper instanceof ChildBatchSQLWrapper) {
+                batchResultMap = doBatchChildUpdate(session, (ChildBatchSQLWrapper) sqlWrapper, mapValueClass);
+            } else {
+                throw createNotSupportedException(sqlWrapper, "batchUpdate");
+            }
+            return batchResultMap;
+        } finally {
+            session.codecContextStatementType(null);
+        }
+    }
+
     /*################################## blow private method ##################################*/
+
 
     private long doChildUpdate(InnerSession session, ChildSQLWrapper childSQLWrapper, final boolean large) {
         final SimpleSQLWrapper parentWrapper = childSQLWrapper.parentWrapper();
@@ -153,80 +148,62 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     }
 
 
-    private int[] doBatchChildUpdate(InnerSession session, ChildBatchSQLWrapper sqlWrapper) {
+    @SuppressWarnings("unchecked")
+    private <V extends Number> Map<Integer, V> doBatchChildUpdate(InnerSession session
+            , ChildBatchSQLWrapper sqlWrapper, Class<V> mapValueClass) {
         final BatchSimpleSQLWrapper parentWrapper = sqlWrapper.parentWrapper();
         final BatchSimpleSQLWrapper childWrapper = sqlWrapper.childWrapper();
 
-        int[] parentRows, childRows;
-        parentRows = doExecuteBatch(session, parentWrapper);
-        childRows = doExecuteBatch(session, childWrapper);
+        Map<Integer, V> batchResultMap;
+        if (mapValueClass == Integer.class) {
+            Map<Integer, Integer> parentResultMap, childResultMap;
+            // firstly, execute child sql
+            childResultMap = doExecuteBatch(session, childWrapper);
+            // secondly,execute parent sql
+            parentResultMap = doExecuteBatch(session, parentWrapper);
+            // assert child execute result and parent result match.
+            assertParentChildBatchResult(parentResultMap, childResultMap, sqlWrapper);
 
-        assertBatchUpdateRows(childRows, parentRows, sqlWrapper);
-        return childRows;
+            batchResultMap = (Map<Integer, V>) childResultMap;
+        } else if (mapValueClass == Long.class) {
+            Map<Integer, Long> parentResultMap, childResultMap;
+            // firstly, execute child sql
+            childResultMap = doExecuteLargeBatch(session, childWrapper);
+            // secondly,execute parent sql
+            parentResultMap = doExecuteLargeBatch(session, parentWrapper);
+            // assert child execute result and parent result match.
+            assertParentChildBatchResult(parentResultMap, childResultMap, sqlWrapper);
+
+            batchResultMap = (Map<Integer, V>) childResultMap;
+        } else {
+            throw new IllegalArgumentException("mapValueClass error.");
+        }
+        return batchResultMap;
     }
 
-    private long[] doBatchChildLargeUpdate(InnerSession session, ChildBatchSQLWrapper sqlWrapper) {
-        final BatchSimpleSQLWrapper parentWrapper = sqlWrapper.parentWrapper();
-        final BatchSimpleSQLWrapper childWrapper = sqlWrapper.childWrapper();
+    private void assertParentChildBatchResult(Map<Integer, ? extends Number> parentResultMap
+            , Map<Integer, ? extends Number> childResultMap, ChildBatchSQLWrapper sqlWrapper) {
 
-        long[] parentRows, childRows;
-        parentRows = doExecuteLargeBatch(session, parentWrapper);
-        childRows = doExecuteLargeBatch(session, childWrapper);
-
-        assertBatchLargeUpdateRows(childRows, parentRows, sqlWrapper);
-        return childRows;
-    }
-
-    private static void assertBatchLargeUpdateRows(long[] childRows, long[] parentRows
-            , ChildBatchSQLWrapper sqlWrapper) {
-
-        if (parentRows.length != childRows.length) {
+        if (parentResultMap.size() != childResultMap.size()) {
             // check domain update batch match.
-            throw createBatchNotMatchException(sqlWrapper.parentWrapper().sql(), sqlWrapper.childWrapper().sql()
-                    , parentRows.length, childRows.length);
+            throw createBatchNotMatchException(this.sessionFactory.name(), sqlWrapper.parentWrapper().sql()
+                    , sqlWrapper.childWrapper().sql()
+                    , parentResultMap.size(), childResultMap.size());
         }
 
-        final int len = childRows.length;
-        long parentUpdateRows;
-        for (int i = 0; i < len; i++) {
-            parentUpdateRows = parentRows[i];
-            if (parentUpdateRows != childRows[i]) {
+        for (Map.Entry<Integer, ? extends Number> p : parentResultMap.entrySet()) {
+            Number parentUpdateRows = p.getValue();
+            if (!parentUpdateRows.equals(childResultMap.get(p.getKey()))) {
                 throw createBatchItemNotMatchException(sqlWrapper.parentWrapper().sql(), sqlWrapper.childWrapper().sql()
-                        , i, parentRows[i], childRows[i]);
+                        , p.getKey(), parentUpdateRows, childResultMap.get(p.getKey()));
             }
-            if (parentUpdateRows < 1 && sqlWrapper.parentWrapper().hasVersion()) {
-                // use child sql,developer can find child table
-                throw createOptimisticLockException(sqlWrapper.childWrapper().sql());
-            }
-        }
 
-    }
-
-    private static void assertBatchUpdateRows(int[] childRows, int[] parentRows, ChildBatchSQLWrapper sqlWrapper) {
-
-        if (parentRows.length != childRows.length) {
-            // check domain update batch match.
-            throw createBatchNotMatchException(sqlWrapper.parentWrapper().sql(), sqlWrapper.childWrapper().sql()
-                    , parentRows.length, childRows.length);
-        }
-
-        final int len = childRows.length;
-        int parentUpdateRows;
-        for (int i = 0; i < len; i++) {
-            parentUpdateRows = parentRows[i];
-            if (parentUpdateRows != childRows[i]) {
-                throw createBatchItemNotMatchException(sqlWrapper.parentWrapper().sql(), sqlWrapper.childWrapper().sql()
-                        , i, parentRows[i], childRows[i]);
-            }
-            if (parentUpdateRows < 1 && sqlWrapper.parentWrapper().hasVersion()) {
-                // use child sql,developer can find child table
-                throw createOptimisticLockException(sqlWrapper.childWrapper().sql());
-            }
         }
     }
 
-    private static DomainUpdateException createBatchItemNotMatchException(String parentSql, String childSql, int index
-            , long parentRows, long childRows) {
+    private static DomainUpdateException createBatchItemNotMatchException(String parentSql
+            , String childSql, Integer index
+            , Number parentRows, Number childRows) {
         throw new DomainUpdateException(
                 "Domain update,index[%s] parent sql[%s] update rows[%s] and" +
                         " child sql[%s] update rows[%s] not match."
