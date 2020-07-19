@@ -31,7 +31,7 @@ public abstract class AbstractDialect implements InnerDialect {
 
     protected final GenericSessionFactory sessionFactory;
 
-    private final DDL tableDDL;
+    private final DDL ddl;
 
     private final DML dml;
 
@@ -49,7 +49,7 @@ public abstract class AbstractDialect implements InnerDialect {
         this.keywords = Collections.unmodifiableSet(createKeywordsSet());
         this.sessionFactory = sessionFactory;
 
-        this.tableDDL = createTableDDL();
+        this.ddl = createTableDDL();
         this.dml = createDML();
         this.dql = createDQL();
 
@@ -93,27 +93,27 @@ public abstract class AbstractDialect implements InnerDialect {
 
     @Override
     public final List<String> createTable(TableMeta<?> tableMeta) {
-        return tableDDL.createTable(tableMeta);
+        return ddl.createTable(tableMeta);
     }
 
     @Override
     public final List<String> addColumn(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> addFieldMetas) {
-        return tableDDL.addColumn(tableMeta, addFieldMetas);
+        return ddl.addColumn(tableMeta, addFieldMetas);
     }
 
     @Override
     public final List<String> changeColumn(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> changeFieldMetas) {
-        return tableDDL.changeColumn(tableMeta, changeFieldMetas);
+        return ddl.changeColumn(tableMeta, changeFieldMetas);
     }
 
     @Override
     public final List<String> addIndex(TableMeta<?> tableMeta, Collection<IndexMeta<?>> indexMetas) {
-        return tableDDL.addIndex(tableMeta, indexMetas);
+        return ddl.addIndex(tableMeta, indexMetas);
     }
 
     @Override
     public final List<String> dropIndex(TableMeta<?> tableMeta, Collection<String> indexNames) {
-        return tableDDL.dropIndex(tableMeta, indexNames);
+        return ddl.dropIndex(tableMeta, indexNames);
     }
 
     /*################################## blow DQL method ##################################*/
@@ -142,7 +142,7 @@ public abstract class AbstractDialect implements InnerDialect {
     }
 
     @Override
-    public final List<SQLWrapper> subQueryInsert(Insert insert, Visible visible) {
+    public final SQLWrapper subQueryInsert(Insert insert, Visible visible) {
         return this.dml.subQueryInsert(insert, visible);
     }
 

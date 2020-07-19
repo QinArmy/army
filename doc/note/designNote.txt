@@ -66,3 +66,5 @@
 17. 为什么 FieldMeta , ComposeRefSelection 和 RefSelection 的 as() 方法每次都要返回新的实例?
 (1) 因为 FieldMeta ,ComposeRefSelection 和 RefSelection 都是对字段的引用,在它的上下文中逻辑上必须是唯一的,否则阄产生 bug.
 
+18. 为什么 可 分片中 SubInsert 的 target table 必须指定表 索引,不允许由子查询推导,因为子查询是可以 join 的
+,如果由子查询推导则会造成 分片算法的不确定性和复杂化。

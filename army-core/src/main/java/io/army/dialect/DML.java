@@ -14,7 +14,7 @@ public interface DML extends SQL {
 
     List<SQLWrapper> valueInsert(Insert insert, @Nullable Set<Integer> domainIndexSet, Visible visible);
 
-    List<SQLWrapper> subQueryInsert(Insert insert, Visible visible);
+    SQLWrapper subQueryInsert(Insert insert, Visible visible);
 
     SQLWrapper simpleUpdate(Update update, Visible visible);
 

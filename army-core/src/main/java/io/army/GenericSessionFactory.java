@@ -9,6 +9,7 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
+import io.army.sharding.TableRoute;
 
 import java.time.ZoneId;
 import java.util.List;
@@ -45,6 +46,11 @@ public interface GenericSessionFactory {
 
     boolean supportSessionCache();
 
+    @Nullable
+    GenericSessionFactory tmSessionFactory();
+
+    boolean shardingSubQueryInsert();
+
     /**
      * Is this factory already closed?
      *
@@ -58,5 +64,5 @@ public interface GenericSessionFactory {
 
     boolean formatSQL();
 
-
+    TableRoute tableRoute(TableMeta<?> tableMeta);
 }

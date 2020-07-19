@@ -63,7 +63,6 @@ public abstract class ObjectAccessorFactory {
             readonlyWrapper = new MapReadonlyWrapper((Map<String, Object>) target);
         } else {
             readonlyWrapper = new ReadonlyWrapperImpl(target);
-            ;
         }
         return readonlyWrapper;
     }

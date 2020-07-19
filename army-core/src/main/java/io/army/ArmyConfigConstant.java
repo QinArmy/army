@@ -48,4 +48,6 @@ public interface ArmyConfigConstant {
 
     String SESSION_CACHE = "army.%s.session.cache";
 
+    String SHARDING_SUB_QUERY_INSERT = "army.%s.sharding.sub.query.insert.enable";
+
 }

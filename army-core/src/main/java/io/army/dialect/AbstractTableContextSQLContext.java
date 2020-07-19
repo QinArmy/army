@@ -1,5 +1,6 @@
 package io.army.dialect;
 
+import io.army.ShardingMode;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Visible;
 import io.army.meta.ChildTableMeta;
@@ -48,7 +49,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         if (!this.tableContext.tableCountMap.containsKey(tableMeta)) {
             throw DialectUtils.createUnKnownTableException(tableMeta);
         }
-        doAppendTable(tableMeta);
+        doAppendTable(tableMeta, this.sqlBuilder);
     }
 
     @Override
@@ -89,15 +90,23 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         return tableAlias;
     }
 
-    protected final void doAppendTable(TableMeta<?> tableMeta) {
-        this.sqlBuilder
-                .append(" ")
+    protected final void doAppendTable(TableMeta<?> tableMeta, StringBuilder builder) {
+        builder.append(" ")
                 .append(this.dialect.quoteIfNeed(tableMeta.tableName()));
 
-        doAppendTableSuffix(tableMeta);
+        if (this.dialect.sessionFactory().shardingMode() != ShardingMode.NO_SHARDING) {
+            TableMeta<?> actualTable;
+            if (tableMeta instanceof ChildTableMeta) {
+                actualTable = ((ChildTableMeta<?>) tableMeta).parentMeta();
+            } else {
+                actualTable = tableMeta;
+            }
+            doAppendTableSuffix(actualTable, builder);
+        }
+
     }
 
-    private void doAppendTableSuffix(TableMeta<?> tableMeta) {
+    protected void doAppendTableSuffix(TableMeta<?> actualTable, StringBuilder builder) {
 
     }
 

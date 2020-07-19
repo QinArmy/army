@@ -1,6 +1,8 @@
 package io.army;
 
 import io.army.dialect.SQLDialect;
+import io.army.meta.TableMeta;
+import io.army.sharding.DataSourceRoute;
 
 import java.util.Map;
 
@@ -11,6 +13,8 @@ public interface TmSessionFactory extends GenericSyncSessionFactory {
     Map<String, SQLDialect> actualSQLDialectMap();
 
     boolean currentSessionContextIsInstanceOf(Class<?> currentSessionContextClass);
+
+    DataSourceRoute dataSourceRoute(TableMeta<?> tableMeta);
 
     SessionBuilder builder();
 

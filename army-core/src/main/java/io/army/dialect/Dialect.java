@@ -5,7 +5,7 @@ import io.army.wrapper.SQLWrapper;
 /**
  * A common interface to all dialect of dialect.
  */
-public interface Dialect extends DDL, DML, DQL {
+public interface Dialect extends DDL, DML, DQL, TCL {
 
     String showSQL(SQLWrapper sqlWrapper);
 

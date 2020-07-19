@@ -5,6 +5,5 @@ package io.army.sharding;
  */
 public interface Route {
 
-    String convertToSuffix(int tableIndex);
 
 }

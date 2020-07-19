@@ -287,7 +287,7 @@ abstract class DMLUtils {
     }
 
     static void createStandardInsertForSimple(TableMeta<?> physicalTable, Collection<FieldMeta<?, ?>> fieldMetas
-            , ReadonlyWrapper domainWrapper, StandardInsertContext context) {
+            , ReadonlyWrapper domainWrapper, ValueInsertContext context) {
 
         final GenericSessionFactory sessionFactory = context.dialect.sessionFactory();
         final StringBuilder fieldBuilder = context.fieldsBuilder().append("INSERT INTO");
@@ -337,7 +337,7 @@ abstract class DMLUtils {
 
 
     static void createStandardBatchInsertForSimple(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> fieldMetas
-            , StandardInsertContext context) {
+            , ValueInsertContext context) {
 
         StringBuilder fieldBuilder = context.fieldsBuilder()
                 .append("INSERT INTO");
@@ -380,14 +380,21 @@ abstract class DMLUtils {
 
         final List<IDomain> domainList = insert.valueList();
 
-        Map<Integer, List<ParamWrapper>> parentParamGroupMap, childParamGroupMap = new HashMap<>();
+        int groupMapCapacity;
+        if (domainIndexSet == null) {
+            groupMapCapacity = (int) (domainList.size() / 0.75F);
+        } else {
+            groupMapCapacity = (int) (domainIndexSet.size() / 0.75F);
+        }
+
+        Map<Integer, List<ParamWrapper>> parentParamGroupMap, childParamGroupMap = new HashMap<>(groupMapCapacity);
         SimpleSQLWrapper parentWrapper, childWrapper;
         // extract parentWrapper,childWrapper
         if (sqlWrapper instanceof ChildSQLWrapper) {
             ChildSQLWrapper childSQLWrapper = (ChildSQLWrapper) sqlWrapper;
             parentWrapper = childSQLWrapper.parentWrapper();
             childWrapper = childSQLWrapper.childWrapper();
-            parentParamGroupMap = new HashMap<>();
+            parentParamGroupMap = new HashMap<>(groupMapCapacity);
         } else if (sqlWrapper instanceof SimpleSQLWrapper) {
             parentWrapper = null;
             parentParamGroupMap = Collections.emptyMap();
@@ -467,46 +474,76 @@ abstract class DMLUtils {
         return value;
     }
 
-    static SQLWrapper createBatchSQLWrapper(Collection<Object> namedParamList, final SQLWrapper sqlWrapper) {
+    static SQLWrapper createBatchSQLWrapper(List<Object> namedParamList, @Nullable Set<Integer> namedParamIexSet
+            , final SQLWrapper sqlWrapper) {
 
-        List<List<ParamWrapper>> parentParamGroupList, childParamGroupList = new ArrayList<>(namedParamList.size());
+        int groupMapCapacity;
+        if (namedParamIexSet == null) {
+            groupMapCapacity = (int) (namedParamList.size() / 0.75F);
+        } else {
+            groupMapCapacity = (int) (namedParamIexSet.size() / 0.75F);
+        }
+
+        Map<Integer, List<ParamWrapper>> parentParamGroupMap, childParamGroupMap = new HashMap<>(groupMapCapacity);
         SimpleSQLWrapper parentWrapper, childWrapper;
         // extract parentWrapper,childWrapper
         if (sqlWrapper instanceof ChildSQLWrapper) {
             ChildSQLWrapper childSQLWrapper = (ChildSQLWrapper) sqlWrapper;
             parentWrapper = childSQLWrapper.parentWrapper();
             childWrapper = childSQLWrapper.childWrapper();
-            parentParamGroupList = new ArrayList<>(namedParamList.size());
+            parentParamGroupMap = new HashMap<>(groupMapCapacity);
         } else if (sqlWrapper instanceof SimpleSQLWrapper) {
             parentWrapper = null;
-            parentParamGroupList = Collections.emptyList();
+            parentParamGroupMap = Collections.emptyMap();
             childWrapper = (SimpleSQLWrapper) sqlWrapper;
         } else {
             throw new IllegalArgumentException(String.format("SQLWrapper[%s] supported", sqlWrapper));
         }
 
-        for (Object paramObject : namedParamList) {
-            // 1. create access object
-            ReadonlyWrapper readonlyWrapper = ObjectAccessorFactory.forReadonlyAccess(paramObject);
-            // 2. create param group list
-            if (sqlWrapper instanceof ChildSQLWrapper) {
-                parentParamGroupList.add(
-                        // create paramWrapperList for parent
-                        createBatchNamedParamList(readonlyWrapper, parentWrapper.paramList())
+        final List<ParamWrapper> childPlaceholderList = childWrapper.paramList();
+        if (namedParamIexSet == null) {
+            final int size = namedParamList.size();
+            for (int i = 0; i < size; i++) {
+                // 1. create access object
+                ReadonlyWrapper readonlyWrapper = ObjectAccessorFactory.forReadonlyAccess(namedParamList.get(i));
+                // 2. create param group list
+                if (sqlWrapper instanceof ChildSQLWrapper) {
+                    parentParamGroupMap.put(i
+                            // create paramWrapperList for parent
+                            , createBatchNamedParamList(readonlyWrapper, parentWrapper.paramList())
+                    );
+                }
+                childParamGroupMap.put(i
+                        // create paramWrapperList for child
+                        , createBatchNamedParamList(readonlyWrapper, childPlaceholderList)
                 );
             }
-            childParamGroupList.add(
-                    // create paramWrapperList for child
-                    createBatchNamedParamList(readonlyWrapper, childWrapper.paramList())
-            );
+        } else {
+            for (Integer namedParamIndex : namedParamIexSet) {
+                // 1. create access object
+                ReadonlyWrapper readonlyWrapper = ObjectAccessorFactory.forReadonlyAccess(
+                        namedParamList.get(namedParamIndex));
+                // 2. create param group list
+                if (sqlWrapper instanceof ChildSQLWrapper) {
+                    parentParamGroupMap.put(namedParamIndex
+                            // create paramWrapperList for parent
+                            , createBatchNamedParamList(readonlyWrapper, parentWrapper.paramList())
+                    );
+                }
+                childParamGroupMap.put(namedParamIndex
+                        // create paramWrapperList for child
+                        , createBatchNamedParamList(readonlyWrapper, childPlaceholderList)
+                );
+            }
         }
+
         // 3. create BatchSimpleSQLWrapper
         BatchSimpleSQLWrapper childBatchWrapper = BatchSimpleSQLWrapper.build(childWrapper.sql()
-                , childParamGroupList, childWrapper.hasVersion());
+                , childParamGroupMap, childWrapper.hasVersion());
         SQLWrapper batchSQLWrapper;
         if (sqlWrapper instanceof ChildSQLWrapper) {
             BatchSimpleSQLWrapper parentBatchWrapper = BatchSimpleSQLWrapper.build(
-                    parentWrapper.sql(), parentParamGroupList, parentWrapper.hasVersion());
+                    parentWrapper.sql(), parentParamGroupMap, parentWrapper.hasVersion());
             batchSQLWrapper = ChildBatchSQLWrapper.build(parentBatchWrapper, childBatchWrapper);
         } else {
             batchSQLWrapper = childBatchWrapper;
@@ -530,9 +567,7 @@ abstract class DMLUtils {
                 paramWrapperList.add(paramWrapper);
             }
         }
-        return paramWrapperList.isEmpty()
-                ? Collections.emptyList()
-                : Collections.unmodifiableList(paramWrapperList);
+        return Collections.unmodifiableList(paramWrapperList);
     }
 
     private static List<ParamWrapper> createBatchInsertParamList(ReadonlyWrapper beanWrapper
@@ -554,7 +589,7 @@ abstract class DMLUtils {
                 paramWrapperList.add(placeHolder);
             }
         }
-        return paramWrapperList.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(paramWrapperList);
+        return Collections.unmodifiableList(paramWrapperList);
     }
 
 

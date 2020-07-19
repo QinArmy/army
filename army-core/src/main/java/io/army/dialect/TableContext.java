@@ -37,6 +37,7 @@ public final class TableContext {
                     throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "TableMeta[%s] alias[%s] duplication."
                             , tableMeta, tableWrapper.alias());
                 }
+
             }
         }
 
@@ -66,17 +67,30 @@ public final class TableContext {
 
     final Map<TableMeta<?>, String> tableAliasMap;
 
+
     private TableContext(Map<TableMeta<?>, Integer> tableCountMap
             , Map<String, TableMeta<?>> aliasTableMap
             , Map<TableMeta<?>, String> tableAliasMap) {
         this.tableCountMap = tableCountMap;
         this.aliasTableMap = aliasTableMap;
         this.tableAliasMap = tableAliasMap;
+
     }
 
     private TableContext() {
         this.tableCountMap = Collections.emptyMap();
         this.aliasTableMap = Collections.emptyMap();
         this.tableAliasMap = Collections.emptyMap();
+    }
+
+    boolean single() {
+        return this.tableCountMap.size() == 1;
+    }
+
+    TableMeta<?> singleTable() {
+        if (!single()) {
+            throw new IllegalStateException("not single table");
+        }
+        return this.tableCountMap.keySet().iterator().next();
     }
 }
