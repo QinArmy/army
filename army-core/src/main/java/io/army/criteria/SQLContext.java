@@ -1,21 +1,13 @@
 package io.army.criteria;
 
 import io.army.dialect.DQL;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
 import io.army.wrapper.ParamWrapper;
 
 public interface SQLContext {
-
-    /**
-     * <p>
-     * the key of sharding  {@link TableMeta} in same database.
-     * </p>
-     *
-     * @param tableMeta {@link TableMeta} that will be append table name .
-     */
-    void appendTable(TableMeta<?> tableMeta);
 
 
     void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta);

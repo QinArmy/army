@@ -2,6 +2,7 @@ package io.army.dialect;
 
 import io.army.criteria.SpecialPredicate;
 import io.army.criteria.Visible;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
@@ -50,12 +51,6 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
         predicate.appendPredicate(this);
     }
 
-    @Override
-    public void appendTable(TableMeta<?> tableMeta) {
-        this.sqlBuilder
-                .append(" ")
-                .append(this.dialect.quoteIfNeed(tableMeta.tableName()));
-    }
 
     @Override
     public final Visible visible() {

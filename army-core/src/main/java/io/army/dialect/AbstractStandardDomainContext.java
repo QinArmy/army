@@ -3,6 +3,7 @@ package io.army.dialect;
 import io.army.criteria.PrimaryValueEqualPredicate;
 import io.army.criteria.SpecialPredicate;
 import io.army.criteria.Visible;
+import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.PrimaryFieldMeta;
@@ -44,15 +45,20 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
     }
 
 
-    final void appendDomainTable(TableMeta<?> tableMeta) {
+    final void appendDomainTable(TableMeta<?> tableMeta, @Nullable String tableAlias) {
         if (tableMeta == this.relationTable) {
             if (!this.existsClauseContext && !this.relationSubQueryContext) {
                 throw DialectUtils.createUnKnownTableException(tableMeta);
             }
-            doAppendTable(tableMeta);
+            doAppendTable(tableMeta, tableAlias, this.sqlBuilder);
         } else {
-            super.appendTable(tableMeta);
+            super.appendTable(tableMeta, tableAlias);
         }
+    }
+
+    @Override
+    protected final void validateTableAndAlias(TableMeta<?> tableMeta, String tableAlias) {
+        super.validateTableAndAlias(tableMeta, tableAlias);
     }
 
     final void appendDomainField(String tableAlias, FieldMeta<?, ?> fieldMeta) {

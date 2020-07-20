@@ -13,17 +13,17 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.sharding.DataSourceRoute;
+import io.army.sharding.RouteUtils;
+import io.army.sharding.RouteWrapper;
 
 import java.util.*;
 
-abstract class RouteUtils {
+abstract class DatabaseRouteUtils extends RouteUtils {
 
-    RouteUtils() {
-        throw new UnsupportedOperationException();
-    }
 
     @Nullable
-    static RouteWrapper findRouteForSelect(List<? extends TableWrapper> tableWrapperList, List<IPredicate> predicateList
+    static RouteWrapper findRouteForSelect(List<? extends TableWrapper> tableWrapperList
+            , List<IPredicate> predicateList
             , final boolean dataSource) {
         RouteWrapper routeWrapper;
         if (predicateList.isEmpty()) {
@@ -40,15 +40,11 @@ abstract class RouteUtils {
         return routeWrapper;
     }
 
+
     @Nullable
     static RouteWrapper findRouteForSingleDML(InnerSingleDML dml, final boolean dataSource) {
         TableMeta<?> tableMeta = dml.tableMeta();
-        List<FieldMeta<?, ?>> dataSourceRouteFields;
-        if (dataSource) {
-            dataSourceRouteFields = tableMeta.dataSourceRouteField();
-        } else {
-            dataSourceRouteFields = tableMeta.tableRouteField();
-        }
+        List<FieldMeta<?, ?>> dataSourceRouteFields = tableMeta.routeFieldList(dataSource);
         RouteWrapper routeWrapper = null;
         // 1. try find from where clause.
         for (IPredicate predicate : dml.predicateList()) {
@@ -147,105 +143,4 @@ abstract class RouteUtils {
     }
 
 
-
-
-    /*################################## blow private method ##################################*/
-
-    @Nullable
-    private static RouteWrapper findRouteFromWhereClause(List<? extends TableWrapper> tableWrapperList
-            , List<IPredicate> predicateList, final boolean dataSource) {
-        RouteWrapper routeWrapper = null;
-
-        tableLevel:
-        for (TableWrapper tableWrapper : tableWrapperList) {
-            TableAble tableAble = tableWrapper.tableAble();
-
-            if (!(tableAble instanceof TableMeta)) {
-                continue;
-            }
-            TableMeta<?> tableMeta = (TableMeta<?>) tableAble;
-            List<FieldMeta<?, ?>> dataSourceRouteFields;
-            if (dataSource) {
-                dataSourceRouteFields = tableMeta.dataSourceRouteField();
-            } else {
-                dataSourceRouteFields = tableMeta.tableRouteField();
-            }
-            for (IPredicate predicate : predicateList) {
-                if (!(predicate instanceof FieldValueEqualPredicate)) {
-                    continue;
-                }
-                FieldValueEqualPredicate p = (FieldValueEqualPredicate) predicate;
-                FieldMeta<?, ?> fieldMeta = p.fieldExp();
-                if (dataSourceRouteFields.contains(fieldMeta)) {
-                    routeWrapper = RouteWrapper.buildRouteKey(fieldMeta.tableMeta(), p.value());
-                    break tableLevel;
-                }
-            }
-        }
-        return routeWrapper;
-    }
-
-    @Nullable
-    private static RouteWrapper findRouteFromTableList(List<? extends TableWrapper> tableWrapperList
-            , final boolean dataSource) {
-        int routeIndex = -1;
-        for (TableWrapper tableWrapper : tableWrapperList) {
-            TableAble tableAble = tableWrapper.tableAble();
-            if (!(tableAble instanceof TableMeta)) {
-                continue;
-            }
-            if (dataSource) {
-                routeIndex = tableWrapper.dataSourceIndex();
-            } else {
-                routeIndex = tableWrapper.tableIndex();
-            }
-            if (routeIndex >= 0) {
-                break;
-            }
-        }
-
-        RouteWrapper routeWrapper;
-        if (routeIndex < 0) {
-            routeWrapper = null;
-        } else {
-            routeWrapper = RouteWrapper.buildRouteIndex(routeIndex);
-        }
-        return routeWrapper;
-    }
-
-
-    @Nullable
-    private static RouteWrapper findRouteFromSubQuery(SubQuery subQuery, final boolean dataSource) {
-        InnerSubQuery innerSubQuery = (InnerSubQuery) subQuery;
-        List<? extends TableWrapper> tableWrappers = innerSubQuery.tableWrapperList();
-
-        RouteWrapper routeWrapper;
-        // 1. try find from sub query's where clause
-        routeWrapper = findRouteFromWhereClause(tableWrappers, innerSubQuery.predicateList(), dataSource);
-
-        if (routeWrapper == null) {
-            // 2. try find from table list of sub query.
-            routeWrapper = findRouteFromTableList(innerSubQuery.tableWrapperList(), dataSource);
-            if (routeWrapper == null) {
-                // 3. try find from sub query of sub query
-                routeWrapper = findRouteFromSubQueryList(tableWrappers, dataSource);
-            }
-        }
-        return routeWrapper;
-    }
-
-    @Nullable
-    private static RouteWrapper findRouteFromSubQueryList(List<? extends TableWrapper> tableWrapperList
-            , final boolean dataSource) {
-        RouteWrapper routeWrapper = null;
-        for (TableWrapper tableWrapper : tableWrapperList) {
-            TableAble tableAble = tableWrapper.tableAble();
-
-            if (!(tableAble instanceof SubQuery)) {
-                continue;
-            }
-            routeWrapper = findRouteFromSubQuery((SubQuery) tableAble, dataSource);
-        }
-        return routeWrapper;
-    }
 }

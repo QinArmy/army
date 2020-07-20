@@ -68,3 +68,6 @@
 
 18. 为什么 可 分片中 SubInsert 的 target table 必须指定表 索引,不允许由子查询推导?
 (1)因为子查询是可以 join 的,如果由子查询推导则会造成 分片算法的不确定性和复杂化。
+
+19. 为什么 batch dml 只能支持 database route ?
+(1)因为 batch 使用相同的sql模板,以节省网络操作,如果再支持 table route 则会产生不同的 sql 模板,那么批量就没有意义了.

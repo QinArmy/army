@@ -1,14 +1,14 @@
-package io.army.boot;
+package io.army.sharding;
 
 import io.army.meta.TableMeta;
 
-final class RouteWrapper {
+public final class RouteWrapper {
 
-    static RouteWrapper buildRouteKey(TableMeta<?> tableMeta, Object value) {
+    public static RouteWrapper buildRouteKey(TableMeta<?> tableMeta, Object value) {
         return new RouteWrapper(tableMeta, value);
     }
 
-    static RouteWrapper buildRouteIndex(int routeIndex) {
+    public static RouteWrapper buildRouteIndex(int routeIndex) {
         return new RouteWrapper(routeIndex);
     }
 
@@ -31,11 +31,11 @@ final class RouteWrapper {
 
     }
 
-    final boolean routeIndex() {
+    public final boolean routeIndex() {
         return this.routeIndex;
     }
 
-    final TableMeta<?> tableMeta() {
+    public final TableMeta<?> tableMeta() {
         if (this.routeIndex) {
             throw new IllegalStateException("value isn't route key.");
         }
@@ -45,14 +45,14 @@ final class RouteWrapper {
         return this.tableMeta;
     }
 
-    final Object routeKey() {
+    public final Object routeKey() {
         if (this.routeIndex) {
             throw new IllegalStateException("value isn't route key.");
         }
         return this.value;
     }
 
-    final int routeIndexValue() {
+    public final int routeIndexValue() {
         if (!this.routeIndex) {
             throw new IllegalStateException("value isn't route index value.");
         }

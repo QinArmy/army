@@ -286,13 +286,13 @@ abstract class DMLUtils {
         return Collections.unmodifiableSet(fieldMetaSet);
     }
 
-    static void createStandardInsertForSimple(TableMeta<?> physicalTable, Collection<FieldMeta<?, ?>> fieldMetas
+    static void createValueInsertForSimple(TableMeta<?> physicalTable, Collection<FieldMeta<?, ?>> fieldMetas
             , ReadonlyWrapper domainWrapper, ValueInsertContext context) {
 
         final GenericSessionFactory sessionFactory = context.dialect.sessionFactory();
         final StringBuilder fieldBuilder = context.fieldsBuilder().append("INSERT INTO");
         // append table name
-        context.appendTable(physicalTable);
+        context.appendTable(physicalTable,null);
         context.fieldsBuilder().append(" (");
 
         final StringBuilder valueBuilder = context.sqlBuilder()

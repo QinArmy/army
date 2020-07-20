@@ -6,15 +6,7 @@ import io.army.meta.TableMeta;
 import java.util.List;
 
 @DeveloperForbid
-public interface InnerSingleDML extends InnerSQL {
+public interface InnerSingleDML extends InnerSQL ,InnerSingleTableSQL{
 
-    TableMeta<?> tableMeta();
 
-    String tableAlias();
-
-    List<IPredicate> predicateList();
-
-    int dataSourceIndex();
-
-    int tableIndex();
 }

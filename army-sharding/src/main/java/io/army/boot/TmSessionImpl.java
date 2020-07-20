@@ -14,6 +14,8 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.sharding.DataSourceRoute;
+import io.army.sharding.DataSourceRouteUtils;
+import io.army.sharding.RouteWrapper;
 import io.army.tx.TmTransaction;
 import io.army.tx.TransactionNotCloseException;
 import io.army.tx.TransactionStatus;
@@ -143,7 +145,7 @@ final class TmSessionImpl extends AbstractSyncApiSession implements TmSession {
     public final <R> List<R> select(Select select, Class<R> resultClass, final Visible visible) {
         InnerSelect innerSelect = (InnerSelect) select;
         //1. try find route
-        RouteWrapper routeWrapper = RouteUtils.findRouteForSelect(innerSelect.tableWrapperList()
+        RouteWrapper routeWrapper = DatabaseRouteUtils.findRouteForSelect(innerSelect.tableWrapperList()
                 , innerSelect.predicateList(), true);
 
         if (routeWrapper == null) {
@@ -394,7 +396,7 @@ final class TmSessionImpl extends AbstractSyncApiSession implements TmSession {
 
     private int processDml(InnerSingleDML singleDML) throws NotFoundRouteException {
         //1. try find route
-        RouteWrapper routeWrapper = RouteUtils.findRouteForSingleDML(singleDML, true);
+        RouteWrapper routeWrapper = DatabaseRouteUtils.findRouteForSingleDML(singleDML, true);
         if (routeWrapper == null) {
             throw new NotFoundRouteException("Single update ,TableMeta[%s] not found data source route."
                     , singleDML.tableMeta());
@@ -454,7 +456,7 @@ final class TmSessionImpl extends AbstractSyncApiSession implements TmSession {
     private <V extends Number> Map<Integer, V> doBatchSingleDmlWithNonNamedPredicates(InnerBatchSingleDML dml
             , DataSourceRoute route, Class<V> valueType, final Visible visible) {
         //  try find route from non named param predicate
-        Object routeKey = RouteUtils.findRouteFromNonNamedPredicates(dml, true);
+        Object routeKey = DatabaseRouteUtils.findRouteFromNonNamedPredicates(dml, true);
         Map<Integer, V> batchResultMap;
         if (routeKey == null) {
             // not found route
@@ -475,7 +477,7 @@ final class TmSessionImpl extends AbstractSyncApiSession implements TmSession {
     private <V extends Number> Map<Integer, V> doBatchSingleDmlWithNamedPredicate(InnerBatchSingleDML dml
             , DataSourceRoute route, Class<V> valueType, final Visible visible) {
         // try find route form named param predicate
-        Map<Integer, Set<Integer>> routeIndexSetMap = RouteUtils.findRouteFromNamedPredicates(dml, route, true);
+        Map<Integer, Set<Integer>> routeIndexSetMap = DatabaseRouteUtils.findRouteFromNamedPredicates(dml, route, true);
 
         Map<Integer, V> batchResultMap;
         if (routeIndexSetMap.isEmpty()) {

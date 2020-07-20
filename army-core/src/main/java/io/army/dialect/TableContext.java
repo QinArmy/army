@@ -6,26 +6,26 @@ import io.army.criteria.TableAble;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.meta.TableMeta;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public final class TableContext {
 
     public static final TableContext EMPTY = new TableContext();
 
-    public static TableContext singleTable(TableMeta<?> tableMeta, String tableAlias) {
+    public static TableContext singleTable(TableMeta<?> tableMeta, String tableAlias, int tableIndex, String primaryRouteSuffix) {
         return new TableContext(
                 Collections.singletonMap(tableMeta, 1)
                 , Collections.singletonMap(tableAlias, tableMeta)
                 , Collections.singletonMap(tableMeta, tableAlias)
+                , Collections.singletonMap(tableAlias, tableIndex)
+                , primaryRouteSuffix
         );
     }
 
-    public static TableContext multiTable(List<? extends TableWrapper> tableWrapperList) {
+    public static TableContext multiTable(List<? extends TableWrapper> tableWrapperList, String primaryRouteSuffix) {
         Map<TableMeta<?>, Integer> tableCountMap = new HashMap<>();
         Map<String, TableMeta<?>> aliasTableMap = new HashMap<>();
+        Map<String, Integer> tableIndexMap = new HashMap<>();
 
         for (TableWrapper tableWrapper : tableWrapperList) {
             TableAble tableAble = tableWrapper.tableAble();
@@ -37,7 +37,7 @@ public final class TableContext {
                     throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "TableMeta[%s] alias[%s] duplication."
                             , tableMeta, tableWrapper.alias());
                 }
-
+                tableIndexMap.put(tableWrapper.alias(), tableWrapper.tableIndex());
             }
         }
 
@@ -58,7 +58,10 @@ public final class TableContext {
         return new TableContext(
                 Collections.unmodifiableMap(tableCountMap)
                 , Collections.unmodifiableMap(aliasTableMap)
-                , Collections.unmodifiableMap(tableAliasMap));
+                , Collections.unmodifiableMap(tableAliasMap)
+                , Collections.unmodifiableMap(tableIndexMap)
+                , primaryRouteSuffix
+        );
     }
 
     final Map<TableMeta<?>, Integer> tableCountMap;
@@ -67,13 +70,19 @@ public final class TableContext {
 
     final Map<TableMeta<?>, String> tableAliasMap;
 
+    final Map<String, Integer> tableIndexMap;
 
-    private TableContext(Map<TableMeta<?>, Integer> tableCountMap
-            , Map<String, TableMeta<?>> aliasTableMap
-            , Map<TableMeta<?>, String> tableAliasMap) {
+    final String primaryRouteSuffix;
+
+
+    private TableContext(Map<TableMeta<?>, Integer> tableCountMap, Map<String, TableMeta<?>> aliasTableMap
+            , Map<TableMeta<?>, String> tableAliasMap, Map<String, Integer> tableIndexMap, String primaryRouteSuffix) {
         this.tableCountMap = tableCountMap;
         this.aliasTableMap = aliasTableMap;
         this.tableAliasMap = tableAliasMap;
+        this.tableIndexMap = tableIndexMap;
+
+        this.primaryRouteSuffix = primaryRouteSuffix;
 
     }
 
@@ -81,6 +90,9 @@ public final class TableContext {
         this.tableCountMap = Collections.emptyMap();
         this.aliasTableMap = Collections.emptyMap();
         this.tableAliasMap = Collections.emptyMap();
+        this.tableIndexMap = Collections.emptyMap();
+
+        this.primaryRouteSuffix = "";
     }
 
     boolean single() {

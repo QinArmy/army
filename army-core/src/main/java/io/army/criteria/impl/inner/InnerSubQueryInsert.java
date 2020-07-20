@@ -1,9 +1,6 @@
 package io.army.criteria.impl.inner;
 
 @DeveloperForbid
-public interface InnerSubQueryInsert extends InnerInsert {
+public interface InnerSubQueryInsert extends InnerInsert, InnerSingleTableSQL {
 
-    int dataSourceIndex();
-
-    int tableIndex();
 }

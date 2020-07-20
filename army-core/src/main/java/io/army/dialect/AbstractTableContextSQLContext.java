@@ -2,26 +2,37 @@ package io.army.dialect;
 
 import io.army.ShardingMode;
 import io.army.criteria.CriteriaException;
+import io.army.criteria.NotFoundRouteException;
 import io.army.criteria.Visible;
+import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
+import io.army.util.StringUtils;
 
 public abstract class AbstractTableContextSQLContext extends AbstractSQLContext implements TableContextSQLContext {
 
+    protected final TableContext primaryTableContext;
 
     protected final TableContext tableContext;
 
+    protected final ShardingMode shardingMode;
 
     protected AbstractTableContextSQLContext(Dialect dialect, Visible visible, TableContext tableContext) {
         super(dialect, visible);
+        this.shardingMode = dialect.sessionFactory().shardingMode();
         this.tableContext = tableContext;
+        this.primaryTableContext = tableContext;
+        assertPrimaryRouteSuffix();
     }
 
     protected AbstractTableContextSQLContext(TableContextSQLContext original, TableContext tableContext) {
         super(original);
+        this.shardingMode = dialect.sessionFactory().shardingMode();
         this.tableContext = tableContext;
+        this.primaryTableContext = original.primaryTableContext();
+        assertPrimaryRouteSuffix();
     }
 
 
@@ -45,16 +56,27 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
     }
 
     @Override
-    public void appendTable(TableMeta<?> tableMeta) {
+    public void appendTable(TableMeta<?> tableMeta, @Nullable String tableAlias) {
         if (!this.tableContext.tableCountMap.containsKey(tableMeta)) {
             throw DialectUtils.createUnKnownTableException(tableMeta);
         }
-        doAppendTable(tableMeta, this.sqlBuilder);
+        doAppendTable(tableMeta, tableAlias, this.sqlBuilder);
+    }
+
+
+    @Override
+    public final TableContext primaryTableContext() {
+        return this.primaryTableContext;
     }
 
     @Override
     public final TableContext tableContext() {
         return this.tableContext;
+    }
+
+    @Override
+    public TableContext parentTableContext() {
+        return null;
     }
 
     @Override
@@ -71,6 +93,11 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
                         , mappingType.nonNullTextValue(value)
                 )
         );
+    }
+
+    @Override
+    public final String primaryRouteSuffix() {
+        return this.tableContext.primaryRouteSuffix;
     }
 
     protected final String findTableAlias(FieldMeta<?, ?> fieldMeta) throws CriteriaException {
@@ -90,29 +117,48 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         return tableAlias;
     }
 
-    protected final void doAppendTable(TableMeta<?> tableMeta, StringBuilder builder) {
+    protected final void doAppendTable(TableMeta<?> tableMeta, @Nullable String tableAlias, StringBuilder builder) {
+        final Dialect dialect = this.dialect;
         builder.append(" ")
-                .append(this.dialect.quoteIfNeed(tableMeta.tableName()));
+                .append(dialect.quoteIfNeed(tableMeta.tableName()));
 
-        if (this.dialect.sessionFactory().shardingMode() != ShardingMode.NO_SHARDING) {
-            TableMeta<?> actualTable;
-            if (tableMeta instanceof ChildTableMeta) {
-                actualTable = ((ChildTableMeta<?>) tableMeta).parentMeta();
-            } else {
-                actualTable = tableMeta;
+        if (this.shardingMode != ShardingMode.NO_SHARDING
+                && !tableMeta.routeFieldList(false).isEmpty()) {
+            doAppendTableSuffix(tableMeta, tableAlias, builder);
+        }
+        if (tableAlias != null) {
+
+            if(!(this instanceof DeleteContext) || dialect.singleDeleteHasTableAlias()){
+                builder.append(" ");
+                if (dialect.tableAliasAfterAs()) {
+                    builder.append("AS ");
+                }
+                builder.append(dialect.quoteIfNeed(tableAlias));
             }
-            doAppendTableSuffix(actualTable, builder);
         }
 
     }
 
-    protected void doAppendTableSuffix(TableMeta<?> actualTable, StringBuilder builder) {
-
+    protected void validateTableAndAlias(TableMeta<?> tableMeta, String tableAlias){
+        if(this.tableContext.aliasTableMap.get(tableAlias) != tableMeta){
+            throw new IllegalArgumentException(String.format("TableMeta[%s] and tableAlias[%s] not match."
+                    ,tableMeta,tableAlias));
+        }
     }
+
+    protected abstract void doAppendTableSuffix(TableMeta<?> tableMeta, @Nullable String tableAlias
+            , StringBuilder builder);
 
     protected String findTableAliasFromParent(FieldMeta<?, ?> fieldMeta) throws CriteriaException {
         throw DialectUtils.createUnKnownFieldException(fieldMeta);
     }
 
+    /*################################## blow private method ##################################*/
 
+    private void assertPrimaryRouteSuffix() {
+        if (this.shardingMode != ShardingMode.NO_SHARDING
+                && !StringUtils.hasText(this.primaryTableContext.primaryRouteSuffix)) {
+            throw new NotFoundRouteException("not found primary route.");
+        }
+    }
 }
