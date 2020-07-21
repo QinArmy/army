@@ -287,12 +287,12 @@ abstract class DMLUtils {
     }
 
     static void createValueInsertForSimple(TableMeta<?> physicalTable, Collection<FieldMeta<?, ?>> fieldMetas
-            , ReadonlyWrapper domainWrapper, ValueInsertContext context) {
+            , ReadonlyWrapper domainWrapper, StandardValueInsertContext context) {
 
         final GenericSessionFactory sessionFactory = context.dialect.sessionFactory();
         final StringBuilder fieldBuilder = context.fieldsBuilder().append("INSERT INTO");
         // append table name
-        context.appendTable(physicalTable,null);
+        context.appendTable(physicalTable, null);
         context.fieldsBuilder().append(" (");
 
         final StringBuilder valueBuilder = context.sqlBuilder()
@@ -337,7 +337,7 @@ abstract class DMLUtils {
 
 
     static void createStandardBatchInsertForSimple(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> fieldMetas
-            , ValueInsertContext context) {
+            , StandardValueInsertContext context) {
 
         StringBuilder fieldBuilder = context.fieldsBuilder()
                 .append("INSERT INTO");

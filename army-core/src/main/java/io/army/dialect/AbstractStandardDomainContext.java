@@ -18,6 +18,8 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
 
     final String primaryAlias;
 
+    final String relationAlias;
+
     private boolean existsClauseContext = false;
 
     private boolean relationSubQueryContext = false;
@@ -29,6 +31,17 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
         this.relationTable = relationTable;
         this.primaryAlias = tableContext.tableAliasMap.get(this.primaryTable);
         Assert.hasText(this.primaryAlias, "tableContext error.");
+
+        this.relationAlias = obtainRelationTableAlias(this.primaryAlias, this.relationTable);
+
+    }
+
+    @Override
+    protected final void doAppendTableSuffix(TableMeta<?> tableMeta, @Nullable String tableAlias
+            , StringBuilder builder) {
+        if (tableMeta == this.primaryTable || tableMeta == this.relationTable) {
+            builder.append(this.tableContext.primaryRouteSuffix);
+        }
     }
 
     final void appendDomainFieldPredicate(SpecialPredicate predicate) {
@@ -47,10 +60,11 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
 
     final void appendDomainTable(TableMeta<?> tableMeta, @Nullable String tableAlias) {
         if (tableMeta == this.relationTable) {
-            if (!this.existsClauseContext && !this.relationSubQueryContext) {
+            if (this.existsClauseContext || this.relationSubQueryContext) {
+                doAppendTable(tableMeta, tableAlias, this.sqlBuilder);
+            } else {
                 throw DialectUtils.createUnKnownTableException(tableMeta);
             }
-            doAppendTable(tableMeta, tableAlias, this.sqlBuilder);
         } else {
             super.appendTable(tableMeta, tableAlias);
         }
@@ -58,7 +72,15 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
 
     @Override
     protected final void validateTableAndAlias(TableMeta<?> tableMeta, String tableAlias) {
-        super.validateTableAndAlias(tableMeta, tableAlias);
+        if (this.existsClauseContext || this.relationSubQueryContext) {
+            if (!tableAlias.equals(this.relationAlias)) {
+                throw new IllegalArgumentException(String.format(
+                        "Domain update relation TableMeta[%s] and tableAlias[%s] not match."
+                        , tableMeta, tableAlias));
+            }
+        } else {
+            super.validateTableAndAlias(tableMeta, tableAlias);
+        }
     }
 
     final void appendDomainField(String tableAlias, FieldMeta<?, ?> fieldMeta) {
@@ -76,7 +98,7 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
             if (fieldMeta instanceof PrimaryFieldMeta) {
                 doAppendFiled(this.primaryAlias, fieldMeta);
             } else if (this.existsClauseContext) {
-                doAppendFiled(obtainRelationTableAlias(), fieldMeta);
+                doAppendFiled(this.relationAlias, fieldMeta);
             } else {
                 this.relationSubQueryContext = true;
                 doReplaceRelationFieldAsScalarSubQuery(fieldMeta);
@@ -93,14 +115,14 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
         final TableMeta<?> relationTable = this.relationTable;
         // replace parent field as sub query.
         final Dialect dialect = this.dialect;
-        final String safeRelationAlias = dialect.quoteIfNeed(obtainRelationTableAlias());
+        final String safeRelationAlias = dialect.quoteIfNeed(this.relationAlias);
 
         StringBuilder builder = this.sqlBuilder.append(" ( SELECT ")
                 .append(safeRelationAlias)
                 .append(".")
                 .append(dialect.quoteIfNeed(relationField.fieldName()))
                 .append(" FROM");
-        appendTable(relationTable);
+        appendTable(relationTable, this.relationAlias);
         if (dialect.tableAliasAfterAs()) {
             builder.append(" AS");
         }
@@ -121,7 +143,7 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
     private void doReplaceFieldPairWithExistsClause(SpecialPredicate predicate) {
 
         final Dialect dialect = this.dialect;
-        final String safeRelationAlias = dialect.quoteIfNeed(obtainRelationTableAlias());
+        final String safeRelationAlias = dialect.quoteIfNeed(this.relationAlias);
 
         final String safeRelationId = dialect.quoteIfNeed(this.relationTable.id().fieldName());
         final StringBuilder builder = this.sqlBuilder
@@ -130,7 +152,7 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
                 .append(".")
                 .append(safeRelationId)
                 .append(" FROM");
-        appendTable(this.relationTable);
+        appendTable(this.relationTable, this.relationAlias);
         if (dialect.tableAliasAfterAs()) {
             builder.append(" AS");
         }
@@ -151,9 +173,9 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
         builder.append(" )");
     }
 
-    private String obtainRelationTableAlias() {
-        String relationTableAlias = this.primaryAlias;
-        if (this.relationTable instanceof ChildTableMeta) {
+    private static String obtainRelationTableAlias(String primaryAlias, TableMeta<?> relationTable) {
+        String relationTableAlias = primaryAlias;
+        if (relationTable instanceof ChildTableMeta) {
             relationTableAlias += "_c";
         } else {
             relationTableAlias += "_p";

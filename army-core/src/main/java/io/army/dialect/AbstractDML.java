@@ -371,11 +371,11 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         }
 
         //2.  create parent sql.
-        ValueInsertContext parentContext = ValueInsertContext.buildParent(insert, this.dialect, visible);
+        StandardValueInsertContext parentContext = StandardValueInsertContext.buildParent(insert, this.dialect, visible);
         DMLUtils.createValueInsertForSimple(parentMeta, parentFields, beanWrapper, parentContext);
 
         //3. create child sql.
-        ValueInsertContext childContext = ValueInsertContext.buildChild(insert, this.dialect, visible);
+        StandardValueInsertContext childContext = StandardValueInsertContext.buildChild(insert, this.dialect, visible);
         DMLUtils.createValueInsertForSimple(childMeta, childFields, beanWrapper, childContext);
 
         return ChildSQLWrapper.build(parentContext.build(), childContext.build());
@@ -389,7 +389,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
             , Collection<FieldMeta<?, ?>> mergedFields, InnerStandardInsert insert
             , final Visible visible) {
 
-        ValueInsertContext context = ValueInsertContext.build(insert, beanWrapper, this.dialect, visible);
+        StandardValueInsertContext context = StandardValueInsertContext.build(insert, beanWrapper, this.dialect, visible);
 
         DMLUtils.createValueInsertForSimple(insert.tableMeta(), mergedFields, beanWrapper, context);
 
@@ -423,7 +423,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         // 1.merge fields
         Set<FieldMeta<?, ?>> fieldMetaSet = DMLUtils.mergeInsertFields(tableMeta, this.dialect, insert.fieldList());
 
-        ValueInsertContext context = ValueInsertContext.build(insert, this.dialect, visible);
+        StandardValueInsertContext context = StandardValueInsertContext.build(insert, this.dialect, visible);
         // single table multiInsert sql
         DMLUtils.createStandardBatchInsertForSimple(tableMeta, fieldMetaSet, context);
         return context.build();
@@ -441,11 +441,11 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         DialectUtils.divideFields(childMeta, mergeFieldSet, parentFieldSet, childFieldSet);
 
         // 3. parent sql wrapper
-        final ValueInsertContext parentContext = ValueInsertContext.buildParent(insert, this.dialect, visible);
+        final StandardValueInsertContext parentContext = StandardValueInsertContext.buildParent(insert, this.dialect, visible);
         DMLUtils.createStandardBatchInsertForSimple(parentMeta, parentFieldSet, parentContext);
 
         //4. child sql wrapper
-        final ValueInsertContext childContext = ValueInsertContext.buildChild(insert, this.dialect, visible);
+        final StandardValueInsertContext childContext = StandardValueInsertContext.buildChild(insert, this.dialect, visible);
         DMLUtils.createStandardBatchInsertForSimple(childMeta, childFieldSet, childContext);
 
         return ChildSQLWrapper.build(parentContext.build(), childContext.build());
@@ -498,7 +498,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         }
 
         //2. parse parent update sql
-        SingleUpdateContext parentContext = SingleUpdateContext.buildParent(update, this.dialect, visible);
+        StandardSingleUpdateContext parentContext = StandardSingleUpdateContext.buildParent(update, this.dialect, visible);
         // 2-1. create parent predicate
         List<IPredicate> parentPredicateList = DMLUtils.extractParentPredicatesForUpdate(
                 childMeta, childFieldList, update.predicateList());
@@ -510,7 +510,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
             sqlWrapper = parentContext.build();
         } else {
             //3 parse child update sql (optional)
-            SingleUpdateContext childContext = SingleUpdateContext.buildChild(update, this.dialect, visible);
+            StandardSingleUpdateContext childContext = StandardSingleUpdateContext.buildChild(update, this.dialect, visible);
             parseStandardUpdate(childContext, childMeta, update.tableAlias()
                     , childFieldList, childExpList, update.predicateList());
 
@@ -520,7 +520,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     }
 
 
-    private void parseStandardUpdate(SingleUpdateContext context, TableMeta<?> tableMeta, String tableAlias
+    private void parseStandardUpdate(StandardSingleUpdateContext context, TableMeta<?> tableMeta, String tableAlias
             , List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueExpList, List<IPredicate> predicateList) {
 
         StringBuilder builder = context.sqlBuilder().append("UPDATE");
@@ -551,7 +551,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     }
 
     private SimpleSQLWrapper standardSimpleUpdate(InnerStandardUpdate update, final Visible visible) {
-        SingleUpdateContext context = SingleUpdateContext.build(update, this.dialect, visible);
+        StandardSingleUpdateContext context = StandardSingleUpdateContext.build(update, this.dialect, visible);
 
         parseStandardUpdate(context, update.tableMeta(), update.tableAlias()
                 , update.targetFieldList(), update.valueExpList(), update.predicateList());
@@ -560,7 +560,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     }
 
     private SimpleSQLWrapper standardParentUpdate(InnerStandardUpdate update, final Visible visible) {
-        SingleUpdateContext context = SingleUpdateContext.build(update, this.dialect, visible);
+        StandardSingleUpdateContext context = StandardSingleUpdateContext.build(update, this.dialect, visible);
         final ParentTableMeta<?> parentMeta = (ParentTableMeta<?>) update.tableMeta();
         // create parent predicate
         List<IPredicate> parentPredicateList = DMLUtils.createParentPredicates(parentMeta, update.predicateList());

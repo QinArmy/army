@@ -38,15 +38,12 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
 
     @Override
     public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) {
-        sqlBuilder.append(" ")
-                .append(this.dialect.quoteIfNeed(tableAlias))
-                .append(".")
-                .append(this.dialect.quoteIfNeed(fieldMeta.fieldName()));
+        doAppendField(tableAlias, fieldMeta, this.sqlBuilder);
     }
 
     @Override
     public void appendField(FieldMeta<?, ?> fieldMeta) {
-        this.appendField(findTableAlias(fieldMeta), fieldMeta);
+        doAppendField(findTableAlias(fieldMeta), fieldMeta, this.sqlBuilder);
     }
 
 
@@ -126,23 +123,29 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
                 && !tableMeta.routeFieldList(false).isEmpty()) {
             doAppendTableSuffix(tableMeta, tableAlias, builder);
         }
-        if (tableAlias != null) {
 
-            if(!(this instanceof DeleteContext) || dialect.singleDeleteHasTableAlias()){
-                builder.append(" ");
-                if (dialect.tableAliasAfterAs()) {
-                    builder.append("AS ");
-                }
-                builder.append(dialect.quoteIfNeed(tableAlias));
+        if (canAppendTableAlias(tableMeta)) {
+            if (tableAlias == null) {
+                throw new IllegalArgumentException(String.format(
+                        "TableMeta[%s] table alias required int SQLContext[%s].", tableMeta, this));
             }
+            builder.append(" ");
+            if (dialect.tableAliasAfterAs()) {
+                builder.append("AS ");
+            }
+            builder.append(dialect.quoteIfNeed(tableAlias));
         }
 
     }
 
-    protected void validateTableAndAlias(TableMeta<?> tableMeta, String tableAlias){
-        if(this.tableContext.aliasTableMap.get(tableAlias) != tableMeta){
+    protected boolean canAppendTableAlias(TableMeta<?> tableMeta) {
+        return true;
+    }
+
+    protected void validateTableAndAlias(TableMeta<?> tableMeta, String tableAlias) {
+        if (this.tableContext.aliasTableMap.get(tableAlias) != tableMeta) {
             throw new IllegalArgumentException(String.format("TableMeta[%s] and tableAlias[%s] not match."
-                    ,tableMeta,tableAlias));
+                    , tableMeta, tableAlias));
         }
     }
 

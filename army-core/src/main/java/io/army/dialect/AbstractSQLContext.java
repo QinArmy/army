@@ -4,7 +4,6 @@ import io.army.criteria.SpecialPredicate;
 import io.army.criteria.Visible;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
 import io.army.wrapper.ParamWrapper;
 import io.army.wrapper.SimpleSQLWrapper;
@@ -43,7 +42,7 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
 
     @Override
     public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) {
-        doAppendFiled(tableAlias, fieldMeta);
+        doAppendField(tableAlias, fieldMeta, this.sqlBuilder);
     }
 
     @Override
@@ -109,21 +108,15 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
 
     /*################################## blow protected final method ##################################*/
 
-    protected final void doAppendFiled(String tableAlias, FieldMeta<?, ?> fieldMeta) {
-        this.sqlBuilder.append(" ");
-        if (this instanceof DeleteContext) {
-            if (this.dialect.singleDeleteHasTableAlias()) {
-                this.sqlBuilder.append(this.dialect.quoteIfNeed(tableAlias))
-                        .append(".");
-            }
-        } else {
-            this.sqlBuilder.append(this.dialect.quoteIfNeed(tableAlias))
+
+    protected final void doAppendField(@Nullable String tableAlias, FieldMeta<?, ?> fieldMeta, StringBuilder builder) {
+        builder.append(" ");
+        if (tableAlias != null) {
+            builder.append(this.dialect.quoteIfNeed(tableAlias))
                     .append(".");
         }
-        this.sqlBuilder.append(this.dialect.quoteIfNeed(fieldMeta.fieldName()));
+        builder.append(this.dialect.quoteIfNeed(fieldMeta.fieldName()));
     }
-
-
 
     /*################################## blow protected template method ##################################*/
 }

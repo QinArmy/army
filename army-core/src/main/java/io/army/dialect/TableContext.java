@@ -3,21 +3,28 @@ package io.army.dialect;
 import io.army.ErrorCode;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.TableAble;
+import io.army.criteria.impl.inner.InnerSingleTableSQL;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.meta.TableMeta;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public final class TableContext {
 
     public static final TableContext EMPTY = new TableContext();
 
-    public static TableContext singleTable(TableMeta<?> tableMeta, String tableAlias, int tableIndex, String primaryRouteSuffix) {
+    public static TableContext singleTable(InnerSingleTableSQL singleTable, String primaryRouteSuffix) {
+        TableMeta<?> tableMeta = singleTable.tableMeta();
+        String tableAlias = singleTable.tableAlias();
+
         return new TableContext(
                 Collections.singletonMap(tableMeta, 1)
                 , Collections.singletonMap(tableAlias, tableMeta)
                 , Collections.singletonMap(tableMeta, tableAlias)
-                , Collections.singletonMap(tableAlias, tableIndex)
+                , Collections.singletonMap(tableAlias, singleTable.tableIndex())
                 , primaryRouteSuffix
         );
     }
