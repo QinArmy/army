@@ -1,7 +1,7 @@
 package io.army.tx;
 
 
- interface GenericTransaction {
+public interface GenericTransaction {
 
      String name();
 

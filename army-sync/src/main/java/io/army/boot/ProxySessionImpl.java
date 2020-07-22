@@ -1,12 +1,12 @@
 package io.army.boot;
 
-import io.army.GenericSyncSessionFactory;
-import io.army.ProxySession;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.env.Environment;
 import io.army.meta.TableMeta;
+import io.army.sync.GenericSyncSessionFactory;
+import io.army.sync.ProxySession;
 
 import java.util.List;
 

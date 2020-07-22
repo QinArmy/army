@@ -2,7 +2,7 @@ package io.army.context.spi;
 
 import io.army.DataAccessException;
 import io.army.NoCurrentSessionException;
-import io.army.Session;
+import io.army.sync.Session;
 
 public interface CurrentSessionContext {
 

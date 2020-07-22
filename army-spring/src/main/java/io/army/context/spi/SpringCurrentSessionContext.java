@@ -2,8 +2,8 @@ package io.army.context.spi;
 
 import io.army.DataAccessException;
 import io.army.NoCurrentSessionException;
-import io.army.Session;
-import io.army.SessionFactory;
+import io.army.sync.Session;
+import io.army.sync.SessionFactory;
 import io.army.util.Assert;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 

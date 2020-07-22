@@ -1,7 +1,7 @@
 package io.army.boot;
 
-import io.army.Session;
 import io.army.dialect.Dialect;
+import io.army.sync.Session;
 import io.army.tx.GenericSyncTransaction;
 
 import java.sql.Connection;

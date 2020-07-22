@@ -1,11 +1,11 @@
 package io.army.boot;
 
 
-import io.army.SessionFactory;
 import io.army.SessionFactoryException;
 import io.army.ShardingMode;
 import io.army.dialect.Dialect;
 import io.army.dialect.SQLDialect;
+import io.army.sync.SessionFactory;
 import io.army.util.Assert;
 import io.army.util.Pair;
 

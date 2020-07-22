@@ -1,9 +1,9 @@
 package io.army.boot;
 
-import io.army.GenericSyncSession;
 import io.army.codec.StatementType;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
+import io.army.sync.GenericSyncSession;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

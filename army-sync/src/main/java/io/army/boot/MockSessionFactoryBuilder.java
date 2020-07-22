@@ -1,11 +1,11 @@
 package io.army.boot;
 
 import io.army.GenericSessionFactory;
-import io.army.SessionFactory;
 import io.army.SessionFactoryException;
 import io.army.dialect.Dialect;
 import io.army.dialect.SQLDialect;
 import io.army.dialect.mysql.MySQLDialectFactory;
+import io.army.sync.SessionFactory;
 
 final class MockSessionFactoryBuilder extends AbstractSessionFactoryBuilder {
 

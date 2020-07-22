@@ -1,10 +1,10 @@
 package io.army.boot;
 
 import io.army.ErrorCode;
-import io.army.SessionFactory;
 import io.army.SessionFactoryException;
 import io.army.codec.FieldCodec;
 import io.army.interceptor.DomainInterceptor;
+import io.army.sync.SessionFactory;
 import io.army.util.Assert;
 
 import java.util.*;

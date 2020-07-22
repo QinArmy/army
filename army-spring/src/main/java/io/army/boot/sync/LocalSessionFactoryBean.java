@@ -1,13 +1,13 @@
 package io.army.boot.sync;
 
 
-import io.army.SessionFactory;
 import io.army.boot.SessionFactoryAdvice;
 import io.army.boot.SessionFactoryBuilder;
 import io.army.codec.FieldCodec;
 import io.army.env.Environment;
 import io.army.env.SpringEnvironmentAdaptor;
 import io.army.interceptor.DomainInterceptor;
+import io.army.sync.SessionFactory;
 import io.army.util.Assert;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNameAware;

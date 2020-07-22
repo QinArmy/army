@@ -1,5 +1,6 @@
-package io.army;
+package io.army.sync;
 
+import io.army.GenericSession;
 import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
@@ -11,10 +12,11 @@ import java.util.List;
  * <p>
  * this interface have three direct sub interfaces:
  *     <ul>
- *         <li>{@link io.army.GenericSyncApiSession}</li>
+ *         <li>{@link GenericSyncApiSession}</li>
  *         <li>{@code io.army.boot.RmSession}</li>
  *     </ul>
  * </p>
+ *
  * @see GenericSyncApiSession
  */
 public interface GenericSyncSession extends GenericSession {

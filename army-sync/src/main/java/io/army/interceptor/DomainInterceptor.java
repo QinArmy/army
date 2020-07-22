@@ -1,9 +1,9 @@
 package io.army.interceptor;
 
-import io.army.ProxySession;
 import io.army.beans.ReadonlyWrapper;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.sync.ProxySession;
 
 import java.util.Collection;
 import java.util.List;

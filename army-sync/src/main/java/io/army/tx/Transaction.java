@@ -1,6 +1,6 @@
 package io.army.tx;
 
-import io.army.Session;
+import io.army.sync.Session;
 
 import java.sql.Savepoint;
 

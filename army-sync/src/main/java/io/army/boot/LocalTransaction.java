@@ -1,9 +1,9 @@
 package io.army.boot;
 
 import io.army.ErrorCode;
-import io.army.Session;
 import io.army.SessionException;
 import io.army.dialect.TransactionOption;
+import io.army.sync.Session;
 import io.army.tx.*;
 
 import java.sql.Connection;

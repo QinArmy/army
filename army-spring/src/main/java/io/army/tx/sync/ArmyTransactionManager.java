@@ -1,10 +1,10 @@
 package io.army.tx.sync;
 
 import io.army.DataAccessException;
-import io.army.Session;
 import io.army.SessionException;
-import io.army.SessionFactory;
 import io.army.context.spi.SpringCurrentSessionContext;
+import io.army.sync.Session;
+import io.army.sync.SessionFactory;
 import io.army.tx.ArmyTransactionRollbackOnlyException;
 import io.army.tx.Transaction;
 import io.army.tx.TransactionRollbackOnlyException;

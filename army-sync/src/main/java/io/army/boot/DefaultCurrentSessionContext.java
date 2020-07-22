@@ -1,9 +1,9 @@
 package io.army.boot;
 
-import io.army.GenericSyncSessionFactory;
 import io.army.NoCurrentSessionException;
-import io.army.Session;
 import io.army.context.spi.CurrentSessionContext;
+import io.army.sync.GenericSyncSessionFactory;
+import io.army.sync.Session;
 import io.army.util.Assert;
 import org.springframework.core.NamedThreadLocal;
 

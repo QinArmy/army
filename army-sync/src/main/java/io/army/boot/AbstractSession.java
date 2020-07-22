@@ -6,6 +6,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerSQL;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
+import io.army.sync.SessionFactory;
 import io.army.tx.Isolation;
 import io.army.tx.Transaction;
 import io.army.wrapper.ChildBatchSQLWrapper;

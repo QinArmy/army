@@ -1,11 +1,11 @@
 package io.army.boot;
 
 
-import io.army.SessionFactory;
 import io.army.SessionFactoryException;
 import io.army.codec.FieldCodec;
 import io.army.env.Environment;
 import io.army.interceptor.DomainInterceptor;
+import io.army.sync.SessionFactory;
 
 import javax.sql.DataSource;
 import java.util.Collection;

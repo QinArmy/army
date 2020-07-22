@@ -1,12 +1,11 @@
-package io.army;
+package io.army.reactive;
 
 import reactor.core.publisher.Mono;
 
-public interface ReactiveSessionFactory extends GenericSessionFactory {
+public interface ReactiveSessionFactory extends GenericReactiveApiSessionFactory {
 
     ReactiveSessionBuilder builder();
 
-    ProxyReactiveSession proxySession();
 
     interface ReactiveSessionBuilder {
 

@@ -1,5 +1,6 @@
-package io.army;
+package io.army.sync;
 
+import io.army.SessionException;
 import io.army.lang.Nullable;
 import io.army.tx.Isolation;
 import io.army.tx.NoSessionTransactionException;

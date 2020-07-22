@@ -1,6 +1,9 @@
 package io.army.boot;
 
-import io.army.*;
+import io.army.ArmyConfigConstant;
+import io.army.DataAccessException;
+import io.army.ErrorCode;
+import io.army.SessionFactoryException;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectNotMatchException;
@@ -11,6 +14,7 @@ import io.army.env.Environment;
 import io.army.interceptor.DomainInterceptor;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.sync.GenericSyncSessionFactory;
 import io.army.util.ClassUtils;
 import io.army.util.Pair;
 import io.army.util.ReflectionUtils;

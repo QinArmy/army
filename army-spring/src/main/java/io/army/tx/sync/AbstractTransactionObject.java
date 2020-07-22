@@ -2,7 +2,7 @@ package io.army.tx.sync;
 
 
 import io.army.DataAccessException;
-import io.army.Session;
+import io.army.sync.Session;
 import org.springframework.transaction.SavepointManager;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.SmartTransactionObject;

@@ -1,8 +1,8 @@
 package io.army.boot;
 
-import io.army.GenericSyncSessionFactory;
 import io.army.interceptor.DomainInterceptor;
 import io.army.meta.TableMeta;
+import io.army.sync.GenericSyncSessionFactory;
 
 import java.util.List;
 import java.util.Map;

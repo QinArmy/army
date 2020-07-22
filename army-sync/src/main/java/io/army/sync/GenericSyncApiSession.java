@@ -1,4 +1,4 @@
-package io.army;
+package io.army.sync;
 
 import io.army.criteria.Delete;
 import io.army.criteria.Insert;
@@ -12,7 +12,7 @@ import java.util.Map;
  * <p>
  * this interface have three direct sub interfaces:
  *     <ul>
- *         <li>{@link io.army.Session}</li>
+ *         <li>{@link Session}</li>
  *         <li>{@link ProxySession}</li>
  *         <li>{@code io.army.TmSession}</li>
  *     </ul>

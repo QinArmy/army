@@ -1,11 +1,11 @@
 package io.army.boot;
 
 
-import io.army.GenericSyncApiSession;
 import io.army.criteria.Delete;
 import io.army.criteria.Insert;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
+import io.army.sync.GenericSyncApiSession;
 
 import java.util.List;
 import java.util.Map;

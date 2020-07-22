@@ -5,7 +5,7 @@ import io.army.env.Environment;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 
-public interface ProxySession extends GenericSyncApiSession {
+public interface GenericProxySession {
 
     boolean hasCurrentSession();
 
@@ -13,5 +13,6 @@ public interface ProxySession extends GenericSyncApiSession {
 
     @Nullable
     <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass);
+
 
 }

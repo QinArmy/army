@@ -1,6 +1,5 @@
 package io.army.dao;
 
-import io.army.ProxySession;
 import io.army.criteria.Insert;
 import io.army.criteria.Select;
 import io.army.criteria.Visible;
@@ -8,6 +7,7 @@ import io.army.criteria.impl.SQLS;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.sync.ProxySession;
 import io.army.util.CriteriaUtils;
 
 import java.util.Collections;

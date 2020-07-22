@@ -1,12 +1,12 @@
 package io.army.boot;
 
-import io.army.GenericSyncSession;
-import io.army.Session;
 import io.army.criteria.Delete;
 import io.army.criteria.Insert;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
 import io.army.lang.Nullable;
+import io.army.sync.GenericSyncSession;
+import io.army.sync.Session;
 import io.army.tx.NoSessionTransactionException;
 import io.army.tx.XATransaction;
 

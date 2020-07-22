@@ -1,11 +1,11 @@
 package io.army.boot;
 
-import io.army.ProxySession;
 import io.army.SessionFactoryException;
 import io.army.ShardingMode;
 import io.army.TmSessionFactory;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.dialect.SQLDialect;
+import io.army.sync.ProxySession;
 import io.army.util.Assert;
 
 import java.util.Map;

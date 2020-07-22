@@ -3,6 +3,7 @@ package io.army;
 import io.army.dialect.SQLDialect;
 import io.army.meta.TableMeta;
 import io.army.sharding.DataSourceRoute;
+import io.army.sync.GenericSyncSessionFactory;
 
 import java.util.Map;
 

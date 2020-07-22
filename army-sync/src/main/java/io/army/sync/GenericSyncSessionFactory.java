@@ -1,5 +1,9 @@
-package io.army;
+package io.army.sync;
 
+import io.army.ArmyRuntimeException;
+import io.army.GenericSession;
+import io.army.GenericSessionFactory;
+import io.army.SessionFactoryException;
 import io.army.interceptor.DomainInterceptor;
 import io.army.meta.TableMeta;
 

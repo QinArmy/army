@@ -1,7 +1,7 @@
 package io.army.boot;
 
-import io.army.SessionFactory;
 import io.army.dialect.Dialect;
+import io.army.sync.SessionFactory;
 
 interface InnerSyncSessionFactory extends SessionFactory, InnerGenericSessionFaction {
 

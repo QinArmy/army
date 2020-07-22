@@ -1,6 +1,6 @@
 package io.army.tx;
 
-import io.army.GenericSyncSession;
+import io.army.sync.GenericSyncSession;
 
 import java.io.Flushable;
 
