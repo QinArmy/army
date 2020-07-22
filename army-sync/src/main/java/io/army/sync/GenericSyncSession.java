@@ -10,7 +10,11 @@ import java.util.List;
 
 /**
  * <p>
- * this interface have three direct sub interfaces:
+ *     This interface encapsulate synchronous api than can access database.
+ * </p>
+ *
+ * <p>
+ * This interface have three direct sub interfaces:
  *     <ul>
  *         <li>{@link GenericSyncApiSession}</li>
  *         <li>{@code io.army.boot.RmSession}</li>

@@ -10,6 +10,9 @@ import java.util.Map;
 
 /**
  * <p>
+ *     This interface encapsulate synchronous api than can access database.
+ * </p>
+ * <p>
  * this interface have three direct sub interfaces:
  *     <ul>
  *         <li>{@link Session}</li>

@@ -6,7 +6,7 @@ import io.army.meta.TableMeta;
  * @see io.army.criteria.impl.SQLS#multiInsert(TableMeta)
  */
 @DeveloperForbid
-public interface InnerStandardInsert extends InnerMultiInsert {
+public interface InnerStandardInsert extends InnerValuesInsert {
 
 
 }

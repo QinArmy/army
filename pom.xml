@@ -24,6 +24,7 @@
         <module>army-mysql</module>
         <module>army-sync</module>
         <module>army-sharding</module>
+        <module>army-oracle</module>
     </modules>
 
     <properties>

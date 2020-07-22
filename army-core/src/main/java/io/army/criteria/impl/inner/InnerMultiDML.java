@@ -3,7 +3,7 @@ package io.army.criteria.impl.inner;
 import java.util.List;
 
 @DeveloperForbid
-public interface InnerMultiTableSQL extends InnerSQL {
+public interface InnerMultiDML extends InnerSQL {
 
     /**
      * @return a unmodifiable list

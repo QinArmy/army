@@ -2,7 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Delete;
 import io.army.criteria.IPredicate;
-import io.army.criteria.impl.inner.InnerStandardBatchDelete;
+import io.army.criteria.impl.inner.InnerBatchDML;
+import io.army.criteria.impl.inner.InnerStandardDelete;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
@@ -12,9 +13,9 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-final class StandardContextualBatchDelete<C> implements Delete, InnerStandardBatchDelete
-        , Delete.BatchDeleteAble<C>, Delete.BatchWhereAble<C>, Delete.BatchWhereAndAble<C>
-        , Delete.BatchNamedParamAble<C>, Delete.DeleteAble {
+final class StandardContextualBatchDelete<C> implements Delete,
+        Delete.BatchDeleteAble<C>, Delete.BatchWhereAble<C>, Delete.BatchWhereAndAble<C>
+        , Delete.BatchNamedParamAble<C>, Delete.DeleteAble, InnerStandardDelete, InnerBatchDML {
 
     static <C> StandardContextualBatchDelete<C> build(C criteria) {
         return new StandardContextualBatchDelete<>(criteria);

@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Update;
-import io.army.criteria.impl.inner.InnerStandardBatchUpdate;
+import io.army.criteria.impl.inner.InnerStandardUpdate;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -14,9 +14,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 final class StandardContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
-        implements Update, InnerStandardBatchUpdate, Update.BatchUpdateAble<T, C>, Update.BatchSetAble<T, C>
+        implements Update, Update.BatchUpdateAble<T, C>, Update.BatchSetAble<T, C>
         , Update.BatchWhereAble<T, C>, Update.BatchWhereAndAble<T, C>, Update.BatchNamedParamAble<C>
-        , Update.UpdateAble {
+        , Update.UpdateAble, InnerBatchUpdate, InnerStandardUpdate {
 
     static <T extends IDomain, C> StandardContextualBatchUpdate<T, C> build(TableMeta<T> tableMeta, C criteria) {
         Assert.isTrue(!tableMeta.immutable(), () -> String.format("TableMeta[%s] immutable", tableMeta));

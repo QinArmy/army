@@ -1,7 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Insert;
-import io.army.criteria.impl.inner.InnerStandardBatchInsert;
+import io.army.criteria.impl.inner.InnerStandardInsert;
+import io.army.criteria.impl.inner.InnerValuesInsert;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -15,7 +16,7 @@ import java.util.List;
 
 final class StandardBatchInsert<T extends IDomain> extends AbstractSQLDebug implements Insert, Insert.InsertAble
         , Insert.BatchInsertIntoAble<T>, Insert.BatchInsertValuesAble<T>, Insert.BatchInsertOptionAble<T>
-        , InnerStandardBatchInsert {
+        , InnerStandardInsert, InnerValuesInsert {
 
 
     static <T extends IDomain> StandardBatchInsert<T> build(TableMeta<T> tableMeta) {

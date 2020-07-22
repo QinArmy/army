@@ -357,7 +357,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
 
     private void partQuery(InnerComposeQuery query, TableContextSQLContext context) {
         // order by clause
-        orderByClause(query.orderPartList(), context);
+        orderByClause(query.orderByList(), context);
         // limit clause
         limitClause(query.offset(), query.rowCount(), context);
     }

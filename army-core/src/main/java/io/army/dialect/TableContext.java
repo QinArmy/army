@@ -3,7 +3,6 @@ package io.army.dialect;
 import io.army.ErrorCode;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.TableAble;
-import io.army.criteria.impl.inner.InnerSingleTableSQL;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.meta.TableMeta;
 

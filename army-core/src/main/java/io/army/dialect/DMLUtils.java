@@ -6,7 +6,6 @@ import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLS;
-import io.army.criteria.impl.inner.InnerStandardBatchInsert;
 import io.army.criteria.impl.inner.InnerUpdate;
 import io.army.domain.IDomain;
 import io.army.generator.FieldGenerator;

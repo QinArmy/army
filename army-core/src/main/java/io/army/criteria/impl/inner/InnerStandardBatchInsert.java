@@ -1,7 +1,7 @@
 package io.army.criteria.impl.inner;
 
 @DeveloperForbid
-public interface InnerStandardBatchInsert extends InnerBatchInsert, InnerStandardInsert {
+public interface InnerStandardBatchInsert extends InnerStandardInsert, InnerValuesInsert {
 
 
 }

@@ -4,7 +4,6 @@ import io.army.ShardingMode;
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.IPredicate;
 import io.army.criteria.NotFoundRouteException;
-import io.army.criteria.impl.inner.InnerSingleTableSQL;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;

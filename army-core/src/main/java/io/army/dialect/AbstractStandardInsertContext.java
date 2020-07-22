@@ -2,7 +2,6 @@ package io.army.dialect;
 
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner.InnerStandardBatchInsert;
 import io.army.criteria.impl.inner.InnerStandardInsert;
 import io.army.meta.TableMeta;
 

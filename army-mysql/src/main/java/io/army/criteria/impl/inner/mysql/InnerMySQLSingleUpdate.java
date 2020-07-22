@@ -2,14 +2,12 @@ package io.army.criteria.impl.inner.mysql;
 
 
 import io.army.criteria.SortPart;
-import io.army.criteria.impl.inner.DeveloperForbid;
-import io.army.criteria.impl.inner.InnerSingleUpdate;
-import io.army.criteria.impl.inner.InnerSpecialUpdate;
+import io.army.criteria.impl.inner.*;
 
 import java.util.List;
 
 @DeveloperForbid
-public interface InnerMySQLSingleUpdate extends InnerSingleUpdate, InnerSpecialUpdate {
+public interface InnerMySQLSingleUpdate extends InnerSpecialUpdate, InnerUpdate, InnerSingleDML {
 
     /**
      * @return a unmodifiable list

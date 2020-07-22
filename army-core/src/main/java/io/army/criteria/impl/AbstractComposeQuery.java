@@ -132,7 +132,7 @@ abstract class AbstractComposeQuery<C> implements PartQuery, SelfDescribed
     /*################################## blow InnerQueryAfterSet method ##################################*/
 
     @Override
-    public final List<SortPart> orderPartList() {
+    public final List<SortPart> orderByList() {
         return this.orderPartList;
     }
 
