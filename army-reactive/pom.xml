@@ -33,6 +33,14 @@
             <artifactId>reactor-core</artifactId>
             <version>${reactor.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.r2dbc</groupId>
+            <artifactId>r2dbc-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.r2dbc</groupId>
+            <artifactId>r2dbc-postgresql</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

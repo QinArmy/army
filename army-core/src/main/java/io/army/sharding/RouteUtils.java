@@ -84,7 +84,7 @@ public  abstract class RouteUtils {
                 continue;
             }
             if (dataSource) {
-                routeIndex = tableWrapper.dataSourceIndex();
+                routeIndex = tableWrapper.databaseIndex();
             } else {
                 routeIndex = tableWrapper.tableIndex();
             }

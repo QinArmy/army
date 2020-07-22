@@ -17,7 +17,7 @@ public interface TableWrapper {
 
     List<IPredicate> onPredicateList();
 
-    int dataSourceIndex();
+    int databaseIndex();
 
     int tableIndex();
 }

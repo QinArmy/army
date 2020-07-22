@@ -62,7 +62,7 @@ class TableWrapperImpl implements TableWrapper {
     }
 
     @Override
-    public final int dataSourceIndex() {
+    public final int databaseIndex() {
         return this.dataSourceIndex;
     }
 

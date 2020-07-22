@@ -43,8 +43,11 @@ final class StandardValueInsertContext extends AbstractTableContextSQLContext im
 
     private final StringBuilder fieldBuilder = new StringBuilder();
 
+    private final TableMeta<?> physicalTable;
+
     private StandardValueInsertContext(Dialect dialect, Visible visible, TableContext tableContext) {
         super(dialect, visible, tableContext);
+        this.physicalTable = tableContext.singleTable();
     }
 
 
@@ -60,12 +63,10 @@ final class StandardValueInsertContext extends AbstractTableContextSQLContext im
 
     @Override
     public final void appendField(FieldMeta<?, ?> fieldMeta) {
-        if (!this.tableContext.tableCountMap.containsKey(fieldMeta.tableMeta())) {
+        if (fieldMeta.tableMeta() != this.physicalTable) {
             throw DialectUtils.createNoLogicalTableException(fieldMeta);
         }
-        this.fieldBuilder
-                .append(" ")
-                .append(this.dialect.quoteIfNeed(fieldMeta.fieldName()));
+        doAppendField(null, fieldMeta, this.fieldBuilder);
     }
 
     @Override
