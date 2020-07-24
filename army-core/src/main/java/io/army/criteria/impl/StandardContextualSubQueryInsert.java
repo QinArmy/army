@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.function.Function;
 
 final class StandardContextualSubQueryInsert<T extends IDomain, C> extends AbstractSQLDebug implements Insert
-        , Insert.InsertAble, Insert.SubQueryTargetFieldAble<T, C>, Insert.SubQueryValueAble<C>
+        , Insert.InsertAble, Insert.SubQueryTargetFieldAble<T, C>, Insert.SimpleTableRouteAble<C>
         , InnerStandardSubQueryInsert {
 
     static <T extends IDomain, C> StandardContextualSubQueryInsert<T, C> build(TableMeta<T> tableMeta, C criteria) {
@@ -33,6 +33,10 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
 
     private SubQuery subQuery;
 
+    private int databaseIndex = -1;
+
+    private int tableIndex = -1;
+
     private boolean prepared;
 
     private StandardContextualSubQueryInsert(TableMeta<T> tableMeta, C criteria) {
@@ -48,13 +52,13 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
     /*################################## blow SubQueryTargetFieldAble method ##################################*/
 
     @Override
-    public final SubQueryValueAble<C> insertInto(List<FieldMeta<T, ?>> fieldMetaList) {
+    public final SimpleTableRouteAble<C> insertInto(List<FieldMeta<T, ?>> fieldMetaList) {
         this.fieldList = new ArrayList<>(fieldMetaList);
         return this;
     }
 
     @Override
-    public SubQueryValueAble<C> insertInto(Function<C, List<FieldMeta<T, ?>>> function) {
+    public final SimpleTableRouteAble<C> insertInto(Function<C, List<FieldMeta<T, ?>>> function) {
         this.fieldList = new ArrayList<>(function.apply(this.criteria));
         return this;
     }
@@ -62,7 +66,20 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
     /*################################## blow SubQueryValueAble method ##################################*/
 
     @Override
-    public final InsertAble values(Function<C, SubQuery> function) {
+    public final SubQueryValueAble<C> route(int databaseIndex, int tableIndex) {
+        this.databaseIndex = databaseIndex;
+        this.tableIndex = tableIndex;
+        return this;
+    }
+
+    @Override
+    public final SubQueryValueAble<C> route(int tableIndex) {
+        this.tableIndex = tableIndex;
+        return this;
+    }
+
+    @Override
+    public final InsertAble subQuery(Function<C, SubQuery> function) {
         this.subQuery = function.apply(this.criteria);
         return this;
     }
@@ -72,6 +89,21 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
     @Override
     public final TableMeta<?> tableMeta() {
         return this.tableMeta;
+    }
+
+    @Override
+    public final String tableAlias() {
+        return "";
+    }
+
+    @Override
+    public final int tableIndex() {
+        return this.tableIndex;
+    }
+
+    @Override
+    public final int databaseIndex() {
+        return this.databaseIndex;
     }
 
     @Override

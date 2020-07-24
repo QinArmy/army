@@ -2,12 +2,13 @@ package io.army.dialect;
 
 import io.army.ErrorCode;
 import io.army.GenericSessionFactory;
-import io.army.beans.ObjectAccessorFactory;
+import io.army.beans.DomainWrapper;
 import io.army.beans.ReadonlyWrapper;
+import io.army.boot.DomainValuesGenerator;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLS;
-import io.army.criteria.impl.inner.InnerUpdate;
-import io.army.domain.IDomain;
+import io.army.criteria.impl.inner.InnerStandardBatchInsert;
+import io.army.criteria.impl.inner.InnerStandardUpdate;
 import io.army.generator.FieldGenerator;
 import io.army.generator.PreFieldGenerator;
 import io.army.lang.Nullable;
@@ -129,7 +130,7 @@ abstract class DMLUtils {
         return Collections.unmodifiableList(parentPredicates);
     }
 
-    static void assertUpdateSetAndWhereClause(InnerUpdate update) {
+    static void assertUpdateSetAndWhereClause(InnerStandardUpdate update) {
         List<FieldMeta<?, ?>> targetFieldList = update.targetFieldList();
         if (CollectionUtils.isEmpty(targetFieldList)) {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "update must have set clause.");
@@ -341,7 +342,7 @@ abstract class DMLUtils {
         StringBuilder fieldBuilder = context.fieldsBuilder()
                 .append("INSERT INTO");
         // append table name
-        context.appendTable(tableMeta);
+        context.appendTable(tableMeta, null);
         fieldBuilder.append(" ( ");
 
         /// VALUE clause
@@ -377,7 +378,7 @@ abstract class DMLUtils {
             , final SQLWrapper sqlWrapper, @Nullable Set<Integer> domainIndexSet
             , GenericSessionFactory sessionFactory) {
 
-        final List<IDomain> domainList = insert.valueList();
+        final List<DomainWrapper> domainList = insert.valueList();
 
         int groupMapCapacity;
         if (domainIndexSet == null) {
@@ -403,12 +404,14 @@ abstract class DMLUtils {
         }
 
         final List<ParamWrapper> childPlaceholderList = childWrapper.paramList();
-
+        final DomainValuesGenerator generator = sessionFactory.DomainValuesGenerator();
+        final boolean migrationData = insert.migrationData();
         if (domainIndexSet == null) {
             final int size = domainList.size();
             for (int i = 0; i < size; i++) {
                 // 1. create value for a domain
-                ReadonlyWrapper beanWrapper = ObjectAccessorFactory.forReadonlyAccess(domainList.get(i));
+                DomainWrapper beanWrapper = domainList.get(i);
+                generator.createValues(beanWrapper, migrationData);
                 // 2. create paramWrapperList
                 if (sqlWrapper instanceof ChildSQLWrapper) {
                     // create paramWrapperList for parent
@@ -422,7 +425,8 @@ abstract class DMLUtils {
         } else {
             for (Integer domainIndex : domainIndexSet) {
                 // 1. create value for a domain
-                ReadonlyWrapper beanWrapper = ObjectAccessorFactory.forReadonlyAccess(domainList.get(domainIndex));
+                DomainWrapper beanWrapper = domainList.get(domainIndex);
+                generator.createValues(beanWrapper, migrationData);
                 // 2. create paramWrapperList
                 if (sqlWrapper instanceof ChildSQLWrapper) {
                     // create paramWrapperList for parent
@@ -473,7 +477,7 @@ abstract class DMLUtils {
         return value;
     }
 
-    static SQLWrapper createBatchSQLWrapper(List<Object> namedParamList, @Nullable Set<Integer> namedParamIexSet
+    static SQLWrapper createBatchSQLWrapper(List<ReadonlyWrapper> namedParamList, @Nullable Set<Integer> namedParamIexSet
             , final SQLWrapper sqlWrapper) {
 
         int groupMapCapacity;
@@ -504,7 +508,7 @@ abstract class DMLUtils {
             final int size = namedParamList.size();
             for (int i = 0; i < size; i++) {
                 // 1. create access object
-                ReadonlyWrapper readonlyWrapper = ObjectAccessorFactory.forReadonlyAccess(namedParamList.get(i));
+                ReadonlyWrapper readonlyWrapper = namedParamList.get(i);
                 // 2. create param group list
                 if (sqlWrapper instanceof ChildSQLWrapper) {
                     parentParamGroupMap.put(i
@@ -520,8 +524,7 @@ abstract class DMLUtils {
         } else {
             for (Integer namedParamIndex : namedParamIexSet) {
                 // 1. create access object
-                ReadonlyWrapper readonlyWrapper = ObjectAccessorFactory.forReadonlyAccess(
-                        namedParamList.get(namedParamIndex));
+                ReadonlyWrapper readonlyWrapper = namedParamList.get(namedParamIndex);
                 // 2. create param group list
                 if (sqlWrapper instanceof ChildSQLWrapper) {
                     parentParamGroupMap.put(namedParamIndex

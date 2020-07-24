@@ -8,9 +8,8 @@ import java.util.Collection;
 import java.util.List;
 
 @DeveloperForbid
-public interface InnerInsert extends InnerSQL {
+public interface InnerInsert extends InnerSQL, InnerSingleDML {
 
-    TableMeta<?> tableMeta();
 
     /**
      * @return a unmodifiable list , maybe empty.

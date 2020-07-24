@@ -7,8 +7,9 @@ import io.army.meta.TableMeta;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
-public interface Insert extends SQLStatement, SQLAble, SQLDebug, QueryAble {
+public interface Insert extends SQLStatement, SQLStatement.SQLAble, SQLDebug, QueryAble {
 
 
     /*################################## blow interfaces  ##################################*/
@@ -33,6 +34,8 @@ public interface Insert extends SQLStatement, SQLAble, SQLDebug, QueryAble {
 
         InsertValuesAble<T> insertInto(Collection<FieldMeta<? super T, ?>> fieldMetaList);
 
+        InsertValuesAble<T> insertInto(Supplier<Collection<FieldMeta<? super T, ?>>> fieldMetaList);
+
         InsertValuesAble<T> insertInto(TableMeta<T> tableMeta);
     }
 
@@ -55,6 +58,8 @@ public interface Insert extends SQLStatement, SQLAble, SQLDebug, QueryAble {
 
         BatchInsertValuesAble<T> insertInto(Collection<FieldMeta<? super T, ?>> fieldMetaList);
 
+        BatchInsertValuesAble<T> insertInto(Supplier<Collection<FieldMeta<? super T, ?>>> fieldMetaList);
+
         BatchInsertValuesAble<T> insertInto(TableMeta<T> tableMeta);
     }
 
@@ -65,29 +70,43 @@ public interface Insert extends SQLStatement, SQLAble, SQLDebug, QueryAble {
     }
 
 
-    /*################################## blow subQuery batchInsert interfaces ##################################*/
+    /*################################## blow subQuery insert interfaces ##################################*/
 
     interface SubQueryTargetFieldAble<T extends IDomain, C> extends InsertSQLAble {
 
-        SubQueryValueAble<C> insertInto(List<FieldMeta<T, ?>> fieldMetaList);
+        SimpleTableRouteAble<C> insertInto(List<FieldMeta<T, ?>> fieldMetaList);
 
-        SubQueryValueAble<C> insertInto(Function<C, List<FieldMeta<T, ?>>> function);
+        SimpleTableRouteAble<C> insertInto(Function<C, List<FieldMeta<T, ?>>> function);
+    }
+
+    interface SimpleTableRouteAble<C> extends SubQueryValueAble<C> {
+
+        SubQueryValueAble<C> route(int databaseIndex, int tableIndex);
+
+        SubQueryValueAble<C> route(int tableIndex);
     }
 
     interface SubQueryValueAble<C> extends InsertSQLAble {
 
 
-        InsertAble values(Function<C, SubQuery> function);
+        InsertAble subQuery(Function<C, SubQuery> function);
     }
 
     /*################################## blow child sub query insert interfaces ##################################*/
 
     interface ParentSubQueryTargetFieldAble<T extends IDomain, C> extends InsertSQLAble {
 
-        ParentSubQueryAble<T, C> parentFields(List<FieldMeta<? super T, ?>> fieldMetaList);
+        ParentTableRouteAble<T, C> parentFields(List<FieldMeta<T, ?>> fieldMetaList);
 
-        ParentSubQueryAble<T, C> parentFields(Function<C, List<FieldMeta<? super T, ?>>> function);
+        ParentTableRouteAble<T, C> parentFields(Function<C, List<FieldMeta<T, ?>>> function);
 
+    }
+
+    interface ParentTableRouteAble<T extends IDomain, C> extends ParentSubQueryAble<T, C> {
+
+        ParentSubQueryAble<T, C> route(int databaseIndex, int tableIndex);
+
+        ParentSubQueryAble<T, C> route(int tableIndex);
     }
 
     interface ChildSubQueryTargetFieldAble<T extends IDomain, C> extends InsertSQLAble {

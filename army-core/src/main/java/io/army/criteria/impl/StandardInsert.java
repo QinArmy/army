@@ -1,5 +1,7 @@
 package io.army.criteria.impl;
 
+import io.army.beans.DomainWrapper;
+import io.army.beans.ObjectAccessorFactory;
 import io.army.criteria.Insert;
 import io.army.criteria.impl.inner.InnerStandardInsert;
 import io.army.domain.IDomain;
@@ -13,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implements Insert
         , Insert.InsertAble, Insert.InsertIntoAble<T>, Insert.InsertValuesAble<T>, Insert.InsertOptionAble<T>
@@ -22,13 +25,21 @@ final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implement
         return new StandardInsert<>(tableMeta);
     }
 
+    static List<DomainWrapper> createDomainWrapper(TableMeta<?> tableMeta, List<? extends IDomain> domainList) {
+        List<DomainWrapper> wrapperList = new ArrayList<>(domainList.size());
+        for (IDomain domain : domainList) {
+            wrapperList.add(ObjectAccessorFactory.forDomainPropertyAccess(domain, tableMeta));
+        }
+        return wrapperList;
+    }
+
     private final TableMeta<T> tableMeta;
 
     private boolean dataMigration;
 
     private List<FieldMeta<?, ?>> fieldList = new ArrayList<>();
 
-    private List<IDomain> valueList;
+    private List<DomainWrapper> valueList;
 
     private boolean prepared;
 
@@ -53,6 +64,12 @@ final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implement
     }
 
     @Override
+    public final InsertValuesAble<T> insertInto(Supplier<Collection<FieldMeta<? super T, ?>>> supplier) {
+        this.fieldList.addAll(supplier.get());
+        return this;
+    }
+
+    @Override
     public final InsertValuesAble<T> insertInto(TableMeta<T> tableMeta) {
         Assert.isTrue(tableMeta == this.tableMeta
                 , () -> String.format("TableMeta[%s] and target[%s] not match.", tableMeta, this.tableMeta));
@@ -67,16 +84,18 @@ final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implement
 
     /*################################## blow InsertValuesAble method ##################################*/
 
+
     @Override
     public final InsertAble value(T domain) {
-        this.valueList = new ArrayList<>(1);
-        this.valueList.add(domain);
+        this.valueList = Collections.singletonList(
+                ObjectAccessorFactory.forDomainPropertyAccess(domain, this.tableMeta)
+        );
         return this;
     }
 
     @Override
     public final InsertAble values(List<T> domainList) {
-        this.valueList = new ArrayList<>(domainList);
+        this.valueList = createDomainWrapper(this.tableMeta, domainList);
         return this;
     }
 
@@ -88,12 +107,28 @@ final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implement
     }
 
     @Override
+    public final String tableAlias() {
+        return "";
+    }
+
+
+    @Override
+    public final int tableIndex() {
+        return -1;
+    }
+
+    @Override
+    public final int databaseIndex() {
+        return -1;
+    }
+
+    @Override
     public final List<FieldMeta<?, ?>> fieldList() {
         return this.fieldList;
     }
 
     @Override
-    public final List<IDomain> valueList() {
+    public final List<DomainWrapper> valueList() {
         return this.valueList;
     }
 

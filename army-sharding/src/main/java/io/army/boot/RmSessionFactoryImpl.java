@@ -3,6 +3,8 @@ package io.army.boot;
 
 import io.army.SessionFactoryException;
 import io.army.ShardingMode;
+import io.army.boot.sync.AbstractSyncSessionFactory;
+import io.army.boot.sync.SyncSessionFactoryUtils;
 import io.army.dialect.Dialect;
 import io.army.dialect.SQLDialect;
 import io.army.sync.SessionFactory;

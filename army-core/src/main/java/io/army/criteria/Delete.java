@@ -4,13 +4,11 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
-public interface Delete extends SQLStatement, SQLAble, SQLDebug, QueryAble {
+public interface Delete extends SQLStatement, SQLStatement.SQLAble, SQLDebug, QueryAble {
 
     interface DeleteSQLAble extends SQLAble {
 
@@ -23,7 +21,14 @@ public interface Delete extends SQLStatement, SQLAble, SQLDebug, QueryAble {
 
     interface SingleDeleteAble<C> extends DeleteSQLAble {
 
-        SingleWhereAble<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias);
+        SingleDeleteTableRouteAble<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias);
+    }
+
+    interface SingleDeleteTableRouteAble<C> extends SingleWhereAble<C> {
+
+        SingleDeleteTableRouteAble<C> route(int databaseIndex, int tableIndex);
+
+        SingleDeleteTableRouteAble<C> route(int tableIndex);
     }
 
     interface SingleWhereAble<C> extends DeleteSQLAble {
@@ -43,7 +48,7 @@ public interface Delete extends SQLStatement, SQLAble, SQLDebug, QueryAble {
          */
         SingleWhereAndAble<C> and(@Nullable IPredicate predicate);
 
-        SingleWhereAndAble<C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function);
+        SingleWhereAndAble<C> ifAnd(Function<C, IPredicate> function);
 
     }
 
@@ -51,7 +56,14 @@ public interface Delete extends SQLStatement, SQLAble, SQLDebug, QueryAble {
 
     interface BatchDeleteAble<C> extends DeleteSQLAble {
 
-        BatchWhereAble<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias);
+        BatchDeleteTableRouteAble<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias);
+    }
+
+    interface BatchDeleteTableRouteAble<C> extends BatchWhereAble<C> {
+
+        BatchWhereAble<C> route(int databaseIndex, int tableIndex);
+
+        BatchWhereAble<C> route(int tableIndex);
     }
 
     interface BatchWhereAble<C> extends DeleteSQLAble {
@@ -65,22 +77,23 @@ public interface Delete extends SQLStatement, SQLAble, SQLDebug, QueryAble {
 
     interface BatchWhereAndAble<C> extends BatchNamedParamAble<C> {
 
-        BatchWhereAndAble<C> and(IPredicate predicate);
+        /**
+         * @see Expression#equalIfNonNull(Object)
+         */
+        BatchWhereAndAble<C> and(@Nullable IPredicate predicate);
 
-        BatchWhereAndAble<C> ifAnd(Predicate<C> testPredicate, IPredicate predicate);
-
-        BatchWhereAndAble<C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function);
+        BatchWhereAndAble<C> ifAnd(Function<C, IPredicate> function);
 
     }
 
     interface BatchNamedParamAble<C> extends DeleteSQLAble {
 
-        DeleteAble namedParamMaps(Collection<Map<String, Object>> mapCollection);
+        DeleteAble namedParamMaps(List<Map<String, Object>> mapList);
 
-        DeleteAble namedParamMaps(Function<C, Collection<Map<String, Object>>> function);
+        DeleteAble namedParamMaps(Function<C, List<Map<String, Object>>> function);
 
-        DeleteAble namedParamBeans(Collection<Object> beanCollection);
+        DeleteAble namedParamBeans(List<Object> beanList);
 
-        DeleteAble namedParamBeans(Function<C, Collection<Object>> function);
+        DeleteAble namedParamBeans(Function<C, List<Object>> function);
     }
 }

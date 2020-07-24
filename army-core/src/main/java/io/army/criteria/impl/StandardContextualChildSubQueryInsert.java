@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.function.Function;
 
 final class StandardContextualChildSubQueryInsert<T extends IDomain, C> extends AbstractSQLDebug implements Insert
-        , InnerStandardChildSubQueryInsert, Insert.ParentSubQueryTargetFieldAble<T, C>, Insert.ParentSubQueryAble<T, C>
+        , InnerStandardChildSubQueryInsert, Insert.ParentSubQueryTargetFieldAble<T, C>, Insert.ParentTableRouteAble<T, C>
         , Insert.ChildSubQueryTargetFieldAble<T, C>, Insert.ChildSubQueryAble<C>, Insert.InsertAble {
 
     static <T extends IDomain, C> StandardContextualChildSubQueryInsert<T, C> build(
@@ -37,6 +37,9 @@ final class StandardContextualChildSubQueryInsert<T extends IDomain, C> extends 
 
     private SubQuery childSubQuery;
 
+    private int databaseIndex = -1;
+
+    private int tableIndex = -1;
 
     private boolean prepared;
 
@@ -53,13 +56,13 @@ final class StandardContextualChildSubQueryInsert<T extends IDomain, C> extends 
     /*################################## blow ParentSubQueryTargetFieldAble method ##################################*/
 
     @Override
-    public ParentSubQueryAble<T, C> parentFields(List<FieldMeta<? super T, ?>> fieldMetas) {
+    public final ParentTableRouteAble<T, C> parentFields(List<FieldMeta<T, ?>> fieldMetas) {
         this.parentFieldList = new ArrayList<>(fieldMetas);
         return this;
     }
 
     @Override
-    public ParentSubQueryAble<T, C> parentFields(Function<C, List<FieldMeta<? super T, ?>>> function) {
+    public final ParentTableRouteAble<T, C> parentFields(Function<C, List<FieldMeta<T, ?>>> function) {
         this.parentFieldList = new ArrayList<>(function.apply(this.criteria));
         return this;
     }
@@ -67,7 +70,20 @@ final class StandardContextualChildSubQueryInsert<T extends IDomain, C> extends 
     /*################################## blow ParentSubQueryAble method ##################################*/
 
     @Override
-    public ChildSubQueryTargetFieldAble<T, C> parentSubQuery(Function<C, SubQuery> function) {
+    public final ParentSubQueryAble<T, C> route(int databaseIndex, int tableIndex) {
+        this.databaseIndex = databaseIndex;
+        this.tableIndex = tableIndex;
+        return this;
+    }
+
+    @Override
+    public final ParentSubQueryAble<T, C> route(int tableIndex) {
+        this.tableIndex = tableIndex;
+        return this;
+    }
+
+    @Override
+    public final ChildSubQueryTargetFieldAble<T, C> parentSubQuery(Function<C, SubQuery> function) {
         this.parentSubQuery = function.apply(this.criteria);
         return this;
     }
@@ -76,13 +92,13 @@ final class StandardContextualChildSubQueryInsert<T extends IDomain, C> extends 
     /*################################## blow ChildSubQueryTargetFieldAble method ##################################*/
 
     @Override
-    public ChildSubQueryAble<C> childFields(List<FieldMeta<T, ?>> fieldMetas) {
+    public final ChildSubQueryAble<C> childFields(List<FieldMeta<T, ?>> fieldMetas) {
         this.childFieldList = new ArrayList<>(fieldMetas);
         return this;
     }
 
     @Override
-    public ChildSubQueryAble<C> childFields(Function<C, List<FieldMeta<T, ?>>> function) {
+    public final ChildSubQueryAble<C> childFields(Function<C, List<FieldMeta<T, ?>>> function) {
         this.childFieldList = new ArrayList<>(function.apply(this.criteria));
         return this;
     }
@@ -90,7 +106,7 @@ final class StandardContextualChildSubQueryInsert<T extends IDomain, C> extends 
     /*################################## blow ChildSubQueryAble method ##################################*/
 
     @Override
-    public InsertAble childSubQuery(Function<C, SubQuery> function) {
+    public final InsertAble childSubQuery(Function<C, SubQuery> function) {
         this.childSubQuery = function.apply(this.criteria);
         return this;
     }
@@ -147,6 +163,21 @@ final class StandardContextualChildSubQueryInsert<T extends IDomain, C> extends 
     @Override
     public final List<FieldMeta<?, ?>> fieldList() {
         return this.childFieldList;
+    }
+
+    @Override
+    public final String tableAlias() {
+        return "";
+    }
+
+    @Override
+    public final int databaseIndex() {
+        return this.databaseIndex;
+    }
+
+    @Override
+    public final int tableIndex() {
+        return this.tableIndex;
     }
 
     @Override

@@ -17,7 +17,7 @@ import java.util.function.Predicate;
 abstract class AbstractStandardSelect<C> extends AbstractSelect implements
         Select.WhereAble<C>, Select.WhereAndAble<C>, Select.HavingAble<C>
         , Select.UnionClause<C>, Select.SelectPartAble<C>, Select.FromAble<C>
-        , Select.JoinAble<C>, Select.OnAble<C>, InnerQuery {
+        , Select.TableRouteJoinAble<C>, Select.TableRouteOnAble<C>, InnerQuery {
 
 
     final C criteria;
@@ -97,7 +97,7 @@ abstract class AbstractStandardSelect<C> extends AbstractSelect implements
     /*################################## blow FromAble method ##################################*/
 
     @Override
-    public final JoinAble<C> from(TableMeta<?> tableMeta, String tableAlias) {
+    public final TableRouteJoinAble<C> from(TableMeta<?> tableMeta, String tableAlias) {
         addTableAble(new TableWrapperImpl(tableMeta, tableAlias, JoinType.NONE));
         return this;
     }
@@ -108,11 +108,22 @@ abstract class AbstractStandardSelect<C> extends AbstractSelect implements
         return this;
     }
 
+    @Override
+    public final JoinAble<C> fromRoute(int databaseIndex, int tableIndex) {
+        doRoute(databaseIndex, tableIndex);
+        return this;
+    }
+
+    @Override
+    public final JoinAble<C> fromRoute(int tableIndex) {
+        doRoute(-1, tableIndex);
+        return this;
+    }
 
     /*################################## blow JoinAble method ##################################*/
 
     @Override
-    public final OnAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias) {
+    public final TableRouteOnAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias) {
         addTableAble(new TableWrapperImpl(tableMeta, tableAlias, JoinType.LEFT));
         return this;
     }
@@ -124,7 +135,7 @@ abstract class AbstractStandardSelect<C> extends AbstractSelect implements
     }
 
     @Override
-    public final OnAble<C> join(TableMeta<?> tableMeta, String tableAlias) {
+    public final TableRouteOnAble<C> join(TableMeta<?> tableMeta, String tableAlias) {
         addTableAble(new TableWrapperImpl(tableMeta, tableAlias, JoinType.JOIN));
         return this;
     }
@@ -136,7 +147,7 @@ abstract class AbstractStandardSelect<C> extends AbstractSelect implements
     }
 
     @Override
-    public final OnAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias) {
+    public final TableRouteOnAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias) {
         addTableAble(new TableWrapperImpl(tableMeta, tableAlias, JoinType.RIGHT));
         return this;
     }
@@ -144,6 +155,18 @@ abstract class AbstractStandardSelect<C> extends AbstractSelect implements
     @Override
     public final OnAble<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia) {
         addTableAble(new TableWrapperImpl(function.apply(this.criteria), subQueryAlia, JoinType.RIGHT));
+        return this;
+    }
+
+    @Override
+    public final OnAble<C> route(int databaseIndex, int tableIndex) {
+        doRoute(databaseIndex, tableIndex);
+        return this;
+    }
+
+    @Override
+    public final OnAble<C> route(int tableIndex) {
+        doRoute(-1, tableIndex);
         return this;
     }
 
@@ -199,15 +222,10 @@ abstract class AbstractStandardSelect<C> extends AbstractSelect implements
 
 
     @Override
-    public final Select.WhereAndAble<C> and(Function<C, IPredicate> function) {
-        this.predicateList.add(function.apply(this.criteria));
-        return this;
-    }
-
-    @Override
-    public final Select.WhereAndAble<C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function) {
-        if (testPredicate.test(this.criteria)) {
-            this.predicateList.add(function.apply(this.criteria));
+    public final Select.WhereAndAble<C> ifAnd(Function<C, IPredicate> function) {
+        IPredicate predicate = function.apply(this.criteria);
+        if (predicate != null) {
+            this.predicateList.add(predicate);
         }
         return this;
     }
@@ -237,27 +255,11 @@ abstract class AbstractStandardSelect<C> extends AbstractSelect implements
         return groupBy(function.apply(this.criteria));
     }
 
-    @Override
-    public final HavingAble<C> ifGroupBy(Predicate<C> test, SortPart sortPart) {
-        if (test.test(this.criteria)) {
-            groupBy(sortPart);
-        }
-        return this;
-    }
-
-    @Override
-    public final HavingAble<C> ifGroupBy(Predicate<C> test, Function<C, List<SortPart>> function) {
-        if (test.test(this.criteria)) {
-            groupBy(function.apply(this.criteria));
-        }
-        return this;
-    }
-
     /*################################## blow HavingAble method ##################################*/
 
     @Override
     public final Select.OrderByAble<C> having(Function<C, List<IPredicate>> function) {
-        if (this.groupExpList.isEmpty()) {
+        if (CollectionUtils.isEmpty(this.groupExpList)) {
             return this;
         }
         this.havingList.addAll(function.apply(this.criteria));
@@ -265,28 +267,20 @@ abstract class AbstractStandardSelect<C> extends AbstractSelect implements
     }
 
     @Override
-    public final Select.OrderByAble<C> having(IPredicate predicate) {
-        if (this.groupExpList.isEmpty()) {
+    public final OrderByAble<C> having(List<IPredicate> predicateList) {
+        if (CollectionUtils.isEmpty(this.groupExpList)) {
             return this;
         }
-        Assert.state(this.havingList.isEmpty(), "having clause ended.");
+        this.havingList.addAll(predicateList);
+        return this;
+    }
+
+    @Override
+    public final Select.OrderByAble<C> having(IPredicate predicate) {
+        if (CollectionUtils.isEmpty(this.groupExpList)) {
+            return this;
+        }
         this.havingList.add(predicate);
-        return this;
-    }
-
-    @Override
-    public final Select.OrderByAble<C> ifHaving(Predicate<C> predicate, Function<C, List<IPredicate>> function) {
-        if (predicate.test(this.criteria)) {
-            having(function);
-        }
-        return this;
-    }
-
-    @Override
-    public final Select.OrderByAble<C> ifHaving(Predicate<C> testPredicate, IPredicate predicate) {
-        if (testPredicate.test(this.criteria)) {
-            having(predicate);
-        }
         return this;
     }
 
@@ -316,22 +310,6 @@ abstract class AbstractStandardSelect<C> extends AbstractSelect implements
         return this;
     }
 
-    @Override
-    public final LimitAble<C> ifOrderBy(Predicate<C> test, SortPart sortPart) {
-        if (test.test(this.criteria)) {
-            orderBy(sortPart);
-        }
-        return this;
-    }
-
-    @Override
-    public final LimitAble<C> ifOrderBy(Predicate<C> test, Function<C, List<SortPart>> function) {
-        if (test.test(this.criteria)) {
-            orderBy(function.apply(this.criteria));
-        }
-        return this;
-    }
-
     /*################################## blow LimitAble method ##################################*/
 
     @Override
@@ -348,7 +326,7 @@ abstract class AbstractStandardSelect<C> extends AbstractSelect implements
     }
 
     @Override
-    public final Select.LockAble<C> limit(Function<C, Pair<Integer, Integer>> function) {
+    public final Select.LockAble<C> ifLimit(Function<C, Pair<Integer, Integer>> function) {
         Pair<Integer, Integer> pair = function.apply(this.criteria);
         int offset = -1, rowCount = -1;
         if (pair.getFirst() != null) {
@@ -362,25 +340,17 @@ abstract class AbstractStandardSelect<C> extends AbstractSelect implements
     }
 
     @Override
-    public final Select.LockAble<C> ifLimit(Predicate<C> predicate, int rowCount) {
-        if (predicate.test(this.criteria)) {
+    public final Select.LockAble<C> ifLimit(Predicate<C> test, int rowCount) {
+        if (test.test(this.criteria)) {
             limit(rowCount);
         }
         return this;
     }
 
     @Override
-    public final Select.LockAble<C> ifLimit(Predicate<C> predicate, int offset, int rowCount) {
-        if (predicate.test(this.criteria)) {
+    public final Select.LockAble<C> ifLimit(Predicate<C> test, int offset, int rowCount) {
+        if (test.test(this.criteria)) {
             limit(offset, rowCount);
-        }
-        return this;
-    }
-
-    @Override
-    public final Select.LockAble<C> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
-        if (predicate.test(this.criteria)) {
-            limit(function);
         }
         return this;
     }
@@ -394,24 +364,8 @@ abstract class AbstractStandardSelect<C> extends AbstractSelect implements
     }
 
     @Override
-    public final UnionClause<C> lock(Function<C, LockMode> function) {
+    public final UnionClause<C> ifLock(Function<C, LockMode> function) {
         this.lockMode = function.apply(this.criteria);
-        return this;
-    }
-
-    @Override
-    public final UnionClause<C> ifLock(Predicate<C> predicate, LockMode lockMode) {
-        if (predicate.test(this.criteria)) {
-            this.lockMode = lockMode;
-        }
-        return this;
-    }
-
-    @Override
-    public final UnionClause<C> ifLock(Predicate<C> predicate, Function<C, LockMode> function) {
-        if (predicate.test(this.criteria)) {
-            this.lockMode = function.apply(this.criteria);
-        }
         return this;
     }
 

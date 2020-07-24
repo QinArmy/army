@@ -1,5 +1,6 @@
 package io.army.boot;
 
+import io.army.boot.sync.RmSessionFactory;
 import io.army.criteria.Delete;
 import io.army.criteria.Insert;
 import io.army.criteria.Update;

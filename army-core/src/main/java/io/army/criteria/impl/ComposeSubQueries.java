@@ -73,18 +73,6 @@ abstract class ComposeSubQueries<C> extends AbstractComposeQuery<C> implements
         return this;
     }
 
-    @Override
-    public final SubQueryLimitClause<C> ifOrderBy(Predicate<C> test, SortPart sortPart) {
-        doOrderBy(test, sortPart);
-        return this;
-    }
-
-    @Override
-    public final SubQueryLimitClause<C> ifOrderBy(Predicate<C> test, Function<C, List<SortPart>> function) {
-        doOrderBy(test, function);
-        return this;
-    }
-
     /*################################## blow SubQueryLimitClause method ##################################*/
 
     @Override
@@ -100,7 +88,7 @@ abstract class ComposeSubQueries<C> extends AbstractComposeQuery<C> implements
     }
 
     @Override
-    public final SubQueryAble limit(Function<C, Pair<Integer, Integer>> function) {
+    public final SubQueryAble ifLimit(Function<C, Pair<Integer, Integer>> function) {
         doLimit(function);
         return this;
     }
@@ -114,12 +102,6 @@ abstract class ComposeSubQueries<C> extends AbstractComposeQuery<C> implements
     @Override
     public final SubQueryAble ifLimit(Predicate<C> predicate, int offset, int rowCount) {
         doLimit(predicate, offset, rowCount);
-        return this;
-    }
-
-    @Override
-    public final SubQueryAble ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
-        doLimit(predicate, function);
         return this;
     }
 

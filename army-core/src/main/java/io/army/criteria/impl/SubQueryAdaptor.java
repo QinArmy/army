@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.Pair;
 
@@ -10,7 +11,8 @@ import java.util.function.Predicate;
 
 final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectPartAble<C>
         , SubQuery.SubQueryFromAble<C>, SubQuery.SubQueryOnAble<C>, SubQuery.SubQueryJoinAble<C>
-        , SubQuery.SubQueryWhereAndAble<C>, SubQuery.SubQueryHavingAble<C>, SubQuery.SubQueryUnionAble<C> {
+        , SubQuery.SubQueryWhereAndAble<C>, SubQuery.SubQueryHavingAble<C>, SubQuery.SubQueryUnionAble<C>
+        , SubQuery.TableRouteJoinAble<C>, SubQuery.TableRouteOnAble<C> {
 
     private final SubQuerySelect<C> actualSelect;
 
@@ -56,14 +58,26 @@ final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectPartAble<C>
     /*################################## blow SubQueryFromAble method ##################################*/
 
     @Override
-    public final SubQuery.SubQueryOnAble<C> from(TableMeta<?> tableMeta, String tableAlias) {
+    public final SubQuery.TableRouteJoinAble<C> from(TableMeta<?> tableMeta, String tableAlias) {
         this.actualSelect.from(tableMeta, tableAlias);
         return this;
     }
 
     @Override
-    public final SubQuery.SubQueryOnAble<C> from(Function<C, SubQuery> function, String subQueryAlia) {
+    public final SubQuery.SubQueryJoinAble<C> from(Function<C, SubQuery> function, String subQueryAlia) {
         this.actualSelect.from(function, subQueryAlia);
+        return this;
+    }
+
+    @Override
+    public final SubQuery.SubQueryJoinAble<C> fromRoute(int databaseIndex, int tableIndex) {
+        this.actualSelect.fromRoute(databaseIndex, tableIndex);
+        return this;
+    }
+
+    @Override
+    public final SubQuery.SubQueryJoinAble<C> fromRoute(int tableIndex) {
+        this.actualSelect.fromRoute(-1, tableIndex);
         return this;
     }
 
@@ -90,7 +104,7 @@ final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectPartAble<C>
     /*################################## blow SubQueryJoinAble method ##################################*/
 
     @Override
-    public final SubQuery.SubQueryOnAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias) {
+    public final SubQuery.TableRouteOnAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias) {
         this.actualSelect.leftJoin(tableMeta, tableAlias);
         return this;
     }
@@ -102,7 +116,7 @@ final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectPartAble<C>
     }
 
     @Override
-    public final SubQuery.SubQueryOnAble<C> join(TableMeta<?> tableMeta, String tableAlias) {
+    public final SubQuery.TableRouteOnAble<C> join(TableMeta<?> tableMeta, String tableAlias) {
         this.actualSelect.join(tableMeta, tableAlias);
         return this;
     }
@@ -114,7 +128,7 @@ final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectPartAble<C>
     }
 
     @Override
-    public final SubQuery.SubQueryOnAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias) {
+    public final SubQuery.TableRouteOnAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias) {
         this.actualSelect.rightJoin(tableMeta, tableAlias);
         return this;
     }
@@ -122,6 +136,18 @@ final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectPartAble<C>
     @Override
     public final SubQuery.SubQueryOnAble<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia) {
         this.actualSelect.rightJoin(function, subQueryAlia);
+        return this;
+    }
+
+    @Override
+    public final SubQuery.SubQueryOnAble<C> route(int databaseIndex, int tableIndex) {
+        this.actualSelect.route(databaseIndex, tableIndex);
+        return this;
+    }
+
+    @Override
+    public final SubQuery.SubQueryOnAble<C> route(int tableIndex) {
+        this.actualSelect.route(-1, tableIndex);
         return this;
     }
 
@@ -149,20 +175,14 @@ final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectPartAble<C>
     /*################################## blow SubQueryWhereAndAble method ##################################*/
 
     @Override
-    public final SubQuery.SubQueryWhereAndAble<C> and(IPredicate predicate) {
+    public final SubQuery.SubQueryWhereAndAble<C> and(@Nullable IPredicate predicate) {
         this.actualSelect.and(predicate);
         return this;
     }
 
     @Override
-    public final SubQuery.SubQueryWhereAndAble<C> and(Function<C, IPredicate> function) {
-        this.actualSelect.and(function);
-        return this;
-    }
-
-    @Override
-    public final SubQuery.SubQueryWhereAndAble<C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function) {
-        this.actualSelect.ifAnd(testPredicate, function);
+    public final SubQuery.SubQueryWhereAndAble<C> ifAnd(Function<C, IPredicate> function) {
+        this.actualSelect.ifAnd(function);
         return this;
     }
 
@@ -186,25 +206,7 @@ final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectPartAble<C>
         return this;
     }
 
-    @Override
-    public final SubQuery.SubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, SortPart sortPart) {
-        this.actualSelect.ifGroupBy(predicate, sortPart);
-        return this;
-    }
-
-    @Override
-    public final SubQuery.SubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, Function<C, List<SortPart>> function) {
-        this.actualSelect.ifGroupBy(predicate, function);
-        return this;
-    }
-
     /*################################## blow SubQueryHavingAble method ##################################*/
-
-    @Override
-    public final SubQuery.SubQueryOrderByAble<C> having(Function<C, List<IPredicate>> function) {
-        this.actualSelect.having(function);
-        return this;
-    }
 
     @Override
     public final SubQuery.SubQueryOrderByAble<C> having(IPredicate predicate) {
@@ -213,14 +215,14 @@ final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectPartAble<C>
     }
 
     @Override
-    public final SubQuery.SubQueryOrderByAble<C> ifHaving(Predicate<C> predicate, Function<C, List<IPredicate>> function) {
-        this.actualSelect.ifHaving(predicate, function);
+    public final SubQuery.SubQueryOrderByAble<C> having(List<IPredicate> predicateList) {
+        this.actualSelect.having(predicateList);
         return this;
     }
 
     @Override
-    public final SubQuery.SubQueryOrderByAble<C> ifHaving(Predicate<C> testPredicate, IPredicate predicate) {
-        this.actualSelect.ifHaving(testPredicate, predicate);
+    public final SubQuery.SubQueryOrderByAble<C> having(Function<C, List<IPredicate>> function) {
+        this.actualSelect.having(function);
         return this;
     }
 
@@ -244,18 +246,6 @@ final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectPartAble<C>
         return this;
     }
 
-    @Override
-    public final SubQuery.SubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, SortPart sortPart) {
-        this.actualSelect.ifOrderBy(predicate, sortPart);
-        return this;
-    }
-
-    @Override
-    public final SubQuery.SubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, Function<C, List<SortPart>> function) {
-        this.actualSelect.ifOrderBy(predicate, function);
-        return this;
-    }
-
     /*################################## blow SubQueryLimitAble method ##################################*/
 
     @Override
@@ -271,8 +261,8 @@ final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectPartAble<C>
     }
 
     @Override
-    public final SubQuery.SubQueryUnionAble<C> limit(Function<C, Pair<Integer, Integer>> function) {
-        this.actualSelect.limit(function);
+    public final SubQuery.SubQueryUnionAble<C> ifLimit(Function<C, Pair<Integer, Integer>> function) {
+        this.actualSelect.ifLimit(function);
         return this;
     }
 
@@ -285,12 +275,6 @@ final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectPartAble<C>
     @Override
     public final SubQuery.SubQueryUnionAble<C> ifLimit(Predicate<C> predicate, int offset, int rowCount) {
         this.actualSelect.ifLimit(predicate, offset, rowCount);
-        return this;
-    }
-
-    @Override
-    public final SubQuery.SubQueryUnionAble<C> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
-        this.actualSelect.ifLimit(predicate, function);
         return this;
     }
 

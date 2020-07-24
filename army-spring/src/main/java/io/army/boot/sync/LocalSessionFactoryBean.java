@@ -1,8 +1,6 @@
 package io.army.boot.sync;
 
 
-import io.army.boot.SessionFactoryAdvice;
-import io.army.boot.SessionFactoryBuilder;
 import io.army.codec.FieldCodec;
 import io.army.env.Environment;
 import io.army.env.SpringEnvironmentAdaptor;

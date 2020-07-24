@@ -1,5 +1,6 @@
 package io.army.criteria;
 
+import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.Pair;
 
@@ -33,9 +34,16 @@ public interface ColumnSubQuery<E> extends SubQuery {
 
     interface ColumnSubQueryFromAble<E, C> extends ColumnSubQueryUnionClause<E, C> {
 
-        ColumnSubQueryJoinAble<E, C> from(TableMeta<?> tableMeta, String tableAlias);
+        TableRouteJoinAble<E, C> from(TableMeta<?> tableMeta, String tableAlias);
 
         ColumnSubQueryJoinAble<E, C> from(Function<C, SubQuery> function, String subQueryAlia);
+    }
+
+    interface TableRouteJoinAble<E, C> extends ColumnSubQueryJoinAble<E, C> {
+
+        ColumnSubQueryJoinAble<E, C> fromRoute(int databaseIndex, int tableIndex);
+
+        ColumnSubQueryJoinAble<E, C> fromRoute(int tableIndex);
     }
 
 
@@ -51,18 +59,26 @@ public interface ColumnSubQuery<E> extends SubQuery {
 
     interface ColumnSubQueryJoinAble<E, C> extends ColumnSubQueryWhereAble<E, C> {
 
-        ColumnSubQueryOnAble<E, C> leftJoin(TableMeta<?> tableMeta, String tableAlias);
+        TableRouteOnAble<E, C> leftJoin(TableMeta<?> tableMeta, String tableAlias);
 
         ColumnSubQueryOnAble<E, C> leftJoin(Function<C, SubQuery> function, String subQueryAlia);
 
-        ColumnSubQueryOnAble<E, C> join(TableMeta<?> tableMeta, String tableAlias);
+        TableRouteOnAble<E, C> join(TableMeta<?> tableMeta, String tableAlias);
 
         ColumnSubQueryOnAble<E, C> join(Function<C, SubQuery> function, String subQueryAlia);
 
-        ColumnSubQueryOnAble<E, C> rightJoin(TableMeta<?> tableMeta, String tableAlias);
+        TableRouteOnAble<E, C> rightJoin(TableMeta<?> tableMeta, String tableAlias);
 
         ColumnSubQueryOnAble<E, C> rightJoin(Function<C, SubQuery> function, String subQueryAlia);
     }
+
+    interface TableRouteOnAble<E, C> extends ColumnSubQueryOnAble<E, C> {
+
+        ColumnSubQueryOnAble<E, C> route(int databaseIndex, int tableIndex);
+
+        ColumnSubQueryOnAble<E, C> route(int tableIndex);
+    }
+
 
     interface ColumnSubQueryWhereAble<E, C> extends ColumnSubQueryGroupByAble<E, C> {
 
@@ -75,11 +91,9 @@ public interface ColumnSubQuery<E> extends SubQuery {
 
     interface ColumnSubQueryWhereAndAble<E, C> extends ColumnSubQueryGroupByAble<E, C> {
 
-        ColumnSubQueryWhereAndAble<E, C> and(IPredicate predicate);
+        ColumnSubQueryWhereAndAble<E, C> and(@Nullable IPredicate predicate);
 
-        ColumnSubQueryWhereAndAble<E, C> and(Function<C, IPredicate> function);
-
-        ColumnSubQueryWhereAndAble<E, C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function);
+        ColumnSubQueryWhereAndAble<E, C> ifAnd(Function<C, IPredicate> function);
 
     }
 
@@ -92,10 +106,6 @@ public interface ColumnSubQuery<E> extends SubQuery {
 
         ColumnSubQueryHavingAble<E, C> groupBy(Function<C, List<SortPart>> function);
 
-        ColumnSubQueryHavingAble<E, C> ifGroupBy(Predicate<C> predicate, SortPart sortPart);
-
-        ColumnSubQueryHavingAble<E, C> ifGroupBy(Predicate<C> predicate, Function<C, List<SortPart>> function);
-
     }
 
     interface ColumnSubQueryHavingAble<E, C> extends ColumnSubQueryOrderByAble<E, C> {
@@ -104,9 +114,7 @@ public interface ColumnSubQuery<E> extends SubQuery {
 
         ColumnSubQueryOrderByAble<E, C> having(IPredicate predicate);
 
-        ColumnSubQueryOrderByAble<E, C> ifHaving(Predicate<C> predicate, Function<C, List<IPredicate>> function);
-
-        ColumnSubQueryOrderByAble<E, C> ifHaving(Predicate<C> testPredicate, IPredicate predicate);
+        ColumnSubQueryOrderByAble<E, C> having(List<IPredicate> predicateList);
     }
 
 
@@ -120,12 +128,6 @@ public interface ColumnSubQuery<E> extends SubQuery {
 
         @Override
         ColumnSubQueryLimitAble<E, C> orderBy(Function<C, List<SortPart>> function);
-
-        @Override
-        ColumnSubQueryLimitAble<E, C> ifOrderBy(Predicate<C> test, SortPart sortPart);
-
-        @Override
-        ColumnSubQueryLimitAble<E, C> ifOrderBy(Predicate<C> test, Function<C, List<SortPart>> function);
     }
 
 
@@ -138,7 +140,7 @@ public interface ColumnSubQuery<E> extends SubQuery {
         ColumnSubQueryUnionClause<E, C> limit(int offset, int rowCount);
 
         @Override
-        ColumnSubQueryUnionClause<E, C> limit(Function<C, Pair<Integer, Integer>> function);
+        ColumnSubQueryUnionClause<E, C> ifLimit(Function<C, Pair<Integer, Integer>> function);
 
         @Override
         ColumnSubQueryUnionClause<E, C> ifLimit(Predicate<C> predicate, int rowCount);
@@ -146,8 +148,6 @@ public interface ColumnSubQuery<E> extends SubQuery {
         @Override
         ColumnSubQueryUnionClause<E, C> ifLimit(Predicate<C> predicate, int offset, int rowCount);
 
-        @Override
-        ColumnSubQueryUnionClause<E, C> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
     }
 
     interface ColumnSubQueryUnionAble<E, C> extends ColumnSubQueryUnionClause<E, C>, ColumnSubQueryOrderByClause<E, C> {
@@ -174,9 +174,6 @@ public interface ColumnSubQuery<E> extends SubQuery {
 
         ColumnSubQueryLimitClause<E, C> orderBy(Function<C, List<SortPart>> function);
 
-        ColumnSubQueryLimitClause<E, C> ifOrderBy(Predicate<C> test, SortPart sortPart);
-
-        ColumnSubQueryLimitClause<E, C> ifOrderBy(Predicate<C> test, Function<C, List<SortPart>> function);
     }
 
     interface ColumnSubQueryLimitClause<E, C> extends ColumnSubQueryAble<E> {
@@ -185,13 +182,11 @@ public interface ColumnSubQuery<E> extends SubQuery {
 
         ColumnSubQueryAble<E> limit(int offset, int rowCount);
 
-        ColumnSubQueryAble<E> limit(Function<C, Pair<Integer, Integer>> function);
+        ColumnSubQueryAble<E> ifLimit(Function<C, Pair<Integer, Integer>> function);
 
         ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, int rowCount);
 
         ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, int offset, int rowCount);
-
-        ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
     }
 
 

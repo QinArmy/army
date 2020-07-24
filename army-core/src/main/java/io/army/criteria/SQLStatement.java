@@ -12,4 +12,7 @@ public interface SQLStatement {
 
     boolean prepared();
 
+    interface SQLAble {
+
+    }
 }

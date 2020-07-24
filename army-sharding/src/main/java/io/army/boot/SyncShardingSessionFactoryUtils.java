@@ -1,6 +1,8 @@
 package io.army.boot;
 
 
+import io.army.boot.sync.SyncSessionFactoryParams;
+import io.army.boot.sync.SyncSessionFactoryUtils;
 import io.army.dialect.SQLDialect;
 import io.army.util.Assert;
 

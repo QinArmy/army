@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.beans.DomainWrapper;
 import io.army.criteria.Insert;
 import io.army.criteria.impl.inner.InnerStandardInsert;
 import io.army.criteria.impl.inner.InnerValuesInsert;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 final class StandardBatchInsert<T extends IDomain> extends AbstractSQLDebug implements Insert, Insert.InsertAble
         , Insert.BatchInsertIntoAble<T>, Insert.BatchInsertValuesAble<T>, Insert.BatchInsertOptionAble<T>
@@ -29,7 +31,7 @@ final class StandardBatchInsert<T extends IDomain> extends AbstractSQLDebug impl
 
     private List<FieldMeta<?, ?>> fieldList;
 
-    private List<IDomain> valueList;
+    private List<DomainWrapper> valueList;
 
     private boolean prepared;
 
@@ -53,16 +55,23 @@ final class StandardBatchInsert<T extends IDomain> extends AbstractSQLDebug impl
     }
 
     @Override
+    public final BatchInsertValuesAble<T> insertInto(Supplier<Collection<FieldMeta<? super T, ?>>> supplier) {
+        this.fieldList = new ArrayList<>(supplier.get());
+        return this;
+    }
+
+    @Override
     public final BatchInsertValuesAble<T> insertInto(TableMeta<T> tableMeta) {
         this.fieldList = new ArrayList<>(tableMeta.fieldCollection());
         return this;
     }
 
-    /*################################## blow BatchInsertValuesAble method ##################################*/
+    /*################################## blow BatchInsertTableRouteAble method ##################################*/
+
 
     @Override
     public final InsertAble values(List<T> domainList) {
-        this.valueList = new ArrayList<>(domainList);
+        this.valueList = StandardInsert.createDomainWrapper(this.tableMeta, domainList);
         return this;
     }
 
@@ -93,13 +102,28 @@ final class StandardBatchInsert<T extends IDomain> extends AbstractSQLDebug impl
     /*################################## blow InnerStandardBatchInsert method ##################################*/
 
     @Override
-    public final List<IDomain> valueList() {
+    public final List<DomainWrapper> valueList() {
         return this.valueList;
     }
 
     @Override
     public TableMeta<?> tableMeta() {
         return this.tableMeta;
+    }
+
+    @Override
+    public final String tableAlias() {
+        return "";
+    }
+
+    @Override
+    public final int tableIndex() {
+        return -1;
+    }
+
+    @Override
+    public final int databaseIndex() {
+        return -1;
     }
 
     @Override

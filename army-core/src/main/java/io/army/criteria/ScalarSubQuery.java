@@ -1,10 +1,10 @@
 package io.army.criteria;
 
+import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 /**
  * @param <E> {@link ScalarSubQuery#selection()}'s Java Type.
@@ -30,6 +30,9 @@ public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expre
     }
 
 
+    /**
+     * @param <C> @param <C> developer definite java type for dynamic sql
+     */
     interface ScalarSubQuerySelectionAble<E, C> extends ScalarSubQuerySQLAble {
 
         ScalarSubQuerySelectionAble<E, C> select(Distinct distinct, Selection selection);
@@ -38,13 +41,22 @@ public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expre
 
     }
 
+    /**
+     * @param <C> @param <C> developer definite java type for dynamic sql
+     */
     interface ScalarSubQueryFromAble<E, C> extends ScalarSubQueryAble<E> {
 
-        ScalarSubQueryFromAble<E, C> from(TableMeta<?> tableMeta, String tableAlias);
+        TableRouteJoinAble<E, C> from(TableMeta<?> tableMeta, String tableAlias);
 
         ScalarSubQueryFromAble<E, C> from(Function<C, SubQuery> function, String subQueryAlia);
     }
 
+    interface TableRouteJoinAble<E, C> extends ScalarSubQueryJoinAble<E, C> {
+
+        ScalarSubQueryJoinAble<E, C> fromRoute(int databaseIndex, int tableIndex);
+
+        ScalarSubQueryJoinAble<E, C> fromRoute(int tableIndex);
+    }
 
     interface ScalarSubQueryOnAble<E, C> extends ScalarSubQuerySQLAble {
 
@@ -58,18 +70,26 @@ public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expre
 
     interface ScalarSubQueryJoinAble<E, C> extends ScalarSubQueryWhereAble<E, C> {
 
-        ScalarSubQueryOnAble<E, C> leftJoin(TableMeta<?> tableMeta, String tableAlias);
+        TableRouteOnAble<E, C> leftJoin(TableMeta<?> tableMeta, String tableAlias);
 
         ScalarSubQueryOnAble<E, C> leftJoin(Function<C, SubQuery> function, String subQueryAlia);
 
-        ScalarSubQueryOnAble<E, C> join(TableMeta<?> tableMeta, String tableAlias);
+        TableRouteOnAble<E, C> join(TableMeta<?> tableMeta, String tableAlias);
 
         ScalarSubQueryOnAble<E, C> join(Function<C, SubQuery> function, String subQueryAlia);
 
-        ScalarSubQueryOnAble<E, C> rightJoin(TableMeta<?> tableMeta, String tableAlias);
+        TableRouteOnAble<E, C> rightJoin(TableMeta<?> tableMeta, String tableAlias);
 
         ScalarSubQueryOnAble<E, C> rightJoin(Function<C, SubQuery> function, String subQueryAlia);
     }
+
+    interface TableRouteOnAble<E, C> extends ScalarSubQueryOnAble<E, C> {
+
+        ScalarSubQueryOnAble<E, C> route(int databaseIndex, int tableIndex);
+
+        ScalarSubQueryOnAble<E, C> route(int tableIndex);
+    }
+
 
     interface ScalarSubQueryWhereAble<E, C> extends ScalarSubQueryGroupByAble<E, C> {
 
@@ -82,9 +102,12 @@ public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expre
 
     interface ScalarSubQueryWhereAndAble<E, C> extends ScalarSubQueryGroupByAble<E, C> {
 
-        ScalarSubQueryWhereAndAble<E, C> and(IPredicate predicate);
+        /**
+         * @see Expression#equalIfNonNull(Object)
+         */
+        ScalarSubQueryWhereAndAble<E, C> and(@Nullable IPredicate predicate);
 
-        ScalarSubQueryWhereAndAble<E, C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function);
+        ScalarSubQueryWhereAndAble<E, C> ifAnd(Function<C, IPredicate> function);
 
     }
 
@@ -96,11 +119,6 @@ public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expre
         ScalarSubQueryHavingAble<E, C> groupBy(List<SortPart> sortPartList);
 
         ScalarSubQueryHavingAble<E, C> groupBy(Function<C, List<SortPart>> function);
-
-        ScalarSubQueryHavingAble<E, C> ifGroupBy(Predicate<C> predicate, SortPart sortPart);
-
-        ScalarSubQueryHavingAble<E, C> ifGroupBy(Predicate<C> predicate, Function<C, List<SortPart>> function);
-
     }
 
     interface ScalarSubQueryHavingAble<E, C> extends ScalarSubQueryOrderByAble<E, C> {
@@ -109,9 +127,7 @@ public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expre
 
         ScalarSubQueryOrderByAble<E, C> having(IPredicate predicate);
 
-        ScalarSubQueryOrderByAble<E, C> ifHaving(Predicate<C> predicate, Function<C, List<IPredicate>> function);
-
-        ScalarSubQueryOrderByAble<E, C> ifHaving(Predicate<C> testPredicate, IPredicate predicate);
+        ScalarSubQueryOrderByAble<E, C> having(List<IPredicate> predicateList);
     }
 
 
@@ -123,9 +139,6 @@ public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expre
 
         ScalarSubQueryLimitAble<E, C> orderBy(Function<C, List<SortPart>> function);
 
-        ScalarSubQueryLimitAble<E, C> ifOrderBy(Predicate<C> test, SortPart sortPart);
-
-        ScalarSubQueryLimitAble<E, C> ifOrderBy(Predicate<C> test, Function<C, List<SortPart>> function);
     }
 
 

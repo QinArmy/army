@@ -13,7 +13,7 @@ public interface InnerComposeQuery extends SelfDescribed, InnerGeneralQuery {
     /**
      * @return a unmodifiable list
      */
-    List<SortPart> orderPartList();
+    List<SortPart> orderByList();
 
     int offset();
 

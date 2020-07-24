@@ -6,8 +6,8 @@ import io.army.criteria.impl.inner.InnerStandardSubQuery;
 import io.army.criteria.impl.inner.InnerSubQuery;
 
 interface SubQuerySelect<C> extends InnerSubQuery, SubQuery
-        , Select.SelectPartAble<C>, Select.FromAble<C>, Select.JoinAble<C>
-        , Select.OnAble<C>, Select.WhereAndAble<C>, Select.LimitAble<C>
+        , Select.SelectPartAble<C>, Select.FromAble<C>, Select.TableRouteJoinAble<C>
+        , Select.TableRouteOnAble<C>, Select.WhereAndAble<C>, Select.LimitAble<C>
         , Select.HavingAble<C>, InnerStandardSubQuery {
 
     C criteria();

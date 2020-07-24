@@ -4,7 +4,10 @@ import io.army.ErrorCode;
 import io.army.IBean;
 import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ReadonlyWrapper;
-import io.army.criteria.*;
+import io.army.criteria.CriteriaException;
+import io.army.criteria.CriteriaRouteKeyException;
+import io.army.criteria.FieldValueEqualPredicate;
+import io.army.criteria.IPredicate;
 import io.army.criteria.impl.inner.InnerSingleDML;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.lang.Nullable;
@@ -61,7 +64,7 @@ abstract class DatabaseRouteUtils extends RouteUtils {
             // 2. try find from table .
             int routeIndex;
             if (dataSource) {
-                routeIndex = dml.dataSourceIndex();
+                routeIndex = dml.databaseIndex();
             } else {
                 routeIndex = dml.tableIndex();
             }

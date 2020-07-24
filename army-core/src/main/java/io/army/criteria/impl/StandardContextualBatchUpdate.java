@@ -1,22 +1,28 @@
 package io.army.criteria.impl;
 
+import io.army.beans.ObjectAccessorFactory;
+import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Update;
-import io.army.criteria.impl.inner.InnerStandardUpdate;
+import io.army.criteria.impl.inner.InnerStandardBatchUpdate;
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 final class StandardContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
         implements Update, Update.BatchUpdateAble<T, C>, Update.BatchSetAble<T, C>
-        , Update.BatchWhereAble<T, C>, Update.BatchWhereAndAble<T, C>, Update.BatchNamedParamAble<C>
-        , Update.UpdateAble, InnerBatchUpdate, InnerStandardUpdate {
+        , Update.BatchWhereAble<T, C>, Update.BatchTableRouteAble<T, C>, Update.BatchWhereAndAble<T, C>
+        , Update.BatchNamedParamAble<C>, Update.UpdateAble, InnerStandardBatchUpdate {
 
     static <T extends IDomain, C> StandardContextualBatchUpdate<T, C> build(TableMeta<T> tableMeta, C criteria) {
         Assert.isTrue(!tableMeta.immutable(), () -> String.format("TableMeta[%s] immutable", tableMeta));
@@ -37,7 +43,11 @@ final class StandardContextualBatchUpdate<T extends IDomain, C> extends Abstract
 
     private List<IPredicate> predicateList = new ArrayList<>();
 
-    private List<Object> namedParamList = new ArrayList<>();
+    private List<ReadonlyWrapper> namedParamList = new ArrayList<>();
+
+    private int databaseIndex = -1;
+
+    private int tableIndex = -1;
 
     private boolean prepared;
 
@@ -51,58 +61,56 @@ final class StandardContextualBatchUpdate<T extends IDomain, C> extends Abstract
     /*################################## blow BatchUpdateAble method ##################################*/
 
     @Override
-    public BatchSetAble<T, C> update(TableMeta<T> tableMeta, String tableAlias) {
+    public final BatchTableRouteAble<T, C> update(TableMeta<T> tableMeta, String tableAlias) {
         Assert.isTrue(tableMeta == this.tableMeta, "tableMeta not match");
         this.tableAlias = tableAlias;
         Assert.hasText(this.tableAlias, "tableMeta required");
         return this;
     }
 
+    @Override
+    public final BatchSetAble<T, C> route(int databaseIndex, int tableIndex) {
+        this.databaseIndex = databaseIndex;
+        this.tableIndex = tableIndex;
+        return this;
+    }
+
+    @Override
+    public final BatchSetAble<T, C> route(int tableIndex) {
+        this.tableIndex = tableIndex;
+        return this;
+    }
+
     /*################################## blow BatchSetAble method ##################################*/
 
     @Override
-    public <F> BatchWhereAble<T, C> set(FieldMeta<? super T, F> target, F value) {
+    public final <F> BatchWhereAble<T, C> set(FieldMeta<? super T, F> target, F value) {
         this.targetFieldList.add(target);
         this.valueExpList.add(SQLS.param(value, target));
         return this;
     }
 
     @Override
-    public <F> BatchWhereAble<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp) {
+    public final <F> BatchWhereAble<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp) {
         this.targetFieldList.add(target);
         this.valueExpList.add(valueExp);
         return this;
     }
 
     @Override
-    public <F> BatchWhereAble<T, C> set(FieldMeta<? super T, F> target, Function<C, Expression<F>> function) {
-        this.targetFieldList.add(target);
-        this.valueExpList.add(function.apply(this.criteria));
-        return this;
-    }
-
-    @Override
-    public <F> BatchWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value) {
-        if (predicate.test(this.criteria)) {
+    public final <F> BatchWhereAble<T, C> ifSet(Predicate<C> test, FieldMeta<? super T, F> target, F value) {
+        if (test.test(this.criteria)) {
             set(target, value);
         }
         return this;
     }
 
     @Override
-    public <F> BatchWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target
-            , Expression<F> valueExp) {
-        if (predicate.test(this.criteria)) {
-            set(target, valueExp);
-        }
-        return this;
-    }
-
-    @Override
-    public <F> BatchWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target
-            , Function<C, Expression<F>> valueExpFunction) {
-        if (predicate.test(this.criteria)) {
-            set(target, valueExpFunction);
+    public final <F> BatchWhereAble<T, C> ifSet(FieldMeta<? super T, F> target
+            , Function<C, Expression<F>> function) {
+        Expression<F> expression = function.apply(this.criteria);
+        if (expression != null) {
+            set(target, expression);
         }
         return this;
     }
@@ -111,19 +119,19 @@ final class StandardContextualBatchUpdate<T extends IDomain, C> extends Abstract
 
 
     @Override
-    public BatchNamedParamAble<C> where(List<IPredicate> predicateList) {
+    public final BatchNamedParamAble<C> where(List<IPredicate> predicateList) {
         this.predicateList.addAll(predicateList);
         return this;
     }
 
     @Override
-    public BatchNamedParamAble<C> where(Function<C, List<IPredicate>> function) {
+    public final BatchNamedParamAble<C> where(Function<C, List<IPredicate>> function) {
         this.predicateList.addAll(function.apply(this.criteria));
         return this;
     }
 
     @Override
-    public BatchWhereAndAble<T, C> where(IPredicate predicate) {
+    public final BatchWhereAndAble<T, C> where(IPredicate predicate) {
         this.predicateList.add(predicate);
         return this;
     }
@@ -131,23 +139,18 @@ final class StandardContextualBatchUpdate<T extends IDomain, C> extends Abstract
     /*################################## blow BatchWhereAndAble method ##################################*/
 
     @Override
-    public BatchWhereAndAble<T, C> and(IPredicate predicate) {
-        this.predicateList.add(predicate);
-        return this;
-    }
-
-    @Override
-    public BatchWhereAndAble<T, C> ifAnd(Predicate<C> testPredicate, IPredicate predicate) {
-        if (testPredicate.test(this.criteria)) {
+    public final BatchWhereAndAble<T, C> and(@Nullable IPredicate predicate) {
+        if (predicate != null) {
             this.predicateList.add(predicate);
         }
         return this;
     }
 
     @Override
-    public BatchWhereAndAble<T, C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function) {
-        if (testPredicate.test(this.criteria)) {
-            this.predicateList.add(function.apply(this.criteria));
+    public final BatchWhereAndAble<T, C> ifAnd(Function<C, IPredicate> function) {
+        IPredicate predicate = function.apply(this.criteria);
+        if (predicate != null) {
+            this.predicateList.add(predicate);
         }
         return this;
     }
@@ -155,33 +158,37 @@ final class StandardContextualBatchUpdate<T extends IDomain, C> extends Abstract
     /*################################## blow BatchNamedParamAble method ##################################*/
 
     @Override
-    public UpdateAble namedParamMaps(Collection<Map<String, Object>> mapCollection) {
-        this.namedParamList.addAll(mapCollection);
+    public final UpdateAble namedParamMaps(List<Map<String, Object>> mapList) {
+        List<ReadonlyWrapper> namedParamList = this.namedParamList;
+        for (Map<String, Object> map : mapList) {
+            namedParamList.add(ObjectAccessorFactory.forReadonlyAccess(map));
+        }
         return this;
     }
 
     @Override
-    public UpdateAble namedParamMaps(Function<C, Collection<Map<String, Object>>> function) {
-        this.namedParamList.addAll(function.apply(this.criteria));
+    public final UpdateAble namedParamMaps(Function<C, List<Map<String, Object>>> function) {
+        return namedParamMaps(function.apply(this.criteria));
+    }
+
+    @Override
+    public final UpdateAble namedParamBeans(List<Object> beanList) {
+        List<ReadonlyWrapper> namedParamList = this.namedParamList;
+        for (Object bean : beanList) {
+            namedParamList.add(ObjectAccessorFactory.forReadonlyAccess(bean));
+        }
         return this;
     }
 
     @Override
-    public UpdateAble namedParamBeans(Collection<Object> beanCollection) {
-        this.namedParamList.addAll(beanCollection);
-        return this;
-    }
-
-    @Override
-    public UpdateAble namedParamBeans(Function<C, Collection<Object>> function) {
-        this.namedParamList.addAll(function.apply(this.criteria));
-        return this;
+    public final UpdateAble namedParamBeans(Function<C, List<Object>> function) {
+        return namedParamBeans(function.apply(this.criteria));
     }
 
     /*################################## blow update method ##################################*/
 
     @Override
-    public boolean prepared() {
+    public final boolean prepared() {
         return this.prepared;
     }
 
@@ -214,7 +221,7 @@ final class StandardContextualBatchUpdate<T extends IDomain, C> extends Abstract
     /*################################## blow InnerStandardBatchUpdate method ##################################*/
 
     @Override
-    public Collection<Object> namedParamList() {
+    public final List<ReadonlyWrapper> namedParamList() {
         return this.namedParamList;
     }
 
@@ -226,6 +233,16 @@ final class StandardContextualBatchUpdate<T extends IDomain, C> extends Abstract
     @Override
     public String tableAlias() {
         return this.tableAlias;
+    }
+
+    @Override
+    public final int databaseIndex() {
+        return this.databaseIndex;
+    }
+
+    @Override
+    public final int tableIndex() {
+        return this.tableIndex;
     }
 
     @Override

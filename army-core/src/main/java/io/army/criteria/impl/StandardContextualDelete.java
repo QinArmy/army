@@ -14,10 +14,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 final class StandardContextualDelete<C> extends AbstractSQLDebug implements Delete
-        , Delete.SingleDeleteAble<C>, Delete.SingleWhereAble<C>, Delete.SingleWhereAndAble<C>
+        , Delete.SingleDeleteAble<C>, Delete.SingleDeleteTableRouteAble<C>, Delete.SingleWhereAndAble<C>
         , InnerStandardDelete {
 
     static <C> StandardContextualDelete<C> buildDelete(C criteria) {
@@ -35,6 +34,10 @@ final class StandardContextualDelete<C> extends AbstractSQLDebug implements Dele
 
     private List<IPredicate> predicateList = new ArrayList<>();
 
+    private int databaseIndex = -1;
+
+    private int tableIndex = -1;
+
     private boolean prepared;
 
     private StandardContextualDelete(C criteria) {
@@ -47,9 +50,22 @@ final class StandardContextualDelete<C> extends AbstractSQLDebug implements Dele
 
 
     @Override
-    public final SingleWhereAble<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias) {
+    public final SingleDeleteTableRouteAble<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias) {
         this.tableMeta = tableMeta;
         this.tableAlias = tableAlias;
+        return this;
+    }
+
+    @Override
+    public final SingleDeleteTableRouteAble<C> route(int databaseIndex, int tableIndex) {
+        this.databaseIndex = databaseIndex;
+        this.tableIndex = tableIndex;
+        return this;
+    }
+
+    @Override
+    public final SingleDeleteTableRouteAble<C> route(int tableIndex) {
+        this.tableIndex = tableIndex;
         return this;
     }
 
@@ -84,9 +100,10 @@ final class StandardContextualDelete<C> extends AbstractSQLDebug implements Dele
     }
 
     @Override
-    public final SingleWhereAndAble<C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function) {
-        if (testPredicate.test(this.criteria)) {
-            this.predicateList.add(function.apply(this.criteria));
+    public final SingleWhereAndAble<C> ifAnd(Function<C, IPredicate> function) {
+        IPredicate predicate = function.apply(this.criteria);
+        if (predicate != null) {
+            this.predicateList.add(predicate);
         }
         return this;
     }
@@ -131,6 +148,16 @@ final class StandardContextualDelete<C> extends AbstractSQLDebug implements Dele
     @Override
     public final TableMeta<?> tableMeta() {
         return this.tableMeta;
+    }
+
+    @Override
+    public final int databaseIndex() {
+        return this.databaseIndex;
+    }
+
+    @Override
+    public final int tableIndex() {
+        return this.tableIndex;
     }
 
     @Override

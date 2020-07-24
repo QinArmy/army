@@ -3,39 +3,43 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerStandardSubQuery;
 import io.army.criteria.impl.inner.TableWrapper;
+import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 final class RowSubQueryAdaptor<C> implements RowSubQuery
         , RowSubQuery.RowSubQuerySelectPartAble<C>, RowSubQuery.RowSubQueryFromAble<C>
         , RowSubQuery.RowSubQueryOnAble<C>, RowSubQuery.RowSubQueryWhereAndAble<C>
-        , RowSubQuery.RowSubQueryJoinAble<C>, RowSubQuery.RowSubQueryHavingAble<C>, InnerStandardSubQuery {
+        , RowSubQuery.RowSubQueryJoinAble<C>, RowSubQuery.RowSubQueryHavingAble<C>
+        , RowSubQuery.TableRouteJoinAble<C>, RowSubQuery.TableRouteOnAble<C>, InnerStandardSubQuery {
 
+    static <C> RowSubQueryAdaptor<C> build(C criteria) {
+        return new RowSubQueryAdaptor<>(criteria);
+    }
 
     private final SubQuerySelect<C> actualSelect;
 
-    RowSubQueryAdaptor(C criteria) {
+    private RowSubQueryAdaptor(C criteria) {
         this.actualSelect = SubQuerySelect.build(criteria);
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
         return "#RowSubQuery@" + System.identityHashCode(this);
     }
 
     /*################################## blow RowSubQuery method ##################################*/
 
     @Override
-    public List<SelectPart> selectPartList() {
+    public final List<SelectPart> selectPartList() {
         return this.actualSelect.selectPartList();
     }
 
 
     @Override
-    public Selection selection(String derivedFieldName) {
+    public final Selection selection(String derivedFieldName) {
         return this.actualSelect.selection(derivedFieldName);
     }
 
@@ -54,14 +58,14 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery
     }
 
     @Override
-    public final RowSubQueryFromAble<C> select(Distinct distinct, SelectPart selectPart) {
-        this.actualSelect.select(distinct, selectPart);
+    public final RowSubQueryFromAble<C> select(Distinct distinct, SelectionGroup selectionGroup) {
+        this.actualSelect.select(distinct, selectionGroup);
         return this;
     }
 
     @Override
-    public final RowSubQueryFromAble<C> select(SelectPart selectPart) {
-        this.actualSelect.select(selectPart);
+    public final RowSubQueryFromAble<C> select(SelectionGroup selectionGroup) {
+        this.actualSelect.select(selectionGroup);
         return this;
     }
 
@@ -80,7 +84,7 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery
     /*################################## blow RowSubQueryFromAble method ##################################*/
 
     @Override
-    public final RowSubQueryFromAble<C> from(TableMeta<?> tableMeta, String tableAlias) {
+    public final TableRouteJoinAble<C> from(TableMeta<?> tableMeta, String tableAlias) {
         this.actualSelect.from(tableMeta, tableAlias);
         return this;
     }
@@ -88,6 +92,18 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery
     @Override
     public final RowSubQueryFromAble<C> from(Function<C, SubQuery> function, String subQueryAlia) {
         this.actualSelect.from(function, subQueryAlia);
+        return this;
+    }
+
+    @Override
+    public final RowSubQueryJoinAble<C> fromRoute(int databaseIndex, int tableIndex) {
+        this.actualSelect.fromRoute(databaseIndex, tableIndex);
+        return this;
+    }
+
+    @Override
+    public final RowSubQueryJoinAble<C> fromRoute(int tableIndex) {
+        this.actualSelect.fromRoute(tableIndex);
         return this;
     }
 
@@ -114,32 +130,50 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery
     /*################################## blow RowSubQueryJoinAble method ##################################*/
 
     @Override
-    public final RowSubQueryJoinAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias) {
+    public final TableRouteOnAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias) {
+        this.actualSelect.leftJoin(tableMeta, tableAlias);
         return this;
     }
 
     @Override
     public final RowSubQueryJoinAble<C> leftJoin(Function<C, SubQuery> function, String subQueryAlia) {
+        this.actualSelect.leftJoin(function, subQueryAlia);
         return this;
     }
 
     @Override
-    public final RowSubQueryJoinAble<C> join(TableMeta<?> tableMeta, String tableAlias) {
+    public final TableRouteOnAble<C> join(TableMeta<?> tableMeta, String tableAlias) {
+        this.actualSelect.join(tableMeta, tableAlias);
         return this;
     }
 
     @Override
     public final RowSubQueryJoinAble<C> join(Function<C, SubQuery> function, String subQueryAlia) {
+        this.actualSelect.join(function, subQueryAlia);
         return this;
     }
 
     @Override
-    public final RowSubQueryJoinAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias) {
+    public final TableRouteOnAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias) {
+        this.actualSelect.rightJoin(tableMeta, tableAlias);
         return this;
     }
 
     @Override
     public final RowSubQueryJoinAble<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia) {
+        this.actualSelect.rightJoin(function, subQueryAlia);
+        return this;
+    }
+
+    @Override
+    public final RowSubQueryOnAble<C> route(int databaseIndex, int tableIndex) {
+        this.actualSelect.route(databaseIndex, tableIndex);
+        return this;
+    }
+
+    @Override
+    public final RowSubQueryOnAble<C> route(int tableIndex) {
+        this.actualSelect.route(tableIndex);
         return this;
     }
 
@@ -167,20 +201,14 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery
     /*################################## blow RowSubQueryWhereAndAble method ##################################*/
 
     @Override
-    public final RowSubQueryWhereAndAble<C> and(IPredicate predicate) {
+    public final RowSubQueryWhereAndAble<C> and(@Nullable IPredicate predicate) {
         this.actualSelect.and(predicate);
         return this;
     }
 
     @Override
-    public final RowSubQueryWhereAndAble<C> and(Function<C, IPredicate> function) {
-        this.actualSelect.and(function);
-        return this;
-    }
-
-    @Override
-    public final RowSubQueryWhereAndAble<C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function) {
-        this.actualSelect.ifAnd(testPredicate, function);
+    public final RowSubQueryWhereAndAble<C> ifAnd(Function<C, IPredicate> function) {
+        this.actualSelect.ifAnd(function);
         return this;
     }
 
@@ -204,18 +232,6 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery
         return this;
     }
 
-    @Override
-    public final RowSubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, SortPart sortPart) {
-        this.actualSelect.ifGroupBy(predicate, sortPart);
-        return this;
-    }
-
-    @Override
-    public final RowSubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, Function<C, List<SortPart>> expFunction) {
-        this.actualSelect.ifGroupBy(predicate, expFunction);
-        return this;
-    }
-
     /*################################## blow RowSubQueryHavingAble method ##################################*/
 
     @Override
@@ -231,14 +247,8 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery
     }
 
     @Override
-    public final RowSubQueryOrderByAble<C> ifHaving(Predicate<C> predicate, Function<C, List<IPredicate>> function) {
-        this.actualSelect.ifHaving(predicate, function);
-        return this;
-    }
-
-    @Override
-    public final RowSubQueryOrderByAble<C> ifHaving(Predicate<C> testPredicate, IPredicate predicate) {
-        this.actualSelect.ifHaving(testPredicate, predicate);
+    public final RowSubQueryOrderByAble<C> having(List<IPredicate> predicateList) {
+        this.actualSelect.having(predicateList);
         return this;
     }
 
@@ -259,18 +269,6 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery
     @Override
     public final RowSubQueryLimitAble<C> orderBy(Function<C, List<SortPart>> function) {
         this.actualSelect.orderBy(function);
-        return this;
-    }
-
-    @Override
-    public final RowSubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, SortPart sortPart) {
-        this.actualSelect.ifOrderBy(predicate, sortPart);
-        return this;
-    }
-
-    @Override
-    public final RowSubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, Function<C, List<SortPart>> expFunction) {
-        this.actualSelect.ifGroupBy(predicate, expFunction);
         return this;
     }
 
@@ -300,47 +298,47 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery
     /*################################## blow InnerSubQueryAble method ##################################*/
 
     @Override
-    public List<SQLModifier> modifierList() {
+    public final List<SQLModifier> modifierList() {
         return this.actualSelect.modifierList();
     }
 
     @Override
-    public List<? extends TableWrapper> tableWrapperList() {
+    public final List<? extends TableWrapper> tableWrapperList() {
         return this.actualSelect.tableWrapperList();
     }
 
     @Override
-    public List<IPredicate> predicateList() {
+    public final List<IPredicate> predicateList() {
         return this.actualSelect.predicateList();
     }
 
     @Override
-    public List<SortPart> groupPartList() {
+    public final List<SortPart> groupPartList() {
         return this.actualSelect.groupPartList();
     }
 
     @Override
-    public List<IPredicate> havingList() {
+    public final List<IPredicate> havingList() {
         return this.actualSelect.havingList();
     }
 
     @Override
-    public List<SortPart> orderPartList() {
+    public final List<SortPart> orderPartList() {
         return this.actualSelect.orderPartList();
     }
 
     @Override
-    public int offset() {
+    public final int offset() {
         return this.actualSelect.offset();
     }
 
     @Override
-    public int rowCount() {
+    public final int rowCount() {
         return this.actualSelect.rowCount();
     }
 
     @Override
-    public void clear() {
+    public final void clear() {
         this.actualSelect.clear();
     }
 

@@ -3,6 +3,7 @@ package io.army.dialect;
 import io.army.ErrorCode;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.TableAble;
+import io.army.criteria.impl.inner.InnerSingleDML;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.meta.TableMeta;
 
@@ -15,7 +16,7 @@ public final class TableContext {
 
     public static final TableContext EMPTY = new TableContext();
 
-    public static TableContext singleTable(InnerSingleTableSQL singleTable, String primaryRouteSuffix) {
+    public static TableContext singleTable(InnerSingleDML singleTable, String primaryRouteSuffix) {
         TableMeta<?> tableMeta = singleTable.tableMeta();
         String tableAlias = singleTable.tableAlias();
 

@@ -1,12 +1,7 @@
 package io.army.criteria.impl.inner;
 
-import io.army.meta.TableMeta;
-
 @DeveloperForbid
-public interface InnerStandardDelete extends InnerDelete {
+public interface InnerStandardDelete extends InnerDelete, InnerSingleDML {
 
-    TableMeta<?> tableMeta();
-
-    String tableAlias();
 
 }

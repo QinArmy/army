@@ -1,20 +1,26 @@
 package io.army.criteria.impl;
 
+import io.army.beans.ObjectAccessorFactory;
+import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.Delete;
 import io.army.criteria.IPredicate;
 import io.army.criteria.impl.inner.InnerBatchDML;
 import io.army.criteria.impl.inner.InnerStandardDelete;
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 final class StandardContextualBatchDelete<C> implements Delete,
-        Delete.BatchDeleteAble<C>, Delete.BatchWhereAble<C>, Delete.BatchWhereAndAble<C>
+        Delete.BatchDeleteAble<C>, Delete.BatchWhereAble<C>, Delete.BatchDeleteTableRouteAble<C>
+        , Delete.BatchWhereAndAble<C>
         , Delete.BatchNamedParamAble<C>, Delete.DeleteAble, InnerStandardDelete, InnerBatchDML {
 
     static <C> StandardContextualBatchDelete<C> build(C criteria) {
@@ -31,7 +37,11 @@ final class StandardContextualBatchDelete<C> implements Delete,
 
     private List<IPredicate> predicateList = new ArrayList<>();
 
-    private List<Object> namedParamList = new ArrayList<>();
+    private List<ReadonlyWrapper> namedParamList = new ArrayList<>();
+
+    private int databaseIndex = -1;
+
+    private int tableIndex = -1;
 
     private boolean prepared;
 
@@ -44,10 +54,23 @@ final class StandardContextualBatchDelete<C> implements Delete,
     /*################################## blow BatchDeleteAble method ##################################*/
 
     @Override
-    public BatchWhereAble<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias) {
+    public final BatchDeleteTableRouteAble<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias) {
         Assert.hasText(this.tableAlias, "tableAlias required");
         this.tableMeta = tableMeta;
         this.tableAlias = tableAlias;
+        return this;
+    }
+
+    @Override
+    public final BatchWhereAble<C> route(int databaseIndex, int tableIndex) {
+        this.databaseIndex = databaseIndex;
+        this.tableIndex = tableIndex;
+        return this;
+    }
+
+    @Override
+    public final BatchWhereAble<C> route(int tableIndex) {
+        this.tableIndex = tableIndex;
         return this;
     }
 
@@ -74,23 +97,18 @@ final class StandardContextualBatchDelete<C> implements Delete,
     /*################################## blow BatchWhereAndAble method ##################################*/
 
     @Override
-    public BatchWhereAndAble<C> and(IPredicate predicate) {
-        this.predicateList.add(predicate);
-        return this;
-    }
-
-    @Override
-    public BatchWhereAndAble<C> ifAnd(Predicate<C> testPredicate, IPredicate predicate) {
-        if (testPredicate.test(this.criteria)) {
+    public BatchWhereAndAble<C> and(@Nullable IPredicate predicate) {
+        if (predicate != null) {
             this.predicateList.add(predicate);
         }
         return this;
     }
 
     @Override
-    public BatchWhereAndAble<C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function) {
-        if (testPredicate.test(this.criteria)) {
-            this.predicateList.add(function.apply(this.criteria));
+    public final BatchWhereAndAble<C> ifAnd(Function<C, IPredicate> function) {
+        IPredicate predicate = function.apply(this.criteria);
+        if (predicate != null) {
+            this.predicateList.add(predicate);
         }
         return this;
     }
@@ -98,33 +116,37 @@ final class StandardContextualBatchDelete<C> implements Delete,
     /*################################## blow BatchNamedParamAble method ##################################*/
 
     @Override
-    public DeleteAble namedParamMaps(Collection<Map<String, Object>> mapCollection) {
-        this.namedParamList.addAll(mapCollection);
+    public final DeleteAble namedParamMaps(List<Map<String, Object>> mapList) {
+        List<ReadonlyWrapper> namedParamList = this.namedParamList;
+        for (Map<String, Object> map : mapList) {
+            namedParamList.add(ObjectAccessorFactory.forReadonlyAccess(map));
+        }
         return this;
     }
 
     @Override
-    public DeleteAble namedParamMaps(Function<C, Collection<Map<String, Object>>> function) {
-        this.namedParamList.addAll(function.apply(this.criteria));
+    public final DeleteAble namedParamMaps(Function<C, List<Map<String, Object>>> function) {
+        return namedParamMaps(function.apply(this.criteria));
+    }
+
+    @Override
+    public final DeleteAble namedParamBeans(List<Object> beanList) {
+        List<ReadonlyWrapper> namedParamList = this.namedParamList;
+        for (Object bean : beanList) {
+            namedParamList.add(ObjectAccessorFactory.forReadonlyAccess(bean));
+        }
         return this;
     }
 
     @Override
-    public DeleteAble namedParamBeans(Collection<Object> beanCollection) {
-        this.namedParamList.addAll(beanCollection);
-        return this;
-    }
-
-    @Override
-    public DeleteAble namedParamBeans(Function<C, Collection<Object>> function) {
-        this.namedParamList.addAll(function.apply(this.criteria));
-        return this;
+    public final DeleteAble namedParamBeans(Function<C, List<Object>> function) {
+        return namedParamBeans(function.apply(this.criteria));
     }
 
     /*################################## blow DeleteAble method ##################################*/
 
     @Override
-    public Delete asDelete() {
+    public final Delete asDelete() {
         if (this.prepared) {
             return this;
         }
@@ -145,34 +167,44 @@ final class StandardContextualBatchDelete<C> implements Delete,
     /*################################## blow Delete method ##################################*/
 
     @Override
-    public boolean prepared() {
+    public final boolean prepared() {
         return this.prepared;
     }
 
     /*################################## blow InnerStandardBatchDelete method ##################################*/
 
     @Override
-    public List<Object> namedParamList() {
+    public final List<ReadonlyWrapper> namedParamList() {
         return this.namedParamList;
     }
 
     @Override
-    public TableMeta<?> tableMeta() {
+    public final TableMeta<?> tableMeta() {
         return this.tableMeta;
     }
 
     @Override
-    public String tableAlias() {
+    public final String tableAlias() {
         return this.tableAlias;
     }
 
     @Override
-    public List<IPredicate> predicateList() {
+    public final int databaseIndex() {
+        return this.databaseIndex;
+    }
+
+    @Override
+    public final int tableIndex() {
+        return this.tableIndex;
+    }
+
+    @Override
+    public final List<IPredicate> predicateList() {
         return this.predicateList;
     }
 
     @Override
-    public void clear() {
+    public final void clear() {
         this.tableMeta = null;
         this.tableAlias = null;
         this.predicateList = null;

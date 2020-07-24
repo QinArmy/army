@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.GenericSessionFactory;
-import io.army.criteria.SQLAble;
 import io.army.criteria.SQLDebug;
+import io.army.criteria.SQLStatement;
 import io.army.criteria.Visible;
 import io.army.dialect.Dialect;
 import io.army.dialect.SQLDialect;
@@ -11,7 +11,7 @@ import io.army.wrapper.SimpleSQLWrapper;
 
 import java.util.List;
 
-abstract class AbstractSQLDebug implements SQLAble, SQLDebug {
+abstract class AbstractSQLDebug implements SQLStatement.SQLAble, SQLDebug {
 
     @Override
     public final String debugSQL() {

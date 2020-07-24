@@ -4,7 +4,6 @@ import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Update;
 import io.army.criteria.impl.inner.InnerStandardUpdate;
-import io.army.criteria.impl.inner.InnerUpdate;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -18,11 +17,11 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug implements
-        Update, Update.UpdateAble, Update.SingleWhereAble<T, C>
-        , Update.WhereAndAble<T, C>, Update.SingleUpdateAble<T, C>, InnerStandardUpdate, InnerUpdate {
+        Update, Update.UpdateAble, Update.SingleWhereAble<T, C>, Update.SingleUpdateTableRouteAble<T, C>
+        , Update.WhereAndAble<T, C>, Update.SingleUpdateAble<T, C>, InnerStandardUpdate {
 
     static <T extends IDomain, C> StandardContextualUpdate<T, C> build(TableMeta<T> tableMeta, C criteria) {
-       Assert.isTrue(!tableMeta.immutable(), () -> String.format("TableMeta[%s] immutable", tableMeta));
+        Assert.isTrue(!tableMeta.immutable(), () -> String.format("TableMeta[%s] immutable", tableMeta));
         return new StandardContextualUpdate<>(tableMeta, criteria);
     }
 
@@ -40,6 +39,10 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
 
     private List<IPredicate> predicateList = new ArrayList<>();
 
+    private int databaseIndex = -1;
+
+    private int tableIndex = -1;
+
     private boolean prepared;
 
     private StandardContextualUpdate(TableMeta<T> tableMeta, C criteria) {
@@ -56,10 +59,23 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
     /*################################## blow DomainUpdateAble method ##################################*/
 
     @Override
-    public final SingleSetAble<T, C> update(TableMeta<T> tableMeta, String tableAlias) {
+    public final SingleUpdateTableRouteAble<T, C> update(TableMeta<T> tableMeta, String tableAlias) {
         Assert.isTrue(this.tableMeta == tableMeta, "tableMeta not match.");
         Assert.hasText(tableAlias, "tableAlias required");
         this.tableAlias = tableAlias;
+        return this;
+    }
+
+    @Override
+    public final SingleSetAble<T, C> route(int databaseIndex, int tableIndex) {
+        this.databaseIndex = databaseIndex;
+        this.tableIndex = tableIndex;
+        return this;
+    }
+
+    @Override
+    public final SingleSetAble<T, C> route(int tableIndex) {
+        this.tableIndex = tableIndex;
         return this;
     }
 
@@ -80,14 +96,6 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
     }
 
     @Override
-    public final <F> SingleWhereAble<T, C> set(FieldMeta<? super T, F> target, Function<C, Expression<F>> function) {
-        this.targetFieldList.add(target);
-        this.valueExpList.add(function.apply(this.criteria));
-        return this;
-    }
-
-
-    @Override
     public final <F> SingleWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value) {
         if (predicate.test(this.criteria)) {
             set(target, value);
@@ -96,19 +104,11 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
     }
 
     @Override
-    public final <F> SingleWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target
-            , Expression<F> valueExp) {
-        if (predicate.test(this.criteria)) {
-            set(target, valueExp);
-        }
-        return this;
-    }
-
-    @Override
-    public final <F> SingleWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target
-            , Function<C, Expression<F>> valueExpFunction) {
-        if (predicate.test(this.criteria)) {
-            set(target, valueExpFunction);
+    public final <F> SingleWhereAble<T, C> nonNullSet(FieldMeta<? super T, F> target
+            , Function<C, Expression<F>> function) {
+        Expression<F> expression = function.apply(this.criteria);
+        if (expression != null) {
+            set(target, expression);
         }
         return this;
     }
@@ -145,17 +145,10 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
     }
 
     @Override
-    public final WhereAndAble<T, C> ifAnd(Predicate<C> testPredicate, IPredicate predicate) {
-        if (testPredicate.test(this.criteria)) {
+    public final WhereAndAble<T, C> ifAnd(Function<C, IPredicate> function) {
+        IPredicate predicate = function.apply(this.criteria);
+        if (predicate != null) {
             this.predicateList.add(predicate);
-        }
-        return this;
-    }
-
-    @Override
-    public final WhereAndAble<T, C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function) {
-        if (testPredicate.test(this.criteria)) {
-            this.predicateList.add(function.apply(this.criteria));
         }
         return this;
     }
@@ -202,6 +195,15 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
         return this.tableAlias;
     }
 
+    @Override
+    public final int databaseIndex() {
+        return this.databaseIndex;
+    }
+
+    @Override
+    public final int tableIndex() {
+        return this.tableIndex;
+    }
 
     @Override
     public final List<IPredicate> predicateList() {

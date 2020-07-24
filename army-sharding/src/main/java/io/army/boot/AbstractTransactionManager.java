@@ -1,6 +1,7 @@
 package io.army.boot;
 
 import io.army.TmSession;
+import io.army.boot.sync.AbstractSyncTransaction;
 import io.army.dialect.TransactionOption;
 import io.army.tx.*;
 import org.slf4j.Logger;

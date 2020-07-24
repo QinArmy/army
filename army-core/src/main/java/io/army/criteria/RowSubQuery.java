@@ -1,10 +1,10 @@
 package io.army.criteria;
 
+import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 public interface RowSubQuery extends SubQuery, SetValuePart {
 
@@ -23,9 +23,9 @@ public interface RowSubQuery extends SubQuery, SetValuePart {
 
         <S extends SelectPart> RowSubQueryFromAble<C> select(Distinct distinct, Function<C, List<S>> function);
 
-        RowSubQueryFromAble<C> select(Distinct distinct, SelectPart selectPart);
+        RowSubQueryFromAble<C> select(Distinct distinct, SelectionGroup selectionGroup);
 
-        RowSubQueryFromAble<C> select(SelectPart selectPart);
+        RowSubQueryFromAble<C> select(SelectionGroup selectionGroup);
 
         <S extends SelectPart> RowSubQueryFromAble<C> select(Distinct distinct, List<S> selectPartList);
 
@@ -34,9 +34,16 @@ public interface RowSubQuery extends SubQuery, SetValuePart {
 
     interface RowSubQueryFromAble<C> extends RowSubQueryAble {
 
-        RowSubQueryFromAble<C> from(TableMeta<?> tableMeta, String tableAlias);
+        TableRouteJoinAble<C> from(TableMeta<?> tableMeta, String tableAlias);
 
         RowSubQueryFromAble<C> from(Function<C, SubQuery> function, String subQueryAlia);
+    }
+
+    interface TableRouteJoinAble<C> extends RowSubQueryJoinAble<C> {
+
+        RowSubQueryJoinAble<C> fromRoute(int databaseIndex, int tableIndex);
+
+        RowSubQueryJoinAble<C> fromRoute(int tableIndex);
     }
 
 
@@ -52,17 +59,24 @@ public interface RowSubQuery extends SubQuery, SetValuePart {
 
     interface RowSubQueryJoinAble<C> extends RowSubQueryWhereAble<C> {
 
-        RowSubQueryJoinAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias);
+        TableRouteOnAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias);
 
         RowSubQueryJoinAble<C> leftJoin(Function<C, SubQuery> function, String subQueryAlia);
 
-        RowSubQueryJoinAble<C> join(TableMeta<?> tableMeta, String tableAlias);
+        TableRouteOnAble<C> join(TableMeta<?> tableMeta, String tableAlias);
 
         RowSubQueryJoinAble<C> join(Function<C, SubQuery> function, String subQueryAlia);
 
-        RowSubQueryJoinAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias);
+        TableRouteOnAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias);
 
         RowSubQueryJoinAble<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia);
+    }
+
+    interface TableRouteOnAble<C> extends RowSubQueryOnAble<C> {
+
+        RowSubQueryOnAble<C> route(int databaseIndex, int tableIndex);
+
+        RowSubQueryOnAble<C> route(int tableIndex);
     }
 
     interface RowSubQueryWhereAble<C> extends RowSubQueryGroupByAble<C> {
@@ -76,11 +90,9 @@ public interface RowSubQuery extends SubQuery, SetValuePart {
 
     interface RowSubQueryWhereAndAble<C> extends RowSubQueryGroupByAble<C> {
 
-        RowSubQueryWhereAndAble<C> and(IPredicate predicate);
+        RowSubQueryWhereAndAble<C> and(@Nullable IPredicate predicate);
 
-        RowSubQueryWhereAndAble<C> and(Function<C, IPredicate> function);
-
-        RowSubQueryWhereAndAble<C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function);
+        RowSubQueryWhereAndAble<C> ifAnd(Function<C, IPredicate> function);
 
     }
 
@@ -93,21 +105,15 @@ public interface RowSubQuery extends SubQuery, SetValuePart {
 
         RowSubQueryHavingAble<C> groupBy(Function<C, List<SortPart>> function);
 
-        RowSubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, SortPart sortPart);
-
-        RowSubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, Function<C, List<SortPart>> expFunction);
-
     }
 
     interface RowSubQueryHavingAble<C> extends RowSubQueryOrderByAble<C> {
 
-        RowSubQueryOrderByAble<C> having(Function<C, List<IPredicate>> function);
-
         RowSubQueryOrderByAble<C> having(IPredicate predicate);
 
-        RowSubQueryOrderByAble<C> ifHaving(Predicate<C> predicate, Function<C, List<IPredicate>> function);
+        RowSubQueryOrderByAble<C> having(List<IPredicate> predicateList);
 
-        RowSubQueryOrderByAble<C> ifHaving(Predicate<C> testPredicate, IPredicate predicate);
+        RowSubQueryOrderByAble<C> having(Function<C, List<IPredicate>> function);
     }
 
 
@@ -119,9 +125,6 @@ public interface RowSubQuery extends SubQuery, SetValuePart {
 
         RowSubQueryLimitAble<C> orderBy(Function<C, List<SortPart>> function);
 
-        RowSubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, SortPart sortPart);
-
-        RowSubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, Function<C, List<SortPart>> expFunction);
     }
 
 

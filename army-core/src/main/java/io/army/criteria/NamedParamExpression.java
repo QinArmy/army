@@ -8,7 +8,7 @@ public interface NamedParamExpression<E> extends Expression<E>, ParamWrapper {
 
 
     /**
-     * @throws UnsupportedOperationException always
+     * @throws UnsupportedOperationException always throws.
      */
     @Override
     Object value() throws UnsupportedOperationException;

@@ -27,8 +27,14 @@ public abstract class SQLS extends AbstractSQLS {
      * a standard insert api support blow {@link io.army.meta.MappingMode}:
      *     <ul>
      *         <li>{@link io.army.meta.MappingMode#SIMPLE}</li>
-     *         <li>{@link io.army.meta.MappingMode#PARENT}</li>
+     *         <li>{@link io.army.meta.MappingMode#PARENT},auto append {@link IPredicate} {@code discriminatorValue = 0}</li>
      *        <li>{@link io.army.meta.MappingMode#CHILD},but must in {@link Isolation#READ_COMMITTED }+ level environment.</li>
+     *     </ul>
+     * </p>
+     * <p>
+     *     <ul>
+     *         <li>see {@code io.army.sync.GenericSyncApiSession#valueInsert(io.army.criteria.Insert, io.army.criteria.Visible)}</li>
+     *         <li> see {@code io.army.reactive.GenericReactiveApiSession#valueInsert(io.army.criteria.Insert, io.army.criteria.Visible)}</li>
      *     </ul>
      * </p>
      *
@@ -39,6 +45,26 @@ public abstract class SQLS extends AbstractSQLS {
         return StandardInsert.build(targetTable);
     }
 
+    /**
+     * create a standard batch insert api object.
+     * <p>
+     * a standard insert api support blow {@link io.army.meta.MappingMode}:
+     *     <ul>
+     *         <li>{@link io.army.meta.MappingMode#SIMPLE}</li>
+     *         <li>{@link io.army.meta.MappingMode#PARENT},auto append {@link IPredicate} {@code discriminatorValue = 0}</li>
+     *        <li>{@link io.army.meta.MappingMode#CHILD},but must in {@link Isolation#READ_COMMITTED }+ level environment.</li>
+     *     </ul>
+     * </p>
+     * <p>
+     *     <ul>
+     *         <li>see {@code io.army.sync.GenericSyncApiSession#valueInsert(io.army.criteria.Insert, io.army.criteria.Visible)}</li>
+     *         <li> see {@code io.army.reactive.GenericReactiveApiSession#valueInsert(io.army.criteria.Insert, io.army.criteria.Visible)}</li>
+     *     </ul>
+     * </p>
+     *
+     * @param targetTable will insert to table meta
+     * @return a standard insert api object.
+     */
     public static <T extends IDomain> Insert.BatchInsertOptionAble<T> batchInsert(TableMeta<T> targetTable) {
         return StandardBatchInsert.build(targetTable);
     }
@@ -125,9 +151,7 @@ public abstract class SQLS extends AbstractSQLS {
     }
 
     public static <C> RowSubQuery.RowSubQuerySelectPartAble<C> rowSubQuery() {
-        return new RowSubQueryAdaptor<>(
-                CriteriaContextHolder.getContext().criteria()
-        );
+        return RowSubQueryAdaptor.build(CriteriaContextHolder.getContext().criteria());
     }
 
     public static <E, C> ColumnSubQuery.ColumnSubQuerySelectionAble<E, C> columnSubQuery(Class<E> columnType) {
@@ -138,17 +162,12 @@ public abstract class SQLS extends AbstractSQLS {
 
     public static <E, C> ScalarSubQuery.ScalarSubQuerySelectionAble<E, C> scalarSubQuery(
             Class<E> columnType, MappingMeta mappingType) {
-        return new ScalarSubQueryAdaptor<>(columnType
-                , mappingType
-                , CriteriaContextHolder.getContext().criteria()
-        );
+        return ScalarSubQueryAdaptor.build(columnType, mappingType, CriteriaContextHolder.getContext().criteria());
     }
 
     public static <E> ScalarSubQuery.ScalarSubQuerySelectionAble<E, EmptyObject> scalarSubQuery(Class<E> columnType) {
-        return new ScalarSubQueryAdaptor<>(columnType
-                , MappingFactory.getDefaultMapping(columnType)
-                , CriteriaContextHolder.getContext().criteria()
-        );
+        return ScalarSubQueryAdaptor.build(columnType, MappingFactory.getDefaultMapping(columnType)
+                , CriteriaContextHolder.getContext().criteria());
     }
 
     /*################################## blow sql reference method ##################################*/
@@ -227,13 +246,14 @@ public abstract class SQLS extends AbstractSQLS {
     }
 
     static ExpressionRow row(List<Expression<?>> columnList) {
-        return new ExpressionRowImpl(columnList);
+        return new ExpressionRowImpl(null);
     }
 
     static <C> ExpressionRow row(Function<C, List<Expression<?>>> function) {
-        return new ExpressionRowImpl(function.apply(
+       /* return new ExpressionRowImpl(function.apply(
                 CriteriaContextHolder.getContext().criteria()
-        ));
+        ));*/
+        return null;
     }
 
 }

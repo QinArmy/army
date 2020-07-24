@@ -1,11 +1,12 @@
 package io.army.sync;
 
+import io.army.GenericRmSessionFactory;
 import io.army.SessionException;
 
 /**
  *
  */
-public interface SessionFactory extends GenericSyncApiSessionFactory {
+public interface SessionFactory extends GenericSyncApiSessionFactory, GenericRmSessionFactory {
 
 
     SessionBuilder builder();

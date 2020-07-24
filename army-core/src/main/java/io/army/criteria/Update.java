@@ -7,13 +7,12 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public interface Update extends SQLStatement, SQLAble, SQLDebug, QueryAble {
+public interface Update extends SQLStatement, SQLStatement.SQLAble, SQLDebug, QueryAble {
 
     interface UpdateSQLAble extends SQLAble {
 
@@ -27,7 +26,15 @@ public interface Update extends SQLStatement, SQLAble, SQLDebug, QueryAble {
 
     interface SingleUpdateAble<T extends IDomain, C> extends UpdateSQLAble {
 
-        SingleSetAble<T, C> update(TableMeta<T> tableMeta, String tableAlias);
+        SingleUpdateTableRouteAble<T, C> update(TableMeta<T> tableMeta, String tableAlias);
+    }
+
+
+    interface SingleUpdateTableRouteAble<T extends IDomain, C> extends SingleSetAble<T, C> {
+
+        SingleSetAble<T, C> route(int databaseIndex, int tableIndex);
+
+        SingleSetAble<T, C> route(int tableIndex);
     }
 
 
@@ -40,15 +47,9 @@ public interface Update extends SQLStatement, SQLAble, SQLDebug, QueryAble {
          */
         <F> SingleWhereAble<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp);
 
-        <F> SingleWhereAble<T, C> set(FieldMeta<? super T, F> target, Function<C, Expression<F>> function);
-
         <F> SingleWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value);
 
-        <F> SingleWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target
-                , Expression<F> valueExp);
-
-        <F> SingleWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target
-                , Function<C, Expression<F>> valueExpFunction);
+        <F> SingleWhereAble<T, C> nonNullSet(FieldMeta<? super T, F> target, Function<C, Expression<F>> function);
     }
 
 
@@ -69,9 +70,7 @@ public interface Update extends SQLStatement, SQLAble, SQLDebug, QueryAble {
          */
         WhereAndAble<T, C> and(@Nullable IPredicate predicate);
 
-        WhereAndAble<T, C> ifAnd(Predicate<C> testPredicate, IPredicate predicate);
-
-        WhereAndAble<T, C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function);
+        WhereAndAble<T, C> ifAnd(Function<C, IPredicate> function);
 
     }
 
@@ -79,9 +78,15 @@ public interface Update extends SQLStatement, SQLAble, SQLDebug, QueryAble {
 
     interface BatchUpdateAble<T extends IDomain, C> extends UpdateSQLAble {
 
-        BatchSetAble<T, C> update(TableMeta<T> tableMeta, String tableAlias);
+        BatchTableRouteAble<T, C> update(TableMeta<T> tableMeta, String tableAlias);
     }
 
+    interface BatchTableRouteAble<T extends IDomain, C> extends BatchSetAble<T, C> {
+
+        BatchSetAble<T, C> route(int databaseIndex, int tableIndex);
+
+        BatchSetAble<T, C> route(int tableIndex);
+    }
 
     interface BatchSetAble<T extends IDomain, C> extends UpdateSQLAble {
 
@@ -92,15 +97,9 @@ public interface Update extends SQLStatement, SQLAble, SQLDebug, QueryAble {
          */
         <F> BatchWhereAble<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp);
 
-        <F> BatchWhereAble<T, C> set(FieldMeta<? super T, F> target, Function<C, Expression<F>> function);
+        <F> BatchWhereAble<T, C> ifSet(Predicate<C> test, FieldMeta<? super T, F> target, F value);
 
-        <F> BatchWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value);
-
-        <F> BatchWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target
-                , Expression<F> valueExp);
-
-        <F> BatchWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target
-                , Function<C, Expression<F>> valueExpFunction);
+        <F> BatchWhereAble<T, C> ifSet(FieldMeta<? super T, F> target, Function<C, Expression<F>> function);
     }
 
     interface BatchWhereAble<T extends IDomain, C> extends BatchSetAble<T, C> {
@@ -115,23 +114,24 @@ public interface Update extends SQLStatement, SQLAble, SQLDebug, QueryAble {
 
     interface BatchWhereAndAble<T extends IDomain, C> extends BatchNamedParamAble<C> {
 
-        BatchWhereAndAble<T, C> and(IPredicate predicate);
+        /**
+         * @see Expression#equalIfNonNull(Object)
+         */
+        BatchWhereAndAble<T, C> and(@Nullable IPredicate predicate);
 
-        BatchWhereAndAble<T, C> ifAnd(Predicate<C> testPredicate, IPredicate predicate);
-
-        BatchWhereAndAble<T, C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function);
+        BatchWhereAndAble<T, C> ifAnd(Function<C, IPredicate> function);
 
     }
 
     interface BatchNamedParamAble<C> extends UpdateSQLAble {
 
-        UpdateAble namedParamMaps(Collection<Map<String, Object>> mapCollection);
+        UpdateAble namedParamMaps(List<Map<String, Object>> mapList);
 
-        UpdateAble namedParamMaps(Function<C, Collection<Map<String, Object>>> function);
+        UpdateAble namedParamMaps(Function<C, List<Map<String, Object>>> function);
 
-        UpdateAble namedParamBeans(Collection<Object> beanCollection);
+        UpdateAble namedParamBeans(List<Object> beanList);
 
-        UpdateAble namedParamBeans(Function<C, Collection<Object>> function);
+        UpdateAble namedParamBeans(Function<C, List<Object>> function);
     }
 
 

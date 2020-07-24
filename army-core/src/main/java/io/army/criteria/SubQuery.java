@@ -1,6 +1,7 @@
 package io.army.criteria;
 
 
+import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.Pair;
 
@@ -41,11 +42,17 @@ public interface SubQuery extends SQLStatement, SelfDescribed, DerivedTable, Que
 
     interface SubQueryFromAble<C> extends SubQueryUnionClause<C> {
 
-        SubQueryOnAble<C> from(TableMeta<?> tableMeta, String tableAlias);
+        TableRouteJoinAble<C> from(TableMeta<?> tableMeta, String tableAlias);
 
-        SubQueryOnAble<C> from(Function<C, SubQuery> function, String subQueryAlia);
+        SubQueryJoinAble<C> from(Function<C, SubQuery> function, String subQueryAlia);
     }
 
+    interface TableRouteJoinAble<C> extends SubQueryJoinAble<C> {
+
+        SubQueryJoinAble<C> fromRoute(int databaseIndex, int tableIndex);
+
+        SubQueryJoinAble<C> fromRoute(int tableIndex);
+    }
 
     interface SubQueryOnAble<C> extends SubQuerySQLAble {
 
@@ -59,18 +66,26 @@ public interface SubQuery extends SQLStatement, SelfDescribed, DerivedTable, Que
 
     interface SubQueryJoinAble<C> extends SubQueryWhereAble<C> {
 
-        SubQueryOnAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias);
+        TableRouteOnAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias);
 
         SubQueryOnAble<C> leftJoin(Function<C, SubQuery> function, String subQueryAlia);
 
-        SubQueryOnAble<C> join(TableMeta<?> tableMeta, String tableAlias);
+        TableRouteOnAble<C> join(TableMeta<?> tableMeta, String tableAlias);
 
         SubQueryOnAble<C> join(Function<C, SubQuery> function, String subQueryAlia);
 
-        SubQueryOnAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias);
+        TableRouteOnAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias);
 
         SubQueryOnAble<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia);
     }
+
+    interface TableRouteOnAble<C> extends SubQueryOnAble<C> {
+
+        SubQueryOnAble<C> route(int databaseIndex, int tableIndex);
+
+        SubQueryOnAble<C> route(int tableIndex);
+    }
+
 
     interface SubQueryWhereAble<C> extends SubQueryGroupByAble<C> {
 
@@ -83,11 +98,12 @@ public interface SubQuery extends SQLStatement, SelfDescribed, DerivedTable, Que
 
     interface SubQueryWhereAndAble<C> extends SubQueryGroupByAble<C> {
 
-        SubQueryWhereAndAble<C> and(IPredicate predicate);
+        /**
+         * @see Expression#equalIfNonNull(Object)
+         */
+        SubQueryWhereAndAble<C> and(@Nullable IPredicate predicate);
 
-        SubQueryWhereAndAble<C> and(Function<C, IPredicate> function);
-
-        SubQueryWhereAndAble<C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function);
+        SubQueryWhereAndAble<C> ifAnd(Function<C, IPredicate> function);
 
     }
 
@@ -100,21 +116,16 @@ public interface SubQuery extends SQLStatement, SelfDescribed, DerivedTable, Que
 
         SubQueryHavingAble<C> groupBy(Function<C, List<SortPart>> function);
 
-        SubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, SortPart sortPart);
-
-        SubQueryHavingAble<C> ifGroupBy(Predicate<C> predicate, Function<C, List<SortPart>> function);
-
     }
 
     interface SubQueryHavingAble<C> extends SubQueryOrderByAble<C> {
 
-        SubQueryOrderByAble<C> having(Function<C, List<IPredicate>> function);
-
         SubQueryOrderByAble<C> having(IPredicate predicate);
 
-        SubQueryOrderByAble<C> ifHaving(Predicate<C> predicate, Function<C, List<IPredicate>> function);
+        SubQueryOrderByAble<C> having(List<IPredicate> predicateList);
 
-        SubQueryOrderByAble<C> ifHaving(Predicate<C> testPredicate, IPredicate predicate);
+        SubQueryOrderByAble<C> having(Function<C, List<IPredicate>> function);
+
     }
 
 
@@ -126,10 +137,6 @@ public interface SubQuery extends SQLStatement, SelfDescribed, DerivedTable, Que
 
         SubQueryLimitAble<C> orderBy(Function<C, List<SortPart>> function);
 
-        SubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, SortPart sortPart);
-
-        SubQueryLimitAble<C> ifOrderBy(Predicate<C> predicate, Function<C, List<SortPart>> function);
-
     }
 
 
@@ -139,13 +146,12 @@ public interface SubQuery extends SQLStatement, SelfDescribed, DerivedTable, Que
 
         SubQueryUnionClause<C> limit(int offset, int rowCount);
 
-        SubQueryUnionClause<C> limit(Function<C, Pair<Integer, Integer>> function);
+        SubQueryUnionClause<C> ifLimit(Function<C, Pair<Integer, Integer>> function);
 
         SubQueryUnionClause<C> ifLimit(Predicate<C> predicate, int rowCount);
 
         SubQueryUnionClause<C> ifLimit(Predicate<C> predicate, int offset, int rowCount);
 
-        SubQueryUnionClause<C> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
     }
 
     interface SubQueryUnionAble<C> extends SubQueryUnionClause<C>, SubQueryOrderByClause<C> {
@@ -172,9 +178,6 @@ public interface SubQuery extends SQLStatement, SelfDescribed, DerivedTable, Que
 
         SubQueryLimitClause<C> orderBy(Function<C, List<SortPart>> function);
 
-        SubQueryLimitClause<C> ifOrderBy(Predicate<C> test, SortPart sortPart);
-
-        SubQueryLimitClause<C> ifOrderBy(Predicate<C> test, Function<C, List<SortPart>> function);
     }
 
     interface SubQueryLimitClause<C> extends SubQueryAble {
@@ -183,13 +186,11 @@ public interface SubQuery extends SQLStatement, SelfDescribed, DerivedTable, Que
 
         SubQueryAble limit(int offset, int rowCount);
 
-        SubQueryAble limit(Function<C, Pair<Integer, Integer>> function);
+        SubQueryAble ifLimit(Function<C, Pair<Integer, Integer>> function);
 
         SubQueryAble ifLimit(Predicate<C> predicate, int rowCount);
 
         SubQueryAble ifLimit(Predicate<C> predicate, int offset, int rowCount);
-
-        SubQueryAble ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
     }
 
 

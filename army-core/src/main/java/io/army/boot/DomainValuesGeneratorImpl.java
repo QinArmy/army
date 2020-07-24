@@ -1,7 +1,7 @@
 package io.army.boot;
 
 import io.army.ErrorCode;
-import io.army.GenericSessionFactory;
+import io.army.GenericRmSessionFactory;
 import io.army.beans.BeanWrapper;
 import io.army.beans.DomainWrapper;
 import io.army.beans.ObjectAccessorFactory;
@@ -25,9 +25,9 @@ import java.util.List;
 
 final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
 
-    private final GenericSessionFactory sessionFactory;
+    private final GenericRmSessionFactory sessionFactory;
 
-    DomainValuesGeneratorImpl(GenericSessionFactory sessionFactory) {
+    DomainValuesGeneratorImpl(GenericRmSessionFactory sessionFactory) {
         Assert.notNull(sessionFactory, "sessionFactory required");
         this.sessionFactory = sessionFactory;
     }
@@ -41,6 +41,13 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
         final DomainWrapper domainWrapper = ObjectAccessorFactory.forDomainPropertyAccess(
                 domain, this.sessionFactory.tableMeta(domain.getClass()));
 
+        createValues(domainWrapper, migrationData);
+        return domainWrapper;
+    }
+
+    @Override
+    public final void createValues(DomainWrapper domainWrapper, boolean migrationData) {
+        final TableMeta<?> tableMeta = domainWrapper.tableMeta();
         if (migrationData) {
             // discriminator
             createDiscriminatorValue(tableMeta, domainWrapper);
@@ -52,9 +59,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
             }
             createValuesWithGenerator(tableMeta, domainWrapper);
         }
-        return domainWrapper;
     }
-
 
     /*################################## blow private method ##################################*/
 
@@ -155,7 +160,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
     }
 
     private void assertDialectSupportedZone() {
-        if (!this.sessionFactory.supportZoneId()) {
+        if (!this.sessionFactory.supportZone()) {
             throw new MetaException("dialect[%s] unsupported zoneId"
                     , this.sessionFactory.actualSQLDialect());
         }

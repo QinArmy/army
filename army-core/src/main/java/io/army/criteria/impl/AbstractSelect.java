@@ -139,6 +139,11 @@ abstract class AbstractSelect extends AbstractSQLDebug implements Select, Select
         tableWrapper.addOnPredicateList(predicateList);
     }
 
+    final void doRoute(int databaseIndex, int tableIndex) {
+        TableWrapperImpl tableWrapper = this.tableWrapperList.get(this.tableWrapperList.size() - 1);
+        tableWrapper.route(databaseIndex, tableIndex);
+    }
+
     void doCheckTableAble(TableWrapper wrapper) {
         throw new IllegalArgumentException(String.format("tableAble[%s] isn't TableMeta or SubQuery."
                 , wrapper.alias()));
