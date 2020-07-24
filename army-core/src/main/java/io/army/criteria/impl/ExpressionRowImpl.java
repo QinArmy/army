@@ -1,25 +1,22 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.meta.FieldMeta;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-final class RowImpl implements Row {
+final class ExpressionRowImpl implements ExpressionRow {
 
-    private final List<Expression<?>> columnList;
+    private final List<FieldMeta<?, ?>> columnList;
 
-    RowImpl(List<Expression<?>> columnList) {
-        for (Expression<?> expression : columnList) {
-            if (expression instanceof ParamExpression) {
-                throw new IllegalArgumentException("columnList of row can't contains ParamExpression.");
-            }
-        }
-        this.columnList = columnList;
+    ExpressionRowImpl(List<FieldMeta<?, ?>> columnList) {
+        this.columnList = Collections.unmodifiableList(columnList);
     }
 
     @Override
-    public List<Expression<?>> columnList() {
+    public List<FieldMeta<?, ?>> columnList() {
         return columnList;
     }
 
@@ -27,7 +24,7 @@ final class RowImpl implements Row {
     public void appendSQL(SQLContext context) {
         StringBuilder builder = context.sqlBuilder()
                 .append(" ")
-                .append("Row(");
+                .append("ExpressionRow(");
 
         for (Iterator<Expression<?>> iterator = columnList.iterator(); iterator.hasNext(); ) {
             Expression<?> expression = iterator.next();

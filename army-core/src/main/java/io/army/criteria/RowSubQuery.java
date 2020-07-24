@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public interface RowSubQuery extends SubQuery {
+public interface RowSubQuery extends SubQuery, SetValuePart {
 
 
     interface RowSubQueryAble extends SubQueryAble {

@@ -1,27 +1,14 @@
 package io.army.criteria;
 
+import io.army.domain.IDomain;
+import io.army.meta.FieldMeta;
+
 import java.util.List;
 
-public interface Row extends SelfDescribed{
+public interface Row {
 
-    List<Expression<?>> columnList();
+    <T extends IDomain> List<FieldMeta<T, ?>> columnList();
 
     @Override
     String toString();
-
-    IPredicate eq(RowSubQuery rowSubQuery);
-
-    IPredicate notEq(RowSubQuery rowSubQuery);
-
-    IPredicate lt(RowSubQuery rowSubQuery);
-
-    IPredicate le(RowSubQuery rowSubQuery);
-
-    IPredicate gt(RowSubQuery rowSubQuery);
-
-    IPredicate ge(RowSubQuery rowSubQuery);
-
-    IPredicate in(RowSubQuery rowSubQuery);
-
-    IPredicate notIn(RowSubQuery rowSubQuery);
 }

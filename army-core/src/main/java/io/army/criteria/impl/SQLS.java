@@ -226,12 +226,12 @@ public abstract class SQLS extends AbstractSQLS {
                 ));
     }
 
-    static Row row(List<Expression<?>> columnList) {
-        return new RowImpl(columnList);
+    static ExpressionRow row(List<Expression<?>> columnList) {
+        return new ExpressionRowImpl(columnList);
     }
 
-    static <C> Row row(Function<C, List<Expression<?>>> function) {
-        return new RowImpl(function.apply(
+    static <C> ExpressionRow row(Function<C, List<Expression<?>>> function) {
+        return new ExpressionRowImpl(function.apply(
                 CriteriaContextHolder.getContext().criteria()
         ));
     }
