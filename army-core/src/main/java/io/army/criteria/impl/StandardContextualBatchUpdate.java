@@ -221,7 +221,7 @@ final class StandardContextualBatchUpdate<T extends IDomain, C> extends Abstract
     /*################################## blow InnerStandardBatchUpdate method ##################################*/
 
     @Override
-    public final List<ReadonlyWrapper> namedParamList() {
+    public final List<ReadonlyWrapper> wrapperList() {
         return this.namedParamList;
     }
 

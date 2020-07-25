@@ -180,19 +180,33 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
     /*################################## blow protected template method ##################################*/
 
 
-    protected abstract void assertSpecialComposeSelect(InnerSpecialComposeQuery select);
+    protected void assertSpecialComposeSelect(InnerSpecialComposeQuery select) {
+        throw new UnsupportedOperationException();
+    }
 
-    protected abstract void assertSpecialSubQuery(InnerSpecialSubQuery subQuery);
+    protected void assertSpecialSubQuery(InnerSpecialSubQuery subQuery) {
+        throw new UnsupportedOperationException();
+    }
 
-    protected abstract void assertSpecialComposeSubQuery(InnerSpecialComposeQuery composeQuery);
+    protected void assertSpecialComposeSubQuery(InnerSpecialComposeQuery composeQuery) {
+        throw new UnsupportedOperationException();
+    }
 
-    protected abstract void assertSpecialSelect(InnerSpecialSelect select);
+    protected void assertSpecialSelect(InnerSpecialSelect select) {
+        throw new UnsupportedOperationException();
+    }
 
-    protected abstract void specialPartSelect(InnerSpecialComposeQuery select, TableContextSQLContext context);
+    protected void specialPartSelect(InnerSpecialComposeQuery select, TableContextSQLContext context) {
+        throw new UnsupportedOperationException();
+    }
 
-    protected abstract void specialSelect(InnerSpecialSelect specialSelect, TableContextSQLContext context);
+    protected void specialSelect(InnerSpecialSelect specialSelect, TableContextSQLContext context) {
+        throw new UnsupportedOperationException();
+    }
 
-    protected abstract void specialSubQuery(InnerSpecialSubQuery composeQuery, TableContextSQLContext context);
+    protected void specialSubQuery(InnerSpecialSubQuery composeQuery, TableContextSQLContext context) {
+        throw new UnsupportedOperationException();
+    }
 
     protected final TableContextSQLContext adaptContext(InnerGeneralQuery query, SQLContext context) {
         TableContextSQLContext adaptedContext;

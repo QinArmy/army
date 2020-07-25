@@ -1,6 +1,7 @@
 package io.army.dialect;
 
 
+import io.army.GenericRmSessionFactory;
 import io.army.GenericSessionFactory;
 import io.army.criteria.*;
 import io.army.lang.Nullable;
@@ -29,7 +30,7 @@ public abstract class AbstractDialect implements InnerDialect {
      */
     private final Set<String> keywords;
 
-    protected final GenericSessionFactory sessionFactory;
+    protected final GenericRmSessionFactory sessionFactory;
 
     private final DDL ddl;
 
@@ -40,7 +41,7 @@ public abstract class AbstractDialect implements InnerDialect {
     private final MappingContext mappingContext;
 
 
-    public AbstractDialect(GenericSessionFactory sessionFactory) {
+    protected AbstractDialect(GenericRmSessionFactory sessionFactory) {
         Assert.notNull(sessionFactory, "sessionFactory required");
         Assert.isTrue(sessionFactory.actualSQLDialect() != this.sqlDialect()
                 , () -> String.format("session actual SQLDialect[%s] and dialect SQLDialect[%s] not match."
@@ -70,7 +71,7 @@ public abstract class AbstractDialect implements InnerDialect {
         if (!StringUtils.hasText(text)) {
             return false;
         }
-        return keywords.contains(text.toUpperCase());
+        return this.keywords.contains(text.toUpperCase());
     }
 
 
@@ -152,7 +153,7 @@ public abstract class AbstractDialect implements InnerDialect {
     }
 
     @Override
-    public final SQLWrapper batchUpdate(Update update, @Nullable Set<Integer> namedParamIexSet, Visible visible) {
+    public final List<SQLWrapper> batchUpdate(Update update, @Nullable Set<Integer> namedParamIexSet, Visible visible) {
         return this.dml.batchUpdate(update, namedParamIexSet, visible);
     }
 
@@ -162,7 +163,7 @@ public abstract class AbstractDialect implements InnerDialect {
     }
 
     @Override
-    public final SQLWrapper batchDelete(Delete delete, @Nullable Set<Integer> namedParamIexSet, Visible visible) {
+    public final List<SQLWrapper> batchDelete(Delete delete, @Nullable Set<Integer> namedParamIexSet, Visible visible) {
         return this.dml.batchDelete(delete, namedParamIexSet, visible);
     }
 

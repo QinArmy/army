@@ -1,23 +1,22 @@
 package io.army.wrapper;
 
 import java.util.List;
-import java.util.Map;
 
 public interface BatchSimpleSQLWrapper extends SQLWrapper {
 
     String sql();
 
-    Map<Integer, List<ParamWrapper>> paramGroupMap();
+    List<List<ParamWrapper>> paramGroupList();
 
     boolean hasVersion();
 
 
-    static BatchSimpleSQLWrapper build(String sql, Map<Integer, List<ParamWrapper>> paramGroupMap) {
-        return new BatchSimpleSQLWrapperImpl(sql, paramGroupMap);
+    static BatchSimpleSQLWrapper build(String sql, List<List<ParamWrapper>> paramGroupList) {
+        return new BatchSimpleSQLWrapperImpl(sql, paramGroupList);
     }
 
-    static BatchSimpleSQLWrapper build(String sql, Map<Integer, List<ParamWrapper>> paramGroupMap, boolean hasVersion) {
-        return new BatchSimpleSQLWrapperImpl(sql, paramGroupMap, hasVersion);
+    static BatchSimpleSQLWrapper build(String sql, List<List<ParamWrapper>> paramGroupList, boolean hasVersion) {
+        return new BatchSimpleSQLWrapperImpl(sql, paramGroupList, hasVersion);
     }
 
 }

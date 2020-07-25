@@ -1,14 +1,14 @@
 package io.army.env;
 
-import io.army.util.ArrayUtils;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.*;
 
 public abstract class AbstractEnvironment implements ConfigurableEnvironment {
+
+    private static final LocalDateTime[] EMPTY_DATE_TIME = new LocalDateTime[0];
 
     @Override
     public final boolean containsValue(String key, String targetValue) {
@@ -145,7 +145,7 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 
     private boolean isMatchDuration(String durationKey) {
 
-        LocalDateTime[] duration = this.getProperty(durationKey, LocalDateTime[].class, ArrayUtils.EMPTY_DATE_TIME);
+        LocalDateTime[] duration = this.getProperty(durationKey, LocalDateTime[].class, EMPTY_DATE_TIME);
         boolean match = false;
         if (duration.length == 2) {
             LocalDateTime now = LocalDateTime.now();

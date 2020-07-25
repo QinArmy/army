@@ -37,7 +37,7 @@ public interface GenericSessionFactory {
 
     List<FieldMeta<?, ?>> generatorChain(TableMeta<?> tableMeta);
 
-    DomainValuesGenerator DomainValuesGenerator();
+    DomainValuesGenerator domainValuesGenerator();
 
     @Nullable
     FieldCodec fieldCodec(FieldMeta<?, ?> fieldMeta);

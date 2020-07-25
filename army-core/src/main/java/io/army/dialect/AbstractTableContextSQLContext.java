@@ -1,5 +1,7 @@
 package io.army.dialect;
 
+import io.army.ArmyRuntimeException;
+import io.army.ErrorCode;
 import io.army.ShardingMode;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.NotFoundRouteException;
@@ -121,7 +123,11 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
 
         if (this.shardingMode != ShardingMode.NO_SHARDING
                 && !tableMeta.routeFieldList(false).isEmpty()) {
-            doAppendTableSuffix(tableMeta, tableAlias, builder);
+            String tableSuffix = parseTableSuffix(tableMeta, tableAlias);
+            if (!StringUtils.hasText(tableSuffix)) {
+                throw new ArmyRuntimeException(ErrorCode.CRITERIA_ERROR, "parseTableSuffix method return error.");
+            }
+            builder.append(tableSuffix);
         }
 
         if (canAppendTableAlias(tableMeta)) {
@@ -149,8 +155,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         }
     }
 
-    protected abstract void doAppendTableSuffix(TableMeta<?> tableMeta, @Nullable String tableAlias
-            , StringBuilder builder);
+    protected abstract String parseTableSuffix(TableMeta<?> tableMeta, @Nullable String tableAlias);
 
     protected String findTableAliasFromParent(FieldMeta<?, ?> fieldMeta) throws CriteriaException {
         throw DialectUtils.createUnKnownFieldException(fieldMeta);

@@ -2,26 +2,25 @@ package io.army.wrapper;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 final class BatchSimpleSQLWrapperImpl implements BatchSimpleSQLWrapper {
 
     private final String sql;
 
-    private final Map<Integer, List<ParamWrapper>> paramGroupMap;
+    private final List<List<ParamWrapper>> paramGroupList;
 
     private final boolean hasVersion;
 
 
-    BatchSimpleSQLWrapperImpl(String sql, Map<Integer, List<ParamWrapper>> paramGroupMap) {
+    BatchSimpleSQLWrapperImpl(String sql, List<List<ParamWrapper>> paramGroupList) {
         this.sql = sql;
-        this.paramGroupMap = Collections.unmodifiableMap(paramGroupMap);
+        this.paramGroupList = Collections.unmodifiableList(paramGroupList);
         this.hasVersion = false;
     }
 
-    BatchSimpleSQLWrapperImpl(String sql, Map<Integer, List<ParamWrapper>> paramGroupMap, boolean hasVersion) {
+    BatchSimpleSQLWrapperImpl(String sql, List<List<ParamWrapper>> paramGroupList, boolean hasVersion) {
         this.sql = sql;
-        this.paramGroupMap = Collections.unmodifiableMap(paramGroupMap);
+        this.paramGroupList = Collections.unmodifiableList(paramGroupList);
         this.hasVersion = hasVersion;
     }
 
@@ -31,8 +30,8 @@ final class BatchSimpleSQLWrapperImpl implements BatchSimpleSQLWrapper {
     }
 
     @Override
-    public final Map<Integer, List<ParamWrapper>> paramGroupMap() {
-        return this.paramGroupMap;
+    public final List<List<ParamWrapper>> paramGroupList() {
+        return this.paramGroupList;
     }
 
     @Override

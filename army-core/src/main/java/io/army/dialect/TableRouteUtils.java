@@ -4,6 +4,7 @@ import io.army.ShardingMode;
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.IPredicate;
 import io.army.criteria.NotFoundRouteException;
+import io.army.criteria.impl.inner.InnerSingleDML;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -16,7 +17,7 @@ abstract class TableRouteUtils extends RouteUtils {
 
 
     static String valueInsertPrimaryRouteSuffix(TableMeta<?> tableMeta, Dialect dialect, ReadonlyWrapper beanWrapper) {
-        if (!supportRoute(dialect, tableMeta)) {
+        if (notSupportRoute(dialect, tableMeta)) {
             return "";
         }
 
@@ -39,9 +40,9 @@ abstract class TableRouteUtils extends RouteUtils {
                 .tableSuffix(routeKey);
     }
 
-    static String singleTablePrimaryRouteSuffix(InnerSingleTableSQL singleTableSQL, Dialect dialect) {
+    static String singleTablePrimaryRouteSuffix(InnerSingleDML singleTableSQL, Dialect dialect) {
         TableMeta<?> tableMeta = singleTableSQL.tableMeta();
-        if (!supportRoute(dialect, tableMeta)) {
+        if (notSupportRoute(dialect, tableMeta)) {
             return "";
         }
         int tableIndex = singleTableSQL.tableIndex();
@@ -55,14 +56,14 @@ abstract class TableRouteUtils extends RouteUtils {
                 .tableSuffix(tableMeta);
     }
 
-    static String singleDmlPrimaryRouteSuffix(InnerSingleTableSQL singleTableSQL, Dialect dialect){
+    static String singleDmlPrimaryRouteSuffix(InnerSingleDML singleTableSQL, Dialect dialect) {
         TableMeta<?> tableMeta = singleTableSQL.tableMeta();
-        if (!supportRoute(dialect, tableMeta)) {
+        if (notSupportRoute(dialect, tableMeta)) {
             return "";
         }
-        String primaryRouteSuffix = findTableSuffix(tableMeta,singleTableSQL.tableIndex()
-                ,singleTableSQL.predicateList(),dialect);
-        if(primaryRouteSuffix == null){
+        String primaryRouteSuffix = findTableSuffix(tableMeta, singleTableSQL.tableIndex()
+                , singleTableSQL.predicateList(), dialect);
+        if (primaryRouteSuffix == null) {
             throw new NotFoundRouteException("Single dml ,TableMeta[%s] not found primary route.", tableMeta);
         }
         return primaryRouteSuffix;
@@ -96,9 +97,9 @@ abstract class TableRouteUtils extends RouteUtils {
 
     /*################################## blow private method ##################################*/
 
-    private static boolean supportRoute(Dialect dialect, TableMeta<?> tableMeta) {
-        return dialect.sessionFactory().shardingMode() != ShardingMode.NO_SHARDING
-                && !tableMeta.routeFieldList(false).isEmpty();
+    private static boolean notSupportRoute(Dialect dialect, TableMeta<?> tableMeta) {
+        return dialect.sessionFactory().shardingMode() == ShardingMode.NO_SHARDING
+                || tableMeta.routeFieldList(false).isEmpty();
     }
 
 

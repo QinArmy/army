@@ -20,40 +20,6 @@ class MySQL57DQL extends AbstractDQL {
 
     /*################################## blow AbstractDQL template method ##################################*/
 
-    @Override
-    protected void assertSpecialComposeSelect(InnerSpecialComposeQuery select) {
-
-    }
-
-    @Override
-    protected void assertSpecialSubQuery(InnerSpecialSubQuery subQuery) {
-
-    }
-
-    @Override
-    protected void assertSpecialComposeSubQuery(InnerSpecialComposeQuery composeQuery) {
-
-    }
-
-    @Override
-    protected void assertSpecialSelect(InnerSpecialSelect select) {
-
-    }
-
-    @Override
-    protected void specialPartSelect(InnerSpecialComposeQuery select, TableContextSQLContext context) {
-
-    }
-
-    @Override
-    protected void specialSelect(InnerSpecialSelect specialSelect, TableContextSQLContext context) {
-
-    }
-
-    @Override
-    protected void specialSubQuery(InnerSpecialSubQuery composeQuery, TableContextSQLContext context) {
-
-    }
 
     @Override
     protected TableContextSQLContext createSpecialSelectContext(TableContextSQLContext original) {

@@ -37,7 +37,7 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
     }
 
     @Override
-    protected final void doAppendTableSuffix(TableMeta<?> tableMeta, @Nullable String tableAlias
+    protected final void parseTableSuffix(TableMeta<?> tableMeta, @Nullable String tableAlias
             , StringBuilder builder) {
         if (tableMeta == this.primaryTable || tableMeta == this.relationTable) {
             builder.append(this.tableContext.primaryRouteSuffix);

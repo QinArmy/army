@@ -1,12 +1,13 @@
 package io.army.dialect;
 
 import io.army.ErrorCode;
-import io.army.beans.ObjectAccessorFactory;
+import io.army.ShardingMode;
+import io.army.beans.DomainWrapper;
 import io.army.beans.ReadonlyWrapper;
+import io.army.boot.DomainValuesGenerator;
 import io.army.criteria.*;
 import io.army.criteria.impl.CriteriaCounselor;
 import io.army.criteria.impl.inner.*;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
@@ -27,14 +28,16 @@ import java.util.*;
  */
 public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
-    public AbstractDML(InnerDialect dialect) {
+
+    protected AbstractDML(InnerDialect dialect) {
         super(dialect);
     }
 
     /*################################## blow DML batchInsert method ##################################*/
 
     @Override
-    public final List<SQLWrapper> valueInsert(Insert insert, @Nullable Set<Integer> domainIndexSet, Visible visible) {
+    public final List<SQLWrapper> valueInsert(Insert insert, @Nullable Set<Integer> domainIndexSet
+            , final Visible visible) {
         Assert.isTrue(insert.prepared(), "Insert don't invoke asInsert() method.");
 
         List<SQLWrapper> list;
@@ -43,7 +46,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
             CriteriaCounselor.assertStandardInsert(standardInsert);
             if (standardInsert instanceof InnerStandardBatchInsert) {
                 list = Collections.singletonList(
-                        standardBatchInsert((InnerStandardBatchInsert) standardInsert, domainIndexSet, visible)
+                        standardBatchInsert((InnerStandardBatchInsert) standardInsert, visible)
                 );
             } else {
                 list = standardInsert(standardInsert, domainIndexSet, visible);
@@ -254,27 +257,30 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         // 1. merge target fields.
         Set<FieldMeta<?, ?>> fieldMetaSet = DMLUtils.mergeInsertFields(tableMeta, this.dialect, insert.fieldList());
 
-        final List<IDomain> domainList = insert.valueList();
-        final List<SQLWrapper> sqlWrapperList = new ArrayList<>(domainList.size());
-
+        final List<DomainWrapper> domainWrapperList = insert.valueList();
+        final List<SQLWrapper> sqlWrapperList = new ArrayList<>(domainWrapperList.size());
+        final DomainValuesGenerator generator = this.dialect.sessionFactory().domainValuesGenerator();
+        final boolean migrationData = insert.migrationData();
         if (domainIndexSet == null) {
-            for (IDomain domain : domainList) {
-                ReadonlyWrapper wrapper = ObjectAccessorFactory.forReadonlyAccess(domain);
+            for (DomainWrapper domainWrapper : domainWrapperList) {
+                // 2. create domain required property value .
+                generator.createValues(domainWrapper, migrationData);
                 sqlWrapperList.add(
-                        // 2. create sql of domain
-                        insertDomain(wrapper, fieldMetaSet, insert, visible)
+                        // 3. create sql of domain
+                        insertDomain(domainWrapper, fieldMetaSet, insert, visible)
                 );
             }
         } else {
             for (Integer domainIndex : domainIndexSet) {
-                ReadonlyWrapper wrapper = ObjectAccessorFactory.forReadonlyAccess(domainList.get(domainIndex));
+                DomainWrapper domainWrapper = domainWrapperList.get(domainIndex);
+                // 2. create domain required property value .
+                generator.createValues(domainWrapper, migrationData);
                 sqlWrapperList.add(
-                        // 2. create sql of domain
-                        insertDomain(wrapper, fieldMetaSet, insert, visible)
+                        // 3. create sql of domain
+                        insertDomain(domainWrapper, fieldMetaSet, insert, visible)
                 );
             }
         }
-
         return sqlWrapperList;
     }
 
@@ -311,7 +317,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         DMLUtils.assertSubQueryInsert(fieldMetaList, subQuery);
 
         StringBuilder builder = context.sqlBuilder().append("INSERT INTO");
-        context.appendTable(tableMeta);
+        context.appendTable(tableMeta, null);
         builder.append(" ( ");
 
         int index = 0;
@@ -371,11 +377,13 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         }
 
         //2.  create parent sql.
-        StandardValueInsertContext parentContext = StandardValueInsertContext.buildParent(insert, this.dialect, visible);
+        StandardValueInsertContext parentContext = StandardValueInsertContext.buildParent(insert, beanWrapper
+                , this.dialect, visible);
         DMLUtils.createValueInsertForSimple(parentMeta, parentFields, beanWrapper, parentContext);
 
         //3. create child sql.
-        StandardValueInsertContext childContext = StandardValueInsertContext.buildChild(insert, this.dialect, visible);
+        StandardValueInsertContext childContext = StandardValueInsertContext.buildChild(insert, beanWrapper
+                , this.dialect, visible);
         DMLUtils.createValueInsertForSimple(childMeta, childFields, beanWrapper, childContext);
 
         return ChildSQLWrapper.build(parentContext.build(), childContext.build());
@@ -397,8 +405,10 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     }
 
 
-    private SQLWrapper standardBatchInsert(InnerStandardBatchInsert insert, @Nullable Set<Integer> domainIndexSet
-            , final Visible visible) {
+    private SQLWrapper standardBatchInsert(InnerStandardBatchInsert insert, final Visible visible) {
+        if (this.dialect.sessionFactory().shardingMode() != ShardingMode.NO_SHARDING) {
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "Batch insert only support NO_SHARDING mode.");
+        }
         SQLWrapper sqlWrapper;
         switch (insert.tableMeta().mappingMode()) {
             case SIMPLE:
@@ -409,25 +419,25 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
                 sqlWrapper = standardBatchInsertForChild(insert, visible);
                 break;
             default:
-                throw new IllegalArgumentException(
-                        String.format("unknown MappingMode[%s]", insert.tableMeta().mappingMode()));
+                throw DialectUtils.createMappingModeUnknownException(insert.tableMeta().mappingMode());
 
         }
-        // create batch insert sql wrapper with domain list .
-        return DMLUtils.createBatchInsertWrapper(insert, sqlWrapper, domainIndexSet, this.dialect.sessionFactory());
+        return sqlWrapper;
     }
 
-
-    private SimpleSQLWrapper standardBatchInsertForSimple(InnerStandardBatchInsert insert, final Visible visible) {
+    private SQLWrapper standardBatchInsertForSimple(InnerStandardBatchInsert insert
+            , final Visible visible) {
         TableMeta<?> tableMeta = insert.tableMeta();
         // 1.merge fields
         Set<FieldMeta<?, ?>> fieldMetaSet = DMLUtils.mergeInsertFields(tableMeta, this.dialect, insert.fieldList());
 
-        StandardValueInsertContext context = StandardValueInsertContext.build(insert, this.dialect, visible);
-        // single table multiInsert sql
+        StandardValueInsertContext context = StandardValueInsertContext.build(insert, null, this.dialect, visible);
+        // 2. parse single table insert sql
         DMLUtils.createStandardBatchInsertForSimple(tableMeta, fieldMetaSet, context);
-        return context.build();
+        // 3. create batch sql wrapper
+        return DMLUtils.createBatchInsertWrapper(insert, context.build(), this.dialect.sessionFactory());
     }
+
 
     private ChildSQLWrapper standardBatchInsertForChild(InnerStandardBatchInsert insert, final Visible visible) {
         final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) insert.tableMeta();
@@ -441,11 +451,13 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         DialectUtils.divideFields(childMeta, mergeFieldSet, parentFieldSet, childFieldSet);
 
         // 3. parent sql wrapper
-        final StandardValueInsertContext parentContext = StandardValueInsertContext.buildParent(insert, this.dialect, visible);
+        final StandardValueInsertContext parentContext = StandardValueInsertContext.buildParent(
+                insert, null, this.dialect, visible);
         DMLUtils.createStandardBatchInsertForSimple(parentMeta, parentFieldSet, parentContext);
 
         //4. child sql wrapper
-        final StandardValueInsertContext childContext = StandardValueInsertContext.buildChild(insert, this.dialect, visible);
+        final StandardValueInsertContext childContext = StandardValueInsertContext.buildChild(
+                insert, null, this.dialect, visible);
         DMLUtils.createStandardBatchInsertForSimple(childMeta, childFieldSet, childContext);
 
         return ChildSQLWrapper.build(parentContext.build(), childContext.build());
@@ -544,7 +556,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
             , final Visible visible) {
         // create batch update wrapper
         return DMLUtils.createBatchSQLWrapper(
-                update.namedParamList()
+                update.wrapperList()
                 , namedParamIexSet
                 , standardGenericUpdate(update, visible)
         );

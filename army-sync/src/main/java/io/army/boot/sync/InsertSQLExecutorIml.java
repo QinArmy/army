@@ -208,9 +208,9 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
 
     private void assertBatchResult(BatchSimpleSQLWrapper sqlWrapper, Map<Integer, Integer> batchResultMap) {
 
-        if (batchResultMap.size() != sqlWrapper.paramGroupMap().size()) {
+        if (batchResultMap.size() != sqlWrapper.paramGroupList().size()) {
             throw new InsertRowsNotMatchException("batch sql[%s] batch count , expected %s but %s ."
-                    , sqlWrapper.sql(), sqlWrapper.paramGroupMap().size(), batchResultMap.size());
+                    , sqlWrapper.sql(), sqlWrapper.paramGroupList().size(), batchResultMap.size());
         }
 
         for (Map.Entry<Integer, Integer> e : batchResultMap.entrySet()) {
@@ -226,7 +226,7 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
     private void assertBatchChildResult(BatchSimpleSQLWrapper parentWrapper, BatchSimpleSQLWrapper childWrapper
             , Map<Integer, Integer> parenResultMap, Map<Integer, Integer> childResultMap) {
         if (parenResultMap.size() != childResultMap.size()
-                || childResultMap.size() != childWrapper.paramGroupMap().size()) {
+                || childResultMap.size() != childWrapper.paramGroupList().size()) {
 
             throw new InsertRowsNotMatchException(
                     "SessionFactory[%s] child sql[%s]  batch count[%s] and parent sql [%s] batch count[%s] not match."

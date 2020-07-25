@@ -48,14 +48,14 @@ class SubQueryContextImpl extends AbstractTableContextSQLContext implements SubQ
     }
 
     @Override
-    protected final void doAppendTableSuffix(TableMeta<?> tableMeta, @Nullable String tableAlias
+    protected final void parseTableSuffix(TableMeta<?> tableMeta, @Nullable String tableAlias
             , StringBuilder builder) {
         if (tableAlias == null) {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "SubQuery[%s] TableMeta[%s] no tableAlias."
                     , this.subQuery, tableMeta);
         }
         Integer tableIndex = this.tableContext.tableIndexMap.get(tableAlias);
-        if (tableIndex == null ) {
+        if (tableIndex == null) {
             throw new IllegalStateException(String.format("SubQuery[%s] TableMeta[%s] table index is null."
                     , this.subQuery, tableMeta));
         }

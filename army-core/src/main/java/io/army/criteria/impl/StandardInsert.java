@@ -11,10 +11,7 @@ import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Supplier;
 
 final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implements Insert
@@ -25,21 +22,23 @@ final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implement
         return new StandardInsert<>(tableMeta);
     }
 
-    static List<DomainWrapper> createDomainWrapper(TableMeta<?> tableMeta, List<? extends IDomain> domainList) {
-        List<DomainWrapper> wrapperList = new ArrayList<>(domainList.size());
-        for (IDomain domain : domainList) {
-            wrapperList.add(ObjectAccessorFactory.forDomainPropertyAccess(domain, tableMeta));
+    static Map<Integer, DomainWrapper> createDomainWrapper(TableMeta<?> tableMeta, List<? extends IDomain> domainList) {
+        Map<Integer, DomainWrapper> wrapperMap = new HashMap<>(domainList.size());
+        final int size = domainList.size();
+        for (int i = 0; i < size; i++) {
+            wrapperMap.put(i, ObjectAccessorFactory.forDomainPropertyAccess(domainList.get(i), tableMeta));
         }
-        return wrapperList;
+
+        return wrapperMap;
     }
 
     private final TableMeta<T> tableMeta;
 
     private boolean dataMigration;
 
-    private List<FieldMeta<?, ?>> fieldList = new ArrayList<>();
+    private List<FieldMeta<?, ?>> fieldList;
 
-    private List<DomainWrapper> valueList;
+    private Map<Integer, DomainWrapper> valueMap;
 
     private boolean prepared;
 
@@ -59,13 +58,13 @@ final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implement
 
     @Override
     public final InsertValuesAble<T> insertInto(Collection<FieldMeta<? super T, ?>> fieldMetas) {
-        this.fieldList.addAll(fieldMetas);
+        this.fieldList = new ArrayList<>(fieldMetas);
         return this;
     }
 
     @Override
     public final InsertValuesAble<T> insertInto(Supplier<Collection<FieldMeta<? super T, ?>>> supplier) {
-        this.fieldList.addAll(supplier.get());
+        this.fieldList = new ArrayList<>(supplier.get());
         return this;
     }
 
@@ -74,6 +73,7 @@ final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implement
         Assert.isTrue(tableMeta == this.tableMeta
                 , () -> String.format("TableMeta[%s] and target[%s] not match.", tableMeta, this.tableMeta));
 
+        this.fieldList = new ArrayList<>();
         if (tableMeta instanceof ChildTableMeta) {
             this.fieldList.addAll(((ChildTableMeta<?>) tableMeta).parentMeta().fieldCollection());
         }
@@ -87,15 +87,14 @@ final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implement
 
     @Override
     public final InsertAble value(T domain) {
-        this.valueList = Collections.singletonList(
-                ObjectAccessorFactory.forDomainPropertyAccess(domain, this.tableMeta)
-        );
+        this.valueMap = Collections.singletonMap(0
+                , ObjectAccessorFactory.forDomainPropertyAccess(domain, this.tableMeta));
         return this;
     }
 
     @Override
     public final InsertAble values(List<T> domainList) {
-        this.valueList = createDomainWrapper(this.tableMeta, domainList);
+        this.valueMap = createDomainWrapper(this.tableMeta, domainList);
         return this;
     }
 
@@ -128,8 +127,8 @@ final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implement
     }
 
     @Override
-    public final List<DomainWrapper> valueList() {
-        return this.valueList;
+    public final Map<Integer, DomainWrapper> valueList() {
+        return this.valueMap;
     }
 
     @Override
@@ -140,7 +139,7 @@ final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implement
     @Override
     public void clear() {
         this.fieldList = null;
-        this.valueList = null;
+        this.valueMap = null;
         this.prepared = false;
     }
     /*################################## blow InsertAble method ##################################*/
@@ -151,10 +150,10 @@ final class StandardInsert<T extends IDomain> extends AbstractSQLDebug implement
             return this;
         }
         Assert.state(!CollectionUtils.isEmpty(this.fieldList), "fieldList is empty,error.");
-        Assert.state(!CollectionUtils.isEmpty(this.valueList), "valueList is empty,error.");
+        Assert.state(!CollectionUtils.isEmpty(this.valueMap), "valueList is empty,error.");
 
         this.fieldList = Collections.unmodifiableList(this.fieldList);
-        this.valueList = Collections.unmodifiableList(this.valueList);
+        this.valueMap = Collections.unmodifiableMap(this.valueMap);
 
         this.prepared = true;
         return this;

@@ -2,8 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.beans.DomainWrapper;
 import io.army.criteria.Insert;
-import io.army.criteria.impl.inner.InnerStandardInsert;
-import io.army.criteria.impl.inner.InnerValuesInsert;
+import io.army.criteria.impl.inner.InnerStandardBatchInsert;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -18,7 +17,7 @@ import java.util.function.Supplier;
 
 final class StandardBatchInsert<T extends IDomain> extends AbstractSQLDebug implements Insert, Insert.InsertAble
         , Insert.BatchInsertIntoAble<T>, Insert.BatchInsertValuesAble<T>, Insert.BatchInsertOptionAble<T>
-        , InnerStandardInsert, InnerValuesInsert {
+        , InnerStandardBatchInsert {
 
 
     static <T extends IDomain> StandardBatchInsert<T> build(TableMeta<T> tableMeta) {
@@ -102,7 +101,7 @@ final class StandardBatchInsert<T extends IDomain> extends AbstractSQLDebug impl
     /*################################## blow InnerStandardBatchInsert method ##################################*/
 
     @Override
-    public final List<DomainWrapper> valueList() {
+    public final List<DomainWrapper> wrapperList() {
         return this.valueList;
     }
 

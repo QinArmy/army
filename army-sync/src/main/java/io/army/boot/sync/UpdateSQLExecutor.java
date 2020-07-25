@@ -14,7 +14,7 @@ interface UpdateSQLExecutor {
 
     /**
      * @param <V> return map's value java type.
-     * @return a unmodifiable map, key : key of {@linkplain BatchSimpleSQLWrapper#paramGroupMap()}
+     * @return a unmodifiable map, key : key of {@linkplain BatchSimpleSQLWrapper#paramGroupList()}
      * * ,value : batch update rows of named param.
      */
     <V extends Number> Map<Integer, V> batchUpdate(InnerSession session, SQLWrapper sqlWrapper

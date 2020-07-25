@@ -7,5 +7,5 @@ import java.util.List;
 @DeveloperForbid
 public interface InnerBatchDML extends InnerSQL {
 
-    List<ReadonlyWrapper> namedParamList();
+     List<? extends ReadonlyWrapper> wrapperList();
 }

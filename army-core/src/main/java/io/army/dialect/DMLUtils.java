@@ -375,76 +375,51 @@ abstract class DMLUtils {
     }
 
     static SQLWrapper createBatchInsertWrapper(InnerStandardBatchInsert insert
-            , final SQLWrapper sqlWrapper, @Nullable Set<Integer> domainIndexSet
-            , GenericSessionFactory sessionFactory) {
+            , final SQLWrapper sqlWrapper, GenericSessionFactory sessionFactory) {
 
-        final List<DomainWrapper> domainList = insert.valueList();
+        final List<DomainWrapper> domainWrapperList = insert.wrapperList();
 
-        int groupMapCapacity;
-        if (domainIndexSet == null) {
-            groupMapCapacity = (int) (domainList.size() / 0.75F);
-        } else {
-            groupMapCapacity = (int) (domainIndexSet.size() / 0.75F);
-        }
-
-        Map<Integer, List<ParamWrapper>> parentParamGroupMap, childParamGroupMap = new HashMap<>(groupMapCapacity);
+        List<List<ParamWrapper>> parentParamGroupList, childParamGroupList = new ArrayList<>(domainWrapperList.size());
         SimpleSQLWrapper parentWrapper, childWrapper;
+        List<ParamWrapper> parentPlaceholderList;
         // extract parentWrapper,childWrapper
         if (sqlWrapper instanceof ChildSQLWrapper) {
             ChildSQLWrapper childSQLWrapper = (ChildSQLWrapper) sqlWrapper;
             parentWrapper = childSQLWrapper.parentWrapper();
+            parentPlaceholderList = parentWrapper.paramList();
             childWrapper = childSQLWrapper.childWrapper();
-            parentParamGroupMap = new HashMap<>(groupMapCapacity);
+            parentParamGroupList = new ArrayList<>(domainWrapperList.size());
         } else if (sqlWrapper instanceof SimpleSQLWrapper) {
             parentWrapper = null;
-            parentParamGroupMap = Collections.emptyMap();
+            parentPlaceholderList = null;
+            parentParamGroupList = Collections.emptyList();
             childWrapper = (SimpleSQLWrapper) sqlWrapper;
         } else {
             throw new IllegalArgumentException(String.format("SQLWrapper[%s] supported", sqlWrapper));
         }
 
         final List<ParamWrapper> childPlaceholderList = childWrapper.paramList();
-        final DomainValuesGenerator generator = sessionFactory.DomainValuesGenerator();
+        final DomainValuesGenerator generator = sessionFactory.domainValuesGenerator();
         final boolean migrationData = insert.migrationData();
-        if (domainIndexSet == null) {
-            final int size = domainList.size();
-            for (int i = 0; i < size; i++) {
-                // 1. create value for a domain
-                DomainWrapper beanWrapper = domainList.get(i);
-                generator.createValues(beanWrapper, migrationData);
-                // 2. create paramWrapperList
-                if (sqlWrapper instanceof ChildSQLWrapper) {
-                    // create paramWrapperList for parent
-                    parentParamGroupMap.put(i
-                            , createBatchInsertParamList(beanWrapper, sessionFactory, parentWrapper.paramList()));
-                }
-                //3. create paramWrapperList for child
-                childParamGroupMap.put(i
-                        , createBatchInsertParamList(beanWrapper, sessionFactory, childPlaceholderList));
+
+        for (DomainWrapper wrapper : domainWrapperList) {
+            //1. create domain  property value.
+            generator.createValues(wrapper, migrationData);
+            // 2. create paramWrapperList
+            if (parentPlaceholderList != null) {
+                // create paramWrapperList for parent
+                parentParamGroupList.add(createBatchInsertParamList(wrapper, sessionFactory, parentPlaceholderList));
             }
-        } else {
-            for (Integer domainIndex : domainIndexSet) {
-                // 1. create value for a domain
-                DomainWrapper beanWrapper = domainList.get(domainIndex);
-                generator.createValues(beanWrapper, migrationData);
-                // 2. create paramWrapperList
-                if (sqlWrapper instanceof ChildSQLWrapper) {
-                    // create paramWrapperList for parent
-                    parentParamGroupMap.put(domainIndex
-                            , createBatchInsertParamList(beanWrapper, sessionFactory, parentWrapper.paramList()));
-                }
-                //3. create paramWrapperList for child
-                childParamGroupMap.put(domainIndex
-                        , createBatchInsertParamList(beanWrapper, sessionFactory, childPlaceholderList));
-            }
+            //3. create paramWrapperList for child
+            childParamGroupList.add(createBatchInsertParamList(wrapper, sessionFactory, childPlaceholderList));
         }
 
         // 4. create BatchSimpleSQLWrapper
-        BatchSimpleSQLWrapper childBatchWrapper = BatchSimpleSQLWrapper.build(childWrapper.sql(), childParamGroupMap);
+        BatchSimpleSQLWrapper childBatchWrapper = BatchSimpleSQLWrapper.build(childWrapper.sql(), childParamGroupList);
         SQLWrapper batchSQLWrapper;
         if (sqlWrapper instanceof ChildSQLWrapper) {
             BatchSimpleSQLWrapper parentBatchWrapper = BatchSimpleSQLWrapper.build(
-                    parentWrapper.sql(), parentParamGroupMap);
+                    parentWrapper.sql(), parentParamGroupList);
             batchSQLWrapper = ChildBatchSQLWrapper.build(parentBatchWrapper, childBatchWrapper);
         } else {
             batchSQLWrapper = childBatchWrapper;

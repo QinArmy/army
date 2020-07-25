@@ -87,7 +87,7 @@ abstract class SQLExecutorSupport {
     }
 
     /**
-     * @return a unmodifiable map, key : key of {@linkplain BatchSimpleSQLWrapper#paramGroupMap()}
+     * @return a unmodifiable map, key : key of {@linkplain BatchSimpleSQLWrapper#paramGroupList()}
      * * ,value : batch update rows of named param.
      */
     protected final Map<Integer, Integer> doExecuteBatch(InnerSession session, BatchSimpleSQLWrapper sqlWrapper) {
@@ -97,7 +97,7 @@ abstract class SQLExecutorSupport {
 
             Map<Integer, Integer> indexMap = new HashMap<>();
             int index = 0;
-            for (Map.Entry<Integer, List<ParamWrapper>> e : sqlWrapper.paramGroupMap().entrySet()) {
+            for (Map.Entry<Integer, List<ParamWrapper>> e : sqlWrapper.paramGroupList().entrySet()) {
                 // 1. set params
                 setParams(codecContext, st, e.getValue());
                 // 2. add to batch
@@ -112,7 +112,7 @@ abstract class SQLExecutorSupport {
             Map<Integer, Integer> batchResultMap = new HashMap<>();
             // 5. convert result array to map.
             final boolean version = sqlWrapper.hasVersion();
-            for (Integer paramIndex : sqlWrapper.paramGroupMap().keySet()) {
+            for (Integer paramIndex : sqlWrapper.paramGroupList().keySet()) {
                 int updateRows = resultArray[indexMap.get(paramIndex)];
                 batchResultMap.put(paramIndex, updateRows);
                 if (version && updateRows < 1) {
@@ -126,7 +126,7 @@ abstract class SQLExecutorSupport {
     }
 
     /**
-     * @return a unmodifiable map, key : key of {@linkplain BatchSimpleSQLWrapper#paramGroupMap()}
+     * @return a unmodifiable map, key : key of {@linkplain BatchSimpleSQLWrapper#paramGroupList()}
      * * ,value : batch update rows of named param.
      */
     protected final Map<Integer, Long> doExecuteLargeBatch(InnerSession session, BatchSimpleSQLWrapper sqlWrapper) {
@@ -136,7 +136,7 @@ abstract class SQLExecutorSupport {
 
             Map<Integer, Integer> indexMap = new HashMap<>();
             int index = 0;
-            for (Map.Entry<Integer, List<ParamWrapper>> e : sqlWrapper.paramGroupMap().entrySet()) {
+            for (Map.Entry<Integer, List<ParamWrapper>> e : sqlWrapper.paramGroupList().entrySet()) {
                 // 1. set params
                 setParams(codecContext, st, e.getValue());
                 // 2. add to batch
@@ -151,7 +151,7 @@ abstract class SQLExecutorSupport {
             Map<Integer, Long> batchResultMap = new HashMap<>();
             // 5. convert result array to map.
             final boolean version = sqlWrapper.hasVersion();
-            for (Integer paramIndex : sqlWrapper.paramGroupMap().keySet()) {
+            for (Integer paramIndex : sqlWrapper.paramGroupList().keySet()) {
                 long updateRows = resultArray[indexMap.get(paramIndex)];
                 batchResultMap.put(paramIndex, updateRows);
                 if (version && updateRows < 1L) {

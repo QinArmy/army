@@ -18,10 +18,10 @@ public interface DML extends SQL {
 
     SQLWrapper simpleUpdate(Update update, Visible visible);
 
-    SQLWrapper batchUpdate(Update update, @Nullable Set<Integer> namedParamIexSet, Visible visible);
+    List<SQLWrapper> batchUpdate(Update update, @Nullable Set<Integer> namedParamIexSet, Visible visible);
 
     SQLWrapper simpleDelete(Delete delete, Visible visible);
 
-    SQLWrapper batchDelete(Delete delete, @Nullable Set<Integer> namedParamIexSet, Visible visible);
+    List<SQLWrapper> batchDelete(Delete delete, @Nullable Set<Integer> namedParamIexSet, Visible visible);
 
 }

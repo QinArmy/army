@@ -12,32 +12,48 @@ import io.army.wrapper.SimpleSQLWrapper;
 
 final class StandardValueInsertContext extends AbstractTableContextSQLContext implements InsertContext {
 
-    static StandardValueInsertContext build(InnerStandardInsert insert, ReadonlyWrapper beanWrapper
+    static StandardValueInsertContext build(InnerStandardInsert insert, @Nullable ReadonlyWrapper beanWrapper
             , Dialect dialect, final Visible visible) {
         TableMeta<?> tableMeta = insert.tableMeta();
-        String primaryRouteSuffix = TableRouteUtils.valueInsertPrimaryRouteSuffix(tableMeta, dialect, beanWrapper);
+        String primaryRouteSuffix = obtainPrimaryRouteSuffix(tableMeta, dialect, beanWrapper);
 
         TableContext tableContext = TableContext.singleTable(insert, primaryRouteSuffix);
         return new StandardValueInsertContext(dialect, visible, tableContext);
     }
 
-    static StandardValueInsertContext buildParent(InnerStandardInsert insert, ReadonlyWrapper beanWrapper, Dialect dialect
+    static StandardValueInsertContext buildParent(InnerStandardInsert insert, @Nullable ReadonlyWrapper beanWrapper
+            , Dialect dialect
             , final Visible visible) {
         ParentTableMeta<?> parentMeta = ((ChildTableMeta<?>) insert.tableMeta()).parentMeta();
-        String primaryRouteSuffix = TableRouteUtils.valueInsertPrimaryRouteSuffix(parentMeta, dialect, beanWrapper);
+
+        String primaryRouteSuffix = obtainPrimaryRouteSuffix(parentMeta, dialect, beanWrapper);
 
         TableContext tableContext = TableContext.singleTable(insert, primaryRouteSuffix);
         return new StandardValueInsertContext(dialect, visible, tableContext);
     }
 
-    static StandardValueInsertContext buildChild(InnerStandardInsert insert, ReadonlyWrapper beanWrapper, Dialect dialect
+    static StandardValueInsertContext buildChild(InnerStandardInsert insert, @Nullable ReadonlyWrapper beanWrapper
+            , Dialect dialect
             , final Visible visible) {
         ChildTableMeta<?> childMeta = (ChildTableMeta<?>) insert.tableMeta();
-        String primaryRouteSuffix = TableRouteUtils.valueInsertPrimaryRouteSuffix(
-                childMeta.parentMeta(), dialect, beanWrapper);
+        String primaryRouteSuffix = obtainPrimaryRouteSuffix(childMeta.parentMeta(), dialect, beanWrapper);
 
         TableContext tableContext = TableContext.singleTable(insert, primaryRouteSuffix);
         return new StandardValueInsertContext(dialect, visible, tableContext);
+    }
+
+    private static String obtainPrimaryRouteSuffix(TableMeta<?> tableMeta, Dialect dialect
+            , @Nullable ReadonlyWrapper beanWrapper) {
+        String primaryRouteSuffix;
+        if (beanWrapper == null) {
+            //no sharding
+            primaryRouteSuffix = "";
+        } else {
+            // sharding
+            primaryRouteSuffix = TableRouteUtils.valueInsertPrimaryRouteSuffix(tableMeta, dialect, beanWrapper);
+        }
+        return primaryRouteSuffix;
+
     }
 
 
@@ -70,9 +86,8 @@ final class StandardValueInsertContext extends AbstractTableContextSQLContext im
     }
 
     @Override
-    protected final void doAppendTableSuffix(TableMeta<?> actualTable, @Nullable String tableAlias
-            , StringBuilder builder) {
-        builder.append(this.tableContext.primaryRouteSuffix);
+    protected final String parseTableSuffix(TableMeta<?> tableMeta, @Nullable String tableAlias) {
+        return this.tableContext.primaryRouteSuffix;
     }
 
     @Override

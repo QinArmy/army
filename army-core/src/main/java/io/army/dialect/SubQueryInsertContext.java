@@ -14,8 +14,7 @@ final class SubQueryInsertContext extends AbstractTableContextSQLContext impleme
 
         String primaryRouteSuffix = TableRouteUtils.singleTablePrimaryRouteSuffix(insert, dialect);
 
-        TableContext tableContext = TableContext.singleTable(insert.tableMeta()
-                , "t", insert.tableIndex(), primaryRouteSuffix);
+        TableContext tableContext = TableContext.singleTable(insert, primaryRouteSuffix);
         return new SubQueryInsertContext(dialect, visible, tableContext);
     }
 
@@ -29,16 +28,13 @@ final class SubQueryInsertContext extends AbstractTableContextSQLContext impleme
         return this.sqlBuilder;
     }
 
-
     @Override
-    protected final void doAppendTableSuffix(TableMeta<?> actualTable, @Nullable String tableAlias
-            , StringBuilder builder) {
+    protected final String parseTableSuffix(TableMeta<?> actualTable, @Nullable String tableAlias) {
         GenericSessionFactory sessionFactory = this.dialect.sessionFactory();
         if (!sessionFactory.shardingSubQueryInsert()) {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "Sub query insert isn't allowed by SessionFactory[%s]"
                     , sessionFactory);
         }
-
-        builder.append(this.tableContext.primaryRouteSuffix);
+        return this.tableContext.primaryRouteSuffix;
     }
 }

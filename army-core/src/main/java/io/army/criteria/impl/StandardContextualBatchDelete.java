@@ -4,8 +4,7 @@ import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.Delete;
 import io.army.criteria.IPredicate;
-import io.army.criteria.impl.inner.InnerBatchDML;
-import io.army.criteria.impl.inner.InnerStandardDelete;
+import io.army.criteria.impl.inner.InnerStandardBatchDelete;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -20,8 +19,7 @@ import java.util.function.Function;
 
 final class StandardContextualBatchDelete<C> implements Delete,
         Delete.BatchDeleteAble<C>, Delete.BatchWhereAble<C>, Delete.BatchDeleteTableRouteAble<C>
-        , Delete.BatchWhereAndAble<C>
-        , Delete.BatchNamedParamAble<C>, Delete.DeleteAble, InnerStandardDelete, InnerBatchDML {
+        , Delete.BatchWhereAndAble<C>, Delete.BatchNamedParamAble<C>, Delete.DeleteAble, InnerStandardBatchDelete {
 
     static <C> StandardContextualBatchDelete<C> build(C criteria) {
         return new StandardContextualBatchDelete<>(criteria);
@@ -174,7 +172,7 @@ final class StandardContextualBatchDelete<C> implements Delete,
     /*################################## blow InnerStandardBatchDelete method ##################################*/
 
     @Override
-    public final List<ReadonlyWrapper> namedParamList() {
+    public final List<ReadonlyWrapper> wrapperList() {
         return this.namedParamList;
     }
 

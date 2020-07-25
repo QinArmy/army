@@ -147,7 +147,7 @@ abstract class AbstractGenericSessionFactory implements InnerGenericSessionFacti
 
 
     @Override
-    public DomainValuesGenerator DomainValuesGenerator() {
+    public DomainValuesGenerator domainValuesGenerator() {
         return this.domainValuesGenerator;
     }
 
