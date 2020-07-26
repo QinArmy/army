@@ -1,5 +1,5 @@
 package io.army.dialect;
 
- interface SelectContext extends TableContextSQLContext {
+public interface SelectContext extends TableContextSQLContext {
 
- }
+}

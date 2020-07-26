@@ -4,12 +4,17 @@ import io.army.ShardingMode;
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.IPredicate;
 import io.army.criteria.NotFoundRouteException;
+import io.army.criteria.TableAble;
+import io.army.criteria.impl.inner.InnerSelect;
 import io.army.criteria.impl.inner.InnerSingleDML;
+import io.army.criteria.impl.inner.TableWrapper;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.sharding.RouteUtils;
+import io.army.sharding.RouteWrapper;
 import io.army.sharding.TableRoute;
+import io.army.util.StringUtils;
 
 import java.util.List;
 
@@ -40,15 +45,15 @@ abstract class TableRouteUtils extends RouteUtils {
                 .tableSuffix(routeKey);
     }
 
-    static String singleTablePrimaryRouteSuffix(InnerSingleDML singleTableSQL, Dialect dialect) {
-        TableMeta<?> tableMeta = singleTableSQL.tableMeta();
+    static String subQueryInsertPrimaryRouteSuffix(InnerSingleDML innerSingleDML, Dialect dialect) {
+        TableMeta<?> tableMeta = innerSingleDML.tableMeta();
         if (notSupportRoute(dialect, tableMeta)) {
             return "";
         }
-        int tableIndex = singleTableSQL.tableIndex();
+        int tableIndex = innerSingleDML.tableIndex();
         if (tableIndex < 0) {
             throw new NotFoundRouteException("Value insert ,TableMeta[%s] not found primary route."
-                    , singleTableSQL.tableMeta());
+                    , innerSingleDML.tableMeta());
         }
         // route table suffix by route key
         return dialect.sessionFactory()
@@ -70,6 +75,38 @@ abstract class TableRouteUtils extends RouteUtils {
     }
 
 
+    static String selectPrimaryRouteSuffix(InnerSelect select, Dialect dialect) {
+        if (dialect.sessionFactory().shardingMode() == ShardingMode.NO_SHARDING) {
+            return "";
+        }
+        RouteWrapper routeWrapper = findRouteForSelect(select, false);
+        String routeSuffix;
+        if (routeWrapper == null) {
+            throw new NotFoundRouteException("Select[%s] no route.", select);
+        } else {
+            routeSuffix = convertToSuffix(routeWrapper, dialect);
+        }
+        return routeSuffix;
+    }
+
+    @Nullable
+    static String findRouteSuffixForTable(TableMeta<?> tableMeta, int tableIndex, List<IPredicate> predicateList
+            , Dialect dialect) {
+        List<FieldMeta<?, ?>> routeFieldList = tableMeta.routeFieldList(false);
+        Object routeKey = findRouteKeyFromWhereClause(routeFieldList, predicateList);
+        TableRoute tableRoute = dialect.sessionFactory().tableRoute(tableMeta);
+        String routeSuffix = null;
+        if (routeKey == null) {
+            if (tableIndex >= 0) {
+                routeSuffix = tableRoute.convertToSuffix(tableIndex);
+            }
+        } else {
+            routeSuffix = tableRoute.tableSuffix(routeKey);
+        }
+        return routeSuffix;
+    }
+
+
     @Nullable
     static String findTableSuffix(TableMeta<?> tableMeta, int tableIndex, List<IPredicate> predicateList
             , Dialect dialect) {
@@ -85,7 +122,7 @@ abstract class TableRouteUtils extends RouteUtils {
             if (tableIndex >= 0) {
                 suffix = route.convertToSuffix(tableIndex);
             }
-        }else {
+        } else {
             suffix = route.tableSuffix(routeKey);
         }
         return suffix;

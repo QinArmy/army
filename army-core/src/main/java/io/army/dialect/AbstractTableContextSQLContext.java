@@ -21,12 +21,15 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
 
     protected final ShardingMode shardingMode;
 
+    protected final boolean childContext;
+
     protected AbstractTableContextSQLContext(Dialect dialect, Visible visible, TableContext tableContext) {
         super(dialect, visible);
         this.shardingMode = dialect.sessionFactory().shardingMode();
         this.tableContext = tableContext;
         this.primaryTableContext = tableContext;
         assertPrimaryRouteSuffix();
+        this.childContext = false;
     }
 
     protected AbstractTableContextSQLContext(TableContextSQLContext original, TableContext tableContext) {
@@ -35,6 +38,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         this.tableContext = tableContext;
         this.primaryTableContext = original.primaryTableContext();
         assertPrimaryRouteSuffix();
+        this.childContext = true;
     }
 
 
@@ -61,7 +65,6 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         }
         doAppendTable(tableMeta, tableAlias);
     }
-
 
 
     @Override

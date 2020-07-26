@@ -12,10 +12,11 @@ class StandardDeleteContext extends AbstractStandardDomainContext implements Del
 
     static StandardDeleteContext build(InnerStandardDelete delete, Dialect dialect, Visible visible) {
         TableMeta<?> tableMeta = delete.tableMeta();
+        String primarySuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(delete,dialect);
 
-        TableContext tableContext = TableContext.singleTable(delete, false, )
+        TableContext tableContext = TableContext.singleTable(delete, false, primarySuffix);
         return new StandardDeleteContext(dialect, visible
-                , TableContext.singleTable(tableMeta, false, delete.tableAlias())
+                , tableContext
                 , tableMeta
                 , tableMeta);
     }
@@ -23,17 +24,22 @@ class StandardDeleteContext extends AbstractStandardDomainContext implements Del
     static StandardDeleteContext buildParent(InnerStandardDelete delete, Dialect dialect, final Visible visible) {
         ParentTableMeta<?> parentMeta = ((ChildTableMeta<?>) delete.tableMeta()).parentMeta();
 
+        String primarySuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(delete,dialect);
+
+        TableContext tableContext = TableContext.singleTable(delete, true, primarySuffix);
         return new StandardDeleteContext(dialect, visible
-                , TableContext.singleTable(parentMeta, true, delete.tableAlias())
+                , tableContext
                 , parentMeta
                 , parentMeta);
     }
 
     static StandardDeleteContext buildChild(InnerStandardDelete delete, Dialect dialect, final Visible visible) {
         ChildTableMeta<?> childMeta = (ChildTableMeta<?>) delete.tableMeta();
+        String primarySuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(delete,dialect);
 
+        TableContext tableContext = TableContext.singleTable(delete, false, primarySuffix);
         return new DomainDeleteContext(dialect, visible
-                , TableContext.singleTable(childMeta, false, delete.tableAlias())
+                , tableContext
                 , childMeta
                 , childMeta.parentMeta()
         );

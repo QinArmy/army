@@ -1,49 +1,40 @@
 package io.army.sharding;
 
+import io.army.ErrorCode;
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.FieldValueEqualPredicate;
 import io.army.criteria.IPredicate;
 import io.army.criteria.SubQuery;
 import io.army.criteria.TableAble;
+import io.army.criteria.impl.inner.InnerSelect;
 import io.army.criteria.impl.inner.InnerSubQuery;
 import io.army.criteria.impl.inner.TableWrapper;
+import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
 
-public  abstract class RouteUtils {
+public abstract class RouteUtils {
 
-   protected   RouteUtils() {
+    protected RouteUtils() {
         throw new UnsupportedOperationException();
     }
 
-
-
-
     @Nullable
-   protected static Object findRouteKeyFromWhereClause(TableMeta<?>  tableMeta,List<IPredicate> predicateList
-            ,final  boolean database){
-
-        List<FieldMeta<?,?>> routeFields = tableMeta.routeFieldList(database);
-
-        Object routeKey = null;
-        for (IPredicate predicate : predicateList) {
-            if (!(predicate instanceof FieldValueEqualPredicate)) {
-                continue;
-            }
-            FieldValueEqualPredicate p = (FieldValueEqualPredicate) predicate;
-            if (routeFields.contains(p.fieldExp())) {
-                // success,find route key.
-                routeKey = p.value();
-                break;
-            }
+    protected static RouteWrapper findRouteForSelect(InnerSelect select, boolean dataSource) {
+        RouteWrapper routeWrapper;
+        routeWrapper = findRouteFromWhereClause(select.tableWrapperList(), select.predicateList(), dataSource);
+        if (routeWrapper != null) {
+            return routeWrapper;
         }
-        return routeKey;
+        routeWrapper = findRouteFromTableList(select.tableWrapperList(), dataSource);
+        if (routeWrapper != null) {
+            return routeWrapper;
+        }
+        return findRouteFromSubQueryList(select.tableWrapperList(), dataSource);
     }
-
-
 
 
     @Nullable
@@ -51,24 +42,18 @@ public  abstract class RouteUtils {
             , List<IPredicate> predicateList, final boolean dataSource) {
         RouteWrapper routeWrapper = null;
 
-        tableLevel:
         for (TableWrapper tableWrapper : tableWrapperList) {
             TableAble tableAble = tableWrapper.tableAble();
 
             if (!(tableAble instanceof TableMeta)) {
                 continue;
             }
-            List<FieldMeta<?, ?>> dataSourceRouteFields = ((TableMeta<?>) tableAble).routeFieldList(dataSource);
-            for (IPredicate predicate : predicateList) {
-                if (!(predicate instanceof FieldValueEqualPredicate)) {
-                    continue;
-                }
-                FieldValueEqualPredicate p = (FieldValueEqualPredicate) predicate;
-                FieldMeta<?, ?> fieldMeta = p.fieldExp();
-                if (dataSourceRouteFields.contains(fieldMeta)) {
-                    routeWrapper = RouteWrapper.buildRouteKey(fieldMeta.tableMeta(), p.value());
-                    break tableLevel;
-                }
+            TableMeta<?> tableMeta = (TableMeta<?>) tableAble;
+            List<FieldMeta<?, ?>> routeFieldList = tableMeta.routeFieldList(dataSource);
+            Object routeKey = findRouteKeyFromWhereClause(routeFieldList, predicateList);
+            if (routeKey != null) {
+                routeWrapper = RouteWrapper.buildRouteKey(tableMeta, routeKey);
+                break;
             }
         }
         return routeWrapper;
@@ -141,7 +126,7 @@ public  abstract class RouteUtils {
 
     @Nullable
     protected static Object findRouteKeyFromWhereClause(List<FieldMeta<?, ?>> routeFieldList
-            ,List<IPredicate> predicateList){
+            , List<IPredicate> predicateList) {
         Object routeKey = null;
 
         for (IPredicate predicate : predicateList) {
@@ -151,7 +136,7 @@ public  abstract class RouteUtils {
             FieldValueEqualPredicate p = (FieldValueEqualPredicate) predicate;
             if (routeFieldList.contains(p.fieldExp())) {
                 routeKey = p.value();
-                break ;
+                break;
             }
         }
         return routeKey;
@@ -170,5 +155,25 @@ public  abstract class RouteUtils {
         }
         return routeKey;
     }
+
+    protected static String convertToSuffix(RouteWrapper routeWrapper, Dialect dialect) {
+        String routeSuffix;
+        if (routeWrapper.routeIndex()) {
+            routeSuffix = dialect.sessionFactory()
+                    .tableRoute(routeWrapper.tableMeta())
+                    .convertToSuffix(routeWrapper.routeIndexValue());
+        } else {
+            routeSuffix = dialect.sessionFactory()
+                    .tableRoute(routeWrapper.tableMeta())
+                    .tableSuffix(routeWrapper.routeKey());
+        }
+        if (!routeSuffix.startsWith("_")) {
+            TableRoute tableRoute = dialect.sessionFactory()
+                    .tableRoute(routeWrapper.tableMeta());
+            throw new ShardingRouteException(ErrorCode.ROUTE_ERROR, "TableRoute[%s] return error.", tableRoute);
+        }
+        return routeSuffix;
+    }
+
 
 }

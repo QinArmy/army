@@ -2,6 +2,7 @@ package io.army.dialect;
 
 import io.army.ErrorCode;
 import io.army.criteria.CriteriaException;
+import io.army.criteria.IPredicate;
 import io.army.criteria.TableAble;
 import io.army.criteria.impl.inner.InnerSingleDML;
 import io.army.criteria.impl.inner.TableWrapper;
@@ -87,7 +88,8 @@ public final class TableContext {
 
 
     private TableContext(Map<TableMeta<?>, Integer> tableCountMap, Map<String, TableMeta<?>> aliasTableMap
-            , Map<TableMeta<?>, String> tableAliasMap, Map<String, Integer> tableIndexMap, String primaryRouteSuffix) {
+            , Map<TableMeta<?>, String> tableAliasMap, Map<String, Integer> tableIndexMap
+            , String primaryRouteSuffix) {
         this.tableCountMap = tableCountMap;
         this.aliasTableMap = aliasTableMap;
         this.tableAliasMap = tableAliasMap;

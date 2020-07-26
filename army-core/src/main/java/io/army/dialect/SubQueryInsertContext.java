@@ -13,7 +13,7 @@ final class SubQueryInsertContext extends AbstractTableContextSQLContext impleme
 
     static SubQueryInsertContext build(InnerStandardSubQueryInsert insert, Dialect dialect, final Visible visible) {
 
-        String primaryRouteSuffix = TableRouteUtils.singleTablePrimaryRouteSuffix(insert, dialect);
+        String primaryRouteSuffix = TableRouteUtils.subQueryInsertPrimaryRouteSuffix(insert, dialect);
 
         TableContext tableContext = TableContext.singleTable(insert, false, primaryRouteSuffix);
         return new SubQueryInsertContext(dialect, visible, tableContext);
@@ -21,7 +21,7 @@ final class SubQueryInsertContext extends AbstractTableContextSQLContext impleme
 
     static SubQueryInsertContext buildParent(InnerStandardChildSubQueryInsert insert, Dialect dialect
             , Visible visible) {
-        String primaryRouteSuffix = TableRouteUtils.singleTablePrimaryRouteSuffix(insert, dialect);
+        String primaryRouteSuffix = TableRouteUtils.subQueryInsertPrimaryRouteSuffix(insert, dialect);
 
         TableContext tableContext = TableContext.singleTable(insert, true, primaryRouteSuffix);
         return new SubQueryInsertContext(dialect, visible, tableContext);
@@ -29,7 +29,7 @@ final class SubQueryInsertContext extends AbstractTableContextSQLContext impleme
 
     static SubQueryInsertContext buildChild(InnerStandardChildSubQueryInsert insert, Dialect dialect
             , Visible visible) {
-        String primaryRouteSuffix = TableRouteUtils.singleTablePrimaryRouteSuffix(insert, dialect);
+        String primaryRouteSuffix = TableRouteUtils.subQueryInsertPrimaryRouteSuffix(insert, dialect);
 
         TableContext tableContext = TableContext.singleTable(insert, false, primaryRouteSuffix);
         return new SubQueryInsertContext(dialect, visible, tableContext);

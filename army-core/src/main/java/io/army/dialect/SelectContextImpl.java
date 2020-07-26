@@ -1,47 +1,39 @@
 package io.army.dialect;
 
 
-import io.army.criteria.SelectPart;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.InnerSelect;
 import io.army.util.Assert;
-import io.army.util.CollectionUtils;
 import io.army.wrapper.SimpleSQLWrapper;
 
-import java.util.Collections;
-import java.util.List;
+final class SelectContextImpl extends AbstractQueryStatementContext implements SelectContext {
 
-final class SelectContextImpl extends AbstractTableContextSQLContext implements SelectContext {
+    public static SelectContextImpl build(InnerSelect select, Dialect dialect, final Visible visible) {
+        String primaryRouteSuffix = TableRouteUtils.selectPrimaryRouteSuffix(select, dialect);
 
-    public static SelectContextImpl build(Dialect dialect, Visible visible, InnerSelect select) {
-        TableContext tableContext = TableContext.multiTable(select.tableWrapperList());
-        return new SelectContextImpl(dialect, visible, tableContext, select.selectPartList());
+        TableContext tableContext = TableContext.multiTable(select.tableWrapperList(), primaryRouteSuffix);
+        return new SelectContextImpl(dialect, visible, tableContext, select);
     }
 
     public static SelectContextImpl build(TableContextSQLContext original, InnerSelect select) {
-        TableContext tableContext = TableContext.multiTable(select.tableWrapperList());
-        return new SelectContextImpl(original, tableContext);
+
+        TableContext tableContext = TableContext.multiTable(select.tableWrapperList(), original.primaryRouteSuffix());
+        return new SelectContextImpl(original, tableContext,select);
     }
-
-    private final List<SelectPart> selectPartList;
-
 
     private SelectContextImpl(Dialect dialect, Visible visible, TableContext tableContext
-            , List<SelectPart> selectPartList) {
-        super(dialect, visible, tableContext);
-        this.selectPartList = selectPartList;
+            , InnerSelect select) {
+        super(dialect, visible, tableContext,select);
     }
 
-    private SelectContextImpl(TableContextSQLContext original, TableContext tableContext) {
-        super(original, tableContext);
-        this.selectPartList = Collections.emptyList();
+    private SelectContextImpl(TableContextSQLContext original, TableContext tableContext, InnerSelect select) {
+        super(original, tableContext,select);
     }
 
     @Override
-    public SimpleSQLWrapper build() {
-        Assert.state(!CollectionUtils.isEmpty(this.selectPartList), "SelectContextImpl not outer context");
-
+    public final SimpleSQLWrapper build() {
+        Assert.state(!this.childContext, "SelectContextImpl not outer context");
         return SimpleSQLWrapper.build(this.sqlBuilder.toString(), this.paramList
-                , DialectUtils.extractSelectionList(this.selectPartList));
+                , DialectUtils.extractSelectionList(this.query.selectPartList()));
     }
 }

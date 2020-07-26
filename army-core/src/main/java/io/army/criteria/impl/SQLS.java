@@ -65,7 +65,7 @@ public abstract class SQLS extends AbstractSQLS {
      * @param targetTable will insert to table meta
      * @return a standard insert api object.
      */
-    public static <T extends IDomain> Insert.BatchInsertOptionAble<T> batchInsert(TableMeta<T> targetTable) {
+    public static <T extends IDomain> Insert.InsertIntoAble<T> batchInsert(TableMeta<T> targetTable) {
         return StandardBatchInsert.build(targetTable);
     }
 
@@ -155,7 +155,7 @@ public abstract class SQLS extends AbstractSQLS {
     }
 
     public static <E, C> ColumnSubQuery.ColumnSubQuerySelectionAble<E, C> columnSubQuery(Class<E> columnType) {
-        return new ColumnSubQueryAdaptor<>(columnType,
+        return  ColumnSubQueryAdaptor.build(columnType,
                 CriteriaContextHolder.getContext().criteria()
         );
     }

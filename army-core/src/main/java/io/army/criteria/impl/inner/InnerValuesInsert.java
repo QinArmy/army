@@ -9,7 +9,7 @@ public interface InnerValuesInsert extends InnerInsert {
 
     boolean migrationData();
 
-    List<DomainWrapper> valueList();
+    List<DomainWrapper> wrapperList();
 
 
 }

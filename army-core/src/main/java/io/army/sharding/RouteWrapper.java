@@ -4,8 +4,8 @@ import io.army.meta.TableMeta;
 
 public final class RouteWrapper {
 
-    public static RouteWrapper buildRouteKey(TableMeta<?> tableMeta, Object value) {
-        return new RouteWrapper(tableMeta, value);
+    public static RouteWrapper buildRouteKey(TableMeta<?> tableMeta, Object routeKey) {
+        return new RouteWrapper(tableMeta, routeKey);
     }
 
     public static RouteWrapper buildRouteIndex(int routeIndex) {

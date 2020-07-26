@@ -15,12 +15,6 @@ public interface InnerQuery extends InnerGeneralBaseQuery {
      */
     List<IPredicate> predicateList();
 
-
-    /**
-     * @return a unmodifiable list
-     */
-    List<SelectPart> selectPartList();
-
     /**
      * @return a unmodifiable list
      */
