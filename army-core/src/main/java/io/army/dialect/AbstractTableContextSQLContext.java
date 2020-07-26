@@ -40,12 +40,12 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
 
     @Override
     public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) {
-        doAppendField(tableAlias, fieldMeta, this.sqlBuilder);
+        doAppendField(tableAlias, fieldMeta);
     }
 
     @Override
     public void appendField(FieldMeta<?, ?> fieldMeta) {
-        doAppendField(findTableAlias(fieldMeta), fieldMeta, this.sqlBuilder);
+        doAppendField(findTableAlias(fieldMeta), fieldMeta);
     }
 
 
@@ -59,8 +59,9 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         if (!this.tableContext.tableCountMap.containsKey(tableMeta)) {
             throw DialectUtils.createUnKnownTableException(tableMeta);
         }
-        doAppendTable(tableMeta, tableAlias, this.sqlBuilder);
+        doAppendTable(tableMeta, tableAlias);
     }
+
 
 
     @Override
@@ -116,8 +117,9 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         return tableAlias;
     }
 
-    protected final void doAppendTable(TableMeta<?> tableMeta, @Nullable String tableAlias, StringBuilder builder) {
+    protected final void doAppendTable(TableMeta<?> tableMeta, @Nullable String tableAlias) {
         final Dialect dialect = this.dialect;
+        StringBuilder builder = obtainTablePartBuilder();
         builder.append(" ")
                 .append(dialect.quoteIfNeed(tableMeta.tableName()));
 

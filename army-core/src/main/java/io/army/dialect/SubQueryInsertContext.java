@@ -4,6 +4,7 @@ import io.army.ErrorCode;
 import io.army.GenericSessionFactory;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Visible;
+import io.army.criteria.impl.inner.InnerStandardChildSubQueryInsert;
 import io.army.criteria.impl.inner.InnerStandardSubQueryInsert;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -14,7 +15,23 @@ final class SubQueryInsertContext extends AbstractTableContextSQLContext impleme
 
         String primaryRouteSuffix = TableRouteUtils.singleTablePrimaryRouteSuffix(insert, dialect);
 
-        TableContext tableContext = TableContext.singleTable(insert, primaryRouteSuffix);
+        TableContext tableContext = TableContext.singleTable(insert, false, primaryRouteSuffix);
+        return new SubQueryInsertContext(dialect, visible, tableContext);
+    }
+
+    static SubQueryInsertContext buildParent(InnerStandardChildSubQueryInsert insert, Dialect dialect
+            , Visible visible) {
+        String primaryRouteSuffix = TableRouteUtils.singleTablePrimaryRouteSuffix(insert, dialect);
+
+        TableContext tableContext = TableContext.singleTable(insert, true, primaryRouteSuffix);
+        return new SubQueryInsertContext(dialect, visible, tableContext);
+    }
+
+    static SubQueryInsertContext buildChild(InnerStandardChildSubQueryInsert insert, Dialect dialect
+            , Visible visible) {
+        String primaryRouteSuffix = TableRouteUtils.singleTablePrimaryRouteSuffix(insert, dialect);
+
+        TableContext tableContext = TableContext.singleTable(insert, false, primaryRouteSuffix);
         return new SubQueryInsertContext(dialect, visible, tableContext);
     }
 

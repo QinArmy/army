@@ -17,7 +17,7 @@ final class StandardValueInsertContext extends AbstractTableContextSQLContext im
         TableMeta<?> tableMeta = insert.tableMeta();
         String primaryRouteSuffix = obtainPrimaryRouteSuffix(tableMeta, dialect, beanWrapper);
 
-        TableContext tableContext = TableContext.singleTable(insert, primaryRouteSuffix);
+        TableContext tableContext = TableContext.singleTable(insert, false, primaryRouteSuffix);
         return new StandardValueInsertContext(dialect, visible, tableContext);
     }
 
@@ -28,7 +28,7 @@ final class StandardValueInsertContext extends AbstractTableContextSQLContext im
 
         String primaryRouteSuffix = obtainPrimaryRouteSuffix(parentMeta, dialect, beanWrapper);
 
-        TableContext tableContext = TableContext.singleTable(insert, primaryRouteSuffix);
+        TableContext tableContext = TableContext.singleTable(insert, true, primaryRouteSuffix);
         return new StandardValueInsertContext(dialect, visible, tableContext);
     }
 
@@ -38,7 +38,7 @@ final class StandardValueInsertContext extends AbstractTableContextSQLContext im
         ChildTableMeta<?> childMeta = (ChildTableMeta<?>) insert.tableMeta();
         String primaryRouteSuffix = obtainPrimaryRouteSuffix(childMeta.parentMeta(), dialect, beanWrapper);
 
-        TableContext tableContext = TableContext.singleTable(insert, primaryRouteSuffix);
+        TableContext tableContext = TableContext.singleTable(insert, false, primaryRouteSuffix);
         return new StandardValueInsertContext(dialect, visible, tableContext);
     }
 
@@ -82,7 +82,12 @@ final class StandardValueInsertContext extends AbstractTableContextSQLContext im
         if (fieldMeta.tableMeta() != this.physicalTable) {
             throw DialectUtils.createNoLogicalTableException(fieldMeta);
         }
-        doAppendField(null, fieldMeta, this.fieldBuilder);
+        doAppendField(null, fieldMeta);
+    }
+
+    @Override
+    protected final StringBuilder obtainTablePartBuilder() {
+        return this.fieldBuilder;
     }
 
     @Override

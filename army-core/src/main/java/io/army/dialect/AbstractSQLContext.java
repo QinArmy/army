@@ -42,7 +42,7 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
 
     @Override
     public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) {
-        doAppendField(tableAlias, fieldMeta, this.sqlBuilder);
+        doAppendField(tableAlias, fieldMeta);
     }
 
     @Override
@@ -108,8 +108,12 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
 
     /*################################## blow protected final method ##################################*/
 
+    protected StringBuilder obtainTablePartBuilder() {
+        return this.sqlBuilder;
+    }
 
-    protected final void doAppendField(@Nullable String tableAlias, FieldMeta<?, ?> fieldMeta, StringBuilder builder) {
+    protected final void doAppendField(@Nullable String tableAlias, FieldMeta<?, ?> fieldMeta) {
+        StringBuilder builder = obtainTablePartBuilder();
         builder.append(" ");
         if (tableAlias != null) {
             builder.append(this.dialect.quoteIfNeed(tableAlias))

@@ -510,7 +510,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         }
 
         //2. parse parent update sql
-        StandardSingleUpdateContext parentContext = StandardSingleUpdateContext.buildParent(update, this.dialect, visible);
+        StandardUpdateContext parentContext = StandardUpdateContext.buildParent(update, this.dialect, visible);
         // 2-1. create parent predicate
         List<IPredicate> parentPredicateList = DMLUtils.extractParentPredicatesForUpdate(
                 childMeta, childFieldList, update.predicateList());
@@ -522,7 +522,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
             sqlWrapper = parentContext.build();
         } else {
             //3 parse child update sql (optional)
-            StandardSingleUpdateContext childContext = StandardSingleUpdateContext.buildChild(update, this.dialect, visible);
+            StandardUpdateContext childContext = StandardUpdateContext.buildChild(update, this.dialect, visible);
             parseStandardUpdate(childContext, childMeta, update.tableAlias()
                     , childFieldList, childExpList, update.predicateList());
 
@@ -532,7 +532,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     }
 
 
-    private void parseStandardUpdate(StandardSingleUpdateContext context, TableMeta<?> tableMeta, String tableAlias
+    private void parseStandardUpdate(StandardUpdateContext context, TableMeta<?> tableMeta, String tableAlias
             , List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueExpList, List<IPredicate> predicateList) {
 
         StringBuilder builder = context.sqlBuilder().append("UPDATE");
@@ -563,7 +563,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     }
 
     private SimpleSQLWrapper standardSimpleUpdate(InnerStandardUpdate update, final Visible visible) {
-        StandardSingleUpdateContext context = StandardSingleUpdateContext.build(update, this.dialect, visible);
+        StandardUpdateContext context = StandardUpdateContext.build(update, this.dialect, visible);
 
         parseStandardUpdate(context, update.tableMeta(), update.tableAlias()
                 , update.targetFieldList(), update.valueExpList(), update.predicateList());
@@ -572,7 +572,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     }
 
     private SimpleSQLWrapper standardParentUpdate(InnerStandardUpdate update, final Visible visible) {
-        StandardSingleUpdateContext context = StandardSingleUpdateContext.build(update, this.dialect, visible);
+        StandardUpdateContext context = StandardUpdateContext.build(update, this.dialect, visible);
         final ParentTableMeta<?> parentMeta = (ParentTableMeta<?>) update.tableMeta();
         // create parent predicate
         List<IPredicate> parentPredicateList = DMLUtils.createParentPredicates(parentMeta, update.predicateList());

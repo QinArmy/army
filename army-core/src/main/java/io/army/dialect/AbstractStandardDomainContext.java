@@ -37,12 +37,13 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
     }
 
     @Override
-    protected final void parseTableSuffix(TableMeta<?> tableMeta, @Nullable String tableAlias
-            , StringBuilder builder) {
+    protected final String parseTableSuffix(TableMeta<?> tableMeta, @Nullable String tableAlias) {
         if (tableMeta == this.primaryTable || tableMeta == this.relationTable) {
-            builder.append(this.tableContext.primaryRouteSuffix);
+            return this.tableContext.primaryRouteSuffix;
         }
+        throw DialectUtils.createUnKnownTableException(tableMeta);
     }
+
 
     final void appendDomainFieldPredicate(SpecialPredicate predicate) {
         if (predicate instanceof PrimaryValueEqualPredicate) {
@@ -61,7 +62,7 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
     final void appendDomainTable(TableMeta<?> tableMeta, @Nullable String tableAlias) {
         if (tableMeta == this.relationTable) {
             if (this.existsClauseContext || this.relationSubQueryContext) {
-                doAppendTable(tableMeta, tableAlias, this.sqlBuilder);
+                doAppendTable(tableMeta, tableAlias);
             } else {
                 throw DialectUtils.createUnKnownTableException(tableMeta);
             }
@@ -93,12 +94,12 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
     final void appendDomainField(FieldMeta<?, ?> fieldMeta) {
         TableMeta<?> tableOfField = fieldMeta.tableMeta();
         if (tableOfField == this.primaryTable) {
-            doAppendFiled(this.primaryAlias, fieldMeta);
+            doAppendField(this.primaryAlias, fieldMeta);
         } else if (tableOfField == this.relationTable) {
             if (fieldMeta instanceof PrimaryFieldMeta) {
-                doAppendFiled(this.primaryAlias, fieldMeta);
+                doAppendField(this.primaryAlias, fieldMeta);
             } else if (this.existsClauseContext) {
-                doAppendFiled(this.relationAlias, fieldMeta);
+                doAppendField(this.relationAlias, fieldMeta);
             } else {
                 this.relationSubQueryContext = true;
                 doReplaceRelationFieldAsScalarSubQuery(fieldMeta);
@@ -108,6 +109,7 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
             throw DialectUtils.createUnKnownFieldException(fieldMeta);
         }
     }
+
 
     private void doReplaceRelationFieldAsScalarSubQuery(FieldMeta<?, ?> relationField) {
         Assert.isTrue(relationField.tableMeta() == this.relationTable, "");

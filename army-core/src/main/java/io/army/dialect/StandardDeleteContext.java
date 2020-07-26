@@ -12,8 +12,10 @@ class StandardDeleteContext extends AbstractStandardDomainContext implements Del
 
     static StandardDeleteContext build(InnerStandardDelete delete, Dialect dialect, Visible visible) {
         TableMeta<?> tableMeta = delete.tableMeta();
+
+        TableContext tableContext = TableContext.singleTable(delete, false, )
         return new StandardDeleteContext(dialect, visible
-                , TableContext.singleTable(tableMeta, delete.tableAlias())
+                , TableContext.singleTable(tableMeta, false, delete.tableAlias())
                 , tableMeta
                 , tableMeta);
     }
@@ -22,7 +24,7 @@ class StandardDeleteContext extends AbstractStandardDomainContext implements Del
         ParentTableMeta<?> parentMeta = ((ChildTableMeta<?>) delete.tableMeta()).parentMeta();
 
         return new StandardDeleteContext(dialect, visible
-                , TableContext.singleTable(parentMeta, delete.tableAlias())
+                , TableContext.singleTable(parentMeta, true, delete.tableAlias())
                 , parentMeta
                 , parentMeta);
     }
@@ -31,7 +33,7 @@ class StandardDeleteContext extends AbstractStandardDomainContext implements Del
         ChildTableMeta<?> childMeta = (ChildTableMeta<?>) delete.tableMeta();
 
         return new DomainDeleteContext(dialect, visible
-                , TableContext.singleTable(childMeta, delete.tableAlias())
+                , TableContext.singleTable(childMeta, false, delete.tableAlias())
                 , childMeta
                 , childMeta.parentMeta()
         );

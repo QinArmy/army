@@ -5,6 +5,7 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.TableAble;
 import io.army.criteria.impl.inner.InnerSingleDML;
 import io.army.criteria.impl.inner.TableWrapper;
+import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 
 import java.util.Collections;
@@ -16,8 +17,11 @@ public final class TableContext {
 
     public static final TableContext EMPTY = new TableContext();
 
-    public static TableContext singleTable(InnerSingleDML singleTable, String primaryRouteSuffix) {
+    public static TableContext singleTable(InnerSingleDML singleTable, boolean parent, String primaryRouteSuffix) {
         TableMeta<?> tableMeta = singleTable.tableMeta();
+        if (parent) {
+            tableMeta = ((ChildTableMeta<?>) tableMeta).parentMeta();
+        }
         String tableAlias = singleTable.tableAlias();
 
         return new TableContext(
