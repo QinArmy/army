@@ -35,7 +35,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             //1. assert composeQuery legal
             CriteriaCounselor.assertStandardComposeSelect(composeSelect);
             // 2. create compose select context
-            SelectContext context = ComposeSelectContext.build(this.dialect, visible);
+            ComposeSelectContext context = ComposeSelectContext.build(this.dialect, visible);
             // 3. append composeQuery
             composeSelect.appendSQL(context);
             // 4. append part query ,eg: order by ,limit
@@ -59,7 +59,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             //1. assert standardSubQuery legal
             CriteriaCounselor.assertStandardSelect(standardSelect);
             // 2. create standard select context
-            SelectContext context = SelectContextImpl.build(this.dialect, visible, standardSelect);
+            SelectContext context = SelectContextImpl.build(standardSelect,this.dialect, visible);
             // 3. parse standard select
             standardSelect(standardSelect, context);
             sqlWrapper = context.build();
@@ -69,7 +69,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             //1. assert specialSubQuery legal
             assertSpecialSelect(specialSelect);
             // 2. create special context
-            SelectContext context = SelectContextImpl.build(this.dialect, visible, specialSelect);
+            SelectContext context = SelectContextImpl.build(specialSelect,this.dialect, visible);
             // 3. parse special select
             specialSelect(specialSelect, context);
             sqlWrapper = context.build();

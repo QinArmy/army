@@ -18,6 +18,10 @@ public final class TableContext {
 
     public static final TableContext EMPTY = new TableContext();
 
+    public static final String PARENT_ALIAS_PREFIX = "p_of_";
+
+    public static final String CHILD_ALIAS_PREFIX = "c_of_";
+
     public static TableContext singleTable(InnerSingleDML singleTable, boolean parent, String primaryRouteSuffix) {
         TableMeta<?> tableMeta = singleTable.tableMeta();
         if (parent) {

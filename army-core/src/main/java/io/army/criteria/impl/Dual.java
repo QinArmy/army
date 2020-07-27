@@ -8,6 +8,7 @@ import io.army.struct.CodeEnum;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 final class Dual implements IDomain {
 
@@ -31,11 +32,6 @@ final class Dual implements IDomain {
         @Override
         public String toString() {
             return "DUAL";
-        }
-
-        @Override
-        public void appendSQL(SQLContext context) {
-            context.appendTable(this);
         }
 
         @Override
@@ -84,13 +80,8 @@ final class Dual implements IDomain {
         }
 
         @Override
-        public FieldMeta<Dual, ?> dataSourceRouteField() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public FieldMeta<Dual, ?> tableRouteField() {
-            throw new UnsupportedOperationException();
+        public List<FieldMeta<?, ?>> routeFieldList(boolean database) {
+           throw new UnsupportedOperationException();
         }
 
         @Override

@@ -1,7 +1,7 @@
 package io.army.sharding;
 
 
-public interface DataSourceRoute extends Route {
+public interface DatabaseRoute extends Route {
 
     int dataSourceCount();
 

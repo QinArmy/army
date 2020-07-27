@@ -5,10 +5,12 @@ import io.army.annotation.Table;
 import io.army.criteria.MetaException;
 import io.army.criteria.SQLContext;
 import io.army.domain.IDomain;
+import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.struct.CodeEnum;
 import io.army.util.Assert;
+import io.army.util.Pair;
 
 import java.util.Collection;
 import java.util.List;
@@ -152,6 +154,10 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     final FieldMeta<? super T, ?> discriminator;
 
+    private final List<FieldMeta<?,?>> databaseRouteFieldList;
+
+    private final List<FieldMeta<?,?>> tableRouteFieldList;
+
     @SuppressWarnings("unchecked")
     private DefaultTableMeta(@Nullable ParentTableMeta<? super T> parentTableMeta, Class<T> domainClass) {
         Assert.notNull(domainClass, "entityClass required");
@@ -176,15 +182,23 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             TableMetaUtils.FieldBean<T> fieldBean = TableMetaUtils.fieldMetaList(this, table);
             this.propNameToFieldMeta = fieldBean.getPropNameToFieldMeta();
             this.indexMetaList = fieldBean.getIndexMetaList();
-            this.discriminator = fieldBean.getDiscriminator();
 
+            if(parentTableMeta == null){
+                this.discriminator = fieldBean.getDiscriminator();
+            }else {
+                this.discriminator = parentTableMeta.discriminator();
+            }
+
+            Pair<List<FieldMeta<?,?>>,List<FieldMeta<?,?>>> routePair = TableMetaUtils.routeFieldList(
+                    this.propNameToFieldMeta);
+            this.databaseRouteFieldList = routePair.getFirst();
+            this.tableRouteFieldList = routePair.getSecond();
 
             this.discriminatorValue = TableMetaUtils.discriminatorValue(this.mappingMode, this);
 
             this.primaryField = (PrimaryFieldMeta<T, Object>) this.propNameToFieldMeta.get(TableMeta.ID);
             Assert.state(this.primaryField != null, () -> String.format(
                     "domain[%s] primary field meta debugSQL error.", domainClass.getName()));
-
             assertModeAndMetaMatch(this);
         } catch (ArmyRuntimeException e) {
             throw e;
@@ -230,16 +244,6 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         return discriminatorValue;
     }
 
-
-    @Override
-    public final FieldMeta<T, ?> dataSourceRouteField() {
-        return null;
-    }
-
-    @Override
-    public final FieldMeta<T, ?> tableRouteField() {
-        return null;
-    }
 
     @Override
     public List<IndexMeta<T>> indexCollection() {
@@ -335,8 +339,8 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     @Override
-    public final void appendSQL(SQLContext context) {
-        context.appendTable(this);
+    public final List<FieldMeta<?, ?>> routeFieldList(boolean database) {
+       return database ? this.databaseRouteFieldList : this.tableRouteFieldList;
     }
 
     @Override
@@ -383,12 +387,15 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             Assert.notNull(parentTableMeta, "parentTableMeta required");
         }
 
+        @NonNull
         @Override
         public final ParentTableMeta<? super T> parentMeta() {
             ParentTableMeta<? super T> meta = super.parentMeta();
             Assert.state(meta != null, "parentMeta is null,state error.");
             return meta;
         }
+
+
 
     }
 

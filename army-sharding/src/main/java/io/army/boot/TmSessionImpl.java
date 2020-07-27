@@ -19,7 +19,7 @@ import io.army.dialect.TransactionOption;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.sharding.DataSourceRoute;
+import io.army.sharding.DatabaseRoute;
 import io.army.sharding.RouteWrapper;
 import io.army.tx.TmTransaction;
 import io.army.tx.TransactionNotCloseException;
@@ -378,7 +378,7 @@ final class TmSessionImpl extends AbstractSyncApiSession implements TmSession {
         final int size = domainList.size();
 
         final boolean migrationData = insert.migrationData();
-        final DataSourceRoute route = this.sessionFactory.dataSourceRoute(tableMeta);
+        final DatabaseRoute route = this.sessionFactory.dataSourceRoute(tableMeta);
 
         final Map<Integer, Set<Integer>> domainIndexSetMap = new HashMap<>();
         for (int i = 0; i < size; i++) {
@@ -427,7 +427,7 @@ final class TmSessionImpl extends AbstractSyncApiSession implements TmSession {
      */
     private <V extends Number> Map<Integer, V> doBatchSingleDml(InnerBatchSingleDML dml, Class<V> valueType
             , final Visible visible) {
-        DataSourceRoute router = this.sessionFactory.dataSourceRoute(dml.tableMeta());
+        DatabaseRoute router = this.sessionFactory.dataSourceRoute(dml.tableMeta());
         Map<Integer, V> batchResultMap;
         // 1. try find route from non named param predicates
         batchResultMap = doBatchSingleDmlWithNonNamedPredicates(dml, router, valueType, visible);
@@ -459,7 +459,7 @@ final class TmSessionImpl extends AbstractSyncApiSession implements TmSession {
      * @see UpdateSQLExecutor#batchUpdate(InnerSession, SQLWrapper, Class, boolean)
      */
     private <V extends Number> Map<Integer, V> doBatchSingleDmlWithNonNamedPredicates(InnerBatchSingleDML dml
-            , DataSourceRoute route, Class<V> valueType, final Visible visible) {
+            , DatabaseRoute route, Class<V> valueType, final Visible visible) {
         //  try find route from non named param predicate
         Object routeKey = DatabaseRouteUtils.findRouteFromNonNamedPredicates(dml, true);
         Map<Integer, V> batchResultMap;
@@ -480,7 +480,7 @@ final class TmSessionImpl extends AbstractSyncApiSession implements TmSession {
      * @see UpdateSQLExecutor#batchUpdate(InnerSession, SQLWrapper, Class, boolean)
      */
     private <V extends Number> Map<Integer, V> doBatchSingleDmlWithNamedPredicate(InnerBatchSingleDML dml
-            , DataSourceRoute route, Class<V> valueType, final Visible visible) {
+            , DatabaseRoute route, Class<V> valueType, final Visible visible) {
         // try find route form named param predicate
         Map<Integer, Set<Integer>> routeIndexSetMap = DatabaseRouteUtils.findRouteFromNamedPredicates(dml, route, true);
 
@@ -505,8 +505,8 @@ final class TmSessionImpl extends AbstractSyncApiSession implements TmSession {
     /**
      * @return a unmodifiable map, key : index of {@linkplain InnerBatchSingleDML#namedParamList()}
      * ,value : batch update rows of named param.
-     * @see #doBatchSingleDmlWithNamedPredicate(InnerBatchSingleDML, DataSourceRoute, Class, Visible)
-     * @see #doBatchSingleDmlWithNonNamedPredicates(InnerBatchSingleDML, DataSourceRoute, Class, Visible)
+     * @see #doBatchSingleDmlWithNamedPredicate(InnerBatchSingleDML, DatabaseRoute, Class, Visible)
+     * @see #doBatchSingleDmlWithNonNamedPredicates(InnerBatchSingleDML, DatabaseRoute, Class, Visible)
      * @see #doBatchSingleDml(InnerBatchSingleDML, Class, Visible)
      * @see UpdateSQLExecutor#batchUpdate(InnerSession, SQLWrapper, Class, boolean)
      */

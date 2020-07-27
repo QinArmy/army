@@ -45,7 +45,7 @@ public final class YesNoType extends AbstractMappingType {
         } else {
             text = IDomain.N;
         }
-        return StringUtils.quote(text);
+        return "'" + text + "'";
     }
 
     @Override

@@ -2,6 +2,7 @@ package io.army.dialect;
 
 import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
+import io.army.ShardingMode;
 import io.army.UnKnownTypeException;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLS;
@@ -185,6 +186,12 @@ public abstract class DialectUtils {
             }
         }
         return Collections.unmodifiableList(selectionList);
+    }
+
+    static void assertShardingMode(Dialect dialect,@Nullable Set<Integer> domainIndexSet){
+        if(domainIndexSet != null && dialect.sessionFactory().shardingMode() == ShardingMode.NO_SHARDING){
+            throw new IllegalArgumentException("domainIndexSet must be null in NO_SHARDING mode.");
+        }
     }
 
     @Nullable

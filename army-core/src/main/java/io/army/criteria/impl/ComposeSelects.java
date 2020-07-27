@@ -74,18 +74,6 @@ abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements
         return this;
     }
 
-    @Override
-    public final LimitClause<C> ifOrderBy(Predicate<C> test, SortPart sortPart) {
-        doOrderBy(test, sortPart);
-        return this;
-    }
-
-    @Override
-    public final LimitClause<C> ifOrderBy(Predicate<C> test, Function<C, List<SortPart>> function) {
-        doOrderBy(test, function);
-        return this;
-    }
-
 
     /*################################## blow LimitClause method ##################################*/
 
@@ -101,11 +89,6 @@ abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements
         return this;
     }
 
-    @Override
-    public final SelectAble limit(Function<C, Pair<Integer, Integer>> function) {
-        doLimit(function);
-        return this;
-    }
 
     @Override
     public final SelectAble ifLimit(Predicate<C> predicate, int rowCount) {
@@ -120,11 +103,10 @@ abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements
     }
 
     @Override
-    public final SelectAble ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
-        doLimit(predicate, function);
+    public final SelectAble ifLimit(Function<C, Pair<Integer, Integer>> function) {
+        doIfLimit(function);
         return this;
     }
-
 
     @Override
     public final Select asSelect() {
@@ -133,7 +115,7 @@ abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements
     }
 
     @Override
-    public void clear() {
+    public final void clear() {
 
     }
 

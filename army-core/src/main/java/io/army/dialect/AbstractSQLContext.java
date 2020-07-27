@@ -21,7 +21,7 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
 
     protected final List<ParamWrapper> paramList;
 
-    private final TableContextSQLContext parentContext;
+    protected final TableContextSQLContext parentContext;
 
     protected AbstractSQLContext(Dialect dialect, Visible visible) {
         this.dialect = dialect;
@@ -31,12 +31,12 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
         this.parentContext = null;
     }
 
-    protected AbstractSQLContext(TableContextSQLContext original) {
-        this.dialect = original.dialect();
-        this.visible = original.visible();
-        this.sqlBuilder = original.sqlBuilder();
-        this.paramList = original.paramList();
-        this.parentContext = original;
+    protected AbstractSQLContext(TableContextSQLContext parentContext) {
+        this.dialect = parentContext.dialect();
+        this.visible = parentContext.visible();
+        this.sqlBuilder = parentContext.sqlBuilder();
+        this.paramList = parentContext.paramList();
+        this.parentContext = parentContext;
     }
 
 
@@ -104,6 +104,12 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
     @Override
     public final TableContextSQLContext parentContext() {
         return this.parentContext;
+    }
+
+    @Nullable
+    @Override
+    public final   TableContext parentTableContext() {
+        return this.parentContext == null ? null :  this.parentContext.tableContext();
     }
 
     /*################################## blow protected final method ##################################*/

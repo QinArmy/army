@@ -417,7 +417,7 @@ abstract class AbstractSession extends AbstractGenericSyncApiSession implements 
             throw new ReadOnlySessionException("current session/session transaction is read only.");
         }
         //1. parse update sql
-        SQLWrapper sqlWrapper = this.dialect.simpleUpdate(update, visible);
+        SQLWrapper sqlWrapper = this.dialect.update(update, visible);
         if (sqlWrapper instanceof ChildSQLWrapper
                 || sqlWrapper instanceof ChildBatchSQLWrapper) {
             // 2. assert child update
@@ -431,7 +431,7 @@ abstract class AbstractSession extends AbstractGenericSyncApiSession implements 
             throw new ReadOnlySessionException("current session/session transaction is read only.");
         }
         //1. parse update sql
-        SQLWrapper sqlWrapper = this.dialect.simpleDelete(delete, visible);
+        SQLWrapper sqlWrapper = this.dialect.delete(delete, visible);
         if (sqlWrapper instanceof ChildSQLWrapper
                 || sqlWrapper instanceof ChildBatchSQLWrapper) {
             // 2. assert child update

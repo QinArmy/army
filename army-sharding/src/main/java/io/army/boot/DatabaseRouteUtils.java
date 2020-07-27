@@ -13,7 +13,7 @@ import io.army.criteria.impl.inner.TableWrapper;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.sharding.DataSourceRoute;
+import io.army.sharding.DatabaseRoute;
 import io.army.sharding.RouteUtils;
 import io.army.sharding.RouteWrapper;
 
@@ -78,7 +78,7 @@ abstract class DatabaseRouteUtils extends RouteUtils {
 
 
     static Map<Integer, Set<Integer>> findRouteFromNamedPredicates(InnerBatchSingleDML dml
-            , DataSourceRoute router, final boolean dataSource) {
+            , DatabaseRoute router, final boolean dataSource) {
         final TableMeta<?> tableMeta = dml.tableMeta();
         final List<Object> namedParamList = dml.namedParamList();
         final List<FieldMeta<?, ?>> routeFieldList = tableMeta.routeFieldList(dataSource);

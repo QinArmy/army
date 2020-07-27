@@ -2,6 +2,7 @@ package io.army.dialect;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.impl.inner.InnerSubQuery;
+import io.army.lang.NonNull;
 import io.army.meta.FieldMeta;
 
 
@@ -13,28 +14,23 @@ class SubQueryContextImpl extends AbstractQueryStatementContext implements SubQu
         return new SubQueryContextImpl(parentContext, tableContext, subQuery);
     }
 
-    protected final TableContext parentTableContext;
-
     private SubQueryContextImpl(TableContextSQLContext parentContext, TableContext tableContext
             , InnerSubQuery subQuery) {
         super(parentContext, tableContext, subQuery);
-        this.parentTableContext = parentContext.tableContext();
-    }
-
-
-    @Override
-    public final TableContext parentTableContext() {
-        return this.parentTableContext;
     }
 
     @Override
     protected final String findTableAliasFromParent(FieldMeta<?, ?> fieldMeta) throws CriteriaException {
-        Integer count = this.parentTableContext.tableCountMap.get(fieldMeta.tableMeta());
+        TableContext parentTableContext = this.parentTableContext();
+        if(parentTableContext == null){
+            throw new IllegalStateException(String.format("SubQuery[%s] no parent table context.",this.query));
+        }
+        Integer count = parentTableContext.tableCountMap.get(fieldMeta.tableMeta());
         String tableAlias;
         if (count == null) {
             throw DialectUtils.createUnKnownFieldException(fieldMeta);
         } else if (count.equals(1)) {
-            tableAlias = this.parentTableContext.tableAliasMap.get(fieldMeta.tableMeta());
+            tableAlias = parentTableContext.tableAliasMap.get(fieldMeta.tableMeta());
         } else {
             throw DialectUtils.createNoLogicalTableException(fieldMeta);
         }

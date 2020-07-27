@@ -141,7 +141,6 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     private final boolean codec;
 
-
     @SuppressWarnings("unchecked")
     private DefaultFieldMeta(final @NonNull TableMeta<T> table, final @NonNull Field field, final boolean unique,
                              final boolean index)

@@ -1,6 +1,7 @@
 package io.army.dialect;
 
 
+import io.army.GenericRmSessionFactory;
 import io.army.GenericSessionFactory;
 import io.army.meta.mapping.MappingMeta;
 
@@ -35,7 +36,7 @@ public abstract class AbstractSQL implements SQL {
     }
 
     @Override
-    public final GenericSessionFactory sessionFactory() {
+    public final GenericRmSessionFactory sessionFactory() {
         return this.dialect.sessionFactory();
     }
 

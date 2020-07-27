@@ -8,10 +8,9 @@ import io.army.boot.DomainValuesGenerator;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLS;
 import io.army.criteria.impl.inner.InnerStandardBatchInsert;
-import io.army.criteria.impl.inner.InnerStandardUpdate;
+import io.army.criteria.impl.inner.InnerUpdate;
 import io.army.generator.FieldGenerator;
 import io.army.generator.PreFieldGenerator;
-import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.struct.CodeEnum;
 import io.army.util.Assert;
@@ -130,12 +129,12 @@ abstract class DMLUtils {
         return Collections.unmodifiableList(parentPredicates);
     }
 
-    static void assertUpdateSetAndWhereClause(InnerStandardUpdate update) {
-        List<FieldMeta<?, ?>> targetFieldList = update.targetFieldList();
+    static void assertUpdateSetAndWhereClause(InnerUpdate update) {
+        List<? extends SetTargetPart> targetFieldList = update.targetFieldList();
         if (CollectionUtils.isEmpty(targetFieldList)) {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "update must have set clause.");
         }
-        List<Expression<?>> valueExpList = update.valueExpList();
+        List<? extends SetValuePart> valueExpList = update.valueExpList();
         if (CollectionUtils.isEmpty(valueExpList)) {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "update must have set clause.");
         }
@@ -152,7 +151,8 @@ abstract class DMLUtils {
     static void standardSimpleUpdateSetClause(UpdateContext context, TableMeta<?> tableMeta, String tableAlias
             , List<FieldMeta<?, ?>> fieldMetaList, List<Expression<?>> valueExpList) {
         if (tableMeta.immutable()) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "TableMeta[%s] is immutable.", tableAlias);
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "TableMeta[%s] alias[%s] is immutable."
+                    , tableMeta,tableAlias);
         }
         Assert.isTrue(fieldMetaList.size() == valueExpList.size()
                 , "field list ifAnd value exp list size not match");
@@ -201,12 +201,10 @@ abstract class DMLUtils {
 
         builder.append(" =");
         context.appendField(tableAlias, versionField);
-        builder.append(" + 1 ");
+        builder.append(" + 1 ,");
 
         //2. updateTime field
         final FieldMeta<?, ?> updateTimeField = tableMeta.getField(TableMeta.UPDATE_TIME);
-
-        builder.append(",");
         // updateTime field self-describe
         context.appendField(tableAlias, updateTimeField);
         builder.append(" =");
@@ -231,8 +229,8 @@ abstract class DMLUtils {
 
     static void assertSetClauseField(FieldMeta<?, ?> fieldMeta) {
         if (!fieldMeta.updatable()) {
-            throw new NonUpdateAbleException("domain[%s] field[%s] is non-updatable."
-                    , fieldMeta.tableMeta().javaType(), fieldMeta.propertyName());
+            throw new NonUpdateAbleException("FieldMeta[%s] is non-updatable."
+                    , fieldMeta);
         }
         if (TableMeta.VERSION.equals(fieldMeta.propertyName())
                 || TableMeta.UPDATE_TIME.equals(fieldMeta.propertyName())) {
@@ -286,8 +284,9 @@ abstract class DMLUtils {
         return Collections.unmodifiableSet(fieldMetaSet);
     }
 
-    static void createValueInsertForSimple(TableMeta<?> physicalTable, Collection<FieldMeta<?, ?>> fieldMetas
-            , ReadonlyWrapper domainWrapper, StandardValueInsertContext context) {
+    static void createValueInsertForSimple(TableMeta<?> physicalTable, TableMeta<?> logicalTable
+            , Collection<FieldMeta<?, ?>> fieldMetas, ReadonlyWrapper domainWrapper
+            , StandardValueInsertContext context) {
 
         final GenericSessionFactory sessionFactory = context.dialect.sessionFactory();
         final StringBuilder fieldBuilder = context.fieldsBuilder().append("INSERT INTO");
@@ -317,7 +316,7 @@ abstract class DMLUtils {
             if (value == null) {
                 context.appendParam(ParamWrapper.build(fieldMeta.mappingMeta(), null));
             } else if (isConstant(fieldMeta)) {
-                valueBuilder.append(fieldMeta.mappingMeta().nonNullTextValue(value));
+                valueBuilder.append(createConstant(fieldMeta, logicalTable));
             } else {
                 valueBuilder.append("?");
                 if (sessionFactory.fieldCodec(fieldMeta) != null) {
@@ -336,13 +335,14 @@ abstract class DMLUtils {
     }
 
 
-    static void createStandardBatchInsertForSimple(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> fieldMetas
+    static void createStandardBatchInsertForSimple(TableMeta<?> physicalTable, TableMeta<?> logicalTable
+            , Collection<FieldMeta<?, ?>> fieldMetas
             , StandardValueInsertContext context) {
 
         StringBuilder fieldBuilder = context.fieldsBuilder()
                 .append("INSERT INTO");
         // append table name
-        context.appendTable(tableMeta, null);
+        context.appendTable(physicalTable, null);
         fieldBuilder.append(" ( ");
 
         /// VALUE clause
@@ -363,7 +363,7 @@ abstract class DMLUtils {
             context.appendField(fieldMeta);
 
             if (isConstant(fieldMeta)) {
-                valueBuilder.append(createConstant(fieldMeta, tableMeta));
+                valueBuilder.append(createConstant(fieldMeta, logicalTable));
             } else {
                 valueBuilder.append("?");
                 context.appendParam(new FieldParamWrapperImpl(fieldMeta));
@@ -408,10 +408,10 @@ abstract class DMLUtils {
             // 2. create paramWrapperList
             if (parentPlaceholderList != null) {
                 // create paramWrapperList for parent
-                parentParamGroupList.add(createBatchInsertParamList(wrapper, sessionFactory, parentPlaceholderList));
+                parentParamGroupList.add(createBatchInsertParamList(wrapper, parentPlaceholderList));
             }
             //3. create paramWrapperList for child
-            childParamGroupList.add(createBatchInsertParamList(wrapper, sessionFactory, childPlaceholderList));
+            childParamGroupList.add(createBatchInsertParamList(wrapper, childPlaceholderList));
         }
 
         // 4. create BatchSimpleSQLWrapper
@@ -452,75 +452,52 @@ abstract class DMLUtils {
         return value;
     }
 
-    static SQLWrapper createBatchSQLWrapper(List<ReadonlyWrapper> namedParamList, @Nullable Set<Integer> namedParamIexSet
+    static SQLWrapper createBatchSQLWrapper(List<? extends ReadonlyWrapper> namedParamList
             , final SQLWrapper sqlWrapper) {
 
-        int groupMapCapacity;
-        if (namedParamIexSet == null) {
-            groupMapCapacity = (int) (namedParamList.size() / 0.75F);
-        } else {
-            groupMapCapacity = (int) (namedParamIexSet.size() / 0.75F);
-        }
-
-        Map<Integer, List<ParamWrapper>> parentParamGroupMap, childParamGroupMap = new HashMap<>(groupMapCapacity);
+        List<List<ParamWrapper>> parentParamGroupList, childParamGroupList = new ArrayList<>(namedParamList.size());
         SimpleSQLWrapper parentWrapper, childWrapper;
         // extract parentWrapper,childWrapper
+        List<ParamWrapper> parentPlaceholderList;
         if (sqlWrapper instanceof ChildSQLWrapper) {
             ChildSQLWrapper childSQLWrapper = (ChildSQLWrapper) sqlWrapper;
             parentWrapper = childSQLWrapper.parentWrapper();
+            parentPlaceholderList = parentWrapper.paramList();
             childWrapper = childSQLWrapper.childWrapper();
-            parentParamGroupMap = new HashMap<>(groupMapCapacity);
+            parentParamGroupList = new ArrayList<>(namedParamList.size());
         } else if (sqlWrapper instanceof SimpleSQLWrapper) {
             parentWrapper = null;
-            parentParamGroupMap = Collections.emptyMap();
+            parentPlaceholderList = Collections.emptyList();
+            parentParamGroupList = Collections.emptyList();
             childWrapper = (SimpleSQLWrapper) sqlWrapper;
         } else {
             throw new IllegalArgumentException(String.format("SQLWrapper[%s] supported", sqlWrapper));
         }
 
         final List<ParamWrapper> childPlaceholderList = childWrapper.paramList();
-        if (namedParamIexSet == null) {
-            final int size = namedParamList.size();
-            for (int i = 0; i < size; i++) {
-                // 1. create access object
-                ReadonlyWrapper readonlyWrapper = namedParamList.get(i);
-                // 2. create param group list
-                if (sqlWrapper instanceof ChildSQLWrapper) {
-                    parentParamGroupMap.put(i
-                            // create paramWrapperList for parent
-                            , createBatchNamedParamList(readonlyWrapper, parentWrapper.paramList())
-                    );
-                }
-                childParamGroupMap.put(i
-                        // create paramWrapperList for child
-                        , createBatchNamedParamList(readonlyWrapper, childPlaceholderList)
+        final int size = namedParamList.size();
+        for (ReadonlyWrapper readonlyWrapper : namedParamList) {
+            // 1. create access object
+            // 2. create param group list
+            if (sqlWrapper instanceof ChildSQLWrapper) {
+                parentParamGroupList.add(
+                        // create paramWrapperList for parent
+                        createBatchNamedParamList(readonlyWrapper, parentPlaceholderList)
                 );
             }
-        } else {
-            for (Integer namedParamIndex : namedParamIexSet) {
-                // 1. create access object
-                ReadonlyWrapper readonlyWrapper = namedParamList.get(namedParamIndex);
-                // 2. create param group list
-                if (sqlWrapper instanceof ChildSQLWrapper) {
-                    parentParamGroupMap.put(namedParamIndex
-                            // create paramWrapperList for parent
-                            , createBatchNamedParamList(readonlyWrapper, parentWrapper.paramList())
-                    );
-                }
-                childParamGroupMap.put(namedParamIndex
-                        // create paramWrapperList for child
-                        , createBatchNamedParamList(readonlyWrapper, childPlaceholderList)
-                );
-            }
+            childParamGroupList.add(
+                    // create paramWrapperList for child
+                    createBatchNamedParamList(readonlyWrapper, childPlaceholderList)
+            );
         }
 
         // 3. create BatchSimpleSQLWrapper
         BatchSimpleSQLWrapper childBatchWrapper = BatchSimpleSQLWrapper.build(childWrapper.sql()
-                , childParamGroupMap, childWrapper.hasVersion());
+                , childParamGroupList, childWrapper.hasVersion());
         SQLWrapper batchSQLWrapper;
         if (sqlWrapper instanceof ChildSQLWrapper) {
             BatchSimpleSQLWrapper parentBatchWrapper = BatchSimpleSQLWrapper.build(
-                    parentWrapper.sql(), parentParamGroupMap, parentWrapper.hasVersion());
+                    parentWrapper.sql(), parentParamGroupList, parentWrapper.hasVersion());
             batchSQLWrapper = ChildBatchSQLWrapper.build(parentBatchWrapper, childBatchWrapper);
         } else {
             batchSQLWrapper = childBatchWrapper;
@@ -532,6 +509,9 @@ abstract class DMLUtils {
 
     /*################################## blow private method ##################################*/
 
+    /**
+     * @return a unmodifiable list
+     */
     private static List<ParamWrapper> createBatchNamedParamList(ReadonlyWrapper readonlyWrapper
             , List<ParamWrapper> placeHolder) {
 
@@ -547,21 +527,18 @@ abstract class DMLUtils {
         return Collections.unmodifiableList(paramWrapperList);
     }
 
+    /**
+     * @return a unmodifiable list
+     */
     private static List<ParamWrapper> createBatchInsertParamList(ReadonlyWrapper beanWrapper
-            , GenericSessionFactory sessionFactory, List<ParamWrapper> placeHolderList) {
+            , List<ParamWrapper> placeHolderList) {
 
         List<ParamWrapper> paramWrapperList = new ArrayList<>(placeHolderList.size());
         for (ParamWrapper placeHolder : placeHolderList) {
             if (placeHolder instanceof FieldParamWrapper) {
                 FieldMeta<?, ?> fieldMeta = ((FieldParamWrapper) placeHolder).paramMeta();
-                ParamWrapper actualParamWrapper;
                 Object value = beanWrapper.getPropertyValue(fieldMeta.propertyName());
-                if (sessionFactory.fieldCodec(fieldMeta) != null) {
-                    actualParamWrapper = ParamWrapper.build(fieldMeta, value);
-                } else {
-                    actualParamWrapper = ParamWrapper.build(fieldMeta.mappingMeta(), value);
-                }
-                paramWrapperList.add(actualParamWrapper);
+                paramWrapperList.add(ParamWrapper.build(fieldMeta, value));
             } else {
                 paramWrapperList.add(placeHolder);
             }

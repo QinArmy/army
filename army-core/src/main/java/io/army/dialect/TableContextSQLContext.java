@@ -34,7 +34,7 @@ public interface TableContextSQLContext extends SQLContext {
 
     String primaryRouteSuffix();
 
-    void appendParentOf(ChildTableMeta<?> tableMeta);
+    void appendParentOf(ChildTableMeta<?> childMeta,String childAlias);
 
     List<ParamWrapper> paramList();
 

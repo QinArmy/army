@@ -39,6 +39,8 @@ abstract class AbstractComposeQuery<C> implements PartQuery, SelfDescribed
     }
 
 
+
+
     final void doOrderBy(SortPart sortPart) {
         if (this.orderPartList == null) {
             this.orderPartList = new ArrayList<>(1);
@@ -78,17 +80,19 @@ abstract class AbstractComposeQuery<C> implements PartQuery, SelfDescribed
         this.rowCount = rowCount;
     }
 
-    final void doLimit(Function<C, Pair<Integer, Integer>> function) {
+    final void doIfLimit(Function<C, Pair<Integer, Integer>> function) {
 
         Pair<Integer, Integer> pair = function.apply(this.criteria);
-        int offset = -1, rowCount = -1;
-        if (pair.getFirst() != null) {
-            offset = pair.getFirst();
+        if(pair != null){
+            int offset = -1, rowCount = -1;
+            if (pair.getFirst() != null) {
+                offset = pair.getFirst();
+            }
+            if (pair.getSecond() != null) {
+                rowCount = pair.getSecond();
+            }
+            doLimit(offset, rowCount);
         }
-        if (pair.getSecond() != null) {
-            rowCount = pair.getSecond();
-        }
-        doLimit(offset, rowCount);
     }
 
     final void doLimit(Predicate<C> test, int rowCount) {
@@ -100,12 +104,6 @@ abstract class AbstractComposeQuery<C> implements PartQuery, SelfDescribed
     final void doLimit(Predicate<C> test, int offset, int rowCount) {
         if (test.test(this.criteria)) {
             doLimit(offset, rowCount);
-        }
-    }
-
-    final void doLimit(Predicate<C> test, Function<C, Pair<Integer, Integer>> function) {
-        if (test.test(this.criteria)) {
-            doLimit(function);
         }
     }
 

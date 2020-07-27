@@ -16,12 +16,8 @@ public interface DML extends SQL {
 
     SQLWrapper subQueryInsert(Insert insert, Visible visible);
 
-    SQLWrapper simpleUpdate(Update update, Visible visible);
+    SQLWrapper update(Update update, Visible visible);
 
-    List<SQLWrapper> batchUpdate(Update update, @Nullable Set<Integer> namedParamIexSet, Visible visible);
-
-    SQLWrapper simpleDelete(Delete delete, Visible visible);
-
-    List<SQLWrapper> batchDelete(Delete delete, @Nullable Set<Integer> namedParamIexSet, Visible visible);
+    SQLWrapper delete(Delete delete, Visible visible);
 
 }

@@ -2,6 +2,7 @@ package io.army.dialect;
 
 import io.army.criteria.SpecialPredicate;
 import io.army.criteria.Visible;
+import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -81,6 +82,21 @@ final class ComposeSelectContext implements SelectContext {
     }
 
     @Override
+    public final TableContext primaryTableContext() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public TableContext parentTableContext() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String primaryRouteSuffix() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void appendFieldPredicate(SpecialPredicate predicate) {
         throw new UnsupportedOperationException();
     }
@@ -91,12 +107,12 @@ final class ComposeSelectContext implements SelectContext {
     }
 
     @Override
-    public void appendTable(TableMeta<?> tableMeta) {
+    public void appendTable(TableMeta<?> tableMeta,@Nullable String tableAlias) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void appendParentOf(ChildTableMeta<?> childTableMeta) {
+    public void appendParentOf(ChildTableMeta<?> childTableMeta,String childAlis) {
         throw new UnsupportedOperationException();
     }
 

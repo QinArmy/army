@@ -64,5 +64,7 @@ public interface GenericSessionFactory {
 
     boolean formatSQL();
 
+    boolean allowSpanSharding();
+
     TableRoute tableRoute(TableMeta<?> tableMeta);
 }

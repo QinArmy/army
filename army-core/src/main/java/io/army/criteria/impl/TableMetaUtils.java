@@ -7,11 +7,12 @@ import io.army.domain.IDomain;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.*;
+import io.army.sharding.DatabaseRoute;
+import io.army.sharding.Route;
+import io.army.sharding.RouteType;
+import io.army.sharding.TableRoute;
 import io.army.struct.CodeEnum;
-import io.army.util.AnnotationUtils;
-import io.army.util.Assert;
-import io.army.util.ReflectionUtils;
-import io.army.util.StringUtils;
+import io.army.util.*;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -206,6 +207,11 @@ abstract class TableMetaUtils {
         return columnName;
     }
 
+    static <T extends IDomain> Pair<List<FieldMeta<?, ?>>, List<FieldMeta<?, ?>>> routeFieldList(
+            TableMeta<?> tableMeta, Collection<FieldMeta<T, ?>> fieldMetas) {
+
+        return null;
+    }
 
     /*################################ private method ####################################*/
 

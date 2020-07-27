@@ -1,5 +1,6 @@
 package io.army.dialect;
 
+import io.army.GenericRmSessionFactory;
 import io.army.GenericSessionFactory;
 import io.army.meta.mapping.MappingMeta;
 
@@ -15,7 +16,7 @@ public interface SQL {
 
     boolean supportZone();
 
-    GenericSessionFactory sessionFactory();
+    GenericRmSessionFactory sessionFactory();
 
     String mapping(MappingMeta mappingType);
 

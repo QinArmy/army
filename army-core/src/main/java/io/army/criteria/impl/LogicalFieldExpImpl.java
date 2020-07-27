@@ -40,7 +40,6 @@ final class LogicalFieldExpImpl<T extends IDomain, F> extends AbstractExpression
         return new FieldSelectionImpl<>(this, alias);
     }
 
-
     @Override
     public String beforeAs() {
         return tableAlias + "." + fieldMeta.fieldName();
@@ -57,33 +56,8 @@ final class LogicalFieldExpImpl<T extends IDomain, F> extends AbstractExpression
     }
 
     @Override
-    public boolean primary() {
-        return fieldMeta.primary();
-    }
-
-    @Override
-    public boolean unique() {
-        return fieldMeta.unique();
-    }
-
-    @Override
-    public boolean index() {
-        return fieldMeta.index();
-    }
-
-    @Override
-    public boolean nullable() {
-        return fieldMeta.nullable();
-    }
-
-    @Override
     public TableMeta<T> tableMeta() {
         return fieldMeta.tableMeta();
-    }
-
-    @Override
-    public GeneratorMeta generator() {
-        return fieldMeta.generator();
     }
 
     @Override
@@ -97,41 +71,6 @@ final class LogicalFieldExpImpl<T extends IDomain, F> extends AbstractExpression
     }
 
     @Override
-    public boolean insertalbe() {
-        return fieldMeta.insertalbe();
-    }
-
-    @Override
-    public boolean updatable() {
-        return fieldMeta.updatable();
-    }
-
-    @Override
-    public String comment() {
-        return fieldMeta.comment();
-    }
-
-    @Override
-    public String defaultValue() {
-        return fieldMeta.defaultValue();
-    }
-
-    @Override
-    public int precision() {
-        return fieldMeta.precision();
-    }
-
-    @Override
-    public int scale() {
-        return fieldMeta.scale();
-    }
-
-    @Override
-    public String fieldName() {
-        return fieldMeta.fieldName();
-    }
-
-    @Override
     public String propertyName() {
         return fieldMeta.propertyName();
     }
@@ -141,10 +80,6 @@ final class LogicalFieldExpImpl<T extends IDomain, F> extends AbstractExpression
         return fieldMeta.mappingMeta();
     }
 
-    @Override
-    public boolean codec() {
-        return this.fieldMeta.codec();
-    }
 
     @Override
     public final boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {

@@ -3,6 +3,7 @@ package io.army.dialect;
 
 import io.army.GenericRmSessionFactory;
 import io.army.GenericSessionFactory;
+import io.army.UnKnownTypeException;
 import io.army.criteria.*;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -10,6 +11,7 @@ import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
+import io.army.wrapper.ChildSQLWrapper;
 import io.army.wrapper.SQLWrapper;
 import io.army.wrapper.SimpleSQLWrapper;
 
@@ -74,6 +76,21 @@ public abstract class AbstractDialect implements InnerDialect {
         return this.keywords.contains(text.toUpperCase());
     }
 
+    @Override
+    public final String showSQL(SQLWrapper sqlWrapper) {
+        String sql;
+        if (sqlWrapper instanceof SimpleSQLWrapper) {
+            sql = ((SimpleSQLWrapper) sqlWrapper).sql();
+        } else if (sqlWrapper instanceof ChildSQLWrapper) {
+            ChildSQLWrapper childSQLWrapper = (ChildSQLWrapper) sqlWrapper;
+            sql = childSQLWrapper.parentWrapper().sql();
+            sql += "\n";
+            sql += childSQLWrapper.childWrapper().sql();
+        } else {
+            throw new UnKnownTypeException(sqlWrapper);
+        }
+        return sql;
+    }
 
     @Override
     public final ZoneId zoneId() {
@@ -81,7 +98,7 @@ public abstract class AbstractDialect implements InnerDialect {
     }
 
     @Override
-    public final GenericSessionFactory sessionFactory() {
+    public final GenericRmSessionFactory sessionFactory() {
         return sessionFactory;
     }
 
@@ -148,23 +165,13 @@ public abstract class AbstractDialect implements InnerDialect {
     }
 
     @Override
-    public final SQLWrapper simpleUpdate(Update update, Visible visible) {
-        return this.dml.simpleUpdate(update, visible);
+    public final SQLWrapper update(Update update, Visible visible) {
+        return this.dml.update(update, visible);
     }
 
     @Override
-    public final List<SQLWrapper> batchUpdate(Update update, @Nullable Set<Integer> namedParamIexSet, Visible visible) {
-        return this.dml.batchUpdate(update, namedParamIexSet, visible);
-    }
-
-    @Override
-    public final SQLWrapper simpleDelete(Delete delete, Visible visible) {
-        return this.dml.simpleDelete(delete, visible);
-    }
-
-    @Override
-    public final List<SQLWrapper> batchDelete(Delete delete, @Nullable Set<Integer> namedParamIexSet, Visible visible) {
-        return this.dml.batchDelete(delete, namedParamIexSet, visible);
+    public final SQLWrapper delete(Delete delete, Visible visible) {
+        return this.dml.delete(delete, visible);
     }
 
     @Override

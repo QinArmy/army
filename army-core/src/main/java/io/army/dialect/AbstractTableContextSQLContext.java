@@ -2,10 +2,12 @@ package io.army.dialect;
 
 import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
+import io.army.GenericRmSessionFactory;
 import io.army.ShardingMode;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.NotFoundRouteException;
 import io.army.criteria.Visible;
+import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
@@ -13,6 +15,11 @@ import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
 import io.army.util.StringUtils;
 
+/**
+ * <p>
+ * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
+ * </p>
+ */
 public abstract class AbstractTableContextSQLContext extends AbstractSQLContext implements TableContextSQLContext {
 
     protected final TableContext primaryTableContext;
@@ -21,24 +28,41 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
 
     protected final ShardingMode shardingMode;
 
+    protected final String primaryRouteSuffix;
+
     protected final boolean childContext;
+
+    protected final boolean  allowSpanSharding;
 
     protected AbstractTableContextSQLContext(Dialect dialect, Visible visible, TableContext tableContext) {
         super(dialect, visible);
+        GenericRmSessionFactory sessionFactory = dialect.sessionFactory();
+
         this.shardingMode = dialect.sessionFactory().shardingMode();
         this.tableContext = tableContext;
         this.primaryTableContext = tableContext;
-        assertPrimaryRouteSuffix();
         this.childContext = false;
+
+        this.allowSpanSharding = sessionFactory.allowSpanSharding();
+        this.primaryRouteSuffix = tableContext.primaryRouteSuffix;
+        assertPrimaryRouteSuffix();
     }
 
-    protected AbstractTableContextSQLContext(TableContextSQLContext original, TableContext tableContext) {
-        super(original);
+    protected AbstractTableContextSQLContext(TableContextSQLContext parentContext, TableContext tableContext) {
+        super(parentContext);
+        GenericRmSessionFactory sessionFactory = dialect.sessionFactory();
+
         this.shardingMode = dialect.sessionFactory().shardingMode();
         this.tableContext = tableContext;
-        this.primaryTableContext = original.primaryTableContext();
-        assertPrimaryRouteSuffix();
+        if(parentContext instanceof ComposeSelectContext){
+            this.primaryTableContext = this.tableContext;
+            this.primaryRouteSuffix = this.tableContext.primaryRouteSuffix;
+        }else {
+            this.primaryTableContext = parentContext.primaryTableContext();
+            this.primaryRouteSuffix = parentContext.primaryRouteSuffix();
+        }
         this.childContext = true;
+        this.allowSpanSharding = sessionFactory.allowSpanSharding();
     }
 
 
@@ -54,8 +78,13 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
 
 
     @Override
-    public final void appendParentOf(ChildTableMeta<?> tableMeta) {
-
+    public final void appendParentOf(ChildTableMeta<?> childMeta,String childAlias) {
+        validateTableAndAlias(childMeta,childAlias);
+        this.sqlBuilder.append(" ")
+                .append(this.dialect.quoteIfNeed(childMeta.parentMeta().tableName()));
+        if(this.shardingMode != ShardingMode.NO_SHARDING){
+            this.sqlBuilder.append(obtainRouteSuffix(childMeta,childAlias));
+        }
     }
 
     @Override
@@ -77,10 +106,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         return this.tableContext;
     }
 
-    @Override
-    public TableContext parentTableContext() {
-        return null;
-    }
+
 
     @Override
     public final void appendText(String textValue) {
@@ -100,7 +126,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
 
     @Override
     public final String primaryRouteSuffix() {
-        return this.tableContext.primaryRouteSuffix;
+        return this.primaryRouteSuffix;
     }
 
     protected final String findTableAlias(FieldMeta<?, ?> fieldMeta) throws CriteriaException {
@@ -120,26 +146,36 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         return tableAlias;
     }
 
+    /**
+     * <ol>
+     *     <li>append table name to builder</li>
+     *     <li>append route suffix to builder if need</li>
+     *     <li>append table alias to builder if need</li>
+     * </ol>
+     * <p>
+     * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
+     * </p>
+     */
     protected final void doAppendTable(TableMeta<?> tableMeta, @Nullable String tableAlias) {
         final Dialect dialect = this.dialect;
         StringBuilder builder = obtainTablePartBuilder();
+        //1. append table name
         builder.append(" ")
                 .append(dialect.quoteIfNeed(tableMeta.tableName()));
 
         if (this.shardingMode != ShardingMode.NO_SHARDING
                 && !tableMeta.routeFieldList(false).isEmpty()) {
-            String tableSuffix = parseTableSuffix(tableMeta, tableAlias);
-            if (!StringUtils.hasText(tableSuffix)) {
-                throw new ArmyRuntimeException(ErrorCode.CRITERIA_ERROR, "parseTableSuffix method return error.");
-            }
-            builder.append(tableSuffix);
+            //2. append table route suffix
+            builder.append(obtainRouteSuffix(tableMeta,tableAlias));
         }
 
         if (canAppendTableAlias(tableMeta)) {
+            //3. append table alias
             if (tableAlias == null) {
                 throw new IllegalArgumentException(String.format(
                         "TableMeta[%s] table alias required int SQLContext[%s].", tableMeta, this));
             }
+            validateTableAndAlias(tableMeta,tableAlias);
             builder.append(" ");
             if (dialect.tableAliasAfterAs()) {
                 builder.append("AS ");
@@ -150,7 +186,13 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
     }
 
     protected boolean canAppendTableAlias(TableMeta<?> tableMeta) {
-        return true;
+        boolean can ;
+        if(this instanceof DeleteContext ){
+            can =  this.dialect.singleDeleteHasTableAlias();
+        }else {
+            can = true;
+        }
+        return can;
     }
 
     protected void validateTableAndAlias(TableMeta<?> tableMeta, String tableAlias) {
@@ -168,10 +210,30 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
 
     /*################################## blow private method ##################################*/
 
+    private String obtainRouteSuffix(TableMeta<?> tableMeta, @Nullable String tableAlias){
+        String routeSuffix;
+        if(this.allowSpanSharding){
+            routeSuffix = parseTableSuffix(tableMeta, tableAlias);
+            if (!StringUtils.hasText(routeSuffix)) {
+                throw new ArmyRuntimeException(ErrorCode.CRITERIA_ERROR, "parseTableSuffix method return error.");
+            }
+        }else {
+            if(this instanceof SubQueryInsertContext  ){
+                SubQueryInsertContext.assertSupportRoute(this.dialect);
+            }
+            routeSuffix = this.primaryRouteSuffix();
+        }
+        return routeSuffix;
+    }
+
+
+
     private void assertPrimaryRouteSuffix() {
         if (this.shardingMode != ShardingMode.NO_SHARDING
-                && !StringUtils.hasText(this.primaryTableContext.primaryRouteSuffix)) {
-            throw new NotFoundRouteException("not found primary route.");
+                && (this.primaryRouteSuffix == null || !this.primaryRouteSuffix.startsWith("_"))) {
+            throw new NotFoundRouteException("not found legal primary route[%s].",this.primaryRouteSuffix);
         }
     }
+
+
 }

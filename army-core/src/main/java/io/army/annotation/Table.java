@@ -73,5 +73,4 @@ public @interface Table {
      * </p>
      */
     String charset() default "";
-
 }

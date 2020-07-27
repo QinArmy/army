@@ -2,7 +2,7 @@ package io.army.sharding;
 
 public enum RouteType {
 
-    DATA_SOURCE,
+    DATABASE,
     TABLE,
     BOTH
 }

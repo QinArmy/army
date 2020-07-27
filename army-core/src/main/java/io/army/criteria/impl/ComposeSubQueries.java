@@ -89,7 +89,7 @@ abstract class ComposeSubQueries<C> extends AbstractComposeQuery<C> implements
 
     @Override
     public final SubQueryAble ifLimit(Function<C, Pair<Integer, Integer>> function) {
-        doLimit(function);
+        doIfLimit(function);
         return this;
     }
 

@@ -10,7 +10,7 @@ import io.army.meta.PrimaryFieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 
-abstract class AbstractStandardDomainContext extends AbstractTableContextSQLContext {
+abstract class AbstractStandardDomainContext extends AbstractTableContextSQLContext implements SingleTableDMLContext {
 
     final TableMeta<?> primaryTable;
 
@@ -37,9 +37,14 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
     }
 
     @Override
+    public final String relationAlias() {
+        return this.relationAlias;
+    }
+
+    @Override
     protected final String parseTableSuffix(TableMeta<?> tableMeta, @Nullable String tableAlias) {
         if (tableMeta == this.primaryTable || tableMeta == this.relationTable) {
-            return this.tableContext.primaryRouteSuffix;
+            return this.primaryRouteSuffix();
         }
         throw DialectUtils.createUnKnownTableException(tableMeta);
     }

@@ -1,6 +1,7 @@
 package io.army.dialect.mysql;
 
 
+import io.army.GenericRmSessionFactory;
 import io.army.GenericSessionFactory;
 import io.army.UnKnownTypeException;
 import io.army.dialect.*;
@@ -18,7 +19,7 @@ import java.util.Set;
 class MySQL57Dialect extends AbstractDialect {
 
 
-    MySQL57Dialect(GenericSessionFactory sessionFactory) {
+    MySQL57Dialect(GenericRmSessionFactory sessionFactory) {
         super(sessionFactory);
 
     }
@@ -39,22 +40,6 @@ class MySQL57Dialect extends AbstractDialect {
     @Override
     public String mapping(MappingMeta mappingType) {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public String showSQL(SQLWrapper sqlWrapper) {
-        String sql;
-        if (sqlWrapper instanceof SimpleSQLWrapper) {
-            sql = ((SimpleSQLWrapper) sqlWrapper).sql();
-        } else if (sqlWrapper instanceof ChildSQLWrapper) {
-            ChildSQLWrapper childSQLWrapper = (ChildSQLWrapper) sqlWrapper;
-            sql = childSQLWrapper.parentWrapper().sql();
-            sql += "\n";
-            sql += childSQLWrapper.childWrapper().sql();
-        } else {
-            throw new UnKnownTypeException(sqlWrapper);
-        }
-        return sql;
     }
 
     @Override

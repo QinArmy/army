@@ -52,7 +52,7 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
 
     int discriminatorValue();
 
-    List<FieldMeta<?, ?>> routeFieldList(boolean dataSource);
+    List<FieldMeta<?, ?>> routeFieldList(boolean database);
 
     @Nullable
     ParentTableMeta<? super T> parentMeta();

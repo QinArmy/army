@@ -129,7 +129,6 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         }
     }
 
-
     protected final void visibleSubQueryPredicateForChild(TableContextSQLContext context
             , ChildTableMeta<?> childMeta, String childAlias, boolean hasPredicate) {
         if (context.visible() == Visible.BOTH) {
@@ -138,20 +137,18 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
 
         ParentTableMeta<?> parentMeta = childMeta.parentMeta();
 
-        final String parentAlias = subQueryParentAlias(parentMeta.tableName());
+        final String parentAlias = obtainParentAlias(context,childAlias);
         // append exists SubQuery
         StringBuilder builder = context.sqlBuilder();
         if (hasPredicate) {
             builder.append(" AND");
         }
-        builder.append(" EXISTS")
-                .append(" ( SELECT");
-
+        builder.append(" EXISTS ( SELECT");
         context.appendField(parentAlias, parentMeta.id());
         // from clause
         builder.append(" FROM");
-        context.appendParentOf(childMeta);
-
+        // append parent table name and route suffix.
+        context.appendParentOf(childMeta,childAlias);
         if (tableAliasAfterAs()) {
             builder.append(" AS");
         }
@@ -215,4 +212,13 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     }
 
 
+    private static String obtainParentAlias(TableContextSQLContext context,String childAlias){
+        String parentAlias;
+        if(context instanceof  SingleTableDMLContext){
+            parentAlias = ((SingleTableDMLContext) context).relationAlias();
+        }else {
+            parentAlias = TableContext.PARENT_ALIAS_PREFIX + childAlias;
+        }
+        return parentAlias;
+    }
 }

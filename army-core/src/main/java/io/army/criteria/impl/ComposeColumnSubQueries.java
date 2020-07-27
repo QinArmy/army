@@ -54,73 +54,54 @@ abstract class ComposeColumnSubQueries<E, C> extends AbstractComposeQuery<C> imp
     /*################################## blow ColumnSubQueryOrderByClause method ##################################*/
 
     @Override
-    public ColumnSubQueryLimitClause<E, C> orderBy(SortPart sortPart) {
+    public final ColumnSubQueryLimitClause<E, C> orderBy(SortPart sortPart) {
         doOrderBy(sortPart);
         return this;
     }
 
     @Override
-    public ColumnSubQueryLimitClause<E, C> orderBy(List<SortPart> sortPartList) {
+    public final ColumnSubQueryLimitClause<E, C> orderBy(List<SortPart> sortPartList) {
         doOrderBy(sortPartList);
         return this;
     }
 
     @Override
-    public ColumnSubQueryLimitClause<E, C> orderBy(Function<C, List<SortPart>> function) {
+    public final ColumnSubQueryLimitClause<E, C> orderBy(Function<C, List<SortPart>> function) {
         doOrderBy(function);
-        return this;
-    }
-
-    @Override
-    public ColumnSubQueryLimitClause<E, C> ifOrderBy(Predicate<C> test, SortPart sortPart) {
-        doOrderBy(test, sortPart);
-        return this;
-    }
-
-    @Override
-    public ColumnSubQueryLimitClause<E, C> ifOrderBy(Predicate<C> test, Function<C, List<SortPart>> function) {
-        doOrderBy(test, function);
         return this;
     }
 
     /*################################## blow ColumnSubQueryLimitClause method ##################################*/
 
     @Override
-    public ColumnSubQueryAble<E> limit(int rowCount) {
+    public final ColumnSubQueryAble<E> limit(int rowCount) {
         doLimit(rowCount);
         return this;
     }
 
     @Override
-    public ColumnSubQueryAble<E> limit(int offset, int rowCount) {
+    public final ColumnSubQueryAble<E> limit(int offset, int rowCount) {
         doLimit(offset, rowCount);
         return this;
     }
 
     @Override
-    public ColumnSubQueryAble<E> limit(Function<C, Pair<Integer, Integer>> function) {
-        doLimit(function);
-        return this;
-    }
-
-    @Override
-    public ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, int rowCount) {
+    public final ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, int rowCount) {
         doLimit(predicate, rowCount);
         return this;
     }
 
     @Override
-    public ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, int offset, int rowCount) {
+    public final ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, int offset, int rowCount) {
         doLimit(predicate, offset, rowCount);
         return this;
     }
 
     @Override
-    public ColumnSubQueryAble<E> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function) {
-        doLimit(predicate, function);
+    public final ColumnSubQueryAble<E> ifLimit(Function<C, Pair<Integer, Integer>> function) {
+        doIfLimit(function);
         return this;
     }
-
 
     /*################################## blow ColumnSubQueryAble method ##################################*/
 
@@ -131,7 +112,7 @@ abstract class ComposeColumnSubQueries<E, C> extends AbstractComposeQuery<C> imp
     }
 
     @Override
-    public void clear() {
+    public final void clear() {
 
     }
 

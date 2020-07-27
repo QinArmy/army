@@ -11,11 +11,13 @@ public interface InnerStandardUpdate extends InnerUpdate, InnerSingleDML {
     /**
      * @return a unmodifiable list
      */
+    @Override
     List<FieldMeta<?, ?>> targetFieldList();
 
     /**
      * @return a unmodifiable list
      */
+    @Override
     List<Expression<?>> valueExpList();
 
 }

@@ -18,25 +18,7 @@ import java.sql.JDBCType;
 public interface FieldExpression<T extends IDomain, F> extends SpecialExpression<F>, FieldSelection {
 
 
-    boolean primary();
-
-    boolean unique();
-
-    boolean index();
-
-    boolean nullable();
-
-
     TableMeta<T> tableMeta();
-
-    /**
-     * <p>
-     * if this field representing {@link TableMeta#ID}
-     * then field's tableMeta is {@link MappingMode#CHILD},always return null.
-     * </p>
-     */
-    @Nullable
-    GeneratorMeta generator();
 
 
     JDBCType jdbcType();
@@ -48,34 +30,6 @@ public interface FieldExpression<T extends IDomain, F> extends SpecialExpression
 
 
     MappingMeta mappingMeta();
-
-    boolean insertalbe();
-
-    boolean updatable();
-
-    String comment();
-
-    String defaultValue();
-
-    boolean codec();
-
-
-    /**
-     * (Optional) The columnSize for a decimal (exact numeric)
-     * column. (Applies only if a decimal column is used.)
-     * Value must be set by developer if used when generating
-     * the DDL for the column.
-     */
-    int precision();
-
-    /**
-     * (Optional) The scale for a decimal (exact numeric) column.
-     * (Applies only if a decimal column is used.)
-     */
-    int scale();
-
-
-    String fieldName();
 
     String propertyName();
 

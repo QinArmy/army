@@ -1,6 +1,6 @@
 package io.army.criteria;
 
-public interface TableAble extends SelfDescribed {
+public interface TableAble  {
 
 
     /**
