@@ -193,8 +193,14 @@ final class ColumnSubQueryAdaptor<E, C> implements ColumnSubQuery<E>, ColumnSubQ
     /*################################## blow ColumnSubQueryWhereAndAble method ##################################*/
 
     @Override
-    public final ColumnSubQuery.ColumnSubQueryWhereAndAble<E, C> and(@Nullable IPredicate predicate) {
+    public final ColumnSubQueryWhereAndAble<E, C> and(IPredicate predicate) {
         this.actualSelect.and(predicate);
+        return this;
+    }
+
+    @Override
+    public final ColumnSubQuery.ColumnSubQueryWhereAndAble<E, C> ifAnd(@Nullable IPredicate predicate) {
+        this.actualSelect.ifAnd(predicate);
         return this;
     }
 

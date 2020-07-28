@@ -53,7 +53,7 @@ abstract class DatabaseRouteUtils extends RouteUtils {
                 continue;
             }
             FieldValueEqualPredicate p = (FieldValueEqualPredicate) predicate;
-            FieldMeta<?, ?> fieldMeta = p.fieldExp();
+            FieldMeta<?, ?> fieldMeta = p.fieldMeta();
             if (dataSourceRouteFields.contains(fieldMeta)) {
                 // success,find route key.
                 routeWrapper = RouteWrapper.buildRouteKey(fieldMeta.tableMeta(), p.value());
@@ -133,7 +133,7 @@ abstract class DatabaseRouteUtils extends RouteUtils {
                 continue;
             }
             FieldValueEqualPredicate p = (FieldValueEqualPredicate) predicate;
-            FieldMeta<?, ?> fieldMeta = p.fieldExp();
+            FieldMeta<?, ?> fieldMeta = p.fieldMeta();
             if (routeFieldList.contains(fieldMeta)) {
                 // success,find route key.
                 routeKey = p.value();

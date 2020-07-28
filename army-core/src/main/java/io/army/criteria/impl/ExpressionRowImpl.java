@@ -1,52 +1,61 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.dialect.SQL;
+import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-final class ExpressionRowImpl implements ExpressionRow {
+final class ExpressionRowImpl<T extends IDomain> implements ExpressionRow<T> {
 
-    private final List<FieldMeta<?, ?>> columnList;
+    private final List<FieldMeta<T, ?>> columnList;
 
-    ExpressionRowImpl(List<FieldMeta<?, ?>> columnList) {
-        this.columnList = Collections.unmodifiableList(columnList);
+    ExpressionRowImpl(List<FieldMeta<T, ?>> columnList) {
+        List<FieldMeta<T, ?>> list = new ArrayList<>(columnList);
+        this.columnList = Collections.unmodifiableList(list);
     }
 
     @Override
-    public List<FieldMeta<?, ?>> columnList() {
+    public List<FieldMeta<T, ?>> columnList() {
         return columnList;
     }
 
     @Override
     public void appendSQL(SQLContext context) {
         StringBuilder builder = context.sqlBuilder()
-                .append(" ")
-                .append("ExpressionRow(");
-
-        for (Iterator<Expression<?>> iterator = columnList.iterator(); iterator.hasNext(); ) {
-            Expression<?> expression = iterator.next();
-            expression.appendSQL(context);
-            if (iterator.hasNext()) {
+                .append(" ");
+        SQL sql = context.dql();
+        if (sql.hasRowKeywords()) {
+            builder.append("ROW");
+        }
+        builder.append("( ");
+        int index = 0;
+        for (FieldMeta<T, ?> fieldMeta : this.columnList) {
+            if(index > 0){
                 builder.append(",");
             }
+            builder.append(sql.quoteIfNeed(fieldMeta.propertyName()));
+            index ++;
         }
-        builder.append(")");
+        builder.append(" )");
     }
 
 
     @Override
-    public String toString() {
+    public final String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("ROW(");
-        for (Iterator<Expression<?>> iterator = columnList.iterator(); iterator.hasNext(); ) {
-            Expression<?> expression = iterator.next();
-            builder.append(expression);
-            if (iterator.hasNext()) {
+        int index = 0;
+        for (FieldMeta<T, ?> fieldMeta : this.columnList) {
+            if(index > 0){
                 builder.append(",");
             }
+            builder.append(fieldMeta.propertyName());
+            index ++;
         }
         builder.append(")");
         return builder.toString();

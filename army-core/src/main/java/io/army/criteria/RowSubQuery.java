@@ -90,7 +90,12 @@ public interface RowSubQuery extends SubQuery, SetValuePart {
 
     interface RowSubQueryWhereAndAble<C> extends RowSubQueryGroupByAble<C> {
 
-        RowSubQueryWhereAndAble<C> and(@Nullable IPredicate predicate);
+        RowSubQueryWhereAndAble<C> and(IPredicate predicate);
+
+        /**
+         * @see Expression#equalIfNonNull(Object)
+         */
+        RowSubQueryWhereAndAble<C> ifAnd(@Nullable IPredicate predicate);
 
         RowSubQueryWhereAndAble<C> ifAnd(Function<C, IPredicate> function);
 

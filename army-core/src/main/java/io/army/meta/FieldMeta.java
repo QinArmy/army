@@ -3,7 +3,6 @@ package io.army.meta;
 import io.army.criteria.SetTargetPart;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
-import io.army.sharding.Route;
 
 /**
  * <p> this interface representing a Java class then tableMeta column mapping.</p>
@@ -11,7 +10,7 @@ import io.army.sharding.Route;
  * @param <T> representing Domain Java Type
  * @param <F> representing Domain property Java Type
  */
-public interface FieldMeta<T extends IDomain, F> extends FieldExpression<T, F>, ParamMeta, SetTargetPart {
+public interface FieldMeta<T extends IDomain, F> extends GenericField<T, F>, ParamMeta, SetTargetPart {
 
     boolean primary();
 
@@ -57,4 +56,9 @@ public interface FieldMeta<T extends IDomain, F> extends FieldExpression<T, F>, 
 
     boolean codec();
 
+    @Override
+    boolean equals(Object o);
+
+    @Override
+    int hashCode();
 }

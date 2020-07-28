@@ -98,10 +98,12 @@ public interface SubQuery extends SQLStatement, SelfDescribed, DerivedTable, Que
 
     interface SubQueryWhereAndAble<C> extends SubQueryGroupByAble<C> {
 
+        SubQueryWhereAndAble<C> and(IPredicate predicate);
+
         /**
          * @see Expression#equalIfNonNull(Object)
          */
-        SubQueryWhereAndAble<C> and(@Nullable IPredicate predicate);
+        SubQueryWhereAndAble<C> ifAnd(@Nullable IPredicate predicate);
 
         SubQueryWhereAndAble<C> ifAnd(Function<C, IPredicate> function);
 

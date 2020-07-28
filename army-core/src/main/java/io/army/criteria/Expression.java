@@ -14,6 +14,7 @@ import java.util.function.Function;
  * the implementation of this interface must implement {@link ExpressionCounselor}
  * </p>
  *
+ * @param <E> expression result java type
  * @see FieldMeta
  * @see ExpressionCounselor
  * @since 1.0
@@ -45,9 +46,9 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingMeta
     /**
      * relational operate with {@code =}
      *
-     * @see Select.WhereAndAble#and(IPredicate)
-     * @see Update.WhereAndAble#and(IPredicate)
-     * @see Delete.SingleWhereAndAble#and(IPredicate)
+     * @see Select.WhereAndAble#ifAnd(IPredicate)
+     * @see Update.WhereAndAble#ifAnd(IPredicate)
+     * @see Delete.SingleWhereAndAble#ifAnd(IPredicate)
      */
     @Nullable
     IPredicate equalIfNonNull(@Nullable E constant);

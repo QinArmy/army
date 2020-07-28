@@ -154,9 +154,11 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     final FieldMeta<? super T, ?> discriminator;
 
-    private final List<FieldMeta<?,?>> databaseRouteFieldList;
+    private final boolean sharding;
 
-    private final List<FieldMeta<?,?>> tableRouteFieldList;
+    private final List<FieldMeta<?, ?>> databaseRouteFieldList;
+
+    private final List<FieldMeta<?, ?>> tableRouteFieldList;
 
     @SuppressWarnings("unchecked")
     private DefaultTableMeta(@Nullable ParentTableMeta<? super T> parentTableMeta, Class<T> domainClass) {
@@ -183,16 +185,17 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             this.propNameToFieldMeta = fieldBean.getPropNameToFieldMeta();
             this.indexMetaList = fieldBean.getIndexMetaList();
 
-            if(parentTableMeta == null){
+            if (parentTableMeta == null) {
                 this.discriminator = fieldBean.getDiscriminator();
-            }else {
+            } else {
                 this.discriminator = parentTableMeta.discriminator();
             }
 
-            Pair<List<FieldMeta<?,?>>,List<FieldMeta<?,?>>> routePair = TableMetaUtils.routeFieldList(
-                    this.propNameToFieldMeta);
+            Pair<List<FieldMeta<?, ?>>, List<FieldMeta<?, ?>>> routePair = TableMetaUtils.routeFieldList(
+                    this, this.propNameToFieldMeta);
             this.databaseRouteFieldList = routePair.getFirst();
             this.tableRouteFieldList = routePair.getSecond();
+            this.sharding = !this.tableRouteFieldList.isEmpty();
 
             this.discriminatorValue = TableMetaUtils.discriminatorValue(this.mappingMode, this);
 
@@ -339,8 +342,13 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     @Override
+    public final boolean sharding() {
+        return this.sharding;
+    }
+
+    @Override
     public final List<FieldMeta<?, ?>> routeFieldList(boolean database) {
-       return database ? this.databaseRouteFieldList : this.tableRouteFieldList;
+        return database ? this.databaseRouteFieldList : this.tableRouteFieldList;
     }
 
     @Override
@@ -394,7 +402,6 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             Assert.state(meta != null, "parentMeta is null,state error.");
             return meta;
         }
-
 
 
     }

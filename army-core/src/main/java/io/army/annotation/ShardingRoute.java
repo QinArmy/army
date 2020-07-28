@@ -11,6 +11,11 @@ import java.lang.annotation.Target;
 public @interface ShardingRoute {
 
     /**
+     * class only is the implementation of below interface:
+     * <ul>
+     *     <li>{@link io.army.sharding.ShardingRoute}</li>
+     *     <li>{@link io.army.sharding.TableRoute}</li>
+     * </ul>
      * @return route function class name.
      */
     String value();

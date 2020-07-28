@@ -33,7 +33,7 @@ final class OrtPredicateImpl extends AbstractPredicate implements OrPredicate {
     }
 
     @Override
-    protected void afterSpace(SQLContext context) {
+    protected void appendSQL(SQLContext context) {
         StringBuilder builder = context.sqlBuilder()
                 .append("(");
         leftPredicate.appendSQL(context);
@@ -56,7 +56,7 @@ final class OrtPredicateImpl extends AbstractPredicate implements OrPredicate {
     }
 
     @Override
-    public String beforeAs() {
+    public String toString() {
         StringBuilder builder = new StringBuilder("(");
         builder.append(leftPredicate)
                 .append(" OR ")

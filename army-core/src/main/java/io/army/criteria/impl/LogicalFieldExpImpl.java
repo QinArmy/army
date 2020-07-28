@@ -31,7 +31,7 @@ final class LogicalFieldExpImpl<T extends IDomain, F> extends AbstractExpression
     }
 
     @Override
-    protected final void afterSpace(SQLContext context) {
+    protected final void appendSQL(SQLContext context) {
         context.appendField(this.tableAlias, this.fieldMeta);
     }
 
@@ -41,7 +41,7 @@ final class LogicalFieldExpImpl<T extends IDomain, F> extends AbstractExpression
     }
 
     @Override
-    public String beforeAs() {
+    public String toString() {
         return tableAlias + "." + fieldMeta.fieldName();
     }
 
@@ -58,11 +58,6 @@ final class LogicalFieldExpImpl<T extends IDomain, F> extends AbstractExpression
     @Override
     public TableMeta<T> tableMeta() {
         return fieldMeta.tableMeta();
-    }
-
-    @Override
-    public JDBCType jdbcType() {
-        return fieldMeta.jdbcType();
     }
 
     @Override

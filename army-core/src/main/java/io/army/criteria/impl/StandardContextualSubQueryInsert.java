@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.IPredicate;
 import io.army.criteria.Insert;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner.InnerStandardSubQueryInsert;
@@ -104,6 +105,11 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
     @Override
     public final int databaseIndex() {
         return this.databaseIndex;
+    }
+
+    @Override
+    public final List<IPredicate> predicateList() {
+       throw new UnsupportedOperationException();
     }
 
     @Override

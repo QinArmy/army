@@ -213,7 +213,13 @@ abstract class AbstractStandardSelect<C> extends AbstractSelect implements
     /*################################## blow WhereAndAble method ##################################*/
 
     @Override
-    public final Select.WhereAndAble<C> and(@Nullable IPredicate predicate) {
+    public final WhereAndAble<C> and(IPredicate predicate) {
+        this.predicateList.add(predicate);
+        return this;
+    }
+
+    @Override
+    public final Select.WhereAndAble<C> ifAnd(@Nullable IPredicate predicate) {
         if (predicate != null) {
             this.predicateList.add(predicate);
         }

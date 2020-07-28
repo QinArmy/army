@@ -229,11 +229,6 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     }
 
     @Override
-    public JDBCType jdbcType() {
-        return mappingType.jdbcType();
-    }
-
-    @Override
     public final Class<F> javaType() {
         return propertyClass;
     }
@@ -308,14 +303,14 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     }
 
     @Override
-    public final String beforeAs() {
+    public final String toString() {
         return this.table.toString()
                 .concat(".")
                 .concat(this.propertyName);
     }
 
     @Override
-    protected final void afterSpace(SQLContext context) {
+    protected final void appendSQL(SQLContext context) {
         context.appendField(this);
     }
 

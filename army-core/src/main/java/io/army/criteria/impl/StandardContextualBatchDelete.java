@@ -75,19 +75,19 @@ final class StandardContextualBatchDelete<C> implements Delete,
     /*################################## blow BatchWhereAble method ##################################*/
 
     @Override
-    public BatchNamedParamAble<C> where(List<IPredicate> predicateList) {
+    public final BatchNamedParamAble<C> where(List<IPredicate> predicateList) {
         this.predicateList.addAll(predicateList);
         return this;
     }
 
     @Override
-    public BatchNamedParamAble<C> where(Function<C, List<IPredicate>> function) {
+    public final BatchNamedParamAble<C> where(Function<C, List<IPredicate>> function) {
         this.predicateList.addAll(function.apply(this.criteria));
         return this;
     }
 
     @Override
-    public BatchWhereAndAble<C> where(IPredicate predicate) {
+    public final BatchWhereAndAble<C> where(IPredicate predicate) {
         this.predicateList.add(predicate);
         return this;
     }
@@ -95,7 +95,13 @@ final class StandardContextualBatchDelete<C> implements Delete,
     /*################################## blow BatchWhereAndAble method ##################################*/
 
     @Override
-    public BatchWhereAndAble<C> and(@Nullable IPredicate predicate) {
+    public final BatchWhereAndAble<C> and(IPredicate predicate) {
+        this.predicateList.add(predicate);
+        return this;
+    }
+
+    @Override
+    public final BatchWhereAndAble<C> ifAnd(@Nullable IPredicate predicate) {
         if (predicate != null) {
             this.predicateList.add(predicate);
         }

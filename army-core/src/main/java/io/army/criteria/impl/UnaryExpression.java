@@ -1,20 +1,25 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
+import io.army.criteria.FieldExpression;
 import io.army.criteria.SQLContext;
-import io.army.criteria.SpecialExpression;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
 
 import java.util.Collection;
 
+/**
+ * This class is a implementation of {@link Expression}.
+ * The expression consist of a  {@link Expression} and a {@link UnaryOperator}.
+ * @param <E> expression result java type
+ */
 class UnaryExpression<E> extends AbstractExpression<E> {
 
     static <E> UnaryExpression<E> build(Expression<E> expression, UnaryOperator unaryOperator) {
         UnaryExpression<E> unaryExpression;
-        if (expression instanceof SpecialExpression) {
-            unaryExpression = new SpecialUnaryExpression<>((SpecialExpression<E>) expression, unaryOperator);
+        if (expression instanceof FieldExpression) {
+            unaryExpression = new FieldUnaryExpression<>((FieldExpression<E>) expression, unaryOperator);
         } else {
             unaryExpression = new UnaryExpression<>(expression, unaryOperator);
         }
@@ -38,17 +43,17 @@ class UnaryExpression<E> extends AbstractExpression<E> {
 
 
     @Override
-    protected final void afterSpace(SQLContext context) {
+    public final void appendSQL(SQLContext context) {
         switch (this.operator.position()) {
             case LEFT:
                 context.sqlBuilder()
+                        .append(" ")
                         .append(this.operator.rendered());
                 this.expression.appendSQL(context);
                 break;
             case RIGHT:
                 this.expression.appendSQL(context);
-                context.sqlBuilder()
-                        .append(" ")
+                context.sqlBuilder().append(" ")
                         .append(this.operator.rendered());
                 break;
             default:
@@ -57,11 +62,12 @@ class UnaryExpression<E> extends AbstractExpression<E> {
     }
 
     @Override
-    public final String beforeAs() {
+    public final String toString() {
         StringBuilder builder = new StringBuilder();
         switch (operator.position()) {
             case LEFT:
                 builder.append(operator.rendered())
+                        .append(" ")
                         .append(expression);
                 break;
             case RIGHT:
@@ -83,9 +89,9 @@ class UnaryExpression<E> extends AbstractExpression<E> {
 
     /*################################## blow private static inner class ##################################*/
 
-    private static final class SpecialUnaryExpression<E> extends UnaryExpression<E> implements SpecialExpression<E> {
+    private static final class FieldUnaryExpression<E> extends UnaryExpression<E> implements FieldExpression<E> {
 
-        private SpecialUnaryExpression(SpecialExpression<E> expression, UnaryOperator operator) {
+        private FieldUnaryExpression(FieldExpression<E> expression, UnaryOperator operator) {
             super(expression, operator);
         }
 

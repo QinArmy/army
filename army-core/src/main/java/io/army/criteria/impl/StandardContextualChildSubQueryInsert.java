@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.IPredicate;
 import io.army.criteria.Insert;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner.InnerStandardChildSubQueryInsert;
@@ -9,6 +10,7 @@ import io.army.meta.FieldMeta;
 import io.army.util.Assert;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -139,6 +141,11 @@ final class StandardContextualChildSubQueryInsert<T extends IDomain, C> extends 
     }
 
     /*################################## blow InnerStandardChildSubQueryInsert method ##################################*/
+
+    @Override
+    public final List<IPredicate> predicateList() {
+       throw new UnsupportedOperationException();
+    }
 
     @Override
     public final List<FieldMeta<?, ?>> parentFieldList() {

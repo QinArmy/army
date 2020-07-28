@@ -5,9 +5,9 @@ import io.army.meta.FieldMeta;
 
 import java.util.List;
 
-public interface Row {
+public interface Row<T extends IDomain> {
 
-    <T extends IDomain> List<FieldMeta<T, ?>> columnList();
+   List<FieldMeta<T, ?>> columnList();
 
     @Override
     String toString();

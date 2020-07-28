@@ -201,8 +201,14 @@ final class RowSubQueryAdaptor<C> implements RowSubQuery
     /*################################## blow RowSubQueryWhereAndAble method ##################################*/
 
     @Override
-    public final RowSubQueryWhereAndAble<C> and(@Nullable IPredicate predicate) {
+    public final RowSubQueryWhereAndAble<C> and(IPredicate predicate) {
         this.actualSelect.and(predicate);
+        return this;
+    }
+
+    @Override
+    public final RowSubQueryWhereAndAble<C> ifAnd(@Nullable IPredicate predicate) {
+        this.actualSelect.ifAnd(predicate);
         return this;
     }
 

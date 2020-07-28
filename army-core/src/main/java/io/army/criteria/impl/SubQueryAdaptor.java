@@ -175,8 +175,14 @@ final class SubQueryAdaptor<C> implements SubQuery.SubQuerySelectPartAble<C>
     /*################################## blow SubQueryWhereAndAble method ##################################*/
 
     @Override
-    public final SubQuery.SubQueryWhereAndAble<C> and(@Nullable IPredicate predicate) {
+    public final SubQuery.SubQueryWhereAndAble<C> and(IPredicate predicate) {
         this.actualSelect.and(predicate);
+        return this;
+    }
+
+    @Override
+    public final SubQuery.SubQueryWhereAndAble<C> ifAnd(@Nullable IPredicate predicate) {
+        this.actualSelect.ifAnd(predicate);
         return this;
     }
 

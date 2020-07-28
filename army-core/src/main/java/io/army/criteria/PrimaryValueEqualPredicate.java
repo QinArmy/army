@@ -9,6 +9,6 @@ import io.army.meta.PrimaryFieldMeta;
 public interface PrimaryValueEqualPredicate extends FieldValueEqualPredicate {
 
     @Override
-    PrimaryFieldMeta<?, ?> fieldExp();
+    PrimaryFieldMeta<?, ?> fieldMeta();
 
 }

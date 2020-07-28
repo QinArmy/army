@@ -43,10 +43,12 @@ public interface Delete extends SQLStatement, SQLStatement.SQLAble, SQLDebug, Qu
 
     interface SingleWhereAndAble<C> extends DeleteAble {
 
+        SingleWhereAndAble<C> and(IPredicate predicate);
+
         /**
          * @see Expression#equalIfNonNull(Object)
          */
-        SingleWhereAndAble<C> and(@Nullable IPredicate predicate);
+        SingleWhereAndAble<C> ifAnd(@Nullable IPredicate predicate);
 
         SingleWhereAndAble<C> ifAnd(Function<C, IPredicate> function);
 
@@ -77,10 +79,12 @@ public interface Delete extends SQLStatement, SQLStatement.SQLAble, SQLDebug, Qu
 
     interface BatchWhereAndAble<C> extends BatchNamedParamAble<C> {
 
+        BatchWhereAndAble<C> and(IPredicate predicate);
+
         /**
          * @see Expression#equalIfNonNull(Object)
          */
-        BatchWhereAndAble<C> and(@Nullable IPredicate predicate);
+        BatchWhereAndAble<C> ifAnd(@Nullable IPredicate predicate);
 
         BatchWhereAndAble<C> ifAnd(Function<C, IPredicate> function);
 

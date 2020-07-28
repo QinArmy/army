@@ -110,10 +110,12 @@ public interface Select extends SQLStatement, SQLDebug, SQLStatement.SQLAble, Qu
 
     interface WhereAndAble<C> extends GroupByAble<C> {
 
+        WhereAndAble<C> and(IPredicate predicate);
+
         /**
          * @see Expression#equalIfNonNull(Object)
          */
-        WhereAndAble<C> and(@Nullable IPredicate predicate);
+        WhereAndAble<C> ifAnd(@Nullable IPredicate predicate);
 
         WhereAndAble<C> ifAnd(Function<C, IPredicate> function);
 

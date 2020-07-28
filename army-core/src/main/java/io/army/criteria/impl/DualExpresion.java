@@ -3,8 +3,8 @@ package io.army.criteria.impl;
 import io.army.criteria.DualOperator;
 import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
-import io.army.criteria.SpecialExpression;
-import io.army.meta.FieldExpression;
+import io.army.criteria.FieldExpression;
+import io.army.meta.GenericField;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
@@ -13,22 +13,29 @@ import io.army.meta.mapping.MappingMeta;
 import java.math.BigInteger;
 import java.util.Collection;
 
+/**
+ * This class is a implementation of {@link Expression}.
+ * The expression consist of a left {@link Expression} ,a {@link DualOperator} and right {@link Expression}.
+ *
+ * @param <E> expression result java type
+ * @since 1.0
+ */
 class DualExpresion<E> extends AbstractExpression<E> {
 
 
     static <E> DualExpresion<E> build(Expression<?> left, DualOperator operator, Expression<?> right) {
         DualExpresion<E> dualExpresion;
-        if (left instanceof SpecialExpression) {
-            if (left instanceof FieldExpression) {
-                dualExpresion = buildLeftField((FieldExpression<?, ?>) left, operator, right);
+        if (left instanceof FieldExpression) {
+            if (left instanceof GenericField) {
+                dualExpresion = buildLeftField((GenericField<?, ?>) left, operator, right);
             } else {
-                dualExpresion = new SpecialExpressionImpl<>(left, operator, right);
+                dualExpresion = new FieldExpressionImpl<>(left, operator, right);
             }
-        } else if (right instanceof SpecialExpression) {
-            if (right instanceof FieldExpression) {
-                dualExpresion = buildRightField(left, operator, (FieldExpression<?, ?>) right);
+        } else if (right instanceof FieldExpression) {
+            if (right instanceof GenericField) {
+                dualExpresion = buildRightField(left, operator, (GenericField<?, ?>) right);
             } else {
-                dualExpresion = new SpecialExpressionImpl<>(left, operator, right);
+                dualExpresion = new FieldExpressionImpl<>(left, operator, right);
             }
         } else {
             dualExpresion = new DualExpresion<>(left, operator, right);
@@ -36,30 +43,30 @@ class DualExpresion<E> extends AbstractExpression<E> {
         return dualExpresion;
     }
 
-    private static <E> DualExpresion<E> buildLeftField(FieldExpression<?, ?> left, DualOperator operator
+    private static <E> DualExpresion<E> buildLeftField(GenericField<?, ?> left, DualOperator operator
             , Expression<?> right) {
         DualExpresion<E> dualExpresion;
-        if (right instanceof FieldExpression) {
-            dualExpresion = buildFieldPair(left, operator, (FieldExpression<?, ?>) right);
+        if (right instanceof GenericField) {
+            dualExpresion = buildFieldPair(left, operator, (GenericField<?, ?>) right);
         } else {
-            dualExpresion = new SpecialExpressionImpl<>(left, operator, right);
+            dualExpresion = new FieldExpressionImpl<>(left, operator, right);
         }
         return dualExpresion;
     }
 
     private static <E> DualExpresion<E> buildRightField(Expression<?> left, DualOperator operator
-            , FieldExpression<?, ?> right) {
+            , GenericField<?, ?> right) {
         DualExpresion<E> dualExpresion;
-        if (left instanceof FieldExpression) {
-            dualExpresion = buildFieldPair((FieldExpression<?, ?>) left, operator, right);
+        if (left instanceof GenericField) {
+            dualExpresion = buildFieldPair((GenericField<?, ?>) left, operator, right);
         } else {
-            dualExpresion = new SpecialExpressionImpl<>(left, operator, right);
+            dualExpresion = new FieldExpressionImpl<>(left, operator, right);
         }
         return dualExpresion;
     }
 
-    private static <E> DualExpresion<E> buildFieldPair(FieldExpression<?, ?> left
-            , DualOperator operator, FieldExpression<?, ?> right) {
+    private static <E> DualExpresion<E> buildFieldPair(GenericField<?, ?> left
+            , DualOperator operator, GenericField<?, ?> right) {
         return new FieldPairExpressionImpl<>(left, operator, right);
     }
 
@@ -84,7 +91,7 @@ class DualExpresion<E> extends AbstractExpression<E> {
     }
 
     @Override
-    protected final void afterSpace(SQLContext context) {
+    public final void appendSQL(SQLContext context) {
         left.appendSQL(context);
         context.sqlBuilder()
                 .append(" ")
@@ -99,15 +106,15 @@ class DualExpresion<E> extends AbstractExpression<E> {
     }
 
     @Override
-    public String beforeAs() {
+    public String toString() {
         return left + " " + operator.rendered() + " " + right;
     }
 
     /*################################## blow private static inner class ##################################*/
 
-    private static class SpecialExpressionImpl<E> extends DualExpresion<E> implements SpecialExpression<E> {
+    private static class FieldExpressionImpl<E> extends DualExpresion<E> implements FieldExpression<E> {
 
-        private SpecialExpressionImpl(Expression<?> left, DualOperator operator, Expression<?> right) {
+        private FieldExpressionImpl(Expression<?> left, DualOperator operator, Expression<?> right) {
             super(left, operator, right);
         }
 
@@ -131,10 +138,10 @@ class DualExpresion<E> extends AbstractExpression<E> {
 
     }
 
-    private static final class FieldPairExpressionImpl<E> extends SpecialExpressionImpl<E> {
+    private static final class FieldPairExpressionImpl<E> extends FieldExpressionImpl<E> {
 
-        private FieldPairExpressionImpl(FieldExpression<?, ?> left, DualOperator operator
-                , FieldExpression<?, ?> right) {
+        private FieldPairExpressionImpl(GenericField<?, ?> left, DualOperator operator
+                , GenericField<?, ?> right) {
             super(left, operator, right);
         }
 

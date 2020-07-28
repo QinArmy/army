@@ -17,7 +17,7 @@ final class ConvertExpressionImpl<E> extends AbstractExpression<E> implements Co
     }
 
     @Override
-    protected void afterSpace(SQLContext context) {
+    protected void appendSQL(SQLContext context) {
         original.appendSQL(context);
     }
 
@@ -33,7 +33,7 @@ final class ConvertExpressionImpl<E> extends AbstractExpression<E> implements Co
     }
 
     @Override
-    public String beforeAs() {
+    public String toString() {
         return original.toString();
     }
 }

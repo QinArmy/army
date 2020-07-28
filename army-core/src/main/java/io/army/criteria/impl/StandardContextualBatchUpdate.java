@@ -139,7 +139,13 @@ final class StandardContextualBatchUpdate<T extends IDomain, C> extends Abstract
     /*################################## blow BatchWhereAndAble method ##################################*/
 
     @Override
-    public final BatchWhereAndAble<T, C> and(@Nullable IPredicate predicate) {
+    public final BatchWhereAndAble<T, C> and(IPredicate predicate) {
+        this.predicateList.add(predicate);
+        return this;
+    }
+
+    @Override
+    public final BatchWhereAndAble<T, C> ifAnd(@Nullable IPredicate predicate) {
         if (predicate != null) {
             this.predicateList.add(predicate);
         }

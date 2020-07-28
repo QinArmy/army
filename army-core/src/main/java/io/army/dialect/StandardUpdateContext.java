@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.criteria.SpecialPredicate;
+import io.army.criteria.FieldPredicate;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.InnerStandardUpdate;
 import io.army.lang.Nullable;
@@ -89,7 +89,7 @@ class StandardUpdateContext extends AbstractStandardDomainContext implements Upd
         }
 
         @Override
-        public final void appendFieldPredicate(SpecialPredicate predicate) {
+        public final void appendFieldPredicate(FieldPredicate predicate) {
             appendDomainFieldPredicate(predicate);
         }
 

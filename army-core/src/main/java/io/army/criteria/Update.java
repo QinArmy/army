@@ -65,10 +65,12 @@ public interface Update extends SQLStatement, SQLStatement.SQLAble, SQLDebug, Qu
 
     interface WhereAndAble<T extends IDomain, C> extends UpdateAble {
 
+        WhereAndAble<T, C> and(IPredicate predicate);
+
         /**
          * @see Expression#equalIfNonNull(Object)
          */
-        WhereAndAble<T, C> and(@Nullable IPredicate predicate);
+        WhereAndAble<T, C> ifAnd(@Nullable IPredicate predicate);
 
         WhereAndAble<T, C> ifAnd(Function<C, IPredicate> function);
 
@@ -114,10 +116,12 @@ public interface Update extends SQLStatement, SQLStatement.SQLAble, SQLDebug, Qu
 
     interface BatchWhereAndAble<T extends IDomain, C> extends BatchNamedParamAble<C> {
 
+        BatchWhereAndAble<T, C> and(IPredicate predicate);
+
         /**
          * @see Expression#equalIfNonNull(Object)
          */
-        BatchWhereAndAble<T, C> and(@Nullable IPredicate predicate);
+        BatchWhereAndAble<T, C> ifAnd(@Nullable IPredicate predicate);
 
         BatchWhereAndAble<T, C> ifAnd(Function<C, IPredicate> function);
 

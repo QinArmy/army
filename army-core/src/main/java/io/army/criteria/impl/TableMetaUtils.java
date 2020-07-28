@@ -208,12 +208,67 @@ abstract class TableMetaUtils {
     }
 
     static <T extends IDomain> Pair<List<FieldMeta<?, ?>>, List<FieldMeta<?, ?>>> routeFieldList(
-            TableMeta<?> tableMeta, Collection<FieldMeta<T, ?>> fieldMetas) {
-
-        return null;
+            TableMeta<?> tableMeta, Map<String, FieldMeta<T, ?>> fieldMetaMap) {
+        ShardingRoute shardingRoute = AnnotationUtils.getAnnotation(tableMeta.javaType(), ShardingRoute.class);
+        if (shardingRoute == null) {
+            return new Pair<>(Collections.emptyList(), Collections.emptyList());
+        }
+        Class<?> routeClass = loadShardingRouteClass(tableMeta, shardingRoute.value());
+        List<FieldMeta<?, ?>> databaseRouteFieldList, tableRouteFieldList;
+        if (io.army.sharding.ShardingRoute.class.isAssignableFrom(routeClass)) {
+            String[] routeFields = shardingRoute.routeFields();
+            if (routeFields.length == 0) {
+                String[] databaseRouteFields = shardingRoute.databaseRouteFields();
+                String[] tableRouteFields = shardingRoute.tableRouteFields();
+                databaseRouteFieldList = getRouteFieldList(tableMeta, fieldMetaMap, databaseRouteFields);
+                tableRouteFieldList = getRouteFieldList(tableMeta, fieldMetaMap, tableRouteFields);
+            } else {
+                databaseRouteFieldList = getRouteFieldList(tableMeta, fieldMetaMap, routeFields);
+                tableRouteFieldList = databaseRouteFieldList;
+            }
+        } else if (TableRoute.class.isAssignableFrom(routeClass)) {
+            String[] tableRouteFields = shardingRoute.routeFields();
+            if (tableRouteFields.length == 0) {
+                tableRouteFields = shardingRoute.tableRouteFields();
+            }
+            databaseRouteFieldList = Collections.emptyList();
+            tableRouteFieldList = getRouteFieldList(tableMeta, fieldMetaMap, tableRouteFields);
+        } else {
+            throw new MetaException("TableMeta[%s] route class isn't %s or %s implementation."
+                    , io.army.sharding.ShardingRoute.class.getName()
+                    , TableRoute.class.getName());
+        }
+        return new Pair<>(databaseRouteFieldList, tableRouteFieldList);
     }
 
     /*################################ private method ####################################*/
+
+    private static Class<?> loadShardingRouteClass(TableMeta<?> tableMeta, String className) {
+        try {
+            return Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            throw new MetaException(e, "TableMeta[%s] not found route implementation class[%s]", tableMeta, className);
+        }
+    }
+
+    /**
+     * @return a unmodifiable list
+     */
+    private static <T extends IDomain> List<FieldMeta<?, ?>> getRouteFieldList(TableMeta<?> tableMeta
+            , Map<String, FieldMeta<T, ?>> fieldMetaMap, String[] routeFields) {
+        if (routeFields.length == 0) {
+                throw new MetaException("TableMeta[%s] not specified route fields",tableMeta);
+        }
+        List<FieldMeta<?, ?>> fieldMetaList = new ArrayList<>(routeFields.length);
+        for (String propName : routeFields) {
+            FieldMeta<T, ?> fieldMeta = fieldMetaMap.get(propName);
+            if (fieldMeta == null) {
+                throw new MetaException("TableMeta[%s] sharding field[%s] not found.", tableMeta, propName);
+            }
+            fieldMetaList.add(fieldMeta);
+        }
+        return Collections.unmodifiableList(fieldMetaList);
+    }
 
 
     /**

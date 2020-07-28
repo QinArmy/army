@@ -53,7 +53,7 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
     }
 
     @Override
-    protected void afterSpace(SQLContext context) {
+    protected void appendSQL(SQLContext context) {
         context.sqlBuilder()
                 .append(this.name)
                 .append("(");
@@ -62,7 +62,7 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
     }
 
     @Override
-    public final String beforeAs() {
+    public final String toString() {
         return String.format("%s(%s)", name, argumentToString());
     }
 

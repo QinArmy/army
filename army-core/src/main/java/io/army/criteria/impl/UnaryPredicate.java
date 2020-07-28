@@ -22,8 +22,8 @@ class UnaryPredicate extends AbstractPredicate {
         if (operator == UnaryOperator.NOT_EXISTS || operator == UnaryOperator.EXISTS) {
             throw new IllegalArgumentException(
                     String.format("operator[%s] can't in [EXISTS,NOT_EXISTS]", operator));
-        } else if (expression instanceof SpecialExpression) {
-            predicate = new SpecialUnaryPredicate(operator, (SpecialExpression<?>) expression);
+        } else if (expression instanceof FieldExpression) {
+            predicate = new SpecialUnaryPredicate(operator, (FieldExpression<?>) expression);
         } else {
             predicate = new UnaryPredicate(operator, expression);
         }
@@ -42,7 +42,7 @@ class UnaryPredicate extends AbstractPredicate {
     }
 
     @Override
-    protected void afterSpace(SQLContext context) {
+    protected void appendSQL(SQLContext context) {
         doAppendSQL(context);
     }
 
@@ -63,7 +63,7 @@ class UnaryPredicate extends AbstractPredicate {
     }
 
     @Override
-    public String beforeAs() {
+    public String toString() {
         StringBuilder builder = new StringBuilder();
         switch (operator.position()) {
             case LEFT:
@@ -89,14 +89,14 @@ class UnaryPredicate extends AbstractPredicate {
 
     /*################################## blow private static inner class ##################################*/
 
-    private static final class SpecialUnaryPredicate extends UnaryPredicate implements SpecialPredicate {
+    private static final class SpecialUnaryPredicate extends UnaryPredicate implements IPredicate {
 
-        private SpecialUnaryPredicate(UnaryOperator operator, SpecialExpression<?> expression) {
+        private SpecialUnaryPredicate(UnaryOperator operator, FieldExpression<?> expression) {
             super(operator, expression);
         }
 
         @Override
-        protected void afterSpace(SQLContext context) {
+        protected void appendSQL(SQLContext context) {
             context.appendFieldPredicate(this);
         }
 

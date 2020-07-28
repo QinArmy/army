@@ -76,7 +76,7 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
     }
 
     @Override
-    protected void afterSpace(SQLContext context) {
+    protected void appendSQL(SQLContext context) {
         context.appendTextValue(this.paramMeta.mappingMeta(), this.constant);
     }
 
@@ -91,7 +91,7 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
     }
 
     @Override
-    public String beforeAs() {
+    public String toString() {
         return this.paramMeta.mappingMeta().nonNullTextValue(constant);
     }
 

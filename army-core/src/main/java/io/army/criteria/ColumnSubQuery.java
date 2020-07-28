@@ -91,7 +91,12 @@ public interface ColumnSubQuery<E> extends SubQuery {
 
     interface ColumnSubQueryWhereAndAble<E, C> extends ColumnSubQueryGroupByAble<E, C> {
 
-        ColumnSubQueryWhereAndAble<E, C> and(@Nullable IPredicate predicate);
+        ColumnSubQueryWhereAndAble<E, C> and(IPredicate predicate);
+
+        /**
+         * @see Expression#equalIfNonNull(Object)
+         */
+        ColumnSubQueryWhereAndAble<E, C> ifAnd(@Nullable IPredicate predicate);
 
         ColumnSubQueryWhereAndAble<E, C> ifAnd(Function<C, IPredicate> function);
 

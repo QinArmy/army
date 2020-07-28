@@ -43,12 +43,12 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
     /*################################## blow AbstractExpression method ##################################*/
 
     @Override
-    protected final void afterSpace(SQLContext context) {
+    public final void appendSQL(SQLContext context) {
         this.actualSelect.appendSQL(context);
     }
 
     @Override
-    protected final String beforeAs() {
+    public final String toString() {
         return "#ScalarSubQuery:" + System.identityHashCode(this);
     }
 
@@ -216,8 +216,14 @@ final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements
     /*################################## blow ScalarSubQueryWhereAndAble method ##################################*/
 
     @Override
-    public final ScalarSubQuery.ScalarSubQueryWhereAndAble<E, C> and(@Nullable IPredicate predicate) {
+    public final ScalarSubQueryWhereAndAble<E, C> and(IPredicate predicate) {
         this.actualSelect.and(predicate);
+        return this;
+    }
+
+    @Override
+    public final ScalarSubQuery.ScalarSubQueryWhereAndAble<E, C> ifAnd(@Nullable IPredicate predicate) {
+        this.actualSelect.ifAnd(predicate);
         return this;
     }
 

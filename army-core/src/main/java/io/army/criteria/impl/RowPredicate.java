@@ -20,7 +20,7 @@ final class RowPredicate extends AbstractPredicate {
     }
 
     @Override
-    protected void afterSpace(SQLContext context) {
+    protected void appendSQL(SQLContext context) {
         row.appendSQL(context);
         context.sqlBuilder()
                 .append(" ")
@@ -31,7 +31,7 @@ final class RowPredicate extends AbstractPredicate {
 
 
     @Override
-    protected String beforeAs() {
+    protected String toString() {
         return row.toString() + " " + operator.rendered() + " " + rowSubQuery;
     }
 }

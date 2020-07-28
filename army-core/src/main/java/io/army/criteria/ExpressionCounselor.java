@@ -6,12 +6,12 @@ import io.army.meta.TableMeta;
 import java.util.Collection;
 
 /**
- * design for {@link SpecialExpression} and {@link SpecialPredicate}
+ * design for {@link FieldExpression} and {@link SpecialPredicate}
  * <p>
  * this interface is implemented by implementation of {@link Expression}
  * </p>
  *
- * @see SpecialExpression
+ * @see FieldExpression
  * @see SpecialPredicate
  */
 public interface ExpressionCounselor {

@@ -1,6 +1,5 @@
 package io.army.dialect;
 
-import io.army.criteria.SpecialPredicate;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.InnerStandardDelete;
 import io.army.meta.ChildTableMeta;

@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.IPredicate;
 import io.army.criteria.SQLContext;
-import io.army.criteria.SpecialPredicate;
 
 /**
  * this interface representing a {@code not} expression
@@ -29,7 +28,7 @@ class NotPredicateImpl extends AbstractPredicate {
     }
 
     @Override
-    protected void afterSpace(SQLContext context) {
+    protected void appendSQL(SQLContext context) {
         doAppendSQL(context);
     }
 
@@ -40,20 +39,20 @@ class NotPredicateImpl extends AbstractPredicate {
     }
 
     @Override
-    public String beforeAs() {
+    public String toString() {
         return UnaryOperator.NOT.rendered() + " " + predicate;
     }
 
     /*################################## blow private static inner class  ##################################*/
 
-    private static final class SpecialNotPredicate extends NotPredicateImpl implements SpecialPredicate {
+    private static final class SpecialNotPredicate extends NotPredicateImpl implements IPredicate {
 
         private SpecialNotPredicate(SpecialPredicate predicate) {
             super(predicate);
         }
 
         @Override
-        protected void afterSpace(SQLContext context) {
+        protected void appendSQL(SQLContext context) {
             context.appendFieldPredicate(this);
         }
 

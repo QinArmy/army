@@ -134,7 +134,7 @@ public abstract class RouteUtils {
                 continue;
             }
             FieldValueEqualPredicate p = (FieldValueEqualPredicate) predicate;
-            if (routeFieldList.contains(p.fieldExp())) {
+            if (routeFieldList.contains(p.fieldMeta())) {
                 routeKey = p.value();
                 break;
             }

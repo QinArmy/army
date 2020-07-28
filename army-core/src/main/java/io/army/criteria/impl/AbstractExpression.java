@@ -17,9 +17,7 @@ import java.util.function.Function;
 /**
  * this class is a implementation of {@link Expression}
  */
-abstract class AbstractExpression<E> implements Expression<E>, Selection, ExpressionCounselor {
-
-    protected String alias;
+abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounselor {
 
     AbstractExpression() {
     }
@@ -27,19 +25,8 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
 
     @Override
     public Selection as(String alias) {
-        Assert.hasText(alias, "alias required");
-        this.alias = alias;
-        return this;
+       return new DefaultSelection(this,alias);
     }
-
-    @Override
-    public String alias() {
-        if (this.alias == null) {
-            throw new IllegalStateException("alias is null,expression state error.");
-        }
-        return alias;
-    }
-
 
     @Override
     public final IPredicate equal(Expression<E> expression) {
@@ -815,22 +802,6 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
         return new SortPartImpl(this, false);
     }
 
-
-    @Override
-    public final void appendSQL(SQLContext context) {
-        context.sqlBuilder()
-                .append(" ");
-        // invoke descendant method
-        afterSpace(context);
-
-        if (this.alias != null) {
-            context.sqlBuilder()
-                    .append(" AS ")
-                    .append(context.dql().quoteIfNeed(this.alias))
-            ;
-        }
-    }
-
     @Override
     public boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
         return false;
@@ -851,28 +822,13 @@ abstract class AbstractExpression<E> implements Expression<E>, Selection, Expres
         return false;
     }
 
-    @Override
-    public void appendSortPart(SQLContext context) {
-        if (this.alias == null) {
-            this.appendSQL(context);
-        } else {
-            context.appendText(this.alias);
-        }
-    }
-
-    @Override
-    public final String toString() {
-        String text = beforeAs();
-        if (StringUtils.hasText(this.alias)) {
-            text = text + " AS " + this.alias;
-        }
-        return text;
-    }
 
     /*################################## blow protected template method ##################################*/
 
-    protected abstract void afterSpace(SQLContext context);
+    @Override
+    public final void appendSortPart(SQLContext context) {
+        this.appendSQL(context);
+    }
 
-    protected abstract String beforeAs();
 
 }

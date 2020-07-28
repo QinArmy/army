@@ -41,7 +41,7 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
     }
 
     @Override
-    protected final void afterSpace(SQLContext context) {
+    protected final void appendSQL(SQLContext context) {
         SQL sql = context.dql();
 
         context.sqlBuilder()
@@ -61,7 +61,7 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
     }
 
     @Override
-    protected final String beforeAs() {
+    protected final String toString() {
         return subQueryAlias + "." + derivedFieldName();
     }
 

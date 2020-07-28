@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.FieldSelection;
 import io.army.criteria.SQLContext;
-import io.army.meta.FieldExpression;
+import io.army.meta.GenericField;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
@@ -14,9 +14,9 @@ import java.util.Collection;
  */
 final class FieldSelectionImpl<E> extends AbstractExpression<E> implements FieldSelection {
 
-    private final FieldExpression<?, E> fieldExp;
+    private final GenericField<?, E> fieldExp;
 
-    FieldSelectionImpl(FieldExpression<?, E> fieldExp, String alias) {
+    FieldSelectionImpl(GenericField<?, E> fieldExp, String alias) {
         this.fieldExp = fieldExp;
         this.as(alias);
     }
@@ -32,12 +32,12 @@ final class FieldSelectionImpl<E> extends AbstractExpression<E> implements Field
     }
 
     @Override
-    protected final void afterSpace(SQLContext context) {
+    protected final void appendSQL(SQLContext context) {
         this.fieldExp.appendSQL(context);
     }
 
     @Override
-    public String beforeAs() {
+    public String toString() {
         return this.fieldExp.toString();
     }
 

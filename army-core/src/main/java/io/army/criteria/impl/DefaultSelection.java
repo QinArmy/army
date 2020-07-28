@@ -4,6 +4,7 @@ import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
 import io.army.criteria.Selection;
 import io.army.meta.mapping.MappingMeta;
+import io.army.util.Assert;
 
 final class DefaultSelection implements Selection {
 
@@ -12,22 +13,23 @@ final class DefaultSelection implements Selection {
     private final String alias;
 
     DefaultSelection(Expression<?> expression, String alias) {
+        Assert.hasText(alias,"alias required for Selection");
         this.expression = expression;
         this.alias = alias;
     }
 
     @Override
-    public String alias() {
+    public final String alias() {
         return this.alias;
     }
 
     @Override
-    public MappingMeta mappingMeta() {
+    public final MappingMeta mappingMeta() {
         return this.expression.mappingMeta();
     }
 
     @Override
-    public void appendSQL(SQLContext context) {
+    public final void appendSQL(SQLContext context) {
         this.expression.appendSQL(context);
         context.sqlBuilder()
                 .append(" AS ")
@@ -35,12 +37,12 @@ final class DefaultSelection implements Selection {
     }
 
     @Override
-    public void appendSortPart(SQLContext context) {
-        this.expression.appendSQL(context);
+    public final void appendSortPart(SQLContext context) {
+       context.appendText(this.alias);
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
         return this.expression.toString() + " AS " + this.alias;
     }
 }

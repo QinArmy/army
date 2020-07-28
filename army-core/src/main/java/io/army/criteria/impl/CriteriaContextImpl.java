@@ -211,7 +211,7 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
         }
 
         @Override
-        protected void afterSpace(SQLContext context) {
+        protected void appendSQL(SQLContext context) {
             SQL sql = context.dql();
             context.sqlBuilder()
                     .append(sql.quoteIfNeed(this.selection.alias()));
@@ -219,7 +219,7 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
         }
 
         @Override
-        protected String beforeAs() {
+        protected String toString() {
             return this.selection.alias();
         }
 

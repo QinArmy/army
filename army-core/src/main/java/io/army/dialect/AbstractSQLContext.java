@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.criteria.SpecialPredicate;
+import io.army.criteria.FieldPredicate;
 import io.army.criteria.Visible;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -46,7 +46,7 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
     }
 
     @Override
-    public void appendFieldPredicate(SpecialPredicate predicate) {
+    public void appendFieldPredicate(FieldPredicate predicate) {
         predicate.appendPredicate(this);
     }
 

@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.lang.Nullable;
-import io.army.meta.FieldExpression;
+import io.army.meta.GenericField;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
@@ -51,8 +51,8 @@ abstract class AbstractSQLS {
 
     public static ParamMeta obtainParamMeta(Expression<?> expression) {
         ParamMeta paramMeta;
-        if (expression instanceof FieldExpression) {
-            FieldMeta<?, ?> fieldMeta = ((FieldExpression<?, ?>) expression).fieldMeta();
+        if (expression instanceof GenericField) {
+            FieldMeta<?, ?> fieldMeta = ((GenericField<?, ?>) expression).fieldMeta();
             if (fieldMeta.codec()) {
                 paramMeta = fieldMeta;
             } else {

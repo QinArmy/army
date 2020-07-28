@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
+import io.army.criteria.IPredicate;
 import io.army.criteria.SQLContext;
-import io.army.criteria.SpecialPredicate;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
@@ -39,7 +39,7 @@ class BetweenPredicate extends AbstractPredicate {
     }
 
     @Override
-    protected void afterSpace(SQLContext context) {
+    protected void appendSQL(SQLContext context) {
         doAppendSQL(context);
     }
 
@@ -54,7 +54,7 @@ class BetweenPredicate extends AbstractPredicate {
 
 
     @Override
-    public String beforeAs() {
+    public String toString() {
         return String.format("%s BETWEEN %s AND %s", left, center, right);
     }
 
@@ -67,14 +67,14 @@ class BetweenPredicate extends AbstractPredicate {
 
     /*################################## blow private static inner class ##################################*/
 
-    private static final class SpecialBetweenPredicate extends BetweenPredicate implements SpecialPredicate {
+    private static final class SpecialBetweenPredicate extends BetweenPredicate implements IPredicate {
 
         private SpecialBetweenPredicate(Expression<?> left, Expression<?> center, Expression<?> right) {
             super(left, center, right);
         }
 
         @Override
-        protected void afterSpace(SQLContext context) {
+        protected void appendSQL(SQLContext context) {
             context.appendFieldPredicate(this);
         }
 

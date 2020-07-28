@@ -10,5 +10,5 @@ import io.army.meta.FieldMeta;
 public interface FieldValueEqualPredicate extends FieldValuePredicate {
 
     @Override
-    FieldMeta<?, ?> fieldExp();
+    FieldMeta<?, ?> fieldMeta();
 }

@@ -53,7 +53,7 @@ class ColumnSubQueryPredicate extends AbstractPredicate {
 
 
     @Override
-    protected void afterSpace(SQLContext context) {
+    protected void appendSQL(SQLContext context) {
         operand.appendSQL(context);
         StringBuilder builder = context.sqlBuilder()
                 .append(" ")
@@ -68,7 +68,7 @@ class ColumnSubQueryPredicate extends AbstractPredicate {
 
     @SuppressWarnings("all")
     @Override
-    protected String beforeAs() {
+    protected String toString() {
         StringBuilder builder = new StringBuilder()
                 .append("(")
                 .append(operand)

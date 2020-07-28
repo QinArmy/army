@@ -26,4 +26,6 @@ public interface SQL {
 
     boolean singleDeleteHasTableAlias();
 
+    boolean hasRowKeywords();
+
 }

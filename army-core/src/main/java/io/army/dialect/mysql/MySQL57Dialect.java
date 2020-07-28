@@ -14,7 +14,6 @@ import java.util.Set;
 
 /**
  * this class is a  {@link Dialect} implementation then abstract base class of all MySQL 5.7 Dialect
- * created  on 2018/10/21.
  */
 class MySQL57Dialect extends AbstractDialect {
 
@@ -50,6 +49,11 @@ class MySQL57Dialect extends AbstractDialect {
     @Override
     public final boolean singleDeleteHasTableAlias() {
         return false;
+    }
+
+    @Override
+    public final boolean hasRowKeywords() {
+        return true;
     }
 
     /*####################################### below AbstractDialect template  method #################################*/

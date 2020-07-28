@@ -5,7 +5,7 @@ import io.army.meta.ChildTableMeta;
 /**
  * design for select visible predicate
  */
-public interface ParentChildJoinPredicate extends SpecialPredicate {
+public interface ParentChildJoinPredicate extends IPredicate {
 
     ChildTableMeta<?> childMeta();
 }

@@ -92,7 +92,13 @@ final class StandardContextualDelete<C> extends AbstractSQLDebug implements Dele
     /*################################## blow private method ##################################*/
 
     @Override
-    public final SingleWhereAndAble<C> and(@Nullable IPredicate predicate) {
+    public final SingleWhereAndAble<C> and(IPredicate predicate) {
+        this.predicateList.add(predicate);
+        return this;
+    }
+
+    @Override
+    public final SingleWhereAndAble<C> ifAnd(@Nullable IPredicate predicate) {
         if (predicate != null) {
             this.predicateList.add(predicate);
         }

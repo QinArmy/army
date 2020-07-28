@@ -1,7 +1,7 @@
 package io.army.dialect;
 
+import io.army.criteria.FieldPredicate;
 import io.army.criteria.PrimaryValueEqualPredicate;
-import io.army.criteria.SpecialPredicate;
 import io.army.criteria.Visible;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
@@ -50,7 +50,7 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
     }
 
 
-    final void appendDomainFieldPredicate(SpecialPredicate predicate) {
+    final void appendDomainFieldPredicate(FieldPredicate predicate) {
         if (predicate instanceof PrimaryValueEqualPredicate) {
             predicate.appendPredicate(this);
         } else if (!predicate.containsSubQuery()
@@ -147,7 +147,7 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
         ;
     }
 
-    private void doReplaceFieldPairWithExistsClause(SpecialPredicate predicate) {
+    private void doReplaceFieldPairWithExistsClause(FieldPredicate predicate) {
 
         final Dialect dialect = this.dialect;
         final String safeRelationAlias = dialect.quoteIfNeed(this.relationAlias);

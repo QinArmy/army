@@ -137,7 +137,13 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
     /*################################## blow WhereAndAble method ##################################*/
 
     @Override
-    public final WhereAndAble<T, C> and(@Nullable IPredicate predicate) {
+    public final WhereAndAble<T, C> and(IPredicate predicate) {
+        this.predicateList.add(predicate);
+        return this;
+    }
+
+    @Override
+    public final WhereAndAble<T, C> ifAnd(@Nullable IPredicate predicate) {
         if (predicate != null) {
             this.predicateList.add(predicate);
         }

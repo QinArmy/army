@@ -242,7 +242,7 @@ abstract class DMLUtils {
         boolean hasVersion = false;
         for (IPredicate predicate : predicateList) {
             if (predicate instanceof FieldValuePredicate) {
-                FieldExpression<?, ?> fieldExp = ((FieldValuePredicate) predicate).fieldExp();
+                GenericField<?, ?> fieldExp = ((FieldValuePredicate) predicate).fieldMeta();
                 if (TableMeta.VERSION.equals(fieldExp.propertyName())) {
                     hasVersion = true;
                     break;
@@ -613,7 +613,7 @@ abstract class DMLUtils {
             if (predicate instanceof FieldValuePredicate) {
                 FieldValuePredicate valuePredicate = (FieldValuePredicate) predicate;
                 if (valuePredicate.operator() == DualPredicateOperator.EQ
-                        && valuePredicate.fieldExp().fieldMeta() == discriminator
+                        && valuePredicate.fieldMeta().fieldMeta() == discriminator
                         && discriminatorClass.isInstance(valuePredicate.value())) {
                     has = true;
                     break;

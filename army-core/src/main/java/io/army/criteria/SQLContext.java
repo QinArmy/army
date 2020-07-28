@@ -9,12 +9,11 @@ import io.army.wrapper.ParamWrapper;
 
 public interface SQLContext {
 
-
     void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta);
 
     void appendField(FieldMeta<?, ?> fieldMeta);
 
-    void appendFieldPredicate(SpecialPredicate predicate);
+    void appendFieldPredicate(FieldPredicate predicate);
 
     void appendText(String textValue);
 

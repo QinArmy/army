@@ -52,6 +52,13 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
 
     int discriminatorValue();
 
+    boolean sharding();
+
+    /**
+     *
+     * @param database true : database route field list,false : table route field list.
+     * @return a unmodifiable list
+     */
     List<FieldMeta<?, ?>> routeFieldList(boolean database);
 
     @Nullable

@@ -13,7 +13,7 @@ final class BracketsExpression<E> extends AbstractExpression<E> {
     }
 
     @Override
-    protected void afterSpace(SQLContext context) {
+    protected void appendSQL(SQLContext context) {
         StringBuilder builder = context.sqlBuilder();
         builder.append("( ");
         exp.appendSQL(context);
@@ -26,7 +26,7 @@ final class BracketsExpression<E> extends AbstractExpression<E> {
     }
 
     @Override
-    public String beforeAs() {
+    public String toString() {
         return "(" + exp + ")";
     }
 }
