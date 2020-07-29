@@ -20,7 +20,7 @@ interface InsertSQLExecutor {
     <T> List<T> returningInsert(InnerSession session, SQLWrapper sqlWrapper, Class<T> resultClass)
             throws InsertException;
 
-    static InsertSQLExecutor build(InnerSyncSessionFactory sessionFactory) {
+    static InsertSQLExecutor build(InnerRmSessionFactory sessionFactory) {
         return new InsertSQLExecutorIml(sessionFactory);
     }
 

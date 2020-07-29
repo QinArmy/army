@@ -1,6 +1,5 @@
-package io.army.boot;
+package io.army;
 
-import io.army.*;
 import io.army.asm.TableMetaLoader;
 import io.army.codec.FieldCodec;
 import io.army.criteria.MetaException;
@@ -16,8 +15,6 @@ import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.ZoneId;
 import java.util.*;
@@ -25,11 +22,9 @@ import java.util.*;
 /**
  * @see GenericSessionFactory
  */
-abstract class SessionFactoryUtils {
+public abstract class GenericSessionFactoryUtils {
 
-    static final Logger LOG = LoggerFactory.getLogger(SessionFactoryUtils.class);
-
-    protected SessionFactoryUtils() {
+    protected GenericSessionFactoryUtils() {
         throw new UnsupportedOperationException();
     }
 
@@ -63,6 +58,28 @@ abstract class SessionFactoryUtils {
     static boolean sessionCache(Environment env, String factoryName) {
         return env.getProperty(String.format(ArmyConfigConstant.SESSION_CACHE, factoryName)
                 , Boolean.class, Boolean.TRUE);
+    }
+
+    static boolean shardingSubQueryInsert(Environment env, String factoryName, ShardingMode shardingMode) {
+        boolean support;
+        if (shardingMode == ShardingMode.NO_SHARDING) {
+            support = false;
+        } else {
+            support = env.getProperty(String.format(ArmyConfigConstant.SHARDING_SUB_QUERY_INSERT, factoryName)
+                    , Boolean.class, Boolean.FALSE);
+        }
+        return support;
+    }
+
+    static boolean allowSpanSharding(Environment env, String factoryName, ShardingMode shardingMode) {
+        boolean allow;
+        if (shardingMode == ShardingMode.NO_SHARDING) {
+            allow = false;
+        } else {
+            allow = env.getProperty(String.format(ArmyConfigConstant.ALLOW_SPAN_SHARDING, factoryName)
+                    , Boolean.class, Boolean.FALSE);
+        }
+        return allow;
     }
 
     static Map<Class<?>, TableMeta<?>> scanPackagesForMeta(SchemaMeta schemaMeta, String factoryName, Environment env) {

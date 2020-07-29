@@ -1,11 +1,11 @@
-package io.army.boot;
+package io.army;
 
 import io.army.codec.FieldCodec;
 import io.army.env.Environment;
 
 import java.util.Collection;
 
-abstract class GenericSessionFactoryParams {
+public abstract class GenericSessionFactoryParams {
 
     private String name;
 
@@ -17,7 +17,7 @@ abstract class GenericSessionFactoryParams {
         return name;
     }
 
-    public GenericSessionFactoryParams setName(String name) {
+    protected GenericSessionFactoryParams setName(String name) {
         this.name = name;
         return this;
     }

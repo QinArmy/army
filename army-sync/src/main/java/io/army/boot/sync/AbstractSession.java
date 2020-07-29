@@ -21,7 +21,7 @@ import java.util.List;
 
 abstract class AbstractSession extends AbstractGenericSyncApiSession implements InnerSession, InnerTxSession {
 
-    final InnerSyncSessionFactory sessionFactory;
+    final InnerRmSessionFactory sessionFactory;
 
     final Connection connection;
 
@@ -31,7 +31,7 @@ abstract class AbstractSession extends AbstractGenericSyncApiSession implements 
 
     final InnerCodecContext codecContext = new CodecContextImpl();
 
-    AbstractSession(InnerSyncSessionFactory sessionFactory, Connection connection)
+    AbstractSession(InnerRmSessionFactory sessionFactory, Connection connection)
             throws SessionException {
         this.sessionFactory = sessionFactory;
         this.connection = connection;

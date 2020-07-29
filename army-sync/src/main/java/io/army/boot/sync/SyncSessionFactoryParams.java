@@ -1,6 +1,6 @@
 package io.army.boot.sync;
 
-import io.army.boot.GenericSessionFactoryParams;
+import io.army.GenericSessionFactoryParams;
 import io.army.dialect.SQLDialect;
 import io.army.interceptor.DomainInterceptor;
 

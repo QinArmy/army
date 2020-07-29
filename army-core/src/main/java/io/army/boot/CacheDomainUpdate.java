@@ -64,32 +64,42 @@ final class CacheDomainUpdate implements Update, InnerStandardUpdate {
 
 
     @Override
-    public TableMeta<?> tableMeta() {
+    public final TableMeta<?> tableMeta() {
         return this.tableMeta;
     }
 
     @Override
-    public String tableAlias() {
+    public final String tableAlias() {
         return this.tableAlias;
     }
 
     @Override
-    public List<FieldMeta<?, ?>> targetFieldList() {
+    public final int databaseIndex() {
+        return -1;
+    }
+
+    @Override
+    public final int tableIndex() {
+        return -1;
+    }
+
+    @Override
+    public final List<FieldMeta<?, ?>> targetFieldList() {
         return this.targetFieldList;
     }
 
     @Override
-    public List<Expression<?>> valueExpList() {
+    public final List<Expression<?>> valueExpList() {
         return this.valueExpList;
     }
 
     @Override
-    public List<IPredicate> predicateList() {
+    public final List<IPredicate> predicateList() {
         return this.predicateList;
     }
 
     @Override
-    public void clear() {
+    public final void clear() {
         this.targetFieldList = null;
         this.valueExpList = null;
         this.predicateList = null;
@@ -97,7 +107,7 @@ final class CacheDomainUpdate implements Update, InnerStandardUpdate {
     }
 
     @Override
-    public boolean prepared() {
+    public final boolean prepared() {
         return this.prepared;
     }
 }

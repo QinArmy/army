@@ -50,4 +50,6 @@ public interface ArmyConfigConstant {
 
     String SHARDING_SUB_QUERY_INSERT = "army.%s.sharding.sub.query.insert.enable";
 
+    String ALLOW_SPAN_SHARDING = "army.%s.allowSpanSharding";
+
 }

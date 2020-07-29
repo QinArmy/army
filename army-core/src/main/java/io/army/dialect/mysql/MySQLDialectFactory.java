@@ -1,13 +1,13 @@
 package io.army.dialect.mysql;
 
-import io.army.GenericSessionFactory;
+import io.army.GenericRmSessionFactory;
 import io.army.dialect.Dialect;
 import io.army.dialect.SQLDialect;
 import io.army.util.Assert;
 
 public abstract class MySQLDialectFactory {
 
-    public static Dialect createMySQLDialect(SQLDialect sqlDialect, GenericSessionFactory sessionFactory) {
+    public static Dialect createMySQLDialect(SQLDialect sqlDialect, GenericRmSessionFactory sessionFactory) {
         Assert.notNull(sqlDialect, "dialect required");
 
         Dialect dialect;

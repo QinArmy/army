@@ -1,7 +1,6 @@
 package io.army.boot;
 
 import io.army.ErrorCode;
-import io.army.IBean;
 import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.CriteriaException;

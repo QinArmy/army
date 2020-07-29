@@ -47,7 +47,7 @@ public interface GenericSessionFactory {
     boolean supportSessionCache();
 
     @Nullable
-    GenericSessionFactory tmSessionFactory();
+    GenericTmSessionFactory tmSessionFactory();
 
     boolean shardingSubQueryInsert();
 

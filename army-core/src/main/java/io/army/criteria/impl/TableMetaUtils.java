@@ -7,12 +7,13 @@ import io.army.domain.IDomain;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.*;
-import io.army.sharding.DatabaseRoute;
 import io.army.sharding.Route;
-import io.army.sharding.RouteType;
 import io.army.sharding.TableRoute;
 import io.army.struct.CodeEnum;
-import io.army.util.*;
+import io.army.util.AnnotationUtils;
+import io.army.util.Assert;
+import io.army.util.ReflectionUtils;
+import io.army.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -207,13 +208,13 @@ abstract class TableMetaUtils {
         return columnName;
     }
 
-    static <T extends IDomain> Pair<List<FieldMeta<?, ?>>, List<FieldMeta<?, ?>>> routeFieldList(
+    static <T extends IDomain> RouteMeta routeMeta(
             TableMeta<?> tableMeta, Map<String, FieldMeta<T, ?>> fieldMetaMap) {
         ShardingRoute shardingRoute = AnnotationUtils.getAnnotation(tableMeta.javaType(), ShardingRoute.class);
         if (shardingRoute == null) {
-            return new Pair<>(Collections.emptyList(), Collections.emptyList());
+            return new RouteMeta(Collections.emptyList(), Collections.emptyList(), null);
         }
-        Class<?> routeClass = loadShardingRouteClass(tableMeta, shardingRoute.value());
+        Class<? extends Route> routeClass = loadShardingRouteClass(tableMeta, shardingRoute.value());
         List<FieldMeta<?, ?>> databaseRouteFieldList, tableRouteFieldList;
         if (io.army.sharding.ShardingRoute.class.isAssignableFrom(routeClass)) {
             String[] routeFields = shardingRoute.routeFields();
@@ -238,14 +239,19 @@ abstract class TableMetaUtils {
                     , io.army.sharding.ShardingRoute.class.getName()
                     , TableRoute.class.getName());
         }
-        return new Pair<>(databaseRouteFieldList, tableRouteFieldList);
+        return new RouteMeta(databaseRouteFieldList, tableRouteFieldList, routeClass);
     }
 
     /*################################ private method ####################################*/
 
-    private static Class<?> loadShardingRouteClass(TableMeta<?> tableMeta, String className) {
+    @SuppressWarnings("unchecked")
+    private static Class<? extends Route> loadShardingRouteClass(TableMeta<?> tableMeta, String className) {
         try {
-            return Class.forName(className);
+            Class<?> routeClass = Class.forName(className);
+            if (!Route.class.isAssignableFrom(routeClass)) {
+                throw new MetaException("TableMeta[%s] route class isn't %s type.", tableMeta, Route.class.getName());
+            }
+            return (Class<? extends Route>) routeClass;
         } catch (ClassNotFoundException e) {
             throw new MetaException(e, "TableMeta[%s] not found route implementation class[%s]", tableMeta, className);
         }
@@ -257,7 +263,7 @@ abstract class TableMetaUtils {
     private static <T extends IDomain> List<FieldMeta<?, ?>> getRouteFieldList(TableMeta<?> tableMeta
             , Map<String, FieldMeta<T, ?>> fieldMetaMap, String[] routeFields) {
         if (routeFields.length == 0) {
-                throw new MetaException("TableMeta[%s] not specified route fields",tableMeta);
+            throw new MetaException("TableMeta[%s] not specified route fields", tableMeta);
         }
         List<FieldMeta<?, ?>> fieldMetaList = new ArrayList<>(routeFields.length);
         for (String propName : routeFields) {
@@ -735,6 +741,22 @@ abstract class TableMetaUtils {
         @Nullable
         FieldMeta<? super T, ?> getDiscriminator() {
             return discriminator;
+        }
+    }
+
+    static final class RouteMeta {
+
+        final List<FieldMeta<?, ?>> databaseRouteFieldList;
+
+        final List<FieldMeta<?, ?>> tableRouteFieldList;
+
+        final Class<? extends Route> routeClass;
+
+        RouteMeta(List<FieldMeta<?, ?>> databaseRouteFieldList, List<FieldMeta<?, ?>> tableRouteFieldList
+                , @Nullable Class<? extends Route> routeClass) {
+            this.databaseRouteFieldList = databaseRouteFieldList;
+            this.tableRouteFieldList = tableRouteFieldList;
+            this.routeClass = routeClass;
         }
     }
 

@@ -38,12 +38,12 @@ import java.util.*;
  */
 abstract class SQLExecutorSupport {
 
-    final InnerSyncSessionFactory sessionFactory;
+    final InnerRmSessionFactory sessionFactory;
 
 
     final MappingContext mappingContext;
 
-    SQLExecutorSupport(InnerSyncSessionFactory sessionFactory) {
+    SQLExecutorSupport(InnerRmSessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
         this.mappingContext = sessionFactory.dialect().mappingContext();
     }

@@ -38,7 +38,7 @@ final class SessionImpl extends AbstractSession {
 
     private boolean closed;
 
-    SessionImpl(InnerSyncSessionFactory sessionFactory, Connection connection
+    SessionImpl(InnerRmSessionFactory sessionFactory, Connection connection
             , boolean currentSession, boolean resetConnection) throws SessionException {
         super(sessionFactory, connection);
 

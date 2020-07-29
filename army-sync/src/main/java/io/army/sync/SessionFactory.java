@@ -4,7 +4,7 @@ import io.army.GenericRmSessionFactory;
 import io.army.SessionException;
 
 /**
- *
+ * This interface
  */
 public interface SessionFactory extends GenericSyncApiSessionFactory, GenericRmSessionFactory {
 

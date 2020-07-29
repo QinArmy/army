@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.annotation.*;
-import io.army.annotation.ShardingRoute;
 import io.army.criteria.MetaException;
 import io.army.domain.IDomain;
 import io.army.generator.PreFieldGenerator;
@@ -9,12 +8,10 @@ import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
-import io.army.meta.RouteMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingMeta;
 import io.army.modelgen.MetaConstant;
-import io.army.sharding.*;
 import io.army.struct.CodeEnum;
 import io.army.util.AnnotationUtils;
 import io.army.util.ClassUtils;

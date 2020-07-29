@@ -1,11 +1,9 @@
 package io.army.domain;
 
-import io.army.IBean;
-
 /**
- * created  on 2018/11/20.
+ *
  */
-public interface IDomain extends IBean {
+public interface IDomain {
 
 
     String NOW = "NOW()";

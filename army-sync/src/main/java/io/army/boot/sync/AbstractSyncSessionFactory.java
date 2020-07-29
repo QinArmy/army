@@ -1,6 +1,6 @@
 package io.army.boot.sync;
 
-import io.army.boot.AbstractGenericSessionFactory;
+import io.army.AbstractGenericSessionFactory;
 import io.army.interceptor.DomainInterceptor;
 import io.army.meta.TableMeta;
 import io.army.sync.GenericSyncSessionFactory;
@@ -8,7 +8,8 @@ import io.army.sync.GenericSyncSessionFactory;
 import java.util.List;
 import java.util.Map;
 
-abstract class AbstractSyncSessionFactory extends AbstractGenericSessionFactory implements GenericSyncSessionFactory {
+abstract class AbstractSyncSessionFactory extends AbstractGenericSessionFactory
+        implements GenericSyncSessionFactory {
 
 
     private final Map<TableMeta<?>, List<DomainInterceptor>> domainInterceptorMap;
@@ -24,9 +25,9 @@ abstract class AbstractSyncSessionFactory extends AbstractGenericSessionFactory 
     /**
      * create inner session factory for {@link io.army.ShardingMode#SHARDING} or {@link io.army.ShardingMode#SAME_SCHEMA_SHARDING}
      */
-    AbstractSyncSessionFactory(AbstractSyncSessionFactory sessionFactory) {
-        super(sessionFactory);
-        this.domainInterceptorMap = sessionFactory.domainInterceptorMap;
+    AbstractSyncSessionFactory(AbstractSyncSessionFactory tmSessionFactory, int factoryIndex) {
+        super(tmSessionFactory, factoryIndex);
+        this.domainInterceptorMap = tmSessionFactory.domainInterceptorMap;
     }
 
 

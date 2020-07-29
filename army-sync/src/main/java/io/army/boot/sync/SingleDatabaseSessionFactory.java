@@ -1,14 +1,17 @@
 package io.army.boot.sync;
 
 import io.army.*;
+import io.army.boot.DomainValuesGenerator;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.dialect.Dialect;
 import io.army.dialect.SQLDialect;
+import io.army.lang.Nullable;
+import io.army.meta.TableMeta;
+import io.army.sharding.TableRoute;
 import io.army.sync.ProxySession;
 import io.army.sync.Session;
 import io.army.sync.SessionFactory;
 import io.army.util.Assert;
-import io.army.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,9 +27,10 @@ import java.sql.SQLException;
  *     <li>{@link ShardingMode#SAME_SCHEMA_SHARDING}</li>
  * </ul>
  */
-class SingleDataSourceSessionFactory extends AbstractSyncSessionFactory implements InnerSyncSessionFactory {
+class SingleDatabaseSessionFactory extends AbstractSyncSessionFactory
+        implements SessionFactory, InnerRmSessionFactory {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SingleDataSourceSessionFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SingleDatabaseSessionFactory.class);
 
     private final DataSource dataSource;
 
@@ -38,6 +42,8 @@ class SingleDataSourceSessionFactory extends AbstractSyncSessionFactory implemen
 
     private final CurrentSessionContext currentSessionContext;
 
+    private final DomainValuesGenerator domainValuesGenerator;
+
     private final InsertSQLExecutor insertSQLExecutor;
 
     private final SelectSQLExecutor selectSQLExecutor;
@@ -47,7 +53,7 @@ class SingleDataSourceSessionFactory extends AbstractSyncSessionFactory implemen
     private boolean closed;
 
 
-    SingleDataSourceSessionFactory(SyncSessionFactoryParams.Single factoryParams)
+    SingleDatabaseSessionFactory(SyncSessionFactoryParams.Single factoryParams)
             throws SessionFactoryException {
         super(factoryParams);
         DataSource dataSource = factoryParams.getDataSource();
@@ -57,10 +63,10 @@ class SingleDataSourceSessionFactory extends AbstractSyncSessionFactory implemen
         this.currentSessionContext = SyncSessionFactoryUtils.buildCurrentSessionContext(this);
         this.proxySession = new ProxySessionImpl(this, this.currentSessionContext);
 
-        Pair<Dialect, SQLDialect> pair = SyncSessionFactoryUtils.createDialect(dataSource, this);
-        this.dialect = pair.getFirst();
-        this.actualSQLDialect = pair.getSecond();
+        this.dialect = SyncSessionFactoryUtils.createDialect(dataSource, this);
+        this.actualSQLDialect = this.dialect.sqlDialect();
         // executor after dialect
+        this.domainValuesGenerator = DomainValuesGenerator.build(this);
         this.insertSQLExecutor = InsertSQLExecutor.build(this);
         this.selectSQLExecutor = SelectSQLExecutor.build(this);
         this.updateSQLExecutor = UpdateSQLExecutor.build(this);
@@ -113,6 +119,14 @@ class SingleDataSourceSessionFactory extends AbstractSyncSessionFactory implemen
         return this.updateSQLExecutor;
     }
 
+
+    @Nullable
+    @Override
+    public GenericTmSessionFactory tmSessionFactory() {
+        // always null
+        return null;
+    }
+
     @Override
     public boolean closed() {
         return this.closed;
@@ -134,6 +148,15 @@ class SingleDataSourceSessionFactory extends AbstractSyncSessionFactory implemen
         return this.actualSQLDialect;
     }
 
+    @Override
+    public DomainValuesGenerator domainValuesGenerator() {
+        return this.domainValuesGenerator;
+    }
+
+    @Override
+    public TableRoute tableRoute(TableMeta<?> tableMeta) {
+        return null;
+    }
 
     @Override
     public String toString() {
@@ -184,11 +207,11 @@ class SingleDataSourceSessionFactory extends AbstractSyncSessionFactory implemen
         public Session build() throws SessionException {
             final boolean current = this.currentSession;
             try {
-                final Session session = new SessionImpl(SingleDataSourceSessionFactory.this
-                        , SingleDataSourceSessionFactory.this.dataSource.getConnection()
+                final Session session = new SessionImpl(SingleDatabaseSessionFactory.this
+                        , SingleDatabaseSessionFactory.this.dataSource.getConnection()
                         , current, noResetConnection);
                 if (current) {
-                    SingleDataSourceSessionFactory.this.currentSessionContext.currentSession(session);
+                    SingleDatabaseSessionFactory.this.currentSessionContext.currentSession(session);
                 }
                 return session;
             } catch (SQLException e) {

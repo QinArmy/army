@@ -3,14 +3,13 @@ package io.army.criteria.impl;
 import io.army.ArmyRuntimeException;
 import io.army.annotation.Table;
 import io.army.criteria.MetaException;
-import io.army.criteria.SQLContext;
 import io.army.domain.IDomain;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.*;
+import io.army.sharding.Route;
 import io.army.struct.CodeEnum;
 import io.army.util.Assert;
-import io.army.util.Pair;
 
 import java.util.Collection;
 import java.util.List;
@@ -160,6 +159,8 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     private final List<FieldMeta<?, ?>> tableRouteFieldList;
 
+    private final Class<? extends Route> routeClass;
+
     @SuppressWarnings("unchecked")
     private DefaultTableMeta(@Nullable ParentTableMeta<? super T> parentTableMeta, Class<T> domainClass) {
         Assert.notNull(domainClass, "entityClass required");
@@ -191,12 +192,12 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
                 this.discriminator = parentTableMeta.discriminator();
             }
 
-            Pair<List<FieldMeta<?, ?>>, List<FieldMeta<?, ?>>> routePair = TableMetaUtils.routeFieldList(
+            TableMetaUtils.RouteMeta routeMeta = TableMetaUtils.routeMeta(
                     this, this.propNameToFieldMeta);
-            this.databaseRouteFieldList = routePair.getFirst();
-            this.tableRouteFieldList = routePair.getSecond();
+            this.databaseRouteFieldList = routeMeta.databaseRouteFieldList;
+            this.tableRouteFieldList = routeMeta.tableRouteFieldList;
             this.sharding = !this.tableRouteFieldList.isEmpty();
-
+            this.routeClass = routeMeta.routeClass;
             this.discriminatorValue = TableMetaUtils.discriminatorValue(this.mappingMode, this);
 
             this.primaryField = (PrimaryFieldMeta<T, Object>) this.propNameToFieldMeta.get(TableMeta.ID);
@@ -349,6 +350,12 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     @Override
     public final List<FieldMeta<?, ?>> routeFieldList(boolean database) {
         return database ? this.databaseRouteFieldList : this.tableRouteFieldList;
+    }
+
+    @Nullable
+    @Override
+    public final Class<? extends Route> routeClass() {
+        return this.routeClass;
     }
 
     @Override

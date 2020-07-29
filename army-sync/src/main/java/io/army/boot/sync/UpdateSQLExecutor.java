@@ -23,7 +23,7 @@ interface UpdateSQLExecutor {
     <T> List<T> returningUpdate(InnerSession session, SQLWrapper sqlWrapper, Class<T> resultClass
             , boolean updateStatement);
 
-    static UpdateSQLExecutor build(InnerSyncSessionFactory sessionFactory) {
+    static UpdateSQLExecutor build(InnerRmSessionFactory sessionFactory) {
         return new UpdateSQLExecutorImpl(sessionFactory);
     }
 }

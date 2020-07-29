@@ -18,9 +18,11 @@ public interface DomainInterceptor {
 
     void afterInsert(TableMeta<?> tableMeta, ReadonlyWrapper wrapper, ProxySession session);
 
-    void beforeUpdate(TableMeta<?> tableMeta, List<FieldMeta<?, ?>> targetFieldList);
+    void beforeUpdate(TableMeta<?> tableMeta, List<FieldMeta<?, ?>> targetFieldList, ProxySession session);
 
-    void afterUpdate(TableMeta<?> tableMeta, List<FieldMeta<?, ?>> targetFieldList);
+    void afterUpdate(TableMeta<?> tableMeta, List<FieldMeta<?, ?>> targetFieldList, ProxySession session);
 
+    void beforeDelete(TableMeta<?> tableMeta, ProxySession session);
 
+    void afterDelete(TableMeta<?> tableMeta, ProxySession session);
 }

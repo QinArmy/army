@@ -1,10 +1,6 @@
 package io.army.boot.sync;
 
-import io.army.ArmyConfigConstant;
-import io.army.DataAccessException;
-import io.army.ErrorCode;
-import io.army.SessionFactoryException;
-import io.army.boot.SessionFactoryUtils;
+import io.army.*;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectNotMatchException;
@@ -17,7 +13,6 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.sync.GenericSyncSessionFactory;
 import io.army.util.ClassUtils;
-import io.army.util.Pair;
 import io.army.util.ReflectionUtils;
 import io.army.util.StringUtils;
 
@@ -29,7 +24,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.*;
 
-abstract class SyncSessionFactoryUtils extends SessionFactoryUtils {
+abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
 
     static DataSource obtainPrimaryDataSource(final DataSource dataSource) {
         final String className = "org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource";
@@ -54,8 +49,8 @@ abstract class SyncSessionFactoryUtils extends SessionFactoryUtils {
         return primary;
     }
 
-    static Pair<Dialect, SQLDialect> createDialect(DataSource dataSource,
-                                                   RmSessionFactory sessionFactory) {
+    static Dialect createDialect(DataSource dataSource,
+                                 GenericRmSessionFactory sessionFactory) {
 
         SQLDialect sqlDialect = sessionFactory.environment().getProperty(
                 String.format(ArmyConfigConstant.SQL_DIALECT, sessionFactory.name()), SQLDialect.class);
@@ -79,7 +74,7 @@ abstract class SyncSessionFactoryUtils extends SessionFactoryUtils {
             default:
                 throw new RuntimeException(String.format("unknown SQLDialect[%s]", actualSqlDialect));
         }
-        return new Pair<>(dialect, databaseSqlDialect);
+        return dialect;
     }
 
     static CurrentSessionContext buildCurrentSessionContext(GenericSyncSessionFactory sessionFactory) {
@@ -175,7 +170,6 @@ abstract class SyncSessionFactoryUtils extends SessionFactoryUtils {
     private static SQLDialect decideSQLDialect(@Nullable SQLDialect dialect, SQLDialect databaseSqlDialect) {
         SQLDialect actual = dialect;
         if (actual == null) {
-            LOG.debug("extract dml dialect from database");
             actual = databaseSqlDialect;
         } else if (!SQLDialect.sameFamily(dialect, databaseSqlDialect)
                 || dialect.ordinal() > databaseSqlDialect.ordinal()) {

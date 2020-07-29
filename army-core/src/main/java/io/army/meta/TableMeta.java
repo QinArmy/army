@@ -4,6 +4,7 @@ import io.army.criteria.MetaException;
 import io.army.criteria.TableAble;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
+import io.army.sharding.Route;
 import io.army.struct.CodeEnum;
 import io.army.util.ArrayUtils;
 
@@ -55,11 +56,13 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
     boolean sharding();
 
     /**
-     *
      * @param database true : database route field list,false : table route field list.
      * @return a unmodifiable list
      */
     List<FieldMeta<?, ?>> routeFieldList(boolean database);
+
+    @Nullable
+    Class<? extends Route> routeClass();
 
     @Nullable
     ParentTableMeta<? super T> parentMeta();
