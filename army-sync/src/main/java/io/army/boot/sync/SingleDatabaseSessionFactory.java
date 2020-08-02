@@ -2,9 +2,11 @@ package io.army.boot.sync;
 
 import io.army.*;
 import io.army.boot.DomainValuesGenerator;
+import io.army.cache.SessionCacheFactory;
 import io.army.context.spi.CurrentSessionContext;
+import io.army.criteria.NotFoundRouteException;
+import io.army.dialect.Database;
 import io.army.dialect.Dialect;
-import io.army.dialect.SQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.sharding.TableRoute;
@@ -18,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.EnumSet;
+import java.util.Map;
 
 /**
  * this class is a implementation of {@link SessionFactory}.
@@ -28,19 +32,19 @@ import java.sql.SQLException;
  * </ul>
  */
 class SingleDatabaseSessionFactory extends AbstractSyncSessionFactory
-        implements SessionFactory, InnerRmSessionFactory {
+        implements InnerSessionFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(SingleDatabaseSessionFactory.class);
 
-    private final DataSource dataSource;
+    private static final EnumSet<ShardingMode> SUPPORT_SHARDING_SET = EnumSet.of(
+            ShardingMode.NO_SHARDING
+            , ShardingMode.SAME_SCHEMA_SHARDING);
 
-    private final SQLDialect actualSQLDialect;
+    private final DataSource dataSource;
 
     private final Dialect dialect;
 
-    private final ProxySession proxySession;
-
-    private final CurrentSessionContext currentSessionContext;
+    private final SessionCacheFactory sessionCacheFactory;
 
     private final DomainValuesGenerator domainValuesGenerator;
 
@@ -50,21 +54,33 @@ class SingleDatabaseSessionFactory extends AbstractSyncSessionFactory
 
     private final UpdateSQLExecutor updateSQLExecutor;
 
+    private final ProxySession proxySession;
+
+    private final CurrentSessionContext currentSessionContext;
+
+    private final Map<TableMeta<?>, TableRoute> tableRouteMap;
+
+
     private boolean closed;
 
 
-    SingleDatabaseSessionFactory(SyncSessionFactoryParams.Single factoryParams)
+    SingleDatabaseSessionFactory(SessionFactoryBuilderImpl factoryBuilder)
             throws SessionFactoryException {
-        super(factoryParams);
-        DataSource dataSource = factoryParams.getDataSource();
+        super(factoryBuilder);
+        if (!SUPPORT_SHARDING_SET.contains(this.shardingMode)) {
+            throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
+                    , "SHardingMode[%s] is supported by %s.", getClass().getName());
+        }
+        DataSource dataSource = factoryBuilder.dataSource();
         Assert.notNull(dataSource, "dataSource required");
 
         this.dataSource = dataSource;
+        this.dialect = SyncSessionFactoryUtils.createDialectForSync(dataSource, this);
+
         this.currentSessionContext = SyncSessionFactoryUtils.buildCurrentSessionContext(this);
         this.proxySession = new ProxySessionImpl(this, this.currentSessionContext);
-
-        this.dialect = SyncSessionFactoryUtils.createDialect(dataSource, this);
-        this.actualSQLDialect = this.dialect.sqlDialect();
+        this.tableRouteMap = SyncSessionFactoryUtils.routeMap(this, TableRoute.class, 1, factoryBuilder.tableCount());
+        this.sessionCacheFactory = SessionCacheFactory.build(this);
         // executor after dialect
         this.domainValuesGenerator = DomainValuesGenerator.build(this);
         this.insertSQLExecutor = InsertSQLExecutor.build(this);
@@ -77,7 +93,6 @@ class SingleDatabaseSessionFactory extends AbstractSyncSessionFactory
     public void close() throws SessionFactoryException {
         this.closed = true;
     }
-
 
     @Override
     public ProxySession proxySession() {
@@ -104,9 +119,21 @@ class SingleDatabaseSessionFactory extends AbstractSyncSessionFactory
         return this.currentSessionContext;
     }
 
+    @Nullable
+    @Override
+    public GenericTmSessionFactory tmSessionFactory() {
+        // always null
+        return null;
+    }
+
+    @Override
+    public Dialect dialect() {
+        return this.dialect;
+    }
+
     @Override
     public InsertSQLExecutor insertSQLExecutor() {
-        return insertSQLExecutor;
+        return this.insertSQLExecutor;
     }
 
     @Override
@@ -119,33 +146,14 @@ class SingleDatabaseSessionFactory extends AbstractSyncSessionFactory
         return this.updateSQLExecutor;
     }
 
-
-    @Nullable
-    @Override
-    public GenericTmSessionFactory tmSessionFactory() {
-        // always null
-        return null;
-    }
-
-    @Override
-    public boolean closed() {
-        return this.closed;
-    }
-
-    @Override
-    public Dialect dialect() {
-        return dialect;
-    }
-
-
     @Override
     public boolean supportZone() {
         return this.dialect.supportZone();
     }
 
     @Override
-    public SQLDialect actualSQLDialect() {
-        return this.actualSQLDialect;
+    public Database actualDatabase() {
+        return this.dialect.database();
     }
 
     @Override
@@ -154,8 +162,17 @@ class SingleDatabaseSessionFactory extends AbstractSyncSessionFactory
     }
 
     @Override
-    public TableRoute tableRoute(TableMeta<?> tableMeta) {
-        return null;
+    public boolean closed() {
+        return this.closed;
+    }
+
+    @Override
+    public TableRoute tableRoute(TableMeta<?> tableMeta) throws NotFoundRouteException {
+        TableRoute tableRoute = this.tableRouteMap.get(tableMeta);
+        if (tableRoute == null) {
+            throw new NotFoundRouteException("TableMeta[%s] not found table route.", tableMeta);
+        }
+        return tableRoute;
     }
 
     @Override

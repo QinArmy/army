@@ -1,6 +1,6 @@
 package io.army.criteria;
 
-import io.army.dialect.SQLDialect;
+import io.army.dialect.Database;
 import org.slf4j.Logger;
 
 /**
@@ -13,11 +13,11 @@ public interface SQLDebug {
         throw new UnsupportedOperationException();
     }
 
-    default String debugSQL(SQLDialect sqlDialect) {
+    default String debugSQL(Database sqlDialect) {
         throw new UnsupportedOperationException();
     }
 
-    default String debugSQL(SQLDialect sqlDialect, Visible visible) {
+    default String debugSQL(Database sqlDialect, Visible visible) {
         throw new UnsupportedOperationException();
     }
 
@@ -25,11 +25,11 @@ public interface SQLDebug {
         throw new UnsupportedOperationException();
     }
 
-    default void debugSQL(SQLDialect sqlDialect, Logger logger) {
+    default void debugSQL(Database sqlDialect, Logger logger) {
         throw new UnsupportedOperationException();
     }
 
-    default void debugSQL(SQLDialect sqlDialect, Visible visible, Logger logger) {
+    default void debugSQL(Database sqlDialect, Visible visible, Logger logger) {
         throw new UnsupportedOperationException();
     }
 }

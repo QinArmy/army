@@ -38,18 +38,18 @@ import java.util.*;
  */
 abstract class SQLExecutorSupport {
 
-    final InnerRmSessionFactory sessionFactory;
+    final InnerGenericRmSessionFactory sessionFactory;
 
 
     final MappingContext mappingContext;
 
-    SQLExecutorSupport(InnerRmSessionFactory sessionFactory) {
+    SQLExecutorSupport(InnerGenericRmSessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
         this.mappingContext = sessionFactory.dialect().mappingContext();
     }
 
 
-    protected final int doExecuteUpdate(InnerSession session, SimpleSQLWrapper sqlWrapper) {
+    protected final int doExecuteUpdate(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper) {
 
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
             // 1. set params
@@ -67,7 +67,7 @@ abstract class SQLExecutorSupport {
         }
     }
 
-    protected final long doExecuteLargeUpdate(InnerSession session, SimpleSQLWrapper sqlWrapper) {
+    protected final long doExecuteLargeUpdate(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper) {
 
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
             // 1. set params
@@ -90,7 +90,7 @@ abstract class SQLExecutorSupport {
      * @return a unmodifiable map, key : key of {@linkplain BatchSimpleSQLWrapper#paramGroupList()}
      * * ,value : batch update rows of named param.
      */
-    protected final Map<Integer, Integer> doExecuteBatch(InnerSession session, BatchSimpleSQLWrapper sqlWrapper) {
+    protected final Map<Integer, Integer> doExecuteBatch(InnerGenericRmSession session, BatchSimpleSQLWrapper sqlWrapper) {
 
         CodecContext codecContext = session.codecContext();
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
@@ -129,7 +129,7 @@ abstract class SQLExecutorSupport {
      * @return a unmodifiable map, key : key of {@linkplain BatchSimpleSQLWrapper#paramGroupList()}
      * * ,value : batch update rows of named param.
      */
-    protected final Map<Integer, Long> doExecuteLargeBatch(InnerSession session, BatchSimpleSQLWrapper sqlWrapper) {
+    protected final Map<Integer, Long> doExecuteLargeBatch(InnerGenericRmSession session, BatchSimpleSQLWrapper sqlWrapper) {
 
         CodecContext codecContext = session.codecContext();
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
@@ -164,7 +164,7 @@ abstract class SQLExecutorSupport {
         }
     }
 
-    protected final <T> List<T> doExecuteSimpleReturning(InnerSession session, SimpleSQLWrapper sqlWrapper
+    protected final <T> List<T> doExecuteSimpleReturning(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper
             , Class<T> resultClass) {
         final String[] aliasArray = asSelectionAliasArray(sqlWrapper.selectionList());
         // 1. create statement
@@ -193,7 +193,7 @@ abstract class SQLExecutorSupport {
         }
     }
 
-    protected final <T> List<T> doExecuteChildReturning(InnerSession session, ChildSQLWrapper sqlWrapper
+    protected final <T> List<T> doExecuteChildReturning(InnerGenericRmSession session, ChildSQLWrapper sqlWrapper
             , Class<T> resultClass) {
 
         Map<Object, BeanWrapper> beanWrapperMap;
@@ -241,7 +241,7 @@ abstract class SQLExecutorSupport {
         return resultList;
     }
 
-    protected final Map<Object, BeanWrapper> doExecuteFirstReturning(InnerSession session, SimpleSQLWrapper sqlWrapper
+    protected final Map<Object, BeanWrapper> doExecuteFirstReturning(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper
             , Class<?> resultClass) {
         final String[] aliasArray = asSelectionAliasArray(sqlWrapper.selectionList());
         // 1. create statement
@@ -265,7 +265,7 @@ abstract class SQLExecutorSupport {
         }
     }
 
-    protected final <T> List<T> doExecuteSecondReturning(InnerSession session, SimpleSQLWrapper sqlWrapper
+    protected final <T> List<T> doExecuteSecondReturning(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper
             , Map<Object, BeanWrapper> wrapperMap) {
         final String[] aliasArray = asSelectionAliasArray(sqlWrapper.selectionList());
         // 1. create statement

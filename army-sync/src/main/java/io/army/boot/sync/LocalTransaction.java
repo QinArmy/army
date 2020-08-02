@@ -2,7 +2,6 @@ package io.army.boot.sync;
 
 import io.army.ErrorCode;
 import io.army.SessionException;
-import io.army.dialect.TransactionOption;
 import io.army.sync.Session;
 import io.army.tx.*;
 

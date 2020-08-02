@@ -11,5 +11,7 @@ public interface GenericTransaction {
 
      long getTimeToLiveInMillis() throws TransactionTimeOutException;
 
+     boolean rollbackOnly();
 
+     void markRollbackOnly() throws TransactionException;
 }

@@ -2,6 +2,7 @@ package io.army;
 
 import io.army.boot.DomainValuesGenerator;
 import io.army.codec.FieldCodec;
+import io.army.criteria.NotFoundRouteException;
 import io.army.domain.IDomain;
 import io.army.env.Environment;
 import io.army.generator.FieldGenerator;
@@ -66,5 +67,5 @@ public interface GenericSessionFactory {
 
     boolean allowSpanSharding();
 
-    TableRoute tableRoute(TableMeta<?> tableMeta);
+    TableRoute tableRoute(TableMeta<?> tableMeta) throws NotFoundRouteException;
 }

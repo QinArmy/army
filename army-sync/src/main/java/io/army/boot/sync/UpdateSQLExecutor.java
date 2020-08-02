@@ -8,22 +8,22 @@ import java.util.Map;
 
 interface UpdateSQLExecutor {
 
-    int update(InnerSession session, SQLWrapper sqlWrapper, boolean updateStatement);
+    int update(InnerGenericRmSession session, SQLWrapper sqlWrapper, boolean updateStatement);
 
-    long largeUpdate(InnerSession session, SQLWrapper sqlWrapper, boolean updateStatement);
+    long largeUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper, boolean updateStatement);
 
     /**
      * @param <V> return map's value java type.
      * @return a unmodifiable map, key : key of {@linkplain BatchSimpleSQLWrapper#paramGroupList()}
      * * ,value : batch update rows of named param.
      */
-    <V extends Number> Map<Integer, V> batchUpdate(InnerSession session, SQLWrapper sqlWrapper
+    <V extends Number> Map<Integer, V> batchUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper
             , Class<V> mapValueClass, boolean updateStatement);
 
-    <T> List<T> returningUpdate(InnerSession session, SQLWrapper sqlWrapper, Class<T> resultClass
+    <T> List<T> returningUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper, Class<T> resultClass
             , boolean updateStatement);
 
-    static UpdateSQLExecutor build(InnerRmSessionFactory sessionFactory) {
+    static UpdateSQLExecutor build(InnerGenericRmSessionFactory sessionFactory) {
         return new UpdateSQLExecutorImpl(sessionFactory);
     }
 }

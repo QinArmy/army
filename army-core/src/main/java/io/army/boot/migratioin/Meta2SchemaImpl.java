@@ -23,7 +23,7 @@ class Meta2SchemaImpl implements Meta2Schema {
         SchemaInfo schemaInfo = schemaExtractor.extract();
         // 2. compare meta and schema .
         List<Migration> migrationList;
-        migrationList = MetaSchemaComparator.build(dialect.sqlDialect())
+        migrationList = MetaSchemaComparator.build(dialect.database())
                 .compare(tableMetas, schemaInfo, dialect);
         // 3. generate DDL SQL
         return generateSQL(migrationList, dialect);

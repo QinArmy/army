@@ -1,6 +1,5 @@
 package io.army.boot.sync;
 
-import io.army.dialect.TransactionOption;
 import io.army.tx.*;
 
 import java.util.EnumSet;

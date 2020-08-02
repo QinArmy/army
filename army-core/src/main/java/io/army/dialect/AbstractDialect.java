@@ -2,7 +2,6 @@ package io.army.dialect;
 
 
 import io.army.GenericRmSessionFactory;
-import io.army.GenericSessionFactory;
 import io.army.UnKnownTypeException;
 import io.army.criteria.*;
 import io.army.lang.Nullable;
@@ -45,9 +44,9 @@ public abstract class AbstractDialect implements InnerDialect {
 
     protected AbstractDialect(GenericRmSessionFactory sessionFactory) {
         Assert.notNull(sessionFactory, "sessionFactory required");
-        Assert.isTrue(sessionFactory.actualSQLDialect() != this.sqlDialect()
-                , () -> String.format("session actual SQLDialect[%s] and dialect SQLDialect[%s] not match."
-                        , sessionFactory.actualSQLDialect(), this.sqlDialect()));
+        Assert.isTrue(sessionFactory.actualDatabase() != this.database()
+                , () -> String.format("session actual Database[%s] and dialect Database[%s] not match."
+                        , sessionFactory.actualDatabase(), this.database()));
 
         this.keywords = Collections.unmodifiableSet(createKeywordsSet());
         this.sessionFactory = sessionFactory;
@@ -56,7 +55,7 @@ public abstract class AbstractDialect implements InnerDialect {
         this.dml = createDML();
         this.dql = createDQL();
 
-        this.mappingContext = new MappingContextImpl(this.sessionFactory.zoneId(), this.sqlDialect());
+        this.mappingContext = new MappingContextImpl(this.sessionFactory.zoneId(), this.database());
     }
 
     @Override
@@ -175,7 +174,7 @@ public abstract class AbstractDialect implements InnerDialect {
     }
 
     @Override
-    public SQLDialect sqlDialect() {
+    public Database database() {
         throw new UnsupportedOperationException();
     }
 
@@ -203,16 +202,16 @@ public abstract class AbstractDialect implements InnerDialect {
 
     @Override
     public String toString() {
-        return String.valueOf(sqlDialect());
+        return String.valueOf(database());
     }
 
 
     private static final class MappingContextImpl implements MappingContext {
 
         private final ZoneId zoneId;
-        private final SQLDialect sqlDialect;
+        private final Database sqlDialect;
 
-        private MappingContextImpl(ZoneId zoneId, SQLDialect sqlDialect) {
+        private MappingContextImpl(ZoneId zoneId, Database sqlDialect) {
             this.zoneId = zoneId;
             this.sqlDialect = sqlDialect;
         }
@@ -223,7 +222,7 @@ public abstract class AbstractDialect implements InnerDialect {
         }
 
         @Override
-        public SQLDialect sqlDialect() {
+        public Database sqlDialect() {
             return sqlDialect;
         }
     }

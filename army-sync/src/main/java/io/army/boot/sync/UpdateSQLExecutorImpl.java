@@ -19,12 +19,12 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     private static final Logger LOG = LoggerFactory.getLogger(UpdateSQLExecutorImpl.class);
 
 
-    UpdateSQLExecutorImpl(InnerRmSessionFactory sessionFactory) {
+    UpdateSQLExecutorImpl(InnerGenericRmSessionFactory sessionFactory) {
         super(sessionFactory);
     }
 
     @Override
-    public final int update(InnerSession session, SQLWrapper sqlWrapper, boolean updateStatement) {
+    public final int update(InnerGenericRmSession session, SQLWrapper sqlWrapper, boolean updateStatement) {
         session.codecContextStatementType(updateStatement ? StatementType.UPDATE : StatementType.DELETE);
         try {
             if (this.sessionFactory.showSQL()) {
@@ -45,7 +45,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     }
 
     @Override
-    public final long largeUpdate(InnerSession session, SQLWrapper sqlWrapper, boolean updateStatement) {
+    public final long largeUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper, boolean updateStatement) {
         session.codecContextStatementType(updateStatement ? StatementType.UPDATE : StatementType.DELETE);
         try {
             if (this.sessionFactory.showSQL()) {
@@ -66,7 +66,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     }
 
     @Override
-    public final <T> List<T> returningUpdate(InnerSession session, SQLWrapper sqlWrapper, Class<T> resultClass
+    public final <T> List<T> returningUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper, Class<T> resultClass
             , boolean updateStatement) {
         session.codecContextStatementType(updateStatement ? StatementType.UPDATE : StatementType.DELETE);
         try {
@@ -90,7 +90,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <V extends Number> Map<Integer, V> batchUpdate(InnerSession session, SQLWrapper sqlWrapper
+    public final <V extends Number> Map<Integer, V> batchUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper
             , Class<V> mapValueClass, boolean updateStatement) {
 
         session.codecContextStatementType(updateStatement ? StatementType.UPDATE : StatementType.DELETE);
@@ -122,7 +122,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     /*################################## blow private method ##################################*/
 
 
-    private long doChildUpdate(InnerSession session, ChildSQLWrapper childSQLWrapper, final boolean large) {
+    private long doChildUpdate(InnerGenericRmSession session, ChildSQLWrapper childSQLWrapper, final boolean large) {
         final SimpleSQLWrapper parentWrapper = childSQLWrapper.parentWrapper();
         final SimpleSQLWrapper childWrapper = childSQLWrapper.childWrapper();
 
@@ -149,7 +149,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
 
 
     @SuppressWarnings("unchecked")
-    private <V extends Number> Map<Integer, V> doBatchChildUpdate(InnerSession session
+    private <V extends Number> Map<Integer, V> doBatchChildUpdate(InnerGenericRmSession session
             , ChildBatchSQLWrapper sqlWrapper, Class<V> mapValueClass) {
         final BatchSimpleSQLWrapper parentWrapper = sqlWrapper.parentWrapper();
         final BatchSimpleSQLWrapper childWrapper = sqlWrapper.childWrapper();

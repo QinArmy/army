@@ -4,17 +4,10 @@ import io.army.ArmyRuntimeException;
 import io.army.GenericSession;
 import io.army.GenericSessionFactory;
 import io.army.SessionFactoryException;
-import io.army.interceptor.DomainInterceptor;
-import io.army.meta.TableMeta;
-
-import java.util.List;
-import java.util.Map;
 
 public interface GenericSyncSessionFactory extends GenericSessionFactory, AutoCloseable {
 
-    Map<TableMeta<?>, List<DomainInterceptor>> domainInterceptorMap();
 
-    List<DomainInterceptor> domainInterceptorList(TableMeta<?> tableMeta);
 
 
     /**

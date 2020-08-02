@@ -4,8 +4,8 @@ import io.army.GenericSessionFactory;
 import io.army.criteria.SQLDebug;
 import io.army.criteria.SQLStatement;
 import io.army.criteria.Visible;
+import io.army.dialect.Database;
 import io.army.dialect.Dialect;
-import io.army.dialect.SQLDialect;
 import io.army.meta.SchemaMeta;
 import io.army.wrapper.SimpleSQLWrapper;
 
@@ -15,11 +15,11 @@ abstract class AbstractSQLDebug implements SQLStatement.SQLAble, SQLDebug {
 
     @Override
     public final String debugSQL() {
-        return debugSQL(SQLDialect.MySQL57, Visible.ONLY_VISIBLE);
+        return debugSQL(Database.MySQL57, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final String debugSQL(SQLDialect sqlDialect) {
+    public final String debugSQL(Database sqlDialect) {
         return debugSQL(sqlDialect, Visible.ONLY_VISIBLE);
     }
 
@@ -27,7 +27,7 @@ abstract class AbstractSQLDebug implements SQLStatement.SQLAble, SQLDebug {
     /*################################## blow protected template method ##################################*/
 
 
-    GenericSessionFactory createSessionFactory(SchemaMeta schemaMeta, SQLDialect sqlDialect) {
+    GenericSessionFactory createSessionFactory(SchemaMeta schemaMeta, Database sqlDialect) {
         return null;
     }
 

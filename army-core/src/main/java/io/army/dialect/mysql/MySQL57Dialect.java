@@ -2,13 +2,8 @@ package io.army.dialect.mysql;
 
 
 import io.army.GenericRmSessionFactory;
-import io.army.GenericSessionFactory;
-import io.army.UnKnownTypeException;
 import io.army.dialect.*;
 import io.army.meta.mapping.MappingMeta;
-import io.army.wrapper.ChildSQLWrapper;
-import io.army.wrapper.SQLWrapper;
-import io.army.wrapper.SimpleSQLWrapper;
 
 import java.util.Set;
 
@@ -27,8 +22,8 @@ class MySQL57Dialect extends AbstractDialect {
 
 
     @Override
-    public SQLDialect sqlDialect() {
-        return SQLDialect.MySQL57;
+    public Database database() {
+        return Database.MySQL57;
     }
 
     @Override

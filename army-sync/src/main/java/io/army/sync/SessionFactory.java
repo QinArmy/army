@@ -8,6 +8,7 @@ import io.army.SessionException;
  */
 public interface SessionFactory extends GenericSyncApiSessionFactory, GenericRmSessionFactory {
 
+    ProxySession proxySession();
 
     SessionBuilder builder();
 

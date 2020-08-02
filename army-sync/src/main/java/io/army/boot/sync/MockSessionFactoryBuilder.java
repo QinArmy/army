@@ -2,13 +2,12 @@ package io.army.boot.sync;
 
 import io.army.GenericSessionFactory;
 import io.army.SessionFactoryException;
+import io.army.dialect.Database;
 import io.army.dialect.Dialect;
-import io.army.dialect.SQLDialect;
 import io.army.dialect.mysql.MySQLDialectFactory;
 import io.army.sync.SessionFactory;
 
-final class MockSessionFactoryBuilder extends AbstractSessionFactoryBuilder {
-
+final class MockSessionFactoryBuilder extends AbstractSyncSessionFactoryBuilder {
 
 
     @Override
@@ -16,7 +15,7 @@ final class MockSessionFactoryBuilder extends AbstractSessionFactoryBuilder {
         throw new UnsupportedOperationException();
     }
 
-    private static Dialect createDialect(GenericSessionFactory sessionFactory, SQLDialect sqlDialect) {
+    private static Dialect createDialect(GenericSessionFactory sessionFactory, Database sqlDialect) {
         Dialect dialect;
         switch (sqlDialect) {
             case MySQL:

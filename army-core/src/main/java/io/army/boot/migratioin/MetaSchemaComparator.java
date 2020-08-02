@@ -1,8 +1,8 @@
 package io.army.boot.migratioin;
 
 import io.army.criteria.MetaException;
+import io.army.dialect.Database;
 import io.army.dialect.Dialect;
-import io.army.dialect.SQLDialect;
 import io.army.meta.TableMeta;
 import io.army.schema.SchemaInfoException;
 
@@ -20,7 +20,7 @@ interface MetaSchemaComparator {
     List<Migration> compare(Collection<TableMeta<?>> tableMetas, SchemaInfo schemaInfo, Dialect dialect)
             throws SchemaInfoException, MetaException;
 
-    static MetaSchemaComparator build(SQLDialect sqlDialect) {
+    static MetaSchemaComparator build(Database sqlDialect) {
         MetaSchemaComparator comparator;
         switch (sqlDialect) {
             case MySQL:

@@ -15,9 +15,7 @@ public interface GenericSyncTransaction extends GenericTransaction, Flushable, A
 
     void rollback() throws TransactionException;
 
-    boolean rollbackOnly();
 
-    void markRollbackOnly() throws TransactionException;
 
     @Override
     void flush() throws TransactionException;

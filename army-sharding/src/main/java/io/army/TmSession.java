@@ -4,7 +4,7 @@ import io.army.criteria.Delete;
 import io.army.criteria.Insert;
 import io.army.criteria.Select;
 import io.army.criteria.Update;
-import io.army.sync.GenericSyncApiSession;
+import io.army.sync.GenericSingleDatabaseSyncSession;
 import io.army.sync.Session;
 import io.army.tx.TmTransaction;
 
@@ -21,7 +21,7 @@ import java.sql.Connection;
  * </ul>
  * {@code Tm}  representing Transaction Manager.
  */
-public interface TmSession extends GenericSyncApiSession, AutoCloseable, Flushable {
+public interface TmSession extends GenericSingleDatabaseSyncSession, AutoCloseable, Flushable {
 
     @Override
     TmSessionFactory sessionFactory();

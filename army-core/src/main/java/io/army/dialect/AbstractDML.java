@@ -160,31 +160,31 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
     protected void assertSpecialGeneralInsert(InnerSpecialValueInsert insert) {
         throw new UnsupportedOperationException(String.format("dialect [%s] not support special general multiInsert."
-                , sqlDialect())
+                , database())
         );
     }
 
     protected void assertSpecialSubQueryInsert(InnerSpecialSubQueryInsert insert) {
         throw new UnsupportedOperationException(String.format("dialect [%s] not support special sub query multiInsert."
-                , sqlDialect())
+                , database())
         );
     }
 
     protected List<SQLWrapper> specialGeneralInsert(InnerSpecialValueInsert insert, Visible visible) {
         throw new UnsupportedOperationException(String.format("dialect[%s] not support special general multiInsert."
-                , sqlDialect())
+                , database())
         );
     }
 
     protected List<SQLWrapper> specialBatchInsert(InnerSpecialBatchInsert insert, Visible visible) {
         throw new UnsupportedOperationException(String.format("dialect[%s] not support special batch multiInsert."
-                , sqlDialect())
+                , database())
         );
     }
 
     protected SQLWrapper specialSubQueryInsert(InnerSpecialSubQueryInsert insert, Visible visible) {
         throw new UnsupportedOperationException(String.format("dialect[%s] not support special sub query multiInsert."
-                , sqlDialect())
+                , database())
         );
     }
 
@@ -195,13 +195,13 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
     protected void assertSpecialUpdate(InnerSpecialUpdate update) {
         throw new UnsupportedOperationException(String.format("dialect[%s] not support special domain update."
-                , sqlDialect())
+                , database())
         );
     }
 
     protected SQLWrapper specialUpdate(InnerSpecialUpdate update, Visible visible) {
         throw new UnsupportedOperationException(String.format("dialect [%s] not support special update."
-                , sqlDialect())
+                , database())
         );
     }
 
@@ -209,13 +209,13 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
     protected void assertSpecialDelete(InnerSpecialDelete delete) {
         throw new UnsupportedOperationException(String.format("dialect[%s] not support special delete."
-                , sqlDialect())
+                , database())
         );
     }
 
     protected SQLWrapper specialDelete(InnerSpecialDelete delete, Visible visible) {
         throw new UnsupportedOperationException(String.format("dialect[%s] not support special delete."
-                , sqlDialect())
+                , database())
         );
     }
 

@@ -22,7 +22,7 @@ public class GenericSessionTests {
 
     public static GenericSessionFactory buildSessionFactory() {
        /* return SessionFactoryBuilder.mockBuilder()
-                .sqlDialect(SQLDialect.MySQL57)
+                .sqlDialect(Database.MySQL57)
                 .build();*/
         return null;
     }

@@ -1,6 +1,6 @@
 package io.army;
 
-import io.army.dialect.SQLDialect;
+import io.army.dialect.Database;
 
 /**
  * <p>
@@ -19,6 +19,6 @@ public interface GenericRmSessionFactory extends GenericSessionFactory {
 
     boolean supportZone();
 
-    SQLDialect actualSQLDialect();
+    Database actualDatabase();
 
 }

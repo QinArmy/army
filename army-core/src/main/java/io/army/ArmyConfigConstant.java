@@ -15,7 +15,7 @@ public interface ArmyConfigConstant {
 
     String CURRENT_SESSION_CONTEXT_CLASS = "army.%s.currentSessionContextClass";
 
-    String SQL_DIALECT = "army.%s.sqlDialect";
+    String DATABASE = "army.%s.database";
 
     String SHOW_SQL = "army.%s.showSQL";
 

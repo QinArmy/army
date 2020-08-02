@@ -1,6 +1,6 @@
 package io.army;
 
-import io.army.dialect.SQLDialect;
+import io.army.dialect.Database;
 import io.army.meta.TableMeta;
 import io.army.sharding.DatabaseRoute;
 
@@ -10,7 +10,7 @@ public interface GenericTmSessionFactory extends GenericSessionFactory {
 
     boolean supportZone();
 
-    Map<String, SQLDialect> actualSQLDialectMap();
+    Map<String, Database> actualSQLDialectMap();
 
     DatabaseRoute dataSourceRoute(TableMeta<?> tableMeta);
 }

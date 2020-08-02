@@ -1,5 +1,6 @@
 package io.army.dialect;
 
+import io.army.criteria.FieldPredicate;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.InnerStandardDelete;
 import io.army.meta.ChildTableMeta;
@@ -69,7 +70,7 @@ class StandardDeleteContext extends AbstractStandardDomainContext implements Del
         }
 
         @Override
-        public void appendFieldPredicate(SpecialPredicate predicate) {
+        public void appendFieldPredicate(FieldPredicate predicate) {
             appendDomainFieldPredicate(predicate);
         }
     }

@@ -1,10 +1,11 @@
 package io.army.boot.sync;
 
 
+import io.army.boot.SessionFactoryAdvice;
 import io.army.codec.FieldCodec;
 import io.army.env.Environment;
 import io.army.env.SpringEnvironmentAdaptor;
-import io.army.interceptor.DomainInterceptor;
+import io.army.interceptor.DomainAdvice;
 import io.army.sync.SessionFactory;
 import io.army.util.Assert;
 import org.springframework.beans.BeansException;
@@ -61,7 +62,7 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
                 .name(getSessionFactoryName())
                 .datasource(this.dataSource)
                 .environment(environment)
-                .domainInterceptor(applicationContext.getBeansOfType(DomainInterceptor.class).values())
+                .domainInterceptor(applicationContext.getBeansOfType(DomainAdvice.class).values())
                 .fieldCodecs(applicationContext.getBeansOfType(FieldCodec.class).values())
 
                 .factoryAdvice(applicationContext.getBeansOfType(SessionFactoryAdvice.class).values())

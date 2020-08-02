@@ -2,23 +2,27 @@ package io.army.boot.sync;
 
 import io.army.*;
 import io.army.context.spi.CurrentSessionContext;
+import io.army.dialect.Database;
 import io.army.dialect.Dialect;
-import io.army.dialect.DialectNotMatchException;
-import io.army.dialect.SQLDialect;
 import io.army.dialect.UnSupportedDialectException;
-import io.army.dialect.mysql.MySQLDialectFactory;
 import io.army.env.Environment;
-import io.army.interceptor.DomainInterceptor;
+import io.army.interceptor.DomainAdvice;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.sharding.Route;
+import io.army.sharding.RouteCreateException;
+import io.army.sharding.RouteMetaData;
+import io.army.sharding.TableRoute;
 import io.army.sync.GenericSyncSessionFactory;
 import io.army.util.ClassUtils;
+import io.army.util.CollectionUtils;
 import io.army.util.ReflectionUtils;
 import io.army.util.StringUtils;
 
 import javax.sql.DataSource;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -49,32 +53,18 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
         return primary;
     }
 
-    static Dialect createDialect(DataSource dataSource,
-                                 GenericRmSessionFactory sessionFactory) {
+    /**
+     * @param database read from {@link Environment} with {@link ArmyConfigConstant#DATABASE}
+     */
+    static Dialect createDialectForSync(DataSource dataSource, SingleDatabaseSessionFactory sessionFactory) {
+        try (Connection conn = dataSource.getConnection()) {
+            Database database = readDatabase(sessionFactory);
 
-        SQLDialect sqlDialect = sessionFactory.environment().getProperty(
-                String.format(ArmyConfigConstant.SQL_DIALECT, sessionFactory.name()), SQLDialect.class);
-
-        final SQLDialect databaseSqlDialect = getSQLDialect(dataSource);
-
-        SQLDialect actualSqlDialect = decideSQLDialect(sqlDialect, databaseSqlDialect);
-
-        Dialect dialect;
-        switch (actualSqlDialect) {
-            case MySQL:
-            case MySQL57:
-            case MySQL80:
-                dialect = MySQLDialectFactory.createMySQLDialect(actualSqlDialect, sessionFactory);
-                break;
-            case Db2:
-            case Oracle:
-            case Postgre:
-            case OceanBase:
-            case SQL_Server:
-            default:
-                throw new RuntimeException(String.format("unknown SQLDialect[%s]", actualSqlDialect));
+            return createDialect(database, extractDatabase(conn), sessionFactory);
+        } catch (SQLException e) {
+            throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR, e, "get connection error.");
         }
-        return dialect;
+
     }
 
     static CurrentSessionContext buildCurrentSessionContext(GenericSyncSessionFactory sessionFactory) {
@@ -115,93 +105,167 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
         }
     }
 
-    static Map<TableMeta<?>, List<DomainInterceptor>> createDomainInterceptorMap(
-            Collection<DomainInterceptor> domainInterceptors) {
-        Map<TableMeta<?>, List<DomainInterceptor>> interceptorMap = new HashMap<>();
+    static Map<TableMeta<?>, List<DomainAdvice>> createDomainInterceptorMap(
+            Collection<DomainAdvice> domainInterceptors) {
+        Map<TableMeta<?>, List<DomainAdvice>> interceptorMap = new HashMap<>();
 
-        for (DomainInterceptor interceptor : domainInterceptors) {
+        for (DomainAdvice interceptor : domainInterceptors) {
             for (TableMeta<?> tableMeta : interceptor.tableMetaSet()) {
-                List<DomainInterceptor> list = interceptorMap.computeIfAbsent(tableMeta, key -> new ArrayList<>());
+                List<DomainAdvice> list = interceptorMap.computeIfAbsent(tableMeta, key -> new ArrayList<>());
                 list.add(interceptor);
             }
         }
 
-        final Comparator<DomainInterceptor> comparator = Comparator.comparingInt(DomainInterceptor::order);
+        final Comparator<DomainAdvice> comparator = Comparator.comparingInt(DomainAdvice::order);
 
-        for (Map.Entry<TableMeta<?>, List<DomainInterceptor>> e : interceptorMap.entrySet()) {
+        for (Map.Entry<TableMeta<?>, List<DomainAdvice>> e : interceptorMap.entrySet()) {
             e.getValue().sort(comparator);
             interceptorMap.replace(e.getKey(), Collections.unmodifiableList(e.getValue()));
         }
         return Collections.unmodifiableMap(interceptorMap);
     }
 
+    static Database extractDatabase(Connection connection) {
+        try {
+            DatabaseMetaData metaData = connection.getMetaData();
+
+            String productName = metaData.getDatabaseProductName();
+            int major = metaData.getDatabaseMajorVersion();
+            int minor = metaData.getDatabaseMinorVersion();
+
+            Database database;
+            switch (productName) {
+                case "MySQL":
+                    database = extractMysqlDialect(major, minor);
+                    break;
+                case "Oracle":
+                    database = extractOracleDialect(major, minor);
+                    break;
+                case "PostgreSQL":
+                    database = extractPostgreDialect(major, minor);
+                    break;
+                default:
+                    throw new UnSupportedDialectException(ErrorCode.UNSUPPORT_DIALECT
+                            , "%s is unsupported by army.", productName);
+            }
+            return database;
+        } catch (SQLException e) {
+            throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
+                    , e, "extract database version error.");
+        }
+    }
+
+
+    protected static <T extends TableRoute> Map<TableMeta<?>, T> routeMap
+            (AbstractGenericSessionFactory sessionFactory, Class<T> routeType, int databaseCount
+                    , int tableCountPerDatabase) {
+        final ShardingMode shardingMode = sessionFactory.shardingMode();
+        if (shardingMode == ShardingMode.NO_SHARDING) {
+            return Collections.emptyMap();
+        }
+        final RouteMetaData routeMetaData = new RouteMetaDataImpl(shardingMode, databaseCount
+                , tableCountPerDatabase);
+
+        Map<TableMeta<?>, T> tableRouteMap = new HashMap<>();
+        for (TableMeta<?> tableMeta : sessionFactory.tableMetaMap().values()) {
+            Class<? extends Route> routeClass = tableMeta.routeClass();
+            if (routeClass == null) {
+                continue;
+            }
+            tableRouteMap.put(tableMeta, createTableRoute(routeClass, routeMetaData, routeType));
+        }
+        return Collections.unmodifiableMap(tableRouteMap);
+    }
+
+    /**
+     * @return a unmodifiable map
+     */
+    static Map<TableMeta<?>, DomainAdvice> createDomainAdviceMap(@Nullable Collection<DomainAdvice> domainAdvices) {
+        if (CollectionUtils.isEmpty(domainAdvices)) {
+            return Collections.emptyMap();
+        }
+        Map<TableMeta<?>, DomainAdvice> map = new HashMap<>();
+
+        for (DomainAdvice domainAdvice : domainAdvices) {
+            for (TableMeta<?> tableMeta : domainAdvice.tableMetaSet()) {
+                if (map.putIfAbsent(tableMeta, domainAdvice) != null) {
+                    throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
+                            , "TableMeta[%s] domain advice duplication.", tableMeta);
+                }
+            }
+
+        }
+        return Collections.unmodifiableMap(map);
+    }
+
     /*################################## blow private method ##################################*/
 
+    @SuppressWarnings("unchecked")
+    private static <T extends TableRoute> T createTableRoute(Class<? extends Route> routeClass
+            , RouteMetaData routeMetaData, Class<T> routeType) {
+        Method method;
 
-    private static SQLDialect oracleDialect(int major, int minor) {
+        try {
+            method = routeClass.getMethod("build", RouteMetaData.class);
+        } catch (NoSuchMethodException e) {
+            throw new RouteCreateException(ErrorCode.ROUTE_ERROR, "Class[%s] not found build(RouteMetaData) method.");
+        }
+
+        if (Modifier.isStatic(method.getModifiers())
+                && routeClass.isAssignableFrom(method.getReturnType())
+                && routeType.isAssignableFrom(routeClass)) {
+            try {
+                return (T) method.invoke(null, routeMetaData);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new RouteCreateException(ErrorCode.ROUTE_ERROR, e
+                        , "Class[%s] build(ShardingMode) method invoke error.");
+            }
+        } else {
+            throw new RouteCreateException(ErrorCode.ROUTE_ERROR, "Class[%s] build(RouteMetaData) method error.");
+        }
+    }
+
+    private static Database extractPostgreDialect(int major, int minor) {
+        Database database;
+        switch (major) {
+            case 11:
+                database = Database.Postgre11;
+                break;
+            case 12:
+                database = Database.Postgre12;
+                break;
+            default:
+                throw createUnSupportedDialectException(major, minor);
+        }
+        return database;
+
+    }
+
+    private static Database extractOracleDialect(int major, int minor) {
         throw new UnSupportedDialectException(ErrorCode.UNSUPPORT_DIALECT
                 , "%s is unsupported by army.", "Oracle");
     }
 
-    private static SQLDialect mysqlDialect(int major, int minor) {
-        SQLDialect sqlDialect;
+    private static Database extractMysqlDialect(int major, int minor) {
+        Database sqlDialect;
         switch (major) {
             case 5:
                 if (minor < 7) {
                     throw createUnSupportedDialectException(major, minor);
                 }
-                sqlDialect = SQLDialect.MySQL57;
+                sqlDialect = Database.MySQL57;
                 break;
             case 8:
-                switch (minor) {
-                    case 0:
-                        sqlDialect = SQLDialect.MySQL80;
-                        break;
-                    default:
-                        throw createUnSupportedDialectException(major, minor);
+                if (minor == 0) {
+                    sqlDialect = Database.MySQL80;
+                } else {
+                    throw createUnSupportedDialectException(major, minor);
                 }
                 break;
             default:
                 throw createUnSupportedDialectException(major, minor);
         }
         return sqlDialect;
-    }
-
-    private static SQLDialect decideSQLDialect(@Nullable SQLDialect dialect, SQLDialect databaseSqlDialect) {
-        SQLDialect actual = dialect;
-        if (actual == null) {
-            actual = databaseSqlDialect;
-        } else if (!SQLDialect.sameFamily(dialect, databaseSqlDialect)
-                || dialect.ordinal() > databaseSqlDialect.ordinal()) {
-            throw new DialectNotMatchException(ErrorCode.META_ERROR, "SQLDialect[%s] then database not match.", actual);
-        }
-        return actual;
-    }
-
-    private static SQLDialect getSQLDialect(DataSource dataSource) {
-        try (Connection conn = dataSource.getConnection()) {
-            DatabaseMetaData metaData = conn.getMetaData();
-
-            String productName = metaData.getDatabaseProductName();
-            int major = metaData.getDatabaseMajorVersion();
-            int minor = metaData.getDatabaseMinorVersion();
-
-            SQLDialect sqlDialect;
-            switch (productName) {
-                case "MySQL":
-                    sqlDialect = mysqlDialect(major, minor);
-                    break;
-                case "Oracle":
-                    sqlDialect = oracleDialect(major, minor);
-                    break;
-                default:
-                    throw new UnSupportedDialectException(ErrorCode.UNSUPPORT_DIALECT
-                            , "%s is unsupported by army.", productName);
-            }
-            return sqlDialect;
-        } catch (SQLException e) {
-            throw new DataAccessException(ErrorCode.ACCESS_ERROR, e, e.getMessage());
-        }
     }
 
 

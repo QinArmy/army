@@ -5,14 +5,20 @@ import io.army.codec.FieldCodec;
 import io.army.criteria.MetaException;
 import io.army.criteria.impl.SchemaMetaFactory;
 import io.army.criteria.impl.TableMetaFactory;
+import io.army.dialect.Database;
+import io.army.dialect.Dialect;
+import io.army.dialect.DialectNotMatchException;
+import io.army.dialect.mysql.MySQLDialectFactory;
 import io.army.env.Environment;
 import io.army.generator.FieldGenerator;
 import io.army.generator.GeneratorFactory;
 import io.army.generator.PreFieldGenerator;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
+import io.army.sharding.RouteMetaData;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
 
@@ -182,8 +188,75 @@ public abstract class GenericSessionFactoryUtils {
         return Collections.unmodifiableMap(fieldCodecMap);
     }
 
+    @Nullable
+    protected static Database readDatabase(AbstractGenericSessionFactory sessionFactory) {
+        String key = String.format(ArmyConfigConstant.DATABASE, sessionFactory.name);
+        return sessionFactory.environment().getProperty(key, Database.class);
+    }
+
+    protected static Dialect createDialect(@Nullable Database database, Database extractedDatabase
+            , GenericRmSessionFactory sessionFactory) {
+
+        Database actualSqlDialect = decideSQLDialect(database, extractedDatabase);
+        Dialect dialect;
+        switch (actualSqlDialect) {
+            case MySQL:
+            case MySQL57:
+            case MySQL80:
+                dialect = MySQLDialectFactory.createMySQLDialect(actualSqlDialect, sessionFactory);
+                break;
+            //  case Db2:
+            case Oracle:
+            case Postgre:
+                // case SQL_Server:
+            default:
+                throw new RuntimeException(String.format("unknown Database[%s]", actualSqlDialect));
+        }
+        return dialect;
+    }
 
 
+    protected static Database decideSQLDialect(@Nullable Database database, Database extractedDatabase) {
+        Database actual = database;
+        if (actual == null) {
+            actual = extractedDatabase;
+        } else if (!Database.compatible(database, extractedDatabase)) {
+            throw new DialectNotMatchException(ErrorCode.META_ERROR, "Database[%s] and extract database[%s] not match."
+                    , database, extractedDatabase);
+        }
+        return actual;
+    }
+
+
+    protected static final class RouteMetaDataImpl implements RouteMetaData {
+
+        private final ShardingMode shardingMode;
+
+        private final int databaseCount;
+
+        private final int tableContPerDatabase;
+
+        public RouteMetaDataImpl(ShardingMode shardingMode, int databaseCount, int tableContPerDatabase) {
+            this.shardingMode = shardingMode;
+            this.databaseCount = databaseCount;
+            this.tableContPerDatabase = tableContPerDatabase;
+        }
+
+        @Override
+        public ShardingMode shardingMode() {
+            return this.shardingMode;
+        }
+
+        @Override
+        public int databaseCount() {
+            return this.databaseCount;
+        }
+
+        @Override
+        public int tableContPerDatabase() {
+            return this.tableContPerDatabase;
+        }
+    }
 
     /*################################## blow private method ##################################*/
 

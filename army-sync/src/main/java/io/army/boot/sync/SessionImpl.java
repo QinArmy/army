@@ -7,7 +7,6 @@ import io.army.cache.SessionCache;
 import io.army.cache.UniqueKey;
 import io.army.criteria.Select;
 import io.army.criteria.Visible;
-import io.army.dialect.TransactionOption;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -38,7 +37,7 @@ final class SessionImpl extends AbstractSession {
 
     private boolean closed;
 
-    SessionImpl(InnerRmSessionFactory sessionFactory, Connection connection
+    SessionImpl(InnerGenericRmSessionFactory sessionFactory, Connection connection
             , boolean currentSession, boolean resetConnection) throws SessionException {
         super(sessionFactory, connection);
 

@@ -1,10 +1,9 @@
 package io.army;
 
-import io.army.sync.GenericSyncSessionFactory;
+import io.army.sync.GenericSyncApiSessionFactory;
 
-public interface TmSessionFactory extends GenericSyncSessionFactory, GenericTmSessionFactory {
+public interface TmSessionFactory extends GenericSyncApiSessionFactory, GenericTmSessionFactory {
 
-    boolean currentSessionContextIsInstanceOf(Class<?> currentSessionContextClass);
 
     SessionBuilder builder();
 

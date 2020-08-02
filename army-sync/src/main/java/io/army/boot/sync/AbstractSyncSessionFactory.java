@@ -1,7 +1,7 @@
 package io.army.boot.sync;
 
 import io.army.AbstractGenericSessionFactory;
-import io.army.interceptor.DomainInterceptor;
+import io.army.interceptor.DomainAdvice;
 import io.army.meta.TableMeta;
 import io.army.sync.GenericSyncSessionFactory;
 
@@ -12,32 +12,24 @@ abstract class AbstractSyncSessionFactory extends AbstractGenericSessionFactory
         implements GenericSyncSessionFactory {
 
 
-    private final Map<TableMeta<?>, List<DomainInterceptor>> domainInterceptorMap;
+    final Map<TableMeta<?>, List<DomainAdvice>> domainInterceptorMap;
 
 
-    AbstractSyncSessionFactory(SyncSessionFactoryParams factoryParams) {
-        super(factoryParams);
+    AbstractSyncSessionFactory(AbstractSyncSessionFactoryBuilder factoryBuilder) {
+        super(factoryBuilder);
         this.domainInterceptorMap = SyncSessionFactoryUtils.createDomainInterceptorMap(
-                factoryParams.getDomainInterceptors());
+                factoryBuilder.domainInterceptors());
 
-    }
-
-    /**
-     * create inner session factory for {@link io.army.ShardingMode#SHARDING} or {@link io.army.ShardingMode#SAME_SCHEMA_SHARDING}
-     */
-    AbstractSyncSessionFactory(AbstractSyncSessionFactory tmSessionFactory, int factoryIndex) {
-        super(tmSessionFactory, factoryIndex);
-        this.domainInterceptorMap = tmSessionFactory.domainInterceptorMap;
     }
 
 
     @Override
-    public Map<TableMeta<?>, List<DomainInterceptor>> domainInterceptorMap() {
+    public Map<TableMeta<?>, List<DomainAdvice>> domainInterceptorMap() {
         return this.domainInterceptorMap;
     }
 
     @Override
-    public List<DomainInterceptor> domainInterceptorList(TableMeta<?> tableMeta) {
+    public List<DomainAdvice> domainInterceptorList(TableMeta<?> tableMeta) {
         return this.domainInterceptorMap.get(tableMeta);
     }
 

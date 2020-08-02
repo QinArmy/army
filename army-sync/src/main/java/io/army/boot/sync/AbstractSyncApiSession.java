@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-abstract class AbstractSyncApiSession extends AbstractGenericSyncApiSession {
+abstract class AbstractSyncApiSession extends AbstractGenericSingleDatabaseSyncSession {
 
 
     static Object obtainRouteKeyValueForInsert(TableMeta<?> tableMeta

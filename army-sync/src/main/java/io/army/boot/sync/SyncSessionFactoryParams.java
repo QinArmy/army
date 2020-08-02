@@ -1,27 +1,27 @@
 package io.army.boot.sync;
 
-import io.army.GenericSessionFactoryParams;
-import io.army.dialect.SQLDialect;
-import io.army.interceptor.DomainInterceptor;
+import io.army.GenericFactoryBuilderImpl;
+import io.army.dialect.Database;
+import io.army.interceptor.DomainAdvice;
 
 import javax.sql.DataSource;
 import java.util.Collection;
 import java.util.Map;
 
-abstract class SyncSessionFactoryParams extends GenericSessionFactoryParams {
+abstract class SyncSessionFactoryParams extends GenericFactoryBuilderImpl {
 
 
-    private Collection<DomainInterceptor> domainInterceptors;
+    private Collection<DomainAdvice> domainInterceptors;
 
     private SyncSessionFactoryParams() {
 
     }
 
-    public Collection<DomainInterceptor> getDomainInterceptors() {
+    public Collection<DomainAdvice> getDomainInterceptors() {
         return domainInterceptors;
     }
 
-    public void setDomainInterceptors(Collection<DomainInterceptor> domainInterceptors) {
+    public void setDomainInterceptors(Collection<DomainAdvice> domainInterceptors) {
         this.domainInterceptors = domainInterceptors;
     }
 
@@ -29,7 +29,7 @@ abstract class SyncSessionFactoryParams extends GenericSessionFactoryParams {
 
         private DataSource dataSource;
 
-        private SQLDialect sqlDialect;
+        private Database sqlDialect;
 
         public DataSource getDataSource() {
             return dataSource;
@@ -39,11 +39,11 @@ abstract class SyncSessionFactoryParams extends GenericSessionFactoryParams {
             this.dataSource = dataSource;
         }
 
-        public SQLDialect getSqlDialect() {
+        public Database getSqlDialect() {
             return sqlDialect;
         }
 
-        public void setSqlDialect(SQLDialect sqlDialect) {
+        public void setSqlDialect(Database sqlDialect) {
             this.sqlDialect = sqlDialect;
         }
     }
@@ -53,9 +53,9 @@ abstract class SyncSessionFactoryParams extends GenericSessionFactoryParams {
 
         private Map<String, DataSource> dataSourceMap;
 
-        private Map<String, SQLDialect> sqlDialectMap;
+        private Map<String, Database> sqlDialectMap;
 
-        private SQLDialect defaultSqlDialect;
+        private Database defaultSqlDialect;
 
         public Map<String, DataSource> getDataSourceMap() {
             return dataSourceMap;
@@ -65,19 +65,19 @@ abstract class SyncSessionFactoryParams extends GenericSessionFactoryParams {
             this.dataSourceMap = dataSourceMap;
         }
 
-        public Map<String, SQLDialect> getSqlDialectMap() {
+        public Map<String, Database> getSqlDialectMap() {
             return sqlDialectMap;
         }
 
-        public void setSqlDialectMap(Map<String, SQLDialect> sqlDialectMap) {
+        public void setSqlDialectMap(Map<String, Database> sqlDialectMap) {
             this.sqlDialectMap = sqlDialectMap;
         }
 
-        public SQLDialect getDefaultSqlDialect() {
+        public Database getDefaultSqlDialect() {
             return defaultSqlDialect;
         }
 
-        public void setDefaultSqlDialect(SQLDialect defaultSqlDialect) {
+        public void setDefaultSqlDialect(Database defaultSqlDialect) {
             this.defaultSqlDialect = defaultSqlDialect;
         }
     }

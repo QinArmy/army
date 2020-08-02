@@ -162,7 +162,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
     private void assertDialectSupportedZone() {
         if (!this.sessionFactory.supportZone()) {
             throw new MetaException("dialect[%s] unsupported zoneId"
-                    , this.sessionFactory.actualSQLDialect());
+                    , this.sessionFactory.actualDatabase());
         }
     }
 

@@ -10,18 +10,18 @@ import java.util.List;
 
 /**
  * <p>
- *     This interface encapsulate synchronous api than can access database.
+ * This interface encapsulate synchronous api than can access database.
  * </p>
  *
  * <p>
  * This interface have three direct sub interfaces:
  *     <ul>
- *         <li>{@link GenericSyncApiSession}</li>
+ *         <li>{@link GenericSingleDatabaseSyncSession}</li>
  *         <li>{@code io.army.boot.RmSession}</li>
  *     </ul>
  * </p>
  *
- * @see GenericSyncApiSession
+ * @see GenericSingleDatabaseSyncSession
  */
 public interface GenericSyncSession extends GenericSession {
 

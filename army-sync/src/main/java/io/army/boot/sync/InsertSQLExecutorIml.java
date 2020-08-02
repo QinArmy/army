@@ -18,12 +18,12 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
     private static final Logger LOG = LoggerFactory.getLogger(InsertSQLExecutorIml.class);
 
 
-    InsertSQLExecutorIml(InnerRmSessionFactory sessionFactory) {
+    InsertSQLExecutorIml(InnerGenericRmSessionFactory sessionFactory) {
         super(sessionFactory);
     }
 
     @Override
-    public final void valueInsert(InnerSession session, List<SQLWrapper> sqlWrapperList)
+    public final void valueInsert(InnerGenericRmSession session, List<SQLWrapper> sqlWrapperList)
             throws InsertException {
         session.codecContextStatementType(StatementType.INSERT);
         try {
@@ -54,7 +54,7 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
     }
 
     @Override
-    public final int subQueryInsert(InnerSession session, SQLWrapper sqlWrapper) throws InsertException {
+    public final int subQueryInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper) throws InsertException {
         session.codecContextStatementType(StatementType.INSERT);
         try {
             if (this.sessionFactory.showSQL()) {
@@ -75,7 +75,7 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
     }
 
     @Override
-    public final long subQueryLargeInsert(InnerSession session, SQLWrapper sqlWrapper) throws InsertException {
+    public final long subQueryLargeInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper) throws InsertException {
         session.codecContextStatementType(StatementType.INSERT);
         try {
             if (this.sessionFactory.showSQL()) {
@@ -96,7 +96,7 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
     }
 
     @Override
-    public final <T> List<T> returningInsert(InnerSession session, SQLWrapper sqlWrapper, Class<T> resultClass)
+    public final <T> List<T> returningInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper, Class<T> resultClass)
             throws InsertException {
         session.codecContextStatementType(StatementType.INSERT);
         try {
@@ -119,7 +119,7 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
 
     /*################################## blow private method ##################################*/
 
-    private void doExecuteSimple(InnerSession session, SimpleSQLWrapper sqlWrapper) {
+    private void doExecuteSimple(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper) {
         int rows;
         rows = doExecuteUpdate(session, sqlWrapper);
         if (rows != 1) {
@@ -129,7 +129,7 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
         }
     }
 
-    private int doExecuteChild(InnerSession session, ChildSQLWrapper childSQLWrapper, final boolean subQueryInsert) {
+    private int doExecuteChild(InnerGenericRmSession session, ChildSQLWrapper childSQLWrapper, final boolean subQueryInsert) {
 
         int childRows, parentRows;
         // firstly,execute parent multiInsert sql
@@ -150,7 +150,7 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
         return childRows;
     }
 
-    private long doExecuteLargeSubQueryChild(InnerSession session, ChildSQLWrapper childSQLWrapper) {
+    private long doExecuteLargeSubQueryChild(InnerGenericRmSession session, ChildSQLWrapper childSQLWrapper) {
 
         final SimpleSQLWrapper parentWrapper = childSQLWrapper.parentWrapper();
         final SimpleSQLWrapper childWrapper = childSQLWrapper.childWrapper();
@@ -169,7 +169,7 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
         return childRows;
     }
 
-    private <T> List<T> doExecuteInsertChildReturning(InnerSession session, ChildSQLWrapper sqlWrapper
+    private <T> List<T> doExecuteInsertChildReturning(InnerGenericRmSession session, ChildSQLWrapper sqlWrapper
             , Class<T> resultClass) {
 
         Map<Object, BeanWrapper> beanWrapperMap;
@@ -192,7 +192,7 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
     }
 
 
-    private void doExecuteChildBatch(InnerSession session, ChildBatchSQLWrapper sqlWrapper) {
+    private void doExecuteChildBatch(InnerGenericRmSession session, ChildBatchSQLWrapper sqlWrapper) {
 
         final BatchSimpleSQLWrapper parentWrapper = sqlWrapper.parentWrapper();
         final BatchSimpleSQLWrapper childWrapper = sqlWrapper.childWrapper();

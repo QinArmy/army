@@ -16,13 +16,13 @@ final class SelectSQLExecutorImpl extends SQLExecutorSupport implements SelectSQ
     private static final Logger LOG = LoggerFactory.getLogger(SelectSQLExecutorImpl.class);
 
 
-    SelectSQLExecutorImpl(InnerRmSessionFactory sessionFactory) {
+    SelectSQLExecutorImpl(InnerGenericRmSessionFactory sessionFactory) {
         super(sessionFactory);
     }
 
 
     @Override
-    public final <T> List<T> select(InnerSession session, SimpleSQLWrapper sqlWrapper, Class<T> resultClass) {
+    public final <T> List<T> select(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper, Class<T> resultClass) {
         if (session.sessionFactory().showSQL()) {
             LOG.info("army will execute select sql:\n{}", session.dialect().showSQL(sqlWrapper));
         }

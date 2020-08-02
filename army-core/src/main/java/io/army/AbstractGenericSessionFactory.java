@@ -1,6 +1,5 @@
 package io.army;
 
-import io.army.cache.SessionCacheFactory;
 import io.army.codec.FieldCodec;
 import io.army.domain.IDomain;
 import io.army.env.Environment;
@@ -44,15 +43,13 @@ public abstract class AbstractGenericSessionFactory implements GenericSessionFac
 
     protected final boolean supportSessionCache;
 
-    protected final SessionCacheFactory sessionCacheFactory;
-
     protected final boolean shardingSubQueryInsert;
 
     protected final boolean allowSpanSharding;
 
-    protected AbstractGenericSessionFactory(GenericSessionFactoryParams factoryParams) {
-        String name = factoryParams.getName();
-        Environment env = factoryParams.getEnvironment();
+    protected AbstractGenericSessionFactory(GenericFactoryBuilderImpl factoryBuilder) {
+        String name = factoryBuilder.name();
+        Environment env = factoryBuilder.environment();
         Assert.hasText(name, "name required");
         Assert.notNull(env, "env required");
 
@@ -72,9 +69,9 @@ public abstract class AbstractGenericSessionFactory implements GenericSessionFac
         this.tableGeneratorChain = generatorWrapper.getTableGeneratorChain();
 
         this.readOnly = GenericSessionFactoryUtils.readOnly(this.name, this.env);
-        this.fieldCodecMap = GenericSessionFactoryUtils.createTableFieldCodecMap(factoryParams.getFieldCodecs());
+        this.fieldCodecMap = GenericSessionFactoryUtils.createTableFieldCodecMap(factoryBuilder.fieldCodecs());
         this.supportSessionCache = GenericSessionFactoryUtils.sessionCache(this.env, this.name);
-        this.sessionCacheFactory = SessionCacheFactory.build(this);
+
 
         this.shardingSubQueryInsert = GenericSessionFactoryUtils.shardingSubQueryInsert(
                 this.env, this.name, this.shardingMode);
@@ -99,9 +96,8 @@ public abstract class AbstractGenericSessionFactory implements GenericSessionFac
         this.readOnly = tmSessionFactory.readOnly;
         this.fieldCodecMap = tmSessionFactory.fieldCodecMap;
         this.supportSessionCache = tmSessionFactory.supportSessionCache;
-        this.sessionCacheFactory = tmSessionFactory.sessionCacheFactory;
-
         this.shardingSubQueryInsert = tmSessionFactory.shardingSubQueryInsert;
+
         this.allowSpanSharding = tmSessionFactory.allowSpanSharding;
     }
 
@@ -169,9 +165,6 @@ public abstract class AbstractGenericSessionFactory implements GenericSessionFac
         return this.supportSessionCache;
     }
 
-    public SessionCacheFactory sessionCacheFactory() {
-        return this.sessionCacheFactory;
-    }
 
     @Override
     public boolean readonly() {

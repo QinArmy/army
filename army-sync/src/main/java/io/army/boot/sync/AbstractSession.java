@@ -1,6 +1,9 @@
 package io.army.boot.sync;
 
-import io.army.*;
+import io.army.DomainUpdateException;
+import io.army.ErrorCode;
+import io.army.ReadOnlySessionException;
+import io.army.SessionException;
 import io.army.codec.StatementType;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerSQL;
@@ -19,9 +22,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-abstract class AbstractSession extends AbstractGenericSyncApiSession implements InnerSession, InnerTxSession {
+abstract class AbstractSession extends AbstractGenericSingleDatabaseSyncSession implements InnerGenericRmSession, InnerTxSession {
 
-    final InnerRmSessionFactory sessionFactory;
+    final InnerGenericRmSessionFactory sessionFactory;
 
     final Connection connection;
 
@@ -31,7 +34,7 @@ abstract class AbstractSession extends AbstractGenericSyncApiSession implements 
 
     final InnerCodecContext codecContext = new CodecContextImpl();
 
-    AbstractSession(InnerRmSessionFactory sessionFactory, Connection connection)
+    AbstractSession(InnerGenericRmSessionFactory sessionFactory, Connection connection)
             throws SessionException {
         this.sessionFactory = sessionFactory;
         this.connection = connection;
@@ -43,20 +46,7 @@ abstract class AbstractSession extends AbstractGenericSyncApiSession implements 
 
 
 
-    @Nullable
-    @Override
-    public <T> T selectOne(Select select, Class<T> resultClass, Visible visible) {
-        List<T> list = select(select, resultClass, visible);
-        T t;
-        if (list.size() == 1) {
-            t = list.get(0);
-        } else if (list.size() == 0) {
-            t = null;
-        } else {
-            throw new NonUniqueException("select result[%s] more than 1.", list.size());
-        }
-        return t;
-    }
+
 
 
     @Override
@@ -341,7 +331,7 @@ abstract class AbstractSession extends AbstractGenericSyncApiSession implements 
         return this.connection;
     }
 
-    /*################################## blow InnerSession method ##################################*/
+    /*################################## blow InnerGenericRmSession method ##################################*/
 
     @Override
     public PreparedStatement createStatement(String sql, boolean generatedKey)
@@ -440,19 +430,5 @@ abstract class AbstractSession extends AbstractGenericSyncApiSession implements 
         return sqlWrapper;
     }
 
-    private List<SQLWrapper> parseInsert(Insert insert, Visible visible) {
-        if (this.readonly()) {
-            throw new ReadOnlySessionException("current session/session transaction is read only.");
-        }
-        //1. parse update sql
-        List<SQLWrapper> sqlWrapperList = this.dialect.subQueryInsert(insert, visible);
-        for (SQLWrapper sqlWrapper : sqlWrapperList) {
-            if (sqlWrapper instanceof ChildSQLWrapper || sqlWrapper instanceof ChildBatchSQLWrapper) {
-                assertChildDomain();
-                break;
-            }
-        }
-        return sqlWrapperList;
-    }
 
 }
