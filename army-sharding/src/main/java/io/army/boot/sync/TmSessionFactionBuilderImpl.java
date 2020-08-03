@@ -1,13 +1,13 @@
 package io.army.boot.sync;
 
 import io.army.SessionFactoryException;
-import io.army.TmSessionFactory;
 import io.army.boot.SessionFactoryAdvice;
 import io.army.codec.FieldCodec;
 import io.army.dialect.Database;
 import io.army.env.Environment;
 import io.army.interceptor.DomainAdvice;
 import io.army.lang.Nullable;
+import io.army.sync.TmSessionFactory;
 
 import javax.sql.XADataSource;
 import java.util.Collection;

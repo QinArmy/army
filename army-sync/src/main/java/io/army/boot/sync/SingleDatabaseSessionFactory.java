@@ -7,6 +7,7 @@ import io.army.context.spi.CurrentSessionContext;
 import io.army.criteria.NotFoundRouteException;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
+import io.army.interceptor.DomainAdvice;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.sharding.TableRoute;
@@ -14,35 +15,29 @@ import io.army.sync.ProxySession;
 import io.army.sync.Session;
 import io.army.sync.SessionFactory;
 import io.army.util.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * this class is a implementation of {@link SessionFactory}.
- * this class run only below:
- * <ul>
- *     <li>{@link ShardingMode#NO_SHARDING}</li>
- *     <li>{@link ShardingMode#SAME_SCHEMA_SHARDING}</li>
- * </ul>
+ * this class is a implementation of {@link SessionFactory}
  */
-class SingleDatabaseSessionFactory extends AbstractSyncSessionFactory
+class SingleDatabaseSessionFactory extends AbstractGenericSessionFactory
         implements InnerSessionFactory {
-
-    private static final Logger LOG = LoggerFactory.getLogger(SingleDatabaseSessionFactory.class);
 
     private static final EnumSet<ShardingMode> SUPPORT_SHARDING_SET = EnumSet.of(
             ShardingMode.NO_SHARDING
-            , ShardingMode.SAME_SCHEMA_SHARDING);
+            , ShardingMode.SINGLE_DATABASE_SHARDING);
 
     private final DataSource dataSource;
 
     private final Dialect dialect;
+
+    private final Map<TableMeta<?>, DomainAdvice> domainAdviceMap;
 
     private final SessionCacheFactory sessionCacheFactory;
 
@@ -60,6 +55,7 @@ class SingleDatabaseSessionFactory extends AbstractSyncSessionFactory
 
     private final Map<TableMeta<?>, TableRoute> tableRouteMap;
 
+    private final AtomicBoolean initFinished = new AtomicBoolean(false);
 
     private boolean closed;
 
@@ -67,20 +63,25 @@ class SingleDatabaseSessionFactory extends AbstractSyncSessionFactory
     SingleDatabaseSessionFactory(SessionFactoryBuilderImpl factoryBuilder)
             throws SessionFactoryException {
         super(factoryBuilder);
+
         if (!SUPPORT_SHARDING_SET.contains(this.shardingMode)) {
             throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
-                    , "SHardingMode[%s] is supported by %s.", getClass().getName());
+                    , "ShardingMode[%s] is supported by %s.", getClass().getName());
         }
+
         DataSource dataSource = factoryBuilder.dataSource();
         Assert.notNull(dataSource, "dataSource required");
 
         this.dataSource = dataSource;
         this.dialect = SyncSessionFactoryUtils.createDialectForSync(dataSource, this);
+        this.domainAdviceMap = SyncSessionFactoryUtils.createDomainAdviceMap(
+                factoryBuilder.domainInterceptors());
 
         this.currentSessionContext = SyncSessionFactoryUtils.buildCurrentSessionContext(this);
         this.proxySession = new ProxySessionImpl(this, this.currentSessionContext);
         this.tableRouteMap = SyncSessionFactoryUtils.routeMap(this, TableRoute.class, 1, factoryBuilder.tableCount());
         this.sessionCacheFactory = SessionCacheFactory.build(this);
+
         // executor after dialect
         this.domainValuesGenerator = DomainValuesGenerator.build(this);
         this.insertSQLExecutor = InsertSQLExecutor.build(this);
@@ -105,6 +106,17 @@ class SingleDatabaseSessionFactory extends AbstractSyncSessionFactory
     }
 
     @Override
+    public Map<TableMeta<?>, DomainAdvice> domainInterceptorMap() {
+        return this.domainAdviceMap;
+    }
+
+    @Nullable
+    @Override
+    public DomainAdvice domainInterceptorList(TableMeta<?> tableMeta) {
+        return this.domainAdviceMap.get(tableMeta);
+    }
+
+    @Override
     public boolean hasCurrentSession() {
         return this.currentSessionContext.hasCurrentSession();
     }
@@ -119,12 +131,31 @@ class SingleDatabaseSessionFactory extends AbstractSyncSessionFactory
         return this.currentSessionContext;
     }
 
+    @Override
+    public SessionCacheFactory sessionCacheFactory() {
+        return this.sessionCacheFactory;
+    }
+
     @Nullable
     @Override
     public GenericTmSessionFactory tmSessionFactory() {
         // always null
         return null;
     }
+
+    /*################################## blow GenericRmSessionFactory method ##################################*/
+
+    @Override
+    public boolean supportZone() {
+        return this.dialect.supportZone();
+    }
+
+    @Override
+    public Database actualDatabase() {
+        return this.dialect.database();
+    }
+
+    /*################################## blow InnerGenericRmSessionFactory method ##################################*/
 
     @Override
     public Dialect dialect() {
@@ -144,16 +175,6 @@ class SingleDatabaseSessionFactory extends AbstractSyncSessionFactory
     @Override
     public UpdateSQLExecutor updateSQLExecutor() {
         return this.updateSQLExecutor;
-    }
-
-    @Override
-    public boolean supportZone() {
-        return this.dialect.supportZone();
-    }
-
-    @Override
-    public Database actualDatabase() {
-        return this.dialect.database();
     }
 
     @Override
@@ -181,7 +202,12 @@ class SingleDatabaseSessionFactory extends AbstractSyncSessionFactory
     }
 
     void initSessionFactory() throws DataAccessException {
-        migrationMeta();
+        synchronized (this.initFinished) {
+            if (this.initFinished.get()) {
+                return;
+            }
+            migrationMeta();
+        }
     }
 
     /*################################## blow private method ##################################*/
@@ -196,17 +222,20 @@ class SingleDatabaseSessionFactory extends AbstractSyncSessionFactory
             new DefaultSessionFactoryInitializer(conn, this.tableMetaMap, this.dialect)
                     .onStartup();
         } catch (SQLException e) {
-            throw new DataAccessException(ErrorCode.CODEC_DATA_ERROR, e, "init session factory failure.");
+            throw new DataAccessException(ErrorCode.CODEC_DATA_ERROR, e, "%s migration failure.", this);
         }
     }
 
     /*################################## blow instance inner class  ##################################*/
 
-    private final class SessionBuilderImpl implements SessionFactory.SessionBuilder {
+    final class SessionBuilderImpl implements SessionFactory.SessionBuilder {
 
         private boolean currentSession;
 
-        private boolean noResetConnection;
+        private boolean resetConnection = true;
+
+        private SessionBuilderImpl() {
+        }
 
         @Override
         public SessionFactory.SessionBuilder currentSession(boolean current) {
@@ -216,8 +245,16 @@ class SingleDatabaseSessionFactory extends AbstractSyncSessionFactory
 
         @Override
         public SessionBuilder resetConnection(boolean reset) {
-            this.noResetConnection = reset;
+            this.resetConnection = reset;
             return this;
+        }
+
+        public final boolean currentSession() {
+            return currentSession;
+        }
+
+        public final boolean resetConnection() {
+            return resetConnection;
         }
 
         @Override
@@ -225,8 +262,7 @@ class SingleDatabaseSessionFactory extends AbstractSyncSessionFactory
             final boolean current = this.currentSession;
             try {
                 final Session session = new SessionImpl(SingleDatabaseSessionFactory.this
-                        , SingleDatabaseSessionFactory.this.dataSource.getConnection()
-                        , current, noResetConnection);
+                        , SingleDatabaseSessionFactory.this.dataSource.getConnection(), SessionBuilderImpl.this);
                 if (current) {
                     SingleDatabaseSessionFactory.this.currentSessionContext.currentSession(session);
                 }

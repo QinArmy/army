@@ -1,4 +1,2 @@
-@NonNullApi
+@io.army.lang.NonNullApi
 package io.army.boot.sync;
-
-import io.army.lang.NonNullApi;

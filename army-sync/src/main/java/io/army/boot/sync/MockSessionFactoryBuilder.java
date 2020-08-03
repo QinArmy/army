@@ -1,18 +1,38 @@
 package io.army.boot.sync;
 
 import io.army.GenericSessionFactory;
-import io.army.SessionFactoryException;
+import io.army.boot.GenericFactoryBuilder;
+import io.army.boot.SessionFactoryAdvice;
+import io.army.codec.FieldCodec;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialectFactory;
-import io.army.sync.SessionFactory;
+import io.army.env.Environment;
+
+import java.util.Collection;
+import java.util.List;
 
 final class MockSessionFactoryBuilder extends AbstractSyncSessionFactoryBuilder {
 
 
     @Override
-    public SessionFactory build() throws SessionFactoryException {
-        throw new UnsupportedOperationException();
+    public GenericFactoryBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs) {
+        return null;
+    }
+
+    @Override
+    public GenericFactoryBuilder name(String sessionFactoryName) {
+        return null;
+    }
+
+    @Override
+    public GenericFactoryBuilder environment(Environment environment) {
+        return null;
+    }
+
+    @Override
+    public GenericFactoryBuilder factoryAdvice(List<SessionFactoryAdvice> factoryAdviceList) {
+        return null;
     }
 
     private static Dialect createDialect(GenericSessionFactory sessionFactory, Database sqlDialect) {

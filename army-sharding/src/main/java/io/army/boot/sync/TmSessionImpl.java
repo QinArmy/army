@@ -1,8 +1,6 @@
 package io.army.boot.sync;
 
 import io.army.SessionException;
-import io.army.TmSession;
-import io.army.TmSessionFactory;
 import io.army.beans.DomainWrapper;
 import io.army.beans.ReadonlyWrapper;
 import io.army.boot.DomainValuesGenerator;
@@ -18,6 +16,8 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.sharding.DatabaseRoute;
 import io.army.sharding.RouteWrapper;
+import io.army.sync.TmSession;
+import io.army.sync.TmSessionFactory;
 import io.army.tx.TmTransaction;
 import io.army.tx.TransactionNotCloseException;
 import io.army.tx.TransactionOption;
@@ -36,7 +36,7 @@ import java.util.*;
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
  */
-final class TmSessionImpl extends AbstractSyncApiSession implements TmSession {
+final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmSession {
 
     private static final EnumSet<TransactionStatus> TX_END_STATUS = EnumSet.of(
             TransactionStatus.COMMITTED

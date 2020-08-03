@@ -1,10 +1,8 @@
 package io.army.boot.sync;
 
-import io.army.wrapper.BatchSimpleSQLWrapper;
 import io.army.wrapper.SQLWrapper;
 
 import java.util.List;
-import java.util.Map;
 
 interface UpdateSQLExecutor {
 
@@ -12,13 +10,9 @@ interface UpdateSQLExecutor {
 
     long largeUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper, boolean updateStatement);
 
-    /**
-     * @param <V> return map's value java type.
-     * @return a unmodifiable map, key : key of {@linkplain BatchSimpleSQLWrapper#paramGroupList()}
-     * * ,value : batch update rows of named param.
-     */
-    <V extends Number> Map<Integer, V> batchUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper
-            , Class<V> mapValueClass, boolean updateStatement);
+    int[] batchUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper, boolean updateStatement);
+
+    long[] batchLargeUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper, boolean updateStatement);
 
     <T> List<T> returningUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper, Class<T> resultClass
             , boolean updateStatement);

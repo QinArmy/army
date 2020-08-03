@@ -15,7 +15,7 @@ final class LocalTransaction extends AbstractSyncTransaction implements Transact
 
     static final String SAVEPOINT_NAME_PREFIX = "ARMY_SAVEPOINT_";
 
-    final InnerTxSession session;
+    final InnerSession session;
 
     final Set<Savepoint> savepointSet = new HashSet<>();
 
@@ -23,7 +23,7 @@ final class LocalTransaction extends AbstractSyncTransaction implements Transact
 
     int savePointCounter = 0;
 
-    LocalTransaction(InnerTxSession session, TransactionOption option) {
+    LocalTransaction(InnerSession session, TransactionOption option) {
         super(option);
         this.session = session;
         this.status = TransactionStatus.NOT_ACTIVE;
@@ -192,6 +192,11 @@ final class LocalTransaction extends AbstractSyncTransaction implements Transact
     public void close() throws TransactionException {
         assertCanClose();
         this.session.closeTransaction(this);
+    }
+
+    @Override
+    public boolean transactionEnded() {
+        return END_ABLE_SET.contains(this.status);
     }
 
     /*################################## blow package method ##################################*/

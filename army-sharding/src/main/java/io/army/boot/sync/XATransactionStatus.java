@@ -1,6 +1,6 @@
-package io.army.tx;
+package io.army.boot.sync;
 
-public enum XATransactionStatus {
+enum XATransactionStatus {
 
     /**
      * The transaction has not yet been started.

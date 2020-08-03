@@ -1,6 +1,7 @@
 package io.army.tx;
 
-import io.army.TmSession;
+import io.army.boot.sync.XATransaction;
+import io.army.sync.TmSession;
 
 public interface TmTransaction extends GenericSyncTransaction {
 

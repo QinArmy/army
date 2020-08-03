@@ -4,6 +4,17 @@ import io.army.DataAccessException;
 import io.army.NoCurrentSessionException;
 import io.army.sync.Session;
 
+/**
+ * This interface's implementation must definite a public static build method like below.
+ * <p>
+ * {@code public class CurrentSessionContextImpl implements CurrentSessionContext {
+ * <p>
+ * public static CurrentSessionContextImpl build(GenericSyncApiSessionFactory sessionFactory){
+ * ...
+ * }
+ * }
+ * }
+ */
 public interface CurrentSessionContext {
 
     boolean hasCurrentSession();

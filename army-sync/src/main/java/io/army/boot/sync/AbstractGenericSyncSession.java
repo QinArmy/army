@@ -1,5 +1,6 @@
 package io.army.boot.sync;
 
+import io.army.AbstractGenericSession;
 import io.army.NonUniqueException;
 import io.army.criteria.*;
 import io.army.domain.IDomain;
@@ -9,7 +10,7 @@ import io.army.sync.GenericSyncSession;
 
 import java.util.List;
 
-abstract class AbstractGenericSyncSession implements GenericSyncSession {
+abstract class AbstractGenericSyncSession extends AbstractGenericSession implements GenericSyncSession {
 
 
     @Nullable
@@ -33,7 +34,7 @@ abstract class AbstractGenericSyncSession implements GenericSyncSession {
 
 
     @Override
-    public final <R> R selectOne(Select select, Class<R> resultClass, Visible visible) {
+    public final <R> R selectOne(Select select, Class<R> resultClass, final Visible visible) {
         List<R> list = select(select, resultClass, visible);
         R r;
         if (list.size() == 1) {

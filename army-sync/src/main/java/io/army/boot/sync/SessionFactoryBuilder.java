@@ -46,7 +46,7 @@ public interface SessionFactoryBuilder extends GenericFactoryBuilder {
     }
 
     static SessionFactoryBuilder mockBuilder() {
-        return new MockSessionFactoryBuilder();
+        throw new UnsupportedOperationException();
     }
 
 

@@ -5,18 +5,18 @@ import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.env.Environment;
 import io.army.meta.TableMeta;
-import io.army.sync.GenericSyncSessionFactory;
 import io.army.sync.ProxySession;
+import io.army.sync.SessionFactory;
 
 import java.util.List;
 
 class ProxySessionImpl implements ProxySession {
 
-    private final GenericSyncSessionFactory sessionFactory;
+    private final SessionFactory sessionFactory;
 
     private final CurrentSessionContext sessionContext;
 
-    ProxySessionImpl(GenericSyncSessionFactory sessionFactory, CurrentSessionContext sessionContext) {
+    ProxySessionImpl(SessionFactory sessionFactory, CurrentSessionContext sessionContext) {
         this.sessionFactory = sessionFactory;
         this.sessionContext = sessionContext;
     }
@@ -81,7 +81,7 @@ class ProxySessionImpl implements ProxySession {
     }
 
     @Override
-    public GenericSyncSessionFactory sessionFactory() {
+    public SessionFactory sessionFactory() {
         return this.sessionFactory;
     }
 
@@ -137,16 +137,6 @@ class ProxySessionImpl implements ProxySession {
     }
 
     @Override
-    public void updateOne(Update update) {
-        this.sessionContext.currentSession().updateOne(update);
-    }
-
-    @Override
-    public void updateOne(Update update, Visible visible) {
-        this.sessionContext.currentSession().updateOne(update, visible);
-    }
-
-    @Override
     public <T> List<T> returningUpdate(Update update, Class<T> resultClass) {
         return this.sessionContext.currentSession().returningUpdate(update, resultClass);
     }
@@ -158,7 +148,7 @@ class ProxySessionImpl implements ProxySession {
 
     @Override
     public int[] batchUpdate(Update update) {
-        return batchUpdate(update, Visible.ONLY_VISIBLE);
+        return this.sessionContext.currentSession().batchUpdate(update);
     }
 
     @Override
@@ -168,7 +158,7 @@ class ProxySessionImpl implements ProxySession {
 
     @Override
     public long largeUpdate(Update update) {
-        return largeUpdate(update, Visible.ONLY_VISIBLE);
+        return this.sessionContext.currentSession().largeUpdate(update);
     }
 
     @Override
@@ -178,7 +168,7 @@ class ProxySessionImpl implements ProxySession {
 
     @Override
     public long[] batchLargeUpdate(Update update) {
-        return batchLargeUpdate(update, Visible.ONLY_VISIBLE);
+        return this.sessionContext.currentSession().batchLargeUpdate(update);
     }
 
     @Override
@@ -188,7 +178,7 @@ class ProxySessionImpl implements ProxySession {
 
     @Override
     public int delete(Delete delete) {
-        return delete(delete, Visible.ONLY_VISIBLE);
+        return this.sessionContext.currentSession().delete(delete);
     }
 
     @Override
@@ -198,7 +188,7 @@ class ProxySessionImpl implements ProxySession {
 
     @Override
     public <T> List<T> returningDelete(Delete delete, Class<T> resultClass) {
-        return returningDelete(delete, resultClass, Visible.ONLY_VISIBLE);
+        return this.sessionContext.currentSession().returningDelete(delete, resultClass);
     }
 
     @Override
@@ -208,7 +198,7 @@ class ProxySessionImpl implements ProxySession {
 
     @Override
     public int[] batchDelete(Delete delete) {
-        return batchDelete(delete, Visible.ONLY_VISIBLE);
+        return this.sessionContext.currentSession().batchDelete(delete);
     }
 
     @Override
@@ -218,7 +208,7 @@ class ProxySessionImpl implements ProxySession {
 
     @Override
     public long largeDelete(Delete delete) {
-        return largeDelete(delete, Visible.ONLY_VISIBLE);
+        return this.sessionContext.currentSession().largeDelete(delete);
     }
 
     @Override
@@ -228,7 +218,7 @@ class ProxySessionImpl implements ProxySession {
 
     @Override
     public long[] batchLargeDelete(Delete delete) {
-        return batchLargeDelete(delete, Visible.ONLY_VISIBLE);
+        return this.sessionContext.currentSession().batchLargeDelete(delete);
     }
 
     @Override

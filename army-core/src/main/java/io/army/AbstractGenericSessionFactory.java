@@ -71,12 +71,10 @@ public abstract class AbstractGenericSessionFactory implements GenericSessionFac
         this.readOnly = GenericSessionFactoryUtils.readOnly(this.name, this.env);
         this.fieldCodecMap = GenericSessionFactoryUtils.createTableFieldCodecMap(factoryBuilder.fieldCodecs());
         this.supportSessionCache = GenericSessionFactoryUtils.sessionCache(this.env, this.name);
-
-
         this.shardingSubQueryInsert = GenericSessionFactoryUtils.shardingSubQueryInsert(
                 this.env, this.name, this.shardingMode);
-        this.allowSpanSharding = GenericSessionFactoryUtils.allowSpanSharding(this.env, this.name, this.shardingMode);
 
+        this.allowSpanSharding = GenericSessionFactoryUtils.allowSpanSharding(this.env, this.name, this.shardingMode);
     }
 
     protected AbstractGenericSessionFactory(AbstractGenericSessionFactory tmSessionFactory, int factoryIndex) {

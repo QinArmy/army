@@ -1,6 +1,7 @@
 package io.army.boot.sync;
 
 import io.army.ErrorCode;
+import io.army.lang.Nullable;
 import io.army.tx.*;
 
 import javax.transaction.xa.XAException;
@@ -69,11 +70,8 @@ final class XaResourceTransaction implements XATransaction {
         this.name = option.name();
         this.timeout = option.timeout();
 
-        if (this.readOnly) {
-            this.xaResource = null;
-        } else {
-            this.xaResource = session.xaResource();
-        }
+        this.xaResource = obtainXaResource(session, this.readOnly);
+
         if (timeout > 0) {
             this.endMills = (System.currentTimeMillis() + this.timeout * 1000L);
         } else {
@@ -261,6 +259,11 @@ final class XaResourceTransaction implements XATransaction {
         //no-op
     }
 
+    @Override
+    public final boolean transactionEnded() {
+        return this.status == XATransactionStatus.FORGOT;
+    }
+
     /*################################## blow package template method ##################################*/
 
 
@@ -301,6 +304,15 @@ final class XaResourceTransaction implements XATransaction {
         } catch (XAException e) {
             this.status = XATransactionStatus.FAILED_COMMIT;
             throw new TransactionFailureException(e, "army XA commit transaction failure.");
+        }
+    }
+
+    @Nullable
+    private static XAResource obtainXaResource(InnerRmSession session, boolean readOnly) {
+        try {
+            return readOnly ? null : session.xaResource();
+        } catch (SQLException e) {
+            throw new CannotCreateTransactionException(ErrorCode.TRANSACTION_ERROR, e, "Can't get XAResource");
         }
     }
 

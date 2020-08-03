@@ -1,8 +1,9 @@
 package io.army.boot.sync;
 
-import javax.sql.XAConnection;
+import javax.transaction.xa.XAResource;
+import java.sql.SQLException;
 
 interface InnerRmSession extends RmSession, InnerGenericRmSession {
 
-    XAConnection connection();
+    XAResource xaResource() throws SQLException;
 }

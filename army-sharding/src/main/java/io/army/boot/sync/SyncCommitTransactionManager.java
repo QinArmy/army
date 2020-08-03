@@ -1,6 +1,6 @@
 package io.army.boot.sync;
 
-import io.army.TmSession;
+import io.army.sync.TmSession;
 import io.army.tx.*;
 
 import java.util.Iterator;

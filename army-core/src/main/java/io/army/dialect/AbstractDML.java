@@ -71,8 +71,21 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         return list;
     }
 
+    @Override
+    public final SQLWrapper returningInsert(Insert insert, final Visible visible) {
+        Assert.isTrue(insert.prepared(), "Insert don't invoke asInsert() method.");
+
+        SQLWrapper sqlWrapper;
+        if (insert instanceof InnerSpecialValueInsert) {
+
+        } else {
+            throw new IllegalArgumentException(String.format("Insert[%s] not supported by returningInsert.", insert));
+        }
+        return null;
+    }
+
     /**
-     *{@inheritDoc}
+     * {@inheritDoc}
      */
     @Override
     public final SQLWrapper subQueryInsert(Insert insert, final Visible visible) {

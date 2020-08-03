@@ -3,15 +3,19 @@ package io.army.tx;
 
 public interface GenericTransaction {
 
-     String name();
+    String name();
 
-     Isolation isolation();
+    Isolation isolation();
 
-     boolean readOnly();
+    boolean readOnly();
 
-     long getTimeToLiveInMillis() throws TransactionTimeOutException;
+    Enum<?> status();
 
-     boolean rollbackOnly();
+    long getTimeToLiveInMillis() throws TransactionTimeOutException;
 
-     void markRollbackOnly() throws TransactionException;
+    boolean rollbackOnly();
+
+    void markRollbackOnly() throws TransactionException;
+
+    boolean transactionEnded();
 }

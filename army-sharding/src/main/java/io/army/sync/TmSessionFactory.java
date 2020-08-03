@@ -1,6 +1,8 @@
-package io.army;
+package io.army.sync;
 
-import io.army.sync.GenericSyncApiSessionFactory;
+import io.army.GenericTmSessionFactory;
+import io.army.SessionException;
+
 
 public interface TmSessionFactory extends GenericSyncApiSessionFactory, GenericTmSessionFactory {
 

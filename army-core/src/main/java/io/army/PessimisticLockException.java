@@ -1,6 +1,6 @@
 package io.army;
 
-public class PessimisticLockException extends ArmyRuntimeException {
+public final class PessimisticLockException extends ArmyRuntimeException {
 
     public PessimisticLockException(ErrorCode errorCode) {
         super(errorCode);

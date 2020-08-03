@@ -13,7 +13,7 @@ import io.army.sharding.Route;
 import io.army.sharding.RouteCreateException;
 import io.army.sharding.RouteMetaData;
 import io.army.sharding.TableRoute;
-import io.army.sync.GenericSyncSessionFactory;
+import io.army.sync.GenericSyncApiSessionFactory;
 import io.army.util.ClassUtils;
 import io.army.util.CollectionUtils;
 import io.army.util.ReflectionUtils;
@@ -26,7 +26,10 @@ import java.lang.reflect.Modifier;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
 
@@ -53,21 +56,20 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
         return primary;
     }
 
-    /**
-     * @param database read from {@link Environment} with {@link ArmyConfigConstant#DATABASE}
-     */
+
     static Dialect createDialectForSync(DataSource dataSource, SingleDatabaseSessionFactory sessionFactory) {
         try (Connection conn = dataSource.getConnection()) {
             Database database = readDatabase(sessionFactory);
 
             return createDialect(database, extractDatabase(conn), sessionFactory);
         } catch (SQLException e) {
-            throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR, e, "get connection error.");
+            throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR, e
+                    , "SessionFactory[%s] get connection error.", sessionFactory.name());
         }
 
     }
 
-    static CurrentSessionContext buildCurrentSessionContext(GenericSyncSessionFactory sessionFactory) {
+    static CurrentSessionContext buildCurrentSessionContext(GenericSyncApiSessionFactory sessionFactory) {
         Environment env = sessionFactory.environment();
 
         final String className = env.getProperty(
@@ -79,20 +81,26 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
 
         try {
             Class<?> clazz = Class.forName(className);
-            Method method = clazz.getMethod("build", GenericSyncSessionFactory.class);
-
             if (!CurrentSessionContext.class.isAssignableFrom(clazz)) {
                 throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
                         , "%s isn't %s type", className
                         , CurrentSessionContext.class.getName());
             }
-            if (!clazz.isAssignableFrom(method.getReturnType())) {
+            Method method = clazz.getMethod("build", GenericSyncApiSessionFactory.class);
+
+            if (Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers())) {
+                if (!clazz.isAssignableFrom(method.getReturnType())) {
+                    throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
+                            , "%s return type isn't %s", className
+                            , className);
+                }
+                // invoke static build method.
+                return (CurrentSessionContext) method.invoke(null, sessionFactory);
+            } else {
                 throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
-                        , "%s return type isn't %s", className
-                        , className);
+                        , "%s not found build method definition", className);
             }
-            // invoke static build method.
-            return (CurrentSessionContext) method.invoke(null, sessionFactory);
+
         } catch (ClassNotFoundException e) {
             throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR, e
                     , "not found CurrentSessionContext class");
@@ -105,24 +113,27 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
         }
     }
 
-    static Map<TableMeta<?>, List<DomainAdvice>> createDomainInterceptorMap(
-            Collection<DomainAdvice> domainInterceptors) {
-        Map<TableMeta<?>, List<DomainAdvice>> interceptorMap = new HashMap<>();
+    /**
+     * @return a unmodifiable map
+     */
+    static Map<TableMeta<?>, DomainAdvice> createDomainAdviceMap(
+            @Nullable Collection<DomainAdvice> domainAdvices) {
 
-        for (DomainAdvice interceptor : domainInterceptors) {
-            for (TableMeta<?> tableMeta : interceptor.tableMetaSet()) {
-                List<DomainAdvice> list = interceptorMap.computeIfAbsent(tableMeta, key -> new ArrayList<>());
-                list.add(interceptor);
+        if (CollectionUtils.isEmpty(domainAdvices)) {
+            return Collections.emptyMap();
+        }
+        Map<TableMeta<?>, DomainAdvice> domainAdviceMap = new HashMap<>();
+
+        for (DomainAdvice domainAdvice : domainAdvices) {
+            for (TableMeta<?> tableMeta : domainAdvice.tableMetaSet()) {
+                if (domainAdviceMap.putIfAbsent(tableMeta, domainAdvice) != null) {
+                    throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
+                            , "TableMeta[%s] DomainAdvice duplication.", tableMeta);
+                }
             }
         }
 
-        final Comparator<DomainAdvice> comparator = Comparator.comparingInt(DomainAdvice::order);
-
-        for (Map.Entry<TableMeta<?>, List<DomainAdvice>> e : interceptorMap.entrySet()) {
-            e.getValue().sort(comparator);
-            interceptorMap.replace(e.getKey(), Collections.unmodifiableList(e.getValue()));
-        }
-        return Collections.unmodifiableMap(interceptorMap);
+        return Collections.unmodifiableMap(domainAdviceMap);
     }
 
     static Database extractDatabase(Connection connection) {
@@ -177,26 +188,6 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
         return Collections.unmodifiableMap(tableRouteMap);
     }
 
-    /**
-     * @return a unmodifiable map
-     */
-    static Map<TableMeta<?>, DomainAdvice> createDomainAdviceMap(@Nullable Collection<DomainAdvice> domainAdvices) {
-        if (CollectionUtils.isEmpty(domainAdvices)) {
-            return Collections.emptyMap();
-        }
-        Map<TableMeta<?>, DomainAdvice> map = new HashMap<>();
-
-        for (DomainAdvice domainAdvice : domainAdvices) {
-            for (TableMeta<?> tableMeta : domainAdvice.tableMetaSet()) {
-                if (map.putIfAbsent(tableMeta, domainAdvice) != null) {
-                    throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
-                            , "TableMeta[%s] domain advice duplication.", tableMeta);
-                }
-            }
-
-        }
-        return Collections.unmodifiableMap(map);
-    }
 
     /*################################## blow private method ##################################*/
 

@@ -8,7 +8,7 @@ import io.army.sync.GenericRmSession;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-interface InnerGenericRmSession extends GenericRmSession {
+interface InnerGenericRmSession extends GenericRmSession, InnerTxSession {
 
     PreparedStatement createStatement(String sql, boolean generatedKey) throws SQLException;
 

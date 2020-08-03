@@ -2,6 +2,8 @@ package io.army.boot.sync;
 
 import io.army.DomainUpdateException;
 import io.army.ReadOnlySessionException;
+import io.army.SessionCloseFailureException;
+import io.army.SessionException;
 import io.army.codec.StatementType;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerSQL;
@@ -9,23 +11,32 @@ import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.tx.GenericTransaction;
 import io.army.tx.Isolation;
+import io.army.tx.TransactionNotCloseException;
 import io.army.wrapper.ChildBatchSQLWrapper;
 import io.army.wrapper.ChildSQLWrapper;
 import io.army.wrapper.SQLWrapper;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
+import java.util.Set;
 
-public abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
+abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
         implements InnerGenericRmSession {
 
     private final InnerGenericRmSessionFactory genericSessionFactory;
+
+    final Connection connection;
 
     final Dialect dialect;
 
     private final InnerCodecContext codecContext = new CodecContextImpl();
 
-    AbstractGenericSyncRmSession(InnerGenericRmSessionFactory sessionFactory) {
+    AbstractGenericSyncRmSession(InnerGenericRmSessionFactory sessionFactory, Connection connection) {
         this.genericSessionFactory = sessionFactory;
+        this.connection = connection;
         this.dialect = this.genericSessionFactory.dialect();
     }
 
@@ -45,7 +56,7 @@ public abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSe
     @Override
     public final int subQueryInsert(Insert insert, final Visible visible) {
         //1. parse update sql
-        final SQLWrapper sqlWrapper = parseValueInsert(insert, visible);
+        final SQLWrapper sqlWrapper = parseSubQueryInsert(insert, visible);
         try {
             //2. execute sql by connection
             return this.genericSessionFactory.insertSQLExecutor()
@@ -62,11 +73,34 @@ public abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSe
     @Override
     public final long largeSubQueryInsert(Insert insert, final Visible visible) {
         //1. parse update sql
-        final SQLWrapper sqlWrapper = parseValueInsert(insert, visible);
+        final SQLWrapper sqlWrapper = parseSubQueryInsert(insert, visible);
         try {
             //2. execute sql by connection
             return this.genericSessionFactory.insertSQLExecutor()
                     .subQueryLargeInsert(this, sqlWrapper);
+        } catch (Exception e) {
+            markRollbackOnlyForChildUpdate(sqlWrapper);
+            throw e;
+        } finally {
+            // 3. clear
+            ((InnerSQL) insert).clear();
+        }
+    }
+
+
+    @Override
+    public final <R> List<R> returningInsert(Insert insert, Class<R> resultClass) {
+        return this.returningInsert(insert, resultClass, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final <R> List<R> returningInsert(Insert insert, Class<R> resultClass, final Visible visible) {
+        //1. parse update sql
+        final SQLWrapper sqlWrapper = parseReturningInsert(insert, visible);
+        try {
+            //2. execute sql by connection
+            return this.genericSessionFactory.insertSQLExecutor()
+                    .returningInsert(this, sqlWrapper, resultClass);
         } catch (Exception e) {
             markRollbackOnlyForChildUpdate(sqlWrapper);
             throw e;
@@ -177,6 +211,20 @@ public abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSe
     }
 
     @Override
+    public void close() throws SessionException {
+        GenericTransaction tx = obtainTransaction();
+        if (tx != null && !tx.transactionEnded()) {
+            throw new TransactionNotCloseException("Session transaction not close,tx status[%s]"
+                    , tx.status());
+        }
+        try {
+            this.connection.close();
+        } catch (SQLException e) {
+            throw new SessionCloseFailureException(e, "Connection close failure.");
+        }
+    }
+
+    @Override
     public final Dialect dialect() {
         return this.dialect;
     }
@@ -191,13 +239,38 @@ public abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSe
         this.codecContext.statementType(statementType);
     }
 
+    @Override
+    public final PreparedStatement createStatement(String sql, boolean generatedKey) throws SQLException {
+        int type;
+        if (generatedKey) {
+            type = Statement.RETURN_GENERATED_KEYS;
+        } else {
+            type = Statement.NO_GENERATED_KEYS;
+        }
+        return this.connection.prepareStatement(sql, type);
+    }
+
+    @Override
+    public final PreparedStatement createStatement(String sql) throws SQLException {
+        return this.connection.prepareStatement(sql);
+    }
+
+    @Override
+    public final PreparedStatement createStatement(String sql, String[] columnNames) throws SQLException {
+        return this.connection.prepareStatement(sql, columnNames);
+    }
+
+    @Override
+    public final Connection connection() {
+        return this.connection;
+    }
     /*################################## blow package method ##################################*/
 
     @Nullable
     abstract GenericTransaction obtainTransaction();
 
 
-    final SQLWrapper parseValueInsert(Insert insert, final Visible visible) {
+    final SQLWrapper parseSubQueryInsert(Insert insert, final Visible visible) {
         if (this.readonly()) {
             throw new ReadOnlySessionException("current session/session transaction is read only.");
         }
@@ -208,6 +281,33 @@ public abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSe
 
         }
         return sqlWrapper;
+    }
+
+    final SQLWrapper parseReturningInsert(Insert insert, final Visible visible) {
+        if (this.readonly()) {
+            throw new ReadOnlySessionException("current session/session transaction is read only.");
+        }
+        SQLWrapper sqlWrapper = this.dialect.returningInsert(insert, visible);
+        if (sqlWrapper instanceof ChildSQLWrapper) {
+            assertChildDomain();
+
+        }
+        return sqlWrapper;
+    }
+
+    final List<SQLWrapper> parseValueInsert(Insert insert, @Nullable Set<Integer> domainIndexSet
+            , final Visible visible) {
+        if (this.readonly()) {
+            throw new ReadOnlySessionException("current session/session transaction is read only.");
+        }
+        List<SQLWrapper> sqlWrapperList = this.dialect.valueInsert(insert, domainIndexSet, visible);
+        for (SQLWrapper sqlWrapper : sqlWrapperList) {
+            if (sqlWrapper instanceof ChildSQLWrapper) {
+                assertChildDomain();
+
+            }
+        }
+        return sqlWrapperList;
     }
 
     final SQLWrapper parseUpdate(Update update, final Visible visible) {
@@ -241,6 +341,19 @@ public abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSe
         if (sqlWrapper instanceof ChildSQLWrapper || sqlWrapper instanceof ChildBatchSQLWrapper) {
             if (transaction != null) {
                 transaction.markRollbackOnly();
+            }
+        }
+    }
+
+    final void markRollbackOnlyForChildInsert(List<SQLWrapper> sqlWrapperList) {
+        GenericTransaction transaction = obtainTransaction();
+        for (SQLWrapper sqlWrapper : sqlWrapperList) {
+            if (sqlWrapper instanceof ChildSQLWrapper || sqlWrapper instanceof ChildBatchSQLWrapper) {
+                if (transaction != null) {
+                    transaction.markRollbackOnly();
+                    break;
+                }
+
             }
         }
     }

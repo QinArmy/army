@@ -14,14 +14,13 @@ import java.util.List;
  * </p>
  *
  * <p>
- * This interface have three direct sub interfaces:
+ * This interface is base interface of below interface:
  *     <ul>
- *         <li>{@link GenericSingleDatabaseSyncSession}</li>
- *         <li>{@code io.army.boot.RmSession}</li>
+ *         <li>{@link io.army.sync.Session}</li>
+ *         <li>{@code io.army.boot.sync.RmSession}</li>
+ *         <li>{@code io.army.sync.TmSession}</li>
  *     </ul>
  * </p>
- *
- * @see GenericSingleDatabaseSyncSession
  */
 public interface GenericSyncSession extends GenericSession {
 
@@ -81,6 +80,10 @@ public interface GenericSyncSession extends GenericSession {
     long subQueryLargeInsert(Insert insert);
 
     long largeSubQueryInsert(Insert insert, Visible visible);
+
+    <R> List<R> returningInsert(Insert insert, Class<R> resultClass);
+
+    <R> List<R> returningInsert(Insert insert, Class<R> resultClass, Visible visible);
 
     /**
      * @param update will start singleUpdate dml instance.

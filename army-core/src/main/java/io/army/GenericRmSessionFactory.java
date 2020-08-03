@@ -7,11 +7,12 @@ import io.army.dialect.Database;
  * This interface encapsulate rm(Resource Manager) SessionFactory api than can directly access database.
  * </p>
  * <p>
- * this interface have four direct sub interfaces:
+ * This interface is base interface of below:
  *     <ul>
  *         <li>{@code io.army.sync.SessionFactory}</li>
  *         <li>{@code io.army.boot.sync.RmSessionFactory}</li>
- *         <li>{@code io.army.TmSession}</li>
+ *         <li>{@code io.army.reactive.ReactiveSessionFactory}</li>
+ *         <li>{@code io.army.boot.reactive.ReactiveRmSessionFactory}</li>
  *     </ul>
  * </p>
  */

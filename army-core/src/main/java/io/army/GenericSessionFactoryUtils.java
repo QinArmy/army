@@ -102,6 +102,7 @@ public abstract class GenericSessionFactoryUtils {
 
     static GeneratorWrapper createGeneratorWrapper(Collection<TableMeta<?>> tableMetas
             , GenericSessionFactory sessionFactory) {
+
         final Map<FieldMeta<?, ?>, FieldGenerator> generatorMap = new HashMap<>();
         final Map<TableMeta<?>, List<FieldMeta<?, ?>>> tableGeneratorChain = new HashMap<>();
 
@@ -112,12 +113,6 @@ public abstract class GenericSessionFactoryUtils {
                 GeneratorMeta generatorMeta = fieldMeta.generator();
                 if (generatorMeta == null) {
                     continue;
-                }
-                if (sessionFactory.shardingMode() != ShardingMode.NO_SHARDING
-                        && PreFieldGenerator.class.isAssignableFrom(generatorMeta.type())) {
-                    throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
-                            , "%s not supported by %s.", PreFieldGenerator.class.getName()
-                            , sessionFactory.shardingMode());
                 }
                 assertPreGenerator(generatorMeta);
 

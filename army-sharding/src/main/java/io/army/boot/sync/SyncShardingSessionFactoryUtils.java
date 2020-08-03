@@ -1,7 +1,9 @@
 package io.army.boot.sync;
 
 
+import io.army.CreateSessionException;
 import io.army.ErrorCode;
+import io.army.SessionException;
 import io.army.SessionFactoryException;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
@@ -10,6 +12,7 @@ import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 
 import javax.sql.DataSource;
+import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -52,6 +55,14 @@ abstract class SyncShardingSessionFactoryUtils extends SyncSessionFactoryUtils {
             throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR, e, "get connection error.");
         }
 
+    }
+
+    static Connection getConnection(XAConnection xaConnection) throws SessionException {
+        try {
+            return xaConnection.getConnection();
+        } catch (SQLException e) {
+            throw new CreateSessionException(ErrorCode.SESSION_CREATE_ERROR, e, "XAConnection getConnection() error.");
+        }
     }
 
     /*################################## blow private method ##################################*/

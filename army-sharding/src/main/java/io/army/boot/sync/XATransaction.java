@@ -1,8 +1,9 @@
-package io.army.tx;
+package io.army.boot.sync;
 
-import io.army.boot.RmSession;
+import io.army.tx.GenericSyncTransaction;
+import io.army.tx.TransactionException;
 
-public interface XATransaction extends GenericSyncTransaction {
+interface XATransaction extends GenericSyncTransaction {
 
     @Override
     RmSession session();

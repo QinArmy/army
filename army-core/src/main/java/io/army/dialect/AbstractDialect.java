@@ -159,6 +159,11 @@ public abstract class AbstractDialect implements InnerDialect {
     }
 
     @Override
+    public final SQLWrapper returningInsert(Insert insert, Visible visible) {
+        return this.dml.returningInsert(insert, visible);
+    }
+
+    @Override
     public final SQLWrapper subQueryInsert(Insert insert, Visible visible) {
         return this.dml.subQueryInsert(insert, visible);
     }

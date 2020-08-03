@@ -1,14 +1,17 @@
 package io.army.boot.sync;
 
+import io.army.AbstractGenericSessionFactory;
 import io.army.SessionFactoryException;
 import io.army.ShardingMode;
-import io.army.TmSessionFactory;
 import io.army.context.spi.CurrentSessionContext;
-import io.army.dialect.Database;
+import io.army.criteria.NotFoundRouteException;
 import io.army.interceptor.DomainAdvice;
 import io.army.meta.TableMeta;
 import io.army.sharding.ShardingRoute;
+import io.army.sharding.TableRoute;
+import io.army.sync.GenericSyncSessionFactory;
 import io.army.sync.ProxySession;
+import io.army.sync.TmSessionFactory;
 import io.army.util.Assert;
 
 import java.util.Map;
@@ -23,7 +26,7 @@ import java.util.Map;
  *     </ul>
  * </p>
  */
-class TmSessionFactoryImpl extends AbstractSyncSessionFactory implements InnerTmSessionFactory {
+class TmSessionFactoryImpl extends AbstractGenericSessionFactory implements InnerTmSessionFactory, GenericSyncSessionFactory {
 
     final Map<TableMeta<?>, DomainAdvice> domainAdviceMap;
 
@@ -68,10 +71,9 @@ class TmSessionFactoryImpl extends AbstractSyncSessionFactory implements InnerTm
     }
 
     @Override
-    public Map<String, Database> actualSQLDialectMap() {
+    public TableRoute tableRoute(TableMeta<?> tableMeta) throws NotFoundRouteException {
         return null;
     }
-
 
     @Override
     public void close() throws SessionFactoryException {

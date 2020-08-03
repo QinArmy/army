@@ -1,10 +1,7 @@
 package io.army.boot.sync;
 
 
-import io.army.AbstractGenericSessionFactory;
-import io.army.GenericTmSessionFactory;
-import io.army.SessionFactoryException;
-import io.army.ShardingMode;
+import io.army.*;
 import io.army.boot.DomainValuesGenerator;
 import io.army.criteria.NotFoundRouteException;
 import io.army.dialect.Database;
@@ -14,10 +11,11 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.sharding.TableRoute;
 import io.army.sync.SessionFactory;
-import io.army.tx.TransactionOption;
+import io.army.tx.XaTransactionOption;
 import io.army.util.Assert;
 
 import javax.sql.XADataSource;
+import java.sql.SQLException;
 
 
 /**
@@ -33,6 +31,10 @@ import javax.sql.XADataSource;
 final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
         implements InnerRmSessionFactory {
 
+    private final TmSessionFactoryImpl tmSessionFactory;
+
+    private final int databaseIndex;
+
     private final XADataSource dataSource;
 
     private final Dialect dialect;
@@ -45,8 +47,6 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
 
     private final UpdateSQLExecutor updateSQLExecutor;
 
-    private final TmSessionFactoryImpl tmSessionFactory;
-
     private boolean closed;
 
     RmSessionFactoryImpl(TmSessionFactoryImpl sessionFactory, XADataSource dataSource, int databaseIndex
@@ -57,6 +57,7 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
         Assert.notNull(dataSource, "dataSource required");
 
         this.tmSessionFactory = sessionFactory;
+        this.databaseIndex = databaseIndex;
         this.dataSource = dataSource;
         this.dialect = SyncShardingSessionFactoryUtils.createDialectForSync(dataSource, database, this);
 
@@ -110,6 +111,10 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
         return this.dialect.database();
     }
 
+    @Override
+    public int databaseIndex() {
+        return this.databaseIndex;
+    }
 
     @Override
     public DomainValuesGenerator domainValuesGenerator() {
@@ -132,8 +137,13 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
         return tableRoute;
     }
 
+
     @Override
-    public RmSession build(TransactionOption option) {
-        return null;
+    public final RmSession build(XaTransactionOption option) throws SessionException {
+        try {
+            return new RmSessionImpl(this, dataSource.getXAConnection(), option);
+        } catch (SQLException e) {
+            throw new CreateSessionException(ErrorCode.SESSION_CREATE_ERROR, e, "getXAConnection() error.");
+        }
     }
 }

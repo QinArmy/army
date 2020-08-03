@@ -7,21 +7,20 @@ import io.army.criteria.Visible;
 
 /**
  * <p>
- *     This interface encapsulate synchronous api than can access database.
+ * This interface encapsulate synchronous api than can access database.
  * </p>
  * <p>
- * this interface have three direct sub interfaces:
+ * This interface is base interface of below:
  *     <ul>
  *         <li>{@link Session}</li>
  *         <li>{@link ProxySession}</li>
- *         <li>{@code io.army.TmSession}</li>
  *     </ul>
  * </p>
  *
  * @see Session
  * @see ProxySession
  */
-public interface GenericSingleDatabaseSyncSession extends GenericSyncSession, GenericSyncApiSession {
+public interface GenericSingleDatabaseSyncSession extends GenericSyncApiSession {
 
     int[] batchUpdate(Update update);
 

@@ -1,29 +1,27 @@
 package io.army.boot.sync;
 
 import io.army.*;
-import io.army.boot.CacheDomainUpdate;
 import io.army.cache.DomainUpdateAdvice;
 import io.army.cache.SessionCache;
 import io.army.cache.UniqueKey;
-import io.army.criteria.Select;
-import io.army.criteria.Visible;
+import io.army.criteria.*;
+import io.army.criteria.impl.inner.InnerSQL;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.sync.SessionFactory;
 import io.army.tx.*;
-import io.army.util.Assert;
 import io.army.util.CriteriaUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.army.wrapper.SQLWrapper;
 
 import javax.transaction.TransactionalException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
-final class SessionImpl extends AbstractSession {
+final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSession {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SessionImpl.class);
+    private final InnerSessionFactory sessionFactory;
 
     private final boolean currentSession;
 
@@ -37,12 +35,13 @@ final class SessionImpl extends AbstractSession {
 
     private boolean closed;
 
-    SessionImpl(InnerGenericRmSessionFactory sessionFactory, Connection connection
-            , boolean currentSession, boolean resetConnection) throws SessionException {
+    SessionImpl(InnerSessionFactory sessionFactory, Connection connection
+            , SingleDatabaseSessionFactory.SessionBuilderImpl builder) throws SessionException {
         super(sessionFactory, connection);
 
-        this.currentSession = currentSession;
-        this.connInitParam = createConnInitParam(connection, resetConnection);
+        this.sessionFactory = sessionFactory;
+        this.currentSession = builder.currentSession();
+        this.connInitParam = createConnInitParam(connection, builder.resetConnection());
         this.readonly = sessionFactory.readonly();
         if (sessionFactory.supportSessionCache()) {
             this.sessionCache = sessionFactory.sessionCacheFactory().createSessionCache(this);
@@ -70,6 +69,10 @@ final class SessionImpl extends AbstractSession {
 
     }
 
+    @Override
+    public final SessionFactory sessionFactory() {
+        return this.sessionFactory;
+    }
 
     @Override
     public final boolean readonly() {
@@ -129,6 +132,115 @@ final class SessionImpl extends AbstractSession {
         return actualReturn;
     }
 
+    @Override
+    public final int[] batchUpdate(Update update) {
+        return this.batchUpdate(update, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public int[] batchUpdate(Update update, final Visible visible) {
+        //1. parse update sql
+        final SQLWrapper sqlWrapper = parseUpdate(update, visible);
+        try {
+            //2. execute sql by connection
+            return this.sessionFactory.updateSQLExecutor()
+                    .batchUpdate(this, sqlWrapper, true);
+        } catch (Exception e) {
+            markRollbackOnlyForChildUpdate(sqlWrapper);
+            throw e;
+        } finally {
+            // 3. clear
+            ((InnerSQL) update).clear();
+        }
+    }
+
+    @Override
+    public long[] batchLargeUpdate(Update update) {
+        return this.batchLargeUpdate(update, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public long[] batchLargeUpdate(Update update, final Visible visible) {
+        //1. parse update sql
+        final SQLWrapper sqlWrapper = parseUpdate(update, visible);
+        try {
+            //2. execute sql by connection
+            return this.sessionFactory.updateSQLExecutor()
+                    .batchLargeUpdate(this, sqlWrapper, true);
+        } catch (Exception e) {
+            markRollbackOnlyForChildUpdate(sqlWrapper);
+            throw e;
+        } finally {
+            // 3. clear
+            ((InnerSQL) update).clear();
+        }
+    }
+
+    @Override
+    public int[] batchDelete(Delete delete) {
+        return this.batchDelete(delete, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public int[] batchDelete(Delete delete, final Visible visible) {
+        //1. parse update sql
+        final SQLWrapper sqlWrapper = parseDelete(delete, visible);
+        try {
+            //2. execute sql by connection
+            return this.sessionFactory.updateSQLExecutor()
+                    .batchUpdate(this, sqlWrapper, false);
+        } catch (Exception e) {
+            markRollbackOnlyForChildUpdate(sqlWrapper);
+            throw e;
+        } finally {
+            // 3. clear
+            ((InnerSQL) delete).clear();
+        }
+    }
+
+    @Override
+    public long[] batchLargeDelete(Delete delete) {
+        return this.batchLargeDelete(delete, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public long[] batchLargeDelete(Delete delete, final Visible visible) {
+        //1. parse update sql
+        final SQLWrapper sqlWrapper = parseDelete(delete, visible);
+        try {
+            //2. execute sql by connection
+            return this.sessionFactory.updateSQLExecutor()
+                    .batchLargeUpdate(this, sqlWrapper, false);
+        } catch (Exception e) {
+            markRollbackOnlyForChildUpdate(sqlWrapper);
+            throw e;
+        } finally {
+            // 3. clear
+            ((InnerSQL) delete).clear();
+        }
+    }
+
+    @Override
+    public final void valueInsert(Insert insert) {
+        valueInsert(insert, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final void valueInsert(Insert insert, final Visible visible) {
+        //1. parse update sql
+        List<SQLWrapper> sqlWrapperList = parseValueInsert(insert, null, visible);
+        try {
+            //2. execute sql by connection
+            this.sessionFactory.insertSQLExecutor()
+                    .valueInsert(this, sqlWrapperList);
+        } catch (Exception e) {
+            markRollbackOnlyForChildInsert(sqlWrapperList);
+            throw e;
+        } finally {
+            // 3. clear
+            ((InnerSQL) insert).clear();
+        }
+    }
 
 
     @Override
@@ -142,13 +254,13 @@ final class SessionImpl extends AbstractSession {
             return;
         }
         try {
-            if (this.currentSession) {
-                sessionFactory.currentSessionContext().removeCurrentSession(this);
-            }
             if (this.transaction != null) {
                 throw new TransactionNotCloseException("Transaction not close.");
             }
-            connection.close();
+            if (this.currentSession) {
+                this.sessionFactory.currentSessionContext().removeCurrentSession(this);
+            }
+            this.connection.close();
             this.closed = true;
         } catch (SessionException e) {
             throw e;
@@ -166,14 +278,10 @@ final class SessionImpl extends AbstractSession {
     }
 
     @Override
-    public TransactionBuilder builder(boolean readOnly, Isolation isolation, int timeoutSeconds)
+    public TransactionBuilder builder()
             throws TransactionalException {
         checkSessionTransaction();
-        if (this.readonly && !readOnly) {
-            throw new CannotCreateTransactionException(ErrorCode.READ_ONLY_SESSION
-                    , "session[%s] is read only,can't create not read only transaction.", this);
-        }
-        return new TransactionBuilderImpl(readOnly, isolation, timeoutSeconds);
+        return new TransactionBuilderImpl();
     }
 
     @Override
@@ -182,7 +290,7 @@ final class SessionImpl extends AbstractSession {
     }
 
     @Override
-    public void flush() throws SessionException {
+    public final void flush() throws SessionException {
         if (this.sessionCache == null) {
             return;
         }
@@ -194,19 +302,25 @@ final class SessionImpl extends AbstractSession {
             if (readOnly) {
                 throw new ReadOnlySessionException("Session is read only,can't update Domain cache.");
             }
-            updateOne(CacheDomainUpdate.build(advice), Visible.ONLY_VISIBLE);
+            int updateRows;
+            updateRows = update(CacheDomainUpdate.build(advice), Visible.ONLY_VISIBLE);
+            if (updateRows != 1) {
+                throw new OptimisticLockException("TableMeta[%s] maybe updated by other transaction."
+                        , advice.readonlyWrapper().tableMeta());
+            }
             advice.updateFinish();
         }
     }
+
+
 
     /*################################## blow package method ##################################*/
 
     @Nullable
     @Override
-    Transaction obtainSessionTransaction() {
+    final GenericTransaction obtainTransaction() {
         return this.transaction;
     }
-
 
     /**
      * invoke by {@link Transaction#close()}
@@ -250,21 +364,42 @@ final class SessionImpl extends AbstractSession {
 
     /*################################## blow instance inner class  ##################################*/
 
-    private final class TransactionBuilderImpl implements TransactionBuilder, TransactionOption {
+    final class TransactionBuilderImpl implements TransactionBuilder, TransactionOption {
 
-        private final boolean readOnly;
+        private Isolation isolation;
 
-        private final Isolation isolation;
+        private int timeout = 0;
 
-        private final int timeout;
+        private boolean readOnly;
 
         private String name;
 
-        private TransactionBuilderImpl(boolean readOnly, Isolation isolation, int timeout) {
-            Assert.notNull(isolation, "isolation required");
-            this.readOnly = readOnly;
+        private TransactionBuilderImpl() {
+
+        }
+
+        @Override
+        public TransactionBuilder name(@Nullable String txName) {
+            this.name = txName;
+            return this;
+        }
+
+        @Override
+        public TransactionBuilder isolation(Isolation isolation) {
             this.isolation = isolation;
+            return this;
+        }
+
+        @Override
+        public TransactionBuilder readOnly(boolean readOnly) {
+            this.readOnly = readOnly;
+            return this;
+        }
+
+        @Override
+        public TransactionBuilder timeout(int timeout) {
             this.timeout = timeout;
+            return this;
         }
 
         @Override
@@ -288,13 +423,18 @@ final class SessionImpl extends AbstractSession {
         }
 
         @Override
-        public TransactionBuilder name(@Nullable String txName) {
-            this.name = txName;
-            return this;
-        }
-
-        @Override
-        public Transaction build() throws TransactionalException {
+        public Transaction build() throws TransactionException {
+            if (this.isolation == null) {
+                throw new CannotCreateTransactionException(ErrorCode.TRANSACTION_ERROR, "not specified isolation.");
+            }
+            if (!this.readOnly && SessionImpl.this.readonly) {
+                throw new CannotCreateTransactionException(ErrorCode.TRANSACTION_ERROR
+                        , "Readonly session can't create non-readonly transaction.");
+            }
+            if (this.timeout == 0) {
+                throw new CannotCreateTransactionException(ErrorCode.TRANSACTION_ERROR
+                        , "not specified transaction timeout.");
+            }
             Transaction tx = new LocalTransaction(SessionImpl.this, TransactionBuilderImpl.this);
             SessionImpl.this.setSessionTransaction(tx);
             return tx;

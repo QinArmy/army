@@ -8,7 +8,6 @@ import io.army.SessionException;
  */
 public abstract class TransactionException extends SessionException {
 
-    private static final long serialVersionUID = 1090341081780810056L;
 
     public TransactionException(ErrorCode errorCode, String format, Object... args) {
         super(errorCode, format, args);

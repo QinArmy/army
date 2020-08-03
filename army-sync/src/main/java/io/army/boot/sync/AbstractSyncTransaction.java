@@ -79,7 +79,7 @@ abstract class AbstractSyncTransaction implements GenericSyncTransaction {
 
     /*################################## blow package template method ##################################*/
 
-    abstract TransactionStatus status();
+    public abstract TransactionStatus status();
 
     /*################################## blow package method ##################################*/
 

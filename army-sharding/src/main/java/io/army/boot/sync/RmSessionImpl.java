@@ -1,5 +1,6 @@
 package io.army.boot.sync;
 
+import io.army.SessionCloseFailureException;
 import io.army.SessionException;
 import io.army.criteria.Select;
 import io.army.criteria.Visible;
@@ -9,8 +10,8 @@ import io.army.tx.*;
 import io.army.util.CriteriaUtils;
 
 import javax.sql.XAConnection;
+import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -24,17 +25,17 @@ final class RmSessionImpl extends AbstractGenericSyncRmSession implements InnerR
 
     private final InnerRmSessionFactory sessionFactory;
 
-    private final XAConnection connection;
+    private final XAConnection xaConnection;
 
     private final XATransaction transaction;
 
     private boolean closed;
 
-    RmSessionImpl(InnerRmSessionFactory sessionFactory, XAConnection connection, XaTransactionOption txOption)
+    RmSessionImpl(InnerRmSessionFactory sessionFactory, XAConnection xaConnection, XaTransactionOption txOption)
             throws SessionException {
-        super(sessionFactory);
+        super(sessionFactory, SyncShardingSessionFactoryUtils.getConnection(xaConnection));
         this.sessionFactory = sessionFactory;
-        this.connection = connection;
+        this.xaConnection = xaConnection;
 
         final Xid xid = new ArmyXid(txOption.globalTransactionId()
                 , sessionFactory.actualDatabase()
@@ -42,6 +43,7 @@ final class RmSessionImpl extends AbstractGenericSyncRmSession implements InnerR
 
         this.transaction = new XaResourceTransaction(this, xid, txOption);
     }
+
 
     @Override
     public final RmSessionFactory sessionFactory() {
@@ -69,13 +71,27 @@ final class RmSessionImpl extends AbstractGenericSyncRmSession implements InnerR
     }
 
     @Override
-    public void flush() throws SessionException {
+    public final void flush() throws SessionException {
         //no-op
     }
 
     @Override
-    public void close() throws SessionException {
+    public final void close() throws SessionException {
+        if (this.closed) {
+            return;
+        }
+        super.close();
 
+        if (!this.transaction.transactionEnded()) {
+            throw new TransactionNotCloseException("Session transaction not close,tx status[%s]"
+                    , this.transaction.status());
+        }
+        try {
+            this.xaConnection.close();
+            this.closed = true;
+        } catch (SQLException e) {
+            throw new SessionCloseFailureException(e, "Connection close failure.");
+        }
     }
 
     @Override
@@ -106,24 +122,14 @@ final class RmSessionImpl extends AbstractGenericSyncRmSession implements InnerR
     /*################################## blow InnerGenericRmSession method ##################################*/
 
     @Override
-    public final XAConnection connection() {
-        return this.connection;
+    public final XAResource xaResource() throws SQLException {
+        return this.xaConnection.getXAResource();
     }
 
     @Override
-    public PreparedStatement createStatement(String sql, boolean generatedKey) throws SQLException {
-        return null;
+    public final void closeTransaction(GenericSyncTransaction transaction) {
+        if (transaction != this.transaction) {
+            throw new IllegalArgumentException("transaction not match.");
+        }
     }
-
-    @Override
-    public PreparedStatement createStatement(String sql) throws SQLException {
-        return null;
-    }
-
-    @Override
-    public PreparedStatement createStatement(String sql, String[] columnNames) throws SQLException {
-        return null;
-    }
-
-
 }
