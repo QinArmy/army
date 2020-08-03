@@ -16,6 +16,7 @@ import io.army.util.Assert;
 
 import javax.sql.XADataSource;
 import java.sql.SQLException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -47,6 +48,8 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
 
     private final UpdateSQLExecutor updateSQLExecutor;
 
+    private final AtomicBoolean initFinished = new AtomicBoolean(false);
+
     private boolean closed;
 
     RmSessionFactoryImpl(TmSessionFactoryImpl sessionFactory, XADataSource dataSource, int databaseIndex
@@ -59,10 +62,10 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
         this.tmSessionFactory = sessionFactory;
         this.databaseIndex = databaseIndex;
         this.dataSource = dataSource;
-        this.dialect = SyncShardingSessionFactoryUtils.createDialectForSync(dataSource, database, this);
+        this.dialect = TmSessionFactoryUtils.createDialectForSync(dataSource, database, this);
 
         // executor after dialect
-        this.domainValuesGenerator = DomainValuesGenerator.build(this);
+        this.domainValuesGenerator = sessionFactory.domainValuesGenerator();
         this.insertSQLExecutor = InsertSQLExecutor.build(this);
         this.selectSQLExecutor = SelectSQLExecutor.build(this);
         this.updateSQLExecutor = UpdateSQLExecutor.build(this);
@@ -117,6 +120,17 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
     }
 
     @Override
+    public void initialize() {
+        if (this.initFinished.get()) {
+            return;
+        }
+        synchronized (this.initFinished) {
+            //TODO zoro
+            this.initFinished.compareAndSet(false, true);
+        }
+    }
+
+    @Override
     public DomainValuesGenerator domainValuesGenerator() {
         return this.domainValuesGenerator;
     }
@@ -129,12 +143,7 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
 
     @Override
     public TableRoute tableRoute(TableMeta<?> tableMeta) throws NotFoundRouteException {
-        TableRoute tableRoute;
-        tableRoute = this.tmSessionFactory.shardingRouteMap.get(tableMeta);
-        if (tableRoute == null) {
-            throw new NotFoundRouteException("TableMeta[%s] not found table route.", tableMeta);
-        }
-        return tableRoute;
+        return this.tmSessionFactory.tableRoute(tableMeta);
     }
 
 

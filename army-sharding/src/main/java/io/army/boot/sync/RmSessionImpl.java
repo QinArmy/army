@@ -33,7 +33,7 @@ final class RmSessionImpl extends AbstractGenericSyncRmSession implements InnerR
 
     RmSessionImpl(InnerRmSessionFactory sessionFactory, XAConnection xaConnection, XaTransactionOption txOption)
             throws SessionException {
-        super(sessionFactory, SyncShardingSessionFactoryUtils.getConnection(xaConnection));
+        super(sessionFactory, TmSessionFactoryUtils.getConnection(xaConnection));
         this.sessionFactory = sessionFactory;
         this.xaConnection = xaConnection;
 
@@ -51,7 +51,7 @@ final class RmSessionImpl extends AbstractGenericSyncRmSession implements InnerR
     }
 
     @Override
-    public final XATransaction sessionTransaction() throws NoSessionTransactionException {
+    public final XATransaction startedTransaction() throws NoSessionTransactionException {
         return this.transaction;
     }
 

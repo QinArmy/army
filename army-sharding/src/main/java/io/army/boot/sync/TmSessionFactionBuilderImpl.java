@@ -1,13 +1,15 @@
 package io.army.boot.sync;
 
+import io.army.ErrorCode;
 import io.army.SessionFactoryException;
-import io.army.boot.SessionFactoryAdvice;
 import io.army.codec.FieldCodec;
 import io.army.dialect.Database;
 import io.army.env.Environment;
 import io.army.interceptor.DomainAdvice;
 import io.army.lang.Nullable;
+import io.army.sync.SessionFactoryAdvice;
 import io.army.sync.TmSessionFactory;
+import io.army.util.Assert;
 
 import javax.sql.XADataSource;
 import java.util.Collection;
@@ -20,7 +22,7 @@ final class TmSessionFactionBuilderImpl extends AbstractSyncSessionFactoryBuilde
 
     private Map<Integer, Database> sqlDialectMap;
 
-    private int tableCountPerDatabase;
+    private int tableCountPerDatabase = -1;
 
     TmSessionFactionBuilderImpl() {
     }
@@ -90,6 +92,43 @@ final class TmSessionFactionBuilderImpl extends AbstractSyncSessionFactoryBuilde
 
     @Override
     public TmSessionFactory build() throws SessionFactoryException {
-        return null;
+        Assert.hasText(this.name, "name required");
+        Assert.notEmpty(this.dataSourceList, "dataSource list required");
+        Assert.notNull(this.environment, "environment required");
+
+        final List<SessionFactoryAdvice> factoryAdviceList = createFactoryInterceptorList();
+        try {
+
+            if (!factoryAdviceList.isEmpty()) {
+                // invoke beforeInstance
+                for (SessionFactoryAdvice sessionFactoryAdvice : factoryAdviceList) {
+                    sessionFactoryAdvice.beforeInstance(this.environment);
+                }
+            }
+            // instance
+            final TmSessionFactoryImpl sessionFactory = new TmSessionFactoryImpl(this);
+
+            if (!factoryAdviceList.isEmpty()) {
+                // invoke beforeInit
+                for (SessionFactoryAdvice interceptor : factoryAdviceList) {
+                    interceptor.beforeInit(sessionFactory);
+                }
+            }
+            // init session factory
+            sessionFactory.initTmSessionFactory();
+
+            if (!factoryAdviceList.isEmpty()) {
+                // invoke afterInit
+                for (SessionFactoryAdvice interceptor : factoryAdviceList) {
+                    interceptor.afterInit(sessionFactory);
+                }
+            }
+            return sessionFactory;
+        } catch (SessionFactoryException e) {
+            throw e;
+        } catch (Throwable e) {
+            throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
+                    , e, "create TmSessionFactory[%s] error.", this.name);
+        }
     }
 }

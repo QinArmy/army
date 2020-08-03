@@ -1,6 +1,5 @@
 package io.army;
 
-import io.army.boot.DomainValuesGenerator;
 import io.army.codec.FieldCodec;
 import io.army.criteria.NotFoundRouteException;
 import io.army.domain.IDomain;
@@ -28,6 +27,8 @@ public interface GenericSessionFactory {
 
     Map<Class<?>, TableMeta<?>> tableMetaMap();
 
+    boolean supportZone();
+
     @Nullable
     <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass);
 
@@ -37,8 +38,6 @@ public interface GenericSessionFactory {
     Map<TableMeta<?>, List<FieldMeta<?, ?>>> tableGeneratorChain();
 
     List<FieldMeta<?, ?>> generatorChain(TableMeta<?> tableMeta);
-
-    DomainValuesGenerator domainValuesGenerator();
 
     @Nullable
     FieldCodec fieldCodec(FieldMeta<?, ?> fieldMeta);

@@ -1,7 +1,7 @@
 package io.army.boot;
 
 import io.army.ErrorCode;
-import io.army.GenericRmSessionFactory;
+import io.army.GenericSessionFactory;
 import io.army.beans.BeanWrapper;
 import io.army.beans.DomainWrapper;
 import io.army.beans.ObjectAccessorFactory;
@@ -25,9 +25,9 @@ import java.util.List;
 
 final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
 
-    private final GenericRmSessionFactory sessionFactory;
+    private final GenericSessionFactory sessionFactory;
 
-    DomainValuesGeneratorImpl(GenericRmSessionFactory sessionFactory) {
+    DomainValuesGeneratorImpl(GenericSessionFactory sessionFactory) {
         Assert.notNull(sessionFactory, "sessionFactory required");
         this.sessionFactory = sessionFactory;
     }
@@ -161,8 +161,8 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
 
     private void assertDialectSupportedZone() {
         if (!this.sessionFactory.supportZone()) {
-            throw new MetaException("dialect[%s] unsupported zoneId"
-                    , this.sessionFactory.actualDatabase());
+            throw new MetaException("%s not support zone"
+                    , this.sessionFactory);
         }
     }
 

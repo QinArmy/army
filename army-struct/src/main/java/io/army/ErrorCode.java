@@ -92,8 +92,8 @@ public enum ErrorCode implements CodeEnum {
     NOT_SUPPORT_SAVE_POINT(1038, "", NONE),
     ROUTE_KEY_ERROR(1039, "", NONE),
     NOT_FOUND_ROUTE_KEY(1040, "", NONE),
-    ROUTE_ERROR(1041,"",NONE)
-    ;
+    ROUTE_ERROR(1041, "", NONE),
+    SESSION_FACTORY_CLOSE_FAILURE(1042, "", NONE);
 
 
     private final int code;

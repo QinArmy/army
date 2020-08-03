@@ -36,7 +36,7 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
     private boolean closed;
 
     SessionImpl(InnerSessionFactory sessionFactory, Connection connection
-            , SingleDatabaseSessionFactory.SessionBuilderImpl builder) throws SessionException {
+            , SessionFactoryImpl.SessionBuilderImpl builder) throws SessionException {
         super(sessionFactory, connection);
 
         this.sessionFactory = sessionFactory;

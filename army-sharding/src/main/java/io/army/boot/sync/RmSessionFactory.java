@@ -9,6 +9,8 @@ interface RmSessionFactory extends GenericSyncSessionFactory, GenericRmSessionFa
 
     int databaseIndex();
 
+    void initialize();
+
     RmSession build(XaTransactionOption option) throws SessionException;
 
 

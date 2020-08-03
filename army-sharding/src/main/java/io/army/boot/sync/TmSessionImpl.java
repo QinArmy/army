@@ -1,10 +1,13 @@
 package io.army.boot.sync;
 
+import io.army.CreateSessionException;
+import io.army.ErrorCode;
 import io.army.SessionException;
 import io.army.beans.DomainWrapper;
 import io.army.beans.ReadonlyWrapper;
 import io.army.boot.DomainValuesGenerator;
 import io.army.cache.SessionCache;
+import io.army.cache.SessionCacheException;
 import io.army.cache.UniqueKey;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerSelect;
@@ -20,8 +23,7 @@ import io.army.sync.TmSession;
 import io.army.sync.TmSessionFactory;
 import io.army.tx.TmTransaction;
 import io.army.tx.TransactionNotCloseException;
-import io.army.tx.TransactionOption;
-import io.army.tx.TransactionStatus;
+import io.army.tx.XaTransactionOption;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 import io.army.util.CriteriaUtils;
@@ -38,57 +40,60 @@ import java.util.*;
  */
 final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmSession {
 
-    private static final EnumSet<TransactionStatus> TX_END_STATUS = EnumSet.of(
-            TransactionStatus.COMMITTED
-            , TransactionStatus.ROLLED_BACK);
-
-
     private final InnerTmSessionFactory sessionFactory;
 
     private final SessionCache sessionCache;
 
-    private final boolean readonly;
+    private final SyncCommitTransactionManager tmTransaction;
 
-    private final boolean currentSession;
+    private final boolean current;
 
-    private final TmTransaction tmTransaction;
+    private final Map<Integer, RmSession> rmSessionMap = new HashMap<>();
 
-    private final Map<String, RmSession> rmSessionMap = new HashMap<>();
+    /**
+     * unmodifiable object
+     */
+    private final XaTransactionOption transactionOption;
+
 
     private boolean closed;
 
-    TmSessionImpl(InnerTmSessionFactory sessionFactory, TransactionOption option, boolean currentSession) {
+    TmSessionImpl(InnerTmSessionFactory sessionFactory, TmSessionFactoryImpl.SessionBuilderImpl builder) {
         this.sessionFactory = sessionFactory;
-        this.currentSession = currentSession;
-        this.readonly = sessionFactory.readonly();
-        this.tmTransaction = new SyncCommitTransactionManager(this, option);
+        this.current = builder.current();
+        this.transactionOption = TmSessionUtils.createXaTransactionOption(builder);
+        this.tmTransaction = new SyncCommitTransactionManager(this, this.transactionOption);
 
-        this.sessionCache = null;
+        if (sessionFactory.supportSessionCache()) {
+            this.sessionCache = sessionFactory.sessionCacheFactory().createSessionCache(this);
+        } else {
+            this.sessionCache = null;
+        }
     }
 
     @Override
-    public TmSessionFactory sessionFactory() {
+    public final TmSessionFactory sessionFactory() {
         return this.sessionFactory;
     }
 
     @Override
-    public TmTransaction sessionTransaction() {
+    public final TmTransaction sessionTransaction() {
         return this.tmTransaction;
     }
 
 
     @Override
-    public boolean readonly() {
-        return this.readonly;
+    public final boolean readonly() {
+        return this.transactionOption.readOnly();
     }
 
     @Override
-    public boolean closed() {
+    public final boolean closed() {
         return this.closed;
     }
 
     @Override
-    public boolean hasTransaction() {
+    public final boolean hasTransaction() {
         return this.tmTransaction != null;
     }
 
@@ -103,7 +108,9 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
                 return actualReturn;
             }
         }
-
+        if (TmSessionUtils.notSupportCache(tableMeta)) {
+            throw new SessionCacheException("TableMeta[%s]'s id isn't  route key.", tableMeta);
+        }
         // 1. create sql
         Select select = CriteriaUtils.createSelectDomainById(tableMeta, id);
         // 2. route rm session and  execute sql
@@ -130,6 +137,9 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
                 return actualReturn;
             }
         }
+        if (TmSessionUtils.notSupportCache(tableMeta, propNameList)) {
+            throw new SessionCacheException("TableMeta[%s]'s %s don't contains route key.", tableMeta, propNameList);
+        }
         // 1. create sql
         Select select = CriteriaUtils.createSelectDomainByUnique(tableMeta, propNameList, valueList);
         // 2. route rm session and  execute sql
@@ -148,30 +158,34 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
     public final <R> List<R> select(Select select, Class<R> resultClass, final Visible visible) {
         InnerSelect innerSelect = (InnerSelect) select;
         //1. try find route
-        RouteWrapper routeWrapper = DatabaseRouteUtils.findRouteForSelect(innerSelect.tableWrapperList()
-                , innerSelect.predicateList(), true);
+        RouteWrapper routeWrapper = DatabaseRouteUtils.findRouteForSelect(innerSelect);
 
         if (routeWrapper == null) {
-            throw new NotFoundRouteException("not found sharding route.");
+            throw new NotFoundRouteException("Select[%s]not found sharding route.", select);
         }
         //2. obtain route index
-        int routeIndex;
+        int databaseIndex;
         if (routeWrapper.routeIndex()) {
-            routeIndex = routeWrapper.routeIndexValue();
+            databaseIndex = routeWrapper.routeIndexValue();
         } else {
-            routeIndex = this.sessionFactory.dataSourceRoute(routeWrapper.tableMeta())
+            databaseIndex = this.sessionFactory.dataSourceRoute(routeWrapper.tableMeta())
                     .dataSourceRoute(routeWrapper.routeKey());
         }
         //3. obtain target session and execute
-        return obtainRmSession(routeIndex)
+        return obtainRmSession(databaseIndex)
                 .select(select, resultClass, visible);
+    }
+
+    @Override
+    public final void valueInsert(Insert insert) {
+        this.valueInsert(insert, Visible.ONLY_VISIBLE);
     }
 
     @Override
     public final void valueInsert(Insert insert, final Visible visible) {
         if (insert instanceof InnerValuesInsert) {
             InnerValuesInsert valuesInsert = (InnerValuesInsert) insert;
-            if (valuesInsert.valueList().size() == 1) {
+            if (valuesInsert.wrapperList().size() == 1) {
                 processSingleInsert(valuesInsert, visible);
             } else {
                 processMultiInsert(valuesInsert, visible);
@@ -181,6 +195,7 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
                     String.format("Insert[%s] not supported by valueInsert method.", insert));
         }
     }
+
 
     @Override
     public final int subQueryInsert(Insert insert, Visible visible) {
@@ -234,28 +249,6 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
     }
 
     @Override
-    public final Map<Integer, Integer> batchUpdate(Update update, final Visible visible) {
-        //TODO 考虑 mysql 的 multi table update 和 postgre 的可 join update.
-        Map<Integer, Integer> batchResultMap;
-        batchResultMap = doBatchSingleDml((InnerBatchSingleDML) update, Integer.class, visible);
-        if (batchResultMap.isEmpty()) {
-            throw new NotFoundRouteException("Batch update[%s] not found route.", update);
-        }
-        return batchResultMap;
-    }
-
-    @Override
-    public final Map<Integer, Long> batchLargeUpdate(Update update, Visible visible) {
-        //TODO 考虑 mysql 的 multi table update 和 postgre 的可 join update.
-        Map<Integer, Long> batchResultMap;
-        batchResultMap = doBatchSingleDml((InnerBatchSingleDML) update, Long.class, visible);
-        if (batchResultMap.isEmpty()) {
-            throw new NotFoundRouteException("Batch update[%s] not found route.", update);
-        }
-        return batchResultMap;
-    }
-
-    @Override
     public final int delete(Delete delete, Visible visible) {
         //TODO 考虑 mysql 的 multi table delete 和 postgre 的可 join delete.
         return obtainRmSession(processDml((InnerSingleDML) delete))
@@ -276,33 +269,11 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
     }
 
     @Override
-    public Map<Integer, Integer> batchDelete(Delete delete, Visible visible) {
-        //TODO 考虑 mysql 的 multi table delete 和 postgre 的可 join delete.
-        Map<Integer, Integer> batchResultMap;
-        batchResultMap = doBatchSingleDml((InnerBatchSingleDML) delete, Integer.class, visible);
-        if (batchResultMap.isEmpty()) {
-            throw new NotFoundRouteException("Batch delete[%s] not found route.", delete);
-        }
-        return batchResultMap;
-    }
-
-    @Override
-    public Map<Integer, Long> batchLargeDelete(Delete delete, Visible visible) {
-        //TODO 考虑 mysql 的 multi table delete 和 postgre 的可 join delete.
-        Map<Integer, Long> batchResultMap;
-        batchResultMap = doBatchSingleDml((InnerBatchSingleDML) delete, Long.class, visible);
-        if (batchResultMap.isEmpty()) {
-            throw new NotFoundRouteException("Batch delete[%s] not found route.", delete);
-        }
-        return batchResultMap;
-    }
-
-    @Override
     public void close() throws SessionException {
         if (this.closed) {
             return;
         }
-        if (!TX_END_STATUS.contains(this.tmTransaction.status())) {
+        if (!AbstractSyncTransaction.END_ABLE_SET.contains(this.tmTransaction.status())) {
             throw new TransactionNotCloseException("Transaction[%s] not close.", this.tmTransaction.name());
         }
         Map<RmSession, SessionException> failSessionMap = null;
@@ -319,6 +290,9 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
         if (!CollectionUtils.isEmpty(failSessionMap)) {
             //TODO throw exception
         }
+        if (this.current) {
+            this.sessionFactory.currentSessionContext().removeCurrentSession(this);
+        }
         this.closed = true;
     }
 
@@ -331,10 +305,6 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
 
     /*################################## blow private method ##################################*/
 
-    private RmSession routeRmSession(Insert insert) {
-        throw new UnsupportedOperationException();
-    }
-
 
     /**
      * process single insert.
@@ -346,8 +316,8 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
      */
     private void processSingleInsert(final InnerValuesInsert insert, final Visible visible) {
 
-        final List<IDomain> domainList = insert.valueList();
-        Assert.isTrue(domainList.size() == 1, "domain size isn't 1 .");
+        final List<DomainWrapper> wrapperList = insert.wrapperList();
+        Assert.isTrue(wrapperList.size() == 1, "wrapperList size isn't 1 .");
         final TableMeta<?> tableMeta = insert.tableMeta();
 
         // 1. create required properties value.
@@ -525,7 +495,26 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
 
 
     private RmSession obtainRmSession(int dataSourceIndex) {
-        throw new UnsupportedOperationException();
+        return this.rmSessionMap.computeIfAbsent(dataSourceIndex, this::createRmSession);
+    }
+
+    private RmSession createRmSession(int databaseIndex) {
+        List<RmSessionFactory> rmSessionFactoryList = this.sessionFactory.rmSessionFactoryList();
+        if (databaseIndex >= rmSessionFactoryList.size()) {
+            throw new CreateSessionException(ErrorCode.SESSION_CREATE_ERROR
+                    , "%s TmSession create RmSession occur error,databaseIndex[%s] error."
+                    , this.sessionFactory, databaseIndex);
+        }
+        RmSessionFactory rmSessionFactory = rmSessionFactoryList.get(databaseIndex);
+        if (rmSessionFactory == null) {
+            throw new CreateSessionException(ErrorCode.SESSION_CREATE_ERROR
+                    , "%s TmSession create RmSession occur error,databaseIndex[%s] error."
+                    , this.sessionFactory, databaseIndex);
+        }
+        RmSession rmSession = rmSessionFactory.build(this.transactionOption);
+        // rm xa transaction add to tm and start rm xa transaction
+        this.tmTransaction.addXaTransaction(this, rmSession.startedTransaction());
+        return rmSession;
     }
 
 

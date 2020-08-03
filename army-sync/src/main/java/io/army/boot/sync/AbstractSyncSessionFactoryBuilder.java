@@ -1,9 +1,9 @@
 package io.army.boot.sync;
 
 import io.army.GenericFactoryBuilderImpl;
-import io.army.boot.SessionFactoryAdvice;
 import io.army.interceptor.DomainAdvice;
 import io.army.lang.Nullable;
+import io.army.sync.SessionFactoryAdvice;
 
 import java.util.*;
 

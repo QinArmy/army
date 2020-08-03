@@ -20,7 +20,7 @@ import io.army.criteria.Visible;
  * @see Session
  * @see ProxySession
  */
-public interface GenericSingleDatabaseSyncSession extends GenericSyncApiSession {
+public interface SingleDatabaseSyncSession extends GenericSyncApiSession {
 
     int[] batchUpdate(Update update);
 

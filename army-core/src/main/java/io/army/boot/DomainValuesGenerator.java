@@ -1,6 +1,6 @@
 package io.army.boot;
 
-import io.army.GenericRmSessionFactory;
+import io.army.GenericSessionFactory;
 import io.army.beans.DomainWrapper;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
@@ -13,7 +13,7 @@ public interface DomainValuesGenerator {
     void createValues(DomainWrapper domainWrapper, boolean migrationData);
 
 
-    static DomainValuesGenerator build(GenericRmSessionFactory sessionFactory) {
+    static DomainValuesGenerator build(GenericSessionFactory sessionFactory) {
         return new DomainValuesGeneratorImpl(sessionFactory);
     }
 }

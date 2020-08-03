@@ -42,7 +42,7 @@ public enum Isolation {
      *
      * @see java.sql.Connection#TRANSACTION_REPEATABLE_READ
      */
-    REPEATABLE_READ(Connection.TRANSACTION_REPEATABLE_READ, "READ UNCOMMITTED"),
+    REPEATABLE_READ(Connection.TRANSACTION_REPEATABLE_READ, "REPEATABLE READ"),
 
     /**
      * A constant indicating that dirty reads, non-repeatable reads and phantom

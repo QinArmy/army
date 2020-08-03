@@ -68,13 +68,18 @@ final class SyncCommitTransactionManager extends AbstractTransactionManager {
         }
     }
 
+    @Override
+    public final boolean transactionEnded() {
+        return END_ABLE_SET.contains(this.status);
+    }
+
     /*################################## blow package method ##################################*/
 
-    void addXaTransaction(TmSession session, XaResourceTransaction xa) {
+    void addXaTransaction(TmSession session, XATransaction startedXa) {
         if (this.session != session) {
             throw new IllegalArgumentException("session error");
         }
-        this.xaTransactionSet.add(xa);
+        this.xaTransactionSet.add(startedXa);
     }
 
     /*################################## blow private method ##################################*/

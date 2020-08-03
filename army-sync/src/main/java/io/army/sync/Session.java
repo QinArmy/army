@@ -7,7 +7,7 @@ import io.army.tx.Transaction;
 import io.army.tx.TransactionException;
 
 
-public interface Session extends GenericSingleDatabaseSyncSession, GenericRmSession {
+public interface Session extends SingleDatabaseSyncSession, GenericRmSession {
 
     @Override
     SessionFactory sessionFactory();

@@ -72,9 +72,15 @@ abstract class AbstractGenericSyncSession extends AbstractGenericSession impleme
         return this.subQueryInsert(insert, Visible.ONLY_VISIBLE);
     }
 
+
     @Override
     public final long subQueryLargeInsert(Insert insert) {
         return this.largeSubQueryInsert(insert, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final <R> List<R> returningInsert(Insert insert, Class<R> resultClass) {
+        return this.returningInsert(insert, resultClass, Visible.ONLY_VISIBLE);
     }
 
     @Override

@@ -7,8 +7,8 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.CriteriaRouteKeyException;
 import io.army.criteria.FieldValueEqualPredicate;
 import io.army.criteria.IPredicate;
+import io.army.criteria.impl.inner.InnerSelect;
 import io.army.criteria.impl.inner.InnerSingleDML;
-import io.army.criteria.impl.inner.TableWrapper;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -22,20 +22,19 @@ abstract class DatabaseRouteUtils extends RouteUtils {
 
 
     @Nullable
-    static RouteWrapper findRouteForSelect(List<? extends TableWrapper> tableWrapperList
-            , List<IPredicate> predicateList
-            , final boolean dataSource) {
+    static RouteWrapper findRouteForSelect(InnerSelect select) {
         RouteWrapper routeWrapper;
+        List<IPredicate> predicateList = select.predicateList();
         if (predicateList.isEmpty()) {
-            routeWrapper = findRouteFromTableList(tableWrapperList, dataSource);
+            routeWrapper = findRouteFromTableList(select.tableWrapperList(), true);
         } else {
-            routeWrapper = findRouteFromWhereClause(tableWrapperList, predicateList, dataSource);
+            routeWrapper = findRouteFromWhereClause(select.tableWrapperList(), predicateList, true);
             if (routeWrapper == null) {
-                routeWrapper = findRouteFromTableList(tableWrapperList, dataSource);
+                routeWrapper = findRouteFromTableList(select.tableWrapperList(), true);
             }
         }
         if (routeWrapper == null) {
-            routeWrapper = findRouteFromSubQueryList(tableWrapperList, dataSource);
+            routeWrapper = findRouteFromSubQueryList(select.tableWrapperList(), true);
         }
         return routeWrapper;
     }

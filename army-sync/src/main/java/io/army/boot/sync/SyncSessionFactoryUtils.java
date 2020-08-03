@@ -57,7 +57,7 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
     }
 
 
-    static Dialect createDialectForSync(DataSource dataSource, SingleDatabaseSessionFactory sessionFactory) {
+    static Dialect createDialectForSync(DataSource dataSource, SessionFactoryImpl sessionFactory) {
         try (Connection conn = dataSource.getConnection()) {
             Database database = readDatabase(sessionFactory);
 
@@ -167,12 +167,23 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
     }
 
 
+    /**
+     * @return a unmodifiable map
+     */
     protected static <T extends TableRoute> Map<TableMeta<?>, T> routeMap
-            (AbstractGenericSessionFactory sessionFactory, Class<T> routeType, int databaseCount
-                    , int tableCountPerDatabase) {
+    (AbstractGenericSessionFactory sessionFactory, Class<T> routeType, final int databaseCount
+            , final int tableCountPerDatabase) {
         final ShardingMode shardingMode = sessionFactory.shardingMode();
         if (shardingMode == ShardingMode.NO_SHARDING) {
             return Collections.emptyMap();
+        }
+        if (tableCountPerDatabase < 1) {
+            throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
+                    , "tableCountPerDatabase[%s] must great than 0 .", tableCountPerDatabase);
+        }
+        if (databaseCount < 2) {
+            throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
+                    , "databaseCount[%s] must great than 1 .", tableCountPerDatabase);
         }
         final RouteMetaData routeMetaData = new RouteMetaDataImpl(shardingMode, databaseCount
                 , tableCountPerDatabase);

@@ -19,6 +19,9 @@ public interface GenericSyncApiSessionFactory extends GenericSyncSessionFactory 
 
     GenericProxySession proxySession();
 
+    /**
+     * @return a unmodifiable map
+     */
     Map<TableMeta<?>, DomainAdvice> domainInterceptorMap();
 
     @Nullable

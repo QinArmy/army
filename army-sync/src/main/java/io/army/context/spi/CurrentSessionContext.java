@@ -2,6 +2,7 @@ package io.army.context.spi;
 
 import io.army.DataAccessException;
 import io.army.NoCurrentSessionException;
+import io.army.sync.GenericSyncSession;
 import io.army.sync.Session;
 
 /**
@@ -29,8 +30,8 @@ public interface CurrentSessionContext {
      */
     Session currentSession() throws NoCurrentSessionException;
 
-    void currentSession(Session session) throws IllegalStateException;
+    void currentSession(GenericSyncSession session) throws IllegalStateException;
 
-    void removeCurrentSession(Session session) throws IllegalStateException;
+    void removeCurrentSession(GenericSyncSession session) throws IllegalStateException;
 
 }

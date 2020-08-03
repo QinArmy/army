@@ -18,7 +18,15 @@ public interface GenericTmSessionFactory extends GenericSessionFactory {
 
     boolean supportZone();
 
+    /**
+     * @return a unmodifiable list
+     */
     List<Database> actualDatabaseList();
+
+    /**
+     * @return a integer than great than 0 .
+     */
+    int tableCountPerDatabase();
 
     DatabaseRoute dataSourceRoute(TableMeta<?> tableMeta) throws NotFoundRouteException;
 }

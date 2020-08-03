@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * this class is a implementation of {@link SessionFactory}
  */
-class SingleDatabaseSessionFactory extends AbstractGenericSessionFactory
+class SessionFactoryImpl extends AbstractGenericSessionFactory
         implements InnerSessionFactory {
 
     private static final EnumSet<ShardingMode> SUPPORT_SHARDING_SET = EnumSet.of(
@@ -60,7 +60,7 @@ class SingleDatabaseSessionFactory extends AbstractGenericSessionFactory
     private boolean closed;
 
 
-    SingleDatabaseSessionFactory(SessionFactoryBuilderImpl factoryBuilder)
+    SessionFactoryImpl(SessionFactoryBuilderImpl factoryBuilder)
             throws SessionFactoryException {
         super(factoryBuilder);
 
@@ -261,10 +261,10 @@ class SingleDatabaseSessionFactory extends AbstractGenericSessionFactory
         public Session build() throws SessionException {
             final boolean current = this.currentSession;
             try {
-                final Session session = new SessionImpl(SingleDatabaseSessionFactory.this
-                        , SingleDatabaseSessionFactory.this.dataSource.getConnection(), SessionBuilderImpl.this);
+                final Session session = new SessionImpl(SessionFactoryImpl.this
+                        , SessionFactoryImpl.this.dataSource.getConnection(), SessionBuilderImpl.this);
                 if (current) {
-                    SingleDatabaseSessionFactory.this.currentSessionContext.currentSession(session);
+                    SessionFactoryImpl.this.currentSessionContext.currentSession(session);
                 }
                 return session;
             } catch (SQLException e) {

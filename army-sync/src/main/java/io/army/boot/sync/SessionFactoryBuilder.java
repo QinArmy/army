@@ -3,11 +3,11 @@ package io.army.boot.sync;
 
 import io.army.SessionFactoryException;
 import io.army.boot.GenericFactoryBuilder;
-import io.army.boot.SessionFactoryAdvice;
 import io.army.codec.FieldCodec;
 import io.army.env.Environment;
 import io.army.interceptor.DomainAdvice;
 import io.army.sync.SessionFactory;
+import io.army.sync.SessionFactoryAdvice;
 
 import javax.sql.DataSource;
 import java.util.Collection;
@@ -37,7 +37,7 @@ public interface SessionFactoryBuilder extends GenericFactoryBuilder {
 
     SessionFactoryBuilder domainInterceptor(Collection<DomainAdvice> domainInterceptors);
 
-    SessionFactoryBuilder tableCount(int tableCount);
+    SessionFactoryBuilder tableCountPerDatabase(int tableCount);
 
     SessionFactory build() throws SessionFactoryException;
 

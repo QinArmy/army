@@ -18,8 +18,6 @@ import io.army.dialect.Database;
  */
 public interface GenericRmSessionFactory extends GenericSessionFactory {
 
-    boolean supportZone();
-
     Database actualDatabase();
 
 }

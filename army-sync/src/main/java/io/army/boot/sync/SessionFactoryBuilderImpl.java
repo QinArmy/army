@@ -2,11 +2,11 @@ package io.army.boot.sync;
 
 import io.army.ErrorCode;
 import io.army.SessionFactoryException;
-import io.army.boot.SessionFactoryAdvice;
 import io.army.codec.FieldCodec;
 import io.army.env.Environment;
 import io.army.interceptor.DomainAdvice;
 import io.army.sync.SessionFactory;
+import io.army.sync.SessionFactoryAdvice;
 import io.army.util.Assert;
 
 import javax.sql.DataSource;
@@ -17,7 +17,7 @@ final class SessionFactoryBuilderImpl extends AbstractSyncSessionFactoryBuilder 
 
     private DataSource dataSource;
 
-    private int tableCount = -1;
+    private int tableCountPerDatabase = -1;
 
     SessionFactoryBuilderImpl() {
     }
@@ -54,8 +54,8 @@ final class SessionFactoryBuilderImpl extends AbstractSyncSessionFactoryBuilder 
     }
 
     @Override
-    public SessionFactoryBuilder tableCount(int tableCount) {
-        this.tableCount = tableCount;
+    public SessionFactoryBuilder tableCountPerDatabase(int tableCount) {
+        this.tableCountPerDatabase = tableCount;
         return this;
     }
 
@@ -70,7 +70,7 @@ final class SessionFactoryBuilderImpl extends AbstractSyncSessionFactoryBuilder 
     }
 
     public int tableCount() {
-        return this.tableCount;
+        return this.tableCountPerDatabase;
     }
 
     @Override
@@ -89,7 +89,7 @@ final class SessionFactoryBuilderImpl extends AbstractSyncSessionFactoryBuilder 
                 }
             }
             // instance
-            SingleDatabaseSessionFactory sessionFactory = new SingleDatabaseSessionFactory(this);
+            SessionFactoryImpl sessionFactory = new SessionFactoryImpl(this);
 
             if (!factoryAdviceList.isEmpty()) {
                 // invoke beforeInit

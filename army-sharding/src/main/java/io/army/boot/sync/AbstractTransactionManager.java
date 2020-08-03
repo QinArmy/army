@@ -17,8 +17,6 @@ abstract class AbstractTransactionManager extends AbstractSyncTransaction implem
 
     final Logger LOG = LoggerFactory.getLogger(getClass());
 
-    private final TransactionOption option;
-
     final TmSession session;
 
     final Set<XATransaction> xaTransactionSet = new HashSet<>();
@@ -28,7 +26,6 @@ abstract class AbstractTransactionManager extends AbstractSyncTransaction implem
     AbstractTransactionManager(TmSession session, TransactionOption option) {
         super(option);
         this.session = session;
-        this.option = option;
     }
 
     @Override

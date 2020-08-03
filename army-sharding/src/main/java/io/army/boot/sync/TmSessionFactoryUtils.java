@@ -9,40 +9,77 @@ import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.util.Assert;
-import io.army.util.CollectionUtils;
 
 import javax.sql.DataSource;
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-abstract class SyncShardingSessionFactoryUtils extends SyncSessionFactoryUtils {
+abstract class TmSessionFactoryUtils extends SyncSessionFactoryUtils {
 
-    static Map<String, RmSessionFactoryImpl> createSessionFactoryMap(TmSessionFactoryImpl factory
+    static final class RmSessionFactoryWrapper {
+
+        /**
+         * a unmodifiable list
+         */
+        final List<RmSessionFactory> rmSessionFactoryList;
+
+        /**
+         * a unmodifiable list
+         */
+        final List<Database> databaseList;
+
+        final boolean supportZone;
+
+        private RmSessionFactoryWrapper(List<RmSessionFactory> rmSessionFactoryList, List<Database> databaseList
+                , boolean supportZone) {
+            this.rmSessionFactoryList = Collections.unmodifiableList(rmSessionFactoryList);
+            this.databaseList = Collections.unmodifiableList(databaseList);
+            this.supportZone = supportZone;
+        }
+    }
+
+    /**
+     * @return a unmodifiable object
+     */
+    static RmSessionFactoryWrapper createRmSessionFactoryMap(TmSessionFactoryImpl tmFactory
             , TmSessionFactionBuilderImpl factionBuilder) {
         List<XADataSource> dataSourceList = factionBuilder.dataSourceList();
-        if (CollectionUtils.isEmpty(dataSourceList)) {
+
+        if (dataSourceList == null || dataSourceList.size() < 2) {
             throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
-                    , "XADataSource list must not empty.");
+                    , "XADataSource list size must great than 1 .");
         }
-        Map<Integer, Database> sqlDialectMap = factionBuilder.sqlDialectMap();
-        if (sqlDialectMap == null) {
-            sqlDialectMap = Collections.emptyMap();
+        Map<Integer, Database> databaseMap = factionBuilder.sqlDialectMap();
+        if (databaseMap == null) {
+            databaseMap = Collections.emptyMap();
         }
-        final Database defaultSqlDialect = readDatabase(factory);
+        List<RmSessionFactory> rmSessionFactoryList = new ArrayList<>(dataSourceList.size());
+        List<Database> databaseList = new ArrayList<>(dataSourceList.size());
+        boolean supportZone = true;
+
+        final Database defaultDatabase = readDatabase(tmFactory);
         final int size = dataSourceList.size();
+
         for (int i = 0; i < size; i++) {
-            Database sqlDialect = sqlDialectMap.get(i);
-            if (sqlDialect == null) {
-                sqlDialect = defaultSqlDialect;
+            Database database = databaseMap.get(i);
+            if (database == null) {
+                database = defaultDatabase;
             }
+            RmSessionFactory rmSessionFactory = new RmSessionFactoryImpl(tmFactory, dataSourceList.get(i), i, database);
+            if (supportZone) {
+                supportZone = rmSessionFactory.supportZone();
+            }
+            rmSessionFactoryList.add(rmSessionFactory);
+            databaseList.add(rmSessionFactory.actualDatabase());
 
         }
-        return Collections.emptyMap();
+        return new RmSessionFactoryWrapper(rmSessionFactoryList, databaseList, supportZone);
     }
 
 
