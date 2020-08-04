@@ -109,28 +109,32 @@ public abstract class AbstractDialect implements InnerDialect {
     /*################################## blow DDL method ##################################*/
 
     @Override
-    public final List<String> createTable(TableMeta<?> tableMeta) {
-        return ddl.createTable(tableMeta);
+    public final List<String> createTable(TableMeta<?> tableMeta, @Nullable String tableSuffix) {
+        return ddl.createTable(tableMeta, tableSuffix);
     }
 
     @Override
-    public final List<String> addColumn(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> addFieldMetas) {
-        return ddl.addColumn(tableMeta, addFieldMetas);
+    public final List<String> addColumn(TableMeta<?> tableMeta, @Nullable String tableSuffix
+            , Collection<FieldMeta<?, ?>> addFieldMetas) {
+        return ddl.addColumn(tableMeta, tableSuffix, addFieldMetas);
     }
 
     @Override
-    public final List<String> changeColumn(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> changeFieldMetas) {
-        return ddl.changeColumn(tableMeta, changeFieldMetas);
+    public final List<String> changeColumn(TableMeta<?> tableMeta, @Nullable String tableSuffix
+            , Collection<FieldMeta<?, ?>> changeFieldMetas) {
+        return ddl.changeColumn(tableMeta, tableSuffix, changeFieldMetas);
     }
 
     @Override
-    public final List<String> addIndex(TableMeta<?> tableMeta, Collection<IndexMeta<?>> indexMetas) {
-        return ddl.addIndex(tableMeta, indexMetas);
+    public final List<String> addIndex(TableMeta<?> tableMeta, @Nullable String tableSuffix
+            , Collection<IndexMeta<?>> indexMetas) {
+        return ddl.addIndex(tableMeta, tableSuffix, indexMetas);
     }
 
     @Override
-    public final List<String> dropIndex(TableMeta<?> tableMeta, Collection<String> indexNames) {
-        return ddl.dropIndex(tableMeta, indexNames);
+    public final List<String> dropIndex(TableMeta<?> tableMeta, @Nullable String tableSuffix
+            , Collection<String> indexNames) {
+        return ddl.dropIndex(tableMeta, tableSuffix, indexNames);
     }
 
     /*################################## blow DQL method ##################################*/

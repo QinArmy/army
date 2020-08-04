@@ -1,5 +1,6 @@
 package io.army.dialect;
 
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexFieldMeta;
 import io.army.meta.IndexMeta;
@@ -27,8 +28,8 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     /*################################## blow interfaces method ##################################*/
 
     @Override
-    public final List<String> createTable(TableMeta<?> tableMeta) {
-        DDLContext context = new TableDDLContext(this.dialect, tableMeta, defaultFunctionMap());
+    public final List<String> createTable(TableMeta<?> tableMeta, @Nullable String tableSuffix) {
+        DDLContext context = new TableDDLContext(this.dialect, tableMeta, tableSuffix, defaultFunctionMap());
         StringBuilder tableBuilder = context.sqlBuilder();
         // 1. create clause
         createClause(context);
@@ -56,7 +57,6 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
             } else if (!independentIndexDefinition) {
                 tableBuilder.append(",\n");
             }
-
             indexDefinitionClause(indexMeta, context);
             index++;
         }
@@ -71,7 +71,8 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     }
 
     @Override
-    public final List<String> addColumn(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> addFieldMetas) {
+    public final List<String> addColumn(TableMeta<?> tableMeta, @Nullable String tableSuffix
+            , Collection<FieldMeta<?, ?>> addFieldMetas) {
 
         final DDLContext context = new ColumnDDLContext(this.dialect, tableMeta, defaultFunctionMap());
 
@@ -81,7 +82,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
                     "TableMeta[%s] then FieldMeta[%s] not match."
                     , tableMeta, fieldMeta));
 
-            doAddColumn(fieldMeta, context);
+            doAddColumn(fieldMeta, tableSuffix, context);
             context.append(context.sqlBuilder().toString());
             context.resetBuilder();
         }
@@ -89,7 +90,8 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     }
 
     @Override
-    public final List<String> changeColumn(TableMeta<?> tableMeta, Collection<FieldMeta<?, ?>> changeFieldMetas) {
+    public final List<String> changeColumn(TableMeta<?> tableMeta, @Nullable String tableSuffix
+            , Collection<FieldMeta<?, ?>> changeFieldMetas) {
         final DDLContext context = new ColumnDDLContext(this.dialect, tableMeta, defaultFunctionMap());
         int index = 0;
         for (FieldMeta<?, ?> fieldMeta : changeFieldMetas) {
@@ -101,7 +103,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
                 context.resetBuilder();
             }
 
-            doChangeColumn(fieldMeta, context);
+            doChangeColumn(fieldMeta, tableSuffix, context);
             context.append(context.sqlBuilder().toString());
             index++;
         }
@@ -109,8 +111,9 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     }
 
     @Override
-    public final List<String> addIndex(TableMeta<?> tableMeta, Collection<IndexMeta<?>> addIndexMetas) {
-        final DDLContext context = new IndexDDLContext(this.dialect, tableMeta, defaultFunctionMap());
+    public final List<String> addIndex(TableMeta<?> tableMeta, @Nullable String tableSuffix
+            , Collection<IndexMeta<?>> addIndexMetas) {
+        final DDLContext context = new IndexDDLContext(this.dialect, tableMeta, tableSuffix, defaultFunctionMap());
         int index = 0;
         for (IndexMeta<?> indexMeta : addIndexMetas) {
             Assert.isTrue(indexMeta.table() == tableMeta, () -> String.format(
@@ -128,14 +131,15 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     }
 
     @Override
-    public final List<String> dropIndex(TableMeta<?> tableMeta, Collection<String> indexNames) {
-        final DDLContext context = new IndexDDLContext(this.dialect, tableMeta, defaultFunctionMap());
+    public final List<String> dropIndex(TableMeta<?> tableMeta, @Nullable String tableSuffix
+            , Collection<String> indexNames) {
+        final DDLContext context = new IndexDDLContext(this.dialect, tableMeta, tableSuffix, defaultFunctionMap());
         int index = 0;
         for (String indexName : indexNames) {
             if (index > 0) {
                 context.resetBuilder();
             }
-            doDropIndex(tableMeta, indexName, context);
+            doDropIndex(indexName, context);
             context.append(context.sqlBuilder().toString());
             index++;
         }
@@ -162,21 +166,24 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
 
     /*####################################### below protected method #################################*/
 
-    protected void doDropIndex(TableMeta<?> tableMeta, String indexName, DDLContext context) {
+    protected void doDropIndex(String indexName, DDLContext context) {
         StringBuilder builder = context.sqlBuilder();
-        builder.append("ALTER TABLE ")
-                .append(this.dialect.quoteIfNeed(tableMeta.tableName()))
-                .append(" DROP INDEX ")
+        builder.append("ALTER TABLE ");
+        context.appendTable();
+        builder.append(" DROP INDEX ")
                 .append(this.dialect.quoteIfNeed(indexName))
         ;
     }
 
-    protected void doAddColumn(FieldMeta<?, ?> fieldMeta, DDLContext context) {
+    protected void doAddColumn(FieldMeta<?, ?> fieldMeta, @Nullable String tableSuffix, DDLContext context) {
         TableMeta<?> tableMeta = context.tableMeta();
         StringBuilder builder = context.sqlBuilder();
         builder.append("ALTER TABLE ")
-                .append(this.dialect.quoteIfNeed(tableMeta.tableName()))
-                .append(" ADD COLUMN ")
+                .append(this.dialect.quoteIfNeed(tableMeta.tableName()));
+        if (tableSuffix != null) {
+            builder.append(tableSuffix);
+        }
+        builder.append(" ADD COLUMN ")
                 .append(this.dialect.quoteIfNeed(fieldMeta.fieldName()));
 
         dataTypeClause(fieldMeta, context);
@@ -185,13 +192,16 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
         columnCommentClause(fieldMeta, context);
     }
 
-    protected void doChangeColumn(FieldMeta<?, ?> fieldMeta, DDLContext context) {
+    protected void doChangeColumn(FieldMeta<?, ?> fieldMeta, @Nullable String tableSuffix, DDLContext context) {
         TableMeta<?> tableMeta = context.tableMeta();
         StringBuilder builder = context.sqlBuilder();
         final String safeColumnName = this.dialect.quoteIfNeed(fieldMeta.fieldName());
         builder.append("ALTER TABLE ")
-                .append(this.dialect.quoteIfNeed(tableMeta.tableName()))
-                .append(" CHANGE COLUMN ")
+                .append(this.dialect.quoteIfNeed(tableMeta.tableName()));
+        if (tableSuffix != null) {
+            builder.append(tableSuffix);
+        }
+        builder.append(" CHANGE COLUMN ")
                 .append(safeColumnName)
                 .append(" ")
                 .append(safeColumnName)
@@ -203,12 +213,12 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
         columnCommentClause(fieldMeta, context);
     }
 
-
+    /**
+     * append create clause before {@code '(' }
+     */
     protected void createClause(DDLContext context) {
-        StringBuilder builder = context.sqlBuilder();
-        builder.append("CREATE TABLE ")
-                .append(this.quoteIfNeed(context.tableMeta().tableName()))
-        ;
+        context.sqlBuilder().append("CREATE TABLE ");
+        context.appendTable();
     }
 
     protected void columnDefinitionClause(FieldMeta<?, ?> fieldMeta, DDLContext context) {
@@ -278,9 +288,8 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     protected void createIndexDefinition(IndexMeta<?> indexMeta, DDLContext context) {
         StringBuilder builder = context.sqlBuilder()
                 .append("ALTER TABLE ");
-        context.appendTable(indexMeta.table());
+        context.appendTable();
         builder.append(" ADD ");
-
         indexDefinitionClause(indexMeta, context);
     }
 

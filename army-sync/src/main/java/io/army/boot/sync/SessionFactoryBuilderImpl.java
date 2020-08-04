@@ -17,7 +17,7 @@ final class SessionFactoryBuilderImpl extends AbstractSyncSessionFactoryBuilder 
 
     private DataSource dataSource;
 
-    private int tableCountPerDatabase = -1;
+    private int tableCountOfSharding = 1;
 
     SessionFactoryBuilderImpl() {
     }
@@ -41,6 +41,7 @@ final class SessionFactoryBuilderImpl extends AbstractSyncSessionFactoryBuilder 
         return this;
     }
 
+
     @Override
     public SessionFactoryBuilder factoryAdvice(List<SessionFactoryAdvice> factoryAdviceList) {
         this.factoryAdviceList = factoryAdviceList;
@@ -54,8 +55,8 @@ final class SessionFactoryBuilderImpl extends AbstractSyncSessionFactoryBuilder 
     }
 
     @Override
-    public SessionFactoryBuilder tableCountPerDatabase(int tableCount) {
-        this.tableCountPerDatabase = tableCount;
+    public SessionFactoryBuilder tableCountOfSharding(int tableCount) {
+        this.tableCountOfSharding = tableCount;
         return this;
     }
 
@@ -69,8 +70,8 @@ final class SessionFactoryBuilderImpl extends AbstractSyncSessionFactoryBuilder 
         return this.dataSource;
     }
 
-    public int tableCount() {
-        return this.tableCountPerDatabase;
+    public int tableCountOfSharding() {
+        return this.tableCountOfSharding;
     }
 
     @Override

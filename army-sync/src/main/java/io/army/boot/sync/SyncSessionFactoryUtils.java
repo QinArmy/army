@@ -56,6 +56,25 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
         return primary;
     }
 
+    static void assertTableCountOfSharding(final int tableCountOfSharding, GenericSessionFactory sessionFactory) {
+        switch (sessionFactory.shardingMode()) {
+            case NO_SHARDING:
+                if (tableCountOfSharding != 1) {
+                    throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
+                            , "%s tableCountOfSharding must equals 1 in NO_SHARDING mode.", sessionFactory);
+                }
+                break;
+            case SINGLE_DATABASE_SHARDING:
+            case SHARDING:
+                if (tableCountOfSharding < 1) {
+                    throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
+                            , "%s tableCountOfSharding must great than 0 in SHARDING mode.", sessionFactory);
+                }
+            default:
+                throw new IllegalArgumentException(String.format("not support %s", sessionFactory.shardingMode()));
+        }
+    }
+
 
     static Dialect createDialectForSync(DataSource dataSource, SessionFactoryImpl sessionFactory) {
         try (Connection conn = dataSource.getConnection()) {

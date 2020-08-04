@@ -1,9 +1,11 @@
 package io.army.boot.migratioin;
 
+import io.army.lang.Nullable;
+
 import java.util.Map;
 import java.util.StringJoiner;
 
-class IndexInfo {
+final class IndexInfo {
 
     private final TableInfo table;
 
@@ -11,7 +13,7 @@ class IndexInfo {
 
     private final boolean unique;
 
-    private Map<String,IndexColumnInfo> columnMap;
+    private Map<String, IndexColumnInfo> columnMap;
 
     public IndexInfo(TableInfo table, String name, boolean unique) {
         this.table = table;
@@ -39,6 +41,7 @@ class IndexInfo {
     }
 
 
+    @Nullable
     public Map<String,IndexColumnInfo> columnMap() {
         return columnMap;
     }

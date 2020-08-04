@@ -1,4 +1,4 @@
-package io.army.boot.sync;
+package io.army.boot.migratioin;
 
 import io.army.ErrorCode;
 import io.army.dialect.DDLSQLExecuteException;
@@ -15,18 +15,30 @@ final class BatchDDLSQLExecutor implements DDLSQLExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(BatchDDLSQLExecutor.class);
 
-    private final Connection connection;
 
-    BatchDDLSQLExecutor(Connection connection) {
-        this.connection = connection;
+    BatchDDLSQLExecutor() {
     }
 
     @Override
-    public void executeDDL(Map<String, List<String>> tableDDLMap) throws DDLSQLExecuteException {
-        try (Statement statement = connection.createStatement()) {
+    public final void executeDDL(int databaseIndex, List<Map<String, List<String>>> shardingDdlList, Connection conn)
+            throws DDLSQLExecuteException {
+
+        final int size = shardingDdlList.size();
+        for (int i = 0; i < size; i++) {
+            doExecuteDDL(databaseIndex, i, shardingDdlList.get(i), conn);
+        }
+    }
+
+
+    /*################################## blow private method ##################################*/
+
+    private void doExecuteDDL(int databaseIndex, int shardingIndex, Map<String, List<String>> tableDdlMap
+            , Connection conn) {
+
+        try (Statement statement = conn.createStatement()) {
             StringBuilder builder = new StringBuilder();
             int sqlCount = 0;
-            for (Map.Entry<String, List<String>> e : tableDDLMap.entrySet()) {
+            for (Map.Entry<String, List<String>> e : tableDdlMap.entrySet()) {
 
                 for (String ddl : e.getValue()) {
                     statement.addBatch(ddl);
@@ -37,15 +49,12 @@ final class BatchDDLSQLExecutor implements DDLSQLExecutor {
                 builder.append("\n\n");
                 sqlCount += e.getValue().size();
             }
-            LOG.info("army will start {} ddl(s):\n\n{}", sqlCount, builder);
+            LOG.info("army will execute database[{}] sharding[{}] {} ddl(s):\n\n{}"
+                    , databaseIndex, shardingIndex, sqlCount, builder);
             statement.executeBatch();
         } catch (SQLException e) {
             throw new DDLSQLExecuteException(ErrorCode.DDL_EXECUTE_ERROR, e, e.getMessage());
         }
-
     }
-
-    /*################################## blow private method ##################################*/
-
 
 }

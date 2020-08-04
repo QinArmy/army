@@ -23,7 +23,7 @@ import java.util.EnumSet;
  * @see SyncCommitTransactionManager
  * @see XAResource
  */
-final class XaResourceTransaction implements XATransaction {
+final class XaResourceTransaction extends AbstractGenericTransaction implements XATransaction {
 
     private static final EnumSet<XATransactionStatus> ROLL_BACK_ABLE_SET = EnumSet.of(
             XATransactionStatus.PREPARED,
@@ -41,16 +41,6 @@ final class XaResourceTransaction implements XATransaction {
     private final XAResource xaResource;
 
     private final Xid xid;
-
-    private final Isolation isolation;
-
-    private final boolean readOnly;
-
-    private final String name;
-
-    private final int timeout;
-
-    private final long endMills;
     /**
      * status maybe read by parallelly .
      *
@@ -62,16 +52,9 @@ final class XaResourceTransaction implements XATransaction {
     private boolean rollBackOnly = false;
 
     XaResourceTransaction(InnerRmSession session, Xid xid, TransactionOption option) {
+        super(option);
         this.session = session;
         this.xid = xid;
-
-        this.isolation = option.isolation();
-        this.readOnly = option.readOnly();
-        this.name = option.name();
-        this.timeout = option.timeout();
-
-        this.endMills = option.endMills();
-
         this.xaResource = obtainXaResource(session, this.readOnly);
 
 
@@ -83,39 +66,18 @@ final class XaResourceTransaction implements XATransaction {
     }
 
     @Override
-    public XATransactionStatus status() {
+    public final XATransactionStatus status() {
         return this.status;
     }
 
     @Override
-    public String name() {
-        return this.name;
-    }
-
-    @Override
-    public Isolation isolation() {
-        return this.isolation;
-    }
-
-    @Override
-    public boolean readOnly() {
-        return this.readOnly;
+    public final boolean nonActive() {
+        return this.status != XATransactionStatus.ACTIVE;
     }
 
     @Override
     public boolean rollbackOnly() {
         return this.rollBackOnly;
-    }
-
-    @Override
-    public long timeToLiveInMillis() throws TransactionTimeOutException {
-        //TODO 考虑 endMills 小于 0 的情况
-        long liveInMills = this.endMills - System.currentTimeMillis();
-        if (liveInMills < 0) {
-            throw new TransactionTimeOutException("transaction[name:%s] timeout,live in mills is %s ."
-                    , this.name, liveInMills);
-        }
-        return liveInMills;
     }
 
     @Override
@@ -136,7 +98,7 @@ final class XaResourceTransaction implements XATransaction {
             } else {
                 conn.setAutoCommit(false);
                 this.xaResource.start(this.xid, XAResource.TMNOFLAGS);
-                this.xaResource.setTransactionTimeout(this.timeout);
+                this.xaResource.setTransactionTimeout(this.timeToLiveInSeconds());
             }
             this.status = XATransactionStatus.ACTIVE;
         } catch (XAException | SQLException e) {
@@ -275,6 +237,10 @@ final class XaResourceTransaction implements XATransaction {
     /*################################## blow private method ##################################*/
 
     private void doCommit(final boolean onePhase) throws TransactionException {
+        if (this.rollbackOnly()) {
+            throw new TransactionRollbackOnlyException(
+                    "transaction[xid:%s] marked rollback only,can't commit transaction.", this.xid);
+        }
         if (onePhase) {
             checkReadWrite("commitOnePhase");
             if (this.status != XATransactionStatus.IDLE) {
@@ -288,10 +254,7 @@ final class XaResourceTransaction implements XATransaction {
                         , this.status, XATransactionStatus.PREPARED);
             }
         }
-        if (this.rollBackOnly) {
-            throw new TransactionRollbackOnlyException("transaction[xid:%s] marked rollback,can't commit transaction."
-                    , this.xid);
-        }
+
 
         try {
             if (!this.readOnly) {

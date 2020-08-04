@@ -1,6 +1,8 @@
 package io.army.boot.migratioin;
 
 import io.army.ErrorCode;
+import io.army.lang.Nullable;
+import io.army.util.Assert;
 import io.army.util.StringUtils;
 
 import java.sql.*;
@@ -17,11 +19,11 @@ final class SyncSchemaExtractorImpl implements SchemaExtractor {
     }
 
     @Override
-    public SchemaInfo extract() {
+    public final SchemaInfo extract(@Nullable String routeSuffix) {
         try {
             SchemaInfo schemaInfo = new SchemaInfo(connection.getCatalog(), connection.getSchema());
             // extract schema's tableMeta info
-            schemaInfo.tableMap(extractTableInfo(schemaInfo, connection.getMetaData()));
+            schemaInfo.tableMap(extractTableInfo(schemaInfo, connection.getMetaData(), routeSuffix));
             return schemaInfo;
         } catch (SQLException e) {
             throw new SchemaExtractException(ErrorCode.ACCESS_ERROR, e, e.getMessage());
@@ -34,10 +36,13 @@ final class SyncSchemaExtractorImpl implements SchemaExtractor {
      *
      * @return a unmodifiable map
      */
-    private Map<String, TableInfo> extractTableInfo(SchemaInfo schemaInfo, DatabaseMetaData metaData)
+    private Map<String, TableInfo> extractTableInfo(SchemaInfo schemaInfo, DatabaseMetaData metaData
+            , @Nullable String routeSuffix)
             throws SQLException {
+        final String tableNamePattern = routeSuffix == null ? "%" : "%" + routeSuffix;
+
         try (ResultSet resultSet = metaData.getTables(schemaInfo.catalog(), schemaInfo.name()
-                , "%", new String[]{"TABLE"})) {
+                , tableNamePattern, new String[]{"TABLE"})) {
 
             Map<String, TableInfo> tableInfoMap = new HashMap<>();
 
@@ -107,7 +112,6 @@ final class SyncSchemaExtractorImpl implements SchemaExtractor {
             IndexInfo indexInfo;
             String indexName;
             boolean asc;
-            Map<String, IndexColumnInfo> columnInfoMap;
             for (IndexColumnInfo columnInfo; resultSet.next(); ) {
 
                 indexName = resultSet.getString("INDEX_NAME");
@@ -121,7 +125,7 @@ final class SyncSchemaExtractorImpl implements SchemaExtractor {
                 columnInfo = new IndexColumnInfo(tableInfo, indexInfo
                         , StringUtils.toLowerCase(resultSet.getString("COLUMN_NAME")), asc);
 
-                columnInfoMap = indexInfo.columnMap();
+                Map<String, IndexColumnInfo> columnInfoMap = indexInfo.columnMap();
                 if (columnInfoMap == null) {
                     columnInfoMap = new HashMap<>();
                     indexInfo.columnMap(columnInfoMap);
@@ -132,7 +136,9 @@ final class SyncSchemaExtractorImpl implements SchemaExtractor {
 
             Map<String, IndexInfo> indexInfoMap = new HashMap<>((int) (map.size() / 0.75f));
             for (IndexInfo index : map.values()) {
-                index.columnMap(Collections.unmodifiableMap(index.columnMap()));
+                Map<String, IndexColumnInfo> columnInfoMap = index.columnMap();
+                Assert.state(columnInfoMap != null, "");
+                index.columnMap(Collections.unmodifiableMap(columnInfoMap));
                 // make key lower case
                 indexInfoMap.put(StringUtils.toLowerCase(index.name()), index);
             }

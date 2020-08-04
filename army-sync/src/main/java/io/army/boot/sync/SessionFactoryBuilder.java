@@ -30,14 +30,13 @@ public interface SessionFactoryBuilder extends GenericFactoryBuilder {
     @Override
     SessionFactoryBuilder environment(Environment environment);
 
-    @Override
     SessionFactoryBuilder factoryAdvice(List<SessionFactoryAdvice> factoryAdviceList);
 
     SessionFactoryBuilder datasource(DataSource dataSource);
 
     SessionFactoryBuilder domainInterceptor(Collection<DomainAdvice> domainInterceptors);
 
-    SessionFactoryBuilder tableCountPerDatabase(int tableCount);
+    SessionFactoryBuilder tableCountOfSharding(int tableCount);
 
     SessionFactory build() throws SessionFactoryException;
 

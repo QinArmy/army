@@ -5,9 +5,6 @@ import io.army.tx.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * <p>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
@@ -19,7 +16,6 @@ abstract class AbstractTransactionManager extends AbstractSyncTransaction implem
 
     final TmSession session;
 
-    final Set<XATransaction> xaTransactionSet = new HashSet<>();
 
     TransactionStatus status = TransactionStatus.NOT_ACTIVE;
 

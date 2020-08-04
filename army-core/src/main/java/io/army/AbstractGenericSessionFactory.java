@@ -188,4 +188,6 @@ public abstract class AbstractGenericSessionFactory implements GenericSessionFac
     public boolean allowSpanSharding() {
         return this.allowSpanSharding;
     }
+
+
 }

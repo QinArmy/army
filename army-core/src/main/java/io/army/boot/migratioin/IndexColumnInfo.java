@@ -2,7 +2,7 @@ package io.army.boot.migratioin;
 
 import java.util.StringJoiner;
 
-class IndexColumnInfo {
+final class IndexColumnInfo {
 
     private final TableInfo table;
 

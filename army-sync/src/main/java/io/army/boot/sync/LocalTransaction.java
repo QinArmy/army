@@ -35,12 +35,12 @@ final class LocalTransaction extends AbstractSyncTransaction implements Transact
     }
 
     @Override
-    public TransactionStatus status() {
+    public final TransactionStatus status() {
         return this.status;
     }
 
     @Override
-    public void start() throws TransactionException {
+    public final void start() throws TransactionException {
         checkTransaction();
 
         if (this.status != TransactionStatus.NOT_ACTIVE) {

@@ -7,8 +7,6 @@ import io.army.tx.XaTransactionOption;
 
 interface RmSessionFactory extends GenericSyncSessionFactory, GenericRmSessionFactory {
 
-    int databaseIndex();
-
     void initialize();
 
     RmSession build(XaTransactionOption option) throws SessionException;

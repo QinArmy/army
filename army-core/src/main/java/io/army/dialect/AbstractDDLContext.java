@@ -1,5 +1,6 @@
 package io.army.dialect;
 
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.struct.CodeEnum;
@@ -20,18 +21,22 @@ abstract class AbstractDDLContext implements DDLContext {
 
     protected final TableMeta<?> tableMeta;
 
+    private final String tableSuffix;
+
     protected final List<String> sqlList;
 
     protected final Map<Class<?>, BiFunction<FieldMeta<?, ?>, ZoneId, String>> defaultFunctionMap;
 
     private boolean prepared;
 
-    AbstractDDLContext(Dialect dialect, TableMeta<?> tableMeta
+    AbstractDDLContext(Dialect dialect, TableMeta<?> tableMeta, @Nullable String tableSuffix
             , Map<Class<?>, BiFunction<FieldMeta<?, ?>, ZoneId, String>> defaultFunctionMap) {
         this.dialect = dialect;
         this.tableMeta = tableMeta;
+        this.tableSuffix = tableSuffix;
         int size = sqlListSize(tableMeta);
         this.sqlList = size < 1 ? Collections.emptyList() : new ArrayList<>(size);
+
         this.defaultFunctionMap = defaultFunctionMap;
 
 
@@ -50,27 +55,30 @@ abstract class AbstractDDLContext implements DDLContext {
     }
 
     @Override
-    public StringBuilder sqlBuilder() {
+    public final StringBuilder sqlBuilder() {
         return this.sqlBuilder;
     }
 
     @Override
-    public TableMeta<?> tableMeta() {
+    public final TableMeta<?> tableMeta() {
         return this.tableMeta;
     }
 
     @Override
-    public void appendTable(TableMeta<?> tableMeta) {
-        this.sqlBuilder.append(this.dialect.quoteIfNeed(tableMeta.tableName()));
+    public final void appendTable() {
+        this.sqlBuilder.append(this.dialect.quoteIfNeed(this.tableMeta.tableName()));
+        if (this.tableSuffix != null) {
+            this.sqlBuilder.append(this.tableSuffix);
+        }
     }
 
     @Override
-    public void append(String sql) {
+    public final void append(String sql) {
         this.sqlList.add(sql);
     }
 
     @Override
-    public void resetBuilder() {
+    public final void resetBuilder() {
         this.sqlBuilder = new StringBuilder();
     }
 

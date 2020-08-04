@@ -1,10 +1,13 @@
 package io.army.boot.sync;
 
+import io.army.ErrorCode;
 import io.army.sync.TmSession;
 import io.army.tx.*;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.Map;
 
 /**
  * this class is a implementation of {@link TmTransaction}
@@ -19,6 +22,8 @@ import java.util.Set;
 final class SyncCommitTransactionManager extends AbstractTransactionManager {
 
 
+    private final Map<Integer, XATransaction> xaTransactionMap = new HashMap<>();
+
     SyncCommitTransactionManager(TmSession session, TransactionOption option) {
         super(session, option);
     }
@@ -31,7 +36,7 @@ final class SyncCommitTransactionManager extends AbstractTransactionManager {
             throw new IllegalTransactionStateException("tm transaction status[%s] isn't %s,can't commit."
                     , this.status, TransactionStatus.ACTIVE);
         }
-        if (this.xaTransactionSet.size() == 1) {
+        if (this.xaTransactionMap.size() == 1) {
             doOnePhaseCommit();
         } else {
             doTwoPhaseCommit();
@@ -48,17 +53,17 @@ final class SyncCommitTransactionManager extends AbstractTransactionManager {
         }
         this.status = TransactionStatus.ROLLING_BACK;
         try {
-            final Set<XATransaction> transactionSet = this.xaTransactionSet;
-            for (XATransaction xa : transactionSet) {
+            final Collection<XATransaction> transactions = this.xaTransactionMap.values();
+            for (XATransaction xa : transactions) {
                 xaEnd(xa);
             }
-            for (XATransaction xa : transactionSet) {
+            for (XATransaction xa : transactions) {
                 xaPrepare(xa);
             }
-            for (XATransaction xa : transactionSet) {
+            for (XATransaction xa : transactions) {
                 xaRollback(xa);
             }
-            for (XATransaction xa : transactionSet) {
+            for (XATransaction xa : transactions) {
                 xaForget(xa);
             }
             this.status = TransactionStatus.ROLLED_BACK;
@@ -75,23 +80,41 @@ final class SyncCommitTransactionManager extends AbstractTransactionManager {
 
     /*################################## blow package method ##################################*/
 
-    void addXaTransaction(TmSession session, XATransaction startedXa) {
-        if (this.session != session) {
+    final void addXaTransaction(TmSession tmSession, XATransaction startedXa) {
+        if (tmSession != this.session) {
             throw new IllegalArgumentException("session error");
         }
-        this.xaTransactionSet.add(startedXa);
+
+        final int databaseIndex = startedXa.session().sessionFactory().databaseIndex();
+
+        if (startedXa.status() != XATransactionStatus.ACTIVE) {
+            throw new IllegalTransactionStateException("RmSessionFactory[%s] XATransaction[%s] not start."
+                    , databaseIndex
+                    , startedXa.name()
+            );
+        }
+        if (this.status != TransactionStatus.ACTIVE) {
+            throw new IllegalTransactionStateException("%s TmTransaction[%s] not active status."
+                    , this.session.sessionFactory()
+                    , this.name()
+            );
+        }
+        if (this.xaTransactionMap.putIfAbsent(databaseIndex, startedXa) != null) {
+            throw new TransactionUsageException(ErrorCode.TRANSACTION_ERROR
+                    , "RmSessionFactory[%s] XATransaction duplication.", databaseIndex);
+        }
     }
 
     /*################################## blow private method ##################################*/
 
 
     private void doOnePhaseCommit() {
-        Iterator<XATransaction> iterator = this.xaTransactionSet.iterator();
+        Iterator<XATransaction> iterator = this.xaTransactionMap.values().iterator();
         if (iterator.hasNext()) {
             XATransaction tx = iterator.next();
             if (iterator.hasNext()) {
                 throw new IllegalStateException(String.format(
-                        "tm transaction[%s] have multi xa transaction resource,can't one phase commit.", this.name));
+                        "tm transaction[%s] have multi xa transaction resource,can't one phase commit.", this.name()));
             }
             try {
                 this.status = TransactionStatus.COMMITTING;
@@ -104,7 +127,7 @@ final class SyncCommitTransactionManager extends AbstractTransactionManager {
             }
         } else {
             throw new IllegalStateException(String.format(
-                    "tm transaction[%s] no xa transaction resource,can't one phase commit.", this.name));
+                    "tm transaction[%s] no xa transaction resource,can't one phase commit.", this.name()));
         }
 
     }
@@ -112,17 +135,17 @@ final class SyncCommitTransactionManager extends AbstractTransactionManager {
     private void doTwoPhaseCommit() {
         this.status = TransactionStatus.COMMITTING;
         try {
-            final Set<XATransaction> transactionSet = this.xaTransactionSet;
-            for (XATransaction xa : transactionSet) {
+            final Collection<XATransaction> transactions = this.xaTransactionMap.values();
+            for (XATransaction xa : transactions) {
                 xaEnd(xa);
             }
-            for (XATransaction xa : transactionSet) {
+            for (XATransaction xa : transactions) {
                 xaPrepare(xa);
             }
-            for (XATransaction xa : transactionSet) {
+            for (XATransaction xa : transactions) {
                 xaCommit(xa);
             }
-            for (XATransaction xa : transactionSet) {
+            for (XATransaction xa : transactions) {
                 xaForget(xa);
             }
             this.status = TransactionStatus.COMMITTED;
@@ -145,13 +168,13 @@ final class SyncCommitTransactionManager extends AbstractTransactionManager {
             case FAILED_ROLLBACK:
                 // here ,classic, commit failure,now rollback.
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("transaction[{} - {}] status is {},ignore end command.", this.name, tx.name(), xaStatus);
+                    LOG.debug("transaction[{} - {}] status is {},ignore end command.", this.name(), tx.name(), xaStatus);
                 }
                 break;
             default:
                 throw new IllegalTransactionStateException(
                         "transaction[%s - %s] status[%s] error,couldn't execute end command."
-                        , this.name, tx.name(), xaStatus);
+                        , this.name(), tx.name(), xaStatus);
         }
     }
 
@@ -166,13 +189,13 @@ final class SyncCommitTransactionManager extends AbstractTransactionManager {
             case FAILED_ROLLBACK:
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("transaction[{} - {}] status is {},ignore prepare command."
-                            , this.name, tx.name(), xaStatus);
+                            , this.name(), tx.name(), xaStatus);
                 }
                 break;
             default:
                 throw new IllegalTransactionStateException(
                         "transaction[%s - %s] status[%s] error,couldn't execute prepare command."
-                        , this.name, tx.name(), xaStatus);
+                        , this.name(), tx.name(), xaStatus);
 
         }
     }
@@ -187,7 +210,7 @@ final class SyncCommitTransactionManager extends AbstractTransactionManager {
             default:
                 throw new IllegalTransactionStateException(
                         "transaction[%s - %s] status[%s] error,couldn't execute commit command."
-                        , this.name, tx.name(), xaStatus);
+                        , this.name(), tx.name(), xaStatus);
 
         }
 
@@ -203,7 +226,7 @@ final class SyncCommitTransactionManager extends AbstractTransactionManager {
             default:
                 throw new IllegalTransactionStateException(
                         "transaction[%s - %s] status[%s] error,couldn't execute rollback command."
-                        , this.name, tx.name(), xaStatus);
+                        , this.name(), tx.name(), xaStatus);
         }
     }
 
@@ -218,7 +241,7 @@ final class SyncCommitTransactionManager extends AbstractTransactionManager {
             default:
                 throw new IllegalTransactionStateException(
                         "transaction[%s-%s] status[%s] error,couldn't execute forget command."
-                        , this.name, tx.name(), xaStatus);
+                        , this.name(), tx.name(), xaStatus);
         }
 
     }

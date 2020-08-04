@@ -1,5 +1,6 @@
 package io.army.boot.migratioin;
 
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
@@ -9,7 +10,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-class MigrationImpl implements Migration {
+final class MigrationImpl implements Migration {
+
+    private final String tableSuffix;
 
     private final TableMeta<?> table;
 
@@ -28,14 +31,28 @@ class MigrationImpl implements Migration {
     private boolean finalFinish;
 
 
-    MigrationImpl(TableMeta<?> table, boolean newTable) {
+    MigrationImpl(TableMeta<?> table, @Nullable String tableSuffix, boolean newTable) {
         this.table = table;
+        this.tableSuffix = tableSuffix;
         this.newTable = newTable;
+    }
+
+    @Nullable
+    @Override
+    public String tableSuffix() {
+        return this.tableSuffix;
     }
 
     @Override
     public TableMeta<?> table() {
         return table;
+    }
+
+    @Override
+    public String actualTableName() {
+        return this.tableSuffix == null
+                ? this.table.tableName()
+                : (table.tableName() + this.tableSuffix);
     }
 
     @Override

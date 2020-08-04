@@ -1,51 +1,63 @@
 package io.army.boot.migratioin;
 
 import io.army.ErrorCode;
+import io.army.GenericRmSessionFactory;
 import io.army.criteria.MetaException;
-import io.army.dialect.Dialect;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexFieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
 import io.army.schema.SchemaInfoException;
+import io.army.sharding.RouteUtils;
 import io.army.util.Assert;
 import io.army.util.ObjectUtils;
 import io.army.util.StringUtils;
-import org.springframework.lang.Nullable;
 
 import java.util.*;
 
-public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
-
-
+abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
 
     @Override
-    public final List<Migration> compare(Collection<TableMeta<?>> tableMetas, SchemaInfo schemaInfo, Dialect dialect)
+    public final List<List<Migration>> compare(SchemaInfo schemaInfo, GenericRmSessionFactory sessionFactory)
             throws SchemaInfoException, MetaException {
-        Assert.notNull(tableMetas, "tableMetas required");
-        Assert.notNull(schemaInfo, "schemaInfo required");
 
         final Map<String, TableInfo> tableInfoMap = schemaInfo.tableMap();
 
-        List<Migration> migrationList = new ArrayList<>();
+        final int tableCount = sessionFactory.tableCountOfSharding();
+        List<List<Migration>> shardingList = new ArrayList<>(tableCount);
+        final Collection<TableMeta<?>> tableMetas = sessionFactory.tableMetaMap().values();
+        for (int i = 0; i < tableCount; i++) {
+            //1. obtain table suffix
+            final String tableSuffix = RouteUtils.convertToSuffix(tableCount, i);
+            List<Migration> migrationList = new ArrayList<>(tableMetas.size());
 
-        for (TableMeta<?> tableMeta : tableMetas) {
-            // make key lower case
-            TableInfo tableInfo = tableInfoMap.get(StringUtils.toLowerCase(tableMeta.tableName()));
-            if (tableInfo == null) {
-                // will debugSQL tableMeta
-                migrationList.add(new MigrationImpl(tableMeta, true));
+            for (TableMeta<?> tableMeta : tableMetas) {
+                //2. obtain actual table name
+                String actualTableName = tableMeta.tableName();
+                if (tableSuffix != null) {
+                    actualTableName += tableSuffix;
+                }
+                //3. create MigrationImpl
+                TableInfo tableInfo = tableInfoMap.get(StringUtils.toLowerCase(actualTableName));
+                if (tableInfo == null) {
+                    // will create table
+                    migrationList.add(new MigrationImpl(tableMeta, tableSuffix, true));
 
-            } else {
-                Migration migration = doMigrateTable(tableMeta, tableInfo);
-                if (migration != null) {
-                    // will alter tableMeta
-                    migrationList.add(migration);
+                } else {
+                    Migration migration = doMigrateTable(tableMeta, tableSuffix, tableInfo);
+                    if (migration != null) {
+                        // will alter tableMeta
+                        migrationList.add(migration);
+                    }
                 }
             }
+            //4. add migrationList to shardingList
+            shardingList.add(Collections.unmodifiableList(migrationList));
         }
-        return Collections.unmodifiableList(migrationList);
+        return Collections.unmodifiableList(shardingList);
     }
+
 
     /*################################## blow abstract method ##################################*/
 
@@ -58,12 +70,12 @@ public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparat
     /*################################## blow private method ##################################*/
 
     @Nullable
-    private Migration doMigrateTable(TableMeta<?> tableMeta, TableInfo tableInfo) {
+    private Migration doMigrateTable(TableMeta<?> tableMeta, @Nullable String tableSuffix, TableInfo tableInfo) {
         Assert.state(tableMeta.tableName().equals(tableInfo.name()),
                 () -> String.format("TableMeta[%s] then TableInfo[%s] not match",
                         tableMeta.tableName(), tableInfo.name()));
 
-        MigrationImpl migration = new MigrationImpl(tableMeta, false);
+        MigrationImpl migration = new MigrationImpl(tableMeta, tableSuffix, false);
 
         // column migration
         migrateColumnIfNeed(tableMeta, tableInfo, migration);
@@ -144,7 +156,7 @@ public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparat
         if (primaryKeyIndex(indexInfo)) {
             return false;
         }
-        boolean need ;
+        boolean need;
         if (indexMeta.unique() != indexInfo.unique()) {
             need = true;
         } else if (indexMeta.fieldList().size() != indexInfo.columnMap().size()) {
@@ -155,7 +167,7 @@ public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparat
         return need;
     }
 
-    private boolean indexOrderMatch(IndexMeta<?> indexMeta, IndexInfo indexInfo){
+    private boolean indexOrderMatch(IndexMeta<?> indexMeta, IndexInfo indexInfo) {
         Map<String, IndexColumnInfo> columnInfoMap = indexInfo.columnMap();
         boolean need = false;
         for (IndexFieldMeta<?, ?> indexFieldMeta : indexMeta.fieldList()) {
@@ -203,7 +215,7 @@ public abstract class AbstractMetaSchemaComparator implements MetaSchemaComparat
 
     private void assertJdbcTypeMatch(FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo)
             throws SchemaInfoException {
-        if (fieldMeta.jdbcType() != columnInfo.jdbcType()) {
+        if (fieldMeta.mappingMeta().jdbcType() != columnInfo.jdbcType()) {
             throw new SchemaInfoException(ErrorCode.SQL_TYPE_NOT_MATCH
                     , "FieldMeta[%s] then ColumnInfo[%s] SQL type not match"
                     , fieldMeta.fieldName(), columnInfo.name());

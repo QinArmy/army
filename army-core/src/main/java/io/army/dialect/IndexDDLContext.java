@@ -1,5 +1,6 @@
 package io.army.dialect;
 
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
@@ -9,9 +10,9 @@ import java.util.function.BiFunction;
 
 final class IndexDDLContext extends AbstractDDLContext {
 
-    IndexDDLContext(Dialect dialect, TableMeta<?> tableMeta, Map<Class<?
-            >, BiFunction<FieldMeta<?, ?>, ZoneId, String>> defaultFunctionMap) {
-        super(dialect, tableMeta, defaultFunctionMap);
+    IndexDDLContext(Dialect dialect, TableMeta<?> tableMeta, @Nullable String tableSuffix
+            , Map<Class<?>, BiFunction<FieldMeta<?, ?>, ZoneId, String>> defaultFunctionMap) {
+        super(dialect, tableMeta, tableSuffix, defaultFunctionMap);
     }
 
     @Override

@@ -165,7 +165,9 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
         assertParamGroupListSizeMatch(parentWrapper, childWrapper);
 
         int[] parentResult, childResult;
+        // firstly, execute child sql
         childResult = doExecuteBatch(session, childWrapper);
+        // secondly, execute child sql
         parentResult = doExecuteBatch(session, parentWrapper);
 
         assertBatchUpdateRows(childResult, parentResult, sqlWrapper);
@@ -179,7 +181,9 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
         assertParamGroupListSizeMatch(parentWrapper, childWrapper);
 
         long[] parentResult, childResult;
+        // firstly, execute child sql
         childResult = doExecuteLargeBatch(session, childWrapper);
+        // secondly, execute child sql
         parentResult = doExecuteLargeBatch(session, parentWrapper);
 
         assertBatchLargeUpdateRows(childResult, parentResult, sqlWrapper);

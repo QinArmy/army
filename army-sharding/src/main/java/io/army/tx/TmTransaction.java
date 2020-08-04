@@ -1,6 +1,5 @@
 package io.army.tx;
 
-import io.army.boot.sync.XATransaction;
 import io.army.sync.TmSession;
 
 public interface TmTransaction extends GenericSyncTransaction {
@@ -21,13 +20,13 @@ public interface TmTransaction extends GenericSyncTransaction {
     void start() throws TransactionException;
 
     /**
-     * invoke all {@link XATransaction} finish operation.
+     * invoke all {@code io.army.boot.sync.XATransaction} finish operation.
      */
     @Override
     void rollback() throws TransactionException;
 
     /**
-     * uses two-phase commit,invoke all {@link XATransaction} finish operation.
+     * uses two-phase commit,invoke all {@code io.army.boot.sync.XATransaction} finish operation.
      */
     @Override
     void commit() throws TransactionException;

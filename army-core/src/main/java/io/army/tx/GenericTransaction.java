@@ -1,8 +1,11 @@
 package io.army.tx;
 
 
+import io.army.lang.Nullable;
+
 public interface GenericTransaction {
 
+    @Nullable
     String name();
 
     Isolation isolation();
@@ -10,6 +13,8 @@ public interface GenericTransaction {
     boolean readOnly();
 
     Enum<?> status();
+
+    boolean nonActive();
 
     int timeToLiveInSeconds() throws TransactionTimeOutException;
 

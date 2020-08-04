@@ -3,7 +3,7 @@ package io.army.boot.migratioin;
 import java.util.Map;
 import java.util.StringJoiner;
 
-public class TableInfo {
+final class TableInfo {
 
     private final SchemaInfo schema;
 

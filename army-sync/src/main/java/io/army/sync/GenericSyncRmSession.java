@@ -17,7 +17,7 @@ public interface GenericSyncRmSession extends GenericSyncSession, AutoCloseable,
 
     /**
      * <o>
-     * <li>invoke {@link io.army.context.spi.CurrentSessionContext#removeCurrentSession(Session)},if need</li>
+     * <li>invoke {@link io.army.context.spi.CurrentSessionContext#removeCurrentSession(GenericSyncSession)},if need</li>
      * <li>invoke {@link Connection#close()}</li>
      * </o>
      *

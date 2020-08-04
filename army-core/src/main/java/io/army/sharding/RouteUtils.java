@@ -23,6 +23,47 @@ public abstract class RouteUtils {
     }
 
     @Nullable
+    public static String convertToSuffix(final int tableCountOfSharding, final int tableIndex) {
+        if (tableCountOfSharding <= 0) {
+            throw new IllegalArgumentException(
+                    String.format("tableCountOfSharding[%s] must great than 0 .", tableCountOfSharding));
+        }
+        if (tableIndex < 0 || tableIndex >= tableCountOfSharding) {
+            throw new IllegalArgumentException(
+                    String.format("tableIndex[%s] must int[%s,%s).", tableIndex, 0, tableCountOfSharding));
+        }
+        if (tableIndex == 0) {
+            return null;
+        }
+
+        int tableCount = tableCountOfSharding, numberLength = 0;
+        while (tableCount > 0) {
+            tableCount /= 10;
+            numberLength++;
+        }
+        final String indexText = Integer.toString(tableIndex);
+        String tableSuffix;
+        if (indexText.length() < numberLength) {
+
+            char[] charArray = new char[numberLength + 1];
+            charArray[0] = '_';
+
+            final int end = numberLength - indexText.length() + 1;
+            for (int i = 1; i < end; i++) {
+                charArray[i] = '0';
+            }
+            for (int i = end; i < charArray.length; i++) {
+                charArray[i] = indexText.charAt(i - end);
+            }
+            tableSuffix = new String(charArray);
+        } else {
+            tableSuffix = "_" + indexText;
+        }
+        return tableSuffix;
+
+    }
+
+    @Nullable
     protected static RouteWrapper findRouteForSelect(InnerSelect select, boolean dataSource) {
         RouteWrapper routeWrapper;
         routeWrapper = findRouteFromWhereClause(select.tableWrapperList(), select.predicateList(), dataSource);

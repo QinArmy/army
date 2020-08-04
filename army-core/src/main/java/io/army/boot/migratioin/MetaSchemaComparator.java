@@ -1,12 +1,10 @@
 package io.army.boot.migratioin;
 
+import io.army.GenericRmSessionFactory;
 import io.army.criteria.MetaException;
 import io.army.dialect.Database;
-import io.army.dialect.Dialect;
-import io.army.meta.TableMeta;
 import io.army.schema.SchemaInfoException;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -17,12 +15,12 @@ interface MetaSchemaComparator {
     /**
      * @return a unmodifiable List
      */
-    List<Migration> compare(Collection<TableMeta<?>> tableMetas, SchemaInfo schemaInfo, Dialect dialect)
+    List<List<Migration>> compare(SchemaInfo schemaInfo, GenericRmSessionFactory sessionFactory)
             throws SchemaInfoException, MetaException;
 
-    static MetaSchemaComparator build(Database sqlDialect) {
+    static MetaSchemaComparator build(Database database) {
         MetaSchemaComparator comparator;
-        switch (sqlDialect) {
+        switch (database) {
             case MySQL:
             case MySQL57:
                 comparator = new MySQL57MetaSchemaComparator();
@@ -30,13 +28,10 @@ interface MetaSchemaComparator {
             case MySQL80:
                 comparator = new MySQL80MetaSchemaComparator();
                 break;
-            case SQL_Server:
-            case OceanBase:
             case Postgre:
             case Oracle:
-            case Db2:
             default:
-                throw new IllegalArgumentException(String.format("unsupported dialect %s", sqlDialect));
+                throw new IllegalArgumentException(String.format("unsupported dialect %s", database));
         }
         return comparator;
     }

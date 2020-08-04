@@ -17,7 +17,6 @@ import io.army.util.Assert;
 
 import javax.sql.XADataSource;
 import java.sql.SQLException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -49,7 +48,7 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
 
     private final UpdateSQLExecutor updateSQLExecutor;
 
-    private final AtomicBoolean initFinished = new AtomicBoolean(false);
+    private boolean initFinished;
 
     private boolean closed;
 
@@ -75,75 +74,78 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
 
 
     @Override
-    public void close() throws SessionFactoryException {
+    public final void close() throws SessionFactoryException {
         this.closed = true;
     }
 
     @Override
-    public boolean closed() {
+    public final boolean closed() {
         return this.closed;
     }
 
     @Override
-    public Dialect dialect() {
+    public final Dialect dialect() {
         return this.dialect;
     }
 
     @Override
-    public InsertSQLExecutor insertSQLExecutor() {
+    public final InsertSQLExecutor insertSQLExecutor() {
         return this.insertSQLExecutor;
     }
 
     @Override
-    public SelectSQLExecutor selectSQLExecutor() {
+    public final SelectSQLExecutor selectSQLExecutor() {
         return this.selectSQLExecutor;
     }
 
     @Override
-    public UpdateSQLExecutor updateSQLExecutor() {
+    public final UpdateSQLExecutor updateSQLExecutor() {
         return this.updateSQLExecutor;
     }
 
 
     @Override
-    public boolean supportZone() {
+    public final boolean supportZone() {
         return this.dialect.supportZone();
     }
 
     @Override
-    public Database actualDatabase() {
+    public final Database actualDatabase() {
         return this.dialect.database();
     }
 
     @Override
-    public int databaseIndex() {
+    public final int databaseIndex() {
         return this.databaseIndex;
     }
 
     @Override
-    public void initialize() {
-        if (this.initFinished.get()) {
-            return;
-        }
-        synchronized (this.initFinished) {
-            //TODO zoro
-            this.initFinished.compareAndSet(false, true);
-        }
+    public final int tableCountOfSharding() {
+        return this.tmSessionFactory.tableCountPerDatabase();
     }
 
     @Override
-    public DomainValuesGenerator domainValuesGenerator() {
+    public final void initialize() {
+        if (this.initFinished) {
+            return;
+        }
+
+        this.initFinished = true;
+    }
+
+    @Override
+    public final DomainValuesGenerator domainValuesGenerator() {
         return this.domainValuesGenerator;
     }
 
     @NonNull
     @Override
-    public GenericTmSessionFactory tmSessionFactory() {
+    public final GenericTmSessionFactory tmSessionFactory() {
         return this.tmSessionFactory;
     }
 
     @Override
-    public TableRoute tableRoute(TableMeta<?> tableMeta) throws NotFoundRouteException {
+    public final TableRoute tableRoute(TableMeta<?> tableMeta) throws NotFoundRouteException {
         return this.tmSessionFactory.tableRoute(tableMeta);
     }
 

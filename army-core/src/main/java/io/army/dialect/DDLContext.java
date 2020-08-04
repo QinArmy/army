@@ -16,7 +16,7 @@ public interface DDLContext {
 
     TableMeta<?> tableMeta();
 
-    void appendTable(TableMeta<?> tableMeta);
+    void appendTable();
 
     void append(String sql);
 

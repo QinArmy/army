@@ -3,7 +3,7 @@ package io.army.boot.migratioin;
 import java.util.Map;
 import java.util.StringJoiner;
 
-class SchemaInfo {
+final class SchemaInfo {
 
     private final String catalog;
 
@@ -25,6 +25,9 @@ class SchemaInfo {
         return schema;
     }
 
+    /**
+     * @return a unmodifiable map
+     */
     Map<String, TableInfo> tableMap() {
         return tableMap;
     }

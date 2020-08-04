@@ -2,6 +2,7 @@ package io.army.boot.sync;
 
 import io.army.*;
 import io.army.boot.DomainValuesGenerator;
+import io.army.boot.migratioin.SyncMetaMigrator;
 import io.army.cache.SessionCacheFactory;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.criteria.NotFoundRouteException;
@@ -38,6 +39,8 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
     private final Dialect dialect;
 
     private final Map<TableMeta<?>, DomainAdvice> domainAdviceMap;
+
+    private final int tableCountOfSharding;
 
     private final SessionCacheFactory sessionCacheFactory;
 
@@ -76,10 +79,13 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
         this.dialect = SyncSessionFactoryUtils.createDialectForSync(dataSource, this);
         this.domainAdviceMap = SyncSessionFactoryUtils.createDomainAdviceMap(
                 factoryBuilder.domainInterceptors());
+        this.tableCountOfSharding = factoryBuilder.tableCountOfSharding();
+        SyncSessionFactoryUtils.assertTableCountOfSharding(this.tableCountOfSharding, this);
 
         this.currentSessionContext = SyncSessionFactoryUtils.buildCurrentSessionContext(this);
         this.proxySession = new ProxySessionImpl(this, this.currentSessionContext);
-        this.tableRouteMap = SyncSessionFactoryUtils.routeMap(this, TableRoute.class, 1, factoryBuilder.tableCount());
+        this.tableRouteMap = SyncSessionFactoryUtils.routeMap(this, TableRoute.class
+                , 1, factoryBuilder.tableCountOfSharding());
         this.sessionCacheFactory = SessionCacheFactory.build(this);
 
         // executor after dialect
@@ -93,6 +99,17 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
     @Override
     public void close() throws SessionFactoryException {
         this.closed = true;
+    }
+
+    @Override
+    public int databaseIndex() {
+        // always 0
+        return 0;
+    }
+
+    @Override
+    public int tableCountOfSharding() {
+        return this.tableCountOfSharding;
     }
 
     @Override
@@ -202,11 +219,12 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
     }
 
     void initSessionFactory() throws DataAccessException {
+        if (this.initFinished.get()) {
+            return;
+        }
         synchronized (this.initFinished) {
-            if (this.initFinished.get()) {
-                return;
-            }
             migrationMeta();
+            this.initFinished.compareAndSet(false, true);
         }
     }
 
@@ -219,8 +237,8 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
         }
         DataSource primary = SyncSessionFactoryUtils.obtainPrimaryDataSource(this.dataSource);
         try (Connection conn = primary.getConnection()) {
-            new DefaultSessionFactoryInitializer(conn, this.tableMetaMap, this.dialect)
-                    .onStartup();
+            // execute migration
+            SyncMetaMigrator.build().migrate(conn, this);
         } catch (SQLException e) {
             throw new DataAccessException(ErrorCode.CODEC_DATA_ERROR, e, "%s migration failure.", this);
         }

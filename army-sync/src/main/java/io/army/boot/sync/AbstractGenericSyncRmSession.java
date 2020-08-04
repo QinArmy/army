@@ -32,6 +32,8 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
 
     private final InnerCodecContext codecContext = new CodecContextImpl();
 
+    private boolean genericClosed;
+
     AbstractGenericSyncRmSession(InnerGenericRmSessionFactory sessionFactory, Connection connection) {
         this.genericSessionFactory = sessionFactory;
         this.connection = connection;
@@ -221,6 +223,9 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
 
     @Override
     public void close() throws SessionException {
+        if (this.genericClosed) {
+            return;
+        }
         GenericTransaction tx = obtainTransaction();
         if (tx != null && !tx.transactionEnded()) {
             throw new TransactionNotCloseException("Session transaction not close,tx status[%s]"
@@ -228,6 +233,7 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
         }
         try {
             this.connection.close();
+            this.genericClosed = true;
         } catch (SQLException e) {
             throw new SessionCloseFailureException(e, "Connection close failure.");
         }
@@ -381,10 +387,10 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
 
     final void assertSessionActive() {
         GenericTransaction tx = obtainTransaction();
-        if (this.closed() || tx == null || tx.transactionEnded()) {
+        if (this.closed() || (tx != null && tx.nonActive())) {
             String txName = this.sessionTransaction().name();
-            throw new SessionUsageException(ErrorCode.SESSION_CLOSED, "TmSession[%s] closed or Transaction[%s] ended."
-                    , txName, txName);
+            throw new SessionUsageException(ErrorCode.SESSION_CLOSED
+                    , "TmSession[%s] closed or Transaction[%s] not active.", txName, txName);
         }
     }
 

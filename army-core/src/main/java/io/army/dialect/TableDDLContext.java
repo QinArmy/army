@@ -1,5 +1,6 @@
 package io.army.dialect;
 
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
@@ -9,10 +10,10 @@ import java.util.function.BiFunction;
 
 final class TableDDLContext extends AbstractDDLContext {
 
-    TableDDLContext(Dialect dialect, TableMeta<?> tableMeta
+    TableDDLContext(Dialect dialect, TableMeta<?> tableMeta, @Nullable String tableSuffix
             , Map<Class<?>, BiFunction<FieldMeta<?, ?>, ZoneId, String>> defaultFunctionMap) {
-        super(dialect, tableMeta, defaultFunctionMap);
-        // place holder for table definition
+        super(dialect, tableMeta, tableSuffix, defaultFunctionMap);
+        // place holder for table definition, @see this.handleSQLList
         sqlList.add("");
     }
 
@@ -23,7 +24,7 @@ final class TableDDLContext extends AbstractDDLContext {
 
     @Override
     protected void handleSQLList() {
-        this.sqlList.set(0, sqlBuilder.toString());
+        this.sqlList.set(0, this.sqlBuilder.toString());
     }
 
 }

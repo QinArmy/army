@@ -3,7 +3,7 @@ package io.army.sharding;
 
 public interface TableRoute extends Route {
 
-    int tableCount();
+    boolean containTable(int tableIndex);
 
     int tableIndex(Object routeKey);
 

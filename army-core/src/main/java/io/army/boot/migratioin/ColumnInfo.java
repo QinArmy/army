@@ -3,17 +3,17 @@ package io.army.boot.migratioin;
 import java.sql.JDBCType;
 import java.util.StringJoiner;
 
-public class ColumnInfo {
+ final class ColumnInfo {
 
-    private final TableInfo table;
+     private final TableInfo table;
 
-    private final String name;
+     private final String name;
 
-    private String sqlType;
+     private String sqlType;
 
-    private JDBCType jdbcType;
+     private JDBCType jdbcType;
 
-    private boolean nullable;
+     private boolean nullable;
 
     private String comment;
 

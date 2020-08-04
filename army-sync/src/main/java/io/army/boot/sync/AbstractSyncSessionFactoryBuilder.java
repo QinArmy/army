@@ -23,6 +23,7 @@ abstract class AbstractSyncSessionFactoryBuilder extends GenericFactoryBuilderIm
         return domainInterceptors;
     }
 
+    @Nullable
     public final List<SessionFactoryAdvice> factoryAdviceList() {
         return factoryAdviceList;
     }

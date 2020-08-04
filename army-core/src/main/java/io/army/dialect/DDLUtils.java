@@ -69,7 +69,9 @@ public abstract class DDLUtils {
         );
     }
 
-
+    /**
+     * @return a unmodifiable list
+     */
     static List<FieldMeta<?, ?>> sortFieldMetaCollection(TableMeta<?> tableMeta) {
         Set<FieldMeta<?, ?>> fieldMetas = new HashSet<>(tableMeta.fieldCollection());
 
@@ -99,6 +101,9 @@ public abstract class DDLUtils {
         return Collections.unmodifiableList(fieldMetaList);
     }
 
+    /**
+     * @return a unmodifiable list
+     */
     static List<IndexMeta<?>> sortIndexMetaCollection(TableMeta<?> tableMeta) {
         Set<IndexMeta<?>> indexMetas = new HashSet<>(tableMeta.indexCollection());
 

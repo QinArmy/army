@@ -1,6 +1,7 @@
 package io.army;
 
 import io.army.dialect.Database;
+import io.army.dialect.Dialect;
 
 /**
  * <p>
@@ -18,6 +19,13 @@ import io.army.dialect.Database;
  */
 public interface GenericRmSessionFactory extends GenericSessionFactory {
 
+
+    int databaseIndex();
+
+    int tableCountOfSharding();
+
     Database actualDatabase();
+
+    Dialect dialect();
 
 }

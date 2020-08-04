@@ -4,7 +4,6 @@ import io.army.codec.FieldCodec;
 import io.army.env.Environment;
 
 import java.util.Collection;
-import java.util.List;
 
 public interface GenericFactoryBuilder {
 
@@ -14,8 +13,6 @@ public interface GenericFactoryBuilder {
     GenericFactoryBuilder name(String sessionFactoryName);
 
     GenericFactoryBuilder environment(Environment environment);
-
-    GenericFactoryBuilder factoryAdvice(List<SessionFactoryAdvice> factoryAdviceList);
 
 
 }
