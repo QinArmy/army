@@ -31,6 +31,8 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
 
     private final boolean readonly;
 
+    private final ShardingMode shardingMode;
+
     private Transaction transaction;
 
     private boolean closed;
@@ -48,6 +50,7 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
         } else {
             this.sessionCache = null;
         }
+        this.shardingMode = sessionFactory.shardingMode();
     }
 
     @Nullable
@@ -139,6 +142,7 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
 
     @Override
     public int[] batchUpdate(Update update, final Visible visible) {
+        assertSupportBatch();
         //1. parse update sql
         final SQLWrapper sqlWrapper = parseUpdate(update, visible);
         try {
@@ -161,6 +165,7 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
 
     @Override
     public long[] batchLargeUpdate(Update update, final Visible visible) {
+        assertSupportBatch();
         //1. parse update sql
         final SQLWrapper sqlWrapper = parseUpdate(update, visible);
         try {
@@ -183,6 +188,7 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
 
     @Override
     public int[] batchDelete(Delete delete, final Visible visible) {
+        assertSupportBatch();
         //1. parse update sql
         final SQLWrapper sqlWrapper = parseDelete(delete, visible);
         try {
@@ -205,6 +211,7 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
 
     @Override
     public long[] batchLargeDelete(Delete delete, final Visible visible) {
+        assertSupportBatch();
         //1. parse update sql
         final SQLWrapper sqlWrapper = parseDelete(delete, visible);
         try {
@@ -357,6 +364,12 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
         }
     }
 
+    private void assertSupportBatch() {
+        if (this.shardingMode != ShardingMode.NO_SHARDING) {
+            throw new SessionUsageException(ErrorCode.NOT_SUPPORT_BATCH
+                    , "not support batch operation in SHARDING mode.");
+        }
+    }
 
     /*################################## blow private multiInsert method ##################################*/
 

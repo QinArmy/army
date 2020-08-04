@@ -7,6 +7,7 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.CriteriaRouteKeyException;
 import io.army.criteria.FieldValueEqualPredicate;
 import io.army.criteria.IPredicate;
+import io.army.criteria.impl.inner.InnerMultiDML;
 import io.army.criteria.impl.inner.InnerSelect;
 import io.army.criteria.impl.inner.InnerSingleDML;
 import io.army.lang.Nullable;
@@ -39,37 +40,49 @@ abstract class DatabaseRouteUtils extends RouteUtils {
         return routeWrapper;
     }
 
-
     @Nullable
-    static RouteWrapper findRouteForSingleDML(InnerSingleDML dml, final boolean dataSource) {
-        TableMeta<?> tableMeta = dml.tableMeta();
-        List<FieldMeta<?, ?>> dataSourceRouteFields = tableMeta.routeFieldList(dataSource);
-        RouteWrapper routeWrapper = null;
-        // 1. try find from where clause.
-        for (IPredicate predicate : dml.predicateList()) {
-            if (!(predicate instanceof FieldValueEqualPredicate)) {
-                continue;
-            }
-            FieldValueEqualPredicate p = (FieldValueEqualPredicate) predicate;
-            FieldMeta<?, ?> fieldMeta = p.fieldMeta();
-            if (dataSourceRouteFields.contains(fieldMeta)) {
-                // success,find route key.
-                routeWrapper = RouteWrapper.buildRouteKey(fieldMeta.tableMeta(), p.value());
+    static Object findRouteKeyInsert(TableMeta<?> tableMeta, ReadonlyWrapper wrapper) {
+        List<FieldMeta<?, ?>> routeFieldList = tableMeta.routeFieldList(true);
+        // obtain route key
+        Object routeKey = null;
+        for (FieldMeta<?, ?> routeField : routeFieldList) {
+            Object value = wrapper.getPropertyType(routeField.propertyName());
+            if (value != null) {
+                routeKey = value;
                 break;
             }
         }
+        return routeKey;
+    }
+
+
+    @Nullable
+    static RouteWrapper findRouteForSingleDML(InnerSingleDML dml) {
+        TableMeta<?> tableMeta = dml.tableMeta();
+        List<FieldMeta<?, ?>> dataSourceRouteFields = tableMeta.routeFieldList(true);
+        RouteWrapper routeWrapper = null;
+        // 1. try find from where clause.
+        Object routeKey = findRouteKeyFromWhereClause(dataSourceRouteFields, dml.predicateList());
+        if (routeKey != null) {
+            routeWrapper = RouteWrapper.buildRouteKey(tableMeta, routeKey);
+        }
         if (routeWrapper == null) {
             // 2. try find from table .
-            int routeIndex;
-            if (dataSource) {
-                routeIndex = dml.databaseIndex();
-            } else {
-                routeIndex = dml.tableIndex();
-            }
+            int routeIndex = dml.databaseIndex();
             if (routeIndex >= 0) {
                 //success ,find route index
                 routeWrapper = RouteWrapper.buildRouteIndex(routeIndex);
             }
+        }
+        return routeWrapper;
+    }
+
+    @Nullable
+    static RouteWrapper findRouteForMultiDML(InnerMultiDML dml) {
+        RouteWrapper routeWrapper;
+        routeWrapper = findRouteFromWhereClause(dml.tableWrapperList(), dml.predicateList(), true);
+        if (routeWrapper == null) {
+            routeWrapper = findRouteFromTableList(dml.tableWrapperList(), true);
         }
         return routeWrapper;
     }

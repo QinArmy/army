@@ -70,7 +70,7 @@ final class SyncCommitTransactionManager extends AbstractTransactionManager {
 
     @Override
     public final boolean transactionEnded() {
-        return END_ABLE_SET.contains(this.status);
+        return END_STATUS_SET.contains(this.status);
     }
 
     /*################################## blow package method ##################################*/

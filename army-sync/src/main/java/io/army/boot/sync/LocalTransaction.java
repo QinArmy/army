@@ -196,7 +196,7 @@ final class LocalTransaction extends AbstractSyncTransaction implements Transact
 
     @Override
     public boolean transactionEnded() {
-        return END_ABLE_SET.contains(this.status);
+        return END_STATUS_SET.contains(this.status);
     }
 
     /*################################## blow package method ##################################*/

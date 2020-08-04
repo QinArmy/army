@@ -11,7 +11,9 @@ public interface GenericTransaction {
 
     Enum<?> status();
 
-    long getTimeToLiveInMillis() throws TransactionTimeOutException;
+    int timeToLiveInSeconds() throws TransactionTimeOutException;
+
+    long timeToLiveInMillis() throws TransactionTimeOutException;
 
     boolean rollbackOnly();
 

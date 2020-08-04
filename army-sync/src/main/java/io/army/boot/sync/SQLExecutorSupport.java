@@ -5,7 +5,6 @@ import io.army.ErrorCode;
 import io.army.OptimisticLockException;
 import io.army.beans.BeanWrapper;
 import io.army.beans.ObjectAccessorFactory;
-import io.army.boot.ExecutorUtils;
 import io.army.codec.CodecContext;
 import io.army.codec.FieldCodec;
 import io.army.criteria.CriteriaException;
@@ -56,9 +55,15 @@ abstract class SQLExecutorSupport {
             setParams(session.codecContext(), st, sqlWrapper.paramList());
             // 2. execute
             int updateRows;
-            //3. execute update
+            // 3. set timeout
+            int timeout = session.timeToLiveInSeconds();
+            if (timeout >= 0) {
+                st.setQueryTimeout(timeout);
+            }
+            //4. execute update
             updateRows = st.executeUpdate();
             if (updateRows < 1 && sqlWrapper.hasVersion()) {
+                // 5. check optimistic lock
                 throw createOptimisticLockException(sqlWrapper.sql());
             }
             return updateRows;
@@ -74,10 +79,15 @@ abstract class SQLExecutorSupport {
             setParams(session.codecContext(), st, sqlWrapper.paramList());
             // 2. execute
             long updateRows;
-            // 3. execute large update
+            // 3. set timeout
+            int timeout = session.timeToLiveInSeconds();
+            if (timeout >= 0) {
+                st.setQueryTimeout(timeout);
+            }
+            // 4. execute large update
             updateRows = st.executeLargeUpdate();
             if (updateRows < 1 && sqlWrapper.hasVersion()) {
-                // 4. check optimistic lock
+                // 5. check optimistic lock
                 throw createOptimisticLockException(sqlWrapper.sql());
             }
             return updateRows;
@@ -90,36 +100,27 @@ abstract class SQLExecutorSupport {
      * @return a unmodifiable map, key : key of {@linkplain BatchSimpleSQLWrapper#paramGroupList()}
      * * ,value : batch update rows of named param.
      */
-    protected final Map<Integer, Integer> doExecuteBatch(InnerGenericRmSession session, BatchSimpleSQLWrapper sqlWrapper) {
+    protected final int[] doExecuteBatch(InnerGenericRmSession session, BatchSimpleSQLWrapper sqlWrapper) {
+        if (session.supportSharding()) {
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                    , "Army don't support batch operation in sharding mode.");
+        }
 
-        CodecContext codecContext = session.codecContext();
+        final CodecContext codecContext = session.codecContext();
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
-
-            Map<Integer, Integer> indexMap = new HashMap<>();
-            int index = 0;
-            for (Map.Entry<Integer, List<ParamWrapper>> e : sqlWrapper.paramGroupList().entrySet()) {
+            for (List<ParamWrapper> paramWrapperList : sqlWrapper.paramGroupList()) {
                 // 1. set params
-                setParams(codecContext, st, e.getValue());
+                setParams(codecContext, st, paramWrapperList);
                 // 2. add to batch
                 st.addBatch();
-                // 3. cache param's index and result's index map.
-                indexMap.put(e.getKey(), index);
-                index++;
             }
-            int[] resultArray;
+            // 3. set timeout
+            int timeout = session.timeToLiveInSeconds();
+            if (timeout >= 0) {
+                st.setQueryTimeout(timeout);
+            }
             // 4. execute batch sql.
-            resultArray = st.executeBatch();
-            Map<Integer, Integer> batchResultMap = new HashMap<>();
-            // 5. convert result array to map.
-            final boolean version = sqlWrapper.hasVersion();
-            for (Integer paramIndex : sqlWrapper.paramGroupList().keySet()) {
-                int updateRows = resultArray[indexMap.get(paramIndex)];
-                batchResultMap.put(paramIndex, updateRows);
-                if (version && updateRows < 1) {
-                    throw createOptimisticLockException(sqlWrapper.sql());
-                }
-            }
-            return Collections.unmodifiableMap(batchResultMap);
+            return st.executeBatch();
         } catch (SQLException e) {
             throw ExecutorUtils.convertSQLException(e, sqlWrapper.sql());
         }
@@ -129,36 +130,26 @@ abstract class SQLExecutorSupport {
      * @return a unmodifiable map, key : key of {@linkplain BatchSimpleSQLWrapper#paramGroupList()}
      * * ,value : batch update rows of named param.
      */
-    protected final Map<Integer, Long> doExecuteLargeBatch(InnerGenericRmSession session, BatchSimpleSQLWrapper sqlWrapper) {
-
-        CodecContext codecContext = session.codecContext();
+    protected final long[] doExecuteLargeBatch(InnerGenericRmSession session, BatchSimpleSQLWrapper sqlWrapper) {
+        if (session.supportSharding()) {
+            throw new CriteriaException(ErrorCode.CRITERIA_ERROR
+                    , "Army don't support batch operation in sharding mode.");
+        }
+        final CodecContext codecContext = session.codecContext();
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
-
-            Map<Integer, Integer> indexMap = new HashMap<>();
-            int index = 0;
-            for (Map.Entry<Integer, List<ParamWrapper>> e : sqlWrapper.paramGroupList().entrySet()) {
+            for (List<ParamWrapper> paramWrapperList : sqlWrapper.paramGroupList()) {
                 // 1. set params
-                setParams(codecContext, st, e.getValue());
+                setParams(codecContext, st, paramWrapperList);
                 // 2. add to batch
                 st.addBatch();
-                // 3. cache param's index and result's index map.
-                indexMap.put(e.getKey(), index);
-                index++;
             }
-            long[] resultArray;
+            // 3. set timeout
+            int timeout = session.timeToLiveInSeconds();
+            if (timeout >= 0) {
+                st.setQueryTimeout(timeout);
+            }
             // 4. execute batch sql.
-            resultArray = st.executeLargeBatch();
-            Map<Integer, Long> batchResultMap = new HashMap<>();
-            // 5. convert result array to map.
-            final boolean version = sqlWrapper.hasVersion();
-            for (Integer paramIndex : sqlWrapper.paramGroupList().keySet()) {
-                long updateRows = resultArray[indexMap.get(paramIndex)];
-                batchResultMap.put(paramIndex, updateRows);
-                if (version && updateRows < 1L) {
-                    throw createOptimisticLockException(sqlWrapper.sql());
-                }
-            }
-            return Collections.unmodifiableMap(batchResultMap);
+            return st.executeLargeBatch();
         } catch (SQLException e) {
             throw ExecutorUtils.convertSQLException(e, sqlWrapper.sql());
         }
@@ -203,7 +194,7 @@ abstract class SQLExecutorSupport {
         List<T> resultList;
         resultList = doExecuteSecondReturning(session, sqlWrapper.parentWrapper(), beanWrapperMap);
         if (beanWrapperMap.size() != resultList.size()) {
-            throw createBatchNotMatchException(this.sessionFactory.name(), sqlWrapper.parentWrapper().sql()
+            throw createBatchNotMatchException(sqlWrapper.parentWrapper().sql()
                     , sqlWrapper.childWrapper().sql()
                     , beanWrapperMap.size(), resultList.size());
         }
@@ -412,6 +403,37 @@ abstract class SQLExecutorSupport {
         }
     }
 
+    /*################################## blow package method ##################################*/
+
+    final OptimisticLockException createOptimisticLockException(String sql) {
+        return new OptimisticLockException(
+                "SessionFactory[%s] record maybe be updated or deleted by transaction,sql:%s"
+                , this.sessionFactory.name(), sql);
+    }
+
+    final DomainUpdateException createBatchNotMatchException(String parentSql, String childSql
+            , int parentRowsLength, int childRowsLength) {
+        throw new DomainUpdateException(
+                "%s Domain update,parent sql[%s] update batch[%s] " +
+                        "and child sql[%s] update batch[%s] not match."
+                , this.sessionFactory
+                , parentSql
+                , parentRowsLength
+                , childSql
+                , childRowsLength
+        );
+    }
+
+    static void assertParamGroupListSizeMatch(BatchSimpleSQLWrapper parentWrapper
+            , BatchSimpleSQLWrapper childWrapper) {
+
+        if (parentWrapper.paramGroupList().size() != childWrapper.paramGroupList().size()) {
+            throw new CriteriaException(ErrorCode.CACHE_ERROR
+                    , "Child update/delete sql [%s] and [%s], paramGroupList %s and %s not  match."
+                    , parentWrapper.sql(), childWrapper.sql()
+                    , parentWrapper.paramGroupList().size(), childWrapper.paramGroupList().size());
+        }
+    }
 
 
     /*################################## blow private method ##################################*/
@@ -470,19 +492,6 @@ abstract class SQLExecutorSupport {
         return new IllegalArgumentException(String.format("%s supported by %s", sqlWrapper, methodName));
     }
 
-    static DomainUpdateException createBatchNotMatchException(String factoryNam, String parentSql, String childSql
-            , int parentRowsLength, int childRowsLength) {
-        throw new DomainUpdateException(
-                "SessionFactory[%s] Domain update,parent sql[%s] update batch[%s] " +
-                        "and child sql[%s] update batch[%s] not match."
-                , factoryNam
-                , parentSql
-                , parentRowsLength
-                , childSql
-                , childRowsLength
-        );
-    }
-
 
     static String[] asSelectionAliasArray(List<Selection> selectionList) {
         final int size = selectionList.size();
@@ -494,12 +503,6 @@ abstract class SQLExecutorSupport {
         return aliasArray;
     }
 
-
-    OptimisticLockException createOptimisticLockException(String sql) {
-        return new OptimisticLockException(
-                "SessionFactory[%s] record maybe be updated or deleted by transaction,sql:%s"
-                , this.sessionFactory.name(), sql);
-    }
 
     /*################################## blow private static method ##################################*/
 

@@ -12,7 +12,7 @@ abstract class AbstractSyncTransaction implements GenericSyncTransaction {
             TransactionStatus.FAILED_COMMIT
     );
 
-    static final EnumSet<TransactionStatus> END_ABLE_SET = EnumSet.of(
+    static final EnumSet<TransactionStatus> END_STATUS_SET = EnumSet.of(
             TransactionStatus.COMMITTED,
             TransactionStatus.ROLLED_BACK
     );
@@ -29,6 +29,7 @@ abstract class AbstractSyncTransaction implements GenericSyncTransaction {
 
     final String name;
 
+
     final long endMills;
 
     AbstractSyncTransaction(TransactionOption option) {
@@ -40,7 +41,7 @@ abstract class AbstractSyncTransaction implements GenericSyncTransaction {
         if (timeout > 0) {
             this.endMills = (System.currentTimeMillis() + timeout * 1000L);
         } else {
-            this.endMills = timeout;
+            this.endMills = -1;
         }
     }
 
@@ -62,8 +63,26 @@ abstract class AbstractSyncTransaction implements GenericSyncTransaction {
     }
 
     @Override
-    public final long getTimeToLiveInMillis() throws TransactionTimeOutException {
-        checkTransaction();
+    public final int timeToLiveInSeconds() throws TransactionTimeOutException {
+        long liveInMills = timeToLiveInMillis();
+        int liveInsSeconds;
+        if (liveInMills < 0L) {
+            liveInsSeconds = -1;
+        } else {
+            final long thousand = 1000L;
+            liveInsSeconds = (int) (liveInMills / thousand);
+            if (liveInsSeconds % thousand != 0) {
+                liveInsSeconds++;
+            }
+        }
+        return liveInsSeconds;
+    }
+
+    @Override
+    public final long timeToLiveInMillis() throws TransactionTimeOutException {
+        if (this.endMills < 0L) {
+            return -1L;
+        }
         long liveInMills = this.endMills - System.currentTimeMillis();
         if (liveInMills < 0) {
             throw new TransactionTimeOutException("transaction[name:%s] timeout,live in mills is %s ."
@@ -85,7 +104,7 @@ abstract class AbstractSyncTransaction implements GenericSyncTransaction {
 
 
     final void checkTransaction() {
-        if (END_ABLE_SET.contains(this.status())) {
+        if (END_STATUS_SET.contains(this.status())) {
             throw new TransactionClosedException("transaction ended.");
         }
     }
@@ -99,9 +118,9 @@ abstract class AbstractSyncTransaction implements GenericSyncTransaction {
     }
 
     final void assertCanClose() {
-        if (!this.readOnly && !LocalTransaction.END_ABLE_SET.contains(this.status())) {
+        if (!this.readOnly && !LocalTransaction.END_STATUS_SET.contains(this.status())) {
             throw new IllegalTransactionStateException("transaction status[%s] not in %s,can't close."
-                    , this.status(), LocalTransaction.END_ABLE_SET);
+                    , this.status(), LocalTransaction.END_STATUS_SET);
         }
     }
 

@@ -93,7 +93,10 @@ public enum ErrorCode implements CodeEnum {
     ROUTE_KEY_ERROR(1039, "", NONE),
     NOT_FOUND_ROUTE_KEY(1040, "", NONE),
     ROUTE_ERROR(1041, "", NONE),
-    SESSION_FACTORY_CLOSE_FAILURE(1042, "", NONE);
+    SESSION_FACTORY_CLOSE_ERROR(1042, "", NONE),
+    NOT_SUPPORT_BATCH(1043, "", NONE),
+    SESSION_CLOSE_ERROR(1044, "", NONE),
+    SESSION_CLOSED(1045, "", NONE);
 
 
     private final int code;

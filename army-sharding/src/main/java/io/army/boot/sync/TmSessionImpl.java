@@ -3,23 +3,20 @@ package io.army.boot.sync;
 import io.army.CreateSessionException;
 import io.army.ErrorCode;
 import io.army.SessionException;
+import io.army.SessionUsageException;
 import io.army.beans.DomainWrapper;
-import io.army.beans.ReadonlyWrapper;
 import io.army.boot.DomainValuesGenerator;
 import io.army.cache.SessionCache;
 import io.army.cache.SessionCacheException;
 import io.army.cache.UniqueKey;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.InnerSelect;
-import io.army.criteria.impl.inner.InnerSingleDML;
-import io.army.criteria.impl.inner.InnerSubQueryInsert;
-import io.army.criteria.impl.inner.InnerValuesInsert;
+import io.army.criteria.impl.inner.*;
 import io.army.domain.IDomain;
-import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.sharding.DatabaseRoute;
 import io.army.sharding.RouteWrapper;
 import io.army.sync.TmSession;
+import io.army.sync.TmSessionCloseException;
 import io.army.sync.TmSessionFactory;
 import io.army.tx.TmTransaction;
 import io.army.tx.TransactionNotCloseException;
@@ -27,7 +24,6 @@ import io.army.tx.XaTransactionOption;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 import io.army.util.CriteriaUtils;
-import io.army.wrapper.SQLWrapper;
 
 import java.util.*;
 
@@ -156,6 +152,8 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
 
     @Override
     public final <R> List<R> select(Select select, Class<R> resultClass, final Visible visible) {
+        assertSessionActive();
+
         InnerSelect innerSelect = (InnerSelect) select;
         //1. try find route
         RouteWrapper routeWrapper = DatabaseRouteUtils.findRouteForSelect(innerSelect);
@@ -183,6 +181,8 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
 
     @Override
     public final void valueInsert(Insert insert, final Visible visible) {
+        assertSessionActive();
+
         if (insert instanceof InnerValuesInsert) {
             InnerValuesInsert valuesInsert = (InnerValuesInsert) insert;
             if (valuesInsert.wrapperList().size() == 1) {
@@ -198,7 +198,9 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
 
 
     @Override
-    public final int subQueryInsert(Insert insert, Visible visible) {
+    public final int subQueryInsert(Insert insert, final Visible visible) {
+        assertSessionActive();
+
         InnerSubQueryInsert subQueryInsert = (InnerSubQueryInsert) insert;
         int routeIndex = subQueryInsert.databaseIndex();
         if (routeIndex < 0) {
@@ -211,6 +213,8 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
 
     @Override
     public final long largeSubQueryInsert(Insert insert, Visible visible) {
+        assertSessionActive();
+
         InnerSubQueryInsert subQueryInsert = (InnerSubQueryInsert) insert;
         int routeIndex = subQueryInsert.databaseIndex();
         if (routeIndex < 0) {
@@ -222,85 +226,177 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
     }
 
     @Override
-    public final <R> List<R> returningInsert(Insert insert, Class<R> resultClass, Visible visible) {
-        //TODO do returninng insert route
-        throw new UnsupportedOperationException();
+    public final <R> List<R> returningInsert(Insert insert, Class<R> resultClass, final Visible visible) {
+        assertSessionActive();
+
+        if (!(insert instanceof InnerReturningInsert)) {
+            throw new IllegalArgumentException(String.format("Inert[%s] isn't supported by returningInsert.", insert));
+        }
+        InnerReturningInsert returningInsert = (InnerReturningInsert) insert;
+        DomainWrapper wrapper = returningInsert.wrapper();
+        TableMeta<?> tableMeta = returningInsert.tableMeta();
+        // 1. create required properties value.
+        this.sessionFactory.domainValuesGenerator().createValues(wrapper, returningInsert.migrationData());
+        // 2. route index
+        Object routeKey = DatabaseRouteUtils.findRouteKeyInsert(tableMeta, wrapper);
+        if (routeKey == null) {
+            throw new NotFoundRouteException("Insert TableMeta[%s] not found database route.", tableMeta);
+        }
+        int dataSourceIndex = this.sessionFactory.dataSourceRoute(tableMeta)
+                .dataSourceRoute(routeKey);
+
+        // 3. obtain target rm session by data source index.
+        return obtainRmSession(dataSourceIndex)
+                // 4. execute insert sql with domain index set .
+                .returningInsert(insert, resultClass, visible);
+
     }
 
 
     @Override
-    public final int update(Update update, Visible visible) {
-        //TODO 考虑 mysql 的 multi table update 和 postgre 的可 join update.
-        return obtainRmSession(processDml((InnerSingleDML) update))
-                .update(update, visible);
+    public final int update(Update update, final Visible visible) {
+        assertSessionActive();
+
+        int updateRow;
+        if (update instanceof InnerSingleDML) {
+            updateRow = obtainRmSession(processSingleDml((InnerSingleDML) update))
+                    .update(update, visible);
+        } else if (update instanceof InnerMultiDML) {
+            updateRow = obtainRmSession(processMultiDml((InnerMultiDML) update))
+                    .update(update, visible);
+        } else {
+            throw new IllegalArgumentException(String.format("Update[%s] isn't supported by update method.", update));
+        }
+        return updateRow;
     }
 
     @Override
-    public final long largeUpdate(Update update, Visible visible) {
-        //TODO 考虑 mysql 的 multi table delete 和 postgre 的可 join delete.
-        return obtainRmSession(processDml((InnerSingleDML) update))
-                .largeUpdate(update, visible);
+    public final long largeUpdate(Update update, final Visible visible) {
+        assertSessionActive();
+
+        long updateRow;
+        if (update instanceof InnerSingleDML) {
+            updateRow = obtainRmSession(processSingleDml((InnerSingleDML) update))
+                    .largeUpdate(update, visible);
+        } else if (update instanceof InnerMultiDML) {
+            updateRow = obtainRmSession(processMultiDml((InnerMultiDML) update))
+                    .largeUpdate(update, visible);
+        } else {
+            throw new IllegalArgumentException(String.format("Update[%s] isn't supported by update largeUpdate."
+                    , update));
+        }
+        return updateRow;
     }
 
     @Override
-    public final <R> List<R> returningUpdate(Update update, Class<R> resultClass, Visible visible) {
-        //TODO do returninng update route
-        throw new UnsupportedOperationException();
+    public final <R> List<R> returningUpdate(Update update, Class<R> resultClass, final Visible visible) {
+        assertSessionActive();
+
+        List<R> list;
+        if (update instanceof InnerSingleDML) {
+            list = obtainRmSession(processSingleDml((InnerSingleDML) update))
+                    .returningUpdate(update, resultClass, visible);
+        } else if (update instanceof InnerMultiDML) {
+            list = obtainRmSession(processMultiDml((InnerMultiDML) update))
+                    .returningUpdate(update, resultClass, visible);
+        } else {
+            throw new IllegalArgumentException(String.format("Update[%s] isn't supported by returningUpdate method."
+                    , update));
+        }
+        return list;
     }
 
     @Override
     public final int delete(Delete delete, Visible visible) {
-        //TODO 考虑 mysql 的 multi table delete 和 postgre 的可 join delete.
-        return obtainRmSession(processDml((InnerSingleDML) delete))
-                .delete(delete, visible);
+        assertSessionActive();
+
+        int deleteRow;
+        if (delete instanceof InnerSingleDML) {
+            deleteRow = obtainRmSession(processSingleDml((InnerSingleDML) delete))
+                    .delete(delete, visible);
+        } else if (delete instanceof InnerMultiDML) {
+            deleteRow = obtainRmSession(processMultiDml((InnerMultiDML) delete))
+                    .delete(delete, visible);
+        } else {
+            throw new IllegalArgumentException(String.format("Delete[%s] isn't supported by delete method.", delete));
+        }
+        return deleteRow;
     }
 
     @Override
     public final long largeDelete(Delete delete, Visible visible) {
-        //TODO 考虑 mysql 的 multi table delete 和 postgre 的可 join delete.
-        return obtainRmSession(processDml((InnerSingleDML) delete))
-                .delete(delete, visible);
+        assertSessionActive();
+
+        long deleteRow;
+        if (delete instanceof InnerSingleDML) {
+            deleteRow = obtainRmSession(processSingleDml((InnerSingleDML) delete))
+                    .largeDelete(delete, visible);
+        } else if (delete instanceof InnerMultiDML) {
+            deleteRow = obtainRmSession(processMultiDml((InnerMultiDML) delete))
+                    .largeDelete(delete, visible);
+        } else {
+            throw new IllegalArgumentException(String.format("Delete[%s] isn't supported by largeDelete method."
+                    , delete));
+        }
+        return deleteRow;
     }
 
     @Override
-    public final <R> List<R> returningDelete(Delete delete, Class<R> resultClass, Visible visible) {
-        //TODO do returninng delete route
-        throw new UnsupportedOperationException();
+    public final <R> List<R> returningDelete(Delete delete, Class<R> resultClass, final Visible visible) {
+        assertSessionActive();
+
+        List<R> list;
+        if (delete instanceof InnerSingleDML) {
+            list = obtainRmSession(processSingleDml((InnerSingleDML) delete))
+                    .returningDelete(delete, resultClass, visible);
+        } else if (delete instanceof InnerMultiDML) {
+            list = obtainRmSession(processMultiDml((InnerMultiDML) delete))
+                    .returningDelete(delete, resultClass, visible);
+        } else {
+            throw new IllegalArgumentException(String.format("Delete[%s] isn't supported by returningDelete method."
+                    , delete));
+        }
+        return list;
     }
 
     @Override
-    public void close() throws SessionException {
+    public final void flush() throws SessionException {
+
+    }
+
+    @Override
+    public final void close() throws SessionException {
         if (this.closed) {
             return;
         }
-        if (!AbstractSyncTransaction.END_ABLE_SET.contains(this.tmTransaction.status())) {
+        if (!AbstractSyncTransaction.END_STATUS_SET.contains(this.tmTransaction.status())) {
             throw new TransactionNotCloseException("Transaction[%s] not close.", this.tmTransaction.name());
         }
-        Map<RmSession, SessionException> failSessionMap = null;
-        for (RmSession session : this.rmSessionMap.values()) {
+
+        Map<Integer, SessionException> failSessionMap = null;
+
+        for (Map.Entry<Integer, RmSession> entry : this.rmSessionMap.entrySet()) {
             try {
-                session.close();
+                entry.getValue().close();
             } catch (SessionException e) {
                 if (failSessionMap == null) {
                     failSessionMap = new HashMap<>();
                 }
-                failSessionMap.put(session, e);
+                failSessionMap.put(entry.getKey(), e);
             }
         }
-        if (!CollectionUtils.isEmpty(failSessionMap)) {
-            //TODO throw exception
+
+        if (CollectionUtils.isEmpty(failSessionMap)) {
+            if (this.current) {
+                this.sessionFactory.currentSessionContext().removeCurrentSession(this);
+            }
+            this.closed = true;
+        } else {
+            throw new TmSessionCloseException(failSessionMap
+                    , "%s TmSession[%s] close occur error,%s RmSession close error."
+                    , this.sessionFactory, this.transactionOption.name(), failSessionMap.size());
         }
-        if (this.current) {
-            this.sessionFactory.currentSessionContext().removeCurrentSession(this);
-        }
-        this.closed = true;
     }
-
-    @Override
-    public void flush() throws SessionException {
-
-    }
-
 
 
     /*################################## blow private method ##################################*/
@@ -319,19 +415,22 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
         final List<DomainWrapper> wrapperList = insert.wrapperList();
         Assert.isTrue(wrapperList.size() == 1, "wrapperList size isn't 1 .");
         final TableMeta<?> tableMeta = insert.tableMeta();
-
+        DomainWrapper domainWrapper = wrapperList.get(0);
         // 1. create required properties value.
-        ReadonlyWrapper wrapper = this.sessionFactory.domainValuesGenerator().createValues(tableMeta
-                , domainList.get(0)
-                , insert.migrationData());
-        // 2. route target data source index.
+        this.sessionFactory.domainValuesGenerator().createValues(domainWrapper, insert.migrationData());
+        // 2. route index
+        Object routeKey = DatabaseRouteUtils.findRouteKeyInsert(tableMeta, domainWrapper);
+        if (routeKey == null) {
+            throw new NotFoundRouteException("Insert TableMeta[%s] not found database route.", tableMeta);
+        }
         int dataSourceIndex = this.sessionFactory.dataSourceRoute(tableMeta)
-                .dataSourceRoute(obtainRouteKeyValueForInsert(tableMeta, wrapper, true));
+                .dataSourceRoute(routeKey);
         // 3. obtain target rm session by data source index.
         obtainRmSession(dataSourceIndex)
                 // 4. execute insert sql with domain index set .
                 .valueInsert((Insert) insert, null, visible);
     }
+
 
     /**
      * process multi insert.
@@ -342,8 +441,8 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
 
         final DomainValuesGenerator generator = this.sessionFactory.domainValuesGenerator();
         final TableMeta<?> tableMeta = insert.tableMeta();
-        final List<IDomain> domainList = insert.valueList();
-        final int size = domainList.size();
+        final List<DomainWrapper> wrapperList = insert.wrapperList();
+        final int size = wrapperList.size();
 
         final boolean migrationData = insert.migrationData();
         final DatabaseRoute route = this.sessionFactory.dataSourceRoute(tableMeta);
@@ -351,9 +450,15 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
         final Map<Integer, Set<Integer>> domainIndexSetMap = new HashMap<>();
         for (int i = 0; i < size; i++) {
             // 1. create required properties value.
-            DomainWrapper wrapper = generator.createValues(tableMeta, domainList.get(i), migrationData);
+            DomainWrapper wrapper = wrapperList.get(i);
+            generator.createValues(wrapper, migrationData);
             // 2. route target data source index.
-            int dataSourceIndex = route.dataSourceRoute(obtainRouteKeyValueForInsert(tableMeta, wrapper, true));
+            Object routeKey = DatabaseRouteUtils.findRouteKeyInsert(tableMeta, wrapper);
+            if (routeKey == null) {
+                throw new NotFoundRouteException("Insert TableMeta[%s] index[%s] not found database route."
+                        , tableMeta, i);
+            }
+            int dataSourceIndex = route.dataSourceRoute(routeKey);
             // 3. cache data source index and domain index
             Set<Integer> domainIndexSet = domainIndexSetMap.computeIfAbsent(dataSourceIndex, k -> new HashSet<>());
             domainIndexSet.add(i);
@@ -367,11 +472,11 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
         }
     }
 
-    private int processDml(InnerSingleDML singleDML) throws NotFoundRouteException {
+    private int processSingleDml(InnerSingleDML singleDML) throws NotFoundRouteException {
         //1. try find route
-        RouteWrapper routeWrapper = DatabaseRouteUtils.findRouteForSingleDML(singleDML, true);
+        RouteWrapper routeWrapper = DatabaseRouteUtils.findRouteForSingleDML(singleDML);
         if (routeWrapper == null) {
-            throw new NotFoundRouteException("Single update ,TableMeta[%s] not found data source route."
+            throw new NotFoundRouteException("Single dml ,TableMeta[%s] not found data source route."
                     , singleDML.tableMeta());
         }
         //2. obtain route index
@@ -385,112 +490,29 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
         return routeIndex;
     }
 
-    /*################################## blow private method about single update ##################################*/
-
-    /**
-     * @return a unmodifiable map. key : index of {@linkplain InnerBatchSingleDML#namedParamList()}
-     * ,value : batch update rows of named param. if empty ,then not found route.
-     * @see #batchUpdate(Update, Visible)
-     * @see UpdateSQLExecutor#batchUpdate(InnerGenericRmSession, SQLWrapper, Class, boolean)
-     */
-    private <V extends Number> Map<Integer, V> doBatchSingleDml(InnerBatchSingleDML dml, Class<V> valueType
-            , final Visible visible) {
-        DatabaseRoute router = this.sessionFactory.dataSourceRoute(dml.tableMeta());
-        Map<Integer, V> batchResultMap;
-        // 1. try find route from non named param predicates
-        batchResultMap = doBatchSingleDmlWithNonNamedPredicates(dml, router, valueType, visible);
-        if (!batchResultMap.isEmpty()) {
-            return batchResultMap;
+    private int processMultiDml(InnerMultiDML multiDML) throws NotFoundRouteException {
+        //1. try find route
+        RouteWrapper routeWrapper = DatabaseRouteUtils.findRouteForMultiDML(multiDML);
+        if (routeWrapper == null) {
+            throw new NotFoundRouteException("Multi dml table list %s not found data source route."
+                    , multiDML.tableWrapperList());
         }
-        //2. step 1 failure, try find route from named param predicates
-        batchResultMap = doBatchSingleDmlWithNamedPredicate(dml, router, valueType, visible);
-        if (!batchResultMap.isEmpty()) {
-            return batchResultMap;
-        }
-        //3. step 2 failure, try find route from table wrapper info.
-        int dataSourceIndex = dml.dataSourceIndex();
-        if (dataSourceIndex < 0) {
-            // not found route
-            batchResultMap = Collections.emptyMap();
+        //2. obtain route index
+        int routeIndex;
+        if (routeWrapper.routeIndex()) {
+            routeIndex = routeWrapper.routeIndexValue();
         } else {
-            // step 3 success.
-            batchResultMap = executeSingleDml(dml, dataSourceIndex, null, valueType, visible);
-
+            routeIndex = this.sessionFactory.dataSourceRoute(routeWrapper.tableMeta())
+                    .dataSourceRoute(routeWrapper.routeKey());
         }
-        return batchResultMap;
+        return routeIndex;
     }
 
-    /**
-     * @return a unmodifiable map, key : index of {@linkplain InnerBatchSingleDML#namedParamList()}
-     * ,value : batch update rows of named param. if empty ,then not found route.
-     * @see #doBatchSingleDml(InnerBatchSingleDML, Class, Visible)
-     * @see UpdateSQLExecutor#batchUpdate(InnerGenericRmSession, SQLWrapper, Class, boolean)
-     */
-    private <V extends Number> Map<Integer, V> doBatchSingleDmlWithNonNamedPredicates(InnerBatchSingleDML dml
-            , DatabaseRoute route, Class<V> valueType, final Visible visible) {
-        //  try find route from non named param predicate
-        Object routeKey = DatabaseRouteUtils.findRouteFromNonNamedPredicates(dml, true);
-        Map<Integer, V> batchResultMap;
-        if (routeKey == null) {
-            // not found route
-            batchResultMap = Collections.emptyMap();
-        } else {
-            batchResultMap = executeSingleDml(dml, route.dataSourceRoute(routeKey), null, valueType, visible);
+    private void assertSessionActive() {
+        if (this.closed || this.tmTransaction.transactionEnded()) {
+            throw new SessionUsageException(ErrorCode.SESSION_CLOSED, "TmSession[%s] closed or Transaction[%s] ended."
+                    , transactionOption.name(), this.tmTransaction.name);
         }
-        return batchResultMap;
-    }
-
-
-    /**
-     * @return a unmodifiable map, key : index of {@linkplain InnerBatchSingleDML#namedParamList()}
-     * ,value : batch update rows of named param. if empty ,then not found route.
-     * @see #doBatchSingleDml(InnerBatchSingleDML, Class, Visible)
-     * @see UpdateSQLExecutor#batchUpdate(InnerGenericRmSession, SQLWrapper, Class, boolean)
-     */
-    private <V extends Number> Map<Integer, V> doBatchSingleDmlWithNamedPredicate(InnerBatchSingleDML dml
-            , DatabaseRoute route, Class<V> valueType, final Visible visible) {
-        // try find route form named param predicate
-        Map<Integer, Set<Integer>> routeIndexSetMap = DatabaseRouteUtils.findRouteFromNamedPredicates(dml, route, true);
-
-        Map<Integer, V> batchResultMap;
-        if (routeIndexSetMap.isEmpty()) {
-            // not found route
-            batchResultMap = Collections.emptyMap();
-        } else {
-            batchResultMap = new HashMap<>();
-            for (Map.Entry<Integer, Set<Integer>> e : routeIndexSetMap.entrySet()) {
-                // put all to resultMap
-                batchResultMap.putAll(
-                        // obtain target session and execute
-                        executeSingleDml(dml, e.getKey(), e.getValue(), valueType, visible)
-                );
-            }
-            batchResultMap = Collections.unmodifiableMap(batchResultMap);
-        }
-        return batchResultMap;
-    }
-
-    /**
-     * @return a unmodifiable map, key : index of {@linkplain InnerBatchSingleDML#namedParamList()}
-     * ,value : batch update rows of named param.
-     * @see #doBatchSingleDmlWithNamedPredicate(InnerBatchSingleDML, DatabaseRoute, Class, Visible)
-     * @see #doBatchSingleDmlWithNonNamedPredicates(InnerBatchSingleDML, DatabaseRoute, Class, Visible)
-     * @see #doBatchSingleDml(InnerBatchSingleDML, Class, Visible)
-     * @see UpdateSQLExecutor#batchUpdate(InnerGenericRmSession, SQLWrapper, Class, boolean)
-     */
-    private <V extends Number> Map<Integer, V> executeSingleDml(InnerBatchSingleDML dml, int dataSourceIndex
-            , @Nullable Set<Integer> paramIndexSet, Class<V> valueType, final Visible visible) {
-        RmSession session = obtainRmSession(dataSourceIndex);
-        Map<Integer, V> batchResultMap;
-        if (dml instanceof Update) {
-            batchResultMap = session.batchUpdate((Update) dml, paramIndexSet, valueType, visible);
-        } else if (dml instanceof Delete) {
-            batchResultMap = session.batchDelete((Delete) dml, paramIndexSet, valueType, visible);
-        } else {
-            throw new IllegalArgumentException(
-                    String.format("dml[%s] isn't Update object or Delete object.", dml));
-        }
-        return batchResultMap;
     }
 
 
@@ -513,7 +535,7 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
         }
         RmSession rmSession = rmSessionFactory.build(this.transactionOption);
         // rm xa transaction add to tm and start rm xa transaction
-        this.tmTransaction.addXaTransaction(this, rmSession.startedTransaction());
+        this.tmTransaction.addXaTransaction(this, rmSession.sessionTransaction());
         return rmSession;
     }
 

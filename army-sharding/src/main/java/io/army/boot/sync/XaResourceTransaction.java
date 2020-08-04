@@ -70,13 +70,11 @@ final class XaResourceTransaction implements XATransaction {
         this.name = option.name();
         this.timeout = option.timeout();
 
+        this.endMills = option.endMills();
+
         this.xaResource = obtainXaResource(session, this.readOnly);
 
-        if (timeout > 0) {
-            this.endMills = (System.currentTimeMillis() + this.timeout * 1000L);
-        } else {
-            this.endMills = timeout;
-        }
+
     }
 
     @Override
@@ -110,8 +108,8 @@ final class XaResourceTransaction implements XATransaction {
     }
 
     @Override
-    public long getTimeToLiveInMillis() throws TransactionTimeOutException {
-
+    public long timeToLiveInMillis() throws TransactionTimeOutException {
+        //TODO 考虑 endMills 小于 0 的情况
         long liveInMills = this.endMills - System.currentTimeMillis();
         if (liveInMills < 0) {
             throw new TransactionTimeOutException("transaction[name:%s] timeout,live in mills is %s ."

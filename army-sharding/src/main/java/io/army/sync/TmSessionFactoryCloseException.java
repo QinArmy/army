@@ -12,7 +12,7 @@ public final class TmSessionFactoryCloseException extends SessionFactoryExceptio
 
     public TmSessionFactoryCloseException(Map<Integer, SessionFactoryException> rmSessionFactoryExceptionMap
             , String format, Object... args) {
-        super(ErrorCode.SESSION_FACTORY_CLOSE_FAILURE, format, args);
+        super(ErrorCode.SESSION_FACTORY_CLOSE_ERROR, format, args);
         this.rmSessionFactoryExceptionMap = Collections.unmodifiableMap(rmSessionFactoryExceptionMap);
     }
 

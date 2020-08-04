@@ -2,18 +2,23 @@ package io.army.boot.sync;
 
 import io.army.SessionCloseFailureException;
 import io.army.SessionException;
+import io.army.criteria.Insert;
 import io.army.criteria.Select;
 import io.army.criteria.Visible;
+import io.army.criteria.impl.inner.InnerSQL;
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.tx.*;
 import io.army.util.CriteriaUtils;
+import io.army.wrapper.SQLWrapper;
 
 import javax.sql.XAConnection;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Set;
 
 /**
  * This class is a implementation of {@linkplain RmSession}.
@@ -51,7 +56,10 @@ final class RmSessionImpl extends AbstractGenericSyncRmSession implements InnerR
     }
 
     @Override
-    public final XATransaction startedTransaction() throws NoSessionTransactionException {
+    public final XATransaction sessionTransaction() throws NoSessionTransactionException {
+        if (this.transaction.transactionEnded()) {
+            throw new NoSessionTransactionException("XA transaction[%s] ended.", this.transaction.name());
+        }
         return this.transaction;
     }
 
@@ -67,7 +75,7 @@ final class RmSessionImpl extends AbstractGenericSyncRmSession implements InnerR
 
     @Override
     public final boolean hasTransaction() {
-        return this.transaction != null;
+        return !this.transaction.transactionEnded();
     }
 
     @Override
@@ -80,6 +88,7 @@ final class RmSessionImpl extends AbstractGenericSyncRmSession implements InnerR
         if (this.closed) {
             return;
         }
+        // first super close
         super.close();
 
         if (!this.transaction.transactionEnded()) {
@@ -92,6 +101,7 @@ final class RmSessionImpl extends AbstractGenericSyncRmSession implements InnerR
         } catch (SQLException e) {
             throw new SessionCloseFailureException(e, "Connection close failure.");
         }
+
     }
 
     @Override
@@ -111,6 +121,21 @@ final class RmSessionImpl extends AbstractGenericSyncRmSession implements InnerR
         return this.selectOne(select, tableMeta.javaType(), visible);
     }
 
+    @Override
+    public final void valueInsert(Insert insert, @Nullable Set<Integer> domainIndexSet, Visible visible) {
+        assertSessionActive();
+
+        List<SQLWrapper> sqlWrapperList = parseValueInsert(insert, domainIndexSet, visible);
+        try {
+            this.sessionFactory.insertSQLExecutor()
+                    .valueInsert(this, sqlWrapperList);
+        } catch (Throwable e) {
+            markRollbackOnlyForChildInsert(sqlWrapperList);
+            throw e;
+        } finally {
+            ((InnerSQL) insert).clear();
+        }
+    }
 
     /*################################## blow package method ##################################*/
 

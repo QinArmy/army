@@ -13,5 +13,13 @@ public interface TransactionOption {
 
     int timeout();
 
+    /**
+     * <ul>
+     *     <li>negative:  Use the default timeout of the underlying transaction system,or none if timeouts are not supported.</li>
+     *     <li>other : transaction end mills. {@link System#currentTimeMillis()} </li>
+     * </ul>
+     */
+    long endMills();
+
 
 }

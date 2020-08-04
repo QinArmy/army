@@ -129,7 +129,8 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
         }
     }
 
-    private int doExecuteChild(InnerGenericRmSession session, ChildSQLWrapper childSQLWrapper, final boolean subQueryInsert) {
+    private int doExecuteChild(InnerGenericRmSession session, ChildSQLWrapper childSQLWrapper
+            , final boolean subQueryInsert) {
 
         int childRows, parentRows;
         // firstly,execute parent multiInsert sql
@@ -185,7 +186,7 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
         resultList = doExecuteSecondReturning(session, sqlWrapper.childWrapper(), beanWrapperMap);
 
         if (beanWrapperMap.size() != resultList.size()) {
-            throw createBatchNotMatchException(this.sessionFactory.name(), sqlWrapper.parentWrapper().sql()
+            throw createBatchNotMatchException(sqlWrapper.parentWrapper().sql()
                     , sqlWrapper.childWrapper().sql(), beanWrapperMap.size(), resultList.size());
         }
         return resultList;
@@ -197,57 +198,58 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
         final BatchSimpleSQLWrapper parentWrapper = sqlWrapper.parentWrapper();
         final BatchSimpleSQLWrapper childWrapper = sqlWrapper.childWrapper();
 
-        Map<Integer, Integer> parenResultMap, childResultMap;
+        int[] parenResult, childResult;
         // firstly, parent multiInsert sql
-        parenResultMap = doExecuteBatch(session, parentWrapper);
+        parenResult = doExecuteBatch(session, parentWrapper);
         // secondly,child multiInsert sql
-        childResultMap = doExecuteBatch(session, childWrapper);
+        childResult = doExecuteBatch(session, childWrapper);
 
-        assertBatchChildResult(parentWrapper, childWrapper, parenResultMap, childResultMap);
+        assertBatchChildResult(parentWrapper, childWrapper, parenResult, childResult);
     }
 
-    private void assertBatchResult(BatchSimpleSQLWrapper sqlWrapper, Map<Integer, Integer> batchResultMap) {
+    private void assertBatchResult(BatchSimpleSQLWrapper sqlWrapper, int[] batchResult) {
 
-        if (batchResultMap.size() != sqlWrapper.paramGroupList().size()) {
+        if (batchResult.length != sqlWrapper.paramGroupList().size()) {
             throw new InsertRowsNotMatchException("batch sql[%s] batch count , expected %s but %s ."
-                    , sqlWrapper.sql(), sqlWrapper.paramGroupList().size(), batchResultMap.size());
+                    , sqlWrapper.sql(), sqlWrapper.paramGroupList().size(), batchResult.length);
         }
-
-        for (Map.Entry<Integer, Integer> e : batchResultMap.entrySet()) {
-            if (e.getValue() != 1) {
+        for (int i = 0, updateRows; i < batchResult.length; i++) {
+            updateRows = batchResult[i];
+            if (updateRows != 1) {
                 throw new InsertRowsNotMatchException(
                         "batch  sql[%s]  index[%s] actual row count[%s] not 1 ."
-                        , sqlWrapper.sql(), e.getKey(), e.getValue());
+                        , sqlWrapper.sql(), i, updateRows);
             }
         }
 
     }
 
     private void assertBatchChildResult(BatchSimpleSQLWrapper parentWrapper, BatchSimpleSQLWrapper childWrapper
-            , Map<Integer, Integer> parenResultMap, Map<Integer, Integer> childResultMap) {
-        if (parenResultMap.size() != childResultMap.size()
-                || childResultMap.size() != childWrapper.paramGroupList().size()) {
+            , int[] parentResult, int[] childResult) {
+        if (parentResult.length != childResult.length
+                || childResult.length != childWrapper.paramGroupList().size()) {
 
             throw new InsertRowsNotMatchException(
                     "SessionFactory[%s] child sql[%s]  batch count[%s] and parent sql [%s] batch count[%s] not match."
-                    , this.sessionFactory.name(), childWrapper.sql(), childResultMap.size()
-                    , parentWrapper.sql(), parenResultMap.size());
+                    , this.sessionFactory.name(), childWrapper.sql(), childResult.length
+                    , parentWrapper.sql(), parentResult.length);
         }
-        for (Map.Entry<Integer, Integer> p : parenResultMap.entrySet()) {
-            Integer parentRow = p.getValue();
-            if (parentRow != 1) {
+        for (int i = 0, parentRows; i < parentResult.length; i++) {
+            parentRows = parentResult[i];
+
+            if (parentRows != 1) {
                 throw new InsertRowsNotMatchException(
                         "SessionFactory[%s] batch  sql[%s]  index[%s] actual row count[%s] not 1 ."
-                        , this.sessionFactory.name(), parentWrapper.sql(), p.getKey(), parentRow);
+                        , this.sessionFactory.name(), parentWrapper.sql(), i, parentRows);
             }
-            if (!parentRow.equals(childResultMap.get(p.getKey()))) {
+            if (parentRows != childResult[i]) {
                 throw new InsertRowsNotMatchException(
                         "SessionFactory[%s] child sql[%s] index[%s] rows[%s] and parent sql [%s] rows[%s] not match."
-                        , this.sessionFactory.name(), childWrapper.sql(), p.getKey(), childResultMap.get(p.getKey())
-                        , parentWrapper.sql(), parentRow);
+                        , this.sessionFactory.name(), childWrapper.sql(), i, childResult[i]
+                        , parentWrapper.sql(), parentRows);
             }
-        }
 
+        }
     }
 
 

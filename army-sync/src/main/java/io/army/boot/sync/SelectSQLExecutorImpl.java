@@ -1,6 +1,5 @@
 package io.army.boot.sync;
 
-import io.army.boot.ExecutorUtils;
 import io.army.codec.StatementType;
 import io.army.wrapper.SimpleSQLWrapper;
 import org.slf4j.Logger;
@@ -32,9 +31,14 @@ final class SelectSQLExecutorImpl extends SQLExecutorSupport implements SelectSQ
             // 2. set params
             setParams(session.codecContext(), st, sqlWrapper.paramList());
             List<T> resultList;
-            // 3. execute query sql
+            // 3. set timeout
+            int timeout = session.timeToLiveInSeconds();
+            if (timeout >= 0) {
+                st.setQueryTimeout(timeout);
+            }
+            // 4. execute query sql
             try (ResultSet resultSet = st.executeQuery()) {
-                // 4. extract result
+                // 5. extract result
                 if (simpleJavaType(sqlWrapper.selectionList(), resultClass)) {
                     resultList = extractSimpleTypeResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
                             , resultClass);

@@ -88,7 +88,7 @@ final class SyncShardingTransaction implements Transaction {
     }
 
     @Override
-    public long getTimeToLiveInMillis() throws TransactionTimeOutException {
+    public long timeToLiveInMillis() throws TransactionTimeOutException {
         return 0;
     }
 }

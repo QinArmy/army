@@ -22,11 +22,19 @@ public class TransactionOptionImpl implements TransactionOption {
 
     private final int timeout;
 
+    private final long endMills;
+
     private TransactionOptionImpl(@Nullable String name, boolean readOnly, Isolation isolation, int timeout) {
         this.name = name;
         this.readOnly = readOnly;
         this.isolation = isolation;
         this.timeout = timeout;
+        if (timeout < 0) {
+            this.endMills = -1L;
+        } else {
+            this.endMills = (System.currentTimeMillis() + timeout * 1000L);
+        }
+
     }
 
     @Nullable
@@ -48,6 +56,11 @@ public class TransactionOptionImpl implements TransactionOption {
     @Override
     public final int timeout() {
         return this.timeout;
+    }
+
+    @Override
+    public final long endMills() {
+        return this.endMills;
     }
 
     private static final class XaTransactionOptionImpl extends TransactionOptionImpl implements XaTransactionOption {

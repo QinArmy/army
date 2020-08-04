@@ -1,16 +1,23 @@
 package io.army.boot.sync;
 
-import io.army.sync.GenericRmSession;
+import io.army.criteria.Insert;
+import io.army.criteria.Visible;
+import io.army.lang.Nullable;
+import io.army.sync.GenericSyncRmSession;
 import io.army.sync.Session;
 import io.army.tx.NoSessionTransactionException;
 import io.army.tx.XaTransactionOption;
+
+import java.util.Set;
 
 /**
  * {@code Rm}  representing Resource Manager.
  *
  * @see Session
  */
-interface RmSession extends GenericRmSession {
+interface RmSession extends GenericSyncRmSession {
+
+    void valueInsert(Insert insert, @Nullable Set<Integer> domainIndexSet, Visible visible);
 
     @Override
     RmSessionFactory sessionFactory();
@@ -21,6 +28,7 @@ interface RmSession extends GenericRmSession {
      * @return a started {@link XATransaction}
      * @see RmSessionFactory#build(XaTransactionOption)
      */
-    XATransaction startedTransaction() throws NoSessionTransactionException;
+    @Override
+    XATransaction sessionTransaction() throws NoSessionTransactionException;
 
 }

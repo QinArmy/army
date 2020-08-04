@@ -11,6 +11,7 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.sharding.TableRoute;
 import io.army.sync.SessionFactory;
+import io.army.tx.TransactionException;
 import io.army.tx.XaTransactionOption;
 import io.army.util.Assert;
 
@@ -150,7 +151,12 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
     @Override
     public final RmSession build(XaTransactionOption option) throws SessionException {
         try {
-            return new RmSessionImpl(this, dataSource.getXAConnection(), option);
+            RmSession rmSession = new RmSessionImpl(this, dataSource.getXAConnection(), option);
+            // start xa transaction
+            rmSession.sessionTransaction().start();
+            return rmSession;
+        } catch (TransactionException e) {
+            throw new CreateSessionException(ErrorCode.SESSION_CREATE_ERROR, e, "XA transaction start error.");
         } catch (SQLException e) {
             throw new CreateSessionException(ErrorCode.SESSION_CREATE_ERROR, e, "getXAConnection() error.");
         }
