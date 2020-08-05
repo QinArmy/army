@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * this class is a implementation of {@link SessionFactory}
+ * This class is a implementation of {@link SessionFactory}
  */
 class SessionFactoryImpl extends AbstractGenericSessionFactory
         implements InnerSessionFactory {
@@ -40,7 +40,7 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
 
     private final Map<TableMeta<?>, DomainAdvice> domainAdviceMap;
 
-    private final int tableCountOfSharding;
+    private final int tableCountPerDatabase;
 
     private final SessionCacheFactory sessionCacheFactory;
 
@@ -79,13 +79,13 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
         this.dialect = SyncSessionFactoryUtils.createDialectForSync(dataSource, this);
         this.domainAdviceMap = SyncSessionFactoryUtils.createDomainAdviceMap(
                 factoryBuilder.domainInterceptors());
-        this.tableCountOfSharding = factoryBuilder.tableCountOfSharding();
-        SyncSessionFactoryUtils.assertTableCountOfSharding(this.tableCountOfSharding, this);
+        this.tableCountPerDatabase = factoryBuilder.tableCountPerDatabase();
+        SyncSessionFactoryUtils.assertTableCountOfSharding(this.tableCountPerDatabase, this);
 
         this.currentSessionContext = SyncSessionFactoryUtils.buildCurrentSessionContext(this);
         this.proxySession = new ProxySessionImpl(this, this.currentSessionContext);
         this.tableRouteMap = SyncSessionFactoryUtils.routeMap(this, TableRoute.class
-                , 1, factoryBuilder.tableCountOfSharding());
+                , 1, this.tableCountPerDatabase);
         this.sessionCacheFactory = SessionCacheFactory.build(this);
 
         // executor after dialect
@@ -109,7 +109,7 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
 
     @Override
     public int tableCountOfSharding() {
-        return this.tableCountOfSharding;
+        return this.tableCountPerDatabase;
     }
 
     @Override
@@ -218,14 +218,15 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
         return "SessionFactory[" + this.name + "]";
     }
 
-    void initSessionFactory() throws DataAccessException {
+    boolean initializeSessionFactory() throws DataAccessException {
         if (this.initFinished.get()) {
-            return;
+            return false;
         }
         synchronized (this.initFinished) {
             migrationMeta();
             this.initFinished.compareAndSet(false, true);
         }
+        return true;
     }
 
     /*################################## blow private method ##################################*/
@@ -238,7 +239,8 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
         DataSource primary = SyncSessionFactoryUtils.obtainPrimaryDataSource(this.dataSource);
         try (Connection conn = primary.getConnection()) {
             // execute migration
-            SyncMetaMigrator.build().migrate(conn, this);
+            SyncMetaMigrator.build()
+                    .migrate(conn, this);
         } catch (SQLException e) {
             throw new DataAccessException(ErrorCode.CODEC_DATA_ERROR, e, "%s migration failure.", this);
         }

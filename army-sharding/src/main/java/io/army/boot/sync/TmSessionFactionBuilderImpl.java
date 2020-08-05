@@ -2,6 +2,7 @@ package io.army.boot.sync;
 
 import io.army.ErrorCode;
 import io.army.SessionFactoryException;
+import io.army.ShardingMode;
 import io.army.codec.FieldCodec;
 import io.army.dialect.Database;
 import io.army.env.Environment;
@@ -10,118 +11,124 @@ import io.army.lang.Nullable;
 import io.army.sync.SessionFactoryAdvice;
 import io.army.sync.TmSessionFactory;
 import io.army.util.Assert;
+import io.army.util.BeanUtils;
 
 import javax.sql.XADataSource;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-final class TmSessionFactionBuilderImpl extends AbstractSyncSessionFactoryBuilder implements TmSessionFactionBuilder {
+class TmSessionFactionBuilderImpl extends AbstractSyncSessionFactoryBuilder implements TmSessionFactionBuilder {
+
+    static TmSessionFactionBuilderImpl buildInstance(boolean springApplication) {
+        TmSessionFactionBuilderImpl builder;
+        if (springApplication) {
+            try {
+                builder = (TmSessionFactionBuilderImpl) BeanUtils.instantiateClass(
+                        Class.forName("io.army.boot.sync.TmSessionFactionBuilderForSpring"));
+            } catch (ClassNotFoundException e) {
+                throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR, e
+                        , "army-spring module not add classpath.");
+            }
+        } else {
+            builder = new TmSessionFactionBuilderImpl();
+        }
+        return builder;
+    }
 
     private List<XADataSource> dataSourceList;
 
-    private Map<Integer, Database> sqlDialectMap;
-
-    private int tableCountPerDatabase = -1;
+    private Map<Integer, Database> databaseMap;
 
     TmSessionFactionBuilderImpl() {
     }
 
 
     @Override
-    public final TmSessionFactionBuilder dataSource(List<XADataSource> dataSourceList) {
+    public final TmSessionFactionBuilder dataSourceList(List<XADataSource> dataSourceList) {
         this.dataSourceList = dataSourceList;
         return this;
     }
 
     @Override
-    public final TmSessionFactionBuilder sqlDialectMap(Map<Integer, Database> sqlDialectMap) {
-        this.sqlDialectMap = sqlDialectMap;
+    public final TmSessionFactionBuilder databaseMap(Map<Integer, Database> databaseMap) {
+        this.databaseMap = databaseMap;
         return this;
     }
 
     @Override
-    public TmSessionFactionBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs) {
+    public final TmSessionFactionBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs) {
         this.fieldCodecs = fieldCodecs;
         return this;
     }
 
     @Override
-    public TmSessionFactionBuilder name(String sessionFactoryName) {
+    public final TmSessionFactionBuilder name(String sessionFactoryName) {
         this.name = sessionFactoryName;
         return this;
     }
 
     @Override
-    public TmSessionFactionBuilder environment(Environment environment) {
+    public final TmSessionFactionBuilder environment(Environment environment) {
         this.environment = environment;
         return this;
     }
 
     @Override
-    public TmSessionFactionBuilder factoryAdvice(List<SessionFactoryAdvice> factoryAdviceList) {
-        this.factoryAdviceList = factoryAdviceList;
+    public final TmSessionFactionBuilder factoryAdvice(Collection<SessionFactoryAdvice> factoryAdvices) {
+        this.factoryAdvices = factoryAdvices;
         return this;
     }
 
     @Override
-    public TmSessionFactionBuilder domainInterceptor(Collection<DomainAdvice> domainInterceptors) {
+    public final TmSessionFactionBuilder domainInterceptor(Collection<DomainAdvice> domainInterceptors) {
         this.domainInterceptors = domainInterceptors;
         return this;
     }
 
     @Override
-    public TmSessionFactionBuilder tableCountPerDatabase(int tableCountPerDatabase) {
+    public final TmSessionFactionBuilder tableCountPerDatabase(int tableCountPerDatabase) {
         this.tableCountPerDatabase = tableCountPerDatabase;
         return this;
     }
 
     @Nullable
-    public final List<XADataSource> dataSourceList() {
+    final List<XADataSource> dataSourceList() {
         return dataSourceList;
     }
 
     @Nullable
-    public final Map<Integer, Database> sqlDialectMap() {
-        return sqlDialectMap;
+    final Map<Integer, Database> databaseMap() {
+        return databaseMap;
     }
 
-    public final int tableCountPerDatabase() {
+    final int tableCountPerDatabase() {
         return this.tableCountPerDatabase;
     }
 
     @Override
-    public TmSessionFactory build() throws SessionFactoryException {
+    final ShardingMode shardingMode() {
+        return ShardingMode.SHARDING;
+    }
+
+    @Override
+    public final TmSessionFactory build() throws SessionFactoryException {
         Assert.hasText(this.name, "name required");
         Assert.notEmpty(this.dataSourceList, "dataSource list required");
         Assert.notNull(this.environment, "environment required");
 
-        final List<SessionFactoryAdvice> factoryAdviceList = createFactoryInterceptorList();
+        final CompositeSessionFactoryAdvice composite = getCompositeSessionFactoryAdvice();
         try {
-
-            if (!factoryAdviceList.isEmpty()) {
-                // invoke beforeInstance
-                for (SessionFactoryAdvice sessionFactoryAdvice : factoryAdviceList) {
-                    sessionFactoryAdvice.beforeInstance(this.environment);
-                }
-            }
-            // instance
-            final TmSessionFactoryImpl sessionFactory = new TmSessionFactoryImpl(this);
-
-            if (!factoryAdviceList.isEmpty()) {
-                // invoke beforeInit
-                for (SessionFactoryAdvice interceptor : factoryAdviceList) {
-                    interceptor.beforeInit(sessionFactory);
-                }
-            }
-            // init session factory
-            sessionFactory.initTmSessionFactory();
-
-            if (!factoryAdviceList.isEmpty()) {
-                // invoke afterInit
-                for (SessionFactoryAdvice interceptor : factoryAdviceList) {
-                    interceptor.afterInit(sessionFactory);
-                }
+            //1. beforeInstance
+            composite.beforeInstance(this.environment);
+            //2.  create TmSessionFactory instance
+            final TmSessionFactoryImpl sessionFactory = createSessionFactory();
+            // 3. beforeInitialize
+            composite.beforeInitialize(sessionFactory);
+            //4. init session factory
+            if (initializeSessionFactory(sessionFactory)) {
+                //5. afterInitialize
+                composite.afterInitialize(sessionFactory);
             }
             return sessionFactory;
         } catch (SessionFactoryException e) {
@@ -131,4 +138,16 @@ final class TmSessionFactionBuilderImpl extends AbstractSyncSessionFactoryBuilde
                     , e, "create TmSessionFactory[%s] error.", this.name);
         }
     }
+
+    /*################################## blow private method ##################################*/
+
+    TmSessionFactoryImpl createSessionFactory() {
+        return new TmSessionFactoryImpl(this);
+    }
+
+    boolean initializeSessionFactory(TmSessionFactoryImpl sessionFactory) {
+        // init session factory
+        return sessionFactory.initializeTmSessionFactory();
+    }
+
 }

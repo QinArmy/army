@@ -1,5 +1,6 @@
 package io.army.dialect;
 
+import io.army.criteria.FieldPredicate;
 import io.army.criteria.Visible;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
@@ -31,6 +32,11 @@ final class ComposeSelectContext implements SelectContext {
         this.visible = visible;
         this.sqlBuilder = new StringBuilder();
         this.paramList = new ArrayList<>();
+    }
+
+    @Override
+    public void appendFieldPredicate(FieldPredicate predicate) {
+        predicate.appendPredicate(this);
     }
 
     @Override
@@ -92,11 +98,6 @@ final class ComposeSelectContext implements SelectContext {
 
     @Override
     public String primaryRouteSuffix() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void appendFieldPredicate(SpecialPredicate predicate) {
         throw new UnsupportedOperationException();
     }
 

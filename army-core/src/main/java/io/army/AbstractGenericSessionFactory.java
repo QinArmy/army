@@ -17,6 +17,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/**
+ * a abstract GenericSessionFactory
+ */
 public abstract class AbstractGenericSessionFactory implements GenericSessionFactory {
 
     private static final ConcurrentMap<String, AbstractGenericSessionFactory> FACTORY_MAP = new ConcurrentHashMap<>(3);
@@ -62,7 +65,7 @@ public abstract class AbstractGenericSessionFactory implements GenericSessionFac
         this.zoneId = GenericSessionFactoryUtils.createZoneId(env, this.name);
 
         this.tableMetaMap = GenericSessionFactoryUtils.scanPackagesForMeta(this.schemaMeta, this.name, env);
-        this.shardingMode = GenericSessionFactoryUtils.shardingMode(this.name, env);
+        this.shardingMode = factoryBuilder.shardingMode();
         GenericSessionFactoryUtils.GeneratorWrapper generatorWrapper =
                 GenericSessionFactoryUtils.createGeneratorWrapper(this.tableMetaMap.values(), this);
         this.fieldGeneratorMap = generatorWrapper.getGeneratorChain();

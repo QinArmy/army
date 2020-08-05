@@ -1,8 +1,11 @@
 package io.army.boot.migratioin;
 
 import io.army.GenericRmSessionFactory;
+import io.army.criteria.MetaException;
+import io.army.dialect.DDLSQLExecuteException;
 import io.army.dialect.Dialect;
 import io.army.meta.IndexMeta;
+import io.army.schema.SchemaInfoException;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 
@@ -15,19 +18,22 @@ final class SyncMetaMigratorImpl implements SyncMetaMigrator {
     }
 
     @Override
-    public final void migrate(Connection conn, GenericRmSessionFactory sessionFactory) {
-        //1.extract schema meta
+    public final void migrate(Connection conn, GenericRmSessionFactory sessionFactory)
+            throws SchemaExtractException, SchemaInfoException, MetaException, DDLSQLExecuteException {
+        //1.extract schema meta from database
         SchemaInfo schemaInfo;
-        schemaInfo = SchemaExtractor.build(conn).extract(null);
-        // 2. compare meta and schema .
+        schemaInfo = SchemaExtractor.build(conn)
+                .extract(null);
+        // 2. compare TableMeta and schema meta from database.
         List<List<Migration>> shardingList;
         shardingList = MetaSchemaComparator.build(sessionFactory.actualDatabase())
                 .compare(schemaInfo, sessionFactory);
-        // 3. create ddl
+        // 3. create ddl by compare result
         List<Map<String, List<String>>> shardingDdlList;
         shardingDdlList = createDdlForShardingList(shardingList, sessionFactory.dialect());
         // 4. execute ddl
-        DDLSQLExecutor.build().executeDDL(sessionFactory.databaseIndex(), shardingDdlList, conn);
+        DDLSQLExecutor.build()
+                .executeDDL(sessionFactory.databaseIndex(), shardingDdlList, conn);
     }
 
 

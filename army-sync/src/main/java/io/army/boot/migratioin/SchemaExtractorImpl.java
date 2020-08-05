@@ -10,16 +10,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-final class SyncSchemaExtractorImpl implements SchemaExtractor {
+final class SchemaExtractorImpl implements SchemaExtractor {
 
     private final Connection connection;
 
-    SyncSchemaExtractorImpl(Connection connection) {
+    SchemaExtractorImpl(Connection connection) {
         this.connection = connection;
     }
 
     @Override
-    public final SchemaInfo extract(@Nullable String routeSuffix) {
+    public final SchemaInfo extract(@Nullable String routeSuffix) throws SchemaExtractException {
         try {
             SchemaInfo schemaInfo = new SchemaInfo(connection.getCatalog(), connection.getSchema());
             // extract schema's tableMeta info

@@ -9,9 +9,9 @@ import java.sql.Connection;
  */
 interface SchemaExtractor {
 
-    SchemaInfo extract(@Nullable String routeSuffix);
+    SchemaInfo extract(@Nullable String routeSuffix) throws SchemaExtractException;
 
     static SchemaExtractor build(Connection conn) {
-        return new SyncSchemaExtractorImpl(conn);
+        return new SchemaExtractorImpl(conn);
     }
 }

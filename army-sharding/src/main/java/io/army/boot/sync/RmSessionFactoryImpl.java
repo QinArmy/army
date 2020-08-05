@@ -3,6 +3,7 @@ package io.army.boot.sync;
 
 import io.army.*;
 import io.army.boot.DomainValuesGenerator;
+import io.army.boot.migratioin.SyncMetaMigrator;
 import io.army.criteria.NotFoundRouteException;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
@@ -15,8 +16,11 @@ import io.army.tx.TransactionException;
 import io.army.tx.XaTransactionOption;
 import io.army.util.Assert;
 
+import javax.sql.XAConnection;
 import javax.sql.XADataSource;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -48,7 +52,7 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
 
     private final UpdateSQLExecutor updateSQLExecutor;
 
-    private boolean initFinished;
+    private final AtomicBoolean initFinished = new AtomicBoolean(false);
 
     private boolean closed;
 
@@ -126,11 +130,16 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
 
     @Override
     public final void initialize() {
-        if (this.initFinished) {
+        if (this.initFinished.get()) {
             return;
         }
-
-        this.initFinished = true;
+        synchronized (this.initFinished) {
+            if (this.initFinished.get()) {
+                return;
+            }
+            migrationMeta();
+            this.initFinished.compareAndSet(false, true);
+        }
     }
 
     @Override
@@ -154,13 +163,46 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
     public final RmSession build(XaTransactionOption option) throws SessionException {
         try {
             RmSession rmSession = new RmSessionImpl(this, dataSource.getXAConnection(), option);
-            // start xa transaction
+            // start xa transaction,because invoker can directly use RmSession.
             rmSession.sessionTransaction().start();
             return rmSession;
         } catch (TransactionException e) {
             throw new CreateSessionException(ErrorCode.SESSION_CREATE_ERROR, e, "XA transaction start error.");
         } catch (SQLException e) {
             throw new CreateSessionException(ErrorCode.SESSION_CREATE_ERROR, e, "getXAConnection() error.");
+        }
+    }
+
+    /*################################## blow private method ##################################*/
+
+    private void migrationMeta() {
+        String keyName = String.format(ArmyConfigConstant.MIGRATION_META, this.tmSessionFactory.name());
+        if (!this.env.getProperty(keyName, Boolean.class, Boolean.FALSE)) {
+            return;
+        }
+        XADataSource primary = SyncSessionFactoryUtils.obtainPrimaryDataSource(this.dataSource);
+        XAConnection xaConn = null;
+        try {
+            xaConn = primary.getXAConnection();
+            try (Connection conn = xaConn.getConnection()) {
+                // execute migration
+                SyncMetaMigrator.build()
+                        .migrate(conn, this);
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(ErrorCode.CODEC_DATA_ERROR, e, "%s migration failure.", this);
+        } finally {
+            if (xaConn != null) {
+                closeXAConnection(xaConn);
+            }
+        }
+    }
+
+    private void closeXAConnection(XAConnection xaConn) {
+        try {
+            xaConn.close();
+        } catch (SQLException e) {
+            throw new DataAccessException(ErrorCode.CODEC_DATA_ERROR, e, "%s migration failure.", this);
         }
     }
 }

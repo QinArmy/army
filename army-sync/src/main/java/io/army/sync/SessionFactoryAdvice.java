@@ -8,7 +8,7 @@ public interface SessionFactoryAdvice {
 
     void beforeInstance(Environment environment);
 
-    void beforeInit(GenericSyncApiSessionFactory sessionFactory);
+    void beforeInitialize(GenericSyncApiSessionFactory sessionFactory);
 
-    void afterInit(GenericSyncApiSessionFactory sessionFactory);
+    void afterInitialize(GenericSyncApiSessionFactory sessionFactory);
 }

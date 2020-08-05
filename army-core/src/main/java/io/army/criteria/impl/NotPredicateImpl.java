@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.FieldPredicate;
 import io.army.criteria.IPredicate;
 import io.army.criteria.SQLContext;
 
@@ -12,8 +13,8 @@ class NotPredicateImpl extends AbstractPredicate {
         IPredicate notPredicate;
         if (predicate instanceof NotPredicateImpl) {
             notPredicate = ((NotPredicateImpl) predicate).predicate;
-        } else if (predicate instanceof SpecialPredicate) {
-            notPredicate = new SpecialNotPredicate((SpecialPredicate) predicate);
+        } else if (predicate instanceof FieldPredicate) {
+            notPredicate = new SpecialNotPredicate((FieldPredicate) predicate);
         } else {
             notPredicate = new NotPredicateImpl(predicate);
         }
@@ -28,7 +29,7 @@ class NotPredicateImpl extends AbstractPredicate {
     }
 
     @Override
-    protected void appendSQL(SQLContext context) {
+    public void appendSQL(SQLContext context) {
         doAppendSQL(context);
     }
 
@@ -45,16 +46,17 @@ class NotPredicateImpl extends AbstractPredicate {
 
     /*################################## blow private static inner class  ##################################*/
 
-    private static final class SpecialNotPredicate extends NotPredicateImpl implements IPredicate {
+    private static final class SpecialNotPredicate extends NotPredicateImpl implements FieldPredicate {
 
-        private SpecialNotPredicate(SpecialPredicate predicate) {
+        private SpecialNotPredicate(FieldPredicate predicate) {
             super(predicate);
         }
 
         @Override
-        protected void appendSQL(SQLContext context) {
+        public void appendSQL(SQLContext context) {
             context.appendFieldPredicate(this);
         }
+
 
         @Override
         public void appendPredicate(SQLContext context) {

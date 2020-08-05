@@ -2,7 +2,7 @@ package io.army.boot.sync;
 
 
 import io.army.SessionFactoryException;
-import io.army.boot.GenericFactoryBuilder;
+import io.army.ShardingMode;
 import io.army.codec.FieldCodec;
 import io.army.env.Environment;
 import io.army.interceptor.DomainAdvice;
@@ -11,7 +11,6 @@ import io.army.sync.SessionFactoryAdvice;
 
 import javax.sql.DataSource;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * 设计为接口的原因
@@ -19,7 +18,7 @@ import java.util.List;
  *     <li>隐藏实现,控制访问级别</li>
  * </ul>
  */
-public interface SessionFactoryBuilder extends GenericFactoryBuilder {
+public interface SessionFactoryBuilder extends SyncSessionFactoryBuilder {
 
     @Override
     SessionFactoryBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs);
@@ -30,18 +29,36 @@ public interface SessionFactoryBuilder extends GenericFactoryBuilder {
     @Override
     SessionFactoryBuilder environment(Environment environment);
 
-    SessionFactoryBuilder factoryAdvice(List<SessionFactoryAdvice> factoryAdviceList);
+    @Override
+    SessionFactoryBuilder factoryAdvice(Collection<SessionFactoryAdvice> factoryAdvices);
+
+    @Override
+    SessionFactoryBuilder tableCountPerDatabase(int tableCountPerDatabase);
+
+    @Override
+    SessionFactoryBuilder domainInterceptor(Collection<DomainAdvice> domainInterceptors);
 
     SessionFactoryBuilder datasource(DataSource dataSource);
 
-    SessionFactoryBuilder domainInterceptor(Collection<DomainAdvice> domainInterceptors);
-
-    SessionFactoryBuilder tableCountOfSharding(int tableCount);
+    /**
+     * possible values below:
+     * <ul>
+     *     <li>{@link ShardingMode#NO_SHARDING }</li>
+     *     <li>{@link ShardingMode#SINGLE_DATABASE_SHARDING}</li>
+     * </ul>
+     * Default value is {@link ShardingMode#NO_SHARDING}
+     */
+    SessionFactoryBuilder shardingMode(ShardingMode shardingMode);
 
     SessionFactory build() throws SessionFactoryException;
 
+
     static SessionFactoryBuilder builder() {
-        return new SessionFactoryBuilderImpl();
+        return builder(false);
+    }
+
+    static SessionFactoryBuilder builder(boolean springApplication) {
+        return SessionFactoryBuilderImpl.buildInstance(springApplication);
     }
 
     static SessionFactoryBuilder mockBuilder() {

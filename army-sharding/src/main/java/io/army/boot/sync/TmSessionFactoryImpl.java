@@ -64,8 +64,8 @@ class TmSessionFactoryImpl extends AbstractGenericSessionFactory implements Inne
 
     TmSessionFactoryImpl(TmSessionFactionBuilderImpl builder) {
         super(builder);
-        Assert.state(this.shardingMode == ShardingMode.SHARDING
-                , () -> String.format("%s support only SHARDING ShardingMode", TmSessionFactoryImpl.class.getName()));
+        Assert.isTrue(this.shardingMode == ShardingMode.SHARDING
+                , () -> String.format("%s support only SHARDING ShardingMode", TmSessionFactoryImpl.this));
 
         this.domainAdviceMap = SyncSessionFactoryUtils.createDomainAdviceMap(builder.domainInterceptors());
         final TmSessionFactoryUtils.RmSessionFactoryWrapper wrapper = TmSessionFactoryUtils.createRmSessionFactoryMap(
@@ -213,14 +213,17 @@ class TmSessionFactoryImpl extends AbstractGenericSessionFactory implements Inne
 
     /*################################## blow package method ##################################*/
 
-    void initTmSessionFactory() {
+    boolean initializeTmSessionFactory() {
+        if (this.initFinished.get()) {
+            return false;
+        }
         synchronized (this.initFinished) {
-            if (this.initFinished.get()) {
-                return;
-            }
+
             this.rmSessionFactoryList.parallelStream()
                     .forEach(RmSessionFactory::initialize);
+            this.initFinished.compareAndSet(false, true);
         }
+        return true;
     }
 
     /*################################## blow package instance inner class ##################################*/

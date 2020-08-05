@@ -1,7 +1,6 @@
 package io.army.boot.sync;
 
 import io.army.SessionFactoryException;
-import io.army.boot.GenericFactoryBuilder;
 import io.army.codec.FieldCodec;
 import io.army.dialect.Database;
 import io.army.env.Environment;
@@ -14,7 +13,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public interface TmSessionFactionBuilder extends GenericFactoryBuilder {
+public interface TmSessionFactionBuilder extends SyncSessionFactoryBuilder {
 
     @Override
     TmSessionFactionBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs);
@@ -26,20 +25,27 @@ public interface TmSessionFactionBuilder extends GenericFactoryBuilder {
     TmSessionFactionBuilder environment(Environment environment);
 
     @Override
-    TmSessionFactionBuilder factoryAdvice(List<SessionFactoryAdvice> factoryAdviceList);
+    TmSessionFactionBuilder factoryAdvice(Collection<SessionFactoryAdvice> factoryAdvices);
 
-    TmSessionFactionBuilder dataSource(List<XADataSource> dataSourceList);
+    @Override
+    TmSessionFactionBuilder tableCountPerDatabase(int tableCountPerDatabase);
 
-    TmSessionFactionBuilder sqlDialectMap(Map<Integer, Database> sqlDialectMap);
-
+    @Override
     TmSessionFactionBuilder domainInterceptor(Collection<DomainAdvice> domainInterceptors);
 
-    TmSessionFactionBuilder tableCountPerDatabase(int tableCountPerDatabase);
+    TmSessionFactionBuilder dataSourceList(List<XADataSource> dataSourceList);
+
+    TmSessionFactionBuilder databaseMap(Map<Integer, Database> databaseMap);
 
     TmSessionFactory build() throws SessionFactoryException;
 
     static TmSessionFactionBuilder builder() {
-        return new TmSessionFactionBuilderImpl();
+        return builder(false);
     }
+
+    static TmSessionFactionBuilder builder(boolean springApplication) {
+        return TmSessionFactionBuilderImpl.buildInstance(springApplication);
+    }
+
 
 }

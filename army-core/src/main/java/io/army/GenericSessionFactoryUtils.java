@@ -95,10 +95,6 @@ public abstract class GenericSessionFactoryUtils {
                 .scanTableMeta(schemaMeta, packagesToScan);
     }
 
-    static ShardingMode shardingMode(String factoryName, Environment env) {
-        return env.getProperty(String.format(ArmyConfigConstant.SHARDING_MODE, factoryName)
-                , ShardingMode.class, ShardingMode.NO_SHARDING);
-    }
 
     static GeneratorWrapper createGeneratorWrapper(Collection<TableMeta<?>> tableMetas
             , GenericSessionFactory sessionFactory) {

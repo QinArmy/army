@@ -14,6 +14,8 @@ public abstract class GenericFactoryBuilderImpl implements GenericFactoryBuilder
 
     protected Collection<FieldCodec> fieldCodecs;
 
+    protected ShardingMode shardingMode = ShardingMode.NO_SHARDING;
+
     protected GenericFactoryBuilderImpl() {
     }
 
@@ -27,5 +29,10 @@ public abstract class GenericFactoryBuilderImpl implements GenericFactoryBuilder
 
     public final Collection<FieldCodec> fieldCodecs() {
         return fieldCodecs;
+    }
+
+
+    ShardingMode shardingMode() {
+        return shardingMode;
     }
 }

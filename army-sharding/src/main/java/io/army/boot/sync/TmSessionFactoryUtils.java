@@ -55,7 +55,7 @@ abstract class TmSessionFactoryUtils extends SyncSessionFactoryUtils {
             throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
                     , "XADataSource list size must great than 1 .");
         }
-        Map<Integer, Database> databaseMap = factionBuilder.sqlDialectMap();
+        Map<Integer, Database> databaseMap = factionBuilder.databaseMap();
         if (databaseMap == null) {
             databaseMap = Collections.emptyMap();
         }

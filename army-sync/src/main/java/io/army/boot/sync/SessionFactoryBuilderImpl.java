@@ -2,66 +2,88 @@ package io.army.boot.sync;
 
 import io.army.ErrorCode;
 import io.army.SessionFactoryException;
+import io.army.ShardingMode;
 import io.army.codec.FieldCodec;
 import io.army.env.Environment;
 import io.army.interceptor.DomainAdvice;
 import io.army.sync.SessionFactory;
 import io.army.sync.SessionFactoryAdvice;
 import io.army.util.Assert;
+import io.army.util.BeanUtils;
 
 import javax.sql.DataSource;
 import java.util.Collection;
-import java.util.List;
 
-final class SessionFactoryBuilderImpl extends AbstractSyncSessionFactoryBuilder implements SessionFactoryBuilder {
+class SessionFactoryBuilderImpl extends AbstractSyncSessionFactoryBuilder implements SessionFactoryBuilder {
+
+    static SessionFactoryBuilderImpl buildInstance(boolean springApplication) {
+        SessionFactoryBuilderImpl builder;
+        if (springApplication) {
+            try {
+                builder = (SessionFactoryBuilderImpl) BeanUtils.instantiateClass(
+                        Class.forName("io.army.boot.sync.SessionFactoryBuilderForSpring"));
+            } catch (ClassNotFoundException e) {
+                throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR, e
+                        , "army-spring module not add classpath.");
+            }
+        } else {
+            builder = new SessionFactoryBuilderImpl();
+        }
+        return builder;
+    }
 
     private DataSource dataSource;
 
-    private int tableCountOfSharding = 1;
 
     SessionFactoryBuilderImpl() {
+
     }
 
 
     @Override
-    public SessionFactoryBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs) {
+    public final SessionFactoryBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs) {
         this.fieldCodecs = fieldCodecs;
         return this;
     }
 
     @Override
-    public SessionFactoryBuilder name(String sessionFactoryName) {
+    public final SessionFactoryBuilder name(String sessionFactoryName) {
         this.name = sessionFactoryName;
         return this;
     }
 
     @Override
-    public SessionFactoryBuilder environment(Environment environment) {
+    public final SessionFactoryBuilder environment(Environment environment) {
         this.environment = environment;
         return this;
     }
 
-
     @Override
-    public SessionFactoryBuilder factoryAdvice(List<SessionFactoryAdvice> factoryAdviceList) {
-        this.factoryAdviceList = factoryAdviceList;
+    public final SessionFactoryBuilder factoryAdvice(Collection<SessionFactoryAdvice> factoryAdvices) {
+        this.factoryAdvices = factoryAdvices;
         return this;
     }
 
     @Override
-    public SessionFactoryBuilder domainInterceptor(Collection<DomainAdvice> domainInterceptors) {
+    public final SessionFactoryBuilder domainInterceptor(Collection<DomainAdvice> domainInterceptors) {
         this.domainInterceptors = domainInterceptors;
         return this;
     }
 
     @Override
-    public SessionFactoryBuilder tableCountOfSharding(int tableCount) {
-        this.tableCountOfSharding = tableCount;
+    public final SessionFactoryBuilder shardingMode(ShardingMode shardingMode) {
+        this.shardingMode = shardingMode;
         return this;
     }
 
     @Override
-    public SessionFactoryBuilder datasource(DataSource dataSource) {
+    public final SessionFactoryBuilder tableCountPerDatabase(int tableCountPerDatabase) {
+        this.tableCountPerDatabase = tableCountPerDatabase;
+        return this;
+    }
+
+    @Override
+    public final SessionFactoryBuilder datasource(DataSource dataSource) {
         this.dataSource = dataSource;
         return this;
     }
@@ -70,42 +92,28 @@ final class SessionFactoryBuilderImpl extends AbstractSyncSessionFactoryBuilder 
         return this.dataSource;
     }
 
-    public int tableCountOfSharding() {
-        return this.tableCountOfSharding;
+    final int tableCountPerDatabase() {
+        return this.tableCountPerDatabase;
     }
 
     @Override
-    public SessionFactory build() throws SessionFactoryException {
+    public final SessionFactory build() throws SessionFactoryException {
         Assert.notNull(this.name, "name required");
         Assert.notNull(this.dataSource, "dataSource required");
         Assert.notNull(this.environment, "environment required");
 
-        final List<SessionFactoryAdvice> factoryAdviceList = createFactoryInterceptorList();
+        final SessionFactoryAdvice composite = getCompositeSessionFactoryAdvice();
         try {
-
-            if (!factoryAdviceList.isEmpty()) {
-                // invoke beforeInstance
-                for (SessionFactoryAdvice sessionFactoryAdvice : factoryAdviceList) {
-                    sessionFactoryAdvice.beforeInstance(this.environment);
-                }
-            }
-            // instance
-            SessionFactoryImpl sessionFactory = new SessionFactoryImpl(this);
-
-            if (!factoryAdviceList.isEmpty()) {
-                // invoke beforeInit
-                for (SessionFactoryAdvice interceptor : factoryAdviceList) {
-                    interceptor.beforeInit(sessionFactory);
-                }
-            }
-            // init session factory
-            sessionFactory.initSessionFactory();
-
-            if (!factoryAdviceList.isEmpty()) {
-                // invoke afterInit
-                for (SessionFactoryAdvice interceptor : factoryAdviceList) {
-                    interceptor.afterInit(sessionFactory);
-                }
+            //1. beforeInstance
+            composite.beforeInstance(this.environment);
+            //2. create SessionFactory instance
+            SessionFactoryImpl sessionFactory = createSessionFactory();
+            //3. beforeInitialize
+            composite.beforeInitialize(sessionFactory);
+            //4. init session factory
+            if (initializeSessionFactory(sessionFactory)) {
+                //5. afterInitialize
+                composite.afterInitialize(sessionFactory);
             }
             return sessionFactory;
         } catch (SessionFactoryException e) {
@@ -119,6 +127,17 @@ final class SessionFactoryBuilderImpl extends AbstractSyncSessionFactoryBuilder 
 
 
     /*################################## blow private method ##################################*/
+
+    SessionFactoryImpl createSessionFactory() {
+        return new SessionFactoryImpl(this);
+    }
+
+    boolean initializeSessionFactory(SessionFactoryImpl sessionFactory) {
+        // init session factory
+        return sessionFactory.initializeSessionFactory();
+    }
+
+    /*################################## blow package static class ##################################*/
 
 
 }

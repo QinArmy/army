@@ -14,11 +14,11 @@ import io.army.sharding.RouteCreateException;
 import io.army.sharding.RouteMetaData;
 import io.army.sharding.TableRoute;
 import io.army.sync.GenericSyncApiSessionFactory;
-import io.army.util.ClassUtils;
 import io.army.util.CollectionUtils;
 import io.army.util.ReflectionUtils;
 import io.army.util.StringUtils;
 
+import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -33,22 +33,20 @@ import java.util.Map;
 
 abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
 
-    static DataSource obtainPrimaryDataSource(final DataSource dataSource) {
-        final String className = "org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource";
+    @SuppressWarnings("unchecked")
+    static <T extends CommonDataSource> T obtainPrimaryDataSource(final T dataSource) {
 
-        DataSource primary = dataSource;
+        T primary = dataSource;
         try {
-            if (ClassUtils.isPresent(className, ClassUtils.getDefaultClassLoader())) {
-                Class<?> routingDataSourceClass = Class.forName(className);
-                if (routingDataSourceClass.isInstance(dataSource)) {
-                    Method method = ReflectionUtils.findMethod(dataSource.getClass(), "getPrimaryDataSource");
-                    if (method != null) {
-                        primary = (DataSource) method.invoke(dataSource);
-                    }
-                }
-                if (primary == null) {
-                    primary = dataSource;
-                }
+            Method method = ReflectionUtils.findMethod(dataSource.getClass(), "getPrimaryDataSource");
+            if (method != null
+                    && Modifier.isPublic(method.getModifiers())
+                    && !Modifier.isStatic(method.getModifiers())
+                    && method.getReturnType() == dataSource.getClass()) {
+                primary = (T) method.invoke(dataSource);
+            }
+            if (primary == null) {
+                primary = dataSource;
             }
         } catch (Exception e) {
             // no -op,primary = dataSource

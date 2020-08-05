@@ -1,20 +1,22 @@
 package io.army.boot.sync;
 
 
+import io.army.ShardingMode;
 import io.army.codec.FieldCodec;
 import io.army.env.Environment;
 import io.army.env.SpringEnvironmentAdaptor;
 import io.army.interceptor.DomainAdvice;
+import io.army.lang.Nullable;
 import io.army.sync.SessionFactory;
 import io.army.sync.SessionFactoryAdvice;
 import io.army.util.Assert;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNameAware;
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.env.ConfigurableEnvironment;
 
 import javax.sql.DataSource;
 
@@ -26,13 +28,19 @@ import javax.sql.DataSource;
  * @since 1.0
  */
 public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
-        , InitializingBean, DisposableBean, BeanNameAware, ApplicationContextAware {
+        , InitializingBean, BeanNameAware, ApplicationContextAware {
 
     private String beanName;
 
     private DataSource dataSource;
 
+    private String dataSourceBeanName;
+
     private Environment environment;
+
+    private int tableCountPerDatabase = 1;
+
+    private ShardingMode shardingMode = ShardingMode.NO_SHARDING;
 
     private SessionFactory sessionFactory;
 
@@ -53,28 +61,22 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
     public void afterPropertiesSet() {
         Assert.state(this.dataSource != null, "dataSource is null");
 
-        Environment environment = this.environment;
-        if (environment == null) {
-            environment = new SpringEnvironmentAdaptor(applicationContext.getEnvironment());
-        }
 
-        this.sessionFactory = SessionFactoryBuilder.builder()
+        this.sessionFactory = SessionFactoryBuilder.builder(true)
+
                 .name(getSessionFactoryName())
-                .datasource(this.dataSource)
-                .environment(environment)
+                .datasource(obtainDataSource())
+                .environment(obtainEnvironment(this.environment, this.applicationContext.getEnvironment()))
                 .domainInterceptor(applicationContext.getBeansOfType(DomainAdvice.class).values())
-                .fieldCodecs(applicationContext.getBeansOfType(FieldCodec.class).values())
 
+                .fieldCodecs(applicationContext.getBeansOfType(FieldCodec.class).values())
                 .factoryAdvice(applicationContext.getBeansOfType(SessionFactoryAdvice.class).values())
+                .tableCountPerDatabase(this.tableCountPerDatabase)
+                .shardingMode(this.shardingMode)
+
                 .build();
     }
 
-    @Override
-    public void destroy() {
-        if (this.sessionFactory != null && !this.sessionFactory.closed()) {
-            this.sessionFactory.close();
-        }
-    }
 
     @Override
     public boolean isSingleton() {
@@ -99,8 +101,26 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
         return this;
     }
 
+    /**
+     * If {@link #setDataSource(DataSource) } invoked by developer ,this will ignore.
+     */
+    public LocalSessionFactoryBean setDataSourceBeanName(String dataSourceBeanName) {
+        this.dataSourceBeanName = dataSourceBeanName;
+        return this;
+    }
+
     public LocalSessionFactoryBean setEnvironment(Environment environment) {
         this.environment = environment;
+        return this;
+    }
+
+    public LocalSessionFactoryBean setTableCountPerDatabase(int tableCountPerDatabase) {
+        this.tableCountPerDatabase = tableCountPerDatabase;
+        return this;
+    }
+
+    public LocalSessionFactoryBean setShardingMode(ShardingMode shardingMode) {
+        this.shardingMode = shardingMode;
         return this;
     }
 
@@ -116,5 +136,32 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
             factoryName = this.beanName;
         }
         return factoryName;
+    }
+
+    private DataSource obtainDataSource() {
+        DataSource returnDataSource = this.dataSource;
+        if (returnDataSource == null) {
+            if (this.dataSourceBeanName == null) {
+                throw new IllegalArgumentException("must specified dataSource or dataSourceBeanName");
+            }
+            returnDataSource = applicationContext.getBean(this.dataSourceBeanName, DataSource.class);
+        }
+        return returnDataSource;
+    }
+
+    /*################################## blow package static method ##################################*/
+
+    static io.army.env.Environment obtainEnvironment(@Nullable io.army.env.Environment armyEnvironment
+            , org.springframework.core.env.Environment springEnvironment) {
+        io.army.env.Environment environment = armyEnvironment;
+        if (environment == null) {
+            if (!(springEnvironment instanceof ConfigurableEnvironment)) {
+                throw new IllegalArgumentException(
+                        "org.springframework.core.env.Environment isn't ConfigurableEnvironment" +
+                                ",please specified io.army.env.Environment");
+            }
+            environment = new SpringEnvironmentAdaptor((ConfigurableEnvironment) springEnvironment);
+        }
+        return environment;
     }
 }

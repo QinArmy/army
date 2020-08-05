@@ -8,7 +8,6 @@ import io.army.schema.SchemaInfoException;
 import java.util.List;
 
 /**
- * @see Meta2Schema
  */
 interface MetaSchemaComparator {
 
