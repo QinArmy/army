@@ -1,6 +1,7 @@
 package io.army.boot.sync;
 
 import io.army.GenericProxySession;
+import io.army.SessionException;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.criteria.*;
 import io.army.domain.IDomain;
@@ -178,6 +179,11 @@ abstract class AbstractProxySyncSession implements GenericSyncApiSession, Generi
     @Override
     public long largeDelete(Delete delete, Visible visible) {
         return this.sessionContext.currentSession().largeDelete(delete, visible);
+    }
+
+    @Override
+    public void flush() throws SessionException {
+        this.sessionContext.currentSession().flush();
     }
 
 }

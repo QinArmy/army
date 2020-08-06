@@ -83,9 +83,14 @@ abstract class TmSessionFactoryUtils extends SyncSessionFactoryUtils {
 
     static Dialect createDialectForSync(XADataSource dataSource, @Nullable Database database
             , RmSessionFactoryImpl sessionFactory) {
-        try (Connection conn = dataSource.getXAConnection().getConnection()) {
-
-            return createDialect(database, extractDatabase(conn), sessionFactory);
+        try {
+            XAConnection xaConn = dataSource.getXAConnection();
+            Dialect dialect;
+            try (Connection conn = xaConn.getConnection()) {
+                dialect = createDialect(database, extractDatabase(conn.getMetaData()), sessionFactory);
+            }
+            xaConn.close();
+            return dialect;
         } catch (SQLException e) {
             throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR, e, "get connection error.");
         }

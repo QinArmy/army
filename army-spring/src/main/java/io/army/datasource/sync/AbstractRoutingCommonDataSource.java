@@ -10,7 +10,7 @@ import javax.sql.CommonDataSource;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -43,14 +43,16 @@ public abstract class AbstractRoutingCommonDataSource<D extends CommonDataSource
     private int timeoutBoundary = 10;
 
     protected AbstractRoutingCommonDataSource(Map<DataSourceRole, D> dataSourceMap) {
+        Map<DataSourceRole, D> newMap = new EnumMap<>(dataSourceMap);
+
         D dataSource;
-        dataSource = dataSourceMap.get(DataSourceRole.PRIMARY);
+        dataSource = newMap.get(DataSourceRole.PRIMARY);
         Assert.notNull(dataSource, "no PRIMARY XADataSource.");
 
-        dataSource = dataSourceMap.get(DataSourceRole.SECONDARY);
+        dataSource = newMap.get(DataSourceRole.SECONDARY);
         Assert.notNull(dataSource, "no SECONDARY XADataSource.");
 
-        this.dataSourceMap = Collections.unmodifiableMap(new HashMap<>(dataSourceMap));
+        this.dataSourceMap = Collections.unmodifiableMap(newMap);
     }
 
     /**

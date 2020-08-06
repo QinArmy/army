@@ -10,7 +10,6 @@ import io.army.tx.TransactionUsageException;
  */
 public class TransactionIsolationException extends TransactionUsageException {
 
-    private static final long serialVersionUID = 5061625890945780522L;
 
     public TransactionIsolationException(String format, Object... args) {
         super(ErrorCode.ISOLATION_ERROR, format, args);

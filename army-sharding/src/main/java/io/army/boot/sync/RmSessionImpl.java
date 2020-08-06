@@ -123,7 +123,7 @@ final class RmSessionImpl extends AbstractGenericSyncRmSession implements InnerR
 
     @Override
     public final void valueInsert(Insert insert, @Nullable Set<Integer> domainIndexSet, Visible visible) {
-        assertSessionActive();
+        assertSessionActive(true);
 
         List<SQLWrapper> sqlWrapperList = parseValueInsert(insert, domainIndexSet, visible);
         try {
