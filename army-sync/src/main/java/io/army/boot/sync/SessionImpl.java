@@ -234,6 +234,8 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
 
     @Override
     public final void valueInsert(Insert insert, final Visible visible) {
+        assertSessionActive(true);
+
         //1. parse update sql
         List<SQLWrapper> sqlWrapperList = parseValueInsert(insert, null, visible);
         try {
@@ -319,7 +321,17 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
         }
     }
 
-
+    @Override
+    public final String toString() {
+        String text = "SessionFactory[" + this.sessionFactory.name() + "]'s Session";
+        if (this.transaction != null) {
+            String txName = this.transaction.name();
+            if (txName != null) {
+                text += ("[" + txName + "]");
+            }
+        }
+        return text;
+    }
 
     /*################################## blow package method ##################################*/
 
@@ -369,6 +381,7 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
             throw new SessionUsageException(ErrorCode.NOT_SUPPORT_BATCH
                     , "not support batch operation in SHARDING mode.");
         }
+        assertSessionActive(true);
     }
 
     /*################################## blow private multiInsert method ##################################*/
@@ -455,10 +468,6 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
             if (!this.readOnly && SessionImpl.this.readonly) {
                 throw new CannotCreateTransactionException(ErrorCode.TRANSACTION_ERROR
                         , "Readonly session can't create non-readonly transaction.");
-            }
-            if (this.timeout == 0) {
-                throw new CannotCreateTransactionException(ErrorCode.TRANSACTION_ERROR
-                        , "not specified transaction timeout.");
             }
             Transaction tx = new LocalTransaction(SessionImpl.this, TransactionBuilderImpl.this);
             SessionImpl.this.setSessionTransaction(tx);

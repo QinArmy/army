@@ -1,71 +1,48 @@
 package io.army.datasource.sync;
 
 import io.army.datasource.DataSourceRole;
-import io.army.lang.Nullable;
 import io.army.tx.sync.TransactionDefinitionHolder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Map;
 
 /**
  * Routing DataSource for read-write splitting.
+ *
+ * @see TransactionDefinitionHolder
+ * @see io.army.tx.sync.TransactionDefinitionInterceptor
+ * @see io.army.datasource.sync.PrimarySecondaryRoutingXADataSource
  */
-public class PrimarySecondaryRoutingDataSource extends AbstractRoutingDataSource {
+public class PrimarySecondaryRoutingDataSource extends AbstractRoutingCommonDataSource<DataSource>
+        implements DataSource {
 
-
-    private static final Logger LOG = LoggerFactory.getLogger(PrimarySecondaryRoutingDataSource.class);
-
-    private Map<Object, Object> targetDataSources;
-
-    /**
-     * transaction timeout boundary seconds
-     */
-    private int timeoutBoundary = 10;
-
-
-    @Override
-    protected Object determineCurrentLookupKey() {
-        String lookupKey;
-        if (TransactionDefinitionHolder.isReadOnly()) {
-            if (TransactionDefinitionHolder.getTimeout() >= this.timeoutBoundary) {
-                lookupKey = DataSourceRole.TIMEOUT_SECONDARY.display;
-            } else {
-                lookupKey = DataSourceRole.SECONDARY.display;
-            }
-        } else {
-            lookupKey = DataSourceRole.PRIMARY.display;
-        }
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("routing datasource:{},thread:{},method:{}",
-                    lookupKey, Thread.currentThread().getName(), TransactionDefinitionHolder.getName());
-        }
-        return lookupKey;
-    }
-
-    public final int getTimeoutBoundary() {
-        return timeoutBoundary;
-    }
-
-    public void setTimeoutBoundary(int timeoutBoundary) {
-        this.timeoutBoundary = timeoutBoundary;
+    public PrimarySecondaryRoutingDataSource(Map<DataSourceRole, DataSource> dataSourceMap) {
+        super(dataSourceMap);
     }
 
     @Override
-    public void setTargetDataSources(Map<Object, Object> targetDataSources) {
-        this.targetDataSources = targetDataSources;
-        super.setTargetDataSources(targetDataSources);
+    public Connection getConnection() throws SQLException {
+        return determineTargetDataSource().getConnection();
     }
 
-    @Nullable
-    public DataSource getPrimaryDataSource() {
-        if (this.targetDataSources == null) {
-            return null;
+    @Override
+    public Connection getConnection(String username, String password) throws SQLException {
+        return determineTargetDataSource().getConnection(username, password);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+        if (iface.isInstance(this)) {
+            return (T) this;
         }
-        Object lookupKey = this.targetDataSources.get(DataSourceRole.PRIMARY.display);
-        return lookupKey == null ? null : resolveSpecifiedDataSource(lookupKey);
+        return determineTargetDataSource().unwrap(iface);
     }
 
+    @Override
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
+        return (iface.isInstance(this) || determineTargetDataSource().isWrapperFor(iface));
+    }
 }

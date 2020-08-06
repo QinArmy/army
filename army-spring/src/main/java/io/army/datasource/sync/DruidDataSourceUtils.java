@@ -1,6 +1,7 @@
 package io.army.datasource.sync;
 
 import com.alibaba.druid.pool.DruidDataSource;
+import com.alibaba.druid.pool.xa.DruidXADataSource;
 import io.army.datasource.DataSourceRole;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
@@ -13,7 +14,18 @@ public abstract class DruidDataSourceUtils {
      */
     public static DruidDataSource createDataSource(Environment env, final String tag, DataSourceRole role) {
         DruidDataSource ds = new DruidDataSource();
+        setDataSourceProperties(ds, env, tag, role);
+        return ds;
+    }
 
+
+    public static DruidXADataSource createXADataSource(Environment env, final String tag, DataSourceRole role) {
+        DruidXADataSource ds = new DruidXADataSource();
+        setDataSourceProperties(ds, env, tag, role);
+        return ds;
+    }
+
+    public static void setDataSourceProperties(DruidDataSource ds, Environment env, final String tag, DataSourceRole role) {
         ds.setUrl(env.getRequiredProperty(String.format("spring.datasource.%s.%s.url", tag, role)));
         ds.setUsername(env.getRequiredProperty(String.format("spring.datasource.%s.%s.username", tag, role)));
         ds.setPassword(env.getRequiredProperty(String.format("spring.datasource.%s.%s.password", tag, role)));
@@ -31,8 +43,8 @@ public abstract class DruidDataSourceUtils {
 
         ds.setRemoveAbandoned(env.getProperty(String.format("spring.datasource.%s.%s.removeAbandoned", tag, role), Boolean.class, Boolean.FALSE));
         ds.setMinEvictableIdleTimeMillis(env.getProperty(String.format("spring.datasource.%s.%s.minEvictableIdleTimeMillis", tag, role), Long.class, 30000L));
-        return ds;
     }
+
 
     private static String getDriver(Environment env, String tag) {
         String driver;

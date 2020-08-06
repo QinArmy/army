@@ -3,6 +3,7 @@ package io.army.tx.sync;
 import io.army.DataAccessException;
 import io.army.SessionException;
 import io.army.tx.Isolation;
+import io.army.tx.TransactionException;
 import org.springframework.transaction.TransactionDefinition;
 
 public abstract class SpringTxUtils {
@@ -22,6 +23,11 @@ public abstract class SpringTxUtils {
         return new org.springframework.dao.DataAccessException(ex.getMessage(), ex) {
 
         };
+    }
+
+    public static org.springframework.transaction.TransactionException convertTransactionException(
+            TransactionException ex) {
+        throw new UnsupportedOperationException();
     }
 
 

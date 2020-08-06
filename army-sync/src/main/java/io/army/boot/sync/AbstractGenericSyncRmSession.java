@@ -42,7 +42,7 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
 
     @Override
     public final <R> List<R> select(Select select, Class<R> resultClass, final Visible visible) {
-        assertSessionActive();
+        assertSessionActive(false);
         try {
             List<R> resultList;
             // execute sql and extract result
@@ -56,7 +56,7 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
 
     @Override
     public final int subQueryInsert(Insert insert, final Visible visible) {
-        assertSessionActive();
+        assertSessionActive(true);
         //1. parse update sql
         final SQLWrapper sqlWrapper = parseSubQueryInsert(insert, visible);
         try {
@@ -74,7 +74,7 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
 
     @Override
     public final long largeSubQueryInsert(Insert insert, final Visible visible) {
-        assertSessionActive();
+        assertSessionActive(true);
         //1. parse update sql
         final SQLWrapper sqlWrapper = parseSubQueryInsert(insert, visible);
         try {
@@ -92,7 +92,7 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
 
     @Override
     public final <R> List<R> returningInsert(Insert insert, Class<R> resultClass, final Visible visible) {
-        assertSessionActive();
+        assertSessionActive(true);
 
         //1. parse update sql
         final SQLWrapper sqlWrapper = parseReturningInsert(insert, visible);
@@ -111,7 +111,7 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
 
     @Override
     public final int update(Update update, final Visible visible) {
-        assertSessionActive();
+        assertSessionActive(true);
 
         //1. parse update sql
         final SQLWrapper sqlWrapper = parseUpdate(update, visible);
@@ -130,7 +130,7 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
 
     @Override
     public final long largeUpdate(Update update, final Visible visible) {
-        assertSessionActive();
+        assertSessionActive(true);
 
         //1. parse update sql
         final SQLWrapper sqlWrapper = parseUpdate(update, visible);
@@ -149,7 +149,7 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
 
     @Override
     public final <R> List<R> returningUpdate(Update update, Class<R> resultClass, final Visible visible) {
-        assertSessionActive();
+        assertSessionActive(true);
 
         //1. parse update sql
         final SQLWrapper sqlWrapper = parseUpdate(update, visible);
@@ -167,7 +167,7 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
 
     @Override
     public final int delete(Delete delete, final Visible visible) {
-        assertSessionActive();
+        assertSessionActive(true);
 
         //1. parse update sql
         final SQLWrapper sqlWrapper = parseDelete(delete, visible);
@@ -186,7 +186,7 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
 
     @Override
     public final long largeDelete(Delete delete, final Visible visible) {
-        assertSessionActive();
+        assertSessionActive(true);
 
         //1. parse update sql
         final SQLWrapper sqlWrapper = parseDelete(delete, visible);
@@ -205,7 +205,7 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
 
     @Override
     public final <R> List<R> returningDelete(Delete delete, Class<R> resultClass, final Visible visible) {
-        assertSessionActive();
+        assertSessionActive(true);
 
         //1. parse update sql
         final SQLWrapper sqlWrapper = parseDelete(delete, visible);
@@ -385,14 +385,18 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
         }
     }
 
-    final void assertSessionActive() {
+    final void assertSessionActive(final boolean write) {
         GenericTransaction tx = obtainTransaction();
         if (this.closed() || (tx != null && tx.nonActive())) {
             String txName = this.sessionTransaction().name();
             throw new SessionUsageException(ErrorCode.SESSION_CLOSED
                     , "TmSession[%s] closed or Transaction[%s] not active.", txName, txName);
         }
+        if (write && this.readonly()) {
+            throw new ReadOnlySessionException("%s read only");
+        }
     }
+
 
     /*################################## blow private method ##################################*/
 

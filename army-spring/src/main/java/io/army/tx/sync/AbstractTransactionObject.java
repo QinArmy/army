@@ -3,60 +3,15 @@ package io.army.tx.sync;
 
 import io.army.DataAccessException;
 import io.army.boot.sync.GenericSyncApiSession;
-import io.army.sync.Session;
-import org.springframework.transaction.SavepointManager;
-import org.springframework.transaction.TransactionException;
-import org.springframework.transaction.TransactionUsageException;
 import org.springframework.transaction.support.SmartTransactionObject;
+import org.springframework.util.Assert;
 
-import java.sql.Savepoint;
-
-abstract class AbstractTransactionObject<S extends GenericSyncApiSession> implements SavepointManager, SmartTransactionObject {
+abstract class AbstractTransactionObject<S extends GenericSyncApiSession>
+        implements SmartTransactionObject {
 
     S session;
 
     AbstractTransactionObject() {
-    }
-
-    /*################################## blow SavepointManager method ##################################*/
-
-    @Override
-    public final Object createSavepoint() throws TransactionException {
-        try {
-            if (this.session instanceof Session) {
-                return ((Session) this.session).sessionTransaction().createSavepoint();
-            } else {
-                throw new TransactionUsageException(String.format("%s not support save point", this.session));
-            }
-        } catch (io.army.tx.TransactionException e) {
-            throw SpringTxUtils.convertArmyAccessException(e);
-        }
-    }
-
-    @Override
-    public final void rollbackToSavepoint(Object savepoint) throws TransactionException {
-        try {
-            if (this.session instanceof Session) {
-                ((Session) this.session).sessionTransaction().rollbackToSavepoint((Savepoint) savepoint);
-            } else {
-                throw new TransactionUsageException(String.format("%s not support save point", this.session));
-            }
-        } catch (io.army.tx.TransactionException e) {
-            throw SpringTxUtils.convertArmyAccessException(e);
-        }
-    }
-
-    @Override
-    public final void releaseSavepoint(Object savepoint) throws TransactionException {
-        try {
-            if (this.session instanceof Session) {
-                ((Session) this.session).sessionTransaction().releaseSavepoint((Savepoint) savepoint);
-            } else {
-                throw new TransactionUsageException(String.format("%s not support save point", this.session));
-            }
-        } catch (io.army.tx.TransactionException e) {
-            throw SpringTxUtils.convertArmyAccessException(e);
-        }
     }
 
     /*################################## blow SmartTransactionObject method ##################################*/
@@ -65,7 +20,7 @@ abstract class AbstractTransactionObject<S extends GenericSyncApiSession> implem
     @Override
     public final void flush() {
         try {
-            session.flush();
+            this.session.flush();
         } catch (DataAccessException e) {
             throw SpringTxUtils.convertArmyAccessException(e);
         }
@@ -74,4 +29,16 @@ abstract class AbstractTransactionObject<S extends GenericSyncApiSession> implem
 
 
     /*################################## blow custom method ##################################*/
+
+    final S suspend() throws IllegalStateException {
+        S currentSession = this.session;
+        Assert.state(currentSession != null, "session is null,ArmyTransactionObject state error.");
+        this.session = null;
+        return currentSession;
+    }
+
+    final void setSession(S newSession) throws IllegalStateException {
+        Assert.state(this.session == null, "session not null,ArmyTransactionObject state error.");
+        this.session = newSession;
+    }
 }

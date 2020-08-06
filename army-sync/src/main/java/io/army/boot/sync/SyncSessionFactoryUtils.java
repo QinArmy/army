@@ -40,12 +40,12 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
             Method method = ReflectionUtils.findMethod(dataSource.getClass(), "getPrimaryDataSource");
             if (method != null
                     && Modifier.isPublic(method.getModifiers())
-                    && !Modifier.isStatic(method.getModifiers())
-                    && method.getReturnType() == dataSource.getClass()) {
-                primary = (T) method.invoke(dataSource);
-            }
-            if (primary == null) {
-                primary = dataSource;
+                    && !Modifier.isStatic(method.getModifiers())) {
+
+                Object returnObject = method.invoke(dataSource);
+                if (dataSource.getClass().isInstance(returnObject)) {
+                    primary = (T) returnObject;
+                }
             }
         } catch (Exception e) {
             // no -op,primary = dataSource

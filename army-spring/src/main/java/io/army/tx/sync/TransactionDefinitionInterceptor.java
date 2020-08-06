@@ -22,6 +22,10 @@ import org.springframework.util.Assert;
  * @see TransactionDefinitionHolder
  * @see TransactionInterceptor
  * @see Transactional
+ * @see io.army.datasource.sync.PrimarySecondaryRoutingDataSource
+ * @see io.army.datasource.sync.PrimarySecondaryRoutingXADataSource
+ * @see org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource
+ * @since 1.0
  */
 public class TransactionDefinitionInterceptor implements MethodInterceptor, InitializingBean, ApplicationContextAware {
 

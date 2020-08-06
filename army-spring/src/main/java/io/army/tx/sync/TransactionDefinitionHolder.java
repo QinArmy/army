@@ -1,7 +1,6 @@
 package io.army.tx.sync;
 
 
-import io.army.datasource.sync.PrimarySecondaryRoutingDataSource;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.core.NamedThreadLocal;
 import org.springframework.lang.NonNull;
@@ -25,7 +24,10 @@ import java.util.concurrent.ConcurrentMap;
  * Transaction definition holder for read-write splitting .
  *
  * @see TransactionDefinitionInterceptor
- * @see PrimarySecondaryRoutingDataSource
+ * @see io.army.datasource.sync.PrimarySecondaryRoutingDataSource
+ * @see io.army.datasource.sync.PrimarySecondaryRoutingXADataSource
+ * @see org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource
+ * @since 1.0
  */
 public abstract class TransactionDefinitionHolder {
 
