@@ -1,5 +1,6 @@
 package io.army;
 
+import io.army.boot.DomainValuesGenerator;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 
@@ -27,5 +28,7 @@ public interface GenericRmSessionFactory extends GenericSessionFactory {
     Database actualDatabase();
 
     Dialect dialect();
+
+    DomainValuesGenerator domainValuesGenerator();
 
 }

@@ -19,6 +19,8 @@ public interface SessionFactory extends GenericSyncApiSessionFactory, GenericRmS
 
     SessionBuilder builder();
 
+    boolean supportsSavePoints();
+
 
     interface SessionBuilder {
 

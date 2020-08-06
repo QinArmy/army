@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.criteria.*;
-import io.army.dialect.SQL;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -211,15 +210,20 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
         }
 
         @Override
-        protected void appendSQL(SQLContext context) {
-            SQL sql = context.dql();
+        public void appendSQL(SQLContext context) {
             context.sqlBuilder()
-                    .append(sql.quoteIfNeed(this.selection.alias()));
+                    .append(" ")
+                    .append(context.dql().quoteIfNeed(this.selection.alias()));
 
         }
 
         @Override
-        protected String toString() {
+        public boolean containsSubQuery() {
+            return false;
+        }
+
+        @Override
+        public String toString() {
             return this.selection.alias();
         }
 

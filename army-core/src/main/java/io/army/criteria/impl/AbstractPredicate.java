@@ -6,10 +6,11 @@ import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingMeta;
 import io.army.util.ArrayUtils;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
- * created  on 2018/11/25.
+ * This class is base class of all {@link IPredicate} implementation .
  */
 abstract class AbstractPredicate extends AbstractExpression<Boolean> implements IPredicate {
 
@@ -20,10 +21,16 @@ abstract class AbstractPredicate extends AbstractExpression<Boolean> implements 
 
     @Override
     public final IPredicate or(@Nullable IPredicate... andIPredicates) {
-        if (andIPredicates == null) {
+        if (andIPredicates == null || andIPredicates.length == 0) {
             return this;
         }
-        return new OrtPredicateImpl(this, ArrayUtils.asList(andIPredicates));
+        List<IPredicate> predicateList;
+        if (andIPredicates.length == 1) {
+            predicateList = Collections.singletonList(andIPredicates[0]);
+        } else {
+            predicateList = ArrayUtils.asList(andIPredicates);
+        }
+        return new OrtPredicateImpl(this, predicateList);
     }
 
     @Override

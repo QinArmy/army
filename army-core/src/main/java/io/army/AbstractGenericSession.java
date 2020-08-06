@@ -18,6 +18,9 @@ import java.util.Set;
 
 public abstract class AbstractGenericSession implements GenericSession {
 
+    public static boolean cacheDomainUpdate(InnerStandardUpdate update) {
+        return update instanceof AbstractGenericSession.CacheDomainUpdate;
+    }
 
     protected static final class CacheDomainUpdate implements Update, InnerStandardUpdate {
 
@@ -115,4 +118,6 @@ public abstract class AbstractGenericSession implements GenericSession {
             return this.prepared;
         }
     }
+
+
 }

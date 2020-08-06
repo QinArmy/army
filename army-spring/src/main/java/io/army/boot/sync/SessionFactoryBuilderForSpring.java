@@ -21,4 +21,9 @@ final class SessionFactoryBuilderForSpring extends SessionFactoryBuilderImpl {
         // no-op, initialize lazy util org.springframework.beans.factory.InitializingBean.afterPropertiesSet
         return false;
     }
+
+    @Override
+    protected final boolean springApplication() {
+        return true;
+    }
 }

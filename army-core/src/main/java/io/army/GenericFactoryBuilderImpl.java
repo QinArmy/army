@@ -35,4 +35,8 @@ public abstract class GenericFactoryBuilderImpl implements GenericFactoryBuilder
     ShardingMode shardingMode() {
         return shardingMode;
     }
+
+    protected boolean springApplication() {
+        return false;
+    }
 }

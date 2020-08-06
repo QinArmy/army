@@ -2,12 +2,14 @@ package io.army.tx.sync;
 
 
 import io.army.datasource.sync.PrimarySecondaryRoutingDataSource;
+import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.core.NamedThreadLocal;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAttribute;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -16,21 +18,25 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
- * transaction definition holder
+ * Transaction definition holder for read-write splitting .
  *
  * @see TransactionDefinitionInterceptor
  * @see PrimarySecondaryRoutingDataSource
  */
 public abstract class TransactionDefinitionHolder {
 
-    private static final ThreadLocal<TxDefinitionHolder> HOLDER = new NamedThreadLocal<>("transaction definition holder");
+    private static final ThreadLocal<TxDefinitionHolder> HOLDER = new NamedThreadLocal<>(
+            "transaction definition holder");
 
     private static final Map<Integer, Isolation> ISOLATION_MAP = initIsolationMap();
 
     private static final Map<Integer, Propagation> PROPAGATION_MAP = initPropagationMap();
 
+    private static final ConcurrentMap<String, Boolean> TX_MANAGER_USE_SAVE_POINT_HOLDER = new ConcurrentHashMap<>();
 
     /**
      * transaction definition link node.
@@ -62,42 +68,69 @@ public abstract class TransactionDefinitionHolder {
     }
 
 
-    static void push(@NonNull TransactionAttribute definition, @NonNull Method method) {
+    /**
+     * This method classically is used by {@link TransactionDefinitionInterceptor#invoke(MethodInvocation)} .
+     *
+     * @param txManagerName {@link Transactional#value()} or {@link ArmyTransactionManager#setBeanName(String)}
+     * @return true:use save points for nested transaction.
+     * @throws IllegalArgumentException throw when txManagerName not register
+     * @see #registerTransactionManager(String, boolean)
+     * @see TransactionDefinitionInterceptor#invoke(MethodInvocation)
+     */
+    static boolean useSavepointForNested(String txManagerName) throws IllegalArgumentException {
+        Boolean use = TX_MANAGER_USE_SAVE_POINT_HOLDER.get(txManagerName);
+        if (use == null) {
+            throw new IllegalArgumentException(String.format("Transaction manager[%s] not register.", txManagerName));
+        }
+        return use;
+    }
+
+    /**
+     * @param txManagerBeanName transaction manager bean name
+     * @throws IllegalStateException throw when if useSavepointForNestedTransaction is different from previous value.
+     */
+    static void registerTransactionManager(String txManagerBeanName, boolean useSavepointForNestedTransaction)
+            throws IllegalStateException {
+        Boolean use;
+        use = TX_MANAGER_USE_SAVE_POINT_HOLDER.putIfAbsent(txManagerBeanName, useSavepointForNestedTransaction);
+        if (use != null && use != useSavepointForNestedTransaction) {
+            throw new IllegalStateException(String.format(
+                    "Transaction manager[%s] previous value[%s] and expected value[%s] not match."
+                    , txManagerBeanName, use, useSavepointForNestedTransaction));
+        }
+    }
+
+
+    static void push(TransactionAttribute definition, Method method) {
+        String txManagerName = definition.getQualifier();
+        if (txManagerName == null) {
+            throw new NoTransactionManagerNameException(method.toString());
+        }
+        if (!supportPropagation(txManagerName, definition.getPropagationBehavior())) {
+            throw new IllegalArgumentException(String.format("Propagation[%s] not support"
+                    , PROPAGATION_MAP.get(definition.getPropagationBehavior())));
+        }
         String txName = StringUtils.hasText(definition.getName()) ? definition.getName() : method.toString();
+
         HOLDER.set(new TxDefinitionHolder(HOLDER.get(), definition, txName));
     }
 
-    static void pop() {
+    static void pop() throws IllegalStateException {
         TxDefinitionHolder current = HOLDER.get();
         if (current != null) {
-            if (current.suspended == null) {
-                HOLDER.remove();
-            } else {
+            HOLDER.remove();
+            if (current.suspended != null) {
                 HOLDER.set(current.suspended);
             }
         } else {
-            throw new IllegalStateException("current transaction definition holder error.");
+            throw new IllegalStateException("transaction definition holder is empty.");
         }
-    }
-
-
-    @Nullable
-    static TransactionDefinition get() {
-        TxDefinitionHolder holder = HOLDER.get();
-
-        TransactionAttribute attribute = null;
-        if (holder != null
-                && isOuterDef(holder.definition.getPropagationBehavior())) {
-            attribute = holder.definition;
-
-        }
-        return attribute;
     }
 
 
     public static boolean isReadOnly() {
-        TransactionDefinition transactionDefinition = get();
-        return transactionDefinition == null || transactionDefinition.isReadOnly();
+        TransactionDefinition definition = get();
+        return definition == null || definition.isReadOnly();
     }
 
     /**
@@ -109,10 +142,10 @@ public abstract class TransactionDefinitionHolder {
     public static Isolation getIsolation() {
         TransactionDefinition transactionDefinition = get();
         Isolation level;
-        if (transactionDefinition != null) {
-            level = ISOLATION_MAP.get(transactionDefinition.getIsolationLevel());
-        } else {
+        if (transactionDefinition == null) {
             level = null;
+        } else {
+            level = ISOLATION_MAP.get(transactionDefinition.getIsolationLevel());
         }
         return level;
     }
@@ -124,10 +157,10 @@ public abstract class TransactionDefinitionHolder {
     public static Propagation getPropagation() {
         TransactionDefinition transactionDefinition = get();
         Propagation propagation;
-        if (transactionDefinition != null) {
-            propagation = PROPAGATION_MAP.get(transactionDefinition.getPropagationBehavior());
-        } else {
+        if (transactionDefinition == null) {
             propagation = null;
+        } else {
+            propagation = PROPAGATION_MAP.get(transactionDefinition.getPropagationBehavior());
         }
         return propagation;
     }
@@ -147,15 +180,28 @@ public abstract class TransactionDefinitionHolder {
     public static String getName() {
         TxDefinitionHolder holder = HOLDER.get();
         String name;
-        if (holder != null) {
-            name = holder.name;
-        } else {
+        if (holder == null) {
             name = null;
+        } else {
+            name = holder.name;
         }
         return name;
     }
 
     /*################################## blow private method ##################################*/
+
+    @Nullable
+    private static TransactionDefinition get() {
+        TxDefinitionHolder holder = HOLDER.get();
+
+        TransactionAttribute definition = null;
+        if (holder != null) {
+
+            definition = holder.definition;
+
+        }
+        return definition;
+    }
 
     private static Map<Integer, Isolation> initIsolationMap() {
         Map<Integer, Isolation> map = new HashMap<>(10);
@@ -173,16 +219,43 @@ public abstract class TransactionDefinitionHolder {
         return Collections.unmodifiableMap(map);
     }
 
-    /**
-     * note {@link TransactionDefinition#PROPAGATION_NOT_SUPPORTED} 虽可被 push 到 holder 中,
-     * 但它在本类中不是外层事务定义,因为它以无事务执行.
-     *
-     * @return true 传播行为是外层事务定义
-     */
-    private static boolean isOuterDef(int def) {
-        return def == TransactionDefinition.PROPAGATION_REQUIRED
-                || def == TransactionDefinition.PROPAGATION_REQUIRES_NEW
-                || def == TransactionDefinition.PROPAGATION_NESTED;
+    private static boolean supportPropagation(String txManagerName, int propagation) {
+        return propagation == TransactionDefinition.PROPAGATION_REQUIRED
+                || propagation == TransactionDefinition.PROPAGATION_REQUIRES_NEW
+                || propagation == TransactionDefinition.PROPAGATION_NOT_SUPPORTED
+                || (propagation == TransactionDefinition.PROPAGATION_NESTED && supportNested(txManagerName))
+                ;
+    }
+
+    private static boolean supportNested(String txManagerName) {
+        boolean support;
+        if (isActiveForCurrent()) {
+            support = !useSavepointForNested(txManagerName);
+        } else {
+            support = true;
+        }
+        return support;
+    }
+
+    private static boolean isActiveForCurrent() {
+        TransactionDefinition definition = get();
+        if (definition == null) {
+            return false;
+        }
+        int propagation = definition.getPropagationBehavior();
+        return propagation == TransactionDefinition.PROPAGATION_REQUIRED
+                || propagation == TransactionDefinition.PROPAGATION_REQUIRES_NEW
+                // If current is PROPAGATION_NESTED than transaction is active.
+                || propagation == TransactionDefinition.PROPAGATION_NESTED;
+    }
+
+    static class NoTransactionManagerNameException extends RuntimeException {
+
+        NoTransactionManagerNameException(String methodName) {
+            super(String.format(
+                    "Method[%s] no specified %s.value()"
+                    , methodName, Transactional.class.getName()));
+        }
     }
 
 

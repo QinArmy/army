@@ -19,4 +19,8 @@ final class TmSessionFactionBuilderForSpring extends TmSessionFactionBuilderImpl
         return false;
     }
 
+    @Override
+    protected final boolean springApplication() {
+        return true;
+    }
 }

@@ -248,7 +248,7 @@ abstract class MySQL57DDLUtils extends DDLUtils {
 
     static String quoteDefaultIfNeed(FieldMeta<?, ?> fieldMeta, String safeDefaultValue) {
         String defaultValue = safeDefaultValue;
-        if (QUOTE_JDBC_TYPE.contains(fieldMeta.jdbcType())) {
+        if (QUOTE_JDBC_TYPE.contains(fieldMeta.mappingMeta().jdbcType())) {
             defaultValue = StringUtils.quote(safeDefaultValue);
         }
         return defaultValue;

@@ -96,6 +96,10 @@ class SessionFactoryBuilderImpl extends AbstractSyncSessionFactoryBuilder implem
         return this.tableCountPerDatabase;
     }
 
+    protected boolean springApplication() {
+        return false;
+    }
+
     @Override
     public final SessionFactory build() throws SessionFactoryException {
         Assert.notNull(this.name, "name required");

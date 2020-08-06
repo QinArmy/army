@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.ArmyRuntimeException;
 import io.army.annotation.Table;
 import io.army.criteria.MetaException;
+import io.army.criteria.SQLContext;
 import io.army.domain.IDomain;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
@@ -356,6 +357,12 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     @Override
     public final Class<? extends Route> routeClass() {
         return this.routeClass;
+    }
+
+    @Override
+    public final void appendSQL(SQLContext context) {
+        throw new UnsupportedOperationException(
+                "please use io.army.dialect.TableContextSQLContext.appendTable(TableMeta<?>,@Nullable  String)");
     }
 
     @Override

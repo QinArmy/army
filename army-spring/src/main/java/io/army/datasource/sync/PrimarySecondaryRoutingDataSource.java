@@ -10,19 +10,13 @@ import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 import javax.sql.DataSource;
 import java.util.Map;
 
+/**
+ * Routing DataSource for read-write splitting.
+ */
 public class PrimarySecondaryRoutingDataSource extends AbstractRoutingDataSource {
 
 
     private static final Logger LOG = LoggerFactory.getLogger(PrimarySecondaryRoutingDataSource.class);
-
-    public static final String PRIMARY = DataSourceRole.PRIMARY.toString();
-
-    /**
-     * @see #setDefaultTargetDataSource(Object)
-     */
-    public static final String SECONDARY = DataSourceRole.SECONDARY.toString();
-
-    public static final String TIMEOUT_SECONDARY = DataSourceRole.TIMEOUT_SECONDARY.toString();
 
     private Map<Object, Object> targetDataSources;
 
@@ -37,12 +31,12 @@ public class PrimarySecondaryRoutingDataSource extends AbstractRoutingDataSource
         String lookupKey;
         if (TransactionDefinitionHolder.isReadOnly()) {
             if (TransactionDefinitionHolder.getTimeout() >= this.timeoutBoundary) {
-                lookupKey = TIMEOUT_SECONDARY;
+                lookupKey = DataSourceRole.TIMEOUT_SECONDARY.display;
             } else {
-                lookupKey = SECONDARY;
+                lookupKey = DataSourceRole.SECONDARY.display;
             }
         } else {
-            lookupKey = PRIMARY;
+            lookupKey = DataSourceRole.PRIMARY.display;
         }
         if (LOG.isDebugEnabled()) {
             LOG.debug("routing datasource:{},thread:{},method:{}",
@@ -70,14 +64,8 @@ public class PrimarySecondaryRoutingDataSource extends AbstractRoutingDataSource
         if (this.targetDataSources == null) {
             return null;
         }
-        Object primary = this.targetDataSources.get(PRIMARY);
-        DataSource dataSource;
-        if (primary instanceof DataSource) {
-            dataSource = (DataSource) primary;
-        } else {
-            dataSource = null;
-        }
-        return dataSource;
+        Object lookupKey = this.targetDataSources.get(DataSourceRole.PRIMARY.display);
+        return lookupKey == null ? null : resolveSpecifiedDataSource(lookupKey);
     }
 
 }

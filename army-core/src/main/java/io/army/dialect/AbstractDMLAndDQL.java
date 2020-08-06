@@ -45,17 +45,22 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
                     .append(joinType.render());
         }
         //2. append ONLY keyword ,eg: postgre,oracle.(optional)
-        tableOnlyModifier(context);
+        this.tableOnlyModifier(context);
         //3. append table able
-        tableWrapper.tableAble().appendSQL(context);
-        if (tableAliasAfterAs()) {
-            builder.append(" AS");
+        TableAble tableAble = tableWrapper.tableAble();
+        if (tableAble instanceof TableMeta) {
+            context.appendTable((TableMeta<?>) tableAble, tableWrapper.alias());
+        } else {
+            tableAble.appendSQL(context);
+            if (this.tableAliasAfterAs()) {
+                builder.append(" AS");
+            }
+            context.appendText(tableWrapper.alias());
         }
-        // 4. table alias
-        context.appendText(tableWrapper.alias());
 
         List<IPredicate> predicateList = tableWrapper.onPredicateList();
         if (predicateList.isEmpty()) {
+            //TODO zoro ,think and validate this design.
             return;
         }
         //5.  on clause
@@ -137,7 +142,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
 
         ParentTableMeta<?> parentMeta = childMeta.parentMeta();
 
-        final String parentAlias = obtainParentAlias(context,childAlias);
+        final String parentAlias = obtainParentAlias(context, childAlias);
         // append exists SubQuery
         StringBuilder builder = context.sqlBuilder();
         if (hasPredicate) {
@@ -148,7 +153,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         // from clause
         builder.append(" FROM");
         // append parent table name and route suffix.
-        context.appendParentOf(childMeta,childAlias);
+        context.appendParentOf(childMeta, childAlias);
         if (tableAliasAfterAs()) {
             builder.append(" AS");
         }
@@ -212,11 +217,11 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     }
 
 
-    private static String obtainParentAlias(TableContextSQLContext context,String childAlias){
+    private static String obtainParentAlias(TableContextSQLContext context, String childAlias) {
         String parentAlias;
-        if(context instanceof  SingleTableDMLContext){
+        if (context instanceof SingleTableDMLContext) {
             parentAlias = ((SingleTableDMLContext) context).relationAlias();
-        }else {
+        } else {
             parentAlias = TableContext.PARENT_ALIAS_PREFIX + childAlias;
         }
         return parentAlias;

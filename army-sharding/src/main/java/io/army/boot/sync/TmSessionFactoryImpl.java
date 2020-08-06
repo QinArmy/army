@@ -211,6 +211,11 @@ class TmSessionFactoryImpl extends AbstractGenericSessionFactory implements Inne
         return this.rmSessionFactoryList;
     }
 
+    @Override
+    public boolean springApplication() {
+        return this.springApplication;
+    }
+
     /*################################## blow package method ##################################*/
 
     boolean initializeTmSessionFactory() {

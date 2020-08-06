@@ -2,12 +2,12 @@ package io.army.tx.sync;
 
 import io.army.DataAccessException;
 import io.army.SessionException;
-import io.army.context.spi.SpringCurrentSessionContext;
 import io.army.sync.Session;
 import io.army.sync.SessionFactory;
 import io.army.tx.ArmyTransactionRollbackOnlyException;
 import io.army.tx.Transaction;
 import io.army.tx.TransactionRollbackOnlyException;
+import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.lang.Nullable;
@@ -20,11 +20,12 @@ import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
-public class ArmyTransactionManager extends AbstractPlatformTransactionManager implements InitializingBean {
+public class ArmyTransactionManager extends AbstractPlatformTransactionManager implements InitializingBean
+        , BeanNameAware {
 
     private final SessionFactory sessionFactory;
 
-    private boolean resetConnection = false;
+    private String beanName;
 
 
     public ArmyTransactionManager(SessionFactory sessionFactory) {
@@ -34,12 +35,14 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
-        Assert.state(sessionFactory.currentSessionContextIsInstanceOf(SpringCurrentSessionContext.class)
-                , String.format("CurrentSessionContext of SessionFactory isn't instance of %s"
-                        , SpringCurrentSessionContext.class.getName()));
+    public void setBeanName(String name) {
+        this.beanName = name;
+    }
 
-
+    @Override
+    public void afterPropertiesSet() {
+        // register transaction manager for read-write splitting
+        TransactionDefinitionHolder.registerTransactionManager(this.beanName, this.useSavepointForNestedTransaction());
     }
 
 
@@ -48,9 +51,9 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
     @Override
     protected Object doGetTransaction() throws TransactionException {
         ArmyTransactionObject txObject = new ArmyTransactionObject();
-        Session session = obtainCurrentSession();
+        Session session = (Session) TransactionSynchronizationManager.getResource(this.sessionFactory);
         if (session != null) {
-            txObject.reset(session);
+            txObject.setSession(session);
         }
         return txObject;
     }
@@ -62,23 +65,32 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
     }
 
     @Override
+    protected Object doSuspend(Object transaction) throws TransactionException {
+        ArmyTransactionObject txObject = (ArmyTransactionObject) transaction;
+        if (txObject.session == null) {
+            throw new IllegalTransactionStateException("transaction no army session.");
+        }
+        TransactionSynchronizationManager.unbindResource(this.sessionFactory);
+        return txObject.suspend();
+    }
+
+    @Override
     protected void doBegin(Object transaction, TransactionDefinition definition) throws TransactionException {
         ArmyTransactionObject txObject = (ArmyTransactionObject) transaction;
 
         try {
-            final SessionFactory sessionFactory = this.sessionFactory;
-            txObject.reset(createNewSession(sessionFactory));
+            txObject.setSession(createNewSession());
 
-            final Transaction tx = txObject.session.builder(
-                    definition.isReadOnly(),
-                    SpringTxUtils.convertTotArmyIsolation(definition.getIsolationLevel()),
-                    determineTimeout(definition)
-            )
+            final Transaction tx = txObject.session.builder()
                     .name(definition.getName())
+                    .isolation(SpringTxUtils.convertTotArmyIsolation(definition.getIsolationLevel()))
+                    .readOnly(definition.isReadOnly())
+                    .timeout(determineTimeout(definition))
+
                     .build();
             // start transaction by JDBC
             tx.start();
-            TransactionSynchronizationManager.bindResource(sessionFactory, txObject.session);
+            TransactionSynchronizationManager.bindResource(this.sessionFactory, txObject.session);
         } catch (Throwable e) {
             throw new CannotCreateTransactionException("Could not open Army transaction", e);
         }
@@ -158,19 +170,9 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
     }
 
     @Override
-    protected Object doSuspend(Object transaction) throws TransactionException {
-        ArmyTransactionObject txObject = (ArmyTransactionObject) transaction;
-        if (txObject.session == null) {
-            throw new IllegalTransactionStateException("transaction no army session.");
-        }
-        TransactionSynchronizationManager.unbindResource(this.sessionFactory);
-        return txObject.suspend();
-    }
-
-    @Override
     protected void doResume(@Nullable Object transaction, Object suspendedResources) throws TransactionException {
 
-        SessionFactory sessionFactory = this.sessionFactory;
+        final SessionFactory sessionFactory = this.sessionFactory;
         if (TransactionSynchronizationManager.hasResource(sessionFactory)) {
             // From non-transactional code running in active transaction synchronization
             // -> can be safely removed, will be closed on transaction completion.
@@ -190,42 +192,26 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             TransactionSynchronizationManager.unbindResource(sessionFactory);
         }
         try {
-            Session session = txObject.session;
-            if (session.hasTransaction()) {
-                session.sessionTransaction().close();
-            }
-            session.close();
+            txObject.session.sessionTransaction().close();
+            txObject.session.close();
         } catch (DataAccessException e) {
             throw SpringTxUtils.convertArmyAccessException(e);
         }
     }
 
+    @Override
+    protected final boolean useSavepointForNestedTransaction() {
+        return this.isNestedTransactionAllowed() && this.sessionFactory.supportsSavePoints();
+    }
+
     /*################################## blow setter method ##################################*/
 
-    public boolean isResetConnection() {
-        return resetConnection;
-    }
 
-    public ArmyTransactionManager setResetConnection(boolean resetConnection) {
-        this.resetConnection = resetConnection;
-        return this;
-    }
-
-
-    @Nullable
-    protected final Session obtainCurrentSession() {
-        return (Session) TransactionSynchronizationManager.getResource(this.sessionFactory);
-    }
-
-    protected final Session createNewSession(@Nullable SessionFactory sessionFactory)
+    protected final Session createNewSession()
             throws DataAccessResourceFailureException {
         try {
-            SessionFactory factory = sessionFactory;
-            if (factory == null) {
-                factory = this.sessionFactory;
-            }
-            return factory.builder()
-                    .resetConnection(this.resetConnection)
+            return this.sessionFactory.builder()
+                    .resetConnection(false)
                     .build();
         } catch (SessionException e) {
             throw new DataAccessResourceFailureException(
@@ -236,16 +222,24 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
 
     /*################################## blow static inner class ##################################*/
 
-    private static final class ArmyTransactionObject extends AbstractTransactionObject {
+    private static final class ArmyTransactionObject extends AbstractTransactionObject<Session> {
 
         private ArmyTransactionObject() {
         }
 
         Session suspend() {
-            return this.session;
+            Session currentSession = this.session;
+            Assert.state(currentSession != null, "session is null,ArmyTransactionObject state error.");
+            this.session = null;
+            return currentSession;
         }
 
-        void reset(Session newSession) {
+        @Override
+        public boolean isRollbackOnly() {
+            return session.sessionTransaction().rollbackOnly();
+        }
+
+        void setSession(Session newSession) {
             Assert.state(this.session == null, "session not null,ArmyTransactionObject state error.");
             this.session = newSession;
         }

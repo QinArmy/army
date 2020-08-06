@@ -105,7 +105,7 @@ class MySQL57DDL extends AbstractDDL {
     @Override
     protected final boolean hasDefaultClause(FieldMeta<?, ?> fieldMeta) {
         return !fieldMeta.primary()
-                && !MySQL57DDLUtils.NO_DEFAULT_JDBC.contains(fieldMeta.jdbcType());
+                && !MySQL57DDLUtils.NO_DEFAULT_JDBC.contains(fieldMeta.mappingMeta().jdbcType());
     }
 
     @Override

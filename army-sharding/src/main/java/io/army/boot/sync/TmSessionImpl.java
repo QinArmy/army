@@ -509,9 +509,9 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
     }
 
     private void assertSessionActive() {
-        if (this.closed || this.tmTransaction.transactionEnded()) {
+        if (this.closed || this.tmTransaction.nonActive()) {
             throw new SessionUsageException(ErrorCode.SESSION_CLOSED, "TmSession[%s] closed or Transaction[%s] ended."
-                    , transactionOption.name(), this.tmTransaction.name);
+                    , transactionOption.name(), this.tmTransaction.name());
         }
     }
 

@@ -1,7 +1,11 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.meta.FieldMeta;
+import io.army.meta.TableMeta;
 import io.army.util.Assert;
+
+import java.util.Collection;
 
 class UnaryPredicate extends AbstractPredicate {
 
@@ -23,7 +27,7 @@ class UnaryPredicate extends AbstractPredicate {
             throw new IllegalArgumentException(
                     String.format("operator[%s] can't in [EXISTS,NOT_EXISTS]", operator));
         } else if (expression instanceof FieldExpression) {
-            predicate = new SpecialUnaryPredicate(operator, (FieldExpression<?>) expression);
+            predicate = new FieldUnaryPredicate(operator, (FieldExpression<?>) expression);
         } else {
             predicate = new UnaryPredicate(operator, expression);
         }
@@ -32,30 +36,33 @@ class UnaryPredicate extends AbstractPredicate {
 
     private final UnaryOperator operator;
 
-    private final SelfDescribed expression;
+    final SelfDescribed expressionOrSubQuery;
 
-    private UnaryPredicate(UnaryOperator operator, SelfDescribed expression) {
-        Assert.notNull(expression, "expression required");
+    private UnaryPredicate(UnaryOperator operator, SelfDescribed expressionOrSubQuery) {
+        Assert.notNull(expressionOrSubQuery, "expression required");
 
         this.operator = operator;
-        this.expression = expression;
+        this.expressionOrSubQuery = expressionOrSubQuery;
     }
 
     @Override
-    protected void appendSQL(SQLContext context) {
-        doAppendSQL(context);
+    public void appendSQL(SQLContext context) {
+        this.doAppendSQL(context);
     }
 
     final void doAppendSQL(SQLContext context) {
-        switch (operator.position()) {
+        switch (this.operator.position()) {
             case LEFT:
                 context.sqlBuilder()
-                        .append(operator.rendered());
-                expression.appendSQL(context);
+                        .append(" ")
+                        .append(this.operator.rendered());
+                this.expressionOrSubQuery.appendSQL(context);
                 break;
             case RIGHT:
-                expression.appendSQL(context);
-                context.sqlBuilder().append(operator.rendered());
+                this.expressionOrSubQuery.appendSQL(context);
+                context.sqlBuilder()
+                        .append(" ")
+                        .append(this.operator.rendered());
                 break;
             default:
                 throw new IllegalStateException(String.format("UnaryOperator[%s]'s position error.", operator));
@@ -63,15 +70,16 @@ class UnaryPredicate extends AbstractPredicate {
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
         StringBuilder builder = new StringBuilder();
-        switch (operator.position()) {
+        switch (this.operator.position()) {
             case LEFT:
-                builder.append(operator.rendered())
-                        .append(expression);
+                builder.append(this.operator.rendered())
+                        .append(" ")
+                        .append(this.expressionOrSubQuery);
                 break;
             case RIGHT:
-                builder.append(expression)
+                builder.append(this.expressionOrSubQuery)
                         .append(" ")
                         .append(operator.rendered());
                 break;
@@ -83,28 +91,41 @@ class UnaryPredicate extends AbstractPredicate {
 
     @Override
     public final boolean containsSubQuery() {
-        return (this.expression instanceof SubQuery)
-                || ((Expression<?>) this.expression).containsSubQuery();
+        return (this.expressionOrSubQuery instanceof SubQuery)
+                || ((Expression<?>) this.expressionOrSubQuery).containsSubQuery();
     }
 
     /*################################## blow private static inner class ##################################*/
 
-    private static final class SpecialUnaryPredicate extends UnaryPredicate implements IPredicate {
+    private static final class FieldUnaryPredicate extends UnaryPredicate implements FieldPredicate {
 
-        private SpecialUnaryPredicate(UnaryOperator operator, FieldExpression<?> expression) {
+        private FieldUnaryPredicate(UnaryOperator operator, FieldExpression<?> expression) {
             super(operator, expression);
         }
 
         @Override
-        protected void appendSQL(SQLContext context) {
+        public void appendSQL(SQLContext context) {
             context.appendFieldPredicate(this);
         }
 
         @Override
         public void appendPredicate(SQLContext context) {
-            context.sqlBuilder()
-                    .append(" ");
-            doAppendSQL(context);
+            this.doAppendSQL(context);
+        }
+
+        @Override
+        public boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
+            return ((FieldExpression<?>) this.expressionOrSubQuery).containsField(fieldMetas);
+        }
+
+        @Override
+        public boolean containsFieldOf(TableMeta<?> tableMeta) {
+            return ((FieldExpression<?>) this.expressionOrSubQuery).containsFieldOf(tableMeta);
+        }
+
+        @Override
+        public int containsFieldCount(TableMeta<?> tableMeta) {
+            return ((FieldExpression<?>) this.expressionOrSubQuery).containsFieldCount(tableMeta);
         }
     }
 }

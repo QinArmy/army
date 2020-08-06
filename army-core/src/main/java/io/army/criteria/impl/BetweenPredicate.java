@@ -1,7 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
-import io.army.criteria.IPredicate;
+import io.army.criteria.FieldExpression;
+import io.army.criteria.FieldPredicate;
 import io.army.criteria.SQLContext;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -12,18 +13,14 @@ class BetweenPredicate extends AbstractPredicate {
 
     static BetweenPredicate build(Expression<?> left, Expression<?> center, Expression<?> right) {
         BetweenPredicate predicate;
-        if (containField(left, center, right)) {
-            predicate = new SpecialBetweenPredicate(left, center, right);
+        if ((left instanceof FieldExpression)
+                || (center instanceof FieldExpression)
+                || (right instanceof FieldExpression)) {
+            predicate = new FieldBetweenPredicate(left, center, right);
         } else {
             predicate = new BetweenPredicate(left, center, right);
         }
         return predicate;
-    }
-
-    private static boolean containField(Expression<?> left, Expression<?> center, Expression<?> right) {
-        return (left instanceof SpecialPredicate)
-                || (center instanceof SpecialPredicate)
-                || (right instanceof SpecialPredicate);
     }
 
     final Expression<?> left;
@@ -39,14 +36,14 @@ class BetweenPredicate extends AbstractPredicate {
     }
 
     @Override
-    protected void appendSQL(SQLContext context) {
+    public void appendSQL(SQLContext context) {
         doAppendSQL(context);
     }
 
     final void doAppendSQL(SQLContext context) {
         left.appendSQL(context);
         StringBuilder builder = context.sqlBuilder()
-                .append(" BETWEEN ");
+                .append(" BETWEEN");
         center.appendSQL(context);
         builder.append(" AND");
         right.appendSQL(context);
@@ -59,7 +56,7 @@ class BetweenPredicate extends AbstractPredicate {
     }
 
     @Override
-    public boolean containsSubQuery() {
+    public final boolean containsSubQuery() {
         return this.left.containsSubQuery()
                 || this.center.containsSubQuery()
                 || this.right.containsSubQuery();
@@ -67,14 +64,15 @@ class BetweenPredicate extends AbstractPredicate {
 
     /*################################## blow private static inner class ##################################*/
 
-    private static final class SpecialBetweenPredicate extends BetweenPredicate implements IPredicate {
+    private static final class FieldBetweenPredicate extends BetweenPredicate implements FieldPredicate {
 
-        private SpecialBetweenPredicate(Expression<?> left, Expression<?> center, Expression<?> right) {
+        private FieldBetweenPredicate(Expression<?> left, Expression<?> center, Expression<?> right) {
             super(left, center, right);
         }
 
+
         @Override
-        protected void appendSQL(SQLContext context) {
+        public void appendSQL(SQLContext context) {
             context.appendFieldPredicate(this);
         }
 

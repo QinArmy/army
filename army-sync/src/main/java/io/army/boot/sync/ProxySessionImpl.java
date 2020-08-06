@@ -9,6 +9,7 @@ import io.army.env.Environment;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.sync.ProxySession;
+import io.army.sync.Session;
 import io.army.sync.SessionFactory;
 
 class ProxySessionImpl extends AbstractProxySyncSession implements ProxySession {
@@ -39,44 +40,46 @@ class ProxySessionImpl extends AbstractProxySyncSession implements ProxySession 
 
     @Override
     public int[] batchUpdate(Update update) {
-        return this.sessionContext.currentSession().batchUpdate(update);
+        return this.obtainSessionForBatch().batchUpdate(update);
     }
 
     @Override
     public int[] batchUpdate(Update update, Visible visible) {
-        return this.sessionContext.currentSession().batchUpdate(update, visible);
+        return this.obtainSessionForBatch().batchUpdate(update, visible);
     }
 
     @Override
     public long[] batchLargeUpdate(Update update) {
-        return this.sessionContext.currentSession().batchLargeUpdate(update);
+        return this.obtainSessionForBatch().batchLargeUpdate(update);
     }
 
     @Override
     public long[] batchLargeUpdate(Update update, Visible visible) {
-        return this.sessionContext.currentSession().batchLargeUpdate(update, visible);
+        return this.obtainSessionForBatch().batchLargeUpdate(update, visible);
     }
 
     @Override
     public int[] batchDelete(Delete delete) {
-        return this.sessionContext.currentSession().batchDelete(delete);
+        return this.obtainSessionForBatch().batchDelete(delete);
     }
 
     @Override
     public int[] batchDelete(Delete delete, Visible visible) {
-        return this.sessionContext.currentSession().batchDelete(delete, visible);
+        return this.obtainSessionForBatch().batchDelete(delete, visible);
     }
 
     @Override
     public long[] batchLargeDelete(Delete delete) {
-        return this.sessionContext.currentSession().batchLargeDelete(delete);
+        return this.obtainSessionForBatch().batchLargeDelete(delete);
     }
 
     @Override
     public long[] batchLargeDelete(Delete delete, Visible visible) {
-        return this.sessionContext.currentSession().batchLargeDelete(delete, visible);
+        return this.obtainSessionForBatch().batchLargeDelete(delete, visible);
     }
 
-
+    private Session obtainSessionForBatch() {
+        return (Session) (this.sessionContext.currentSession());
+    }
 
 }

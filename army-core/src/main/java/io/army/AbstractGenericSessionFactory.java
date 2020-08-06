@@ -50,6 +50,8 @@ public abstract class AbstractGenericSessionFactory implements GenericSessionFac
 
     protected final boolean allowSpanSharding;
 
+    protected final boolean springApplication;
+
     protected AbstractGenericSessionFactory(GenericFactoryBuilderImpl factoryBuilder) {
         String name = factoryBuilder.name();
         Environment env = factoryBuilder.environment();
@@ -78,6 +80,7 @@ public abstract class AbstractGenericSessionFactory implements GenericSessionFac
                 this.env, this.name, this.shardingMode);
 
         this.allowSpanSharding = GenericSessionFactoryUtils.allowSpanSharding(this.env, this.name, this.shardingMode);
+        this.springApplication = factoryBuilder.springApplication();
     }
 
     protected AbstractGenericSessionFactory(AbstractGenericSessionFactory tmSessionFactory, int factoryIndex) {
@@ -100,6 +103,7 @@ public abstract class AbstractGenericSessionFactory implements GenericSessionFac
         this.shardingSubQueryInsert = tmSessionFactory.shardingSubQueryInsert;
 
         this.allowSpanSharding = tmSessionFactory.allowSpanSharding;
+        this.springApplication = tmSessionFactory.springApplication;
     }
 
     @Override
@@ -191,6 +195,9 @@ public abstract class AbstractGenericSessionFactory implements GenericSessionFac
     public boolean allowSpanSharding() {
         return this.allowSpanSharding;
     }
+
+
+    /*################################## blow protected method ##################################*/
 
 
 }

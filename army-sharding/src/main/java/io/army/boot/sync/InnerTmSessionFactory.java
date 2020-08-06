@@ -7,7 +7,7 @@ import io.army.sync.TmSessionFactory;
 
 import java.util.List;
 
-interface InnerTmSessionFactory extends TmSessionFactory {
+interface InnerTmSessionFactory extends TmSessionFactory, InnerGenericSyncApiSessionFactory {
 
     DomainValuesGenerator domainValuesGenerator();
 
@@ -19,4 +19,5 @@ interface InnerTmSessionFactory extends TmSessionFactory {
      * @return a unmodifiable list
      */
     List<RmSessionFactory> rmSessionFactoryList();
+
 }

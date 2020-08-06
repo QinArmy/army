@@ -16,6 +16,7 @@ import io.army.sync.ProxySession;
 import io.army.sync.Session;
 import io.army.sync.SessionFactory;
 import io.army.util.Assert;
+import io.army.util.Pair;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -37,6 +38,8 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
     private final DataSource dataSource;
 
     private final Dialect dialect;
+
+    private final boolean supportsSavePoints;
 
     private final Map<TableMeta<?>, DomainAdvice> domainAdviceMap;
 
@@ -76,16 +79,19 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
         Assert.notNull(dataSource, "dataSource required");
 
         this.dataSource = dataSource;
-        this.dialect = SyncSessionFactoryUtils.createDialectForSync(dataSource, this);
+        Pair<Dialect, Boolean> pair = SyncSessionFactoryUtils.getDatabaseMetaForSync(dataSource, this);
+        this.dialect = pair.getFirst();
+        this.supportsSavePoints = pair.getSecond();
         this.domainAdviceMap = SyncSessionFactoryUtils.createDomainAdviceMap(
                 factoryBuilder.domainInterceptors());
+
         this.tableCountPerDatabase = factoryBuilder.tableCountPerDatabase();
         SyncSessionFactoryUtils.assertTableCountOfSharding(this.tableCountPerDatabase, this);
-
         this.currentSessionContext = SyncSessionFactoryUtils.buildCurrentSessionContext(this);
         this.proxySession = new ProxySessionImpl(this, this.currentSessionContext);
         this.tableRouteMap = SyncSessionFactoryUtils.routeMap(this, TableRoute.class
                 , 1, this.tableCountPerDatabase);
+
         this.sessionCacheFactory = SessionCacheFactory.build(this);
 
         // executor after dialect
@@ -93,6 +99,7 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
         this.insertSQLExecutor = InsertSQLExecutor.build(this);
         this.selectSQLExecutor = SelectSQLExecutor.build(this);
         this.updateSQLExecutor = UpdateSQLExecutor.build(this);
+
     }
 
 
@@ -120,6 +127,11 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
     @Override
     public SessionFactory.SessionBuilder builder() {
         return new SessionBuilderImpl();
+    }
+
+    @Override
+    public boolean supportsSavePoints() {
+        return this.supportsSavePoints;
     }
 
     @Override
@@ -192,6 +204,11 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
     @Override
     public UpdateSQLExecutor updateSQLExecutor() {
         return this.updateSQLExecutor;
+    }
+
+    @Override
+    public boolean springApplication() {
+        return this.springApplication;
     }
 
     @Override

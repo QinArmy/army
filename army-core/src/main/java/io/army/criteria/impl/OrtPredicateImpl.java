@@ -33,23 +33,23 @@ final class OrtPredicateImpl extends AbstractPredicate implements OrPredicate {
     }
 
     @Override
-    protected void appendSQL(SQLContext context) {
+    public void appendSQL(SQLContext context) {
         StringBuilder builder = context.sqlBuilder()
-                .append("(");
-        leftPredicate.appendSQL(context);
-        builder.append(" OR ");
-        if (rightPredicate.size() > 1) {
+                .append(" (");
+        this.leftPredicate.appendSQL(context);
+        builder.append(" OR");
+        if (this.rightPredicate.size() > 1) {
             builder.append(" (");
         }
         int index = 0;
-        for (IPredicate predicate : rightPredicate) {
+        for (IPredicate predicate : this.rightPredicate) {
             if (index > 0) {
                 builder.append(" AND");
             }
             predicate.appendSQL(context);
             index++;
         }
-        if (rightPredicate.size() > 1) {
+        if (this.rightPredicate.size() > 1) {
             builder.append(" )");
         }
         builder.append(" )");
@@ -81,9 +81,9 @@ final class OrtPredicateImpl extends AbstractPredicate implements OrPredicate {
 
     @Override
     public boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
-        boolean contains = leftPredicate.containsField(fieldMetas);
+        boolean contains = this.leftPredicate.containsField(fieldMetas);
         if (!contains) {
-            for (IPredicate predicate : rightPredicate) {
+            for (IPredicate predicate : this.rightPredicate) {
                 if (predicate.containsField(fieldMetas)) {
                     contains = true;
                     break;
@@ -95,9 +95,9 @@ final class OrtPredicateImpl extends AbstractPredicate implements OrPredicate {
 
     @Override
     public boolean containsFieldOf(TableMeta<?> tableMeta) {
-        boolean contains = leftPredicate.containsFieldOf(tableMeta);
+        boolean contains = this.leftPredicate.containsFieldOf(tableMeta);
         if (!contains) {
-            for (IPredicate predicate : rightPredicate) {
+            for (IPredicate predicate : this.rightPredicate) {
                 if (predicate.containsFieldOf(tableMeta)) {
                     contains = true;
                     break;
@@ -109,8 +109,8 @@ final class OrtPredicateImpl extends AbstractPredicate implements OrPredicate {
 
     @Override
     public int containsFieldCount(TableMeta<?> tableMeta) {
-        int count = leftPredicate.containsFieldCount(tableMeta);
-        for (IPredicate predicate : rightPredicate) {
+        int count = this.leftPredicate.containsFieldCount(tableMeta);
+        for (IPredicate predicate : this.rightPredicate) {
             count += predicate.containsFieldCount(tableMeta);
         }
         return count;
@@ -118,9 +118,9 @@ final class OrtPredicateImpl extends AbstractPredicate implements OrPredicate {
 
     @Override
     public boolean containsSubQuery() {
-        boolean contains = leftPredicate.containsSubQuery();
+        boolean contains = this.leftPredicate.containsSubQuery();
         if (!contains) {
-            for (IPredicate predicate : rightPredicate) {
+            for (IPredicate predicate : this.rightPredicate) {
                 if (predicate.containsSubQuery()) {
                     contains = true;
                     break;

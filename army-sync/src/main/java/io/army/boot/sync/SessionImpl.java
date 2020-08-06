@@ -381,9 +381,11 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
 
         private Isolation isolation;
 
-        private int timeout = 0;
+        private int timeout = -1;
 
         private boolean readOnly;
+
+        private long endMills = -1;
 
         private String name;
 
@@ -412,7 +414,17 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
         @Override
         public TransactionBuilder timeout(int timeout) {
             this.timeout = timeout;
+            if (timeout > 0) {
+                this.endMills = (System.currentTimeMillis() + timeout + 1000L);
+            } else {
+                this.endMills = -1;
+            }
             return this;
+        }
+
+        @Override
+        public long endMills() {
+            return this.endMills;
         }
 
         @Override

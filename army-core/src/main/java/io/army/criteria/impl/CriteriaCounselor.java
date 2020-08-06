@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.boot.BootCounselor;
+import io.army.AbstractGenericSession;
 import io.army.criteria.ColumnSubQuery;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner.*;
@@ -69,7 +69,7 @@ public abstract class CriteriaCounselor {
                 throw new IllegalArgumentException(String.format("%s isn't instance of %s", update
                         , StandardContextualBatchUpdate.class.getName()));
             }
-        } else if (!BootCounselor.cacheDomainUpdate(update)
+        } else if (!AbstractGenericSession.cacheDomainUpdate(update)
                 && !(update instanceof StandardContextualUpdate)) {
             throw new IllegalArgumentException(String.format("%s isn't instance of %s", update
                     , StandardContextualUpdate.class.getName()));

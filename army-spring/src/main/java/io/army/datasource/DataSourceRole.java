@@ -6,15 +6,10 @@ public enum DataSourceRole {
     SECONDARY("secondary"),
     TIMEOUT_SECONDARY("timeoutSecondary");
 
-    private final String display;
+    public final String display;
 
     DataSourceRole(String display) {
         this.display = display;
     }
 
-
-    @Override
-    public String toString() {
-        return this.display;
-    }
 }

@@ -41,10 +41,11 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
     }
 
     @Override
-    protected final void appendSQL(SQLContext context) {
+    public final void appendSQL(SQLContext context) {
         SQL sql = context.dql();
 
         context.sqlBuilder()
+                .append(" ")
                 .append(sql.quoteIfNeed(this.subQueryAlias))
                 .append(".")
                 .append(sql.quoteIfNeed(this.derivedFieldName()));
@@ -61,7 +62,12 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
     }
 
     @Override
-    protected final String toString() {
+    public final boolean containsSubQuery() {
+        return false;
+    }
+
+    @Override
+    public final String toString() {
         return subQueryAlias + "." + derivedFieldName();
     }
 
@@ -159,7 +165,8 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
         }
 
         @Override
-        public void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context) throws SQLException {
+        public void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context)
+                throws SQLException {
             Assert.state(this.mappingMeta != null, "no mappingMeta.");
             this.mappingMeta.nonNullSet(st, nonNullValue, index, context);
         }

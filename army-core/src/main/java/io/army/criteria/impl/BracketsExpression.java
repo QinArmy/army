@@ -1,32 +1,75 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
+import io.army.criteria.FieldExpression;
 import io.army.criteria.SQLContext;
+import io.army.meta.FieldMeta;
+import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
 
-final class BracketsExpression<E> extends AbstractExpression<E> {
+import java.util.Collection;
 
-    private final Expression<E> exp;
+class BracketsExpression<E> extends AbstractExpression<E> {
 
-    BracketsExpression(Expression<E> exp) {
+    static <E> BracketsExpression<E> build(Expression<E> expression) {
+        BracketsExpression<E> bracketsExpression;
+        if (expression instanceof FieldExpression) {
+            bracketsExpression = new FieldBracketsExpression<>(expression);
+        } else {
+            bracketsExpression = new BracketsExpression<>(expression);
+        }
+        return bracketsExpression;
+    }
+
+    final Expression<E> exp;
+
+    private BracketsExpression(Expression<E> exp) {
         this.exp = exp;
     }
 
     @Override
-    protected void appendSQL(SQLContext context) {
+    public final void appendSQL(SQLContext context) {
         StringBuilder builder = context.sqlBuilder();
-        builder.append("( ");
+        builder.append(" ( ");
         exp.appendSQL(context);
         builder.append(" )");
     }
 
     @Override
-    public MappingMeta mappingMeta() {
+    public final MappingMeta mappingMeta() {
         return exp.mappingMeta();
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
         return "(" + exp + ")";
+    }
+
+    @Override
+    public final boolean containsSubQuery() {
+        return this.exp.containsSubQuery();
+    }
+
+
+    private static final class FieldBracketsExpression<E> extends BracketsExpression<E> implements FieldExpression<E> {
+
+        private FieldBracketsExpression(Expression<E> exp) {
+            super(exp);
+        }
+
+        @Override
+        public boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
+            return exp.containsField(fieldMetas);
+        }
+
+        @Override
+        public boolean containsFieldOf(TableMeta<?> tableMeta) {
+            return exp.containsFieldOf(tableMeta);
+        }
+
+        @Override
+        public int containsFieldCount(TableMeta<?> tableMeta) {
+            return exp.containsFieldCount(tableMeta);
+        }
     }
 }

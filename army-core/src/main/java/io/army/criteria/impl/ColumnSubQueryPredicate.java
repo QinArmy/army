@@ -53,22 +53,22 @@ class ColumnSubQueryPredicate extends AbstractPredicate {
 
 
     @Override
-    protected void appendSQL(SQLContext context) {
-        operand.appendSQL(context);
+    public void appendSQL(SQLContext context) {
+        this.operand.appendSQL(context);
         StringBuilder builder = context.sqlBuilder()
                 .append(" ")
-                .append(operator.rendered());
+                .append(this.operator.rendered());
         SubQueryOperator subQueryOperator = subQueryOperator();
         if (subQueryOperator != null) {
             builder.append(" ")
                     .append(subQueryOperator.rendered());
         }
-        subQuery.appendSQL(context);
+        this.subQuery.appendSQL(context);
     }
 
     @SuppressWarnings("all")
     @Override
-    protected String toString() {
+    public String toString() {
         StringBuilder builder = new StringBuilder()
                 .append("(")
                 .append(operand)

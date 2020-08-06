@@ -53,12 +53,18 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
     }
 
     @Override
-    protected void appendSQL(SQLContext context) {
-        context.sqlBuilder()
+    public final void appendSQL(SQLContext context) {
+        StringBuilder builder = context.sqlBuilder()
+                .append(" ")
                 .append(this.name)
                 .append("(");
         doAppendArgument(context);
-        context.sqlBuilder().append(")");
+        builder.append(")");
+    }
+
+    @Override
+    public final boolean containsSubQuery() {
+        return false;
     }
 
     @Override

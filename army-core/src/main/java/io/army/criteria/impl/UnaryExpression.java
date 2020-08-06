@@ -12,6 +12,7 @@ import java.util.Collection;
 /**
  * This class is a implementation of {@link Expression}.
  * The expression consist of a  {@link Expression} and a {@link UnaryOperator}.
+ *
  * @param <E> expression result java type
  */
 class UnaryExpression<E> extends AbstractExpression<E> {
@@ -28,7 +29,7 @@ class UnaryExpression<E> extends AbstractExpression<E> {
 
     final Expression<E> expression;
 
-    final UnaryOperator operator;
+    private final UnaryOperator operator;
 
     private UnaryExpression(Expression<E> expression, UnaryOperator operator) {
         this.expression = expression;
@@ -43,7 +44,11 @@ class UnaryExpression<E> extends AbstractExpression<E> {
 
 
     @Override
-    public final void appendSQL(SQLContext context) {
+    public void appendSQL(SQLContext context) {
+        this.doAppendSQL(context);
+    }
+
+    final void doAppendSQL(SQLContext context) {
         switch (this.operator.position()) {
             case LEFT:
                 context.sqlBuilder()
@@ -53,27 +58,28 @@ class UnaryExpression<E> extends AbstractExpression<E> {
                 break;
             case RIGHT:
                 this.expression.appendSQL(context);
-                context.sqlBuilder().append(" ")
+                context.sqlBuilder()
+                        .append(" ")
                         .append(this.operator.rendered());
                 break;
             default:
-                throw new IllegalStateException(String.format("UnaryOperator[%s]'s position error.", operator));
+                throw new IllegalStateException(String.format("UnaryOperator[%s]'s position error.", this.operator));
         }
     }
 
     @Override
     public final String toString() {
         StringBuilder builder = new StringBuilder();
-        switch (operator.position()) {
+        switch (this.operator.position()) {
             case LEFT:
-                builder.append(operator.rendered())
+                builder.append(this.operator.rendered())
                         .append(" ")
-                        .append(expression);
+                        .append(this.expression);
                 break;
             case RIGHT:
-                builder.append(expression)
+                builder.append(this.expression)
                         .append(" ")
-                        .append(operator.rendered());
+                        .append(this.operator.rendered());
                 break;
             default:
                 throw new IllegalStateException(String.format("UnaryOperator[%s]'s position error.", operator));

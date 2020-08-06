@@ -3,7 +3,9 @@ package io.army.criteria.impl;
 import io.army.criteria.MetaException;
 import io.army.criteria.SQLContext;
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
 import io.army.meta.*;
+import io.army.sharding.Route;
 import io.army.struct.CodeEnum;
 
 import java.util.Collection;
@@ -25,13 +27,15 @@ final class Dual implements IDomain {
 
         static final DualTableMeta INSTANCE = new DualTableMeta();
 
+        private static final String TABLE_NAME = "DUAL";
+
         private DualTableMeta() {
 
         }
 
         @Override
         public String toString() {
-            return "DUAL";
+            return TABLE_NAME;
         }
 
         @Override
@@ -41,7 +45,7 @@ final class Dual implements IDomain {
 
         @Override
         public String tableName() {
-            return "DUAL";
+            return TABLE_NAME;
         }
 
         @Override
@@ -51,11 +55,30 @@ final class Dual implements IDomain {
 
         @Override
         public String comment() {
-            return "DUAL";
+            return TABLE_NAME;
+        }
+
+        @Nullable
+        @Override
+        public ParentTableMeta<? super Dual> parentMeta() {
+            return null;
         }
 
         @Override
-        public ParentTableMeta<? super Dual> parentMeta() {
+        public void appendSQL(SQLContext context) {
+            context.sqlBuilder()
+                    .append(" ")
+                    .append(TABLE_NAME);
+        }
+
+        @Override
+        public final boolean sharding() {
+            return false;
+        }
+
+        @Nullable
+        @Override
+        public Class<? extends Route> routeClass() {
             return null;
         }
 
@@ -81,7 +104,7 @@ final class Dual implements IDomain {
 
         @Override
         public List<FieldMeta<?, ?>> routeFieldList(boolean database) {
-           throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException();
         }
 
         @Override

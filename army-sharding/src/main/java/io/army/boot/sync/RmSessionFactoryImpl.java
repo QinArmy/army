@@ -107,6 +107,10 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
         return this.updateSQLExecutor;
     }
 
+    @Override
+    public final boolean springApplication() {
+        return this.springApplication;
+    }
 
     @Override
     public final boolean supportZone() {

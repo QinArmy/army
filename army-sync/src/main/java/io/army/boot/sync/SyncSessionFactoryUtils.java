@@ -5,7 +5,6 @@ import io.army.context.spi.CurrentSessionContext;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect.UnSupportedDialectException;
-import io.army.env.Environment;
 import io.army.interceptor.DomainAdvice;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -15,8 +14,8 @@ import io.army.sharding.RouteMetaData;
 import io.army.sharding.TableRoute;
 import io.army.sync.GenericSyncApiSessionFactory;
 import io.army.util.CollectionUtils;
+import io.army.util.Pair;
 import io.army.util.ReflectionUtils;
-import io.army.util.StringUtils;
 
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
@@ -74,11 +73,18 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
     }
 
 
-    static Dialect createDialectForSync(DataSource dataSource, SessionFactoryImpl sessionFactory) {
+    static Pair<Dialect, Boolean> getDatabaseMetaForSync(DataSource dataSource, SessionFactoryImpl sessionFactory) {
         try (Connection conn = dataSource.getConnection()) {
             Database database = readDatabase(sessionFactory);
 
-            return createDialect(database, extractDatabase(conn), sessionFactory);
+            DatabaseMetaData databaseMetaData = conn.getMetaData();
+
+            Dialect dialect;
+            dialect = createDialect(database, extractDatabase(databaseMetaData), sessionFactory);
+            boolean supportSavePoints;
+            supportSavePoints = databaseMetaData.supportsSavepoints();
+
+            return new Pair<>(dialect, supportSavePoints);
         } catch (SQLException e) {
             throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR, e
                     , "SessionFactory[%s] get connection error.", sessionFactory.name());
@@ -86,45 +92,33 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
 
     }
 
-    static CurrentSessionContext buildCurrentSessionContext(GenericSyncApiSessionFactory sessionFactory) {
-        Environment env = sessionFactory.environment();
+    static CurrentSessionContext buildCurrentSessionContext(InnerGenericSyncApiSessionFactory sessionFactory) {
 
-        final String className = env.getProperty(
-                String.format(ArmyConfigConstant.CURRENT_SESSION_CONTEXT_CLASS, sessionFactory.name()));
-
-        if (!StringUtils.hasText(className)) {
-            return DefaultCurrentSessionContext.build(sessionFactory);
-        }
+        final String className = "io.army.boot.sync.SpringCurrentSessionContext";
 
         try {
-            Class<?> clazz = Class.forName(className);
-            if (!CurrentSessionContext.class.isAssignableFrom(clazz)) {
-                throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
-                        , "%s isn't %s type", className
-                        , CurrentSessionContext.class.getName());
-            }
-            Method method = clazz.getMethod("build", GenericSyncApiSessionFactory.class);
-
-            if (Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers())) {
-                if (!clazz.isAssignableFrom(method.getReturnType())) {
+            CurrentSessionContext sessionContext;
+            if (sessionFactory.springApplication()) {
+                // spring application environment
+                Class<?> contextClass = Class.forName(className);
+                Method method;
+                method = ReflectionUtils.findMethod(contextClass, "build", GenericSyncApiSessionFactory.class);
+                if (method != null
+                        && Modifier.isPublic(method.getModifiers())
+                        && Modifier.isStatic(method.getModifiers())
+                        && contextClass.isAssignableFrom(method.getReturnType())) {
+                    sessionContext = (CurrentSessionContext) method.invoke(null, sessionFactory);
+                } else {
                     throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
-                            , "%s return type isn't %s", className
-                            , className);
+                            , "%s definition error.", className);
                 }
-                // invoke static build method.
-                return (CurrentSessionContext) method.invoke(null, sessionFactory);
             } else {
-                throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
-                        , "%s not found build method definition", className);
+                sessionContext = DefaultCurrentSessionContext.build(sessionFactory);
             }
-
+            return sessionContext;
         } catch (ClassNotFoundException e) {
             throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR, e
-                    , "not found CurrentSessionContext class");
-        } catch (NoSuchMethodException e) {
-            throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR, e
-                    , "%s no [public static %s build(SessionFactory)] method.", className
-                    , className);
+                    , "not found %s class", className);
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR, e, e.getMessage());
         }
@@ -153,9 +147,8 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
         return Collections.unmodifiableMap(domainAdviceMap);
     }
 
-    static Database extractDatabase(Connection connection) {
+    static Database extractDatabase(DatabaseMetaData metaData) {
         try {
-            DatabaseMetaData metaData = connection.getMetaData();
 
             String productName = metaData.getDatabaseProductName();
             int major = metaData.getDatabaseMajorVersion();

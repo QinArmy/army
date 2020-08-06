@@ -66,7 +66,8 @@ abstract class AbstractDDLContext implements DDLContext {
 
     @Override
     public final void appendTable() {
-        this.sqlBuilder.append(this.dialect.quoteIfNeed(this.tableMeta.tableName()));
+        this.sqlBuilder.append(" ")
+                .append(this.dialect.quoteIfNeed(this.tableMeta.tableName()));
         if (this.tableSuffix != null) {
             this.sqlBuilder.append(this.tableSuffix);
         }

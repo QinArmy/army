@@ -74,7 +74,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     public final List<String> addColumn(TableMeta<?> tableMeta, @Nullable String tableSuffix
             , Collection<FieldMeta<?, ?>> addFieldMetas) {
 
-        final DDLContext context = new ColumnDDLContext(this.dialect, tableMeta, defaultFunctionMap());
+        final DDLContext context = new ColumnDDLContext(this.dialect, tableMeta, tableSuffix, defaultFunctionMap());
 
         for (FieldMeta<?, ?> fieldMeta : addFieldMetas) {
 
@@ -82,7 +82,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
                     "TableMeta[%s] then FieldMeta[%s] not match."
                     , tableMeta, fieldMeta));
 
-            doAddColumn(fieldMeta, tableSuffix, context);
+            doAddColumn(fieldMeta, context);
             context.append(context.sqlBuilder().toString());
             context.resetBuilder();
         }
@@ -92,7 +92,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     @Override
     public final List<String> changeColumn(TableMeta<?> tableMeta, @Nullable String tableSuffix
             , Collection<FieldMeta<?, ?>> changeFieldMetas) {
-        final DDLContext context = new ColumnDDLContext(this.dialect, tableMeta, defaultFunctionMap());
+        final DDLContext context = new ColumnDDLContext(this.dialect, tableMeta, tableSuffix, defaultFunctionMap());
         int index = 0;
         for (FieldMeta<?, ?> fieldMeta : changeFieldMetas) {
 
@@ -103,7 +103,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
                 context.resetBuilder();
             }
 
-            doChangeColumn(fieldMeta, tableSuffix, context);
+            doChangeColumn(fieldMeta, context);
             context.append(context.sqlBuilder().toString());
             index++;
         }
@@ -175,14 +175,10 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
         ;
     }
 
-    protected void doAddColumn(FieldMeta<?, ?> fieldMeta, @Nullable String tableSuffix, DDLContext context) {
-        TableMeta<?> tableMeta = context.tableMeta();
+    protected void doAddColumn(FieldMeta<?, ?> fieldMeta, DDLContext context) {
         StringBuilder builder = context.sqlBuilder();
-        builder.append("ALTER TABLE ")
-                .append(this.dialect.quoteIfNeed(tableMeta.tableName()));
-        if (tableSuffix != null) {
-            builder.append(tableSuffix);
-        }
+        builder.append("ALTER TABLE");
+        context.appendTable();
         builder.append(" ADD COLUMN ")
                 .append(this.dialect.quoteIfNeed(fieldMeta.fieldName()));
 
@@ -192,15 +188,11 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
         columnCommentClause(fieldMeta, context);
     }
 
-    protected void doChangeColumn(FieldMeta<?, ?> fieldMeta, @Nullable String tableSuffix, DDLContext context) {
-        TableMeta<?> tableMeta = context.tableMeta();
+    protected void doChangeColumn(FieldMeta<?, ?> fieldMeta, DDLContext context) {
         StringBuilder builder = context.sqlBuilder();
         final String safeColumnName = this.dialect.quoteIfNeed(fieldMeta.fieldName());
-        builder.append("ALTER TABLE ")
-                .append(this.dialect.quoteIfNeed(tableMeta.tableName()));
-        if (tableSuffix != null) {
-            builder.append(tableSuffix);
-        }
+        builder.append("ALTER TABLE ");
+        context.appendTable();
         builder.append(" CHANGE COLUMN ")
                 .append(safeColumnName)
                 .append(" ")

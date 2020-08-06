@@ -15,7 +15,6 @@ import io.army.util.AnnotationUtils;
 import io.army.util.Assert;
 
 import java.lang.reflect.Field;
-import java.sql.JDBCType;
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -189,8 +188,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     @Override
     public final String alias() {
-        // must override super as ,because one column of field only one instance
-        return propertyName;
+        return this.propertyName;
     }
 
     @Override
@@ -310,7 +308,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     }
 
     @Override
-    protected final void appendSQL(SQLContext context) {
+    public final void appendSQL(SQLContext context) {
         context.appendField(this);
     }
 
@@ -322,12 +320,12 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     @Override
     public final boolean containsFieldOf(TableMeta<?> tableMeta) {
-        return this.table == tableMeta;
+        return tableMeta == this.table;
     }
 
     @Override
     public final int containsFieldCount(TableMeta<?> tableMeta) {
-        return this.table == tableMeta ? 1 : 0;
+        return tableMeta == this.table ? 1 : 0;
     }
 
     @Override

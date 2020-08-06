@@ -3,6 +3,10 @@ package io.army.criteria.impl;
 import io.army.criteria.FieldPredicate;
 import io.army.criteria.IPredicate;
 import io.army.criteria.SQLContext;
+import io.army.meta.FieldMeta;
+import io.army.meta.TableMeta;
+
+import java.util.Collection;
 
 /**
  * this interface representing a {@code not} expression
@@ -14,14 +18,14 @@ class NotPredicateImpl extends AbstractPredicate {
         if (predicate instanceof NotPredicateImpl) {
             notPredicate = ((NotPredicateImpl) predicate).predicate;
         } else if (predicate instanceof FieldPredicate) {
-            notPredicate = new SpecialNotPredicate((FieldPredicate) predicate);
+            notPredicate = new FieldNotPredicate((FieldPredicate) predicate);
         } else {
             notPredicate = new NotPredicateImpl(predicate);
         }
         return notPredicate;
     }
 
-    private final IPredicate predicate;
+    final IPredicate predicate;
 
     private NotPredicateImpl(IPredicate predicate) {
         this.predicate = predicate;
@@ -35,8 +39,14 @@ class NotPredicateImpl extends AbstractPredicate {
 
     final void doAppendSQL(SQLContext context) {
         context.sqlBuilder()
+                .append(" ")
                 .append(UnaryOperator.NOT.rendered());
-        predicate.appendSQL(context);
+        this.predicate.appendSQL(context);
+    }
+
+    @Override
+    public final boolean containsSubQuery() {
+        return this.predicate.containsSubQuery();
     }
 
     @Override
@@ -46,11 +56,13 @@ class NotPredicateImpl extends AbstractPredicate {
 
     /*################################## blow private static inner class  ##################################*/
 
-    private static final class SpecialNotPredicate extends NotPredicateImpl implements FieldPredicate {
 
-        private SpecialNotPredicate(FieldPredicate predicate) {
+    private static final class FieldNotPredicate extends NotPredicateImpl implements FieldPredicate {
+
+        private FieldNotPredicate(FieldPredicate predicate) {
             super(predicate);
         }
+
 
         @Override
         public void appendSQL(SQLContext context) {
@@ -60,9 +72,24 @@ class NotPredicateImpl extends AbstractPredicate {
 
         @Override
         public void appendPredicate(SQLContext context) {
-            context.sqlBuilder()
-                    .append(" ");
-            doAppendSQL(context);
+            this.doAppendSQL(context);
+        }
+
+        @Override
+        public boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
+            return this.predicate.containsField(fieldMetas);
+        }
+
+        @Override
+        public boolean containsFieldOf(TableMeta<?> tableMeta) {
+            return this.predicate.containsFieldOf(tableMeta);
+        }
+
+        @Override
+        public int containsFieldCount(TableMeta<?> tableMeta) {
+            return this.predicate.containsFieldCount(tableMeta);
         }
     }
+
+
 }

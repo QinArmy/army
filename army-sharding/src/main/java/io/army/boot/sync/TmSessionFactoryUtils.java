@@ -8,9 +8,7 @@ import io.army.SessionFactoryException;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
-import io.army.util.Assert;
 
-import javax.sql.DataSource;
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 import java.sql.Connection;
@@ -104,19 +102,4 @@ abstract class TmSessionFactoryUtils extends SyncSessionFactoryUtils {
 
     /*################################## blow private method ##################################*/
 
-    private static RmSessionFactoryParams createSingleFactoryParams(
-            SyncSessionFactoryParams.Sharding shardingParams, String factoryName) {
-        RmSessionFactoryParams params = new RmSessionFactoryParams();
-
-        DataSource dataSource = shardingParams.getDataSourceMap().get(factoryName);
-        Assert.notNull(dataSource, () -> String.format("DataSource[%s] is null.", factoryName));
-        params.setDataSource(dataSource);
-
-        Database sqlDialect = shardingParams.getSqlDialectMap().get(factoryName);
-        if (sqlDialect == null) {
-            sqlDialect = shardingParams.getDefaultSqlDialect();
-        }
-        params.setSqlDialect(sqlDialect);
-        return params;
-    }
 }

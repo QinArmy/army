@@ -23,6 +23,7 @@
         <module>army-spring</module>
         <module>army-mysql</module>
         <module>army-sync</module>
+        <module>army-reactive</module>
         <module>army-sharding</module>
         <module>army-oracle</module>
     </modules>
@@ -51,6 +52,7 @@
         <army.version>${project.version}</army.version>
         <ali.druid.version>1.1.20</ali.druid.version>
         <reactor.version>3.3.5.RELEASE</reactor.version>
+        <r2dbc-postgresql.version>0.8.4.RELEASE</r2dbc-postgresql.version>
     </properties>
 
     <dependencyManagement>
@@ -165,6 +167,7 @@
                 <artifactId>jsr305</artifactId>
                 <version>${jsr305.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
@@ -184,6 +187,11 @@
                 <groupId>com.ibm.db2</groupId>
                 <artifactId>jcc</artifactId>
                 <version>${db2-jdbc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.r2dbc</groupId>
+                <artifactId>r2dbc-postgresql</artifactId>
+                <version>${r2dbc-postgresql.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.alibaba</groupId>

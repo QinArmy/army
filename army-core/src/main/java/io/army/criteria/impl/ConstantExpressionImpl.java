@@ -71,27 +71,32 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
 
 
     @Override
-    public Selection as(String alias) {
+    public final Selection as(String alias) {
         return new DefaultSelection(this, alias);
     }
 
     @Override
-    protected void appendSQL(SQLContext context) {
+    public final void appendSQL(SQLContext context) {
         context.appendTextValue(this.paramMeta.mappingMeta(), this.constant);
     }
 
     @Override
-    public MappingMeta mappingMeta() {
+    public final MappingMeta mappingMeta() {
         return this.paramMeta.mappingMeta();
     }
 
     @Override
-    public E value() {
+    public final E value() {
         return constant;
     }
 
     @Override
-    public String toString() {
+    public final boolean containsSubQuery() {
+        return false;
+    }
+
+    @Override
+    public final String toString() {
         return this.paramMeta.mappingMeta().nonNullTextValue(constant);
     }
 

@@ -1,6 +1,7 @@
 package io.army.dialect;
 
 import io.army.ErrorCode;
+import io.army.GenericRmSessionFactory;
 import io.army.GenericSessionFactory;
 import io.army.beans.DomainWrapper;
 import io.army.beans.ReadonlyWrapper;
@@ -375,7 +376,7 @@ abstract class DMLUtils {
     }
 
     static SQLWrapper createBatchInsertWrapper(InnerStandardBatchInsert insert
-            , final SQLWrapper sqlWrapper, GenericSessionFactory sessionFactory) {
+            , final SQLWrapper sqlWrapper, GenericRmSessionFactory sessionFactory) {
 
         final List<DomainWrapper> domainWrapperList = insert.wrapperList();
 

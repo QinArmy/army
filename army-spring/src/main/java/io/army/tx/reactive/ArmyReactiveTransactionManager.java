@@ -1,9 +1,9 @@
 package io.army.tx.reactive;
 
-import io.army.ReactiveSession;
-import io.army.ReactiveSessionFactory;
-import io.army.ReactiveTransaction;
+
 import io.army.SessionException;
+import io.army.reactive.ReactiveSession;
+import io.army.reactive.ReactiveSessionFactory;
 import io.army.tx.sync.SpringTxUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.IllegalTransactionStateException;
@@ -101,8 +101,9 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
         if (txObject.session == null || !txObject.session.hasTransaction()) {
             return Mono.error(new NoTransactionException("cannot rollbackOnly,no transaction"));
         }
-        return txObject.session.sessionTransaction()
-                .rollbackOnly(true);
+        txObject.session.sessionTransaction()
+                .markRollbackOnly();
+        return Mono.empty();
     }
 
     @Override

@@ -7,8 +7,6 @@ import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingMeta;
-import io.army.util.Assert;
-import io.army.util.StringUtils;
 
 import java.math.BigInteger;
 import java.util.Collection;
@@ -779,17 +777,17 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final <O> Expression<O> asType(Class<O> convertType) {
-        return new ConvertExpressionImpl<>(this, MappingFactory.getDefaultMapping(convertType));
+        return ConvertExpressionImpl.build(this, MappingFactory.getDefaultMapping(convertType));
     }
 
     @Override
     public final <O> Expression<O> asType(Class<O> convertType, MappingMeta longMapping) {
-        return new ConvertExpressionImpl<>(this, longMapping);
+        return ConvertExpressionImpl.build(this, longMapping);
     }
 
     @Override
     public final Expression<E> brackets() {
-        return new BracketsExpression<>(this);
+        return BracketsExpression.build(this);
     }
 
     @Override
@@ -815,11 +813,6 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
     @Override
     public int containsFieldCount(TableMeta<?> tableMeta) {
         return 0;
-    }
-
-    @Override
-    public boolean containsSubQuery() {
-        return false;
     }
 
 

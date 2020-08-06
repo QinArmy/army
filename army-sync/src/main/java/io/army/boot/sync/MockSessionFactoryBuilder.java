@@ -7,6 +7,8 @@ import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialectFactory;
 import io.army.env.Environment;
+import io.army.interceptor.DomainAdvice;
+import io.army.sync.SessionFactoryAdvice;
 
 import java.util.Collection;
 
@@ -24,6 +26,21 @@ final class MockSessionFactoryBuilder extends AbstractSyncSessionFactoryBuilder 
 
     @Override
     public GenericFactoryBuilder environment(Environment environment) {
+        return null;
+    }
+
+    @Override
+    public SyncSessionFactoryBuilder factoryAdvice(Collection<SessionFactoryAdvice> factoryAdvices) {
+        return null;
+    }
+
+    @Override
+    public SyncSessionFactoryBuilder tableCountPerDatabase(int tableCountPerDatabase) {
+        return null;
+    }
+
+    @Override
+    public SyncSessionFactoryBuilder domainInterceptor(Collection<DomainAdvice> domainInterceptors) {
         return null;
     }
 

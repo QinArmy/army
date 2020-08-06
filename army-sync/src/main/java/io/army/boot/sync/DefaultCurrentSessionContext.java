@@ -2,9 +2,7 @@ package io.army.boot.sync;
 
 import io.army.NoCurrentSessionException;
 import io.army.context.spi.CurrentSessionContext;
-import io.army.sync.GenericSyncSessionFactory;
-import io.army.sync.Session;
-import io.army.util.Assert;
+import io.army.sync.GenericSyncApiSessionFactory;
 import org.springframework.core.NamedThreadLocal;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,14 +10,15 @@ import java.util.concurrent.ConcurrentMap;
 
 final class DefaultCurrentSessionContext implements CurrentSessionContext {
 
-    private static final ConcurrentMap<GenericSyncSessionFactory, DefaultCurrentSessionContext> CONTEXT_CACHE =
+    private static final ConcurrentMap<GenericSyncApiSessionFactory, DefaultCurrentSessionContext> CONTEXT_CACHE =
             new ConcurrentHashMap<>(2);
 
-    static DefaultCurrentSessionContext build(GenericSyncSessionFactory sessionFactory) {
+    static DefaultCurrentSessionContext build(GenericSyncApiSessionFactory sessionFactory) {
         return CONTEXT_CACHE.computeIfAbsent(sessionFactory, key -> new DefaultCurrentSessionContext());
     }
 
-    private static final ThreadLocal<Session> HOLDER = new NamedThreadLocal<>("session holder");
+    private static final ThreadLocal<GenericSyncApiSession> HOLDER = new NamedThreadLocal<>(
+            "GenericSyncApiSession holder");
 
     @Override
     public boolean hasCurrentSession() {
@@ -27,8 +26,8 @@ final class DefaultCurrentSessionContext implements CurrentSessionContext {
     }
 
     @Override
-    public Session currentSession() throws NoCurrentSessionException {
-        Session session = HOLDER.get();
+    public GenericSyncApiSession currentSession() throws NoCurrentSessionException {
+        GenericSyncApiSession session = HOLDER.get();
         if (session == null) {
             throw new NoCurrentSessionException("no current session.");
         }
@@ -36,23 +35,22 @@ final class DefaultCurrentSessionContext implements CurrentSessionContext {
     }
 
     @Override
-    public void currentSession(Session session) throws IllegalStateException {
-        final Session holdSession = HOLDER.get();
-        Assert.state(holdSession == null || holdSession == session
-                , () -> String.format("existed current session[%s]", holdSession));
-
+    public void currentSession(GenericSyncApiSession session) throws IllegalStateException {
+        final GenericSyncApiSession holdSession = HOLDER.get();
+        if (holdSession != null && holdSession != session) {
+            throw new IllegalStateException(String.format("existed current session[%s]", holdSession));
+        }
         if (holdSession == null) {
             HOLDER.set(session);
         }
-
     }
 
     @Override
-    public void removeCurrentSession(Session session) throws IllegalStateException {
-        final Session holdSession = HOLDER.get();
-        Assert.state(holdSession == null || holdSession == session
-                , () -> String.format("existed current session[%s]", holdSession));
-
+    public void removeCurrentSession(GenericSyncApiSession session) throws IllegalStateException {
+        final GenericSyncApiSession holdSession = HOLDER.get();
+        if (holdSession != null && holdSession != session) {
+            throw new IllegalStateException(String.format("existed current session[%s]", holdSession));
+        }
         if (holdSession != null) {
             HOLDER.remove();
         }

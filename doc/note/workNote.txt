@@ -1,3 +1,4 @@
 
 1. 处理 NotPredicateImpl 类.
 2. 重新 评估 FieldPredicate 和 FieldExpression 的设计.
+3. 考虑 ConvertExpressionImpl 的具体 设计 与 实现,比如 用 sql 还是用转换器.
