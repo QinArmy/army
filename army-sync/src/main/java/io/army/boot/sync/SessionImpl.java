@@ -44,7 +44,7 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
         this.sessionFactory = sessionFactory;
         this.currentSession = builder.currentSession();
         this.connInitParam = createConnInitParam(connection, builder.resetConnection());
-        this.readonly = sessionFactory.readonly();
+        this.readonly = builder.readOnly();
         if (sessionFactory.supportSessionCache()) {
             this.sessionCache = sessionFactory.sessionCacheFactory().createSessionCache(this);
         } else {

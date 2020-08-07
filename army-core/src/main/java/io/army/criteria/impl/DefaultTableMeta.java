@@ -378,7 +378,17 @@ class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     @Override
     public final String toString() {
-        return this.domainClass.getName();
+        StringBuilder builder = new StringBuilder();
+        if (this instanceof ChildTableMeta) {
+            builder.append("ChildTableMeta[");
+        } else if (this instanceof ParentTableMeta) {
+            builder.append("ParentTableMeta[");
+        } else {
+            builder.append("TableMeta[");
+        }
+        builder.append(this.domainClass.getName())
+                .append("]");
+        return builder.toString();
     }
 
 

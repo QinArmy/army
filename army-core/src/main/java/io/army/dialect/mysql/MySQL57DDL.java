@@ -6,10 +6,11 @@ import io.army.dialect.DDLContext;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.sqltype.MySQLDataType;
 import io.army.util.Assert;
 
 import java.sql.JDBCType;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -25,46 +26,37 @@ class MySQL57DDL extends AbstractDDL {
 
     /*################################## blow SQL interface method ##################################*/
 
+    /*################################## blow DDL method ##################################*/
 
+    @Override
+    public void clearForDDL() {
+        super.clearForDDL();
+        this.jdbcTypeFunctionMap = null;
+    }
 
     /*################################## blow AbstractTableDDL template method ##################################*/
 
     @Override
     protected final void defaultOfCreateAndUpdate(FieldMeta<?, ?> fieldMeta, DDLContext context) {
-        StringBuilder tableBuilder = context.sqlBuilder();
+        StringBuilder builder = context.sqlBuilder();
         int precision = fieldMeta.precision();
         if (precision < 0) {
             precision = 0;
         }
-        if (precision > MySQLDataType.DATETIME.maxPrecision()) {
-            MySQL57DDLUtils.throwPrecisionException(fieldMeta);
+        if (precision > 6) {
+            throw new MetaException("%s,this value range of MySQL DATETIME is [0,6] .", fieldMeta);
         }
-        tableBuilder.append("CURRENT_TIMESTAMP");
+        builder.append("CURRENT_TIMESTAMP");
         if (precision > 0) {
-            tableBuilder.append("(")
+            builder.append("(")
                     .append(precision)
                     .append(")");
         }
     }
 
     @Override
-    protected final void dataTypeClause(FieldMeta<?, ?> fieldMeta, DDLContext context) {
-        Map<JDBCType, Function<FieldMeta<?, ?>, String>> funcMap = this.jdbcTypeFunctionMap;
-        if (funcMap == null) {
-            funcMap = MySQL57DDLUtils.createJdbcFunctionMap();
-            this.jdbcTypeFunctionMap = funcMap;
-        }
-
-        Function<FieldMeta<?, ?>, String> function = funcMap.get(fieldMeta.mappingMeta().jdbcType());
-        if (function == null) {
-            throw new MetaException("Entity[%s].column[%s] not found jdbc function"
-                    , fieldMeta.tableMeta().tableName()
-                    , fieldMeta.fieldName()
-            );
-        }
-        context.sqlBuilder()
-                .append(" ")
-                .append(function.apply(fieldMeta));
+    protected Map<JDBCType, Function<FieldMeta<?, ?>, String>> createJdbcFunctionMap() {
+        return MySQL57DDLUtils.createJdbcFunctionMap();
     }
 
     @Override
@@ -80,18 +72,26 @@ class MySQL57DDL extends AbstractDDL {
     }
 
     @Override
-    protected final void nonReservedPropDefault(FieldMeta<?, ?> fieldMeta, DDLContext context) {
+    protected final void doFieldDefaultValue(FieldMeta<?, ?> fieldMeta, DDLContext context) {
         final String defaultValue = fieldMeta.defaultValue().toUpperCase();
         StringBuilder tableBuilder = context.sqlBuilder().append(" ");
         switch (defaultValue) {
-            case "NOW":
             case IDomain.NOW:
+                if (fieldMeta.javaType() != LocalDateTime.class) {
+                    throw new MetaException("%s, IDomain.NOW only support LocalDateTime for MySQL");
+                }
                 MySQL57DDLUtils.nowFunc(fieldMeta, tableBuilder);
                 break;
             case IDomain.ZERO_DATE_TIME:
+                if (fieldMeta.javaType() != LocalDateTime.class) {
+                    throw new MetaException("%s, IDomain.ZERO_DATE_TIME only support LocalDateTime for MySQL");
+                }
                 tableBuilder.append(MySQL57DDLUtils.zeroDateTime(fieldMeta, zoneId()));
                 break;
             case IDomain.ZERO_DATE:
+                if (fieldMeta.javaType() != LocalDate.class) {
+                    throw new MetaException("%s, IDomain.ZERO_DATE only support LocalDate for MySQL");
+                }
                 tableBuilder.append(MySQL57DDLUtils.zeroDate(fieldMeta, zoneId()));
                 break;
             case IDomain.ZERO_YEAR:
@@ -109,14 +109,13 @@ class MySQL57DDL extends AbstractDDL {
     }
 
     @Override
-    protected final boolean independentIndexDefinition() {
+    protected final boolean useIndependentIndexDefinition() {
         return false;
     }
 
     @Override
-    protected final void indexSuffix(DDLContext context) {
-        context.sqlBuilder()
-                .append(",\n");
+    protected final boolean useIndependentComment() {
+        return false;
     }
 
     /*################################## blow protected method ##################################*/

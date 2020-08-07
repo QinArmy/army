@@ -18,6 +18,8 @@ public interface DDLContext {
 
     void appendTable();
 
+    void appendField(FieldMeta<?, ?> fieldMeta);
+
     void append(String sql);
 
     void resetBuilder();

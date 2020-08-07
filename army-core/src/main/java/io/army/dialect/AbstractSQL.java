@@ -8,9 +8,9 @@ import java.time.ZoneId;
 
 public abstract class AbstractSQL implements SQL {
 
-    protected final InnerDialect dialect;
+    protected final Dialect dialect;
 
-    protected AbstractSQL(InnerDialect dialect) {
+    protected AbstractSQL(Dialect dialect) {
         this.dialect = dialect;
     }
 

@@ -23,4 +23,9 @@ public interface DDL extends SQL {
 
     List<String> dropIndex(TableMeta<?> tableMeta, @Nullable String tableSuffix, Collection<String> indexNames);
 
+    /**
+     * performance after {@link io.army.GenericRmSessionFactory}  initializing .
+     */
+    void clearForDDL();
+
 }

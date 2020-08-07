@@ -34,6 +34,8 @@ final class SyncMetaMigratorImpl implements SyncMetaMigrator {
         // 4. execute ddl
         DDLSQLExecutor.build()
                 .executeDDL(sessionFactory.databaseIndex(), shardingDdlList, conn);
+        // clear ddl cache.
+        sessionFactory.dialect().clearForDDL();
     }
 
 

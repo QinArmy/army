@@ -269,6 +269,8 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
 
         private boolean currentSession;
 
+        private boolean readOnly = SessionFactoryImpl.this.readOnly;
+
         private boolean resetConnection = true;
 
         private SessionBuilderImpl() {
@@ -277,6 +279,12 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
         @Override
         public SessionFactory.SessionBuilder currentSession(boolean current) {
             this.currentSession = current;
+            return this;
+        }
+
+        @Override
+        public final SessionBuilder readOnly(boolean readOnly) {
+            this.readOnly = readOnly;
             return this;
         }
 
@@ -290,6 +298,10 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
             return currentSession;
         }
 
+        public final boolean readOnly() {
+            return this.readOnly;
+        }
+
         public final boolean resetConnection() {
             return resetConnection;
         }
@@ -298,8 +310,12 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
         public Session build() throws SessionException {
             final boolean current = this.currentSession;
             try {
+                if (SessionFactoryImpl.this.readOnly && !this.readOnly) {
+                    throw new CreateSessionException(ErrorCode.SESSION_CREATE_ERROR
+                            , "%s can't create create non-readonly TmSession.", SessionFactoryImpl.this);
+                }
                 final Session session = new SessionImpl(SessionFactoryImpl.this
-                        , SessionFactoryImpl.this.dataSource.getConnection(), SessionBuilderImpl.this);
+                        , SessionFactoryImpl.this.dataSource.getConnection(), this);
                 if (current) {
                     SessionFactoryImpl.this.currentSessionContext.currentSession(session);
                 }

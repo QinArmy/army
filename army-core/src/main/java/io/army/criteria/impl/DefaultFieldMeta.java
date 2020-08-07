@@ -302,9 +302,19 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     @Override
     public final String toString() {
-        return this.table.toString()
-                .concat(".")
-                .concat(this.propertyName);
+        StringBuilder builder = new StringBuilder();
+        if (this instanceof PrimaryFieldMeta) {
+            builder.append("PrimaryFieldMeta[");
+        } else if (this instanceof IndexFieldMeta) {
+            builder.append("IndexFieldMeta[");
+        } else {
+            builder.append("FieldMeta[");
+        }
+        builder.append(this.table.javaType().getName())
+                .append(".")
+                .append(this.propertyName)
+                .append("]");
+        return builder.toString();
     }
 
     @Override

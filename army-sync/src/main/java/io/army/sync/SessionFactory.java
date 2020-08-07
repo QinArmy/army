@@ -24,8 +24,19 @@ public interface SessionFactory extends GenericSyncApiSessionFactory, GenericRmS
 
     interface SessionBuilder {
 
+        /**
+         * Optional,default is {@code false}
+         */
         SessionBuilder currentSession(boolean current);
 
+        /**
+         * Optional,default is {@link SessionFactory#readonly()}
+         */
+        SessionBuilder readOnly(boolean readOnly);
+
+        /**
+         * Optional,default is {@code true}
+         */
         SessionBuilder resetConnection(boolean reset);
 
         Session build() throws SessionException;

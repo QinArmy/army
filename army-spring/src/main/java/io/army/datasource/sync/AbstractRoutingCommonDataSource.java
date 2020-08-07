@@ -35,12 +35,12 @@ public abstract class AbstractRoutingCommonDataSource<D extends CommonDataSource
 
     protected final Map<DataSourceRole, D> dataSourceMap;
 
-    private boolean lenientFallback = true;
+    protected boolean lenientFallback = true;
 
     /**
      * transaction timeout boundary seconds
      */
-    private int timeoutBoundary = 10;
+    protected int timeoutBoundary = 10;
 
     protected AbstractRoutingCommonDataSource(Map<DataSourceRole, D> dataSourceMap) {
         Map<DataSourceRole, D> newMap = new EnumMap<>(dataSourceMap);
@@ -129,7 +129,14 @@ public abstract class AbstractRoutingCommonDataSource<D extends CommonDataSource
         }
         D dataSource = this.dataSourceMap.get(lookupKey);
         if (dataSource == null) {
-            throw new IllegalStateException("Cannot determine target DataSource for lookup key [" + lookupKey + "]");
+            if (lookupKey == DataSourceRole.TIMEOUT_SECONDARY && this.lenientFallback) {
+                dataSource = this.dataSourceMap.get(DataSourceRole.SECONDARY);
+            }
+            if (dataSource == null) {
+                throw new IllegalStateException(
+                        "Cannot determine target DataSource for lookup key [" + lookupKey + "]");
+            }
+
         }
         return dataSource;
     }

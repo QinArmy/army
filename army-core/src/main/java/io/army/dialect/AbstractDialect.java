@@ -137,6 +137,11 @@ public abstract class AbstractDialect implements InnerDialect {
         return ddl.dropIndex(tableMeta, tableSuffix, indexNames);
     }
 
+    @Override
+    public final void clearForDDL() {
+        this.ddl.clearForDDL();
+    }
+
     /*################################## blow DQL method ##################################*/
 
     @Override

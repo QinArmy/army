@@ -15,14 +15,29 @@ public interface TmSessionFactory extends GenericSyncApiSessionFactory, GenericT
 
     interface SessionBuilder {
 
+        /**
+         * Optional
+         */
         SessionBuilder transactionName(@Nullable String transactionName);
 
+        /**
+         * Optional,default is {@code false}
+         */
         SessionBuilder currentSession(boolean current);
 
+        /**
+         * Required, default is {@code null}
+         */
         SessionBuilder isolation(Isolation isolation);
 
+        /**
+         * Optional,default is {@link TmSessionFactory#readonly()}
+         */
         SessionBuilder readOnly(boolean readOnly);
 
+        /**
+         * Optional,default is {@code -1}
+         */
         SessionBuilder timeout(int timeoutSeconds);
 
         TmSession build() throws SessionException;

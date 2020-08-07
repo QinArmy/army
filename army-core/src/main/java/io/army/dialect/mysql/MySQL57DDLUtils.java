@@ -11,7 +11,6 @@ import java.sql.JDBCType;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -20,7 +19,7 @@ import java.util.function.Function;
 
 abstract class MySQL57DDLUtils extends DDLUtils {
 
-   static EnumSet<JDBCType> NO_DEFAULT_JDBC = EnumSet.of(
+    static EnumSet<JDBCType> NO_DEFAULT_JDBC = EnumSet.of(
             JDBCType.LONGNVARCHAR,
             JDBCType.LONGVARCHAR,
             JDBCType.LONGVARBINARY,
@@ -88,10 +87,10 @@ abstract class MySQL57DDLUtils extends DDLUtils {
 
     static String varcharFunction(FieldMeta<?, ?> fieldMeta) {
         int precision = fieldMeta.precision();
-        if(precision < 0){
+        if (precision < 0) {
             precision = 255;
         }
-        return onlyPrecisionType(fieldMeta, MySQLDataType.VARCHAR,precision);
+        return onlyPrecisionType(fieldMeta, MySQLDataType.VARCHAR, precision);
     }
 
     static String longVarcharFunction(FieldMeta<?, ?> fieldMeta) {
@@ -169,6 +168,10 @@ abstract class MySQL57DDLUtils extends DDLUtils {
         return onlyPrecisionType(fieldMeta, MySQLDataType.DATETIME, 0);
     }
 
+    private static String booleanFunction(FieldMeta<?, ?> fieldMeta) {
+        return "BOOLEAN";
+    }
+
     /**
      * @return a unmodifiable map
      */
@@ -201,34 +204,20 @@ abstract class MySQL57DDLUtils extends DDLUtils {
         map.put(JDBCType.TIME, MySQL57DDLUtils::timeFunction);
         map.put(JDBCType.TIMESTAMP, MySQL57DDLUtils::timestampFunction);
 
+        map.put(JDBCType.BOOLEAN, MySQL57DDLUtils::booleanFunction);
         return Collections.unmodifiableMap(map);
     }
 
-    static String zeroDateTime(FieldMeta<?, ?> fieldMeta, ZoneId zoneId) {
-        int precision = fieldMeta.precision();
-        DateTimeFormatter formatter = null;
-        if (precision < 0) {
-            formatter = TimeUtils.DATE_TIME_FORMATTER;
-        } else if (precision <= MySQLDataType.DATETIME.maxPrecision()) {
-            formatter = TimeUtils.SIX_FRACTION_DATE_TIME_FORMATTER;
-        } else {
-            throwPrecisionException(fieldMeta);
-        }
-        return StringUtils.quote(
-                ZonedDateTime.ofInstant(Instant.EPOCH, zoneId)
-                        .format(formatter)
-        );
-    }
 
-    static void nowFunc(FieldMeta<?, ?> fieldMeta, StringBuilder tableBuilder) {
+    static void nowFunc(FieldMeta<?, ?> fieldMeta, StringBuilder builder) {
         int precision = fieldMeta.precision();
-        tableBuilder.append("CURRENT_TIMESTAMP");
+        builder.append("CURRENT_TIMESTAMP");
         if (precision > 0 && precision < 7) {
-            tableBuilder.append("(")
-                    .append(fieldMeta.precision())
+            builder.append("(")
+                    .append(precision)
                     .append(")");
         } else if (precision > 6) {
-            throw new MetaException("MySQL NOW/CURRENT_TIMESTAMP func precision must in [0,6]");
+            throw new MetaException("%s, NOW/CURRENT_TIMESTAMP func precision must in [0,6]", fieldMeta);
         }
     }
 

@@ -5,17 +5,22 @@ import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
 import io.army.sqltype.SQLDataType;
+import io.army.util.StringUtils;
 import io.army.util.TimeUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.JDBCType;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.BiFunction;
 
 public abstract class DDLUtils {
 
+    protected DDLUtils() {
+        throw new UnsupportedOperationException();
+    }
 
     protected static EnumSet<JDBCType> QUOTE_JDBC_TYPE = EnumSet.of(
             JDBCType.VARCHAR,
@@ -37,6 +42,21 @@ public abstract class DDLUtils {
             JDBCType.TIMESTAMP_WITH_TIMEZONE
     );
 
+    public static String zeroDateTime(FieldMeta<?, ?> fieldMeta, ZoneId zoneId) {
+        int precision = fieldMeta.precision();
+        DateTimeFormatter formatter;
+        if (precision < 0) {
+            formatter = TimeUtils.DATE_TIME_FORMATTER;
+        } else if (precision <= 6) {
+            formatter = TimeUtils.SIX_FRACTION_DATE_TIME_FORMATTER;
+        } else {
+            throw new MetaException("% ,precision must in [0,6] for dialect");
+        }
+        return StringUtils.quote(
+                ZonedDateTime.ofInstant(Instant.EPOCH, zoneId)
+                        .format(formatter)
+        );
+    }
 
     protected static String onlyPrecisionType(FieldMeta<?, ?> fieldMeta, SQLDataType dataType) {
         return onlyPrecisionType(fieldMeta, dataType, dataType.maxPrecision());

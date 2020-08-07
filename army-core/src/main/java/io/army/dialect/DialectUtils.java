@@ -17,6 +17,9 @@ import java.util.*;
 
 public abstract class DialectUtils {
 
+    protected DialectUtils() {
+        throw new UnsupportedOperationException();
+    }
 
     protected static final EnumSet<JDBCType> TEXT_JDBC_TYPE = EnumSet.of(
             JDBCType.VARCHAR,

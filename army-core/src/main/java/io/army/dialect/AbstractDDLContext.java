@@ -74,6 +74,16 @@ abstract class AbstractDDLContext implements DDLContext {
     }
 
     @Override
+    public final void appendField(FieldMeta<?, ?> fieldMeta) {
+        if (fieldMeta.tableMeta() != this.tableMeta) {
+            throw DialectUtils.createUnKnownFieldException(fieldMeta);
+        }
+        this.sqlBuilder.append(" ")
+                .append(this.dialect.quoteIfNeed(fieldMeta.fieldName()));
+
+    }
+
+    @Override
     public final void append(String sql) {
         this.sqlList.add(sql);
     }

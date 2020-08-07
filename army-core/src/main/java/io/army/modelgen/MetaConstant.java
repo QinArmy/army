@@ -5,10 +5,7 @@ import io.army.util.ArrayUtils;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.Set;
 
 /**
@@ -42,7 +39,9 @@ public interface MetaConstant {
             LocalDateTime.class,
             LocalDate.class,
 
-            ZonedDateTime.class
+            ZonedDateTime.class,
+            OffsetDateTime.class,
+            OffsetTime.class
     );
 
     Set<Class<?>> MAYBE_NO_DEFAULT_TYPES = SIMPLE_JAVA_TYPE_SET;

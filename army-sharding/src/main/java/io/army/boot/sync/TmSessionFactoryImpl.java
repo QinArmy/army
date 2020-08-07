@@ -241,7 +241,7 @@ class TmSessionFactoryImpl extends AbstractGenericSessionFactory implements Inne
 
         private Isolation isolation;
 
-        private boolean readOnly;
+        private boolean readOnly = TmSessionFactoryImpl.this.readOnly;
 
         private int timeout = 0;
 
@@ -308,7 +308,7 @@ class TmSessionFactoryImpl extends AbstractGenericSessionFactory implements Inne
             if (this.timeout == 0) {
                 throw new CreateSessionException(ErrorCode.SESSION_CREATE_ERROR, "not specified timeout");
             }
-            return null;
+            return new TmSessionImpl(TmSessionFactoryImpl.this, this);
         }
     }
 
