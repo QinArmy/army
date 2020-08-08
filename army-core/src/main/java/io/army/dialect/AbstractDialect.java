@@ -51,7 +51,7 @@ public abstract class AbstractDialect implements InnerDialect {
         this.keywords = Collections.unmodifiableSet(createKeywordsSet());
         this.sessionFactory = sessionFactory;
 
-        this.ddl = createTableDDL();
+        this.ddl = createDDL();
         this.dml = createDML();
         this.dql = createDQL();
 
@@ -69,10 +69,7 @@ public abstract class AbstractDialect implements InnerDialect {
 
     @Override
     public final boolean isKeyWord(String text) {
-        if (!StringUtils.hasText(text)) {
-            return false;
-        }
-        return this.keywords.contains(text.toUpperCase());
+        return StringUtils.hasText(text) && this.keywords.contains(text.toUpperCase());
     }
 
     @Override
@@ -206,7 +203,7 @@ public abstract class AbstractDialect implements InnerDialect {
 
     protected abstract String doQuote(String identifier);
 
-    protected abstract DDL createTableDDL();
+    protected abstract DDL createDDL();
 
     protected abstract DML createDML();
 

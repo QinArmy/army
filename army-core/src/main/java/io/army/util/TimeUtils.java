@@ -4,11 +4,13 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
-import java.util.Locale;
 import java.util.TimeZone;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 /**
+ *
  */
 public abstract class TimeUtils {
 
@@ -16,24 +18,29 @@ public abstract class TimeUtils {
 
     public static final ZoneId ZONE8 = ZoneId.of(CHINA_ZONE);
 
+    public static final OffsetDateTime ZERO_DATE_TIME = OffsetDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC);
+
     public static final ZoneId GMT = ZoneId.of("GMT");
 
     public static final TimeZone TIME_ZONE8 = TimeZone.getTimeZone(ZONE8);
 
-    public static final ZoneOffset ZONE_OFFSET8 = ZoneOffset.of(CHINA_ZONE);
+    public static final String TIME_FORMAT = "HH:mm:ss";
 
+    public static final String ZONE_TIME_FORMAT = "HH:mm:ssZ";
 
-    public static final String DATE_TIME_FORMAT = "uuuu-MM-dd HH:mm:ss";
+    public static final String SIX_FRACTION_TIME_FORMAT = "HH:mm:ss.SSSSSS";
+
+    public static final String SIX_FRACTION_ZONED_TIME_FORMAT = "HH:mm:ss.SSSSSSZ";
 
     public static final String DATE_FORMAT = "uuuu-MM-dd";
+
+    public static final String DATE_TIME_FORMAT = "uuuu-MM-dd HH:mm:ss";
 
     public static final String YEAR_FORMAT = "uuuu";
 
     public static final String MONTH_DAY_FORMAT = "MM-dd";
 
     public static final String YEAR_MONTH_FORMAT = "uuuu-MM";
-
-    public static final String TIME_FORMAT = "HH:mm:ss";
 
     public static final String CLOSE_DATE_FORMAT = "uuuuMMdd";
 
@@ -47,45 +54,16 @@ public abstract class TimeUtils {
 
     public static final String FULL_ZONE_DATE_TIME_FORMAT = "uuuu-MM-dd HH:mm:ss.SSSZ";
 
+    public static final String SIX_FRACTION_ZONE_DATE_TIME_FORMAT = "uuuu-MM-dd HH:mm:ss.SSSSSSZ";
+
     public static final String LOCALE_ZONE_DATE_TIME_FORMAT = "E MMM dd HH:mm:ss Z uuuu";
 
-
-    public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(DATE_FORMAT);
-
-    public static final DateTimeFormatter YEAR_FORMATTER = DateTimeFormatter.ofPattern(YEAR_FORMAT);
-
-    public static final DateTimeFormatter MONTH_DAY_FORMATTER = DateTimeFormatter.ofPattern(MONTH_DAY_FORMAT);
-
-    public static final DateTimeFormatter YEAR_MONTH_FORMATTER = DateTimeFormatter.ofPattern(YEAR_MONTH_FORMAT);
-
-    public static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern(TIME_FORMAT);
-
-    public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
-
-    public static final DateTimeFormatter CLOSE_DATE_FORMATTER = DateTimeFormatter.ofPattern(CLOSE_DATE_FORMAT);
-
-    public static final DateTimeFormatter CLOSE_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(CLOSE_DATE_TIME_FORMAT);
-
-    public static final DateTimeFormatter FULL_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(FULL_DATE_TIME_FORMAT);
-
-    public static final DateTimeFormatter ZONE_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(ZONE_DATE_TIME_FORMAT);
-
-    public static final DateTimeFormatter FULL_ZONE_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(FULL_ZONE_DATE_TIME_FORMAT);
-
-    public static final DateTimeFormatter SIX_FRACTION_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(SIX_FRACTION_DATE_TIME_FORMAT);
-
-    public static final DateTimeFormatter ENGLISH_ZONE_FORMATTER =
-            DateTimeFormatter.ofPattern(LOCALE_ZONE_DATE_TIME_FORMAT, Locale.ENGLISH);
+    private static final ConcurrentMap<String, DateTimeFormatter> dateTimeFormatterHolder = new ConcurrentHashMap<>();
 
 
-    /**
-     *
-     * @see System#currentTimeMillis()
-     */
-    public static final LocalDateTime SOURCE_DATE_TIME = LocalDateTime.ofInstant(Instant.EPOCH, ZoneId.systemDefault());
-
-
-    public static final LocalDate SOURCE_DATE = SOURCE_DATE_TIME.toLocalDate();
+    public static DateTimeFormatter dateTimeFormatter(String format) {
+        return dateTimeFormatterHolder.computeIfAbsent(format, DateTimeFormatter::ofPattern);
+    }
 
 
     public static ChronoUnit convertTimeUnit(TimeUnit timeUnit) {
@@ -120,21 +98,12 @@ public abstract class TimeUtils {
     }
 
 
-    /**
-     * @return true 表示 date 等于 {@link #SOURCE_DATE}
-     */
-    public static boolean isSource(LocalDate date) {
-        return SOURCE_DATE.isEqual(date);
+    public static boolean isZero(LocalDate date) {
+        return ZERO_DATE_TIME.toLocalDate().isEqual(date);
     }
 
-    /**
-     * 比较 dateTime 是否等于 东八区 1970-01-01 08:00:00 ,这个过程将会忽略毫秒.
-     * 如果 需要精确到毫秒请使用 {@link LocalDateTime#equals(Object)}
-     *
-     * @return true 表示 dateTime 是 东八区 1970-01-01 08:00:00
-     */
-    public static boolean isSource(LocalDateTime dateTime) {
-        return SOURCE_DATE_TIME.isEqual(dateTime);
+    public static boolean isZero(LocalDateTime dateTime) {
+        return ZERO_DATE_TIME.toLocalDateTime().isEqual(dateTime);
     }
 
     /**

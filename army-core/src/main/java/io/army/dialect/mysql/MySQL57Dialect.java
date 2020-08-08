@@ -60,11 +60,11 @@ class MySQL57Dialect extends AbstractDialect {
 
     @Override
     protected Set<String> createKeywordsSet() {
-        return MySQLUtils.create57KeywordsSet();
+        return MySQLDialectUtils.create57KeywordsSet();
     }
 
     @Override
-    protected DDL createTableDDL() {
+    protected DDL createDDL() {
         return new MySQL57DDL(this);
     }
 

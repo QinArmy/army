@@ -28,11 +28,11 @@ class MySQL80Dialect extends MySQL57Dialect {
 
     @Override
     protected Set<String> createKeywordsSet() {
-        return MySQLUtils.create80KeywordsSet();
+        return MySQLDialectUtils.create80KeywordsSet();
     }
 
     @Override
-    protected DDL createTableDDL() {
+    protected DDL createDDL() {
         return new MySQL80TableDDL(this);
     }
 

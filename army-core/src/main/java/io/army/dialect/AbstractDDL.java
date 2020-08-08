@@ -1,27 +1,23 @@
 package io.army.dialect;
 
 import io.army.criteria.MetaException;
+import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexFieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
-import io.army.modelgen.MetaConstant;
-import io.army.struct.CodeEnum;
-import io.army.util.Assert;
+import io.army.meta.mapping.LocalDateTimeType;
+import io.army.meta.mapping.MappingMeta;
 import io.army.util.StringUtils;
 
 import java.sql.JDBCType;
-import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public abstract class AbstractDDL extends AbstractSQL implements DDL {
-
-    private Map<Class<?>, BiFunction<FieldMeta<?, ?>, ZoneId, String>> defaultFunctionMap;
 
     private Map<JDBCType, Function<FieldMeta<?, ?>, String>> jdbcTypeFunctionMap;
 
@@ -33,31 +29,34 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
 
     @Override
     public final List<String> createTable(TableMeta<?> tableMeta, @Nullable String tableSuffix) {
-        DDLContext context = new TableDDLContext(this.dialect, tableMeta, tableSuffix, defaultFunctionMap());
-        StringBuilder builder = context.sqlBuilder();
+        DDLContext context = new DDLContextImpl(this.dialect, tableMeta, tableSuffix);
         // 1. create clause
         createTableClause(context);
-        builder.append(" (\n");
+        context.sqlBuilder().append(" (\n");
         // 2. column definition clause
         columnListDefinitions(context);
         if (useIndependentIndexDefinition()) {
-            builder.append(" )\n");
+            context.sqlBuilder().append(" )\n");
             // 3. table option clause
             tableOptionsClause(context);
             //4. rest builder
-            context.append(builder.toString());
+            context.append(context.sqlBuilder().toString());
             context.resetBuilder();
             //5. independent index list clause
             independentIndexListDefinitions(context);
         } else {
             // 3. index definition
             inlineIndexListDefinitionClause(context);
-            builder.append(" )\n");
+            context.sqlBuilder().append(" )\n");
             // 4. tableMeta options definition
             tableOptionsClause(context);
         }
 
         if (useIndependentComment()) {
+            //rest builder
+            context.append(context.sqlBuilder().toString());
+            context.resetBuilder();
+            // finally , independent comment statement
             independentTableComment(context);
         }
         return context.build();
@@ -67,17 +66,29 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     public final List<String> addColumn(TableMeta<?> tableMeta, @Nullable String tableSuffix
             , Collection<FieldMeta<?, ?>> addFieldMetas) {
 
-        final DDLContext context = new ColumnDDLContext(this.dialect, tableMeta, tableSuffix, defaultFunctionMap());
+        DDLContext context = new DDLContextImpl(this.dialect, tableMeta, tableSuffix);
 
+        int index = 0;
         for (FieldMeta<?, ?> fieldMeta : addFieldMetas) {
 
-            Assert.isTrue(fieldMeta.tableMeta() == tableMeta, () -> String.format(
-                    "TableMeta[%s] then FieldMeta[%s] not match."
-                    , tableMeta, fieldMeta));
-
+            if (fieldMeta.tableMeta() != tableMeta) {
+                throw new IllegalArgumentException(String.format("%s and %s not match.", tableMeta, fieldMeta));
+            }
+            if (index > 0) {
+                context.resetBuilder();
+            }
             doAddColumn(fieldMeta, context);
+            if (useIndependentComment()) {
+                //append sql statement
+                context.append(context.sqlBuilder().toString());
+                // reset builder
+                context.resetBuilder();
+                independentColumnComment(fieldMeta, context);
+            }
+            // append sql statement
             context.append(context.sqlBuilder().toString());
-            context.resetBuilder();
+
+            index++;
         }
         return context.build();
     }
@@ -85,18 +96,25 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     @Override
     public final List<String> changeColumn(TableMeta<?> tableMeta, @Nullable String tableSuffix
             , Collection<FieldMeta<?, ?>> changeFieldMetas) {
-        final DDLContext context = new ColumnDDLContext(this.dialect, tableMeta, tableSuffix, defaultFunctionMap());
+        DDLContext context = new DDLContextImpl(this.dialect, tableMeta, tableSuffix);
         int index = 0;
         for (FieldMeta<?, ?> fieldMeta : changeFieldMetas) {
 
-            Assert.isTrue(fieldMeta.tableMeta() == tableMeta, () -> String.format(
-                    "TableMeta[%s] then FieldMeta[%s] not match."
-                    , tableMeta, fieldMeta));
+            if (fieldMeta.tableMeta() != tableMeta) {
+                throw new IllegalArgumentException(String.format("%s and %s not match.", tableMeta, fieldMeta));
+            }
             if (index > 0) {
                 context.resetBuilder();
             }
-
             doChangeColumn(fieldMeta, context);
+            if (useIndependentComment()) {
+                //append sql statement
+                context.append(context.sqlBuilder().toString());
+                // reset builder
+                context.resetBuilder();
+                independentColumnComment(fieldMeta, context);
+            }
+            // append sql statement
             context.append(context.sqlBuilder().toString());
             index++;
         }
@@ -106,18 +124,18 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     @Override
     public final List<String> addIndex(TableMeta<?> tableMeta, @Nullable String tableSuffix
             , Collection<IndexMeta<?>> addIndexMetas) {
-        final DDLContext context = new IndexDDLContext(this.dialect, tableMeta, tableSuffix, defaultFunctionMap());
+        DDLContext context = new DDLContextImpl(this.dialect, tableMeta, tableSuffix);
         int index = 0;
         for (IndexMeta<?> indexMeta : addIndexMetas) {
-            Assert.isTrue(indexMeta.table() == tableMeta, () -> String.format(
-                    "TableMeta[%s] then Index[%s] not match."
-                    , tableMeta.tableName(), indexMeta.name()));
+            if (indexMeta.table() != tableMeta) {
+                throw new IllegalArgumentException(String.format("%s and %s not match.", tableMeta, indexMeta));
+            }
             if (index > 0) {
                 context.resetBuilder();
             }
             createIndexDefinition(indexMeta, context);
+            // append sql statement
             context.append(context.sqlBuilder().toString());
-
             index++;
         }
         return context.build();
@@ -126,13 +144,14 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     @Override
     public final List<String> dropIndex(TableMeta<?> tableMeta, @Nullable String tableSuffix
             , Collection<String> indexNames) {
-        final DDLContext context = new IndexDDLContext(this.dialect, tableMeta, tableSuffix, defaultFunctionMap());
+        DDLContext context = new DDLContextImpl(this.dialect, tableMeta, tableSuffix);
         int index = 0;
         for (String indexName : indexNames) {
             if (index > 0) {
                 context.resetBuilder();
             }
             doDropIndex(indexName, context);
+            // append sql statement
             context.append(context.sqlBuilder().toString());
             index++;
         }
@@ -141,7 +160,6 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
 
     @Override
     public void clearForDDL() {
-        this.defaultFunctionMap = null;
         this.jdbcTypeFunctionMap = null;
     }
 
@@ -150,10 +168,9 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
 
     protected abstract void tableOptionsClause(DDLContext context);
 
-    protected abstract void doFieldDefaultValue(FieldMeta<?, ?> fieldMeta, DDLContext context);
+    protected abstract void doDefaultExpression(FieldMeta<?, ?> fieldMeta, StringBuilder builder);
 
-    protected abstract void defaultOfCreateAndUpdate(FieldMeta<?, ?> fieldMeta, DDLContext context);
-
+    protected abstract void doDefaultForCreateOrUpdateTime(FieldMeta<?, ?> fieldMeta, DDLContext context);
 
     protected abstract boolean hasDefaultClause(FieldMeta<?, ?> fieldMeta);
 
@@ -162,6 +179,9 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     protected abstract boolean useIndependentComment();
 
     protected abstract void independentIndexDefinitionClause(IndexMeta<?> indexMeta, DDLContext context);
+
+    protected abstract void doNowExpressionForDefaultClause(FieldMeta<?, ?> fieldMeta, StringBuilder builder)
+            throws MetaException;
 
     /**
      * This method performance when create table .
@@ -210,8 +230,8 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
         StringBuilder builder = context.sqlBuilder();
         builder.append("ALTER TABLE");
         context.appendTable();
-        builder.append(" ADD COLUMN ")
-                .append(this.dialect.quoteIfNeed(fieldMeta.fieldName()));
+        builder.append(" ADD COLUMN");
+        context.appendField(fieldMeta);
 
         dataTypeClause(fieldMeta, context);
         nullableClause(fieldMeta, context);
@@ -255,18 +275,20 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
         dataTypeClause(fieldMeta, context);
         //3. default clause
         defaultClause(fieldMeta, context);
-        //4. common clause
+        // 4. comment clause
         columnCommentClause(fieldMeta, context);
     }
 
     protected final void columnCommentClause(FieldMeta<?, ?> fieldMeta, DDLContext context) {
-        context.sqlBuilder().append(" COMMENT '")
-                .append(escapeQuote(fieldMeta.comment()))
-                .append("'")
-        ;
+        if (!useIndependentComment()) {
+            context.sqlBuilder().append(" COMMENT '")
+                    .append(escapeQuote(fieldMeta.comment()))
+                    .append("'")
+            ;
+        }
     }
 
-    protected String escapeQuote(String text) {
+    protected final String escapeQuote(String text) {
         return text.replaceAll("'", "\\\\'");
     }
 
@@ -280,8 +302,8 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     }
 
     protected final void defaultClause(FieldMeta<?, ?> fieldMeta, DDLContext context) {
-
-        if (!hasDefaultClause(fieldMeta)) {
+        if ((fieldMeta.nullable() && !StringUtils.hasText(fieldMeta.defaultValue()))
+                || !hasDefaultClause(fieldMeta)) {
             return;
         }
 
@@ -294,21 +316,20 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
         } else if (fieldMeta.tableMeta().discriminator() == fieldMeta) {
             builder.append(defaultKeyword)
                     .append(fieldMeta.tableMeta().discriminatorValue());
-        } else if (!StringUtils.hasText(fieldMeta.defaultValue())
-                && (MetaConstant.MAYBE_NO_DEFAULT_TYPES.contains(fieldMeta.javaType())
-                || CodeEnum.class.isAssignableFrom(fieldMeta.javaType()))) {
-            builder.append(defaultKeyword)
-                    .append(context.defaultValue(fieldMeta));
         } else {
             if (StringUtils.hasText(fieldMeta.defaultValue())) {
-                doFieldDefaultValue(fieldMeta, context);
+                handleDefaultExpression(fieldMeta, builder);
+            } else if (DDLUtils.simpleJavaType(fieldMeta)) {
+                builder.append(defaultKeyword)
+                        .append(DDLUtils.defaultValueForSimpleJavaType(fieldMeta));
             } else if (!fieldMeta.nullable()) {
-                throw new MetaException("%s isn't nullable and no default value.", fieldMeta);
+                throw new MetaException(fieldMeta + " nullable and no default" +
+                        ",only [reserved properties,discriminator, simple java type] can no default value."
+                );
             }
         }
 
     }
-
 
     protected void createIndexDefinition(IndexMeta<?> indexMeta, DDLContext context) {
         StringBuilder builder = context.sqlBuilder()
@@ -353,14 +374,14 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     /*################################## blow private method ##################################*/
 
     private void reservedPropDefaultValue(FieldMeta<?, ?> fieldMeta, DDLContext context) {
-        StringBuilder builder = context.sqlBuilder().append(" ");
+        StringBuilder builder = context.sqlBuilder();
         switch (fieldMeta.propertyName()) {
             case TableMeta.ID:
                 // no-op
                 break;
             case TableMeta.CREATE_TIME:
             case TableMeta.UPDATE_TIME:
-                defaultOfCreateAndUpdate(fieldMeta, context);
+                doDefaultForCreateOrUpdateTime(fieldMeta, context);
                 break;
             case TableMeta.VISIBLE:
                 builder.append(
@@ -373,16 +394,6 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
             default:
                 throw new IllegalArgumentException(String.format("%s isn't reserved property.", fieldMeta));
         }
-    }
-
-
-    private Map<Class<?>, BiFunction<FieldMeta<?, ?>, ZoneId, String>> defaultFunctionMap() {
-        Map<Class<?>, BiFunction<FieldMeta<?, ?>, ZoneId, String>> funcMap = this.defaultFunctionMap;
-        if (funcMap == null) {
-            funcMap = DDLUtils.createDefaultFunctionMap();
-            this.defaultFunctionMap = funcMap;
-        }
-        return funcMap;
     }
 
     private void columnListDefinitions(DDLContext context) {
@@ -422,5 +433,39 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
             index++;
         }
     }
+
+    private void handleDefaultExpression(FieldMeta<?, ?> fieldMeta, StringBuilder builder) {
+        switch (fieldMeta.defaultValue()) {
+            case IDomain.NOW:
+                if (armyMappingMeta(fieldMeta.mappingMeta())) {
+                    doNowExpressionForDefaultClause(fieldMeta, builder);
+                } else {
+                    doDefaultExpression(fieldMeta, builder);
+                }
+                break;
+            case IDomain.ZERO_TIME:
+            case IDomain.ZERO_YEAR:
+            case IDomain.ZERO_DATE:
+            case IDomain.ZERO_DATE_TIME:
+                if (armyMappingMeta(fieldMeta.mappingMeta())) {
+                    if (!this.supportZone() && DDLUtils.timeTypeWithZone(fieldMeta.javaType())) {
+                        throw new MetaException("%s, NOW() expression not support %s for %s."
+                                , fieldMeta, fieldMeta.javaType().getName(), database());
+                    }
+                    builder.append(DDLUtils.zeroForTimeType(fieldMeta));
+                } else {
+                    doDefaultExpression(fieldMeta, builder);
+                }
+                break;
+            default:
+                doDefaultExpression(fieldMeta, builder);
+        }
+    }
+
+
+    private static boolean armyMappingMeta(MappingMeta mappingMeta) {
+        return mappingMeta.getClass().getPackage() == LocalDateTimeType.class.getPackage();
+    }
+
 
 }

@@ -5,12 +5,12 @@ import io.army.dialect.DDLUtils;
 import io.army.meta.FieldMeta;
 import io.army.sqltype.MySQLDataType;
 import io.army.util.StringUtils;
-import io.army.util.TimeUtils;
 
 import java.sql.JDBCType;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Year;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -209,7 +209,7 @@ abstract class MySQL57DDLUtils extends DDLUtils {
     }
 
 
-    static void nowFunc(FieldMeta<?, ?> fieldMeta, StringBuilder builder) {
+    static void nowFunc(FieldMeta<?, ?> fieldMeta, StringBuilder builder) throws MetaException {
         int precision = fieldMeta.precision();
         builder.append("CURRENT_TIMESTAMP");
         if (precision > 0 && precision < 7) {
@@ -221,19 +221,17 @@ abstract class MySQL57DDLUtils extends DDLUtils {
         }
     }
 
-    static String zeroDate(FieldMeta<?, ?> fieldMeta, ZoneId zoneId) {
-        return StringUtils.quote(
-                ZonedDateTime.ofInstant(Instant.EPOCH, zoneId)
-                        .format(TimeUtils.DATE_FORMATTER)
-        );
+    static void assertSupportTimeType(FieldMeta<?, ?> fieldMeta) {
+        Class<?> javaType = fieldMeta.javaType();
+        boolean support = javaType == LocalDateTime.class
+                || javaType == LocalDate.class
+                || javaType == LocalTime.class
+                || javaType == Year.class;
+        if (!support) {
+            throw new MetaException("%s java type not support by MySQL.");
+        }
     }
 
-    static String zeroYear(FieldMeta<?, ?> fieldMeta, ZoneId zoneId) {
-        return StringUtils.quote(
-                ZonedDateTime.ofInstant(Instant.EPOCH, zoneId)
-                        .format(TimeUtils.YEAR_FORMATTER)
-        );
-    }
 
     static String quoteDefaultIfNeed(FieldMeta<?, ?> fieldMeta, String safeDefaultValue) {
         String defaultValue = safeDefaultValue;

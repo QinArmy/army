@@ -18,6 +18,8 @@ public interface MappingMeta extends ParamMeta {
 
 
     /**
+     * design for {@link io.army.dialect.DDL}
+     *
      * @return value's text with quote (if need)
      * @throws IllegalArgumentException value error
      */

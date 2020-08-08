@@ -11,7 +11,13 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.Function;
 
-abstract class Postgre110DDLUtils extends DDLUtils {
+abstract class Postgre11DDLUtils extends DDLUtils {
+
+    static void assertSupportTimeType(FieldMeta<?, ?> fieldMeta) {
+        if (fieldMeta.javaType() == java.util.Date.class) {
+            throw new MetaException("not support %s java type.", fieldMeta);
+        }
+    }
 
     /**
      * @return a unmodifiable map
@@ -20,39 +26,43 @@ abstract class Postgre110DDLUtils extends DDLUtils {
         Map<JDBCType, Function<FieldMeta<?, ?>, String>> map;
         map = new EnumMap<>(JDBCType.class);
 
-        map.put(JDBCType.BIT, Postgre110DDLUtils::bitFunction);
-        map.put(JDBCType.TINYINT, Postgre110DDLUtils::tinyIntFunction);
-        map.put(JDBCType.SMALLINT, Postgre110DDLUtils::smallIntFunction);
-        map.put(JDBCType.INTEGER, Postgre110DDLUtils::integerFunction);
+        map.put(JDBCType.BIT, Postgre11DDLUtils::bitFunction);
+        map.put(JDBCType.TINYINT, Postgre11DDLUtils::tinyIntFunction);
+        map.put(JDBCType.SMALLINT, Postgre11DDLUtils::smallIntFunction);
+        map.put(JDBCType.INTEGER, Postgre11DDLUtils::integerFunction);
 
-        map.put(JDBCType.BIGINT, Postgre110DDLUtils::bitIntFunction);
-        map.put(JDBCType.FLOAT, Postgre110DDLUtils::floatFunction);
-        map.put(JDBCType.DOUBLE, Postgre110DDLUtils::doubleFunction);
-        map.put(JDBCType.DECIMAL, Postgre110DDLUtils::decimalFunction);
+        map.put(JDBCType.BIGINT, Postgre11DDLUtils::bitIntFunction);
+        map.put(JDBCType.FLOAT, Postgre11DDLUtils::floatFunction);
+        map.put(JDBCType.DOUBLE, Postgre11DDLUtils::doubleFunction);
+        map.put(JDBCType.DECIMAL, Postgre11DDLUtils::decimalFunction);
 
-        map.put(JDBCType.CHAR, Postgre110DDLUtils::charFunction);
-        map.put(JDBCType.VARCHAR, Postgre110DDLUtils::varcharFunction);
-        map.put(JDBCType.LONGVARCHAR, Postgre110DDLUtils::longVarcharFunction);
-        map.put(JDBCType.NCHAR, Postgre110DDLUtils::ncharFunction);
+        map.put(JDBCType.CHAR, Postgre11DDLUtils::charFunction);
+        map.put(JDBCType.VARCHAR, Postgre11DDLUtils::varcharFunction);
+        map.put(JDBCType.LONGVARCHAR, Postgre11DDLUtils::longVarcharFunction);
+        map.put(JDBCType.NCHAR, Postgre11DDLUtils::ncharFunction);
 
-        map.put(JDBCType.NVARCHAR, Postgre110DDLUtils::nvarcharFunction);
-        map.put(JDBCType.BINARY, Postgre110DDLUtils::binaryFunction);
-        map.put(JDBCType.VARBINARY, Postgre110DDLUtils::varbinaryFunction);
-        map.put(JDBCType.LONGVARBINARY, Postgre110DDLUtils::longVarbinaryFunction);
+        map.put(JDBCType.NVARCHAR, Postgre11DDLUtils::nvarcharFunction);
+        map.put(JDBCType.BINARY, Postgre11DDLUtils::binaryFunction);
+        map.put(JDBCType.VARBINARY, Postgre11DDLUtils::varbinaryFunction);
+        map.put(JDBCType.LONGVARBINARY, Postgre11DDLUtils::longVarbinaryFunction);
 
-        map.put(JDBCType.BLOB, Postgre110DDLUtils::blobFunction);
-        map.put(JDBCType.DATE, Postgre110DDLUtils::dateFunction);
-        map.put(JDBCType.TIME, Postgre110DDLUtils::timeFunction);
-        map.put(JDBCType.TIME_WITH_TIMEZONE, Postgre110DDLUtils::timeWithTimeZoneFunction);
+        map.put(JDBCType.BLOB, Postgre11DDLUtils::blobFunction);
+        map.put(JDBCType.DATE, Postgre11DDLUtils::dateFunction);
+        map.put(JDBCType.TIME, Postgre11DDLUtils::timeFunction);
+        map.put(JDBCType.TIME_WITH_TIMEZONE, Postgre11DDLUtils::timeWithTimeZoneFunction);
 
-        map.put(JDBCType.TIMESTAMP, Postgre110DDLUtils::timestampFunction);
-        map.put(JDBCType.TIMESTAMP_WITH_TIMEZONE, Postgre110DDLUtils::timestampWithTimeZoneFunction);
-        map.put(JDBCType.BOOLEAN, Postgre110DDLUtils::booleanFunction);
+        map.put(JDBCType.TIMESTAMP, Postgre11DDLUtils::timestampFunction);
+        map.put(JDBCType.TIMESTAMP_WITH_TIMEZONE, Postgre11DDLUtils::timestampWithTimeZoneFunction);
+        map.put(JDBCType.BOOLEAN, Postgre11DDLUtils::booleanFunction);
 
         return Collections.unmodifiableMap(map);
     }
 
-    /*################################## blow JDBC function method ##################################*/
+    /*################################## blow private method ##################################*/
+
+
+
+    /*################################## blow  JDBC function method ##################################*/
 
     private static String bitFunction(FieldMeta<?, ?> fieldMeta) {
         int precision = fieldMeta.precision();

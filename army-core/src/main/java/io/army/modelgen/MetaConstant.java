@@ -41,7 +41,8 @@ public interface MetaConstant {
 
             ZonedDateTime.class,
             OffsetDateTime.class,
-            OffsetTime.class
+            OffsetTime.class,
+            Year.class
     );
 
     Set<Class<?>> MAYBE_NO_DEFAULT_TYPES = SIMPLE_JAVA_TYPE_SET;

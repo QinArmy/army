@@ -4,17 +4,18 @@ import io.army.criteria.MetaException;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
+import io.army.modelgen.MetaConstant;
 import io.army.sqltype.SQLDataType;
+import io.army.struct.CodeEnum;
 import io.army.util.StringUtils;
 import io.army.util.TimeUtils;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.JDBCType;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.Temporal;
 import java.util.*;
-import java.util.function.BiFunction;
 
 public abstract class DDLUtils {
 
@@ -42,21 +43,117 @@ public abstract class DDLUtils {
             JDBCType.TIMESTAMP_WITH_TIMEZONE
     );
 
-    public static String zeroDateTime(FieldMeta<?, ?> fieldMeta, ZoneId zoneId) {
-        int precision = fieldMeta.precision();
-        DateTimeFormatter formatter;
-        if (precision < 0) {
-            formatter = TimeUtils.DATE_TIME_FORMATTER;
-        } else if (precision <= 6) {
-            formatter = TimeUtils.SIX_FRACTION_DATE_TIME_FORMATTER;
+
+    /**
+     * @see io.army.domain.IDomain#ZERO_TIME
+     * @see io.army.domain.IDomain#ZERO_DATE
+     * @see io.army.domain.IDomain#ZERO_YEAR
+     * @see io.army.domain.IDomain#ZERO_DATE_TIME
+     */
+    public static String zeroForTimeType(FieldMeta<?, ?> fieldMeta) {
+        Class<?> javaType = fieldMeta.javaType();
+        String zeroValue;
+        if (javaType == Month.class) {
+            zeroValue = Month.JANUARY.name();
+        } else if (javaType == DayOfWeek.class) {
+            zeroValue = DayOfWeek.MONDAY.name();
         } else {
-            throw new MetaException("% ,precision must in [0,6] for dialect");
+            zeroValue = StringUtils.quote(
+                    TimeUtils.ZERO_DATE_TIME.format(formatterForTimeTypeDefaultValue(fieldMeta))
+            );
         }
-        return StringUtils.quote(
-                ZonedDateTime.ofInstant(Instant.EPOCH, zoneId)
-                        .format(formatter)
-        );
+        return zeroValue;
     }
+
+    public static boolean timeTypeSupportedByArmy(Class<?> javaType) {
+        return javaType == LocalDateTime.class
+                || javaType == LocalDate.class
+                || javaType == LocalTime.class
+                || javaType == ZonedDateTime.class
+                || javaType == OffsetDateTime.class
+                || javaType == OffsetTime.class
+                || javaType == Year.class
+                || javaType == MonthDay.class
+                || javaType == YearMonth.class
+                || javaType == Month.class
+                || javaType == DayOfWeek.class
+                ;
+    }
+
+    public static boolean timeTypeWithoutZoneSupportedByArmy(Class<?> javaType) {
+        return javaType == LocalDateTime.class
+                || javaType == LocalDate.class
+                || javaType == LocalTime.class
+                || javaType == Year.class
+                || javaType == MonthDay.class
+                || javaType == YearMonth.class
+                || javaType == Month.class
+                || javaType == DayOfWeek.class
+                ;
+    }
+
+    public static boolean timeTypeWithZone(Class<?> javaType) {
+        return javaType == ZonedDateTime.class
+                || javaType == OffsetDateTime.class
+                || javaType == OffsetTime.class;
+    }
+
+    /**
+     * see {@code io.army.dialect.AbstractDDL#doDefaultForCreateOrUpdateTime(io.army.meta.FieldMeta, io.army.dialect.DDLContext) }
+     */
+    public static MetaException createPropertyNotSupportJavaTypeException(FieldMeta<?, ?> fieldMeta, Database database) {
+        return new MetaException("Property[%s] not support %s for %s"
+                , fieldMeta.propertyName(), fieldMeta.javaType().getName(), database);
+    }
+
+    public static MetaException createNowExpressionNotSupportJavaTypeException(FieldMeta<?, ?> fieldMeta, Database database) {
+        return new MetaException("%s, %s's NOW() expression not support %s ."
+                , fieldMeta, database, fieldMeta.javaType().getName());
+    }
+
+    public static void assertTimePrecision(FieldMeta<?, ?> fieldMeta, Database database) {
+        if (fieldMeta.precision() > 6) {
+            throw createTimePrecisionException(fieldMeta, database);
+        }
+    }
+
+    public static MetaException createTimePrecisionException(FieldMeta<?, ?> fieldMeta, Database database) {
+        return new MetaException("%s precision must in [0,6]", fieldMeta);
+    }
+
+
+    /**
+     * @see io.army.modelgen.MetaConstant#SIMPLE_JAVA_TYPE_SET
+     */
+    static String defaultValueForSimpleJavaType(FieldMeta<?, ?> fieldMeta) {
+        Class<?> javaType = fieldMeta.javaType();
+        if (CodeEnum.class.isAssignableFrom(javaType)) {
+            javaType = Integer.class;
+        }
+        String defaultValueExp;
+        if (javaType == String.class) {
+            defaultValueExp = "''";
+        } else if (Number.class.isAssignableFrom(javaType)) {
+            if (javaType == BigDecimal.class) {
+                defaultValueExp = decimalDefault(fieldMeta);
+            } else {
+                defaultValueExp = "0";
+            }
+        } else if (Temporal.class.isAssignableFrom(javaType)) {
+            // don't need assert java type ,because data type clause do this.
+            defaultValueExp = zeroForTimeType(fieldMeta);
+        } else {
+            throw new IllegalArgumentException(fieldMeta + " java type isn't simple.");
+        }
+        return defaultValueExp;
+    }
+
+    static boolean simpleJavaType(FieldMeta<?, ?> fieldMeta) {
+        return MetaConstant.MAYBE_NO_DEFAULT_TYPES.contains(fieldMeta.javaType())
+                || (Enum.class.isAssignableFrom(fieldMeta.javaType())
+                && CodeEnum.class.isAssignableFrom(fieldMeta.javaType()));
+    }
+
 
     protected static String onlyPrecisionType(FieldMeta<?, ?> fieldMeta, SQLDataType dataType) {
         return onlyPrecisionType(fieldMeta, dataType, dataType.maxPrecision());
@@ -150,38 +247,7 @@ public abstract class DDLUtils {
     }
 
 
-    static Map<Class<?>, BiFunction<FieldMeta<?, ?>, ZoneId, String>> createDefaultFunctionMap() {
-        Map<Class<?>, BiFunction<FieldMeta<?, ?>, ZoneId, String>> map = new HashMap<>();
-
-        map.put(String.class, DDLUtils::stringDefault);
-        map.put(Long.class, DDLUtils::intDefault);
-        map.put(Integer.class, DDLUtils::intDefault);
-        map.put(BigDecimal.class, DDLUtils::decimalDefault);
-
-        map.put(BigInteger.class, DDLUtils::intDefault);
-        map.put(Byte.class, DDLUtils::intDefault);
-        map.put(Double.class, DDLUtils::floatDefault);
-        map.put(Float.class, DDLUtils::floatDefault);
-
-        map.put(LocalTime.class, DDLUtils::timeDefault);
-        map.put(Short.class, DDLUtils::intDefault);
-        map.put(LocalDateTime.class, DDLUtils::dateTimeDefault);
-        map.put(LocalDate.class, DDLUtils::dateDefault);
-
-        map.put(ZonedDateTime.class, DDLUtils::zonedDateTimeDefault);
-        return Collections.unmodifiableMap(map);
-    }
-
-
-    private static String stringDefault(FieldMeta<?, ?> fieldMeta, ZoneId zoneId) {
-        return "''";
-    }
-
-    private static String intDefault(FieldMeta<?, ?> fieldMeta, ZoneId zoneId) {
-        return "0";
-    }
-
-    private static String decimalDefault(FieldMeta<?, ?> fieldMeta, ZoneId zoneId) {
+    private static String decimalDefault(FieldMeta<?, ?> fieldMeta) {
         String text;
         int scale = fieldMeta.scale();
         if (scale < 0) {
@@ -200,26 +266,37 @@ public abstract class DDLUtils {
         return text;
     }
 
-    private static String floatDefault(FieldMeta<?, ?> fieldMeta, ZoneId zoneId) {
-        return "0.0";
-    }
 
-    private static String timeDefault(FieldMeta<?, ?> fieldMeta, ZoneId zoneId) {
-        return "'" + LocalTime.MIDNIGHT.format(TimeUtils.TIME_FORMATTER) + "'";
-    }
+    private static DateTimeFormatter formatterForTimeTypeDefaultValue(FieldMeta<?, ?> fieldMeta) {
+        int precision = fieldMeta.precision();
+        if (precision > 6) {
+            throw new MetaException("% ,precision must in [0,6].", fieldMeta);
+        }
+        final boolean sixFraction = precision > 0;
 
-    private static String dateDefault(FieldMeta<?, ?> fieldMeta, ZoneId zoneId) {
-        return "'" + ZonedDateTime.ofInstant(Instant.EPOCH, zoneId)
-                .toLocalDate().format(TimeUtils.DATE_FORMATTER) + "'";
-    }
-
-    private static String dateTimeDefault(FieldMeta<?, ?> fieldMeta, ZoneId zoneId) {
-        return "'" + ZonedDateTime.ofInstant(Instant.EPOCH, zoneId)
-                .toLocalDateTime().format(TimeUtils.DATE_TIME_FORMATTER) + "'";
-    }
-
-    private static String zonedDateTimeDefault(FieldMeta<?, ?> fieldMeta, ZoneId zoneId) {
-        return "'" + ZonedDateTime.ofInstant(Instant.EPOCH, zoneId).format(TimeUtils.ZONE_DATE_TIME_FORMATTER) + "'";
+        Class<?> javaType = fieldMeta.javaType();
+        String format;
+        if (javaType == LocalDateTime.class) {
+            format = sixFraction ? TimeUtils.SIX_FRACTION_DATE_TIME_FORMAT : TimeUtils.DATE_TIME_FORMAT;
+        } else if (javaType == LocalDate.class) {
+            format = TimeUtils.DATE_FORMAT;
+        } else if (javaType == LocalTime.class) {
+            format = sixFraction ? TimeUtils.SIX_FRACTION_TIME_FORMAT : TimeUtils.TIME_FORMAT;
+        } else if (javaType == ZonedDateTime.class || javaType == OffsetDateTime.class) {
+            format = sixFraction ? TimeUtils.SIX_FRACTION_ZONE_DATE_TIME_FORMAT : TimeUtils.ZONE_DATE_TIME_FORMAT;
+        } else if (javaType == OffsetTime.class) {
+            format = sixFraction ? TimeUtils.SIX_FRACTION_ZONED_TIME_FORMAT : TimeUtils.ZONE_TIME_FORMAT;
+        } else if (javaType == Year.class) {
+            format = TimeUtils.YEAR_FORMAT;
+        } else if (javaType == YearMonth.class) {
+            format = TimeUtils.YEAR_MONTH_FORMAT;
+        } else if (javaType == MonthDay.class) {
+            format = TimeUtils.MONTH_DAY_FORMAT;
+        } else {
+            throw new MetaException("%s java type isn't supported by io.army.domain.IDomain default constant."
+                    , fieldMeta);
+        }
+        return TimeUtils.dateTimeFormatter(format);
     }
 
 

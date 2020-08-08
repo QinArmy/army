@@ -7,11 +7,6 @@ import java.util.List;
 
 public interface DDLContext {
 
-    /**
-     * @see io.army.modelgen.MetaConstant#MAYBE_NO_DEFAULT_TYPES
-     */
-    String defaultValue(FieldMeta<?, ?> fieldMeta);
-
     StringBuilder sqlBuilder();
 
     TableMeta<?> tableMeta();

@@ -3,7 +3,7 @@ package io.army.dialect.mysql;
 import java.util.HashSet;
 import java.util.Set;
 
-abstract class MySQLUtils {
+abstract class MySQLDialectUtils {
 
     /**
      * @return a modifiable set

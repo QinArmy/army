@@ -9,16 +9,16 @@ import io.army.meta.mapping.MappingMeta;
 
 import java.util.Set;
 
-class Postgre110Dialect extends AbstractDialect {
+class Postgre11Dialect extends AbstractDialect {
 
-    Postgre110Dialect(GenericRmSessionFactory sessionFactory) {
+    Postgre11Dialect(GenericRmSessionFactory sessionFactory) {
         super(sessionFactory);
     }
 
 
     @Override
     protected Set<String> createKeywordsSet() {
-        return null;
+        return Postgre11DialectUtils.create11KeywordsSet();
     }
 
     @Override
@@ -27,8 +27,8 @@ class Postgre110Dialect extends AbstractDialect {
     }
 
     @Override
-    protected DDL createTableDDL() {
-        return null;
+    protected DDL createDDL() {
+        return new Postgre11DDL(this);
     }
 
     @Override
