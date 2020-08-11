@@ -5,6 +5,8 @@ import io.army.criteria.impl.TableMetaFactory;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.util.BeanUtils;
+import io.army.util.PairBean;
+import io.army.util.TripleBean;
 
 import java.util.Map;
 
@@ -45,10 +47,9 @@ public abstract class ObjectAccessorFactory {
 
     public static BeanWrapper forBeanPropertyAccess(Class<?> beanClass) {
         BeanWrapper beanWrapper;
-        final String simpleName = beanClass.getSimpleName();
-        if (simpleName.equals("Pair")) {
+        if (PairBean.class.isAssignableFrom(beanClass)) {
             beanWrapper = new PairBeanWrapperImpl(beanClass);
-        } else if (simpleName.equals("Tripe")) {
+        } else if (TripleBean.class.isAssignableFrom(beanClass)) {
             beanWrapper = new TripeWrapperImpl(beanClass);
         } else {
             beanWrapper = new BeanWrapperImpl(BeanUtils.instantiateClass(beanClass));

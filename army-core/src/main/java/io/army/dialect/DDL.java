@@ -15,13 +15,21 @@ public interface DDL extends SQL {
 
     List<String> createTable(TableMeta<?> tableMeta, @Nullable String tableSuffix);
 
-    List<String> addColumn(TableMeta<?> tableMeta, @Nullable String tableSuffix, Collection<FieldMeta<?, ?>> addFieldMetas);
+    List<String> addColumn(TableMeta<?> tableMeta, @Nullable String tableSuffix
+            , Collection<FieldMeta<?, ?>> addFieldMetas);
 
-    List<String> changeColumn(TableMeta<?> tableMeta, @Nullable String tableSuffix, Collection<FieldMeta<?, ?>> changeFieldMetas);
+    List<String> changeColumn(TableMeta<?> tableMeta, @Nullable String tableSuffix
+            , Collection<FieldMeta<?, ?>> changeFieldMetas);
 
-    List<String> addIndex(TableMeta<?> tableMeta, @Nullable String tableSuffix, Collection<IndexMeta<?>> indexMetas);
+    List<String> addIndex(TableMeta<?> tableMeta, @Nullable String tableSuffix
+            , Collection<IndexMeta<?>> indexMetas);
 
-    List<String> dropIndex(TableMeta<?> tableMeta, @Nullable String tableSuffix, Collection<String> indexNames);
+    List<String> dropIndex(TableMeta<?> tableMeta, @Nullable String tableSuffix
+            , Collection<String> indexNames);
+
+    List<String> modifyTableComment(TableMeta<?> tableMeta, @Nullable String tableSuffix);
+
+    List<String> modifyColumnComment(FieldMeta<?, ?> fieldMeta, @Nullable String tableSuffix);
 
     /**
      * performance after {@link io.army.GenericRmSessionFactory}  initializing .

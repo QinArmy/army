@@ -1,6 +1,8 @@
 package io.army.domain;
 
 import io.army.annotation.Column;
+import io.army.dialect.Database;
+import io.army.dialect.SQLBuilder;
 import io.army.meta.FieldMeta;
 
 /**
@@ -11,52 +13,20 @@ public interface IDomain {
 
     /**
      * @see Column#defaultValue()
+     * @see io.army.sqltype.SQLDataType#nowValue(FieldMeta, SQLBuilder, Database)
      */
-    String NOW = "NOW()";
+    String NOW = "$NOW()$";
 
     /**
      * @see Column#defaultValue()
-     * @see io.army.dialect.DDLUtils#zeroForTimeType(FieldMeta)
+     * @see io.army.sqltype.SQLDataType#zeroValue(FieldMeta, SQLBuilder, Database)
      */
-    String ZERO_TIME = "$ZERO_TIME$";
-
-    /**
-     * @see Column#defaultValue()
-     * @see io.army.dialect.DDLUtils#zeroForTimeType(FieldMeta)
-     */
-    String ZERO_DATE = "$ZERO_DATE$";
-
-    /**
-     * @see Column#defaultValue()
-     * @see io.army.dialect.DDLUtils#zeroForTimeType(FieldMeta)
-     */
-    String ZERO_YEAR = "$ZERO_YEAR$";
-
-    /**
-     * @see Column#defaultValue()
-     * @see io.army.dialect.DDLUtils#zeroForTimeType(FieldMeta)
-     */
-    String ZERO_DATE_TIME = "$ZERO_DATE_TIME$";
-
-    /**
-     * @see Column#defaultValue()
-     */
-    String ZERO = "0";
+    String ZERO_VALUE = "$ZERO_VALUE$";
 
     /**
      * @see Column#defaultValue()
      */
     String ONE = "1";
-
-    /**
-     * @see Column#defaultValue()
-     */
-    String DECIMAL_ZERO = "0.00";
-
-    /**
-     * @see Column#defaultValue()
-     */
-    String N = "N";
 
     /**
      * @see Column#defaultValue()

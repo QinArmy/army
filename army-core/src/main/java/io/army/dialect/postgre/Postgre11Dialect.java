@@ -1,10 +1,7 @@
 package io.army.dialect.postgre;
 
 import io.army.GenericRmSessionFactory;
-import io.army.dialect.AbstractDialect;
-import io.army.dialect.DDL;
-import io.army.dialect.DML;
-import io.army.dialect.DQL;
+import io.army.dialect.*;
 import io.army.meta.mapping.MappingMeta;
 
 import java.util.Set;
@@ -17,13 +14,18 @@ class Postgre11Dialect extends AbstractDialect {
 
 
     @Override
+    public Database database() {
+        return Database.Postgre11;
+    }
+
+    @Override
     protected Set<String> createKeywordsSet() {
         return Postgre11DialectUtils.create11KeywordsSet();
     }
 
     @Override
-    protected String doQuote(String identifier) {
-        return null;
+    protected final String doQuote(String identifier) {
+        return "\"" + identifier + "\"";
     }
 
     @Override
@@ -42,8 +44,9 @@ class Postgre11Dialect extends AbstractDialect {
     }
 
     @Override
-    public boolean supportZone() {
-        return false;
+    public final boolean supportZone() {
+        // always true
+        return true;
     }
 
     @Override
@@ -52,17 +55,20 @@ class Postgre11Dialect extends AbstractDialect {
     }
 
     @Override
-    public boolean tableAliasAfterAs() {
-        return false;
+    public final boolean tableAliasAfterAs() {
+        // always true
+        return true;
     }
 
     @Override
-    public boolean singleDeleteHasTableAlias() {
-        return false;
+    public final boolean singleDeleteHasTableAlias() {
+        // always true
+        return true;
     }
 
     @Override
-    public boolean hasRowKeywords() {
-        return false;
+    public final boolean hasRowKeywords() {
+        // always true
+        return true;
     }
 }

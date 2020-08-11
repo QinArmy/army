@@ -3,7 +3,6 @@ package io.army.meta.mapping;
 import io.army.dialect.MappingContext;
 import io.army.domain.IDomain;
 import io.army.util.Assert;
-import io.army.util.StringUtils;
 
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -37,10 +36,10 @@ public final class YesNoType extends AbstractMappingType {
     }
 
     @Override
-    public String nonNullTextValue(Object value) {
-        Assert.isInstanceOf(Boolean.class,value,"");
+    public String nonNullTextValue(Object nonNullValue) {
+        Assert.isInstanceOf(Boolean.class, nonNullValue, "");
         String text;
-        if (Boolean.TRUE.equals(value)) {
+        if (Boolean.TRUE.equals(nonNullValue)) {
             text = IDomain.Y;
         } else {
             text = IDomain.N;

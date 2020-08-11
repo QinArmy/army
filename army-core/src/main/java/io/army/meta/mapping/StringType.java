@@ -32,8 +32,8 @@ public final class StringType extends AbstractMappingType {
     }
 
     @Override
-    public String nonNullTextValue(Object value) {
-        return String.valueOf(value);
+    public String nonNullTextValue(Object nonNullValue) {
+        return String.valueOf(nonNullValue);
     }
 
     @Override

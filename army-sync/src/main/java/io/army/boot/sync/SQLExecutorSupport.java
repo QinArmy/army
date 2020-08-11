@@ -1,5 +1,6 @@
 package io.army.boot.sync;
 
+import io.army.DataAccessException;
 import io.army.DomainUpdateException;
 import io.army.ErrorCode;
 import io.army.OptimisticLockException;
@@ -17,11 +18,10 @@ import io.army.meta.ParamMeta;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.ResultColumnMeta;
 import io.army.wrapper.*;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 
 
@@ -166,7 +166,7 @@ abstract class SQLExecutorSupport {
             try (ResultSet resultSet = st.executeQuery()) {
                 List<T> resultList;
                 //4. extract result
-                if (simpleJavaType(sqlWrapper.selectionList(), resultClass)) {
+                if (singleType(sqlWrapper.selectionList(), resultClass)) {
                     resultList = extractSimpleTypeResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
                             , resultClass);
                 } else {
@@ -181,6 +181,8 @@ abstract class SQLExecutorSupport {
             }
         } catch (SQLException e) {
             throw ExecutorUtils.convertSQLException(e, sqlWrapper.sql());
+        } catch (ResultColumnClassNotFoundException e) {
+            throw createExceptionForResultColumnClassNotFound(e, sqlWrapper.sql());
         }
     }
 
@@ -203,7 +205,8 @@ abstract class SQLExecutorSupport {
 
     @SuppressWarnings("unchecked")
     protected final <T> List<T> extractSimpleTypeResult(CodecContext codecContext, ResultSet resultSet
-            , List<Selection> selectionList, Class<T> resultClass) throws SQLException {
+            , List<Selection> selectionList, Class<T> resultClass) throws SQLException
+            , ResultColumnClassNotFoundException {
 
         assertSimpleResult(selectionList, resultClass);
         final Selection selection = selectionList.get(0);
@@ -221,8 +224,10 @@ abstract class SQLExecutorSupport {
         }
         List<T> resultList = new ArrayList<>();
         final MappingMeta mappingMeta = selection.mappingMeta();
+        final ResultColumnMeta columnMeta = extractResultRowMeta(resultSet.getMetaData(), selectionList).get(0);
+
         while (resultSet.next()) {
-            Object value = mappingMeta.nullSafeGet(resultSet, selection.alias(), this.mappingContext);
+            Object value = mappingMeta.nullSafeGet(resultSet, selection.alias(), columnMeta, this.mappingContext);
 
             if (value != null && fieldCodec != null) {
                 value = fieldCodec.decode(fieldMeta, value, codecContext);
@@ -231,6 +236,7 @@ abstract class SQLExecutorSupport {
         }
         return resultList;
     }
+
 
     protected final Map<Object, BeanWrapper> doExecuteFirstReturning(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper
             , Class<?> resultClass) {
@@ -253,6 +259,8 @@ abstract class SQLExecutorSupport {
             }
         } catch (SQLException e) {
             throw ExecutorUtils.convertSQLException(e, sqlWrapper.sql());
+        } catch (ResultColumnClassNotFoundException e) {
+            throw createExceptionForResultColumnClassNotFound(e, sqlWrapper.sql());
         }
     }
 
@@ -276,6 +284,8 @@ abstract class SQLExecutorSupport {
             }
         } catch (SQLException e) {
             throw ExecutorUtils.convertSQLException(e, sqlWrapper.sql());
+        } catch (ResultColumnClassNotFoundException e) {
+            throw createExceptionForResultColumnClassNotFound(e, sqlWrapper.sql());
         }
     }
 
@@ -283,13 +293,14 @@ abstract class SQLExecutorSupport {
             , List<Selection> selectionList, Class<?> resultClass) throws SQLException {
 
         final PrimaryFieldMeta<?, ?> primaryField = obtainPrimaryField(selectionList);
+        final List<ResultColumnMeta> columnMetaList = extractResultRowMeta(resultSet.getMetaData(), selectionList);
 
         Map<Object, BeanWrapper> map = new HashMap<>();
         BeanWrapper beanWrapper;
         while (resultSet.next()) {
             beanWrapper = ObjectAccessorFactory.forBeanPropertyAccess(resultClass);
             // extract one row
-            extractRow(codecContext, resultSet, selectionList, beanWrapper);
+            extractRowForBean(codecContext, resultSet, selectionList, columnMetaList, beanWrapper);
             Object idValue;
             if (beanWrapper.isReadableProperty(primaryField.alias())) {
                 idValue = beanWrapper.getPropertyValue(TableMeta.ID);
@@ -315,22 +326,32 @@ abstract class SQLExecutorSupport {
             , List<Selection> selectionList, Map<Object, BeanWrapper> wrapperMap) throws SQLException {
 
         final PrimaryFieldMeta<?, ?> primaryField = obtainPrimaryField(selectionList);
+        final List<ResultColumnMeta> columnMetaList = extractResultRowMeta(resultSet.getMetaData(), selectionList);
+
         List<Selection> subSelectionList;
+        List<ResultColumnMeta> subColumnMetaList;
         if (selectionList.size() == 1) {
             subSelectionList = Collections.emptyList();
+            subColumnMetaList = Collections.emptyList();
         } else {
             subSelectionList = selectionList.subList(1, selectionList.size());
+            subColumnMetaList = columnMetaList.subList(1, columnMetaList.size());
         }
+
         List<T> resultList = new ArrayList<>(wrapperMap.size());
         while (resultSet.next()) {
-            Object idValue = primaryField.mappingMeta().nullSafeGet(resultSet, primaryField.alias(), this.mappingContext);
+            Object idValue = primaryField.mappingMeta().nullSafeGet(resultSet, primaryField.alias()
+                    , columnMetaList.get(0), this.mappingContext);
+
             BeanWrapper beanWrapper = wrapperMap.get(idValue);
             if (beanWrapper == null) {
                 throw new CriteriaException(ErrorCode.CRITERIA_ERROR
                         , "Domain returning insert/update/delete criteria error,not found BeanWrapper by id[%s]"
                         , idValue);
             }
-            extractRow(codecContext, resultSet, subSelectionList, beanWrapper);
+            if (!subSelectionList.isEmpty()) {
+                extractRowForBean(codecContext, resultSet, subSelectionList, subColumnMetaList, beanWrapper);
+            }
             resultList.add((T) beanWrapper.getWrappedInstance());
         }
         return resultList;
@@ -373,23 +394,30 @@ abstract class SQLExecutorSupport {
     protected final <T> List<T> extractBeanTypeResult(CodecContext codecContext, ResultSet resultSet
             , List<Selection> selectionList, Class<T> resultClass) throws SQLException {
 
+        final List<ResultColumnMeta> columnMetaList = extractResultRowMeta(resultSet.getMetaData(), selectionList);
+
         List<T> resultList = new ArrayList<>();
         BeanWrapper beanWrapper;
         while (resultSet.next()) {
             beanWrapper = ObjectAccessorFactory.forBeanPropertyAccess(resultClass);
-            extractRow(codecContext, resultSet, selectionList, beanWrapper);
+            extractRowForBean(codecContext, resultSet, selectionList, columnMetaList, beanWrapper);
             // result add to resultList
             resultList.add((T) beanWrapper.getWrappedInstance());
         }
         return resultList;
     }
 
-    protected final void extractRow(CodecContext codecContext, ResultSet resultSet, List<Selection> selectionList
-            , BeanWrapper beanWrapper)
+    protected final void extractRowForBean(CodecContext codecContext, ResultSet resultSet, List<Selection> selectionList
+            , List<ResultColumnMeta> columnMetaList, BeanWrapper beanWrapper)
             throws SQLException {
 
-        for (Selection selection : selectionList) {
-            Object value = selection.mappingMeta().nullSafeGet(resultSet, selection.alias(), this.mappingContext);
+        final int size = columnMetaList.size();
+
+        for (int i = 0; i < size; i++) {
+            Selection selection = selectionList.get(i);
+
+            Object value = selection.mappingMeta().nullSafeGet(resultSet, selection.alias()
+                    , columnMetaList.get(i), this.mappingContext);
             if (value == null) {
                 continue;
             }
@@ -401,6 +429,7 @@ abstract class SQLExecutorSupport {
             }
             beanWrapper.setPropertyValue(selection.alias(), value);
         }
+
     }
 
     /*################################## blow package method ##################################*/
@@ -480,9 +509,32 @@ abstract class SQLExecutorSupport {
         return primaryField;
     }
 
+    /**
+     * @return a unmodifiable list
+     */
+    private List<ResultColumnMeta> extractResultRowMeta(ResultSetMetaData resultSetMetaData
+            , List<Selection> selectionList) throws SQLException {
+        final int size = selectionList.size();
+        List<ResultColumnMeta> columnMetaList = new ArrayList<>(size);
+        for (int i = 1; i <= size; i++) {
+            String javaClassName = null;
+            try {
+                JDBCType jdbcType = JDBCType.valueOf(resultSetMetaData.getColumnType(i));
+                String sqlType = resultSetMetaData.getColumnTypeName(i);
+                javaClassName = resultSetMetaData.getColumnClassName(i);
+                Class<?> javaType = Class.forName(javaClassName);
+
+                columnMetaList.add(new ResultColumnMetaImpl(jdbcType, sqlType, javaType));
+            } catch (ClassNotFoundException e) {
+                throw new ResultColumnClassNotFoundException(javaClassName, e);
+            }
+        }
+        return Collections.unmodifiableList(columnMetaList);
+    }
+
     /*################################## blow package static method ##################################*/
 
-    static boolean simpleJavaType(List<Selection> selectionList, Class<?> resultClass) {
+    static boolean singleType(List<Selection> selectionList, Class<?> resultClass) {
         return selectionList.size() == 1
                 && resultClass.isAssignableFrom(selectionList.get(0).mappingMeta().javaType());
 
@@ -503,6 +555,11 @@ abstract class SQLExecutorSupport {
         return aliasArray;
     }
 
+    static DataAccessException createExceptionForResultColumnClassNotFound(
+            ResultColumnClassNotFoundException e, String sql) {
+        return new DataAccessException(ErrorCode.ACCESS_ERROR, e
+                , "Class[%s] not found when extract ResultSetMeta with SQL[%s].", e.getClassName(), sql);
+    }
 
     /*################################## blow private static method ##################################*/
 
@@ -521,6 +578,49 @@ abstract class SQLExecutorSupport {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR
                     , "selection's MappingMeta[%s] and  resultClass[%s] not match."
                     , selection.mappingMeta(), resultClass);
+        }
+    }
+
+
+    private static final class ResultColumnMetaImpl implements ResultColumnMeta {
+
+        private final JDBCType jdbcType;
+
+        private final String sqlType;
+
+        private final Class<?> javaType;
+
+        private ResultColumnMetaImpl(JDBCType jdbcType, String sqlType, Class<?> javaType) {
+            this.jdbcType = jdbcType;
+            this.sqlType = sqlType;
+            this.javaType = javaType;
+        }
+
+        @Override
+        public final JDBCType jdbcType() {
+            return this.jdbcType;
+        }
+
+        @Override
+        public final String sqlType() {
+            return this.sqlType;
+        }
+
+        @Override
+        public final Class<?> javaType() {
+            return this.javaType;
+        }
+    }
+
+
+    static final class ResultColumnClassNotFoundException extends RuntimeException {
+
+        private ResultColumnClassNotFoundException(String className, Throwable cause) {
+            super(className, cause);
+        }
+
+        String getClassName() {
+            return getMessage();
         }
     }
 

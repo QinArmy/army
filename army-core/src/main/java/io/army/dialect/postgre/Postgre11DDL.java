@@ -1,18 +1,12 @@
 package io.army.dialect.postgre;
 
-import io.army.criteria.MetaException;
-import io.army.dialect.AbstractDDL;
-import io.army.dialect.DDLContext;
-import io.army.dialect.DDLUtils;
+import io.army.dialect.*;
 import io.army.meta.FieldMeta;
+import io.army.meta.IndexFieldMeta;
 import io.army.meta.IndexMeta;
-
-import java.sql.JDBCType;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
-import java.util.Map;
-import java.util.function.Function;
+import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.SQLDataType;
+import io.army.util.StringUtils;
 
 /**
  * This class is a implementation of {@link io.army.dialect.DDL} for Postgre 11.x .
@@ -27,76 +21,99 @@ class Postgre11DDL extends AbstractDDL {
     /*################################## blow DDL method ##################################*/
 
     @Override
+    protected final void internalModifyTableComment(DDLContext context) {
+        independentTableComment(context);
+    }
+
+    @Override
+    protected final void internalModifyColumnComment(FieldMeta<?, ?> fieldMeta, DDLContext context) {
+        independentColumnComment(fieldMeta, context);
+    }
+
+    @Override
     protected final void tableOptionsClause(DDLContext context) {
         //no-op
     }
 
     @Override
-    protected final void doDefaultForCreateOrUpdateTime(FieldMeta<?, ?> fieldMeta, DDLContext context) {
-        int precision = fieldMeta.precision();
-        if (precision > 6) {
-            throw new MetaException("%s,this value range of Prestgre time type is [0,6] .", fieldMeta);
+    protected final void doDefaultExpression(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) {
+        SQLDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database());
+        String defaultExp = fieldMeta.defaultValue();
+        if (sqlDataType instanceof PostgreDataType) {
+            PostgreDataType dataType = (PostgreDataType) sqlDataType;
+            if (Postgre11DDLUtils.needQuoteForDefault(dataType)
+                    && (!defaultExp.startsWith("'") || !defaultExp.endsWith("'"))) {
+                throw DDLUtils.createDefaultValueSyntaxException(fieldMeta);
+            }
+
         }
-        StringBuilder builder = context.sqlBuilder();
-        Class<?> javaType = fieldMeta.javaType();
-        if (javaType == LocalDateTime.class) {
-            builder.append("LOCALTIMESTAMP");
-        } else if (javaType == ZonedDateTime.class || javaType == OffsetDateTime.class) {
-            builder.append("CURRENT_TIMESTAMP");
-        } else {
-            throw DDLUtils.createPropertyNotSupportJavaTypeException(fieldMeta, database());
+        builder.append(defaultExp);
+    }
+
+    @Override
+    protected final boolean supportSQLDateType(SQLDataType dataType) {
+        return dataType instanceof PostgreDataType || dataType.database().family() == Database.Postgre;
+    }
+
+    @Override
+    protected final void independentIndexDefinitionClause(IndexMeta<?> indexMeta, DDLContext context) {
+        SQLBuilder builder = context.sqlBuilder();
+        builder.append("CREATE ");
+        if (indexMeta.unique()) {
+            builder.append("UNIQUE");
         }
-        if (precision > 0) {
-            builder.append("(")
-                    .append(precision)
-                    .append(")");
+        builder.append(" INDEX IF NOT EXISTS");
+        context.appendIdentifier(indexMeta.name());
+        builder.append(" ON");
+        context.appendTable();
+
+        String type = indexMeta.type();
+        if (StringUtils.hasText(type)) {
+            builder.append(" USING ")
+                    .append(type);
         }
-    }
-
-    @Override
-    protected void doDefaultExpression(FieldMeta<?, ?> fieldMeta, StringBuilder builder) {
-
-    }
-
-
-    @Override
-    protected Map<JDBCType, Function<FieldMeta<?, ?>, String>> createJdbcFunctionMap() {
-        return Postgre11DDLUtils.createJdbcFunctionMap();
-    }
-
-    @Override
-    protected void independentIndexDefinitionClause(IndexMeta<?> indexMeta, DDLContext context) {
+        for (IndexFieldMeta<?, ?> indexFieldMeta : indexMeta.fieldList()) {
+            builder.append(indexFieldMeta);
+            Boolean asc = indexFieldMeta.fieldAsc();
+            if (Boolean.TRUE.equals(asc)) {
+                builder.append(" ASC");
+            } else if (Boolean.FALSE.equals(asc)) {
+                builder.append(" DESC");
+            }
+        }
 
     }
 
     @Override
-    protected void independentTableComment(DDLContext context) {
-
+    protected final void independentTableComment(DDLContext context) {
+        SQLBuilder builder = context.sqlBuilder();
+        builder.append("COMMENT ON TABLE ");
+        context.appendTable();
+        builder.append(" IS '")
+                .append(DDLUtils.escapeQuote(context.tableMeta().comment().trim()))
+                .append("'");
     }
 
     @Override
-    protected void independentColumnComment(FieldMeta<?, ?> fieldMeta, DDLContext context) {
-
-    }
-
-    @Override
-    protected boolean hasDefaultClause(FieldMeta<?, ?> fieldMeta) {
-        return false;
+    protected final void independentColumnComment(FieldMeta<?, ?> fieldMeta, DDLContext context) {
+        SQLBuilder builder = context.sqlBuilder();
+        builder.append("COMMENT ON COLUMN ");
+        context.appendFieldWithTable(fieldMeta);
+        builder.append(" IS '")
+                .append(DDLUtils.escapeQuote(fieldMeta.comment().trim()))
+                .append("'");
     }
 
 
     @Override
     protected final boolean useIndependentIndexDefinition() {
+        //always true
         return true;
     }
 
     @Override
     protected final boolean useIndependentComment() {
+        //always true
         return true;
-    }
-
-    @Override
-    protected final void doNowExpressionForDefaultClause(FieldMeta<?, ?> fieldMeta, StringBuilder builder) {
-
     }
 }

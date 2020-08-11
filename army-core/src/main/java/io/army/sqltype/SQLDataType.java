@@ -1,43 +1,36 @@
 package io.army.sqltype;
 
+import io.army.criteria.MetaException;
+import io.army.dialect.Database;
+import io.army.dialect.SQLBuilder;
+import io.army.meta.FieldMeta;
+
 public interface SQLDataType {
+
+    Database database();
 
     String name();
 
-    default int minPrecision() {
-        return 0;
+    void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database) throws MetaException;
+
+    default void dataTypeClause(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) throws MetaException {
+        builder.append(typeName());
     }
 
-    int maxPrecision();
-
-    default int minScale() {
-        return 0;
+    default String typeName() {
+        return name();
     }
 
-    default int maxScale() {
-        return -1;
+    default void nowValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+            throws MetaException {
+        throw new MetaException("%s,SQLDataType[%s] not support io.army.domain.IDomain.NOW.", fieldMeta, name());
     }
 
-
-    /**
-     *
-     * @return true match
-     * @throws IllegalArgumentException precisionOfField error
-     */
-    default boolean precisionMatch(int precisionOfField, int columnSize)
-            throws IllegalArgumentException{
-        return precisionOfField < 0
-                || precisionOfField == columnSize;
+    default boolean supportZeroValue(Database database) {
+        return true;
     }
 
-    /**
-     *
-     * @return true match
-     * @throws IllegalArgumentException precisionOfField error
-     */
-    default boolean scaleMatch(int scaleOfField, int scaleOfColumn) throws IllegalArgumentException{
-        return scaleOfField < 0
-                || scaleOfField == scaleOfColumn;
+    default boolean supportNowValue(Database database) {
+        return false;
     }
-
 }

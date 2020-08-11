@@ -43,8 +43,12 @@ public enum Database {
         return productName;
     }
 
-    public static boolean compatible(Database databaseA, Database databaseB) {
-        return databaseA.family == databaseB.family
-                && databaseA.version <= databaseB.version;
+    public int version() {
+        return this.version;
     }
+
+    public boolean compatible(Database database) {
+        return this.family == database.family && this.version >= database.version;
+    }
+
 }

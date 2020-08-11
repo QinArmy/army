@@ -211,7 +211,7 @@ public abstract class GenericSessionFactoryUtils {
         Database actual = database;
         if (actual == null) {
             actual = extractedDatabase;
-        } else if (!Database.compatible(database, extractedDatabase)) {
+        } else if (!extractedDatabase.compatible(database)) {
             throw new DialectNotMatchException(ErrorCode.META_ERROR, "Database[%s] and extract database[%s] not match."
                     , database, extractedDatabase);
         }

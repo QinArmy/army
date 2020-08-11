@@ -119,14 +119,12 @@ abstract class FieldMetaUtils extends TableMetaUtils {
     }
 
 
-    static MappingMeta columnMappingType(@NonNull Field field) {
+    static MappingMeta columnMappingMeta(@NonNull Field field) {
         Mapping mapping = AnnotationUtils.getAnnotation(field, Mapping.class);
 
         Class<?> mappingClass;
         if (mapping == null) {
             mappingClass = null;
-        } else if (mapping.mapping() != AnnotationUtils.getDefaultValue(Mapping.class, "mapping")) {
-            mappingClass = mapping.mapping();
         } else {
             try {
                 mappingClass = ClassUtils.forName(mapping.value(), ClassUtils.getDefaultClassLoader());

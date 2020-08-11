@@ -1,18 +1,17 @@
 package io.army.dialect.mysql;
 
-import io.army.criteria.MetaException;
 import io.army.dialect.AbstractDDL;
 import io.army.dialect.DDLContext;
 import io.army.dialect.DDLUtils;
+import io.army.dialect.SQLBuilder;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
+import io.army.sqltype.MySQLDataType;
+import io.army.sqltype.SQLDataType;
 import io.army.util.Assert;
 
-import java.sql.JDBCType;
-import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.function.Function;
+import java.util.Collections;
 
 class MySQL57DDL extends AbstractDDL {
 
@@ -26,31 +25,41 @@ class MySQL57DDL extends AbstractDDL {
 
     /*################################## blow DDL method ##################################*/
 
+    @Override
+    protected final void internalModifyTableComment(DDLContext context) {
+        SQLBuilder builder = context.sqlBuilder()
+                .append("ALTER TABLE");
+        context.appendTable();
+        builder.append(" COMMENT = '")
+                .append(DDLUtils.escapeQuote(context.tableMeta().comment()))
+                .append("'")
+        ;
+    }
+
+    @Override
+    protected final void internalModifyColumnComment(FieldMeta<?, ?> fieldMeta, DDLContext context) {
+        doChangeColumn(Collections.singleton(fieldMeta), context);
+    }
+
+    @Override
+    protected void doDefaultExpression(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) {
+        SQLDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database());
+        String defaultExp = fieldMeta.defaultValue();
+        if (sqlDataType instanceof MySQLDataType) {
+            if (MySQL57DDLUtils.needQuoteForDefault((MySQLDataType) sqlDataType)
+                    && !(defaultExp.startsWith("'") && defaultExp.endsWith("'"))) {
+                throw DDLUtils.createDefaultValueSyntaxException(fieldMeta);
+            }
+        }
+        builder.append(defaultExp);
+    }
+
+    @Override
+    protected boolean supportSQLDateType(SQLDataType dataType) {
+        return false;
+    }
 
     /*################################## blow AbstractTableDDL template method ##################################*/
-
-    @Override
-    protected final void doDefaultForCreateOrUpdateTime(FieldMeta<?, ?> fieldMeta, DDLContext context) {
-        if (fieldMeta.javaType() != LocalDateTime.class) {
-            throw DDLUtils.createPropertyNotSupportJavaTypeException(fieldMeta, database());
-        }
-        StringBuilder builder = context.sqlBuilder();
-        int precision = fieldMeta.precision();
-        if (precision > 6) {
-            throw new MetaException("%s,this value range of MySQL DATETIME is [0,6] .", fieldMeta);
-        }
-        builder.append("CURRENT_TIMESTAMP");
-        if (precision > 0) {
-            builder.append("(")
-                    .append(precision)
-                    .append(")");
-        }
-    }
-
-    @Override
-    protected Map<JDBCType, Function<FieldMeta<?, ?>, String>> createJdbcFunctionMap() {
-        return MySQL57DDLUtils.createJdbcFunctionMap();
-    }
 
     @Override
     protected void tableOptionsClause(DDLContext context) {
@@ -59,22 +68,9 @@ class MySQL57DDL extends AbstractDDL {
                 .append(" ENGINE = InnoDB CHARACTER SET = ")
                 .append(MySQL57DDLUtils.tableCharset(tableMeta.charset()))
                 .append(" COMMENT '")
-                .append(tableMeta.comment())
+                .append(DDLUtils.escapeQuote(tableMeta.comment()))
                 .append("'")
         ;
-    }
-
-    @Override
-    protected void doDefaultExpression(FieldMeta<?, ?> fieldMeta, StringBuilder builder) {
-        builder.append(
-                MySQL57DDLUtils.quoteDefaultIfNeed(fieldMeta, escapeQuote(fieldMeta.defaultValue()))
-        );
-    }
-
-
-    @Override
-    protected final boolean hasDefaultClause(FieldMeta<?, ?> fieldMeta) {
-        return MySQL57DDLUtils.NO_DEFAULT_JDBC.contains(fieldMeta.mappingMeta().jdbcType());
     }
 
     @Override
@@ -103,15 +99,6 @@ class MySQL57DDL extends AbstractDDL {
     }
 
     /*################################## blow protected method ##################################*/
-
-
-    protected void doNowExpressionForDefaultClause(FieldMeta<?, ?> fieldMeta, StringBuilder builder) {
-        if (fieldMeta.javaType() != LocalDateTime.class) {
-            throw DDLUtils.createNowExpressionNotSupportJavaTypeException(fieldMeta, database());
-        }
-        MySQL57DDLUtils.nowFunc(fieldMeta, builder);
-    }
-
 
 
     /*################################## blow private method ##################################*/

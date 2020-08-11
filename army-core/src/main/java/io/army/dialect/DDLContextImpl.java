@@ -13,7 +13,7 @@ final class DDLContextImpl implements DDLContext {
 
     protected final Dialect dialect;
 
-    protected StringBuilder sqlBuilder = new StringBuilder();
+    protected SQLBuilder sqlBuilder = DialectUtils.createSQLBuilder();
 
     protected final TableMeta<?> tableMeta;
 
@@ -30,7 +30,7 @@ final class DDLContextImpl implements DDLContext {
     }
 
     @Override
-    public final StringBuilder sqlBuilder() {
+    public final SQLBuilder sqlBuilder() {
         return this.sqlBuilder;
     }
 
@@ -41,11 +41,13 @@ final class DDLContextImpl implements DDLContext {
 
     @Override
     public final void appendTable() {
-        this.sqlBuilder.append(" ")
-                .append(this.dialect.quoteIfNeed(this.tableMeta.tableName()));
+        this.sqlBuilder.append(" ");
+        String tableName = this.tableMeta.tableName();
         if (this.tableSuffix != null) {
-            this.sqlBuilder.append(this.tableSuffix);
+            tableName += this.tableSuffix;
         }
+        this.sqlBuilder.append(this.dialect.quoteIfNeed(tableName));
+
     }
 
     @Override
@@ -59,13 +61,29 @@ final class DDLContextImpl implements DDLContext {
     }
 
     @Override
-    public final void append(String sql) {
+    public final void appendFieldWithTable(FieldMeta<?, ?> fieldMeta) {
+        if (fieldMeta.tableMeta() != this.tableMeta) {
+            throw DialectUtils.createUnKnownFieldException(fieldMeta);
+        }
+        appendTable();
+        this.sqlBuilder.append(".")
+                .append(this.dialect.quoteIfNeed(fieldMeta.fieldName()));
+    }
+
+    @Override
+    public final void appendSQL(String sql) {
         this.sqlList.add(sql);
     }
 
     @Override
+    public final void appendIdentifier(String identifier) {
+        this.sqlBuilder.append(" ")
+                .append(this.dialect.quoteIfNeed(identifier));
+    }
+
+    @Override
     public final void resetBuilder() {
-        this.sqlBuilder = new StringBuilder();
+        this.sqlBuilder = DialectUtils.createSQLBuilder();
     }
 
     @Override

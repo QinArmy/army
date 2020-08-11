@@ -20,7 +20,7 @@ public abstract class AbstractMappingType implements MappingMeta {
 
     @Override
     public final String toString() {
-        return javaType().getName() + "#" + jdbcType().name();
+        return javaType().getName() + "#" + jdbcType().name() + "#";
     }
 
 

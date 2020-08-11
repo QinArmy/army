@@ -1,8 +1,5 @@
 package io.army.util;
 
-public interface PairBean<F, S> {
+public interface PairBean {
 
-    F getFirst();
-
-    S getSecond();
 }

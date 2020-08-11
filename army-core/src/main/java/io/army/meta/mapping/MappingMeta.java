@@ -1,8 +1,11 @@
 package io.army.meta.mapping;
 
+import io.army.dialect.Database;
 import io.army.dialect.MappingContext;
+import io.army.dialect.NotSupportDialectException;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
+import io.army.sqltype.SQLDataType;
 
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -16,22 +19,13 @@ public interface MappingMeta extends ParamMeta {
 
     JDBCType jdbcType();
 
-
-    /**
-     * design for {@link io.army.dialect.DDL}
-     *
-     * @return value's text with quote (if need)
-     * @throws IllegalArgumentException value error
-     */
-    default String nonNullTextValue(Object value) {
-        return String.valueOf(value);
-    }
-
-    boolean isTextValue(String textValue);
+    SQLDataType sqlDataType(Database database) throws NotSupportDialectException;
 
     void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context) throws SQLException;
 
     @Nullable
-    Object nullSafeGet(ResultSet resultSet, String alias, MappingContext context) throws SQLException;
+    Object nullSafeGet(ResultSet resultSet, String alias, ResultColumnMeta resultColumnMeta, MappingContext context)
+            throws SQLException;
+
 
 }

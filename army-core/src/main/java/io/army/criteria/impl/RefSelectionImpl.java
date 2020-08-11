@@ -178,9 +178,9 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
         }
 
         @Override
-        public String nonNullTextValue(Object value) {
+        public String nonNullTextValue(Object nonNullValue) {
             Assert.state(this.mappingMeta != null, "no mappingMeta.");
-            return this.mappingMeta.nonNullTextValue(value);
+            return this.mappingMeta.nonNullTextValue(nonNullValue);
         }
     }
 

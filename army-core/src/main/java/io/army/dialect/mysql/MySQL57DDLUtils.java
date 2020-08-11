@@ -1,250 +1,43 @@
 package io.army.dialect.mysql;
 
-import io.army.criteria.MetaException;
 import io.army.dialect.DDLUtils;
-import io.army.meta.FieldMeta;
 import io.army.sqltype.MySQLDataType;
 import io.army.util.StringUtils;
 
-import java.sql.JDBCType;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.Year;
-import java.util.Collections;
-import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.Map;
-import java.util.function.Function;
+import java.util.Set;
 
 abstract class MySQL57DDLUtils extends DDLUtils {
 
-    static EnumSet<JDBCType> NO_DEFAULT_JDBC = EnumSet.of(
-            JDBCType.LONGNVARCHAR,
-            JDBCType.LONGVARCHAR,
-            JDBCType.LONGVARBINARY,
-            JDBCType.BLOB,
-            JDBCType.CLOB
+    private static final Set<MySQLDataType> NEED_QUOTE_TYPE_SET = EnumSet.of(
+            MySQLDataType.CHAR,
+            MySQLDataType.NCHAR,
+            MySQLDataType.VARCHAR,
+            MySQLDataType.NVARCHAR,
+
+            MySQLDataType.BINARY,
+            MySQLDataType.VARBINARY,
+            MySQLDataType.TINYBLOB,
+            MySQLDataType.BLOB,
+
+            MySQLDataType.MEDIUMBLOB,
+            MySQLDataType.TINYTEXT,
+            MySQLDataType.TEXT,
+            MySQLDataType.MEDIUMTEXT,
+
+            MySQLDataType.ENUM
+
     );
 
-
-
-
-    /*################################## blow jdbc method ##################################*/
-
-    static String bitFunction(FieldMeta<?, ?> fieldMeta) {
-        return onlyPrecisionType(fieldMeta, MySQLDataType.BIT, 1);
+    static boolean needQuoteForDefault(MySQLDataType dataType) {
+        return NEED_QUOTE_TYPE_SET.contains(dataType);
     }
 
-    static String tinyIntFunction(FieldMeta<?, ?> fieldMeta) {
-        return onlyPrecisionType(fieldMeta, MySQLDataType.TINYINT);
-    }
-
-    static String smallIntFunction(FieldMeta<?, ?> fieldMeta) {
-        return onlyPrecisionType(fieldMeta, MySQLDataType.SMALLINT);
-    }
-
-    static String integerFunction(FieldMeta<?, ?> fieldMeta) {
-        return onlyPrecisionType(fieldMeta, MySQLDataType.INT);
-    }
-
-    static String bitIntFunction(FieldMeta<?, ?> fieldMeta) {
-        return onlyPrecisionType(fieldMeta, MySQLDataType.BIGINT);
-    }
-
-    static String floatFunction(FieldMeta<?, ?> fieldMeta) {
-        return MySQLDataType.FLOAT.name();
-    }
-
-    static String doubleFunction(FieldMeta<?, ?> fieldMeta) {
-        return MySQLDataType.DOUBLE.name();
-    }
-
-    static String decimalFunction(FieldMeta<?, ?> fieldMeta) {
-        int precision = fieldMeta.precision();
-        int scale = fieldMeta.scale();
-        final int maxPrecision = MySQLDataType.DECIMAL.maxPrecision();
-        final int maxScale = MySQLDataType.DECIMAL.maxScale();
-        if (precision < 0) {
-            precision = 10;
-        } else if (precision == 0 || precision > maxPrecision) {
-            throwPrecisionException(fieldMeta);
-        }
-
-        if (scale < 0) {
-            scale = 0;
-        } else if (scale > maxScale) {
-            throwScaleException(fieldMeta);
-        }
-        return MySQLDataType.DECIMAL.name() + "(" + precision + "," + scale + ")";
-    }
-
-    /*################################## blow string function method ##################################*/
-
-    static String charFunction(FieldMeta<?, ?> fieldMeta) {
-        return onlyPrecisionType(fieldMeta, MySQLDataType.CHAR);
-    }
-
-    static String varcharFunction(FieldMeta<?, ?> fieldMeta) {
-        int precision = fieldMeta.precision();
-        if (precision < 0) {
-            precision = 255;
-        }
-        return onlyPrecisionType(fieldMeta, MySQLDataType.VARCHAR, precision);
-    }
-
-    static String longVarcharFunction(FieldMeta<?, ?> fieldMeta) {
-        final int precision = fieldMeta.precision();
-        MySQLDataType dataType = null;
-        if (precision < 0) {
-            dataType = MySQLDataType.TEXT;
-        } else if (precision <= MySQLDataType.TINYTEXT.maxPrecision()) {
-            dataType = MySQLDataType.TINYTEXT;
-        } else if (precision <= MySQLDataType.TEXT.maxPrecision()) {
-            dataType = MySQLDataType.TEXT;
-        } else if (precision <= MySQLDataType.MEDIUMTEXT.maxPrecision()) {
-            dataType = MySQLDataType.MEDIUMTEXT;
-        } else {
-            throwPrecisionException(fieldMeta);
-        }
-        return dataType.name();
-    }
-
-    static String ncharFunction(FieldMeta<?, ?> fieldMeta) {
-        return onlyPrecisionType(fieldMeta, MySQLDataType.NCHAR);
-    }
-
-    static String nvarcharFunction(FieldMeta<?, ?> fieldMeta) {
-        return onlyPrecisionType(fieldMeta, MySQLDataType.NVARCHAR);
-    }
-
-    static String binaryFunction(FieldMeta<?, ?> fieldMeta) {
-        return onlyPrecisionType(fieldMeta, MySQLDataType.BINARY, 1);
-    }
-
-    static String varbinaryFunction(FieldMeta<?, ?> fieldMeta) {
-        return onlyPrecisionType(fieldMeta, MySQLDataType.VARBINARY, 1);
-    }
-
-    static String longVarbinaryFunction(FieldMeta<?, ?> fieldMeta) {
-        return blobFunction(fieldMeta);
-    }
-
-
-    static String blobFunction(FieldMeta<?, ?> fieldMeta) {
-        final int precision = fieldMeta.precision();
-        MySQLDataType dataType = null;
-        if (precision < 0) {
-            dataType = MySQLDataType.BLOB;
-        } else if (precision <= MySQLDataType.TINYBLOB.maxPrecision()) {
-            dataType = MySQLDataType.TINYBLOB;
-        } else if (precision <= MySQLDataType.BLOB.maxPrecision()) {
-            dataType = MySQLDataType.BLOB;
-        } else if (precision <= MySQLDataType.MEDIUMBLOB.maxPrecision()) {
-            dataType = MySQLDataType.MEDIUMBLOB;
-        } else {
-            throwPrecisionException(fieldMeta);
-        }
-        return dataType.name();
-    }
-
-    /*################################## blow date time function method ##################################*/
-
-    static String dateFunction(FieldMeta<?, ?> fieldMeta) {
-        MySQLDataType dataType;
-        if (fieldMeta.precision() == 4) {
-            dataType = MySQLDataType.YEAR;
-        } else {
-            dataType = MySQLDataType.DATE;
-        }
-        return dataType.name();
-    }
-
-    static String timeFunction(FieldMeta<?, ?> fieldMeta) {
-        return onlyPrecisionType(fieldMeta, MySQLDataType.TIME, 0);
-    }
-
-    static String timestampFunction(FieldMeta<?, ?> fieldMeta) {
-        return onlyPrecisionType(fieldMeta, MySQLDataType.DATETIME, 0);
-    }
-
-    private static String booleanFunction(FieldMeta<?, ?> fieldMeta) {
-        return "BOOLEAN";
-    }
-
-    /**
-     * @return a unmodifiable map
-     */
-    static Map<JDBCType, Function<FieldMeta<?, ?>, String>> createJdbcFunctionMap() {
-        Map<JDBCType, Function<FieldMeta<?, ?>, String>> map;
-        map = new EnumMap<>(JDBCType.class);
-
-        map.put(JDBCType.BIT, MySQL57DDLUtils::bitFunction);
-        map.put(JDBCType.TINYINT, MySQL57DDLUtils::tinyIntFunction);
-        map.put(JDBCType.SMALLINT, MySQL57DDLUtils::smallIntFunction);
-        map.put(JDBCType.INTEGER, MySQL57DDLUtils::integerFunction);
-
-        map.put(JDBCType.BIGINT, MySQL57DDLUtils::bitIntFunction);
-        map.put(JDBCType.FLOAT, MySQL57DDLUtils::floatFunction);
-        map.put(JDBCType.DOUBLE, MySQL57DDLUtils::doubleFunction);
-        map.put(JDBCType.DECIMAL, MySQL57DDLUtils::decimalFunction);
-
-        map.put(JDBCType.CHAR, MySQL57DDLUtils::charFunction);
-        map.put(JDBCType.VARCHAR, MySQL57DDLUtils::varcharFunction);
-        map.put(JDBCType.LONGVARCHAR, MySQL57DDLUtils::longVarcharFunction);
-        map.put(JDBCType.NCHAR, MySQL57DDLUtils::ncharFunction);
-
-        map.put(JDBCType.NVARCHAR, MySQL57DDLUtils::nvarcharFunction);
-        map.put(JDBCType.BINARY, MySQL57DDLUtils::binaryFunction);
-        map.put(JDBCType.VARBINARY, MySQL57DDLUtils::varbinaryFunction);
-        map.put(JDBCType.LONGVARBINARY, MySQL57DDLUtils::longVarbinaryFunction);
-
-        map.put(JDBCType.BLOB, MySQL57DDLUtils::blobFunction);
-        map.put(JDBCType.DATE, MySQL57DDLUtils::dateFunction);
-        map.put(JDBCType.TIME, MySQL57DDLUtils::timeFunction);
-        map.put(JDBCType.TIMESTAMP, MySQL57DDLUtils::timestampFunction);
-
-        map.put(JDBCType.BOOLEAN, MySQL57DDLUtils::booleanFunction);
-        return Collections.unmodifiableMap(map);
-    }
-
-
-    static void nowFunc(FieldMeta<?, ?> fieldMeta, StringBuilder builder) throws MetaException {
-        int precision = fieldMeta.precision();
-        builder.append("CURRENT_TIMESTAMP");
-        if (precision > 0 && precision < 7) {
-            builder.append("(")
-                    .append(precision)
-                    .append(")");
-        } else if (precision > 6) {
-            throw new MetaException("%s, NOW/CURRENT_TIMESTAMP func precision must in [0,6]", fieldMeta);
-        }
-    }
-
-    static void assertSupportTimeType(FieldMeta<?, ?> fieldMeta) {
-        Class<?> javaType = fieldMeta.javaType();
-        boolean support = javaType == LocalDateTime.class
-                || javaType == LocalDate.class
-                || javaType == LocalTime.class
-                || javaType == Year.class;
-        if (!support) {
-            throw new MetaException("%s java type not support by MySQL.");
-        }
-    }
-
-
-    static String quoteDefaultIfNeed(FieldMeta<?, ?> fieldMeta, String safeDefaultValue) {
-        String defaultValue = safeDefaultValue;
-        if (QUOTE_JDBC_TYPE.contains(fieldMeta.mappingMeta().jdbcType())) {
-            defaultValue = StringUtils.quote(safeDefaultValue);
-        }
-        return defaultValue;
-    }
 
     static String tableCharset(String charset) {
         String actualCharset = charset;
         if (!StringUtils.hasText(actualCharset)) {
-            actualCharset = "utf8mb4";
+            actualCharset = "UTF8MB4";
         }
         return actualCharset;
     }

@@ -39,7 +39,7 @@ final class SelectSQLExecutorImpl extends SQLExecutorSupport implements SelectSQ
             // 4. execute query sql
             try (ResultSet resultSet = st.executeQuery()) {
                 // 5. extract result
-                if (simpleJavaType(sqlWrapper.selectionList(), resultClass)) {
+                if (sqlWrapper.selectionList().size() == 1) {
                     resultList = extractSimpleTypeResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
                             , resultClass);
                 } else {
@@ -50,6 +50,8 @@ final class SelectSQLExecutorImpl extends SQLExecutorSupport implements SelectSQ
             return resultList;
         } catch (SQLException e) {
             throw ExecutorUtils.convertSQLException(e, sqlWrapper.sql());
+        } catch (ResultColumnClassNotFoundException e) {
+            throw createExceptionForResultColumnClassNotFound(e, sqlWrapper.sql());
         } finally {
             session.codecContextStatementType(null);
         }

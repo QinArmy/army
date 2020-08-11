@@ -1,14 +1,22 @@
 package io.army.meta.mapping;
 
+import io.army.dialect.Database;
 import io.army.dialect.MappingContext;
+import io.army.dialect.NotSupportDialectException;
+import io.army.sqltype.MySQLDataType;
+import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.SQLDataType;
 import io.army.util.Assert;
-import io.army.util.StringUtils;
-import io.army.util.TimeUtils;
 
 import java.sql.*;
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.Map;
 
 public final class LocalDateType extends AbstractMappingType {
+
+    private static final Map<Database, SQLDataType> DATA_TYPE_MAP = createDataTypeMap();
 
     private static final LocalDateType INSTANCE = new LocalDateType();
 
@@ -16,6 +24,16 @@ public final class LocalDateType extends AbstractMappingType {
         Assert.isTrue(LocalDate.class == typeClass, "");
         return INSTANCE;
     }
+
+    private static Map<Database, SQLDataType> createDataTypeMap() {
+        EnumMap<Database, SQLDataType> map = new EnumMap<>(Database.class);
+
+        map.put(Database.MySQL, MySQLDataType.DATE);
+        map.put(Database.Postgre, PostgreDataType.DATE);
+
+        return Collections.unmodifiableMap(map);
+    }
+
 
     private LocalDateType() {
     }
@@ -31,33 +49,25 @@ public final class LocalDateType extends AbstractMappingType {
     }
 
     @Override
-    public String nonNullTextValue(Object value) {
-        return StringUtils.quote(
-                ((LocalDate) value).format(TimeUtils.DATE_FORMATTER)
-        );
-    }
-
-
-    @Override
-    public boolean isTextValue(String textValue) {
-        boolean yes;
-        try {
-            LocalDate.parse(textValue, TimeUtils.DATE_FORMATTER);
-            yes = true;
-        } catch (Exception e) {
-            yes = false;
+    public SQLDataType sqlDataType(Database database) throws NotSupportDialectException {
+        SQLDataType dataType = DATA_TYPE_MAP.get(database.family());
+        if (dataType == null) {
+            throw MappingMetaUtils.createNotSupportDialectException(this, database);
         }
-        return yes;
+        return dataType;
     }
 
     @Override
-    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context) throws SQLException {
+    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context)
+            throws SQLException {
         Assert.isInstanceOf(LocalDate.class, nonNullValue, "");
         st.setDate(index, Date.valueOf((LocalDate) nonNullValue));
     }
 
     @Override
-    public Object nullSafeGet(ResultSet st, String alias, MappingContext context) throws SQLException {
+    public Object nullSafeGet(ResultSet st, String alias, ResultColumnMeta resultColumnMeta
+            , MappingContext context) throws SQLException {
+
         Date date = st.getDate(alias);
         LocalDate localDate = null;
         if (date != null) {

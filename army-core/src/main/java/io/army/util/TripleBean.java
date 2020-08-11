@@ -1,10 +1,5 @@
 package io.army.util;
 
-public interface TripleBean<F, S, T> {
+public interface TripleBean {
 
-    F getFirst();
-
-    S getSecond();
-
-    T getThird();
 }

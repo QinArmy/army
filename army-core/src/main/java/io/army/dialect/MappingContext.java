@@ -6,5 +6,5 @@ public interface MappingContext {
 
     ZoneId zoneId();
 
-    Database sqlDialect();
+    Database database();
 }

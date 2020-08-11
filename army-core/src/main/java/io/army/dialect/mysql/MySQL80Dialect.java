@@ -33,7 +33,7 @@ class MySQL80Dialect extends MySQL57Dialect {
 
     @Override
     protected DDL createDDL() {
-        return new MySQL80TableDDL(this);
+        return new MySQL80DDL(this);
     }
 
     @Override

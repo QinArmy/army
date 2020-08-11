@@ -161,7 +161,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
             this.precision = column.precision();
             this.scale = column.scale();
             this.fieldName = FieldMetaUtils.columnName(column, field);
-            this.mappingType = FieldMetaUtils.columnMappingType(field);
+            this.mappingType = FieldMetaUtils.columnMappingMeta(field);
 
             final boolean isDiscriminator = FieldMetaUtils.isDiscriminator(this);
 

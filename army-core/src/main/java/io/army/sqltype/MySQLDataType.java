@@ -1,111 +1,435 @@
 package io.army.sqltype;
 
+import io.army.criteria.MetaException;
+import io.army.dialect.DDLUtils;
+import io.army.dialect.Database;
+import io.army.dialect.SQLBuilder;
+import io.army.meta.FieldMeta;
+
+import java.time.*;
+
 public enum MySQLDataType implements SQLDataType {
 
-    BIT(64) {
+    BIT {
         @Override
-        public int minPrecision() {
-            return 1;
+        public void dataTypeClause(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) {
+            int precision = fieldMeta.precision();
+            if (precision > 64) {
+                throw SQLDataTypeUtils.createPrecisionException(this, 1, 64, fieldMeta);
+            }
+            SQLDataTypeUtils.appendDataTypeWithPrecision(this, precision, builder);
+        }
+
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            builder.append("B'0'");
         }
     },
-    TINYINT(3),
-
-    BOOLEAN(1),
-
-    SMALLINT(5),
-
-    MEDIUMINT(7),
-
-    INT(10),
-
-    BIGINT(19),
-
-    DECIMAL(65) {
+    TINYINT {
         @Override
-        public int maxScale() {
-            return 30;
-        }
-    },
-
-    FLOAT(24),
-
-    DOUBLE(53) {
-        @Override
-        public int minPrecision() {
-            return 25;
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            builder.append("0");
         }
     },
 
-    DATE(0),
-
-    TIME(6) {
+    BOOLEAN {
         @Override
-        public boolean precisionMatch(int precisionOfField, int columnSize) {
-            return timePrecisionMatch(8, precisionOfField, columnSize);
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            builder.append("FALSE");
         }
     },
 
-    DATETIME(6) {
+    SMALLINT {
         @Override
-        public boolean precisionMatch(int precisionOfField, int columnSize) {
-            return timePrecisionMatch(19, precisionOfField, columnSize);
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            builder.append("0");
         }
     },
 
-    YEAR(0),
+    MEDIUMINT {
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            builder.append("0");
+        }
+    },
 
-    CHAR(255),
+    INT {
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            builder.append("0");
+        }
+    },
 
-    NCHAR(CHAR.maxPrecision),
+    BIGINT {
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            builder.append("0");
+        }
+    },
 
-    VARCHAR((1 << 16) - 1),
+    DECIMAL {
+        @Override
+        public void dataTypeClause(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) throws MetaException {
+            SQLDataTypeUtils.decimalDataTypeClause(this, 65, 30, fieldMeta, builder);
+        }
 
-    NVARCHAR(VARCHAR.maxPrecision),
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            builder.append(SQLDataTypeUtils.decimalDefaultValue(fieldMeta));
+        }
+    },
 
-    BINARY(CHAR.maxPrecision),
+    FLOAT {
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            builder.append("0");
+        }
+    },
 
-    VARBINARY(VARCHAR.maxPrecision),
+    DOUBLE {
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            builder.append("0");
+        }
+    },
 
-    TINYBLOB(255),
+    DATE {
+        @Override
+        public boolean supportNowValue(Database database) {
+            return database.compatible(Database.MySQL80);
+        }
 
-    BLOB((1 << 16) - 1),
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            Class<?> javaType = fieldMeta.javaType();
+            if (javaType != LocalDate.class && javaType != YearMonth.class && javaType != MonthDay.class) {
+                throw SQLDataTypeUtils.createNotJavaTypeException(this, fieldMeta);
+            }
+            if (database.compatible(Database.MySQL80)) {
+                builder.append(DDLUtils.zeroForTimeType(fieldMeta));
+            } else {
+                throw SQLDataTypeUtils.createNotSupportZeroValueException(this, fieldMeta, database);
+            }
+        }
 
-    MEDIUMBLOB((1 << 24) - 1),
+        @Override
+        public void nowValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            if (fieldMeta.javaType() != LocalDate.class) {
+                throw SQLDataTypeUtils.createNotJavaTypeException(this, fieldMeta);
+            }
+            if (database.compatible(Database.MySQL80)) {
+                SQLDataTypeUtils.mySQLDateNowValue(fieldMeta, builder);
+            } else {
+                throw SQLDataTypeUtils.createNotSupportNowExpressionException(this, fieldMeta, database);
+            }
+        }
+    },
 
-    TINYTEXT(255),
+    TIME {
+        @Override
+        public boolean supportNowValue(Database database) {
+            return database.compatible(Database.MySQL80);
+        }
 
-    TEXT((1 << 16) - 1),
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            if (fieldMeta.javaType() != LocalTime.class) {
+                throw SQLDataTypeUtils.createNotJavaTypeException(this, fieldMeta);
+            }
+            if (supportZeroValue(database)) {
+                builder.append(DDLUtils.zeroForTimeType(fieldMeta));
+            } else {
+                throw SQLDataTypeUtils.createNotSupportZeroValueException(this, fieldMeta, database);
+            }
+        }
 
-    MEDIUMTEXT((1 << 24) - 1);
+        @Override
+        public void nowValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            if (fieldMeta.javaType() != LocalTime.class) {
+                throw SQLDataTypeUtils.createNotJavaTypeException(this, fieldMeta);
+            }
+            if (supportNowValue(database)) {
+                builder.append("(CURRENT_TIME)");
+            } else {
+                throw SQLDataTypeUtils.createNotSupportNowExpressionException(this, fieldMeta, database);
+            }
+        }
+    },
 
-
-    private final int maxPrecision;
-
-    MySQLDataType(int maxPrecision) {
-        this.maxPrecision = maxPrecision;
-    }
-
-    @Override
-    public int maxPrecision() {
-        return maxPrecision;
-    }
-
-
-    private static boolean timePrecisionMatch(final int basePrecision, final int precisionOfField,
-                                              final int precisionOfColumn) throws IllegalArgumentException {
-        if (precisionOfField < 0) {
+    DATETIME {
+        @Override
+        public boolean supportNowValue(Database database) {
             return true;
         }
-        boolean match;
 
-        if (precisionOfField == 0) {
-            match = precisionOfColumn == basePrecision;
-        } else if (precisionOfField < 7) {
-            match = precisionOfColumn == basePrecision + precisionOfField + 1;
-        } else {
-            throw new IllegalArgumentException("precisionOfField  error");
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            if (fieldMeta.javaType() != LocalDateTime.class) {
+                throw SQLDataTypeUtils.createNotJavaTypeException(this, fieldMeta);
+            }
+            builder.append(DDLUtils.zeroForTimeType(fieldMeta));
         }
-        return match;
-    }
 
+        @Override
+        public void nowValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            if (fieldMeta.javaType() != LocalDateTime.class) {
+                throw SQLDataTypeUtils.createNotJavaTypeException(this, fieldMeta);
+            }
+            int precision = fieldMeta.precision();
+            builder.append("CURRENT_TIMESTAMP");
+            if (precision > 0 && precision < 7) {
+                builder.append("(")
+                        .append(precision)
+                        .append(")");
+            } else if (precision > 6) {
+                throw new MetaException("%s, NOW/CURRENT_TIMESTAMP funcion precision must in [0,6]", fieldMeta);
+            }
+        }
+    },
+
+    YEAR {
+        @Override
+        public boolean supportNowValue(Database database) {
+            return database.compatible(Database.MySQL80);
+        }
+
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            if (fieldMeta.javaType() != Year.class) {
+                throw SQLDataTypeUtils.createNotJavaTypeException(this, fieldMeta);
+            }
+            builder.append(DDLUtils.zeroForTimeType(fieldMeta));
+        }
+
+        @Override
+        public void nowValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            if (supportNowValue(database)) {
+                builder.append("(YEAR(CURRENT_DATE))");
+            } else {
+                throw SQLDataTypeUtils.createNotSupportNowExpressionException(this, fieldMeta, database);
+            }
+        }
+    },
+
+    CHAR {
+        @Override
+        public void dataTypeClause(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) throws MetaException {
+            SQLDataTypeUtils.appendDataTypeWithMaxPrecision(this, fieldMeta, (1 << 8) - 1, builder);
+        }
+
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            builder.append("''");
+        }
+    },
+
+    NCHAR {
+        @Override
+        public void dataTypeClause(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) throws MetaException {
+            SQLDataTypeUtils.appendDataTypeWithMaxPrecision(this, fieldMeta, (1 << 8) - 1, builder);
+        }
+
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database) {
+            CHAR.zeroValue(fieldMeta, builder, database);
+        }
+    },
+
+    VARCHAR {
+        @Override
+        public void dataTypeClause(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) throws MetaException {
+            SQLDataTypeUtils.appendDataTypeWithMaxPrecision(this, fieldMeta, (1 << 16) - 1, builder);
+        }
+
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database) {
+            builder.append("''");
+        }
+    },
+
+    NVARCHAR {
+        @Override
+        public void dataTypeClause(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) throws MetaException {
+            SQLDataTypeUtils.appendDataTypeWithMaxPrecision(this, fieldMeta, (1 << 16) - 1, builder);
+        }
+
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database) {
+            builder.append("''");
+        }
+    },
+
+    BINARY {
+        @Override
+        public void dataTypeClause(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) throws MetaException {
+            SQLDataTypeUtils.appendDataTypeWithMaxPrecision(this, fieldMeta, (1 << 8) - 1, builder);
+        }
+
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database) {
+            builder.append("0x00");
+        }
+
+    },
+
+    VARBINARY {
+        @Override
+        public void dataTypeClause(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) throws MetaException {
+            SQLDataTypeUtils.appendDataTypeWithMaxPrecision(this, fieldMeta, (1 << 16) - 1, builder);
+        }
+
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            builder.append("0x00");
+        }
+    },
+
+    TINYBLOB {
+        @Override
+        public void dataTypeClause(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) throws MetaException {
+            SQLDataTypeUtils.appendDataTypeWithMaxPrecision(this, fieldMeta, (1 << 8) - 1, builder);
+        }
+
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            builder.append("0x00");
+        }
+    },
+
+    BLOB {
+        @Override
+        public void dataTypeClause(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) throws MetaException {
+            SQLDataTypeUtils.appendDataTypeWithMaxPrecision(this, fieldMeta, (1 << 16) - 1, builder);
+        }
+
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            builder.append("0x00");
+        }
+    },
+
+    MEDIUMBLOB {
+        @Override
+        public void dataTypeClause(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) throws MetaException {
+            SQLDataTypeUtils.appendDataTypeWithMaxPrecision(this, fieldMeta, (1 << 24) - 1, builder);
+        }
+
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            builder.append("0x00");
+        }
+    },
+
+    TINYTEXT {
+        @Override
+        public void dataTypeClause(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) throws MetaException {
+            SQLDataTypeUtils.appendDataTypeWithMaxPrecision(this, fieldMeta, (1 << 8) - 1, builder);
+        }
+
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            builder.append("''");
+        }
+    },
+
+    TEXT {
+        @Override
+        public void dataTypeClause(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) throws MetaException {
+            SQLDataTypeUtils.appendDataTypeWithMaxPrecision(this, fieldMeta, (1 << 16) - 1, builder);
+        }
+
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database) throws MetaException {
+            builder.append("''");
+        }
+    },
+
+    MEDIUMTEXT {
+        @Override
+        public void dataTypeClause(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) throws MetaException {
+            SQLDataTypeUtils.appendDataTypeWithMaxPrecision(this, fieldMeta, (1 << 24) - 1, builder);
+        }
+
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            builder.append("''");
+        }
+    },
+    ENUM {
+        @Override
+        public void dataTypeClause(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) throws MetaException {
+            Class<?> javaType = fieldMeta.javaType();
+            if (!javaType.isEnum()) {
+                throw SQLDataTypeUtils.createNotJavaTypeException(this, fieldMeta);
+            }
+            builder.append("ENUM(");
+            int index = 0;
+            for (Object e : javaType.getEnumConstants()) {
+                if (index > 0) {
+                    builder.append(",");
+                }
+                builder.append("'")
+                        .append(((Enum<?>) e).name())
+                        .append("'");
+                index++;
+            }
+            builder.append(")");
+        }
+
+        @Override
+        public void nowValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database) throws MetaException {
+            Class<?> javaType = fieldMeta.javaType();
+            if (javaType == Month.class) {
+                builder.append("(UPPER(MONTHNAME(CURRENT_DATE)))");
+            } else if (javaType == DayOfWeek.class) {
+                builder.append("(UPPER(DATE_FORMAT(CURRENT_DATE,'%W')))");
+            } else {
+                throw SQLDataTypeUtils.createNotJavaTypeException(this, fieldMeta);
+            }
+        }
+
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            builder.append(1);
+        }
+    },
+    JSON {
+        @Override
+        public void zeroValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
+                throws MetaException {
+            builder.append("'{}'");
+        }
+    };
+
+
+    @Override
+    public final Database database() {
+        return Database.MySQL;
+    }
 }

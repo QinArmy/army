@@ -76,3 +76,18 @@
 (1) 多表的 insert 在实践中意义不大.
 (2) 若支持多表 整个 criteria 设计 则更复杂.
 
+21. 为什么 Dialect 的方法都不声明异常？
+(1) 因为 Dialect 的方法都不直接面向开发者,只有 Session,Transaction,SessionFactory 直接面向开发者
+,所以只能在 这三者的这一层抽象处理异常就好。
+(2) 可以省去不必要的 try catch
+
+22. 为什么 io.army.util.PairBean 和 io.army.util.TripleBean 接口 不设计 任何方法?
+(1) 防止 开发者将 io.army.util.PairBean 和 io.army.util.TripleBean 接口 作为 dao 和 service 的返回值
+,这样会破坏开发者项目的整体结构设计.
+
+23. 为什么 MySQLDateType 不支持 LONGBLOB ,LONGTEXT ?
+(1)因为太大了(2的32次方 -1,有4 个G),这种级别的存储不应该使用传统数据库.
+(3) 对于整个设计来说 io.army.annotation.Column.precision() 返回 int 类型才是最合适的.
+
+24. 为什么 io.army.meta.mapping.LocalDateTimeType.nonNullSet 不用 setString ?
+(1) 因为要考虑各数据库的 时间精度问题.

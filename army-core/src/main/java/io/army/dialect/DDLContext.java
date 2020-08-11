@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface DDLContext {
 
-    StringBuilder sqlBuilder();
+    SQLBuilder sqlBuilder();
 
     TableMeta<?> tableMeta();
 
@@ -15,7 +15,11 @@ public interface DDLContext {
 
     void appendField(FieldMeta<?, ?> fieldMeta);
 
-    void append(String sql);
+    void appendFieldWithTable(FieldMeta<?, ?> fieldMeta);
+
+    void appendSQL(String sql);
+
+    void appendIdentifier(String identifier);
 
     void resetBuilder();
 

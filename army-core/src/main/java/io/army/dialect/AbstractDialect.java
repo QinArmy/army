@@ -135,6 +135,16 @@ public abstract class AbstractDialect implements InnerDialect {
     }
 
     @Override
+    public final List<String> modifyTableComment(TableMeta<?> tableMeta, @Nullable String tableSuffix) {
+        return this.ddl.modifyTableComment(tableMeta, tableSuffix);
+    }
+
+    @Override
+    public final List<String> modifyColumnComment(FieldMeta<?, ?> fieldMeta, @Nullable String tableSuffix) {
+        return this.ddl.modifyColumnComment(fieldMeta, tableSuffix);
+    }
+
+    @Override
     public final void clearForDDL() {
         this.ddl.clearForDDL();
     }
@@ -184,11 +194,6 @@ public abstract class AbstractDialect implements InnerDialect {
         return this.dml.delete(delete, visible);
     }
 
-    @Override
-    public Database database() {
-        throw new UnsupportedOperationException();
-    }
-
 
 
     /*####################################### below DQL  method #################################*/
@@ -212,8 +217,8 @@ public abstract class AbstractDialect implements InnerDialect {
     /*############################### sub class override method ####################################*/
 
     @Override
-    public String toString() {
-        return String.valueOf(database());
+    public final String toString() {
+        return database().name();
     }
 
 
@@ -233,7 +238,7 @@ public abstract class AbstractDialect implements InnerDialect {
         }
 
         @Override
-        public Database sqlDialect() {
+        public Database database() {
             return sqlDialect;
         }
     }

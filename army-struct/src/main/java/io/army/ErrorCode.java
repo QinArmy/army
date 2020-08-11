@@ -96,7 +96,11 @@ public enum ErrorCode implements CodeEnum {
     SESSION_FACTORY_CLOSE_ERROR(1042, "", NONE),
     NOT_SUPPORT_BATCH(1043, "", NONE),
     SESSION_CLOSE_ERROR(1044, "", NONE),
-    SESSION_CLOSED(1045, "", NONE);
+    SESSION_CLOSED(1045, "", NONE),
+    CUSTOM_SQL_TYPE_ERROR(1046, "", NONE),
+    DDL_ERROR(1047, "", NONE),
+    NOT_SUPPORT_DIALECT(1048, "", NONE),
+    EXP_SYNTAX_ERROR(1049, "", NONE);
 
 
     private final int code;
