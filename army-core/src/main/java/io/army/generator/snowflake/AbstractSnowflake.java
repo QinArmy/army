@@ -104,7 +104,7 @@ public abstract class AbstractSnowflake implements Snowflake {
     @Override
     public final String nextAsString(long suffixNumber) {
         Assert.isTrue(suffixNumber >= 0L, "suffixNumber must great than 0");
-        return LocalDateTime.now().format(TimeUtils.CLOSE_DATE_FORMATTER)
+        return LocalDateTime.now().format(TimeUtils.dateTimeFormatter(TimeUtils.CLOSE_DATE_FORMAT))
                 + this.next()
                 + suffixWithZero(suffixNumber);
     }

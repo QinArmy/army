@@ -2,7 +2,8 @@ package io.army.meta.mapping;
 
 import io.army.dialect.Database;
 import io.army.dialect.MappingContext;
-import io.army.dialect.NotSupportDialectException;
+import io.army.lang.Nullable;
+import io.army.meta.FieldMeta;
 import io.army.sqltype.MySQLDataType;
 import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SQLDataType;
@@ -12,8 +13,13 @@ import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.Map;
 
 public final class DoubleType extends AbstractMappingType {
+
+    private static final Map<Database, SQLDataType> DATA_TYPE_MAP = createDataTypeMap();
 
     private static final DoubleType INSTANCE = new DoubleType();
 
@@ -22,6 +28,15 @@ public final class DoubleType extends AbstractMappingType {
             throw MappingMetaUtils.createNotSupportJavaTypeException(DoubleType.class, typeClass);
         }
         return INSTANCE;
+    }
+
+    private static Map<Database, SQLDataType> createDataTypeMap() {
+        EnumMap<Database, SQLDataType> map = new EnumMap<>(Database.class);
+
+        map.put(Database.MySQL, MySQLDataType.DOUBLE);
+        map.put(Database.Postgre, PostgreDataType.DOUBLE_PRECISION);
+
+        return Collections.unmodifiableMap(map);
     }
 
     private DoubleType() {
@@ -38,19 +53,8 @@ public final class DoubleType extends AbstractMappingType {
     }
 
     @Override
-    public SQLDataType sqlDataType(Database database) throws NotSupportDialectException {
-        SQLDataType dataType;
-        switch (database.family()) {
-            case MySQL:
-                dataType = MySQLDataType.DOUBLE;
-                break;
-            case Postgre:
-                dataType = PostgreDataType.DOUBLE_PRECISION;
-                break;
-            default:
-                throw MappingMetaUtils.createNotSupportDialectException(this, database);
-        }
-        return dataType;
+    public boolean singleton() {
+        return true;
     }
 
     @Override
@@ -66,4 +70,15 @@ public final class DoubleType extends AbstractMappingType {
         return resultSet.getDouble(alias);
     }
 
+    /*################################## blow protected method ##################################*/
+
+    @Override
+    protected Map<Database, SQLDataType> sqlDataTypeMap() {
+        return DATA_TYPE_MAP;
+    }
+
+    @Override
+    protected String doToConstant(@Nullable FieldMeta<?, ?> paramMeta, Object nonNullValue) {
+        return nonNullValue.toString();
+    }
 }

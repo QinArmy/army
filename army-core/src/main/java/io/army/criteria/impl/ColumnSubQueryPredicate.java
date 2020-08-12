@@ -4,6 +4,7 @@ import io.army.criteria.ColumnSubQuery;
 import io.army.criteria.DualPredicateOperator;
 import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
+import io.army.dialect.SQLBuilder;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -55,7 +56,7 @@ class ColumnSubQueryPredicate extends AbstractPredicate {
     @Override
     public void appendSQL(SQLContext context) {
         this.operand.appendSQL(context);
-        StringBuilder builder = context.sqlBuilder()
+        SQLBuilder builder = context.sqlBuilder()
                 .append(" ")
                 .append(this.operator.rendered());
         SubQueryOperator subQueryOperator = subQueryOperator();

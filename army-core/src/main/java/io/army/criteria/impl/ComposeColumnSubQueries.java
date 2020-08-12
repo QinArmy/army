@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.dialect.SQLBuilder;
 import io.army.util.Pair;
 
 import java.util.List;
@@ -134,7 +135,7 @@ abstract class ComposeColumnSubQueries<E, C> extends AbstractComposeQuery<C> imp
 
         @Override
         public void appendSQL(SQLContext context) {
-            StringBuilder builder = context.sqlBuilder()
+            SQLBuilder builder = context.sqlBuilder()
                     .append(" (");
             context.dql().subQuery(this.encloseSubQuery, context);
             builder.append(" )");

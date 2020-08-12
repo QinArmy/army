@@ -17,16 +17,16 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
 
-public final class IntegerType extends AbstractMappingType {
-
-    static final Map<Database, SQLDataType> DATA_TYPE_MAP = createDataTypeMap();
-
-    private static final IntegerType INSTANCE = new IntegerType();
+public final class BooleanType extends AbstractMappingType {
 
 
-    public static IntegerType build(Class<?> typeClass) {
-        if (typeClass != Integer.class) {
-            throw MappingMetaUtils.createNotSupportJavaTypeException(IntegerType.class, typeClass);
+    private static final Map<Database, SQLDataType> DATA_TYPE_MAP = createDataTypeMap();
+
+    private static final BooleanType INSTANCE = new BooleanType();
+
+    public static BooleanType build(Class<?> typeClass) {
+        if (typeClass != Boolean.class) {
+            throw MappingMetaUtils.createNotSupportJavaTypeException(BooleanType.class, typeClass);
         }
         return INSTANCE;
     }
@@ -34,43 +34,53 @@ public final class IntegerType extends AbstractMappingType {
     private static Map<Database, SQLDataType> createDataTypeMap() {
         EnumMap<Database, SQLDataType> map = new EnumMap<>(Database.class);
 
-        map.put(Database.MySQL, MySQLDataType.INT);
-        map.put(Database.Postgre, PostgreDataType.INTEGER);
+        map.put(Database.MySQL, MySQLDataType.BOOLEAN);
+        map.put(Database.Postgre, PostgreDataType.BOOLEAN);
 
         return Collections.unmodifiableMap(map);
+
     }
 
-    private IntegerType() {
+    private BooleanType() {
     }
 
     @Override
     public Class<?> javaType() {
-        return Integer.class;
+        return Boolean.class;
     }
 
     @Override
     public JDBCType jdbcType() {
-        return JDBCType.INTEGER;
+        return JDBCType.TINYINT;
+    }
+
+    @Override
+    public boolean singleton() {
+        return true;
     }
 
     @Override
     public void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context)
             throws SQLException {
-        Assert.isInstanceOf(Integer.class, nonNullValue, "");
-        st.setInt(index, (Integer) nonNullValue);
+        Assert.isInstanceOf(Boolean.class, nonNullValue);
+        st.setInt(index, Boolean.TRUE.equals(nonNullValue) ? 1 : 0);
     }
 
     @Override
-    public Object nullSafeGet(ResultSet st, String alias, ResultColumnMeta resultColumnMeta
+    public Object nullSafeGet(ResultSet resultSet, String alias, ResultColumnMeta resultColumnMeta
             , MappingContext context) throws SQLException {
-        Object value = st.getObject(alias);
-        if (value != null && !(value instanceof Integer)) {
-            throw new SQLException(String.format(
-                    "Alis[%s] return error,value[Class %s] from database isn't Integer type."
-                    , alias, value.getClass().getName()));
+        String value = resultSet.getString(alias);
+        Boolean boolValue;
+        if (value == null) {
+            boolValue = null;
+        } else if (value.equals("1")) {
+            boolValue = Boolean.TRUE;
+        } else {
+            boolValue = Boolean.FALSE;
         }
-        return value;
+        return boolValue;
     }
+
 
     /*################################## blow protected method ##################################*/
 
@@ -83,4 +93,5 @@ public final class IntegerType extends AbstractMappingType {
     protected String doToConstant(@Nullable FieldMeta<?, ?> paramMeta, Object nonNullValue) {
         return nonNullValue.toString();
     }
+
 }

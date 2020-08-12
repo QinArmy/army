@@ -2,7 +2,8 @@ package io.army.meta.mapping;
 
 import io.army.dialect.Database;
 import io.army.dialect.MappingContext;
-import io.army.dialect.NotSupportDialectException;
+import io.army.lang.Nullable;
+import io.army.meta.FieldMeta;
 import io.army.sqltype.MySQLDataType;
 import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SQLDataType;
@@ -25,8 +26,7 @@ public final class BigDecimalType extends AbstractMappingType {
 
     public static BigDecimalType build(Class<?> typeClass) {
         if (typeClass != BigDecimal.class) {
-            throw new IllegalArgumentException(String.format("typeClass[%s] isn't java.math.BigDecimal"
-                    , typeClass.getName()));
+            throw MappingMetaUtils.createNotSupportJavaTypeException(BigDecimalType.class, typeClass);
         }
         return INSTANCE;
     }
@@ -45,6 +45,11 @@ public final class BigDecimalType extends AbstractMappingType {
     }
 
     @Override
+    public boolean singleton() {
+        return true;
+    }
+
+    @Override
     public Class<?> javaType() {
         return BigDecimal.class;
     }
@@ -54,14 +59,6 @@ public final class BigDecimalType extends AbstractMappingType {
         return JDBCType.DECIMAL;
     }
 
-    @Override
-    public SQLDataType sqlDataType(Database database) throws NotSupportDialectException {
-        SQLDataType dataType = DATA_TYPE_MAP.get(database.family());
-        if (dataType == null) {
-            throw MappingMetaUtils.createNotSupportDialectException(this, database);
-        }
-        return dataType;
-    }
 
     @Override
     public void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context)
@@ -74,5 +71,17 @@ public final class BigDecimalType extends AbstractMappingType {
     public Object nullSafeGet(ResultSet resultSet, String alias, ResultColumnMeta resultColumnMeta
             , MappingContext context) throws SQLException {
         return resultSet.getBigDecimal(alias);
+    }
+
+    /*################################## blow protected method ##################################*/
+
+    @Override
+    protected Map<Database, SQLDataType> sqlDataTypeMap() {
+        return DATA_TYPE_MAP;
+    }
+
+    @Override
+    protected String doToConstant(@Nullable FieldMeta<?, ?> fieldMeta, Object nonNullValue) {
+        return ((BigDecimal) nonNullValue).toPlainString();
     }
 }

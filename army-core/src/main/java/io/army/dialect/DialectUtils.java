@@ -99,7 +99,7 @@ public abstract class DialectUtils {
 
     public static void appendPredicateList(List<IPredicate> predicateList, TableContextSQLContext context) {
 
-        StringBuilder builder = context.sqlBuilder();
+        SQLBuilder builder = context.sqlBuilder();
         int count = 0;
         for (IPredicate predicate : predicateList) {
             if (count > 0) {
@@ -111,7 +111,7 @@ public abstract class DialectUtils {
     }
 
     public static void appendSortPartList(List<SortPart> sortPartList, TableContextSQLContext context) {
-        StringBuilder builder = context.sqlBuilder();
+        SQLBuilder builder = context.sqlBuilder();
 
         int count = 0;
         for (SortPart sortPart : sortPartList) {

@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.Expression;
 import io.army.criteria.FuncExpression;
 import io.army.criteria.SQLContext;
+import io.army.dialect.SQLBuilder;
 import io.army.meta.mapping.MappingMeta;
 import io.army.util.ArrayUtils;
 import io.army.util.Assert;
@@ -54,7 +55,7 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
 
     @Override
     public final void appendSQL(SQLContext context) {
-        StringBuilder builder = context.sqlBuilder()
+        SQLBuilder builder = context.sqlBuilder()
                 .append(" ")
                 .append(this.name)
                 .append("(");
@@ -160,7 +161,7 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
 
         @Override
         protected void doAppendArgument(SQLContext context) {
-            StringBuilder builder = context.sqlBuilder();
+            SQLBuilder builder = context.sqlBuilder();
             builder.append(format.get(0));
             one.appendSQL(context);
             builder.append(format.get(1));
@@ -217,7 +218,7 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
 
         @Override
         protected void doAppendArgument(SQLContext context) {
-            StringBuilder builder = context.sqlBuilder();
+            SQLBuilder builder = context.sqlBuilder();
             builder.append(format.get(0));
             one.appendSQL(context);
             builder.append(format.get(1));

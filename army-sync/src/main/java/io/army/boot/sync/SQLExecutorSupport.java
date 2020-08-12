@@ -517,17 +517,11 @@ abstract class SQLExecutorSupport {
         final int size = selectionList.size();
         List<ResultColumnMeta> columnMetaList = new ArrayList<>(size);
         for (int i = 1; i <= size; i++) {
-            String javaClassName = null;
-            try {
-                JDBCType jdbcType = JDBCType.valueOf(resultSetMetaData.getColumnType(i));
-                String sqlType = resultSetMetaData.getColumnTypeName(i);
-                javaClassName = resultSetMetaData.getColumnClassName(i);
-                Class<?> javaType = Class.forName(javaClassName);
+            JDBCType jdbcType = JDBCType.valueOf(resultSetMetaData.getColumnType(i));
+            String sqlType = resultSetMetaData.getColumnTypeName(i);
+            String javaClassName = resultSetMetaData.getColumnClassName(i);
 
-                columnMetaList.add(new ResultColumnMetaImpl(jdbcType, sqlType, javaType));
-            } catch (ClassNotFoundException e) {
-                throw new ResultColumnClassNotFoundException(javaClassName, e);
-            }
+            columnMetaList.add(new ResultColumnMetaImpl(jdbcType, sqlType, javaClassName));
         }
         return Collections.unmodifiableList(columnMetaList);
     }
@@ -588,12 +582,12 @@ abstract class SQLExecutorSupport {
 
         private final String sqlType;
 
-        private final Class<?> javaType;
+        private final String javaClassName;
 
-        private ResultColumnMetaImpl(JDBCType jdbcType, String sqlType, Class<?> javaType) {
+        private ResultColumnMetaImpl(JDBCType jdbcType, String sqlType, String javaClassName) {
             this.jdbcType = jdbcType;
             this.sqlType = sqlType;
-            this.javaType = javaType;
+            this.javaClassName = javaClassName;
         }
 
         @Override
@@ -607,9 +601,10 @@ abstract class SQLExecutorSupport {
         }
 
         @Override
-        public final Class<?> javaType() {
-            return this.javaType;
+        public String javaClassName() {
+            return this.javaClassName;
         }
+
     }
 
 

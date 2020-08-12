@@ -2,12 +2,12 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.dialect.SQL;
+import io.army.dialect.SQLBuilder;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 final class ExpressionRowImpl<T extends IDomain> implements ExpressionRow<T> {
@@ -26,7 +26,7 @@ final class ExpressionRowImpl<T extends IDomain> implements ExpressionRow<T> {
 
     @Override
     public void appendSQL(SQLContext context) {
-        StringBuilder builder = context.sqlBuilder()
+        SQLBuilder builder = context.sqlBuilder()
                 .append(" ");
         SQL sql = context.dql();
         if (sql.hasRowKeywords()) {

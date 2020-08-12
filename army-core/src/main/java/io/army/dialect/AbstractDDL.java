@@ -7,21 +7,14 @@ import io.army.meta.FieldMeta;
 import io.army.meta.IndexFieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.LocalDateTimeType;
-import io.army.meta.mapping.MappingMeta;
 import io.army.sqltype.SQLDataType;
 import io.army.sqltype.SQLDataTypeUtils;
 import io.army.util.StringUtils;
 
-import java.sql.JDBCType;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 
 public abstract class AbstractDDL extends AbstractSQL implements DDL {
-
-    private Map<JDBCType, Function<FieldMeta<?, ?>, String>> jdbcTypeFunctionMap;
 
     public AbstractDDL(Dialect dialect) {
         super(dialect);
@@ -156,7 +149,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
 
     @Override
     public void clearForDDL() {
-        this.jdbcTypeFunctionMap = null;
+
     }
 
 
@@ -332,7 +325,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
                 builder.append(defaultKeyWord);
                 Database database = database();
                 SQLDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database);
-                if (sqlDataType.supportZeroValue()) {
+                if (sqlDataType.supportZeroValue(database)) {
                     sqlDataType.zeroValue(fieldMeta, builder, database);
                 } else {
                     throw SQLDataTypeUtils.createNotSupportZeroValueException(sqlDataType, fieldMeta, database);
@@ -398,7 +391,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
                 break;
             case TableMeta.CREATE_TIME:
             case TableMeta.UPDATE_TIME:
-                if (sqlDataType.supportNowValue()) {
+                if (sqlDataType.supportNowValue(database)) {
                     sqlDataType.nowValue(fieldMeta, builder, database);
                 } else {
                     throw SQLDataTypeUtils.createNotSupportNowExpressionException(sqlDataType, fieldMeta, database);
@@ -406,7 +399,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
                 break;
             case TableMeta.VISIBLE:
             case TableMeta.VERSION:
-                if (sqlDataType.supportZeroValue()) {
+                if (sqlDataType.supportZeroValue(database)) {
                     sqlDataType.zeroValue(fieldMeta, builder, database);
                 } else {
                     throw SQLDataTypeUtils.createNotSupportZeroValueException(sqlDataType, fieldMeta, database);
@@ -460,14 +453,14 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
         SQLDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database);
         switch (fieldMeta.defaultValue()) {
             case IDomain.NOW:
-                if (sqlDataType.supportNowValue()) {
+                if (sqlDataType.supportNowValue(database)) {
                     sqlDataType.nowValue(fieldMeta, builder, database);
                 } else {
                     throw SQLDataTypeUtils.createNotSupportNowExpressionException(sqlDataType, fieldMeta, database);
                 }
                 break;
             case IDomain.ZERO_VALUE:
-                if (sqlDataType.supportZeroValue()) {
+                if (sqlDataType.supportZeroValue(database)) {
                     sqlDataType.zeroValue(fieldMeta, builder, database);
                 } else {
                     throw SQLDataTypeUtils.createNotSupportZeroValueException(sqlDataType, fieldMeta, database);
@@ -478,22 +471,6 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
         }
     }
 
-
-    @Nullable
-    private String handleCustomSQLTypeDefaultClause(FieldMeta<?, ?> fieldMeta)
-            throws CustomSQLTypeException {
-        String customDefaultClause = ((CustomSQLType) fieldMeta.mappingMeta()).defaultClause(fieldMeta, database());
-        if (!fieldMeta.nullable() && !StringUtils.hasText(customDefaultClause)) {
-            throw new CustomSQLTypeException(
-                    "CustomSQLType[%s] defaultClause method return error,%s isn't nullable,so must have default clause."
-                    , fieldMeta.mappingMeta().getClass().getName(), fieldMeta);
-        }
-        return customDefaultClause;
-    }
-
-    private static boolean armyMappingMeta(MappingMeta mappingMeta) {
-        return mappingMeta.getClass().getPackage() == LocalDateTimeType.class.getPackage();
-    }
 
 
 }

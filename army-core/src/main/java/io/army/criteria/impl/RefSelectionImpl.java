@@ -2,10 +2,15 @@ package io.army.criteria.impl;
 
 import io.army.criteria.SQLContext;
 import io.army.criteria.Selection;
+import io.army.dialect.Database;
 import io.army.dialect.MappingContext;
+import io.army.dialect.NotSupportDialectException;
 import io.army.dialect.SQL;
-import io.army.meta.mapping.AbstractMappingType;
+import io.army.lang.Nullable;
+import io.army.meta.FieldMeta;
 import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.ResultColumnMeta;
+import io.army.sqltype.SQLDataType;
 import io.army.util.Assert;
 
 import java.sql.JDBCType;
@@ -133,7 +138,7 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
     }
 
 
-    private static final class ProxyMappingType extends AbstractMappingType {
+    private static final class ProxyMappingType implements MappingMeta {
 
         private MappingMeta mappingMeta;
 
@@ -158,11 +163,6 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
             return this.mappingMeta.jdbcType();
         }
 
-        @Override
-        public boolean isTextValue(String textValue) {
-            Assert.state(this.mappingMeta != null, "no mappingMeta.");
-            return this.mappingMeta.isTextValue(textValue);
-        }
 
         @Override
         public void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context)
@@ -172,15 +172,28 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
         }
 
         @Override
-        public Object nullSafeGet(ResultSet resultSet, String alias, MappingContext context) throws SQLException {
+        public Object nullSafeGet(ResultSet resultSet, String alias, ResultColumnMeta resultColumnMeta
+                , MappingContext context) throws SQLException {
             Assert.state(this.mappingMeta != null, "no mappingMeta.");
-            return this.mappingMeta.nullSafeGet(resultSet, alias, context);
+            return this.mappingMeta.nullSafeGet(resultSet, alias, resultColumnMeta, context);
         }
 
         @Override
-        public String nonNullTextValue(Object nonNullValue) {
+        public String toConstant(@Nullable FieldMeta<?, ?> paramMeta, Object nonNullValue) {
             Assert.state(this.mappingMeta != null, "no mappingMeta.");
-            return this.mappingMeta.nonNullTextValue(nonNullValue);
+            return this.mappingMeta.toConstant(paramMeta, nonNullValue);
+        }
+
+        @Override
+        public SQLDataType sqlDataType(Database database) throws NotSupportDialectException {
+            Assert.state(this.mappingMeta != null, "no mappingMeta.");
+            return this.mappingMeta.sqlDataType(database);
+        }
+
+        @Override
+        public MappingMeta mappingMeta() {
+            Assert.state(this.mappingMeta != null, "no mappingMeta.");
+            return this.mappingMeta;
         }
     }
 

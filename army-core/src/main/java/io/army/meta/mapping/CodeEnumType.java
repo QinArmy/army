@@ -2,7 +2,8 @@ package io.army.meta.mapping;
 
 import io.army.dialect.Database;
 import io.army.dialect.MappingContext;
-import io.army.dialect.NotSupportDialectException;
+import io.army.lang.Nullable;
+import io.army.meta.FieldMeta;
 import io.army.sqltype.SQLDataType;
 import io.army.struct.CodeEnum;
 import io.army.util.Assert;
@@ -44,7 +45,7 @@ public final class CodeEnumType extends AbstractMappingType {
 
     @Override
     public Class<?> javaType() {
-        return enumClass;
+        return this.enumClass;
     }
 
     @Override
@@ -53,12 +54,8 @@ public final class CodeEnumType extends AbstractMappingType {
     }
 
     @Override
-    public SQLDataType sqlDataType(Database database) throws NotSupportDialectException {
-        SQLDataType dataType = DATA_TYPE_MAP.get(database.family());
-        if (dataType == null) {
-            throw MappingMetaUtils.createNotSupportDialectException(this, database);
-        }
-        return dataType;
+    public boolean singleton() {
+        return false;
     }
 
     @Override
@@ -80,6 +77,19 @@ public final class CodeEnumType extends AbstractMappingType {
         }
         return code;
     }
+
+    /*################################## blow protected method ##################################*/
+
+    @Override
+    protected Map<Database, SQLDataType> sqlDataTypeMap() {
+        return DATA_TYPE_MAP;
+    }
+
+    @Override
+    protected String doToConstant(@Nullable FieldMeta<?, ?> paramMeta, Object nonNullValue) {
+        return Integer.toString(((CodeEnum) nonNullValue).code());
+    }
+
 
     /*################################## blow private method ##################################*/
 

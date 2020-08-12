@@ -128,6 +128,7 @@ public enum PostgreDataType implements SQLDataType {
     /*################################## blow  Date/Time Data Types  ##################################*/
 
     TIME_WITHOUT_TIME_ZONE {
+
         @Override
         public boolean supportNowValue(Database database) {
             return true;

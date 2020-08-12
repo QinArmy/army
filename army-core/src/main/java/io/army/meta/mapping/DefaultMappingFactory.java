@@ -2,25 +2,27 @@ package io.army.meta.mapping;
 
 import io.army.criteria.MetaException;
 import io.army.lang.Nullable;
-import io.army.struct.CodeEnum;
-import io.army.util.ClassUtils;
+import io.army.util.ReflectionUtils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-class DefaultMappingFactory implements MappingFactory {
+abstract class DefaultMappingFactory {
 
-    private static final DefaultMappingFactory INSTANCE = new DefaultMappingFactory();
+    private DefaultMappingFactory() {
+    }
 
     private static final Map<Class<?>, MappingMeta> DEFAULT_MAPPING = createDefaultMapping();
 
-    private static final ConcurrentMap<Class<?>, MappingMeta> CUSTOM_MAPPING = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<?>, MappingMeta> OVERRIDE_DEFAULT_MAP = new ConcurrentHashMap<>();
 
 
     private static Map<Class<?>, MappingMeta> createDefaultMapping() {
@@ -36,22 +38,12 @@ class DefaultMappingFactory implements MappingFactory {
         map.put(LocalDate.class, LocalDateType.build(LocalDate.class));
         map.put(Double.class, DoubleType.build(Double.class));
 
+        map.put(OffsetTime.class, OffsetTimeType.build(OffsetTime.class));
+        map.put(OffsetDateTime.class, OffsetDateTimeType.build(OffsetDateTime.class));
+        map.put(ZonedDateTime.class, ZonedDateTimeType.build(ZonedDateTime.class));
+
         return Collections.unmodifiableMap(map);
     }
-
-    private DefaultMappingFactory() {
-    }
-
-
-    public static DefaultMappingFactory getInstance() {
-        return INSTANCE;
-    }
-
-
-    private boolean isCodeEnum(Class<?> javaType) {
-        return javaType.isEnum() && CodeEnum.class.isAssignableFrom(javaType);
-    }
-
 
     static MappingMeta getDefaultMapping(Class<?> javaType) throws MetaException {
         MappingMeta mappingType = obtainDefaultMapping(javaType);
@@ -67,44 +59,68 @@ class DefaultMappingFactory implements MappingFactory {
         if (javaType.isEnum()) {
             mappingType = CodeEnumType.build(javaType);
         } else {
-            mappingType = DEFAULT_MAPPING.get(javaType);
+            mappingType = OVERRIDE_DEFAULT_MAP.get(javaType);
+            if (mappingType == null) {
+                mappingType = DEFAULT_MAPPING.get(javaType);
+            }
         }
         return mappingType;
     }
 
-    @Override
-    public MappingMeta getMapping(Class<?> javaType, Class<?> mappingClass) throws MetaException {
-        return null;
+    static void overrideDefaultMapping(Class<?> javaType, MappingMeta mappingMeta) throws MetaException {
+        assertMappingMeta(javaType, mappingMeta);
+        if (OVERRIDE_DEFAULT_MAP.putIfAbsent(javaType, mappingMeta) != null) {
+            throw new IllegalStateException(String.format("java type[%s] override mapping duplication."
+                    , javaType.getName()));
+        }
+
     }
 
-    @Override
-    public MappingMeta getMapping(Class<?> javaType) throws MetaException {
-        if (javaType.isEnum()) {
-            return CodeEnumType.build(javaType);
+
+    static MappingMeta createMappingMeta(Class<?> mappingClass, Class<?> typeClass)
+            throws MetaException, IllegalArgumentException {
+
+        if (!MappingMeta.class.isAssignableFrom(mappingClass)) {
+            throw new IllegalArgumentException(String.format("mappingClass isn't %s type."
+                    , MappingMeta.class.getName()));
         }
-        MappingMeta mappingType = CUSTOM_MAPPING.get(javaType);
-        if (mappingType == null) {
-            mappingType = DEFAULT_MAPPING.get(javaType);
+
+        Method method = ReflectionUtils.findMethod(mappingClass, "build", Class.class);
+        if (method != null
+                && Modifier.isPublic(method.getModifiers())
+                && Modifier.isStatic(method.getModifiers())
+                && mappingClass == method.getReturnType()) {
+            try {
+                MappingMeta mappingMeta = (MappingMeta) method.invoke(null, typeClass);
+                if (mappingMeta == null) {
+                    throw new MetaException("MappingMeta[%s] build method return null.", mappingClass.getName());
+                }
+                assertMappingMeta(typeClass, mappingMeta);
+                return mappingMeta;
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new MetaException(e, "invoke MappingMeta[%s] build method occur error.", mappingClass.getName());
+            }
+        } else {
+            throw new MetaException("MappingMeta[%s] build(Class<?> typeClass) method definite error."
+                    , mappingClass.getName());
         }
-        if (mappingType == null) {
-            throw new MetaException(
-                    "not found MappingType for java type[%s]", javaType.getName());
-        }
-        return mappingType;
     }
 
-    @Override
-    public MappingMeta getMapping(Class<?> javaType, String mappingType) throws MetaException {
-        try {
-            Class<?> mappingTypeClass = ClassUtils.forName(mappingType, getClass().getClassLoader());
 
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+
 
     /*################################## blow private method ##################################*/
 
+    private static void assertMappingMeta(Class<?> javaType, MappingMeta mappingMeta) {
+        if (mappingMeta.singleton()) {
+            if (mappingMeta.javaType() != javaType) {
+                throw new MetaException("MappingMeta[%s] is singleton,javaType() must == Class[%s]"
+                        , mappingMeta.getClass().getName(), javaType.getName());
+            }
+        } else if (mappingMeta.javaType().isAssignableFrom(javaType)) {
+            throw new MetaException("MappingMeta[%s] isn't singleton,javaType() must be base class/interface of %s ."
+                    , mappingMeta.getClass().getName(), javaType.getName());
+        }
+    }
 
 }

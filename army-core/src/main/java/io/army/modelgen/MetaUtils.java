@@ -285,7 +285,7 @@ abstract class MetaUtils {
         if (mapping == null) {
             return;
         }
-        if (mapping.mapping() == AnnotationUtils.getDefaultValue(Mapping.class, "mapping")
+        if (mapping.value() == AnnotationUtils.getDefaultValue(Mapping.class, "mapping")
                 && !StringUtils.hasText(mapping.value())) {
             throw new MetaException("Entity[%s] mapping prop[%s] Mapping no value",
                     entityElement.getQualifiedName(),

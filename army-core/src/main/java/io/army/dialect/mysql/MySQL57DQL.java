@@ -5,6 +5,7 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.LockMode;
 import io.army.dialect.AbstractDQL;
 import io.army.dialect.Keywords;
+import io.army.dialect.SQLBuilder;
 import io.army.dialect.TableContextSQLContext;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingMeta;
@@ -35,7 +36,7 @@ class MySQL57DQL extends AbstractDQL {
     protected final void limitClause(int offset, int rowCount, TableContextSQLContext context) {
 
         if (offset > -1 || rowCount > -1) {
-            StringBuilder builder = context.sqlBuilder();
+            SQLBuilder builder = context.sqlBuilder();
             builder.append(" ")
                     .append(Keywords.LIMIT);
             final MappingMeta integerType = MappingFactory.getDefaultMapping(Integer.class);

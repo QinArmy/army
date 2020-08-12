@@ -7,12 +7,10 @@ import io.army.ShardingMode;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.NotFoundRouteException;
 import io.army.criteria.Visible;
-import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingMeta;
 import io.army.util.StringUtils;
 
 /**
@@ -115,16 +113,6 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
     }
 
     @Override
-    public final void appendTextValue(MappingMeta mappingType, Object value) {
-        sqlBuilder.append(
-                DialectUtils.quoteIfNeed(
-                        mappingType
-                        , mappingType.nonNullTextValue(value)
-                )
-        );
-    }
-
-    @Override
     public final String primaryRouteSuffix() {
         return this.primaryRouteSuffix;
     }
@@ -158,7 +146,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
      */
     protected final void doAppendTable(TableMeta<?> tableMeta, @Nullable String tableAlias) {
         final Dialect dialect = this.dialect;
-        StringBuilder builder = obtainTablePartBuilder();
+        SQLBuilder builder = obtainTablePartBuilder();
         //1. append table name
         builder.append(" ")
                 .append(dialect.quoteIfNeed(tableMeta.tableName()));

@@ -11,6 +11,7 @@ import io.army.util.TimeUtils;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.Temporal;
 import java.util.*;
 
 public abstract class DDLUtils {
@@ -18,7 +19,6 @@ public abstract class DDLUtils {
     protected DDLUtils() {
         throw new UnsupportedOperationException();
     }
-
 
 
     /**
@@ -33,11 +33,23 @@ public abstract class DDLUtils {
         } else if (javaType == DayOfWeek.class) {
             zeroValue = DayOfWeek.MONDAY.name();
         } else {
+            int precision = fieldMeta.precision();
+            if (precision > 6) {
+                throw new MetaException("%s ,precision must in [0,6].", fieldMeta);
+            }
             zeroValue = StringUtils.quote(
-                    TimeUtils.ZERO_DATE_TIME.format(formatterForTimeTypeDefaultValue(fieldMeta))
+                    TimeUtils.ZERO_DATE_TIME.format(formatterForTimeTypeDefaultValue(fieldMeta.javaType(), precision))
             );
         }
         return zeroValue;
+    }
+
+    public static String constantForTimeType(Temporal temporal, int precision) {
+        return StringUtils.quote(
+                formatterForTimeTypeDefaultValue(temporal.getClass(), precision)
+                        .format(temporal)
+        );
+
     }
 
     public static String escapeQuote(String text) {
@@ -132,14 +144,13 @@ public abstract class DDLUtils {
     }
 
 
-    private static DateTimeFormatter formatterForTimeTypeDefaultValue(FieldMeta<?, ?> fieldMeta) {
-        int precision = fieldMeta.precision();
+    private static DateTimeFormatter formatterForTimeTypeDefaultValue(Class<?> javaType, int precision) {
         if (precision > 6) {
-            throw new MetaException("% ,precision must in [0,6].", fieldMeta);
+            throw new IllegalArgumentException(String.format("Class[%s| ,precision must in [0,6]."
+                    , javaType.getName()));
         }
         final boolean sixFraction = precision > 0;
 
-        Class<?> javaType = fieldMeta.javaType();
         String format;
         if (javaType == LocalDateTime.class) {
             format = sixFraction ? TimeUtils.SIX_FRACTION_DATE_TIME_FORMAT : TimeUtils.DATE_TIME_FORMAT;
@@ -158,8 +169,8 @@ public abstract class DDLUtils {
         } else if (javaType == MonthDay.class) {
             format = TimeUtils.MONTH_DAY_FORMAT;
         } else {
-            throw new MetaException("%s java type isn't supported by io.army.domain.IDomain default constant."
-                    , fieldMeta);
+            throw new IllegalArgumentException(String.format("Class[%s| not supported."
+                    , javaType.getName()));
         }
         return TimeUtils.dateTimeFormatter(format);
     }

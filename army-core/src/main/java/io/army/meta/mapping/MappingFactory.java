@@ -2,25 +2,28 @@ package io.army.meta.mapping;
 
 import io.army.criteria.MetaException;
 
-public interface MappingFactory {
+public abstract class MappingFactory {
 
-
-    MappingMeta getMapping(Class<?> javaType) throws MetaException;
-
-    MappingMeta getMapping(Class<?> javaType, Class<?> mappingClass) throws MetaException;
-
-    MappingMeta getMapping(Class<?> javaType, String mappingType) throws MetaException;
-
-    static MappingFactory build() {
-        return DefaultMappingFactory.getInstance();
+    protected MappingFactory() {
+        throw new UnsupportedOperationException();
     }
 
-    static boolean hasMappingMeta(Class<?> javaType) {
+    public static boolean hasMappingMeta(Class<?> javaType) {
         return DefaultMappingFactory.obtainDefaultMapping(javaType) != null;
     }
 
-    static MappingMeta getDefaultMapping(Class<?> javaType) throws MetaException {
+    public static void registerDefaultMapping(Class<?> javaType, MappingMeta mappingMeta)
+            throws MetaException, IllegalStateException {
+        DefaultMappingFactory.overrideDefaultMapping(javaType, mappingMeta);
+    }
+
+    public static MappingMeta getDefaultMapping(Class<?> javaType) throws MetaException {
         return DefaultMappingFactory.getDefaultMapping(javaType);
+    }
+
+    public static MappingMeta build(Class<?> mappingClass, Class<?> typeClass)
+            throws MetaException, IllegalArgumentException {
+        return DefaultMappingFactory.createMappingMeta(mappingClass, typeClass);
     }
 
 }

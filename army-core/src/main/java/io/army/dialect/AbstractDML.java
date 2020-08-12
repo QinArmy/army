@@ -305,7 +305,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
         DMLUtils.assertSubQueryInsert(fieldMetaList, subQuery);
 
-        StringBuilder builder = context.sqlBuilder().append("INSERT INTO");
+        SQLBuilder builder = context.sqlBuilder().append("INSERT INTO");
         context.appendTable(physicalTable, null);
         builder.append(" ( ");
 
@@ -644,7 +644,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     private void parseStandardDelete(TableMeta<?> tableMeta, String tableAlias, List<IPredicate> predicateList
             , StandardDeleteContext context) {
 
-        StringBuilder builder = context.sqlBuilder().append("DELETE FROM");
+        SQLBuilder builder = context.sqlBuilder().append("DELETE FROM");
         tableOnlyModifier(context);
         // append table name
         context.appendTable(tableMeta,tableAlias);

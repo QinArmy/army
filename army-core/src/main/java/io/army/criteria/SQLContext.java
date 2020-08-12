@@ -1,10 +1,9 @@
 package io.army.criteria;
 
 import io.army.dialect.DQL;
-import io.army.lang.Nullable;
+import io.army.dialect.SQLBuilder;
 import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.ParamMeta;
 import io.army.wrapper.ParamWrapper;
 
 public interface SQLContext {
@@ -20,11 +19,11 @@ public interface SQLContext {
     /**
      * @see ConstantExpression
      */
-    void appendTextValue(MappingMeta mappingType, Object value);
+    void appendConstant(ParamMeta paramMeta, Object value);
 
     DQL dql();
 
-    StringBuilder sqlBuilder();
+    SQLBuilder sqlBuilder();
 
     void appendParam(ParamWrapper paramWrapper);
 

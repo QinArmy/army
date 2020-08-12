@@ -238,7 +238,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
 
     protected final void selectClause(List<SQLModifier> modifierList, TableContextSQLContext context) {
 
-        StringBuilder builder = context.sqlBuilder()
+        SQLBuilder builder = context.sqlBuilder()
                 .append(" SELECT");
         for (SQLModifier sqlModifier : modifierList) {
             builder.append(" ")
@@ -247,7 +247,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
     }
 
     protected final void selectListClause(List<SelectPart> selectPartList, TableContextSQLContext context) {
-        StringBuilder builder = context.sqlBuilder();
+        SQLBuilder builder = context.sqlBuilder();
         int index = 0;
         for (SelectPart selectPart : selectPartList) {
             if (index > 0) {
@@ -331,7 +331,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
     }
 
     private void standardSubQuery(InnerStandardSubQuery subQuery, TableContextSQLContext context) {
-        StringBuilder builder = context.sqlBuilder();
+        SQLBuilder builder = context.sqlBuilder();
 
         final boolean standardSubQueryInsert = context.parentContext() instanceof SubQueryInsertContext;
         if (standardSubQueryInsert) {

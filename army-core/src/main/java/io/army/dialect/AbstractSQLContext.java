@@ -4,6 +4,7 @@ import io.army.criteria.FieldPredicate;
 import io.army.criteria.Visible;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
+import io.army.meta.ParamMeta;
 import io.army.meta.mapping.MappingMeta;
 import io.army.wrapper.ParamWrapper;
 import io.army.wrapper.SimpleSQLWrapper;
@@ -17,7 +18,7 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
 
     protected final Visible visible;
 
-    protected final StringBuilder sqlBuilder;
+    protected final SQLBuilder sqlBuilder;
 
     protected final List<ParamWrapper> paramList;
 
@@ -26,7 +27,7 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
     protected AbstractSQLContext(Dialect dialect, Visible visible) {
         this.dialect = dialect;
         this.visible = visible;
-        this.sqlBuilder = new StringBuilder();
+        this.sqlBuilder = DialectUtils.createSQLBuilder();
         this.paramList = new ArrayList<>();
         this.parentContext = null;
     }
@@ -69,11 +70,21 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
     }
 
     @Override
-    public void appendTextValue(MappingMeta mappingType, Object value) {
-        this.sqlBuilder
-                .append(" ")
-                .append(mappingType.nonNullTextValue(value));
+    public final void appendConstant(ParamMeta paramMeta, Object value) {
+        MappingMeta mappingMeta = paramMeta.mappingMeta();
+        if (mappingMeta instanceof FieldMeta) {
+            this.sqlBuilder
+                    .append(" ")
+                    .append(mappingMeta.toConstant((FieldMeta<?, ?>) mappingMeta, value))
+            ;
+        } else {
+            this.sqlBuilder
+                    .append(" ")
+                    .append(mappingMeta.toConstant(null, value))
+            ;
+        }
     }
+
 
     @Override
     public final DQL dql() {
@@ -81,7 +92,7 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
     }
 
     @Override
-    public final StringBuilder sqlBuilder() {
+    public final SQLBuilder sqlBuilder() {
         return this.sqlBuilder;
     }
 
@@ -114,18 +125,19 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
 
     /*################################## blow protected final method ##################################*/
 
-    protected StringBuilder obtainTablePartBuilder() {
+    protected SQLBuilder obtainTablePartBuilder() {
         return this.sqlBuilder;
     }
 
     protected final void doAppendField(@Nullable String tableAlias, FieldMeta<?, ?> fieldMeta) {
-        StringBuilder builder = obtainTablePartBuilder();
+        SQLBuilder builder = obtainTablePartBuilder();
+        Dialect dialect = this.dialect;
         builder.append(" ");
         if (tableAlias != null) {
-            builder.append(this.dialect.quoteIfNeed(tableAlias))
+            builder.append(dialect.quoteIfNeed(tableAlias))
                     .append(".");
         }
-        builder.append(this.dialect.quoteIfNeed(fieldMeta.fieldName()));
+        builder.append(dialect.quoteIfNeed(fieldMeta.fieldName()));
     }
 
     /*################################## blow protected template method ##################################*/

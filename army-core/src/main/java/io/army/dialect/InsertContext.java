@@ -5,7 +5,7 @@ import io.army.meta.TableMeta;
 
 public interface InsertContext extends TableContextSQLContext {
 
-    StringBuilder fieldsBuilder();
+    SQLBuilder fieldsBuilder();
 
     /**
      * if tableMeta is target table , use fieldsBuilder

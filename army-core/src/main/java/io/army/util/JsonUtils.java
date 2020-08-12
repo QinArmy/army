@@ -27,7 +27,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-import static io.army.util.TimeUtils.*;
+import static io.army.util.TimeUtils.DATE_FORMAT;
+import static io.army.util.TimeUtils.DATE_TIME_FORMAT;
 
 /**
  * created  on 2018/4/18.
@@ -44,17 +45,17 @@ public abstract class JsonUtils {
     private static final ObjectMapper OBJECT_MAPPER;
 
 
-    public static final LocalDateTimeDeserializer LOCALDATETIME_DESERIALIZER = new LocalDateTimeDeserializer(DATE_TIME_FORMATTER);
+    public static final LocalDateTimeDeserializer LOCALDATETIME_DESERIALIZER = new LocalDateTimeDeserializer(TimeUtils.dateTimeFormatter(DATE_TIME_FORMAT));
 
-    public static final LocalDateTimeSerializer LOCALDATETIME_SERIALIZER = new LocalDateTimeSerializer(DATE_TIME_FORMATTER);
+    public static final LocalDateTimeSerializer LOCALDATETIME_SERIALIZER = new LocalDateTimeSerializer(TimeUtils.dateTimeFormatter(DATE_TIME_FORMAT));
 
-    public static final LocalDateDeserializer LOCALDATE_DESERIALIZER = new LocalDateDeserializer(DATE_FORMATTER);
+    public static final LocalDateDeserializer LOCALDATE_DESERIALIZER = new LocalDateDeserializer(TimeUtils.dateTimeFormatter(DATE_FORMAT));
 
-    public static final LocalDateSerializer LOCALDATE_SERIALIZER = new LocalDateSerializer(DATE_FORMATTER);
+    public static final LocalDateSerializer LOCALDATE_SERIALIZER = new LocalDateSerializer(TimeUtils.dateTimeFormatter(TimeUtils.DATE_FORMAT));
 
-    public static final LocalTimeSerializer LOCAL_TIME_SERIALIZER = new LocalTimeSerializer(TIME_FORMATTER);
+    public static final LocalTimeSerializer LOCAL_TIME_SERIALIZER = new LocalTimeSerializer(TimeUtils.dateTimeFormatter(TimeUtils.TIME_FORMAT));
 
-    public static final LocalTimeDeserializer LOCAL_TIME_DESERIALIZER = new LocalTimeDeserializer(TIME_FORMATTER);
+    public static final LocalTimeDeserializer LOCAL_TIME_DESERIALIZER = new LocalTimeDeserializer(TimeUtils.dateTimeFormatter(TimeUtils.TIME_FORMAT));
 
 
     /**

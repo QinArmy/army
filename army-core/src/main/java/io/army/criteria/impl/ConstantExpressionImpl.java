@@ -39,20 +39,23 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
     @SuppressWarnings("unchecked")
     static <E> ConstantExpression<E> build(final @Nullable ParamMeta paramMeta, final E constant) {
 
-        ParamMeta type;
+        ParamMeta actualParamMeta;
         if (paramMeta == null) {
-            type = MappingFactory.getDefaultMapping(constant.getClass());
+            actualParamMeta = MappingFactory.getDefaultMapping(constant.getClass());
         } else {
-            type = paramMeta;
+            if (paramMeta.mappingMeta().javaType() != constant.getClass()) {
+                throw new IllegalArgumentException(String.format("constant's class[%s] and paramMeta[%s] not match."
+                        , constant.getClass().getName(), paramMeta.getClass().getName()));
+            }
+            actualParamMeta = paramMeta;
         }
-
         final ConstantExpression<E> cacheExp = (ConstantExpression<E>) CONSTANT_EXP_CACHE.get(constant);
 
         ConstantExpression<E> exp;
-        if (cacheExp != null && cacheExp.mappingMeta() == type) {
+        if (cacheExp != null && cacheExp.mappingMeta() == actualParamMeta.mappingMeta()) {
             exp = cacheExp;
         } else {
-            exp = new ConstantExpressionImpl<>(type, constant);
+            exp = new ConstantExpressionImpl<>(actualParamMeta, constant);
             if (cacheExp == null && CONSTANT_KEYS.contains(constant)) {
                 CONSTANT_EXP_CACHE.put(constant, exp);
             }
@@ -77,7 +80,7 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
 
     @Override
     public final void appendSQL(SQLContext context) {
-        context.appendTextValue(this.paramMeta.mappingMeta(), this.constant);
+        context.appendConstant(this.paramMeta.mappingMeta(), this.constant);
     }
 
     @Override
@@ -87,7 +90,7 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
 
     @Override
     public final E value() {
-        return constant;
+        return this.constant;
     }
 
     @Override
@@ -97,7 +100,7 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
 
     @Override
     public final String toString() {
-        return this.paramMeta.mappingMeta().nonNullTextValue(constant);
+        return String.valueOf(this.constant);
     }
 
 

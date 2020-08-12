@@ -42,7 +42,7 @@ final class ParamWrapperImpl implements ParamWrapper {
         if (value == null) {
             valueText = "NULL";
         } else {
-            valueText = mappingMeta.nonNullTextValue(value);
+            valueText = mappingMeta.toConstant(null, value);
         }
         return String.format("paramMeta:%s,value:%s"
                 , this.paramMeta

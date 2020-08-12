@@ -5,8 +5,8 @@ import io.army.criteria.Visible;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
+import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingMeta;
 import io.army.wrapper.ParamWrapper;
 import io.army.wrapper.SimpleSQLWrapper;
 
@@ -23,14 +23,14 @@ final class ComposeSelectContext implements SelectContext {
 
     private final Visible visible;
 
-    private final StringBuilder sqlBuilder;
+    private final SQLBuilder sqlBuilder;
 
     private final List<ParamWrapper> paramList;
 
     ComposeSelectContext(Dialect dialect, Visible visible) {
         this.dialect = dialect;
         this.visible = visible;
-        this.sqlBuilder = new StringBuilder();
+        this.sqlBuilder = DialectUtils.createSQLBuilder();
         this.paramList = new ArrayList<>();
     }
 
@@ -65,7 +65,7 @@ final class ComposeSelectContext implements SelectContext {
     }
 
     @Override
-    public StringBuilder sqlBuilder() {
+    public SQLBuilder sqlBuilder() {
         return this.sqlBuilder;
     }
 
@@ -127,7 +127,8 @@ final class ComposeSelectContext implements SelectContext {
     }
 
     @Override
-    public void appendTextValue(MappingMeta mappingType, Object value) {
+    public void appendConstant(ParamMeta paramMeta, Object value) {
         throw new UnsupportedOperationException();
     }
+
 }

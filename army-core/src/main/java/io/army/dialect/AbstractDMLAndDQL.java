@@ -37,7 +37,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     }
 
     protected void doTableWrapper(TableWrapper tableWrapper, TableContextSQLContext context) {
-        final StringBuilder builder = context.sqlBuilder();
+        final SQLBuilder builder = context.sqlBuilder();
         // 1. form/join type
         SQLModifier joinType = tableWrapper.jointType();
         if (!"".equals(joinType.render())) {
@@ -144,7 +144,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
 
         final String parentAlias = obtainParentAlias(context, childAlias);
         // append exists SubQuery
-        StringBuilder builder = context.sqlBuilder();
+        SQLBuilder builder = context.sqlBuilder();
         if (hasPredicate) {
             builder.append(" AND");
         }
@@ -176,7 +176,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
 
         final FieldMeta<?, ?> visibleField = tableMeta.getField(TableMeta.VISIBLE);
 
-        StringBuilder builder = context.sqlBuilder();
+        SQLBuilder builder = context.sqlBuilder();
 
         if (hasPredicate) {
             builder.append(" AND");
@@ -184,7 +184,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         context.appendField(tableAlias, visibleField);
 
         builder.append(" = ")
-                .append(visibleField.mappingMeta().nonNullTextValue(visible));
+                .append(visibleField.mappingMeta().toConstant(null, visible));
     }
 
     private void appendVisibleIfNeed(TableWrapper tableWrapper, @Nullable TableWrapper preTableWrapper

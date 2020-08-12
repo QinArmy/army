@@ -1,18 +1,20 @@
 package io.army.meta.mapping;
 
+import io.army.dialect.DDLUtils;
 import io.army.dialect.Database;
 import io.army.dialect.MappingContext;
-import io.army.dialect.NotSupportDialectException;
+import io.army.lang.Nullable;
+import io.army.meta.FieldMeta;
 import io.army.sqltype.MySQLDataType;
 import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SQLDataType;
 import io.army.util.Assert;
 
+import java.sql.Date;
 import java.sql.*;
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 
 public final class LocalDateType extends AbstractMappingType {
 
@@ -49,30 +51,38 @@ public final class LocalDateType extends AbstractMappingType {
     }
 
     @Override
-    public SQLDataType sqlDataType(Database database) throws NotSupportDialectException {
-        SQLDataType dataType = DATA_TYPE_MAP.get(database.family());
-        if (dataType == null) {
-            throw MappingMetaUtils.createNotSupportDialectException(this, database);
-        }
-        return dataType;
-    }
-
-    @Override
     public void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context)
             throws SQLException {
         Assert.isInstanceOf(LocalDate.class, nonNullValue, "");
-        st.setDate(index, Date.valueOf((LocalDate) nonNullValue));
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone(context.zoneId()));
+        st.setDate(index, Date.valueOf((LocalDate) nonNullValue), calendar);
     }
 
     @Override
     public Object nullSafeGet(ResultSet st, String alias, ResultColumnMeta resultColumnMeta
             , MappingContext context) throws SQLException {
-
-        Date date = st.getDate(alias);
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone(context.zoneId()));
+        Date date = st.getDate(alias, calendar);
         LocalDate localDate = null;
         if (date != null) {
             localDate = date.toLocalDate();
         }
         return localDate;
+    }
+
+    /*################################## blow protected method ##################################*/
+
+    @Override
+    protected Map<Database, SQLDataType> sqlDataTypeMap() {
+        return DATA_TYPE_MAP;
+    }
+
+    @Override
+    protected String doToConstant(@Nullable FieldMeta<?, ?> paramMeta, Object nonNullValue) {
+        int precision = 0;
+        if (paramMeta != null) {
+            precision = paramMeta.precision();
+        }
+        return DDLUtils.constantForTimeType((LocalDateTime) nonNullValue, precision);
     }
 }

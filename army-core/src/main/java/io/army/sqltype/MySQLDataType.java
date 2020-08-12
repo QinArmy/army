@@ -7,6 +7,7 @@ import io.army.dialect.SQLBuilder;
 import io.army.meta.FieldMeta;
 
 import java.time.*;
+import java.util.Map;
 
 public enum MySQLDataType implements SQLDataType {
 
@@ -432,4 +433,12 @@ public enum MySQLDataType implements SQLDataType {
     public final Database database() {
         return Database.MySQL;
     }
+
+
+    public static final Map<String, MySQLDataType> TYPE_NAME_MAP = SQLDataType.createTypeNameMap(MySQLDataType.class);
+
+    public static boolean mySQLDataType(String typeName) {
+        return TYPE_NAME_MAP.containsKey(typeName.toUpperCase());
+    }
+
 }

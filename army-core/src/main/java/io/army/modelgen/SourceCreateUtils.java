@@ -149,7 +149,7 @@ abstract class SourceCreateUtils {
                 .append("\"\n")
                 .append(ANNOTATION_PRE)
                 .append(",date = \"")
-                .append(ZonedDateTime.now().format(TimeUtils.FULL_ZONE_DATE_TIME_FORMATTER))
+                .append(ZonedDateTime.now().format(TimeUtils.dateTimeFormatter(TimeUtils.FULL_ZONE_DATE_TIME_FORMAT)))
                 .append("\"\n")
                 .append(ANNOTATION_PRE)
                 .append(",comments = \"")

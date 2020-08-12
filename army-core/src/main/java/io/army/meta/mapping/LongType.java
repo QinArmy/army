@@ -2,7 +2,8 @@ package io.army.meta.mapping;
 
 import io.army.dialect.Database;
 import io.army.dialect.MappingContext;
-import io.army.dialect.NotSupportDialectException;
+import io.army.lang.Nullable;
+import io.army.meta.FieldMeta;
 import io.army.sqltype.MySQLDataType;
 import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SQLDataType;
@@ -51,15 +52,6 @@ public final class LongType extends AbstractMappingType {
     }
 
     @Override
-    public SQLDataType sqlDataType(Database database) throws NotSupportDialectException {
-        SQLDataType dataType = DATA_TYPE_MAP.get(database.family());
-        if (dataType == null) {
-            throw MappingMetaUtils.createNotSupportDialectException(this, database);
-        }
-        return dataType;
-    }
-
-    @Override
     public void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context) throws SQLException {
         Assert.isInstanceOf(Long.class, nonNullValue, "");
         st.setLong(index, (Long) nonNullValue);
@@ -68,6 +60,26 @@ public final class LongType extends AbstractMappingType {
     @Override
     public Object nullSafeGet(ResultSet resultSet, String alias, ResultColumnMeta resultColumnMeta
             , MappingContext context) throws SQLException {
-        return resultSet.getLong(alias);
+        Object value = resultSet.getObject(alias);
+        if (value != null && !(value instanceof Long)) {
+            throw new SQLException(String.format(
+                    "Alis[%s] return error,value[Class %s] from database isn't Long type."
+                    , alias, value.getClass().getName()));
+        }
+        return value;
     }
+
+
+    /*################################## blow protected method ##################################*/
+
+    @Override
+    protected Map<Database, SQLDataType> sqlDataTypeMap() {
+        return DATA_TYPE_MAP;
+    }
+
+    @Override
+    protected String doToConstant(@Nullable FieldMeta<?, ?> paramMeta, Object nonNullValue) {
+        return nonNullValue.toString();
+    }
+
 }

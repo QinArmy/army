@@ -2,8 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.lang.Nullable;
-import io.army.meta.GenericField;
 import io.army.meta.FieldMeta;
+import io.army.meta.GenericField;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
@@ -80,17 +80,20 @@ abstract class AbstractSQLS {
         return actualExp;
     }
 
+    /**
+     * @see MappingMeta#toConstant(ParamMeta, Object)
+     */
     public static <E> ConstantExpression<E> constant(E value) {
         return ConstantExpressionImpl.build(null, value);
     }
 
-    public static <E> ConstantExpression<E> constant(E value, @Nullable MappingMeta mappingType) {
-        return ConstantExpressionImpl.build(mappingType, value);
+    /**
+     * @see MappingMeta#toConstant(ParamMeta, Object)
+     */
+    public static <E> ConstantExpression<E> constant(E value, @Nullable ParamMeta paramMeta) {
+        return ConstantExpressionImpl.build(paramMeta, value);
     }
 
-    static <E> ConstantExpression<E> constant(E value, Expression<E> expression) {
-        return ConstantExpressionImpl.build(expression.mappingMeta(), value);
-    }
 
     @SuppressWarnings("unchecked")
     public static <E> Expression<E> defaultValue() {

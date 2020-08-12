@@ -4,6 +4,7 @@ import io.army.dialect.Database;
 import io.army.dialect.MappingContext;
 import io.army.dialect.NotSupportDialectException;
 import io.army.lang.Nullable;
+import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.sqltype.SQLDataType;
 
@@ -19,6 +20,11 @@ public interface MappingMeta extends ParamMeta {
 
     JDBCType jdbcType();
 
+    /**
+     * @see io.army.criteria.impl.SQLS#constant(Object, ParamMeta)
+     */
+    String toConstant(@Nullable FieldMeta<?, ?> paramMeta, Object nonNullValue);
+
     SQLDataType sqlDataType(Database database) throws NotSupportDialectException;
 
     void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context) throws SQLException;
@@ -27,5 +33,8 @@ public interface MappingMeta extends ParamMeta {
     Object nullSafeGet(ResultSet resultSet, String alias, ResultColumnMeta resultColumnMeta, MappingContext context)
             throws SQLException;
 
+    default boolean singleton() {
+        return true;
+    }
 
 }

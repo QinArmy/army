@@ -1,15 +1,30 @@
 package io.army.meta.mapping;
 
+import io.army.dialect.Database;
 import io.army.dialect.MappingContext;
-import io.army.domain.IDomain;
+import io.army.lang.Nullable;
+import io.army.meta.FieldMeta;
+import io.army.sqltype.MySQLDataType;
+import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.SQLDataType;
 import io.army.util.Assert;
+import io.army.util.StringUtils;
 
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.Map;
 
 public final class YesNoType extends AbstractMappingType {
+
+    public static final String Y = "Y";
+
+    public static final String N = "N";
+
+    private static final Map<Database, SQLDataType> DATA_TYPE_MAP = createDataTypeMap();
 
     private static final YesNoType INSTANCE = new YesNoType();
 
@@ -18,9 +33,15 @@ public final class YesNoType extends AbstractMappingType {
         return INSTANCE;
     }
 
-    public static final String Y = "Y";
+    private static Map<Database, SQLDataType> createDataTypeMap() {
+        EnumMap<Database, SQLDataType> map = new EnumMap<>(Database.class);
 
-    public static final String N = "N";
+        map.put(Database.MySQL, MySQLDataType.CHAR);
+        map.put(Database.Postgre, PostgreDataType.CHAR);
+
+        return Collections.unmodifiableMap(map);
+    }
+
 
     private YesNoType() {
     }
@@ -36,24 +57,6 @@ public final class YesNoType extends AbstractMappingType {
     }
 
     @Override
-    public String nonNullTextValue(Object nonNullValue) {
-        Assert.isInstanceOf(Boolean.class, nonNullValue, "");
-        String text;
-        if (Boolean.TRUE.equals(nonNullValue)) {
-            text = IDomain.Y;
-        } else {
-            text = IDomain.N;
-        }
-        return "'" + text + "'";
-    }
-
-    @Override
-    public boolean isTextValue(String textValue) {
-        return IDomain.Y.equals(textValue)
-                || IDomain.N.equals(textValue);
-    }
-
-    @Override
     public void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context)
             throws SQLException {
         Assert.isInstanceOf(Boolean.class, nonNullValue);
@@ -61,7 +64,8 @@ public final class YesNoType extends AbstractMappingType {
     }
 
     @Override
-    public Object nullSafeGet(ResultSet resultSet, String alias, MappingContext context) throws SQLException {
+    public Object nullSafeGet(ResultSet resultSet, String alias, ResultColumnMeta resultColumnMeta
+            , MappingContext context) throws SQLException {
         String text = resultSet.getString(alias);
         if (text == null) {
             return null;
@@ -75,8 +79,20 @@ public final class YesNoType extends AbstractMappingType {
                 value = Boolean.FALSE;
                 break;
             default:
-                throw new SQLException(String.format("database return %s,but only 'Y' or 'N'", text));
+                throw new SQLException(String.format("Alias[%s],database return %s,but only 'Y' or 'N'", alias, text));
         }
         return value;
+    }
+
+    /*################################## blow protected method ##################################*/
+
+    @Override
+    protected Map<Database, SQLDataType> sqlDataTypeMap() {
+        return DATA_TYPE_MAP;
+    }
+
+    @Override
+    protected String doToConstant(@Nullable FieldMeta<?, ?> paramMeta, Object nonNullValue) {
+        return StringUtils.quote(Boolean.TRUE.equals(nonNullValue) ? Y : N);
     }
 }

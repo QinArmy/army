@@ -2,7 +2,6 @@ package io.army.dialect;
 
 import io.army.ErrorCode;
 import io.army.GenericRmSessionFactory;
-import io.army.GenericSessionFactory;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.InnerStandardChildSubQueryInsert;
@@ -60,7 +59,7 @@ final class SubQueryInsertContext extends AbstractTableContextSQLContext impleme
     }
 
     @Override
-    public final StringBuilder fieldsBuilder() {
+    public final SQLBuilder fieldsBuilder() {
         return this.sqlBuilder;
     }
 

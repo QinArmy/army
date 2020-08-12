@@ -163,7 +163,7 @@ abstract class DMLUtils {
             Assert.notEmpty(fieldMetaList, "set clause must not empty");
         }
 
-        StringBuilder builder = context.sqlBuilder()
+        SQLBuilder builder = context.sqlBuilder()
                 .append(" SET");
 
         final int size = fieldMetaList.size();
@@ -196,7 +196,7 @@ abstract class DMLUtils {
             , String tableAlias) {
         //1. version field
         final FieldMeta<?, ?> versionField = tableMeta.getField(TableMeta.VERSION);
-        StringBuilder builder = context.sqlBuilder();
+        SQLBuilder builder = context.sqlBuilder();
 
         context.appendField(tableAlias, versionField);
 
@@ -290,12 +290,12 @@ abstract class DMLUtils {
             , StandardValueInsertContext context) {
 
         final GenericSessionFactory sessionFactory = context.dialect.sessionFactory();
-        final StringBuilder fieldBuilder = context.fieldsBuilder().append("INSERT INTO");
+        final SQLBuilder fieldBuilder = context.fieldsBuilder().append("INSERT INTO");
         // append table name
         context.appendTable(physicalTable, null);
         context.fieldsBuilder().append(" (");
 
-        final StringBuilder valueBuilder = context.sqlBuilder()
+        final SQLBuilder valueBuilder = context.sqlBuilder()
                 .append(" VALUE (");
 
         Object value;
@@ -340,14 +340,14 @@ abstract class DMLUtils {
             , Collection<FieldMeta<?, ?>> fieldMetas
             , StandardValueInsertContext context) {
 
-        StringBuilder fieldBuilder = context.fieldsBuilder()
+        SQLBuilder fieldBuilder = context.fieldsBuilder()
                 .append("INSERT INTO");
         // append table name
         context.appendTable(physicalTable, null);
         fieldBuilder.append(" ( ");
 
         /// VALUE clause
-        StringBuilder valueBuilder = context.sqlBuilder()
+        SQLBuilder valueBuilder = context.sqlBuilder()
                 .append(" VALUES ( ");
 
         int index = 0;

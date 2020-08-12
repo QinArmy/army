@@ -119,7 +119,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
     }
 
 
-    static MappingMeta columnMappingMeta(@NonNull Field field) {
+    static MappingMeta columnMappingMeta(Field field) {
         Mapping mapping = AnnotationUtils.getAnnotation(field, Mapping.class);
 
         Class<?> mappingClass;
@@ -128,20 +128,21 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         } else {
             try {
                 mappingClass = ClassUtils.forName(mapping.value(), ClassUtils.getDefaultClassLoader());
+                if (!MappingMeta.class.isAssignableFrom(mappingClass)) {
+                    throw new MetaException("%s mapping class isn't %s type.", field, MappingMeta.class.getName());
+                }
             } catch (ClassNotFoundException e) {
-                throw new MetaException("%s.value() not a %s type."
+                throw new MetaException(e, "%s.value() class not found."
                         , Mapping.class.getName()
-                        , MappingMeta.class.getName()
                 );
             }
         }
 
-        MappingFactory mappingFactory = mappingFactory();
         MappingMeta mappingType;
         if (mappingClass == null) {
-            mappingType = mappingFactory.getMapping(field.getType());
+            mappingType = MappingFactory.getDefaultMapping(field.getType());
         } else {
-            mappingType = mappingFactory.getMapping(field.getType(), mappingClass);
+            mappingType = MappingFactory.build(mappingClass, field.getType());
         }
         return mappingType;
 
@@ -176,7 +177,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
 
     @NonNull
     static String columnComment(Column column, FieldMeta<?, ?> fieldMeta) {
-        String comment = column.comment();
+        String comment = column.comment().trim();
         if (TableMeta.RESERVED_PROPS.contains(fieldMeta.propertyName())
                 || CodeEnum.class.isAssignableFrom(fieldMeta.javaType())) {
 
@@ -206,26 +207,17 @@ abstract class FieldMetaUtils extends TableMetaUtils {
     }
 
     static String columnDefault(Column column, FieldMeta<?, ?> fieldMeta) {
+        String defaultValue = column.defaultValue().trim();
         if (!fieldMeta.nullable()
-                && !TableMeta.RESERVED_PROPS.contains(fieldMeta.propertyName())
-                && !MetaConstant.WITHOUT_DEFAULT_TYPES.contains(fieldMeta.javaType())
-                && !CodeEnum.class.isAssignableFrom(fieldMeta.javaType())
-                && !StringUtils.hasText(column.defaultValue())
-                && !isManagedByArmy(fieldMeta)) {
-            // TODO zoro optimize
-            throw new MetaException("mapped class[%s] column[%s] no defaultValue.",
-                    fieldMeta.tableMeta().javaType(),
-                    fieldMeta.fieldName()
-            );
+                && !StringUtils.hasText(defaultValue)
+                && !managedByArmy(fieldMeta)
+                && !MetaConstant.MAYBE_NO_DEFAULT_TYPES.contains(fieldMeta.javaType())) {
+            throw new MetaException("%s non-null ,please specified defaultValue() for it.", fieldMeta);
         }
-        return column.defaultValue().trim();
+        return defaultValue;
     }
 
     /*################################## blow private method ##################################*/
-
-    private static MappingFactory mappingFactory() {
-        return MappingFactory.build();
-    }
 
     private static String commentManagedByArmy(FieldMeta<?, ?> fieldMeta) {
         String comment = "";
@@ -254,9 +246,8 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         return comment;
     }
 
-    private static boolean isManagedByArmy(FieldMeta<?, ?> fieldMeta) {
+    private static boolean managedByArmy(FieldMeta<?, ?> fieldMeta) {
         Inheritance inheritance = AnnotationUtils.getAnnotation(fieldMeta.tableMeta().javaType(), Inheritance.class);
-
         return TableMeta.RESERVED_PROPS.contains(fieldMeta.propertyName())
                 || (inheritance != null
                 && inheritance.value().equalsIgnoreCase(fieldMeta.fieldName()))

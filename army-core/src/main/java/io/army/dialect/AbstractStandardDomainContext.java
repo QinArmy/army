@@ -124,7 +124,7 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
         final Dialect dialect = this.dialect;
         final String safeRelationAlias = dialect.quoteIfNeed(this.relationAlias);
 
-        StringBuilder builder = this.sqlBuilder.append(" ( SELECT ")
+        SQLBuilder builder = this.sqlBuilder.append(" ( SELECT ")
                 .append(safeRelationAlias)
                 .append(".")
                 .append(dialect.quoteIfNeed(relationField.fieldName()))
@@ -153,7 +153,7 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
         final String safeRelationAlias = dialect.quoteIfNeed(this.relationAlias);
 
         final String safeRelationId = dialect.quoteIfNeed(this.relationTable.id().fieldName());
-        final StringBuilder builder = this.sqlBuilder
+        final SQLBuilder builder = this.sqlBuilder
                 .append(" EXISTS ( SELECT ")
                 .append(safeRelationAlias)
                 .append(".")
