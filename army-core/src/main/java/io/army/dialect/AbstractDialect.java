@@ -39,6 +39,8 @@ public abstract class AbstractDialect implements InnerDialect {
 
     private final DQL dql;
 
+    private final TCL tcl;
+
     private final MappingContext mappingContext;
 
 
@@ -54,7 +56,8 @@ public abstract class AbstractDialect implements InnerDialect {
         this.ddl = createDDL();
         this.dml = createDML();
         this.dql = createDQL();
-
+        this.tcl = createTCL();
+        assertDatabaseMatch();
         this.mappingContext = new MappingContextImpl(this.sessionFactory.zoneId(), this.database());
     }
 
@@ -196,9 +199,6 @@ public abstract class AbstractDialect implements InnerDialect {
 
 
 
-    /*####################################### below DQL  method #################################*/
-
-
     /*####################################### below protected template method #################################*/
 
     /**
@@ -214,11 +214,24 @@ public abstract class AbstractDialect implements InnerDialect {
 
     protected abstract DQL createDQL();
 
+    protected abstract TCL createTCL();
+
     /*############################### sub class override method ####################################*/
 
     @Override
     public final String toString() {
         return database().name();
+    }
+
+    /*################################## blow private method ##################################*/
+
+    private void assertDatabaseMatch() {
+        Database database = this.ddl.database();
+        if (this.dml.database() != database || this.dql.database() != database || this.tcl.database() != database) {
+            throw new IllegalStateException(
+                    String.format("ddl database[%s] , dml database[%s] ,dql database[%s] , tcl database[%s] not match."
+                            , this.ddl.database(), this.dml.database(), this.dql.database(), this.tcl.database()));
+        }
     }
 
 

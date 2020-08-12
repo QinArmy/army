@@ -29,7 +29,7 @@ import java.util.*;
 public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
 
-    protected AbstractDML(InnerDialect dialect) {
+    protected AbstractDML(Dialect dialect) {
         super(dialect);
     }
 

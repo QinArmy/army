@@ -22,7 +22,7 @@ import java.util.Random;
  */
 public abstract class AbstractDMLAndDQL extends AbstractSQL {
 
-    protected AbstractDMLAndDQL(InnerDialect dialect) {
+    protected AbstractDMLAndDQL(Dialect dialect) {
         super(dialect);
     }
 

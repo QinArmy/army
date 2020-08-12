@@ -2,7 +2,6 @@ package io.army.dialect.postgre;
 
 import io.army.GenericRmSessionFactory;
 import io.army.dialect.*;
-import io.army.meta.mapping.MappingMeta;
 
 import java.util.Set;
 
@@ -35,12 +34,17 @@ class Postgre11Dialect extends AbstractDialect {
 
     @Override
     protected DML createDML() {
-        return null;
+        return new Postgre11DML(this);
     }
 
     @Override
     protected DQL createDQL() {
-        return null;
+        return new Postgre11DQL(this);
+    }
+
+    @Override
+    protected TCL createTCL() {
+        return new Postgre11TCL(this);
     }
 
     @Override
@@ -49,10 +53,6 @@ class Postgre11Dialect extends AbstractDialect {
         return true;
     }
 
-    @Override
-    public String mapping(MappingMeta mappingType) {
-        return null;
-    }
 
     @Override
     public final boolean tableAliasAfterAs() {

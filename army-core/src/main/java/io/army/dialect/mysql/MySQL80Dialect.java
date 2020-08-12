@@ -3,8 +3,8 @@ package io.army.dialect.mysql;
 import io.army.GenericRmSessionFactory;
 import io.army.dialect.DDL;
 import io.army.dialect.DML;
-import io.army.dialect.DQL;
 import io.army.dialect.Database;
+import io.army.dialect.TCL;
 
 import java.util.Set;
 
@@ -38,11 +38,12 @@ class MySQL80Dialect extends MySQL57Dialect {
 
     @Override
     protected DML createDML() {
-        return super.createDML();
+        return new MySQL80DML(this);
     }
 
+
     @Override
-    protected DQL createDQL() {
-        return super.createDQL();
+    protected TCL createTCL() {
+        return new MySQL80TCL(this);
     }
 }

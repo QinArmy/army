@@ -76,6 +76,10 @@ public abstract class DialectUtils {
                 , "TableMeta[%s] and FieldMeta[%s] not match.", tableMeta, fieldMeta);
     }
 
+    public static IllegalArgumentException createUnknownLockModeException(LockMode lockMode, Database database) {
+        return new IllegalArgumentException(String.format("unknown LockMode[%s] for database[%s]", lockMode, database));
+    }
+
     public static void divideFields(ChildTableMeta<?> childMeta, Collection<FieldMeta<?, ?>> mergedFields
             , Collection<FieldMeta<?, ?>> parentFields, Collection<FieldMeta<?, ?>> childFields) {
 

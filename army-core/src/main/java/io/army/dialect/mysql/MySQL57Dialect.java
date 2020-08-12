@@ -3,7 +3,6 @@ package io.army.dialect.mysql;
 
 import io.army.GenericRmSessionFactory;
 import io.army.dialect.*;
-import io.army.meta.mapping.MappingMeta;
 
 import java.util.Set;
 
@@ -29,11 +28,6 @@ class MySQL57Dialect extends AbstractDialect {
     @Override
     public final boolean supportZone() {
         return false;
-    }
-
-    @Override
-    public String mapping(MappingMeta mappingType) {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -78,5 +72,8 @@ class MySQL57Dialect extends AbstractDialect {
         return new MySQL57DQL(this);
     }
 
-
+    @Override
+    protected TCL createTCL() {
+        return new MySQL57TCL(this);
+    }
 }

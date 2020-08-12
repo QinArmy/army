@@ -19,7 +19,7 @@ import java.util.Map;
  */
 public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
 
-    public AbstractDQL(InnerDialect dialect) {
+    public AbstractDQL(Dialect dialect) {
         super(dialect);
     }
 
