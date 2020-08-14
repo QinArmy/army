@@ -5,7 +5,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 /**
- * created  on 08/04/2018.
+ * @since 1.0
  */
 public abstract class ExceptionUtils {
 

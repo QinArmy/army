@@ -1,8 +1,7 @@
 package io.army.boot.migratioin;
 
 import io.army.GenericRmSessionFactory;
-import io.army.criteria.MetaException;
-import io.army.dialect.Database;
+import io.army.meta.MetaException;
 import io.army.schema.SchemaInfoException;
 
 import java.util.List;
@@ -14,23 +13,24 @@ interface MetaSchemaComparator {
     /**
      * @return a unmodifiable List
      */
-    List<List<Migration>> compare(SchemaInfo schemaInfo, GenericRmSessionFactory sessionFactory)
+    List<List<Migration>> compare(SchemaInfo schemaInfo)
             throws SchemaInfoException, MetaException;
 
-    static MetaSchemaComparator build(Database database) {
+    static MetaSchemaComparator build(GenericRmSessionFactory sessionFactory) {
         MetaSchemaComparator comparator;
-        switch (database) {
+        switch (sessionFactory.actualDatabase()) {
             case MySQL:
             case MySQL57:
-                comparator = new MySQL57MetaSchemaComparator();
+                comparator = new MySQL57MetaSchemaComparator(sessionFactory);
                 break;
             case MySQL80:
-                comparator = new MySQL80MetaSchemaComparator();
+                comparator = new MySQL80MetaSchemaComparator(sessionFactory);
                 break;
             case Postgre:
             case Oracle:
             default:
-                throw new IllegalArgumentException(String.format("unsupported dialect %s", database));
+                throw new IllegalArgumentException(String.format("unsupported dialect %s"
+                        , sessionFactory.actualDatabase()));
         }
         return comparator;
     }

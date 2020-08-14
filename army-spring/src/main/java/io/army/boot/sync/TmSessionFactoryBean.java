@@ -2,7 +2,7 @@ package io.army.boot.sync;
 
 import io.army.codec.FieldCodec;
 import io.army.dialect.Database;
-import io.army.env.Environment;
+import io.army.env.ArmyConfigurableArmyEnvironment;
 import io.army.interceptor.DomainAdvice;
 import io.army.sync.SessionFactoryAdvice;
 import io.army.sync.TmSessionFactory;
@@ -32,7 +32,7 @@ public class TmSessionFactoryBean implements FactoryBean<TmSessionFactory>
 
     private String beanName;
 
-    private Environment environment;
+    private ArmyConfigurableArmyEnvironment environment;
 
     private int tableCountPerDatabase = 1;
 
@@ -62,7 +62,7 @@ public class TmSessionFactoryBean implements FactoryBean<TmSessionFactory>
 
                 .name(obtainSessionFactoryName())
                 .dataSourceList(obtainDataSourceList())
-                .environment(obtainEnvironment(this.environment, applicationContext.getEnvironment()))
+                .environment(obtainEnvironment(this.environment, applicationContext))
                 .domainInterceptor(this.applicationContext.getBeansOfType(DomainAdvice.class).values())
 
                 .fieldCodecs(this.applicationContext.getBeansOfType(FieldCodec.class).values())
@@ -86,7 +86,7 @@ public class TmSessionFactoryBean implements FactoryBean<TmSessionFactory>
 
     /*################################## blow setter method ##################################*/
 
-    public TmSessionFactoryBean setEnvironment(Environment environment) {
+    public TmSessionFactoryBean setEnvironment(ArmyConfigurableArmyEnvironment environment) {
         this.environment = environment;
         return this;
     }

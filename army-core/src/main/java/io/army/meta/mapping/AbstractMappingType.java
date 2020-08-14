@@ -4,7 +4,7 @@ import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
-import io.army.sqltype.SQLDataType;
+import io.army.sqldatatype.SQLDataType;
 
 import java.util.Map;
 

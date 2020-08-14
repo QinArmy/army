@@ -2,7 +2,8 @@ package io.army.util;
 
 /**
  * forbid Quadra
- * created  on 2018/11/24.
+ *
+ * @since 1.0
  */
 public final class Triple<F, S, T> implements TripleBean {
 

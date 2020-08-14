@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.annotation.*;
-import io.army.criteria.MetaException;
 import io.army.domain.IDomain;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;

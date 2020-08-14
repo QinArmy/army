@@ -5,7 +5,7 @@ import io.army.struct.CodeEnum;
 import java.util.Map;
 
 /**
- * created  on 2018/10/20.
+ * @since 1.0
  */
 public enum OS implements CodeEnum {
 

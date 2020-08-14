@@ -10,7 +10,7 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.mapping.MappingMeta;
 import io.army.meta.mapping.ResultColumnMeta;
-import io.army.sqltype.SQLDataType;
+import io.army.sqldatatype.SQLDataType;
 import io.army.util.Assert;
 
 import java.sql.JDBCType;

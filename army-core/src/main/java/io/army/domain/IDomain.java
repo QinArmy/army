@@ -1,9 +1,6 @@
 package io.army.domain;
 
 import io.army.annotation.Column;
-import io.army.dialect.Database;
-import io.army.dialect.SQLBuilder;
-import io.army.meta.FieldMeta;
 
 /**
  *
@@ -12,14 +9,16 @@ public interface IDomain {
 
 
     /**
+     * see {@code see io.army.sqldatatype.SQLDataType#nowValue(FieldMeta, SQLBuilder, Database)}
+     *
      * @see Column#defaultValue()
-     * @see io.army.sqltype.SQLDataType#nowValue(FieldMeta, SQLBuilder, Database)
      */
     String NOW = "$NOW()$";
 
     /**
+     * see {@code see io.army.sqldatatype.SQLDataType#zeroValue(FieldMeta, SQLBuilder, Database)}
+     *
      * @see Column#defaultValue()
-     * @see io.army.sqltype.SQLDataType#zeroValue(FieldMeta, SQLBuilder, Database)
      */
     String ZERO_VALUE = "$ZERO_VALUE$";
 

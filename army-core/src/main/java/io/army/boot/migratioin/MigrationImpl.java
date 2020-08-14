@@ -18,6 +18,8 @@ final class MigrationImpl implements Migration {
 
     private final boolean newTable;
 
+    private boolean modifyTableComment;
+
     private List<FieldMeta<?, ?>> columnsToAdd;
 
     private List<FieldMeta<?, ?>> columnsToModify;
@@ -25,6 +27,8 @@ final class MigrationImpl implements Migration {
     private List<IndexMeta<?>> indexesToAdd;
 
     private List<IndexMeta<?>> indexesToModify;
+
+    private List<FieldMeta<?, ?>> commentsToModify;
 
     private List<String> indexesToDrop;
 
@@ -35,6 +39,9 @@ final class MigrationImpl implements Migration {
         this.table = table;
         this.tableSuffix = tableSuffix;
         this.newTable = newTable;
+        if (newTable) {
+            makeFinal();
+        }
     }
 
     @Nullable
@@ -60,6 +67,12 @@ final class MigrationImpl implements Migration {
         return newTable;
     }
 
+
+    @Override
+    public boolean modifyTableComment() {
+        return this.modifyTableComment;
+    }
+
     @Override
     public List<FieldMeta<?, ?>> columnsToAdd() {
         return columnsToAdd;
@@ -78,12 +91,29 @@ final class MigrationImpl implements Migration {
         return columnsToModify;
     }
 
+    @Override
+    public List<FieldMeta<?, ?>> commentToModify() {
+        return this.commentsToModify;
+    }
+
+    void modifyTableComment(boolean modify) {
+        this.modifyTableComment = modify;
+    }
+
     void addColumnToModify(FieldMeta<?, ?> columnToModify) {
         assertNotFinal();
         if (this.columnsToModify == null) {
             this.columnsToModify = new ArrayList<>();
         }
         this.columnsToModify.add(columnToModify);
+    }
+
+    void addCommentToModify(FieldMeta<?, ?> commentToModify) {
+        assertNotFinal();
+        if (this.commentsToModify == null) {
+            this.commentsToModify = new ArrayList<>();
+        }
+        this.commentsToModify.add(commentToModify);
     }
 
     @Override
@@ -126,11 +156,12 @@ final class MigrationImpl implements Migration {
     }
 
     boolean needAlter() {
-        return !CollectionUtils.isEmpty(columnsToAdd)
-                || !CollectionUtils.isEmpty(columnsToModify)
-                || !CollectionUtils.isEmpty(indexesToAdd)
-                || !CollectionUtils.isEmpty(indexesToModify)
-                || !CollectionUtils.isEmpty(indexesToDrop)
+        return !CollectionUtils.isEmpty(this.columnsToAdd)
+                || !CollectionUtils.isEmpty(this.columnsToModify)
+                || !CollectionUtils.isEmpty(this.indexesToAdd)
+                || !CollectionUtils.isEmpty(this.indexesToModify)
+                || !CollectionUtils.isEmpty(this.indexesToDrop)
+                || !CollectionUtils.isEmpty(this.commentsToModify)
                 ;
     }
 
@@ -138,27 +169,31 @@ final class MigrationImpl implements Migration {
         if (finalFinish) {
             return;
         }
+
         if (needAlter()) {
-            columnsToAdd = this.unmodifiableList(columnsToAdd);
-            columnsToModify = this.unmodifiableList(columnsToModify);
-            indexesToAdd = this.unmodifiableList(indexesToAdd);
-            indexesToModify = this.unmodifiableList(indexesToModify);
-            indexesToDrop = this.unmodifiableList(indexesToDrop);
+            this.columnsToAdd = this.unmodifiableList(this.columnsToAdd);
+            this.columnsToModify = this.unmodifiableList(this.columnsToModify);
+            this.indexesToAdd = this.unmodifiableList(this.indexesToAdd);
+            this.indexesToModify = this.unmodifiableList(this.indexesToModify);
+            this.indexesToDrop = this.unmodifiableList(this.indexesToDrop);
+            this.commentsToModify = this.unmodifiableList(this.commentsToModify);
         } else {
-            columnsToAdd = Collections.emptyList();
-            columnsToModify = Collections.emptyList();
-            indexesToAdd = Collections.emptyList();
-            indexesToModify = Collections.emptyList();
-            indexesToDrop = Collections.emptyList();
+            this.columnsToAdd = Collections.emptyList();
+            this.columnsToModify = Collections.emptyList();
+            this.indexesToAdd = Collections.emptyList();
+            this.indexesToModify = Collections.emptyList();
+            this.indexesToDrop = Collections.emptyList();
         }
 
-        finalFinish = true;
+        this.finalFinish = true;
 
     }
 
+
+
     /*################################## blow private method ##################################*/
 
-    private <T> List<T> unmodifiableList(List<T> list) {
+    private <T> List<T> unmodifiableList(@Nullable List<T> list) {
         List<T> unmodifiableList;
         if (list == null) {
             unmodifiableList = Collections.emptyList();
@@ -169,7 +204,7 @@ final class MigrationImpl implements Migration {
     }
 
     private void assertNotFinal() {
-        if (finalFinish) {
+        if (this.finalFinish) {
             throw new UnsupportedOperationException();
         }
     }

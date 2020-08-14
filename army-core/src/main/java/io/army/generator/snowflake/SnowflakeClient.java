@@ -1,10 +1,12 @@
 package io.army.generator.snowflake;
 
 
+import io.army.beans.ArmyBean;
+
 /**
  *
  */
-public interface SnowflakeClient {
+public interface SnowflakeClient extends ArmyBean {
 
     /**
      * @throws SnowflakeWorkerException when assign failure

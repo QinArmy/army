@@ -7,7 +7,7 @@ import java.util.Map;
 
 /**
  * @see <a href="https://www.currency-iso.org/dam/downloads/lists/list_one.xml">ISO Currency Codes</a>
- * created  on 2018/8/28.
+ * @since 1.0
  */
 public enum Currency implements CodeEnum {
 

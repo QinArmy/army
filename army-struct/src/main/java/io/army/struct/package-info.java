@@ -1,4 +1,4 @@
 /**
- * created  on 2019-03-14.
+ * @since 1.0
  */
 package io.army.struct;

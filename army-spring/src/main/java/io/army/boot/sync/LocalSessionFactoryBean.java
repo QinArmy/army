@@ -2,21 +2,21 @@ package io.army.boot.sync;
 
 
 import io.army.ShardingMode;
+import io.army.beans.ArmyBean;
 import io.army.codec.FieldCodec;
-import io.army.env.Environment;
+import io.army.env.ArmyConfigurableArmyEnvironment;
+import io.army.env.ArmyEnvironment;
 import io.army.env.SpringEnvironmentAdaptor;
 import io.army.interceptor.DomainAdvice;
 import io.army.lang.Nullable;
 import io.army.sync.SessionFactory;
 import io.army.sync.SessionFactoryAdvice;
-import io.army.util.Assert;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.env.ConfigurableEnvironment;
 
 import javax.sql.DataSource;
 
@@ -36,7 +36,7 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
 
     private String dataSourceBeanName;
 
-    private Environment environment;
+    private ArmyConfigurableArmyEnvironment environment;
 
     private int tableCountPerDatabase = 1;
 
@@ -52,6 +52,7 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
         this.beanName = name;
     }
 
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
@@ -59,14 +60,11 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
 
     @Override
     public void afterPropertiesSet() {
-        Assert.state(this.dataSource != null, "dataSource is null");
-
-
         this.sessionFactory = SessionFactoryBuilder.builder(true)
 
                 .name(getSessionFactoryName())
                 .datasource(obtainDataSource())
-                .environment(obtainEnvironment(this.environment, this.applicationContext.getEnvironment()))
+                .environment(obtainEnvironment(this.environment, this.applicationContext))
                 .domainInterceptor(applicationContext.getBeansOfType(DomainAdvice.class).values())
 
                 .fieldCodecs(applicationContext.getBeansOfType(FieldCodec.class).values())
@@ -76,7 +74,6 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
 
                 .build();
     }
-
 
     @Override
     public boolean isSingleton() {
@@ -109,7 +106,7 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
         return this;
     }
 
-    public LocalSessionFactoryBean setEnvironment(Environment environment) {
+    public LocalSessionFactoryBean setEnvironment(ArmyConfigurableArmyEnvironment environment) {
         this.environment = environment;
         return this;
     }
@@ -151,17 +148,13 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
 
     /*################################## blow package static method ##################################*/
 
-    static io.army.env.Environment obtainEnvironment(@Nullable io.army.env.Environment armyEnvironment
-            , org.springframework.core.env.Environment springEnvironment) {
-        io.army.env.Environment environment = armyEnvironment;
+    static ArmyEnvironment obtainEnvironment(@Nullable ArmyConfigurableArmyEnvironment armyEnvironment
+            , ApplicationContext applicationContext) {
+        ArmyConfigurableArmyEnvironment environment = armyEnvironment;
         if (environment == null) {
-            if (!(springEnvironment instanceof ConfigurableEnvironment)) {
-                throw new IllegalArgumentException(
-                        "org.springframework.core.env.Environment isn't ConfigurableEnvironment" +
-                                ",please specified io.army.env.Environment");
-            }
-            environment = new SpringEnvironmentAdaptor((ConfigurableEnvironment) springEnvironment);
+            environment = new SpringEnvironmentAdaptor(applicationContext.getEnvironment());
         }
+        environment.addBeansIfNotExists(applicationContext.getBeansOfType(ArmyBean.class));
         return environment;
     }
 }

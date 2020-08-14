@@ -2,8 +2,8 @@ package io.army.asm;
 
 import io.army.ErrorCode;
 import io.army.annotation.Table;
-import io.army.criteria.MetaException;
 import io.army.criteria.impl.TableMetaFactory;
+import io.army.meta.MetaException;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen.MetaConstant;

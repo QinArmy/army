@@ -2,10 +2,13 @@ package io.army.modelgen;
 
 /**
  * debugSQL mapping props part of meta source code
- * created  on 2018/11/18.
+ * <p>
+ * see {@code io.army.meta.FieldMeta}
+ * </p>
+ *
  * @see io.army.annotation.Column
- * @see io.army.meta.FieldMeta
  * @see MetaEntity
+ * @since 1.0
  */
  interface MetaAttribute {
 

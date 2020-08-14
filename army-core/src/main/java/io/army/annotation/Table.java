@@ -1,7 +1,6 @@
 package io.army.annotation;
 
 
-import io.army.meta.TableMeta;
 
 import java.lang.annotation.*;
 
@@ -26,8 +25,8 @@ public @interface Table {
 
     /**
      * (Required) The name of the table.
-     *
-     * @see TableMeta#tableName()
+     * <p>
+     * see io.army.meta.TableMeta#tableName()
      */
     String name();
 

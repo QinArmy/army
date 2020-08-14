@@ -1,7 +1,7 @@
 package io.army.modelgen;
 
 import io.army.annotation.*;
-import io.army.criteria.MetaException;
+import io.army.meta.MetaException;
 import io.army.meta.TableMeta;
 import io.army.struct.CodeEnum;
 import io.army.util.AnnotationUtils;

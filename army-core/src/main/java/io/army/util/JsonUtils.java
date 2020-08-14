@@ -31,7 +31,7 @@ import static io.army.util.TimeUtils.DATE_FORMAT;
 import static io.army.util.TimeUtils.DATE_TIME_FORMAT;
 
 /**
- * created  on 2018/4/18.
+ * @since 1.0
  */
 public abstract class JsonUtils {
 

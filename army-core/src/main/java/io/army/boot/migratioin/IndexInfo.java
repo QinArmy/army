@@ -1,6 +1,6 @@
 package io.army.boot.migratioin;
 
-import io.army.lang.Nullable;
+import io.army.util.Assert;
 
 import java.util.Map;
 import java.util.StringJoiner;
@@ -41,9 +41,9 @@ final class IndexInfo {
     }
 
 
-    @Nullable
     public Map<String,IndexColumnInfo> columnMap() {
-        return columnMap;
+        Assert.state(this.columnMap != null, "columnMap state error.");
+        return this.columnMap;
     }
 
 

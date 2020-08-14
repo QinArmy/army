@@ -2,7 +2,7 @@ package io.army.util;
 
 
 /**
- * created  on 2018/9/12.
+ * @since 1.0
  */
 public final class Pair<F, S> implements PairBean {
 

@@ -1,7 +1,7 @@
 package io.army;
 
 /**
- * created  on 2018/11/25.
+ * @since 1.0
  */
 public class ArmyCatchException extends Exception implements IArmyExpression {
 

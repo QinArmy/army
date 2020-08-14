@@ -4,7 +4,7 @@ import io.army.annotation.Column;
 import io.army.annotation.Index;
 import io.army.annotation.Inheritance;
 import io.army.annotation.Table;
-import io.army.criteria.MetaException;
+import io.army.meta.MetaException;
 import io.army.meta.TableMeta;
 import io.army.util.StringUtils;
 import org.springframework.lang.NonNull;
@@ -15,7 +15,8 @@ import java.util.*;
 
 /**
  * this class is a implementation of  {@link MetaEntity}
- * created  on 2018/11/18.
+ *
+ * @since 1.0
  */
 class DefaultMetaEntity implements MetaEntity {
 

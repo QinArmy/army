@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * created  on 2019-02-22.
+ * @since 1.0
  */
 public abstract class Converters {
 

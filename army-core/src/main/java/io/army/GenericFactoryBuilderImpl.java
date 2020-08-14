@@ -2,7 +2,7 @@ package io.army;
 
 import io.army.boot.GenericFactoryBuilder;
 import io.army.codec.FieldCodec;
-import io.army.env.Environment;
+import io.army.env.ArmyEnvironment;
 
 import java.util.Collection;
 
@@ -10,7 +10,7 @@ public abstract class GenericFactoryBuilderImpl implements GenericFactoryBuilder
 
     protected String name;
 
-    protected Environment environment;
+    protected ArmyEnvironment environment;
 
     protected Collection<FieldCodec> fieldCodecs;
 
@@ -23,7 +23,7 @@ public abstract class GenericFactoryBuilderImpl implements GenericFactoryBuilder
         return name;
     }
 
-    public final Environment environment() {
+    public final ArmyEnvironment environment() {
         return environment;
     }
 

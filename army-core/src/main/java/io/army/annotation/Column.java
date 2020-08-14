@@ -1,6 +1,5 @@
 package io.army.annotation;
 
-import io.army.meta.TableMeta;
 
 import java.io.InputStream;
 import java.lang.annotation.Documented;
@@ -22,7 +21,9 @@ public @interface Column {
     /**
      * (Optional) field name of table
      *
-     * @see io.army.util.StringUtils#camelToLowerCase(String)
+     * <p>
+     * see {@code io.army.util.StringUtils#camelToLowerCase(String)}
+     * </p>
      */
     String name() default "";
 
@@ -41,17 +42,14 @@ public @interface Column {
      * <p>
      * blow ,army modify to false. see {@code io.army.criteria.impl.FieldMetaUtils#columnUpdatable(io.army.meta.TableMeta, java.lang.String, io.army.annotation.Column, boolean)}
      * <ol>
-     *     <li>{@link TableMeta#immutable()}</li>
-     *     <li>{@link TableMeta#id()}</li>
-     *     <li>{@link TableMeta#CREATE_TIME}</li>
-     *     <li>{@link TableMeta#discriminator()}</li>
+     *     <li>{@code TableMeta#immutable()}</li>
+     *     <li>{@code TableMeta#id()}</li>
+     *     <li>{@code TableMeta#CREATE_TIME}</li>
+     *     <li>{@code TableMeta#discriminator()}</li>
      * </ol>
      * </p>
      */
     boolean updatable() default true;
-
-    UpdateMode updateMode() default UpdateMode.ALWAYS;
-
 
     /**
      * (Optional) The columnSize for a decimal (exact numeric)
@@ -71,14 +69,14 @@ public @interface Column {
      * <p>
      * blow,allow to don't specify default value of column.
      *     <ol>
-     *         <li>{@link TableMeta#RESERVED_PROPS}</li>
-     *         <li>{@link TableMeta#discriminator()} </li>
+     *         <li>{@code TableMeta#RESERVED_PROPS}</li>
+     *         <li>{@code TableMeta#discriminator()} </li>
      *         <li>mapping field java type is {@link String},because army specify default {@code ''}</li>
      *         <li>mapping field java type is {@link Long},because army specify default 0</li>
      *         <li>mapping field java type is {@link Integer},because army specify default 0</li>
      *         <li>mapping field java type is {@link java.math.BigDecimal} ,because army specify default 0.00 or 0</li>
      *         <li>mapping field java type is {@link java.math.BigInteger},because army specify default 0</li>
-     *         <li>mapping field java type is {@link io.army.struct.CodeEnum},because army specify default 0</li>
+     *         <li>mapping field java type is {@code io.army.struct.CodeEnum},because army specify default 0</li>
      *         <li>mapping field java type is {@link InputStream},because can't specify</li>
      *         <li>mapping field java type is {@code byte[]},because can't specify</li>
      *         <li>mapping field java type is {@link Byte},because army specify default 0</li>
@@ -95,8 +93,8 @@ public @interface Column {
      * <p>
      * blow,don't specify comment of column.
      *     <ol>
-     *         <li>{@link TableMeta#RESERVED_PROPS}</li>
-     *         <li>{@link TableMeta#discriminator()} </li>
+     *         <li>{@code TableMeta#RESERVED_PROPS}</li>
+     *         <li>{@code TableMeta#discriminator()} </li>
      *     </ol>
      * </p>
      */

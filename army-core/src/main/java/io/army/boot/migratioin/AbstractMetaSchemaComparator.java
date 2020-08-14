@@ -2,31 +2,97 @@ package io.army.boot.migratioin;
 
 import io.army.ErrorCode;
 import io.army.GenericRmSessionFactory;
-import io.army.criteria.MetaException;
+import io.army.dialect.DDLUtils;
+import io.army.dialect.Database;
+import io.army.dialect.DialectUtils;
+import io.army.dialect.SQLBuilder;
+import io.army.domain.IDomain;
 import io.army.lang.Nullable;
-import io.army.meta.FieldMeta;
-import io.army.meta.IndexFieldMeta;
-import io.army.meta.IndexMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 import io.army.schema.SchemaInfoException;
 import io.army.sharding.RouteUtils;
+import io.army.sqldatatype.SQLDataType;
 import io.army.util.Assert;
-import io.army.util.ObjectUtils;
 import io.army.util.StringUtils;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
 
+    private static final Pattern NOT_EMPTY_NUMBER_PATTERN = Pattern.compile(
+            "[+-]?(?:\\d*)?\\.?(?:\\d*)?(?:[eE][+-]?\\d+)?");
+
+    private static final Pattern BIT_VALUE_LITERAL_PATTERN = Pattern.compile("(?:[bB]'[01]+?')|(?:0b[01]+?)");
+
+    private static final Pattern HEXADECIMAL_LITERAL_PATTERN = Pattern.compile(
+            "(?:[xX]'[0-9a-fA-F]+?')|(?:0x[0-9a-fA-F]+?)");
+
+    static final String YEAR_FORMAT = "[0-9]{4,8}";
+
+
+    static final String DATE_FORMAT = YEAR_FORMAT + "-(?:(?:[0][1-9])|(?:[1][12]))-(?:(?:[0][1-9])?|(?:[12][0-9])|(?:3[01]))";
+
+    static final String TIME_FORMAT = "(?:(?:[01][0-9])|(?:2[0-3])):[0-5][0-9]:[0-5][0-9](?:\\.[0-9]{1,6})?";
+
+    static final String ZONE_FORMAT = "(?:[+-](?:(?:0[0-9])|(?:1[0-1])):[0-5][0-9])?";
+
+    static final Pattern YEAR_FORMAT_PATTERN = Pattern.compile(YEAR_FORMAT);
+
+    static final Pattern DATE_FORMAT_PATTERN = Pattern.compile("'" + DATE_FORMAT + "'");
+
+    static final Pattern TIME_WITHOUT_ZONE_FORMAT_PATTERN = Pattern.compile("'" + TIME_FORMAT + "'");
+
+    static final Pattern TIME_WITH_ZONE_FORMAT_PATTERN = Pattern.compile("'" + TIME_FORMAT + ZONE_FORMAT + "'");
+
+    static final Pattern DATE_TIME_WITHOUT_ZONE_FORMAT_PATTERN = Pattern.compile(
+            "'" + DATE_FORMAT + " " + TIME_FORMAT + "'"
+    );
+
+    static final Pattern DATE_TIME_WITH_ZONE_FORMAT_PATTERN = Pattern.compile(
+            "'" + DATE_FORMAT + " " + TIME_FORMAT + ZONE_FORMAT + "'"
+    );
+
+    static boolean numericLiteral(String expression) {
+        return StringUtils.hasText(expression)
+                && NOT_EMPTY_NUMBER_PATTERN.matcher(expression).matches();
+    }
+
+    static boolean stringLiteral(String expression) {
+        return StringUtils.hasText(expression)
+                && expression.startsWith("'")
+                && expression.endsWith("'");
+    }
+
+    static boolean bitValueLiteral(String expression) {
+        return BIT_VALUE_LITERAL_PATTERN.matcher(expression).matches();
+    }
+
+    static boolean hexadecimalLiterals(String expression) {
+        return HEXADECIMAL_LITERAL_PATTERN.matcher(expression).matches();
+    }
+
+
+    private StringBuilder dataTypeErrorBuilder = new StringBuilder();
+
+    final GenericRmSessionFactory sessionFactory;
+
+    final boolean compareDefaultOnMigrating;
+
+    AbstractMetaSchemaComparator(GenericRmSessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
+        this.compareDefaultOnMigrating = sessionFactory.compareDefaultOnMigrating();
+    }
+
     @Override
-    public final List<List<Migration>> compare(SchemaInfo schemaInfo, GenericRmSessionFactory sessionFactory)
+    public final List<List<Migration>> compare(SchemaInfo schemaInfo)
             throws SchemaInfoException, MetaException {
 
         final Map<String, TableInfo> tableInfoMap = schemaInfo.tableMap();
 
-        final int tableCount = sessionFactory.tableCountOfSharding();
+        final int tableCount = this.sessionFactory.tableCountPerDatabase();
         List<List<Migration>> shardingList = new ArrayList<>(tableCount);
-        final Collection<TableMeta<?>> tableMetas = sessionFactory.tableMetaMap().values();
+        final Collection<TableMeta<?>> tableMetas = this.sessionFactory.tableMetaMap().values();
         for (int i = 0; i < tableCount; i++) {
             //1. obtain table suffix
             final String tableSuffix = RouteUtils.convertToSuffix(tableCount, i);
@@ -45,15 +111,25 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
                     migrationList.add(new MigrationImpl(tableMeta, tableSuffix, true));
 
                 } else {
-                    Migration migration = doMigrateTable(tableMeta, tableSuffix, tableInfo);
+                    MigrationImpl migration = doMigrateTable(tableMeta, tableSuffix, tableInfo);
                     if (migration != null) {
                         // will alter tableMeta
                         migrationList.add(migration);
                     }
+                    if (!DDLUtils.escapeQuote(tableMeta.comment()).equals(tableInfo.comment())) {
+                        if (migration == null) {
+                            migration = new MigrationImpl(tableMeta, tableSuffix, false);
+                        }
+                        migration.modifyTableComment(true);
+                    }
+
                 }
             }
             //4. add migrationList to shardingList
             shardingList.add(Collections.unmodifiableList(migrationList));
+        }
+        if (this.dataTypeErrorBuilder.length() > 0) {
+            throw new SchemaInfoException(ErrorCode.SCHEMA_ERROR, this.dataTypeErrorBuilder.toString());
         }
         return Collections.unmodifiableList(shardingList);
     }
@@ -61,16 +137,46 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
 
     /*################################## blow abstract method ##################################*/
 
-    protected abstract boolean precisionOrScaleAlter(FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo)
+    protected abstract boolean needModifyPrecisionOrScale(FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo)
             throws SchemaInfoException, MetaException;
 
-    protected abstract boolean defaultValueAlter(FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo)
+    protected abstract boolean needModifyDefault(FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo)
             throws SchemaInfoException, MetaException;
+
+    /**
+     * @return tue: sqlTypeName is synonym of  fieldMeta's SQLDataType
+     */
+    protected abstract boolean synonyms(FieldMeta<?, ?> fieldMeta, String sqlTypeName);
+
+    protected abstract Database database();
+
+    /*################################## blow protected final method ##################################*/
+
+    protected final String obtainDefaultValue(FieldMeta<?, ?> fieldMeta) {
+        String defaultValue = fieldMeta.defaultValue();
+        Database database = database();
+        SQLDataType dataType = fieldMeta.mappingMeta().sqlDataType(database);
+        SQLBuilder builder;
+        switch (defaultValue) {
+            case IDomain.NOW:
+                builder = DialectUtils.createSQLBuilder();
+                dataType.nowValue(fieldMeta, builder, database);
+                defaultValue = builder.toString();
+                break;
+            case IDomain.ZERO_VALUE:
+                builder = DialectUtils.createSQLBuilder();
+                dataType.zeroValue(fieldMeta, builder, database);
+                defaultValue = builder.toString();
+                break;
+            default:
+        }
+        return defaultValue;
+    }
 
     /*################################## blow private method ##################################*/
 
     @Nullable
-    private Migration doMigrateTable(TableMeta<?> tableMeta, @Nullable String tableSuffix, TableInfo tableInfo) {
+    private MigrationImpl doMigrateTable(TableMeta<?> tableMeta, @Nullable String tableSuffix, TableInfo tableInfo) {
         Assert.state(tableMeta.tableName().equals(tableInfo.name()),
                 () -> String.format("TableMeta[%s] then TableInfo[%s] not match",
                         tableMeta.tableName(), tableInfo.name()));
@@ -93,16 +199,27 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
 
     private void migrateColumnIfNeed(TableMeta<?> tableMeta, TableInfo tableInfo, MigrationImpl migration) {
         final Map<String, ColumnInfo> columnInfoMap = tableInfo.columnMap();
-
+        Database database = database();
         for (FieldMeta<?, ?> fieldMeta : tableMeta.fieldCollection()) {
             // make key lower case
             ColumnInfo columnInfo = columnInfoMap.get(StringUtils.toLowerCase(fieldMeta.fieldName()));
             if (columnInfo == null) {
                 // alter tableMeta add column
                 migration.addColumnToAdd(fieldMeta);
+            } else if (!synonyms(fieldMeta, columnInfo.sqlType())) {
+                this.dataTypeErrorBuilder
+                        .append("\n")
+                        .append(fieldMeta)
+                        .append(" SQLDataType[")
+                        .append(fieldMeta.mappingMeta().sqlDataType(database()))
+                        .append("] and ")
+                        .append(columnInfo.sqlType())
+                        .append(" not match.");
             } else if (needAlterColumn(fieldMeta, columnInfo)) {
                 // alter tableMeta alter column
                 migration.addColumnToModify(fieldMeta);
+            } else if (!DDLUtils.escapeQuote(fieldMeta.comment()).equals(columnInfo.comment())) {
+                migration.addCommentToModify(fieldMeta);
             }
         }
 
@@ -162,12 +279,12 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
         } else if (indexMeta.fieldList().size() != indexInfo.columnMap().size()) {
             need = true;
         } else {
-            need = indexOrderMatch(indexMeta, indexInfo);
+            need = needAlterIndexColumn(indexMeta, indexInfo);
         }
         return need;
     }
 
-    private boolean indexOrderMatch(IndexMeta<?> indexMeta, IndexInfo indexInfo) {
+    private boolean needAlterIndexColumn(IndexMeta<?> indexMeta, IndexInfo indexInfo) {
         Map<String, IndexColumnInfo> columnInfoMap = indexInfo.columnMap();
         boolean need = false;
         for (IndexFieldMeta<?, ?> indexFieldMeta : indexMeta.fieldList()) {
@@ -192,34 +309,9 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
 
 
     private boolean needAlterColumn(FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo) throws SchemaInfoException {
-        // 1. data type, TODO zoro add dialect jdbc mapping
-        assertJdbcTypeMatch(fieldMeta, columnInfo);
-        boolean needAlter = false;
-
-        if (precisionOrScaleAlter(fieldMeta, columnInfo)) {
-            // 2. columnSize ,scale
-            needAlter = true;
-        } else if (defaultValueAlter(fieldMeta, columnInfo)) {
-            // 3. default value
-            needAlter = true;
-        } else if (columnInfo.nullable() != fieldMeta.nullable()) {
-            // 4. nullableKeyword
-            needAlter = true;
-        } else if (!TableMeta.VERSION_PROPS.contains(fieldMeta.propertyName())
-                && !ObjectUtils.nullSafeEquals(fieldMeta.comment(), columnInfo.comment())) {
-            // 5. comment
-            needAlter = true;
-        }
-        return needAlter;
-    }
-
-    private void assertJdbcTypeMatch(FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo)
-            throws SchemaInfoException {
-        if (fieldMeta.mappingMeta().jdbcType() != columnInfo.jdbcType()) {
-            throw new SchemaInfoException(ErrorCode.SQL_TYPE_NOT_MATCH
-                    , "FieldMeta[%s] then ColumnInfo[%s] SQL type not match"
-                    , fieldMeta.fieldName(), columnInfo.name());
-        }
+        return needModifyPrecisionOrScale(fieldMeta, columnInfo)
+                || (this.compareDefaultOnMigrating && needModifyDefault(fieldMeta, columnInfo))
+                || columnInfo.nullable() != fieldMeta.nullable();
     }
 
 

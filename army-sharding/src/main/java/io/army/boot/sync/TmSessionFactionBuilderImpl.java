@@ -5,7 +5,7 @@ import io.army.SessionFactoryException;
 import io.army.ShardingMode;
 import io.army.codec.FieldCodec;
 import io.army.dialect.Database;
-import io.army.env.Environment;
+import io.army.env.ArmyEnvironment;
 import io.army.interceptor.DomainAdvice;
 import io.army.lang.Nullable;
 import io.army.sync.SessionFactoryAdvice;
@@ -69,7 +69,7 @@ class TmSessionFactionBuilderImpl extends AbstractSyncSessionFactoryBuilder impl
     }
 
     @Override
-    public final TmSessionFactionBuilder environment(Environment environment) {
+    public final TmSessionFactionBuilder environment(ArmyEnvironment environment) {
         this.environment = environment;
         return this;
     }

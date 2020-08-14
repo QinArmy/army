@@ -2,7 +2,7 @@ package io.army.struct;
 
 
 /**
- * created  on 2019-03-14.
+ * @since 1.0
  */
 public enum Country implements CodeEnum {
 

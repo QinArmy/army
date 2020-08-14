@@ -2,7 +2,7 @@ package io.army.boot.sync;
 
 import io.army.GenericFactoryBuilderImpl;
 import io.army.ShardingMode;
-import io.army.env.Environment;
+import io.army.env.ArmyEnvironment;
 import io.army.interceptor.DomainAdvice;
 import io.army.lang.Nullable;
 import io.army.sync.GenericSyncApiSessionFactory;
@@ -74,7 +74,7 @@ abstract class AbstractSyncSessionFactoryBuilder extends GenericFactoryBuilderIm
         }
 
         @Override
-        public void beforeInstance(Environment environment) {
+        public void beforeInstance(ArmyEnvironment environment) {
             for (SessionFactoryAdvice factoryAdvice : this.adviceList) {
                 factoryAdvice.beforeInstance(environment);
             }

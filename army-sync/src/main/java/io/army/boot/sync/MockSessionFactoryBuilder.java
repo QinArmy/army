@@ -6,7 +6,7 @@ import io.army.codec.FieldCodec;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialectFactory;
-import io.army.env.Environment;
+import io.army.env.ArmyEnvironment;
 import io.army.interceptor.DomainAdvice;
 import io.army.sync.SessionFactoryAdvice;
 
@@ -25,7 +25,7 @@ final class MockSessionFactoryBuilder extends AbstractSyncSessionFactoryBuilder 
     }
 
     @Override
-    public GenericFactoryBuilder environment(Environment environment) {
+    public GenericFactoryBuilder environment(ArmyEnvironment environment) {
         return null;
     }
 

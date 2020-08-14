@@ -3,13 +3,12 @@ package io.army.beans;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
-import org.springframework.beans.BeanWrapper;
 
 final class DomainReadonlyWrapperImpl extends ReadonlyWrapperImpl implements DomainReadonlyWrapper {
 
     private final TableMeta<?> tableMeta;
 
-    DomainReadonlyWrapperImpl(BeanWrapper beanWrapper, TableMeta<?> tableMeta) {
+    DomainReadonlyWrapperImpl(org.springframework.beans.BeanWrapper beanWrapper, TableMeta<?> tableMeta) {
         super(beanWrapper);
         this.tableMeta = tableMeta;
         Assert.isTrue(beanWrapper.getWrappedClass() == tableMeta.javaType()

@@ -1,8 +1,8 @@
 package io.army.cache;
 
-import io.army.criteria.MetaException;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
+import io.army.meta.MetaException;
 import io.army.meta.TableMeta;
 import io.army.util.ReflectionUtils;
 import org.springframework.aop.ClassFilter;

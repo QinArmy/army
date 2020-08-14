@@ -2,22 +2,18 @@ package io.army;
 
 import io.army.asm.TableMetaLoader;
 import io.army.codec.FieldCodec;
-import io.army.criteria.MetaException;
 import io.army.criteria.impl.SchemaMetaFactory;
 import io.army.criteria.impl.TableMetaFactory;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectNotMatchException;
 import io.army.dialect.mysql.MySQLDialectFactory;
-import io.army.env.Environment;
+import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGenerator;
 import io.army.generator.GeneratorFactory;
 import io.army.generator.PreFieldGenerator;
 import io.army.lang.Nullable;
-import io.army.meta.FieldMeta;
-import io.army.meta.GeneratorMeta;
-import io.army.meta.SchemaMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 import io.army.sharding.RouteMetaData;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
@@ -61,12 +57,12 @@ public abstract class GenericSessionFactoryUtils {
         }
     }
 
-    static boolean sessionCache(Environment env, String factoryName) {
+    static boolean sessionCache(ArmyEnvironment env, String factoryName) {
         return env.getProperty(String.format(ArmyConfigConstant.SESSION_CACHE, factoryName)
                 , Boolean.class, Boolean.TRUE);
     }
 
-    static boolean shardingSubQueryInsert(Environment env, String factoryName, ShardingMode shardingMode) {
+    static boolean shardingSubQueryInsert(ArmyEnvironment env, String factoryName, ShardingMode shardingMode) {
         boolean support;
         if (shardingMode == ShardingMode.NO_SHARDING) {
             support = false;
@@ -77,7 +73,7 @@ public abstract class GenericSessionFactoryUtils {
         return support;
     }
 
-    static boolean allowSpanSharding(Environment env, String factoryName, ShardingMode shardingMode) {
+    static boolean allowSpanSharding(ArmyEnvironment env, String factoryName, ShardingMode shardingMode) {
         boolean allow;
         if (shardingMode == ShardingMode.NO_SHARDING) {
             allow = false;
@@ -88,7 +84,12 @@ public abstract class GenericSessionFactoryUtils {
         return allow;
     }
 
-    static Map<Class<?>, TableMeta<?>> scanPackagesForMeta(SchemaMeta schemaMeta, String factoryName, Environment env) {
+    static boolean compareDefaultOnMigrating(ArmyEnvironment env, String factoryName) {
+        return env.getProperty(String.format(ArmyConfigConstant.COMPARE_DEFAULT_ON_MIGRATING, factoryName)
+                , Boolean.class, Boolean.FALSE);
+    }
+
+    static Map<Class<?>, TableMeta<?>> scanPackagesForMeta(SchemaMeta schemaMeta, String factoryName, ArmyEnvironment env) {
         List<String> packagesToScan = env.getRequiredPropertyList(
                 String.format(ArmyConfigConstant.PACKAGE_TO_SCAN, factoryName), String[].class);
         return TableMetaLoader.build()
@@ -130,13 +131,13 @@ public abstract class GenericSessionFactoryUtils {
         return new GeneratorWrapper(generatorMap, tableGeneratorChain);
     }
 
-    static SchemaMeta obtainSchemaMeta(String factoryName, Environment env) {
+    static SchemaMeta obtainSchemaMeta(String factoryName, ArmyEnvironment env) {
         String catalog = env.getProperty(String.format("army.sessionFactory.%s.catalog", factoryName), "");
         String schema = env.getProperty(String.format("army.sessionFactory.%s.schema", factoryName), "");
         return SchemaMetaFactory.getSchema(catalog, schema);
     }
 
-    static ZoneId createZoneId(Environment env, String factoryName) {
+    static ZoneId createZoneId(ArmyEnvironment env, String factoryName) {
         String zoneIdText = env.getProperty(String.format(ArmyConfigConstant.ZONE_ID, factoryName));
         ZoneId zoneId;
         if (StringUtils.hasText(zoneIdText)) {
@@ -147,7 +148,7 @@ public abstract class GenericSessionFactoryUtils {
         return zoneId;
     }
 
-    static boolean readOnly(String factoryName, Environment env) {
+    static boolean readOnly(String factoryName, ArmyEnvironment env) {
         return env.getProperty(String.format(ArmyConfigConstant.READ_ONLY, factoryName), Boolean.class, Boolean.FALSE);
     }
 
@@ -188,7 +189,7 @@ public abstract class GenericSessionFactoryUtils {
     protected static Dialect createDialect(@Nullable Database database, Database extractedDatabase
             , GenericRmSessionFactory sessionFactory) {
 
-        Database actualSqlDialect = decideSQLDialect(database, extractedDatabase);
+        Database actualSqlDialect = decideActualDatabase(database, extractedDatabase);
         Dialect dialect;
         switch (actualSqlDialect) {
             case MySQL:
@@ -207,7 +208,7 @@ public abstract class GenericSessionFactoryUtils {
     }
 
 
-    protected static Database decideSQLDialect(@Nullable Database database, Database extractedDatabase) {
+    protected static Database decideActualDatabase(@Nullable Database database, Database extractedDatabase) {
         Database actual = database;
         if (actual == null) {
             actual = extractedDatabase;

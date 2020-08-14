@@ -4,7 +4,7 @@ package io.army.boot.sync;
 import io.army.SessionFactoryException;
 import io.army.ShardingMode;
 import io.army.codec.FieldCodec;
-import io.army.env.Environment;
+import io.army.env.ArmyEnvironment;
 import io.army.interceptor.DomainAdvice;
 import io.army.sync.SessionFactory;
 import io.army.sync.SessionFactoryAdvice;
@@ -27,7 +27,7 @@ public interface SessionFactoryBuilder extends SyncSessionFactoryBuilder {
     SessionFactoryBuilder name(String sessionFactoryName);
 
     @Override
-    SessionFactoryBuilder environment(Environment environment);
+    SessionFactoryBuilder environment(ArmyEnvironment environment);
 
     @Override
     SessionFactoryBuilder factoryAdvice(Collection<SessionFactoryAdvice> factoryAdvices);

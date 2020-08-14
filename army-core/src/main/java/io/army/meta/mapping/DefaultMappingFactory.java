@@ -1,7 +1,7 @@
 package io.army.meta.mapping;
 
-import io.army.criteria.MetaException;
 import io.army.lang.Nullable;
+import io.army.meta.MetaException;
 import io.army.util.ReflectionUtils;
 
 import java.lang.reflect.InvocationTargetException;

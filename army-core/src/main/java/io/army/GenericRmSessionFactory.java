@@ -23,12 +23,14 @@ public interface GenericRmSessionFactory extends GenericSessionFactory {
 
     int databaseIndex();
 
-    int tableCountOfSharding();
+    int tableCountPerDatabase();
 
     Database actualDatabase();
 
     Dialect dialect();
 
     DomainValuesGenerator domainValuesGenerator();
+
+    boolean compareDefaultOnMigrating();
 
 }

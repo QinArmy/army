@@ -2,10 +2,11 @@ package io.army.modelgen;
 
 /**
  * this interface debugSQL parts of meta source code.
- * created  on 2018/11/18.
+ *
  * @see io.army.annotation.Table
  * @see io.army.meta.TableMeta
  * @see MetaAttribute
+ * @since 1.0
  */
 interface MetaEntity {
 

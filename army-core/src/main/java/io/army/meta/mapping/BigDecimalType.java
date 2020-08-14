@@ -4,9 +4,9 @@ import io.army.dialect.Database;
 import io.army.dialect.MappingContext;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
-import io.army.sqltype.MySQLDataType;
-import io.army.sqltype.PostgreDataType;
-import io.army.sqltype.SQLDataType;
+import io.army.sqldatatype.MySQLDataType;
+import io.army.sqldatatype.PostgreDataType;
+import io.army.sqldatatype.SQLDataType;
 import io.army.util.Assert;
 
 import java.math.BigDecimal;

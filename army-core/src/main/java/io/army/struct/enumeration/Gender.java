@@ -6,7 +6,8 @@ import java.util.Map;
 
 /**
  * 性别
- * created  on 2018/9/27.
+ *
+ * @since 1.0
  */
 public enum Gender implements CodeEnum {
 

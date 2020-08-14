@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.MetaException;
 import io.army.criteria.SQLContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;

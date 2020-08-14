@@ -4,8 +4,8 @@ import io.army.dialect.*;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexFieldMeta;
 import io.army.meta.IndexMeta;
-import io.army.sqltype.PostgreDataType;
-import io.army.sqltype.SQLDataType;
+import io.army.sqldatatype.PostgreDataType;
+import io.army.sqldatatype.SQLDataType;
 import io.army.util.StringUtils;
 
 /**

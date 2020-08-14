@@ -1,6 +1,7 @@
 package io.army.datasource.sync;
 
 import io.army.datasource.DataSourceRole;
+import io.army.datasource.RoutingDataSource;
 import io.army.tx.sync.TransactionDefinitionHolder;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
@@ -29,7 +30,8 @@ import java.util.logging.Logger;
  * @see io.army.datasource.sync.PrimarySecondaryRoutingXADataSource
  * @since 1.0
  */
-public abstract class AbstractRoutingCommonDataSource<D extends CommonDataSource> implements CommonDataSource {
+public abstract class AbstractRoutingCommonDataSource<D extends CommonDataSource>
+        implements CommonDataSource, RoutingDataSource<D> {
 
     protected final org.slf4j.Logger LOG = LoggerFactory.getLogger(getClass());
 

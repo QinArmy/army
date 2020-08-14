@@ -3,7 +3,7 @@ package io.army.annotation;
 import java.lang.annotation.*;
 
 /**
- * created  on 2018/9/27.
+ * @since 1.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

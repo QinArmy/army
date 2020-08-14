@@ -1,18 +1,16 @@
 package io.army.generator.snowflake;
 
-import io.army.ArmyConfigConstant;
-import io.army.ArmyRuntimeException;
-import io.army.ErrorCode;
-import io.army.GenericSessionFactory;
+import io.army.*;
 import io.army.annotation.Param;
+import io.army.beans.ArmyBean;
 import io.army.beans.ReadonlyWrapper;
-import io.army.criteria.MetaException;
-import io.army.env.Environment;
+import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGenerator;
 import io.army.generator.PreFieldGenerator;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
+import io.army.meta.MetaException;
 import io.army.util.Assert;
 import io.army.util.ReflectionUtils;
 import io.army.util.StringUtils;
@@ -43,7 +41,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @see Snowflake
  * @see SnowflakeClient
  */
-public final class SnowflakeGenerator implements PreFieldGenerator {
+public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
 
     /*################################## blow static properties ##################################*/
 
@@ -71,12 +69,11 @@ public final class SnowflakeGenerator implements PreFieldGenerator {
     private static final AtomicReference<Method> SNOWFLAKE_BUILDER = new AtomicReference<>(null);
 
     /**
-     * @see #getSnowflakeClient(Environment)
      */
     private static final AtomicReference<SnowflakeClient> SNOWFLAKE_CLIENT = new AtomicReference<>(null);
 
     /**
-     * @see #doGetStartTime(Environment, FieldMeta)
+     * @see #doGetStartTime(ArmyEnvironment, FieldMeta)
      * @see #getDefaultStartTime()
      */
     private static final AtomicLong DEFAULT_START_TIME = new AtomicLong(-1);
@@ -99,11 +96,10 @@ public final class SnowflakeGenerator implements PreFieldGenerator {
      * @see FieldGenerator
      */
     public static SnowflakeGenerator build(FieldMeta<?, ?> fieldMeta, GenericSessionFactory sessionFactory) {
-        Environment env = sessionFactory.environment();
         SnowflakeGenerator generator = INSTANCE_HOLDER.computeIfAbsent(
-                doGetStartTime(env, fieldMeta)
-                , key -> new SnowflakeGenerator(createSnowflake(env, fieldMeta)));
-        generator.registerGenerator(env);
+                doGetStartTime(sessionFactory.environment(), fieldMeta)
+                , key -> new SnowflakeGenerator(createSnowflake(sessionFactory, fieldMeta)));
+        generator.registerGenerator(sessionFactory);
         return generator;
     }
 
@@ -183,12 +179,12 @@ public final class SnowflakeGenerator implements PreFieldGenerator {
 
     /*################################## blow private static method ##################################*/
 
-    private static Snowflake createSnowflake(Environment env, FieldMeta<?, ?> fieldMeta) {
+    private static Snowflake createSnowflake(GenericSessionFactory sessionFactory, FieldMeta<?, ?> fieldMeta) {
 
-        SnowflakeClient client = getSnowflakeClient(env);
-        final long startTime = doGetStartTime(env, fieldMeta);
+        SnowflakeClient client = getSnowflakeClient(sessionFactory);
+        final long startTime = doGetStartTime(sessionFactory.environment(), fieldMeta);
 
-        final Method method = getSnowflakeBuilder(env);
+        final Method method = getSnowflakeBuilder(sessionFactory.environment());
         Snowflake snowflake = (Snowflake) ReflectionUtils.invokeMethod(method, null, startTime, client.currentWorker());
         if (snowflake == null) {
             throw new IllegalStateException(String.format("method[%s] return null", method));
@@ -196,7 +192,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator {
         return snowflake;
     }
 
-    private static long doGetStartTime(Environment env, FieldMeta<?, ?> fieldMeta) {
+    private static long doGetStartTime(ArmyEnvironment env, FieldMeta<?, ?> fieldMeta) {
         GeneratorMeta generatorMeta = fieldMeta.generator();
 
         if (generatorMeta == null) {
@@ -218,7 +214,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator {
         return startTime;
     }
 
-    private static long doGetDefaultSnowflakeStartTime(Environment env) {
+    private static long doGetDefaultSnowflakeStartTime(ArmyEnvironment env) {
         long startTime = DEFAULT_START_TIME.get();
         if (startTime >= 0) {
             return startTime;
@@ -235,18 +231,34 @@ public final class SnowflakeGenerator implements PreFieldGenerator {
         return DEFAULT_START_TIME.get();
     }
 
-    private static SnowflakeClient getSnowflakeClient(Environment env) {
+    private static SnowflakeClient getSnowflakeClient(GenericSessionFactory sessionFactory) {
         SnowflakeClient client = SNOWFLAKE_CLIENT.get();
-        if (client == null) {
-            SNOWFLAKE_CLIENT.compareAndSet(null, env.getRequiredBean(
-                    ArmyConfigConstant.SNOWFLAKE_CLIENT_NAME, SnowflakeClient.class));
-            client = SNOWFLAKE_CLIENT.get();
+        if (client != null) {
+            return client;
         }
+        ArmyEnvironment env = sessionFactory.environment();
+        String beanName = env.getRequiredProperty(ArmyConfigConstant.SNOWFLAKE_CLIENT_NAME);
+        client = env.getBean(beanName, SnowflakeClient.class);
+        if (client == null && sessionFactory.shardingMode() == ShardingMode.NO_SHARDING) {
+            boolean singleApplication = env.getProperty(
+                    String.format(ArmyConfigConstant.SINGLE_APPLICATION, sessionFactory.name())
+                    , Boolean.class, Boolean.TRUE);
+            if (singleApplication) {
+                client = SingleApplicationSnowflakeClient.build(sessionFactory);
+                client.askAssignWorker();
+            }
+        }
+        if (client == null) {
+            throw new SnowflakeWorkerException("not found %s .", SnowflakeClient.class.getName());
+        }
+
+        SNOWFLAKE_CLIENT.compareAndSet(null, client);
+        client = SNOWFLAKE_CLIENT.get();
         return client;
     }
 
 
-    private static Method getSnowflakeBuilder(Environment env) {
+    private static Method getSnowflakeBuilder(ArmyEnvironment env) {
         Method method = SNOWFLAKE_BUILDER.get();
         if (method != null) {
             return method;
@@ -372,6 +384,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator {
         return snowflake.nextAsString(longValue);
     }
 
+
     /*################################## blow private method ##################################*/
 
     private long tryConvertToLong(String dependValue) {
@@ -401,8 +414,8 @@ public final class SnowflakeGenerator implements PreFieldGenerator {
     /**
      * @see SnowflakeClient#registerGenerator(SnowflakeGenerator)
      */
-    private void registerGenerator(Environment env) {
-        SnowflakeClient client = getSnowflakeClient(env);
+    private void registerGenerator(GenericSessionFactory sessionFactory) {
+        SnowflakeClient client = getSnowflakeClient(sessionFactory);
         for (int i = 0; !client.registerGenerator(this); i++) {
             updateSnowflake();
             Assert.state(i <= 10, "SnowflakeGenerator register count exception");

@@ -1,14 +1,11 @@
 package io.army.dialect;
 
-import io.army.criteria.MetaException;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
-import io.army.meta.FieldMeta;
-import io.army.meta.IndexFieldMeta;
-import io.army.meta.IndexMeta;
-import io.army.meta.TableMeta;
-import io.army.sqltype.SQLDataType;
-import io.army.sqltype.SQLDataTypeUtils;
+import io.army.meta.*;
+import io.army.sqldatatype.SQLDataType;
+import io.army.sqldatatype.SQLDataTypeUtils;
+import io.army.sqldatatype.UnsupportedSQLDataTypeException;
 import io.army.util.StringUtils;
 
 import java.util.Collection;
@@ -40,6 +37,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
             //5. independent index list clause
             independentIndexListDefinitions(context);
         } else {
+            context.sqlBuilder().append(",\n");
             // 3. index definition
             inlineIndexListDefinitionClause(context);
             context.sqlBuilder().append(" )\n");
@@ -54,6 +52,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
             // finally , independent comment statement
             independentTableComment(context);
         }
+        context.appendSQL(context.sqlBuilder().toString());
         return context.build();
     }
 
@@ -254,7 +253,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
      * append create clause before {@code '(\n' }
      */
     protected final void createTableClause(DDLContext context) {
-        context.sqlBuilder().append("CREATE TABLE IF NOT EXISTS ");
+        context.sqlBuilder().append("CREATE TABLE IF NOT EXISTS");
         context.appendTable();
 
     }
@@ -286,8 +285,8 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     protected final void dataTypeClause(FieldMeta<?, ?> fieldMeta, DDLContext context) throws MetaException {
         SQLDataType dataType = fieldMeta.mappingMeta().sqlDataType(database());
         if (!supportSQLDateType(dataType)) {
-            throw new NotSupportDialectException("%s,%s.%s not support dialect[%s]."
-                    , fieldMeta, dataType.getClass().getName(), dataType.name(), database());
+            throw new UnsupportedSQLDataTypeException("%s,database[%s] not support SQLDataType[%s]."
+                    , fieldMeta, database(), dataType);
         }
 
         dataType.dataTypeClause(fieldMeta, context.sqlBuilder().append(" "));
@@ -312,7 +311,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
         SQLBuilder builder = context.sqlBuilder();
         final String defaultKeyWord = " DEFAULT ";
         if (TableMeta.RESERVED_PROPS.contains(fieldMeta.propertyName())) {
-            builder.append(defaultKeyWord);
+            // defaultKeyWord in reservedPropDefaultValue
             reservedPropDefaultValue(fieldMeta, context);
         } else if (fieldMeta.tableMeta().discriminator() == fieldMeta) {
             builder.append(defaultKeyWord)
@@ -322,10 +321,10 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
                 builder.append(defaultKeyWord);
                 handleDefaultExpression(fieldMeta, builder);
             } else if (DDLUtils.simpleJavaType(fieldMeta)) {
-                builder.append(defaultKeyWord);
                 Database database = database();
                 SQLDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database);
                 if (sqlDataType.supportZeroValue(database)) {
+                    builder.append(defaultKeyWord);
                     sqlDataType.zeroValue(fieldMeta, builder, database);
                 } else {
                     throw SQLDataTypeUtils.createNotSupportZeroValueException(sqlDataType, fieldMeta, database);
@@ -361,13 +360,13 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
         if (StringUtils.hasText(indexMeta.type())) {
             builder.append(indexMeta.type());
         }
-        builder.append(" (");
+        builder.append("(");
         int index = 0;
         for (IndexFieldMeta<?, ?> fieldMeta : indexMeta.fieldList()) {
             if (index > 0) {
                 builder.append(",");
             }
-            builder.append(this.dialect.quoteIfNeed(fieldMeta.fieldName()));
+            context.appendField(fieldMeta);
             if (Boolean.TRUE.equals(fieldMeta.fieldAsc())) {
                 builder.append(" ASC");
             } else if (Boolean.FALSE.equals(fieldMeta.fieldAsc())) {
@@ -385,6 +384,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
         Database database = database();
         SQLDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database);
         SQLBuilder builder = context.sqlBuilder();
+        final String defaultKey = " DEFAULT ";
         switch (fieldMeta.propertyName()) {
             case TableMeta.ID:
                 // no-op
@@ -392,6 +392,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
             case TableMeta.CREATE_TIME:
             case TableMeta.UPDATE_TIME:
                 if (sqlDataType.supportNowValue(database)) {
+                    builder.append(defaultKey);
                     sqlDataType.nowValue(fieldMeta, builder, database);
                 } else {
                     throw SQLDataTypeUtils.createNotSupportNowExpressionException(sqlDataType, fieldMeta, database);
@@ -400,6 +401,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
             case TableMeta.VISIBLE:
             case TableMeta.VERSION:
                 if (sqlDataType.supportZeroValue(database)) {
+                    builder.append(defaultKey);
                     sqlDataType.zeroValue(fieldMeta, builder, database);
                 } else {
                     throw SQLDataTypeUtils.createNotSupportZeroValueException(sqlDataType, fieldMeta, database);
@@ -470,7 +472,6 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
                 doDefaultExpression(fieldMeta, builder);
         }
     }
-
 
 
 }

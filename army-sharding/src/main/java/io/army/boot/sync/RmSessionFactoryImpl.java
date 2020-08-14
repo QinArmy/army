@@ -128,7 +128,7 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
     }
 
     @Override
-    public final int tableCountOfSharding() {
+    public final int tableCountPerDatabase() {
         return this.tmSessionFactory.tableCountPerDatabase();
     }
 
@@ -149,6 +149,11 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
     @Override
     public final DomainValuesGenerator domainValuesGenerator() {
         return this.domainValuesGenerator;
+    }
+
+    @Override
+    public boolean compareDefaultOnMigrating() {
+        return this.compareDefaultOnMigrating;
     }
 
     @NonNull

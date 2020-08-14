@@ -1,8 +1,8 @@
 package io.army.dialect;
 
-import io.army.criteria.MetaException;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
+import io.army.meta.MetaException;
 import io.army.meta.TableMeta;
 import io.army.modelgen.MetaConstant;
 import io.army.struct.CodeEnum;
@@ -51,6 +51,7 @@ public abstract class DDLUtils {
         );
 
     }
+
 
     public static String escapeQuote(String text) {
         return text.replaceAll("'", "\\\\'");

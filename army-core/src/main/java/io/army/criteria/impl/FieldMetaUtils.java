@@ -1,13 +1,13 @@
 package io.army.criteria.impl;
 
 import io.army.annotation.*;
-import io.army.criteria.MetaException;
 import io.army.domain.IDomain;
 import io.army.generator.PreFieldGenerator;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
+import io.army.meta.MetaException;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
 import io.army.meta.mapping.MappingMeta;

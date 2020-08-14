@@ -2,6 +2,7 @@ package io.army.boot.sync;
 
 import io.army.*;
 import io.army.context.spi.CurrentSessionContext;
+import io.army.datasource.RoutingDataSource;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect.UnSupportedDialectException;
@@ -35,20 +36,12 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
     @SuppressWarnings("unchecked")
     static <T extends CommonDataSource> T obtainPrimaryDataSource(final T dataSource) {
 
-        T primary = dataSource;
-        try {
-            Method method = ReflectionUtils.findMethod(dataSource.getClass(), "getPrimaryDataSource");
-            if (method != null
-                    && Modifier.isPublic(method.getModifiers())
-                    && !Modifier.isStatic(method.getModifiers())) {
-
-                Object returnObject = method.invoke(dataSource);
-                if (dataSource.getClass().isInstance(returnObject)) {
-                    primary = (T) returnObject;
-                }
-            }
-        } catch (Exception e) {
-            // no -op,primary = dataSource
+        T primary = null;
+        if (dataSource instanceof RoutingDataSource) {
+            primary = ((RoutingDataSource<T>) dataSource).getPrimaryDataSource();
+        }
+        if (primary == null) {
+            primary = dataSource;
         }
         return primary;
     }

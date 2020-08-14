@@ -1,12 +1,12 @@
 package io.army.sync;
 
-import io.army.env.Environment;
+import io.army.env.ArmyEnvironment;
 
 public interface SessionFactoryAdvice {
 
     int order();
 
-    void beforeInstance(Environment environment);
+    void beforeInstance(ArmyEnvironment environment);
 
     void beforeInitialize(GenericSyncApiSessionFactory sessionFactory);
 

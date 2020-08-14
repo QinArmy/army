@@ -56,10 +56,10 @@ class MySQL57DQL extends AbstractDQL {
     @Override
     protected void lockClause(LockMode lockMode, TableContextSQLContext context) {
         switch (lockMode) {
-            case READ:
+            case PESSIMISTIC_READ:
                 context.sqlBuilder().append(" LOCK IN SHARE MODE");
                 break;
-            case WRITE:
+            case PESSIMISTIC_WRITE:
                 context.sqlBuilder().append(" FOR UPDATE");
                 break;
             default:

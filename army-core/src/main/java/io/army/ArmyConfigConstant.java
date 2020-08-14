@@ -9,11 +9,8 @@ public interface ArmyConfigConstant {
 
     String PACKAGE_TO_SCAN = "army.%s.packageToScan";
 
-    String SHARDING_MODE = "army.%s.shardingMode";
-
     String READ_ONLY = "army.%s.readOnly";
 
-    String CURRENT_SESSION_CONTEXT_CLASS = "army.%s.currentSessionContextClass";
 
     String DATABASE = "army.%s.database";
 
@@ -42,7 +39,7 @@ public interface ArmyConfigConstant {
      */
     String SNOWFLAKE_CLASS = "army.snowflake.class";
 
-    String SNOWFLAKE_CLIENT_NAME = "army.snowflake.client";
+    String SNOWFLAKE_CLIENT_NAME = "army.snowflake.client.name";
 
     String SNOWFLAKE_DEFAULT_TIME = "army.snowflake.time";
 
@@ -52,4 +49,7 @@ public interface ArmyConfigConstant {
 
     String ALLOW_SPAN_SHARDING = "army.%s.allowSpanSharding";
 
+    String COMPARE_DEFAULT_ON_MIGRATING = "army.%s.compareDefaultOnMigrating";
+
+    String SINGLE_APPLICATION = "army.%s.single.application";
 }

@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.ArmyRuntimeException;
 import io.army.annotation.Table;
-import io.army.criteria.MetaException;
 import io.army.criteria.SQLContext;
 import io.army.domain.IDomain;
 import io.army.lang.NonNull;
@@ -19,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * created  on 2018/11/19.
+ * @since 1.0
  */
 class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 

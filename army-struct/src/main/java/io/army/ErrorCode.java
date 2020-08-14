@@ -1,13 +1,13 @@
 package io.army;
 
+import io.army.lang.NonNull;
+import io.army.lang.Nullable;
 import io.army.struct.CodeEnum;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 
 import java.util.Map;
 
 /**
- * created  on 2018/11/19.
+ * @since 1.0
  */
 public enum ErrorCode implements CodeEnum {
 
@@ -100,7 +100,10 @@ public enum ErrorCode implements CodeEnum {
     CUSTOM_SQL_TYPE_ERROR(1046, "", NONE),
     DDL_ERROR(1047, "", NONE),
     NOT_SUPPORT_DIALECT(1048, "", NONE),
-    EXP_SYNTAX_ERROR(1049, "", NONE);
+    EXP_SYNTAX_ERROR(1049, "", NONE),
+    UNSUPPORTED_SQL_DATA_TYPE(1050, "", NONE),
+    SCHEMA_ERROR(1051, "", NONE),
+    MAPPING_ERROR(1052, "", NONE);
 
 
     private final int code;

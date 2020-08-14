@@ -1,0 +1,88 @@
+spring:
+  profiles:
+    active: sync,no_sharding,MySQL57
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    fortune:
+      primary:
+        url: jdbc:mysql://localhost:3306/fortune
+        username: fortune_wr
+        password: fortune123
+      secondary:
+        url: jdbc:mysql://localhost:3306/fortune
+        username: fortune_r
+        password: fortune123
+
+fortune:
+  dao:
+    database: MySQL
+army:
+  fortune:
+    migration:
+      meta: true
+    packageToScan: com.example.fortune.domain.**
+    currentSessionContextClass: io.army.context.spi.SpringCurrentSessionContext
+    showSQL: true
+  single.192.168.0.106.dataCenterId: 1
+  single.192.168.0.106.workerId: 1
+  snowflake:
+    client:
+      name: fortuneSnowflakeClient
+mock:
+  merchant:
+    user:
+      info:
+        codec:
+          key: sOr/mCFsAh9Yx42BCXnku3bUT6Qf1ssu4mvScfuUiC8=
+
+
+    577577577:
+      1:
+        public:
+          key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtAKm6bORyCbEjniDjkJL
+            utNBK5ZTXVEv3UyPhTqRklSEKIpvv4W57uBnS1FLJi0DRTEcPRW45OD0z3ecuHR3
+            Dqx3qQth3f6edFic84OMRiauqO2IqGDB385l4KYTApbm+e4/7M+ZLMjrLuQ10cFs
+            Kgxm6ylwy0JXatv0F5DpR9AWW29H816PT7A594+89nCRzluLqDbHkAq9Tuq8SnE4
+            qBTHn2EwNLmLBxYzoAz6rxXPxGPK2wkigom8T+u38zIIpHmywhY9BGdaRB/ME4+v
+            EUET+hO4xrHNz2Hw+xEq9eyEL+BYRpeJ5+meKG2joycMJ1USuXmK5uJIFHlv2bRF
+            dQIDAQAB
+  private:
+    key:
+      1: MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCONP1Fqam2Z1+b
+        zUsYwiWytG8frAW6QbFEkAw168ybwbR9440hNNqtGKennD9QuaBoEdKpg9O6W+la
+        V9PIQ84F8qQJhtt7EaRq2HvzDwT3gYhX98+GJLtcBzAwph/jgcHs/lVK/g/nbS5R
+        KqZqN4AKuUcs0J7a+LrFmyKCpwp6t6qRegGaSYL3TgJpfDJlEBm2Icw9s+gvVt3t
+        Bt6UmAS1Clk76w06D2o3mAWoN0i+BB6GXLlqlyvHslNO/r3O+H9ym58Zp4jiN8cd
+        4KCyQkLxccSRP66q/IjDDYVChd5yQjLE14MXwqVbWmFQ1cwwCgPa+pbaHFZA/pY8
+        Qs2ywJdxAgMBAAECggEALBHz46DevW5vzMLkYPnZ4PXV8kTHSZ+OJidWAWff8u0m
+        2FSqqf3NPxOC8YiUfpnoQhgz5uC5vuk4+gx5z3hj4qf9eg5W+l7PS2VnlD21VlbI
+        QCrGH1ZG0hBQOONiwoi15pIzMJhnqVrGndTP2d71SV191z+X21h12UNogIDv2HOX
+        PBCiu2NHnNo8xq8jPFrQ4TlourAGt99Ncle3vXkXdTJa1c7a6GO2Rc1/4F6cKT20
+        xzo+ZROdbxrVxjA/RSmsFyjhfr+HOhItAYNT38EX5UsCpY4Ayc98HJmFXdvT4mWM
+        qlb+sbZj94B8hNsGPG8MrfgtNsc3I89R/FGAFx5ooQKBgQDeYZdLyHkYctGH5fK8
+        BvI1XQzdp4/8RTPdnL3AR82ySXH4Rx/ONbqkejH4x3JaVz3ZvFULjYm56qpxV2CX
+        ML7rmnHrTEDkv8sLTt+6WVd3HqQH+B1TghU6eg2QtZWlQTPaFW9PtLZBg3FMoxpP
+        zN7qWOskWYdP/n6oXJuz92qFXQKBgQCjtJBEEztkPR7oD8by4e9w45pdexTNsKJX
+        fd/eYSYfUUd05QrDs+fiosFcvhm0Cz3JGc3t9Dg+YITVecxQ2duutPvWpW5uXkD7
+        Y+kPP5HWTj3xoZ8cxOuRMIBFVC1iYXcG7tZ6auzbdnIeN04W03wOyAFXI2DKulBC
+        1Vk/yjqFJQKBgGmSuSoQJXU25UR4JVGglpJA95+vMgsYq3PVOrwzGnM+rO2qjm3u
+        UgpNvLWXsjEzY7if0VwnuK/buUkPq1p7mNfvPY/wZopyhyl6K3qjeYOit0rVPs7r
+        XbqiQRhnLIEEwGITdQHJEBFwHnS8pfwmjdmBlzhtjHCsqGKzfHPmzNo9AoGBAJlB
+        C6G/Q2WG1q03P+/XVdogKT4EYKhjCMfRfkfoONEuvS+Q0K//d0EzTsPs75EeyPu/
+        3Yo7jH/QyeozuPOj0EZRBkae3rASKtFtahytTXEMFG9l99ft/f4RIrREpqwoRE7I
+        Px+hhBW8X/8rlT5HRCduU9ross929nZq1r+iKYDFAoGBAMGX/zraP6ECQV5HCrc3
+        05F5zexmZGsY9nbfcgg0QudEqgYp7Z4MY/1Gvm/pxGYhLL15eTFamt/5atBWcQ4n
+        ksSh2SikM4llDbhJ9b1tqi/0Too67jJFvqx+5nDVDs2at0NDK9Jb3c5Retk/M30F
+        Q+Q5Sasefett+w2rM8bGu9U/
+  public:
+    key:
+      1: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjjT9Ramptmdfm81LGMIl
+        srRvH6wFukGxRJAMNevMm8G0feONITTarRinp5w/ULmgaBHSqYPTulvpWlfTyEPO
+        BfKkCYbbexGkath78w8E94GIV/fPhiS7XAcwMKYf44HB7P5VSv4P520uUSqmajeA
+        CrlHLNCe2vi6xZsigqcKereqkXoBmkmC904CaXwyZRAZtiHMPbPoL1bd7QbelJgE
+        tQpZO+sNOg9qN5gFqDdIvgQehly5apcrx7JTTv69zvh/cpufGaeI4jfHHeCgskJC
+        8XHEkT+uqvyIww2FQoXeckIyxNeDF8KlW1phUNXMMAoD2vqW2hxWQP6WPELNssCX
+        cQIDAQAB
+
+
+

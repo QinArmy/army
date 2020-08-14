@@ -4,7 +4,7 @@ import io.army.annotation.DiscriminatorValue;
 import io.army.annotation.Inheritance;
 import io.army.annotation.MappedSuperclass;
 import io.army.annotation.Table;
-import io.army.criteria.MetaException;
+import io.army.meta.MetaException;
 import io.army.util.Pair;
 import io.army.util.StringUtils;
 import org.slf4j.Logger;

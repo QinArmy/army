@@ -1,7 +1,7 @@
 package io.army;
 
 import io.army.domain.IDomain;
-import io.army.env.Environment;
+import io.army.env.ArmyEnvironment;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 
@@ -16,7 +16,7 @@ public interface GenericProxySession {
 
     boolean hasCurrentSession();
 
-    Environment environment();
+    ArmyEnvironment environment();
 
     @Nullable
     <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass);

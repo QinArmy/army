@@ -3,7 +3,7 @@ package io.army.boot.sync;
 import io.army.SessionFactoryException;
 import io.army.codec.FieldCodec;
 import io.army.dialect.Database;
-import io.army.env.Environment;
+import io.army.env.ArmyEnvironment;
 import io.army.interceptor.DomainAdvice;
 import io.army.sync.SessionFactoryAdvice;
 import io.army.sync.TmSessionFactory;
@@ -22,7 +22,7 @@ public interface TmSessionFactionBuilder extends SyncSessionFactoryBuilder {
     TmSessionFactionBuilder name(String sessionFactoryName);
 
     @Override
-    TmSessionFactionBuilder environment(Environment environment);
+    TmSessionFactionBuilder environment(ArmyEnvironment environment);
 
     @Override
     TmSessionFactionBuilder factoryAdvice(Collection<SessionFactoryAdvice> factoryAdvices);

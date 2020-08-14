@@ -2,7 +2,7 @@ package io.army.boot.sync;
 
 import io.army.context.spi.CurrentSessionContext;
 import io.army.domain.IDomain;
-import io.army.env.Environment;
+import io.army.env.ArmyEnvironment;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.sync.ProxyTmSession;
@@ -23,7 +23,7 @@ class ProxyTmSessionImpl extends AbstractProxySyncSession implements ProxyTmSess
     }
 
     @Override
-    public Environment environment() {
+    public ArmyEnvironment environment() {
         return this.sessionFactory.environment();
     }
 

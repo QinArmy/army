@@ -1,6 +1,7 @@
 package io.army.struct;
 
-import org.springframework.lang.NonNull;
+
+import io.army.lang.NonNull;
 
 /**
  * replace {@link Comparable#compareTo(Object)} return value

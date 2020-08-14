@@ -46,10 +46,6 @@ public abstract class AbstractDialect implements InnerDialect {
 
     protected AbstractDialect(GenericRmSessionFactory sessionFactory) {
         Assert.notNull(sessionFactory, "sessionFactory required");
-        Assert.isTrue(sessionFactory.actualDatabase() != this.database()
-                , () -> String.format("session actual Database[%s] and dialect Database[%s] not match."
-                        , sessionFactory.actualDatabase(), this.database()));
-
         this.keywords = Collections.unmodifiableSet(createKeywordsSet());
         this.sessionFactory = sessionFactory;
 

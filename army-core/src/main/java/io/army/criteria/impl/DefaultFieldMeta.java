@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.ArmyRuntimeException;
 import io.army.annotation.Codec;
 import io.army.annotation.Column;
-import io.army.criteria.MetaException;
 import io.army.criteria.SQLContext;
 import io.army.criteria.Selection;
 import io.army.domain.IDomain;
@@ -21,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * created  on 2018/11/18.
+ * @since 1.0
  */
 class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> implements FieldMeta<T, F>, Selection {
 

@@ -1,6 +1,6 @@
 package io.army.meta.mapping;
 
-import io.army.criteria.MetaException;
+import io.army.meta.MetaException;
 
 public abstract class MappingFactory {
 

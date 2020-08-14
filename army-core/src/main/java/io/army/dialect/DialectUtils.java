@@ -37,6 +37,10 @@ public abstract class DialectUtils {
             JDBCType.TIMESTAMP_WITH_TIMEZONE
     );
 
+    public static SQLBuilder createSQLBuilder() {
+        return new SQLBuilderImpl();
+    }
+
 
     public static String quoteIfNeed(MappingMeta mappingType, String textValue) {
         if (TEXT_JDBC_TYPE.contains(mappingType.jdbcType())) {
@@ -183,9 +187,6 @@ public abstract class DialectUtils {
 
     /*################################## blow package method ##################################*/
 
-    static SQLBuilder createSQLBuilder() {
-        return new SQLBuilderImpl();
-    }
 
     static List<Selection> extractSelectionList(List<SelectPart> selectPartList) {
         List<Selection> selectionList = new ArrayList<>();

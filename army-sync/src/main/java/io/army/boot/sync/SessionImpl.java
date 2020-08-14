@@ -14,7 +14,6 @@ import io.army.tx.*;
 import io.army.util.CriteriaUtils;
 import io.army.wrapper.SQLWrapper;
 
-import javax.transaction.TransactionalException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -288,7 +287,7 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
 
     @Override
     public TransactionBuilder builder()
-            throws TransactionalException {
+            throws TransactionException {
         checkSessionTransaction();
         return new TransactionBuilderImpl();
     }
@@ -364,12 +363,12 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
     }
 
 
-    private void setSessionTransaction(Transaction transaction) throws TransactionalException {
+    private void setSessionTransaction(Transaction transaction) throws TransactionException {
         checkSessionTransaction();
         this.transaction = transaction;
     }
 
-    private void checkSessionTransaction() throws TransactionalException {
+    private void checkSessionTransaction() throws TransactionException {
         if (this.transaction != null) {
             throw new DuplicationSessionTransaction(
                     "create transaction failure,session[%s] duplication transaction.", this);

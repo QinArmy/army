@@ -2,7 +2,7 @@ package io.army;
 
 import io.army.codec.FieldCodec;
 import io.army.domain.IDomain;
-import io.army.env.Environment;
+import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGenerator;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -26,7 +26,7 @@ public abstract class AbstractGenericSessionFactory implements GenericSessionFac
 
     protected final String name;
 
-    protected final Environment env;
+    protected final ArmyEnvironment env;
 
     protected final ZoneId zoneId;
 
@@ -52,9 +52,11 @@ public abstract class AbstractGenericSessionFactory implements GenericSessionFac
 
     protected final boolean springApplication;
 
+    protected final boolean compareDefaultOnMigrating;
+
     protected AbstractGenericSessionFactory(GenericFactoryBuilderImpl factoryBuilder) {
         String name = factoryBuilder.name();
-        Environment env = factoryBuilder.environment();
+        ArmyEnvironment env = factoryBuilder.environment();
         Assert.hasText(name, "name required");
         Assert.notNull(env, "env required");
 
@@ -81,6 +83,7 @@ public abstract class AbstractGenericSessionFactory implements GenericSessionFac
 
         this.allowSpanSharding = GenericSessionFactoryUtils.allowSpanSharding(this.env, this.name, this.shardingMode);
         this.springApplication = factoryBuilder.springApplication();
+        this.compareDefaultOnMigrating = GenericSessionFactoryUtils.compareDefaultOnMigrating(this.env, this.name);
     }
 
     protected AbstractGenericSessionFactory(AbstractGenericSessionFactory tmSessionFactory, int factoryIndex) {
@@ -104,6 +107,7 @@ public abstract class AbstractGenericSessionFactory implements GenericSessionFac
 
         this.allowSpanSharding = tmSessionFactory.allowSpanSharding;
         this.springApplication = tmSessionFactory.springApplication;
+        this.compareDefaultOnMigrating = tmSessionFactory.compareDefaultOnMigrating;
     }
 
     @Override
@@ -112,7 +116,7 @@ public abstract class AbstractGenericSessionFactory implements GenericSessionFac
     }
 
     @Override
-    public Environment environment() {
+    public ArmyEnvironment environment() {
         return this.env;
     }
 

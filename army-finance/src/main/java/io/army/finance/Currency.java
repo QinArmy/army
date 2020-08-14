@@ -1,12 +1,12 @@
 package io.army.finance;
 
+import io.army.lang.NonNull;
 import io.army.struct.CodeEnum;
-import org.springframework.lang.NonNull;
 
 import java.util.Map;
 
 /**
- * created  on 2019-03-14.
+ * @since 1.0
  */
 public enum Currency implements CodeEnum {
 

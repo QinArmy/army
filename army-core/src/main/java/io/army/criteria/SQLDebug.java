@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 
 /**
  * @see Select
- * created  on 2018/10/21.
+ * @since 1.0
  */
 public interface SQLDebug {
 

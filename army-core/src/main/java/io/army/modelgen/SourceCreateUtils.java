@@ -3,7 +3,6 @@ package io.army.modelgen;
 import io.army.annotation.Column;
 import io.army.annotation.Inheritance;
 import io.army.annotation.Table;
-import io.army.criteria.MetaException;
 import io.army.criteria.impl.TableMetaFactory;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
@@ -22,7 +21,7 @@ import java.time.ZonedDateTime;
 import java.util.*;
 
 /**
- * created  on 2018/11/18.
+ * @since 1.0
  */
 abstract class SourceCreateUtils {
 
@@ -156,12 +155,6 @@ abstract class SourceCreateUtils {
                 .append(entityElement.getAnnotation(Table.class).comment())
                 .append("\")")
                 .append("\n")
-
-                .append("@StaticMetamodel(")
-                .append(entityElement.getSimpleName())
-                .append(".class)")
-                .append("\n")
-
                 .append("public abstract class ")
                 .append(entityElement.getSimpleName())
                 .append(MetaConstant.META_CLASS_NAME_SUFFIX)
@@ -452,9 +445,6 @@ abstract class SourceCreateUtils {
                 .append(";\n")
 
                 .append("import javax.annotation.Generated")
-                .append(";\n")
-
-                .append("import javax.persistence.metamodel.StaticMetamodel")
                 .append(";\n")
 
                 .append("import ")

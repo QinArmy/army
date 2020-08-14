@@ -7,7 +7,8 @@ import java.util.Map;
 
 /**
  * 特别日 的类型
- * created  on 2018/9/2.
+ *
+ * @since 1.0
  */
 public enum DayType implements CodeEnum {
 

@@ -6,7 +6,7 @@ import java.lang.annotation.Target;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * created  on 2018/9/19.
+ * @since 1.0
  */
 @Target({})
 @Retention(RUNTIME)

@@ -1,6 +1,7 @@
 package io.army.boot.sync;
 
 import io.army.*;
+import io.army.beans.ArmyBean;
 import io.army.boot.DomainValuesGenerator;
 import io.army.boot.migratioin.SyncMetaMigrator;
 import io.army.cache.SessionCacheFactory;
@@ -105,6 +106,7 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
 
     @Override
     public void close() throws SessionFactoryException {
+        destroyArmyBeans();
         this.closed = true;
     }
 
@@ -115,7 +117,7 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
     }
 
     @Override
-    public int tableCountOfSharding() {
+    public int tableCountPerDatabase() {
         return this.tableCountPerDatabase;
     }
 
@@ -217,6 +219,11 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
     }
 
     @Override
+    public boolean compareDefaultOnMigrating() {
+        return this.compareDefaultOnMigrating;
+    }
+
+    @Override
     public boolean closed() {
         return this.closed;
     }
@@ -241,6 +248,7 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
         }
         synchronized (this.initFinished) {
             migrationMeta();
+            initializeArmyBeans();
             this.initFinished.compareAndSet(false, true);
         }
         return true;
@@ -260,6 +268,30 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
                     .migrate(conn, this);
         } catch (SQLException e) {
             throw new DataAccessException(ErrorCode.CODEC_DATA_ERROR, e, "%s migration failure.", this);
+        }
+    }
+
+    private void initializeArmyBeans() {
+        ArmyBean armyBean = null;
+        try {
+            for (ArmyBean bean : this.env.getAllBean().values()) {
+                armyBean = bean;
+                bean.initializing(this);
+            }
+        } catch (Exception e) {
+            throw new SessionFactoryException(e, "ArmyBean initializing occur error,ArmyBean[%s].", armyBean);
+        }
+    }
+
+    private void destroyArmyBeans() {
+        ArmyBean armyBean = null;
+        try {
+            for (ArmyBean bean : this.env.getAllBean().values()) {
+                armyBean = bean;
+                bean.armyBeanDestroy();
+            }
+        } catch (Exception e) {
+            throw new SessionFactoryException(e, "ArmyBean destroy occur error,ArmyBean[%s].", armyBean);
         }
     }
 

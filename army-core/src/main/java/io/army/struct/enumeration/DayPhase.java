@@ -7,7 +7,8 @@ import java.util.Map;
 
 /**
  * 节日的阶段
- * created  on 2018/9/2.
+ *
+ * @since 1.0
  */
 public enum DayPhase implements CodeEnum {
 

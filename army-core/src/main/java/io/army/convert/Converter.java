@@ -1,7 +1,7 @@
 package io.army.convert;
 
 /**
- * created  on 2019-02-22.
+ * @since 1.0
  */
 public interface Converter<S, T> extends org.springframework.core.convert.converter.Converter<S, T> {
 

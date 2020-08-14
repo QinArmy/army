@@ -1,8 +1,8 @@
 package io.army.boot.migratioin;
 
 import io.army.GenericRmSessionFactory;
-import io.army.criteria.MetaException;
 import io.army.dialect.DDLSQLExecuteException;
+import io.army.meta.MetaException;
 import io.army.schema.SchemaInfoException;
 
 import java.sql.Connection;

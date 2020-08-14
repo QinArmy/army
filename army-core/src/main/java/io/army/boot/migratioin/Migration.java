@@ -18,9 +18,13 @@ interface Migration {
 
     boolean newTable();
 
+    boolean modifyTableComment();
+
     List<FieldMeta<?, ?>> columnsToAdd();
 
     List<FieldMeta<?, ?>> columnsToChange();
+
+    List<FieldMeta<?, ?>> commentToModify();
 
     List<IndexMeta<?>> indexesToAdd();
 

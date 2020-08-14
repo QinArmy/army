@@ -6,7 +6,7 @@ import io.army.lang.Nullable;
 import java.io.PrintWriter;
 
 /**
- * created  on 2018/11/25.
+ * @since 1.0
  */
 public interface IArmyExpression {
 

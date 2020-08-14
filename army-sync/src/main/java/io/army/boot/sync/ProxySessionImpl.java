@@ -5,7 +5,7 @@ import io.army.criteria.Delete;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
 import io.army.domain.IDomain;
-import io.army.env.Environment;
+import io.army.env.ArmyEnvironment;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.sync.ProxySession;
@@ -28,7 +28,7 @@ class ProxySessionImpl extends AbstractProxySyncSession implements ProxySession 
     }
 
     @Override
-    public Environment environment() {
+    public ArmyEnvironment environment() {
         return this.sessionFactory.environment();
     }
 

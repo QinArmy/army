@@ -1,10 +1,11 @@
 package io.army.boot.migratioin;
 
 import io.army.GenericRmSessionFactory;
-import io.army.criteria.MetaException;
 import io.army.dialect.DDLSQLExecuteException;
 import io.army.dialect.Dialect;
+import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
+import io.army.meta.MetaException;
 import io.army.schema.SchemaInfoException;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
@@ -26,8 +27,8 @@ final class SyncMetaMigratorImpl implements SyncMetaMigrator {
                 .extract(null);
         // 2. compare TableMeta and schema meta from database.
         List<List<Migration>> shardingList;
-        shardingList = MetaSchemaComparator.build(sessionFactory.actualDatabase())
-                .compare(schemaInfo, sessionFactory);
+        shardingList = MetaSchemaComparator.build(sessionFactory)
+                .compare(schemaInfo);
         // 3. create ddl by compare result
         List<Map<String, List<String>>> shardingDdlList;
         shardingDdlList = createDdlForShardingList(shardingList, sessionFactory.dialect());
@@ -66,6 +67,9 @@ final class SyncMetaMigratorImpl implements SyncMetaMigrator {
             } else {
                 // invoke  dialect generate DML SQL
                 createDdlForTable(migration, dialect, sqlList);
+                if (migration.modifyTableComment()) {
+                    dialect.modifyTableComment(migration.table(), migration.tableSuffix());
+                }
             }
             map.put(tableName, Collections.unmodifiableList(sqlList));
         }
@@ -99,6 +103,13 @@ final class SyncMetaMigratorImpl implements SyncMetaMigrator {
             sqlList.addAll(dialect.dropIndex(migration.table(), migration.tableSuffix(), dropList));
             // 5-2. then add index
             sqlList.addAll(dialect.addIndex(migration.table(), migration.tableSuffix(), migration.indexesToAlter()));
+        }
+        //6. modify column  comment
+        if (!CollectionUtils.isEmpty(migration.commentToModify())) {
+            for (FieldMeta<?, ?> fieldMeta : migration.commentToModify()) {
+                dialect.modifyColumnComment(fieldMeta, migration.tableSuffix());
+            }
+
         }
 
     }

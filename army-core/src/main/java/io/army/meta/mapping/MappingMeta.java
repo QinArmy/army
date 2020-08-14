@@ -6,7 +6,7 @@ import io.army.dialect.NotSupportDialectException;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
-import io.army.sqltype.SQLDataType;
+import io.army.sqldatatype.SQLDataType;
 
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;

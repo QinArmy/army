@@ -17,7 +17,8 @@ import javax.lang.model.type.TypeMirror;
 
 /**
  * this class is a implement of {@link MetaAttribute}
- * created  on 2018/11/18.
+ *
+ * @since 1.0
  */
 class DefaultMetaAttribute implements MetaAttribute {
 

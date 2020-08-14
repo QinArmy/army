@@ -5,7 +5,8 @@ import io.army.ErrorCode;
 
 /**
  * throw when {@link CodeEnum} definition error .
- * created  on 2019-02-24.
+ *
+ * @since 1.0
  */
 public class CodeEnumException extends ArmyRuntimeException {
 

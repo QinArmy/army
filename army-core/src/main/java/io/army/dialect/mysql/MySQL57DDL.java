@@ -7,8 +7,8 @@ import io.army.dialect.SQLBuilder;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
-import io.army.sqltype.MySQLDataType;
-import io.army.sqltype.SQLDataType;
+import io.army.sqldatatype.MySQLDataType;
+import io.army.sqldatatype.SQLDataType;
 import io.army.util.Assert;
 
 import java.util.Collections;
@@ -56,7 +56,7 @@ class MySQL57DDL extends AbstractDDL {
 
     @Override
     protected boolean supportSQLDateType(SQLDataType dataType) {
-        return false;
+        return dataType instanceof MySQLDataType;
     }
 
     /*################################## blow AbstractTableDDL template method ##################################*/

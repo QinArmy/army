@@ -4,7 +4,7 @@ import io.army.ErrorCode;
 import io.army.SessionFactoryException;
 import io.army.ShardingMode;
 import io.army.codec.FieldCodec;
-import io.army.env.Environment;
+import io.army.env.ArmyEnvironment;
 import io.army.interceptor.DomainAdvice;
 import io.army.sync.SessionFactory;
 import io.army.sync.SessionFactoryAdvice;
@@ -53,7 +53,7 @@ class SessionFactoryBuilderImpl extends AbstractSyncSessionFactoryBuilder implem
     }
 
     @Override
-    public final SessionFactoryBuilder environment(Environment environment) {
+    public final SessionFactoryBuilder environment(ArmyEnvironment environment) {
         this.environment = environment;
         return this;
     }

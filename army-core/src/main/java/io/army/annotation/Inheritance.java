@@ -1,7 +1,5 @@
 package io.army.annotation;
 
-import io.army.struct.CodeEnum;
-
 import java.lang.annotation.*;
 
 
@@ -16,8 +14,7 @@ public @interface Inheritance {
 
 
     /**
-     *
-     * tableMeta's column name ,the column mapping property must is {@link Enum} that implements {@link CodeEnum}.
+     * tableMeta's column name ,the column mapping property must is {@link Enum} that implements {@code io.army.struct.CodeEnum}.
      */
     String value();
 

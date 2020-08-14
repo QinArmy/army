@@ -136,8 +136,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
 
     /**
      * <ol>
-     *     <li>append table name to builder</li>
-     *     <li>append route suffix to builder if need</li>
+     *     <li>append table name( and suffix if need) to builder</li>
      *     <li>append table alias to builder if need</li>
      * </ol>
      * <p>
@@ -147,23 +146,23 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
     protected final void doAppendTable(TableMeta<?> tableMeta, @Nullable String tableAlias) {
         final Dialect dialect = this.dialect;
         SQLBuilder builder = obtainTablePartBuilder();
-        //1. append table name
-        builder.append(" ")
-                .append(dialect.quoteIfNeed(tableMeta.tableName()));
 
+        String actualTableName = tableMeta.tableName();
         if (this.shardingMode != ShardingMode.NO_SHARDING
                 && !tableMeta.routeFieldList(false).isEmpty()) {
-            //2. append table route suffix
-            builder.append(obtainRouteSuffix(tableMeta,tableAlias));
+            //2.  route suffix
+            actualTableName += obtainRouteSuffix(tableMeta, tableAlias);
         }
-
+        //1. append table name
+        builder.append(" ")
+                .append(dialect.quoteIfNeed(actualTableName));
         if (canAppendTableAlias(tableMeta)) {
             //3. append table alias
             if (tableAlias == null) {
                 throw new IllegalArgumentException(String.format(
                         "TableMeta[%s] table alias required int SQLContext[%s].", tableMeta, this));
             }
-            validateTableAndAlias(tableMeta,tableAlias);
+            validateTableAndAlias(tableMeta, tableAlias);
             builder.append(" ");
             if (dialect.tableAliasAfterAs()) {
                 builder.append("AS ");

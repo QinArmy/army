@@ -3,7 +3,7 @@ package io.army;
 import io.army.codec.FieldCodec;
 import io.army.criteria.NotFoundRouteException;
 import io.army.domain.IDomain;
-import io.army.env.Environment;
+import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGenerator;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -19,7 +19,7 @@ public interface GenericSessionFactory {
 
     String name();
 
-    Environment environment();
+    ArmyEnvironment environment();
 
     ZoneId zoneId();
 

@@ -1,6 +1,7 @@
 package io.army.generator.snowflake;
 
-import io.army.env.Environment;
+import io.army.GenericSessionFactory;
+import io.army.env.ArmyEnvironment;
 import io.army.util.Assert;
 import io.army.util.NetUtils;
 
@@ -11,14 +12,14 @@ import static io.army.ArmyConfigConstant.WORKER_FORMAT;
 
 public final class SingleApplicationSnowflakeClient extends AbstractSnowflakeClient {
 
-
-    public static SingleApplicationSnowflakeClient build(Environment env) {
-        return new SingleApplicationSnowflakeClient(env);
+    public static SingleApplicationSnowflakeClient build(GenericSessionFactory sessionFactory) {
+        return new SingleApplicationSnowflakeClient(sessionFactory.environment());
     }
 
-    private final Environment env;
+    private final ArmyEnvironment env;
 
-    private SingleApplicationSnowflakeClient(Environment env) {
+
+    private SingleApplicationSnowflakeClient(ArmyEnvironment env) {
         this.env = env;
     }
 
@@ -46,8 +47,7 @@ public final class SingleApplicationSnowflakeClient extends AbstractSnowflakeCli
 
     @Override
     public void heartbeat() throws SnowflakeWorkerException {
-
+        //no-op
     }
-
 
 }

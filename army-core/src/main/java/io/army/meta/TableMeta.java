@@ -1,6 +1,5 @@
 package io.army.meta;
 
-import io.army.criteria.MetaException;
 import io.army.criteria.TableAble;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;

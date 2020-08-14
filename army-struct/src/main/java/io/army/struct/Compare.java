@@ -1,9 +1,10 @@
 package io.army.struct;
 
-import org.springframework.lang.NonNull;
+
+import io.army.lang.NonNull;
 
 /**
- * created  on 2019-02-23.
+ * @since 1.0
  */
 public interface Compare<T> {
 

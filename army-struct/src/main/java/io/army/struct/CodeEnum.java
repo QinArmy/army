@@ -1,8 +1,8 @@
 package io.army.struct;
 
 
+import io.army.lang.NonNull;
 import io.army.lang.Nullable;
-import org.springframework.lang.NonNull;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,7 +14,8 @@ import java.util.Map;
  * <p>
  * army 不支持原生枚举,只支持实现 {@link CodeEnum} 的枚举
  * </p>
- * created  on 2018/9/1.
+ *
+ * @since 1.0
  */
 public interface CodeEnum extends Compare<CodeEnum> {
 

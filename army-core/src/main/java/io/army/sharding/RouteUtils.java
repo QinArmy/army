@@ -23,22 +23,22 @@ public abstract class RouteUtils {
     }
 
     @Nullable
-    public static String convertToSuffix(final int tableCountOfSharding, final int tableIndex) {
-        if (tableCountOfSharding <= 0) {
+    public static String convertToSuffix(final int tableCountPerDatabase, final int tableIndex) {
+        if (tableCountPerDatabase <= 0) {
             throw new IllegalArgumentException(
-                    String.format("tableCountOfSharding[%s] must great than 0 .", tableCountOfSharding));
+                    String.format("tableCountPerDatabase[%s] must great than 0 .", tableCountPerDatabase));
         }
-        if (tableIndex < 0 || tableIndex >= tableCountOfSharding) {
+        if (tableIndex < 0 || tableIndex >= tableCountPerDatabase) {
             throw new IllegalArgumentException(
-                    String.format("tableIndex[%s] must int[%s,%s).", tableIndex, 0, tableCountOfSharding));
+                    String.format("tableIndex[%s] must int[%s,%s).", tableIndex, 0, tableCountPerDatabase));
         }
         if (tableIndex == 0) {
             return null;
         }
 
-        int tableCount = tableCountOfSharding, numberLength = 0;
-        while (tableCount > 0) {
-            tableCount /= 10;
+        int tableNum = tableCountPerDatabase - 1, numberLength = 0;
+        while (tableNum > 0) {
+            tableNum /= 10;
             numberLength++;
         }
         final String indexText = Integer.toString(tableIndex);

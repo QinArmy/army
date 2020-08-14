@@ -1,7 +1,7 @@
 package io.army.meta;
 
 /**
- * created  on 2019-02-21.
+ * @since 1.0
  */
 public enum MappingMode {
 

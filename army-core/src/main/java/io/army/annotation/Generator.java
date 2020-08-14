@@ -1,8 +1,5 @@
 package io.army.annotation;
 
-import io.army.generator.FieldGenerator;
-import io.army.generator.PreFieldGenerator;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -11,7 +8,7 @@ import java.lang.annotation.Target;
 import static java.lang.annotation.ElementType.FIELD;
 
 /**
- * Specifies the {@link PreFieldGenerator} for the mapping property of Entity.
+ * Specifies the {@code io.army.generator.PreFieldGenerator} for the mapping property of Entity.
  *
  * <p>
  * <pre>
@@ -43,11 +40,11 @@ import static java.lang.annotation.ElementType.FIELD;
  *     }
  * </pre>
  * </p>
- *
+ * <p>
+ *     see {@code io.army.generator.PreFieldGenerator} and {@code io.army.generator.FieldGenerator}
+ * </p>
  * @see Column
- * @see FieldGenerator
- * @see PreFieldGenerator
- * @since Army 1.0
+ * @since 1.0
  */
 @Target({FIELD})
 @Retention(RetentionPolicy.RUNTIME)
@@ -55,12 +52,12 @@ import static java.lang.annotation.ElementType.FIELD;
 public @interface Generator {
 
     /**
-     * Specifies the class name of {@link FieldGenerator}.
+     * Specifies the class name of {@code io.army.generator.PreFieldGenerator}.
      */
     String value() ;
 
     /**
-     * Specifies the creation value(s) of {@link FieldGenerator}.
+     * Specifies the creation value(s) of {@code io.army.generator.FieldGenerator}.
      */
     Param[] params() default {};
 }
