@@ -27,12 +27,12 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
         context.sqlBuilder().append(" (\n");
         // 2. column definition clause
         columnListDefinitions(context);
+        primaryKeyClause(context);
         if (useIndependentIndexDefinition()) {
-            context.sqlBuilder().append(" )\n");
+            context.sqlBuilder().append("\n)");
             // 3. table option clause
             tableOptionsClause(context);
             //4. rest builder
-            context.appendSQL(context.sqlBuilder().toString());
             context.resetBuilder();
             //5. independent index list clause
             independentIndexListDefinitions(context);
@@ -40,19 +40,17 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
             context.sqlBuilder().append(",\n");
             // 3. index definition
             inlineIndexListDefinitionClause(context);
-            context.sqlBuilder().append(" )\n");
+            context.sqlBuilder().append("\n)");
             // 4. tableMeta options definition
             tableOptionsClause(context);
+            context.resetBuilder();
         }
 
         if (useIndependentComment()) {
-            //rest builder
-            context.appendSQL(context.sqlBuilder().toString());
-            context.resetBuilder();
             // finally , independent comment statement
             independentTableComment(context);
+            context.resetBuilder();
         }
-        context.appendSQL(context.sqlBuilder().toString());
         return context.build();
     }
 
@@ -62,27 +60,18 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
 
         DDLContext context = new DDLContextImpl(this.dialect, tableMeta, tableSuffix);
 
-        int index = 0;
         for (FieldMeta<?, ?> fieldMeta : addFieldMetas) {
 
             if (fieldMeta.tableMeta() != tableMeta) {
                 throw new IllegalArgumentException(String.format("%s and %s not match.", tableMeta, fieldMeta));
             }
-            if (index > 0) {
-                context.resetBuilder();
-            }
             doAddColumn(fieldMeta, context);
             if (useIndependentComment()) {
-                //append sql statement
-                context.appendSQL(context.sqlBuilder().toString());
                 // reset builder
                 context.resetBuilder();
                 independentColumnComment(fieldMeta, context);
             }
-            // append sql statement
-            context.appendSQL(context.sqlBuilder().toString());
-
-            index++;
+            context.resetBuilder();
         }
         return context.build();
     }
@@ -99,18 +88,13 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     public final List<String> addIndex(TableMeta<?> tableMeta, @Nullable String tableSuffix
             , Collection<IndexMeta<?>> addIndexMetas) {
         DDLContext context = new DDLContextImpl(this.dialect, tableMeta, tableSuffix);
-        int index = 0;
         for (IndexMeta<?> indexMeta : addIndexMetas) {
             if (indexMeta.table() != tableMeta) {
                 throw new IllegalArgumentException(String.format("%s and %s not match.", tableMeta, indexMeta));
             }
-            if (index > 0) {
-                context.resetBuilder();
-            }
             createIndexDefinition(indexMeta, context);
             // append sql statement
-            context.appendSQL(context.sqlBuilder().toString());
-            index++;
+            context.resetBuilder();
         }
         return context.build();
     }
@@ -119,15 +103,9 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     public final List<String> dropIndex(TableMeta<?> tableMeta, @Nullable String tableSuffix
             , Collection<String> indexNames) {
         DDLContext context = new DDLContextImpl(this.dialect, tableMeta, tableSuffix);
-        int index = 0;
         for (String indexName : indexNames) {
-            if (index > 0) {
-                context.resetBuilder();
-            }
             doDropIndex(indexName, context);
-            // append sql statement
-            context.appendSQL(context.sqlBuilder().toString());
-            index++;
+            context.resetBuilder();
         }
         return context.build();
     }
@@ -136,6 +114,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     public final List<String> modifyTableComment(TableMeta<?> tableMeta, @Nullable String tableSuffix) {
         DDLContext context = new DDLContextImpl(this.dialect, tableMeta, tableSuffix);
         internalModifyTableComment(context);
+        context.resetBuilder();
         return context.build();
     }
 
@@ -143,6 +122,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     public final List<String> modifyColumnComment(FieldMeta<?, ?> fieldMeta, @Nullable String tableSuffix) {
         DDLContext context = new DDLContextImpl(this.dialect, fieldMeta.tableMeta(), tableSuffix);
         internalModifyColumnComment(fieldMeta, context);
+        context.resetBuilder();
         return context.build();
     }
 
@@ -187,26 +167,18 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
 
     protected final void doChangeColumn(Collection<FieldMeta<?, ?>> changeFieldMetas, DDLContext context) {
         TableMeta<?> tableMeta = context.tableMeta();
-        int index = 0;
         for (FieldMeta<?, ?> fieldMeta : changeFieldMetas) {
 
             if (fieldMeta.tableMeta() != tableMeta) {
                 throw new IllegalArgumentException(String.format("%s and %s not match.", tableMeta, fieldMeta));
             }
-            if (index > 0) {
-                context.resetBuilder();
-            }
             doChangeColumn(fieldMeta, context);
             if (useIndependentComment()) {
-                //append sql statement
-                context.appendSQL(context.sqlBuilder().toString());
                 // reset builder
                 context.resetBuilder();
                 independentColumnComment(fieldMeta, context);
             }
-            // append sql statement
-            context.appendSQL(context.sqlBuilder().toString());
-            index++;
+            context.resetBuilder();
         }
     }
 
@@ -437,16 +409,10 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     }
 
     private void independentIndexListDefinitions(DDLContext context) {
-        SQLBuilder builder = context.sqlBuilder();
-        int index = 0;
+
         for (IndexMeta<?> indexMeta : DDLUtils.sortIndexMetaCollection(context.tableMeta())) {
-            if (index > 0) {
-                context.appendSQL(builder.toString());
-                context.resetBuilder();
-                builder = context.sqlBuilder();
-            }
             independentIndexDefinitionClause(indexMeta, context);
-            index++;
+            context.resetBuilder();
         }
     }
 
@@ -473,5 +439,11 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
         }
     }
 
+    private void primaryKeyClause(DDLContext context) {
+        SQLBuilder builder = context.sqlBuilder().append(",\n");
+        builder.append("PRIMARY KEY(");
+        context.appendField(context.tableMeta().id());
+        builder.append(")");
+    }
 
 }

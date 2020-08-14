@@ -5,6 +5,10 @@ import io.army.generator.snowflake.Snowflake;
 
 public interface ArmyConfigConstant {
 
+    String CATALOG = "army.%s.catalog";
+
+    String SCHEMA = "army.%s.schema";
+
     String ZONE_ID = "army.%s.zoneId";
 
     String PACKAGE_TO_SCAN = "army.%s.packageToScan";

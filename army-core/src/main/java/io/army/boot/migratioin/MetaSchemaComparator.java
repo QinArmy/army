@@ -27,6 +27,9 @@ interface MetaSchemaComparator {
                 comparator = new MySQL80MetaSchemaComparator(sessionFactory);
                 break;
             case Postgre:
+            case Postgre11:
+                comparator = new Postgre11MetaSchemaComparator(sessionFactory);
+                break;
             case Oracle:
             default:
                 throw new IllegalArgumentException(String.format("unsupported dialect %s"

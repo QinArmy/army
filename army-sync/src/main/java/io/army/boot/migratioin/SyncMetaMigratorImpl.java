@@ -29,14 +29,17 @@ final class SyncMetaMigratorImpl implements SyncMetaMigrator {
         List<List<Migration>> shardingList;
         shardingList = MetaSchemaComparator.build(sessionFactory)
                 .compare(schemaInfo);
-        // 3. create ddl by compare result
-        List<Map<String, List<String>>> shardingDdlList;
-        shardingDdlList = createDdlForShardingList(shardingList, sessionFactory.dialect());
-        // 4. execute ddl
-        DDLSQLExecutor.build()
-                .executeDDL(sessionFactory.databaseIndex(), shardingDdlList, conn);
-        // clear ddl cache.
-        sessionFactory.dialect().clearForDDL();
+
+        if (!shardingList.isEmpty()) {
+            // 3. create ddl by compare result
+            List<Map<String, List<String>>> shardingDdlList;
+            shardingDdlList = createDdlForShardingList(shardingList, sessionFactory.dialect());
+            // 4. execute ddl
+            DDLSQLExecutor.build()
+                    .executeDDL(sessionFactory.databaseIndex(), shardingDdlList, conn);
+            // clear ddl cache.
+            sessionFactory.dialect().clearForDDL();
+        }
     }
 
 
@@ -48,7 +51,7 @@ final class SyncMetaMigratorImpl implements SyncMetaMigrator {
         for (List<Migration> migrationList : shardingList) {
             ddlList.add(createDdlForOneSharding(migrationList, dialect));
         }
-        return Collections.unmodifiableList(ddlList);
+        return ddlList.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(ddlList);
     }
 
     private static Map<String, List<String>> createDdlForOneSharding(List<Migration> migrationList, Dialect dialect) {
@@ -68,7 +71,7 @@ final class SyncMetaMigratorImpl implements SyncMetaMigrator {
                 // invoke  dialect generate DML SQL
                 createDdlForTable(migration, dialect, sqlList);
                 if (migration.modifyTableComment()) {
-                    dialect.modifyTableComment(migration.table(), migration.tableSuffix());
+                    sqlList.addAll(dialect.modifyTableComment(migration.table(), migration.tableSuffix()));
                 }
             }
             map.put(tableName, Collections.unmodifiableList(sqlList));
@@ -107,7 +110,9 @@ final class SyncMetaMigratorImpl implements SyncMetaMigrator {
         //6. modify column  comment
         if (!CollectionUtils.isEmpty(migration.commentToModify())) {
             for (FieldMeta<?, ?> fieldMeta : migration.commentToModify()) {
-                dialect.modifyColumnComment(fieldMeta, migration.tableSuffix());
+                sqlList.addAll(
+                        dialect.modifyColumnComment(fieldMeta, migration.tableSuffix())
+                );
             }
 
         }

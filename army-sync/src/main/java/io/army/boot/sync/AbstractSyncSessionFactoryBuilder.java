@@ -24,10 +24,9 @@ abstract class AbstractSyncSessionFactoryBuilder extends GenericFactoryBuilderIm
 
     private CompositeSessionFactoryAdvice compositeSessionFactoryAdvice;
 
-    AbstractSyncSessionFactoryBuilder() {
-
+    AbstractSyncSessionFactoryBuilder(boolean springApplication) {
+        super(springApplication);
     }
-
 
     @Nullable
     public final Collection<DomainAdvice> domainInterceptors() {

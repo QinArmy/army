@@ -14,6 +14,10 @@ import java.util.Collection;
 
 final class MockSessionFactoryBuilder extends AbstractSyncSessionFactoryBuilder {
 
+    MockSessionFactoryBuilder(boolean springApplication) {
+        super(springApplication);
+    }
+
     @Override
     public GenericFactoryBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs) {
         return null;

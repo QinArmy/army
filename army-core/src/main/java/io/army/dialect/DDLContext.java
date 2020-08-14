@@ -17,8 +17,6 @@ public interface DDLContext {
 
     void appendFieldWithTable(FieldMeta<?, ?> fieldMeta);
 
-    void appendSQL(String sql);
-
     void appendIdentifier(String identifier);
 
     void resetBuilder();

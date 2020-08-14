@@ -8,6 +8,7 @@ import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectNotMatchException;
 import io.army.dialect.mysql.MySQLDialectFactory;
+import io.army.dialect.postgre.PostgreDialectFactory;
 import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGenerator;
 import io.army.generator.GeneratorFactory;
@@ -25,6 +26,8 @@ import java.util.*;
  * @see GenericSessionFactory
  */
 public abstract class GenericSessionFactoryUtils {
+
+    private Database actualSqlDialect;
 
     protected GenericSessionFactoryUtils() {
         throw new UnsupportedOperationException();
@@ -132,8 +135,8 @@ public abstract class GenericSessionFactoryUtils {
     }
 
     static SchemaMeta obtainSchemaMeta(String factoryName, ArmyEnvironment env) {
-        String catalog = env.getProperty(String.format("army.sessionFactory.%s.catalog", factoryName), "");
-        String schema = env.getProperty(String.format("army.sessionFactory.%s.schema", factoryName), "");
+        String catalog = env.getProperty(String.format(ArmyConfigConstant.CATALOG, factoryName), "");
+        String schema = env.getProperty(String.format(ArmyConfigConstant.SCHEMA, factoryName), "");
         return SchemaMetaFactory.getSchema(catalog, schema);
     }
 
@@ -191,15 +194,15 @@ public abstract class GenericSessionFactoryUtils {
 
         Database actualSqlDialect = decideActualDatabase(database, extractedDatabase);
         Dialect dialect;
-        switch (actualSqlDialect) {
+        switch (actualSqlDialect.family()) {
             case MySQL:
-            case MySQL57:
-            case MySQL80:
                 dialect = MySQLDialectFactory.createMySQLDialect(actualSqlDialect, sessionFactory);
+                break;
+            case Postgre:
+                dialect = PostgreDialectFactory.createPostgreDialect(actualSqlDialect, sessionFactory);
                 break;
             //  case Db2:
             case Oracle:
-            case Postgre:
                 // case SQL_Server:
             default:
                 throw new RuntimeException(String.format("unknown Database[%s]", actualSqlDialect));
@@ -249,6 +252,8 @@ public abstract class GenericSessionFactoryUtils {
             return this.tableContPerDatabase;
         }
     }
+
+
 
     /*################################## blow private method ##################################*/
 
@@ -360,6 +365,56 @@ public abstract class GenericSessionFactoryUtils {
                 }
             }
 
+        }
+    }
+
+    protected static class DatabaseMeta {
+
+
+        private final String productName;
+
+        private final int majorVersion;
+
+        private final int minorVersion;
+
+        private final String catalog;
+
+        private final String schema;
+
+        private final boolean supportSavePoint;
+
+        protected DatabaseMeta(String productName, int majorVersion, int minorVersion
+                , @Nullable String catalog, @Nullable String schema, boolean supportSavePoint) {
+            this.productName = productName;
+            this.majorVersion = majorVersion;
+            this.minorVersion = minorVersion;
+            this.catalog = catalog == null ? "" : catalog;
+            this.schema = schema == null ? "" : schema;
+            this.supportSavePoint = supportSavePoint;
+        }
+
+        public String getProductName() {
+            return this.productName;
+        }
+
+        public int getMajorVersion() {
+            return this.majorVersion;
+        }
+
+        public int getMinorVersion() {
+            return this.minorVersion;
+        }
+
+        public String getCatalog() {
+            return this.catalog;
+        }
+
+        public String getSchema() {
+            return this.schema;
+        }
+
+        public boolean isSupportSavePoint() {
+            return this.supportSavePoint;
         }
     }
 

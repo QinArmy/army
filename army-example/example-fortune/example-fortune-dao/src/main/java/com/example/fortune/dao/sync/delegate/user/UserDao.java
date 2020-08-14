@@ -1,4 +1,4 @@
-package com.example.fortune.dao.sync.user;
+package com.example.fortune.dao.sync.delegate.user;
 
 import com.example.fortune.dao.sync.FortuneSyncDao;
 

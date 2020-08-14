@@ -9,36 +9,22 @@ import io.army.interceptor.DomainAdvice;
 import io.army.sync.SessionFactory;
 import io.army.sync.SessionFactoryAdvice;
 import io.army.util.Assert;
-import io.army.util.BeanUtils;
 
 import javax.sql.DataSource;
 import java.util.Collection;
 
-class SessionFactoryBuilderImpl extends AbstractSyncSessionFactoryBuilder implements SessionFactoryBuilder {
+final class SessionFactoryBuilderImpl extends AbstractSyncSessionFactoryBuilder implements SessionFactoryBuilder {
 
     static SessionFactoryBuilderImpl buildInstance(boolean springApplication) {
-        SessionFactoryBuilderImpl builder;
-        if (springApplication) {
-            try {
-                builder = (SessionFactoryBuilderImpl) BeanUtils.instantiateClass(
-                        Class.forName("io.army.boot.sync.SessionFactoryBuilderForSpring"));
-            } catch (ClassNotFoundException e) {
-                throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR, e
-                        , "army-spring module not add classpath.");
-            }
-        } else {
-            builder = new SessionFactoryBuilderImpl();
-        }
-        return builder;
+
+        return new SessionFactoryBuilderImpl(springApplication);
     }
 
     private DataSource dataSource;
 
-
-    SessionFactoryBuilderImpl() {
-
+    private SessionFactoryBuilderImpl(boolean springApplication) {
+        super(springApplication);
     }
-
 
     @Override
     public final SessionFactoryBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs) {
@@ -96,8 +82,9 @@ class SessionFactoryBuilderImpl extends AbstractSyncSessionFactoryBuilder implem
         return this.tableCountPerDatabase;
     }
 
+    @Override
     protected boolean springApplication() {
-        return false;
+        return super.springApplication();
     }
 
     @Override
@@ -132,7 +119,8 @@ class SessionFactoryBuilderImpl extends AbstractSyncSessionFactoryBuilder implem
 
     /*################################## blow private method ##################################*/
 
-    SessionFactoryImpl createSessionFactory() {
+    private SessionFactoryImpl createSessionFactory() {
+
         return new SessionFactoryImpl(this);
     }
 

@@ -71,11 +71,6 @@ final class DDLContextImpl implements DDLContext {
     }
 
     @Override
-    public final void appendSQL(String sql) {
-        this.sqlList.add(sql);
-    }
-
-    @Override
     public final void appendIdentifier(String identifier) {
         this.sqlBuilder.append(" ")
                 .append(this.dialect.quoteIfNeed(identifier));
@@ -83,6 +78,7 @@ final class DDLContextImpl implements DDLContext {
 
     @Override
     public final void resetBuilder() {
+        this.sqlList.add(this.sqlBuilder.toString());
         this.sqlBuilder = DialectUtils.createSQLBuilder();
     }
 

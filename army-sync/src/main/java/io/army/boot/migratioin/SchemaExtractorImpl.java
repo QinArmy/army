@@ -2,7 +2,6 @@ package io.army.boot.migratioin;
 
 import io.army.ErrorCode;
 import io.army.lang.Nullable;
-import io.army.util.Assert;
 import io.army.util.StringUtils;
 
 import java.sql.*;
@@ -126,19 +125,13 @@ final class SchemaExtractorImpl implements SchemaExtractor {
                         , StringUtils.toLowerCase(resultSet.getString("COLUMN_NAME")), asc);
 
                 Map<String, IndexColumnInfo> columnInfoMap = indexInfo.columnMap();
-                if (columnInfoMap == null) {
-                    columnInfoMap = new HashMap<>();
-                    indexInfo.columnMap(columnInfoMap);
-                }
                 // make key lower case
                 columnInfoMap.put(StringUtils.toLowerCase(columnInfo.name()), columnInfo);
             }
 
             Map<String, IndexInfo> indexInfoMap = new HashMap<>((int) (map.size() / 0.75f));
             for (IndexInfo index : map.values()) {
-                Map<String, IndexColumnInfo> columnInfoMap = index.columnMap();
-                Assert.state(columnInfoMap != null, "");
-                index.columnMap(Collections.unmodifiableMap(columnInfoMap));
+                index.columnMap(Collections.unmodifiableMap(index.columnMap()));
                 // make key lower case
                 indexInfoMap.put(StringUtils.toLowerCase(index.name()), index);
             }

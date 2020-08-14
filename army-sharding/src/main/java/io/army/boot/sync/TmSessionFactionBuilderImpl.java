@@ -1,6 +1,5 @@
 package io.army.boot.sync;
 
-import io.army.ErrorCode;
 import io.army.SessionFactoryException;
 import io.army.ShardingMode;
 import io.army.codec.FieldCodec;
@@ -11,7 +10,6 @@ import io.army.lang.Nullable;
 import io.army.sync.SessionFactoryAdvice;
 import io.army.sync.TmSessionFactory;
 import io.army.util.Assert;
-import io.army.util.BeanUtils;
 
 import javax.sql.XADataSource;
 import java.util.Collection;
@@ -21,26 +19,16 @@ import java.util.Map;
 class TmSessionFactionBuilderImpl extends AbstractSyncSessionFactoryBuilder implements TmSessionFactionBuilder {
 
     static TmSessionFactionBuilderImpl buildInstance(boolean springApplication) {
-        TmSessionFactionBuilderImpl builder;
-        if (springApplication) {
-            try {
-                builder = (TmSessionFactionBuilderImpl) BeanUtils.instantiateClass(
-                        Class.forName("io.army.boot.sync.TmSessionFactionBuilderForSpring"));
-            } catch (ClassNotFoundException e) {
-                throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR, e
-                        , "army-spring module not add classpath.");
-            }
-        } else {
-            builder = new TmSessionFactionBuilderImpl();
-        }
-        return builder;
+
+        return new TmSessionFactionBuilderImpl(springApplication);
     }
 
     private List<XADataSource> dataSourceList;
 
     private Map<Integer, Database> databaseMap;
 
-    TmSessionFactionBuilderImpl() {
+    private TmSessionFactionBuilderImpl(boolean springApplication) {
+        super(springApplication);
     }
 
 
@@ -134,8 +122,7 @@ class TmSessionFactionBuilderImpl extends AbstractSyncSessionFactoryBuilder impl
         } catch (SessionFactoryException e) {
             throw e;
         } catch (Throwable e) {
-            throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
-                    , e, "create TmSessionFactory[%s] error.", this.name);
+            throw new SessionFactoryException(e, "create TmSessionFactory[%s] error.", this.name);
         }
     }
 

@@ -117,29 +117,16 @@ public abstract class DDLUtils {
     }
 
     /**
-     * @return a unmodifiable list
+     * @return a unmodifiable list without primary key
      */
     static List<IndexMeta<?>> sortIndexMetaCollection(TableMeta<?> tableMeta) {
         Set<IndexMeta<?>> indexMetas = new HashSet<>(tableMeta.indexCollection());
 
         List<IndexMeta<?>> indexMetaList = new ArrayList<>(indexMetas.size());
-        IndexMeta<?> primaryKey = null;
-        // place holder for primary key
-        indexMetaList.add(null);
         for (IndexMeta<?> indexMeta : indexMetas) {
-            if (indexMeta.isPrimaryKey()) {
-                if (primaryKey != null) {
-                    throw new MetaException("TableMeta[%s] error,primary key duplicate", tableMeta);
-                }
-                primaryKey = indexMeta;
-            } else {
+            if (!indexMeta.isPrimaryKey()) {
                 indexMetaList.add(indexMeta);
             }
-        }
-        if (primaryKey == null) {
-            throw new MetaException("TableMeta[%s] error,no primary key index.", tableMeta);
-        } else {
-            indexMetaList.set(0, primaryKey);
         }
         return Collections.unmodifiableList(indexMetaList);
     }

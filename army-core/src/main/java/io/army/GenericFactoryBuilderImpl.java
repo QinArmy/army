@@ -8,6 +8,8 @@ import java.util.Collection;
 
 public abstract class GenericFactoryBuilderImpl implements GenericFactoryBuilder {
 
+    private final boolean springApplication;
+
     protected String name;
 
     protected ArmyEnvironment environment;
@@ -16,7 +18,8 @@ public abstract class GenericFactoryBuilderImpl implements GenericFactoryBuilder
 
     protected ShardingMode shardingMode = ShardingMode.NO_SHARDING;
 
-    protected GenericFactoryBuilderImpl() {
+    protected GenericFactoryBuilderImpl(boolean springApplication) {
+        this.springApplication = springApplication;
     }
 
     public final String name() {
@@ -37,6 +40,8 @@ public abstract class GenericFactoryBuilderImpl implements GenericFactoryBuilder
     }
 
     protected boolean springApplication() {
-        return false;
+        return this.springApplication;
     }
+
+
 }

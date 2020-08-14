@@ -2,6 +2,7 @@ package io.army.boot.migratioin;
 
 import io.army.util.Assert;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
 
@@ -13,7 +14,7 @@ final class IndexInfo {
 
     private final boolean unique;
 
-    private Map<String, IndexColumnInfo> columnMap;
+    private Map<String, IndexColumnInfo> columnMap = new HashMap<>();
 
     public IndexInfo(TableInfo table, String name, boolean unique) {
         this.table = table;

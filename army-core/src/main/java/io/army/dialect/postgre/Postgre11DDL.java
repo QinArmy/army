@@ -72,16 +72,22 @@ class Postgre11DDL extends AbstractDDL {
             builder.append(" USING ")
                     .append(type);
         }
+        builder.append("(");
+        int index = 0;
         for (IndexFieldMeta<?, ?> indexFieldMeta : indexMeta.fieldList()) {
-            builder.append(indexFieldMeta);
+            if (index > 0) {
+                builder.append(",");
+            }
+            context.appendField(indexFieldMeta);
             Boolean asc = indexFieldMeta.fieldAsc();
             if (Boolean.TRUE.equals(asc)) {
                 builder.append(" ASC");
             } else if (Boolean.FALSE.equals(asc)) {
                 builder.append(" DESC");
             }
+            index++;
         }
-
+        builder.append(")");
     }
 
     @Override
@@ -90,7 +96,7 @@ class Postgre11DDL extends AbstractDDL {
         builder.append("COMMENT ON TABLE ");
         context.appendTable();
         builder.append(" IS '")
-                .append(DDLUtils.escapeQuote(context.tableMeta().comment().trim()))
+                .append(DDLUtils.escapeQuote(context.tableMeta().comment()))
                 .append("'");
     }
 
@@ -100,7 +106,7 @@ class Postgre11DDL extends AbstractDDL {
         builder.append("COMMENT ON COLUMN ");
         context.appendFieldWithTable(fieldMeta);
         builder.append(" IS '")
-                .append(DDLUtils.escapeQuote(fieldMeta.comment().trim()))
+                .append(DDLUtils.escapeQuote(fieldMeta.comment()))
                 .append("'");
     }
 

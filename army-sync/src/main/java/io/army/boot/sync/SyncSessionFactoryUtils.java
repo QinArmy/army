@@ -46,6 +46,29 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
         return primary;
     }
 
+    static DatabaseMetaForSync obtainDatabaseMeta(DataSource dataSource) {
+        try (Connection conn = obtainPrimaryDataSource(dataSource).getConnection()) {
+
+            String catalog, schema, productName;
+
+            catalog = conn.getCatalog();
+            schema = conn.getSchema();
+            DatabaseMetaData metaData = conn.getMetaData();
+            productName = metaData.getDatabaseProductName();
+
+            int major, minor;
+            major = metaData.getDatabaseMajorVersion();
+            minor = metaData.getDatabaseMinorVersion();
+
+            boolean supportSavePoint;
+            supportSavePoint = metaData.supportsSavepoints();
+
+            return new DatabaseMetaForSync(productName, major, minor, catalog, schema, supportSavePoint);
+        } catch (SQLException e) {
+            throw new SessionFactoryException(e, "obtain database meta data occur error.");
+        }
+    }
+
     static void assertTableCountOfSharding(final int tableCountOfSharding, GenericSessionFactory sessionFactory) {
         switch (sessionFactory.shardingMode()) {
             case NO_SHARDING:
@@ -277,5 +300,14 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
     private static UnSupportedDialectException createUnSupportedDialectException(int major, int minor) {
         return new UnSupportedDialectException(ErrorCode.UNSUPPORTED_DIALECT
                 , "MySQL %s.%s.x is supported by army", major, minor);
+    }
+
+
+    static final class DatabaseMetaForSync extends DatabaseMeta {
+
+        public DatabaseMetaForSync(String productName, int majorVersion, int minorVersion
+                , String catalog, String schema, boolean supportSavePoint) {
+            super(productName, majorVersion, minorVersion, catalog, schema, supportSavePoint);
+        }
     }
 }

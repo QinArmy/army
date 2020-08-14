@@ -1,9 +1,9 @@
 spring:
   profiles:
-    active: sync,no_sharding,MySQL57
+    active: sync,no_sharding,Postgre11
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    fortune:
+    fortuneMySQL:
       primary:
         url: jdbc:mysql://localhost:3306/fortune
         username: fortune_wr
@@ -12,12 +12,20 @@ spring:
         url: jdbc:mysql://localhost:3306/fortune
         username: fortune_r
         password: fortune123
+    fortunePostgre11:
+      driver-class-name: org.postgresql.Driver
+      primary:
+        url: jdbc:postgresql://localhost:5432/army?currentSchema=fortune
+        username: fortune_wr
+        password: fortune123
+      secondary:
+        url: jdbc:postgresql://localhost:5432/army?currentSchema=fortune
+        username: fortune_r
+        password: fortune123
 
-fortune:
-  dao:
-    database: MySQL
 army:
   fortune:
+    database: Postgre11
     migration:
       meta: true
     packageToScan: com.example.fortune.domain.**

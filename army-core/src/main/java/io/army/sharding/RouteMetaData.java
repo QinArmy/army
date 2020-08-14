@@ -2,13 +2,13 @@ package io.army.sharding;
 
 import io.army.ShardingMode;
 
-public interface RouteMetaData {
+    public interface RouteMetaData {
 
-    ShardingMode shardingMode();
+        ShardingMode shardingMode();
 
-    int databaseCount();
+        int databaseCount();
 
-    int tableContPerDatabase();
+        int tableContPerDatabase();
 
 
-}
+    }

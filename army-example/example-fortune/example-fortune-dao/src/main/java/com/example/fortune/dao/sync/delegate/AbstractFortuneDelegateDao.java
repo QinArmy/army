@@ -35,7 +35,7 @@ public abstract class AbstractFortuneDelegateDao<T extends FortuneSyncDao>
     @Override
     public void afterPropertiesSet() throws Exception {
         Environment env = this.applicationContext.getEnvironment();
-        Database database = env.getRequiredProperty("fortune.dao.database", Database.class);
+        Database database = env.getRequiredProperty("army.fortune.database", Database.class);
         String daoBeanName = Character.toLowerCase(database.name().charAt(0)) + database.name().substring(1)
                 + Character.toUpperCase(this.beanName.charAt(0)) + this.beanName.substring(1);
         this.dao = this.applicationContext.getBean(daoBeanName, getDaoClass());

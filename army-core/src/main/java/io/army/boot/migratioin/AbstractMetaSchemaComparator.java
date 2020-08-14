@@ -96,7 +96,7 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
         for (int i = 0; i < tableCount; i++) {
             //1. obtain table suffix
             final String tableSuffix = RouteUtils.convertToSuffix(tableCount, i);
-            List<Migration> migrationList = new ArrayList<>(tableMetas.size());
+            List<Migration> migrationList = new ArrayList<>();
 
             for (TableMeta<?> tableMeta : tableMetas) {
                 //2. obtain actual table name
@@ -126,12 +126,14 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
                 }
             }
             //4. add migrationList to shardingList
-            shardingList.add(Collections.unmodifiableList(migrationList));
+            if (!migrationList.isEmpty()) {
+                shardingList.add(Collections.unmodifiableList(migrationList));
+            }
         }
         if (this.dataTypeErrorBuilder.length() > 0) {
             throw new SchemaInfoException(ErrorCode.SCHEMA_ERROR, this.dataTypeErrorBuilder.toString());
         }
-        return Collections.unmodifiableList(shardingList);
+        return shardingList.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(shardingList);
     }
 
 
@@ -199,7 +201,7 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
 
     private void migrateColumnIfNeed(TableMeta<?> tableMeta, TableInfo tableInfo, MigrationImpl migration) {
         final Map<String, ColumnInfo> columnInfoMap = tableInfo.columnMap();
-        Database database = database();
+
         for (FieldMeta<?, ?> fieldMeta : tableMeta.fieldCollection()) {
             // make key lower case
             ColumnInfo columnInfo = columnInfoMap.get(StringUtils.toLowerCase(fieldMeta.fieldName()));
@@ -210,8 +212,8 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
                 this.dataTypeErrorBuilder
                         .append("\n")
                         .append(fieldMeta)
-                        .append(" SQLDataType[")
-                        .append(fieldMeta.mappingMeta().sqlDataType(database()))
+                        .append(", SQLDataType[")
+                        .append(fieldMeta.mappingMeta().sqlDataType(database()).typeName())
                         .append("] and ")
                         .append(columnInfo.sqlType())
                         .append(" not match.");

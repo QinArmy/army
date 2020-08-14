@@ -1,6 +1,6 @@
-package com.example.fortune.dao.sync.delegate;
+package com.example.fortune.dao.sync.delegate.user;
 
-import com.example.fortune.dao.sync.user.UserDao;
+import com.example.fortune.dao.sync.delegate.AbstractFortuneDelegateDao;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 

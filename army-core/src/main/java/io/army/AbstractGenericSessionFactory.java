@@ -61,14 +61,14 @@ public abstract class AbstractGenericSessionFactory implements GenericSessionFac
         Assert.notNull(env, "env required");
 
         if (FACTORY_MAP.putIfAbsent(name, this) != null) {
-            throw new SessionFactoryException(ErrorCode.FACTORY_NAME_DUPLICATION, "factory name[%s] duplication", name);
+            throw new SessionFactoryException("factory name[%s] duplication", name);
         }
         this.name = name;
         this.env = env;
-        this.schemaMeta = GenericSessionFactoryUtils.obtainSchemaMeta(this.name, env);
+        this.schemaMeta = GenericSessionFactoryUtils.obtainSchemaMeta(this.name, this.env);
         this.zoneId = GenericSessionFactoryUtils.createZoneId(env, this.name);
 
-        this.tableMetaMap = GenericSessionFactoryUtils.scanPackagesForMeta(this.schemaMeta, this.name, env);
+        this.tableMetaMap = GenericSessionFactoryUtils.scanPackagesForMeta(this.schemaMeta, this.name, this.env);
         this.shardingMode = factoryBuilder.shardingMode();
         GenericSessionFactoryUtils.GeneratorWrapper generatorWrapper =
                 GenericSessionFactoryUtils.createGeneratorWrapper(this.tableMetaMap.values(), this);
