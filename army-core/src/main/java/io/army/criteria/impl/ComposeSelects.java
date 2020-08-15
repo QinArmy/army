@@ -4,7 +4,6 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerStandardComposeQuery;
 import io.army.dialect.DQL;
 import io.army.dialect.SQLBuilder;
-import io.army.util.Pair;
 
 import java.util.List;
 import java.util.function.Function;
@@ -104,7 +103,7 @@ abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements
     }
 
     @Override
-    public final SelectAble ifLimit(Function<C, Pair<Integer, Integer>> function) {
+    public final SelectAble ifLimit(Function<C, LimitOption> function) {
         doIfLimit(function);
         return this;
     }

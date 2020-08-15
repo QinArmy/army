@@ -6,9 +6,11 @@ import io.army.criteria.SQLStatement;
 import io.army.criteria.Visible;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
+import io.army.lang.Nullable;
 import io.army.meta.SchemaMeta;
 import io.army.wrapper.SimpleSQLWrapper;
 
+import java.util.Collections;
 import java.util.List;
 
 abstract class AbstractSQLDebug implements SQLStatement.SQLAble, SQLDebug {
@@ -39,5 +41,10 @@ abstract class AbstractSQLDebug implements SQLStatement.SQLAble, SQLDebug {
             ;
         }
         return builder.toString();
+    }
+
+
+    protected static <E> List<E> asUnmodifiableList(@Nullable List<E> nullableList) {
+        return nullableList == null ? Collections.emptyList() : Collections.unmodifiableList(nullableList);
     }
 }

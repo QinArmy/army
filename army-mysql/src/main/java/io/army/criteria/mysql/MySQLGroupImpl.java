@@ -1,4 +1,6 @@
-package io.army.criteria;
+package io.army.criteria.mysql;
+
+import io.army.criteria.Expression;
 
 import java.util.List;
 

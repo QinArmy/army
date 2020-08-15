@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerComposeQuery;
 import io.army.criteria.impl.inner.InnerGeneralQuery;
-import io.army.util.Pair;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,8 +36,6 @@ abstract class AbstractComposeQuery<C> implements PartQuery, SelfDescribed
         this.criteriaContext = new CriteriaContextImpl<>(criteria, selectionMap);
         CriteriaContextHolder.setContext(this.criteriaContext);
     }
-
-
 
 
     final void doOrderBy(SortPart sortPart) {
@@ -80,18 +77,11 @@ abstract class AbstractComposeQuery<C> implements PartQuery, SelfDescribed
         this.rowCount = rowCount;
     }
 
-    final void doIfLimit(Function<C, Pair<Integer, Integer>> function) {
-
-        Pair<Integer, Integer> pair = function.apply(this.criteria);
-        if(pair != null){
-            int offset = -1, rowCount = -1;
-            if (pair.getFirst() != null) {
-                offset = pair.getFirst();
-            }
-            if (pair.getSecond() != null) {
-                rowCount = pair.getSecond();
-            }
-            doLimit(offset, rowCount);
+    final void doIfLimit(Function<C, LimitOption> function) {
+        LimitOption option = function.apply(this.criteria);
+        if (option != null) {
+            this.offset = option.offset();
+            this.rowCount = option.rowCount();
         }
     }
 

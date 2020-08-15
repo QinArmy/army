@@ -1,5 +1,7 @@
-package io.army.criteria;
+package io.army.criteria.mysql;
 
+
+import io.army.criteria.SQLModifier;
 
 public enum MySQLModifier implements SQLModifier {
     ALL,

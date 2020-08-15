@@ -7,7 +7,8 @@ enum JoinType implements SQLModifier {
     LEFT("LEFT JOIN"),
     JOIN("JOIN"),
     RIGHT("RIGHT JOIN"),
-    FULL("FULL JOIN");
+    FULL("FULL JOIN"),
+    STRAIGHT_JOIN("STRAIGHT_JOIN");
 
     public final String keyWords;
 

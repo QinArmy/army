@@ -1,13 +1,12 @@
 package io.army.criteria.impl;
 
 import io.army.ErrorCode;
-import io.army.criteria.CriteriaException;
-import io.army.criteria.SQLContext;
-import io.army.criteria.Selection;
-import io.army.criteria.SubQuery;
+import io.army.criteria.*;
 import io.army.meta.TableMeta;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.function.Function;
 
 final class StandardSubQueryMultiSelect<C> extends AbstractStandardSelect<C> implements SubQuerySelect<C> {
 
@@ -48,10 +47,16 @@ final class StandardSubQueryMultiSelect<C> extends AbstractStandardSelect<C> imp
         context.dql().subQuery(this, context);
     }
 
+    @Override
+    public final SelectAble lock(LockMode lockMode) {
+        throw new UnsupportedOperationException();
+    }
 
+    @Override
+    public final SelectAble ifLock(Function<C, LockMode> function) {
+        throw new UnsupportedOperationException();
+    }
 
-
-    /*################################## blow package template method ##################################*/
 
     @Override
     final void onAddTable(TableMeta<?> table, String tableAlias) {
@@ -66,13 +71,43 @@ final class StandardSubQueryMultiSelect<C> extends AbstractStandardSelect<C> imp
     }
 
     @Override
-    final void concreteAsSelect() {
-
+    public final UnionAble<C> brackets() {
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    final void concreteClear() {
-
+    public final <S extends Select> UnionAble<C> union(Function<C, S> function) {
+        throw new UnsupportedOperationException();
     }
 
+    @Override
+    public final <S extends Select> UnionAble<C> unionAll(Function<C, S> function) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public final <S extends Select> UnionAble<C> unionDistinct(Function<C, S> function) {
+        throw new UnsupportedOperationException();
+    }
+
+    /*################################## blow package method ##################################*/
+
+    @Override
+    final void internalAsSelect() {
+        if (this.selectionMap == null) {
+            this.selectionMap = Collections.emptyMap();
+        } else {
+            this.selectionMap = Collections.unmodifiableMap(this.selectionMap);
+        }
+    }
+
+    @Override
+    final void internalClear() {
+        this.selectionMap = null;
+    }
+
+    @Override
+    final boolean hasLockClause() {
+        return false;
+    }
 }

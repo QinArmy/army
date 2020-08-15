@@ -2,7 +2,6 @@ package io.army.criteria;
 
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.util.Pair;
 
 import java.util.List;
 import java.util.function.Function;
@@ -160,11 +159,11 @@ public interface Select extends SQLStatement, SQLDebug, SQLStatement.SQLAble, Qu
 
         LockAble<C> limit(int offset, int rowCount);
 
-        LockAble<C> ifLimit(Function<C, Pair<Integer, Integer>> function);
+        LockAble<C> ifLimit(Function<C, LimitOption> function);
 
-        LockAble<C> ifLimit(Predicate<C> test, int rowCount);
+        LockAble<C> ifLimit(Predicate<C> predicate, int rowCount);
 
-        LockAble<C> ifLimit(Predicate<C> test, int offset, int rowCount);
+        LockAble<C> ifLimit(Predicate<C> predicate, int offset, int rowCount);
 
     }
 
@@ -208,7 +207,7 @@ public interface Select extends SQLStatement, SQLDebug, SQLStatement.SQLAble, Qu
 
         SelectAble limit(int offset, int rowCount);
 
-        SelectAble ifLimit(Function<C, Pair<Integer, Integer>> function);
+        SelectAble ifLimit(Function<C, LimitOption> function);
 
         SelectAble ifLimit(Predicate<C> predicate, int rowCount);
 
