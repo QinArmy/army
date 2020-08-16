@@ -208,14 +208,17 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select, Sel
         if (predicate.test(this.criteria)) {
             addTableAble(createTableWrapper(tableMeta, tableAlias, joinType));
         } else {
-            notAddTable();
+            this.ableOnClause = false;
+            this.ableRouteClause = false;
+            onNotAddTable();
         }
     }
 
     final void ifAddSubQuery(Function<C, SubQuery> function, String subQueryAlias, JoinType joinType) {
         SubQuery subQuery = function.apply(this.criteria);
         if (subQuery == null) {
-            notAddDerivedTable();
+            this.ableOnClause = false;
+            onNotAddDerivedTable();
         } else {
             addTableAble(createTableWrapper(subQuery, subQueryAlias, joinType));
         }
@@ -251,10 +254,12 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select, Sel
     }
 
     final void addGroupByList(List<SortPart> sortPartList) {
-        if (this.groupByList == null) {
-            this.groupByList = new ArrayList<>(sortPartList.size());
+        if (!CollectionUtils.isEmpty(sortPartList)) {
+            if (this.groupByList == null) {
+                this.groupByList = new ArrayList<>(sortPartList.size());
+            }
+            this.groupByList.addAll(sortPartList);
         }
-        this.groupByList.addAll(sortPartList);
     }
 
     final void addHaving(IPredicate predicate) {
@@ -268,7 +273,7 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select, Sel
     }
 
     final void addHavingList(List<IPredicate> predicateList) {
-        if (!CollectionUtils.isEmpty(this.groupByList)) {
+        if (!CollectionUtils.isEmpty(this.groupByList) && !CollectionUtils.isEmpty(predicateList)) {
             if (this.havingList == null) {
                 this.havingList = new ArrayList<>(predicateList.size());
             }
@@ -284,10 +289,12 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select, Sel
     }
 
     final void addOrderByList(List<SortPart> sortPartList) {
-        if (this.orderByList == null) {
-            this.orderByList = new ArrayList<>(sortPartList.size());
+        if (!CollectionUtils.isEmpty(sortPartList)) {
+            if (this.orderByList == null) {
+                this.orderByList = new ArrayList<>(sortPartList.size());
+            }
+            this.orderByList.addAll(sortPartList);
         }
-        this.orderByList.addAll(sortPartList);
     }
 
     final void doLimit(int offset, int rowCount) {
@@ -299,8 +306,25 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select, Sel
         return this.asSelect();
     }
 
+    final TableWrapperImpl lastTableWrapper() {
+        Assert.state(!this.tableWrapperList.isEmpty(), "tableWrapperList is empty.");
+
+        TableWrapperImpl tableWrapper = this.tableWrapperList.get(this.tableWrapperList.size() - 1);
+        Assert.state(tableWrapper.getClass() != TableWrapperImpl.class
+                , "tableWrapper isn't sub class of TableWrapperImpl");
+        return tableWrapper;
+    }
+
     TableWrapperImpl createTableWrapper(TableAble tableAble, String alias, JoinType joinType) {
         return new TableWrapperImpl(tableAble, alias, joinType);
+    }
+
+    void onNotAddDerivedTable() {
+
+    }
+
+    void onNotAddTable() {
+
     }
 
     /*################################## blow package template method ##################################*/
@@ -327,6 +351,8 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select, Sel
             Assert.state(!this.tableWrapperList.isEmpty(), "no from clause.");
         }
 
+        this.tableWrapperList.add(wrapper);
+        this.ableOnClause = true;
         if (wrapper.tableAble instanceof TableMeta) {
             onAddTable((TableMeta<?>) wrapper.tableAble, wrapper.alias);
             this.ableRouteClause = true;
@@ -335,18 +361,9 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select, Sel
         } else {
             doCheckTableAble(wrapper);
         }
-        this.tableWrapperList.add(wrapper);
-        this.ableOnClause = true;
+
     }
 
-    private void notAddDerivedTable() {
-        this.ableOnClause = false;
-    }
-
-    private void notAddTable() {
-        this.ableOnClause = false;
-        this.ableRouteClause = false;
-    }
 
     /**
      * <ol>

@@ -18,7 +18,7 @@ class TableWrapperImpl implements TableWrapper {
 
     final SQLModifier jointType;
 
-    private List<IPredicate> onPredicateList = new ArrayList<>();
+    private List<IPredicate> onPredicateList = Collections.emptyList();
 
     private int dataSourceIndex = -1;
 
@@ -32,8 +32,7 @@ class TableWrapperImpl implements TableWrapper {
 
     final void addOnPredicateList(List<IPredicate> predicateList) {
         Assert.state(this.onPredicateList.isEmpty(), "on clause ended.");
-        this.onPredicateList.addAll(predicateList);
-        this.onPredicateList = Collections.unmodifiableList(this.onPredicateList);
+        this.onPredicateList = Collections.unmodifiableList(new ArrayList<>(predicateList));
     }
 
     final void route(int dataSourceIndex, int tableIndex) {

@@ -91,3 +91,20 @@
 
 24. 为什么 io.army.meta.mapping.LocalDateTimeType.nonNullSet 不用 setString ?
 (1) 因为要考虑各数据库的 时间精度问题.
+
+25. 为什么要坚持 为 Select,SubQuery,RowSubQuery,ColumnSubQuery,ScalarSubQuery 分别写一套 api 接口?
+(1) Army 的语法表达的  api(如:Select,Update,SubQuery) 等的设计原则是 sql style,易读性,书写的引导性.
+(2)在(1)的前提下, select 的 union 操作只能接收 select,不能接收 SubQuery.
+(3)在(1)的前提下, SubQuery 的 union 操作只能接口 SubQuery.
+(4) RowSubQuery,ColumnSubQuery,ScalarSubQuery 都在特定的上下文中有有特殊的意义,如: ScalarSubQuery 本身继承了 Expression 接口,
+ColumnSubQuery 可以使用 in,any ,some,all 等关键字.
+
+26. 为什么要坚持 为 不同的数据库 sql 语法写不同的版本,如:MySQL57Select?
+(1)基于 第 25 号问题的设计, sql 表达 api(如:Select,Update,SubQuery) 有时候不易扩展.
+(2)数据库 sql api 本身不同版本要要求不同,如:MySQ 5.7 没有 window 子句,有 procedure，lock 子句也没有 of table 子句,但 MySQL 8.0
+有 window 子句,删除 procedure 子句,lock 子句 增加 of table 子句. 然而基于 25 号问题的设计,不能在原有 api 上进行扩展.
+(3) 首先这样的设计作者作为广大开发者之一并不反感,其次 对于不同的数据库有不同的 专用 api 这个设计我相信大多数开发也理解和接受.
+(4) 这个设计缺点在于 随着数据库的版本的增加相应的 api 版本也增加,但这也是不一定的,因为有时候数据库版本增加了但 sql api 并没有什么变化,
+退一步讲,就算 army 的 sql表达 api 的版本变多了,我认为这也不是核心的问题,在理解和接受的范围内.而且 数据库想要增加一个较大的版本并被广大开发者所
+采用不是一件短时间的事,几个月/一年 恐怕是完不成的,但 对于 army 来说增加一个版本的 sql 表达 api 只需要几天的开发和最多长达几周的测试.
+

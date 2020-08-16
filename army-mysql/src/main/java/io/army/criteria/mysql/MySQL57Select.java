@@ -8,10 +8,17 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+
+/**
+ * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/select.html">MySQL 5.7 Select statement</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/union.html">MySQL 5.7 UNION Clause</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/join.html">MySQL 5.7 JOIN Clause</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/index-hints.html">MySQL 5.7  Index Hints</a>
+ */
 public interface MySQL57Select extends Select {
 
 
-    interface MySQLSelectPartAble<C> {
+    interface MySQLSelectPartAble<C> extends SelectSQLAble {
 
         <S extends SelectPart> MySQLFromAble<C> select(Distinct distinct, Function<C, List<S>> function);
 
@@ -35,11 +42,19 @@ public interface MySQL57Select extends Select {
 
     }
 
-    interface MySQLTableRouteJoinAble<C> extends MySQLJoinAble<C> {
+    interface MySQLAfterFromIndexHintAble<C> extends MySQLJoinAble<C> {
 
-        MySQLJoinAble<C> fromRoute(int databaseIndex, int tableIndex);
+        /**
+         * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/index-hints.html">MySQL 5.7  Index Hints</a>
+         */
+        MySQLJoinAble<C> indexHintList(Function<C, List<MySQLIndexHint>> function);
+    }
 
-        MySQLJoinAble<C> fromRoute(int tableIndex);
+    interface MySQLTableRouteJoinAble<C> extends MySQLAfterFromIndexHintAble<C> {
+
+        MySQLAfterFromIndexHintAble<C> route(int databaseIndex, int tableIndex);
+
+        MySQLAfterFromIndexHintAble<C> route(int tableIndex);
     }
 
 
@@ -53,13 +68,24 @@ public interface MySQL57Select extends Select {
 
     }
 
-    interface MySQLTableRouteOnAble<C> extends MySQLOnAble<C> {
+    interface MySQLAfterJoneIndexHintAble<C> extends MySQLOnAble<C> {
+
+        /**
+         * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/index-hints.html">MySQL 5.7  Index Hints</a>
+         */
+        MySQLOnAble<C> indexHintList(Function<C, List<MySQLIndexHint>> function);
+    }
+
+    interface MySQLTableRouteOnAble<C> extends MySQLAfterJoneIndexHintAble<C> {
 
         MySQLOnAble<C> route(int databaseIndex, int tableIndex);
 
         MySQLOnAble<C> route(int tableIndex);
     }
 
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/join.html">MySQL 5.7 JOIN Clause</a>
+     */
     interface MySQLJoinAble<C> extends MySQLWhereAble<C> {
 
         MySQLTableRouteOnAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias);
@@ -157,14 +183,19 @@ public interface MySQL57Select extends Select {
 
     interface MySQLLimitAble<C> extends MySQLLimitClause<C>, MySQLLockAble<C> {
 
+        @Override
         MySQLLockAble<C> limit(int rowCount);
 
+        @Override
         MySQLLockAble<C> limit(int offset, int rowCount);
 
+        @Override
         MySQLLockAble<C> ifLimit(Function<C, LimitOption> function);
 
+        @Override
         MySQLLockAble<C> ifLimit(Predicate<C> test, int rowCount);
 
+        @Override
         MySQLLockAble<C> ifLimit(Predicate<C> test, int offset, int rowCount);
 
     }

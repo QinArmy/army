@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.EmptyObject;
 import io.army.criteria.mysql.MySQL57Select;
+import io.army.criteria.mysql.MySQL57SubQuery;
 
 public abstract class MySQLS extends SQLS {
 
@@ -50,6 +51,14 @@ public abstract class MySQLS extends SQLS {
 
     public static MySQL57Select.MySQLSelectPartAble<EmptyObject> mySQL57Select() {
         return MySQL57ContextualSelect.build(EmptyObject.getInstance());
+    }
+
+    public static <C> MySQL57SubQuery.MySQLSubQuerySelectPartAble<C> mySQL57SubQuery(C criteria) {
+        return null;
+    }
+
+    public static MySQL57SubQuery.MySQLSubQuerySelectPartAble<EmptyObject> mySQL57SubQuery() {
+        return null;
     }
 
 }

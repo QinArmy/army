@@ -2,18 +2,23 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.mysql.InnerMySQL57Select;
+import io.army.criteria.impl.inner.mysql.MySQLTable57Wrapper;
 import io.army.criteria.mysql.MySQL57Select;
+import io.army.criteria.mysql.MySQLIndexHint;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.util.Assert;
+import io.army.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 final class MySQL57ContextualSelect<C> extends AbstractSelect<C> implements MySQL57Select
-        , MySQL57Select.MySQLSelectPartAble<C>, MySQL57Select.MySQLFromAble<C>, MySQL57Select.MySQLTableRouteJoinAble<C>
-        , MySQL57Select.MySQLTableRouteOnAble<C>, MySQL57Select.MySQLJoinAble<C>, MySQL57Select.MySQLWhereAble<C>
+        , MySQL57Select.MySQLSelectPartAble<C>, MySQL57Select.MySQLFromAble<C>, MySQL57Select.MySQLJoinAble<C>
+        , MySQL57Select.MySQLTableRouteJoinAble<C>, MySQL57Select.MySQLWhereAble<C>
         , MySQL57Select.MySQLWhereAndAble<C>, MySQL57Select.MySQLGroupByAble<C>, MySQL57Select.MySQLWithRollUpAble<C>
         , MySQL57Select.MySQLHavingAble<C>, MySQL57Select.MySQLLockAble<C>, MySQL57Select.MySQLLimitAble<C>
         , MySQL57Select.MySQLUnionAble<C>, InnerMySQL57Select {
@@ -24,12 +29,17 @@ final class MySQL57ContextualSelect<C> extends AbstractSelect<C> implements MySQ
 
     private final CriteriaContext criteriaContext;
 
+    private final OnClauseImpl<C> joinClause;
+
     private MySQL57LockMode lockMode;
 
     private boolean withRollUp;
 
+    private boolean enableIndexHint;
+
     private MySQL57ContextualSelect(C criteria) {
         super(criteria);
+        this.joinClause = new OnClauseImpl<>(this);
         this.criteriaContext = new CriteriaContextImpl<>(criteria);
         CriteriaContextHolder.setContext(this.criteriaContext);
     }
@@ -83,117 +93,93 @@ final class MySQL57ContextualSelect<C> extends AbstractSelect<C> implements MySQ
     }
 
     @Override
-    public MySQLJoinAble<C> fromRoute(int databaseIndex, int tableIndex) {
+    public MySQLAfterFromIndexHintAble<C> route(int databaseIndex, int tableIndex) {
         doRouteClause(databaseIndex, tableIndex);
         return this;
     }
 
     @Override
-    public MySQLJoinAble<C> fromRoute(int tableIndex) {
+    public MySQLAfterFromIndexHintAble<C> route(int tableIndex) {
         doRouteClause(-1, tableIndex);
         return this;
     }
 
     @Override
-    public MySQLJoinAble<C> on(List<IPredicate> predicateList) {
-        doOnClause(predicateList);
-        return this;
-    }
-
-    @Override
-    public MySQLJoinAble<C> on(IPredicate predicate) {
-        doOnClause(Collections.singletonList(predicate));
-        return this;
-    }
-
-    @Override
-    public MySQLJoinAble<C> on(Function<C, List<IPredicate>> function) {
-        doOnClause(function.apply(this.criteria));
-        return this;
-    }
-
-    @Override
-    public MySQLOnAble<C> route(int databaseIndex, int tableIndex) {
-        doRouteClause(databaseIndex, tableIndex);
-        return this;
-    }
-
-    @Override
-    public MySQLOnAble<C> route(int tableIndex) {
-        doRouteClause(-1, tableIndex);
+    public MySQLJoinAble<C> indexHintList(Function<C, List<MySQLIndexHint>> function) {
+        doAddIndexHint(function);
         return this;
     }
 
     @Override
     public MySQLTableRouteOnAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias) {
         addTable(tableMeta, tableAlias, JoinType.LEFT);
-        return this;
+        return this.joinClause;
     }
 
     @Override
     public MySQLOnAble<C> leftJoin(Function<C, SubQuery> function, String subQueryAlia) {
         addSubQuery(function.apply(this.criteria), subQueryAlia, JoinType.LEFT);
-        return this;
+        return this.joinClause;
     }
 
     @Override
     public MySQLTableRouteOnAble<C> ifLeftJoin(Predicate<C> predicate, TableMeta<?> tableMeta, String tableAlias) {
         ifAddTable(predicate, tableMeta, tableAlias, JoinType.LEFT);
-        return this;
+        return this.joinClause;
     }
 
     @Override
     public MySQLOnAble<C> ifLeftJoin(Function<C, SubQuery> function, String subQueryAlia) {
         ifAddSubQuery(function, subQueryAlia, JoinType.LEFT);
-        return this;
+        return this.joinClause;
     }
 
     @Override
     public MySQLTableRouteOnAble<C> join(TableMeta<?> tableMeta, String tableAlias) {
         addTable(tableMeta, tableAlias, JoinType.JOIN);
-        return this;
+        return this.joinClause;
     }
 
     @Override
     public MySQLOnAble<C> join(Function<C, SubQuery> function, String subQueryAlia) {
         addSubQuery(function.apply(this.criteria), subQueryAlia, JoinType.JOIN);
-        return this;
+        return this.joinClause;
     }
 
     @Override
     public MySQLTableRouteOnAble<C> ifJoin(Predicate<C> predicate, TableMeta<?> tableMeta, String tableAlias) {
         ifAddTable(predicate, tableMeta, tableAlias, JoinType.JOIN);
-        return this;
+        return this.joinClause;
     }
 
     @Override
     public MySQLOnAble<C> ifJoin(Function<C, SubQuery> function, String subQueryAlia) {
         ifAddSubQuery(function, subQueryAlia, JoinType.JOIN);
-        return this;
+        return this.joinClause;
     }
 
     @Override
     public MySQLTableRouteOnAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias) {
         addTable(tableMeta, tableAlias, JoinType.RIGHT);
-        return this;
+        return this.joinClause;
     }
 
     @Override
     public MySQLOnAble<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia) {
         addSubQuery(function.apply(this.criteria), subQueryAlia, JoinType.RIGHT);
-        return this;
+        return this.joinClause;
     }
 
     @Override
     public MySQLTableRouteOnAble<C> ifRightJoin(Predicate<C> predicate, TableMeta<?> tableMeta, String tableAlias) {
         ifAddTable(predicate, tableMeta, tableAlias, JoinType.RIGHT);
-        return this;
+        return this.joinClause;
     }
 
     @Override
     public MySQLOnAble<C> ifRightJoin(Function<C, SubQuery> function, String subQueryAlia) {
         ifAddSubQuery(function, subQueryAlia, JoinType.RIGHT);
-        return this;
+        return this.joinClause;
     }
 
     /*################################## blow straight joint method ##################################*/
@@ -201,25 +187,25 @@ final class MySQL57ContextualSelect<C> extends AbstractSelect<C> implements MySQ
     @Override
     public MySQLTableRouteOnAble<C> straightJoin(TableMeta<?> tableMeta, String tableAlias) {
         addTable(tableMeta, tableAlias, JoinType.STRAIGHT_JOIN);
-        return this;
+        return this.joinClause;
     }
 
     @Override
     public MySQLOnAble<C> straightJoin(Function<C, SubQuery> function, String subQueryAlia) {
         addSubQuery(function.apply(this.criteria), subQueryAlia, JoinType.STRAIGHT_JOIN);
-        return this;
+        return this.joinClause;
     }
 
     @Override
     public MySQLTableRouteOnAble<C> ifStraightJoin(Predicate<C> predicate, TableMeta<?> tableMeta, String tableAlias) {
         ifAddTable(predicate, tableMeta, tableAlias, JoinType.STRAIGHT_JOIN);
-        return this;
+        return this.joinClause;
     }
 
     @Override
     public MySQLOnAble<C> ifStraightJoin(Function<C, SubQuery> function, String subQueryAlia) {
         ifAddSubQuery(function, subQueryAlia, JoinType.STRAIGHT_JOIN);
-        return this;
+        return this.joinClause;
     }
 
     /*################################## blow MySQLWhereAble method ##################################*/
@@ -414,7 +400,13 @@ final class MySQL57ContextualSelect<C> extends AbstractSelect<C> implements MySQ
 
     @Override
     void onAddTable(TableMeta<?> table, String tableAlias) {
+        this.enableIndexHint = true;
         this.criteriaContext.onAddTable(table, tableAlias);
+    }
+
+    @Override
+    void onNotAddTable() {
+        this.enableIndexHint = false;
     }
 
     @Override
@@ -440,6 +432,27 @@ final class MySQL57ContextualSelect<C> extends AbstractSelect<C> implements MySQ
     }
 
 
+    /*################################## blow private method ##################################*/
+
+    /**
+     * @see #onAddTable(TableMeta, String)
+     * @see #onNotAddTable()
+     * @see #enableIndexHint
+     */
+    private void doAddIndexHint(Function<C, List<MySQLIndexHint>> function) {
+        if (this.enableIndexHint) {
+            List<MySQLIndexHint> hintList = function.apply(this.criteria);
+            if (!CollectionUtils.isEmpty(hintList)) {
+                TableWrapperImpl tableWrapper = lastTableWrapper();
+                Assert.state(tableWrapper instanceof MySQLTableWrapperImpl, "tableWrapper not MySQLTableWrapperImpl");
+                MySQLTableWrapperImpl mySQLTableWrapper = (MySQLTableWrapperImpl) tableWrapper;
+                mySQLTableWrapper.indexHintList(hintList);
+            }
+            this.enableIndexHint = false;
+        }
+    }
+
+
     /*################################## blow private static inner class ##################################*/
 
 
@@ -459,6 +472,71 @@ final class MySQL57ContextualSelect<C> extends AbstractSelect<C> implements MySQ
         @Override
         public String render() {
             return this.modifier;
+        }
+    }
+
+    private static final class MySQLTableWrapperImpl extends TableWrapperImpl implements MySQLTable57Wrapper {
+
+        private List<MySQLIndexHint> indexHintList = Collections.emptyList();
+
+        private MySQLTableWrapperImpl(TableAble tableAble, String alias, JoinType jointType) {
+            super(tableAble, alias, jointType);
+        }
+
+        @Override
+        public List<MySQLIndexHint> indexHintList() {
+            return this.indexHintList;
+        }
+
+        private void indexHintList(List<MySQLIndexHint> indexHintList) {
+            Assert.state(this.indexHintList.isEmpty(), "indexHintList duplicate set.");
+            Assert.notEmpty(indexHintList, "indexHintList must not empty.");
+            this.indexHintList = Collections.unmodifiableList(new ArrayList<>(indexHintList));
+        }
+    }
+
+    private static final class OnClauseImpl<C> implements MySQLTableRouteOnAble<C> {
+
+        private final MySQL57ContextualSelect<C> contextualSelect;
+
+        private OnClauseImpl(MySQL57ContextualSelect<C> contextualSelect) {
+            this.contextualSelect = contextualSelect;
+        }
+
+        @Override
+        public final MySQLJoinAble<C> on(List<IPredicate> predicateList) {
+            this.contextualSelect.doOnClause(predicateList);
+            return this.contextualSelect;
+        }
+
+        @Override
+        public final MySQLJoinAble<C> on(IPredicate predicate) {
+            this.contextualSelect.doOnClause(Collections.singletonList(predicate));
+            return this.contextualSelect;
+        }
+
+        @Override
+        public final MySQLJoinAble<C> on(Function<C, List<IPredicate>> function) {
+            this.contextualSelect.doOnClause(function.apply(this.contextualSelect.criteria));
+            return this.contextualSelect;
+        }
+
+        @Override
+        public MySQLOnAble<C> indexHintList(Function<C, List<MySQLIndexHint>> function) {
+            this.contextualSelect.doAddIndexHint(function);
+            return this;
+        }
+
+        @Override
+        public MySQLOnAble<C> route(int databaseIndex, int tableIndex) {
+            this.contextualSelect.doRouteClause(databaseIndex, tableIndex);
+            return this;
+        }
+
+        @Override
+        public MySQLOnAble<C> route(int tableIndex) {
+            this.contextualSelect.doRouteClause(-1, tableIndex);
+            return this;
         }
     }
 }
