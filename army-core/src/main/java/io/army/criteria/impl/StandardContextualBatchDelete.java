@@ -18,8 +18,8 @@ import java.util.Map;
 import java.util.function.Function;
 
 final class StandardContextualBatchDelete<C> implements Delete,
-        Delete.BatchDeleteAble<C>, Delete.BatchWhereAble<C>, Delete.BatchDeleteTableRouteAble<C>
-        , Delete.BatchWhereAndAble<C>, Delete.BatchNamedParamAble<C>, Delete.DeleteAble, InnerStandardBatchDelete {
+        Delete.BatchSingleDeleteSpec<C>, Delete.BatchSingleDeleteWhereSpec<C>, Delete.BatchSingleDeleteTableRouteSpec<C>
+        , Delete.BatchSingleDeleteWhereAndSpec<C>, Delete.BatchSingleDeleteNamedParamSpec<C>, Delete.DeleteSpec, InnerStandardBatchDelete {
 
     static <C> StandardContextualBatchDelete<C> build(C criteria) {
         return new StandardContextualBatchDelete<>(criteria);
@@ -49,10 +49,10 @@ final class StandardContextualBatchDelete<C> implements Delete,
         CriteriaContextHolder.setContext(this.criteriaContext);
     }
 
-    /*################################## blow BatchDeleteAble method ##################################*/
+    /*################################## blow BatchSingleDeleteSpec method ##################################*/
 
     @Override
-    public final BatchDeleteTableRouteAble<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias) {
+    public final BatchSingleDeleteTableRouteSpec<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias) {
         Assert.hasText(this.tableAlias, "tableAlias required");
         this.tableMeta = tableMeta;
         this.tableAlias = tableAlias;
@@ -60,48 +60,48 @@ final class StandardContextualBatchDelete<C> implements Delete,
     }
 
     @Override
-    public final BatchWhereAble<C> route(int databaseIndex, int tableIndex) {
+    public final BatchSingleDeleteWhereSpec<C> route(int databaseIndex, int tableIndex) {
         this.databaseIndex = databaseIndex;
         this.tableIndex = tableIndex;
         return this;
     }
 
     @Override
-    public final BatchWhereAble<C> route(int tableIndex) {
+    public final BatchSingleDeleteWhereSpec<C> route(int tableIndex) {
         this.tableIndex = tableIndex;
         return this;
     }
 
-    /*################################## blow BatchWhereAble method ##################################*/
+    /*################################## blow BatchWhereSpec method ##################################*/
 
     @Override
-    public final BatchNamedParamAble<C> where(List<IPredicate> predicateList) {
+    public final BatchSingleDeleteNamedParamSpec<C> where(List<IPredicate> predicateList) {
         this.predicateList.addAll(predicateList);
         return this;
     }
 
     @Override
-    public final BatchNamedParamAble<C> where(Function<C, List<IPredicate>> function) {
+    public final BatchSingleDeleteNamedParamSpec<C> where(Function<C, List<IPredicate>> function) {
         this.predicateList.addAll(function.apply(this.criteria));
         return this;
     }
 
     @Override
-    public final BatchWhereAndAble<C> where(IPredicate predicate) {
+    public final BatchSingleDeleteWhereAndSpec<C> where(IPredicate predicate) {
         this.predicateList.add(predicate);
         return this;
     }
 
-    /*################################## blow BatchWhereAndAble method ##################################*/
+    /*################################## blow BatchWhereAndSpec method ##################################*/
 
     @Override
-    public final BatchWhereAndAble<C> and(IPredicate predicate) {
+    public final BatchSingleDeleteWhereAndSpec<C> and(IPredicate predicate) {
         this.predicateList.add(predicate);
         return this;
     }
 
     @Override
-    public final BatchWhereAndAble<C> ifAnd(@Nullable IPredicate predicate) {
+    public final BatchSingleDeleteWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate) {
         if (predicate != null) {
             this.predicateList.add(predicate);
         }
@@ -109,7 +109,7 @@ final class StandardContextualBatchDelete<C> implements Delete,
     }
 
     @Override
-    public final BatchWhereAndAble<C> ifAnd(Function<C, IPredicate> function) {
+    public final BatchSingleDeleteWhereAndSpec<C> ifAnd(Function<C, IPredicate> function) {
         IPredicate predicate = function.apply(this.criteria);
         if (predicate != null) {
             this.predicateList.add(predicate);
@@ -117,10 +117,10 @@ final class StandardContextualBatchDelete<C> implements Delete,
         return this;
     }
 
-    /*################################## blow BatchNamedParamAble method ##################################*/
+    /*################################## blow BatchNamedParamSpec method ##################################*/
 
     @Override
-    public final DeleteAble namedParamMaps(List<Map<String, Object>> mapList) {
+    public final DeleteSpec namedParamMaps(List<Map<String, Object>> mapList) {
         List<ReadonlyWrapper> namedParamList = this.namedParamList;
         for (Map<String, Object> map : mapList) {
             namedParamList.add(ObjectAccessorFactory.forReadonlyAccess(map));
@@ -129,12 +129,12 @@ final class StandardContextualBatchDelete<C> implements Delete,
     }
 
     @Override
-    public final DeleteAble namedParamMaps(Function<C, List<Map<String, Object>>> function) {
+    public final DeleteSpec namedParamMaps(Function<C, List<Map<String, Object>>> function) {
         return namedParamMaps(function.apply(this.criteria));
     }
 
     @Override
-    public final DeleteAble namedParamBeans(List<Object> beanList) {
+    public final DeleteSpec namedParamBeans(List<Object> beanList) {
         List<ReadonlyWrapper> namedParamList = this.namedParamList;
         for (Object bean : beanList) {
             namedParamList.add(ObjectAccessorFactory.forReadonlyAccess(bean));
@@ -143,11 +143,11 @@ final class StandardContextualBatchDelete<C> implements Delete,
     }
 
     @Override
-    public final DeleteAble namedParamBeans(Function<C, List<Object>> function) {
+    public final DeleteSpec namedParamBeans(Function<C, List<Object>> function) {
         return namedParamBeans(function.apply(this.criteria));
     }
 
-    /*################################## blow DeleteAble method ##################################*/
+    /*################################## blow DeleteSpec method ##################################*/
 
     @Override
     public final Delete asDelete() {

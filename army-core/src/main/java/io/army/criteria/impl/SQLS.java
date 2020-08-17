@@ -89,11 +89,11 @@ public abstract class SQLS extends AbstractSQLS {
         return StandardContextualChildSubQueryInsert.build(tableMeta, criteria);
     }
 
-    public static <T extends IDomain> Update.SingleUpdateAble<T, EmptyObject> singleUpdate(TableMeta<T> targetTable) {
+    public static <T extends IDomain> Update.SingleUpdateSpec<T, EmptyObject> singleUpdate(TableMeta<T> targetTable) {
         return StandardContextualUpdate.build(targetTable, EmptyObject.getInstance());
     }
 
-    public static <T extends IDomain, C> Update.SingleUpdateAble<T, C> singleUpdate(TableMeta<T> targetTable
+    public static <T extends IDomain, C> Update.SingleUpdateSpec<T, C> singleUpdate(TableMeta<T> targetTable
             , C criteria) {
         return StandardContextualUpdate.build(targetTable, criteria);
     }
@@ -101,7 +101,7 @@ public abstract class SQLS extends AbstractSQLS {
     /**
      * @see #namedParam(String, ParamMeta)
      */
-    public static <T extends IDomain> Update.BatchUpdateAble<T, EmptyObject> batchSingleUpdate(
+    public static <T extends IDomain> Update.BatchUpdateSpec<T, EmptyObject> batchSingleUpdate(
             TableMeta<T> targetTable) {
         return StandardContextualBatchUpdate.build(targetTable, EmptyObject.getInstance());
     }
@@ -109,30 +109,30 @@ public abstract class SQLS extends AbstractSQLS {
     /**
      * @see #namedParam(String, ParamMeta)
      */
-    public static <T extends IDomain, C> Update.BatchUpdateAble<T, C> batchSingleUpdate(TableMeta<T> targetTable
+    public static <T extends IDomain, C> Update.BatchUpdateSpec<T, C> batchSingleUpdate(TableMeta<T> targetTable
             , C criteria) {
         return StandardContextualBatchUpdate.build(targetTable, criteria);
     }
 
-    public static Delete.SingleDeleteAble<EmptyObject> singleDelete() {
+    public static Delete.SingleDeleteSpec<EmptyObject> singleDelete() {
         return StandardContextualDelete.buildDelete(EmptyObject.getInstance());
     }
 
-    public static <C> Delete.SingleDeleteAble<C> singleDelete(C criteria) {
+    public static <C> Delete.SingleDeleteSpec<C> singleDelete(C criteria) {
         return StandardContextualDelete.buildDelete(criteria);
     }
 
     /**
      * @see #namedParam(String, ParamMeta)
      */
-    public static Delete.BatchDeleteAble<EmptyObject> batchSingleDelete() {
+    public static Delete.BatchSingleDeleteSpec<EmptyObject> batchSingleDelete() {
         return StandardContextualBatchDelete.build(EmptyObject.getInstance());
     }
 
     /**
      * @see #namedParam(String, ParamMeta)
      */
-    public static <C> Delete.BatchDeleteAble<C> batchSingleDelete(C criteria) {
+    public static <C> Delete.BatchSingleDeleteSpec<C> batchSingleDelete(C criteria) {
         return StandardContextualBatchDelete.build(criteria);
     }
 

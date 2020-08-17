@@ -8,96 +8,90 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-public interface Delete extends SQLStatement, SQLStatement.SQLAble, SQLDebug, Query {
+public interface Delete extends SQLStatement, SQLDebug {
 
-    interface DeleteSQLAble extends SQLAble {
+    interface DeleteSQLSpec {
 
     }
 
-    interface DeleteAble extends DeleteSQLAble {
+    interface DeleteSpec extends DeleteSQLSpec {
 
         Delete asDelete();
     }
 
-    interface SingleDeleteAble<C> extends DeleteSQLAble {
+    interface SingleDeleteSpec<C> extends DeleteSQLSpec {
 
-        SingleDeleteTableRouteAble<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias);
+        SingleDeleteTableRouteSpec<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias);
     }
 
-    interface SingleDeleteTableRouteAble<C> extends SingleWhereAble<C> {
+    interface SingleDeleteTableRouteSpec<C> extends SingleDeleteWhereSpec<C> {
 
-        SingleDeleteTableRouteAble<C> route(int databaseIndex, int tableIndex);
+        SingleDeleteTableRouteSpec<C> route(int databaseIndex, int tableIndex);
 
-        SingleDeleteTableRouteAble<C> route(int tableIndex);
+        SingleDeleteTableRouteSpec<C> route(int tableIndex);
     }
 
-    interface SingleWhereAble<C> extends DeleteSQLAble {
+    interface SingleDeleteWhereSpec<C> extends DeleteSQLSpec {
 
-        DeleteAble where(List<IPredicate> predicateList);
+        DeleteSpec where(List<IPredicate> predicateList);
 
-        DeleteAble where(Function<C, List<IPredicate>> function);
+        DeleteSpec where(Function<C, List<IPredicate>> function);
 
-        SingleWhereAndAble<C> where(IPredicate predicate);
+        SingleDeleteWhereAndSpec<C> where(IPredicate predicate);
     }
 
 
-    interface SingleWhereAndAble<C> extends DeleteAble {
+    interface SingleDeleteWhereAndSpec<C> extends DeleteSpec {
 
-        SingleWhereAndAble<C> and(IPredicate predicate);
+        SingleDeleteWhereAndSpec<C> and(IPredicate predicate);
 
         /**
          * @see Expression#equalIfNonNull(Object)
          */
-        SingleWhereAndAble<C> ifAnd(@Nullable IPredicate predicate);
+        SingleDeleteWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
 
-        SingleWhereAndAble<C> ifAnd(Function<C, IPredicate> function);
+        SingleDeleteWhereAndSpec<C> ifAnd(Function<C, IPredicate> function);
 
     }
 
     /*################################## blow batch delete ##################################*/
 
-    interface BatchDeleteAble<C> extends DeleteSQLAble {
+    interface BatchSingleDeleteSpec<C> extends DeleteSQLSpec {
 
-        BatchDeleteTableRouteAble<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias);
+        BatchSingleDeleteWhereSpec<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias);
     }
 
-    interface BatchDeleteTableRouteAble<C> extends BatchWhereAble<C> {
 
-        BatchWhereAble<C> route(int databaseIndex, int tableIndex);
+    interface BatchSingleDeleteWhereSpec<C> extends DeleteSQLSpec {
 
-        BatchWhereAble<C> route(int tableIndex);
+        BatchSingleDeleteNamedParamSpec<C> where(List<IPredicate> predicateList);
+
+        BatchSingleDeleteNamedParamSpec<C> where(Function<C, List<IPredicate>> function);
+
+        BatchSingleDeleteWhereAndSpec<C> where(IPredicate predicate);
     }
 
-    interface BatchWhereAble<C> extends DeleteSQLAble {
+    interface BatchSingleDeleteWhereAndSpec<C> extends BatchSingleDeleteNamedParamSpec<C> {
 
-        BatchNamedParamAble<C> where(List<IPredicate> predicateList);
-
-        BatchNamedParamAble<C> where(Function<C, List<IPredicate>> function);
-
-        BatchWhereAndAble<C> where(IPredicate predicate);
-    }
-
-    interface BatchWhereAndAble<C> extends BatchNamedParamAble<C> {
-
-        BatchWhereAndAble<C> and(IPredicate predicate);
+        BatchSingleDeleteWhereAndSpec<C> and(IPredicate predicate);
 
         /**
          * @see Expression#equalIfNonNull(Object)
          */
-        BatchWhereAndAble<C> ifAnd(@Nullable IPredicate predicate);
+        BatchSingleDeleteWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
 
-        BatchWhereAndAble<C> ifAnd(Function<C, IPredicate> function);
+        BatchSingleDeleteWhereAndSpec<C> ifAnd(Function<C, IPredicate> function);
 
     }
 
-    interface BatchNamedParamAble<C> extends DeleteSQLAble {
+    interface BatchSingleDeleteNamedParamSpec<C> extends DeleteSQLSpec {
 
-        DeleteAble namedParamMaps(List<Map<String, Object>> mapList);
+        DeleteSpec namedParamMaps(List<Map<String, Object>> mapList);
 
-        DeleteAble namedParamMaps(Function<C, List<Map<String, Object>>> function);
+        DeleteSpec namedParamMaps(Function<C, List<Map<String, Object>>> function);
 
-        DeleteAble namedParamBeans(List<Object> beanList);
+        DeleteSpec namedParamBeans(List<Object> beanList);
 
-        DeleteAble namedParamBeans(Function<C, List<Object>> function);
+        DeleteSpec namedParamBeans(Function<C, List<Object>> function);
     }
 }

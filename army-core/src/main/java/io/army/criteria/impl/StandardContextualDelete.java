@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.function.Function;
 
 final class StandardContextualDelete<C> extends AbstractSQLDebug implements Delete
-        , Delete.SingleDeleteAble<C>, Delete.SingleDeleteTableRouteAble<C>, Delete.SingleWhereAndAble<C>
+        , Delete.SingleDeleteSpec<C>, Delete.SingleDeleteTableRouteSpec<C>, Delete.SingleDeleteWhereAndSpec<C>
         , InnerStandardDelete {
 
     static <C> StandardContextualDelete<C> buildDelete(C criteria) {
@@ -46,45 +46,45 @@ final class StandardContextualDelete<C> extends AbstractSQLDebug implements Dele
         CriteriaContextHolder.setContext(criteriaContext);
     }
 
-    /*################################## blow SingleDeleteAble method ##################################*/
+    /*################################## blow SingleDeleteSpec method ##################################*/
 
 
     @Override
-    public final SingleDeleteTableRouteAble<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias) {
+    public final SingleDeleteTableRouteSpec<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias) {
         this.tableMeta = tableMeta;
         this.tableAlias = tableAlias;
         return this;
     }
 
     @Override
-    public final SingleDeleteTableRouteAble<C> route(int databaseIndex, int tableIndex) {
+    public final SingleDeleteTableRouteSpec<C> route(int databaseIndex, int tableIndex) {
         this.databaseIndex = databaseIndex;
         this.tableIndex = tableIndex;
         return this;
     }
 
     @Override
-    public final SingleDeleteTableRouteAble<C> route(int tableIndex) {
+    public final SingleDeleteTableRouteSpec<C> route(int tableIndex) {
         this.tableIndex = tableIndex;
         return this;
     }
 
-    /*################################## blow SingleWhereAble method ##################################*/
+    /*################################## blow SingleWhereSpec method ##################################*/
 
     @Override
-    public final DeleteAble where(List<IPredicate> predicateList) {
+    public final DeleteSpec where(List<IPredicate> predicateList) {
         this.predicateList.addAll(predicateList);
         return this;
     }
 
     @Override
-    public final DeleteAble where(Function<C, List<IPredicate>> function) {
+    public final DeleteSpec where(Function<C, List<IPredicate>> function) {
         this.predicateList.addAll(function.apply(this.criteria));
         return this;
     }
 
     @Override
-    public final SingleWhereAndAble<C> where(IPredicate predicate) {
+    public final SingleDeleteWhereAndSpec<C> where(IPredicate predicate) {
         this.predicateList.add(predicate);
         return this;
     }
@@ -92,13 +92,13 @@ final class StandardContextualDelete<C> extends AbstractSQLDebug implements Dele
     /*################################## blow private method ##################################*/
 
     @Override
-    public final SingleWhereAndAble<C> and(IPredicate predicate) {
+    public final SingleDeleteWhereAndSpec<C> and(IPredicate predicate) {
         this.predicateList.add(predicate);
         return this;
     }
 
     @Override
-    public final SingleWhereAndAble<C> ifAnd(@Nullable IPredicate predicate) {
+    public final SingleDeleteWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate) {
         if (predicate != null) {
             this.predicateList.add(predicate);
         }
@@ -106,7 +106,7 @@ final class StandardContextualDelete<C> extends AbstractSQLDebug implements Dele
     }
 
     @Override
-    public final SingleWhereAndAble<C> ifAnd(Function<C, IPredicate> function) {
+    public final SingleDeleteWhereAndSpec<C> ifAnd(Function<C, IPredicate> function) {
         IPredicate predicate = function.apply(this.criteria);
         if (predicate != null) {
             this.predicateList.add(predicate);
@@ -121,7 +121,7 @@ final class StandardContextualDelete<C> extends AbstractSQLDebug implements Dele
         return this.prepared;
     }
 
-    /*################################## blow DeleteAble method ##################################*/
+    /*################################## blow DeleteSpec method ##################################*/
 
     @Override
     public final Delete asDelete() {

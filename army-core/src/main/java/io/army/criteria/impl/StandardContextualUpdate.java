@@ -17,8 +17,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug implements
-        Update, Update.UpdateAble, Update.SingleWhereAble<T, C>, Update.SingleUpdateTableRouteAble<T, C>
-        , Update.WhereAndAble<T, C>, Update.SingleUpdateAble<T, C>, InnerStandardUpdate {
+        Update, Update.UpdateSpec, Update.SingleWhereSpec<T, C>, Update.SingleUpdateTableRouteSpec<T, C>
+        , Update.WhereAndSpec<T, C>, Update.SingleUpdateSpec<T, C>, InnerStandardUpdate {
 
     static <T extends IDomain, C> StandardContextualUpdate<T, C> build(TableMeta<T> tableMeta, C criteria) {
         Assert.isTrue(!tableMeta.immutable(), () -> String.format("TableMeta[%s] immutable", tableMeta));
@@ -59,7 +59,7 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
     /*################################## blow DomainUpdateAble method ##################################*/
 
     @Override
-    public final SingleUpdateTableRouteAble<T, C> update(TableMeta<T> tableMeta, String tableAlias) {
+    public final SingleUpdateTableRouteSpec<T, C> update(TableMeta<T> tableMeta, String tableAlias) {
         Assert.isTrue(this.tableMeta == tableMeta, "tableMeta not match.");
         Assert.hasText(tableAlias, "tableAlias required");
         this.tableAlias = tableAlias;
@@ -67,14 +67,14 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
     }
 
     @Override
-    public final SingleSetAble<T, C> route(int databaseIndex, int tableIndex) {
+    public final SingleSetSpec<T, C> route(int databaseIndex, int tableIndex) {
         this.databaseIndex = databaseIndex;
         this.tableIndex = tableIndex;
         return this;
     }
 
     @Override
-    public final SingleSetAble<T, C> route(int tableIndex) {
+    public final SingleSetSpec<T, C> route(int tableIndex) {
         this.tableIndex = tableIndex;
         return this;
     }
@@ -82,21 +82,21 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
     /*################################## blow DomainSetAble method ##################################*/
 
     @Override
-    public final <F> SingleWhereAble<T, C> set(FieldMeta<? super T, F> target, F value) {
+    public final <F> SingleWhereSpec<T, C> set(FieldMeta<? super T, F> target, F value) {
         this.targetFieldList.add(target);
         this.valueExpList.add(SQLS.paramWithExp(value, target));
         return this;
     }
 
     @Override
-    public final <F> SingleWhereAble<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp) {
+    public final <F> SingleWhereSpec<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp) {
         this.targetFieldList.add(target);
         this.valueExpList.add(valueExp);
         return this;
     }
 
     @Override
-    public final <F> SingleWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value) {
+    public final <F> SingleWhereSpec<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value) {
         if (predicate.test(this.criteria)) {
             set(target, value);
         }
@@ -104,7 +104,7 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
     }
 
     @Override
-    public final <F> SingleWhereAble<T, C> nonNullSet(FieldMeta<? super T, F> target
+    public final <F> SingleWhereSpec<T, C> ifSet(FieldMeta<? super T, F> target
             , Function<C, Expression<F>> function) {
         Expression<F> expression = function.apply(this.criteria);
         if (expression != null) {
@@ -117,19 +117,19 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
 
 
     @Override
-    public final UpdateAble where(List<IPredicate> predicateList) {
+    public final UpdateSpec where(List<IPredicate> predicateList) {
         this.predicateList.addAll(predicateList);
         return this;
     }
 
     @Override
-    public final UpdateAble where(Function<C, List<IPredicate>> function) {
+    public final UpdateSpec where(Function<C, List<IPredicate>> function) {
         this.predicateList.addAll(function.apply(this.criteria));
         return this;
     }
 
     @Override
-    public final WhereAndAble<T, C> where(IPredicate predicate) {
+    public final WhereAndSpec<T, C> where(IPredicate predicate) {
         this.predicateList.add(predicate);
         return this;
     }
@@ -137,13 +137,13 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
     /*################################## blow WhereAndSpec method ##################################*/
 
     @Override
-    public final WhereAndAble<T, C> and(IPredicate predicate) {
+    public final WhereAndSpec<T, C> and(IPredicate predicate) {
         this.predicateList.add(predicate);
         return this;
     }
 
     @Override
-    public final WhereAndAble<T, C> ifAnd(@Nullable IPredicate predicate) {
+    public final WhereAndSpec<T, C> ifAnd(@Nullable IPredicate predicate) {
         if (predicate != null) {
             this.predicateList.add(predicate);
         }
@@ -151,7 +151,7 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
     }
 
     @Override
-    public final WhereAndAble<T, C> ifAnd(Function<C, IPredicate> function) {
+    public final WhereAndSpec<T, C> ifAnd(Function<C, IPredicate> function) {
         IPredicate predicate = function.apply(this.criteria);
         if (predicate != null) {
             this.predicateList.add(predicate);
@@ -166,7 +166,7 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
         return this.prepared;
     }
 
-    /*################################## blow UpdateAble method ##################################*/
+    /*################################## blow UpdateSpec method ##################################*/
 
     @Override
     public final Update asUpdate() {

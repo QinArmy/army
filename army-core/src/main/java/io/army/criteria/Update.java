@@ -12,130 +12,130 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public interface Update extends SQLStatement, SQLStatement.SQLAble, SQLDebug, Query {
+public interface Update extends SQLStatement, SQLDebug {
 
-    interface UpdateSQLAble extends SQLAble {
+    interface UpdateSQLSpec {
 
     }
 
-    interface UpdateAble extends UpdateSQLAble {
+    interface UpdateSpec extends UpdateSQLSpec {
 
         Update asUpdate();
     }
 
 
-    interface SingleUpdateAble<T extends IDomain, C> extends UpdateSQLAble {
+    interface SingleUpdateSpec<T extends IDomain, C> extends UpdateSQLSpec {
 
-        SingleUpdateTableRouteAble<T, C> update(TableMeta<T> tableMeta, String tableAlias);
+        SingleUpdateTableRouteSpec<T, C> update(TableMeta<T> tableMeta, String tableAlias);
     }
 
 
-    interface SingleUpdateTableRouteAble<T extends IDomain, C> extends SingleSetAble<T, C> {
+    interface SingleUpdateTableRouteSpec<T extends IDomain, C> extends SingleSetSpec<T, C> {
 
-        SingleSetAble<T, C> route(int databaseIndex, int tableIndex);
+        SingleSetSpec<T, C> route(int databaseIndex, int tableIndex);
 
-        SingleSetAble<T, C> route(int tableIndex);
+        SingleSetSpec<T, C> route(int tableIndex);
     }
 
 
-    interface SingleSetAble<T extends IDomain, C> extends UpdateSQLAble {
+    interface SingleSetSpec<T extends IDomain, C> extends UpdateSQLSpec {
 
-        <F> SingleWhereAble<T, C> set(FieldMeta<? super T, F> target, F value);
+        <F> SingleWhereSpec<T, C> set(FieldMeta<? super T, F> target, F value);
 
         /**
          * @see SQLS#defaultValue()
          */
-        <F> SingleWhereAble<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp);
+        <F> SingleWhereSpec<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp);
 
-        <F> SingleWhereAble<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value);
+        <F> SingleWhereSpec<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value);
 
-        <F> SingleWhereAble<T, C> nonNullSet(FieldMeta<? super T, F> target, Function<C, Expression<F>> function);
+        <F> SingleWhereSpec<T, C> ifSet(FieldMeta<? super T, F> target, Function<C, Expression<F>> function);
     }
 
 
-    interface SingleWhereAble<T extends IDomain, C> extends SingleSetAble<T, C> {
+    interface SingleWhereSpec<T extends IDomain, C> extends SingleSetSpec<T, C> {
 
-        UpdateAble where(List<IPredicate> predicateList);
+        UpdateSpec where(List<IPredicate> predicateList);
 
-        UpdateAble where(Function<C, List<IPredicate>> function);
+        UpdateSpec where(Function<C, List<IPredicate>> function);
 
-        WhereAndAble<T, C> where(IPredicate predicate);
+        WhereAndSpec<T, C> where(IPredicate predicate);
     }
 
 
-    interface WhereAndAble<T extends IDomain, C> extends UpdateAble {
+    interface WhereAndSpec<T extends IDomain, C> extends UpdateSpec {
 
-        WhereAndAble<T, C> and(IPredicate predicate);
+        WhereAndSpec<T, C> and(IPredicate predicate);
 
         /**
          * @see Expression#equalIfNonNull(Object)
          */
-        WhereAndAble<T, C> ifAnd(@Nullable IPredicate predicate);
+        WhereAndSpec<T, C> ifAnd(@Nullable IPredicate predicate);
 
-        WhereAndAble<T, C> ifAnd(Function<C, IPredicate> function);
+        WhereAndSpec<T, C> ifAnd(Function<C, IPredicate> function);
 
     }
 
     /*################################## blow batch update interface ##################################*/
 
-    interface BatchUpdateAble<T extends IDomain, C> extends UpdateSQLAble {
+    interface BatchUpdateSpec<T extends IDomain, C> extends UpdateSQLSpec {
 
-        BatchTableRouteAble<T, C> update(TableMeta<T> tableMeta, String tableAlias);
+        BatchTableRouteSpec<T, C> update(TableMeta<T> tableMeta, String tableAlias);
     }
 
-    interface BatchTableRouteAble<T extends IDomain, C> extends BatchSetAble<T, C> {
+    interface BatchTableRouteSpec<T extends IDomain, C> extends BatchSetSpec<T, C> {
 
-        BatchSetAble<T, C> route(int databaseIndex, int tableIndex);
+        BatchSetSpec<T, C> route(int databaseIndex, int tableIndex);
 
-        BatchSetAble<T, C> route(int tableIndex);
+        BatchSetSpec<T, C> route(int tableIndex);
     }
 
-    interface BatchSetAble<T extends IDomain, C> extends UpdateSQLAble {
+    interface BatchSetSpec<T extends IDomain, C> extends UpdateSQLSpec {
 
-        <F> BatchWhereAble<T, C> set(FieldMeta<? super T, F> target, F value);
+        <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> target, F value);
 
         /**
          * @see SQLS#defaultValue()
          */
-        <F> BatchWhereAble<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp);
+        <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp);
 
-        <F> BatchWhereAble<T, C> ifSet(Predicate<C> test, FieldMeta<? super T, F> target, F value);
+        <F> BatchWhereSpec<T, C> ifSet(Predicate<C> test, FieldMeta<? super T, F> target, F value);
 
-        <F> BatchWhereAble<T, C> ifSet(FieldMeta<? super T, F> target, Function<C, Expression<F>> function);
+        <F> BatchWhereSpec<T, C> ifSet(FieldMeta<? super T, F> target, Function<C, Expression<F>> function);
     }
 
-    interface BatchWhereAble<T extends IDomain, C> extends BatchSetAble<T, C> {
+    interface BatchWhereSpec<T extends IDomain, C> extends BatchSetSpec<T, C> {
 
 
-        BatchNamedParamAble<C> where(List<IPredicate> predicateList);
+        BatchNamedParamSpec<C> where(List<IPredicate> predicateList);
 
-        BatchNamedParamAble<C> where(Function<C, List<IPredicate>> function);
+        BatchNamedParamSpec<C> where(Function<C, List<IPredicate>> function);
 
-        BatchWhereAndAble<T, C> where(IPredicate predicate);
+        BatchWhereAndSpec<T, C> where(IPredicate predicate);
     }
 
-    interface BatchWhereAndAble<T extends IDomain, C> extends BatchNamedParamAble<C> {
+    interface BatchWhereAndSpec<T extends IDomain, C> extends BatchNamedParamSpec<C> {
 
-        BatchWhereAndAble<T, C> and(IPredicate predicate);
+        BatchWhereAndSpec<T, C> and(IPredicate predicate);
 
         /**
          * @see Expression#equalIfNonNull(Object)
          */
-        BatchWhereAndAble<T, C> ifAnd(@Nullable IPredicate predicate);
+        BatchWhereAndSpec<T, C> ifAnd(@Nullable IPredicate predicate);
 
-        BatchWhereAndAble<T, C> ifAnd(Function<C, IPredicate> function);
+        BatchWhereAndSpec<T, C> ifAnd(Function<C, IPredicate> function);
 
     }
 
-    interface BatchNamedParamAble<C> extends UpdateSQLAble {
+    interface BatchNamedParamSpec<C> extends UpdateSQLSpec {
 
-        UpdateAble namedParamMaps(List<Map<String, Object>> mapList);
+        UpdateSpec namedParamMaps(List<Map<String, Object>> mapList);
 
-        UpdateAble namedParamMaps(Function<C, List<Map<String, Object>>> function);
+        UpdateSpec namedParamMaps(Function<C, List<Map<String, Object>>> function);
 
-        UpdateAble namedParamBeans(List<Object> beanList);
+        UpdateSpec namedParamBeans(List<Object> beanList);
 
-        UpdateAble namedParamBeans(Function<C, List<Object>> function);
+        UpdateSpec namedParamBeans(Function<C, List<Object>> function);
     }
 
 

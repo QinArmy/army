@@ -688,13 +688,13 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public MySQLOnSpec<MySQL57ScalarSubQuery<E>, C> route(int databaseIndex, int tableIndex) {
+        public MySQLIndexHintOnSpec<MySQL57ScalarSubQuery<E>, C> route(int databaseIndex, int tableIndex) {
             this.mysql57Query.actualSelect.tableRouteOnSpec.route(databaseIndex, tableIndex);
             return this;
         }
 
         @Override
-        public MySQLOnSpec<MySQL57ScalarSubQuery<E>, C> route(int tableIndex) {
+        public MySQLIndexHintOnSpec<MySQL57ScalarSubQuery<E>, C> route(int tableIndex) {
             this.mysql57Query.actualSelect.tableRouteOnSpec.route(-1, tableIndex);
             return this;
         }

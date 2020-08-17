@@ -46,7 +46,7 @@ public interface MySQL57Query extends Query {
     }
 
 
-    interface MySQLAfterFromIndexHintSpec<Q extends MySQL57Query, C> extends MySQLJoinSpec<Q, C> {
+    interface MySQLIndexHintJoinSpec<Q extends MySQL57Query, C> extends MySQLJoinSpec<Q, C> {
 
         /**
          * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/index-hints.html">MySQL 5.7  Index Hints</a>
@@ -55,7 +55,7 @@ public interface MySQL57Query extends Query {
     }
 
 
-    interface MySQLTableRouteJoinSpec<Q extends MySQL57Query, C> extends MySQLAfterFromIndexHintSpec<Q, C> {
+    interface MySQLTableRouteJoinSpec<Q extends MySQL57Query, C> extends MySQLIndexHintJoinSpec<Q, C> {
 
         MySQLJoinSpec<Q, C> route(int databaseIndex, int tableIndex);
 
@@ -73,7 +73,7 @@ public interface MySQL57Query extends Query {
 
     }
 
-    interface MySQLAfterJoinIndexHintSpec<Q extends MySQL57Query, C> extends MySQLOnSpec<Q, C> {
+    interface MySQLIndexHintOnSpec<Q extends MySQL57Query, C> extends MySQLOnSpec<Q, C> {
 
         /**
          * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/index-hints.html">MySQL 5.7  Index Hints</a>
@@ -82,11 +82,11 @@ public interface MySQL57Query extends Query {
 
     }
 
-    interface MySQLTableRouteOnSpec<Q extends MySQL57Query, C> extends MySQLAfterJoinIndexHintSpec<Q, C> {
+    interface MySQLTableRouteOnSpec<Q extends MySQL57Query, C> extends MySQLIndexHintOnSpec<Q, C> {
 
-        MySQLOnSpec<Q, C> route(int databaseIndex, int tableIndex);
+        MySQLIndexHintOnSpec<Q, C> route(int databaseIndex, int tableIndex);
 
-        MySQLOnSpec<Q, C> route(int tableIndex);
+        MySQLIndexHintOnSpec<Q, C> route(int tableIndex);
     }
 
     interface MySQLJoinSpec<Q extends MySQL57Query, C> extends MySQLWhereSpec<Q, C> {

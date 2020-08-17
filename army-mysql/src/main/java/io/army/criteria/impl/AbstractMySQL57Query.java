@@ -552,13 +552,13 @@ abstract class AbstractMySQL57Query<Q extends MySQL57Query, C> extends AbstractQ
         }
 
         @Override
-        public MySQLOnSpec<Q, C> route(int databaseIndex, int tableIndex) {
+        public MySQLIndexHintOnSpec<Q, C> route(int databaseIndex, int tableIndex) {
             this.mySQL57Query.doRouteClause(databaseIndex, tableIndex);
             return this;
         }
 
         @Override
-        public MySQLOnSpec<Q, C> route(int tableIndex) {
+        public MySQLIndexHintOnSpec<Q, C> route(int tableIndex) {
             this.mySQL57Query.doRouteClause(-1, tableIndex);
             return this;
         }
