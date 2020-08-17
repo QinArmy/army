@@ -162,19 +162,19 @@ public interface Query extends SQLStatement {
 
     interface LimitSpec<Q extends Query, C> extends LimitClause<Q, C>, LockSpec<Q, C> {
         @Override
-        QuerySpec<Q> limit(int rowCount);
+        LockSpec<Q, C> limit(int rowCount);
 
         @Override
-        QuerySpec<Q> limit(int offset, int rowCount);
+        LockSpec<Q, C> limit(int offset, int rowCount);
 
         @Override
-        QuerySpec<Q> ifLimit(Function<C, LimitOption> function);
+        LockSpec<Q, C> ifLimit(Function<C, LimitOption> function);
 
         @Override
-        QuerySpec<Q> ifLimit(Predicate<C> predicate, int rowCount);
+        LockSpec<Q, C> ifLimit(Predicate<C> predicate, int rowCount);
 
         @Override
-        QuerySpec<Q> ifLimit(Predicate<C> predicate, int offset, int rowCount);
+        LockSpec<Q, C> ifLimit(Predicate<C> predicate, int offset, int rowCount);
     }
 
     interface LockSpec<Q extends Query, C> extends QuerySpec<Q>, UnionClause<Q, C> {

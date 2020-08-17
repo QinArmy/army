@@ -149,11 +149,11 @@ public interface MySQL57Query extends Query {
 
     interface MySQLGroupBySpec<Q extends MySQL57Query, C> extends MySQLOrderBySpec<Q, C> {
 
-        MySQLHavingSpec<Q, C> groupBy(SortPart... sortParts);
+        MySQLWithRollUpSpec<Q, C> groupBy(SortPart... sortParts);
 
-        MySQLHavingSpec<Q, C> groupBy(List<SortPart> sortPartList);
+        MySQLWithRollUpSpec<Q, C> groupBy(List<SortPart> sortPartList);
 
-        MySQLHavingSpec<Q, C> ifGroupBy(Function<C, List<SortPart>> function);
+        MySQLWithRollUpSpec<Q, C> ifGroupBy(Function<C, List<SortPart>> function);
     }
 
     interface MySQLWithRollUpSpec<Q extends MySQL57Query, C> extends MySQLHavingSpec<Q, C> {

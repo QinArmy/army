@@ -9,7 +9,6 @@ import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
 import io.army.util.Assert;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -57,12 +56,23 @@ abstract class StandardSubQueries<Q extends Query, C> extends AbstractStandardQu
 
 
     @Override
-    public String toString() {
-        return "#SubQuery@" + System.identityHashCode(this);
+    public final String toString() {
+        String subQueryType;
+        if (this instanceof ScalarSubQuery) {
+            subQueryType = "#ScalarSubQuery@";
+        } else if (this instanceof RowSubQuery) {
+            subQueryType = "#RowSubQuery@";
+        } else if (this instanceof ColumnSubQuery) {
+            subQueryType = "#ColumnSubQuery@";
+        } else {
+            subQueryType = "#SubQuery@";
+        }
+
+        return subQueryType + System.identityHashCode(this);
     }
 
     @Override
-    public Selection selection(String derivedFieldName) {
+    public final Selection selection(String derivedFieldName) {
         if (this.selectionMap == null) {
             this.selectionMap = CriteriaUtils.createSelectionMap(selectPartList());
         }
@@ -76,7 +86,7 @@ abstract class StandardSubQueries<Q extends Query, C> extends AbstractStandardQu
 
 
     @Override
-    public void appendSQL(SQLContext context) {
+    public final void appendSQL(SQLContext context) {
         context.dql().subQuery(this, context);
     }
 
@@ -99,11 +109,7 @@ abstract class StandardSubQueries<Q extends Query, C> extends AbstractStandardQu
 
     @Override
     final void internalAsSelect() {
-        if (this.selectionMap == null) {
-            this.selectionMap = Collections.emptyMap();
-        } else {
-            this.selectionMap = Collections.unmodifiableMap(this.selectionMap);
-        }
+        // no-op
     }
 
     @Override
@@ -456,31 +462,31 @@ abstract class StandardSubQueries<Q extends Query, C> extends AbstractStandardQu
         }
 
         @Override
-        public final QuerySpec<ScalarSubQuery<E>> limit(int rowCount) {
+        public final LockSpec<ScalarSubQuery<E>, C> limit(int rowCount) {
             this.actualSelect.limit(rowCount);
             return this;
         }
 
         @Override
-        public final QuerySpec<ScalarSubQuery<E>> limit(int offset, int rowCount) {
+        public final LockSpec<ScalarSubQuery<E>, C> limit(int offset, int rowCount) {
             this.actualSelect.limit(offset, rowCount);
             return this;
         }
 
         @Override
-        public final QuerySpec<ScalarSubQuery<E>> ifLimit(Function<C, LimitOption> function) {
+        public final LockSpec<ScalarSubQuery<E>, C> ifLimit(Function<C, LimitOption> function) {
             this.actualSelect.ifLimit(function);
             return this;
         }
 
         @Override
-        public final QuerySpec<ScalarSubQuery<E>> ifLimit(Predicate<C> predicate, int rowCount) {
+        public final LockSpec<ScalarSubQuery<E>, C> ifLimit(Predicate<C> predicate, int rowCount) {
             this.actualSelect.ifLimit(predicate, rowCount);
             return this;
         }
 
         @Override
-        public final QuerySpec<ScalarSubQuery<E>> ifLimit(Predicate<C> predicate, int offset, int rowCount) {
+        public final LockSpec<ScalarSubQuery<E>, C> ifLimit(Predicate<C> predicate, int offset, int rowCount) {
             this.actualSelect.ifLimit(predicate, offset, rowCount);
             return this;
         }

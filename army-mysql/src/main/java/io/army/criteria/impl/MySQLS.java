@@ -1,9 +1,9 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.EmptyObject;
-import io.army.criteria.mysql.MySQL57Query;
-import io.army.criteria.mysql.MySQL57Select;
-import io.army.criteria.mysql.MySQL57SubQuery;
+import io.army.criteria.mysql.*;
+import io.army.meta.mapping.MappingFactory;
+import io.army.meta.mapping.MappingMeta;
 
 public abstract class MySQLS extends SQLS {
 
@@ -54,12 +54,51 @@ public abstract class MySQLS extends SQLS {
         return MySQL57ContextualSelect.build(EmptyObject.getInstance());
     }
 
-    public static <C> MySQL57SubQuery.MySQLSubQuerySelectPartAble<C> mySQL57SubQuery(C criteria) {
-        return null;
+    public static <C> MySQL57Query.MySQLSelectPartSpec<MySQL57SubQuery, C> mySQL57SubQuery(C criteria) {
+        return MySQL57SubQueries.build(criteria);
     }
 
-    public static MySQL57SubQuery.MySQLSubQuerySelectPartAble<EmptyObject> mySQL57SubQuery() {
-        return null;
+    public static MySQL57Query.MySQLSelectPartSpec<MySQL57SubQuery, EmptyObject> mySQL57SubQuery() {
+        return MySQL57SubQueries.build(EmptyObject.getInstance());
+    }
+
+    public static <C> MySQL57Query.MySQLSelectPartSpec<MySQL57RowSubQuery, C> mySQL57RowSubQuery(C criteria) {
+        return MySQL57SubQueries.buildRowSubQuery(criteria);
+    }
+
+    public static MySQL57Query.MySQLSelectPartSpec<MySQL57RowSubQuery, EmptyObject> mySQL57RowSubQuery() {
+        return MySQL57SubQueries.buildRowSubQuery(EmptyObject.getInstance());
+    }
+
+    public static <E, C> MySQL57ColumnSubQuery.MySQLColumnSelectionSpec<E, C> mySQL57ColumnSubQuery(
+            Class<E> columnType, C criteria) {
+        return MySQL57SubQueries.buildColumnSubQuery(columnType, criteria);
+    }
+
+    public static <E> MySQL57ColumnSubQuery.MySQLColumnSelectionSpec<E, EmptyObject> mySQL57ColumnSubQuery(
+            Class<E> columnType) {
+        return MySQL57SubQueries.buildColumnSubQuery(columnType, EmptyObject.getInstance());
+    }
+
+    public static <E, C> MySQL57ScalarSubQuery.MySQLScalarSelectionSpec<E, C> mySQL57ScalarSubQuery(
+            Class<E> javaType, MappingMeta mappingType, C criteria) {
+        return MySQL57SubQueries.buildScalarSubQuery(javaType, mappingType, criteria);
+    }
+
+    public static <E> MySQL57ScalarSubQuery.MySQLScalarSelectionSpec<E, EmptyObject> mySQL57ScalarSubQuery(
+            Class<E> javaType, MappingMeta mappingType) {
+        return MySQL57SubQueries.buildScalarSubQuery(javaType, mappingType, EmptyObject.getInstance());
+    }
+
+    public static <E, C> MySQL57ScalarSubQuery.MySQLScalarSelectionSpec<E, C> mySQL57ScalarSubQuery(
+            Class<E> javaType, C criteria) {
+        return MySQL57SubQueries.buildScalarSubQuery(javaType, MappingFactory.getDefaultMapping(javaType), criteria);
+    }
+
+    public static <E> MySQL57ScalarSubQuery.MySQLScalarSelectionSpec<E, EmptyObject> mySQL57ScalarSubQuery(
+            Class<E> javaType) {
+        return MySQL57SubQueries.buildScalarSubQuery(javaType, MappingFactory.getDefaultMapping(javaType)
+                , EmptyObject.getInstance());
     }
 
 }

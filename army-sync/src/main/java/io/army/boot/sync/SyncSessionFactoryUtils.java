@@ -20,6 +20,7 @@ import io.army.util.ReflectionUtils;
 
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
+import javax.sql.XADataSource;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -39,6 +40,14 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
         T primary = null;
         if (dataSource instanceof RoutingDataSource) {
             primary = ((RoutingDataSource<T>) dataSource).getPrimaryDataSource();
+
+            if (dataSource instanceof XADataSource && !(primary instanceof XADataSource)) {
+                throw new SessionFactoryException("%s getPrimaryDataSource() return error."
+                        , dataSource.getClass().getName());
+            } else if (dataSource instanceof DataSource && !(primary instanceof DataSource)) {
+                throw new SessionFactoryException("%s getPrimaryDataSource() return error."
+                        , dataSource.getClass().getName());
+            }
         }
         if (primary == null) {
             primary = dataSource;

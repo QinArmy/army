@@ -156,13 +156,27 @@ public abstract class SQLS extends AbstractSQLS {
         return StandardSubQueries.buildColumnSubQuery(columnType, criteria);
     }
 
+    public static <E> ColumnSubQuery.ColumnSelectionSpec<E, EmptyObject> columnSubQuery(Class<E> columnType) {
+        return StandardSubQueries.buildColumnSubQuery(columnType, EmptyObject.getInstance());
+    }
+
     public static <E, C> ScalarSubQuery.ScalarSelectionSpec<E, C> scalarSubQuery(
             Class<E> javaType, MappingMeta mappingType, C criteria) {
         return StandardSubQueries.buildScalarSubQuery(javaType, mappingType, criteria);
     }
 
+    public static <E> ScalarSubQuery.ScalarSelectionSpec<E, EmptyObject> scalarSubQuery(
+            Class<E> javaType, MappingMeta mappingType) {
+        return StandardSubQueries.buildScalarSubQuery(javaType, mappingType, EmptyObject.getInstance());
+    }
+
     public static <E, C> ScalarSubQuery.ScalarSelectionSpec<E, C> scalarSubQuery(Class<E> javaType, C criteria) {
         return StandardSubQueries.buildScalarSubQuery(javaType, MappingFactory.getDefaultMapping(javaType), criteria);
+    }
+
+    public static <E> ScalarSubQuery.ScalarSelectionSpec<E, EmptyObject> scalarSubQuery(Class<E> javaType) {
+        return StandardSubQueries.buildScalarSubQuery(javaType, MappingFactory.getDefaultMapping(javaType)
+                , EmptyObject.getInstance());
     }
 
     /*################################## blow sql reference method ##################################*/

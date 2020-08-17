@@ -311,6 +311,9 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
     }
 
     final void doLimit(int offset, int rowCount) {
+        if (this instanceof RowSubQuery && rowCount > -1 && rowCount != 1) {
+            throw new IllegalArgumentException("RowSubQuery limit clause rowCount only one.");
+        }
         this.offset = offset;
         this.rowCount = rowCount;
     }

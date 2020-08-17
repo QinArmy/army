@@ -245,7 +245,7 @@ abstract class AbstractMySQL57Query<Q extends MySQL57Query, C> extends AbstractQ
     }
 
     @Override
-    public final MySQLHavingSpec<Q, C> groupBy(SortPart... sortParts) {
+    public final MySQLWithRollUpSpec<Q, C> groupBy(SortPart... sortParts) {
         if (sortParts.length == 1) {
             addGroupBy(sortParts[0]);
         } else {
@@ -255,14 +255,14 @@ abstract class AbstractMySQL57Query<Q extends MySQL57Query, C> extends AbstractQ
     }
 
     @Override
-    public final MySQLHavingSpec<Q, C> groupBy(List<SortPart> sortPartList) {
+    public final MySQLWithRollUpSpec<Q, C> groupBy(List<SortPart> sortPartList) {
         Assert.notEmpty(sortPartList, "sortPartList not empty.");
         addGroupByList(sortPartList);
         return this;
     }
 
     @Override
-    public final MySQLHavingSpec<Q, C> ifGroupBy(Function<C, List<SortPart>> function) {
+    public final MySQLWithRollUpSpec<Q, C> ifGroupBy(Function<C, List<SortPart>> function) {
         addGroupByList(function.apply(this.criteria));
         return this;
     }
