@@ -134,7 +134,7 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
         return this;
     }
 
-    /*################################## blow WhereAndAble method ##################################*/
+    /*################################## blow WhereAndSpec method ##################################*/
 
     @Override
     public final WhereAndAble<T, C> and(IPredicate predicate) {

@@ -14,7 +14,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select, Select.SelectAble, InnerQuery {
+abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implements Query, InnerQuery {
 
     protected final C criteria;
 
@@ -42,7 +42,7 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select, Sel
 
     private boolean prepared;
 
-    AbstractSelect(C criteria) {
+    AbstractQuery(C criteria) {
         Assert.notNull(criteria, "criteria required");
         this.criteria = criteria;
     }
@@ -57,9 +57,10 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select, Sel
     }
 
 
-    public final Select asSelect() {
+    @SuppressWarnings("unchecked")
+    public final Q asQuery() {
         if (this.prepared) {
-            return this;
+            return (Q) this;
         }
         processSelectPartList(this.selectPartList, this.tableWrapperList);
 
@@ -78,7 +79,7 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select, Sel
         internalAsSelect();
 
         this.prepared = true;
-        return this;
+        return (Q) this;
     }
 
     @Override
@@ -158,6 +159,9 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select, Sel
             this.modifierList = Collections.singletonList(distinct);
         }
         Assert.notEmpty(selectPartList, "select clause must have SelectPart.");
+        if (this instanceof ColumnSubQuery && selectPartList.size() != 1) {
+            throw new IllegalArgumentException("ColumnSubQuery only one selection.");
+        }
         this.selectPartList.addAll(selectPartList);
     }
 
@@ -166,6 +170,9 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select, Sel
 
         this.modifierList = new ArrayList<>(modifierList);
         Assert.notEmpty(selectPartList, "select clause must have SelectPart.");
+        if (this instanceof ColumnSubQuery && selectPartList.size() != 1) {
+            throw new IllegalArgumentException("ColumnSubQuery only one selection.");
+        }
         this.selectPartList.addAll(selectPartList);
     }
 
@@ -174,12 +181,18 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select, Sel
         if (distinct != null) {
             this.modifierList = Collections.singletonList(distinct);
         }
+        if (this instanceof ColumnSubQuery && !(selectPart instanceof Selection)) {
+            throw new IllegalArgumentException("ColumnSubQuery only one selection.");
+        }
         this.selectPartList.add(selectPart);
     }
 
     final <M extends SQLModifier, S extends SelectPart> void doSelectClause(List<M> modifierList, S selectPart) {
         Assert.state(this.selectPartList.isEmpty(), "select clause ended.");
         this.modifierList = new ArrayList<>(modifierList);
+        if (this instanceof ColumnSubQuery && !(selectPart instanceof Selection)) {
+            throw new IllegalArgumentException("ColumnSubQuery only one selection.");
+        }
         this.selectPartList.add(selectPart);
     }
 
@@ -273,7 +286,7 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select, Sel
     }
 
     final void addHavingList(List<IPredicate> predicateList) {
-        if (!CollectionUtils.isEmpty(this.groupByList) && !CollectionUtils.isEmpty(predicateList)) {
+        if (!CollectionUtils.isEmpty(this.groupByList) && !predicateList.isEmpty()) {
             if (this.havingList == null) {
                 this.havingList = new ArrayList<>(predicateList.size());
             }
@@ -289,7 +302,7 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select, Sel
     }
 
     final void addOrderByList(List<SortPart> sortPartList) {
-        if (!CollectionUtils.isEmpty(sortPartList)) {
+        if (!sortPartList.isEmpty()) {
             if (this.orderByList == null) {
                 this.orderByList = new ArrayList<>(sortPartList.size());
             }
@@ -300,10 +313,6 @@ abstract class AbstractSelect<C> extends AbstractSQLDebug implements Select, Sel
     final void doLimit(int offset, int rowCount) {
         this.offset = offset;
         this.rowCount = rowCount;
-    }
-
-    final Select thisSelect() {
-        return this.asSelect();
     }
 
     final TableWrapperImpl lastTableWrapper() {

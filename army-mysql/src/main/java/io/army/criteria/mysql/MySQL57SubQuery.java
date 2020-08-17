@@ -8,6 +8,13 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+
+/**
+ * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/select.html">MySQL 5.7 Select statement</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/union.html">MySQL 5.7 UNION Clause</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/join.html">MySQL 5.7 JOIN Clause</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/index-hints.html">MySQL 5.7  Index Hints</a>
+ */
 public interface MySQL57SubQuery extends SubQuery {
 
 
@@ -175,9 +182,9 @@ public interface MySQL57SubQuery extends SubQuery {
 
     interface MySQLSubQueryLockAble<C> extends SubQueryAble, Select.UnionClause<C> {
 
-        SubQueryAble forUpdate();
+        Select.UnionClause<C> forUpdate();
 
-        SubQueryAble lockInShareMode();
+        Select.UnionClause<C> lockInShareMode();
 
     }
 

@@ -8,6 +8,10 @@ enum JoinType implements SQLModifier {
     JOIN("JOIN"),
     RIGHT("RIGHT JOIN"),
     FULL("FULL JOIN"),
+
+    /**
+     * MySQL
+     */
     STRAIGHT_JOIN("STRAIGHT_JOIN");
 
     public final String keyWords;

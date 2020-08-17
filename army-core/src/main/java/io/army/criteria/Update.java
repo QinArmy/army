@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public interface Update extends SQLStatement, SQLStatement.SQLAble, SQLDebug, QueryAble {
+public interface Update extends SQLStatement, SQLStatement.SQLAble, SQLDebug, Query {
 
     interface UpdateSQLAble extends SQLAble {
 

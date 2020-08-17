@@ -52,9 +52,9 @@ public abstract class CriteriaCounselor {
                         , ColumnSubQueryAdaptor.class.getName()));
             }
         } else if (subQuery instanceof SubQuery) {
-            if (!(subQuery instanceof StandardSubQueryMultiSelect)) {
+            if (!(subQuery instanceof StandardSubQueries)) {
                 throw new IllegalArgumentException(String.format("%s isn't instance of %s", subQuery
-                        , StandardSubQueryMultiSelect.class.getName()));
+                        , StandardSubQueries.class.getName()));
             }
         } else {
             throw new IllegalArgumentException(String.format("%s isn't instance of %s", subQuery

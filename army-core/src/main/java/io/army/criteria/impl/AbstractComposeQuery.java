@@ -11,8 +11,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class AbstractComposeQuery<C> implements PartQuery, SelfDescribed
-        , InnerComposeQuery {
+abstract class AbstractComposeQuery<Q extends Query, C> implements PartQuery, SelfDescribed, Query
+        , Query.QuerySpec<Q>, InnerComposeQuery {
 
 
     final C criteria;
@@ -29,7 +29,7 @@ abstract class AbstractComposeQuery<C> implements PartQuery, SelfDescribed
 
     private boolean prepared;
 
-    AbstractComposeQuery(C criteria, QueryAble query) {
+    AbstractComposeQuery(C criteria, Q query) {
         this.criteria = criteria;
         this.generalQuery = (InnerGeneralQuery) query;
         Map<String, Selection> selectionMap = CriteriaUtils.createSelectionMap(this.generalQuery.selectPartList());
@@ -97,13 +97,26 @@ abstract class AbstractComposeQuery<C> implements PartQuery, SelfDescribed
         }
     }
 
-    final void asQuery() {
-        if (this.orderPartList == null) {
-            this.orderPartList = Collections.emptyList();
-        } else {
-            this.orderPartList = Collections.unmodifiableList(this.orderPartList);
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public final Q asQuery() {
+        if (!this.prepared) {
+            if (this.orderPartList == null) {
+                this.orderPartList = Collections.emptyList();
+            } else {
+                this.orderPartList = Collections.unmodifiableList(this.orderPartList);
+            }
+            this.prepared = true;
         }
-        this.prepared = true;
+        return (Q) this;
+    }
+
+    @Override
+    public final void clear() {
+        this.orderPartList = null;
+        this.offset = -1;
+        this.rowCount = -1;
     }
 
     /*################################## blow SQLStatement method ##################################*/
@@ -114,7 +127,7 @@ abstract class AbstractComposeQuery<C> implements PartQuery, SelfDescribed
     }
 
     @Override
-    public List<SelectPart> selectPartList() {
+    public final List<SelectPart> selectPartList() {
         return this.generalQuery.selectPartList();
     }
     /*################################## blow InnerQueryAfterSet method ##################################*/

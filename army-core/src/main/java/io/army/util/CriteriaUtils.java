@@ -34,14 +34,14 @@ public abstract class CriteriaUtils {
                     .join(parentMeta, "p").on(childMeta.id().equal(parentMeta.id()))
                     .where(createPredicateList(tableMeta, propNameList, valueList))
                     .limit(2)
-                    .asSelect();
+                    .asQuery();
         } else {
             select = SQLS.multiSelect()
                     .select(tableMeta.id())
                     .from(tableMeta, "t")
                     .where(createPredicateList(tableMeta, propNameList, valueList))
                     .limit(2)
-                    .asSelect();
+                    .asQuery();
         }
         return select;
     }
@@ -57,13 +57,13 @@ public abstract class CriteriaUtils {
                     .from(childMeta, "c") // small table first
                     .join(parentMeta, "p").on(childMeta.id().equal(parentMeta.id()))
                     .where(childMeta.id().equal(id))
-                    .asSelect();
+                    .asQuery();
         } else {
             select = SQLS.multiSelect()
                     .select(SQLS.group(tableMeta, "t"))
                     .from(tableMeta, "t")
                     .where(tableMeta.id().equal(id))
-                    .asSelect();
+                    .asQuery();
         }
         return select;
     }
@@ -81,7 +81,7 @@ public abstract class CriteriaUtils {
                     .join(parentMeta, "p").on(parentMeta.id().equal(childMeta.id()))
                     .where(createPredicateList(tableMeta, propNameList, valueList))
                     .limit(2)
-                    .asSelect();
+                    .asQuery();
 
         } else {
             select = SQLS.multiSelect()
@@ -89,7 +89,7 @@ public abstract class CriteriaUtils {
                     .from(tableMeta, "d")
                     .where(createPredicateList(tableMeta, propNameList, valueList))
                     .limit(2)
-                    .asSelect();
+                    .asQuery();
         }
         return select;
     }

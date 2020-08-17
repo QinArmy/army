@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.EmptyObject;
+import io.army.criteria.mysql.MySQL57Query;
 import io.army.criteria.mysql.MySQL57Select;
 import io.army.criteria.mysql.MySQL57SubQuery;
 
@@ -45,11 +46,11 @@ public abstract class MySQLS extends SQLS {
     /*################################## blow select method ##################################*/
 
 
-    public static <C> MySQL57Select.MySQLSelectPartAble<C> mySQL57Select(C criteria) {
+    public static <C> MySQL57Query.MySQLSelectPartSpec<MySQL57Select, C> mySQL57Select(C criteria) {
         return MySQL57ContextualSelect.build(criteria);
     }
 
-    public static MySQL57Select.MySQLSelectPartAble<EmptyObject> mySQL57Select() {
+    public static MySQL57Query.MySQLSelectPartSpec<MySQL57Select, EmptyObject> mySQL57Select() {
         return MySQL57ContextualSelect.build(EmptyObject.getInstance());
     }
 

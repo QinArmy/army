@@ -27,7 +27,7 @@ abstract class CriteriaContextHolder {
     }
 
     /**
-     * @see Select.SelectAble#asSelect()
+     * @see Select.SelectAble#asQuery()
      */
     static void clearContext(CriteriaContext context) {
         CriteriaContext current = HOLDER.get();

@@ -9,67 +9,72 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements
-        Select.UnionAble<C>, Select, SelfDescribed, InnerStandardComposeQuery {
+abstract class ComposeSelects<Q extends Query, C> extends AbstractComposeQuery<Q, C> implements
+        Query.UnionSpec<Q, C>, InnerStandardComposeQuery {
 
-    static <C> UnionAble<C> brackets(C criteria, Select enclosedSelect) {
-        return new BracketsSelect<>(criteria, enclosedSelect);
+    static <Q extends Query, C> UnionSpec<Q, C> brackets(C criteria, Q enclosedQuery) {
+        return new BracketsQuery<>(criteria, enclosedQuery);
     }
 
-    static <C, S extends Select> UnionAble<C> compose(C criteria, Select leftSelect, SQLModifier modifier
-            , Function<C, S> function) {
-        Select left = leftSelect, right;
+    @SuppressWarnings("unchecked")
+    static <Q extends Query, C> UnionSpec<Q, C> compose(C criteria, Q leftQuery, SQLModifier modifier
+            , Function<C, Q> function) {
+        Q left = leftQuery, right;
         if (left.requiredBrackets()) {
-            left = new BracketsSelect<>(criteria, left);
+            left = (Q) new BracketsQuery<>(criteria, left);
         }
         right = function.apply(criteria);
         if (right.requiredBrackets()) {
-            right = new BracketsSelect<>(criteria, right);
+            right = (Q) new BracketsQuery<>(criteria, right);
         }
-        return new ComposeSelectImpl<>(criteria, left, modifier, right);
+        return new ComposeQueryImpl<>(criteria, left, modifier, right);
     }
 
-    private ComposeSelects(C criteria, Select firstSelect) {
+    private ComposeSelects(C criteria, Q firstSelect) {
         super(criteria, firstSelect);
     }
 
 
+    @SuppressWarnings("unchecked")
     @Override
-    public final UnionAble<C> brackets() {
-        return new BracketsSelect<>(criteria, this);
+    public final UnionSpec<Q, C> bracketsQuery() {
+        return new BracketsQuery<>(criteria, (Q) this);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public final <S extends Select> UnionAble<C> union(Function<C, S> function) {
-        return compose(this.criteria, this, UnionType.UNION, function);
+    public final UnionSpec<Q, C> union(Function<C, Q> function) {
+        return compose(this.criteria, (Q) this, UnionType.UNION, function);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public final <S extends Select> UnionAble<C> unionAll(Function<C, S> function) {
-        return compose(this.criteria, this, UnionType.UNION_ALL, function);
+    public final UnionSpec<Q, C> unionAll(Function<C, Q> function) {
+        return compose(this.criteria, (Q) this, UnionType.UNION_ALL, function);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public final <S extends Select> UnionAble<C> unionDistinct(Function<C, S> function) {
-        return compose(this.criteria, this, UnionType.UNION_DISTINCT, function);
+    public final UnionSpec<Q, C> unionDistinct(Function<C, Q> function) {
+        return compose(this.criteria, (Q) this, UnionType.UNION_DISTINCT, function);
     }
 
     /*################################## blow OrderByClause method ##################################*/
 
     @Override
-    public final LimitClause<C> orderBy(SortPart sortPart) {
+    public final LimitClause<Q, C> orderBy(SortPart sortPart) {
         doOrderBy(sortPart);
         return this;
     }
 
     @Override
-    public final LimitClause<C> orderBy(List<SortPart> sortPartList) {
+    public final LimitClause<Q, C> orderBy(List<SortPart> sortPartList) {
         doOrderBy(sortPartList);
         return this;
     }
 
     @Override
-    public final LimitClause<C> orderBy(Function<C, List<SortPart>> function) {
+    public final LimitClause<Q, C> ifOrderBy(Function<C, List<SortPart>> function) {
         doOrderBy(function);
         return this;
     }
@@ -78,56 +83,46 @@ abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements
     /*################################## blow LimitClause method ##################################*/
 
     @Override
-    public final SelectAble limit(int rowCount) {
+    public final QuerySpec<Q> limit(int rowCount) {
         doLimit(rowCount);
         return this;
     }
 
     @Override
-    public final SelectAble limit(int offset, int rowCount) {
+    public final QuerySpec<Q> limit(int offset, int rowCount) {
         doLimit(offset, rowCount);
         return this;
     }
 
 
     @Override
-    public final SelectAble ifLimit(Predicate<C> predicate, int rowCount) {
+    public final QuerySpec<Q> ifLimit(Predicate<C> predicate, int rowCount) {
         doLimit(predicate, rowCount);
         return this;
     }
 
     @Override
-    public final SelectAble ifLimit(Predicate<C> predicate, int offset, int rowCount) {
+    public final QuerySpec<Q> ifLimit(Predicate<C> predicate, int offset, int rowCount) {
         doLimit(predicate, offset, rowCount);
         return this;
     }
 
     @Override
-    public final SelectAble ifLimit(Function<C, LimitOption> function) {
+    public final QuerySpec<Q> ifLimit(Function<C, LimitOption> function) {
         doIfLimit(function);
         return this;
     }
 
-    @Override
-    public final Select asSelect() {
-        asQuery();
-        return this;
-    }
-
-    @Override
-    public final void clear() {
-
-    }
 
     /*################################## blow static inner class ##################################*/
 
-    private static final class BracketsSelect<C> extends ComposeSelects<C> {
+    private static final class BracketsQuery<Q extends Query, C> extends ComposeSelects<Q, C> {
 
-        private final Select enclosedSelect;
+        private final Q enclosedQuery;
 
-        BracketsSelect(C criteria, Select enclosedSelect) {
-            super(criteria, enclosedSelect);
-            this.enclosedSelect = enclosedSelect;
+        BracketsQuery(C criteria, Q enclosedQuery) {
+            super(criteria, enclosedQuery);
+            this.enclosedQuery = enclosedQuery;
         }
 
         @Override
@@ -139,25 +134,31 @@ abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements
         public void appendSQL(SQLContext context) {
             SQLBuilder builder = context.sqlBuilder()
                     .append(" (");
-            context.dql().select(this.enclosedSelect, context);
+            if (this.enclosedQuery instanceof Select) {
+                context.dql().select((Select) this.enclosedQuery, context);
+            } else if (this.enclosedQuery instanceof SubQuery) {
+                context.dql().subQuery((SubQuery) this.enclosedQuery, context);
+            } else {
+                throw new IllegalStateException(String.format("%s isn't Select or SubQuery.", this.enclosedQuery));
+            }
             builder.append(" )");
         }
 
     }
 
-    private static final class ComposeSelectImpl<C> extends ComposeSelects<C> implements Select, SelfDescribed {
+    private static final class ComposeQueryImpl<Q extends Query, C> extends ComposeSelects<Q, C> {
 
-        private final Select leftSelect;
+        private final Q leftQuery;
 
         private final SQLModifier modifier;
 
-        private final Select rightSelect;
+        private final Q rightQuery;
 
-        ComposeSelectImpl(C criteria, Select leftSelect, SQLModifier modifier, Select rightSelect) {
-            super(criteria, leftSelect);
-            this.leftSelect = leftSelect;
+        ComposeQueryImpl(C criteria, Q leftQuery, SQLModifier modifier, Q rightQuery) {
+            super(criteria, leftQuery);
+            this.leftQuery = leftQuery;
             this.modifier = modifier;
-            this.rightSelect = rightSelect;
+            this.rightQuery = rightQuery;
         }
 
         @Override
@@ -168,14 +169,29 @@ abstract class ComposeSelects<C> extends AbstractComposeQuery<C> implements
         @Override
         public void appendSQL(SQLContext context) {
             DQL dql = context.dql();
-            dql.select(leftSelect, context);
 
-            context.sqlBuilder()
-                    .append(" ")
-                    .append(modifier.render())
-                    .append(" ");
+            if (this.leftQuery instanceof Select) {
+                dql.select((Select) this.leftQuery, context);
 
-            dql.select(rightSelect, context);
+                context.sqlBuilder()
+                        .append(" ")
+                        .append(this.modifier.render())
+                        .append(" ");
+
+                dql.select((Select) this.rightQuery, context);
+            } else if (this.leftQuery instanceof SubQuery) {
+                dql.subQuery((SubQuery) this.leftQuery, context);
+
+                context.sqlBuilder()
+                        .append(" ")
+                        .append(this.modifier.render())
+                        .append(" ");
+
+                dql.subQuery((SubQuery) this.rightQuery, context);
+            } else {
+                throw new IllegalStateException(String.format("%s isn't Select or SubQuery.", this.leftQuery));
+            }
+
         }
 
     }

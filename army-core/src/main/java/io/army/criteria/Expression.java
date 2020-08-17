@@ -46,7 +46,7 @@ public interface Expression<E> extends SelectionAble, SelfDescribed, MappingMeta
     /**
      * relational operate with {@code =}
      *
-     * @see Select.WhereAndAble#ifAnd(IPredicate)
+     * @see Query.WhereAndSpec#ifAnd(IPredicate)
      * @see Update.WhereAndAble#ifAnd(IPredicate)
      * @see Delete.SingleWhereAndAble#ifAnd(IPredicate)
      */

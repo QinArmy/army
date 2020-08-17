@@ -63,7 +63,7 @@ public abstract class AbstractBaseDay implements BaseDao, EnvironmentAware
                 .select(tableMeta.id())
                 .from(tableMeta, "t")
                 .where(tableMeta.id().equal(id))
-                .asSelect();
+                .asQuery();
         return session.selectOne(select, tableMeta.id().javaType(), Visible.resolve(visible)) != null;
     }
 

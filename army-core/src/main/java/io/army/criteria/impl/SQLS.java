@@ -136,38 +136,33 @@ public abstract class SQLS extends AbstractSQLS {
         return StandardContextualBatchDelete.build(criteria);
     }
 
-    public static Select.SelectPartAble<EmptyObject> multiSelect() {
+    public static Query.SelectPartSpec<Select, EmptyObject> multiSelect() {
         return StandardContextualMultiSelect.build(EmptyObject.getInstance());
     }
 
-    public static <C> Select.SelectPartAble<C> multiSelect(C criteria) {
+    public static <C> Query.SelectPartSpec<Select, C> multiSelect(C criteria) {
         return StandardContextualMultiSelect.build(criteria);
     }
 
-    public static <C> SubQuery.SubQuerySelectPartAble<C> subQuery() {
-        return new SubQueryAdaptor<>(
-                CriteriaContextHolder.getContext().criteria()
-        );
+    public static <C> Query.SelectPartSpec<SubQuery, C> subQuery(C criteria) {
+        return StandardSubQueries.build(criteria);
     }
 
-    public static <C> RowSubQuery.RowSubQuerySelectPartAble<C> rowSubQuery() {
-        return RowSubQueryAdaptor.build(CriteriaContextHolder.getContext().criteria());
+    public static <C> Query.SelectPartSpec<RowSubQuery, C> rowSubQuery(C criteria) {
+        return StandardSubQueries.buildRowSubQuery(criteria);
     }
 
-    public static <E, C> ColumnSubQuery.ColumnSubQuerySelectionAble<E, C> columnSubQuery(Class<E> columnType) {
-        return  ColumnSubQueryAdaptor.build(columnType,
-                CriteriaContextHolder.getContext().criteria()
-        );
+    public static <E, C> ColumnSubQuery.ColumnSelectionSpec<E, C> columnSubQuery(Class<E> columnType, C criteria) {
+        return StandardSubQueries.buildColumnSubQuery(columnType, criteria);
     }
 
-    public static <E, C> ScalarSubQuery.ScalarSubQuerySelectionAble<E, C> scalarSubQuery(
-            Class<E> columnType, MappingMeta mappingType) {
-        return ScalarSubQueryAdaptor.build(columnType, mappingType, CriteriaContextHolder.getContext().criteria());
+    public static <E, C> ScalarSubQuery.ScalarSelectionSpec<E, C> scalarSubQuery(
+            Class<E> javaType, MappingMeta mappingType, C criteria) {
+        return StandardSubQueries.buildScalarSubQuery(javaType, mappingType, criteria);
     }
 
-    public static <E> ScalarSubQuery.ScalarSubQuerySelectionAble<E, EmptyObject> scalarSubQuery(Class<E> columnType) {
-        return ScalarSubQueryAdaptor.build(columnType, MappingFactory.getDefaultMapping(columnType)
-                , CriteriaContextHolder.getContext().criteria());
+    public static <E, C> ScalarSubQuery.ScalarSelectionSpec<E, C> scalarSubQuery(Class<E> javaType, C criteria) {
+        return StandardSubQueries.buildScalarSubQuery(javaType, MappingFactory.getDefaultMapping(javaType), criteria);
     }
 
     /*################################## blow sql reference method ##################################*/
@@ -189,7 +184,7 @@ public abstract class SQLS extends AbstractSQLS {
 
     /**
      * <p>
-     * eg: {@link Select.UnionAble#orderBy(SortPart)}
+     * eg: {@link Query.UnionSpec#orderBy(SortPart)}
      * </p>
      */
     public static <E> Expression<E> composeRef(String selectionAlias) {
@@ -245,11 +240,11 @@ public abstract class SQLS extends AbstractSQLS {
                 ));
     }
 
-    static ExpressionRow row(List<Expression<?>> columnList) {
-        return new ExpressionRowImpl(null);
+    static <T extends IDomain> ExpressionRow<T> row(List<Expression<?>> columnList) {
+        return new ExpressionRowImpl<>(null);
     }
 
-    static <C> ExpressionRow row(Function<C, List<Expression<?>>> function) {
+    static <T extends IDomain, C> ExpressionRow<T> row(Function<C, List<Expression<?>>> function) {
        /* return new ExpressionRowImpl(function.apply(
                 CriteriaContextHolder.getContext().criteria()
         ));*/

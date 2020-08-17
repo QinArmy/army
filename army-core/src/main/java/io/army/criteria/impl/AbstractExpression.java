@@ -785,7 +785,6 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
         return ConvertExpressionImpl.build(this, longMapping);
     }
 
-    @Override
     public final Expression<E> brackets() {
         return BracketsExpression.build(this);
     }
