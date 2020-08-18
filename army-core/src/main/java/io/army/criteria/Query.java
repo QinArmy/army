@@ -130,9 +130,13 @@ public interface Query extends SQLStatement {
 
     interface GroupBySpec<Q extends Query, C> extends OrderBySpec<Q, C> {
 
-        HavingSpec<Q, C> groupBy(SortPart... sortParts);
+        HavingSpec<Q, C> groupBy(SortPart sortPart);
+
+        HavingSpec<Q, C> groupBy(SortPart sortPart1, SortPart sortPart2);
 
         HavingSpec<Q, C> groupBy(List<SortPart> sortPartList);
+
+        HavingSpec<Q, C> groupBy(Function<C, List<SortPart>> function);
 
         HavingSpec<Q, C> ifGroupBy(Function<C, List<SortPart>> function);
     }
@@ -141,7 +145,9 @@ public interface Query extends SQLStatement {
 
         OrderBySpec<Q, C> having(IPredicate predicate);
 
-        OrderBySpec<Q, C> ifHaving(List<IPredicate> predicateList);
+        OrderBySpec<Q, C> having(List<IPredicate> predicateList);
+
+        OrderBySpec<Q, C> having(Function<C, List<IPredicate>> function);
 
         OrderBySpec<Q, C> ifHaving(Function<C, List<IPredicate>> function);
     }
@@ -150,10 +156,16 @@ public interface Query extends SQLStatement {
     interface OrderBySpec<Q extends Query, C> extends OrderByClause<Q, C>, LimitSpec<Q, C> {
 
         @Override
-        LimitSpec<Q, C> orderBy(SortPart... sortPart);
+        LimitClause<Q, C> orderBy(SortPart sortPart);
+
+        @Override
+        LimitClause<Q, C> orderBy(SortPart sortPart1, SortPart sortPart2);
 
         @Override
         LimitSpec<Q, C> orderBy(List<SortPart> sortPartList);
+
+        @Override
+        LimitClause<Q, C> orderBy(Function<C, List<SortPart>> function);
 
         @Override
         LimitSpec<Q, C> ifOrderBy(Function<C, List<SortPart>> function);
@@ -204,9 +216,13 @@ public interface Query extends SQLStatement {
 
     interface OrderByClause<Q extends Query, C> extends LimitClause<Q, C> {
 
-        LimitClause<Q, C> orderBy(SortPart... sortPart);
+        LimitClause<Q, C> orderBy(SortPart sortPart);
+
+        LimitClause<Q, C> orderBy(SortPart sortPart1, SortPart sortPart2);
 
         LimitClause<Q, C> orderBy(List<SortPart> sortPartList);
+
+        LimitClause<Q, C> orderBy(Function<C, List<SortPart>> function);
 
         LimitClause<Q, C> ifOrderBy(Function<C, List<SortPart>> function);
     }

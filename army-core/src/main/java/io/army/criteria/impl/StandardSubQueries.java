@@ -408,14 +408,26 @@ abstract class StandardSubQueries<Q extends Query, C> extends AbstractStandardQu
         }
 
         @Override
-        public final HavingSpec<ScalarSubQuery<E>, C> groupBy(SortPart... sortParts) {
-            this.actualSelect.groupBy(sortParts);
+        public final HavingSpec<ScalarSubQuery<E>, C> groupBy(SortPart sortPart) {
+            this.actualSelect.groupBy(sortPart);
+            return this;
+        }
+
+        @Override
+        public final HavingSpec<ScalarSubQuery<E>, C> groupBy(SortPart sortPart1, SortPart sortPart2) {
+            this.actualSelect.groupBy(sortPart1, sortPart2);
             return this;
         }
 
         @Override
         public final HavingSpec<ScalarSubQuery<E>, C> groupBy(List<SortPart> sortPartList) {
             this.actualSelect.groupBy(sortPartList);
+            return this;
+        }
+
+        @Override
+        public final HavingSpec<ScalarSubQuery<E>, C> groupBy(Function<C, List<SortPart>> function) {
+            this.actualSelect.groupBy(function);
             return this;
         }
 
@@ -432,8 +444,14 @@ abstract class StandardSubQueries<Q extends Query, C> extends AbstractStandardQu
         }
 
         @Override
-        public final OrderBySpec<ScalarSubQuery<E>, C> ifHaving(List<IPredicate> predicateList) {
-            this.actualSelect.ifHaving(predicateList);
+        public final OrderBySpec<ScalarSubQuery<E>, C> having(List<IPredicate> predicateList) {
+            this.actualSelect.having(predicateList);
+            return this;
+        }
+
+        @Override
+        public final OrderBySpec<ScalarSubQuery<E>, C> having(Function<C, List<IPredicate>> function) {
+            this.actualSelect.having(function);
             return this;
         }
 
@@ -444,14 +462,26 @@ abstract class StandardSubQueries<Q extends Query, C> extends AbstractStandardQu
         }
 
         @Override
-        public final LimitSpec<ScalarSubQuery<E>, C> orderBy(SortPart... sortPart) {
+        public final LimitClause<ScalarSubQuery<E>, C> orderBy(SortPart sortPart) {
             this.actualSelect.orderBy(sortPart);
+            return this;
+        }
+
+        @Override
+        public final LimitClause<ScalarSubQuery<E>, C> orderBy(SortPart sortPart1, SortPart sortPart2) {
+            this.actualSelect.orderBy(sortPart1, sortPart2);
             return this;
         }
 
         @Override
         public final LimitSpec<ScalarSubQuery<E>, C> orderBy(List<SortPart> sortPartList) {
             this.actualSelect.orderBy(sortPartList);
+            return this;
+        }
+
+        @Override
+        public final LimitClause<ScalarSubQuery<E>, C> orderBy(Function<C, List<SortPart>> function) {
+            this.actualSelect.orderBy(function);
             return this;
         }
 

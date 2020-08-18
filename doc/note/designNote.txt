@@ -99,6 +99,8 @@
 (4) RowSubQuery,ColumnSubQuery,ScalarSubQuery 都在特定的上下文中有有特殊的意义,如: ScalarSubQuery 本身继承了 Expression 接口,
 ColumnSubQuery 可以使用 in,any ,some,all 等关键字.
 
+注: 25 号问题 已经通过 抽象 io.army.criteria.Query 和 XxxQuery 接口 并加入泛型得到简化。
+
 26. 为什么要坚持 为 不同的数据库 sql 语法写不同的版本,如:MySQL57Select?
 (1)基于 第 25 号问题的设计, sql 表达 api(如:Select,Update,SubQuery) 有时候不易扩展.
 (2)数据库 sql api 本身不同版本要要求不同,如:MySQ 5.7 没有 window 子句,有 procedure，lock 子句也没有 of table 子句,但 MySQL 8.0
@@ -107,4 +109,18 @@ ColumnSubQuery 可以使用 in,any ,some,all 等关键字.
 (4) 这个设计缺点在于 随着数据库的版本的增加相应的 api 版本也增加,但这也是不一定的,因为有时候数据库版本增加了但 sql api 并没有什么变化,
 退一步讲,就算 army 的 sql表达 api 的版本变多了,我认为这也不是核心的问题,在理解和接受的范围内.而且 数据库想要增加一个较大的版本并被广大开发者所
 采用不是一件短时间的事,几个月/一年 恐怕是完不成的,但 对于 army 来说增加一个版本的 sql 表达 api 只需要几天的开发和最多长达几周的测试.
+
+27. groupBy 和 orderBy 子句为什么最多允许 两个 SortPart 参数,多于两个就要用 List 或者 Function?
+(1) Army api 的设计理解之一就是易读性, 虽然 SortPart 常常为字段比较短,但由于类名常常很长,若多于两个 SortPart 则会造成 groupBy/orderBy
+子句 过长而不易阅读.
+
+28. having 子句为什么至多只允许一个 IPredicate 参数,多于一个就要用 List 或者 Function?
+(1) Army api 的设计理解之一就是易读性,predicate 表达式不同于 SortPart 通常较长,若允许多个则违反了易读性的设计原则.
+
+29. groupBy(Function<C,List<SortPart>> function),orderBy(Function<C,List<SortPart>> function)
+,having(Function<C,List<IPredicate>> function) 和  ifGroupBy(Function<C,List<SortPart>> function)
+,ifOrderBy(Function<C,List<SortPart>> function),ifHaving(Function<C,List<IPredicate>> function) 明明参数相同，为什么
+要设计 成两个方法?
+(1) Army api 的设计理解之一就是易读性,阅读者应该从 api 语义上直接快速看出 子句是必然还是可选,而不是要去看具体的 Function 实现.
+
 

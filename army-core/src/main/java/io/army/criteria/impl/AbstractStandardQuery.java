@@ -212,17 +212,27 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
     /*################################## blow GroupBySpec method ##################################*/
 
     @Override
-    public final HavingSpec<Q, C> groupBy(SortPart... sortParts) {
-        if (sortParts.length == 1) {
-            addGroupBy(sortParts[0]);
-        } else {
-            addGroupByList(Arrays.asList(sortParts));
-        }
+    public final HavingSpec<Q, C> groupBy(SortPart sortPart) {
+        addGroupBy(sortPart);
+        return this;
+    }
+
+    @Override
+    public final HavingSpec<Q, C> groupBy(SortPart sortPart1, SortPart sortPart2) {
+        addGroupByList(Arrays.asList(sortPart1, sortPart2));
         return this;
     }
 
     @Override
     public final HavingSpec<Q, C> groupBy(List<SortPart> sortPartList) {
+        Assert.notEmpty(sortPartList, "sortPartList must not empty.");
+        addGroupByList(sortPartList);
+        return this;
+    }
+
+    @Override
+    public final HavingSpec<Q, C> groupBy(Function<C, List<SortPart>> function) {
+        List<SortPart> sortPartList = function.apply(this.criteria);
         Assert.notEmpty(sortPartList, "sortPartList must not empty.");
         addGroupByList(sortPartList);
         return this;
@@ -243,31 +253,50 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
     }
 
     @Override
-    public final OrderBySpec<Q, C> ifHaving(Function<C, List<IPredicate>> function) {
-        addHavingList(function.apply(this.criteria));
+    public final OrderBySpec<Q, C> having(List<IPredicate> predicateList) {
+        Assert.notEmpty(predicateList, "predicateList not empty.");
+        addHavingList(predicateList);
         return this;
     }
 
     @Override
-    public final OrderBySpec<Q, C> ifHaving(List<IPredicate> predicateList) {
+    public final OrderBySpec<Q, C> having(Function<C, List<IPredicate>> function) {
+        List<IPredicate> predicateList = function.apply(this.criteria);
+        Assert.notEmpty(predicateList, "predicateList not empty.");
         addHavingList(predicateList);
+        return this;
+    }
+
+    @Override
+    public final OrderBySpec<Q, C> ifHaving(Function<C, List<IPredicate>> function) {
+        addHavingList(function.apply(this.criteria));
         return this;
     }
 
     /*################################## blow OrderBySpec method ##################################*/
 
     @Override
-    public final LimitSpec<Q, C> orderBy(SortPart... sortPart) {
-        if (sortPart.length == 1) {
-            addOrderBy(sortPart[0]);
-        } else {
-            addOrderByList(Arrays.asList(sortPart));
-        }
+    public final LimitClause<Q, C> orderBy(SortPart sortPart) {
+        addOrderBy(sortPart);
+        return this;
+    }
+
+    @Override
+    public final LimitClause<Q, C> orderBy(SortPart sortPart1, SortPart sortPart2) {
+        addOrderByList(Arrays.asList(sortPart1, sortPart2));
         return this;
     }
 
     @Override
     public final LimitSpec<Q, C> orderBy(List<SortPart> sortPartList) {
+        Assert.notEmpty(sortPartList, "sortPartList must not empty.");
+        addOrderByList(sortPartList);
+        return this;
+    }
+
+    @Override
+    public final LimitClause<Q, C> orderBy(Function<C, List<SortPart>> function) {
+        List<SortPart> sortPartList = function.apply(this.criteria);
         Assert.notEmpty(sortPartList, "sortPartList must not empty.");
         addOrderByList(sortPartList);
         return this;

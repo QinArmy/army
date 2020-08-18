@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/index-hints.html">MySQL 5.7  Index Hints</a>
  */
-public interface MySQLIndexHint {
+public interface MySQL57IndexHint {
 
     /**
      * @return {@code {USE|IGNORE|FORCE} }
@@ -20,5 +20,8 @@ public interface MySQLIndexHint {
      */
     SQLModifier scope();
 
+    /**
+     * @return a unmodifiable list
+     */
     List<IndexMeta<?>> indexMetaList();
 }

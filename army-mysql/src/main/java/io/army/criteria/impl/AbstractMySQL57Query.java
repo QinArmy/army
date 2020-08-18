@@ -4,8 +4,8 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.mysql.InnerMySQL57Query;
 import io.army.criteria.impl.inner.mysql.MySQLTable57Wrapper;
+import io.army.criteria.mysql.MySQL57IndexHint;
 import io.army.criteria.mysql.MySQL57Query;
-import io.army.criteria.mysql.MySQLIndexHint;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
@@ -99,7 +99,7 @@ abstract class AbstractMySQL57Query<Q extends MySQL57Query, C> extends AbstractQ
     }
 
     @Override
-    public final MySQLJoinSpec<Q, C> ifIndexHintList(Function<C, List<MySQLIndexHint>> function) {
+    public final MySQLJoinSpec<Q, C> ifIndexHintList(Function<C, List<MySQL57IndexHint>> function) {
         doAddIndexHint(function);
         return this;
     }
@@ -245,17 +245,27 @@ abstract class AbstractMySQL57Query<Q extends MySQL57Query, C> extends AbstractQ
     }
 
     @Override
-    public final MySQLWithRollUpSpec<Q, C> groupBy(SortPart... sortParts) {
-        if (sortParts.length == 1) {
-            addGroupBy(sortParts[0]);
-        } else {
-            addGroupByList(Arrays.asList(sortParts));
-        }
+    public final MySQLWithRollUpSpec<Q, C> groupBy(SortPart sortPart) {
+        addGroupBy(sortPart);
+        return this;
+    }
+
+    @Override
+    public final MySQLWithRollUpSpec<Q, C> groupBy(SortPart sortPart1, SortPart sortPart2) {
+        addGroupByList(Arrays.asList(sortPart1, sortPart2));
         return this;
     }
 
     @Override
     public final MySQLWithRollUpSpec<Q, C> groupBy(List<SortPart> sortPartList) {
+        Assert.notEmpty(sortPartList, "sortPartList not empty.");
+        addGroupByList(sortPartList);
+        return this;
+    }
+
+    @Override
+    public final MySQLWithRollUpSpec<Q, C> groupBy(Function<C, List<SortPart>> function) {
+        List<SortPart> sortPartList = function.apply(this.criteria);
         Assert.notEmpty(sortPartList, "sortPartList not empty.");
         addGroupByList(sortPartList);
         return this;
@@ -293,23 +303,41 @@ abstract class AbstractMySQL57Query<Q extends MySQL57Query, C> extends AbstractQ
     }
 
     @Override
+    public final MySQLOrderBySpec<Q, C> having(Function<C, List<IPredicate>> function) {
+        List<IPredicate> predicateList = function.apply(this.criteria);
+        Assert.notEmpty(predicateList, "predicateList not empty.");
+        addHavingList(predicateList);
+        return this;
+    }
+
+    @Override
     public final MySQLOrderBySpec<Q, C> ifHaving(Function<C, List<IPredicate>> function) {
         addHavingList(function.apply(this.criteria));
         return this;
     }
 
     @Override
-    public final MySQLLimitSpec<Q, C> orderBy(SortPart... sortParts) {
-        if (sortParts.length == 1) {
-            addOrderBy(sortParts[0]);
-        } else {
-            addOrderByList(Arrays.asList(sortParts));
-        }
+    public final MySQLLimitSpec<Q, C> orderBy(SortPart sortPart) {
+        addOrderBy(sortPart);
+        return this;
+    }
+
+    @Override
+    public final MySQLLimitSpec<Q, C> orderBy(SortPart sortPart1, SortPart sortPart2) {
+        addOrderByList(Arrays.asList(sortPart1, sortPart2));
         return this;
     }
 
     @Override
     public final MySQLLimitSpec<Q, C> orderBy(List<SortPart> sortPartList) {
+        Assert.notEmpty(sortPartList, "sortPartList not empty.");
+        addOrderByList(sortPartList);
+        return this;
+    }
+
+    @Override
+    public final MySQLLimitSpec<Q, C> orderBy(Function<C, List<SortPart>> function) {
+        List<SortPart> sortPartList = function.apply(this.criteria);
         Assert.notEmpty(sortPartList, "sortPartList not empty.");
         addOrderByList(sortPartList);
         return this;
@@ -461,9 +489,9 @@ abstract class AbstractMySQL57Query<Q extends MySQL57Query, C> extends AbstractQ
      * @see #enableIndexHint
      * @see #createTableWrapper(TableAble, String, JoinType)
      */
-    private void doAddIndexHint(Function<C, List<MySQLIndexHint>> function) {
+    private void doAddIndexHint(Function<C, List<MySQL57IndexHint>> function) {
         if (this.enableIndexHint) {
-            List<MySQLIndexHint> hintList = function.apply(this.criteria);
+            List<MySQL57IndexHint> hintList = function.apply(this.criteria);
             if (!CollectionUtils.isEmpty(hintList)) {
                 TableWrapperImpl tableWrapper = lastTableWrapper();
                 Assert.state(tableWrapper instanceof MySQLTableWrapperImpl, "tableWrapper not MySQLTableWrapperImpl");
@@ -497,18 +525,18 @@ abstract class AbstractMySQL57Query<Q extends MySQL57Query, C> extends AbstractQ
 
     private static final class MySQLTableWrapperImpl extends TableWrapperImpl implements MySQLTable57Wrapper {
 
-        private List<MySQLIndexHint> indexHintList = Collections.emptyList();
+        private List<MySQL57IndexHint> indexHintList = Collections.emptyList();
 
         private MySQLTableWrapperImpl(TableAble tableAble, String alias, JoinType jointType) {
             super(tableAble, alias, jointType);
         }
 
         @Override
-        public List<MySQLIndexHint> indexHintList() {
+        public List<MySQL57IndexHint> indexHintList() {
             return this.indexHintList;
         }
 
-        private void indexHintList(List<MySQLIndexHint> indexHintList) {
+        private void indexHintList(List<MySQL57IndexHint> indexHintList) {
             Assert.state(this.indexHintList.isEmpty(), "indexHintList duplicate set.");
             Assert.notEmpty(indexHintList, "indexHintList must not empty.");
             this.indexHintList = Collections.unmodifiableList(new ArrayList<>(indexHintList));
@@ -564,7 +592,7 @@ abstract class AbstractMySQL57Query<Q extends MySQL57Query, C> extends AbstractQ
         }
 
         @Override
-        public MySQLOnSpec<Q, C> ifIndexHintList(Function<C, List<MySQLIndexHint>> function) {
+        public MySQLOnSpec<Q, C> ifIndexHintList(Function<C, List<MySQL57IndexHint>> function) {
             this.mySQL57Query.doAddIndexHint(function);
             return this;
         }

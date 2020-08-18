@@ -282,7 +282,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
 
         @Override
         public final MySQLJoinSpec<MySQL57ScalarSubQuery<E>, C> ifIndexHintList(
-                Function<C, List<MySQLIndexHint>> function) {
+                Function<C, List<MySQL57IndexHint>> function) {
             this.actualSelect.ifIndexHintList(function);
             return this;
         }
@@ -439,15 +439,26 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public final MySQLWithRollUpSpec<MySQL57ScalarSubQuery<E>, C> groupBy(SortPart... sortParts) {
-            this.actualSelect.groupBy(sortParts);
+        public final MySQLWithRollUpSpec<MySQL57ScalarSubQuery<E>, C> groupBy(SortPart sortPart) {
+            this.actualSelect.groupBy(sortPart);
             return this;
         }
 
+        @Override
+        public final MySQLWithRollUpSpec<MySQL57ScalarSubQuery<E>, C> groupBy(SortPart sortPart1, SortPart sortPart2) {
+            this.actualSelect.groupBy(sortPart1, sortPart2);
+            return this;
+        }
 
         @Override
         public final MySQLWithRollUpSpec<MySQL57ScalarSubQuery<E>, C> groupBy(List<SortPart> sortPartList) {
             this.actualSelect.groupBy(sortPartList);
+            return this;
+        }
+
+        @Override
+        public final MySQLWithRollUpSpec<MySQL57ScalarSubQuery<E>, C> groupBy(Function<C, List<SortPart>> function) {
+            this.actualSelect.groupBy(function);
             return this;
         }
 
@@ -482,20 +493,38 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
+        public final MySQLOrderBySpec<MySQL57ScalarSubQuery<E>, C> having(Function<C, List<IPredicate>> function) {
+            this.actualSelect.having(function);
+            return this;
+        }
+
+        @Override
         public final MySQLOrderBySpec<MySQL57ScalarSubQuery<E>, C> ifHaving(Function<C, List<IPredicate>> function) {
             this.actualSelect.ifHaving(function);
             return this;
         }
 
         @Override
-        public final MySQLLimitSpec<MySQL57ScalarSubQuery<E>, C> orderBy(SortPart... sortPart) {
+        public final MySQLLimitSpec<MySQL57ScalarSubQuery<E>, C> orderBy(SortPart sortPart) {
             this.actualSelect.orderBy(sortPart);
+            return this;
+        }
+
+        @Override
+        public final MySQLLimitSpec<MySQL57ScalarSubQuery<E>, C> orderBy(SortPart sortPart1, SortPart sortPart2) {
+            this.actualSelect.orderBy(sortPart1, sortPart2);
             return this;
         }
 
         @Override
         public final MySQLLimitSpec<MySQL57ScalarSubQuery<E>, C> orderBy(List<SortPart> sortPartList) {
             this.actualSelect.orderBy(sortPartList);
+            return this;
+        }
+
+        @Override
+        public final MySQLLimitSpec<MySQL57ScalarSubQuery<E>, C> orderBy(Function<C, List<SortPart>> function) {
+            this.actualSelect.orderBy(function);
             return this;
         }
 
@@ -700,7 +729,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public MySQLOnSpec<MySQL57ScalarSubQuery<E>, C> ifIndexHintList(Function<C, List<MySQLIndexHint>> function) {
+        public MySQLOnSpec<MySQL57ScalarSubQuery<E>, C> ifIndexHintList(Function<C, List<MySQL57IndexHint>> function) {
             this.mysql57Query.actualSelect.tableRouteOnSpec.ifIndexHintList(function);
             return this;
         }

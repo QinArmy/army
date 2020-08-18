@@ -95,7 +95,7 @@ public interface MySQL57Delete extends Delete {
         /**
          * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/index-hints.html">MySQL 5.7  Index Hints</a>
          */
-        MySQLMultiDeleteJoinSpec<C> ifIndexHintList(Function<C, List<MySQLIndexHint>> function);
+        MySQLMultiDeleteJoinSpec<C> ifIndexHintList(Function<C, List<MySQL57IndexHint>> function);
     }
 
     interface MySQLMultiDeleteJoinSpec<C> extends MySQLMultiDeleteWhereSpec<C> {
@@ -131,7 +131,7 @@ public interface MySQL57Delete extends Delete {
         /**
          * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/index-hints.html">MySQL 5.7  Index Hints</a>
          */
-        MySQLMultiDeleteOnSpec<C> ifIndexHintList(Function<C, List<MySQLIndexHint>> function);
+        MySQLMultiDeleteOnSpec<C> ifIndexHintList(Function<C, List<MySQL57IndexHint>> function);
     }
 
     interface MySQLMultiDeleteOnSpec<C> extends DeleteSQLSpec {
@@ -245,7 +245,7 @@ public interface MySQL57Delete extends Delete {
         /**
          * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/index-hints.html">MySQL 5.7  Index Hints</a>
          */
-        MySQLBatchMultiDeleteJoinSpec<C> ifIndexHintList(Function<C, List<MySQLIndexHint>> function);
+        MySQLBatchMultiDeleteJoinSpec<C> ifIndexHintList(Function<C, List<MySQL57IndexHint>> function);
     }
 
     interface MySQLBatchMultiDeleteJoinSpec<C> extends MySQLBatchMultiDeleteWhereSpec<C> {
@@ -273,7 +273,7 @@ public interface MySQL57Delete extends Delete {
         /**
          * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/index-hints.html">MySQL 5.7  Index Hints</a>
          */
-        MySQLBatchMultiDeleteOnSpec<C> ifIndexHintList(Function<C, List<MySQLIndexHint>> function);
+        MySQLBatchMultiDeleteOnSpec<C> ifIndexHintList(Function<C, List<MySQL57IndexHint>> function);
     }
 
     interface MySQLBatchMultiDeleteOnSpec<C> extends DeleteSQLSpec {

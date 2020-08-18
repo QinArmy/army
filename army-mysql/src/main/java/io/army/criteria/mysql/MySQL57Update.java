@@ -111,7 +111,7 @@ public interface MySQL57Update extends Update {
         /**
          * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/index-hints.html">MySQL 5.7  Index Hints</a>
          */
-        MySQLMultiUpdateJoinSpec<C> ifIndexHintList(Function<C, List<MySQLIndexHint>> function);
+        MySQLMultiUpdateJoinSpec<C> ifIndexHintList(Function<C, List<MySQL57IndexHint>> function);
 
     }
 
@@ -148,7 +148,7 @@ public interface MySQL57Update extends Update {
         /**
          * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/index-hints.html">MySQL 5.7  Index Hints</a>
          */
-        MySQLMultiUpdateOnSpec<C> ifIndexHintList(Function<C, List<MySQLIndexHint>> function);
+        MySQLMultiUpdateOnSpec<C> ifIndexHintList(Function<C, List<MySQL57IndexHint>> function);
     }
 
     interface MySQLMultiUpdateOnSpec<C> extends UpdateSQLSpec {
@@ -288,7 +288,7 @@ public interface MySQL57Update extends Update {
         /**
          * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/index-hints.html">MySQL 5.7  Index Hints</a>
          */
-        MySQLBatchMultiUpdateJoinSpec<C> ifIndexHintList(Function<C, List<MySQLIndexHint>> function);
+        MySQLBatchMultiUpdateJoinSpec<C> ifIndexHintList(Function<C, List<MySQL57IndexHint>> function);
 
     }
 
@@ -318,7 +318,7 @@ public interface MySQL57Update extends Update {
         /**
          * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/index-hints.html">MySQL 5.7  Index Hints</a>
          */
-        MySQLBatchMultiUpdateOnSpec<C> ifIndexHintList(Function<C, List<MySQLIndexHint>> function);
+        MySQLBatchMultiUpdateOnSpec<C> ifIndexHintList(Function<C, List<MySQL57IndexHint>> function);
     }
 
     interface MySQLBatchMultiUpdateOnSpec<C> extends UpdateSQLSpec {

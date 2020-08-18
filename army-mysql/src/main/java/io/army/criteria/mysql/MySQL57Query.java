@@ -51,7 +51,7 @@ public interface MySQL57Query extends Query {
         /**
          * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/index-hints.html">MySQL 5.7  Index Hints</a>
          */
-        MySQLJoinSpec<Q, C> ifIndexHintList(Function<C, List<MySQLIndexHint>> function);
+        MySQLJoinSpec<Q, C> ifIndexHintList(Function<C, List<MySQL57IndexHint>> function);
     }
 
 
@@ -78,7 +78,7 @@ public interface MySQL57Query extends Query {
         /**
          * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/index-hints.html">MySQL 5.7  Index Hints</a>
          */
-        MySQLOnSpec<Q, C> ifIndexHintList(Function<C, List<MySQLIndexHint>> function);
+        MySQLOnSpec<Q, C> ifIndexHintList(Function<C, List<MySQL57IndexHint>> function);
 
     }
 
@@ -149,9 +149,13 @@ public interface MySQL57Query extends Query {
 
     interface MySQLGroupBySpec<Q extends MySQL57Query, C> extends MySQLOrderBySpec<Q, C> {
 
-        MySQLWithRollUpSpec<Q, C> groupBy(SortPart... sortParts);
+        MySQLWithRollUpSpec<Q, C> groupBy(SortPart sortPart);
+
+        MySQLWithRollUpSpec<Q, C> groupBy(SortPart sortPart1, SortPart sortPart2);
 
         MySQLWithRollUpSpec<Q, C> groupBy(List<SortPart> sortPartList);
+
+        MySQLWithRollUpSpec<Q, C> groupBy(Function<C, List<SortPart>> function);
 
         MySQLWithRollUpSpec<Q, C> ifGroupBy(Function<C, List<SortPart>> function);
     }
@@ -169,6 +173,8 @@ public interface MySQL57Query extends Query {
 
         MySQLOrderBySpec<Q, C> having(List<IPredicate> predicateList);
 
+        MySQLOrderBySpec<Q, C> having(Function<C, List<IPredicate>> function);
+
         MySQLOrderBySpec<Q, C> ifHaving(Function<C, List<IPredicate>> function);
     }
 
@@ -176,10 +182,16 @@ public interface MySQL57Query extends Query {
     interface MySQLOrderBySpec<Q extends MySQL57Query, C> extends OrderByClause<Q, C>, MySQLLimitSpec<Q, C> {
 
         @Override
-        MySQLLimitSpec<Q, C> orderBy(SortPart... sortParts);
+        MySQLLimitSpec<Q, C> orderBy(SortPart sortPart);
+
+        @Override
+        MySQLLimitSpec<Q, C> orderBy(SortPart sortPart1, SortPart sortPart2);
 
         @Override
         MySQLLimitSpec<Q, C> orderBy(List<SortPart> sortPartList);
+
+        @Override
+        MySQLLimitSpec<Q, C> orderBy(Function<C, List<SortPart>> function);
 
         @Override
         MySQLLimitSpec<Q, C> ifOrderBy(Function<C, List<SortPart>> function);
