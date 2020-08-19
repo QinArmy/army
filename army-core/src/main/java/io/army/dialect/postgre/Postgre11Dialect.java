@@ -18,6 +18,12 @@ class Postgre11Dialect extends AbstractDialect {
     }
 
     @Override
+    public final boolean supportSavePoint() {
+        //always true
+        return true;
+    }
+
+    @Override
     protected Set<String> createKeywordsSet() {
         return Postgre11DialectUtils.create11KeywordsSet();
     }

@@ -9,6 +9,8 @@ public interface Dialect extends DDL, DML, DQL, TCL {
 
     String showSQL(SQLWrapper sqlWrapper);
 
+    boolean supportSavePoint();
+
     /**
      * @return always same a instance.
      */

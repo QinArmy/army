@@ -26,6 +26,12 @@ class MySQL57Dialect extends AbstractDialect {
     }
 
     @Override
+    public final boolean supportSavePoint() {
+        // always true
+        return true;
+    }
+
+    @Override
     public final boolean supportZone() {
         return false;
     }
