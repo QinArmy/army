@@ -41,7 +41,7 @@ public abstract class SQLS extends AbstractSQLS {
      * @param targetTable will insert to table meta
      * @return a standard insert api object.
      */
-    public static <T extends IDomain> Insert.InsertIntoAble<T> multiInsert(TableMeta<T> targetTable) {
+    public static <T extends IDomain> Insert.InsertIntoSpec<T> multiInsert(TableMeta<T> targetTable) {
         return StandardInsert.build(targetTable);
     }
 
@@ -65,26 +65,26 @@ public abstract class SQLS extends AbstractSQLS {
      * @param targetTable will insert to table meta
      * @return a standard insert api object.
      */
-    public static <T extends IDomain> Insert.InsertIntoAble<T> batchInsert(TableMeta<T> targetTable) {
+    public static <T extends IDomain> Insert.InsertIntoSpec<T> batchInsert(TableMeta<T> targetTable) {
         return StandardBatchInsert.build(targetTable);
     }
 
-    public static <T extends IDomain> Insert.SubQueryTargetFieldAble<T, EmptyObject> subQueryInsert(
+    public static <T extends IDomain> Insert.SubQueryTargetFieldSpec<T, EmptyObject> subQueryInsert(
             TableMeta<T> targetTable) {
         return StandardContextualSubQueryInsert.build(targetTable, EmptyObject.getInstance());
     }
 
-    public static <T extends IDomain, C> Insert.SubQueryTargetFieldAble<T, C> subQueryInsert(
+    public static <T extends IDomain, C> Insert.SubQueryTargetFieldSpec<T, C> subQueryInsert(
             TableMeta<T> targetTable, C criteria) {
         return StandardContextualSubQueryInsert.build(targetTable, criteria);
     }
 
-    public static <T extends IDomain> Insert.ParentSubQueryTargetFieldAble<T, EmptyObject> subQueryInsert(
+    public static <T extends IDomain> Insert.ParentSubQueryTargetFieldSpec<T, EmptyObject> subQueryInsert(
             ChildTableMeta<T> tableMeta) {
         return StandardContextualChildSubQueryInsert.build(tableMeta, EmptyObject.getInstance());
     }
 
-    public static <T extends IDomain, C> Insert.ParentSubQueryTargetFieldAble<T, C> subQueryInsert(
+    public static <T extends IDomain, C> Insert.ParentSubQueryTargetFieldSpec<T, C> subQueryInsert(
             ChildTableMeta<T> tableMeta, C criteria) {
         return StandardContextualChildSubQueryInsert.build(tableMeta, criteria);
     }

@@ -4,12 +4,14 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerStandardComposeQuery;
 import io.army.dialect.DQL;
 import io.army.dialect.SQLBuilder;
+import io.army.util.Assert;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class ComposeSelects<Q extends Query, C> extends AbstractComposeQuery<Q, C> implements
+abstract class ComposeQueries<Q extends Query, C> extends AbstractComposeQuery<Q, C> implements
         Query.UnionSpec<Q, C>, InnerStandardComposeQuery {
 
     static <Q extends Query, C> UnionSpec<Q, C> brackets(C criteria, Q enclosedQuery) {
@@ -30,7 +32,7 @@ abstract class ComposeSelects<Q extends Query, C> extends AbstractComposeQuery<Q
         return new ComposeQueryImpl<>(criteria, left, modifier, right);
     }
 
-    private ComposeSelects(C criteria, Q firstSelect) {
+    private ComposeQueries(C criteria, Q firstSelect) {
         super(criteria, firstSelect);
     }
 
@@ -68,8 +70,22 @@ abstract class ComposeSelects<Q extends Query, C> extends AbstractComposeQuery<Q
     }
 
     @Override
+    public final LimitClause<Q, C> orderBy(SortPart sortPart1, SortPart sortPart2) {
+        doOrderBy(Arrays.asList(sortPart1, sortPart2));
+        return this;
+    }
+
+    @Override
     public final LimitClause<Q, C> orderBy(List<SortPart> sortPartList) {
         doOrderBy(sortPartList);
+        return this;
+    }
+
+    @Override
+    public final LimitClause<Q, C> orderBy(Function<C, List<SortPart>> function) {
+        List<SortPart> list = function.apply(this.criteria);
+        Assert.notEmpty(list, "sortPartList must not empty.");
+        doOrderBy(list);
         return this;
     }
 
@@ -116,7 +132,7 @@ abstract class ComposeSelects<Q extends Query, C> extends AbstractComposeQuery<Q
 
     /*################################## blow static inner class ##################################*/
 
-    private static final class BracketsQuery<Q extends Query, C> extends ComposeSelects<Q, C> {
+    private static final class BracketsQuery<Q extends Query, C> extends ComposeQueries<Q, C> {
 
         private final Q enclosedQuery;
 
@@ -146,7 +162,7 @@ abstract class ComposeSelects<Q extends Query, C> extends AbstractComposeQuery<Q
 
     }
 
-    private static final class ComposeQueryImpl<Q extends Query, C> extends ComposeSelects<Q, C> {
+    private static final class ComposeQueryImpl<Q extends Query, C> extends ComposeQueries<Q, C> {
 
         private final Q leftQuery;
 

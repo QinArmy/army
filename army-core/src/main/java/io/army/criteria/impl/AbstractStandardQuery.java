@@ -361,22 +361,22 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
 
     @Override
     public final UnionSpec<Q, C> bracketsQuery() {
-        return ComposeSelects.brackets(this.criteria, asQuery());
+        return ComposeQueries.brackets(this.criteria, asQuery());
     }
 
     @Override
     public final UnionSpec<Q, C> union(Function<C, Q> function) {
-        return ComposeSelects.compose(this.criteria, asQuery(), UnionType.UNION, function);
+        return ComposeQueries.compose(this.criteria, asQuery(), UnionType.UNION, function);
     }
 
     @Override
     public final UnionSpec<Q, C> unionAll(Function<C, Q> function) {
-        return ComposeSelects.compose(this.criteria, asQuery(), UnionType.UNION_ALL, function);
+        return ComposeQueries.compose(this.criteria, asQuery(), UnionType.UNION_ALL, function);
     }
 
     @Override
     public final UnionSpec<Q, C> unionDistinct(Function<C, Q> function) {
-        return ComposeSelects.compose(this.criteria, asQuery(), UnionType.UNION_DISTINCT, function);
+        return ComposeQueries.compose(this.criteria, asQuery(), UnionType.UNION_DISTINCT, function);
     }
 
     @Nullable

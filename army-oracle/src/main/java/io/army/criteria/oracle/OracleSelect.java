@@ -1,21 +1,16 @@
 package io.army.criteria.oracle;
 
-import io.army.criteria.*;
-import io.army.lang.Nullable;
-import io.army.meta.TableMeta;
-import io.army.util.Pair;
-
-import java.util.List;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import io.army.criteria.Expression;
+import io.army.criteria.Select;
 
 public interface OracleSelect extends Select {
 
 
     /*################################## blow oracle select clause  interfaces ##################################*/
 
+/*
 
-    interface WithAble<C> extends SelectSQLAble {
+    interface WithAble<C> e {
 
         PLSQLDeclarationAble<C> with();
     }
@@ -129,9 +124,11 @@ public interface OracleSelect extends Select {
 
     interface WhereAndAble<C> extends GroupByAble<C> {
 
-        /**
-         * @see Expression#equalIfNonNull(Object)
-         */
+        */
+/**
+ * @see Expression#equalIfNonNull(Object)
+ *//*
+
         WhereAndAble<C> and(@Nullable IPredicate predicate);
 
         WhereAndAble<C> and(Function<C, IPredicate> function);
@@ -243,7 +240,7 @@ public interface OracleSelect extends Select {
         LimitClause<C> ifOrderBy(Predicate<C> test, Function<C, List<SortPart>> function);
     }
 
-    interface LimitClause<C> extends SelectAble {
+    interface LimitClause<C> extends  {
 
         SelectAble limit(int rowCount);
 
@@ -266,5 +263,6 @@ public interface OracleSelect extends Select {
     interface SubQueryOptionalClause {
 
     }
+*/
 
 }

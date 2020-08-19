@@ -3,8 +3,8 @@ package io.army.reactive;
 import io.army.GenericSession;
 import io.army.criteria.*;
 import io.army.domain.IDomain;
-import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -17,49 +17,43 @@ public interface GenericReactiveSession extends GenericSession {
     /**
      * @param <R> representing select result Java Type
      */
-    @Nullable
     <R extends IDomain> Mono<R> get(TableMeta<R> tableMeta, Object id);
 
     /**
      * @param <R> representing select result Java Type.
      */
-    @Nullable
     <R extends IDomain> Mono<R> get(TableMeta<R> tableMeta, Object id, Visible visible);
 
     /**
      * @param <R> representing select result Java Type.
      */
-    @Nullable
     <R extends IDomain> Mono<R> getByUnique(TableMeta<R> tableMeta, List<String> propNameList, List<Object> valueList);
 
     /**
      * @param <R> representing select result Java Type.
      */
-    @Nullable
     <R extends IDomain> Mono<R> getByUnique(TableMeta<R> tableMeta, List<String> propNameList
             , List<Object> valueList, Visible visible);
 
     /**
      * @param <R> representing select result Java Type.
      */
-    @Nullable
     <R> Mono<R> selectOne(Select select, Class<R> resultClass);
 
     /**
      * @param <R> representing select result Java Type.
      */
-    @Nullable
     <R> Mono<R> selectOne(Select select, Class<R> resultClass, Visible visible);
 
     /**
      * @param <R> representing select result Java Type.
      */
-    <R> Mono<List<R>> select(Select select, Class<R> resultClass);
+    <R> Flux<R> select(Select select, Class<R> resultClass);
 
     /**
      * @param <R> representing select result Java Type.
      */
-    <R> Mono<List<R>> select(Select select, Class<R> resultClass, Visible visible);
+    <R> Flux<R> select(Select select, Class<R> resultClass, Visible visible);
 
     Mono<Integer> subQueryInsert(Insert insert);
 
@@ -84,12 +78,12 @@ public interface GenericReactiveSession extends GenericSession {
     /**
      * @param <R> representing returning result Java Type.
      */
-    <R> Mono<List<R>> returningUpdate(Update update, Class<R> resultClass);
+    <R> Flux<R> returningUpdate(Update update, Class<R> resultClass);
 
     /**
      * @param <R> representing returning result Java Type.
      */
-    <R> Mono<List<R>> returningUpdate(Update update, Class<R> resultClass, Visible visible);
+    <R> Flux<R> returningUpdate(Update update, Class<R> resultClass, Visible visible);
 
     Mono<Integer> delete(Delete delete);
 
@@ -102,11 +96,11 @@ public interface GenericReactiveSession extends GenericSession {
     /**
      * @param <R> representing returning result Java Type.
      */
-    <R> Mono<List<R>> returningDelete(Delete delete, Class<R> resultClass);
+    <R> Flux<R> returningDelete(Delete delete, Class<R> resultClass);
 
     /**
      * @param <R> representing returning result Java Type.
      */
-    <R> Mono<List<R>> returningDelete(Delete delete, Class<R> resultClass, Visible visible);
+    <R> Flux<R> returningDelete(Delete delete, Class<R> resultClass, Visible visible);
 
 }

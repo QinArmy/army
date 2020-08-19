@@ -10,14 +10,13 @@ import io.army.meta.FieldMeta;
 import io.army.util.Assert;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
 final class StandardContextualChildSubQueryInsert<T extends IDomain, C> extends AbstractSQLDebug implements Insert
-        , InnerStandardChildSubQueryInsert, Insert.ParentSubQueryTargetFieldAble<T, C>, Insert.ParentTableRouteAble<T, C>
-        , Insert.ChildSubQueryTargetFieldAble<T, C>, Insert.ChildSubQueryAble<C>, Insert.InsertAble {
+        , InnerStandardChildSubQueryInsert, Insert.ParentSubQueryTargetFieldSpec<T, C>, Insert.ParentTableRouteSpec<T, C>
+        , Insert.ChildSubQueryTargetFieldSpec<T, C>, Insert.ChildSubQuerySpec<C>, Insert.InsertSpec {
 
     static <T extends IDomain, C> StandardContextualChildSubQueryInsert<T, C> build(
             ChildTableMeta<T> tableMeta, C criteria) {
@@ -55,65 +54,66 @@ final class StandardContextualChildSubQueryInsert<T extends IDomain, C> extends 
         CriteriaContextHolder.setContext(this.criteriaContext);
     }
 
-    /*################################## blow ParentSubQueryTargetFieldAble method ##################################*/
+    /*################################## blow ParentSubQueryTargetFieldSpec method ##################################*/
 
     @Override
-    public final ParentTableRouteAble<T, C> parentFields(List<FieldMeta<T, ?>> fieldMetas) {
+    public final ParentTableRouteSpec<T, C> parentFields(List<FieldMeta<T, ?>> fieldMetas) {
         this.parentFieldList = new ArrayList<>(fieldMetas);
         return this;
     }
 
     @Override
-    public final ParentTableRouteAble<T, C> parentFields(Function<C, List<FieldMeta<T, ?>>> function) {
+    public final ParentTableRouteSpec<T, C> parentFields(Function<C, List<FieldMeta<T, ?>>> function) {
         this.parentFieldList = new ArrayList<>(function.apply(this.criteria));
         return this;
     }
 
-    /*################################## blow ParentSubQueryAble method ##################################*/
+    /*################################## blow ParentSubQuerySpec method ##################################*/
 
     @Override
-    public final ParentSubQueryAble<T, C> route(int databaseIndex, int tableIndex) {
+    public final ParentSubQuerySpec<T, C> route(int databaseIndex, int tableIndex) {
         this.databaseIndex = databaseIndex;
         this.tableIndex = tableIndex;
         return this;
     }
 
     @Override
-    public final ParentSubQueryAble<T, C> route(int tableIndex) {
+    public final ParentSubQuerySpec<T, C> route(int tableIndex) {
         this.tableIndex = tableIndex;
         return this;
     }
 
     @Override
-    public final ChildSubQueryTargetFieldAble<T, C> parentSubQuery(Function<C, SubQuery> function) {
+    public final ChildSubQueryTargetFieldSpec<T, C> parentSubQuery(Function<C, SubQuery> function) {
         this.parentSubQuery = function.apply(this.criteria);
         return this;
     }
 
 
-    /*################################## blow ChildSubQueryTargetFieldAble method ##################################*/
+    /*################################## blow ChildSubQueryTargetFieldSpec method ##################################*/
 
     @Override
-    public final ChildSubQueryAble<C> childFields(List<FieldMeta<T, ?>> fieldMetas) {
+    public final ChildSubQuerySpec<C> childFields(List<FieldMeta<T, ?>> fieldMetas) {
         this.childFieldList = new ArrayList<>(fieldMetas);
         return this;
     }
 
     @Override
-    public final ChildSubQueryAble<C> childFields(Function<C, List<FieldMeta<T, ?>>> function) {
+    public final ChildSubQuerySpec<C> childFields(Function<C, List<FieldMeta<T, ?>>> function) {
         this.childFieldList = new ArrayList<>(function.apply(this.criteria));
         return this;
     }
 
-    /*################################## blow ChildSubQueryAble method ##################################*/
+    /*################################## blow ChildSubQuerySpec method ##################################*/
 
     @Override
-    public final InsertAble childSubQuery(Function<C, SubQuery> function) {
+    public final InsertSpec childSubQuery(Function<C, SubQuery> function) {
         this.childSubQuery = function.apply(this.criteria);
         return this;
     }
 
-    /*################################## blow InsertAble method ##################################*/
+
+    /*################################## blow InsertSpec method ##################################*/
 
     @Override
     public final Insert asInsert() {

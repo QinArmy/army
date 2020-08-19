@@ -9,99 +9,99 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public interface Insert extends SQLStatement, SQLStatement.SQLAble, SQLDebug, Query {
+public interface Insert extends SQLStatement, SQLDebug {
 
 
     /*################################## blow interfaces  ##################################*/
 
-    interface InsertSQLAble extends SQLAble {
+    interface InsertSQLSpec {
 
     }
 
-    interface InsertAble extends InsertSQLAble {
+    interface InsertSpec extends InsertSQLSpec {
 
         Insert asInsert();
     }
 
     /*################################## blow multiInsert interfaces ##################################*/
 
-    interface InsertOptionAble<T extends IDomain> extends InsertIntoAble<T> {
+    interface InsertOptionSpec<T extends IDomain> extends InsertIntoSpec<T> {
 
-        InsertOptionAble<T> dataMigration();
+        InsertOptionSpec<T> dataMigration();
     }
 
-    interface InsertIntoAble<T extends IDomain> extends InsertSQLAble {
+    interface InsertIntoSpec<T extends IDomain> extends InsertSQLSpec {
 
-        InsertValuesAble<T> insertInto(Collection<FieldMeta<? super T, ?>> fieldMetaList);
+        InsertValuesSpec<T> insertInto(Collection<FieldMeta<? super T, ?>> fieldMetaList);
 
-        InsertValuesAble<T> insertInto(Supplier<Collection<FieldMeta<? super T, ?>>> fieldMetaList);
+        InsertValuesSpec<T> insertInto(Supplier<Collection<FieldMeta<? super T, ?>>> fieldMetaList);
 
-        InsertValuesAble<T> insertInto(TableMeta<T> tableMeta);
+        InsertValuesSpec<T> insertInto(TableMeta<T> tableMeta);
     }
 
-    interface InsertValuesAble<T extends IDomain> extends InsertSQLAble {
+    interface InsertValuesSpec<T extends IDomain> extends InsertSQLSpec {
 
-        InsertAble value(T domain);
+        InsertSpec value(T domain);
 
-        InsertAble values(List<T> domainList);
+        InsertSpec values(List<T> domainList);
     }
 
 
 
     /*################################## blow subQuery insert interfaces ##################################*/
 
-    interface SubQueryTargetFieldAble<T extends IDomain, C> extends InsertSQLAble {
+    interface SubQueryTargetFieldSpec<T extends IDomain, C> extends InsertSQLSpec {
 
-        SimpleTableRouteAble<C> insertInto(List<FieldMeta<T, ?>> fieldMetaList);
+        SimpleTableRouteSpec<C> insertInto(List<FieldMeta<T, ?>> fieldMetaList);
 
-        SimpleTableRouteAble<C> insertInto(Function<C, List<FieldMeta<T, ?>>> function);
+        SimpleTableRouteSpec<C> insertInto(Function<C, List<FieldMeta<T, ?>>> function);
     }
 
-    interface SimpleTableRouteAble<C> extends SubQueryValueAble<C> {
+    interface SimpleTableRouteSpec<C> extends SubQueryValueSpec<C> {
 
-        SubQueryValueAble<C> route(int databaseIndex, int tableIndex);
+        SubQueryValueSpec<C> route(int databaseIndex, int tableIndex);
 
-        SubQueryValueAble<C> route(int tableIndex);
+        SubQueryValueSpec<C> route(int tableIndex);
     }
 
-    interface SubQueryValueAble<C> extends InsertSQLAble {
+    interface SubQueryValueSpec<C> extends InsertSQLSpec {
 
-        InsertAble subQuery(Function<C, SubQuery> function);
+        InsertSpec subQuery(Function<C, SubQuery> function);
     }
 
     /*################################## blow child sub query insert interfaces ##################################*/
 
-    interface ParentSubQueryTargetFieldAble<T extends IDomain, C> extends InsertSQLAble {
+    interface ParentSubQueryTargetFieldSpec<T extends IDomain, C> extends InsertSQLSpec {
 
-        ParentTableRouteAble<T, C> parentFields(List<FieldMeta<T, ?>> fieldMetaList);
+        ParentTableRouteSpec<T, C> parentFields(List<FieldMeta<T, ?>> fieldMetaList);
 
-        ParentTableRouteAble<T, C> parentFields(Function<C, List<FieldMeta<T, ?>>> function);
-
-    }
-
-    interface ParentTableRouteAble<T extends IDomain, C> extends ParentSubQueryAble<T, C> {
-
-        ParentSubQueryAble<T, C> route(int databaseIndex, int tableIndex);
-
-        ParentSubQueryAble<T, C> route(int tableIndex);
-    }
-
-    interface ChildSubQueryTargetFieldAble<T extends IDomain, C> extends InsertSQLAble {
-
-        ChildSubQueryAble<C> childFields(List<FieldMeta<T, ?>> fieldMetaList);
-
-        ChildSubQueryAble<C> childFields(Function<C, List<FieldMeta<T, ?>>> function);
+        ParentTableRouteSpec<T, C> parentFields(Function<C, List<FieldMeta<T, ?>>> function);
 
     }
 
-    interface ParentSubQueryAble<T extends IDomain, C> extends InsertSQLAble {
+    interface ParentTableRouteSpec<T extends IDomain, C> extends ParentSubQuerySpec<T, C> {
 
-        ChildSubQueryTargetFieldAble<T, C> parentSubQuery(Function<C, SubQuery> function);
+        ParentSubQuerySpec<T, C> route(int databaseIndex, int tableIndex);
+
+        ParentSubQuerySpec<T, C> route(int tableIndex);
     }
 
-    interface ChildSubQueryAble<C> extends InsertSQLAble {
+    interface ChildSubQueryTargetFieldSpec<T extends IDomain, C> extends InsertSQLSpec {
 
-        InsertAble childSubQuery(Function<C, SubQuery> function);
+        ChildSubQuerySpec<C> childFields(List<FieldMeta<T, ?>> fieldMetaList);
+
+        ChildSubQuerySpec<C> childFields(Function<C, List<FieldMeta<T, ?>>> function);
+
+    }
+
+    interface ParentSubQuerySpec<T extends IDomain, C> extends InsertSQLSpec {
+
+        ChildSubQueryTargetFieldSpec<T, C> parentSubQuery(Function<C, SubQuery> function);
+    }
+
+    interface ChildSubQuerySpec<C> extends InsertSQLSpec {
+
+        InsertSpec childSubQuery(Function<C, SubQuery> function);
     }
 
 

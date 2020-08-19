@@ -12,12 +12,15 @@ import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Supplier;
 
  class StandardInsert<T extends IDomain> extends AbstractSQLDebug implements Insert
-        , Insert.InsertAble, Insert.InsertIntoAble<T>, Insert.InsertValuesAble<T>, Insert.InsertOptionAble<T>
-        , InnerStandardInsert {
+         , Insert.InsertSpec, Insert.InsertIntoSpec<T>, Insert.InsertValuesSpec<T>, Insert.InsertOptionSpec<T>
+         , InnerStandardInsert {
 
     static <T extends IDomain> StandardInsert<T> build(TableMeta<T> tableMeta) {
         return new StandardInsert<>(tableMeta);
@@ -38,61 +41,61 @@ import java.util.function.Supplier;
         this.tableMeta = tableMeta;
     }
 
-    /*################################## blow InsertOptionAble method ##################################*/
+     /*################################## blow InsertOptionSpec method ##################################*/
 
-    @Override
-    public final InsertOptionAble<T> dataMigration() {
-        this.dataMigration = true;
-        return this;
-    }
+     @Override
+     public final InsertOptionSpec<T> dataMigration() {
+         this.dataMigration = true;
+         return this;
+     }
 
-    /*################################## blow InsertIntoAble method ##################################*/
+     /*################################## blow InsertIntoSpec method ##################################*/
 
-    @Override
-    public final InsertValuesAble<T> insertInto(Collection<FieldMeta<? super T, ?>> fieldMetas) {
-        this.fieldList = new ArrayList<>(fieldMetas);
-        return this;
-    }
+     @Override
+     public final InsertValuesSpec<T> insertInto(Collection<FieldMeta<? super T, ?>> fieldMetas) {
+         this.fieldList = new ArrayList<>(fieldMetas);
+         return this;
+     }
 
-    @Override
-    public final InsertValuesAble<T> insertInto(Supplier<Collection<FieldMeta<? super T, ?>>> supplier) {
-        this.fieldList = new ArrayList<>(supplier.get());
-        return this;
-    }
+     @Override
+     public final InsertValuesSpec<T> insertInto(Supplier<Collection<FieldMeta<? super T, ?>>> supplier) {
+         this.fieldList = new ArrayList<>(supplier.get());
+         return this;
+     }
 
-    @Override
-    public final InsertValuesAble<T> insertInto(TableMeta<T> tableMeta) {
-        Assert.isTrue(tableMeta == this.tableMeta
-                , () -> String.format("TableMeta[%s] and target[%s] not match.", tableMeta, this.tableMeta));
+     @Override
+     public final InsertValuesSpec<T> insertInto(TableMeta<T> tableMeta) {
+         Assert.isTrue(tableMeta == this.tableMeta
+                 , () -> String.format("TableMeta[%s] and target[%s] not match.", tableMeta, this.tableMeta));
 
-        this.fieldList = new ArrayList<>();
-        if (tableMeta instanceof ChildTableMeta) {
-            this.fieldList.addAll(((ChildTableMeta<?>) tableMeta).parentMeta().fieldCollection());
-        }
-        this.fieldList.addAll(tableMeta.fieldCollection());
-        return this;
-    }
-
-
-    /*################################## blow InsertValuesAble method ##################################*/
+         this.fieldList = new ArrayList<>();
+         if (tableMeta instanceof ChildTableMeta) {
+             this.fieldList.addAll(((ChildTableMeta<?>) tableMeta).parentMeta().fieldCollection());
+         }
+         this.fieldList.addAll(tableMeta.fieldCollection());
+         return this;
+     }
 
 
-    @Override
-    public final InsertAble value(T domain) {
-        this.wrapperList = Collections.singletonList(
+     /*################################## blow InsertValuesSpec method ##################################*/
+
+
+     @Override
+     public final InsertSpec value(T domain) {
+         this.wrapperList = Collections.singletonList(
                  ObjectAccessorFactory.forDomainPropertyAccess(domain, this.tableMeta));
-        return this;
-    }
+         return this;
+     }
 
-    @Override
-    public final InsertAble values(List<T> domainList) {
-        List<DomainWrapper> wrapperList = new ArrayList<>(domainList.size());
-        for (IDomain domain : domainList) {
-            wrapperList.add(ObjectAccessorFactory.forDomainPropertyAccess(domain, tableMeta));
-        }
-        this.wrapperList = wrapperList;
-        return this;
-    }
+     @Override
+     public final InsertSpec values(List<T> domainList) {
+         List<DomainWrapper> wrapperList = new ArrayList<>(domainList.size());
+         for (IDomain domain : domainList) {
+             wrapperList.add(ObjectAccessorFactory.forDomainPropertyAccess(domain, tableMeta));
+         }
+         this.wrapperList = wrapperList;
+         return this;
+     }
 
     /*################################## blow InnerStandardInsert method ##################################*/
 
@@ -143,7 +146,7 @@ import java.util.function.Supplier;
         this.wrapperList = null;
         this.prepared = false;
     }
-    /*################################## blow InsertAble method ##################################*/
+     /*################################## blow InsertSpec method ##################################*/
 
     @Override
     public final Insert asInsert() {

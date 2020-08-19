@@ -12,30 +12,20 @@ public abstract class CriteriaCounselor {
     }
 
     public static void assertStandardComposeSelect(InnerStandardComposeQuery select) {
-        if (!(select instanceof ComposeSelects)) {
+        if (!(select instanceof ComposeQueries)) {
             throw new IllegalArgumentException(String.format("%s isn't instance of %s", select
-                    , ComposeSelects.class.getName()));
+                    , ComposeQueries.class.getName()));
         }
     }
 
     public static void assertStandardComposeSubQuery(InnerStandardComposeQuery composeQuery) {
-        if (composeQuery instanceof ColumnSubQuery) {
-            if (!(composeQuery instanceof ComposeColumnSubQueries)) {
-                throw new IllegalArgumentException(String.format("%s isn't instance of %s", composeQuery
-                        , ComposeColumnSubQueries.class.getName()));
-            }
-        } else if (composeQuery instanceof SubQuery) {
-            if (!(composeQuery instanceof ComposeSubQueries)) {
-                throw new IllegalArgumentException(String.format("%s isn't instance of %s", composeQuery
-                        , ComposeSubQueries.class.getName()));
-            }
-        } else {
+
+        if (!(composeQuery instanceof ComposeQueries)) {
             throw new IllegalArgumentException(String.format("%s isn't instance of %s or %s.", composeQuery
                     , SubQuery.class.getName()
                     , ColumnSubQuery.class.getName()
             ));
         }
-
     }
 
     public static void assertStandardSelect(InnerStandardSelect select) {
@@ -46,20 +36,7 @@ public abstract class CriteriaCounselor {
     }
 
     public static void assertStandardSubQuery(InnerStandardSubQuery subQuery) {
-        if (subQuery instanceof ColumnSubQuery) {
-            if (!(subQuery instanceof ColumnSubQueryAdaptor)) {
-                throw new IllegalArgumentException(String.format("%s isn't instance of %s", subQuery
-                        , ColumnSubQueryAdaptor.class.getName()));
-            }
-        } else if (subQuery instanceof SubQuery) {
-            if (!(subQuery instanceof StandardSubQueries)) {
-                throw new IllegalArgumentException(String.format("%s isn't instance of %s", subQuery
-                        , StandardSubQueries.class.getName()));
-            }
-        } else {
-            throw new IllegalArgumentException(String.format("%s isn't instance of %s", subQuery
-                    , SubQuery.class.getName()));
-        }
+        StandardSubQueries.assertStandardSubQuery(subQuery);
     }
 
 

@@ -124,3 +124,24 @@ ColumnSubQuery 可以使用 in,any ,some,all 等关键字.
 (1) Army api 的设计理解之一就是易读性,阅读者应该从 api 语义上直接快速看出 子句是必然还是可选,而不是要去看具体的 Function 实现.
 
 
+30. 为什么 MySQL multi-table update 和 multi-table delete 不支持 可选的 join api(如:ifJoin) ?
+(1)Army 是帮助开发者访问数据的,所以对数据的修改指令要像军人一样明确精确,否则可能应该某个 ifJoin 问题造成数据灾难,这个结果是开发者无法承受的.
+
+31. 为什么 普通 update/delete 和 batch update/delete 没有合成一套 api?
+(1)Army 的设计理念 SQL-style,易读,引导性, batch update/delete 需要 namedParamMaps/namedParamBeans 方法
+,普通 update/delete 则不需要.
+(2) batch update/delete 只能在 NO_SHARDING mode 下运行,所以 禁止 route 方法.
+(3)Army 的 DML 指令应该身军人一样准确,明确,不能有二义性,所以当 调用  SQLS.singleUpdate 和 SQLS.batchSingleUpdate 就已经明确了接下来的
+指令.
+
+32. 为什么 io.army.criteria.impl.AbstractExpression 不设计为 public 类,开放 expression 的定制?
+(1) Army 之所以能解析复杂 SQL 是因为 通过 io.army.criteria.SelfDescribed.appendSQL(SQLContext) 把解析逻辑的下放到 表达式中.
+这种设计的好处是可能解析很复杂的 SQL,而且编程简单,前有两个前提:
+    [1]需要为每个 Expression 创建对象.
+    [2]需要确保每个表达式的实现是可靠 的。
+如以上说述,Army 为确保正确的解析逻辑不开发 Expression 的定制.
+
+33. 为什么要设计 ProxySession ?
+(1) 这个设计是为了更好的整合 Spring,让开发者直接将 ProxySession 注入 Dao 实例,否则开发者要负责管理 session
+ ,这会很麻烦.由于 spring 是 应用开发的事实标准,Army 选择天然支持 spring,在以后的 QinArmy 开发的 UserHub 中也同样会遵循这一理念.
+

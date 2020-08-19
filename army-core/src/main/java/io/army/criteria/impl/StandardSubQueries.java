@@ -47,6 +47,28 @@ abstract class StandardSubQueries<Q extends Query, C> extends AbstractStandardQu
         return new ScalarSubQueryAdaptor<>(javaType, mappingType, criteria);
     }
 
+    static void assertStandardSubQuery(InnerStandardSubQuery subQuery) {
+        if (subQuery instanceof ScalarSubQuery) {
+            if (!(subQuery instanceof ScalarSubQueryAdaptor)) {
+                throw new IllegalArgumentException(String.format("%s isn't instance of %s", subQuery
+                        , ScalarSubQueryAdaptor.class.getName()));
+            }
+        } else if (subQuery instanceof ColumnSubQuery) {
+            if (!(subQuery instanceof StandardColumnSubQuery)) {
+                throw new IllegalArgumentException(String.format("%s isn't instance of %s", subQuery
+                        , StandardColumnSubQuery.class.getName()));
+            }
+        } else if (subQuery instanceof RowSubQuery) {
+            if (!(subQuery instanceof StandardRowSubQuery)) {
+                throw new IllegalArgumentException(String.format("%s isn't instance of %s", subQuery
+                        , StandardRowSubQuery.class.getName()));
+            }
+        } else if (!(subQuery instanceof StandardSubQuery)) {
+            throw new IllegalArgumentException(String.format("%s isn't instance of %s", subQuery
+                    , StandardSubQuery.class.getName()));
+        }
+    }
+
 
     private Map<String, Selection> selectionMap;
 
@@ -536,22 +558,22 @@ abstract class StandardSubQueries<Q extends Query, C> extends AbstractStandardQu
 
         @Override
         public final UnionSpec<ScalarSubQuery<E>, C> bracketsQuery() {
-            return ComposeSelects.brackets(this.actualSelect.criteria, asQuery());
+            return ComposeQueries.brackets(this.actualSelect.criteria, asQuery());
         }
 
         @Override
         public final UnionSpec<ScalarSubQuery<E>, C> union(Function<C, ScalarSubQuery<E>> function) {
-            return ComposeSelects.compose(this.actualSelect.criteria, asQuery(), UnionType.UNION, function);
+            return ComposeQueries.compose(this.actualSelect.criteria, asQuery(), UnionType.UNION, function);
         }
 
         @Override
         public final UnionSpec<ScalarSubQuery<E>, C> unionAll(Function<C, ScalarSubQuery<E>> function) {
-            return ComposeSelects.compose(this.actualSelect.criteria, asQuery(), UnionType.UNION_ALL, function);
+            return ComposeQueries.compose(this.actualSelect.criteria, asQuery(), UnionType.UNION_ALL, function);
         }
 
         @Override
         public final UnionSpec<ScalarSubQuery<E>, C> unionDistinct(Function<C, ScalarSubQuery<E>> function) {
-            return ComposeSelects.compose(this.actualSelect.criteria, asQuery(), UnionType.UNION_DISTINCT, function);
+            return ComposeQueries.compose(this.actualSelect.criteria, asQuery(), UnionType.UNION_DISTINCT, function);
         }
 
         @Override

@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 final class StandardContextualBatchDelete<C> implements Delete,
-        Delete.BatchSingleDeleteSpec<C>, Delete.BatchSingleDeleteWhereSpec<C>, Delete.BatchSingleDeleteTableRouteSpec<C>
+        Delete.BatchSingleDeleteSpec<C>, Delete.BatchSingleDeleteWhereSpec<C>
         , Delete.BatchSingleDeleteWhereAndSpec<C>, Delete.BatchSingleDeleteNamedParamSpec<C>, Delete.DeleteSpec, InnerStandardBatchDelete {
 
     static <C> StandardContextualBatchDelete<C> build(C criteria) {
@@ -52,25 +52,10 @@ final class StandardContextualBatchDelete<C> implements Delete,
     /*################################## blow BatchSingleDeleteSpec method ##################################*/
 
     @Override
-    public final BatchSingleDeleteTableRouteSpec<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias) {
-        Assert.hasText(this.tableAlias, "tableAlias required");
-        this.tableMeta = tableMeta;
-        this.tableAlias = tableAlias;
-        return this;
+    public BatchSingleDeleteWhereSpec<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias) {
+        return null;
     }
 
-    @Override
-    public final BatchSingleDeleteWhereSpec<C> route(int databaseIndex, int tableIndex) {
-        this.databaseIndex = databaseIndex;
-        this.tableIndex = tableIndex;
-        return this;
-    }
-
-    @Override
-    public final BatchSingleDeleteWhereSpec<C> route(int tableIndex) {
-        this.tableIndex = tableIndex;
-        return this;
-    }
 
     /*################################## blow BatchWhereSpec method ##################################*/
 
