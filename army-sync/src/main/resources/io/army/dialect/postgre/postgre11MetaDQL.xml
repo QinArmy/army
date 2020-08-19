@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <meta_dqls dialec="Postgre">
-    <schema_dql>
+    <postgre_schema_dql>
         SELECT current_database() AS catalog, current_schema() AS schema
-    </schema_dql>
-    <table_dql>
+    </postgre_schema_dql>
+    <postgre_table_dql>
         SELECT
             n.nspname     AS schema,
             c.relname     AS tableName,
@@ -17,8 +17,8 @@
                   current_database() = $1
               AND n.nspname = $2
               AND c.relkind IN ('r', 'p')
-    </table_dql>
-    <column_dql>
+    </postgre_table_dql>
+    <postgre_column_dql>
         SELECT
             a.attname                                                AS columnName,
             t.typname                                                AS dataType,
@@ -56,7 +56,7 @@
               AND c.relkind IN ('r', 'p')
               AND a.attnum > 0
               AND NOT a.attisdropped
-    </column_dql>
+    </postgre_column_dql>
     <postgre_index_dql>
         SELECT
             tmp.indexName AS indexName,
