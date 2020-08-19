@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<meta_dqls dialec="MySQL">
+    <mysql_schema_dql>
+        SELECT
+            NULL       AS catalog,
+            database() AS `schema`
+    </mysql_schema_dql>
+
+    <mysql_table_dql>
+        SELECT
+            t.TABLE_SCHEMA  AS `schema`,
+            t.TABLE_NAME    AS tableName,
+            t.TABLE_COMMENT AS comment
+            FROM
+                information_schema.TABLES AS t
+            WHERE
+                  t.TABLE_SCHEMA = $1
+              AND t.TABLE_TYPE = 'BASE TABLE'
+    </mysql_table_dql>
+
+    <mysql_column_dql>
+        SELECT
+            c.column_name      AS columnName,
+            upper(c.data_type) AS dataType,
+            CASE
+                WHEN upper(c.data_type) IN ('TIME', 'DATETIME')
+                    THEN c.datetime_precision
+                WHEN upper(c.data_type) IN ('DECIMAL', 'BIT')
+                    THEN c.numeric_precision
+                WHEN upper(c.data_type) IN
+                     ('CHAR', 'VARCHAR', 'BINARY', 'VARBINARY', 'TINYBLOB', 'BLOB', 'MEDIUMBLOB', 'LONGBLOB',
+                      'TINYTEXT', 'TEXT', 'MEDIUMTEXT', 'LONGTEXT', 'ENUM', 'SET')
+                    THEN c.character_maximum_length
+                    ELSE -1
+            END                AS `precision`,
+            c.numeric_scale    AS scale,
+            CASE c.is_nullable
+                WHEN 'YES'
+                    THEN 'true'
+                WHEN 'NO'
+                    THEN 'false'
+            END                AS nullable,
+            c.column_default   AS defaultValue,
+            c.column_comment   AS comment
+            FROM
+                information_schema.columns AS c
+            WHERE
+                  c.table_schema = $1
+              AND c.table_name = $2
+    </mysql_column_dql>
+    <mysql_index_dql>
+        SELECT
+            s.index_name     AS indexName,
+            s.index_type     AS indexType,
+            NOT s.non_unique AS `unique`,
+            s.column_name    AS columnName,
+            CASE s.collation
+                WHEN 'A'
+                    THEN 'true'
+                WHEN 'D'
+                    THEN 'false'
+            END              AS `asc`
+            FROM
+                information_schema.statistics AS s
+            WHERE
+                  s.table_schema = $1
+              AND s.table_name = $2
+    </mysql_index_dql>
+</meta_dqls>

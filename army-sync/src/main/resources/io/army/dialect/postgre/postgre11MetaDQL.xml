@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<meta_dqls dialec="postgre">
+<meta_dqls dialec="Postgre">
     <schema_dql>
         SELECT current_database() AS catalog, current_schema() AS schema
     </schema_dql>
@@ -7,7 +7,6 @@
         SELECT
             n.nspname     AS schema,
             c.relname     AS tableName,
-            c.relkind     AS tableType,
             d.description AS comment
             FROM
                 pg_catalog.pg_namespace                 n
@@ -22,9 +21,7 @@
     <column_dql>
         SELECT
             a.attname                                                AS columnName,
-            t.typname                                                AS dataTypeName,
-            pg_catalog.pg_get_expr(def.adbin, def.adrelid)           AS defaultValue,
-            NOT (a.attnotnull OR (t.typtype = 'd' AND t.typnotnull)) AS nullable,
+            t.typname                                                AS dataType,
             CASE
                 WHEN t.oid = 1700 AND a.atttypmod &lt;> -1-- DECIMAL
                     THEN ((a.atttypmod - 4) &amp; -65536) >> 16
@@ -42,6 +39,8 @@
                     THEN ((a.atttypmod - 4) &amp; 65535)
                     ELSE a.atttypmod
             END                                                      AS scalse,
+            NOT (a.attnotnull OR (t.typtype = 'd' AND t.typnotnull)) AS nullable,
+            pg_catalog.pg_get_expr(def.adbin, def.adrelid)           AS defaultValue,
             dsc.description                                          AS comment
             FROM
                 pg_catalog.pg_namespace                 n
@@ -58,13 +57,12 @@
               AND a.attnum > 0
               AND NOT a.attisdropped
     </column_dql>
-    <index_dql>
+    <postgre_index_dql>
         SELECT
-            tmp.tableName AS tableName,
             tmp.indexName AS indexName,
+            tmp.indexType AS indexType,
             tmp."unique"  AS "unique",
             tmp.colmnName AS colmnName,
-            tmp.indexType AS indexType,
             CASE tmp.indexType
                 WHEN 'btree' THEN CASE indoption[ordinalPosition - 1] &amp; 1
                                       WHEN 1 THEN FALSE
@@ -74,7 +72,6 @@
             FROM
                 (
                     SELECT
-                        c.relname                                        AS tableName,
                         ci.relname                                       AS indexName,
                         i.indisunique                                    AS "unique",
                         am.amname                                        AS indexType,
@@ -94,5 +91,5 @@
                           AND n.nspname = $2
                           AND c.relname = $3
                 ) AS tmp
-    </index_dql>
+    </postgre_index_dql>
 </meta_dqls>
