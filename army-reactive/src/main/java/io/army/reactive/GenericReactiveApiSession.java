@@ -24,24 +24,12 @@ import reactor.core.publisher.Mono;
 public interface GenericReactiveApiSession extends GenericReactiveSession {
 
 
-    /**
-     * @return a unmodifiable map
-     */
     Mono<Integer> batchUpdate(Update update);
 
-    /**
-     * @return a unmodifiable map
-     */
     Mono<Integer> batchUpdate(Update update, Visible visible);
 
-    /**
-     * @return a unmodifiable map
-     */
     Mono<Long> batchLargeUpdate(Update update);
 
-    /**
-     * @return a unmodifiable map
-     */
     Mono<Long> batchLargeUpdate(Update update, Visible visible);
 
     Mono<Void> valueInsert(Insert insert);
@@ -52,19 +40,11 @@ public interface GenericReactiveApiSession extends GenericReactiveSession {
 
     <R> Flux<R> returningInsert(Insert insert, Class<R> resultClass, Visible visible);
 
-    /**
-     * @return a unmodifiable map
-     */
     Mono<Integer> batchDelete(Delete delete);
 
-    /**
-     * @return a unmodifiable map
-     */
     Mono<Integer> batchDelete(Delete delete, Visible visible);
 
-    /**
-     * @return a unmodifiable map
-     */
+
     Mono<Long> batchLargeDelete(Delete delete);
 
     /**

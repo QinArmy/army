@@ -5,57 +5,58 @@
     </postgre_schema_dql>
     <postgre_table_dql>
         SELECT
-            n.nspname     AS schema,
-            c.relname     AS tableName,
-            d.description AS comment
+            t.table_name,
+            d.description
             FROM
-                pg_catalog.pg_namespace                 n
-                    LEFT JOIN pg_catalog.pg_class       c ON c.relnamespace = n.oid
-                    LEFT JOIN pg_catalog.pg_description d ON c.oid = d.objoid AND d.objsubid = 0
-
+                information_schema.tables          AS t
+                    JOIN pg_catalog.pg_class       AS c ON t.table_name = c.relname AND c.relkind IN ('r', 'p')
+                    JOIN pg_catalog.pg_namespace   AS n ON c.relnamespace = n.oid
+                    JOIN pg_catalog.pg_description AS d ON c.oid = d.objoid AND d.objsubid = 0
             WHERE
                   current_database() = $1
               AND n.nspname = $2
-              AND c.relkind IN ('r', 'p')
+              AND t.table_type = 'BASE TABLE';
     </postgre_table_dql>
     <postgre_column_dql>
         SELECT
-            a.attname                                                AS columnName,
-            t.typname                                                AS dataType,
+            col.column_name      AS columnName,
+            upper(col.data_type) AS dataType,
             CASE
-                WHEN t.oid = 1700 AND a.atttypmod &lt;> -1-- DECIMAL
-                    THEN ((a.atttypmod - 4) &amp; -65536) >> 16
-                WHEN t.oid = 16 OR t.oid = 18-- BOOLEAN OR CHAR
-                    THEN 1
-                WHEN (t.oid = 1042 OR t.oid = 1043) AND a.atttypmod > 4 -- BPCHAR OR VARCHAR
-                    THEN a.atttypmod - 4
-                WHEN t.oid = ANY (ARRAY [1082,1083,1266,1114,1184]) AND
-                     a.atttypmod = -1 -- DATE,TIME,TIMETZ,TIMESTAMP,TIMESTAMPTZ
-                    THEN 6
-                    ELSE a.atttypmod
-            END                                                      AS precision,
+                WHEN upper(col.data_type) IN ('TIME WITH TIME ZONE', 'TIMESTAMP WITH TIME ZONE') AND
+                     col.datetime_precision IS NOT NULL
+                    THEN col.datetime_precision
+                WHEN upper(col.data_type) IN ('DECIMAL', 'NUMERIC') AND col.numeric_precision IS NOT NULL
+                    THEN col.numeric_precision
+                WHEN upper(col.data_type) IN ('CHAR', 'VARCHAR', 'CHARACTER VARYING', 'CHARACTER', 'BIT') AND
+                     col.character_maximum_length IS NOT NULL
+                    THEN col.character_maximum_length
+                    ELSE -1
+            END                  AS precision,
             CASE
-                WHEN t.oid = 1700 AND a.atttypmod &lt;> -1-- DECIMAL
-                    THEN ((a.atttypmod - 4) &amp; 65535)
-                    ELSE a.atttypmod
-            END                                                      AS scalse,
-            NOT (a.attnotnull OR (t.typtype = 'd' AND t.typnotnull)) AS nullable,
-            pg_catalog.pg_get_expr(def.adbin, def.adrelid)           AS defaultValue,
-            dsc.description                                          AS comment
+                WHEN upper(col.data_type) IN ('DECIMAL', 'NUMERIC') AND col.numeric_scale IS NOT NULL
+                    THEN col.numeric_scale
+                    ELSE -1
+            END                  AS scale,
+            CASE col.is_nullable
+                WHEN 'YES'
+                    THEN 'true'
+                WHEN 'NO'
+                    THEN 'false'
+            END                  AS nullable,
+            col.column_default   AS defaultValue,
+            d.description        AS comment
             FROM
-                pg_catalog.pg_namespace                 n
-                    JOIN      pg_catalog.pg_class       c ON c.relnamespace = n.oid
-                    JOIN      pg_catalog.pg_attribute   a ON a.attrelid = c.oid
-                    JOIN      pg_catalog.pg_type        t ON a.atttypid = t.oid
-                    LEFT JOIN pg_catalog.pg_attrdef     def ON a.attrelid = def.adrelid AND a.attnum = def.adnum
-                    LEFT JOIN pg_catalog.pg_description dsc ON c.oid = dsc.objoid AND a.attnum = dsc.objsubid
+                pg_catalog.pg_namespace                  AS n
+                    JOIN      pg_catalog.pg_class        AS t ON n.oid = t.relnamespace AND t.relkind IN ('r', 'p')
+                    JOIN      pg_catalog.pg_attribute    AS c ON t.oid = c.attrelid AND c.attnum > 0
+                    JOIN      information_schema.columns AS col
+                              ON col.table_schema = n.nspname AND col.table_name = t.relname AND
+                                 c.attname = col.column_name
+                    LEFT JOIN pg_catalog.pg_description  AS d ON t.oid = d.objoid AND d.objsubid = c.attnum
             WHERE
                   current_database() = $1
               AND n.nspname = $2
-              AND c.relname = $3
-              AND c.relkind IN ('r', 'p')
-              AND a.attnum > 0
-              AND NOT a.attisdropped
+              AND col.table_name = $3
     </postgre_column_dql>
     <postgre_index_dql>
         SELECT
