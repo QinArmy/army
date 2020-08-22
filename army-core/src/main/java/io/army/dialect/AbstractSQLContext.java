@@ -7,7 +7,6 @@ import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.mapping.MappingMeta;
 import io.army.wrapper.ParamWrapper;
-import io.army.wrapper.SimpleSQLWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -107,10 +106,6 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
     }
 
 
-    @Override
-    public SimpleSQLWrapper build() {
-        return SimpleSQLWrapper.build(this.sqlBuilder.toString(), this.paramList);
-    }
 
     @Override
     public final TableContextSQLContext parentContext() {

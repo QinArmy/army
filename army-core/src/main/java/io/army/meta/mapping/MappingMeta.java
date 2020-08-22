@@ -18,6 +18,10 @@ public interface MappingMeta extends ParamMeta {
 
     Class<?> javaType();
 
+    default Class<?> reactiveJavaType(Database database) {
+        return javaType();
+    }
+
     JDBCType jdbcType();
 
     /**
@@ -26,6 +30,15 @@ public interface MappingMeta extends ParamMeta {
     String toConstant(@Nullable FieldMeta<?, ?> paramMeta, Object nonNullValue);
 
     SQLDataType sqlDataType(Database database) throws NotSupportDialectException;
+
+    default Object encodeForReactive(Object nonNullValue, MappingContext context) {
+        return nonNullValue;
+    }
+
+    default Object decodeForReactive(Object nonNullValue, MappingContext context) {
+        return nonNullValue;
+    }
+
 
     void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context) throws SQLException;
 

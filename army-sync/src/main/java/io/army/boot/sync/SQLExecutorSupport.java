@@ -3,16 +3,19 @@ package io.army.boot.sync;
 import io.army.DataAccessException;
 import io.army.DomainUpdateException;
 import io.army.ErrorCode;
-import io.army.OptimisticLockException;
 import io.army.beans.BeanWrapper;
 import io.army.beans.ObjectAccessorFactory;
+import io.army.boot.GenericSQLExecutorSupport;
 import io.army.codec.CodecContext;
 import io.army.codec.FieldCodec;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.FieldSelection;
 import io.army.criteria.Selection;
 import io.army.dialect.MappingContext;
-import io.army.meta.*;
+import io.army.meta.FieldMeta;
+import io.army.meta.ParamMeta;
+import io.army.meta.PrimaryFieldMeta;
+import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
 import io.army.meta.mapping.ResultColumnMeta;
 import io.army.wrapper.*;
@@ -31,7 +34,7 @@ import java.util.*;
  * @see UpdateSQLExecutorImpl
  * @see SelectSQLExecutorImpl
  */
-abstract class SQLExecutorSupport {
+abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
 
     final InnerGenericRmSessionFactory sessionFactory;
 
@@ -39,6 +42,7 @@ abstract class SQLExecutorSupport {
     final MappingContext mappingContext;
 
     SQLExecutorSupport(InnerGenericRmSessionFactory sessionFactory) {
+        super(sessionFactory);
         this.sessionFactory = sessionFactory;
         this.mappingContext = sessionFactory.dialect().mappingContext();
     }
@@ -48,7 +52,7 @@ abstract class SQLExecutorSupport {
 
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
             // 1. set params
-            setParams(session.codecContext(), st, sqlWrapper.paramList());
+            bindParamList(session.codecContext(), st, sqlWrapper.paramList());
             // 2. execute
             int updateRows;
             // 3. set timeout
@@ -64,7 +68,7 @@ abstract class SQLExecutorSupport {
             }
             return updateRows;
         } catch (SQLException e) {
-            throw ExecutorUtils.convertSQLException(e, sqlWrapper.sql());
+            throw convertSQLException(e, sqlWrapper.sql());
         }
     }
 
@@ -72,7 +76,7 @@ abstract class SQLExecutorSupport {
 
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
             // 1. set params
-            setParams(session.codecContext(), st, sqlWrapper.paramList());
+            bindParamList(session.codecContext(), st, sqlWrapper.paramList());
             // 2. execute
             long updateRows;
             // 3. set timeout
@@ -84,11 +88,11 @@ abstract class SQLExecutorSupport {
             updateRows = st.executeLargeUpdate();
             if (updateRows < 1 && sqlWrapper.hasVersion()) {
                 // 5. check optimistic lock
-                throw createOptimisticLockException(sqlWrapper.sql());
+                throw createOptimisticLockException(this.sessionFactory, sqlWrapper.sql());
             }
             return updateRows;
         } catch (SQLException e) {
-            throw ExecutorUtils.convertSQLException(e, sqlWrapper.sql());
+            throw convertSQLException(e, sqlWrapper.sql());
         }
     }
 
@@ -106,7 +110,7 @@ abstract class SQLExecutorSupport {
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
             for (List<ParamWrapper> paramWrapperList : sqlWrapper.paramGroupList()) {
                 // 1. set params
-                setParams(codecContext, st, paramWrapperList);
+                bindParamList(codecContext, st, paramWrapperList);
                 // 2. add to batch
                 st.addBatch();
             }
@@ -118,7 +122,7 @@ abstract class SQLExecutorSupport {
             // 4. execute batch sql.
             return st.executeBatch();
         } catch (SQLException e) {
-            throw ExecutorUtils.convertSQLException(e, sqlWrapper.sql());
+            throw convertSQLException(e, sqlWrapper.sql());
         }
     }
 
@@ -128,14 +132,13 @@ abstract class SQLExecutorSupport {
      */
     protected final long[] doExecuteLargeBatch(InnerGenericRmSession session, BatchSimpleSQLWrapper sqlWrapper) {
         if (session.supportSharding()) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                    , "Army don't support batch operation in sharding mode.");
+            throw new CriteriaException("Army don't support batch operation in sharding mode.");
         }
         final CodecContext codecContext = session.codecContext();
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
             for (List<ParamWrapper> paramWrapperList : sqlWrapper.paramGroupList()) {
                 // 1. set params
-                setParams(codecContext, st, paramWrapperList);
+                bindParamList(codecContext, st, paramWrapperList);
                 // 2. add to batch
                 st.addBatch();
             }
@@ -147,7 +150,7 @@ abstract class SQLExecutorSupport {
             // 4. execute batch sql.
             return st.executeLargeBatch();
         } catch (SQLException e) {
-            throw ExecutorUtils.convertSQLException(e, sqlWrapper.sql());
+            throw convertSQLException(e, sqlWrapper.sql());
         }
     }
 
@@ -157,13 +160,13 @@ abstract class SQLExecutorSupport {
         // 1. create statement
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), aliasArray)) {
             // 2. set params
-            setParams(session.codecContext(), st, sqlWrapper.paramList());
+            bindParamList(session.codecContext(), st, sqlWrapper.paramList());
             // 3. execute sql
             try (ResultSet resultSet = st.executeQuery()) {
                 List<T> resultList;
                 //4. extract result
                 if (singleType(sqlWrapper.selectionList(), resultClass)) {
-                    resultList = extractSimpleTypeResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
+                    resultList = extractSingleResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
                             , resultClass);
                 } else {
                     resultList = extractBeanTypeResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
@@ -171,12 +174,12 @@ abstract class SQLExecutorSupport {
                 }
                 //5.check Optimistic Lock
                 if (resultList.isEmpty() && sqlWrapper.hasVersion()) {
-                    throw createOptimisticLockException(sqlWrapper.sql());
+                    throw createOptimisticLockException(this.sessionFactory, sqlWrapper.sql());
                 }
                 return resultList;
             }
         } catch (SQLException e) {
-            throw ExecutorUtils.convertSQLException(e, sqlWrapper.sql());
+            throw convertSQLException(e, sqlWrapper.sql());
         } catch (ResultColumnClassNotFoundException e) {
             throw createExceptionForResultColumnClassNotFound(e, sqlWrapper.sql());
         }
@@ -200,7 +203,7 @@ abstract class SQLExecutorSupport {
     }
 
     @SuppressWarnings("unchecked")
-    protected final <T> List<T> extractSimpleTypeResult(CodecContext codecContext, ResultSet resultSet
+    protected final <T> List<T> extractSingleResult(CodecContext codecContext, ResultSet resultSet
             , List<Selection> selectionList, Class<T> resultClass) throws SQLException
             , ResultColumnClassNotFoundException {
 
@@ -213,7 +216,7 @@ abstract class SQLExecutorSupport {
             if (fieldMeta.codec()) {
                 fieldCodec = this.sessionFactory.fieldCodec(fieldMeta);
                 if (fieldCodec == null) {
-                    throw createFieldCodecException(fieldMeta);
+                    throw createNoFieldCodecException(fieldMeta);
                 }
             }
 
@@ -241,7 +244,7 @@ abstract class SQLExecutorSupport {
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), aliasArray)) {
 
             // 2. set params
-            setParams(session.codecContext(), st, sqlWrapper.paramList());
+            bindParamList(session.codecContext(), st, sqlWrapper.paramList());
             // 3. execute sql
             try (ResultSet resultSet = st.executeQuery()) {
                 Map<Object, BeanWrapper> wrapperMap;
@@ -249,12 +252,12 @@ abstract class SQLExecutorSupport {
                 wrapperMap = extractFirstSQLResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
                         , resultClass);
                 if (wrapperMap.isEmpty() && sqlWrapper.hasVersion()) {
-                    throw createOptimisticLockException(sqlWrapper.sql());
+                    throw createOptimisticLockException(this.sessionFactory, sqlWrapper.sql());
                 }
                 return wrapperMap;
             }
         } catch (SQLException e) {
-            throw ExecutorUtils.convertSQLException(e, sqlWrapper.sql());
+            throw convertSQLException(e, sqlWrapper.sql());
         } catch (ResultColumnClassNotFoundException e) {
             throw createExceptionForResultColumnClassNotFound(e, sqlWrapper.sql());
         }
@@ -266,7 +269,7 @@ abstract class SQLExecutorSupport {
         // 1. create statement
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), aliasArray)) {
             // 2. set params
-            setParams(session.codecContext(), st, sqlWrapper.paramList());
+            bindParamList(session.codecContext(), st, sqlWrapper.paramList());
             // 3. execute sql
             try (ResultSet resultSet = st.executeQuery()) {
                 List<T> resultList;
@@ -274,12 +277,12 @@ abstract class SQLExecutorSupport {
                 resultList = extractSecondSQLResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
                         , wrapperMap);
                 if (resultList.isEmpty() && sqlWrapper.hasVersion()) {
-                    throw createOptimisticLockException(sqlWrapper.sql());
+                    throw createOptimisticLockException(this.sessionFactory, sqlWrapper.sql());
                 }
                 return resultList;
             }
         } catch (SQLException e) {
-            throw ExecutorUtils.convertSQLException(e, sqlWrapper.sql());
+            throw convertSQLException(e, sqlWrapper.sql());
         } catch (ResultColumnClassNotFoundException e) {
             throw createExceptionForResultColumnClassNotFound(e, sqlWrapper.sql());
         }
@@ -354,7 +357,7 @@ abstract class SQLExecutorSupport {
     }
 
 
-    protected final void setParams(CodecContext codecContext, PreparedStatement st, List<ParamWrapper> paramList)
+    protected final void bindParamList(CodecContext codecContext, PreparedStatement st, List<ParamWrapper> paramList)
             throws SQLException {
         ParamWrapper paramWrapper;
         Object value;
@@ -430,11 +433,6 @@ abstract class SQLExecutorSupport {
 
     /*################################## blow package method ##################################*/
 
-    final OptimisticLockException createOptimisticLockException(String sql) {
-        return new OptimisticLockException(
-                "SessionFactory[%s] record maybe be updated or deleted by transaction,sql:%s"
-                , this.sessionFactory.name(), sql);
-    }
 
     final DomainUpdateException createBatchNotMatchException(String parentSql, String childSql
             , int parentRowsLength, int childRowsLength) {
@@ -463,47 +461,6 @@ abstract class SQLExecutorSupport {
 
     /*################################## blow private method ##################################*/
 
-    private Object doEncodeParam(CodecContext codecContext, FieldMeta<?, ?> fieldMeta, final Object value) {
-        FieldCodec fieldCodec = this.sessionFactory.fieldCodec(fieldMeta);
-        Object paramValue;
-        if (fieldCodec == null) {
-            throw createFieldCodecException(fieldMeta);
-        } else {
-            // encode param
-            paramValue = fieldCodec.encode(fieldMeta, value, codecContext);
-            if (!fieldMeta.javaType().isInstance(paramValue)) {
-                throw ExecutorUtils.createCodecReturnTypeException(fieldCodec, fieldMeta, paramValue);
-            }
-        }
-        return paramValue;
-    }
-
-    private Object doDecodeResult(CodecContext codecContext, FieldMeta<?, ?> fieldMeta, final Object resultFromDB) {
-        FieldCodec fieldCodec = this.sessionFactory.fieldCodec(fieldMeta);
-        Object result;
-        if (fieldCodec == null) {
-            throw createFieldCodecException(fieldMeta);
-        } else {
-            // decode result
-            result = fieldCodec.decode(fieldMeta, resultFromDB, codecContext);
-            if (!fieldMeta.javaType().isInstance(result)) {
-                throw ExecutorUtils.createCodecReturnTypeException(fieldCodec, fieldMeta, result);
-            }
-        }
-        return result;
-    }
-
-    private PrimaryFieldMeta<?, ?> obtainPrimaryField(List<Selection> selectionList) {
-        PrimaryFieldMeta<?, ?> primaryField;
-        Selection selection = selectionList.get(0);
-        if (selection instanceof PrimaryFieldMeta) {
-            primaryField = (PrimaryFieldMeta<?, ?>) selection;
-        } else {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                    , "Domain update/insert,first selection must be PrimaryFieldMeta");
-        }
-        return primaryField;
-    }
 
     /**
      * @return a unmodifiable list
@@ -524,11 +481,7 @@ abstract class SQLExecutorSupport {
 
     /*################################## blow package static method ##################################*/
 
-    static boolean singleType(List<Selection> selectionList, Class<?> resultClass) {
-        return selectionList.size() == 1
-                && resultClass.isAssignableFrom(selectionList.get(0).mappingMeta().javaType());
 
-    }
 
     static IllegalArgumentException createNotSupportedException(SQLWrapper sqlWrapper, String methodName) {
         return new IllegalArgumentException(String.format("%s supported by %s", sqlWrapper, methodName));
@@ -553,9 +506,6 @@ abstract class SQLExecutorSupport {
 
     /*################################## blow private static method ##################################*/
 
-    private static MetaException createFieldCodecException(FieldMeta<?, ?> fieldMeta) {
-        return new MetaException("FieldMeta[%s] not found FieldCodec.", fieldMeta);
-    }
 
     private static void assertSimpleResult(List<Selection> selectionList, Class<?> resultClass) {
         if (selectionList.size() != 1) {

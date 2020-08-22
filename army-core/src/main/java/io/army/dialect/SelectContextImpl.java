@@ -1,6 +1,7 @@
 package io.army.dialect;
 
 
+import io.army.codec.StatementType;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.InnerSelect;
 import io.army.util.Assert;
@@ -18,22 +19,26 @@ final class SelectContextImpl extends AbstractQueryStatementContext implements S
     public static SelectContextImpl build(TableContextSQLContext original, InnerSelect select) {
 
         TableContext tableContext = TableContext.multiTable(select.tableWrapperList(), original.primaryRouteSuffix());
-        return new SelectContextImpl(original, tableContext,select);
+        return new SelectContextImpl(original, tableContext, select);
     }
 
     private SelectContextImpl(Dialect dialect, Visible visible, TableContext tableContext
             , InnerSelect select) {
-        super(dialect, visible, tableContext,select);
+        super(dialect, visible, tableContext, select);
     }
 
     private SelectContextImpl(TableContextSQLContext original, TableContext tableContext, InnerSelect select) {
-        super(original, tableContext,select);
+        super(original, tableContext, select);
     }
 
     @Override
     public final SimpleSQLWrapper build() {
         Assert.state(!this.childContext, "SelectContextImpl not outer context");
-        return SimpleSQLWrapper.build(this.sqlBuilder.toString(), this.paramList
-                , DialectUtils.extractSelectionList(this.query.selectPartList()));
+        return SimpleSQLWrapper.builder()
+                .sql(this.sqlBuilder.toString())
+                .paramList(this.paramList)
+                .statementType(StatementType.SELECT)
+                .selectionList(DialectUtils.extractSelectionList(this.query.selectPartList()))
+                .build();
     }
 }

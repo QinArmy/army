@@ -5,5 +5,8 @@ public enum StatementType {
     INSERT,
     UPDATE,
     DELETE,
-    SELECT
+    SELECT,
+    WITH_INSERT,
+    WITH_UPDATE,
+    WITH_DELETE,
 }

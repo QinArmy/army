@@ -44,12 +44,8 @@ public interface GenericReactiveApiSession extends GenericReactiveSession {
 
     Mono<Integer> batchDelete(Delete delete, Visible visible);
 
-
     Mono<Long> batchLargeDelete(Delete delete);
 
-    /**
-     * @return a unmodifiable map
-     */
     Mono<Long> batchLargeDelete(Delete delete, Visible visible);
 
 }

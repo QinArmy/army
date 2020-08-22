@@ -1,40 +1,39 @@
 package io.army.wrapper;
 
+import io.army.codec.StatementType;
 import io.army.criteria.Selection;
 
 import java.util.List;
 
-public interface SimpleSQLWrapper extends SQLWrapper {
-
-    String sql();
+public interface SimpleSQLWrapper extends GenericSimpleWrapper {
 
     /**
      * @return a unmodifiable list
      */
     List<ParamWrapper> paramList();
 
-    boolean hasVersion();
-
     /**
      * @return a unmodifiable list
      */
     List<Selection> selectionList();
 
-    static SimpleSQLWrapper build(String sql, List<ParamWrapper> paramList) {
-        return new SimpleSQLWrapperImpl(sql, paramList);
+    static Builder builder() {
+        return new SimpleSQLWrapperImpl.Builder();
     }
 
-    static SimpleSQLWrapper build(String sql, List<ParamWrapper> paramList, boolean hasVersion) {
-        return new SimpleSQLWrapperImpl(sql, paramList, hasVersion);
-    }
+    interface Builder {
 
-    static SimpleSQLWrapper build(String sql, List<ParamWrapper> paramList, List<Selection> selectionList) {
-        return new SimpleSQLWrapperImpl(sql, paramList, false, selectionList);
-    }
+        Builder sql(String sql);
 
-    static SimpleSQLWrapper build(String sql, List<ParamWrapper> paramList, boolean hasVersion
-            , List<Selection> selectionList) {
-        return new SimpleSQLWrapperImpl(sql, paramList, hasVersion, selectionList);
+        Builder paramList(List<ParamWrapper> paramList);
+
+        Builder statementType(StatementType statementType);
+
+        Builder selectionList(List<Selection> selectionList);
+
+        Builder hasVersion(boolean hasVersion);
+
+        SimpleSQLWrapper build();
     }
 
 }

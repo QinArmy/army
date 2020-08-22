@@ -4,11 +4,12 @@ import io.army.ErrorCode;
 import io.army.util.Assert;
 import io.army.util.BeanUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
-final class MapReadonlyWrapper implements ReadonlyWrapper {
+class MapReadonlyWrapper implements ReadonlyWrapper {
 
-    private final Map<String, Object> map;
+    final Map<String, Object> map;
 
     MapReadonlyWrapper(Map<String, Object> map) {
         this.map = map;
@@ -17,7 +18,12 @@ final class MapReadonlyWrapper implements ReadonlyWrapper {
     @SuppressWarnings("unchecked")
     MapReadonlyWrapper(Class<?> mapClass) {
         Assert.isAssignable(Map.class, mapClass);
-        this.map = (Map<String, Object>) BeanUtils.instantiateClass(mapClass);
+        if (mapClass.isInterface()) {
+            this.map = new HashMap<>();
+        } else {
+            this.map = (Map<String, Object>) BeanUtils.instantiateClass(mapClass);
+        }
+
     }
 
     @Override

@@ -1,22 +1,29 @@
 package io.army.wrapper;
 
+import io.army.codec.StatementType;
+
 import java.util.List;
 
-public interface BatchSimpleSQLWrapper extends SQLWrapper {
+public interface BatchSimpleSQLWrapper extends GenericSimpleWrapper {
 
-    String sql();
 
     List<List<ParamWrapper>> paramGroupList();
 
-    boolean hasVersion();
-
-
-    static BatchSimpleSQLWrapper build(String sql, List<List<ParamWrapper>> paramGroupList) {
-        return new BatchSimpleSQLWrapperImpl(sql, paramGroupList);
+    static Builder builder() {
+        return new BatchSimpleSQLWrapperImpl.Builder();
     }
 
-    static BatchSimpleSQLWrapper build(String sql, List<List<ParamWrapper>> paramGroupList, boolean hasVersion) {
-        return new BatchSimpleSQLWrapperImpl(sql, paramGroupList, hasVersion);
+    interface Builder {
+
+        Builder sql(String sql);
+
+        Builder paramGroupList(List<List<ParamWrapper>> paramGroupList);
+
+        Builder statementType(StatementType statementType);
+
+        Builder hasVersion(boolean hasVersion);
+
+        BatchSimpleSQLWrapper build();
     }
 
 }

@@ -29,7 +29,7 @@ final class SelectSQLExecutorImpl extends SQLExecutorSupport implements SelectSQ
         // 1. create statement
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql())) {
             // 2. set params
-            setParams(session.codecContext(), st, sqlWrapper.paramList());
+            bindParamList(session.codecContext(), st, sqlWrapper.paramList());
             List<T> resultList;
             // 3. set timeout
             int timeout = session.timeToLiveInSeconds();
@@ -40,7 +40,7 @@ final class SelectSQLExecutorImpl extends SQLExecutorSupport implements SelectSQ
             try (ResultSet resultSet = st.executeQuery()) {
                 // 5. extract result
                 if (sqlWrapper.selectionList().size() == 1) {
-                    resultList = extractSimpleTypeResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
+                    resultList = extractSingleResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
                             , resultClass);
                 } else {
                     resultList = extractBeanTypeResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
@@ -49,7 +49,7 @@ final class SelectSQLExecutorImpl extends SQLExecutorSupport implements SelectSQ
             }
             return resultList;
         } catch (SQLException e) {
-            throw ExecutorUtils.convertSQLException(e, sqlWrapper.sql());
+            throw convertSQLException(e, sqlWrapper.sql());
         } catch (ResultColumnClassNotFoundException e) {
             throw createExceptionForResultColumnClassNotFound(e, sqlWrapper.sql());
         } finally {

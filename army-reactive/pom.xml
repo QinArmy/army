@@ -21,8 +21,8 @@
             <artifactId>reactor-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.r2dbc</groupId>
-            <artifactId>r2dbc-postgresql</artifactId>
+            <groupId>io.jdbd</groupId>
+            <artifactId>reactve-jdbc-api</artifactId>
         </dependency>
     </dependencies>
 

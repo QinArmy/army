@@ -57,6 +57,13 @@ public abstract class ObjectAccessorFactory {
         return beanWrapper;
     }
 
+    public static BeanWrapper forMapAccess(Class<?> mapClass) {
+        if (!Map.class.isAssignableFrom(mapClass)) {
+            throw new IllegalArgumentException(String.format("mapClass[%s] isn't Map type", mapClass.getName()));
+        }
+        return new MapWrapperImpl(mapClass);
+    }
+
     @SuppressWarnings("unchecked")
     public static ReadonlyWrapper forReadonlyAccess(Object target) {
         ReadonlyWrapper readonlyWrapper;
