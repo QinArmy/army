@@ -1,6 +1,5 @@
 package io.army.boot.reactive;
 
-import io.army.DomainUpdateException;
 import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ObjectWrapper;
 import io.army.boot.GenericSQLExecutorSupport;
@@ -160,24 +159,6 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
         return flux;
     }
 
-    protected final <T> T extractRowResult(InnerGenericRmSession session, ResultRow resultRow
-            , SimpleSQLWrapper sqlWrapper, Class<T> resultClass) {
-
-        final ObjectWrapper beanWrapper = createObjectWrapper(resultClass, session);
-
-        final StatementType statementType = sqlWrapper.statementType();
-        for (Selection selection : sqlWrapper.selectionList()) {
-            // 1. obtain column result
-            Object columnResult = extractColumnResult(resultRow, selection, statementType
-                    , selection.mappingMeta().javaType());
-            if (columnResult == null) {
-                continue;
-            }
-            // 2. set bean property value.
-            beanWrapper.setPropertyValue(selection.alias(), columnResult);
-        }
-        return getWrapperInstance(beanWrapper);
-    }
 
     /*################################## blow private method ##################################*/
 
@@ -293,6 +274,26 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
         return resultClass.cast(objectWrapper.getWrappedInstance());
     }
 
+
+    private <T> T extractRowResult(InnerGenericRmSession session, ResultRow resultRow
+            , SimpleSQLWrapper sqlWrapper, Class<T> resultClass) {
+
+        final ObjectWrapper beanWrapper = createObjectWrapper(resultClass, session);
+
+        final StatementType statementType = sqlWrapper.statementType();
+        for (Selection selection : sqlWrapper.selectionList()) {
+            // 1. obtain column result
+            Object columnResult = extractColumnResult(resultRow, selection, statementType
+                    , selection.mappingMeta().javaType());
+            if (columnResult == null) {
+                continue;
+            }
+            // 2. set bean property value.
+            beanWrapper.setPropertyValue(selection.alias(), columnResult);
+        }
+        return getWrapperInstance(beanWrapper);
+    }
+
     /**
      * @param <T> column's {@link Selection} java type
      */
@@ -308,7 +309,11 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
         MappingMeta mappingMeta = selection.mappingMeta();
         // 2. decode columnResult with mappingMeta
         columnResult = mappingMeta.decodeForReactive(columnResult, this.mappingContext);
-        assertDecodeForReactiveReturning(mappingMeta, columnResult);
+        if (!mappingMeta.javaType().isInstance(columnResult)) {
+            throw new MetaException("%s decodeForReactive return value isn't %s's instance."
+                    , mappingMeta.getClass().getName()
+                    , mappingMeta.javaType().getName());
+        }
 
         if (selection instanceof FieldSelection) {
             FieldMeta<?, ?> fieldMeta = ((FieldSelection) selection).fieldMeta();
@@ -324,7 +329,7 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
         Mono<T> mono;
         if (sqlWrapper.hasVersion()) {
             // throw optimistic lock exception
-            mono = Mono.defer(() -> Mono.error(createOptimisticLockException(this.sessionFactory, sqlWrapper.sql())));
+            mono = Mono.defer(() -> Mono.error(createOptimisticLockException(sqlWrapper.sql())));
         } else {
             mono = Mono.empty();
         }
@@ -332,14 +337,13 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
     }
 
     private <T> Mono<List<T>> assertFirstSQLAndSecondSQLResultMatch(List<T> listOfSecond
-            , Map<?, ?> wrapperMap, GenericSimpleWrapper simpleWrapper) {
+            , Map<?, ?> wrapperMap, SimpleSQLWrapper simpleWrapper) {
         Mono<List<T>> mono;
         if (listOfSecond.size() == wrapperMap.size()) {
             mono = Mono.just(listOfSecond);
         } else {
-            mono = Mono.error(new DomainUpdateException(
-                    "%s updated rows[%s] and first sql[%s] not match.", simpleWrapper.sql()
-                    , listOfSecond.size(), wrapperMap.size()));
+            mono = Mono.error(createChildReturningNotMatchException(wrapperMap.size(), listOfSecond.size()
+                    , simpleWrapper));
         }
         return mono;
     }
@@ -355,33 +359,15 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
     }
 
 
-    private void assertDecodeForReactiveReturning(MappingMeta mappingMeta, Object columnResult) {
-        if (!mappingMeta.javaType().isInstance(columnResult)) {
-            throw new MetaException("%s decodeForReactive return value isn't %s's instance."
-                    , mappingMeta.getClass().getName()
-                    , mappingMeta.javaType().getName());
-        }
-    }
-
-
     private <N extends Number> Mono<N> assertOptimisticLock(N updatedRows, GenericSimpleWrapper sqlWrapper) {
-        final boolean hasVersion = sqlWrapper.hasVersion();
-        if (!hasVersion) {
-            return Mono.just(updatedRows);
-        }
-        Mono<N> mono = null;
-        if (updatedRows instanceof Integer) {
-            if (updatedRows.intValue() < 1) {
-                mono = Mono.error(createOptimisticLockException(this.sessionFactory, sqlWrapper.sql()));
-            }
-        } else if (updatedRows instanceof Long) {
-            if (updatedRows.longValue() < 1L) {
-                mono = Mono.error(createOptimisticLockException(this.sessionFactory, sqlWrapper.sql()));
-            }
+
+        Mono<N> mono;
+        if (sqlWrapper.hasVersion() && updatedRows.longValue() < 1L) {
+            mono = Mono.error(createOptimisticLockException(sqlWrapper.sql()));
         } else {
-            throw new IllegalArgumentException("executeFunction error.");
+            mono = Mono.just(updatedRows);
         }
-        return mono == null ? Mono.just(updatedRows) : mono;
+        return mono;
     }
 
 

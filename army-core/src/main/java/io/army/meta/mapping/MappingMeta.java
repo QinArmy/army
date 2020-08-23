@@ -43,7 +43,7 @@ public interface MappingMeta extends ParamMeta {
     void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context) throws SQLException;
 
     @Nullable
-    Object nullSafeGet(ResultSet resultSet, String alias, ResultColumnMeta resultColumnMeta, MappingContext context)
+    Object nullSafeGet(ResultSet resultSet, String alias, MappingContext context)
             throws SQLException;
 
     default boolean singleton() {

@@ -1,30 +1,26 @@
 package io.army.boot.sync;
 
-import io.army.DataAccessException;
-import io.army.DomainUpdateException;
-import io.army.ErrorCode;
 import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ObjectWrapper;
 import io.army.boot.GenericSQLExecutorSupport;
-import io.army.codec.CodecContext;
-import io.army.codec.FieldCodec;
-import io.army.criteria.CriteriaException;
+import io.army.codec.StatementType;
 import io.army.criteria.FieldSelection;
 import io.army.criteria.Selection;
 import io.army.dialect.MappingContext;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
+import io.army.meta.MetaException;
 import io.army.meta.ParamMeta;
-import io.army.meta.PrimaryFieldMeta;
-import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
-import io.army.meta.mapping.ResultColumnMeta;
-import io.army.wrapper.BatchSimpleSQLWrapper;
-import io.army.wrapper.ChildSQLWrapper;
-import io.army.wrapper.ParamWrapper;
-import io.army.wrapper.SimpleSQLWrapper;
+import io.army.wrapper.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
+import java.util.function.BiFunction;
 
 
 /**
@@ -39,8 +35,9 @@ import java.util.*;
  */
 abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
 
-    final InnerGenericRmSessionFactory sessionFactory;
+    private static final Logger LOG = LoggerFactory.getLogger(SQLExecutorSupport.class);
 
+    final InnerGenericRmSessionFactory sessionFactory;
 
     final MappingContext mappingContext;
 
@@ -51,21 +48,90 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     }
 
 
-    protected final int doExecuteUpdate(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper) {
+    final Integer integerUpdate(PreparedStatement st, SimpleSQLWrapper sqlWrapper) {
+        try {
+            return st.executeUpdate();
+        } catch (SQLException e) {
+            throw convertSQLException(e, sqlWrapper.sql());
+        }
+    }
 
+    final Long longUpdate(PreparedStatement st, SimpleSQLWrapper sqlWrapper) {
+        try {
+            return st.executeLargeUpdate();
+        } catch (SQLException e) {
+            throw convertSQLException(e, sqlWrapper.sql());
+        }
+    }
+
+    final List<Integer> integerBatchUpdate(PreparedStatement st, BatchSimpleSQLWrapper sqlWrapper) {
+        try {
+            int[] batchResult;
+            batchResult = st.executeBatch();
+            List<Integer> resultList = new ArrayList<>(batchResult.length);
+            final boolean hasVersion = sqlWrapper.hasVersion();
+            final boolean insertStatement = sqlWrapper.statementType().insertStatement();
+            for (int row : batchResult) {
+                if (hasVersion && row < 1) {
+                    throw createOptimisticLockException(sqlWrapper.sql());
+                }
+                if (insertStatement && row != 1) {
+                    throw createValueInsertException(row, sqlWrapper);
+                }
+                resultList.add(row);
+            }
+            return Collections.unmodifiableList(resultList);
+        } catch (SQLException e) {
+            throw convertSQLException(e, sqlWrapper.sql());
+        }
+    }
+
+    final List<Long> longBatchUpdate(PreparedStatement st, BatchSimpleSQLWrapper sqlWrapper) {
+        try {
+            long[] batchResult;
+            batchResult = st.executeLargeBatch();
+            List<Long> resultList = new ArrayList<>(batchResult.length);
+            final boolean hasVersion = sqlWrapper.hasVersion();
+            for (long row : batchResult) {
+                if (hasVersion && row < 1L) {
+                    throw createOptimisticLockException(sqlWrapper.sql());
+                }
+                resultList.add(row);
+            }
+            return Collections.unmodifiableList(resultList);
+        } catch (SQLException e) {
+            throw convertSQLException(e, sqlWrapper.sql());
+        }
+    }
+
+    /**
+     * @param executeFunction execute update method ,must be below:
+     *                        <ul>
+     *                          <li>{@link #integerUpdate(PreparedStatement, SimpleSQLWrapper)}</li>
+     *                          <li>{@link #longUpdate(PreparedStatement, SimpleSQLWrapper)}</li>
+     *                        </ul>
+     * @param <N>             result typed of update rows ,must be  {@link Integer} or {@link Long}
+     * @return {@code Integer or Long}
+     */
+    final <N extends Number> N doExecuteUpdate(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper
+            , BiFunction<PreparedStatement, SimpleSQLWrapper, N> executeFunction) {
+        //1. create statement
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
-            // 1. set params
-            bindParamList(session.codecContext(), st, sqlWrapper.paramList());
-            // 2. execute
-            int updateRows;
+            // 2. set params
+            bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramList());
             // 3. set timeout
             int timeout = session.timeToLiveInSeconds();
             if (timeout >= 0) {
                 st.setQueryTimeout(timeout);
             }
+            if (this.sessionFactory.showSQL()) {
+                LOG.info("Army will execute {} sql:\n{}", sqlWrapper.statementType()
+                        , this.sessionFactory.dialect().showSQL(sqlWrapper));
+            }
+            N updateRows;
             //4. execute update
-            updateRows = st.executeUpdate();
-            if (updateRows < 1 && sqlWrapper.hasVersion()) {
+            updateRows = executeFunction.apply(st, sqlWrapper);
+            if (updateRows.longValue() < 1L && sqlWrapper.hasVersion()) {
                 // 5. check optimistic lock
                 throw createOptimisticLockException(sqlWrapper.sql());
             }
@@ -75,292 +141,291 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
         }
     }
 
-    protected final long doExecuteLargeUpdate(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper) {
-
-        try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
-            // 1. set params
-            bindParamList(session.codecContext(), st, sqlWrapper.paramList());
-            // 2. execute
-            long updateRows;
-            // 3. set timeout
-            int timeout = session.timeToLiveInSeconds();
-            if (timeout >= 0) {
-                st.setQueryTimeout(timeout);
-            }
-            // 4. execute large update
-            updateRows = st.executeLargeUpdate();
-            if (updateRows < 1 && sqlWrapper.hasVersion()) {
-                // 5. check optimistic lock
-                throw createOptimisticLockException(this.sessionFactory, sqlWrapper.sql());
-            }
-            return updateRows;
-        } catch (SQLException e) {
-            throw convertSQLException(e, sqlWrapper.sql());
-        }
-    }
-
     /**
-     * @return a unmodifiable map, key : key of {@linkplain BatchSimpleSQLWrapper#paramGroupList()}
-     * * ,value : batch update rows of named param.
+     * @param executeFunction execute update method ,must be below:
+     *                        <ul>
+     *                          <li>{@link #integerBatchUpdate(PreparedStatement, BatchSimpleSQLWrapper)}</li>
+     *                          <li>{@link #longBatchUpdate(PreparedStatement, BatchSimpleSQLWrapper)}</li>
+     *                        </ul>
+     * @param <N>             result typed of update rows ,must be  {@link Integer} or {@link Long}
+     * @return {@code List<Integer> or List<Long>}
      */
-    protected final int[] doExecuteBatch(InnerGenericRmSession session, BatchSimpleSQLWrapper sqlWrapper) {
-        if (session.supportSharding()) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                    , "Army don't support batch operation in sharding mode.");
-        }
-
-        final CodecContext codecContext = session.codecContext();
-        try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
-            for (List<ParamWrapper> paramWrapperList : sqlWrapper.paramGroupList()) {
-                // 1. set params
-                bindParamList(codecContext, st, paramWrapperList);
-                // 2. add to batch
-                st.addBatch();
-            }
-            // 3. set timeout
-            int timeout = session.timeToLiveInSeconds();
-            if (timeout >= 0) {
-                st.setQueryTimeout(timeout);
-            }
-            // 4. execute batch sql.
-            return st.executeBatch();
-        } catch (SQLException e) {
-            throw convertSQLException(e, sqlWrapper.sql());
-        }
-    }
-
-    /**
-     * @return a unmodifiable map, key : key of {@linkplain BatchSimpleSQLWrapper#paramGroupList()}
-     * * ,value : batch update rows of named param.
-     */
-    protected final long[] doExecuteLargeBatch(InnerGenericRmSession session, BatchSimpleSQLWrapper sqlWrapper) {
-        if (session.supportSharding()) {
-            throw new CriteriaException("Army don't support batch operation in sharding mode.");
-        }
-        final CodecContext codecContext = session.codecContext();
-        try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
-            for (List<ParamWrapper> paramWrapperList : sqlWrapper.paramGroupList()) {
-                // 1. set params
-                bindParamList(codecContext, st, paramWrapperList);
-                // 2. add to batch
-                st.addBatch();
-            }
-            // 3. set timeout
-            int timeout = session.timeToLiveInSeconds();
-            if (timeout >= 0) {
-                st.setQueryTimeout(timeout);
-            }
-            // 4. execute batch sql.
-            return st.executeLargeBatch();
-        } catch (SQLException e) {
-            throw convertSQLException(e, sqlWrapper.sql());
-        }
-    }
-
-    protected final <T> List<T> doExecuteSimpleReturning(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper
-            , Class<T> resultClass) {
-        final String[] aliasArray = asSelectionAliasArray(sqlWrapper.selectionList());
+    final <N extends Number> List<N> doExecuteBatch(InnerGenericRmSession session, BatchSimpleSQLWrapper sqlWrapper
+            , BiFunction<PreparedStatement, BatchSimpleSQLWrapper, List<N>> executeFunction) {
         // 1. create statement
-        try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), aliasArray)) {
+        try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
+            StatementType statementType = sqlWrapper.statementType();
+            for (List<ParamWrapper> paramList : sqlWrapper.paramGroupList()) {
+                // 2. bind param list
+                bindParamList(st, statementType, paramList);
+                st.addBatch();
+            }
+            // 3. set timeout
+            int timeout = session.timeToLiveInSeconds();
+            if (timeout >= 0) {
+                st.setQueryTimeout(timeout);
+            }
+            if (this.sessionFactory.showSQL()) {
+                LOG.info("Army will execute {} sql:\n{}", sqlWrapper.statementType()
+                        , this.sessionFactory.dialect().showSQL(sqlWrapper));
+            }
+            // 4. execute
+            return executeFunction.apply(st, sqlWrapper);
+        } catch (SQLException e) {
+            throw convertSQLException(e, sqlWrapper.sql());
+        }
+    }
+
+
+    final <T> List<T> doExecuteSimpleQuery(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper
+            , Class<T> resultClass) {
+        // 1. create statement
+        try (PreparedStatement st = session.createStatement(sqlWrapper.sql())) {
             // 2. set params
-            bindParamList(session.codecContext(), st, sqlWrapper.paramList());
+            bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramList());
             // 3. execute sql
             try (ResultSet resultSet = st.executeQuery()) {
                 List<T> resultList;
                 //4. extract result
                 if (singleType(sqlWrapper.selectionList(), resultClass)) {
-                    resultList = extractSingleResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
-                            , resultClass);
+                    resultList = extractSingleResultList(resultSet, sqlWrapper, resultClass);
                 } else {
-                    resultList = extractBeanTypeResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
-                            , resultClass);
+                    resultList = extractRowResultList(session, resultSet, sqlWrapper, resultClass);
                 }
                 //5.check Optimistic Lock
-                if (resultList.isEmpty() && sqlWrapper.hasVersion()) {
-                    throw createOptimisticLockException(this.sessionFactory, sqlWrapper.sql());
+                if (sqlWrapper.hasVersion() && resultList.isEmpty()) {
+                    throw createOptimisticLockException(sqlWrapper.sql());
                 }
                 return resultList;
             }
         } catch (SQLException e) {
             throw convertSQLException(e, sqlWrapper.sql());
-        } catch (ResultColumnClassNotFoundException e) {
-            throw createExceptionForResultColumnClassNotFound(e, sqlWrapper.sql());
         }
     }
 
-    protected final <T> List<T> doExecuteChildReturning(InnerGenericRmSession session, ChildSQLWrapper sqlWrapper
-            , Class<T> resultClass) {
 
-        Map<Object, ObjectWrapper> beanWrapperMap;
-        // firstly, execute child sql
-        beanWrapperMap = doExecuteFirstReturning(session, sqlWrapper.childWrapper(), resultClass);
-        // secondly, execute parent sql
+    final <T> List<T> doExecuteReturning(InnerGenericRmSession session, SQLWrapper sqlWrapper
+            , Class<T> resultClass, boolean updateStatement, String methodName) {
         List<T> resultList;
-        resultList = doExecuteSecondReturning(session, sqlWrapper.parentWrapper(), beanWrapperMap);
-        if (beanWrapperMap.size() != resultList.size()) {
-            throw createBatchNotMatchException(sqlWrapper.parentWrapper().sql()
-                    , sqlWrapper.childWrapper().sql()
-                    , beanWrapperMap.size(), resultList.size());
-        }
-        return resultList;
-    }
+        if (sqlWrapper instanceof SimpleSQLWrapper) {
+            resultList = doExecuteSimpleQuery(session, (SimpleSQLWrapper) sqlWrapper, resultClass);
+        } else if (sqlWrapper instanceof ChildSQLWrapper) {
+            final ChildSQLWrapper childSQLWrapper = (ChildSQLWrapper) sqlWrapper;
+            final SimpleSQLWrapper firstWrapper = updateStatement
+                    ? childSQLWrapper.childWrapper()
+                    : childSQLWrapper.parentWrapper();
 
-    @SuppressWarnings("unchecked")
-    protected final <T> List<T> extractSingleResult(CodecContext codecContext, ResultSet resultSet
-            , List<Selection> selectionList, Class<T> resultClass) throws SQLException
-            , ResultColumnClassNotFoundException {
+            final SimpleSQLWrapper secondWrapper = updateStatement
+                    ? childSQLWrapper.parentWrapper()
+                    : childSQLWrapper.childWrapper();
 
-        assertSimpleResult(selectionList, resultClass);
-        final Selection selection = selectionList.get(0);
-        FieldMeta<?, ?> fieldMeta = null;
-        FieldCodec fieldCodec = null;
-        if (selection instanceof FieldSelection) {
-            fieldMeta = ((FieldSelection) selection).fieldMeta();
-            if (fieldMeta.codec()) {
-                fieldCodec = this.sessionFactory.fieldCodec(fieldMeta);
-                if (fieldCodec == null) {
-                    throw createNoFieldCodecException(fieldMeta);
-                }
-            }
 
-        }
-        List<T> resultList = new ArrayList<>();
-        final MappingMeta mappingMeta = selection.mappingMeta();
-        final ResultColumnMeta columnMeta = extractResultRowMeta(resultSet.getMetaData(), selectionList).get(0);
-
-        while (resultSet.next()) {
-            Object value = mappingMeta.nullSafeGet(resultSet, selection.alias(), columnMeta, this.mappingContext);
-
-            if (value != null && fieldCodec != null) {
-                value = fieldCodec.decode(fieldMeta, value, codecContext);
-            }
-            resultList.add((T) value);
+            final boolean onlyIdReturning = onlyIdReturning(childSQLWrapper.parentWrapper()
+                    , childSQLWrapper.childWrapper());
+            // 1. execute first sql
+            Map<Object, ObjectWrapper> objectWrapperMap = doExecuteFirstSQLReturning(session, firstWrapper
+                    , resultClass, onlyIdReturning);
+            // 2. execute second sql
+            resultList = doExecuteSecondSQLReturning(session, secondWrapper, resultClass, objectWrapperMap);
+        } else {
+            throw createUnSupportedSQLWrapperException(sqlWrapper, methodName);
         }
         return resultList;
     }
 
 
-    protected final Map<Object, ObjectWrapper> doExecuteFirstReturning(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper
-            , Class<?> resultClass) {
-        final String[] aliasArray = asSelectionAliasArray(sqlWrapper.selectionList());
-        // 1. create statement
-        try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), aliasArray)) {
+    /*################################## blow private method ##################################*/
 
-            // 2. set params
-            bindParamList(session.codecContext(), st, sqlWrapper.paramList());
-            // 3. execute sql
+    private Map<Object, ObjectWrapper> doExecuteFirstSQLReturning(InnerGenericRmSession session
+            , SimpleSQLWrapper sqlWrapper, Class<?> resultClass, boolean onlyIdReturning) {
+        // 1. create statement
+        try (PreparedStatement st = session.createStatement(sqlWrapper.sql())) {
+            //2. bind param list
+            bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramList());
+            //3. execute sql
             try (ResultSet resultSet = st.executeQuery()) {
-                Map<Object, ObjectWrapper> wrapperMap;
-                //4. extract first result
-                wrapperMap = extractFirstSQLResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
-                        , resultClass);
-                if (wrapperMap.isEmpty() && sqlWrapper.hasVersion()) {
-                    throw createOptimisticLockException(this.sessionFactory, sqlWrapper.sql());
-                }
-                return wrapperMap;
+                //4.extract first sql result
+                return extractFirstSQLResult(session, resultSet, sqlWrapper, resultClass, onlyIdReturning);
+
             }
         } catch (SQLException e) {
             throw convertSQLException(e, sqlWrapper.sql());
-        } catch (ResultColumnClassNotFoundException e) {
-            throw createExceptionForResultColumnClassNotFound(e, sqlWrapper.sql());
         }
     }
 
-    protected final <T> List<T> doExecuteSecondReturning(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper
-            , Map<Object, ObjectWrapper> wrapperMap) {
-        final String[] aliasArray = asSelectionAliasArray(sqlWrapper.selectionList());
+    private <T> List<T> doExecuteSecondSQLReturning(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper
+            , Class<T> resultClass, Map<Object, ObjectWrapper> objectWrapperMap) {
         // 1. create statement
-        try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), aliasArray)) {
-            // 2. set params
-            bindParamList(session.codecContext(), st, sqlWrapper.paramList());
-            // 3. execute sql
+        try (PreparedStatement st = session.createStatement(sqlWrapper.sql())) {
+            //2. bind param list
+            bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramList());
+            //3. execute sql
             try (ResultSet resultSet = st.executeQuery()) {
-                List<T> resultList;
-                // 4. extract second result
-                resultList = extractSecondSQLResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
-                        , wrapperMap);
-                if (resultList.isEmpty() && sqlWrapper.hasVersion()) {
-                    throw createOptimisticLockException(this.sessionFactory, sqlWrapper.sql());
-                }
-                return resultList;
+                //4.extract second sql result
+                return extractSecondSQLResult(resultSet, objectWrapperMap, sqlWrapper, resultClass);
+
             }
         } catch (SQLException e) {
             throw convertSQLException(e, sqlWrapper.sql());
-        } catch (ResultColumnClassNotFoundException e) {
-            throw createExceptionForResultColumnClassNotFound(e, sqlWrapper.sql());
         }
     }
 
-    protected final Map<Object, ObjectWrapper> extractFirstSQLResult(CodecContext codecContext, ResultSet resultSet
-            , List<Selection> selectionList, Class<?> resultClass) throws SQLException {
+    /**
+     * @return a unmodifiable map
+     */
+    private Map<Object, ObjectWrapper> extractFirstSQLResult(InnerGenericRmSession session, ResultSet resultSet
+            , SimpleSQLWrapper sqlWrapper, Class<?> resultClass, boolean onlyIdReturning) throws SQLException {
 
-        final PrimaryFieldMeta<?, ?> primaryField = obtainPrimaryFieldForReturning(selectionList);
-        final List<ResultColumnMeta> columnMetaList = extractResultRowMeta(resultSet.getMetaData(), selectionList);
+        final List<Selection> selectionList = sqlWrapper.selectionList();
+        final Selection primaryFieldSelection = obtainPrimaryFieldForReturning(selectionList);
 
         Map<Object, ObjectWrapper> map = new HashMap<>();
-        ObjectWrapper beanWrapper;
         while (resultSet.next()) {
-            beanWrapper = ObjectAccessorFactory.forBeanPropertyAccess(resultClass);
-            // extract one row
-            extractRowForBean(codecContext, resultSet, selectionList, columnMetaList, beanWrapper);
-            Object idValue;
-            if (beanWrapper.isReadableProperty(primaryField.alias())) {
-                idValue = beanWrapper.getPropertyValue(TableMeta.ID);
-                if (idValue == null) {
-                    throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                            , "Domain returning insert/update/delete id value is null.");
+            ObjectWrapper objectWrapper = onlyIdReturning
+                    ? ObjectAccessorFactory.forIdAccess(resultClass)
+                    : createObjectWrapper(resultClass, session);
+
+            for (Selection selection : selectionList) {
+                Object columnResult = extractColumnResult(resultSet, selection, sqlWrapper.statementType()
+                        , selection.mappingMeta().javaType());
+                if (columnResult == null) {
+                    continue;
                 }
-            } else {
-                throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                        , "Domain returning  insert/update/delete must have id property.");
+                // set columnResult to object
+                objectWrapper.setPropertyValue(selection.alias(), columnResult);
             }
-            // result add to result map
-            if (map.putIfAbsent(idValue, beanWrapper) != null) {
-                throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                        , "Domain returning  insert/update/delete duplication row.");
+            Object idValue = objectWrapper.getPropertyValue(primaryFieldSelection.alias());
+            if (idValue == null) {
+                // first selection must be Primary Field
+                throw createDomainFirstReturningNoIdException();
             }
+            map.put(idValue, objectWrapper);
         }
         return Collections.unmodifiableMap(map);
     }
 
-    @SuppressWarnings("unchecked")
-    protected final <T> List<T> extractSecondSQLResult(CodecContext codecContext, ResultSet resultSet
-            , List<Selection> selectionList, Map<Object, ObjectWrapper> wrapperMap) throws SQLException {
+    private <T> List<T> extractSecondSQLResult(ResultSet resultSet, Map<Object, ObjectWrapper> objectWrapperMap
+            , SimpleSQLWrapper sqlWrapper, Class<T> resultClass) throws SQLException {
 
-        final PrimaryFieldMeta<?, ?> primaryField = obtainPrimaryFieldForReturning(selectionList);
-        final List<ResultColumnMeta> columnMetaList = extractResultRowMeta(resultSet.getMetaData(), selectionList);
+        final List<Selection> selectionList = sqlWrapper.selectionList();
+        final Selection primaryFieldSelection = obtainPrimaryFieldForReturning(selectionList);
 
-        List<Selection> subSelectionList;
-        List<ResultColumnMeta> subColumnMetaList;
-        if (selectionList.size() == 1) {
-            subSelectionList = Collections.emptyList();
-            subColumnMetaList = Collections.emptyList();
-        } else {
-            subSelectionList = selectionList.subList(1, selectionList.size());
-            subColumnMetaList = columnMetaList.subList(1, columnMetaList.size());
-        }
+        final StatementType statementType = sqlWrapper.statementType();
 
-        List<T> resultList = new ArrayList<>(wrapperMap.size());
+        List<T> resultList = new ArrayList<>(objectWrapperMap.size());
+        final int size = selectionList.size();
         while (resultSet.next()) {
-            Object idValue = primaryField.mappingMeta().nullSafeGet(resultSet, primaryField.alias()
-                    , columnMetaList.get(0), this.mappingContext);
+            ObjectWrapper objectWrapper = obtainFirstSQLObjectWrapper(resultSet, primaryFieldSelection
+                    , statementType, objectWrapperMap);
 
-            ObjectWrapper beanWrapper = wrapperMap.get(idValue);
-            if (beanWrapper == null) {
-                throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                        , "Domain returning insert/update/delete criteria error,not found ObjectWrapper by id[%s]"
-                        , idValue);
+            for (int i = 1; i < size; i++) {
+                Selection selection = selectionList.get(i);
+                Object columnResult = extractColumnResult(resultSet, selection, statementType
+                        , selection.mappingMeta().javaType());
+                if (columnResult == null) {
+                    continue;
+                }
+                objectWrapper.setPropertyValue(selection.alias(), columnResult);
             }
-            if (!subSelectionList.isEmpty()) {
-                extractRowForBean(codecContext, resultSet, subSelectionList, subColumnMetaList, beanWrapper);
-            }
-            resultList.add((T) beanWrapper.getWrappedInstance());
+            resultList.add(resultClass.cast(objectWrapper.getWrappedInstance()));
+        }
+        if (objectWrapperMap.size() != resultList.size()) {
+            throw createChildReturningNotMatchException(objectWrapperMap.size(), resultList.size(), sqlWrapper);
+        }
+        return resultList;
+    }
+
+    private ObjectWrapper obtainFirstSQLObjectWrapper(ResultSet resultSet, Selection primaryFieldSelection
+            , StatementType statementType, Map<Object, ObjectWrapper> objectWrapperMap) throws SQLException {
+
+        final Object primaryFieldValue = extractColumnResult(resultSet, primaryFieldSelection, statementType
+                , primaryFieldSelection.mappingMeta().javaType());
+
+        if (primaryFieldValue == null) {
+            throw createDomainSecondReturningNoIdException();
+        }
+        ObjectWrapper objectWrapper = objectWrapperMap.get(primaryFieldValue);
+        if (objectWrapper == null) {
+            throw new IllegalStateException(String.format(
+                    "wrapperMap error,not found value for key[%s]", primaryFieldValue));
+        }
+        return objectWrapper;
+    }
+
+
+    private <T> List<T> extractSingleResultList(ResultSet resultSet, SimpleSQLWrapper sqlWrapper
+            , Class<T> resultClass) throws SQLException {
+
+        final Selection selection = sqlWrapper.selectionList().get(0);
+        final StatementType statementType = sqlWrapper.statementType();
+
+        List<T> resultList = new ArrayList<>();
+        while (resultSet.next()) {
+            resultList.add(
+                    extractColumnResult(resultSet, selection, statementType, resultClass)
+            );
+        }
+        return resultList;
+    }
+
+    private <T> List<T> extractRowResultList(InnerGenericRmSession session, ResultSet resultSet
+            , SimpleSQLWrapper sqlWrapper, Class<T> resultClass) throws SQLException {
+
+        List<T> resultList = new ArrayList<>();
+        while (resultSet.next()) {
+            resultList.add(
+                    extractRowResult(session, resultSet, sqlWrapper, resultClass)
+            );
         }
         return resultList;
     }
 
 
-    protected final void bindParamList(CodecContext codecContext, PreparedStatement st, List<ParamWrapper> paramList)
+    private <T> T extractRowResult(InnerGenericRmSession session, ResultSet resultSet
+            , SimpleSQLWrapper sqlWrapper, Class<T> resultClass) throws SQLException {
+
+        final ObjectWrapper beanWrapper = createObjectWrapper(resultClass, session);
+
+        final StatementType statementType = sqlWrapper.statementType();
+        for (Selection selection : sqlWrapper.selectionList()) {
+            // 1. obtain column result
+            Object columnResult = extractColumnResult(resultSet, selection, statementType
+                    , selection.mappingMeta().javaType());
+            if (columnResult == null) {
+                continue;
+            }
+            // 2. set bean property value.
+            beanWrapper.setPropertyValue(selection.alias(), columnResult);
+        }
+        return getWrapperInstance(beanWrapper);
+    }
+
+    @Nullable
+    private <T> T extractColumnResult(ResultSet resultSet, Selection selection, StatementType statementType
+            , Class<T> columnClass) throws SQLException {
+
+        final MappingMeta mappingMeta = selection.mappingMeta();
+
+        Object columnResult = mappingMeta.nullSafeGet(resultSet, selection.alias(), this.mappingContext);
+        if (columnResult == null) {
+            return null;
+        }
+        if (!mappingMeta.javaType().isInstance(columnResult)) {
+            throw new MetaException("%s nullSafeGet return value isn't %s's instance."
+                    , mappingMeta.getClass().getName()
+                    , mappingMeta.javaType().getName());
+        }
+        if (selection instanceof FieldSelection) {
+            FieldMeta<?, ?> fieldMeta = ((FieldSelection) selection).fieldMeta();
+            if (fieldMeta.codec()) {
+                columnResult = doDecodeResult(statementType, fieldMeta, columnResult);
+            }
+        }
+        return columnClass.cast(columnResult);
+    }
+
+
+    private void bindParamList(PreparedStatement st, StatementType statementType, List<ParamWrapper> paramList)
             throws SQLException {
         ParamWrapper paramWrapper;
         Object value;
@@ -368,201 +433,23 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
         final int size = paramList.size();
         for (int i = 0; i < size; i++) {
             paramWrapper = paramList.get(i);
+            ParamMeta paramMeta = paramWrapper.paramMeta();
             value = paramWrapper.value();
             if (value == null) {
-                st.setNull(i + 1, paramWrapper.paramMeta().mappingMeta().jdbcType().getVendorTypeNumber());
+                st.setNull(i + 1, paramMeta.mappingMeta().jdbcType().getVendorTypeNumber());
             } else {
-                setNonNullValue(codecContext, st, i + 1, paramWrapper.paramMeta(), value);
-            }
-        }
-
-    }
-
-    protected final void setNonNullValue(CodecContext codecContext, PreparedStatement st, final int index
-            , ParamMeta paramMeta, final Object value)
-            throws SQLException {
-        Object paramValue = value;
-        if (paramMeta instanceof FieldMeta) {
-            FieldMeta<?, ?> fieldMeta = (FieldMeta<?, ?>) paramMeta;
-            if (fieldMeta.codec()) {
-                paramValue = doEncodeParam(codecContext, fieldMeta, value);
-            }
-        }
-        // set param
-        paramMeta.mappingMeta().nonNullSet(st, paramValue, index, this.mappingContext);
-    }
-
-    @SuppressWarnings("unchecked")
-    protected final <T> List<T> extractBeanTypeResult(CodecContext codecContext, ResultSet resultSet
-            , List<Selection> selectionList, Class<T> resultClass) throws SQLException {
-
-        final List<ResultColumnMeta> columnMetaList = extractResultRowMeta(resultSet.getMetaData(), selectionList);
-
-        List<T> resultList = new ArrayList<>();
-        ObjectWrapper beanWrapper;
-        while (resultSet.next()) {
-            beanWrapper = ObjectAccessorFactory.forBeanPropertyAccess(resultClass);
-            extractRowForBean(codecContext, resultSet, selectionList, columnMetaList, beanWrapper);
-            // result add to resultList
-            resultList.add((T) beanWrapper.getWrappedInstance());
-        }
-        return resultList;
-    }
-
-    protected final void extractRowForBean(CodecContext codecContext, ResultSet resultSet, List<Selection> selectionList
-            , List<ResultColumnMeta> columnMetaList, ObjectWrapper beanWrapper)
-            throws SQLException {
-
-        final int size = columnMetaList.size();
-
-        for (int i = 0; i < size; i++) {
-            Selection selection = selectionList.get(i);
-
-            Object value = selection.mappingMeta().nullSafeGet(resultSet, selection.alias()
-                    , columnMetaList.get(i), this.mappingContext);
-            if (value == null) {
-                continue;
-            }
-            if (selection instanceof FieldSelection) {
-                FieldMeta<?, ?> fieldMeta = ((FieldSelection) selection).fieldMeta();
-                if (fieldMeta.codec()) {
-                    value = doDecodeResult(codecContext, fieldMeta, value);
+                if (paramMeta instanceof FieldMeta) {
+                    FieldMeta<?, ?> fieldMeta = (FieldMeta<?, ?>) paramMeta;
+                    if (fieldMeta.codec()) {
+                        value = doEncodeParam(statementType, fieldMeta, value);
+                    }
                 }
+                // bind param
+                paramMeta.mappingMeta().nonNullSet(st, value, i + 1, this.mappingContext);
             }
-            beanWrapper.setPropertyValue(selection.alias(), value);
         }
 
     }
 
-    /*################################## blow package method ##################################*/
-
-
-    final DomainUpdateException createBatchNotMatchException(String parentSql, String childSql
-            , int parentRowsLength, int childRowsLength) {
-        throw new DomainUpdateException(
-                "%s Domain update,parent sql[%s] update batch[%s] " +
-                        "and child sql[%s] update batch[%s] not match."
-                , this.sessionFactory
-                , parentSql
-                , parentRowsLength
-                , childSql
-                , childRowsLength
-        );
-    }
-
-    static void assertParamGroupListSizeMatch(BatchSimpleSQLWrapper parentWrapper
-            , BatchSimpleSQLWrapper childWrapper) {
-
-        if (parentWrapper.paramGroupList().size() != childWrapper.paramGroupList().size()) {
-            throw new CriteriaException(ErrorCode.CACHE_ERROR
-                    , "Child update/delete sql [%s] and [%s], paramGroupList %s and %s not  match."
-                    , parentWrapper.sql(), childWrapper.sql()
-                    , parentWrapper.paramGroupList().size(), childWrapper.paramGroupList().size());
-        }
-    }
-
-
-    /*################################## blow private method ##################################*/
-
-
-    /**
-     * @return a unmodifiable list
-     */
-    private List<ResultColumnMeta> extractResultRowMeta(ResultSetMetaData resultSetMetaData
-            , List<Selection> selectionList) throws SQLException {
-        final int size = selectionList.size();
-        List<ResultColumnMeta> columnMetaList = new ArrayList<>(size);
-        for (int i = 1; i <= size; i++) {
-            JDBCType jdbcType = JDBCType.valueOf(resultSetMetaData.getColumnType(i));
-            String sqlType = resultSetMetaData.getColumnTypeName(i);
-            String javaClassName = resultSetMetaData.getColumnClassName(i);
-
-            columnMetaList.add(new ResultColumnMetaImpl(jdbcType, sqlType, javaClassName));
-        }
-        return Collections.unmodifiableList(columnMetaList);
-    }
-
-    /*################################## blow package static method ##################################*/
-
-
-
-
-
-    static String[] asSelectionAliasArray(List<Selection> selectionList) {
-        final int size = selectionList.size();
-        String[] aliasArray = new String[size];
-
-        for (int i = 0; i < size; i++) {
-            aliasArray[i] = selectionList.get(i).alias();
-        }
-        return aliasArray;
-    }
-
-    static DataAccessException createExceptionForResultColumnClassNotFound(
-            ResultColumnClassNotFoundException e, String sql) {
-        return new DataAccessException(ErrorCode.ACCESS_ERROR, e
-                , "Class[%s] not found when extract ResultSetMeta with SQL[%s].", e.getClassName(), sql);
-    }
-
-    /*################################## blow private static method ##################################*/
-
-
-    private static void assertSimpleResult(List<Selection> selectionList, Class<?> resultClass) {
-        if (selectionList.size() != 1) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                    , "selection size must be one but %s,when resultClass is simple java class"
-                    , selectionList.size());
-        }
-        Selection selection = selectionList.get(0);
-        if (selection.mappingMeta().javaType() != resultClass) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                    , "selection's MappingMeta[%s] and  resultClass[%s] not match."
-                    , selection.mappingMeta(), resultClass);
-        }
-    }
-
-
-    private static final class ResultColumnMetaImpl implements ResultColumnMeta {
-
-        private final JDBCType jdbcType;
-
-        private final String sqlType;
-
-        private final String javaClassName;
-
-        private ResultColumnMetaImpl(JDBCType jdbcType, String sqlType, String javaClassName) {
-            this.jdbcType = jdbcType;
-            this.sqlType = sqlType;
-            this.javaClassName = javaClassName;
-        }
-
-        @Override
-        public final JDBCType jdbcType() {
-            return this.jdbcType;
-        }
-
-        @Override
-        public final String sqlType() {
-            return this.sqlType;
-        }
-
-        @Override
-        public String javaClassName() {
-            return this.javaClassName;
-        }
-
-    }
-
-
-    static final class ResultColumnClassNotFoundException extends RuntimeException {
-
-        private ResultColumnClassNotFoundException(String className, Throwable cause) {
-            super(className, cause);
-        }
-
-        String getClassName() {
-            return getMessage();
-        }
-    }
 
 }

@@ -8,5 +8,10 @@ public enum StatementType {
     SELECT,
     WITH_INSERT,
     WITH_UPDATE,
-    WITH_DELETE,
+    WITH_DELETE;
+
+    public boolean insertStatement() {
+        return this == INSERT
+                || this == WITH_INSERT;
+    }
 }

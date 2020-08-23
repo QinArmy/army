@@ -74,7 +74,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
             }
             List<T> resultList;
             if (sqlWrapper instanceof SimpleSQLWrapper) {
-                resultList = doExecuteSimpleReturning(session, (SimpleSQLWrapper) sqlWrapper, resultClass);
+                resultList = doExecuteSimpleQuery(session, (SimpleSQLWrapper) sqlWrapper, resultClass);
             } else if (sqlWrapper instanceof ChildBatchSQLWrapper) {
                 resultList = doExecuteChildReturning(session, (ChildSQLWrapper) sqlWrapper, resultClass);
             } else {

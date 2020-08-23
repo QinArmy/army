@@ -40,7 +40,7 @@ final class SelectSQLExecutorImpl extends SQLExecutorSupport implements SelectSQ
             try (ResultSet resultSet = st.executeQuery()) {
                 // 5. extract result
                 if (sqlWrapper.selectionList().size() == 1) {
-                    resultList = extractSingleResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
+                    resultList = extractSingleResultList(session.codecContext(), resultSet, sqlWrapper.selectionList()
                             , resultClass);
                 } else {
                     resultList = extractBeanTypeResult(session.codecContext(), resultSet, sqlWrapper.selectionList()

@@ -56,7 +56,7 @@ public abstract class GenericSQLExecutorSupport {
         } else {
             // decode result
             result = fieldCodec.decode(fieldMeta, resultFromDB, statementType);
-            if (!fieldMeta.javaType().isInstance(result)) {
+            if (result.getClass() != resultFromDB.getClass()) {
                 throw GenericSQLExecutorSupport.createCodecReturnTypeException(fieldCodec, fieldMeta);
             }
         }
@@ -91,6 +91,22 @@ public abstract class GenericSQLExecutorSupport {
             , String methodName) {
         return new IllegalArgumentException(String.format("%s,%s unsupported by %s", this.genericSessionFactory
                 , sqlWrapper, methodName));
+    }
+
+    protected final OptimisticLockException createOptimisticLockException(String sql) {
+        return new OptimisticLockException(
+                "%s record maybe be updated or deleted by transaction,sql:\n%s"
+                , this.genericSessionFactory, sql);
+    }
+
+    protected final DomainUpdateException createChildReturningNotMatchException(int firstRows, int secondRows
+            , SimpleSQLWrapper childWrapper) {
+        return new DomainUpdateException("%s,first returning[%s] and second[%s] not match.sql:\n%s"
+                , this.genericSessionFactory, firstRows, secondRows, childWrapper.sql());
+    }
+
+    protected final InsertException createValueInsertException(Integer insertRows, GenericSimpleWrapper simpleWrapper) {
+        return new InsertException("expected insert 1 row,but %s rows.sql:\n%s", insertRows, simpleWrapper.sql());
     }
 
     /*################################## blow protected static method ##################################*/
@@ -182,17 +198,6 @@ public abstract class GenericSQLExecutorSupport {
 
     protected static MetaException createNoFieldCodecException(FieldMeta<?, ?> fieldMeta) {
         return new MetaException("FieldMeta[%s] not found FieldCodec.", fieldMeta);
-    }
-
-    protected static OptimisticLockException createOptimisticLockException(GenericSessionFactory sessionFactory, String sql) {
-        return new OptimisticLockException(
-                "SessionFactory[%s] record maybe be updated or deleted by transaction,sql:%s"
-                , sessionFactory.name(), sql);
-    }
-
-
-    protected static InsertException createValueInsertException(Integer insertRows, GenericSimpleWrapper simpleWrapper) {
-        return new InsertException("expected insert 1 row,but %s rows.sql:\n%s", insertRows, simpleWrapper.sql());
     }
 
 
