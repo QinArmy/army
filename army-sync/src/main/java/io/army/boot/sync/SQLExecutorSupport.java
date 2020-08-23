@@ -3,8 +3,8 @@ package io.army.boot.sync;
 import io.army.DataAccessException;
 import io.army.DomainUpdateException;
 import io.army.ErrorCode;
-import io.army.beans.BeanWrapper;
 import io.army.beans.ObjectAccessorFactory;
+import io.army.beans.ObjectWrapper;
 import io.army.boot.GenericSQLExecutorSupport;
 import io.army.codec.CodecContext;
 import io.army.codec.FieldCodec;
@@ -18,7 +18,10 @@ import io.army.meta.PrimaryFieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingMeta;
 import io.army.meta.mapping.ResultColumnMeta;
-import io.army.wrapper.*;
+import io.army.wrapper.BatchSimpleSQLWrapper;
+import io.army.wrapper.ChildSQLWrapper;
+import io.army.wrapper.ParamWrapper;
+import io.army.wrapper.SimpleSQLWrapper;
 
 import java.sql.*;
 import java.util.*;
@@ -188,7 +191,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     protected final <T> List<T> doExecuteChildReturning(InnerGenericRmSession session, ChildSQLWrapper sqlWrapper
             , Class<T> resultClass) {
 
-        Map<Object, BeanWrapper> beanWrapperMap;
+        Map<Object, ObjectWrapper> beanWrapperMap;
         // firstly, execute child sql
         beanWrapperMap = doExecuteFirstReturning(session, sqlWrapper.childWrapper(), resultClass);
         // secondly, execute parent sql
@@ -237,7 +240,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     }
 
 
-    protected final Map<Object, BeanWrapper> doExecuteFirstReturning(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper
+    protected final Map<Object, ObjectWrapper> doExecuteFirstReturning(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper
             , Class<?> resultClass) {
         final String[] aliasArray = asSelectionAliasArray(sqlWrapper.selectionList());
         // 1. create statement
@@ -247,7 +250,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
             bindParamList(session.codecContext(), st, sqlWrapper.paramList());
             // 3. execute sql
             try (ResultSet resultSet = st.executeQuery()) {
-                Map<Object, BeanWrapper> wrapperMap;
+                Map<Object, ObjectWrapper> wrapperMap;
                 //4. extract first result
                 wrapperMap = extractFirstSQLResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
                         , resultClass);
@@ -264,7 +267,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     }
 
     protected final <T> List<T> doExecuteSecondReturning(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper
-            , Map<Object, BeanWrapper> wrapperMap) {
+            , Map<Object, ObjectWrapper> wrapperMap) {
         final String[] aliasArray = asSelectionAliasArray(sqlWrapper.selectionList());
         // 1. create statement
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), aliasArray)) {
@@ -288,14 +291,14 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
         }
     }
 
-    protected final Map<Object, BeanWrapper> extractFirstSQLResult(CodecContext codecContext, ResultSet resultSet
+    protected final Map<Object, ObjectWrapper> extractFirstSQLResult(CodecContext codecContext, ResultSet resultSet
             , List<Selection> selectionList, Class<?> resultClass) throws SQLException {
 
-        final PrimaryFieldMeta<?, ?> primaryField = obtainPrimaryField(selectionList);
+        final PrimaryFieldMeta<?, ?> primaryField = obtainPrimaryFieldForReturning(selectionList);
         final List<ResultColumnMeta> columnMetaList = extractResultRowMeta(resultSet.getMetaData(), selectionList);
 
-        Map<Object, BeanWrapper> map = new HashMap<>();
-        BeanWrapper beanWrapper;
+        Map<Object, ObjectWrapper> map = new HashMap<>();
+        ObjectWrapper beanWrapper;
         while (resultSet.next()) {
             beanWrapper = ObjectAccessorFactory.forBeanPropertyAccess(resultClass);
             // extract one row
@@ -322,9 +325,9 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
 
     @SuppressWarnings("unchecked")
     protected final <T> List<T> extractSecondSQLResult(CodecContext codecContext, ResultSet resultSet
-            , List<Selection> selectionList, Map<Object, BeanWrapper> wrapperMap) throws SQLException {
+            , List<Selection> selectionList, Map<Object, ObjectWrapper> wrapperMap) throws SQLException {
 
-        final PrimaryFieldMeta<?, ?> primaryField = obtainPrimaryField(selectionList);
+        final PrimaryFieldMeta<?, ?> primaryField = obtainPrimaryFieldForReturning(selectionList);
         final List<ResultColumnMeta> columnMetaList = extractResultRowMeta(resultSet.getMetaData(), selectionList);
 
         List<Selection> subSelectionList;
@@ -342,10 +345,10 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
             Object idValue = primaryField.mappingMeta().nullSafeGet(resultSet, primaryField.alias()
                     , columnMetaList.get(0), this.mappingContext);
 
-            BeanWrapper beanWrapper = wrapperMap.get(idValue);
+            ObjectWrapper beanWrapper = wrapperMap.get(idValue);
             if (beanWrapper == null) {
                 throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                        , "Domain returning insert/update/delete criteria error,not found BeanWrapper by id[%s]"
+                        , "Domain returning insert/update/delete criteria error,not found ObjectWrapper by id[%s]"
                         , idValue);
             }
             if (!subSelectionList.isEmpty()) {
@@ -396,7 +399,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
         final List<ResultColumnMeta> columnMetaList = extractResultRowMeta(resultSet.getMetaData(), selectionList);
 
         List<T> resultList = new ArrayList<>();
-        BeanWrapper beanWrapper;
+        ObjectWrapper beanWrapper;
         while (resultSet.next()) {
             beanWrapper = ObjectAccessorFactory.forBeanPropertyAccess(resultClass);
             extractRowForBean(codecContext, resultSet, selectionList, columnMetaList, beanWrapper);
@@ -407,7 +410,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     }
 
     protected final void extractRowForBean(CodecContext codecContext, ResultSet resultSet, List<Selection> selectionList
-            , List<ResultColumnMeta> columnMetaList, BeanWrapper beanWrapper)
+            , List<ResultColumnMeta> columnMetaList, ObjectWrapper beanWrapper)
             throws SQLException {
 
         final int size = columnMetaList.size();
@@ -483,9 +486,6 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
 
 
 
-    static IllegalArgumentException createNotSupportedException(SQLWrapper sqlWrapper, String methodName) {
-        return new IllegalArgumentException(String.format("%s supported by %s", sqlWrapper, methodName));
-    }
 
 
     static String[] asSelectionAliasArray(List<Selection> selectionList) {

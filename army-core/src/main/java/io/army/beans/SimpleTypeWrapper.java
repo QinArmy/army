@@ -6,7 +6,7 @@ import io.army.util.Pair;
 /**
  * @see io.army.modelgen.MetaConstant#SIMPLE_JAVA_TYPE_SET
  */
-final class SimpleTypeWrapper implements BeanWrapper {
+final class SimpleTypeWrapper implements ObjectWrapper {
 
     private final Class<?> simpleType;
 

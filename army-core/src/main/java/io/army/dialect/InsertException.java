@@ -5,11 +5,12 @@ import io.army.ErrorCode;
 
 public class InsertException extends DataAccessException {
 
+    @Deprecated
     public InsertException(ErrorCode errorCode, String format, Object... args) {
         super(errorCode, format, args);
     }
 
-    public InsertException(ErrorCode errorCode, Throwable cause, String format, Object... args) {
-        super(errorCode, cause, format, args);
+    public InsertException(String format, Object... args) {
+        super(format, args);
     }
 }

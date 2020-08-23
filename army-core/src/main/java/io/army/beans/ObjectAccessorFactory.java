@@ -11,8 +11,8 @@ import io.army.util.TripleBean;
 import java.util.Map;
 
 /**
- * Simple factory facade for obtaining {@link BeanWrapper} instances,
- * in particular for {@link BeanWrapper} instances. Conceals the actual
+ * Simple factory facade for obtaining {@link ObjectWrapper} instances,
+ * in particular for {@link ObjectWrapper} instances. Conceals the actual
  * target implementation classes then their extended public signature.
  *
  * @since 1.0
@@ -21,14 +21,14 @@ public abstract class ObjectAccessorFactory {
 
 
     /**
-     * Obtain a BeanWrapper for the given target object,
+     * Obtain a ObjectWrapper for the given target object,
      * accessing properties in JavaBeans style.
      *
      * @param target the target object to wrap
      * @return the property accessor
      * @see BeanWrapperImpl
      */
-    public static BeanWrapper forBeanPropertyAccess(Object target) {
+    public static ObjectWrapper forBeanPropertyAccess(Object target) {
         return new BeanWrapperImpl(target);
     }
 
@@ -41,12 +41,12 @@ public abstract class ObjectAccessorFactory {
         return new DomainWrapperImpl(domain, tableMeta);
     }
 
-    static BeanWrapper forSimplePropertyAccess(Class<?> simpleType, String propertyName) {
+    static ObjectWrapper forSimplePropertyAccess(Class<?> simpleType, String propertyName) {
         return new SimpleTypeWrapper(simpleType, propertyName);
     }
 
-    public static BeanWrapper forBeanPropertyAccess(Class<?> beanClass) {
-        BeanWrapper beanWrapper;
+    public static ObjectWrapper forBeanPropertyAccess(Class<?> beanClass) {
+        ObjectWrapper beanWrapper;
         if (PairBean.class.isAssignableFrom(beanClass)) {
             beanWrapper = new PairBeanWrapperImpl(beanClass);
         } else if (TripleBean.class.isAssignableFrom(beanClass)) {
@@ -57,11 +57,15 @@ public abstract class ObjectAccessorFactory {
         return beanWrapper;
     }
 
-    public static BeanWrapper forMapAccess(Class<?> mapClass) {
+    public static ObjectWrapper forMapAccess(Class<?> mapClass) {
         if (!Map.class.isAssignableFrom(mapClass)) {
             throw new IllegalArgumentException(String.format("mapClass[%s] isn't Map type", mapClass.getName()));
         }
         return new MapWrapperImpl(mapClass);
+    }
+
+    public static ObjectWrapper forIdAccess(Class<?> idClass) {
+        return new IdPropertyWrapper(idClass);
     }
 
     @SuppressWarnings("unchecked")

@@ -35,7 +35,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
             } else if (sqlWrapper instanceof ChildSQLWrapper) {
                 updateRows = (int) doChildUpdate(session, (ChildSQLWrapper) sqlWrapper, false);
             } else {
-                throw createNotSupportedException(sqlWrapper, "update");
+                throw createUnSupportedSQLWrapperException(sqlWrapper, "update");
             }
             return updateRows;
         } finally {
@@ -56,7 +56,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
             } else if (sqlWrapper instanceof ChildSQLWrapper) {
                 updateRows = doChildUpdate(session, (ChildSQLWrapper) sqlWrapper, true);
             } else {
-                throw createNotSupportedException(sqlWrapper, "largeUpdate");
+                throw createUnSupportedSQLWrapperException(sqlWrapper, "largeUpdate");
             }
             return updateRows;
         } finally {
@@ -78,7 +78,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
             } else if (sqlWrapper instanceof ChildBatchSQLWrapper) {
                 resultList = doExecuteChildReturning(session, (ChildSQLWrapper) sqlWrapper, resultClass);
             } else {
-                throw createNotSupportedException(sqlWrapper, "returningUpdate");
+                throw createUnSupportedSQLWrapperException(sqlWrapper, "returningUpdate");
             }
             return resultList;
         } finally {
@@ -100,7 +100,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
             } else if (sqlWrapper instanceof ChildBatchSQLWrapper) {
                 batchResult = doBatchChildUpdate(session, (ChildBatchSQLWrapper) sqlWrapper);
             } else {
-                throw createNotSupportedException(sqlWrapper, "batchUpdate");
+                throw createUnSupportedSQLWrapperException(sqlWrapper, "batchUpdate");
             }
             return batchResult;
         } finally {
@@ -122,7 +122,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
             } else if (sqlWrapper instanceof ChildBatchSQLWrapper) {
                 batchResult = doLargeBatchChildUpdate(session, (ChildBatchSQLWrapper) sqlWrapper);
             } else {
-                throw createNotSupportedException(sqlWrapper, "batchLargeUpdate");
+                throw createUnSupportedSQLWrapperException(sqlWrapper, "batchLargeUpdate");
             }
             return batchResult;
         } finally {

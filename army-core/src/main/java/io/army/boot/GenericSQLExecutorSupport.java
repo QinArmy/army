@@ -1,21 +1,25 @@
 package io.army.boot;
 
 import io.army.*;
-import io.army.beans.BeanWrapper;
 import io.army.beans.MapWrapper;
 import io.army.beans.ObjectAccessorFactory;
+import io.army.beans.ObjectWrapper;
 import io.army.codec.FieldCodec;
 import io.army.codec.FieldCodecReturnException;
 import io.army.codec.StatementType;
 import io.army.criteria.CriteriaException;
+import io.army.criteria.FieldSelection;
 import io.army.criteria.Selection;
+import io.army.dialect.InsertException;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.meta.PrimaryFieldMeta;
+import io.army.wrapper.BatchSimpleSQLWrapper;
 import io.army.wrapper.GenericSimpleWrapper;
+import io.army.wrapper.SQLWrapper;
+import io.army.wrapper.SimpleSQLWrapper;
 
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -59,26 +63,67 @@ public abstract class GenericSQLExecutorSupport {
         return result;
     }
 
-    protected static PrimaryFieldMeta<?, ?> obtainPrimaryField(List<Selection> selectionList) {
-        PrimaryFieldMeta<?, ?> primaryField;
-        Selection selection = selectionList.get(0);
-        if (selection instanceof PrimaryFieldMeta) {
-            primaryField = (PrimaryFieldMeta<?, ?>) selection;
-        } else {
-            throw new CriteriaException("Domain update/insert,first selection must be PrimaryFieldMeta");
-        }
-        return primaryField;
+    protected final InsertRowsNotMatchException createBatchChildInsertNotMatchException(
+            Number parentRows, Number childRows, BatchSimpleSQLWrapper sqlWrapper) {
+        return new InsertRowsNotMatchException("%s,batch child insert[%s] and parent[%s] not match.sql:\n%s"
+                , this.genericSessionFactory, childRows, parentRows, sqlWrapper.sql());
     }
 
-    protected static List<Selection> subSelectionListForSecondSQL(List<Selection> selectionList) {
-        List<Selection> subSelectionList;
-        if (selectionList.size() == 1) {
-            subSelectionList = Collections.emptyList();
-        } else {
-            subSelectionList = Collections.unmodifiableList(selectionList.subList(1, selectionList.size()));
-        }
-        return subSelectionList;
+    protected final InsertRowsNotMatchException createChildSubQueryInsertNotMatchException(Number parentRows
+            , Number childRows, SimpleSQLWrapper sqlWrapper) {
+        return new InsertRowsNotMatchException("%s,child subQuery insert[%s] and parent[%s] not match,sql:\n%s"
+                , this.genericSessionFactory, childRows, parentRows, sqlWrapper.sql());
     }
+
+    protected final InsertRowsNotMatchException createParentUpdateNotMatchException(Number parentRows
+            , Number childRows, GenericSimpleWrapper sqlWrapper) {
+        return new InsertRowsNotMatchException("%s,parent update/delete[%s] and child[%s] not match,sql:\n%s"
+                , this.genericSessionFactory, parentRows, childRows, sqlWrapper.sql());
+    }
+
+    protected final InsertRowsNotMatchException createParentBatchUpdateNotMatchException(int parentBatch
+            , int childBatch, GenericSimpleWrapper sqlWrapper) {
+        return new InsertRowsNotMatchException("%s,parent update/delete batch[%s] and child[%s] not match,sql:\n%s"
+                , this.genericSessionFactory, parentBatch, childBatch, sqlWrapper.sql());
+    }
+
+    protected final IllegalArgumentException createUnSupportedSQLWrapperException(SQLWrapper sqlWrapper
+            , String methodName) {
+        return new IllegalArgumentException(String.format("%s,%s unsupported by %s", this.genericSessionFactory
+                , sqlWrapper, methodName));
+    }
+
+    /*################################## blow protected static method ##################################*/
+
+    protected static boolean onlyIdReturning(SimpleSQLWrapper parentWrapper, SimpleSQLWrapper childWrapper) {
+        List<Selection> parentSelectionList = parentWrapper.selectionList();
+        List<Selection> childSelectionList = childWrapper.selectionList();
+        boolean yes = false;
+        if (parentSelectionList.size() == 1 && childSelectionList.size() == 1) {
+            Selection parentSelect = parentSelectionList.get(0);
+            Selection childSelect = childSelectionList.get(0);
+            if (parentSelect instanceof FieldSelection && childSelect instanceof FieldSelection) {
+                FieldMeta<?, ?> parentFieldMeta = ((FieldSelection) parentSelect).fieldMeta();
+                FieldMeta<?, ?> childFieldMeta = ((FieldSelection) childSelect).fieldMeta();
+                yes = parentFieldMeta instanceof PrimaryFieldMeta && childFieldMeta instanceof PrimaryFieldMeta;
+            }
+        }
+        return yes;
+    }
+
+    protected static Selection obtainPrimaryFieldForReturning(List<Selection> selectionList) {
+
+        if (selectionList.isEmpty()) {
+            throw new CriteriaException("Domain update/insert,first selection must be PrimaryFieldMeta");
+        }
+        Selection selection = selectionList.get(0);
+        if (selection instanceof FieldSelection
+                && ((FieldSelection) selection).fieldMeta() instanceof PrimaryFieldMeta) {
+            return selection;
+        }
+        throw new CriteriaException("Domain update/insert,first selection must be PrimaryFieldMeta");
+    }
+
 
     protected static CriteriaException createDomainFirstReturningNoIdException() {
         return new CriteriaException("Domain returning insert/update/delete id value is null.");
@@ -93,8 +138,8 @@ public abstract class GenericSQLExecutorSupport {
         return new CriteriaException(ex, "execute sql[%s] error.", simpleWrapper.sql());
     }
 
-    protected static BeanWrapper createObjectWrapper(Class<?> resultClass, GenericSession session) {
-        BeanWrapper beanWrapper;
+    protected static ObjectWrapper createObjectWrapper(Class<?> resultClass, GenericSession session) {
+        ObjectWrapper beanWrapper;
         if (Map.class.isAssignableFrom(resultClass)) {
             if (!session.hasTransaction() || !session.sessionTransaction().readOnly()) {
                 throw new UnSupportedResultClassException(resultClass
@@ -108,7 +153,7 @@ public abstract class GenericSQLExecutorSupport {
     }
 
     @SuppressWarnings("unchecked")
-    protected static <T> T getWrapperInstance(BeanWrapper beanWrapper) {
+    protected static <T> T getWrapperInstance(ObjectWrapper beanWrapper) {
         T result;
         if (beanWrapper instanceof MapWrapper) {
             result = (T) ((MapWrapper) beanWrapper).getUnmodifiableMap();
@@ -144,4 +189,11 @@ public abstract class GenericSQLExecutorSupport {
                 "SessionFactory[%s] record maybe be updated or deleted by transaction,sql:%s"
                 , sessionFactory.name(), sql);
     }
+
+
+    protected static InsertException createValueInsertException(Integer insertRows, GenericSimpleWrapper simpleWrapper) {
+        return new InsertException("expected insert 1 row,but %s rows.sql:\n%s", insertRows, simpleWrapper.sql());
+    }
+
+
 }

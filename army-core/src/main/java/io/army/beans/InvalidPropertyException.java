@@ -9,16 +9,23 @@ public class InvalidPropertyException extends FatalBeanException {
 
     private final String propertyName;
 
-    public InvalidPropertyException(ErrorCode errorCode, String propertyName,
-                                    Class<?> beanClass, String format, Object... args) {
-        super(errorCode, format, args);
+     InvalidPropertyException(ErrorCode errorCode, String propertyName,
+                              Class<?> beanClass, String format, Object... args) {
+         super(errorCode, format, args);
+         this.beanClass = beanClass;
+         this.propertyName = propertyName;
+     }
+
+    InvalidPropertyException(ErrorCode errorCode, Throwable cause, String propertyName,
+                             Class<?> beanClass, String format, Object... args) {
+        super(errorCode, cause, format, args);
         this.beanClass = beanClass;
         this.propertyName = propertyName;
     }
 
-    public InvalidPropertyException(ErrorCode errorCode, Throwable cause, String propertyName,
-                                    Class<?> beanClass, String format, Object... args) {
-        super(errorCode, cause, format, args);
+    InvalidPropertyException(String propertyName,
+                             Class<?> beanClass, String format, Object... args) {
+        super(ErrorCode.NONE, format, args);
         this.beanClass = beanClass;
         this.propertyName = propertyName;
     }

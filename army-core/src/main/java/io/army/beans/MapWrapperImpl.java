@@ -2,6 +2,7 @@ package io.army.beans;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.SortedMap;
 
 final class MapWrapperImpl extends MapReadonlyWrapper implements MapWrapper {
 
@@ -30,7 +31,9 @@ final class MapWrapperImpl extends MapReadonlyWrapper implements MapWrapper {
 
     @Override
     public Map<String, Object> getUnmodifiableMap() {
-        return Collections.unmodifiableMap(this.map);
+        return this.map instanceof SortedMap
+                ? Collections.unmodifiableSortedMap((SortedMap<String, Object>) this.map)
+                : Collections.unmodifiableMap(this.map);
     }
 
     @Override

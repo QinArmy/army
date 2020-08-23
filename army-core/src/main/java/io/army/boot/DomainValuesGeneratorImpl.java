@@ -2,9 +2,9 @@ package io.army.boot;
 
 import io.army.ErrorCode;
 import io.army.GenericSessionFactory;
-import io.army.beans.BeanWrapper;
 import io.army.beans.DomainWrapper;
 import io.army.beans.ObjectAccessorFactory;
+import io.army.beans.ObjectWrapper;
 import io.army.criteria.CriteriaException;
 import io.army.domain.IDomain;
 import io.army.generator.FieldGenerator;
@@ -59,7 +59,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
 
     /*################################## blow private method ##################################*/
 
-    private void createValuesWithGenerator(TableMeta<?> tableMeta, BeanWrapper domainWrapper) {
+    private void createValuesWithGenerator(TableMeta<?> tableMeta, ObjectWrapper domainWrapper) {
         List<FieldMeta<?, ?>> chain = sessionFactory.tableGeneratorChain().get(tableMeta);
         if (CollectionUtils.isEmpty(chain)) {
             return;
@@ -78,7 +78,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
         }
     }
 
-    private void assertFirstDependency(FieldMeta<?, ?> fieldMeta, BeanWrapper domainWrapper) {
+    private void assertFirstDependency(FieldMeta<?, ?> fieldMeta, ObjectWrapper domainWrapper) {
         GeneratorMeta generatorMeta = fieldMeta.generator();
 
         Assert.state(generatorMeta != null
@@ -95,7 +95,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
     }
 
     private void doCreateValueWithGenerator(FieldMeta<?, ?> fieldMeta, PreFieldGenerator generator
-            , BeanWrapper entityWrapper) {
+            , ObjectWrapper entityWrapper) {
         // invoke generator
         Object value = generator.next(fieldMeta, entityWrapper);
 
@@ -112,7 +112,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
      * create required value for entity,eg : prop annotated by @Generator ,createTime,updateTime,version
      */
     private void createValuesManagedByArmy(
-            TableMeta<?> tableMeta, BeanWrapper entityWrapper) {
+            TableMeta<?> tableMeta, ObjectWrapper entityWrapper) {
         TableMeta<?> parentMeta;
         if (tableMeta instanceof ChildTableMeta) {
             parentMeta = ((ChildTableMeta<?>) tableMeta).parentMeta();
@@ -134,7 +134,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
     }
 
     private <T extends IDomain, E extends Enum<E> & CodeEnum> void createDiscriminatorValue(
-            TableMeta<T> tableMeta, BeanWrapper entityWrapper) {
+            TableMeta<T> tableMeta, ObjectWrapper entityWrapper) {
         FieldMeta<?, E> discriminator = tableMeta.discriminator();
 
         if (discriminator == null) {
@@ -144,7 +144,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
         entityWrapper.setPropertyValue(discriminator.propertyName(), codeEnum);
     }
 
-    private void createCreateOrUpdateTime(FieldMeta<?, ?> fieldMeta, ZonedDateTime now, BeanWrapper entityWrapper) {
+    private void createCreateOrUpdateTime(FieldMeta<?, ?> fieldMeta, ZonedDateTime now, ObjectWrapper entityWrapper) {
         if (fieldMeta.javaType() == LocalDateTime.class) {
             entityWrapper.setPropertyValue(fieldMeta.propertyName(), now.toLocalDateTime());
         } else if (fieldMeta.javaType() == ZonedDateTime.class) {

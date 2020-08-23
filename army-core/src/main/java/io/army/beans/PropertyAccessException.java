@@ -4,11 +4,15 @@ import io.army.ErrorCode;
 
 public class PropertyAccessException extends BeansException {
 
-    public PropertyAccessException(ErrorCode errorCode, String format, Object... args) {
+    PropertyAccessException(ErrorCode errorCode, String format, Object... args) {
         super(errorCode, format, args);
     }
 
-    public PropertyAccessException(ErrorCode errorCode, Throwable cause, String format, Object... args) {
+    PropertyAccessException(ErrorCode errorCode, Throwable cause, String format, Object... args) {
         super(errorCode, cause, format, args);
+    }
+
+    PropertyAccessException(String format, Object... args) {
+        super(ErrorCode.NONE, format, args);
     }
 }

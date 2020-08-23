@@ -6,6 +6,8 @@ import io.army.util.BeanUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 class MapReadonlyWrapper implements ReadonlyWrapper {
 
@@ -18,8 +20,13 @@ class MapReadonlyWrapper implements ReadonlyWrapper {
     @SuppressWarnings("unchecked")
     MapReadonlyWrapper(Class<?> mapClass) {
         Assert.isAssignable(Map.class, mapClass);
+
         if (mapClass.isInterface()) {
-            this.map = new HashMap<>();
+            if (SortedMap.class.isAssignableFrom(mapClass)) {
+                this.map = new TreeMap<>();
+            } else {
+                this.map = new HashMap<>();
+            }
         } else {
             this.map = (Map<String, Object>) BeanUtils.instantiateClass(mapClass);
         }

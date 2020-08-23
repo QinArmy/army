@@ -2,7 +2,7 @@ package io.army.boot.sync;
 
 import io.army.ErrorCode;
 import io.army.InsertRowsNotMatchException;
-import io.army.beans.BeanWrapper;
+import io.army.beans.ObjectWrapper;
 import io.army.codec.StatementType;
 import io.army.dialect.Dialect;
 import io.army.dialect.InsertException;
@@ -45,7 +45,7 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
                 } else if (sqlWrapper instanceof ChildBatchSQLWrapper) {
                     this.doExecuteChildBatch(session, (ChildBatchSQLWrapper) sqlWrapper);
                 } else {
-                    throw createNotSupportedException(sqlWrapper, "valueInsert");
+                    throw createUnSupportedSQLWrapperException(sqlWrapper, "valueInsert");
                 }
             }
         } finally {
@@ -66,7 +66,7 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
             } else if (sqlWrapper instanceof ChildSQLWrapper) {
                 insertRows = doExecuteChild(session, (ChildSQLWrapper) sqlWrapper, true);
             } else {
-                throw createNotSupportedException(sqlWrapper, "subQueryInsert");
+                throw createUnSupportedSQLWrapperException(sqlWrapper, "subQueryInsert");
             }
             return insertRows;
         } finally {
@@ -87,7 +87,7 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
             } else if (sqlWrapper instanceof ChildSQLWrapper) {
                 insertRows = doExecuteLargeSubQueryChild(session, (ChildSQLWrapper) sqlWrapper);
             } else {
-                throw createNotSupportedException(sqlWrapper, "subQueryLargeInsert");
+                throw createUnSupportedSQLWrapperException(sqlWrapper, "subQueryLargeInsert");
             }
             return insertRows;
         } finally {
@@ -109,7 +109,7 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
             } else if (sqlWrapper instanceof ChildSQLWrapper) {
                 resultList = doExecuteInsertChildReturning(session, (ChildSQLWrapper) sqlWrapper, resultClass);
             } else {
-                throw createNotSupportedException(sqlWrapper, "returningInsert");
+                throw createUnSupportedSQLWrapperException(sqlWrapper, "returningInsert");
             }
             return resultList;
         } finally {
@@ -173,7 +173,7 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
     private <T> List<T> doExecuteInsertChildReturning(InnerGenericRmSession session, ChildSQLWrapper sqlWrapper
             , Class<T> resultClass) {
 
-        Map<Object, BeanWrapper> beanWrapperMap;
+        Map<Object, ObjectWrapper> beanWrapperMap;
         // firstly, execute child sql
         beanWrapperMap = doExecuteFirstReturning(session, sqlWrapper.parentWrapper(), resultClass);
 

@@ -1,6 +1,6 @@
 package io.army.beans;
 
-public interface DomainWrapper extends BeanWrapper, DomainReadonlyWrapper {
+public interface DomainWrapper extends ObjectWrapper, DomainReadonlyWrapper {
 
 
 }
