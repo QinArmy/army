@@ -1,13 +1,9 @@
 package io.army.boot.sync;
 
-import io.army.codec.StatementType;
 import io.army.wrapper.SimpleSQLWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 final class SelectSQLExecutorImpl extends SQLExecutorSupport implements SelectSQLExecutor {
@@ -22,39 +18,7 @@ final class SelectSQLExecutorImpl extends SQLExecutorSupport implements SelectSQ
 
     @Override
     public final <T> List<T> select(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper, Class<T> resultClass) {
-        if (session.sessionFactory().showSQL()) {
-            LOG.info("army will execute select sql:\n{}", session.dialect().showSQL(sqlWrapper));
-        }
-        session.codecContextStatementType(StatementType.SELECT);
-        // 1. create statement
-        try (PreparedStatement st = session.createStatement(sqlWrapper.sql())) {
-            // 2. set params
-            bindParamList(session.codecContext(), st, sqlWrapper.paramList());
-            List<T> resultList;
-            // 3. set timeout
-            int timeout = session.timeToLiveInSeconds();
-            if (timeout >= 0) {
-                st.setQueryTimeout(timeout);
-            }
-            // 4. execute query sql
-            try (ResultSet resultSet = st.executeQuery()) {
-                // 5. extract result
-                if (sqlWrapper.selectionList().size() == 1) {
-                    resultList = extractSingleResultList(session.codecContext(), resultSet, sqlWrapper.selectionList()
-                            , resultClass);
-                } else {
-                    resultList = extractBeanTypeResult(session.codecContext(), resultSet, sqlWrapper.selectionList()
-                            , resultClass);
-                }
-            }
-            return resultList;
-        } catch (SQLException e) {
-            throw convertSQLException(e, sqlWrapper.sql());
-        } catch (ResultColumnClassNotFoundException e) {
-            throw createExceptionForResultColumnClassNotFound(e, sqlWrapper.sql());
-        } finally {
-            session.codecContextStatementType(null);
-        }
+        return doExecuteSimpleQuery(session, sqlWrapper, resultClass);
     }
 
     /*################################## blow private method ##################################*/

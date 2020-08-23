@@ -6,16 +6,15 @@ import java.util.List;
 
 interface UpdateSQLExecutor {
 
-    int update(InnerGenericRmSession session, SQLWrapper sqlWrapper, boolean updateStatement);
+    int update(InnerGenericRmSession session, SQLWrapper sqlWrapper);
 
-    long largeUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper, boolean updateStatement);
+    long largeUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper);
 
-    int[] batchUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper, boolean updateStatement);
+    List<Integer> batchUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper);
 
-    long[] batchLargeUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper, boolean updateStatement);
+    List<Long> batchLargeUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper);
 
-    <T> List<T> returningUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper, Class<T> resultClass
-            , boolean updateStatement);
+    <T> List<T> returningUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper, Class<T> resultClass);
 
     static UpdateSQLExecutor build(InnerGenericRmSessionFactory sessionFactory) {
         return new UpdateSQLExecutorImpl(sessionFactory);

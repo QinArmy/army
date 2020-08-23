@@ -64,6 +64,9 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
         }
     }
 
+    /**
+     * @return a unmodifiable list
+     */
     final List<Integer> integerBatchUpdate(PreparedStatement st, BatchSimpleSQLWrapper sqlWrapper) {
         try {
             int[] batchResult;
@@ -80,7 +83,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
                 }
                 resultList.add(row);
             }
-            return Collections.unmodifiableList(resultList);
+            return resultList;
         } catch (SQLException e) {
             throw convertSQLException(e, sqlWrapper.sql());
         }
@@ -98,7 +101,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
                 }
                 resultList.add(row);
             }
-            return Collections.unmodifiableList(resultList);
+            return resultList;
         } catch (SQLException e) {
             throw convertSQLException(e, sqlWrapper.sql());
         }
@@ -148,7 +151,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
      *                          <li>{@link #longBatchUpdate(PreparedStatement, BatchSimpleSQLWrapper)}</li>
      *                        </ul>
      * @param <N>             result typed of update rows ,must be  {@link Integer} or {@link Long}
-     * @return {@code List<Integer> or List<Long>}
+     * @return a unmodifiable list,{@code List<Integer> or List<Long>}
      */
     final <N extends Number> List<N> doExecuteBatch(InnerGenericRmSession session, BatchSimpleSQLWrapper sqlWrapper
             , BiFunction<PreparedStatement, BatchSimpleSQLWrapper, List<N>> executeFunction) {
@@ -170,7 +173,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
                         , this.sessionFactory.dialect().showSQL(sqlWrapper));
             }
             // 4. execute
-            return executeFunction.apply(st, sqlWrapper);
+            return Collections.unmodifiableList(executeFunction.apply(st, sqlWrapper));
         } catch (SQLException e) {
             throw convertSQLException(e, sqlWrapper.sql());
         }
@@ -183,6 +186,10 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql())) {
             // 2. set params
             bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramList());
+            if (this.sessionFactory.showSQL()) {
+                LOG.info("Army will execute {} sql:\n{}", sqlWrapper.statementType()
+                        , this.sessionFactory.dialect().showSQL(sqlWrapper));
+            }
             // 3. execute sql
             try (ResultSet resultSet = st.executeQuery()) {
                 List<T> resultList;
