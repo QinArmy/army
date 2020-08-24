@@ -59,7 +59,18 @@ final class ReactiveInsertSQLExecutorImpl extends ReactiveSQLExecutorSupport imp
                     // 2. assert  insert rows equals 1
                     .flatMap(insertRows -> assertValueInsertRows(insertRows, simpleSQLWrapper));
         } else if (sqlWrapper instanceof ChildSQLWrapper) {
-            mono = doChildValueInsert(session, (ChildSQLWrapper) sqlWrapper);
+            ChildSQLWrapper childSQLWrapper = (ChildSQLWrapper) sqlWrapper;
+            final SimpleSQLWrapper parentWrapper = childSQLWrapper.parentWrapper();
+            final SimpleSQLWrapper childWrapper = childSQLWrapper.childWrapper();
+            // 1. execute parent insert sql
+            mono = doExecuteUpdate(session, parentWrapper, PreparedStatement::executeUpdate)
+                    // 2. assert parent insert rows equals 1
+                    .flatMap(insertRows -> assertValueInsertRows(insertRows, parentWrapper))
+                    //3. execute child insert sql
+                    .then(doExecuteUpdate(session, childWrapper, PreparedStatement::executeUpdate))
+                    // 4. assert child insert rows equals 1
+                    .flatMap(insertRows -> assertValueInsertRows(insertRows, childWrapper))
+            ;
         } else if (sqlWrapper instanceof BatchSimpleSQLWrapper) {
             final BatchSimpleSQLWrapper batchSQLWrapper = (BatchSimpleSQLWrapper) sqlWrapper;
             // 1. execute batch insert sql
@@ -68,31 +79,25 @@ final class ReactiveInsertSQLExecutorImpl extends ReactiveSQLExecutorSupport imp
                     .flatMap(insertRows -> assertValueInsertRows(insertRows, batchSQLWrapper))
                     .then();
         } else if (sqlWrapper instanceof ChildBatchSQLWrapper) {
-            mono = doBatchChildValueInsert(session, (ChildBatchSQLWrapper) sqlWrapper);
+            ChildBatchSQLWrapper batchSQLWrapper = (ChildBatchSQLWrapper) sqlWrapper;
+            final BatchSimpleSQLWrapper parentWrapper = batchSQLWrapper.parentWrapper();
+            final BatchSimpleSQLWrapper childWrapper = batchSQLWrapper.childWrapper();
+
+            // 1. execute parent batch insert sql
+            mono = doExecuteBatchUpdate(session, parentWrapper, PreparedStatement::executeBatch)
+                    // 2. assert each parent insert rows equals 1
+                    .flatMap(insertRows -> assertValueInsertRows(insertRows, parentWrapper))
+                    // 3. statistics parent insert count
+                    .count()
+                    // 4. execute child batch insert sql
+                    .flatMap(parentRows -> doExecuteBatchChildValueInsert(session, childWrapper, parentRows))
+            ;
         } else {
             mono = Mono.error(createUnSupportedSQLWrapperException(sqlWrapper, "valueInsert"));
         }
         return mono;
     }
 
-    private Mono<Void> doBatchChildValueInsert(InnerGenericRmSession session, ChildBatchSQLWrapper batchSQLWrapper) {
-        final BatchSimpleSQLWrapper parentWrapper = batchSQLWrapper.parentWrapper();
-        final BatchSimpleSQLWrapper childWrapper = batchSQLWrapper.childWrapper();
-
-        // 1. execute parent batch insert sql
-        return doExecuteBatchUpdate(session, parentWrapper, PreparedStatement::executeBatch)
-                // 2. assert each parent insert rows equals 1
-                .flatMap(insertRows -> assertValueInsertRows(insertRows, parentWrapper))
-                // 3. statistics parent insert count
-                .count()
-                // 4. execute child batch insert sql
-                .flatMap(parentRows -> doExecuteBatchChildValueInsert(session, childWrapper, parentRows))
-                ;
-    }
-
-    /**
-     * invoked by {@link #doBatchChildValueInsert(InnerGenericRmSession, ChildBatchSQLWrapper)}
-     */
     private Mono<Void> doExecuteBatchChildValueInsert(InnerGenericRmSession session, BatchSimpleSQLWrapper childWrapper
             , Long parentRows) {
         // 1. execute child  batch insert sql
@@ -115,22 +120,6 @@ final class ReactiveInsertSQLExecutorImpl extends ReactiveSQLExecutorSupport imp
             mono = Mono.error(createBatchChildInsertNotMatchException(parentRows, childRows, childWrapper));
         }
         return mono;
-    }
-
-
-    private Mono<Void> doChildValueInsert(InnerGenericRmSession session, ChildSQLWrapper sqlWrapper) {
-        final SimpleSQLWrapper parentWrapper = sqlWrapper.parentWrapper();
-        final SimpleSQLWrapper childWrapper = sqlWrapper.childWrapper();
-
-        // 1. execute parent insert sql
-        return doExecuteUpdate(session, parentWrapper, PreparedStatement::executeUpdate)
-                // 2. assert parent insert rows equals 1
-                .flatMap(insertRows -> assertValueInsertRows(insertRows, parentWrapper))
-                //3. execute child insert sql
-                .then(doExecuteUpdate(session, childWrapper, PreparedStatement::executeUpdate))
-                // 4. assert child insert rows equals 1
-                .flatMap(insertRows -> assertValueInsertRows(insertRows, childWrapper))
-                ;
     }
 
     private Mono<Void> assertValueInsertRows(Integer insertRows, GenericSimpleWrapper sqlWrapper) {

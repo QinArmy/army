@@ -20,6 +20,8 @@ import io.jdbd.PreparedStatement;
 import io.jdbd.ReactiveSQLException;
 import io.jdbd.ResultRow;
 import org.reactivestreams.Publisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -39,6 +41,8 @@ import java.util.function.Function;
  * @see ReactiveSelectSQLExecutorImpl
  */
 abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ReactiveSQLExecutorSupport.class);
 
     final GenericReactiveRmSessionFactory sessionFactory;
 
@@ -68,6 +72,7 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
         return session.createPreparedStatement(sqlWrapper.sql())
                 //2. bind param list
                 .map(st -> bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramList()))
+                .doOnNext(st -> printSQL(sqlWrapper))
                 //3. execute sql
                 .flatMap(executeFunction)
                 //4.assert optimistic Lock
@@ -94,6 +99,7 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
         return session.createPreparedStatement(sqlWrapper.sql())
                 //2. bind param list
                 .map(st -> bindParamGroupList(st, sqlWrapper))
+                .doOnNext(st -> printSQL(sqlWrapper))
                 //3. execute sql
                 .flatMapMany(executeFunction)
                 //4.assert optimistic Lock
@@ -107,25 +113,28 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
     protected final <T> Flux<T> doExecuteSimpleQuery(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper
             , Class<T> resultClass) {
 
-        //1. decide map function
-        Function<ResultRow, T> resultFunction;
-        if (singleType(sqlWrapper.selectionList(), resultClass)) {
-            resultFunction = row -> extractColumnResult(row, sqlWrapper.selectionList().get(0)
-                    , sqlWrapper.statementType(), resultClass);
-        } else {
-            resultFunction = row -> extractRowResult(session, row, sqlWrapper, resultClass);
-        }
-        //2. create statement
-        return session.createPreparedStatement(sqlWrapper.sql())
-                //3. bind param list
+        //1. create statement
+        Flux<? extends ResultRow> resultRowFlux = session.createPreparedStatement(sqlWrapper.sql())
+                //2. bind param list
                 .map(st -> bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramList()))
-                //4. execute sql
+                .doOnNext(st -> printSQL(sqlWrapper))
+                //3. execute sql
                 .flatMapMany(PreparedStatement::executeQuery)
-                //5. assert optimistic lock
-                .switchIfEmpty(assertOptimisticLockWhenEmpty(sqlWrapper))
-                //6. map result
-                .map(resultFunction)
-                ;
+                //4. assert optimistic lock
+                .switchIfEmpty(assertOptimisticLockWhenEmpty(sqlWrapper));
+
+        //5. map result
+        Flux<T> flux;
+        if (singleType(sqlWrapper.selectionList(), resultClass)) {
+            Selection selection = sqlWrapper.selectionList().get(0);
+            StatementType statementType = sqlWrapper.statementType();
+            // map single column result
+            flux = resultRowFlux.flatMap(row -> flatMapColumnResult(row, selection, statementType, resultClass));
+        } else {
+            // map complex result
+            flux = resultRowFlux.map(row -> extractRowResult(session, row, sqlWrapper, resultClass));
+        }
+        return flux;
     }
 
     protected final <T> Flux<T> doReturningUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper
@@ -171,6 +180,7 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
         return session.createPreparedStatement(sqlWrapper.sql())
                 //2. bind param list
                 .map(st -> bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramList()))
+                .doOnNext(st -> printSQL(sqlWrapper))
                 //3. execute sql
                 .flatMapMany(PreparedStatement::executeQuery)
                 //4. assert optimistic lock
@@ -196,6 +206,7 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
         return session.createPreparedStatement(sqlWrapper.sql())
                 //2. bind param list
                 .map(st -> bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramList()))
+                .doOnNext(st -> printSQL(sqlWrapper))
                 //3. execute sql
                 .flatMapMany(PreparedStatement::executeQuery)
                 //4. assert optimistic lock
@@ -292,6 +303,13 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
             beanWrapper.setPropertyValue(selection.alias(), columnResult);
         }
         return getWrapperInstance(beanWrapper);
+    }
+
+    private <T> Mono<T> flatMapColumnResult(ResultRow resultRow, Selection selection, StatementType statementType
+            , Class<T> columnClass) {
+        return Mono.justOrEmpty(
+                extractColumnResult(resultRow, selection, statementType, columnClass)
+        );
     }
 
     /**
@@ -411,5 +429,12 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
         return st;
     }
 
+
+    private void printSQL(GenericSimpleWrapper sqlWrapper) {
+        if (this.sessionFactory.showSQL()) {
+            LOG.info("Army will execute {}:\n{}", sqlWrapper.statementType()
+                    , this.sessionFactory.dialect().showSQL(sqlWrapper));
+        }
+    }
 
 }

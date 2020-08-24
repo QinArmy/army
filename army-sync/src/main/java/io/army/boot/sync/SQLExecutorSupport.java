@@ -249,6 +249,10 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql())) {
             //2. bind param list
             bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramList());
+            if (this.sessionFactory.showSQL()) {
+                LOG.info("Army will execute {} sql:\n{}", sqlWrapper.statementType()
+                        , this.sessionFactory.dialect().showSQL(sqlWrapper));
+            }
             //3. execute sql
             try (ResultSet resultSet = st.executeQuery()) {
                 //4.extract first sql result
@@ -266,6 +270,10 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql())) {
             //2. bind param list
             bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramList());
+            if (this.sessionFactory.showSQL()) {
+                LOG.info("Army will execute {} sql:\n{}", sqlWrapper.statementType()
+                        , this.sessionFactory.dialect().showSQL(sqlWrapper));
+            }
             //3. execute sql
             try (ResultSet resultSet = st.executeQuery()) {
                 //4.extract second sql result
