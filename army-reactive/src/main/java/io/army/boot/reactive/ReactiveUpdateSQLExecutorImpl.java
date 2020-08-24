@@ -16,23 +16,31 @@ final class ReactiveUpdateSQLExecutorImpl extends ReactiveSQLExecutorSupport imp
     }
 
     @Override
-    public final Mono<Integer> update(InnerGenericRmSession session, SQLWrapper sqlWrapper) {
-        return internalUpdate(session, sqlWrapper, PreparedStatement::executeUpdate, "update");
+    public final <N extends Number> Mono<N> update(InnerGenericRmSession session, SQLWrapper sqlWrapper
+            , Class<N> resultClass) {
+        Mono<? extends Number> mono;
+        if (resultClass == Integer.class) {
+            mono = internalUpdate(session, sqlWrapper, PreparedStatement::executeUpdate, "update");
+        } else if (resultClass == Long.class) {
+            mono = internalUpdate(session, sqlWrapper, PreparedStatement::executeLargeUpdate, "update");
+        } else {
+            mono = Mono.error(new IllegalArgumentException("ResultClass error"));
+        }
+        return mono.cast(resultClass);
     }
 
     @Override
-    public final Mono<Long> largeUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper) {
-        return internalUpdate(session, sqlWrapper, PreparedStatement::executeLargeUpdate, "largeUpdate");
-    }
-
-    @Override
-    public final Flux<Integer> batchUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper) {
-        return internalBatchUpdate(session, sqlWrapper, PreparedStatement::executeBatch, "batchUpdate");
-    }
-
-    @Override
-    public final Flux<Long> batchLargeUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper) {
-        return internalBatchUpdate(session, sqlWrapper, PreparedStatement::executeLargeBatch, "batchLargeUpdate");
+    public final <N extends Number> Flux<N> batchUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper
+            , Class<N> resultClass) {
+        Flux<? extends Number> flux;
+        if (resultClass == Integer.class) {
+            flux = internalBatchUpdate(session, sqlWrapper, PreparedStatement::executeBatch, "batchUpdate");
+        } else if (resultClass == Long.class) {
+            flux = internalBatchUpdate(session, sqlWrapper, PreparedStatement::executeLargeBatch, "batchUpdate");
+        } else {
+            flux = Flux.error(new IllegalArgumentException("ResultClass error"));
+        }
+        return flux.cast(resultClass);
     }
 
     @Override

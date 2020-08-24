@@ -1,12 +1,12 @@
 package io.army.boot.sync;
 
 import io.army.*;
+import io.army.advice.sync.DomainAdvice;
 import io.army.boot.DomainValuesGenerator;
 import io.army.cache.SessionCacheFactory;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.criteria.NotFoundRouteException;
 import io.army.dialect.Database;
-import io.army.interceptor.DomainAdvice;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.sharding.DatabaseRoute;

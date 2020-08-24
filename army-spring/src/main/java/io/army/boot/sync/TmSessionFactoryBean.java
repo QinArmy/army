@@ -1,9 +1,9 @@
 package io.army.boot.sync;
 
+import io.army.advice.sync.DomainAdvice;
 import io.army.codec.FieldCodec;
 import io.army.dialect.Database;
 import io.army.env.ArmyConfigurableArmyEnvironment;
-import io.army.interceptor.DomainAdvice;
 import io.army.sync.SessionFactoryAdvice;
 import io.army.sync.TmSessionFactory;
 import org.springframework.beans.BeansException;

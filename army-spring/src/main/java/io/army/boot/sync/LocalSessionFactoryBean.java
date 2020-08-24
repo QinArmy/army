@@ -2,12 +2,12 @@ package io.army.boot.sync;
 
 
 import io.army.ShardingMode;
+import io.army.advice.sync.DomainAdvice;
 import io.army.beans.ArmyBean;
 import io.army.codec.FieldCodec;
 import io.army.env.ArmyConfigurableArmyEnvironment;
 import io.army.env.ArmyEnvironment;
 import io.army.env.SpringEnvironmentAdaptor;
-import io.army.interceptor.DomainAdvice;
 import io.army.lang.Nullable;
 import io.army.sync.SessionFactory;
 import io.army.sync.SessionFactoryAdvice;

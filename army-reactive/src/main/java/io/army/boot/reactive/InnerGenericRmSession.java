@@ -1,6 +1,7 @@
 package io.army.boot.reactive;
 
 import io.army.reactive.GenericReactiveRmSession;
+import io.army.tx.reactive.GenericReactiveTransaction;
 import io.jdbd.PreparedStatement;
 import io.jdbd.ReactiveSQLException;
 import reactor.core.publisher.Mono;
@@ -9,4 +10,6 @@ import reactor.core.publisher.Mono;
 interface InnerGenericRmSession extends GenericReactiveRmSession {
 
     Mono<PreparedStatement> createPreparedStatement(String sql) throws ReactiveSQLException;
+
+    Mono<Void> closeTransaction(GenericReactiveTransaction transaction);
 }

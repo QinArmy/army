@@ -1,10 +1,10 @@
 package io.army.boot.sync;
 
 import io.army.SessionFactoryException;
+import io.army.advice.sync.DomainAdvice;
 import io.army.codec.FieldCodec;
 import io.army.dialect.Database;
 import io.army.env.ArmyEnvironment;
-import io.army.interceptor.DomainAdvice;
 import io.army.sync.SessionFactoryAdvice;
 import io.army.sync.TmSessionFactory;
 

@@ -8,7 +8,7 @@ package io.army.reactive;
  *     <li>{@code io.army.reactive.ReactiveTmSessionFactory}</li>
  * </ul>
  */
-public interface GenericReactiveApiSessionFactory extends GenericReactiveSessionFactory {
+public interface ReactiveApiSessionFactory extends GenericReactiveSessionFactory {
 
     GenericReactiveApiSession proxySession();
 

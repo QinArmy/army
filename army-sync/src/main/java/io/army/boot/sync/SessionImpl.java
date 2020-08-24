@@ -377,8 +377,7 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
 
     private void assertSupportBatch() {
         if (this.shardingMode != ShardingMode.NO_SHARDING) {
-            throw new SessionUsageException(ErrorCode.NOT_SUPPORT_BATCH
-                    , "not support batch operation in SHARDING mode.");
+            throw new SessionUsageException("not support batch operation in SHARDING mode.");
         }
         assertSessionActive(true);
     }

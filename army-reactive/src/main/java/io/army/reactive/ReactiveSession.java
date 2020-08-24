@@ -3,13 +3,17 @@ package io.army.reactive;
 import io.army.SessionException;
 import io.army.lang.Nullable;
 import io.army.tx.Isolation;
+import io.army.tx.NoSessionTransactionException;
 import io.army.tx.reactive.ReactiveTransaction;
 import reactor.core.publisher.Mono;
 
 public interface ReactiveSession extends SingleDatabaseReactiveSession, GenericReactiveRmSession {
 
     @Override
-    ReactiveTransaction sessionTransaction();
+    ReactiveSessionFactory sessionFactory();
+
+    @Override
+    ReactiveTransaction sessionTransaction() throws NoSessionTransactionException;
 
     Mono<Void> close() throws SessionException;
 

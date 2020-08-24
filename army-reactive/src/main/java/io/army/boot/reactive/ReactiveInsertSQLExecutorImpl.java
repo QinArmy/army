@@ -23,18 +23,20 @@ final class ReactiveInsertSQLExecutorImpl extends ReactiveSQLExecutorSupport imp
     }
 
     @Override
-    public final Mono<Integer> subQueryInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper)
-            throws InsertException {
-        return internalSubQueryInsert(session, sqlWrapper, PreparedStatement::executeUpdate, "subQueryInsert");
-    }
+    public <N extends Number> Mono<N> subQueryInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper
+            , Class<N> resultClass) throws InsertException {
 
-    @Override
-    public final Mono<Long> subQueryLargeInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper)
-            throws InsertException {
-        return internalSubQueryInsert(session, sqlWrapper, PreparedStatement::executeLargeUpdate
-                , "subQueryLargeInsert");
+        Mono<? extends Number> mono;
+        if (resultClass == Integer.class) {
+            mono = internalSubQueryInsert(session, sqlWrapper, PreparedStatement::executeUpdate, "subQueryInsert");
+        } else if (resultClass == Long.class) {
+            mono = internalSubQueryInsert(session, sqlWrapper, PreparedStatement::executeLargeUpdate
+                    , "subQueryInsert");
+        } else {
+            mono = Mono.error(new IllegalArgumentException("ResultClass error"));
+        }
+        return mono.cast(resultClass);
     }
-
 
     @Override
     public final <T> Flux<T> returningInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper, Class<T> resultClass)

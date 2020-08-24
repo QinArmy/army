@@ -2,8 +2,8 @@ package io.army.boot.sync;
 
 import io.army.GenericFactoryBuilderImpl;
 import io.army.ShardingMode;
+import io.army.advice.sync.DomainAdvice;
 import io.army.env.ArmyEnvironment;
-import io.army.interceptor.DomainAdvice;
 import io.army.lang.Nullable;
 import io.army.sync.GenericSyncApiSessionFactory;
 import io.army.sync.SessionFactoryAdvice;

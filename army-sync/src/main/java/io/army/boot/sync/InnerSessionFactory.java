@@ -9,4 +9,5 @@ interface InnerSessionFactory extends InnerGenericRmSessionFactory, InnerGeneric
     CurrentSessionContext currentSessionContext();
 
     SessionCacheFactory sessionCacheFactory();
+
 }

@@ -7,13 +7,9 @@ import reactor.core.publisher.Mono;
 
 interface ReactiveUpdateSQLExecutor {
 
-    Mono<Integer> update(InnerGenericRmSession session, SQLWrapper sqlWrapper);
+   <N extends Number> Mono<N> update(InnerGenericRmSession session, SQLWrapper sqlWrapper, Class<N> resultClass);
 
-    Mono<Long> largeUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper);
-
-    Flux<Integer> batchUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper);
-
-    Flux<Long> batchLargeUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper);
+    <N extends Number> Flux<N> batchUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper, Class<N> resultClass);
 
     <T> Flux<T> returningUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper, Class<T> resultClass);
 

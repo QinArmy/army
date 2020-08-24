@@ -3,7 +3,7 @@ package io.army.reactive;
 import io.army.GenericRmSessionFactory;
 import reactor.core.publisher.Mono;
 
-public interface ReactiveSessionFactory extends GenericReactiveApiSessionFactory, GenericRmSessionFactory {
+public interface ReactiveSessionFactory extends ReactiveApiSessionFactory, GenericRmSessionFactory {
 
     ReactiveSessionBuilder builder();
 

@@ -1,7 +1,7 @@
 package io.army.boot.sync;
 
+import io.army.advice.sync.DomainAdvice;
 import io.army.boot.GenericFactoryBuilder;
-import io.army.interceptor.DomainAdvice;
 import io.army.sync.SessionFactoryAdvice;
 
 import java.util.Collection;

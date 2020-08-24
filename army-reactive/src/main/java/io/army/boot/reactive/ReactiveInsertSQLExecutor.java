@@ -10,9 +10,8 @@ interface ReactiveInsertSQLExecutor {
 
     Mono<Void> valueInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper) throws InsertException;
 
-    Mono<Integer> subQueryInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper) throws InsertException;
-
-    Mono<Long> subQueryLargeInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper) throws InsertException;
+    <N extends Number> Mono<N> subQueryInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper
+            , Class<N> resultClass) throws InsertException;
 
     <T> Flux<T> returningInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper, Class<T> resultClass)
             throws InsertException;

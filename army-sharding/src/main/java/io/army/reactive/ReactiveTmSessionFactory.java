@@ -3,7 +3,7 @@ package io.army.reactive;
 import io.army.GenericTmSessionFactory;
 
 
-public interface ReactiveTmSessionFactory extends GenericTmSessionFactory, GenericReactiveApiSessionFactory {
+public interface ReactiveTmSessionFactory extends GenericTmSessionFactory, ReactiveApiSessionFactory {
 
 
 }

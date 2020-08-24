@@ -119,5 +119,4 @@ public abstract class AbstractGenericSession implements GenericSession {
         }
     }
 
-
 }

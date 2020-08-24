@@ -3,9 +3,9 @@ package io.army.boot.sync;
 
 import io.army.SessionFactoryException;
 import io.army.ShardingMode;
+import io.army.advice.sync.DomainAdvice;
 import io.army.codec.FieldCodec;
 import io.army.env.ArmyEnvironment;
-import io.army.interceptor.DomainAdvice;
 import io.army.sync.SessionFactory;
 import io.army.sync.SessionFactoryAdvice;
 

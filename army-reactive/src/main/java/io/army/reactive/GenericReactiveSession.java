@@ -2,12 +2,9 @@ package io.army.reactive;
 
 import io.army.GenericSession;
 import io.army.criteria.*;
-import io.army.domain.IDomain;
-import io.army.meta.TableMeta;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,27 +14,6 @@ public interface GenericReactiveSession extends GenericSession {
 
 
     GenericReactiveSessionFactory sessionFactory();
-
-    /**
-     * @param <R> representing select result Java Type
-     */
-    <R extends IDomain> Mono<R> get(TableMeta<R> tableMeta, Object id);
-
-    /**
-     * @param <R> representing select result Java Type.
-     */
-    <R extends IDomain> Mono<R> get(TableMeta<R> tableMeta, Object id, Visible visible);
-
-    /**
-     * @param <R> representing select result Java Type.
-     */
-    <R extends IDomain> Mono<R> getByUnique(TableMeta<R> tableMeta, List<String> propNameList, List<Object> valueList);
-
-    /**
-     * @param <R> representing select result Java Type.
-     */
-    <R extends IDomain> Mono<R> getByUnique(TableMeta<R> tableMeta, List<String> propNameList
-            , List<Object> valueList, Visible visible);
 
     /**
      * @param <R> representing select result Java Type.

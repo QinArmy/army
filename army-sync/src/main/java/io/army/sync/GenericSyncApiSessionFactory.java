@@ -1,7 +1,7 @@
 package io.army.sync;
 
 import io.army.GenericProxySession;
-import io.army.interceptor.DomainAdvice;
+import io.army.advice.sync.DomainAdvice;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 

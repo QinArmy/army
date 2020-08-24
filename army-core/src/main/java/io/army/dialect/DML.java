@@ -20,6 +20,10 @@ public interface DML extends SQL {
 
     SQLWrapper update(Update update, Visible visible);
 
+    SQLWrapper returningUpdate(Update update, Visible visible);
+
     SQLWrapper delete(Delete delete, Visible visible);
+
+    SQLWrapper returningDelete(Delete delete, Visible visible);
 
 }
