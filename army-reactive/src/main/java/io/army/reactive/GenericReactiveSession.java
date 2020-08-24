@@ -8,7 +8,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Map;
 
+/**
+ *
+ */
 public interface GenericReactiveSession extends GenericSession {
 
 
@@ -45,6 +49,10 @@ public interface GenericReactiveSession extends GenericSession {
      */
     <R> Mono<R> selectOne(Select select, Class<R> resultClass, Visible visible);
 
+    Mono<Map<String, Object>> selectOneAsUnmodifiableMap(Select select);
+
+    Mono<Map<String, Object>> selectOneAsUnmodifiableMap(Select select, Visible visible);
+
     /**
      * @param <R> representing select result Java Type.
      */
@@ -55,11 +63,25 @@ public interface GenericReactiveSession extends GenericSession {
      */
     <R> Flux<R> select(Select select, Class<R> resultClass, Visible visible);
 
+    Flux<Map<String, Object>> selectAsUnmodifiableMap(Select select);
+
+    Flux<Map<String, Object>> selectAsUnmodifiableMap(Select select, Visible visible);
+
+    /**
+     * @param <R> representing select result Java Type.
+     */
+    <R> Flux<R> returningInsert(Insert insert, Class<R> resultClass);
+
+    /**
+     * @param <R> representing select result Java Type.
+     */
+    <R> Flux<R> returningInsert(Insert insert, Class<R> resultClass, Visible visible);
+
     Mono<Integer> subQueryInsert(Insert insert);
 
     Mono<Integer> subQueryInsert(Insert insert, Visible visible);
 
-    Mono<Long> subQueryLargeInsert(Insert insert);
+    Mono<Long> largeSubQueryInsert(Insert insert);
 
     Mono<Long> largeSubQueryInsert(Insert insert, Visible visible);
 

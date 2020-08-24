@@ -6,16 +6,14 @@ import io.army.tx.Isolation;
 import io.army.tx.reactive.ReactiveTransaction;
 import reactor.core.publisher.Mono;
 
-public interface ReactiveSession extends GenericReactiveApiSession {
+public interface ReactiveSession extends SingleDatabaseReactiveSession, GenericReactiveRmSession {
 
-
+    @Override
     ReactiveTransaction sessionTransaction();
-
-    SessionTransactionBuilder builder();
 
     Mono<Void> close() throws SessionException;
 
-    Mono<Void> flush() throws SessionException;
+    SessionTransactionBuilder builder();
 
     interface SessionTransactionBuilder {
 

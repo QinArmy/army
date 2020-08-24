@@ -1,17 +1,16 @@
 package io.army.boot.sync;
 
-import io.army.*;
+import io.army.SessionCloseFailureException;
+import io.army.SessionException;
+import io.army.ShardingMode;
 import io.army.codec.StatementType;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerSQL;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.tx.GenericTransaction;
-import io.army.tx.Isolation;
 import io.army.tx.TransactionNotCloseException;
 import io.army.tx.TransactionTimeOutException;
-import io.army.wrapper.ChildBatchSQLWrapper;
-import io.army.wrapper.ChildSQLWrapper;
 import io.army.wrapper.SQLWrapper;
 
 import java.sql.Connection;
@@ -19,7 +18,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
-import java.util.Set;
 
 abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
         implements InnerGenericRmSession {
@@ -293,119 +291,9 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
     }
     /*################################## blow package method ##################################*/
 
-    @Nullable
-    abstract GenericTransaction obtainTransaction();
 
 
-    final SQLWrapper parseSubQueryInsert(Insert insert, final Visible visible) {
-        if (this.readonly()) {
-            throw new ReadOnlySessionException("current session/session transaction is read only.");
-        }
-        //1. parse update sql
-        SQLWrapper sqlWrapper = this.dialect.subQueryInsert(insert, visible);
-        if (sqlWrapper instanceof ChildSQLWrapper) {
-            assertChildDomain();
 
-        }
-        return sqlWrapper;
-    }
-
-    final SQLWrapper parseReturningInsert(Insert insert, final Visible visible) {
-        if (this.readonly()) {
-            throw new ReadOnlySessionException("current session/session transaction is read only.");
-        }
-        SQLWrapper sqlWrapper = this.dialect.returningInsert(insert, visible);
-        if (sqlWrapper instanceof ChildSQLWrapper) {
-            assertChildDomain();
-
-        }
-        return sqlWrapper;
-    }
-
-    final List<SQLWrapper> parseValueInsert(Insert insert, @Nullable Set<Integer> domainIndexSet
-            , final Visible visible) {
-        if (this.readonly()) {
-            throw new ReadOnlySessionException("current session/session transaction is read only.");
-        }
-        List<SQLWrapper> sqlWrapperList = this.dialect.valueInsert(insert, domainIndexSet, visible);
-        for (SQLWrapper sqlWrapper : sqlWrapperList) {
-            if (sqlWrapper instanceof ChildSQLWrapper) {
-                assertChildDomain();
-
-            }
-        }
-        return sqlWrapperList;
-    }
-
-    final SQLWrapper parseUpdate(Update update, final Visible visible) {
-        if (this.readonly()) {
-            throw new ReadOnlySessionException("current session/session transaction is read only.");
-        }
-        //1. parse update sql
-        SQLWrapper sqlWrapper = this.dialect.update(update, visible);
-        if (sqlWrapper instanceof ChildSQLWrapper || sqlWrapper instanceof ChildBatchSQLWrapper) {
-            // 2. assert child update
-            assertChildDomain();
-        }
-        return sqlWrapper;
-    }
-
-    final SQLWrapper parseDelete(Delete delete, final Visible visible) {
-        if (this.readonly()) {
-            throw new ReadOnlySessionException("current session/session transaction is read only.");
-        }
-        //1. parse update sql
-        SQLWrapper sqlWrapper = this.dialect.delete(delete, visible);
-        if (sqlWrapper instanceof ChildSQLWrapper || sqlWrapper instanceof ChildBatchSQLWrapper) {
-            // 2. assert child update
-            assertChildDomain();
-        }
-        return sqlWrapper;
-    }
-
-    final void markRollbackOnlyForChildUpdate(SQLWrapper sqlWrapper) {
-        GenericTransaction transaction = obtainTransaction();
-        if (sqlWrapper instanceof ChildSQLWrapper || sqlWrapper instanceof ChildBatchSQLWrapper) {
-            if (transaction != null) {
-                transaction.markRollbackOnly();
-            }
-        }
-    }
-
-    final void markRollbackOnlyForChildInsert(List<SQLWrapper> sqlWrapperList) {
-        GenericTransaction transaction = obtainTransaction();
-        for (SQLWrapper sqlWrapper : sqlWrapperList) {
-            if (sqlWrapper instanceof ChildSQLWrapper || sqlWrapper instanceof ChildBatchSQLWrapper) {
-                if (transaction != null) {
-                    transaction.markRollbackOnly();
-                    break;
-                }
-
-            }
-        }
-    }
-
-    final void assertSessionActive(final boolean write) {
-        GenericTransaction tx = obtainTransaction();
-        if (this.closed() || (tx != null && tx.nonActive())) {
-            String txName = this.sessionTransaction().name();
-            throw new SessionUsageException(ErrorCode.SESSION_CLOSED
-                    , "TmSession[%s] closed or Transaction[%s] not active.", txName, txName);
-        }
-        if (write && this.readonly()) {
-            throw new ReadOnlySessionException("%s read only");
-        }
-    }
-
-
-    /*################################## blow private method ##################################*/
-
-    private void assertChildDomain() {
-        GenericTransaction tx = obtainTransaction();
-        if (tx == null || tx.isolation().level < Isolation.READ_COMMITTED.level) {
-            throw new DomainUpdateException("Child domain update must in READ_COMMITTED(+) transaction.");
-        }
-    }
 
 
 }

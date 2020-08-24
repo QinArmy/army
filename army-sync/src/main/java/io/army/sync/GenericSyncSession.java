@@ -7,6 +7,7 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -63,6 +64,10 @@ public interface GenericSyncSession extends GenericSession {
     @Nullable
     <R> R selectOne(Select select, Class<R> resultClass, Visible visible);
 
+    Map<String, Object> selectOneAsUnmodifiableMap(Select select);
+
+    Map<String, Object> selectOneAsUnmodifiableMap(Select select, Visible visible);
+
     /**
      * @param <R> representing select result Java Type.
      */
@@ -72,6 +77,14 @@ public interface GenericSyncSession extends GenericSession {
      * @param <R> representing select result Java Type.
      */
     <R> List<R> select(Select select, Class<R> resultClass, Visible visible);
+
+    List<Map<String, Object>> selectAsUnmodifiableMap(Select select);
+
+    List<Map<String, Object>> selectAsUnmodifiableMap(Select select, Visible visible);
+
+    void valueInsert(Insert insert);
+
+    void valueInsert(Insert insert, Visible visible);
 
     int subQueryInsert(Insert insert);
 

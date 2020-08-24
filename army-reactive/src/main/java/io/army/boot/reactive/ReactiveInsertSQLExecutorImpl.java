@@ -7,7 +7,6 @@ import io.jdbd.PreparedStatement;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
 import java.util.function.Function;
 
 final class ReactiveInsertSQLExecutorImpl extends ReactiveSQLExecutorSupport implements ReactiveInsertSQLExecutor {
@@ -18,13 +17,9 @@ final class ReactiveInsertSQLExecutorImpl extends ReactiveSQLExecutorSupport imp
 
 
     @Override
-    public final Mono<Void> valueInsert(InnerGenericRmSession session, List<SQLWrapper> sqlWrapperList)
+    public final Mono<Void> valueInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper)
             throws InsertException {
-        return Flux.fromIterable(sqlWrapperList)
-                // iterate each element and execute insert sql
-                .flatMap(sqlWrapper -> doValueInsert(session, sqlWrapper))
-                .then()
-                ;
+        return doValueInsert(session, sqlWrapper);
     }
 
     @Override

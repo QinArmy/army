@@ -5,6 +5,8 @@ import io.army.criteria.Delete;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
 
+import java.util.List;
+
 /**
  * <p>
  * This interface encapsulate synchronous api than can access database.
@@ -20,22 +22,46 @@ import io.army.criteria.Visible;
  * @see Session
  * @see ProxySession
  */
-public interface SingleDatabaseSyncSession extends GenericSyncApiSession {
+interface SingleDatabaseSyncSession extends GenericSyncApiSession {
 
-    int[] batchUpdate(Update update);
+    /**
+     * @return a unmodifiable list
+     */
+    List<Integer> batchUpdate(Update update);
 
-    int[] batchUpdate(Update update, Visible visible);
+    /**
+     * @return a unmodifiable list
+     */
+    List<Integer> batchUpdate(Update update, Visible visible);
 
-    long[] batchLargeUpdate(Update update);
+    /**
+     * @return a unmodifiable list
+     */
+    List<Long> batchLargeUpdate(Update update);
 
-    long[] batchLargeUpdate(Update update, Visible visible);
+    /**
+     * @return a unmodifiable list
+     */
+    List<Long> batchLargeUpdate(Update update, Visible visible);
 
-    int[] batchDelete(Delete delete);
+    /**
+     * @return a unmodifiable list
+     */
+    List<Integer> batchDelete(Delete delete);
 
-    int[] batchDelete(Delete delete, Visible visible);
+    /**
+     * @return a unmodifiable list
+     */
+    List<Integer> batchDelete(Delete delete, Visible visible);
 
-    long[] batchLargeDelete(Delete delete);
+    /**
+     * @return a unmodifiable list
+     */
+    List<Long> batchLargeDelete(Delete delete);
 
-    long[] batchLargeDelete(Delete delete, Visible visible);
+    /**
+     * @return a unmodifiable list
+     */
+    List<Long> batchLargeDelete(Delete delete, Visible visible);
 
 }

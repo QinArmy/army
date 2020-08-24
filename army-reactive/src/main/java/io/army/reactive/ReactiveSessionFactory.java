@@ -1,15 +1,18 @@
 package io.army.reactive;
 
+import io.army.GenericRmSessionFactory;
 import reactor.core.publisher.Mono;
 
-public interface ReactiveSessionFactory extends GenericReactiveApiSessionFactory {
+public interface ReactiveSessionFactory extends GenericReactiveApiSessionFactory, GenericRmSessionFactory {
 
     ReactiveSessionBuilder builder();
 
 
     interface ReactiveSessionBuilder {
 
-        ReactiveSessionBuilder currentSession();
+        ReactiveSessionBuilder currentSession(boolean current);
+
+        ReactiveSessionBuilder readOnly(boolean readOnly);
 
         Mono<ReactiveSession> build();
     }

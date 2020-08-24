@@ -29,5 +29,4 @@ public interface GenericSyncApiSessionFactory extends GenericSyncSessionFactory 
 
     boolean hasCurrentSession();
 
-    boolean currentSessionContextIsInstanceOf(Class<?> currentSessionContextClass);
 }
