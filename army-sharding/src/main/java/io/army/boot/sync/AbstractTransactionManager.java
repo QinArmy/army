@@ -57,9 +57,9 @@ abstract class AbstractTransactionManager extends AbstractSyncTransaction implem
     public void markRollbackOnly() throws TransactionException {
         checkReadWrite("markRollbackOnly");
 
-        if (!ROLL_BACK_ONLY_ABLE_SET.contains(this.status())) {
+        if (!TransactionStatus.ROLL_BACK_ONLY_ABLE_SET.contains(this.status())) {
             throw new IllegalTransactionStateException("transaction status[%s] not in %s,can't mark roll back only."
-                    , this.status, ROLL_BACK_ONLY_ABLE_SET);
+                    , this.status, TransactionStatus.ROLL_BACK_ONLY_ABLE_SET);
         }
         this.status = TransactionStatus.MARKED_ROLLBACK;
     }

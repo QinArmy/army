@@ -20,6 +20,7 @@ import io.army.sync.TmSessionCloseException;
 import io.army.sync.TmSessionFactory;
 import io.army.tx.TmTransaction;
 import io.army.tx.TransactionNotCloseException;
+import io.army.tx.TransactionStatus;
 import io.army.tx.XaTransactionOption;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
@@ -369,7 +370,7 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
         if (this.closed) {
             return;
         }
-        if (!AbstractSyncTransaction.END_STATUS_SET.contains(this.tmTransaction.status())) {
+        if (!TransactionStatus.END_STATUS_SET.contains(this.tmTransaction.status())) {
             throw new TransactionNotCloseException("Transaction[%s] not close.", this.tmTransaction.name());
         }
 

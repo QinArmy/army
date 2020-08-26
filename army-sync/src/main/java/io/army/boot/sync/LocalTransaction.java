@@ -89,9 +89,9 @@ final class LocalTransaction extends AbstractSyncTransaction implements Transact
     public void rollback() throws TransactionException {
         checkReadWrite("rollback");
 
-        if (!ROLL_BACK_ABLE_SET.contains(this.status)) {
+        if (!TransactionStatus.ROLL_BACK_ABLE_SET.contains(this.status)) {
             throw new IllegalTransactionStateException("transaction status[%s] don't in %s,can't rollback."
-                    , this.status, ROLL_BACK_ABLE_SET);
+                    , this.status, TransactionStatus.ROLL_BACK_ABLE_SET);
         }
         this.status = TransactionStatus.ROLLING_BACK;
         try {
@@ -137,10 +137,10 @@ final class LocalTransaction extends AbstractSyncTransaction implements Transact
     public void rollbackToSavepoint(final Savepoint savepoint) throws TransactionException {
         checkReadWrite("rollbackToSavepoint");
 
-        if (!ROLL_BACK_ABLE_SET.contains(this.status)) {
+        if (!TransactionStatus.ROLL_BACK_ABLE_SET.contains(this.status)) {
             throw new IllegalTransactionStateException(
                     "transaction status[%s] don't in %s,can't rollback to save point."
-                    , this.status, ROLL_BACK_ABLE_SET);
+                    , this.status, TransactionStatus.ROLL_BACK_ABLE_SET);
         }
         if (!this.savepointSet.contains(savepoint)) {
             throw new UnKnownSavepointException("Savepoint[%s] not exists", savepoint);
@@ -171,9 +171,9 @@ final class LocalTransaction extends AbstractSyncTransaction implements Transact
     public void markRollbackOnly() throws TransactionException {
         checkReadWrite("markRollbackOnly");
 
-        if (!ROLL_BACK_ONLY_ABLE_SET.contains(this.status())) {
+        if (!TransactionStatus.ROLL_BACK_ONLY_ABLE_SET.contains(this.status())) {
             throw new IllegalTransactionStateException("transaction status[%s] not in %s,can't mark roll back only."
-                    , this.status, ROLL_BACK_ONLY_ABLE_SET);
+                    , this.status, TransactionStatus.ROLL_BACK_ONLY_ABLE_SET);
         }
         this.status = TransactionStatus.MARKED_ROLLBACK;
     }
@@ -196,7 +196,7 @@ final class LocalTransaction extends AbstractSyncTransaction implements Transact
 
     @Override
     public boolean transactionEnded() {
-        return END_STATUS_SET.contains(this.status);
+        return TransactionStatus.END_STATUS_SET.contains(this.status);
     }
 
     /*################################## blow package method ##################################*/

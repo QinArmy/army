@@ -2,25 +2,7 @@ package io.army.boot.sync;
 
 import io.army.tx.*;
 
-import java.util.EnumSet;
-
 abstract class AbstractSyncTransaction extends AbstractGenericTransaction implements GenericSyncTransaction {
-
-    static final EnumSet<TransactionStatus> ROLL_BACK_ABLE_SET = EnumSet.of(
-            TransactionStatus.ACTIVE,
-            TransactionStatus.MARKED_ROLLBACK,
-            TransactionStatus.FAILED_COMMIT
-    );
-
-    static final EnumSet<TransactionStatus> END_STATUS_SET = EnumSet.of(
-            TransactionStatus.COMMITTED,
-            TransactionStatus.ROLLED_BACK
-    );
-
-    static final EnumSet<TransactionStatus> ROLL_BACK_ONLY_ABLE_SET = EnumSet.of(
-            TransactionStatus.ACTIVE,
-            TransactionStatus.MARKED_ROLLBACK
-    );
 
     protected boolean rollbackOnly;
 
@@ -47,7 +29,7 @@ abstract class AbstractSyncTransaction extends AbstractGenericTransaction implem
 
 
     final void checkTransaction() {
-        if (END_STATUS_SET.contains(this.status())) {
+        if (TransactionStatus.END_STATUS_SET.contains(this.status())) {
             throw new TransactionClosedException("transaction ended.");
         }
     }
@@ -61,9 +43,9 @@ abstract class AbstractSyncTransaction extends AbstractGenericTransaction implem
     }
 
     final void assertCanClose() {
-        if (!this.readOnly && !LocalTransaction.END_STATUS_SET.contains(this.status())) {
+        if (!this.readOnly && !TransactionStatus.END_STATUS_SET.contains(this.status())) {
             throw new IllegalTransactionStateException("transaction status[%s] not in %s,can't close."
-                    , this.status(), LocalTransaction.END_STATUS_SET);
+                    , this.status(), TransactionStatus.END_STATUS_SET);
         }
     }
 

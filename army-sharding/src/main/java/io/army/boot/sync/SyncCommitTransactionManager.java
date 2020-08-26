@@ -47,9 +47,9 @@ final class SyncCommitTransactionManager extends AbstractTransactionManager {
     @Override
     public final void rollback() throws TransactionException {
         checkReadWrite("rollback");
-        if (!ROLL_BACK_ABLE_SET.contains(this.status)) {
+        if (!TransactionStatus.ROLL_BACK_ABLE_SET.contains(this.status)) {
             throw new IllegalTransactionStateException("transaction status[%s] don't in %s,can't rollback."
-                    , this.status, ROLL_BACK_ABLE_SET);
+                    , this.status, TransactionStatus.ROLL_BACK_ABLE_SET);
         }
         this.status = TransactionStatus.ROLLING_BACK;
         try {
@@ -75,7 +75,7 @@ final class SyncCommitTransactionManager extends AbstractTransactionManager {
 
     @Override
     public final boolean transactionEnded() {
-        return END_STATUS_SET.contains(this.status);
+        return TransactionStatus.END_STATUS_SET.contains(this.status);
     }
 
     /*################################## blow package method ##################################*/

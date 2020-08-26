@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * This class is a implementation of {@link ReactiveSession}.
  */
 final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<DatabaseSession, InnerReactiveSessionFactory>
-        implements ReactiveSession, InnerGenericRmSession {
+        implements InnerReactiveSession {
 
     private final DatabaseSession databaseSession;
 
@@ -53,6 +53,7 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
         this.currentSessionContext = sessionFactory.currentSessionContext();
         this.current = current;
     }
+
 
     @Override
     public final <R extends IDomain> Mono<R> get(TableMeta<R> tableMeta, Object id) {
@@ -220,17 +221,28 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
         Mono<Void> mono;
         if (sessionTransaction == null) {
             mono = Mono.empty();
-        } else if (transaction == sessionTransaction && sessionTransaction.transactionEnded()) {
-            this.sessionTransaction.compareAndSet(sessionTransaction, null);
-            mono = Mono.empty();
+        } else if (transaction == sessionTransaction) {
+            if (sessionTransaction.transactionEnded()) {
+                this.sessionTransaction.compareAndSet(sessionTransaction, null);
+                mono = Mono.empty();
+            } else {
+                mono = Mono.error(new SessionUsageException("%s not end,can't close.", transaction));
+            }
         } else {
-            mono = Mono.error(new SessionUsageException("transaction[%s] and sessionTransaction[%s] not match."
-                    , transaction, sessionTransaction));
+            mono = Mono.error(new SessionUsageException("%s and %s not match.", transaction, this));
         }
         return mono;
     }
 
-    /*################################## blow private instance inner class ##################################*/
+    @Override
+    public DatabaseSession databaseSession(ReactiveLocalTransaction sessionTransaction) {
+        if (sessionTransaction != this.sessionTransaction.get()) {
+            throw new IllegalArgumentException("sessionTransaction not match.");
+        }
+        return this.databaseSession;
+    }
+
+    /*################################## blow private method ##################################*/
 
     /**
      * @param resultClass {@link Integer} or {@link Long}
@@ -290,5 +302,8 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
                 ? assertForBatch()
                 : this.assertSessionActive(true);
     }
+
+    /*################################## blow private instance inner class ##################################*/
+
 
 }
