@@ -1,6 +1,5 @@
 package io.army.boot.reactive;
 
-import io.army.reactive.GenericReactiveRmSessionFactory;
 import io.army.wrapper.*;
 import io.jdbd.PreparedStatement;
 import reactor.core.publisher.Flux;
@@ -11,7 +10,7 @@ import java.util.function.Function;
 
 final class ReactiveUpdateSQLExecutorImpl extends ReactiveSQLExecutorSupport implements ReactiveUpdateSQLExecutor {
 
-    ReactiveUpdateSQLExecutorImpl(GenericReactiveRmSessionFactory sessionFactory) {
+    ReactiveUpdateSQLExecutorImpl(InnerGenericRmSessionFactory sessionFactory) {
         super(sessionFactory);
     }
 

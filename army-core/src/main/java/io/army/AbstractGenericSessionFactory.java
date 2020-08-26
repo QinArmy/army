@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * a abstract GenericSessionFactory
+ * a abstract GenericSessionFactoryAdvice
  */
 public abstract class AbstractGenericSessionFactory implements GenericSessionFactory {
 
@@ -54,7 +54,7 @@ public abstract class AbstractGenericSessionFactory implements GenericSessionFac
 
     protected final boolean compareDefaultOnMigrating;
 
-    protected AbstractGenericSessionFactory(GenericFactoryBuilderImpl factoryBuilder) {
+    protected AbstractGenericSessionFactory(GenericFactoryBuilderImpl<?> factoryBuilder) throws SessionFactoryException {
         String name = factoryBuilder.name();
         ArmyEnvironment env = factoryBuilder.environment();
         Assert.hasText(name, "name required");

@@ -22,11 +22,10 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.Optional;
 
 abstract class AbstractGenericReactiveSession extends AbstractGenericSession implements GenericReactiveSession {
 
-    static final Function<Throwable, ? extends Throwable> DEFAULT_EXCEPTION_FUNCTION = throwable -> throwable;
 
     final boolean readOnly;
 
@@ -63,18 +62,41 @@ abstract class AbstractGenericReactiveSession extends AbstractGenericSession imp
                 ;
     }
 
-
+    @SuppressWarnings("rawtypes")
     @Override
-    public final Mono<Map<String, Object>> selectOneAsUnmodifiableMap(Select select) {
-        return this.selectOneAsUnmodifiableMap(select, Visible.ONLY_VISIBLE);
+    public Mono<Map<String, Object>> selectOneAsUnmodifiableMap(Select select, Class<? extends Map> resultClass) {
+        return this.selectOneAsUnmodifiableMap(select, resultClass, Visible.ONLY_VISIBLE);
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
-    public final Mono<Map<String, Object>> selectOneAsUnmodifiableMap(Select select, final Visible visible) {
-        return this.selectOne(select, Map.class, visible)
-                .map(this::castMap)
+    public Mono<Map<String, Object>> selectOneAsUnmodifiableMap(Select select, Class<? extends Map> resultClass
+            , Visible visible) {
+        return this.selectAsUnmodifiableMap(select, resultClass, Visible.ONLY_VISIBLE)
+                .take(2L)
+                .collectList()
+                .flatMap(this::mapMono)
                 ;
     }
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    public final Flux<Map<String, Object>> selectAsUnmodifiableMap(Select select, Class<? extends Map> resultClass) {
+        return this.selectAsUnmodifiableMap(select, resultClass, Visible.ONLY_VISIBLE);
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    @Override
+    public final Flux<Map<String, Object>> selectAsUnmodifiableMap(Select select, Class<? extends Map> resultClass
+            , Visible visible) {
+        GenericReactiveTransaction transaction = obtainTransaction();
+        if (transaction == null || !transaction.readOnly()) {
+            return Flux.error(new UnsupportedOperationException(
+                    "selectAsUnmodifiableMap only run in read only transaction."));
+        }
+        return (Flux<Map<String, Object>>) this.select(select, resultClass, visible);
+    }
+
 
     @Override
     public final <R> Flux<R> select(Select select, Class<R> resultClass) {
@@ -82,15 +104,8 @@ abstract class AbstractGenericReactiveSession extends AbstractGenericSession imp
     }
 
     @Override
-    public final Flux<Map<String, Object>> selectAsUnmodifiableMap(Select select) {
-        return this.selectAsUnmodifiableMap(select, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final Flux<Map<String, Object>> selectAsUnmodifiableMap(Select select, final Visible visible) {
-        return this.select(select, Map.class, visible)
-                .map(this::castMap)
-                ;
+    public final <R> Flux<Optional<R>> selectOptional(Select select, Class<R> columnClass) {
+        return this.selectOptional(select, columnClass, Visible.ONLY_VISIBLE);
     }
 
 

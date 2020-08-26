@@ -16,7 +16,10 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.reactive.ReactiveSession;
 import io.army.reactive.ReactiveSessionFactory;
+import io.army.tx.CannotCreateTransactionException;
+import io.army.tx.Isolation;
 import io.army.tx.NoSessionTransactionException;
+import io.army.tx.TransactionOptionImpl;
 import io.army.tx.reactive.GenericReactiveTransaction;
 import io.army.tx.reactive.ReactiveTransaction;
 import io.army.wrapper.SQLWrapper;
@@ -176,8 +179,11 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
     }
 
     @Override
-    public SessionTransactionBuilder builder() {
-        return null;
+    public SessionTransactionBuilder builder() throws CannotCreateTransactionException {
+        if (this.sessionTransaction.get() != null) {
+            throw new CannotCreateTransactionException("session transaction already exists.");
+        }
+        return new SessionTransactionBuilder(this);
     }
 
     @Override
@@ -305,5 +311,61 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
 
     /*################################## blow private instance inner class ##################################*/
 
+    private static final class SessionTransactionBuilder implements ReactiveSession.SessionTransactionBuilder {
+
+        private final ReactiveSessionImpl session;
+
+        private boolean readOnly;
+
+        private Isolation isolation;
+
+        private int timeout = -1;
+
+        private String name;
+
+        private SessionTransactionBuilder(ReactiveSessionImpl session) {
+            this.session = session;
+        }
+
+        @Override
+        public ReactiveSession.SessionTransactionBuilder readOnly(boolean readOnly) {
+            this.readOnly = readOnly;
+            return this;
+        }
+
+        @Override
+        public ReactiveSession.SessionTransactionBuilder isolation(Isolation isolation) {
+            this.isolation = isolation;
+            return this;
+        }
+
+        @Override
+        public ReactiveSession.SessionTransactionBuilder timeout(int seconds) {
+            this.timeout = seconds;
+            return this;
+        }
+
+        @Override
+        public ReactiveSession.SessionTransactionBuilder name(@Nullable String txName) {
+            this.name = txName;
+            return this;
+        }
+
+        @Override
+        public ReactiveTransaction build() throws CannotCreateTransactionException {
+            if (this.isolation == null) {
+                throw new CannotCreateTransactionException("not specified isolation.");
+            }
+            if (this.session.readOnly && !this.readOnly) {
+                throw new CannotCreateTransactionException("Readonly session can't create non-readonly transaction.");
+            }
+            ReactiveLocalTransaction sessionTransaction = new ReactiveLocalTransaction(this.session,
+                    TransactionOptionImpl.build(this.name, this.readOnly, isolation, this.timeout));
+            if (!this.session.sessionTransaction.compareAndSet(null, sessionTransaction)) {
+                throw new CannotCreateTransactionException("session transaction already exists.");
+            }
+            return sessionTransaction;
+        }
+    }
 
 }

@@ -7,6 +7,7 @@ import io.army.criteria.impl.TableMetaFactory;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectNotMatchException;
+import io.army.dialect.UnsupportedDatabaseException;
 import io.army.dialect.mysql.MySQLDialectFactory;
 import io.army.dialect.postgre.PostgreDialectFactory;
 import io.army.env.ArmyEnvironment;
@@ -27,7 +28,6 @@ import java.util.*;
  */
 public abstract class GenericSessionFactoryUtils {
 
-    private Database actualSqlDialect;
 
     protected GenericSessionFactoryUtils() {
         throw new UnsupportedOperationException();
@@ -188,6 +188,25 @@ public abstract class GenericSessionFactoryUtils {
         String key = String.format(ArmyConfigConstant.DATABASE, sessionFactory.name);
         return sessionFactory.environment().getProperty(key, Database.class);
     }
+
+    protected static Database convertToDatabase(String databaseProductName, int majorVersion, int minorVersion) {
+        Database database;
+        switch (databaseProductName) {
+            case "MySQL":
+                database = convertToMySQLDatabase(databaseProductName, majorVersion, minorVersion);
+                break;
+            case "Oracle":
+                database = convertOracleDatabase(databaseProductName, majorVersion, minorVersion);
+                break;
+            case "PostgreSQL":
+                database = convertPostgreDatabase(databaseProductName, majorVersion, minorVersion);
+                break;
+            default:
+                throw new UnsupportedDatabaseException(databaseProductName, majorVersion, minorVersion);
+        }
+        return database;
+    }
+
 
     protected static Dialect createDialect(@Nullable Database database, Database extractedDatabase
             , GenericRmSessionFactory sessionFactory) {
@@ -366,6 +385,49 @@ public abstract class GenericSessionFactoryUtils {
             }
 
         }
+    }
+
+    private static Database convertOracleDatabase(String productName, int major, int minor) {
+        throw new UnsupportedDatabaseException(productName, major, minor);
+    }
+
+    private static Database convertPostgreDatabase(String productName, int major, int minor) {
+        Database database;
+        switch (major) {
+            case 11:
+                database = Database.Postgre11;
+                break;
+            case 12:
+                database = Database.Postgre12;
+                break;
+            default:
+                throw new UnsupportedDatabaseException(productName, major, minor);
+        }
+        return database;
+
+    }
+
+
+    private static Database convertToMySQLDatabase(String minorVersion, int major, int minor) {
+        Database database;
+        switch (major) {
+            case 5:
+                if (minor < 7) {
+                    throw new UnsupportedDatabaseException(minorVersion, major, minor);
+                }
+                database = Database.MySQL57;
+                break;
+            case 8:
+                if (minor == 0) {
+                    database = Database.MySQL80;
+                } else {
+                    throw new UnsupportedDatabaseException(minorVersion, major, minor);
+                }
+                break;
+            default:
+                throw new UnsupportedDatabaseException(minorVersion, major, minor);
+        }
+        return database;
     }
 
     protected static class DatabaseMeta {

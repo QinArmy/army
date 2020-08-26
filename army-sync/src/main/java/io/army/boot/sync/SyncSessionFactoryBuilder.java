@@ -1,16 +1,16 @@
 package io.army.boot.sync;
 
+import io.army.advice.GenericSessionFactoryAdvice;
 import io.army.advice.sync.DomainAdvice;
 import io.army.boot.GenericFactoryBuilder;
-import io.army.sync.SessionFactoryAdvice;
 
 import java.util.Collection;
 
-public interface SyncSessionFactoryBuilder extends GenericFactoryBuilder {
+interface SyncSessionFactoryBuilder<T extends SyncSessionFactoryBuilder<T>> extends GenericFactoryBuilder<T> {
 
-    SyncSessionFactoryBuilder factoryAdvice(Collection<SessionFactoryAdvice> factoryAdvices);
+    T factoryAdvice(Collection<GenericSessionFactoryAdvice> factoryAdvices);
 
-    SyncSessionFactoryBuilder tableCountPerDatabase(int tableCountPerDatabase);
+    T tableCountPerDatabase(int tableCountPerDatabase);
 
-    SyncSessionFactoryBuilder domainInterceptor(Collection<DomainAdvice> domainInterceptors);
+    T domainInterceptor(Collection<DomainAdvice> domainInterceptors);
 }

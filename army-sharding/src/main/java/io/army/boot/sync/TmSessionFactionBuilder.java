@@ -1,11 +1,11 @@
 package io.army.boot.sync;
 
 import io.army.SessionFactoryException;
+import io.army.advice.GenericSessionFactoryAdvice;
 import io.army.advice.sync.DomainAdvice;
 import io.army.codec.FieldCodec;
 import io.army.dialect.Database;
 import io.army.env.ArmyEnvironment;
-import io.army.sync.SessionFactoryAdvice;
 import io.army.sync.TmSessionFactory;
 
 import javax.sql.XADataSource;
@@ -25,7 +25,7 @@ public interface TmSessionFactionBuilder extends SyncSessionFactoryBuilder {
     TmSessionFactionBuilder environment(ArmyEnvironment environment);
 
     @Override
-    TmSessionFactionBuilder factoryAdvice(Collection<SessionFactoryAdvice> factoryAdvices);
+    TmSessionFactionBuilder factoryAdvice(Collection<GenericSessionFactoryAdvice> factoryAdvices);
 
     @Override
     TmSessionFactionBuilder tableCountPerDatabase(int tableCountPerDatabase);

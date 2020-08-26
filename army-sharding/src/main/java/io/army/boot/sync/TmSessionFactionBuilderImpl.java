@@ -2,12 +2,12 @@ package io.army.boot.sync;
 
 import io.army.SessionFactoryException;
 import io.army.ShardingMode;
+import io.army.advice.GenericSessionFactoryAdvice;
 import io.army.advice.sync.DomainAdvice;
 import io.army.codec.FieldCodec;
 import io.army.dialect.Database;
 import io.army.env.ArmyEnvironment;
 import io.army.lang.Nullable;
-import io.army.sync.SessionFactoryAdvice;
 import io.army.sync.TmSessionFactory;
 import io.army.util.Assert;
 
@@ -63,7 +63,7 @@ class TmSessionFactionBuilderImpl extends AbstractSyncSessionFactoryBuilder impl
     }
 
     @Override
-    public final TmSessionFactionBuilder factoryAdvice(Collection<SessionFactoryAdvice> factoryAdvices) {
+    public final TmSessionFactionBuilder factoryAdvice(Collection<GenericSessionFactoryAdvice> factoryAdvices) {
         this.factoryAdvices = factoryAdvices;
         return this;
     }

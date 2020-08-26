@@ -128,19 +128,20 @@ final class ReactiveLocalTransaction extends AbstractReactiveTransaction impleme
     @Override
     public Mono<Void> rollback() throws TransactionException {
         final TransactionStatus currentStatus = this.status.get();
-
         if (!TransactionStatus.ROLL_BACK_ABLE_SET.contains(currentStatus)) {
             return Mono.error(new IllegalTransactionStateException(
                     "transaction status[%s] isn't %s,can't rollback."
                     , currentStatus, TransactionStatus.ROLL_BACK_ABLE_SET));
         }
+        // 1. assert non read only
         return this.checkNonReadOnly("rollback")
+                // 2. modify status to ROLLING_BACK
                 .then(Mono.defer(() -> this.setStatus(currentStatus, TransactionStatus.ROLLING_BACK)))
-                // rollback by database session
+                //3. rollback by database session
                 .then(Mono.defer(() -> this.session.databaseSession(this).rollback()))
                 // if error ,modify status to FAILED_ROLLBACK
                 .doOnError(e -> this.setStatus(TransactionStatus.ROLLING_BACK, TransactionStatus.FAILED_ROLLBACK))
-                // if complete ,modify status to ROLLED_BACK
+                //4. if complete ,modify status to ROLLED_BACK
                 .then(Mono.defer(() -> this.setStatus(TransactionStatus.ROLLING_BACK, TransactionStatus.ROLLED_BACK)));
     }
 

@@ -2,6 +2,7 @@ package io.army.boot.sync;
 
 
 import io.army.ShardingMode;
+import io.army.advice.GenericSessionFactoryAdvice;
 import io.army.advice.sync.DomainAdvice;
 import io.army.beans.ArmyBean;
 import io.army.codec.FieldCodec;
@@ -10,7 +11,6 @@ import io.army.env.ArmyEnvironment;
 import io.army.env.SpringEnvironmentAdaptor;
 import io.army.lang.Nullable;
 import io.army.sync.SessionFactory;
-import io.army.sync.SessionFactoryAdvice;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.FactoryBean;
@@ -68,7 +68,7 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
                 .domainInterceptor(applicationContext.getBeansOfType(DomainAdvice.class).values())
 
                 .fieldCodecs(applicationContext.getBeansOfType(FieldCodec.class).values())
-                .factoryAdvice(applicationContext.getBeansOfType(SessionFactoryAdvice.class).values())
+                .factoryAdvice(applicationContext.getBeansOfType(GenericSessionFactoryAdvice.class).values())
                 .tableCountPerDatabase(this.tableCountPerDatabase)
                 .shardingMode(this.shardingMode)
 

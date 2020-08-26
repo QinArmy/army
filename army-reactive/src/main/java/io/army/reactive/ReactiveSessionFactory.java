@@ -5,6 +5,9 @@ import reactor.core.publisher.Mono;
 
 public interface ReactiveSessionFactory extends ReactiveApiSessionFactory, GenericRmSessionFactory {
 
+    @Override
+    ProxyReactiveSession proxySession();
+
     ReactiveSessionBuilder builder();
 
 

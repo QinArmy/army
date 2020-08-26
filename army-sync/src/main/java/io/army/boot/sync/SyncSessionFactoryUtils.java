@@ -6,7 +6,6 @@ import io.army.context.spi.CurrentSessionContext;
 import io.army.datasource.RoutingDataSource;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
-import io.army.dialect.UnSupportedDialectException;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.sharding.Route;
@@ -180,20 +179,7 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
             int minor = metaData.getDatabaseMinorVersion();
 
             Database database;
-            switch (productName) {
-                case "MySQL":
-                    database = extractMysqlDialect(major, minor);
-                    break;
-                case "Oracle":
-                    database = extractOracleDialect(major, minor);
-                    break;
-                case "PostgreSQL":
-                    database = extractPostgreDialect(major, minor);
-                    break;
-                default:
-                    throw new UnSupportedDialectException(ErrorCode.UNSUPPORT_DIALECT
-                            , "%s is unsupported by army.", productName);
-            }
+
             return database;
         } catch (SQLException e) {
             throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
@@ -262,54 +248,10 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
         }
     }
 
-    private static Database extractPostgreDialect(int major, int minor) {
-        Database database;
-        switch (major) {
-            case 11:
-                database = Database.Postgre11;
-                break;
-            case 12:
-                database = Database.Postgre12;
-                break;
-            default:
-                throw createUnSupportedDialectException(major, minor);
-        }
-        return database;
-
-    }
-
-    private static Database extractOracleDialect(int major, int minor) {
-        throw new UnSupportedDialectException(ErrorCode.UNSUPPORT_DIALECT
-                , "%s is unsupported by army.", "Oracle");
-    }
-
-    private static Database extractMysqlDialect(int major, int minor) {
-        Database sqlDialect;
-        switch (major) {
-            case 5:
-                if (minor < 7) {
-                    throw createUnSupportedDialectException(major, minor);
-                }
-                sqlDialect = Database.MySQL57;
-                break;
-            case 8:
-                if (minor == 0) {
-                    sqlDialect = Database.MySQL80;
-                } else {
-                    throw createUnSupportedDialectException(major, minor);
-                }
-                break;
-            default:
-                throw createUnSupportedDialectException(major, minor);
-        }
-        return sqlDialect;
-    }
 
 
-    private static UnSupportedDialectException createUnSupportedDialectException(int major, int minor) {
-        return new UnSupportedDialectException(ErrorCode.UNSUPPORTED_DIALECT
-                , "MySQL %s.%s.x is supported by army", major, minor);
-    }
+
+
 
 
     static final class DatabaseMetaForSync extends DatabaseMeta {

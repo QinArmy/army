@@ -13,7 +13,6 @@ import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.meta.ParamMeta;
 import io.army.meta.mapping.MappingMeta;
-import io.army.reactive.GenericReactiveRmSessionFactory;
 import io.army.sqldatatype.SQLDataType;
 import io.army.wrapper.*;
 import io.jdbd.PreparedStatement;
@@ -28,6 +27,7 @@ import reactor.core.publisher.Mono;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -44,11 +44,11 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
 
     private static final Logger LOG = LoggerFactory.getLogger(ReactiveSQLExecutorSupport.class);
 
-    final GenericReactiveRmSessionFactory sessionFactory;
+    final InnerGenericRmSessionFactory sessionFactory;
 
     final MappingContext mappingContext;
 
-    ReactiveSQLExecutorSupport(GenericReactiveRmSessionFactory sessionFactory) {
+    ReactiveSQLExecutorSupport(InnerGenericRmSessionFactory sessionFactory) {
         super(sessionFactory);
         this.sessionFactory = sessionFactory;
         this.mappingContext = sessionFactory.dialect().mappingContext();
@@ -110,8 +110,8 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
     }
 
 
-    protected final <T> Flux<T> doExecuteSimpleQuery(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper
-            , Class<T> resultClass) {
+    protected final <R> Flux<R> doExecuteSimpleQuery(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper
+            , Class<R> resultClass) {
 
         //1. create statement
         Flux<? extends ResultRow> resultRowFlux = session.createPreparedStatement(sqlWrapper.sql())
@@ -124,7 +124,7 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
                 .switchIfEmpty(assertOptimisticLockWhenEmpty(sqlWrapper));
 
         //5. map result
-        Flux<T> flux;
+        Flux<R> flux;
         if (singleType(sqlWrapper.selectionList(), resultClass)) {
             Selection selection = sqlWrapper.selectionList().get(0);
             StatementType statementType = sqlWrapper.statementType();
@@ -137,9 +137,31 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
         return flux;
     }
 
-    protected final <T> Flux<T> doReturningUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper
-            , Class<T> resultClass, boolean updateStatement, String methodName) {
-        Flux<T> flux;
+    protected final <R> Flux<Optional<R>> doExecuteColumnQuery(InnerGenericRmSession session
+            , SimpleSQLWrapper sqlWrapper, Class<R> columnClass) {
+        List<Selection> selectionList = sqlWrapper.selectionList();
+        if (selectionList.size() != 1) {
+            return Flux.error(new IllegalArgumentException("selectionList size not 1 ."));
+        }
+
+        final Selection selection = selectionList.get(0);
+        final StatementType statementType = sqlWrapper.statementType();
+        //1. create statement
+        return session.createPreparedStatement(sqlWrapper.sql())
+                //2. bind param list
+                .map(st -> bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramList()))
+                .doOnNext(st -> printSQL(sqlWrapper))
+                //3. execute sql
+                .flatMapMany(PreparedStatement::executeQuery)
+                .map(row -> Optional.ofNullable(extractColumnResult(row, selection, statementType, columnClass)))
+                ;
+
+    }
+
+
+    protected final <R> Flux<R> doReturningUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper
+            , Class<R> resultClass, boolean updateStatement, String methodName) {
+        Flux<R> flux;
         if (sqlWrapper instanceof SimpleSQLWrapper) {
             flux = doExecuteSimpleQuery(session, (SimpleSQLWrapper) sqlWrapper, resultClass);
         } else if (sqlWrapper instanceof ChildSQLWrapper) {
@@ -196,8 +218,8 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
                 ;
     }
 
-    private <T> Flux<T> doExecuteSecondSQLReturning(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper
-            , Class<T> resultClass, Map<Object, ObjectWrapper> objectWrapperMap) {
+    private <R> Flux<R> doExecuteSecondSQLReturning(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper
+            , Class<R> resultClass, Map<Object, ObjectWrapper> objectWrapperMap) {
 
         // assert first selection is primary field selection
         obtainPrimaryFieldForReturning(sqlWrapper.selectionList());
@@ -248,10 +270,10 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
     }
 
     /**
-     * @param <T> row's  java type
+     * @param <R> row's  java type
      */
-    private <T> T mapSecondSQLResult(ResultRow resultRow
-            , Map<Object, ObjectWrapper> objectWrapperMap, SimpleSQLWrapper sqlWrapper, Class<T> resultClass) {
+    private <R> R mapSecondSQLResult(ResultRow resultRow
+            , Map<Object, ObjectWrapper> objectWrapperMap, SimpleSQLWrapper sqlWrapper, Class<R> resultClass) {
 
         final List<Selection> selectionList = sqlWrapper.selectionList();
         // first Selection must be PrimaryField Selection
@@ -286,8 +308,8 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
     }
 
 
-    private <T> T extractRowResult(InnerGenericRmSession session, ResultRow resultRow
-            , SimpleSQLWrapper sqlWrapper, Class<T> resultClass) {
+    private <R> R extractRowResult(InnerGenericRmSession session, ResultRow resultRow
+            , SimpleSQLWrapper sqlWrapper, Class<R> resultClass) {
 
         final ObjectWrapper beanWrapper = createObjectWrapper(resultClass, session);
 
@@ -305,19 +327,19 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
         return getWrapperInstance(beanWrapper);
     }
 
-    private <T> Mono<T> flatMapColumnResult(ResultRow resultRow, Selection selection, StatementType statementType
-            , Class<T> columnClass) {
+    private <R> Mono<R> flatMapColumnResult(ResultRow resultRow, Selection selection, StatementType statementType
+            , Class<R> columnClass) {
         return Mono.justOrEmpty(
                 extractColumnResult(resultRow, selection, statementType, columnClass)
         );
     }
 
     /**
-     * @param <T> column's {@link Selection} java type
+     * @param <R> column's {@link Selection} java type
      */
     @Nullable
-    private <T> T extractColumnResult(ResultRow resultRow, Selection selection, StatementType statementType
-            , Class<T> columnResultClass) {
+    private <R> R extractColumnResult(ResultRow resultRow, Selection selection, StatementType statementType
+            , Class<R> columnResultClass) {
 
         // 1. obtain column result
         Object columnResult = resultRow.getObject(selection.alias());
@@ -343,8 +365,8 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
         return columnResultClass.cast(columnResult);
     }
 
-    private <T> Publisher<T> assertOptimisticLockWhenEmpty(SimpleSQLWrapper sqlWrapper) {
-        Mono<T> mono;
+    private <R> Publisher<R> assertOptimisticLockWhenEmpty(SimpleSQLWrapper sqlWrapper) {
+        Mono<R> mono;
         if (sqlWrapper.hasVersion()) {
             // throw optimistic lock exception
             mono = Mono.defer(() -> Mono.error(createOptimisticLockException(sqlWrapper.sql())));
@@ -354,9 +376,9 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
         return mono;
     }
 
-    private <T> Mono<List<T>> assertFirstSQLAndSecondSQLResultMatch(List<T> listOfSecond
+    private <R> Mono<List<R>> assertFirstSQLAndSecondSQLResultMatch(List<R> listOfSecond
             , Map<?, ?> wrapperMap, SimpleSQLWrapper simpleWrapper) {
-        Mono<List<T>> mono;
+        Mono<List<R>> mono;
         if (listOfSecond.size() == wrapperMap.size()) {
             mono = Mono.just(listOfSecond);
         } else {

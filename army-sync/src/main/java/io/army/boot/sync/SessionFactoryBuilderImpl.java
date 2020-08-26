@@ -3,11 +3,11 @@ package io.army.boot.sync;
 import io.army.ErrorCode;
 import io.army.SessionFactoryException;
 import io.army.ShardingMode;
+import io.army.advice.GenericSessionFactoryAdvice;
 import io.army.advice.sync.DomainAdvice;
 import io.army.codec.FieldCodec;
 import io.army.env.ArmyEnvironment;
 import io.army.sync.SessionFactory;
-import io.army.sync.SessionFactoryAdvice;
 import io.army.util.Assert;
 
 import javax.sql.DataSource;
@@ -45,7 +45,7 @@ final class SessionFactoryBuilderImpl extends AbstractSyncSessionFactoryBuilder 
     }
 
     @Override
-    public final SessionFactoryBuilder factoryAdvice(Collection<SessionFactoryAdvice> factoryAdvices) {
+    public final SessionFactoryBuilder factoryAdvice(Collection<GenericSessionFactoryAdvice> factoryAdvices) {
         this.factoryAdvices = factoryAdvices;
         return this;
     }
@@ -78,22 +78,16 @@ final class SessionFactoryBuilderImpl extends AbstractSyncSessionFactoryBuilder 
         return this.dataSource;
     }
 
-    final int tableCountPerDatabase() {
-        return this.tableCountPerDatabase;
-    }
 
-    @Override
-    protected boolean springApplication() {
-        return super.springApplication();
-    }
 
     @Override
     public final SessionFactory build() throws SessionFactoryException {
         Assert.notNull(this.name, "name required");
         Assert.notNull(this.dataSource, "dataSource required");
         Assert.notNull(this.environment, "environment required");
+        Assert.notNull(this.shardingMode, "shardingMode required");
 
-        final SessionFactoryAdvice composite = getCompositeSessionFactoryAdvice();
+        final GenericSessionFactoryAdvice factoryAdvice = getFactoryAdviceComposite();
         try {
             //1. beforeInstance
             composite.beforeInstance(this.environment);

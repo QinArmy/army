@@ -1,18 +1,22 @@
 package io.army.boot;
 
+import io.army.advice.GenericSessionFactoryAdvice;
 import io.army.codec.FieldCodec;
 import io.army.env.ArmyEnvironment;
 
 import java.util.Collection;
 
-public interface GenericFactoryBuilder {
+public interface GenericFactoryBuilder<T extends GenericFactoryBuilder<T>> {
 
 
-    GenericFactoryBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs);
+    T fieldCodecs(Collection<FieldCodec> fieldCodecs);
 
-    GenericFactoryBuilder name(String sessionFactoryName);
+    T name(String sessionFactoryName);
 
-    GenericFactoryBuilder environment(ArmyEnvironment environment);
+    T environment(ArmyEnvironment environment);
 
+    T tableCountPerDatabase(int tableCountPerDatabase);
+
+    T factoryAdvice(Collection<GenericSessionFactoryAdvice> factoryAdvices);
 
 }

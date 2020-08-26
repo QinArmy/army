@@ -4,6 +4,7 @@ import io.army.DomainUpdateException;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerMultiDML;
 import io.army.criteria.impl.inner.InnerSQL;
+import io.army.criteria.impl.inner.InnerSelect;
 import io.army.criteria.impl.inner.InnerSingleDML;
 import io.army.dialect.Dialect;
 import io.army.meta.TableMeta;
@@ -17,6 +18,8 @@ import io.jdbd.StatelessDatabaseSession;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -58,6 +61,24 @@ abstract class AbstractGenericReactiveRmSession<S extends StatelessDatabaseSessi
                 // if error convert exception for application developer
                 .onErrorMap(this::composedExceptionFunction);
     }
+
+    @Override
+    public final <R> Flux<Optional<R>> selectOptional(Select select, Class<R> columnClass, Visible visible) {
+        List<SelectPart> selectPartList = ((InnerSelect) select).selectPartList();
+        if (selectPartList.size() != 1 || !(selectPartList.get(0) instanceof Selection)) {
+            return Flux.error(new IllegalArgumentException(
+                    "select isn't single column query,please use select method."));
+        }
+        // 1. assert session active
+        return this.assertSessionActive(false)
+                // 2. parse select
+                .then(Mono.defer(() -> Mono.just(this.dialect.select(select, visible))))
+                // 3. execute select sql
+                .flatMapMany(sqlWrapper -> this.selectSQLExecutor.selectOptional(this, sqlWrapper, columnClass))
+                // if error convert exception for application developer
+                .onErrorMap(this::composedExceptionFunction);
+    }
+
 
     @Override
     public final <R> Flux<R> returningInsert(Insert insert, Class<R> resultClass, final Visible visible) {
@@ -361,7 +382,7 @@ abstract class AbstractGenericReactiveRmSession<S extends StatelessDatabaseSessi
         ReactiveDomainInsertAdvice domainInsertAdvice = sessionFactory.domainInsertAdviceComposite(tableMeta);
         return domainInsertAdvice == null
                 ? Mono.empty()
-                : domainInsertAdvice.insertThows(tableMeta, sessionFactory.proxySession(), ex);
+                : domainInsertAdvice.InsertThrows(tableMeta, sessionFactory.proxySession(), ex);
 
     }
 

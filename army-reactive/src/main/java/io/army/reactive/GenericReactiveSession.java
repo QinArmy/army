@@ -6,6 +6,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
+import java.util.Optional;
 
 /**
  *
@@ -25,9 +26,25 @@ public interface GenericReactiveSession extends GenericSession {
      */
     <R> Mono<R> selectOne(Select select, Class<R> resultClass, Visible visible);
 
-    Mono<Map<String, Object>> selectOneAsUnmodifiableMap(Select select);
+    /**
+     * @throws UnsupportedOperationException throw when <ol>
+     *                                       <li>no session transaction</li>
+     *                                       <li>transaction isn't read only</li>
+     *                                       </ol>
+     */
+    @SuppressWarnings("rawtypes")
+    Mono<Map<String, Object>> selectOneAsUnmodifiableMap(Select select, Class<? extends Map> resultClass);
 
-    Mono<Map<String, Object>> selectOneAsUnmodifiableMap(Select select, Visible visible);
+    /**
+     * @throws UnsupportedOperationException throw when <ol>
+     *                                       <li>no session transaction</li>
+     *                                       <li>transaction isn't read only</li>
+     *                                       </ol>
+     * @see #selectAsUnmodifiableMap(Select, Class, Visible)
+     */
+    @SuppressWarnings("rawtypes")
+    Mono<Map<String, Object>> selectOneAsUnmodifiableMap(Select select, Class<? extends Map> resultClass
+            , Visible visible);
 
     /**
      * @param <R> representing select result Java Type.
@@ -39,9 +56,35 @@ public interface GenericReactiveSession extends GenericSession {
      */
     <R> Flux<R> select(Select select, Class<R> resultClass, Visible visible);
 
-    Flux<Map<String, Object>> selectAsUnmodifiableMap(Select select);
+    /**
+     * @param <R> representing select result Java Type.
+     */
+    <R> Flux<Optional<R>> selectOptional(Select select, Class<R> columnClass);
 
-    Flux<Map<String, Object>> selectAsUnmodifiableMap(Select select, Visible visible);
+    /**
+     * @param <R> representing select result Java Type.
+     */
+    <R> Flux<Optional<R>> selectOptional(Select select, Class<R> columnClass, Visible visible);
+
+
+    /**
+     * @throws UnsupportedOperationException throw when <ol>
+     *                                       <li>no session transaction</li>
+     *                                       <li>transaction isn't read only</li>
+     *                                       </ol>
+     */
+    @SuppressWarnings("rawtypes")
+    Flux<Map<String, Object>> selectAsUnmodifiableMap(Select select, Class<? extends Map> resultClass);
+
+    /**
+     * @throws UnsupportedOperationException throw when <ol>
+     *                                       <li>no session transaction</li>
+     *                                       <li>transaction isn't read only</li>
+     *                                       </ol>
+     */
+    @SuppressWarnings("rawtypes")
+    Flux<Map<String, Object>> selectAsUnmodifiableMap(Select select, Class<? extends Map> resultClass, Visible visible);
+
 
     /**
      * @param <R> representing select result Java Type.

@@ -15,7 +15,7 @@ public interface ReactiveDomainInsertAdvice extends GenericDomainAdvice {
         return Mono.empty();
     }
 
-    default Mono<Void> insertThows(TableMeta<?> tableMeta, GenericReactiveApiSession proxySession, Throwable ex) {
+    default Mono<Void> InsertThrows(TableMeta<?> tableMeta, GenericReactiveApiSession proxySession, Throwable ex) {
         return Mono.empty();
     }
 }

@@ -72,8 +72,7 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
         super(factoryBuilder);
 
         if (!SUPPORT_SHARDING_SET.contains(this.shardingMode)) {
-            throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
-                    , "ShardingMode[%s] is supported by %s.", getClass().getName());
+            throw new SessionFactoryException("ShardingMode[%s] is supported by %s.", getClass().getName());
         }
 
         DataSource dataSource = factoryBuilder.dataSource();

@@ -2,12 +2,13 @@ package io.army.reactive;
 
 import io.army.SessionException;
 import io.army.lang.Nullable;
+import io.army.tx.CannotCreateTransactionException;
 import io.army.tx.Isolation;
 import io.army.tx.NoSessionTransactionException;
 import io.army.tx.reactive.ReactiveTransaction;
 import reactor.core.publisher.Mono;
 
-public interface ReactiveSession extends SingleDatabaseReactiveSession, GenericReactiveRmSession {
+public interface ReactiveSession extends SingleDatabaseReactiveSession, GenericReactiveSession {
 
     @Override
     ReactiveSessionFactory sessionFactory();
@@ -17,7 +18,10 @@ public interface ReactiveSession extends SingleDatabaseReactiveSession, GenericR
 
     Mono<Void> close() throws SessionException;
 
-    SessionTransactionBuilder builder();
+    /**
+     * @throws CannotCreateTransactionException throw when session already have {@link ReactiveTransaction}
+     */
+    SessionTransactionBuilder builder() throws CannotCreateTransactionException;
 
     interface SessionTransactionBuilder {
 
@@ -29,6 +33,14 @@ public interface ReactiveSession extends SingleDatabaseReactiveSession, GenericR
 
         SessionTransactionBuilder name(@Nullable String txName);
 
-        Mono<ReactiveTransaction> build();
+        /**
+         * @throws CannotCreateTransactionException throw when
+         *                                          <ul>
+         *                                              <li>not specified {@link Isolation}</li>
+         *                                              <li>{@link ReactiveSession#readonly()} equals {@code true} but,specified transaction readOnly</li>
+         *                                              <li>session already have {@link ReactiveTransaction}</li>
+         *                                          </ul>
+         */
+        ReactiveTransaction build() throws CannotCreateTransactionException;
     }
 }

@@ -3,40 +3,15 @@ package io.army.boot.sync;
 
 import io.army.SessionFactoryException;
 import io.army.ShardingMode;
-import io.army.advice.sync.DomainAdvice;
-import io.army.codec.FieldCodec;
-import io.army.env.ArmyEnvironment;
 import io.army.sync.SessionFactory;
-import io.army.sync.SessionFactoryAdvice;
 
 import javax.sql.DataSource;
-import java.util.Collection;
 
 /**
- * 设计为接口的原因
- * <ul>
- *     <li>隐藏实现,控制访问级别</li>
- * </ul>
+ * builder for {@link SessionFactory}
  */
-public interface SessionFactoryBuilder extends SyncSessionFactoryBuilder {
+public interface SessionFactoryBuilder extends SyncSessionFactoryBuilder<SessionFactoryBuilder> {
 
-    @Override
-    SessionFactoryBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs);
-
-    @Override
-    SessionFactoryBuilder name(String sessionFactoryName);
-
-    @Override
-    SessionFactoryBuilder environment(ArmyEnvironment environment);
-
-    @Override
-    SessionFactoryBuilder factoryAdvice(Collection<SessionFactoryAdvice> factoryAdvices);
-
-    @Override
-    SessionFactoryBuilder tableCountPerDatabase(int tableCountPerDatabase);
-
-    @Override
-    SessionFactoryBuilder domainInterceptor(Collection<DomainAdvice> domainInterceptors);
 
     SessionFactoryBuilder datasource(DataSource dataSource);
 

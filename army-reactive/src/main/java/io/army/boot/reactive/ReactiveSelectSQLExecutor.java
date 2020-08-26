@@ -1,15 +1,19 @@
 package io.army.boot.reactive;
 
-import io.army.reactive.GenericReactiveRmSessionFactory;
 import io.army.wrapper.SimpleSQLWrapper;
 import reactor.core.publisher.Flux;
 
- interface ReactiveSelectSQLExecutor {
+import java.util.Optional;
 
-     <T> Flux<T> select(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper, Class<T> resultClass);
+interface ReactiveSelectSQLExecutor {
 
-     static ReactiveSelectSQLExecutor build(GenericReactiveRmSessionFactory sessionFactory) {
-         return new ReactiveSelectSQLExecutorImpl(sessionFactory);
-     }
+    <R> Flux<R> select(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper, Class<R> resultClass);
 
- }
+    <R> Flux<Optional<R>> selectOptional(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper
+            , Class<R> columnClass);
+
+    static ReactiveSelectSQLExecutor build(InnerGenericRmSessionFactory sessionFactory) {
+        return new ReactiveSelectSQLExecutorImpl(sessionFactory);
+    }
+
+}

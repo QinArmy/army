@@ -9,4 +9,5 @@ public interface GenericDomainAdvice {
     int order();
 
     Set<TableMeta<?>> supportTableMetaSet();
+
 }

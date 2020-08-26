@@ -1,6 +1,7 @@
 package io.army.boot.sync;
 
 import io.army.GenericRmSessionFactory;
+import io.army.advice.GenericSessionFactoryAdvice;
 import io.army.advice.sync.DomainAdvice;
 import io.army.boot.GenericFactoryBuilder;
 import io.army.codec.FieldCodec;
@@ -8,7 +9,6 @@ import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialectFactory;
 import io.army.env.ArmyEnvironment;
-import io.army.sync.SessionFactoryAdvice;
 
 import java.util.Collection;
 
@@ -34,7 +34,7 @@ final class MockSessionFactoryBuilder extends AbstractSyncSessionFactoryBuilder 
     }
 
     @Override
-    public SyncSessionFactoryBuilder factoryAdvice(Collection<SessionFactoryAdvice> factoryAdvices) {
+    public SyncSessionFactoryBuilder factoryAdvice(Collection<GenericSessionFactoryAdvice> factoryAdvices) {
         return null;
     }
 

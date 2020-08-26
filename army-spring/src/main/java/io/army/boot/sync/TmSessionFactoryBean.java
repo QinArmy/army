@@ -1,10 +1,10 @@
 package io.army.boot.sync;
 
+import io.army.advice.GenericSessionFactoryAdvice;
 import io.army.advice.sync.DomainAdvice;
 import io.army.codec.FieldCodec;
 import io.army.dialect.Database;
 import io.army.env.ArmyConfigurableArmyEnvironment;
-import io.army.sync.SessionFactoryAdvice;
 import io.army.sync.TmSessionFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNameAware;
@@ -66,7 +66,7 @@ public class TmSessionFactoryBean implements FactoryBean<TmSessionFactory>
                 .domainInterceptor(this.applicationContext.getBeansOfType(DomainAdvice.class).values())
 
                 .fieldCodecs(this.applicationContext.getBeansOfType(FieldCodec.class).values())
-                .factoryAdvice(this.applicationContext.getBeansOfType(SessionFactoryAdvice.class).values())
+                .factoryAdvice(this.applicationContext.getBeansOfType(GenericSessionFactoryAdvice.class).values())
                 .tableCountPerDatabase(this.tableCountPerDatabase)
                 .databaseMap(this.databaseMap)
 
