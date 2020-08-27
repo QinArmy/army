@@ -2,9 +2,10 @@ package io.army.boot.reactive;
 
 import io.army.AbstractGenericSessionFactory;
 import io.army.GenericTmSessionFactory;
+import io.army.SessionFactoryException;
+import io.army.ShardingMode;
 import io.army.boot.DomainValuesGenerator;
 import io.army.cache.SessionCacheFactory;
-import io.army.context.spi.ReactiveCurrentSessionContext;
 import io.army.criteria.NotFoundRouteException;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
@@ -14,8 +15,11 @@ import io.army.reactive.advice.ReactiveDomainDeleteAdvice;
 import io.army.reactive.advice.ReactiveDomainInsertAdvice;
 import io.army.reactive.advice.ReactiveDomainUpdateAdvice;
 import io.army.sharding.TableRoute;
+import io.army.util.Assert;
+import io.jdbd.DatabaseSessionFactory;
 import reactor.core.publisher.Mono;
 
+import java.util.EnumSet;
 import java.util.function.Function;
 
 /**
@@ -23,6 +27,23 @@ import java.util.function.Function;
  */
 class ReactiveSessionFactoryImpl extends AbstractGenericSessionFactory implements InnerReactiveSessionFactory {
 
+    private static final EnumSet<ShardingMode> SUPPORT_SHARDING_SET = EnumSet.of(
+            ShardingMode.NO_SHARDING
+            , ShardingMode.SINGLE_DATABASE_SHARDING);
+
+    private final DatabaseSessionFactory databaseSessionFactory;
+
+    private final Dialect dialect;
+
+    private final int tableCountPerDatabase;
+
+    private final CurrentSessionContext currentSessionContext;
+
+    private final ProxyReactiveSession proxyReactiveSession;
+
+    private final DomainValuesGenerator domainValuesGenerator;
+
+    private final SessionCacheFactory sessionCacheFactory;
 
     private final ReactiveInsertSQLExecutor insertSQLExecutor;
 
@@ -32,6 +53,20 @@ class ReactiveSessionFactoryImpl extends AbstractGenericSessionFactory implement
 
     ReactiveSessionFactoryImpl(ReactiveSessionFactoryBuilderImpl factoryBuilder, Database actualDatabase) {
         super(factoryBuilder);
+        if (!SUPPORT_SHARDING_SET.contains(this.shardingMode)) {
+            throw new SessionFactoryException("ShardingMode[%s] is supported by %s.", getClass().getName());
+        }
+
+        this.databaseSessionFactory = factoryBuilder.databaseSessionFactory();
+        Assert.notNull(this.databaseSessionFactory, "databaseSessionFactory required");
+        this.dialect = ReactiveSessionFactoryUtils.createDialect(this, actualDatabase);
+        this.tableCountPerDatabase = factoryBuilder.tableCountPerDatabase();
+        ReactiveSessionFactoryUtils.assertReactiveTableCountOfSharding(this.tableCountPerDatabase, this);
+        this.currentSessionContext = ReactiveSessionFactoryUtils.createCurrentSessionContext(this);
+        this.proxyReactiveSession = ProxyReactiveSessionImpl.build(this, this.currentSessionContext);
+        this.domainValuesGenerator = DomainValuesGenerator.build(this);
+
+        this.sessionCacheFactory = SessionCacheFactory.build(this);
 
         this.insertSQLExecutor = ReactiveInsertSQLExecutor.build(this);
         this.selectSQLExecutor = ReactiveSelectSQLExecutor.build(this);
@@ -47,27 +82,27 @@ class ReactiveSessionFactoryImpl extends AbstractGenericSessionFactory implement
 
     @Override
     public int tableCountPerDatabase() {
-        return 1;
+        return this.tableCountPerDatabase;
     }
 
     @Override
     public Database actualDatabase() {
-        return null;
+        return this.dialect.database();
     }
 
     @Override
     public DomainValuesGenerator domainValuesGenerator() {
-        return null;
+        return this.domainValuesGenerator;
     }
 
     @Override
     public boolean compareDefaultOnMigrating() {
-        return false;
+        return this.compareDefaultOnMigrating;
     }
 
     @Override
     public SessionCacheFactory sessionCacheFactory() {
-        return null;
+        return this.sessionCacheFactory;
     }
 
     @Override
@@ -76,7 +111,7 @@ class ReactiveSessionFactoryImpl extends AbstractGenericSessionFactory implement
     }
 
     @Override
-    public ReactiveCurrentSessionContext currentSessionContext() {
+    public CurrentSessionContext currentSessionContext() {
         return null;
     }
 
@@ -157,5 +192,9 @@ class ReactiveSessionFactoryImpl extends AbstractGenericSessionFactory implement
 
     Mono<Boolean> initializing() {
         return Mono.empty();
+    }
+
+    public boolean springApplication() {
+        return this.springApplication;
     }
 }

@@ -1,21 +1,30 @@
 package io.army.boot.reactive;
 
+import io.army.AbstractGenericSessionFactory;
 import io.army.GenericSessionFactoryUtils;
+import io.army.SessionFactoryException;
 import io.army.advice.GenericDomainAdvice;
 import io.army.dialect.Database;
+import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.reactive.GenericReactiveApiSession;
+import io.army.reactive.GenericReactiveSessionFactory;
+import io.army.reactive.ReactiveApiSessionFactory;
 import io.army.reactive.advice.ReactiveDomainDeleteAdvice;
 import io.army.reactive.advice.ReactiveDomainInsertAdvice;
 import io.army.reactive.advice.ReactiveDomainUpdateAdvice;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
+import io.army.util.ReflectionUtils;
 import io.jdbd.DatabaseProductMetaData;
 import io.jdbd.StatelessDatabaseSession;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 abstract class ReactiveSessionFactoryUtils extends GenericSessionFactoryUtils {
@@ -24,6 +33,44 @@ abstract class ReactiveSessionFactoryUtils extends GenericSessionFactoryUtils {
         return session.getDatabaseMetaData()
                 .getDatabaseProduct()
                 .map(ReactiveSessionFactoryUtils::mapDatabase);
+    }
+
+    static Dialect createDialect(AbstractGenericSessionFactory rmSessionFactory, Database queriedDatabase) {
+        Database configDatabase = readDatabase(rmSessionFactory);
+        Database finalDatabase = decideActualDatabase(configDatabase, queriedDatabase);
+        return createDialect(rmSessionFactory, finalDatabase);
+    }
+
+    static void assertReactiveTableCountOfSharding(final int tableCountOfSharding
+            , GenericReactiveSessionFactory sessionFactory) {
+        assertTableCountOfSharding(tableCountOfSharding, sessionFactory);
+    }
+
+    static CurrentSessionContext createCurrentSessionContext(InnerReactiveApiSessionFactory sessionFactory) {
+        final String className = "io.army.boot.reactive.SpringCurrentSessionContext";
+        try {
+            CurrentSessionContext sessionContext;
+            if (sessionFactory.springApplication()) {
+                // spring application environment
+                Class<?> contextClass = Class.forName(className);
+                Method method;
+                method = ReflectionUtils.findMethod(contextClass, "build", ReactiveApiSessionFactory.class);
+                if (method != null
+                        && Modifier.isStatic(method.getModifiers())
+                        && contextClass.isAssignableFrom(method.getReturnType())) {
+                    sessionContext = (CurrentSessionContext) method.invoke(null, sessionFactory);
+                } else {
+                    throw new SessionFactoryException("%s definition error.", className);
+                }
+            } else {
+                sessionContext = DefaultCurrentSessionContext.build(sessionFactory);
+            }
+            return sessionContext;
+        } catch (ClassNotFoundException e) {
+            throw new SessionFactoryException(e, "not found %s class", className);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new SessionFactoryException(e, e.getMessage());
+        }
     }
 
     @SuppressWarnings("unchecked")

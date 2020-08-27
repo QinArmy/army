@@ -1,7 +1,7 @@
 package io.army.boot.reactive;
 
-import io.army.reactive.GenericReactiveSession;
+import io.army.reactive.BaseReactiveSession;
 
-interface ReactiveRmSession extends InnerGenericRmSession, GenericReactiveSession {
+interface ReactiveRmSession extends InnerGenericRmSession, BaseReactiveSession {
 
 }

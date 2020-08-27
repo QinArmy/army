@@ -1,6 +1,5 @@
 package io.army.reactive;
 
-import io.army.GenericSession;
 import io.army.criteria.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -9,9 +8,18 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- *
+ * <p>
+ * This interface is base interface of below:
+ *     <ul>
+ *         <li>{@link ReactiveSession}</li>
+ *         <li>{@code io.army.boot.reactive.ReactiveTmSession}</li>
+ *         <li>{@code io.army.boot.reactive.ReactiveRmSession}</li>
+ *         <li>{@code io.army.reactive.ProxyReactiveSession}</li>
+ *         <li>{@code io.army.boot.reactive.ProxyReactiveTmSession}</li>
+ *     </ul>
+ * </p>
  */
-public interface GenericReactiveSession extends GenericSession {
+public interface BaseReactiveSession {
 
 
     GenericReactiveSessionFactory sessionFactory();

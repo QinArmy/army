@@ -5,5 +5,6 @@ import io.army.boot.sync.GenericSyncApiSession;
 
 public interface GenericSyncProxySession extends GenericProxySession, GenericSyncApiSession {
 
+    boolean hasCurrentSession();
 
 }

@@ -1,7 +1,6 @@
 package io.army.boot.reactive;
 
 import io.army.cache.SessionCacheFactory;
-import io.army.context.spi.ReactiveCurrentSessionContext;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.reactive.ReactiveApiSessionFactory;
@@ -17,7 +16,7 @@ interface InnerReactiveApiSessionFactory extends ReactiveApiSessionFactory {
 
     Function<Throwable, RuntimeException> composeExceptionFunction();
 
-    ReactiveCurrentSessionContext currentSessionContext();
+    CurrentSessionContext currentSessionContext();
 
     @Nullable
     ReactiveDomainInsertAdvice domainInsertAdviceComposite(TableMeta<?> tableMeta);
@@ -28,4 +27,5 @@ interface InnerReactiveApiSessionFactory extends ReactiveApiSessionFactory {
     @Nullable
     ReactiveDomainDeleteAdvice domainDeleteAdviceComposite(TableMeta<?> tableMeta);
 
+    boolean springApplication();
 }

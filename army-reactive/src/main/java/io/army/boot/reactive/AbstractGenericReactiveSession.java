@@ -11,7 +11,7 @@ import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.reactive.GenericReactiveSession;
+import io.army.reactive.BaseReactiveSession;
 import io.army.reactive.GenericReactiveSessionFactory;
 import io.army.tx.GenericTransaction;
 import io.army.tx.TransactionNotCloseException;
@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-abstract class AbstractGenericReactiveSession extends AbstractGenericSession implements GenericReactiveSession {
+abstract class AbstractGenericReactiveSession extends AbstractGenericSession implements BaseReactiveSession {
 
 
     final boolean readOnly;

@@ -5,7 +5,10 @@ import io.army.criteria.Update;
 import io.army.criteria.Visible;
 import reactor.core.publisher.Flux;
 
-interface SingleDatabaseReactiveSession extends GenericReactiveApiSession {
+interface SingleDatabaseReactiveSession extends BaseReactiveApiSession {
+
+    @Override
+    ReactiveSessionFactory sessionFactory();
 
     Flux<Integer> batchUpdate(Update update);
 

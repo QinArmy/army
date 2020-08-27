@@ -4,7 +4,6 @@ import io.army.SessionException;
 import io.army.SessionUsageException;
 import io.army.ShardingMode;
 import io.army.cache.UniqueKey;
-import io.army.context.spi.ReactiveCurrentSessionContext;
 import io.army.criteria.Delete;
 import io.army.criteria.Insert;
 import io.army.criteria.Update;
@@ -41,7 +40,7 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
 
     private final DatabaseSession databaseSession;
 
-    private final ReactiveCurrentSessionContext currentSessionContext;
+    private final CurrentSessionContext currentSessionContext;
 
     private final AtomicBoolean sessionClosed = new AtomicBoolean(false);
 
@@ -167,7 +166,7 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
                 // 1. assert transaction end
                 .flatMap(notClosed -> this.assertTransactionEnd())
                 // 2. remove current session if need
-                .then(Mono.defer(() -> this.currentSessionContext.removeCurrentSession(this.current, this)))
+                .then(Mono.defer(this::removeCurrentSessionInNeed))
                 //3. close database session
                 .then(Mono.defer(this.databaseSession::close))
                 //4. set session close status
@@ -176,6 +175,10 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
                 .onErrorMap(this.sessionFactory.composeExceptionFunction())
                 .then()
                 ;
+    }
+
+    private Mono<Void> removeCurrentSessionInNeed() {
+
     }
 
     @Override

@@ -1,5 +1,5 @@
 package io.army.reactive;
 
-public interface ReactiveTmSession extends GenericReactiveApiSession {
+public interface ReactiveTmSession extends BaseReactiveApiSession {
 
 }

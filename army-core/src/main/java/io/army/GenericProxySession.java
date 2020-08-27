@@ -14,8 +14,6 @@ import io.army.meta.TableMeta;
  */
 public interface GenericProxySession {
 
-    boolean hasCurrentSession();
-
     ArmyEnvironment environment();
 
     @Nullable

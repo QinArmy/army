@@ -10,7 +10,7 @@ package io.army.reactive;
  */
 public interface ReactiveApiSessionFactory extends GenericReactiveSessionFactory {
 
-    GenericReactiveApiSession proxySession();
+    BaseReactiveApiSession proxySession();
 
     boolean hasCurrentSession();
 }

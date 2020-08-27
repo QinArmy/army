@@ -104,6 +104,10 @@ final class ReactiveSessionFactoryBuilderImpl
         return this;
     }
 
+    final DatabaseSessionFactory databaseSessionFactory() {
+        return this.databaseSessionFactory;
+    }
+
     @Override
     public ReactiveSessionFactory build() throws SessionFactoryException {
         final long startTime = System.currentTimeMillis();

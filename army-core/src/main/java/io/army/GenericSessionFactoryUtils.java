@@ -65,6 +65,23 @@ public abstract class GenericSessionFactoryUtils {
                 , Boolean.class, Boolean.TRUE);
     }
 
+    protected static void assertTableCountOfSharding(final int tableCountOfSharding, GenericSessionFactory sessionFactory) {
+        switch (sessionFactory.shardingMode()) {
+            case NO_SHARDING:
+                if (tableCountOfSharding != 1) {
+                    throw new SessionFactoryException("%s tableCountOfSharding must equals 1 in NO_SHARDING mode.", sessionFactory);
+                }
+                break;
+            case SINGLE_DATABASE_SHARDING:
+            case SHARDING:
+                if (tableCountOfSharding < 1) {
+                    throw new SessionFactoryException("%s tableCountOfSharding must great than 0 in SHARDING mode.", sessionFactory);
+                }
+            default:
+                throw new IllegalArgumentException(String.format("not support %s", sessionFactory.shardingMode()));
+        }
+    }
+
     static boolean shardingSubQueryInsert(ArmyEnvironment env, String factoryName, ShardingMode shardingMode) {
         boolean support;
         if (shardingMode == ShardingMode.NO_SHARDING) {

@@ -17,4 +17,6 @@ public interface GenericSession {
 
     GenericTransaction sessionTransaction() throws NoSessionTransactionException;
 
+    GenericSessionFactory sessionFactory();
+
 }

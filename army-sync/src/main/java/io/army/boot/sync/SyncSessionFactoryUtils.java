@@ -54,6 +54,10 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
         return primary;
     }
 
+    static void assertSyncTableCountOfSharding(int tableCountPerDatabase, AbstractGenericSessionFactory factory) {
+        assertTableCountOfSharding(tableCountPerDatabase, factory);
+    }
+
     static DatabaseMetaForSync obtainDatabaseMeta(DataSource dataSource) {
         try (Connection conn = obtainPrimaryDataSource(dataSource).getConnection()) {
 
@@ -74,25 +78,6 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
             return new DatabaseMetaForSync(productName, major, minor, catalog, schema, supportSavePoint);
         } catch (SQLException e) {
             throw new SessionFactoryException(e, "obtain database meta data occur error.");
-        }
-    }
-
-    static void assertTableCountOfSharding(final int tableCountOfSharding, GenericSessionFactory sessionFactory) {
-        switch (sessionFactory.shardingMode()) {
-            case NO_SHARDING:
-                if (tableCountOfSharding != 1) {
-                    throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
-                            , "%s tableCountOfSharding must equals 1 in NO_SHARDING mode.", sessionFactory);
-                }
-                break;
-            case SINGLE_DATABASE_SHARDING:
-            case SHARDING:
-                if (tableCountOfSharding < 1) {
-                    throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
-                            , "%s tableCountOfSharding must great than 0 in SHARDING mode.", sessionFactory);
-                }
-            default:
-                throw new IllegalArgumentException(String.format("not support %s", sessionFactory.shardingMode()));
         }
     }
 

@@ -1,13 +1,13 @@
 package io.army.tx.reactive;
 
-import io.army.reactive.GenericReactiveSession;
+import io.army.reactive.BaseReactiveSession;
 import io.army.tx.GenericTransaction;
 import io.army.tx.TransactionException;
 import reactor.core.publisher.Mono;
 
 public interface GenericReactiveTransaction extends GenericTransaction {
 
-    GenericReactiveSession session();
+    BaseReactiveSession session();
 
 
     Mono<Void> start() throws TransactionException;

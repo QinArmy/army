@@ -40,8 +40,6 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
 
     private final Dialect dialect;
 
-    private final boolean supportsSavePoints;
-
     private final Map<TableMeta<?>, DomainAdvice> domainAdviceMap;
 
     private final int tableCountPerDatabase;
@@ -81,12 +79,11 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
         this.dataSource = dataSource;
         Pair<Dialect, Boolean> pair = SyncSessionFactoryUtils.getDatabaseMetaForSync(dataSource, this);
         this.dialect = pair.getFirst();
-        this.supportsSavePoints = pair.getSecond();
         this.domainAdviceMap = SyncSessionFactoryUtils.createDomainAdviceMap(
                 factoryBuilder.domainInterceptors());
 
         this.tableCountPerDatabase = factoryBuilder.tableCountPerDatabase();
-        SyncSessionFactoryUtils.assertTableCountOfSharding(this.tableCountPerDatabase, this);
+        SyncSessionFactoryUtils.assertSyncTableCountOfSharding(this.tableCountPerDatabase, this);
         this.currentSessionContext = SyncSessionFactoryUtils.buildCurrentSessionContext(this);
         this.proxySession = new ProxySessionImpl(this, this.currentSessionContext);
         this.tableRouteMap = SyncSessionFactoryUtils.routeMap(this, TableRoute.class
