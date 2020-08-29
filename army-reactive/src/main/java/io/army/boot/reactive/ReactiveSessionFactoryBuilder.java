@@ -26,4 +26,12 @@ public interface ReactiveSessionFactoryBuilder
 
     ReactiveSessionFactory build() throws SessionFactoryException;
 
+    static ReactiveSessionFactoryBuilder builder() {
+        return builder(false);
+    }
+
+    static ReactiveSessionFactoryBuilder builder(boolean springApplication) {
+        return ReactiveSessionFactoryBuilderImpl.build(springApplication);
+    }
+
 }

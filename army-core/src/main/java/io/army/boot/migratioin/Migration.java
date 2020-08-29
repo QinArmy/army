@@ -9,27 +9,33 @@ import java.util.List;
 
 interface Migration {
 
+    TableMeta<?> tableMeta();
+
     @Nullable
     String tableSuffix();
 
-    TableMeta<?> table();
-
     String actualTableName();
 
-    boolean newTable();
+    interface TableMigration extends Migration {
 
-    boolean modifyTableComment();
+    }
 
-    List<FieldMeta<?, ?>> columnsToAdd();
+    interface MemberMigration extends Migration {
 
-    List<FieldMeta<?, ?>> columnsToChange();
+        boolean modifyTableComment();
 
-    List<FieldMeta<?, ?>> commentToModify();
+        List<FieldMeta<?, ?>> columnsToAdd();
 
-    List<IndexMeta<?>> indexesToAdd();
+        List<FieldMeta<?, ?>> columnsToChange();
 
-    List<IndexMeta<?>> indexesToAlter();
+        List<FieldMeta<?, ?>> columnToModifyComment();
 
-    List<String> indexesToDrop();
+        List<IndexMeta<?>> indexesToAdd();
 
+        List<IndexMeta<?>> indexesToAlter();
+
+        List<String> indexesToDrop();
+
+
+    }
 }

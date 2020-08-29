@@ -7,10 +7,6 @@ import java.util.SortedMap;
 
 final class MapWrapperImpl extends MapReadonlyWrapper implements MapWrapper {
 
-    MapWrapperImpl(Map<String, Object> map) {
-        super(map);
-    }
-
     MapWrapperImpl(Class<?> mapClass) {
         super(mapClass);
     }

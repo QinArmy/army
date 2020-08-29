@@ -105,9 +105,9 @@ public class ArmyTmTransactionManager extends AbstractPlatformTransactionManager
                 tx.commit();
             }
         } catch (io.army.tx.TransactionException e) {
-            throw SpringTxUtils.convertTransactionException(e);
+            throw SpringUtils.convertTransactionException(e);
         } catch (SessionException e) {
-            throw SpringTxUtils.convertSessionException(e);
+            throw SpringUtils.convertSessionException(e);
         }
     }
 
@@ -127,7 +127,7 @@ public class ArmyTmTransactionManager extends AbstractPlatformTransactionManager
                 tx.rollback();
             }
         } catch (io.army.tx.TransactionException e) {
-            throw SpringTxUtils.convertTransactionException(e);
+            throw SpringUtils.convertTransactionException(e);
         }
     }
 
@@ -147,7 +147,7 @@ public class ArmyTmTransactionManager extends AbstractPlatformTransactionManager
                 tx.markRollbackOnly();
             }
         } catch (io.army.tx.TransactionException e) {
-            throw SpringTxUtils.convertTransactionException(e);
+            throw SpringUtils.convertTransactionException(e);
         }
     }
 
@@ -178,7 +178,7 @@ public class ArmyTmTransactionManager extends AbstractPlatformTransactionManager
             tmSession.sessionTransaction().close();
             tmSession.close();
         } catch (DataAccessException e) {
-            throw SpringTxUtils.convertArmyAccessException(e);
+            throw SpringUtils.convertArmyAccessException(e);
         }
     }
 
@@ -186,6 +186,11 @@ public class ArmyTmTransactionManager extends AbstractPlatformTransactionManager
     protected final boolean useSavepointForNestedTransaction() {
         // always false
         return false;
+    }
+
+    @Override
+    protected final void prepareForCommit(DefaultTransactionStatus status) {
+        status.flush();
     }
 
     /*################################## blow private method ##################################*/
@@ -196,7 +201,7 @@ public class ArmyTmTransactionManager extends AbstractPlatformTransactionManager
             return this.tmSessionFactory.builder()
 
                     .transactionName(definition.getName())
-                    .isolation(SpringTxUtils.convertTotArmyIsolation(definition.getIsolationLevel()))
+                    .isolation(SpringUtils.convertTotArmyIsolation(definition.getIsolationLevel()))
                     .readOnly(definition.isReadOnly())
                     .timeout(determineTimeout(definition))
 

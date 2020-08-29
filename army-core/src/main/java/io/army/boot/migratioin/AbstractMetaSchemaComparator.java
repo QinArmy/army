@@ -85,18 +85,18 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
     }
 
     @Override
-    public final List<List<Migration>> compare(SchemaInfo schemaInfo)
+    public final List<List<MigrationMember>> compare(SchemaInfo schemaInfo)
             throws SchemaInfoException, MetaException {
 
         final Map<String, TableInfo> tableInfoMap = schemaInfo.tableMap();
 
         final int tableCount = this.sessionFactory.tableCountPerDatabase();
-        List<List<Migration>> shardingList = new ArrayList<>(tableCount);
+        List<List<MigrationMember>> shardingList = new ArrayList<>(tableCount);
         final Collection<TableMeta<?>> tableMetas = this.sessionFactory.tableMetaMap().values();
         for (int i = 0; i < tableCount; i++) {
             //1. obtain table suffix
             final String tableSuffix = RouteUtils.convertToSuffix(tableCount, i);
-            List<Migration> migrationList = new ArrayList<>();
+            List<MigrationMember> migrationList = new ArrayList<>();
 
             for (TableMeta<?> tableMeta : tableMetas) {
                 //2. obtain actual table name
@@ -104,21 +104,21 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
                 if (tableSuffix != null) {
                     actualTableName += tableSuffix;
                 }
-                //3. create MigrationImpl
+                //3. create MigrationMemberImpl
                 TableInfo tableInfo = tableInfoMap.get(StringUtils.toLowerCase(actualTableName));
                 if (tableInfo == null) {
                     // will create table
-                    migrationList.add(new MigrationImpl(tableMeta, tableSuffix, true));
+                    migrationList.add(new MigrationMemberImpl(tableMeta, tableSuffix, true));
 
                 } else {
-                    MigrationImpl migration = doMigrateTable(tableMeta, tableSuffix, tableInfo);
+                    MigrationMemberImpl migration = doMigrateTable(tableMeta, tableSuffix, tableInfo);
                     if (migration != null) {
                         // will alter tableMeta
                         migrationList.add(migration);
                     }
                     if (!DDLUtils.escapeQuote(tableMeta.comment()).equals(tableInfo.comment())) {
                         if (migration == null) {
-                            migration = new MigrationImpl(tableMeta, tableSuffix, false);
+                            migration = new MigrationMemberImpl(tableMeta, tableSuffix, false);
                         }
                         migration.modifyTableComment(true);
                     }
@@ -178,12 +178,12 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
     /*################################## blow private method ##################################*/
 
     @Nullable
-    private MigrationImpl doMigrateTable(TableMeta<?> tableMeta, @Nullable String tableSuffix, TableInfo tableInfo) {
+    private MigrationMemberImpl doMigrateTable(TableMeta<?> tableMeta, @Nullable String tableSuffix, TableInfo tableInfo) {
         Assert.state(tableMeta.tableName().equals(tableInfo.name()),
                 () -> String.format("TableMeta[%s] then TableInfo[%s] not match",
                         tableMeta.tableName(), tableInfo.name()));
 
-        MigrationImpl migration = new MigrationImpl(tableMeta, tableSuffix, false);
+        MigrationMemberImpl migration = new MigrationMemberImpl(tableMeta, tableSuffix, false);
 
         // column migration
         migrateColumnIfNeed(tableMeta, tableInfo, migration);
@@ -199,7 +199,7 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
     }
 
 
-    private void migrateColumnIfNeed(TableMeta<?> tableMeta, TableInfo tableInfo, MigrationImpl migration) {
+    private void migrateColumnIfNeed(TableMeta<?> tableMeta, TableInfo tableInfo, MigrationMemberImpl migration) {
         final Map<String, ColumnInfo> columnInfoMap = tableInfo.columnMap();
 
         for (FieldMeta<?, ?> fieldMeta : tableMeta.fieldCollection()) {
@@ -227,7 +227,7 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
 
     }
 
-    private void migrateIndexIfNeed(TableMeta<?> tableMeta, TableInfo tableInfo, MigrationImpl migration) {
+    private void migrateIndexIfNeed(TableMeta<?> tableMeta, TableInfo tableInfo, MigrationMemberImpl migration) {
         final Map<String, IndexInfo> indexInfoMap = tableInfo.indexMap();
         // index migration
         Set<String> indexNameSet = new HashSet<>();

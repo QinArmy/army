@@ -22,7 +22,7 @@ abstract class AbstractTransactionObject<S extends GenericSyncApiSession>
         try {
             this.session.flush();
         } catch (DataAccessException e) {
-            throw SpringTxUtils.convertArmyAccessException(e);
+            throw SpringUtils.convertArmyAccessException(e);
         }
     }
 

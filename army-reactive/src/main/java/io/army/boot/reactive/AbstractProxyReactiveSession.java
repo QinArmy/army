@@ -6,8 +6,8 @@ import io.army.env.ArmyEnvironment;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.reactive.GenericProxyReactiveSession;
+import io.army.reactive.GenericReactiveApiSession;
 import io.army.reactive.GenericReactiveSessionFactory;
-import io.army.reactive.GenericReactiveTmSession;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -41,13 +41,13 @@ abstract class AbstractProxyReactiveSession<F extends GenericReactiveSessionFact
     @Override
     public Mono<Boolean> readOnly() {
         return this.currentSessionContext.currentSession()
-                .map(GenericReactiveTmSession::readonly);
+                .map(GenericReactiveApiSession::readonly);
     }
 
     @Override
     public Mono<Boolean> hasTransaction() {
         return this.currentSessionContext.currentSession()
-                .map(GenericReactiveTmSession::hasTransaction);
+                .map(GenericReactiveApiSession::hasTransaction);
     }
 
     @Override
@@ -252,6 +252,6 @@ abstract class AbstractProxyReactiveSession<F extends GenericReactiveSessionFact
     @Override
     public Mono<Void> flush() {
         return this.currentSessionContext.currentSession()
-                .flatMap(GenericReactiveTmSession::flush);
+                .flatMap(GenericReactiveApiSession::flush);
     }
 }

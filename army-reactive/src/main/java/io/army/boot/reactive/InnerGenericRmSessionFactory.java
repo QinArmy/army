@@ -8,10 +8,10 @@ interface InnerGenericRmSessionFactory extends GenericReactiveSessionFactory, Ge
 
     Dialect dialect();
 
-    ReactiveSelectSQLExecutor selectSQLExecutor();
+    SelectSQLExecutor selectSQLExecutor();
 
-    ReactiveInsertSQLExecutor insertSQLExecutor();
+    InsertSQLExecutor insertSQLExecutor();
 
-    ReactiveUpdateSQLExecutor updateSQLExecutor();
+    UpdateSQLExecutor updateSQLExecutor();
 
 }

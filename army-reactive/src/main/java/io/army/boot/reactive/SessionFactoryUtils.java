@@ -1,6 +1,6 @@
 package io.army.boot.reactive;
 
-import io.army.AbstractGenericSessionFactory;
+import io.army.GenericRmSessionFactory;
 import io.army.GenericSessionFactoryUtils;
 import io.army.SessionFactoryException;
 import io.army.advice.GenericDomainAdvice;
@@ -8,9 +8,9 @@ import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.reactive.GenericReactiveApiSession;
+import io.army.reactive.GenericProxyReactiveSession;
+import io.army.reactive.GenericReactiveApiSessionFactory;
 import io.army.reactive.GenericReactiveSessionFactory;
-import io.army.reactive.ReactiveApiSessionFactory;
 import io.army.reactive.advice.ReactiveDomainDeleteAdvice;
 import io.army.reactive.advice.ReactiveDomainInsertAdvice;
 import io.army.reactive.advice.ReactiveDomainUpdateAdvice;
@@ -18,7 +18,9 @@ import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 import io.army.util.ReflectionUtils;
 import io.jdbd.DatabaseProductMetaData;
+import io.jdbd.DatabaseSessionFactory;
 import io.jdbd.StatelessDatabaseSession;
+import io.jdbd.pool.ReadWriteSplittingSessionFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -27,18 +29,31 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
-abstract class ReactiveSessionFactoryUtils extends GenericSessionFactoryUtils {
+abstract class SessionFactoryUtils extends GenericSessionFactoryUtils {
+
+    static DatabaseSessionFactory tryObtainPrimaryFactory(DatabaseSessionFactory factory) {
+        DatabaseSessionFactory actualFactory;
+        if (factory instanceof ReadWriteSplittingSessionFactory) {
+            ReadWriteSplittingSessionFactory rwFactory = (ReadWriteSplittingSessionFactory) factory;
+            actualFactory = rwFactory.getPrimaryFactory();
+            if (actualFactory == null) {
+                throw new IllegalArgumentException(factory.getClass().getName() + ".getPrimaryFactory() return null.");
+            }
+        } else {
+            actualFactory = factory;
+        }
+        return actualFactory;
+    }
 
     static Mono<Database> queryDatabase(StatelessDatabaseSession session) {
         return session.getDatabaseMetaData()
                 .getDatabaseProduct()
-                .map(ReactiveSessionFactoryUtils::mapDatabase);
+                .map(SessionFactoryUtils::mapDatabase);
     }
 
-    static Dialect createDialect(AbstractGenericSessionFactory rmSessionFactory, Database queriedDatabase) {
+    static Dialect createDialect(GenericRmSessionFactory rmSessionFactory, Database queriedDatabase) {
         Database configDatabase = readDatabase(rmSessionFactory);
-        Database finalDatabase = decideActualDatabase(configDatabase, queriedDatabase);
-        return createDialect(rmSessionFactory, finalDatabase);
+        return createDialect(configDatabase, queriedDatabase, rmSessionFactory);
     }
 
     static void assertReactiveTableCountOfSharding(final int tableCountOfSharding
@@ -54,7 +69,7 @@ abstract class ReactiveSessionFactoryUtils extends GenericSessionFactoryUtils {
                 // spring application environment
                 Class<?> contextClass = Class.forName(className);
                 Method method;
-                method = ReflectionUtils.findMethod(contextClass, "build", ReactiveApiSessionFactory.class);
+                method = ReflectionUtils.findMethod(contextClass, "build", GenericReactiveApiSessionFactory.class);
                 if (method != null
                         && Modifier.isStatic(method.getModifiers())
                         && contextClass.isAssignableFrom(method.getReturnType())) {
@@ -161,7 +176,7 @@ abstract class ReactiveSessionFactoryUtils extends GenericSessionFactoryUtils {
         }
 
         @Override
-        public Mono<Void> beforeInsert(TableMeta<?> tableMeta, GenericReactiveApiSession proxySession) {
+        public Mono<Void> beforeInsert(TableMeta<?> tableMeta, GenericProxyReactiveSession proxySession) {
             if (!this.tableMetaSet.contains(tableMeta)) {
                 return Mono.error(new IllegalArgumentException(String.format("not support %s", tableMeta)));
             }
@@ -172,7 +187,7 @@ abstract class ReactiveSessionFactoryUtils extends GenericSessionFactoryUtils {
         }
 
         @Override
-        public Mono<Void> afterInsert(TableMeta<?> tableMeta, GenericReactiveApiSession proxySession) {
+        public Mono<Void> afterInsert(TableMeta<?> tableMeta, GenericProxyReactiveSession proxySession) {
             if (!this.tableMetaSet.contains(tableMeta)) {
                 return Mono.error(new IllegalArgumentException(String.format("not support %s", tableMeta)));
             }
@@ -183,7 +198,7 @@ abstract class ReactiveSessionFactoryUtils extends GenericSessionFactoryUtils {
         }
 
         @Override
-        public Mono<Void> InsertThrows(TableMeta<?> tableMeta, GenericReactiveApiSession proxySession, Throwable ex) {
+        public Mono<Void> InsertThrows(TableMeta<?> tableMeta, GenericProxyReactiveSession proxySession, Throwable ex) {
             if (!this.tableMetaSet.contains(tableMeta)) {
                 return Mono.error(new IllegalArgumentException(String.format("not support %s", tableMeta)));
             }
@@ -230,7 +245,7 @@ abstract class ReactiveSessionFactoryUtils extends GenericSessionFactoryUtils {
         }
 
         @Override
-        public Mono<Void> beforeUpdate(TableMeta<?> tableMeta, GenericReactiveApiSession proxySession) {
+        public Mono<Void> beforeUpdate(TableMeta<?> tableMeta, GenericProxyReactiveSession proxySession) {
             if (!this.tableMetaSet.contains(tableMeta)) {
                 return Mono.error(new IllegalArgumentException(String.format("not support %s", tableMeta)));
             }
@@ -241,7 +256,7 @@ abstract class ReactiveSessionFactoryUtils extends GenericSessionFactoryUtils {
         }
 
         @Override
-        public Mono<Void> afterUpdate(TableMeta<?> tableMeta, GenericReactiveApiSession proxySession) {
+        public Mono<Void> afterUpdate(TableMeta<?> tableMeta, GenericProxyReactiveSession proxySession) {
             if (!this.tableMetaSet.contains(tableMeta)) {
                 return Mono.error(new IllegalArgumentException(String.format("not support %s", tableMeta)));
             }
@@ -252,7 +267,7 @@ abstract class ReactiveSessionFactoryUtils extends GenericSessionFactoryUtils {
         }
 
         @Override
-        public Mono<Void> updateThrows(TableMeta<?> tableMeta, GenericReactiveApiSession proxySession, Throwable ex) {
+        public Mono<Void> updateThrows(TableMeta<?> tableMeta, GenericProxyReactiveSession proxySession, Throwable ex) {
             if (!this.tableMetaSet.contains(tableMeta)) {
                 return Mono.error(new IllegalArgumentException(String.format("not support %s", tableMeta)));
             }
@@ -299,7 +314,7 @@ abstract class ReactiveSessionFactoryUtils extends GenericSessionFactoryUtils {
         }
 
         @Override
-        public Mono<Void> beforeDelete(TableMeta<?> tableMeta, GenericReactiveApiSession proxySession) {
+        public Mono<Void> beforeDelete(TableMeta<?> tableMeta, GenericProxyReactiveSession proxySession) {
             if (!this.tableMetaSet.contains(tableMeta)) {
                 return Mono.error(new IllegalArgumentException(String.format("not support %s", tableMeta)));
             }
@@ -310,7 +325,7 @@ abstract class ReactiveSessionFactoryUtils extends GenericSessionFactoryUtils {
         }
 
         @Override
-        public Mono<Void> afterDelete(TableMeta<?> tableMeta, GenericReactiveApiSession proxySession) {
+        public Mono<Void> afterDelete(TableMeta<?> tableMeta, GenericProxyReactiveSession proxySession) {
             if (!this.tableMetaSet.contains(tableMeta)) {
                 return Mono.error(new IllegalArgumentException(String.format("not support %s", tableMeta)));
             }
@@ -321,7 +336,7 @@ abstract class ReactiveSessionFactoryUtils extends GenericSessionFactoryUtils {
         }
 
         @Override
-        public Mono<Void> deleteThrows(TableMeta<?> tableMeta, GenericReactiveApiSession proxySession, Throwable ex) {
+        public Mono<Void> deleteThrows(TableMeta<?> tableMeta, GenericProxyReactiveSession proxySession, Throwable ex) {
             if (!this.tableMetaSet.contains(tableMeta)) {
                 return Mono.error(new IllegalArgumentException(String.format("not support %s", tableMeta)));
             }

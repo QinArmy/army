@@ -8,6 +8,7 @@ import io.army.lang.Nullable;
 import io.army.util.CollectionUtils;
 
 import java.util.*;
+import java.util.function.Function;
 
 public abstract class GenericFactoryBuilderImpl<T extends GenericFactoryBuilder<T>>
         implements GenericFactoryBuilder<T> {
@@ -26,6 +27,8 @@ public abstract class GenericFactoryBuilderImpl<T extends GenericFactoryBuilder<
 
     protected Collection<GenericSessionFactoryAdvice> factoryAdvices;
 
+    protected Function<RuntimeException, RuntimeException> exceptionFunction;
+
     private GenericSessionFactoryAdvice factoryAdviceComposite;
 
     protected GenericFactoryBuilderImpl(boolean springApplication) {
@@ -40,10 +43,12 @@ public abstract class GenericFactoryBuilderImpl<T extends GenericFactoryBuilder<
         return this.environment;
     }
 
+    @Nullable
     public final Collection<FieldCodec> fieldCodecs() {
         return this.fieldCodecs;
     }
 
+    @Nullable
     public final ShardingMode shardingMode() {
         return this.shardingMode;
     }
@@ -54,6 +59,16 @@ public abstract class GenericFactoryBuilderImpl<T extends GenericFactoryBuilder<
 
     public final boolean springApplication() {
         return this.springApplication;
+    }
+
+    @Nullable
+    final Function<RuntimeException, RuntimeException> exceptionFunction() {
+        return this.exceptionFunction;
+    }
+
+    @Nullable
+    protected Function<RuntimeException, RuntimeException> springExceptionFunction() {
+        return null;
     }
 
     protected final GenericSessionFactoryAdvice getFactoryAdviceComposite() {

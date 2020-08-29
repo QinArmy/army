@@ -2,16 +2,12 @@ package io.army.boot.migratioin;
 
 import io.army.GenericRmSessionFactory;
 import io.army.dialect.DDLSQLExecuteException;
-import io.army.dialect.Dialect;
-import io.army.meta.FieldMeta;
-import io.army.meta.IndexMeta;
 import io.army.meta.MetaException;
 import io.army.schema.SchemaInfoException;
-import io.army.util.Assert;
-import io.army.util.CollectionUtils;
 
 import java.sql.Connection;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 final class SyncMetaMigratorImpl implements SyncMetaMigrator {
 
@@ -26,7 +22,7 @@ final class SyncMetaMigratorImpl implements SyncMetaMigrator {
         schemaInfo = SchemaExtractor.build(conn)
                 .extract(null);
         // 2. compare TableMeta and schema meta from database.
-        List<List<Migration>> shardingList;
+        List<List<MigrationMember>> shardingList;
         shardingList = MetaSchemaComparator.build(sessionFactory)
                 .compare(schemaInfo);
 
@@ -45,77 +41,5 @@ final class SyncMetaMigratorImpl implements SyncMetaMigrator {
 
     /*################################## blow private method ##################################*/
 
-    private static List<Map<String, List<String>>> createDdlForShardingList(List<List<Migration>> shardingList
-            , Dialect dialect) {
-        List<Map<String, List<String>>> ddlList = new ArrayList<>(shardingList.size());
-        for (List<Migration> migrationList : shardingList) {
-            ddlList.add(createDdlForOneSharding(migrationList, dialect));
-        }
-        return ddlList.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(ddlList);
-    }
 
-    private static Map<String, List<String>> createDdlForOneSharding(List<Migration> migrationList, Dialect dialect) {
-        Map<String, List<String>> map = new HashMap<>();
-        for (Migration migration : migrationList) {
-
-            final String tableName = migration.actualTableName();
-
-            Assert.isTrue(!map.containsKey(tableName), "migrationList error");
-
-            List<String> sqlList = new ArrayList<>();
-
-            if (migration.newTable()) {
-                // invoke  dialect generate  SQL
-                sqlList.addAll(dialect.createTable(migration.table(), migration.tableSuffix()));
-            } else {
-                // invoke  dialect generate DML SQL
-                createDdlForTable(migration, dialect, sqlList);
-                if (migration.modifyTableComment()) {
-                    sqlList.addAll(dialect.modifyTableComment(migration.table(), migration.tableSuffix()));
-                }
-            }
-            map.put(tableName, Collections.unmodifiableList(sqlList));
-        }
-        return Collections.unmodifiableMap(map);
-    }
-
-    private static void createDdlForTable(Migration migration, Dialect dialect, List<String> sqlList) {
-        // 1. add column if need
-        if (!CollectionUtils.isEmpty(migration.columnsToAdd())) {
-            sqlList.addAll(dialect.addColumn(migration.table(), migration.tableSuffix(), migration.columnsToAdd()));
-        }
-        // 2. alter column if need
-        if (!CollectionUtils.isEmpty(migration.columnsToChange())) {
-            sqlList.addAll(dialect.changeColumn(migration.table(), migration.tableSuffix(), migration.columnsToChange()));
-        }
-        // 3. drop index if need
-        if (!CollectionUtils.isEmpty(migration.indexesToDrop())) {
-            sqlList.addAll(dialect.dropIndex(migration.table(), migration.tableSuffix(), migration.indexesToDrop()));
-        }
-        // 4. add index if need
-        if (!CollectionUtils.isEmpty(migration.indexesToAdd())) {
-            sqlList.addAll(dialect.addIndex(migration.table(), migration.tableSuffix(), migration.indexesToAdd()));
-        }
-        // 5. alter index if need
-        if (!CollectionUtils.isEmpty(migration.indexesToAlter())) {
-            List<String> dropList = new ArrayList<>(migration.indexesToAlter().size());
-            for (IndexMeta<?> indexMeta : migration.indexesToAlter()) {
-                dropList.add(indexMeta.name());
-            }
-            // 5-1. first drop index
-            sqlList.addAll(dialect.dropIndex(migration.table(), migration.tableSuffix(), dropList));
-            // 5-2. then add index
-            sqlList.addAll(dialect.addIndex(migration.table(), migration.tableSuffix(), migration.indexesToAlter()));
-        }
-        //6. modify column  comment
-        if (!CollectionUtils.isEmpty(migration.commentToModify())) {
-            for (FieldMeta<?, ?> fieldMeta : migration.commentToModify()) {
-                sqlList.addAll(
-                        dialect.modifyColumnComment(fieldMeta, migration.tableSuffix())
-                );
-            }
-
-        }
-
-    }
 }

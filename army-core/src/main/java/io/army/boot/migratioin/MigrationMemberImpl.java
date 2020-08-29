@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-final class MigrationImpl implements Migration {
+final class MigrationMemberImpl implements MigrationMember {
 
     private final String tableSuffix;
 
@@ -35,7 +35,7 @@ final class MigrationImpl implements Migration {
     private boolean finalFinish;
 
 
-    MigrationImpl(TableMeta<?> table, @Nullable String tableSuffix, boolean newTable) {
+    MigrationMemberImpl(TableMeta<?> table, @Nullable String tableSuffix, boolean newTable) {
         this.table = table;
         this.tableSuffix = tableSuffix;
         this.newTable = newTable;

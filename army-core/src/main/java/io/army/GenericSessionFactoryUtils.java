@@ -18,10 +18,12 @@ import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.sharding.RouteMetaData;
 import io.army.util.Assert;
+import io.army.util.CollectionUtils;
 import io.army.util.StringUtils;
 
 import java.time.ZoneId;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * @see GenericSessionFactory
@@ -32,6 +34,84 @@ public abstract class GenericSessionFactoryUtils {
     protected GenericSessionFactoryUtils() {
         throw new UnsupportedOperationException();
     }
+
+    @Nullable
+    protected static Database readDatabase(GenericSessionFactory sessionFactory) {
+        String key = String.format(ArmyConfigConstant.DATABASE, sessionFactory.name());
+        return sessionFactory.environment().getProperty(key, Database.class);
+    }
+
+
+    protected static Database convertToDatabase(String databaseProductName, int majorVersion, int minorVersion) {
+        Database database;
+        switch (databaseProductName) {
+            case "MySQL":
+                database = convertToMySQLDatabase(databaseProductName, majorVersion, minorVersion);
+                break;
+            case "Oracle":
+                database = convertOracleDatabase(databaseProductName, majorVersion, minorVersion);
+                break;
+            case "PostgreSQL":
+                database = convertPostgreDatabase(databaseProductName, majorVersion, minorVersion);
+                break;
+            default:
+                throw new UnsupportedDatabaseException(databaseProductName, majorVersion, minorVersion);
+        }
+        return database;
+    }
+
+
+    protected static Dialect createDialect(@Nullable Database database, Database extractedDatabase
+            , GenericRmSessionFactory sessionFactory) {
+
+        Database actualDatabase = decideActualDatabase(database, extractedDatabase);
+        Dialect dialect;
+        switch (actualDatabase.family()) {
+            case MySQL:
+                dialect = MySQLDialectFactory.createMySQLDialect(actualDatabase, sessionFactory);
+                break;
+            case Postgre:
+                dialect = PostgreDialectFactory.createPostgreDialect(actualDatabase, sessionFactory);
+                break;
+            //  case Db2:
+            case Oracle:
+                // case SQL_Server:
+            default:
+                throw new RuntimeException(String.format("unknown Database[%s]", actualDatabase));
+        }
+        return dialect;
+    }
+
+
+    protected static Database decideActualDatabase(@Nullable Database database, Database extractedDatabase) {
+        Database actual = database;
+        if (actual == null) {
+            actual = extractedDatabase;
+        } else if (!extractedDatabase.compatible(database)) {
+            throw new DialectNotMatchException(ErrorCode.META_ERROR, "Database[%s] and extract database[%s] not match."
+                    , database, extractedDatabase);
+        }
+        return actual;
+    }
+
+
+    static Function<Throwable, Throwable> createComposedExceptionFunction(
+            GenericFactoryBuilderImpl<?> builder) {
+
+        final Function<RuntimeException, RuntimeException> customFunction = builder.exceptionFunction();
+        final Function<RuntimeException, RuntimeException> springFunction = builder.springExceptionFunction();
+
+        return throwable -> convertToCustomException(throwable, springFunction, customFunction);
+    }
+
+    static ShardingMode shardingMode(GenericFactoryBuilderImpl<?> builder) {
+        ShardingMode shardingMode = builder.shardingMode();
+        if (shardingMode == null) {
+            throw new SessionFactoryException("shardingMode required");
+        }
+        return shardingMode;
+    }
+
 
     static final class GeneratorWrapper {
 
@@ -173,7 +253,11 @@ public abstract class GenericSessionFactoryUtils {
     }
 
     static Map<FieldMeta<?, ?>, FieldCodec> createTableFieldCodecMap(
-            Collection<FieldCodec> fieldCodecs) {
+            @Nullable Collection<FieldCodec> fieldCodecs) {
+
+        if (CollectionUtils.isEmpty(fieldCodecs)) {
+            return Collections.emptyMap();
+        }
 
         Map<FieldMeta<?, ?>, FieldCodec> fieldCodecMap = new HashMap<>();
 
@@ -181,12 +265,10 @@ public abstract class GenericSessionFactoryUtils {
 
             for (FieldMeta<?, ?> fieldMeta : codec.fieldMetaSet()) {
                 if (!fieldMeta.codec()) {
-                    throw new SessionFactoryException(ErrorCode.NON_CODEC_FIELD
-                            , "FieldMeta[%s] don't support FieldCodec.", fieldMeta);
+                    throw new SessionFactoryException("FieldMeta[%s] don't support FieldCodec.", fieldMeta);
                 }
                 if (fieldCodecMap.putIfAbsent(fieldMeta, codec) != null) {
-                    throw new SessionFactoryException(ErrorCode.FIELD_CODEC_DUPLICATION
-                            , "FieldMeta[%s]'s FieldCodec[%s] duplication.", fieldMeta, codec);
+                    throw new SessionFactoryException("FieldMeta[%s]'s FieldCodec[%s] duplication.", fieldMeta, codec);
                 }
             }
         }
@@ -194,68 +276,9 @@ public abstract class GenericSessionFactoryUtils {
         Set<FieldMeta<?, ?>> codecFieldSet = new HashSet<>(fieldCodecMap.keySet());
         codecFieldSet.removeAll(TableMetaFactory.codecFieldMetaSet());
         if (!codecFieldSet.isEmpty()) {
-            throw new SessionFactoryException(ErrorCode.NO_FIELD_CODEC
-                    , "FieldMeta set [%s] not found FieldCodec.", codecFieldSet);
+            throw new SessionFactoryException("FieldMeta set [%s] not found FieldCodec.", codecFieldSet);
         }
         return Collections.unmodifiableMap(fieldCodecMap);
-    }
-
-    @Nullable
-    protected static Database readDatabase(AbstractGenericSessionFactory sessionFactory) {
-        String key = String.format(ArmyConfigConstant.DATABASE, sessionFactory.name);
-        return sessionFactory.environment().getProperty(key, Database.class);
-    }
-
-    protected static Database convertToDatabase(String databaseProductName, int majorVersion, int minorVersion) {
-        Database database;
-        switch (databaseProductName) {
-            case "MySQL":
-                database = convertToMySQLDatabase(databaseProductName, majorVersion, minorVersion);
-                break;
-            case "Oracle":
-                database = convertOracleDatabase(databaseProductName, majorVersion, minorVersion);
-                break;
-            case "PostgreSQL":
-                database = convertPostgreDatabase(databaseProductName, majorVersion, minorVersion);
-                break;
-            default:
-                throw new UnsupportedDatabaseException(databaseProductName, majorVersion, minorVersion);
-        }
-        return database;
-    }
-
-
-    protected static Dialect createDialect(@Nullable Database database, Database extractedDatabase
-            , GenericRmSessionFactory sessionFactory) {
-
-        Database actualSqlDialect = decideActualDatabase(database, extractedDatabase);
-        Dialect dialect;
-        switch (actualSqlDialect.family()) {
-            case MySQL:
-                dialect = MySQLDialectFactory.createMySQLDialect(actualSqlDialect, sessionFactory);
-                break;
-            case Postgre:
-                dialect = PostgreDialectFactory.createPostgreDialect(actualSqlDialect, sessionFactory);
-                break;
-            //  case Db2:
-            case Oracle:
-                // case SQL_Server:
-            default:
-                throw new RuntimeException(String.format("unknown Database[%s]", actualSqlDialect));
-        }
-        return dialect;
-    }
-
-
-    protected static Database decideActualDatabase(@Nullable Database database, Database extractedDatabase) {
-        Database actual = database;
-        if (actual == null) {
-            actual = extractedDatabase;
-        } else if (!extractedDatabase.compatible(database)) {
-            throw new DialectNotMatchException(ErrorCode.META_ERROR, "Database[%s] and extract database[%s] not match."
-                    , database, extractedDatabase);
-        }
-        return actual;
     }
 
 
@@ -445,6 +468,29 @@ public abstract class GenericSessionFactoryUtils {
                 throw new UnsupportedDatabaseException(minorVersion, major, minor);
         }
         return database;
+    }
+
+
+    private static Throwable convertToCustomException(Throwable throwable
+            , @Nullable Function<RuntimeException, RuntimeException> springFunction
+            , @Nullable Function<RuntimeException, RuntimeException> customFunction) {
+        if (throwable instanceof Error) {
+            return throwable;
+        }
+        RuntimeException convertedException = convertToSessionException((Exception) throwable);
+        if (springFunction != null) {
+            convertedException = springFunction.apply(convertedException);
+        }
+        if (customFunction != null) {
+            convertedException = customFunction.apply(convertedException);
+        }
+        return convertedException;
+    }
+
+    protected static SessionException convertToSessionException(Exception ex) {
+
+        // TODO zoro finish this
+        return new SessionUsageException(ex, "");
     }
 
     protected static class DatabaseMeta {

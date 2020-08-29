@@ -4,11 +4,12 @@ import io.army.DataAccessException;
 import io.army.SessionException;
 import io.army.tx.Isolation;
 import io.army.tx.TransactionException;
+import org.springframework.core.NestedRuntimeException;
 import org.springframework.transaction.TransactionDefinition;
 
-public abstract class SpringTxUtils {
+public abstract class SpringUtils {
 
-    protected SpringTxUtils() {
+    protected SpringUtils() {
         throw new UnsupportedOperationException();
     }
 
@@ -20,6 +21,12 @@ public abstract class SpringTxUtils {
     }
 
     public static org.springframework.dao.DataAccessException convertArmyAccessException(DataAccessException ex) {
+        return new org.springframework.dao.DataAccessException(ex.getMessage(), ex) {
+
+        };
+    }
+
+    public static NestedRuntimeException convertToSpringException(RuntimeException ex) {
         return new org.springframework.dao.DataAccessException(ex.getMessage(), ex) {
 
         };

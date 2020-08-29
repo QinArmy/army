@@ -220,7 +220,7 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
     }
 
     @Override
-    public boolean closed() {
+    public boolean factoryClosed() {
         return this.closed;
     }
 
@@ -253,7 +253,7 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
     /*################################## blow private method ##################################*/
 
     private void migrationMeta() {
-        String keyName = String.format(ArmyConfigConstant.MIGRATION_META, this.name);
+        String keyName = String.format(ArmyConfigConstant.MIGRATION_MODE, this.name);
         if (!this.env.getProperty(keyName, Boolean.class, Boolean.FALSE)) {
             return;
         }

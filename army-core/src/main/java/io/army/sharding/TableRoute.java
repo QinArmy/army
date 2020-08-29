@@ -7,12 +7,4 @@ public interface TableRoute extends Route {
 
     int tableIndex(Object routeKey);
 
-    String tableSuffix(Object routeKey);
-
-    /**
-     * @return start with {@literal '_'}
-     */
-    String convertToSuffix(int tableIndex);
-
-    String suffixPlaceHolder();
 }

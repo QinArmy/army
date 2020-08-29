@@ -25,7 +25,7 @@ public interface GenericSyncSessionFactory extends GenericSessionFactory, AutoCl
      * open {@link GenericSessionFactory sessions} before calling this method asType the impact
      * on those {@link GenericSession sessions} is indeterminate.
      * <p/>
-     * No-ops if already {@link #closed closed}.
+     * No-ops if already {@link #factoryClosed closed}.
      *
      * @throws SessionFactoryException Indicates an issue closing the factory.
      */

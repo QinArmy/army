@@ -8,9 +8,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.function.Function;
 
-final class ReactiveInsertSQLExecutorImpl extends ReactiveSQLExecutorSupport implements ReactiveInsertSQLExecutor {
+final class InsertSQLExecutorImpl extends SQLExecutorSupport implements InsertSQLExecutor {
 
-    ReactiveInsertSQLExecutorImpl(InnerGenericRmSessionFactory sessionFactory) {
+    InsertSQLExecutorImpl(InnerGenericRmSessionFactory sessionFactory) {
         super(sessionFactory);
     }
 

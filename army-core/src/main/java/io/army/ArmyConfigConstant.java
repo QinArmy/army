@@ -25,7 +25,8 @@ public interface ArmyConfigConstant {
     /**
      * value is {@code true} or {@code false}
      */
-    String MIGRATION_META = "army.%s.migration.meta";
+    String MIGRATION_MODE = "army.%s.migration.mode";
+
 
     /**
      * @see io.army.generator.snowflake.SingleApplicationSnowflakeClient

@@ -1,8 +1,5 @@
 package io.army.reactive;
 
-import io.army.GenericSession;
-import reactor.core.publisher.Mono;
-
 /**
  * <p>
  * This interface is base interface of below:
@@ -12,9 +9,7 @@ import reactor.core.publisher.Mono;
  *     </ul>
  * </p>
  */
-public interface GenericReactiveTmSession extends BaseReactiveApiSession, GenericSession {
+public interface GenericReactiveApiSession extends GenericReactiveSession, BaseReactiveApiSession {
 
-
-    Mono<Void> close();
 
 }

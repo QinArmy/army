@@ -8,6 +8,7 @@ import io.army.criteria.impl.inner.InnerSelect;
 import io.army.criteria.impl.inner.InnerSingleDML;
 import io.army.dialect.Dialect;
 import io.army.meta.TableMeta;
+import io.army.reactive.GenericReactiveApiSessionFactory;
 import io.army.reactive.advice.ReactiveDomainDeleteAdvice;
 import io.army.reactive.advice.ReactiveDomainInsertAdvice;
 import io.army.reactive.advice.ReactiveDomainUpdateAdvice;
@@ -32,11 +33,11 @@ abstract class AbstractGenericReactiveRmSession<S extends StatelessDatabaseSessi
 
     final Dialect dialect;
 
-    final ReactiveSelectSQLExecutor selectSQLExecutor;
+    final SelectSQLExecutor selectSQLExecutor;
 
-    final ReactiveInsertSQLExecutor insertSQLExecutor;
+    final InsertSQLExecutor insertSQLExecutor;
 
-    final ReactiveUpdateSQLExecutor updateSQLExecutor;
+    final UpdateSQLExecutor updateSQLExecutor;
 
     AbstractGenericReactiveRmSession(F sessionFactory, S databaseSession, boolean readOnly) {
         super(sessionFactory, readOnly);
@@ -239,7 +240,7 @@ abstract class AbstractGenericReactiveRmSession<S extends StatelessDatabaseSessi
 
     /**
      * @param resultClass {@link Integer} or {@link Long}
-     * @see ReactiveInsertSQLExecutor#subQueryInsert(InnerGenericRmSession, SQLWrapper, Class)
+     * @see InsertSQLExecutor#subQueryInsert(InnerGenericRmSession, SQLWrapper, Class)
      */
     private <N extends Number> Mono<N> internalSubQuery(Insert insert, Visible visible, Class<N> resultClass) {
         // 1. assert session active
@@ -263,7 +264,7 @@ abstract class AbstractGenericReactiveRmSession<S extends StatelessDatabaseSessi
 
     /**
      * @param resultClass {@link Integer} or {@link Long}
-     * @see ReactiveUpdateSQLExecutor#update(InnerGenericRmSession, SQLWrapper, Class)
+     * @see UpdateSQLExecutor#update(InnerGenericRmSession, SQLWrapper, Class)
      */
     private <N extends Number> Mono<N> internalUpdate(Update update, final Visible visible, Class<N> resultClass) {
         // 1. assert session active
@@ -287,7 +288,7 @@ abstract class AbstractGenericReactiveRmSession<S extends StatelessDatabaseSessi
 
     /**
      * @param resultClass {@link Integer} or {@link Long}
-     * @see ReactiveUpdateSQLExecutor#update(InnerGenericRmSession, SQLWrapper, Class)
+     * @see UpdateSQLExecutor#update(InnerGenericRmSession, SQLWrapper, Class)
      */
     private <N extends Number> Mono<N> internalDelete(Delete delete, final Visible visible, Class<N> resultClass) {
         // 1. assert session active
@@ -440,7 +441,7 @@ abstract class AbstractGenericReactiveRmSession<S extends StatelessDatabaseSessi
     }
 
     private Throwable composedExceptionFunction(Throwable ex) {
-        return this.sessionFactory instanceof InnerReactiveApiSessionFactory
+        return this.sessionFactory instanceof GenericReactiveApiSessionFactory
                 ? ((InnerReactiveApiSessionFactory) this.sessionFactory).composeExceptionFunction().apply(ex)
                 : ex;
     }

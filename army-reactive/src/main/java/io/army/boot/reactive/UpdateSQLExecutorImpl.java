@@ -8,9 +8,9 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 import java.util.function.Function;
 
-final class ReactiveUpdateSQLExecutorImpl extends ReactiveSQLExecutorSupport implements ReactiveUpdateSQLExecutor {
+final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQLExecutor {
 
-    ReactiveUpdateSQLExecutorImpl(InnerGenericRmSessionFactory sessionFactory) {
+    UpdateSQLExecutorImpl(InnerGenericRmSessionFactory sessionFactory) {
         super(sessionFactory);
     }
 
@@ -33,9 +33,9 @@ final class ReactiveUpdateSQLExecutorImpl extends ReactiveSQLExecutorSupport imp
             , Class<N> resultClass) {
         Flux<? extends Number> flux;
         if (resultClass == Integer.class) {
-            flux = internalBatchUpdate(session, sqlWrapper, PreparedStatement::executeBatch, "batchUpdate");
+            flux = internalBatchUpdate(session, sqlWrapper, PreparedStatement::executeBatch);
         } else if (resultClass == Long.class) {
-            flux = internalBatchUpdate(session, sqlWrapper, PreparedStatement::executeLargeBatch, "batchUpdate");
+            flux = internalBatchUpdate(session, sqlWrapper, PreparedStatement::executeLargeBatch);
         } else {
             flux = Flux.error(new IllegalArgumentException("ResultClass error"));
         }
@@ -45,7 +45,7 @@ final class ReactiveUpdateSQLExecutorImpl extends ReactiveSQLExecutorSupport imp
     @Override
     public final <T> Flux<T> returningUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper
             , Class<T> resultClass) {
-        return doReturningUpdate(session, sqlWrapper, resultClass, true, "returningUpdate");
+        return doReturningUpdate(session, sqlWrapper, resultClass, true);
     }
 
     /*################################## blow private method ##################################*/
@@ -129,7 +129,7 @@ final class ReactiveUpdateSQLExecutorImpl extends ReactiveSQLExecutorSupport imp
      * @see #doExecuteBatchUpdate(InnerGenericRmSession, BatchSimpleSQLWrapper, Function)
      */
     private <N extends Number> Flux<N> internalBatchUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper
-            , Function<PreparedStatement, Flux<N>> executeFunction, String methodName) {
+            , Function<PreparedStatement, Flux<N>> executeFunction) {
 
         Flux<N> flux;
         if (sqlWrapper instanceof BatchSimpleSQLWrapper) {
@@ -145,7 +145,7 @@ final class ReactiveUpdateSQLExecutorImpl extends ReactiveSQLExecutorSupport imp
                     .flatMapMany(list -> doParentBatchUpdate(session, childSQLWrapper, executeFunction, list))
             ;
         } else {
-            flux = Flux.error(createUnSupportedSQLWrapperException(sqlWrapper, methodName));
+            flux = Flux.error(createUnSupportedSQLWrapperException(sqlWrapper, "batchUpdate"));
         }
         return flux;
     }

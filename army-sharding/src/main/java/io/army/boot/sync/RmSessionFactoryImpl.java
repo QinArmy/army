@@ -83,7 +83,7 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
     }
 
     @Override
-    public final boolean closed() {
+    public final boolean factoryClosed() {
         return this.closed;
     }
 
@@ -185,7 +185,7 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
     /*################################## blow private method ##################################*/
 
     private void migrationMeta() {
-        String keyName = String.format(ArmyConfigConstant.MIGRATION_META, this.tmSessionFactory.name());
+        String keyName = String.format(ArmyConfigConstant.MIGRATION_MODE, this.tmSessionFactory.name());
         if (!this.env.getProperty(keyName, Boolean.class, Boolean.FALSE)) {
             return;
         }

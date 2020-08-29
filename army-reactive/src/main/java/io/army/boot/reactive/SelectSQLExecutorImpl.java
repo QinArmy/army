@@ -5,9 +5,9 @@ import reactor.core.publisher.Flux;
 
 import java.util.Optional;
 
-final class ReactiveSelectSQLExecutorImpl extends ReactiveSQLExecutorSupport implements ReactiveSelectSQLExecutor {
+final class SelectSQLExecutorImpl extends SQLExecutorSupport implements SelectSQLExecutor {
 
-    ReactiveSelectSQLExecutorImpl(InnerGenericRmSessionFactory sessionFactory) {
+    SelectSQLExecutorImpl(InnerGenericRmSessionFactory sessionFactory) {
         super(sessionFactory);
     }
 

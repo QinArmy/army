@@ -36,19 +36,19 @@ import java.util.function.Function;
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
  *
- * @see ReactiveInsertSQLExecutorImpl
- * @see ReactiveUpdateSQLExecutorImpl
- * @see ReactiveSelectSQLExecutorImpl
+ * @see InsertSQLExecutorImpl
+ * @see UpdateSQLExecutorImpl
+ * @see SelectSQLExecutorImpl
  */
-abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
+abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ReactiveSQLExecutorSupport.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SQLExecutorSupport.class);
 
     final InnerGenericRmSessionFactory sessionFactory;
 
     final MappingContext mappingContext;
 
-    ReactiveSQLExecutorSupport(InnerGenericRmSessionFactory sessionFactory) {
+    SQLExecutorSupport(InnerGenericRmSessionFactory sessionFactory) {
         super(sessionFactory);
         this.sessionFactory = sessionFactory;
         this.mappingContext = sessionFactory.dialect().mappingContext();
@@ -160,7 +160,7 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
 
 
     protected final <R> Flux<R> doReturningUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper
-            , Class<R> resultClass, boolean updateStatement, String methodName) {
+            , Class<R> resultClass, boolean updateStatement) {
         Flux<R> flux;
         if (sqlWrapper instanceof SimpleSQLWrapper) {
             flux = doExecuteSimpleQuery(session, (SimpleSQLWrapper) sqlWrapper, resultClass);
@@ -185,7 +185,7 @@ abstract class ReactiveSQLExecutorSupport extends GenericSQLExecutorSupport {
                             , objectWrapperMap))
             ;
         } else {
-            flux = Flux.error(createUnSupportedSQLWrapperException(sqlWrapper, methodName));
+            flux = Flux.error(createUnSupportedSQLWrapperException(sqlWrapper, "returningUpdate"));
         }
         return flux;
     }

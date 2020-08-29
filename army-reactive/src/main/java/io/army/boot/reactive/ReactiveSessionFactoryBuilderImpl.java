@@ -16,10 +16,26 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
-final class ReactiveSessionFactoryBuilderImpl
+class ReactiveSessionFactoryBuilderImpl
         extends GenericReactiveSessionFactoryBuilderImpl<ReactiveSessionFactoryBuilder>
         implements ReactiveSessionFactoryBuilder {
+
+    static ReactiveSessionFactoryBuilderImpl build(boolean springApplication) {
+        ReactiveSessionFactoryBuilderImpl builder;
+        if (springApplication) {
+            try {
+                Class<?> buildClass = Class.forName("io.army.boot.reactive.ReactiveSessionFactoryBuilderForSpring");
+                builder = (ReactiveSessionFactoryBuilderImpl) buildClass.newInstance();
+            } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
+                throw new SessionFactoryException(e, "army-spring module must in classpath.");
+            }
+        } else {
+            builder = new ReactiveSessionFactoryBuilderImpl(springApplication);
+        }
+        return builder;
+    }
 
     private static final Logger LOG = LoggerFactory.getLogger(ReactiveSessionFactoryBuilderImpl.class);
 
@@ -51,6 +67,12 @@ final class ReactiveSessionFactoryBuilderImpl
     }
 
     @Override
+    public ReactiveSessionFactoryBuilder exceptionFunction(Function<RuntimeException, RuntimeException> function) {
+        this.exceptionFunction = function;
+        return this;
+    }
+
+    @Override
     public ReactiveSessionFactoryBuilder tableCountPerDatabase(int tableCountPerDatabase) {
         this.tableCountPerDatabase = tableCountPerDatabase;
         return this;
@@ -75,13 +97,13 @@ final class ReactiveSessionFactoryBuilderImpl
     }
 
     @Override
-    public ReactiveSessionFactoryBuilder domainUpdateInsertAdvice(Collection<ReactiveDomainUpdateAdvice> updateAdvices) {
+    public ReactiveSessionFactoryBuilder domainUpdateAdvice(Collection<ReactiveDomainUpdateAdvice> updateAdvices) {
         this.domainUpdateAdvices = updateAdvices;
         return this;
     }
 
     @Override
-    public ReactiveSessionFactoryBuilder domainDeleteInsertAdvice(Collection<ReactiveDomainDeleteAdvice> deleteAdvices) {
+    public ReactiveSessionFactoryBuilder domainDeleteAdvice(Collection<ReactiveDomainDeleteAdvice> deleteAdvices) {
         this.domainDeleteAdvices = deleteAdvices;
         return this;
     }
@@ -97,6 +119,7 @@ final class ReactiveSessionFactoryBuilderImpl
         }
         return this;
     }
+
 
     @Override
     public ReactiveSessionFactoryBuilder shardingMode(ShardingMode shardingMode) {
@@ -133,7 +156,7 @@ final class ReactiveSessionFactoryBuilderImpl
 
         this.databaseSessionFactory.getSession()
                 // 2. query database info
-                .flatMap(ReactiveSessionFactoryUtils::queryDatabase)
+                .flatMap(SessionFactoryUtils::queryDatabase)
                 // 3. create session factory
                 .map(database -> new ReactiveSessionFactoryImpl(this, database))
                 //4. invoke beforeInitialize session factory advice

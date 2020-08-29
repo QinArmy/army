@@ -5,6 +5,15 @@ import io.army.criteria.Update;
 import io.army.criteria.Visible;
 import reactor.core.publisher.Flux;
 
+/**
+ * <p>
+ * This interface is base interface of below:
+ *     <ul>
+ *         <li>{@link ReactiveSession}</li>
+ *         <li>{@code io.army.reactive.ProxyReactiveSession}</li>
+ *     </ul>
+ * </p>
+ */
 interface SingleDatabaseReactiveSession extends BaseReactiveApiSession {
 
     @Override

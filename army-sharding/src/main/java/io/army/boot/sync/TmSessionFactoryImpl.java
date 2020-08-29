@@ -91,7 +91,7 @@ class TmSessionFactoryImpl extends AbstractGenericSessionFactory implements Inne
     }
 
     @Override
-    public boolean closed() {
+    public boolean factoryClosed() {
         return this.closed;
     }
 

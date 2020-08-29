@@ -7,6 +7,15 @@ import io.army.reactive.advice.ReactiveDomainUpdateAdvice;
 
 import java.util.Collection;
 
+/**
+ * <p>
+ * This interface is base interface of below:
+ *     <ul>
+ *         <li>{@link ReactiveSessionFactoryBuilder}</li>
+ *         <li>{@code io.army.boot.reactive.ReactiveTmSessionFactoryBuilder}</li>
+ *     </ul>
+ * </p>
+ */
 interface GenericReactiveSessionFactoryBuilder<T extends GenericReactiveSessionFactoryBuilder<T>>
         extends GenericFactoryBuilder<T> {
 
@@ -14,8 +23,8 @@ interface GenericReactiveSessionFactoryBuilder<T extends GenericReactiveSessionF
 
     T domainInsertAdvice(Collection<ReactiveDomainInsertAdvice> insertAdvices);
 
-    T domainUpdateInsertAdvice(Collection<ReactiveDomainUpdateAdvice> updateAdvices);
+    T domainUpdateAdvice(Collection<ReactiveDomainUpdateAdvice> updateAdvices);
 
-    T domainDeleteInsertAdvice(Collection<ReactiveDomainDeleteAdvice> deleteAdvices);
+    T domainDeleteAdvice(Collection<ReactiveDomainDeleteAdvice> deleteAdvices);
 
 }

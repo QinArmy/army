@@ -2,20 +2,20 @@ package io.army.boot.reactive;
 
 import io.army.NoCurrentSessionException;
 import io.army.reactive.GenericReactiveApiSession;
-import io.army.reactive.ReactiveApiSessionFactory;
+import io.army.reactive.GenericReactiveApiSessionFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.reactive.TransactionSynchronizationManager;
 import reactor.core.publisher.Mono;
 
 final class SpringCurrentSessionContext implements CurrentSessionContext {
 
-    static SpringCurrentSessionContext build(ReactiveApiSessionFactory sessionFactory) {
+    static SpringCurrentSessionContext build(GenericReactiveApiSessionFactory sessionFactory) {
         return new SpringCurrentSessionContext(sessionFactory);
     }
 
-    private final ReactiveApiSessionFactory sessionFactory;
+    private final GenericReactiveApiSessionFactory sessionFactory;
 
-    private SpringCurrentSessionContext(ReactiveApiSessionFactory sessionFactory) {
+    private SpringCurrentSessionContext(GenericReactiveApiSessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
     }
 

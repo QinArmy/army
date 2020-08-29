@@ -56,7 +56,7 @@ public interface GenericSessionFactory {
      *
      * @return True if this factory is already closed; false otherwise.
      */
-    boolean closed();
+    boolean factoryClosed();
 
     boolean readonly();
 

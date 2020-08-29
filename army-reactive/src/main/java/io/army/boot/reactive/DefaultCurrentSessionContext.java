@@ -1,8 +1,8 @@
 package io.army.boot.reactive;
 
 import io.army.NoCurrentSessionException;
-import io.army.reactive.GenericReactiveTmSession;
-import io.army.reactive.ReactiveApiSessionFactory;
+import io.army.reactive.GenericReactiveApiSession;
+import io.army.reactive.GenericReactiveApiSessionFactory;
 import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
 
@@ -10,13 +10,13 @@ import java.util.NoSuchElementException;
 
 final class DefaultCurrentSessionContext implements UpdatableCurrentSessionContext {
 
-    static DefaultCurrentSessionContext build(ReactiveApiSessionFactory sessionFactory) {
+    static DefaultCurrentSessionContext build(GenericReactiveApiSessionFactory sessionFactory) {
         return new DefaultCurrentSessionContext(sessionFactory);
     }
 
-    private final ReactiveApiSessionFactory sessionFactory;
+    private final GenericReactiveApiSessionFactory sessionFactory;
 
-    private DefaultCurrentSessionContext(ReactiveApiSessionFactory sessionFactory) {
+    private DefaultCurrentSessionContext(GenericReactiveApiSessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
     }
 
@@ -27,16 +27,16 @@ final class DefaultCurrentSessionContext implements UpdatableCurrentSessionConte
     }
 
     @Override
-    public Mono<GenericReactiveTmSession> currentSession() throws NoCurrentSessionException {
+    public Mono<GenericReactiveApiSession> currentSession() throws NoCurrentSessionException {
         return Mono.subscriberContext()
                 .map(cxt -> cxt.get(this.sessionFactory))
                 .onErrorMap(this::mapNoCurrentSessionException)
-                .cast(GenericReactiveTmSession.class)
+                .cast(GenericReactiveApiSession.class)
                 ;
     }
 
     @Override
-    public Mono<Void> currentSession(GenericReactiveTmSession session) throws IllegalStateException {
+    public Mono<Void> currentSession(GenericReactiveApiSession session) throws IllegalStateException {
         return Mono.subscriberContext()
                 .map(cxt -> doCurrentSession(cxt, session))
                 .then()
@@ -44,15 +44,15 @@ final class DefaultCurrentSessionContext implements UpdatableCurrentSessionConte
     }
 
     @Override
-    public Mono<Void> removeCurrentSession(GenericReactiveTmSession session) throws IllegalStateException {
+    public Mono<Void> removeCurrentSession(GenericReactiveApiSession session) throws IllegalStateException {
         return Mono.subscriberContext()
                 .map(cxt -> doRemoveCurrentSession(cxt, session))
                 .then()
                 ;
     }
 
-    private Context doRemoveCurrentSession(Context context, GenericReactiveTmSession session) {
-        ReactiveApiSessionFactory sessionFactory = this.sessionFactory;
+    private Context doRemoveCurrentSession(Context context, GenericReactiveApiSession session) {
+        GenericReactiveApiSessionFactory sessionFactory = this.sessionFactory;
         Context newContext;
         if (context.hasKey(sessionFactory)) {
             if (context.get(sessionFactory) != session) {
@@ -74,8 +74,8 @@ final class DefaultCurrentSessionContext implements UpdatableCurrentSessionConte
         return e;
     }
 
-    private Context doCurrentSession(Context context, GenericReactiveTmSession session) {
-        ReactiveApiSessionFactory sessionFactory = this.sessionFactory;
+    private Context doCurrentSession(Context context, GenericReactiveApiSession session) {
+        GenericReactiveApiSessionFactory sessionFactory = this.sessionFactory;
         Context newContext;
         if (context.hasKey(sessionFactory)) {
             if (context.get(sessionFactory) != session) {

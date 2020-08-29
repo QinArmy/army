@@ -1,9 +1,10 @@
 package io.army.reactive;
 
 import io.army.GenericRmSessionFactory;
+import io.army.SessionException;
 import reactor.core.publisher.Mono;
 
-public interface ReactiveSessionFactory extends ReactiveApiSessionFactory, GenericRmSessionFactory {
+public interface ReactiveSessionFactory extends GenericReactiveApiSessionFactory, GenericRmSessionFactory {
 
     @Override
     ProxyReactiveSession proxySession();
@@ -17,7 +18,7 @@ public interface ReactiveSessionFactory extends ReactiveApiSessionFactory, Gener
 
         ReactiveSessionBuilder readOnly(boolean readOnly);
 
-        Mono<ReactiveSession> build();
+        Mono<ReactiveSession> build() throws SessionException;
     }
 
 }

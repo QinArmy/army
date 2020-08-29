@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 
 /**
  * a abstract GenericSessionFactoryAdvice
@@ -41,6 +42,8 @@ public abstract class AbstractGenericSessionFactory implements GenericSessionFac
     protected final Map<FieldMeta<?, ?>, FieldCodec> fieldCodecMap;
 
     protected final ShardingMode shardingMode;
+
+    protected final Function<Throwable, Throwable> composedExceptionFunction;
 
     protected final boolean readOnly;
 
@@ -69,7 +72,9 @@ public abstract class AbstractGenericSessionFactory implements GenericSessionFac
         this.zoneId = GenericSessionFactoryUtils.createZoneId(env, this.name);
 
         this.tableMetaMap = GenericSessionFactoryUtils.scanPackagesForMeta(this.schemaMeta, this.name, this.env);
-        this.shardingMode = factoryBuilder.shardingMode();
+        this.shardingMode = GenericSessionFactoryUtils.shardingMode(factoryBuilder);
+        this.composedExceptionFunction = GenericSessionFactoryUtils.createComposedExceptionFunction(factoryBuilder);
+
         GenericSessionFactoryUtils.GeneratorWrapper generatorWrapper =
                 GenericSessionFactoryUtils.createGeneratorWrapper(this.tableMetaMap.values(), this);
         this.fieldGeneratorMap = generatorWrapper.getGeneratorChain();
@@ -97,14 +102,15 @@ public abstract class AbstractGenericSessionFactory implements GenericSessionFac
 
         this.tableMetaMap = tmSessionFactory.tableMetaMap;
         this.shardingMode = tmSessionFactory.shardingMode;
+        this.composedExceptionFunction = tmSessionFactory.composedExceptionFunction;
         this.fieldGeneratorMap = tmSessionFactory.fieldGeneratorMap;
-        this.tableGeneratorChain = tmSessionFactory.tableGeneratorChain;
 
+        this.tableGeneratorChain = tmSessionFactory.tableGeneratorChain;
         this.readOnly = tmSessionFactory.readOnly;
         this.fieldCodecMap = tmSessionFactory.fieldCodecMap;
         this.supportSessionCache = tmSessionFactory.supportSessionCache;
-        this.shardingSubQueryInsert = tmSessionFactory.shardingSubQueryInsert;
 
+        this.shardingSubQueryInsert = tmSessionFactory.shardingSubQueryInsert;
         this.allowSpanSharding = tmSessionFactory.allowSpanSharding;
         this.springApplication = tmSessionFactory.springApplication;
         this.compareDefaultOnMigrating = tmSessionFactory.compareDefaultOnMigrating;
@@ -203,5 +209,9 @@ public abstract class AbstractGenericSessionFactory implements GenericSessionFac
 
     /*################################## blow protected method ##################################*/
 
+    protected final boolean notNeedMigrateMeta() {
+        String key = String.format(ArmyConfigConstant.MIGRATION_MODE, this.name);
+        return !this.env.getProperty(key, Boolean.class, Boolean.FALSE);
+    }
 
 }

@@ -255,7 +255,7 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
 
     /**
      * @param resultClass {@link Integer} or {@link Long}
-     * @see ReactiveUpdateSQLExecutor#batchUpdate(InnerGenericRmSession, SQLWrapper, Class)
+     * @see UpdateSQLExecutor#batchUpdate(InnerGenericRmSession, SQLWrapper, Class)
      */
     private <N extends Number> Flux<N> internalBatchUpdate(Update update, final Visible visible, Class<N> resultClass) {
         // 1. assert session active
@@ -278,7 +278,7 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
 
     /**
      * @param resultClass {@link Integer} or {@link Long}
-     * @see ReactiveUpdateSQLExecutor#batchUpdate(InnerGenericRmSession, SQLWrapper, Class)
+     * @see UpdateSQLExecutor#batchUpdate(InnerGenericRmSession, SQLWrapper, Class)
      */
     private <N extends Number> Flux<N> internalBatchDelete(Delete delete, final Visible visible, Class<N> resultClass) {
         // 1. assert session active

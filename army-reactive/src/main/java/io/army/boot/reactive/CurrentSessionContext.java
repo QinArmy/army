@@ -1,7 +1,7 @@
 package io.army.boot.reactive;
 
 import io.army.NoCurrentSessionException;
-import io.army.reactive.GenericReactiveTmSession;
+import io.army.reactive.GenericReactiveApiSession;
 import reactor.core.publisher.Mono;
 
 interface CurrentSessionContext {
@@ -16,7 +16,7 @@ interface CurrentSessionContext {
      * @throws NoCurrentSessionException Typically indicates an issue
      *                                   locating or creating the current session.
      */
-    Mono<GenericReactiveTmSession> currentSession() throws NoCurrentSessionException;
+    Mono<GenericReactiveApiSession> currentSession() throws NoCurrentSessionException;
 
 
 

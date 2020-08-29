@@ -82,7 +82,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
 
             final Transaction tx = txObject.session.builder()
                     .name(definition.getName())
-                    .isolation(SpringTxUtils.convertTotArmyIsolation(definition.getIsolationLevel()))
+                    .isolation(SpringUtils.convertTotArmyIsolation(definition.getIsolationLevel()))
                     .readOnly(definition.isReadOnly())
                     .timeout(determineTimeout(definition))
 
@@ -113,9 +113,9 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
                 tx.commit();
             }
         } catch (io.army.tx.TransactionException e) {
-            throw SpringTxUtils.convertTransactionException(e);
+            throw SpringUtils.convertTransactionException(e);
         } catch (SessionException e) {
-            throw SpringTxUtils.convertSessionException(e);
+            throw SpringUtils.convertSessionException(e);
         }
     }
 
@@ -134,7 +134,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
                 tx.rollback();
             }
         } catch (io.army.tx.TransactionException e) {
-            throw SpringTxUtils.convertTransactionException(e);
+            throw SpringUtils.convertTransactionException(e);
         }
     }
 
@@ -153,7 +153,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
                 tx.markRollbackOnly();
             }
         } catch (io.army.tx.TransactionException e) {
-            throw SpringTxUtils.convertTransactionException(e);
+            throw SpringUtils.convertTransactionException(e);
         }
     }
 
@@ -184,7 +184,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             session.sessionTransaction().close();
             session.close();
         } catch (DataAccessException e) {
-            throw SpringTxUtils.convertArmyAccessException(e);
+            throw SpringUtils.convertArmyAccessException(e);
         }
     }
 
@@ -224,7 +224,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             try {
                 return this.session.sessionTransaction().createSavepoint();
             } catch (io.army.tx.TransactionException e) {
-                throw SpringTxUtils.convertArmyAccessException(e);
+                throw SpringUtils.convertArmyAccessException(e);
             }
         }
 
@@ -233,7 +233,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             try {
                 this.session.sessionTransaction().rollbackToSavepoint((Savepoint) savepoint);
             } catch (io.army.tx.TransactionException e) {
-                throw SpringTxUtils.convertArmyAccessException(e);
+                throw SpringUtils.convertArmyAccessException(e);
             }
         }
 
@@ -242,7 +242,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             try {
                 this.session.sessionTransaction().releaseSavepoint((Savepoint) savepoint);
             } catch (io.army.tx.TransactionException e) {
-                throw SpringTxUtils.convertArmyAccessException(e);
+                throw SpringUtils.convertArmyAccessException(e);
             }
         }
 
