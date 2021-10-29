@@ -2,7 +2,7 @@ package io.army.tx.sync;
 
 
 import io.army.DataAccessException;
-import io.army.boot.sync.GenericSyncApiSession;
+import io.army.sync.GenericSyncApiSession;
 import org.springframework.transaction.support.SmartTransactionObject;
 import org.springframework.util.Assert;
 

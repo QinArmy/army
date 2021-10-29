@@ -3,7 +3,10 @@ package io.army.boot.sync;
 import io.army.DataAccessException;
 import io.army.NoCurrentSessionException;
 import io.army.context.spi.CurrentSessionContext;
+import io.army.sync.GenericSyncApiSession;
 import io.army.sync.GenericSyncApiSessionFactory;
+import io.army.sync.InnerGenericSyncApiSessionFactory;
+import io.army.sync.SyncSessionFactoryUtils;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @SuppressWarnings("unused")

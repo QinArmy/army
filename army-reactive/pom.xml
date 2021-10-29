@@ -22,7 +22,18 @@
         </dependency>
         <dependency>
             <groupId>io.jdbd</groupId>
-            <artifactId>reactve-jdbc-api</artifactId>
+            <artifactId>jdbd-spi</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jdbd</groupId>
+            <artifactId>jdbd-mysql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jdbd</groupId>
+            <artifactId>jdbd-postgre</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

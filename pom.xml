@@ -26,13 +26,15 @@
         <module>army-reactive</module>
         <module>army-sharding</module>
         <module>army-oracle</module>
+        <module>army-jdbc</module>
+        <module>army-jdbd</module>
     </modules>
 
     <properties>
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <spring.boot.version>2.3.3.RELEASE</spring.boot.version>
+        <spring.boot.version>2.5.6.RELEASE</spring.boot.version>
 
         <slf4.version>1.7.28</slf4.version>
 
@@ -162,7 +164,17 @@
             </dependency>
             <dependency>
                 <groupId>io.jdbd</groupId>
-                <artifactId>reactve-jdbc-api</artifactId>
+                <artifactId>jdbd-spi</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jdbd</groupId>
+                <artifactId>jdbd-mysql</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jdbd</groupId>
+                <artifactId>jdbd-postgre</artifactId>
                 <version>1.0-SNAPSHOT</version>
             </dependency>
             <dependency>

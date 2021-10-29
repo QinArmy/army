@@ -5,6 +5,7 @@ import io.army.domain.IDomain;
 import io.army.env.ArmyEnvironment;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.sync.AbstractProxySyncSession;
 import io.army.sync.ProxyTmSession;
 import io.army.sync.TmSessionFactory;
 

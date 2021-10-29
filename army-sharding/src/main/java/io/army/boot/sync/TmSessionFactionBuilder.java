@@ -2,6 +2,7 @@ package io.army.boot.sync;
 
 import io.army.SessionFactoryException;
 import io.army.dialect.Database;
+import io.army.sync.SyncSessionFactoryBuilder;
 import io.army.sync.TmSessionFactory;
 
 import javax.sql.XADataSource;

@@ -1,5 +1,7 @@
 package io.army.boot.sync;
 
+import io.army.sync.InnerGenericRmSession;
+
 import javax.transaction.xa.XAResource;
 import java.sql.SQLException;
 

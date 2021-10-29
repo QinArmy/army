@@ -8,6 +8,7 @@ import io.army.SessionFactoryException;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
+import io.army.sync.SyncSessionFactoryUtils;
 
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;

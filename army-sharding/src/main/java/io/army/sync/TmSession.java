@@ -1,7 +1,6 @@
 package io.army.sync;
 
 import io.army.SessionException;
-import io.army.boot.sync.GenericSyncApiSession;
 import io.army.criteria.Delete;
 import io.army.criteria.Insert;
 import io.army.criteria.Select;

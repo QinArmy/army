@@ -1,8 +1,6 @@
 package io.army.boot.migratioin;
 
 import io.army.dialect.DDLSQLExecuteException;
-import io.jdbd.StatelessSession;
-import io.jdbd.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
@@ -16,9 +14,11 @@ final class ReactiveBatchDDLSQLExecutor implements ReactiveDDLSQLExecutor {
     private static final Logger LOG = LoggerFactory.getLogger(ReactiveBatchDDLSQLExecutor.class);
 
 
+
+
     @Override
     public Mono<Void> executeDDL(int databaseIndex, List<Map<String, List<String>>> shardingDdlList
-            , StatelessSession session) throws DDLSQLExecuteException {
+            , Daba session) throws DDLSQLExecuteException {
         return Flux.fromIterable(shardingDdlList)
                 .index()
                 .flatMap(tuple2 -> doExecuteDDL(databaseIndex, tuple2.getT1(), tuple2.getT2(), session))

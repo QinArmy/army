@@ -11,6 +11,7 @@ import io.army.env.ArmyEnvironment;
 import io.army.env.SpringEnvironmentAdaptor;
 import io.army.lang.Nullable;
 import io.army.sync.SessionFactory;
+import io.army.sync.SessionFactoryBuilder;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.FactoryBean;

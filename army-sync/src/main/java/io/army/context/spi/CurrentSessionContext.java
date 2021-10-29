@@ -2,7 +2,7 @@ package io.army.context.spi;
 
 import io.army.DataAccessException;
 import io.army.NoCurrentSessionException;
-import io.army.boot.sync.GenericSyncApiSession;
+import io.army.sync.GenericSyncApiSession;
 
 /**
  * This interface's implementation must definite a public static build method like below.

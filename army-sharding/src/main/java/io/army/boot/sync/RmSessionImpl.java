@@ -9,6 +9,7 @@ import io.army.criteria.impl.inner.InnerSQL;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.sync.AbstractGenericSyncRmSession;
 import io.army.tx.*;
 import io.army.util.CriteriaUtils;
 import io.army.wrapper.SQLWrapper;

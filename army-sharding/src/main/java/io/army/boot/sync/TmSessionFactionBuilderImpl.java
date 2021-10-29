@@ -8,6 +8,7 @@ import io.army.codec.FieldCodec;
 import io.army.dialect.Database;
 import io.army.env.ArmyEnvironment;
 import io.army.lang.Nullable;
+import io.army.sync.AbstractSyncSessionFactoryBuilder;
 import io.army.sync.TmSessionFactory;
 import io.army.util.Assert;
 

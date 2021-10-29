@@ -15,6 +15,7 @@ import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.sharding.DatabaseRoute;
 import io.army.sharding.RouteWrapper;
+import io.army.sync.AbstractGenericSyncSession;
 import io.army.sync.TmSession;
 import io.army.sync.TmSessionCloseException;
 import io.army.sync.TmSessionFactory;
