@@ -12,16 +12,16 @@ public abstract class MappingFactory {
         return DefaultMappingFactory.obtainDefaultMapping(javaType) != null;
     }
 
-    public static void registerDefaultMapping(Class<?> javaType, MappingMeta mappingMeta)
+    public static void registerDefaultMapping(Class<?> javaType, MappingType mappingType)
             throws MetaException, IllegalStateException {
-        DefaultMappingFactory.overrideDefaultMapping(javaType, mappingMeta);
+        DefaultMappingFactory.overrideDefaultMapping(javaType, mappingType);
     }
 
-    public static MappingMeta getDefaultMapping(Class<?> javaType) throws MetaException {
+    public static MappingType getDefaultMapping(Class<?> javaType) throws MetaException {
         return DefaultMappingFactory.getDefaultMapping(javaType);
     }
 
-    public static MappingMeta build(Class<?> mappingClass, Class<?> typeClass)
+    public static MappingType build(Class<?> mappingClass, Class<?> typeClass)
             throws MetaException, IllegalArgumentException {
         return DefaultMappingFactory.createMappingMeta(mappingClass, typeClass);
     }

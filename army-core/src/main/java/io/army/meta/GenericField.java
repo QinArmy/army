@@ -4,7 +4,7 @@ import io.army.criteria.FieldSelection;
 import io.army.criteria.LogicalField;
 import io.army.criteria.FieldExpression;
 import io.army.domain.IDomain;
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.MappingType;
 
 /**
  * This interface is base interface of below interface:
@@ -27,7 +27,7 @@ public interface GenericField<T extends IDomain, F> extends FieldExpression<F>, 
      */
     Class<F> javaType();
 
-    MappingMeta mappingMeta();
+    MappingType mappingMeta();
 
     String propertyName();
 }

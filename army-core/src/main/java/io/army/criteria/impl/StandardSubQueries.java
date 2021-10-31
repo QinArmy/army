@@ -6,7 +6,7 @@ import io.army.criteria.impl.inner.InnerStandardSubQuery;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
 
 import java.util.List;
@@ -39,7 +39,7 @@ abstract class StandardSubQueries<Q extends Query, C> extends AbstractStandardQu
         return new StandardColumnSubQuery<>(criteria, columnType);
     }
 
-    static <E, C> ScalarSubQueryAdaptor<E, C> buildScalarSubQuery(Class<E> javaType, MappingMeta mappingType
+    static <E, C> ScalarSubQueryAdaptor<E, C> buildScalarSubQuery(Class<E> javaType, MappingType mappingType
             , C criteria) {
         if (criteria != CriteriaContextHolder.getContext()) {
             throw new IllegalArgumentException("criteria isn't current context.");
@@ -195,13 +195,13 @@ abstract class StandardSubQueries<Q extends Query, C> extends AbstractStandardQu
             , InnerStandardSubQuery {
 
 
-        private final MappingMeta mappingType;
+        private final MappingType mappingType;
 
         private final StandardColumnSubQuery<E, C> actualSelect;
 
         private final ScalarOnClauseImpl<E, C> onClauseImpl;
 
-        private ScalarSubQueryAdaptor(Class<E> javaType, MappingMeta mappingType, C criteria) {
+        private ScalarSubQueryAdaptor(Class<E> javaType, MappingType mappingType, C criteria) {
             Assert.isAssignable(javaType, mappingType.javaType(), "javaType and paramMeta not match.");
             this.mappingType = mappingType;
             this.actualSelect = new StandardColumnSubQuery<>(criteria, javaType);
@@ -222,7 +222,7 @@ abstract class StandardSubQueries<Q extends Query, C> extends AbstractStandardQu
         }
 
         @Override
-        public final MappingMeta mappingMeta() {
+        public final MappingType mappingMeta() {
             return mappingType;
         }
 

@@ -84,7 +84,7 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
     @Override
     public final <F> SingleWhereSpec<T, C> set(FieldMeta<? super T, F> target, F value) {
         this.targetFieldList.add(target);
-        this.valueExpList.add(SQLS.paramWithExp(value, target));
+        this.valueExpList.add(Sqls.paramWithExp(value, target));
         return this;
     }
 

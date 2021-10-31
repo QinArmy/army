@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.Expression;
 import io.army.criteria.SQLContext;
 import io.army.criteria.Selection;
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
 
 final class DefaultSelection implements Selection {
@@ -24,7 +24,7 @@ final class DefaultSelection implements Selection {
     }
 
     @Override
-    public final MappingMeta mappingMeta() {
+    public final MappingType mappingMeta() {
         return this.expression.mappingMeta();
     }
 

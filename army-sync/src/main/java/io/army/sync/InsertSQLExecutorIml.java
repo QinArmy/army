@@ -2,7 +2,7 @@ package io.army.sync;
 
 import io.army.dialect.InsertException;
 import io.army.util.Assert;
-import io.army.wrapper.*;
+import io.army.stmt.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,45 +20,45 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
     }
 
     @Override
-    public final void valueInsert(InnerGenericRmSession session, List<SQLWrapper> sqlWrapperList) {
-        for (SQLWrapper sqlWrapper : sqlWrapperList) {
-            if (sqlWrapper instanceof SimpleSQLWrapper) {
-                SimpleSQLWrapper simpleSQLWrapper = (SimpleSQLWrapper) sqlWrapper;
+    public final void valueInsert(InnerGenericRmSession session, List<Stmt> stmtList) {
+        for (Stmt stmt : stmtList) {
+            if (stmt instanceof SimpleStmt) {
+                SimpleStmt simpleSQLWrapper = (SimpleStmt) stmt;
                 int rows;
                 ///1. execute insert sql
                 rows = doExecuteUpdate(session, simpleSQLWrapper, this::integerUpdate);
                 //2. assert insert rows equals 1 .
                 assertValueInsertResult(rows, simpleSQLWrapper);
-            } else if (sqlWrapper instanceof ChildSQLWrapper) {
-                final ChildSQLWrapper childSQLWrapper = (ChildSQLWrapper) sqlWrapper;
-                final SimpleSQLWrapper parentWrapper = childSQLWrapper.parentWrapper();
+            } else if (stmt instanceof ChildStmt) {
+                final ChildStmt childSQLWrapper = (ChildStmt) stmt;
+                final SimpleStmt parentWrapper = childSQLWrapper.parentWrapper();
                 int rows;
                 //1. execute parent insert sql
                 rows = doExecuteUpdate(session, parentWrapper, this::integerUpdate);
                 //2. assert parent insert rows equals 1 .
                 assertValueInsertResult(rows, parentWrapper);
-                final SimpleSQLWrapper childWrapper = childSQLWrapper.childWrapper();
+                final SimpleStmt childWrapper = childSQLWrapper.childWrapper();
                 //3. execute child insert sql
                 rows = doExecuteUpdate(session, childWrapper, this::integerUpdate);
                 //4. assert child insert rows equals 1 .
                 assertValueInsertResult(rows, childWrapper);
-            } else if (sqlWrapper instanceof BatchSimpleSQLWrapper) {
-                BatchSimpleSQLWrapper simpleSQLWrapper = (BatchSimpleSQLWrapper) sqlWrapper;
+            } else if (stmt instanceof BatchSimpleStmt) {
+                BatchSimpleStmt simpleSQLWrapper = (BatchSimpleStmt) stmt;
                 //1. assert StatementType for integerBatchUpdate function
                 Assert.isTrue(simpleSQLWrapper.statementType().insertStatement(), "sqlWrapper error");
                 // 2. execute batch insert sql
                 doExecuteBatch(session, simpleSQLWrapper, this::integerBatchUpdate);
 
-            } else if (sqlWrapper instanceof ChildBatchSQLWrapper) {
-                final ChildBatchSQLWrapper childSQLWrapper = (ChildBatchSQLWrapper) sqlWrapper;
-                final BatchSimpleSQLWrapper parentWrapper = childSQLWrapper.parentWrapper();
+            } else if (stmt instanceof ChildBatchStmt) {
+                final ChildBatchStmt childSQLWrapper = (ChildBatchStmt) stmt;
+                final BatchSimpleStmt parentWrapper = childSQLWrapper.parentWrapper();
                 List<Integer> parentList, childList;
                 //1. assert StatementType for integerBatchUpdate function
                 Assert.isTrue(parentWrapper.statementType().insertStatement(), "sqlWrapper error");
                 //2. execute parent batch insert sql
                 parentList = doExecuteBatch(session, parentWrapper, this::integerBatchUpdate);
 
-                final BatchSimpleSQLWrapper childWrapper = childSQLWrapper.childWrapper();
+                final BatchSimpleStmt childWrapper = childSQLWrapper.childWrapper();
                 //3. assert StatementType for integerBatchUpdate function
                 Assert.isTrue(childWrapper.statementType().insertStatement(), "sqlWrapper error");
                 //4. execute child batch insert sql
@@ -67,26 +67,26 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
                     throw createBatchChildInsertNotMatchException(parentList.size(), childList.size(), childWrapper);
                 }
             } else {
-                throw createUnSupportedSQLWrapperException(sqlWrapper, "valueInsert");
+                throw createUnSupportedSQLWrapperException(stmt, "valueInsert");
             }
         }
     }
 
 
     @Override
-    public final int subQueryInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper) throws InsertException {
-        return internalSubQueryInsert(session, sqlWrapper, this::integerUpdate, "subQueryInsert");
+    public final int subQueryInsert(InnerGenericRmSession session, Stmt stmt) throws InsertException {
+        return internalSubQueryInsert(session, stmt, this::integerUpdate, "subQueryInsert");
     }
 
     @Override
-    public final long subQueryLargeInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper) throws InsertException {
-        return internalSubQueryInsert(session, sqlWrapper, this::longUpdate, "subQueryLargeInsert");
+    public final long subQueryLargeInsert(InnerGenericRmSession session, Stmt stmt) throws InsertException {
+        return internalSubQueryInsert(session, stmt, this::longUpdate, "subQueryLargeInsert");
     }
 
     @Override
-    public final <T> List<T> returningInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper, Class<T> resultClass)
+    public final <T> List<T> returningInsert(InnerGenericRmSession session, Stmt stmt, Class<T> resultClass)
             throws InsertException {
-        return doExecuteReturning(session, sqlWrapper, resultClass, false, "returningInsert");
+        return doExecuteReturning(session, stmt, resultClass, false, "returningInsert");
     }
 
     /*################################## blow private method ##################################*/
@@ -95,26 +95,26 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
     /**
      * @param executeFunction execute update method ,must be below:
      *                        <ul>
-     *                          <li>{@link #integerUpdate(PreparedStatement, SimpleSQLWrapper)}</li>
-     *                          <li>{@link #longUpdate(PreparedStatement, SimpleSQLWrapper)}</li>
+     *                          <li>{@link #integerUpdate(PreparedStatement, SimpleStmt)}</li>
+     *                          <li>{@link #longUpdate(PreparedStatement, SimpleStmt)}</li>
      *                        </ul>
      * @param <N>             result typed of update rows ,must be  {@link Integer} or {@link Long}
      * @return {@code Integer or Long}
      */
-    private <N extends Number> N internalSubQueryInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper
-            , BiFunction<PreparedStatement, SimpleSQLWrapper, N> executeFunction, String methodName) {
+    private <N extends Number> N internalSubQueryInsert(InnerGenericRmSession session, Stmt stmt
+            , BiFunction<PreparedStatement, SimpleStmt, N> executeFunction, String methodName) {
         N rows;
-        if (sqlWrapper instanceof SimpleSQLWrapper) {
-            rows = doExecuteUpdate(session, (SimpleSQLWrapper) sqlWrapper, executeFunction);
-        } else if (sqlWrapper instanceof ChildSQLWrapper) {
-            final ChildSQLWrapper childSQLWrapper = (ChildSQLWrapper) sqlWrapper;
-            final SimpleSQLWrapper parentWrapper = childSQLWrapper.parentWrapper();
+        if (stmt instanceof SimpleStmt) {
+            rows = doExecuteUpdate(session, (SimpleStmt) stmt, executeFunction);
+        } else if (stmt instanceof ChildStmt) {
+            final ChildStmt childSQLWrapper = (ChildStmt) stmt;
+            final SimpleStmt parentWrapper = childSQLWrapper.parentWrapper();
             N parentRows;
             //1. execute parent sub query insert sql
             parentRows = doExecuteUpdate(session, parentWrapper, executeFunction);
             //2. assert parent insert rows equals 1 .
             if (parentRows.longValue() > 0L) {
-                final SimpleSQLWrapper childWrapper = childSQLWrapper.childWrapper();
+                final SimpleStmt childWrapper = childSQLWrapper.childWrapper();
                 //2. execute child sub query insert sql
                 rows = doExecuteUpdate(session, childWrapper, executeFunction);
                 if (!rows.equals(parentRows)) {
@@ -124,12 +124,12 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
                 rows = parentRows;
             }
         } else {
-            throw createUnSupportedSQLWrapperException(sqlWrapper, methodName);
+            throw createUnSupportedSQLWrapperException(stmt, methodName);
         }
         return rows;
     }
 
-    private void assertValueInsertResult(int insertRows, GenericSimpleWrapper sqlWrapper) {
+    private void assertValueInsertResult(int insertRows, GenericSimpleStmt sqlWrapper) {
         if (insertRows != 1) {
             throw createValueInsertException(insertRows, sqlWrapper);
         }

@@ -6,7 +6,7 @@ import io.army.cache.DomainUpdateAdvice;
 import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Update;
-import io.army.criteria.impl.SQLS;
+import io.army.criteria.impl.Sqls;
 import io.army.criteria.impl.inner.InnerStandardUpdate;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -36,9 +36,9 @@ public abstract class AbstractGenericSession implements GenericSession {
                 targetList.add(fieldMeta);
                 Object value = readonlyWrapper.getPropertyValue(fieldMeta.propertyName());
                 if (value == null) {
-                    valueList.add(SQLS.asNull(fieldMeta.mappingMeta()));
+                    valueList.add(Sqls.asNull(fieldMeta.mappingMeta()));
                 } else {
-                    valueList.add(SQLS.param(value, fieldMeta));
+                    valueList.add(Sqls.param(value, fieldMeta));
                 }
             }
             return new CacheDomainUpdate(advice, targetList, valueList);

@@ -12,7 +12,7 @@ import io.army.meta.TableMeta;
 import io.army.sync.AbstractGenericSyncRmSession;
 import io.army.tx.*;
 import io.army.util.CriteriaUtils;
-import io.army.wrapper.SQLWrapper;
+import io.army.stmt.Stmt;
 
 import javax.sql.XAConnection;
 import javax.transaction.xa.XAResource;
@@ -126,12 +126,12 @@ final class RmSessionImpl extends AbstractGenericSyncRmSession implements InnerR
     public final void valueInsert(Insert insert, @Nullable Set<Integer> domainIndexSet, Visible visible) {
         assertSessionActive(true);
 
-        List<SQLWrapper> sqlWrapperList = parseValueInsert(insert, domainIndexSet, visible);
+        List<Stmt> stmtList = parseValueInsert(insert, domainIndexSet, visible);
         try {
             this.sessionFactory.insertSQLExecutor()
-                    .valueInsert(this, sqlWrapperList);
+                    .valueInsert(this, stmtList);
         } catch (Throwable e) {
-            markRollbackOnlyForChildInsert(sqlWrapperList);
+            markRollbackOnlyForChildInsert(stmtList);
             throw e;
         } finally {
             ((InnerSQL) insert).clear();

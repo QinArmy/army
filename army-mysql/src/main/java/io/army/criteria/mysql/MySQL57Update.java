@@ -1,7 +1,7 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.SQLS;
+import io.army.criteria.impl.Sqls;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -38,7 +38,7 @@ public interface MySQL57Update extends Update {
         <F> MySQLSingleUpdateWhereSpec<T, C> set(FieldMeta<? super T, F> target, F value);
 
         /**
-         * @see SQLS#defaultValue()
+         * @see Sqls#defaultValue()
          */
         <F> MySQLSingleUpdateWhereSpec<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp);
 
@@ -166,7 +166,7 @@ public interface MySQL57Update extends Update {
         <F> MySQLMultiUpdateWhereSpec<C> set(FieldMeta<?, F> target, F value);
 
         /**
-         * @see SQLS#defaultValue()
+         * @see Sqls#defaultValue()
          */
         <F> MySQLMultiUpdateWhereSpec<C> set(FieldMeta<?, F> target, Expression<F> valueExp);
 
@@ -212,7 +212,7 @@ public interface MySQL57Update extends Update {
         <F> MySQLBatchSingleUpdateWhereSpec<T, C> set(FieldMeta<? super T, F> target, F value);
 
         /**
-         * @see SQLS#defaultValue()
+         * @see Sqls#defaultValue()
          */
         <F> MySQLBatchSingleUpdateWhereSpec<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp);
 
@@ -336,7 +336,7 @@ public interface MySQL57Update extends Update {
         <F> MySQLBatchMultiUpdateWhereSpec<C> set(FieldMeta<?, F> target, F value);
 
         /**
-         * @see SQLS#defaultValue()
+         * @see Sqls#defaultValue()
          */
         <F> MySQLBatchMultiUpdateWhereSpec<C> set(FieldMeta<?, F> target, Expression<F> valueExp);
 

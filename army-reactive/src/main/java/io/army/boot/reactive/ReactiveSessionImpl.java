@@ -21,7 +21,7 @@ import io.army.tx.NoSessionTransactionException;
 import io.army.tx.TransactionOptionImpl;
 import io.army.tx.reactive.GenericReactiveTransaction;
 import io.army.tx.reactive.ReactiveTransaction;
-import io.army.wrapper.SQLWrapper;
+import io.army.stmt.Stmt;
 import io.jdbd.DatabaseSession;
 import io.jdbd.PreparedStatement;
 import io.jdbd.ReactiveSQLException;
@@ -255,7 +255,7 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
 
     /**
      * @param resultClass {@link Integer} or {@link Long}
-     * @see UpdateSQLExecutor#batchUpdate(InnerGenericRmSession, SQLWrapper, Class)
+     * @see UpdateSQLExecutor#batchUpdate(InnerGenericRmSession, Stmt, Class)
      */
     private <N extends Number> Flux<N> internalBatchUpdate(Update update, final Visible visible, Class<N> resultClass) {
         // 1. assert session active
@@ -278,7 +278,7 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
 
     /**
      * @param resultClass {@link Integer} or {@link Long}
-     * @see UpdateSQLExecutor#batchUpdate(InnerGenericRmSession, SQLWrapper, Class)
+     * @see UpdateSQLExecutor#batchUpdate(InnerGenericRmSession, Stmt, Class)
      */
     private <N extends Number> Flux<N> internalBatchDelete(Delete delete, final Visible visible, Class<N> resultClass) {
         // 1. assert session active

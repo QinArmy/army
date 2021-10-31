@@ -4,7 +4,7 @@ import io.army.dialect.DQL;
 import io.army.dialect.SQLBuilder;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
-import io.army.wrapper.ParamWrapper;
+import io.army.stmt.ParamValue;
 
 public interface SQLContext {
 
@@ -25,6 +25,6 @@ public interface SQLContext {
 
     SQLBuilder sqlBuilder();
 
-    void appendParam(ParamWrapper paramWrapper);
+    void appendParam(ParamValue paramValue);
 
 }

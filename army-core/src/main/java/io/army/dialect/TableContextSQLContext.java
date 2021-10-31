@@ -5,8 +5,8 @@ import io.army.criteria.Visible;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
-import io.army.wrapper.ParamWrapper;
-import io.army.wrapper.SimpleSQLWrapper;
+import io.army.stmt.ParamValue;
+import io.army.stmt.SimpleStmt;
 
 import java.util.List;
 
@@ -36,9 +36,9 @@ public interface TableContextSQLContext extends SQLContext {
 
     void appendParentOf(ChildTableMeta<?> childMeta,String childAlias);
 
-    List<ParamWrapper> paramList();
+    List<ParamValue> paramList();
 
-    SimpleSQLWrapper build();
+    SimpleStmt build();
 
     @Nullable
     TableContextSQLContext parentContext();

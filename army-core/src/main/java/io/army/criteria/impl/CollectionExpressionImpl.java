@@ -4,9 +4,9 @@ import io.army.criteria.SQLContext;
 import io.army.criteria.ValueExpression;
 import io.army.dialect.SQLBuilder;
 import io.army.meta.ParamMeta;
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
-import io.army.wrapper.ParamWrapper;
+import io.army.stmt.ParamValue;
 
 import java.util.Collection;
 
@@ -45,14 +45,14 @@ final class CollectionExpressionImpl<E> extends AbstractNoNOperationExpression<C
             }
             Assert.notNull(value, "value of collection can't be null.");
             builder.append("?");
-            context.appendParam(ParamWrapper.build(this.paramMeta, value));
+            context.appendParam(ParamValue.build(this.paramMeta, value));
             index++;
         }
         builder.append(")");
     }
 
     @Override
-    public MappingMeta mappingMeta() {
+    public MappingType mappingMeta() {
         return this.paramMeta.mappingMeta();
     }
 

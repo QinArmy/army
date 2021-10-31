@@ -4,7 +4,7 @@ import io.army.criteria.*;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.MappingType;
 
 import java.math.BigInteger;
 import java.util.Collection;
@@ -656,7 +656,7 @@ abstract class AbstractNoNOperationExpression<E> implements Expression<E>, Expre
     }
 
     @Override
-    public final <O> Expression<O> asType(Class<O> convertType, MappingMeta longMapping) {
+    public final <O> Expression<O> asType(Class<O> convertType, MappingType longMapping) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 

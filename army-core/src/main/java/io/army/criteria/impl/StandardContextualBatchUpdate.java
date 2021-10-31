@@ -86,7 +86,7 @@ final class StandardContextualBatchUpdate<T extends IDomain, C> extends Abstract
     @Override
     public final <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> target, F value) {
         this.targetFieldList.add(target);
-        this.valueExpList.add(SQLS.param(value, target));
+        this.valueExpList.add(Sqls.param(value, target));
         return this;
     }
 

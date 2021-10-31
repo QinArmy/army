@@ -7,8 +7,8 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
-import io.army.wrapper.ParamWrapper;
-import io.army.wrapper.SimpleSQLWrapper;
+import io.army.stmt.ParamValue;
+import io.army.stmt.SimpleStmt;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +25,7 @@ final class ComposeSelectContext implements SelectContext {
 
     private final SQLBuilder sqlBuilder;
 
-    private final List<ParamWrapper> paramList;
+    private final List<ParamValue> paramList;
 
     ComposeSelectContext(Dialect dialect, Visible visible) {
         this.dialect = dialect;
@@ -55,7 +55,7 @@ final class ComposeSelectContext implements SelectContext {
     }
 
     @Override
-    public List<ParamWrapper> paramList() {
+    public List<ParamValue> paramList() {
         return this.paramList;
     }
 
@@ -70,8 +70,8 @@ final class ComposeSelectContext implements SelectContext {
     }
 
     @Override
-    public SimpleSQLWrapper build() {
-        return SimpleSQLWrapper.build(this.sqlBuilder.toString(), this.paramList);
+    public SimpleStmt build() {
+        return SimpleStmt.build(this.sqlBuilder.toString(), this.paramList);
     }
 
     @Override
@@ -102,7 +102,7 @@ final class ComposeSelectContext implements SelectContext {
     }
 
     @Override
-    public void appendParam(ParamWrapper paramWrapper) {
+    public void appendParam(ParamValue paramValue) {
         throw new UnsupportedOperationException();
     }
 

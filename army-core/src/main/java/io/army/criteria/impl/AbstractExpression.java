@@ -6,7 +6,7 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.MappingType;
 
 import java.math.BigInteger;
 import java.util.Collection;
@@ -33,7 +33,7 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final IPredicate equal(E constant) {
-        return DualPredicate.build(this, DualPredicateOperator.EQ, SQLS.paramWithExp(constant, this));
+        return DualPredicate.build(this, DualPredicateOperator.EQ, Sqls.paramWithExp(constant, this));
     }
 
     @Nullable
@@ -44,12 +44,12 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final IPredicate equal(String subQueryAlias, String fieldAlias) {
-        return DualPredicate.build(this, DualPredicateOperator.EQ, SQLS.ref(subQueryAlias, fieldAlias));
+        return DualPredicate.build(this, DualPredicateOperator.EQ, Sqls.ref(subQueryAlias, fieldAlias));
     }
 
     @Override
     public final IPredicate equal(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return DualPredicate.build(this, DualPredicateOperator.EQ, SQLS.field(tableAlias, fieldMeta));
+        return DualPredicate.build(this, DualPredicateOperator.EQ, Sqls.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -87,17 +87,17 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final IPredicate lessThan(E constant) {
-        return DualPredicate.build(this, DualPredicateOperator.LT, SQLS.paramWithExp(constant, this));
+        return DualPredicate.build(this, DualPredicateOperator.LT, Sqls.paramWithExp(constant, this));
     }
 
     @Override
     public final IPredicate lessThan(String subQueryAlias, String fieldAlias) {
-        return DualPredicate.build(this, DualPredicateOperator.LT, SQLS.ref(subQueryAlias, fieldAlias));
+        return DualPredicate.build(this, DualPredicateOperator.LT, Sqls.ref(subQueryAlias, fieldAlias));
     }
 
     @Override
     public final IPredicate lessThan(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return DualPredicate.build(this, DualPredicateOperator.LT, SQLS.field(tableAlias, fieldMeta));
+        return DualPredicate.build(this, DualPredicateOperator.LT, Sqls.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -135,17 +135,17 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final IPredicate lessEqual(E constant) {
-        return DualPredicate.build(this, DualPredicateOperator.LE, SQLS.paramWithExp(constant, this));
+        return DualPredicate.build(this, DualPredicateOperator.LE, Sqls.paramWithExp(constant, this));
     }
 
     @Override
     public final IPredicate lessEqual(String subQueryAlias, String fieldAlias) {
-        return DualPredicate.build(this, DualPredicateOperator.LE, SQLS.ref(subQueryAlias, fieldAlias));
+        return DualPredicate.build(this, DualPredicateOperator.LE, Sqls.ref(subQueryAlias, fieldAlias));
     }
 
     @Override
     public final IPredicate lessEqual(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return DualPredicate.build(this, DualPredicateOperator.LE, SQLS.field(tableAlias, fieldMeta));
+        return DualPredicate.build(this, DualPredicateOperator.LE, Sqls.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -183,17 +183,17 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final IPredicate greatThan(E constant) {
-        return DualPredicate.build(this, DualPredicateOperator.GT, SQLS.paramWithExp(constant, this));
+        return DualPredicate.build(this, DualPredicateOperator.GT, Sqls.paramWithExp(constant, this));
     }
 
     @Override
     public final IPredicate greatThan(String subQueryAlias, String fieldAlias) {
-        return DualPredicate.build(this, DualPredicateOperator.GT, SQLS.ref(subQueryAlias, fieldAlias));
+        return DualPredicate.build(this, DualPredicateOperator.GT, Sqls.ref(subQueryAlias, fieldAlias));
     }
 
     @Override
     public final IPredicate greatThan(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return DualPredicate.build(this, DualPredicateOperator.GT, SQLS.field(tableAlias, fieldMeta));
+        return DualPredicate.build(this, DualPredicateOperator.GT, Sqls.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -231,17 +231,17 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final IPredicate greatEqual(E constant) {
-        return DualPredicate.build(this, DualPredicateOperator.GE, SQLS.paramWithExp(constant, this));
+        return DualPredicate.build(this, DualPredicateOperator.GE, Sqls.paramWithExp(constant, this));
     }
 
     @Override
     public final IPredicate greatEqual(String subQueryAlias, String fieldAlias) {
-        return DualPredicate.build(this, DualPredicateOperator.GE, SQLS.ref(subQueryAlias, fieldAlias));
+        return DualPredicate.build(this, DualPredicateOperator.GE, Sqls.ref(subQueryAlias, fieldAlias));
     }
 
     @Override
     public final IPredicate greatEqual(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return DualPredicate.build(this, DualPredicateOperator.GE, SQLS.field(tableAlias, fieldMeta));
+        return DualPredicate.build(this, DualPredicateOperator.GE, Sqls.field(tableAlias, fieldMeta));
     }
 
 
@@ -280,17 +280,17 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final IPredicate notEqual(E constant) {
-        return DualPredicate.build(this, DualPredicateOperator.NOT_EQ, SQLS.paramWithExp(constant, this));
+        return DualPredicate.build(this, DualPredicateOperator.NOT_EQ, Sqls.paramWithExp(constant, this));
     }
 
     @Override
     public final IPredicate notEqual(String subQueryAlias, String fieldAlias) {
-        return DualPredicate.build(this, DualPredicateOperator.NOT_EQ, SQLS.ref(subQueryAlias, fieldAlias));
+        return DualPredicate.build(this, DualPredicateOperator.NOT_EQ, Sqls.ref(subQueryAlias, fieldAlias));
     }
 
     @Override
     public final IPredicate notEqual(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return DualPredicate.build(this, DualPredicateOperator.NOT_EQ, SQLS.field(tableAlias, fieldMeta));
+        return DualPredicate.build(this, DualPredicateOperator.NOT_EQ, Sqls.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -329,17 +329,17 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final IPredicate between(E first, E second) {
-        return BetweenPredicate.build(this, SQLS.paramWithExp(first, this), SQLS.paramWithExp(second, this));
+        return BetweenPredicate.build(this, Sqls.paramWithExp(first, this), Sqls.paramWithExp(second, this));
     }
 
     @Override
     public final IPredicate between(Expression<E> first, E second) {
-        return BetweenPredicate.build(this, first, SQLS.paramWithExp(second, this));
+        return BetweenPredicate.build(this, first, Sqls.paramWithExp(second, this));
     }
 
     @Override
     public final IPredicate between(E first, Expression<E> second) {
-        return BetweenPredicate.build(this, SQLS.paramWithExp(first, this), second);
+        return BetweenPredicate.build(this, Sqls.paramWithExp(first, this), second);
     }
 
     @Override
@@ -362,7 +362,7 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final IPredicate in(Collection<E> values) {
-        return DualPredicate.build(this, DualPredicateOperator.IN, SQLS.collectionWithExp(this, values));
+        return DualPredicate.build(this, DualPredicateOperator.IN, Sqls.collectionWithExp(this, values));
     }
 
     @Override
@@ -379,7 +379,7 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final IPredicate notIn(Collection<E> values) {
-        return DualPredicate.build(this, DualPredicateOperator.NOT_IN, SQLS.collectionWithExp(this, values));
+        return DualPredicate.build(this, DualPredicateOperator.NOT_IN, Sqls.collectionWithExp(this, values));
     }
 
     @Override
@@ -396,7 +396,7 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final IPredicate like(String pattern) {
-        return DualPredicate.build(this, DualPredicateOperator.LIKE, SQLS.param(pattern, SQLS.obtainParamMeta(this)));
+        return DualPredicate.build(this, DualPredicateOperator.LIKE, Sqls.param(pattern, Sqls.obtainParamMeta(this)));
     }
 
     @Override
@@ -414,7 +414,7 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
     @Override
     public final IPredicate notLike(String pattern) {
         return DualPredicate.build(this, DualPredicateOperator.NOT_LIKE
-                , SQLS.param(pattern, SQLS.obtainParamMeta(this)));
+                , Sqls.param(pattern, Sqls.obtainParamMeta(this)));
     }
 
     @Override
@@ -436,17 +436,17 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final <N extends Number> Expression<E> mod(N operator) {
-        return DualExpresion.build(this, DualOperator.MOD, SQLS.param(operator, SQLS.obtainParamMeta(this)));
+        return DualExpresion.build(this, DualOperator.MOD, Sqls.param(operator, Sqls.obtainParamMeta(this)));
     }
 
     @Override
     public final Expression<E> mod(String subQueryAlias, String derivedFieldName) {
-        return DualExpresion.build(this, DualOperator.MOD, SQLS.ref(subQueryAlias, derivedFieldName));
+        return DualExpresion.build(this, DualOperator.MOD, Sqls.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final <N extends Number> Expression<E> mod(String tableAlias, FieldMeta<?, N> fieldMeta) {
-        return DualExpresion.build(this, DualOperator.MOD, SQLS.field(tableAlias, fieldMeta));
+        return DualExpresion.build(this, DualOperator.MOD, Sqls.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -463,17 +463,17 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final <N extends Number> Expression<E> multiply(N multiplicand) {
-        return DualExpresion.build(this, DualOperator.MULTIPLY, SQLS.param(multiplicand, SQLS.obtainParamMeta(this)));
+        return DualExpresion.build(this, DualOperator.MULTIPLY, Sqls.param(multiplicand, Sqls.obtainParamMeta(this)));
     }
 
     @Override
     public final Expression<E> multiply(String subQueryAlias, String derivedFieldName) {
-        return DualExpresion.build(this, DualOperator.MULTIPLY, SQLS.ref(subQueryAlias, derivedFieldName));
+        return DualExpresion.build(this, DualOperator.MULTIPLY, Sqls.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final Expression<E> multiply(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return DualExpresion.build(this, DualOperator.MULTIPLY, SQLS.field(tableAlias, fieldMeta));
+        return DualExpresion.build(this, DualOperator.MULTIPLY, Sqls.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -490,17 +490,17 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final <N extends Number> Expression<E> add(N augend) {
-        return DualExpresion.build(this, DualOperator.ADD, SQLS.param(augend, SQLS.obtainParamMeta(this)));
+        return DualExpresion.build(this, DualOperator.ADD, Sqls.param(augend, Sqls.obtainParamMeta(this)));
     }
 
     @Override
     public final Expression<E> add(String subQueryAlias, String derivedFieldName) {
-        return DualExpresion.build(this, DualOperator.ADD, SQLS.ref(subQueryAlias, derivedFieldName));
+        return DualExpresion.build(this, DualOperator.ADD, Sqls.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final Expression<E> add(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return DualExpresion.build(this, DualOperator.ADD, SQLS.field(tableAlias, fieldMeta));
+        return DualExpresion.build(this, DualOperator.ADD, Sqls.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -517,17 +517,17 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final <N extends Number> Expression<E> subtract(N subtrahend) {
-        return DualExpresion.build(this, DualOperator.SUBTRACT, SQLS.param(subtrahend, SQLS.obtainParamMeta(this)));
+        return DualExpresion.build(this, DualOperator.SUBTRACT, Sqls.param(subtrahend, Sqls.obtainParamMeta(this)));
     }
 
     @Override
     public final Expression<E> subtract(String subQueryAlias, String derivedFieldName) {
-        return DualExpresion.build(this, DualOperator.SUBTRACT, SQLS.ref(subQueryAlias, derivedFieldName));
+        return DualExpresion.build(this, DualOperator.SUBTRACT, Sqls.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final Expression<E> subtract(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return DualExpresion.build(this, DualOperator.SUBTRACT, SQLS.field(tableAlias, fieldMeta));
+        return DualExpresion.build(this, DualOperator.SUBTRACT, Sqls.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -544,17 +544,17 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final <N extends Number> Expression<E> divide(N divisor) {
-        return DualExpresion.build(this, DualOperator.DIVIDE, SQLS.param(divisor, SQLS.obtainParamMeta(this)));
+        return DualExpresion.build(this, DualOperator.DIVIDE, Sqls.param(divisor, Sqls.obtainParamMeta(this)));
     }
 
     @Override
     public final Expression<E> divide(String subQueryAlias, String derivedFieldName) {
-        return DualExpresion.build(this, DualOperator.DIVIDE, SQLS.ref(subQueryAlias, derivedFieldName));
+        return DualExpresion.build(this, DualOperator.DIVIDE, Sqls.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final Expression<E> divide(String tableAlias, FieldMeta<?, E> fieldMeta) {
-        return DualExpresion.build(this, DualOperator.DIVIDE, SQLS.field(tableAlias, fieldMeta));
+        return DualExpresion.build(this, DualOperator.DIVIDE, Sqls.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -576,17 +576,17 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final Expression<BigInteger> and(Long operand) {
-        return DualExpresion.build(this, DualOperator.AND, SQLS.param(operand, SQLS.obtainParamMeta(this)));
+        return DualExpresion.build(this, DualOperator.AND, Sqls.param(operand, Sqls.obtainParamMeta(this)));
     }
 
     @Override
     public final Expression<BigInteger> and(String subQueryAlias, String derivedFieldName) {
-        return DualExpresion.build(this, DualOperator.AND, SQLS.ref(subQueryAlias, derivedFieldName));
+        return DualExpresion.build(this, DualOperator.AND, Sqls.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final <O> Expression<BigInteger> and(String tableAlias, FieldMeta<?, O> fieldMeta) {
-        return DualExpresion.build(this, DualOperator.AND, SQLS.field(tableAlias, fieldMeta));
+        return DualExpresion.build(this, DualOperator.AND, Sqls.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -603,17 +603,17 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final Expression<BigInteger> or(Long operand) {
-        return DualExpresion.build(this, DualOperator.OR, SQLS.param(operand, SQLS.obtainParamMeta(this)));
+        return DualExpresion.build(this, DualOperator.OR, Sqls.param(operand, Sqls.obtainParamMeta(this)));
     }
 
     @Override
     public final Expression<BigInteger> or(String subQueryAlias, String derivedFieldName) {
-        return DualExpresion.build(this, DualOperator.OR, SQLS.ref(subQueryAlias, derivedFieldName));
+        return DualExpresion.build(this, DualOperator.OR, Sqls.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final <O> Expression<BigInteger> or(String tableAlias, FieldMeta<?, O> fieldMeta) {
-        return DualExpresion.build(this, DualOperator.OR, SQLS.field(tableAlias, fieldMeta));
+        return DualExpresion.build(this, DualOperator.OR, Sqls.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -630,17 +630,17 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final Expression<BigInteger> xor(Long operand) {
-        return DualExpresion.build(this, DualOperator.XOR, SQLS.param(operand, SQLS.obtainParamMeta(this)));
+        return DualExpresion.build(this, DualOperator.XOR, Sqls.param(operand, Sqls.obtainParamMeta(this)));
     }
 
     @Override
     public final Expression<BigInteger> xor(String subQueryAlias, String derivedFieldName) {
-        return DualExpresion.build(this, DualOperator.XOR, SQLS.ref(subQueryAlias, derivedFieldName));
+        return DualExpresion.build(this, DualOperator.XOR, Sqls.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final <O> Expression<BigInteger> xor(String tableAlias, FieldMeta<?, O> fieldMeta) {
-        return DualExpresion.build(this, DualOperator.XOR, SQLS.field(tableAlias, fieldMeta));
+        return DualExpresion.build(this, DualOperator.XOR, Sqls.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -657,17 +657,17 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final Expression<BigInteger> inversion(Long operand) {
-        return DualExpresion.build(this, DualOperator.INVERT, SQLS.param(operand, SQLS.obtainParamMeta(this)));
+        return DualExpresion.build(this, DualOperator.INVERT, Sqls.param(operand, Sqls.obtainParamMeta(this)));
     }
 
     @Override
     public final Expression<BigInteger> inversion(String subQueryAlias, String derivedFieldName) {
-        return DualExpresion.build(this, DualOperator.INVERT, SQLS.ref(subQueryAlias, derivedFieldName));
+        return DualExpresion.build(this, DualOperator.INVERT, Sqls.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final <O> Expression<BigInteger> inversion(String tableAlias, FieldMeta<?, O> fieldMeta) {
-        return DualExpresion.build(this, DualOperator.INVERT, SQLS.field(tableAlias, fieldMeta));
+        return DualExpresion.build(this, DualOperator.INVERT, Sqls.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -679,7 +679,7 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final Expression<BigInteger> rightShift(Integer bitNumber) {
-        return DualExpresion.build(this, DualOperator.RIGHT_SHIFT, SQLS.param(bitNumber, SQLS.obtainParamMeta(this)));
+        return DualExpresion.build(this, DualOperator.RIGHT_SHIFT, Sqls.param(bitNumber, Sqls.obtainParamMeta(this)));
     }
 
     @Override
@@ -689,12 +689,12 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final Expression<BigInteger> rightShift(String subQueryAlias, String derivedFieldName) {
-        return DualExpresion.build(this, DualOperator.RIGHT_SHIFT, SQLS.ref(subQueryAlias, derivedFieldName));
+        return DualExpresion.build(this, DualOperator.RIGHT_SHIFT, Sqls.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final <O> Expression<BigInteger> rightShift(String tableAlias, FieldMeta<?, O> fieldMeta) {
-        return DualExpresion.build(this, DualOperator.RIGHT_SHIFT, SQLS.field(tableAlias, fieldMeta));
+        return DualExpresion.build(this, DualOperator.RIGHT_SHIFT, Sqls.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -706,7 +706,7 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final Expression<BigInteger> leftShift(Integer bitNumber) {
-        return DualExpresion.build(this, DualOperator.LEFT_SHIFT, SQLS.param(bitNumber, SQLS.obtainParamMeta(this)));
+        return DualExpresion.build(this, DualOperator.LEFT_SHIFT, Sqls.param(bitNumber, Sqls.obtainParamMeta(this)));
     }
 
     @Override
@@ -716,12 +716,12 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final Expression<BigInteger> leftShift(String subQueryAlias, String derivedFieldName) {
-        return DualExpresion.build(this, DualOperator.LEFT_SHIFT, SQLS.ref(subQueryAlias, derivedFieldName));
+        return DualExpresion.build(this, DualOperator.LEFT_SHIFT, Sqls.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final <O> Expression<BigInteger> leftShift(String tableAlias, FieldMeta<?, O> fieldMeta) {
-        return DualExpresion.build(this, DualOperator.LEFT_SHIFT, SQLS.field(tableAlias, fieldMeta));
+        return DualExpresion.build(this, DualOperator.LEFT_SHIFT, Sqls.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -738,12 +738,12 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final Expression<E> plusOther(String subQueryAlias, String derivedFieldName) {
-        return DualExpresion.build(this, DualOperator.ADD, SQLS.ref(subQueryAlias, derivedFieldName));
+        return DualExpresion.build(this, DualOperator.ADD, Sqls.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final <O> Expression<E> plusOther(String tableAlias, FieldMeta<?, O> fieldMeta) {
-        return DualExpresion.build(this, DualOperator.ADD, SQLS.field(tableAlias, fieldMeta));
+        return DualExpresion.build(this, DualOperator.ADD, Sqls.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -760,12 +760,12 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public final Expression<E> minusOther(String subQueryAlias, String derivedFieldName) {
-        return DualExpresion.build(this, DualOperator.SUBTRACT, SQLS.ref(subQueryAlias, derivedFieldName));
+        return DualExpresion.build(this, DualOperator.SUBTRACT, Sqls.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
     public final <O> Expression<E> minusOther(String tableAlias, FieldMeta<?, O> fieldMeta) {
-        return DualExpresion.build(this, DualOperator.SUBTRACT, SQLS.field(tableAlias, fieldMeta));
+        return DualExpresion.build(this, DualOperator.SUBTRACT, Sqls.field(tableAlias, fieldMeta));
     }
 
     @Override
@@ -781,7 +781,7 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
     }
 
     @Override
-    public final <O> Expression<O> asType(Class<O> convertType, MappingMeta longMapping) {
+    public final <O> Expression<O> asType(Class<O> convertType, MappingType longMapping) {
         return ConvertExpressionImpl.build(this, longMapping);
     }
 

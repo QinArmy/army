@@ -8,7 +8,7 @@ import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.SchemaMeta;
-import io.army.wrapper.SimpleSQLWrapper;
+import io.army.stmt.SimpleStmt;
 
 import java.util.Collections;
 import java.util.List;
@@ -33,9 +33,9 @@ abstract class AbstractSQLDebug implements SQLStatement.SQLAble, SQLDebug {
         return null;
     }
 
-    String printSQL(List<SimpleSQLWrapper> sqlWrapperList, Dialect dialect) {
+    String printSQL(List<SimpleStmt> sqlWrapperList, Dialect dialect) {
         StringBuilder builder = new StringBuilder();
-        for (SimpleSQLWrapper wrapper : sqlWrapperList) {
+        for (SimpleStmt wrapper : sqlWrapperList) {
             builder.append(wrapper)
                     .append("\n")
             ;

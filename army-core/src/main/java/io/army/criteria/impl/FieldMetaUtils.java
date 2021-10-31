@@ -10,7 +10,7 @@ import io.army.meta.GeneratorMeta;
 import io.army.meta.MetaException;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.MappingType;
 import io.army.modelgen.MetaConstant;
 import io.army.struct.CodeEnum;
 import io.army.util.AnnotationUtils;
@@ -119,7 +119,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
     }
 
 
-    static MappingMeta columnMappingMeta(Field field) {
+    static MappingType columnMappingMeta(Field field) {
         Mapping mapping = AnnotationUtils.getAnnotation(field, Mapping.class);
 
         Class<?> mappingClass;
@@ -128,8 +128,8 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         } else {
             try {
                 mappingClass = ClassUtils.forName(mapping.value(), ClassUtils.getDefaultClassLoader());
-                if (!MappingMeta.class.isAssignableFrom(mappingClass)) {
-                    throw new MetaException("%s mapping class isn't %s type.", field, MappingMeta.class.getName());
+                if (!MappingType.class.isAssignableFrom(mappingClass)) {
+                    throw new MetaException("%s mapping class isn't %s type.", field, MappingType.class.getName());
                 }
             } catch (ClassNotFoundException e) {
                 throw new MetaException(e, "%s.value() class not found."
@@ -138,7 +138,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
             }
         }
 
-        MappingMeta mappingType;
+        MappingType mappingType;
         if (mappingClass == null) {
             mappingType = MappingFactory.getDefaultMapping(field.getType());
         } else {

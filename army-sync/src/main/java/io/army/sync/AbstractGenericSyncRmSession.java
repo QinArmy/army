@@ -11,7 +11,7 @@ import io.army.lang.Nullable;
 import io.army.tx.GenericTransaction;
 import io.army.tx.TransactionNotCloseException;
 import io.army.tx.TransactionTimeOutException;
-import io.army.wrapper.SQLWrapper;
+import io.army.stmt.Stmt;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -56,13 +56,13 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
     public final int subQueryInsert(Insert insert, final Visible visible) {
         assertSessionActive(true);
         //1. parse update sql
-        final SQLWrapper sqlWrapper = parseSubQueryInsert(insert, visible);
+        final Stmt stmt = parseSubQueryInsert(insert, visible);
         try {
             //2. execute sql by connection
             return this.genericSessionFactory.insertSQLExecutor()
-                    .subQueryInsert(this, sqlWrapper);
+                    .subQueryInsert(this, stmt);
         } catch (Throwable e) {
-            markRollbackOnlyForChildUpdate(sqlWrapper);
+            markRollbackOnlyForChildUpdate(stmt);
             throw e;
         } finally {
             // 3. clear
@@ -74,13 +74,13 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
     public final long largeSubQueryInsert(Insert insert, final Visible visible) {
         assertSessionActive(true);
         //1. parse update sql
-        final SQLWrapper sqlWrapper = parseSubQueryInsert(insert, visible);
+        final Stmt stmt = parseSubQueryInsert(insert, visible);
         try {
             //2. execute sql by connection
             return this.genericSessionFactory.insertSQLExecutor()
-                    .subQueryLargeInsert(this, sqlWrapper);
+                    .subQueryLargeInsert(this, stmt);
         } catch (Throwable e) {
-            markRollbackOnlyForChildUpdate(sqlWrapper);
+            markRollbackOnlyForChildUpdate(stmt);
             throw e;
         } finally {
             // 3. clear
@@ -93,13 +93,13 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
         assertSessionActive(true);
 
         //1. parse update sql
-        final SQLWrapper sqlWrapper = parseReturningInsert(insert, visible);
+        final Stmt stmt = parseReturningInsert(insert, visible);
         try {
             //2. execute sql by connection
             return this.genericSessionFactory.insertSQLExecutor()
-                    .returningInsert(this, sqlWrapper, resultClass);
+                    .returningInsert(this, stmt, resultClass);
         } catch (Throwable e) {
-            markRollbackOnlyForChildUpdate(sqlWrapper);
+            markRollbackOnlyForChildUpdate(stmt);
             throw e;
         } finally {
             // 3. clear
@@ -112,13 +112,13 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
         assertSessionActive(true);
 
         //1. parse update sql
-        final SQLWrapper sqlWrapper = parseUpdate(update, visible);
+        final Stmt stmt = parseUpdate(update, visible);
         try {
             //2. execute sql by connection
             return this.genericSessionFactory.updateSQLExecutor()
-                    .update(this, sqlWrapper, true);
+                    .update(this, stmt, true);
         } catch (Throwable e) {
-            markRollbackOnlyForChildUpdate(sqlWrapper);
+            markRollbackOnlyForChildUpdate(stmt);
             throw e;
         } finally {
             // 3. clear
@@ -131,13 +131,13 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
         assertSessionActive(true);
 
         //1. parse update sql
-        final SQLWrapper sqlWrapper = parseUpdate(update, visible);
+        final Stmt stmt = parseUpdate(update, visible);
         try {
             //2. execute sql by connection
             return this.genericSessionFactory.updateSQLExecutor()
-                    .largeUpdate(this, sqlWrapper, true);
+                    .largeUpdate(this, stmt, true);
         } catch (Throwable e) {
-            markRollbackOnlyForChildUpdate(sqlWrapper);
+            markRollbackOnlyForChildUpdate(stmt);
             throw e;
         } finally {
             // 3. clear
@@ -150,12 +150,12 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
         assertSessionActive(true);
 
         //1. parse update sql
-        final SQLWrapper sqlWrapper = parseUpdate(update, visible);
+        final Stmt stmt = parseUpdate(update, visible);
         try {   //2. execute sql by connection
             return this.genericSessionFactory.updateSQLExecutor()
-                    .returningUpdate(this, sqlWrapper, resultClass, true);
+                    .returningUpdate(this, stmt, resultClass, true);
         } catch (Throwable e) {
-            markRollbackOnlyForChildUpdate(sqlWrapper);
+            markRollbackOnlyForChildUpdate(stmt);
             throw e;
         } finally {
             // 3. clear
@@ -168,13 +168,13 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
         assertSessionActive(true);
 
         //1. parse update sql
-        final SQLWrapper sqlWrapper = parseDelete(delete, visible);
+        final Stmt stmt = parseDelete(delete, visible);
         try {
             //2. execute sql by connection
             return this.genericSessionFactory.updateSQLExecutor()
-                    .update(this, sqlWrapper, false);
+                    .update(this, stmt, false);
         } catch (Throwable e) {
-            markRollbackOnlyForChildUpdate(sqlWrapper);
+            markRollbackOnlyForChildUpdate(stmt);
             throw e;
         } finally {
             // 3. clear
@@ -187,13 +187,13 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
         assertSessionActive(true);
 
         //1. parse update sql
-        final SQLWrapper sqlWrapper = parseDelete(delete, visible);
+        final Stmt stmt = parseDelete(delete, visible);
         try {
             //2. execute sql by connection
             return this.genericSessionFactory.updateSQLExecutor()
-                    .largeUpdate(this, sqlWrapper, false);
+                    .largeUpdate(this, stmt, false);
         } catch (Throwable e) {
-            markRollbackOnlyForChildUpdate(sqlWrapper);
+            markRollbackOnlyForChildUpdate(stmt);
             throw e;
         } finally {
             // 3. clear
@@ -206,12 +206,12 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
         assertSessionActive(true);
 
         //1. parse update sql
-        final SQLWrapper sqlWrapper = parseDelete(delete, visible);
+        final Stmt stmt = parseDelete(delete, visible);
         try {   //2. execute sql by connection
             return this.genericSessionFactory.updateSQLExecutor()
-                    .returningUpdate(this, sqlWrapper, resultClass, false);
+                    .returningUpdate(this, stmt, resultClass, false);
         } catch (Throwable e) {
-            markRollbackOnlyForChildUpdate(sqlWrapper);
+            markRollbackOnlyForChildUpdate(stmt);
             throw e;
         } finally {
             // 3. clear

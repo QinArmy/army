@@ -8,7 +8,7 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
-import io.army.wrapper.SimpleSQLWrapper;
+import io.army.stmt.SimpleStmt;
 
 final class StandardValueInsertContext extends AbstractTableContextSQLContext implements InsertContext {
 
@@ -101,7 +101,7 @@ final class StandardValueInsertContext extends AbstractTableContextSQLContext im
     }
 
     @Override
-    public final SimpleSQLWrapper build() {
-        return SimpleSQLWrapper.build(this.fieldBuilder.toString() + this.sqlBuilder.toString(), this.paramList);
+    public final SimpleStmt build() {
+        return SimpleStmt.build(this.fieldBuilder.toString() + this.sqlBuilder.toString(), this.paramList);
     }
 }

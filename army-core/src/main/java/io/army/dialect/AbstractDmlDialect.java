@@ -14,9 +14,9 @@ import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
-import io.army.wrapper.ChildSQLWrapper;
-import io.army.wrapper.SQLWrapper;
-import io.army.wrapper.SimpleSQLWrapper;
+import io.army.stmt.ChildStmt;
+import io.army.stmt.Stmt;
+import io.army.stmt.SimpleStmt;
 
 import java.util.*;
 
@@ -26,10 +26,10 @@ import java.util.*;
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
  */
-public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
+public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements DmlDialect {
 
 
-    protected AbstractDML(Dialect dialect) {
+    protected AbstractDmlDialect(Dialect dialect) {
         super(dialect);
     }
 
@@ -39,12 +39,12 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
      *{@inheritDoc}
      */
     @Override
-    public final List<SQLWrapper> valueInsert(Insert insert, @Nullable Set<Integer> domainIndexSet
+    public final List<Stmt> valueInsert(Insert insert, @Nullable Set<Integer> domainIndexSet
             , final Visible visible) {
         DialectUtils.assertShardingMode(this.dialect,domainIndexSet);
         Assert.isTrue(insert.prepared(), "Insert don't invoke asInsert() method.");
 
-        List<SQLWrapper> list;
+        List<Stmt> list;
         if (insert instanceof InnerStandardInsert) {
             InnerStandardInsert standardInsert = (InnerStandardInsert) insert;
             // assert implementation class is legal
@@ -72,10 +72,10 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     }
 
     @Override
-    public final SQLWrapper returningInsert(Insert insert, final Visible visible) {
+    public final Stmt returningInsert(Insert insert, final Visible visible) {
         Assert.isTrue(insert.prepared(), "Insert don't invoke asInsert() method.");
 
-        SQLWrapper sqlWrapper;
+        Stmt stmt;
         if (insert instanceof InnerSpecialValueInsert) {
 
         } else {
@@ -88,44 +88,44 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
      * {@inheritDoc}
      */
     @Override
-    public final SQLWrapper subQueryInsert(Insert insert, final Visible visible) {
+    public final Stmt subQueryInsert(Insert insert, final Visible visible) {
         Assert.isTrue(insert.prepared(), "Insert don't invoke asInsert() method.");
 
-        SQLWrapper sqlWrapper;
+        Stmt stmt;
         if (insert instanceof InnerStandardSubQueryInsert) {
             InnerStandardSubQueryInsert subQueryInsert = (InnerStandardSubQueryInsert) insert;
             // assert implementation class is legal
             CriteriaCounselor.assertStandardSubQueryInsert(subQueryInsert);
             // parse sql
-            sqlWrapper = standardSubQueryInsert(subQueryInsert, visible);
+            stmt = standardSubQueryInsert(subQueryInsert, visible);
         } else if (insert instanceof InnerSpecialSubQueryInsert) {
             InnerSpecialSubQueryInsert subQueryInsert = (InnerSpecialSubQueryInsert) insert;
             // assert implementation class is legal
             assertSpecialSubQueryInsert(subQueryInsert);
-            sqlWrapper = specialSubQueryInsert(subQueryInsert, visible);
+            stmt = specialSubQueryInsert(subQueryInsert, visible);
         } else {
             throw new IllegalArgumentException(String.format("Insert[%s] type unknown.", insert.getClass().getName()));
         }
-        return sqlWrapper;
+        return stmt;
     }
 
 
     /*################################## blow update method ##################################*/
 
     @Override
-    public final SQLWrapper update(Update update, final Visible visible) {
+    public final Stmt update(Update update, final Visible visible) {
         Assert.isTrue(update.prepared(), "Update don't invoke asUpdate() method.");
 
-        SQLWrapper sqlWrapper;
+        Stmt stmt;
         if (update instanceof InnerStandardUpdate) {
             InnerStandardUpdate standardUpdate = (InnerStandardUpdate) update;
             // assert implementation class is legal
             CriteriaCounselor.assertStandardUpdate(standardUpdate);
             DMLUtils.assertUpdateSetAndWhereClause(standardUpdate);
             if (update instanceof InnerStandardBatchUpdate) {
-                sqlWrapper = standardBatchUpdate((InnerStandardBatchUpdate) update, visible);
+                stmt = standardBatchUpdate((InnerStandardBatchUpdate) update, visible);
             }else {
-                sqlWrapper = standardGenericUpdate(standardUpdate, visible);
+                stmt = standardGenericUpdate(standardUpdate, visible);
             }
 
         } else if (update instanceof InnerSpecialUpdate) {
@@ -133,25 +133,25 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
             // assert implementation class is legal
             assertSpecialUpdate(specialUpdate);
             DMLUtils.assertUpdateSetAndWhereClause(specialUpdate);
-            sqlWrapper = specialUpdate(specialUpdate, visible);
+            stmt = specialUpdate(specialUpdate, visible);
         } else {
             throw new IllegalArgumentException(String.format("Update[%s] not supported by simpleUpdate.", update));
         }
-        return sqlWrapper;
+        return stmt;
     }
 
     @Override
-    public final SQLWrapper delete(Delete delete, final Visible visible) {
+    public final Stmt delete(Delete delete, final Visible visible) {
         Assert.isTrue(delete.prepared(), "Delete don't invoke asDelete() method.");
 
-        SQLWrapper sqlWrapper;
+        Stmt stmt;
         if (delete instanceof InnerStandardDelete) {
             InnerStandardDelete standardDelete = (InnerStandardDelete) delete;
             CriteriaCounselor.assertStandardDelete(standardDelete);
             if (standardDelete instanceof InnerStandardBatchDelete) {
-                sqlWrapper = standardBatchDelete((InnerStandardBatchDelete) delete, visible);
+                stmt = standardBatchDelete((InnerStandardBatchDelete) delete, visible);
             }else {
-                sqlWrapper = standardGenericDelete(standardDelete, visible);
+                stmt = standardGenericDelete(standardDelete, visible);
             }
         } else if (delete instanceof InnerSpecialDelete) {
             InnerSpecialDelete specialDelete = (InnerSpecialDelete) delete;
@@ -159,11 +159,11 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
             if (specialDelete instanceof InnerSpecialBatchDelete) {
                 throw new IllegalArgumentException(String.format("Delete[%s] not supported by simpleDelete.", delete));
             }
-            sqlWrapper = specialDelete(specialDelete, visible);
+            stmt = specialDelete(specialDelete, visible);
         } else {
             throw new IllegalArgumentException(String.format("Delete[%s] not supported by simpleDelete.", delete));
         }
-        return sqlWrapper;
+        return stmt;
     }
 
     /*################################## blow protected template method ##################################*/
@@ -183,19 +183,19 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         );
     }
 
-    protected List<SQLWrapper> specialGeneralInsert(InnerSpecialValueInsert insert, Visible visible) {
+    protected List<Stmt> specialGeneralInsert(InnerSpecialValueInsert insert, Visible visible) {
         throw new UnsupportedOperationException(String.format("dialect[%s] not support special general multiInsert."
                 , database())
         );
     }
 
-    protected List<SQLWrapper> specialBatchInsert(InnerSpecialBatchInsert insert, Visible visible) {
+    protected List<Stmt> specialBatchInsert(InnerSpecialBatchInsert insert, Visible visible) {
         throw new UnsupportedOperationException(String.format("dialect[%s] not support special batch multiInsert."
                 , database())
         );
     }
 
-    protected SQLWrapper specialSubQueryInsert(InnerSpecialSubQueryInsert insert, Visible visible) {
+    protected Stmt specialSubQueryInsert(InnerSpecialSubQueryInsert insert, Visible visible) {
         throw new UnsupportedOperationException(String.format("dialect[%s] not support special sub query multiInsert."
                 , database())
         );
@@ -212,7 +212,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         );
     }
 
-    protected SQLWrapper specialUpdate(InnerSpecialUpdate update, Visible visible) {
+    protected Stmt specialUpdate(InnerSpecialUpdate update, Visible visible) {
         throw new UnsupportedOperationException(String.format("dialect [%s] not support special update."
                 , database())
         );
@@ -226,7 +226,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         );
     }
 
-    protected SQLWrapper specialDelete(InnerSpecialDelete delete, Visible visible) {
+    protected Stmt specialDelete(InnerSpecialDelete delete, Visible visible) {
         throw new UnsupportedOperationException(String.format("dialect[%s] not support special delete."
                 , database())
         );
@@ -239,7 +239,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     /**
      * @return a modifiable list
      */
-    private List<SQLWrapper> standardInsert(InnerStandardInsert insert, @Nullable Set<Integer> domainIndexSet
+    private List<Stmt> standardInsert(InnerStandardInsert insert, @Nullable Set<Integer> domainIndexSet
             , final Visible visible) {
 
         final TableMeta<?> tableMeta = insert.tableMeta();
@@ -247,14 +247,14 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         Set<FieldMeta<?, ?>> fieldMetaSet = DMLUtils.mergeInsertFields(tableMeta, this.dialect, insert.fieldList());
 
         final List<DomainWrapper> domainWrapperList = insert.wrapperList();
-        final List<SQLWrapper> sqlWrapperList = new ArrayList<>(domainWrapperList.size());
+        final List<Stmt> stmtList = new ArrayList<>(domainWrapperList.size());
         final DomainValuesGenerator generator = this.dialect.sessionFactory().domainValuesGenerator();
         final boolean migrationData = insert.migrationData();
         if (domainIndexSet == null) {
             for (DomainWrapper domainWrapper : domainWrapperList) {
                 // 2. create domain required property value .
                 generator.createValues(domainWrapper, migrationData);
-                sqlWrapperList.add(
+                stmtList.add(
                         // 3. create sql of domain
                         insertDomain(domainWrapper, fieldMetaSet, insert, visible)
                 );
@@ -264,28 +264,28 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
                 DomainWrapper domainWrapper = domainWrapperList.get(domainIndex);
                 // 2. create domain required property value .
                 generator.createValues(domainWrapper, migrationData);
-                sqlWrapperList.add(
+                stmtList.add(
                         // 3. create sql of domain
                         insertDomain(domainWrapper, fieldMetaSet, insert, visible)
                 );
             }
         }
-        return sqlWrapperList;
+        return stmtList;
     }
 
-    private SQLWrapper standardSubQueryInsert(InnerStandardSubQueryInsert insert, final Visible visible) {
-        SQLWrapper sqlWrapper;
+    private Stmt standardSubQueryInsert(InnerStandardSubQueryInsert insert, final Visible visible) {
+        Stmt stmt;
         if (insert instanceof InnerStandardChildSubQueryInsert) {
-            sqlWrapper = standardChildQueryInsert((InnerStandardChildSubQueryInsert) insert, visible);
+            stmt = standardChildQueryInsert((InnerStandardChildSubQueryInsert) insert, visible);
         } else {
             SubQueryInsertContext context = SubQueryInsertContext.build(insert, this.dialect, visible);
             parseStandardSimpleSubQueryInsert(context, insert.tableMeta(), insert.fieldList(), insert.subQuery());
-            sqlWrapper = context.build();
+            stmt = context.build();
         }
-        return sqlWrapper;
+        return stmt;
     }
 
-    private ChildSQLWrapper standardChildQueryInsert(InnerStandardChildSubQueryInsert insert, final Visible visible) {
+    private ChildStmt standardChildQueryInsert(InnerStandardChildSubQueryInsert insert, final Visible visible) {
         final ChildTableMeta<?> childMeta = insert.tableMeta();
         final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
 
@@ -297,7 +297,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         SubQueryInsertContext childContext = SubQueryInsertContext.buildChild(insert, this.dialect, visible);
         parseStandardSimpleSubQueryInsert(childContext, childMeta, insert.fieldList(), insert.subQuery());
 
-        return ChildSQLWrapper.build(parentContext.build(), childContext.build());
+        return ChildStmt.build(parentContext.build(), childContext.build());
     }
 
     private void parseStandardSimpleSubQueryInsert(SubQueryInsertContext context
@@ -322,29 +322,29 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     }
 
 
-    private SQLWrapper insertDomain(ReadonlyWrapper domainWrapper, Collection<FieldMeta<?, ?>> fieldMetas
+    private Stmt insertDomain(ReadonlyWrapper domainWrapper, Collection<FieldMeta<?, ?>> fieldMetas
             , InnerStandardInsert insert, final Visible visible) {
 
-        SQLWrapper sqlWrapper;
+        Stmt stmt;
         switch (insert.tableMeta().mappingMode()) {
             case PARENT:// when PARENT,discriminatorValue is 0 .
             case SIMPLE:
-                sqlWrapper = createInsertForSimple(domainWrapper, fieldMetas, insert, visible);
+                stmt = createInsertForSimple(domainWrapper, fieldMetas, insert, visible);
                 break;
             case CHILD:
-                sqlWrapper = createInsertForChild(domainWrapper, fieldMetas, insert, visible);
+                stmt = createInsertForChild(domainWrapper, fieldMetas, insert, visible);
                 break;
             default:
                 throw DialectUtils.createMappingModeUnknownException(insert.tableMeta().mappingMode());
 
         }
-        return sqlWrapper;
+        return stmt;
     }
 
     /**
      * @param mergedFields merged by {@link DMLUtils#mergeInsertFields(TableMeta, Dialect, Collection)}
      */
-    private ChildSQLWrapper createInsertForChild(ReadonlyWrapper beanWrapper, Collection<FieldMeta<?, ?>> mergedFields
+    private ChildStmt createInsertForChild(ReadonlyWrapper beanWrapper, Collection<FieldMeta<?, ?>> mergedFields
             , InnerStandardInsert insert, final Visible visible) {
 
         Assert.notEmpty(mergedFields, "mergedFields must not empty.");
@@ -370,14 +370,14 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
                 , this.dialect, visible);
         DMLUtils.createValueInsertForSimple(childMeta, childMeta,childFields, beanWrapper, childContext);
 
-        return ChildSQLWrapper.build(parentContext.build(), childContext.build());
+        return ChildStmt.build(parentContext.build(), childContext.build());
     }
 
 
     /**
      * @param mergedFields merged by {@link DMLUtils#mergeInsertFields(TableMeta, Dialect, Collection)}
      */
-    private SimpleSQLWrapper createInsertForSimple(ReadonlyWrapper beanWrapper
+    private SimpleStmt createInsertForSimple(ReadonlyWrapper beanWrapper
             , Collection<FieldMeta<?, ?>> mergedFields, InnerStandardInsert insert
             , final Visible visible) {
 
@@ -390,27 +390,27 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     }
 
 
-    private SQLWrapper standardBatchInsert(InnerStandardBatchInsert insert, final Visible visible) {
+    private Stmt standardBatchInsert(InnerStandardBatchInsert insert, final Visible visible) {
         if (this.dialect.sessionFactory().shardingMode() != ShardingMode.NO_SHARDING) {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "Batch insert only support NO_SHARDING mode.");
         }
-        SQLWrapper sqlWrapper;
+        Stmt stmt;
         switch (insert.tableMeta().mappingMode()) {
             case SIMPLE:
             case PARENT:
-                sqlWrapper = standardBatchInsertForSimple(insert, visible);
+                stmt = standardBatchInsertForSimple(insert, visible);
                 break;
             case CHILD:
-                sqlWrapper = standardBatchInsertForChild(insert, visible);
+                stmt = standardBatchInsertForChild(insert, visible);
                 break;
             default:
                 throw DialectUtils.createMappingModeUnknownException(insert.tableMeta().mappingMode());
 
         }
-        return sqlWrapper;
+        return stmt;
     }
 
-    private SQLWrapper standardBatchInsertForSimple(InnerStandardBatchInsert insert
+    private Stmt standardBatchInsertForSimple(InnerStandardBatchInsert insert
             , final Visible visible) {
         TableMeta<?> tableMeta = insert.tableMeta();
         // 1.merge fields
@@ -424,7 +424,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
     }
 
 
-    private ChildSQLWrapper standardBatchInsertForChild(InnerStandardBatchInsert insert, final Visible visible) {
+    private ChildStmt standardBatchInsertForChild(InnerStandardBatchInsert insert, final Visible visible) {
         final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) insert.tableMeta();
         final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
 
@@ -445,31 +445,31 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
                 insert, null, this.dialect, visible);
         DMLUtils.createStandardBatchInsertForSimple(childMeta,childMeta, childFieldSet, childContext);
 
-        return ChildSQLWrapper.build(parentContext.build(), childContext.build());
+        return ChildStmt.build(parentContext.build(), childContext.build());
     }
 
     /*################################## blow update private method ##################################*/
 
-    private SQLWrapper standardGenericUpdate(InnerStandardUpdate update, final Visible visible) {
+    private Stmt standardGenericUpdate(InnerStandardUpdate update, final Visible visible) {
 
-        SQLWrapper sqlWrapper;
+        Stmt stmt;
         switch (update.tableMeta().mappingMode()) {
             case SIMPLE:
-                sqlWrapper = standardSimpleUpdate(update, visible);
+                stmt = standardSimpleUpdate(update, visible);
                 break;
             case PARENT:
-                sqlWrapper = standardParentUpdate(update, visible);
+                stmt = standardParentUpdate(update, visible);
                 break;
             case CHILD:
-                sqlWrapper = standardChildUpdate(update, visible);
+                stmt = standardChildUpdate(update, visible);
                 break;
             default:
                 throw DialectUtils.createMappingModeUnknownException(update.tableMeta().mappingMode());
         }
-        return sqlWrapper;
+        return stmt;
     }
 
-    private SQLWrapper standardChildUpdate(InnerStandardUpdate update, final Visible visible) {
+    private Stmt standardChildUpdate(InnerStandardUpdate update, final Visible visible) {
         List<FieldMeta<?, ?>> targetFieldList = update.targetFieldList();
         List<Expression<?>> valueExpList = update.valueExpList();
 
@@ -502,18 +502,18 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         parseStandardUpdate(parentContext, parentMeta, update.tableAlias()
                 , parentFieldList, parentExpList, parentPredicateList);
 
-        SQLWrapper sqlWrapper;
+        Stmt stmt;
         if (childFieldList.isEmpty()) {
-            sqlWrapper = parentContext.build();
+            stmt = parentContext.build();
         } else {
             //3 parse child update sql (optional)
             StandardUpdateContext childContext = StandardUpdateContext.buildChild(update, this.dialect, visible);
             parseStandardUpdate(childContext, childMeta, update.tableAlias()
                     , childFieldList, childExpList, update.predicateList());
 
-            sqlWrapper = ChildSQLWrapper.build(parentContext.build(), childContext.build());
+            stmt = ChildStmt.build(parentContext.build(), childContext.build());
         }
-        return sqlWrapper;
+        return stmt;
     }
 
 
@@ -533,7 +533,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
     }
 
-    private SQLWrapper standardBatchUpdate(InnerStandardBatchUpdate update, final Visible visible) {
+    private Stmt standardBatchUpdate(InnerStandardBatchUpdate update, final Visible visible) {
         // create batch update wrapper
         return DMLUtils.createBatchSQLWrapper(
                 update.wrapperList()
@@ -541,7 +541,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         );
     }
 
-    private SimpleSQLWrapper standardSimpleUpdate(InnerStandardUpdate update, final Visible visible) {
+    private SimpleStmt standardSimpleUpdate(InnerStandardUpdate update, final Visible visible) {
         StandardUpdateContext context = StandardUpdateContext.build(update, this.dialect, visible);
 
         parseStandardUpdate(context, update.tableMeta(), update.tableAlias()
@@ -550,7 +550,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         return context.build();
     }
 
-    private SimpleSQLWrapper standardParentUpdate(InnerStandardUpdate update, final Visible visible) {
+    private SimpleStmt standardParentUpdate(InnerStandardUpdate update, final Visible visible) {
         StandardUpdateContext context = StandardUpdateContext.build(update, this.dialect, visible);
         final ParentTableMeta<?> parentMeta = (ParentTableMeta<?>) update.tableMeta();
         // create parent predicate
@@ -582,39 +582,39 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
 
     /*################################## blow delete private method ##################################*/
 
-    private SQLWrapper standardBatchDelete(InnerStandardBatchDelete delete, final Visible visible) {
+    private Stmt standardBatchDelete(InnerStandardBatchDelete delete, final Visible visible) {
         return DMLUtils.createBatchSQLWrapper(
                 delete.wrapperList()
                 , standardGenericDelete(delete, visible)
         );
     }
 
-    private SQLWrapper standardGenericDelete(InnerStandardDelete delete, final Visible visible) {
-        SQLWrapper sqlWrapper;
+    private Stmt standardGenericDelete(InnerStandardDelete delete, final Visible visible) {
+        Stmt stmt;
         switch (delete.tableMeta().mappingMode()) {
             case SIMPLE:
-                sqlWrapper = standardSimpleDelete(delete, visible);
+                stmt = standardSimpleDelete(delete, visible);
                 break;
             case PARENT:
-                sqlWrapper = standardParentDelete(delete, visible);
+                stmt = standardParentDelete(delete, visible);
                 break;
             case CHILD:
-                sqlWrapper = standardChildDelete(delete, visible);
+                stmt = standardChildDelete(delete, visible);
                 break;
             default:
                 throw DialectUtils.createMappingModeUnknownException(delete.tableMeta().mappingMode());
         }
-        return sqlWrapper;
+        return stmt;
     }
 
 
-    private SQLWrapper standardSimpleDelete(InnerStandardDelete delete, final Visible visible) {
+    private Stmt standardSimpleDelete(InnerStandardDelete delete, final Visible visible) {
         StandardDeleteContext context = StandardDeleteContext.build(delete, this.dialect, visible);
         parseStandardDelete(delete.tableMeta(), delete.tableAlias(), delete.predicateList(), context);
         return context.build();
     }
 
-    private SQLWrapper standardParentDelete(InnerStandardDelete delete, final Visible visible) {
+    private Stmt standardParentDelete(InnerStandardDelete delete, final Visible visible) {
         StandardDeleteContext context = StandardDeleteContext.build(delete, this.dialect, visible);
         final ParentTableMeta<?> parentMeta = (ParentTableMeta<?>) delete.tableMeta();
         // create parent predicate list
@@ -623,7 +623,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         return context.build();
     }
 
-    private SQLWrapper standardChildDelete(InnerStandardDelete delete, final Visible visible) {
+    private Stmt standardChildDelete(InnerStandardDelete delete, final Visible visible) {
         final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) delete.tableMeta();
         final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
         // 1. extract parent predicate list
@@ -638,7 +638,7 @@ public abstract class AbstractDML extends AbstractDMLAndDQL implements DML {
         StandardDeleteContext childContext = StandardDeleteContext.buildChild(delete, this.dialect, visible);
         parseStandardDelete(childMeta, delete.tableAlias(), delete.predicateList(), childContext);
 
-        return ChildSQLWrapper.build(parentContext.build(), childContext.build());
+        return ChildStmt.build(parentContext.build(), childContext.build());
     }
 
     private void parseStandardDelete(TableMeta<?> tableMeta, String tableAlias, List<IPredicate> predicateList

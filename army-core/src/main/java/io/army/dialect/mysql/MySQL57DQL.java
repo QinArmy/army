@@ -8,8 +8,8 @@ import io.army.dialect.Keywords;
 import io.army.dialect.SQLBuilder;
 import io.army.dialect.TableContextSQLContext;
 import io.army.meta.mapping.MappingFactory;
-import io.army.meta.mapping.MappingMeta;
-import io.army.wrapper.ParamWrapper;
+import io.army.meta.mapping.MappingType;
+import io.army.stmt.ParamValue;
 
 class MySQL57DQL extends AbstractDQL {
 
@@ -39,17 +39,17 @@ class MySQL57DQL extends AbstractDQL {
             SQLBuilder builder = context.sqlBuilder();
             builder.append(" ")
                     .append(Keywords.LIMIT);
-            final MappingMeta integerType = MappingFactory.getDefaultMapping(Integer.class);
+            final MappingType integerType = MappingFactory.getDefaultMapping(Integer.class);
             if (offset > -1) {
                 builder.append(" ?,");
-                context.appendParam(ParamWrapper.build(integerType, offset));
+                context.appendParam(ParamValue.build(integerType, offset));
                 if (rowCount < 0) {
                     throw new CriteriaException(ErrorCode.CRITERIA_ERROR
                             , "offset[%s] > -1 and rowCount[%s] < 0 is supported by MySQL.", offset, rowCount);
                 }
             }
             builder.append(" ?");
-            context.appendParam(ParamWrapper.build(integerType, rowCount));
+            context.appendParam(ParamValue.build(integerType, rowCount));
         }
     }
 

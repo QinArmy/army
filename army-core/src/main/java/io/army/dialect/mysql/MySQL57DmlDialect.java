@@ -1,11 +1,11 @@
 package io.army.dialect.mysql;
 
 import io.army.criteria.SQLContext;
-import io.army.dialect.AbstractDML;
+import io.army.dialect.AbstractDmlDialect;
 
-class MySQL57DML extends AbstractDML {
+class MySQL57DmlDialect extends AbstractDmlDialect {
 
-    MySQL57DML(MySQL57Dialect sql) {
+    MySQL57DmlDialect(MySQL57Dialect sql) {
         super(sql);
     }
 

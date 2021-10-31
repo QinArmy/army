@@ -5,7 +5,7 @@ import io.army.criteria.FieldExpression;
 import io.army.criteria.SQLContext;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.MappingType;
 
 import java.util.Collection;
 
@@ -38,7 +38,7 @@ class UnaryExpression<E> extends AbstractExpression<E> {
 
 
     @Override
-    public final MappingMeta mappingMeta() {
+    public final MappingType mappingMeta() {
         return expression.mappingMeta();
     }
 

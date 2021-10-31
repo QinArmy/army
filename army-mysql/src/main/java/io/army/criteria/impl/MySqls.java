@@ -3,9 +3,9 @@ package io.army.criteria.impl;
 import io.army.criteria.EmptyObject;
 import io.army.criteria.mysql.*;
 import io.army.meta.mapping.MappingFactory;
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.MappingType;
 
-public abstract class MySQLS extends SQLS {
+public abstract class MySqls extends Sqls {
 
     /*################################## blow update  method ##################################*/
 /*
@@ -81,12 +81,12 @@ public abstract class MySQLS extends SQLS {
     }
 
     public static <E, C> MySQL57ScalarSubQuery.MySQLScalarSelectionSpec<E, C> mySQL57ScalarSubQuery(
-            Class<E> javaType, MappingMeta mappingType, C criteria) {
+            Class<E> javaType, MappingType mappingType, C criteria) {
         return MySQL57SubQueries.buildScalarSubQuery(javaType, mappingType, criteria);
     }
 
     public static <E> MySQL57ScalarSubQuery.MySQLScalarSelectionSpec<E, EmptyObject> mySQL57ScalarSubQuery(
-            Class<E> javaType, MappingMeta mappingType) {
+            Class<E> javaType, MappingType mappingType) {
         return MySQL57SubQueries.buildScalarSubQuery(javaType, mappingType, EmptyObject.getInstance());
     }
 

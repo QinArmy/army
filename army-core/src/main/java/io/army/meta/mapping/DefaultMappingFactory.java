@@ -20,13 +20,13 @@ abstract class DefaultMappingFactory {
     private DefaultMappingFactory() {
     }
 
-    private static final Map<Class<?>, MappingMeta> DEFAULT_MAPPING = createDefaultMapping();
+    private static final Map<Class<?>, MappingType> DEFAULT_MAPPING = createDefaultMapping();
 
-    private static final ConcurrentMap<Class<?>, MappingMeta> OVERRIDE_DEFAULT_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<?>, MappingType> OVERRIDE_DEFAULT_MAP = new ConcurrentHashMap<>();
 
 
-    private static Map<Class<?>, MappingMeta> createDefaultMapping() {
-        Map<Class<?>, MappingMeta> map = new HashMap<>();
+    private static Map<Class<?>, MappingType> createDefaultMapping() {
+        Map<Class<?>, MappingType> map = new HashMap<>();
 
         map.put(Long.class, LongType.build(Long.class));
         map.put(Integer.class, IntegerType.build(Integer.class));
@@ -45,8 +45,8 @@ abstract class DefaultMappingFactory {
         return Collections.unmodifiableMap(map);
     }
 
-    static MappingMeta getDefaultMapping(Class<?> javaType) throws MetaException {
-        MappingMeta mappingType = obtainDefaultMapping(javaType);
+    static MappingType getDefaultMapping(Class<?> javaType) throws MetaException {
+        MappingType mappingType = obtainDefaultMapping(javaType);
         if (mappingType == null) {
             throw new MetaException("not found MappingType for %s", javaType.getName());
         }
@@ -54,8 +54,8 @@ abstract class DefaultMappingFactory {
     }
 
     @Nullable
-    static MappingMeta obtainDefaultMapping(Class<?> javaType) {
-        MappingMeta mappingType;
+    static MappingType obtainDefaultMapping(Class<?> javaType) {
+        MappingType mappingType;
         if (javaType.isEnum()) {
             mappingType = CodeEnumType.build(javaType);
         } else {
@@ -67,9 +67,9 @@ abstract class DefaultMappingFactory {
         return mappingType;
     }
 
-    static void overrideDefaultMapping(Class<?> javaType, MappingMeta mappingMeta) throws MetaException {
-        assertMappingMeta(javaType, mappingMeta);
-        if (OVERRIDE_DEFAULT_MAP.putIfAbsent(javaType, mappingMeta) != null) {
+    static void overrideDefaultMapping(Class<?> javaType, MappingType mappingType) throws MetaException {
+        assertMappingMeta(javaType, mappingType);
+        if (OVERRIDE_DEFAULT_MAP.putIfAbsent(javaType, mappingType) != null) {
             throw new IllegalStateException(String.format("java type[%s] override mapping duplication."
                     , javaType.getName()));
         }
@@ -77,12 +77,12 @@ abstract class DefaultMappingFactory {
     }
 
 
-    static MappingMeta createMappingMeta(Class<?> mappingClass, Class<?> typeClass)
+    static MappingType createMappingMeta(Class<?> mappingClass, Class<?> typeClass)
             throws MetaException, IllegalArgumentException {
 
-        if (!MappingMeta.class.isAssignableFrom(mappingClass)) {
+        if (!MappingType.class.isAssignableFrom(mappingClass)) {
             throw new IllegalArgumentException(String.format("mappingClass isn't %s type."
-                    , MappingMeta.class.getName()));
+                    , MappingType.class.getName()));
         }
 
         Method method = ReflectionUtils.findMethod(mappingClass, "build", Class.class);
@@ -91,12 +91,12 @@ abstract class DefaultMappingFactory {
                 && Modifier.isStatic(method.getModifiers())
                 && mappingClass == method.getReturnType()) {
             try {
-                MappingMeta mappingMeta = (MappingMeta) method.invoke(null, typeClass);
-                if (mappingMeta == null) {
+                MappingType mappingType = (MappingType) method.invoke(null, typeClass);
+                if (mappingType == null) {
                     throw new MetaException("MappingMeta[%s] build method return null.", mappingClass.getName());
                 }
-                assertMappingMeta(typeClass, mappingMeta);
-                return mappingMeta;
+                assertMappingMeta(typeClass, mappingType);
+                return mappingType;
             } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new MetaException(e, "invoke MappingMeta[%s] build method occur error.", mappingClass.getName());
             }
@@ -111,15 +111,15 @@ abstract class DefaultMappingFactory {
 
     /*################################## blow private method ##################################*/
 
-    private static void assertMappingMeta(Class<?> javaType, MappingMeta mappingMeta) {
-        if (mappingMeta.singleton()) {
-            if (mappingMeta.javaType() != javaType) {
+    private static void assertMappingMeta(Class<?> javaType, MappingType mappingType) {
+        if (mappingType.singleton()) {
+            if (mappingType.javaType() != javaType) {
                 throw new MetaException("MappingMeta[%s] is singleton,javaType() must == Class[%s]"
-                        , mappingMeta.getClass().getName(), javaType.getName());
+                        , mappingType.getClass().getName(), javaType.getName());
             }
-        } else if (mappingMeta.javaType().isAssignableFrom(javaType)) {
+        } else if (mappingType.javaType().isAssignableFrom(javaType)) {
             throw new MetaException("MappingMeta[%s] isn't singleton,javaType() must be base class/interface of %s ."
-                    , mappingMeta.getClass().getName(), javaType.getName());
+                    , mappingType.getClass().getName(), javaType.getName());
         }
     }
 

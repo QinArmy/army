@@ -4,7 +4,7 @@ import io.army.criteria.Expression;
 import io.army.criteria.FuncExpression;
 import io.army.criteria.SQLContext;
 import io.army.dialect.SQLBuilder;
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.MappingType;
 import io.army.util.ArrayUtils;
 import io.army.util.Assert;
 
@@ -15,20 +15,20 @@ import java.util.List;
 abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpression<E> {
 
 
-    static <E> FuncExpression<E> noArgumentFunc(String name, MappingMeta returnType) {
+    static <E> FuncExpression<E> noArgumentFunc(String name, MappingType returnType) {
         return new NoArgumentFunc<>(name, returnType);
     }
 
-    static <E> FuncExpression<E> oneArgumentFunc(String name, MappingMeta returnType, Expression<?> one) {
+    static <E> FuncExpression<E> oneArgumentFunc(String name, MappingType returnType, Expression<?> one) {
         return new OneArgumentFunc<>(name, returnType, one);
     }
 
-    static <E> FuncExpression<E> twoArgumentFunc(String name, MappingMeta returnType, Expression<?> one
+    static <E> FuncExpression<E> twoArgumentFunc(String name, MappingType returnType, Expression<?> one
             , Expression<?> two) {
         return new TwoArgumentFunc<>(name, returnType, one, two);
     }
 
-    static <E> FuncExpression<E> twoArgumentFunc(String name, MappingMeta returnType, List<String> format
+    static <E> FuncExpression<E> twoArgumentFunc(String name, MappingType returnType, List<String> format
             , Expression<?> one, Expression<?> two) {
         return new TwoArgumentFunc<>(name, returnType, format, one, two);
     }
@@ -36,15 +36,15 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
 
     private final String name;
 
-    protected final MappingMeta returnType;
+    protected final MappingType returnType;
 
-    private AbstractFunc(String name, MappingMeta returnType) {
+    private AbstractFunc(String name, MappingType returnType) {
         this.name = name;
         this.returnType = returnType;
     }
 
     @Override
-    public final MappingMeta mappingMeta() {
+    public final MappingType mappingMeta() {
         return returnType;
     }
 
@@ -81,7 +81,7 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
 
     private static final class NoArgumentFunc<E> extends AbstractFunc<E> {
 
-        NoArgumentFunc(String name, MappingMeta returnType) {
+        NoArgumentFunc(String name, MappingType returnType) {
             super(name, returnType);
         }
 
@@ -96,7 +96,7 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
         }
 
         @Override
-        public List<MappingMeta> argumentTypeList() {
+        public List<MappingType> argumentTypeList() {
             return Collections.emptyList();
         }
     }
@@ -105,9 +105,9 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
 
         private final Expression<?> one;
 
-        private final List<MappingMeta> argumentTypeList;
+        private final List<MappingType> argumentTypeList;
 
-        private OneArgumentFunc(String name, MappingMeta returnType, Expression<?> one) {
+        private OneArgumentFunc(String name, MappingType returnType, Expression<?> one) {
             super(name, returnType);
             this.one = one;
             this.argumentTypeList = Collections.singletonList(one.mappingMeta());
@@ -124,7 +124,7 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
         }
 
         @Override
-        public List<MappingMeta> argumentTypeList() {
+        public List<MappingType> argumentTypeList() {
             return this.argumentTypeList;
         }
     }
@@ -139,9 +139,9 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
 
         private final Expression<?> two;
 
-        private final List<MappingMeta> argumentTypeList;
+        private final List<MappingType> argumentTypeList;
 
-        private TwoArgumentFunc(String name, MappingMeta returnType, List<String> format, Expression<?> one
+        private TwoArgumentFunc(String name, MappingType returnType, List<String> format, Expression<?> one
                 , Expression<?> two) {
             super(name, returnType);
             Assert.isTrue(format.size() >= 3, "");
@@ -149,13 +149,13 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
             this.one = one;
             this.two = two;
 
-            List<MappingMeta> typeList = new ArrayList<>(2);
+            List<MappingType> typeList = new ArrayList<>(2);
             typeList.add(one.mappingMeta());
             typeList.add(two.mappingMeta());
             this.argumentTypeList = Collections.unmodifiableList(typeList);
         }
 
-        private TwoArgumentFunc(String name, MappingMeta returnType, Expression<?> one, Expression<?> two) {
+        private TwoArgumentFunc(String name, MappingType returnType, Expression<?> one, Expression<?> two) {
             this(name, returnType, FORMAT_LIST, one, two);
         }
 
@@ -175,7 +175,7 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
         }
 
         @Override
-        public List<MappingMeta> argumentTypeList() {
+        public List<MappingType> argumentTypeList() {
             return this.argumentTypeList;
         }
     }
@@ -192,9 +192,9 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
 
         protected final Expression<?> three;
 
-        private final List<MappingMeta> argumentTypeList;
+        private final List<MappingType> argumentTypeList;
 
-        ThreeArgumentFunc(String name, MappingMeta returnType, List<String> format, Expression<?> one
+        ThreeArgumentFunc(String name, MappingType returnType, List<String> format, Expression<?> one
                 , Expression<?> two, Expression<?> three) {
             super(name, returnType);
             Assert.isTrue(format.size() >= 4, "showSQL error");
@@ -203,14 +203,14 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
             this.two = two;
             this.three = three;
 
-            List<MappingMeta> typeList = new ArrayList<>(3);
+            List<MappingType> typeList = new ArrayList<>(3);
             typeList.add(one.mappingMeta());
             typeList.add(two.mappingMeta());
             typeList.add(three.mappingMeta());
             this.argumentTypeList = Collections.unmodifiableList(typeList);
         }
 
-        ThreeArgumentFunc(String name, MappingMeta returnType, Expression<?> one
+        ThreeArgumentFunc(String name, MappingType returnType, Expression<?> one
                 , Expression<?> two, Expression<?> three) {
             this(name, returnType, FORMAT_LIST, one, two, three);
         }
@@ -234,7 +234,7 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
         }
 
         @Override
-        public List<MappingMeta> argumentTypeList() {
+        public List<MappingType> argumentTypeList() {
             return this.argumentTypeList;
         }
     }

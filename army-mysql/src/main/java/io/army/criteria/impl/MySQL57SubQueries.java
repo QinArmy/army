@@ -7,7 +7,7 @@ import io.army.criteria.impl.inner.mysql.InnerMySQL57SubQuery;
 import io.army.criteria.mysql.*;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
 
 import java.util.List;
@@ -41,7 +41,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         return new MySQL57ColumnSubQueryImpl<>(criteria, columnType);
     }
 
-    static <E, C> MySQL57ScalarSubQueryAdaptor<E, C> buildScalarSubQuery(Class<E> javaType, MappingMeta mappingType
+    static <E, C> MySQL57ScalarSubQueryAdaptor<E, C> buildScalarSubQuery(Class<E> javaType, MappingType mappingType
             , C criteria) {
         if (criteria != CriteriaContextHolder.getContext()) {
             throw new IllegalArgumentException("criteria isn't current context.");
@@ -157,13 +157,13 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
             , InnerMySQL57SubQuery {
 
 
-        private final MappingMeta mappingType;
+        private final MappingType mappingType;
 
         private final MySQL57ColumnSubQueryImpl<E, C> actualSelect;
 
         private final MySQLTableRouteOnSpecImpl<E, C> tableRouteSpec;
 
-        private MySQL57ScalarSubQueryAdaptor(Class<E> javaType, MappingMeta mappingType, C criteria) {
+        private MySQL57ScalarSubQueryAdaptor(Class<E> javaType, MappingType mappingType, C criteria) {
             Assert.isAssignable(javaType, mappingType.javaType(), "javaType and paramMeta not match.");
             this.mappingType = mappingType;
             this.actualSelect = new MySQL57ColumnSubQueryImpl<>(criteria, javaType);
@@ -184,7 +184,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public final MappingMeta mappingMeta() {
+        public final MappingType mappingMeta() {
             return mappingType;
         }
 

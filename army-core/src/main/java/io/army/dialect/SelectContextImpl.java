@@ -5,7 +5,7 @@ import io.army.codec.StatementType;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.InnerSelect;
 import io.army.util.Assert;
-import io.army.wrapper.SimpleSQLWrapper;
+import io.army.stmt.SimpleStmt;
 
 final class SelectContextImpl extends AbstractQueryStatementContext implements SelectContext {
 
@@ -32,9 +32,9 @@ final class SelectContextImpl extends AbstractQueryStatementContext implements S
     }
 
     @Override
-    public final SimpleSQLWrapper build() {
+    public final SimpleStmt build() {
         Assert.state(!this.childContext, "SelectContextImpl not outer context");
-        return SimpleSQLWrapper.builder()
+        return SimpleStmt.builder()
                 .sql(this.sqlBuilder.toString())
                 .paramList(this.paramList)
                 .statementType(StatementType.SELECT)

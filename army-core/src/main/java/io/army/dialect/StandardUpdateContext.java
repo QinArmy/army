@@ -7,7 +7,7 @@ import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.wrapper.SimpleSQLWrapper;
+import io.army.stmt.SimpleStmt;
 
 class StandardUpdateContext extends AbstractStandardDomainContext implements UpdateContext {
 
@@ -59,8 +59,8 @@ class StandardUpdateContext extends AbstractStandardDomainContext implements Upd
     }
 
     @Override
-    public final SimpleSQLWrapper build() {
-        return SimpleSQLWrapper.build(this.sqlBuilder.toString(), this.paramList, this.hasVersion);
+    public final SimpleStmt build() {
+        return SimpleStmt.build(this.sqlBuilder.toString(), this.paramList, this.hasVersion);
     }
 
 

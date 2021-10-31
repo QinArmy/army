@@ -1,8 +1,8 @@
 package io.army.criteria;
 
-import io.army.wrapper.ParamWrapper;
+import io.army.stmt.ParamValue;
 
-public interface NamedParamExpression<E> extends Expression<E>, ParamWrapper {
+public interface NamedParamExpression<E> extends Expression<E>, ParamValue {
 
     String name();
 

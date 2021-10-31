@@ -5,7 +5,7 @@ import io.army.criteria.SQLContext;
 import io.army.meta.FieldMeta;
 import io.army.meta.GenericField;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.MappingType;
 
 import java.util.Collection;
 
@@ -30,7 +30,7 @@ final class FieldSelectionImpl<E> extends AbstractExpression<E> implements Field
     }
 
     @Override
-    public final MappingMeta mappingMeta() {
+    public final MappingType mappingMeta() {
         return this.fieldExp.mappingMeta();
     }
 

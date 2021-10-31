@@ -5,11 +5,11 @@ import io.army.ErrorCode;
 import io.army.ShardingMode;
 import io.army.UnKnownTypeException;
 import io.army.criteria.*;
-import io.army.criteria.impl.SQLS;
+import io.army.criteria.impl.Sqls;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.lang.Nullable;
 import io.army.meta.*;
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.MappingType;
 import io.army.util.StringUtils;
 
 import java.sql.JDBCType;
@@ -42,7 +42,7 @@ public abstract class DialectUtils {
     }
 
 
-    public static String quoteIfNeed(MappingMeta mappingType, String textValue) {
+    public static String quoteIfNeed(MappingType mappingType, String textValue) {
         if (TEXT_JDBC_TYPE.contains(mappingType.jdbcType())) {
             return StringUtils.quote(textValue);
         }
@@ -140,7 +140,7 @@ public abstract class DialectUtils {
     }
 
     public static boolean needAppendVisible(List<? extends TableWrapper> tableWrapperList) {
-        final TableMeta<?> dual = SQLS.dual();
+        final TableMeta<?> dual = Sqls.dual();
         boolean need = false;
         for (TableWrapper tableWrapper : tableWrapperList) {
             TableAble tableAble = tableWrapper.tableAble();

@@ -1,16 +1,16 @@
-package io.army.wrapper;
+package io.army.stmt;
 
 import io.army.codec.StatementType;
 import io.army.criteria.Selection;
 
 import java.util.List;
 
-public interface SimpleSQLWrapper extends GenericSimpleWrapper {
+public interface SimpleStmt extends GenericSimpleStmt {
 
     /**
      * @return a unmodifiable list
      */
-    List<ParamWrapper> paramList();
+    List<ParamValue> paramGroup();
 
     /**
      * @return a unmodifiable list
@@ -18,14 +18,14 @@ public interface SimpleSQLWrapper extends GenericSimpleWrapper {
     List<Selection> selectionList();
 
     static Builder builder() {
-        return new SimpleSQLWrapperImpl.Builder();
+        return new SimpleStmtImpl.Builder();
     }
 
     interface Builder {
 
         Builder sql(String sql);
 
-        Builder paramList(List<ParamWrapper> paramList);
+        Builder paramList(List<ParamValue> paramList);
 
         Builder statementType(StatementType statementType);
 
@@ -33,7 +33,7 @@ public interface SimpleSQLWrapper extends GenericSimpleWrapper {
 
         Builder hasVersion(boolean hasVersion);
 
-        SimpleSQLWrapper build();
+        SimpleStmt build();
     }
 
 }

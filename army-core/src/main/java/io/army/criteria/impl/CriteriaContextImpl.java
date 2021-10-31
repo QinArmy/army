@@ -6,7 +6,7 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.MappingType;
 import io.army.util.CollectionUtils;
 
 import java.util.*;
@@ -228,7 +228,7 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
         }
 
         @Override
-        public MappingMeta mappingMeta() {
+        public MappingType mappingMeta() {
             return this.selection.mappingMeta();
         }
     }

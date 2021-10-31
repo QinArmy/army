@@ -10,12 +10,12 @@ public abstract class MappingMetaUtils {
     }
 
     public static NotSupportDialectException createNotSupportDialectException(
-            MappingMeta mappingMeta, Database database) {
+            MappingType mappingType, Database database) {
         return new NotSupportDialectException("%s not support database[%s]"
-                , mappingMeta.getClass().getName(), database);
+                , mappingType.getClass().getName(), database);
     }
 
-    public static IllegalArgumentException createNotSupportJavaTypeException(Class<? extends MappingMeta> mappingMetaClass
+    public static IllegalArgumentException createNotSupportJavaTypeException(Class<? extends MappingType> mappingMetaClass
             , Class<?> javaType) {
         return new IllegalArgumentException(
                 String.format("%s not support java type[%s].", mappingMetaClass.getName(), javaType.getName()));

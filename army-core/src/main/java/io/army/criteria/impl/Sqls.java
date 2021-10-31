@@ -7,7 +7,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.MappingType;
 import io.army.tx.Isolation;
 
 import java.util.ArrayList;
@@ -15,9 +15,9 @@ import java.util.List;
 import java.util.function.Function;
 
 @SuppressWarnings({"unused"})
-public abstract class SQLS extends AbstractSQLS {
+public abstract class Sqls extends AbstractSQLS {
 
-    SQLS() {
+    Sqls() {
 
     }
 
@@ -161,12 +161,12 @@ public abstract class SQLS extends AbstractSQLS {
     }
 
     public static <E, C> ScalarSubQuery.ScalarSelectionSpec<E, C> scalarSubQuery(
-            Class<E> javaType, MappingMeta mappingType, C criteria) {
+            Class<E> javaType, MappingType mappingType, C criteria) {
         return StandardSubQueries.buildScalarSubQuery(javaType, mappingType, criteria);
     }
 
     public static <E> ScalarSubQuery.ScalarSelectionSpec<E, EmptyObject> scalarSubQuery(
-            Class<E> javaType, MappingMeta mappingType) {
+            Class<E> javaType, MappingType mappingType) {
         return StandardSubQueries.buildScalarSubQuery(javaType, mappingType, EmptyObject.getInstance());
     }
 
@@ -216,8 +216,8 @@ public abstract class SQLS extends AbstractSQLS {
 
     public static List<SelectionGroup> childGroup(ChildTableMeta<?> childMeta, String parentAlias, String childAlias) {
         List<SelectionGroup> list = new ArrayList<>(2);
-        list.add(SQLS.group(childMeta.parentMeta(), parentAlias));
-        list.add(SQLS.group(childMeta, childAlias));
+        list.add(Sqls.group(childMeta.parentMeta(), parentAlias));
+        list.add(Sqls.group(childMeta, childAlias));
         return list;
     }
 

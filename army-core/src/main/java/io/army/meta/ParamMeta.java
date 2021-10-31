@@ -1,12 +1,12 @@
 package io.army.meta;
 
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.MappingType;
 
 /**
- * @see io.army.meta.mapping.MappingMeta
+ * @see MappingType
  * @see FieldMeta
  */
 public interface ParamMeta extends Meta {
 
-    MappingMeta mappingMeta();
+    MappingType mappingMeta();
 }

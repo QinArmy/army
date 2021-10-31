@@ -4,7 +4,7 @@ import com.example.domain.EDomain;
 import io.army.criteria.Insert;
 import io.army.criteria.Select;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.SQLS;
+import io.army.criteria.impl.Sqls;
 import io.army.meta.TableMeta;
 import io.army.sync.GenericSyncProxySession;
 import io.army.util.CriteriaUtils;
@@ -43,7 +43,7 @@ public abstract class AbstractBaseDay implements BaseDao, EnvironmentAware
     public <D extends EDomain> void save(D domain) {
         @SuppressWarnings("unchecked")
         TableMeta<D> tableMeta = obtainTableMeta((Class<D>) domain.getClass());
-        Insert insert = SQLS.multiInsert(tableMeta)
+        Insert insert = Sqls.multiInsert(tableMeta)
                 .insertInto(tableMeta)
                 .value(domain)
                 .asInsert();
@@ -59,7 +59,7 @@ public abstract class AbstractBaseDay implements BaseDao, EnvironmentAware
     @Override
     public <D extends EDomain> boolean isExists(Class<D> domainClass, Object id, @Nullable Boolean visible) {
         TableMeta<D> tableMeta = obtainTableMeta(domainClass);
-        Select select = SQLS.multiSelect()
+        Select select = Sqls.multiSelect()
                 .select(tableMeta.id())
                 .from(tableMeta, "t")
                 .where(tableMeta.id().equal(id))

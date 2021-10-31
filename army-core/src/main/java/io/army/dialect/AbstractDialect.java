@@ -10,9 +10,9 @@ import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
-import io.army.wrapper.ChildSQLWrapper;
-import io.army.wrapper.SQLWrapper;
-import io.army.wrapper.SimpleSQLWrapper;
+import io.army.stmt.ChildStmt;
+import io.army.stmt.Stmt;
+import io.army.stmt.SimpleStmt;
 
 import java.time.ZoneId;
 import java.util.Collection;
@@ -35,7 +35,7 @@ public abstract class AbstractDialect implements InnerDialect {
 
     private final DDL ddl;
 
-    private final DML dml;
+    private final DmlDialect dml;
 
     private final DQL dql;
 
@@ -72,17 +72,17 @@ public abstract class AbstractDialect implements InnerDialect {
     }
 
     @Override
-    public final String showSQL(SQLWrapper sqlWrapper) {
+    public final String showSQL(Stmt stmt) {
         String sql;
-        if (sqlWrapper instanceof SimpleSQLWrapper) {
-            sql = ((SimpleSQLWrapper) sqlWrapper).sql();
-        } else if (sqlWrapper instanceof ChildSQLWrapper) {
-            ChildSQLWrapper childSQLWrapper = (ChildSQLWrapper) sqlWrapper;
+        if (stmt instanceof SimpleStmt) {
+            sql = ((SimpleStmt) stmt).sql();
+        } else if (stmt instanceof ChildStmt) {
+            ChildStmt childSQLWrapper = (ChildStmt) stmt;
             sql = childSQLWrapper.parentWrapper().sql();
             sql += "\n";
             sql += childSQLWrapper.childWrapper().sql();
         } else {
-            throw new UnKnownTypeException(sqlWrapper);
+            throw new UnKnownTypeException(stmt);
         }
         return sql;
     }
@@ -151,7 +151,7 @@ public abstract class AbstractDialect implements InnerDialect {
     /*################################## blow DQL method ##################################*/
 
     @Override
-    public final SimpleSQLWrapper select(Select select, Visible visible) {
+    public final SimpleStmt select(Select select, Visible visible) {
         return this.dql.select(select, visible);
     }
 
@@ -169,27 +169,27 @@ public abstract class AbstractDialect implements InnerDialect {
     /*################################## blow DML method ##################################*/
 
     @Override
-    public final List<SQLWrapper> valueInsert(Insert insert, @Nullable Set<Integer> domainIndexSet, Visible visible) {
+    public final List<Stmt> valueInsert(Insert insert, @Nullable Set<Integer> domainIndexSet, Visible visible) {
         return this.dml.valueInsert(insert, domainIndexSet, visible);
     }
 
     @Override
-    public final SQLWrapper returningInsert(Insert insert, Visible visible) {
+    public final Stmt returningInsert(Insert insert, Visible visible) {
         return this.dml.returningInsert(insert, visible);
     }
 
     @Override
-    public final SQLWrapper subQueryInsert(Insert insert, Visible visible) {
+    public final Stmt subQueryInsert(Insert insert, Visible visible) {
         return this.dml.subQueryInsert(insert, visible);
     }
 
     @Override
-    public final SQLWrapper update(Update update, Visible visible) {
+    public final Stmt update(Update update, Visible visible) {
         return this.dml.update(update, visible);
     }
 
     @Override
-    public final SQLWrapper delete(Delete delete, Visible visible) {
+    public final Stmt delete(Delete delete, Visible visible) {
         return this.dml.delete(delete, visible);
     }
 
@@ -206,7 +206,7 @@ public abstract class AbstractDialect implements InnerDialect {
 
     protected abstract DDL createDDL();
 
-    protected abstract DML createDML();
+    protected abstract DmlDialect createDML();
 
     protected abstract DQL createDQL();
 

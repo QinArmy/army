@@ -1,13 +1,13 @@
 package io.army.dialect;
 
-import io.army.wrapper.SQLWrapper;
+import io.army.stmt.Stmt;
 
 /**
  * A common interface to all dialect of dialect.
  */
-public interface Dialect extends DDL, DML, DQL, TCL {
+public interface Dialect extends DDL, DmlDialect, DQL, TCL {
 
-    String showSQL(SQLWrapper sqlWrapper);
+    String showSQL(Stmt stmt);
 
     boolean supportSavePoint();
 

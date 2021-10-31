@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.NamedParamExpression;
 import io.army.criteria.SQLContext;
 import io.army.meta.ParamMeta;
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.MappingType;
 
 final class NamedParamExpressionImpl<E> extends AbstractNoNOperationExpression<E>
         implements NamedParamExpression<E> {
@@ -45,7 +45,7 @@ final class NamedParamExpressionImpl<E> extends AbstractNoNOperationExpression<E
     }
 
     @Override
-    public final MappingMeta mappingMeta() {
+    public final MappingType mappingMeta() {
         throw new UnsupportedOperationException();
     }
 }

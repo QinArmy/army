@@ -14,7 +14,7 @@ import io.army.reactive.advice.ReactiveDomainInsertAdvice;
 import io.army.reactive.advice.ReactiveDomainUpdateAdvice;
 import io.army.tx.GenericTransaction;
 import io.army.tx.Isolation;
-import io.army.wrapper.SQLWrapper;
+import io.army.stmt.Stmt;
 import io.jdbd.StatelessDatabaseSession;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -226,12 +226,12 @@ abstract class AbstractGenericReactiveRmSession<S extends StatelessDatabaseSessi
                 ;
     }
 
-    final Mono<SQLWrapper> assertChildDomain(SQLWrapper sqlWrapper) {
+    final Mono<Stmt> assertChildDomain(Stmt stmt) {
         GenericTransaction tx = obtainTransaction();
         if (tx == null || tx.isolation().level < Isolation.READ_COMMITTED.level) {
             return Mono.error(new DomainUpdateException("Child domain update must in READ_COMMITTED(+) transaction."));
         }
-        return Mono.just(sqlWrapper);
+        return Mono.just(stmt);
     }
 
 
@@ -240,7 +240,7 @@ abstract class AbstractGenericReactiveRmSession<S extends StatelessDatabaseSessi
 
     /**
      * @param resultClass {@link Integer} or {@link Long}
-     * @see InsertSQLExecutor#subQueryInsert(InnerGenericRmSession, SQLWrapper, Class)
+     * @see InsertSQLExecutor#subQueryInsert(InnerGenericRmSession, Stmt, Class)
      */
     private <N extends Number> Mono<N> internalSubQuery(Insert insert, Visible visible, Class<N> resultClass) {
         // 1. assert session active
@@ -264,7 +264,7 @@ abstract class AbstractGenericReactiveRmSession<S extends StatelessDatabaseSessi
 
     /**
      * @param resultClass {@link Integer} or {@link Long}
-     * @see UpdateSQLExecutor#update(InnerGenericRmSession, SQLWrapper, Class)
+     * @see UpdateSQLExecutor#update(InnerGenericRmSession, Stmt, Class)
      */
     private <N extends Number> Mono<N> internalUpdate(Update update, final Visible visible, Class<N> resultClass) {
         // 1. assert session active
@@ -288,7 +288,7 @@ abstract class AbstractGenericReactiveRmSession<S extends StatelessDatabaseSessi
 
     /**
      * @param resultClass {@link Integer} or {@link Long}
-     * @see UpdateSQLExecutor#update(InnerGenericRmSession, SQLWrapper, Class)
+     * @see UpdateSQLExecutor#update(InnerGenericRmSession, Stmt, Class)
      */
     private <N extends Number> Mono<N> internalDelete(Delete delete, final Visible visible, Class<N> resultClass) {
         // 1. assert session active

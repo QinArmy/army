@@ -1,7 +1,7 @@
 package io.army.sync;
 
 import io.army.dialect.InsertException;
-import io.army.wrapper.SQLWrapper;
+import io.army.stmt.Stmt;
 
 import java.util.List;
 
@@ -11,13 +11,13 @@ import java.util.List;
 interface InsertSQLExecutor {
 
 
-    void valueInsert(InnerGenericRmSession session, List<SQLWrapper> sqlWrapperList) throws InsertException;
+    void valueInsert(InnerGenericRmSession session, List<Stmt> stmtList) throws InsertException;
 
-    int subQueryInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper) throws InsertException;
+    int subQueryInsert(InnerGenericRmSession session, Stmt stmt) throws InsertException;
 
-    long subQueryLargeInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper) throws InsertException;
+    long subQueryLargeInsert(InnerGenericRmSession session, Stmt stmt) throws InsertException;
 
-    <T> List<T> returningInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper, Class<T> resultClass)
+    <T> List<T> returningInsert(InnerGenericRmSession session, Stmt stmt, Class<T> resultClass)
             throws InsertException;
 
     static InsertSQLExecutor build(InnerGenericRmSessionFactory sessionFactory) {

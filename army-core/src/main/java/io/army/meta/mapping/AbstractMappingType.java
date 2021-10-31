@@ -8,7 +8,7 @@ import io.army.sqldatatype.SQLDataType;
 
 import java.util.Map;
 
-public abstract class AbstractMappingType implements MappingMeta {
+public abstract class AbstractMappingType implements MappingType {
 
     @Override
     public final int hashCode() {
@@ -22,7 +22,7 @@ public abstract class AbstractMappingType implements MappingMeta {
 
 
     @Override
-    public final MappingMeta mappingMeta() {
+    public final MappingType mappingMeta() {
         return this;
     }
 

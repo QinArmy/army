@@ -1,4 +1,4 @@
-package io.army.wrapper;
+package io.army.stmt;
 
 
 import io.army.codec.StatementType;
@@ -8,11 +8,11 @@ import io.army.util.Assert;
 import java.util.Collections;
 import java.util.List;
 
-final class SimpleSQLWrapperImpl implements SimpleSQLWrapper {
+final class SimpleStmtImpl implements SimpleStmt {
 
     private final String sql;
 
-    private final List<ParamWrapper> paramList;
+    private final List<ParamValue> paramList;
 
     private final boolean hasVersion;
 
@@ -20,7 +20,7 @@ final class SimpleSQLWrapperImpl implements SimpleSQLWrapper {
 
     private final StatementType statementType;
 
-    public SimpleSQLWrapperImpl(String sql, List<ParamWrapper> paramList, boolean hasVersion
+    public SimpleStmtImpl(String sql, List<ParamValue> paramList, boolean hasVersion
             , List<Selection> selectionList, StatementType statementType) {
         this.sql = sql;
         this.paramList = paramList.isEmpty()
@@ -39,7 +39,7 @@ final class SimpleSQLWrapperImpl implements SimpleSQLWrapper {
     }
 
     @Override
-    public final List<ParamWrapper> paramList() {
+    public final List<ParamValue> paramGroup() {
         return paramList;
     }
 
@@ -59,11 +59,11 @@ final class SimpleSQLWrapperImpl implements SimpleSQLWrapper {
     }
 
 
-    static final class Builder implements SimpleSQLWrapper.Builder {
+    static final class Builder implements SimpleStmt.Builder {
 
         private String sql;
 
-        private List<ParamWrapper> paramList;
+        private List<ParamValue> paramList;
 
         private boolean hasVersion;
 
@@ -72,41 +72,41 @@ final class SimpleSQLWrapperImpl implements SimpleSQLWrapper {
         private StatementType statementType;
 
         @Override
-        public SimpleSQLWrapper.Builder sql(String sql) {
+        public SimpleStmt.Builder sql(String sql) {
             this.sql = sql;
             return this;
         }
 
         @Override
-        public SimpleSQLWrapper.Builder paramList(List<ParamWrapper> paramList) {
+        public SimpleStmt.Builder paramList(List<ParamValue> paramList) {
             this.paramList = paramList;
             return this;
         }
 
         @Override
-        public SimpleSQLWrapper.Builder statementType(StatementType statementType) {
+        public SimpleStmt.Builder statementType(StatementType statementType) {
             this.statementType = statementType;
             return this;
         }
 
         @Override
-        public SimpleSQLWrapper.Builder selectionList(List<Selection> selectionList) {
+        public SimpleStmt.Builder selectionList(List<Selection> selectionList) {
             this.selectionList = selectionList;
             return this;
         }
 
         @Override
-        public SimpleSQLWrapper.Builder hasVersion(boolean hasVersion) {
+        public SimpleStmt.Builder hasVersion(boolean hasVersion) {
             this.hasVersion = hasVersion;
             return this;
         }
 
         @Override
-        public SimpleSQLWrapper build() {
+        public SimpleStmt build() {
             Assert.hasText(this.sql, "sql required");
             Assert.notNull(this.statementType, "statementType required");
 
-            List<ParamWrapper> paramList = this.paramList;
+            List<ParamValue> paramList = this.paramList;
             if (paramList == null) {
                 paramList = Collections.emptyList();
             }
@@ -114,7 +114,7 @@ final class SimpleSQLWrapperImpl implements SimpleSQLWrapper {
             if (selectionList == null) {
                 selectionList = Collections.emptyList();
             }
-            return new SimpleSQLWrapperImpl(this.sql, paramList, this.hasVersion, selectionList, this.statementType);
+            return new SimpleStmtImpl(this.sql, paramList, this.hasVersion, selectionList, this.statementType);
         }
     }
 }

@@ -7,7 +7,7 @@ import io.army.meta.GenericField;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.mapping.MappingFactory;
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.MappingType;
 import io.army.meta.mapping.StringType;
 
 import java.time.LocalDate;
@@ -27,7 +27,7 @@ abstract class AbstractSQLS {
         return ParamExpressionImp.build(MappingFactory.getDefaultMapping(nullTypeClass), null);
     }
 
-    public static <E> ParamExpression<E> asNull(MappingMeta mappingType) {
+    public static <E> ParamExpression<E> asNull(MappingType mappingType) {
         return ParamExpressionImp.build(mappingType, null);
     }
 
@@ -40,10 +40,10 @@ abstract class AbstractSQLS {
     }
 
     /**
-     * @see SQLS#batchSingleUpdate(TableMeta)
-     * @see SQLS#batchSingleUpdate(TableMeta, Object)
-     * @see SQLS#batchSingleDelete()
-     * @see SQLS#batchSingleDelete(Object)
+     * @see Sqls#batchSingleUpdate(TableMeta)
+     * @see Sqls#batchSingleUpdate(TableMeta, Object)
+     * @see Sqls#batchSingleDelete()
+     * @see Sqls#batchSingleDelete(Object)
      */
     public static <E> NamedParamExpression<E> namedParam(String name, ParamMeta paramMeta) {
         return NamedParamExpressionImpl.build(name, paramMeta);
@@ -81,14 +81,14 @@ abstract class AbstractSQLS {
     }
 
     /**
-     * @see MappingMeta#toConstant(ParamMeta, Object)
+     * @see MappingType#toConstant(ParamMeta, Object)
      */
     public static <E> ConstantExpression<E> constant(E value) {
         return ConstantExpressionImpl.build(null, value);
     }
 
     /**
-     * @see MappingMeta#toConstant(ParamMeta, Object)
+     * @see MappingType#toConstant(ParamMeta, Object)
      */
     public static <E> ConstantExpression<E> constant(E value, @Nullable ParamMeta paramMeta) {
         return ConstantExpressionImpl.build(paramMeta, value);
@@ -278,7 +278,7 @@ abstract class AbstractSQLS {
         }
 
         @Override
-        public MappingMeta mappingMeta() {
+        public MappingType mappingMeta() {
             return StringType.build(String.class);
         }
     }

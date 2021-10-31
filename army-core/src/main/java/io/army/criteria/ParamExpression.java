@@ -1,13 +1,13 @@
 package io.army.criteria;
 
-import io.army.wrapper.ParamWrapper;
+import io.army.stmt.ParamValue;
 
 /**
- * extends {@link ParamWrapper} to avoid new instance of {@link ParamWrapper}
+ * extends {@link ParamValue} to avoid new instance of {@link ParamValue}
  *
  * @since 1.0
  */
-public interface ParamExpression<E> extends ValueExpression<E>, ParamWrapper {
+public interface ParamExpression<E> extends ValueExpression<E>, ParamValue {
 
 
 }

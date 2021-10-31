@@ -14,10 +14,10 @@ import io.army.dialect.InsertException;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.meta.PrimaryFieldMeta;
-import io.army.wrapper.BatchSimpleSQLWrapper;
-import io.army.wrapper.GenericSimpleWrapper;
-import io.army.wrapper.SQLWrapper;
-import io.army.wrapper.SimpleSQLWrapper;
+import io.army.stmt.BatchSimpleStmt;
+import io.army.stmt.GenericSimpleStmt;
+import io.army.stmt.Stmt;
+import io.army.stmt.SimpleStmt;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -64,33 +64,33 @@ public abstract class GenericSQLExecutorSupport {
     }
 
     protected final InsertRowsNotMatchException createBatchChildInsertNotMatchException(
-            Number parentRows, Number childRows, BatchSimpleSQLWrapper sqlWrapper) {
+            Number parentRows, Number childRows, BatchSimpleStmt sqlWrapper) {
         return new InsertRowsNotMatchException("%s,batch child insert[%s] and parent[%s] not match.sql:\n%s"
                 , this.genericSessionFactory, childRows, parentRows, sqlWrapper.sql());
     }
 
     protected final InsertRowsNotMatchException createChildSubQueryInsertNotMatchException(Number parentRows
-            , Number childRows, SimpleSQLWrapper sqlWrapper) {
+            , Number childRows, SimpleStmt sqlWrapper) {
         return new InsertRowsNotMatchException("%s,child subQuery insert[%s] and parent[%s] not match,sql:\n%s"
                 , this.genericSessionFactory, childRows, parentRows, sqlWrapper.sql());
     }
 
     protected final InsertRowsNotMatchException createParentUpdateNotMatchException(Number parentRows
-            , Number childRows, GenericSimpleWrapper sqlWrapper) {
+            , Number childRows, GenericSimpleStmt sqlWrapper) {
         return new InsertRowsNotMatchException("%s,parent update/delete[%s] and child[%s] not match,sql:\n%s"
                 , this.genericSessionFactory, parentRows, childRows, sqlWrapper.sql());
     }
 
     protected final InsertRowsNotMatchException createParentBatchUpdateNotMatchException(int parentBatch
-            , int childBatch, GenericSimpleWrapper sqlWrapper) {
+            , int childBatch, GenericSimpleStmt sqlWrapper) {
         return new InsertRowsNotMatchException("%s,parent update/delete batch[%s] and child[%s] not match,sql:\n%s"
                 , this.genericSessionFactory, parentBatch, childBatch, sqlWrapper.sql());
     }
 
-    protected final IllegalArgumentException createUnSupportedSQLWrapperException(SQLWrapper sqlWrapper
+    protected final IllegalArgumentException createUnSupportedSQLWrapperException(Stmt stmt
             , String methodName) {
         return new IllegalArgumentException(String.format("%s,%s unsupported by %s", this.genericSessionFactory
-                , sqlWrapper, methodName));
+                , stmt, methodName));
     }
 
     protected final OptimisticLockException createOptimisticLockException(String sql) {
@@ -100,18 +100,18 @@ public abstract class GenericSQLExecutorSupport {
     }
 
     protected final DomainUpdateException createChildReturningNotMatchException(int firstRows, int secondRows
-            , SimpleSQLWrapper childWrapper) {
+            , SimpleStmt childWrapper) {
         return new DomainUpdateException("%s,first returning[%s] and second[%s] not match.sql:\n%s"
                 , this.genericSessionFactory, firstRows, secondRows, childWrapper.sql());
     }
 
-    protected final InsertException createValueInsertException(Integer insertRows, GenericSimpleWrapper simpleWrapper) {
+    protected final InsertException createValueInsertException(Integer insertRows, GenericSimpleStmt simpleWrapper) {
         return new InsertException("expected insert 1 row,but %s rows.sql:\n%s", insertRows, simpleWrapper.sql());
     }
 
     /*################################## blow protected static method ##################################*/
 
-    protected static boolean onlyIdReturning(SimpleSQLWrapper parentWrapper, SimpleSQLWrapper childWrapper) {
+    protected static boolean onlyIdReturning(SimpleStmt parentWrapper, SimpleStmt childWrapper) {
         List<Selection> parentSelectionList = parentWrapper.selectionList();
         List<Selection> childSelectionList = childWrapper.selectionList();
         boolean yes = false;
@@ -150,7 +150,7 @@ public abstract class GenericSQLExecutorSupport {
     }
 
 
-    protected static CriteriaException convertExceptionWithSQL(Throwable ex, GenericSimpleWrapper simpleWrapper) {
+    protected static CriteriaException convertExceptionWithSQL(Throwable ex, GenericSimpleStmt simpleWrapper) {
         return new CriteriaException(ex, "execute sql[%s] error.", simpleWrapper.sql());
     }
 

@@ -6,7 +6,7 @@ import io.army.criteria.Selection;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
 
 import java.util.Collection;
@@ -74,7 +74,7 @@ final class LogicalFieldExpImpl<T extends IDomain, F> extends AbstractExpression
     }
 
     @Override
-    public MappingMeta mappingMeta() {
+    public MappingType mappingMeta() {
         return fieldMeta.mappingMeta();
     }
 

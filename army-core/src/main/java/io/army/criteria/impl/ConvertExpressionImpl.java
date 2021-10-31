@@ -6,13 +6,13 @@ import io.army.criteria.FieldExpression;
 import io.army.criteria.SQLContext;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.MappingType;
 
 import java.util.Collection;
 
 class ConvertExpressionImpl<E> extends AbstractExpression<E> implements ConvertExpression<E> {
 
-    static <O> ConvertExpressionImpl<O> build(Expression<?> original, MappingMeta convertType) {
+    static <O> ConvertExpressionImpl<O> build(Expression<?> original, MappingType convertType) {
         return original instanceof FieldExpression
                 ? new FieldConvertExpressionImpl<>(original, convertType)
                 : new ConvertExpressionImpl<>(original, convertType);
@@ -20,9 +20,9 @@ class ConvertExpressionImpl<E> extends AbstractExpression<E> implements ConvertE
 
     final Expression<?> original;
 
-    private final MappingMeta convertType;
+    private final MappingType convertType;
 
-    private ConvertExpressionImpl(Expression<?> original, MappingMeta convertType) {
+    private ConvertExpressionImpl(Expression<?> original, MappingType convertType) {
         this.original = original;
         this.convertType = convertType;
     }
@@ -34,7 +34,7 @@ class ConvertExpressionImpl<E> extends AbstractExpression<E> implements ConvertE
 
 
     @Override
-    public final MappingMeta mappingMeta() {
+    public final MappingType mappingMeta() {
         return this.convertType;
     }
 
@@ -56,7 +56,7 @@ class ConvertExpressionImpl<E> extends AbstractExpression<E> implements ConvertE
     private static final class FieldConvertExpressionImpl<E> extends ConvertExpressionImpl<E>
             implements FieldExpression<E> {
 
-        private FieldConvertExpressionImpl(Expression<?> original, MappingMeta convertType) {
+        private FieldConvertExpressionImpl(Expression<?> original, MappingType convertType) {
             super(original, convertType);
         }
 

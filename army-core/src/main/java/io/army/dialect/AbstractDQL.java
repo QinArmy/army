@@ -5,7 +5,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.CriteriaCounselor;
 import io.army.criteria.impl.inner.*;
 import io.army.util.Assert;
-import io.army.wrapper.SimpleSQLWrapper;
+import io.army.stmt.SimpleStmt;
 
 import java.util.HashMap;
 import java.util.List;
@@ -26,10 +26,10 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
     /*################################## blow DQL method ##################################*/
 
     @Override
-    public final SimpleSQLWrapper select(Select select, final Visible visible) {
+    public final SimpleStmt select(Select select, final Visible visible) {
         Assert.isTrue(select.prepared(), "select not prepared");
 
-        SimpleSQLWrapper sqlWrapper;
+        SimpleStmt sqlWrapper;
         if (select instanceof InnerStandardComposeQuery) {
             InnerStandardComposeQuery composeSelect = (InnerStandardComposeQuery) select;
             //1. assert composeQuery legal

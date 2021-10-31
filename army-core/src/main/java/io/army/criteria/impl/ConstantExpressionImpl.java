@@ -6,7 +6,7 @@ import io.army.criteria.Selection;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
 import io.army.meta.mapping.MappingFactory;
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.MappingType;
 import io.army.util.ArrayUtils;
 
 import java.math.BigDecimal;
@@ -84,7 +84,7 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
     }
 
     @Override
-    public final MappingMeta mappingMeta() {
+    public final MappingType mappingMeta() {
         return this.paramMeta.mappingMeta();
     }
 

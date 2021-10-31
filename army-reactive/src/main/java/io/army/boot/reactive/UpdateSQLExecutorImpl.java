@@ -1,6 +1,6 @@
 package io.army.boot.reactive;
 
-import io.army.wrapper.*;
+import io.army.stmt.*;
 import io.jdbd.PreparedStatement;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -15,13 +15,13 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     }
 
     @Override
-    public final <N extends Number> Mono<N> update(InnerGenericRmSession session, SQLWrapper sqlWrapper
+    public final <N extends Number> Mono<N> update(InnerGenericRmSession session, Stmt stmt
             , Class<N> resultClass) {
         Mono<? extends Number> mono;
         if (resultClass == Integer.class) {
-            mono = internalUpdate(session, sqlWrapper, PreparedStatement::executeUpdate, "update");
+            mono = internalUpdate(session, stmt, PreparedStatement::executeUpdate, "update");
         } else if (resultClass == Long.class) {
-            mono = internalUpdate(session, sqlWrapper, PreparedStatement::executeLargeUpdate, "update");
+            mono = internalUpdate(session, stmt, PreparedStatement::executeLargeUpdate, "update");
         } else {
             mono = Mono.error(new IllegalArgumentException("ResultClass error"));
         }
@@ -29,13 +29,13 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     }
 
     @Override
-    public final <N extends Number> Flux<N> batchUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper
+    public final <N extends Number> Flux<N> batchUpdate(InnerGenericRmSession session, Stmt stmt
             , Class<N> resultClass) {
         Flux<? extends Number> flux;
         if (resultClass == Integer.class) {
-            flux = internalBatchUpdate(session, sqlWrapper, PreparedStatement::executeBatch);
+            flux = internalBatchUpdate(session, stmt, PreparedStatement::executeBatch);
         } else if (resultClass == Long.class) {
-            flux = internalBatchUpdate(session, sqlWrapper, PreparedStatement::executeLargeBatch);
+            flux = internalBatchUpdate(session, stmt, PreparedStatement::executeLargeBatch);
         } else {
             flux = Flux.error(new IllegalArgumentException("ResultClass error"));
         }
@@ -43,9 +43,9 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     }
 
     @Override
-    public final <T> Flux<T> returningUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper
+    public final <T> Flux<T> returningUpdate(InnerGenericRmSession session, Stmt stmt
             , Class<T> resultClass) {
-        return doReturningUpdate(session, sqlWrapper, resultClass, true);
+        return doReturningUpdate(session, stmt, resultClass, true);
     }
 
     /*################################## blow private method ##################################*/
@@ -58,17 +58,17 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
      *                        </ul>
      * @param <N>             result typed of update rows ,must be  {@link Integer} or {@link Long}
      * @return {@code Mono<Integer> or Mono<Long>}
-     * @see #doExecuteUpdate(InnerGenericRmSession, SimpleSQLWrapper, Function)
+     * @see #doExecuteUpdate(InnerGenericRmSession, SimpleStmt, Function)
      */
-    private <N extends Number> Mono<N> internalUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper
+    private <N extends Number> Mono<N> internalUpdate(InnerGenericRmSession session, Stmt stmt
             , Function<PreparedStatement, Mono<N>> executeFunction, String methodName) {
 
         Mono<N> mono;
-        if (sqlWrapper instanceof SimpleSQLWrapper) {
-            mono = doExecuteUpdate(session, (SimpleSQLWrapper) sqlWrapper, executeFunction);
-        } else if (sqlWrapper instanceof ChildSQLWrapper) {
-            final ChildSQLWrapper childSQLWrapper = (ChildSQLWrapper) sqlWrapper;
-            final SimpleSQLWrapper childWrapper = childSQLWrapper.childWrapper();
+        if (stmt instanceof SimpleStmt) {
+            mono = doExecuteUpdate(session, (SimpleStmt) stmt, executeFunction);
+        } else if (stmt instanceof ChildStmt) {
+            final ChildStmt childSQLWrapper = (ChildStmt) stmt;
+            final SimpleStmt childWrapper = childSQLWrapper.childWrapper();
 
             // 1. execute child update sql
             mono = doExecuteUpdate(session, childWrapper, executeFunction)
@@ -76,7 +76,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
                     .flatMap(childRows -> doParentUpdate(session, childSQLWrapper, executeFunction, childRows))
             ;
         } else {
-            mono = Mono.error(createUnSupportedSQLWrapperException(sqlWrapper, methodName));
+            mono = Mono.error(createUnSupportedSQLWrapperException(stmt, methodName));
         }
         return mono;
     }
@@ -89,15 +89,15 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
      *                        </ul>
      * @param <N>             result typed of update rows ,must be  {@link Integer} or {@link Long}
      * @return {@code Mono<Integer> or Mono<Long>}
-     * @see #doExecuteUpdate(InnerGenericRmSession, SimpleSQLWrapper, Function)
+     * @see #doExecuteUpdate(InnerGenericRmSession, SimpleStmt, Function)
      */
-    private <N extends Number> Mono<N> doParentUpdate(InnerGenericRmSession session, ChildSQLWrapper childSQLWrapper
+    private <N extends Number> Mono<N> doParentUpdate(InnerGenericRmSession session, ChildStmt childSQLWrapper
             , Function<PreparedStatement, Mono<N>> executeFunction, N childRows) {
         Mono<N> mono;
         if (childRows.longValue() < 1L) {
             mono = Mono.just(childRows);
         } else {
-            final SimpleSQLWrapper childWrapper = childSQLWrapper.childWrapper();
+            final SimpleStmt childWrapper = childSQLWrapper.childWrapper();
             // 1. execute parent update sql.
             mono = doExecuteUpdate(session, childSQLWrapper.parentWrapper(), executeFunction)
                     // 2. assert parent updated rows and child match
@@ -108,7 +108,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     }
 
     private <N extends Number> Mono<N> assertParentChildUpdateMatch(N parentRows, N childRows
-            , SimpleSQLWrapper childWrapper) {
+            , SimpleStmt childWrapper) {
         Mono<N> mono;
         if (parentRows.equals(childRows)) {
             mono = Mono.just(childRows);
@@ -126,17 +126,17 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
      *                        </ul>
      * @param <N>             result typed of update rows ,must be  {@link Integer} or {@link Long}
      * @return {@code Flux<Integer> or Flux<Long>}
-     * @see #doExecuteBatchUpdate(InnerGenericRmSession, BatchSimpleSQLWrapper, Function)
+     * @see #doExecuteBatchUpdate(InnerGenericRmSession, BatchSimpleStmt, Function)
      */
-    private <N extends Number> Flux<N> internalBatchUpdate(InnerGenericRmSession session, SQLWrapper sqlWrapper
+    private <N extends Number> Flux<N> internalBatchUpdate(InnerGenericRmSession session, Stmt stmt
             , Function<PreparedStatement, Flux<N>> executeFunction) {
 
         Flux<N> flux;
-        if (sqlWrapper instanceof BatchSimpleSQLWrapper) {
-            flux = doExecuteBatchUpdate(session, (BatchSimpleSQLWrapper) sqlWrapper, executeFunction);
-        } else if (sqlWrapper instanceof ChildBatchSQLWrapper) {
-            final ChildBatchSQLWrapper childSQLWrapper = (ChildBatchSQLWrapper) sqlWrapper;
-            final BatchSimpleSQLWrapper childWrapper = childSQLWrapper.childWrapper();
+        if (stmt instanceof BatchSimpleStmt) {
+            flux = doExecuteBatchUpdate(session, (BatchSimpleStmt) stmt, executeFunction);
+        } else if (stmt instanceof ChildBatchStmt) {
+            final ChildBatchStmt childSQLWrapper = (ChildBatchStmt) stmt;
+            final BatchSimpleStmt childWrapper = childSQLWrapper.childWrapper();
 
             // 1. execute child batch update sql
             flux = doExecuteBatchUpdate(session, childWrapper, executeFunction)
@@ -145,7 +145,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
                     .flatMapMany(list -> doParentBatchUpdate(session, childSQLWrapper, executeFunction, list))
             ;
         } else {
-            flux = Flux.error(createUnSupportedSQLWrapperException(sqlWrapper, "batchUpdate"));
+            flux = Flux.error(createUnSupportedSQLWrapperException(stmt, "batchUpdate"));
         }
         return flux;
     }
@@ -158,13 +158,13 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
      *                        </ul>
      * @param <N>             result typed of update rows ,must be  {@link Integer} or {@link Long}
      * @return {@code Mono<Integer> or Mono<Long>}
-     * @see #doExecuteUpdate(InnerGenericRmSession, SimpleSQLWrapper, Function)
+     * @see #doExecuteUpdate(InnerGenericRmSession, SimpleStmt, Function)
      */
     private <N extends Number> Flux<N> doParentBatchUpdate(InnerGenericRmSession session
-            , ChildBatchSQLWrapper childSQLWrapper, Function<PreparedStatement, Flux<N>> executeFunction
+            , ChildBatchStmt childSQLWrapper, Function<PreparedStatement, Flux<N>> executeFunction
             , List<N> childList) {
 
-        final BatchSimpleSQLWrapper childWrapper = childSQLWrapper.childWrapper();
+        final BatchSimpleStmt childWrapper = childSQLWrapper.childWrapper();
         return // 1. execute parent update sql.
                 doExecuteBatchUpdate(session, childSQLWrapper.parentWrapper(), executeFunction)
                         .collectList()
@@ -176,7 +176,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
 
 
     private <N extends Number> Mono<List<N>> assertParentChildBatchUpdateMatch(List<N> parentRowsList
-            , List<N> childRowsList, BatchSimpleSQLWrapper childWrapper) {
+            , List<N> childRowsList, BatchSimpleStmt childWrapper) {
         if (parentRowsList.size() != childRowsList.size()) {
             return Mono.error(createParentBatchUpdateNotMatchException(parentRowsList.size()
                     , childRowsList.size(), childWrapper));

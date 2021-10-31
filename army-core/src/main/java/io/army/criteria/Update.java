@@ -1,7 +1,7 @@
 package io.army.criteria;
 
 
-import io.army.criteria.impl.SQLS;
+import io.army.criteria.impl.Sqls;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -43,7 +43,7 @@ public interface Update extends SQLStatement, SQLDebug {
         <F> SingleWhereSpec<T, C> set(FieldMeta<? super T, F> target, F value);
 
         /**
-         * @see SQLS#defaultValue()
+         * @see Sqls#defaultValue()
          */
         <F> SingleWhereSpec<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp);
 
@@ -95,7 +95,7 @@ public interface Update extends SQLStatement, SQLDebug {
         <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> target, F value);
 
         /**
-         * @see SQLS#defaultValue()
+         * @see Sqls#defaultValue()
          */
         <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp);
 

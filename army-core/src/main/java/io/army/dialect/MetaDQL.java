@@ -2,7 +2,7 @@ package io.army.dialect;
 
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
-import io.army.wrapper.SimpleSQLWrapper;
+import io.army.stmt.SimpleStmt;
 
 /**
  * DQL of below meta:
@@ -21,12 +21,12 @@ import io.army.wrapper.SimpleSQLWrapper;
 public interface MetaDQL extends SQL {
 
 
-    SimpleSQLWrapper currentSchemaMeta();
+    SimpleStmt currentSchemaMeta();
 
-    SimpleSQLWrapper tableMeta(SchemaMeta schemaMeta);
+    SimpleStmt tableMeta(SchemaMeta schemaMeta);
 
-    SimpleSQLWrapper columnMeta(TableMeta<?> tableMeta);
+    SimpleStmt columnMeta(TableMeta<?> tableMeta);
 
-    SimpleSQLWrapper indexMeta(TableMeta<?> tableMeta);
+    SimpleStmt indexMeta(TableMeta<?> tableMeta);
 
 }

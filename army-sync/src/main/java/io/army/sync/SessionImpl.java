@@ -11,7 +11,7 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.tx.*;
 import io.army.util.CriteriaUtils;
-import io.army.wrapper.SQLWrapper;
+import io.army.stmt.Stmt;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -142,13 +142,13 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
     public int[] batchUpdate(Update update, final Visible visible) {
         assertSupportBatch();
         //1. parse update sql
-        final SQLWrapper sqlWrapper = parseUpdate(update, visible);
+        final Stmt stmt = parseUpdate(update, visible);
         try {
             //2. execute sql by connection
             return this.sessionFactory.updateSQLExecutor()
-                    .batchUpdate(this, sqlWrapper, true);
+                    .batchUpdate(this, stmt, true);
         } catch (Exception e) {
-            markRollbackOnlyForChildUpdate(sqlWrapper);
+            markRollbackOnlyForChildUpdate(stmt);
             throw e;
         } finally {
             // 3. clear
@@ -165,13 +165,13 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
     public long[] batchLargeUpdate(Update update, final Visible visible) {
         assertSupportBatch();
         //1. parse update sql
-        final SQLWrapper sqlWrapper = parseUpdate(update, visible);
+        final Stmt stmt = parseUpdate(update, visible);
         try {
             //2. execute sql by connection
             return this.sessionFactory.updateSQLExecutor()
-                    .batchLargeUpdate(this, sqlWrapper, true);
+                    .batchLargeUpdate(this, stmt, true);
         } catch (Exception e) {
-            markRollbackOnlyForChildUpdate(sqlWrapper);
+            markRollbackOnlyForChildUpdate(stmt);
             throw e;
         } finally {
             // 3. clear
@@ -188,13 +188,13 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
     public int[] batchDelete(Delete delete, final Visible visible) {
         assertSupportBatch();
         //1. parse update sql
-        final SQLWrapper sqlWrapper = parseDelete(delete, visible);
+        final Stmt stmt = parseDelete(delete, visible);
         try {
             //2. execute sql by connection
             return this.sessionFactory.updateSQLExecutor()
-                    .batchUpdate(this, sqlWrapper, false);
+                    .batchUpdate(this, stmt, false);
         } catch (Exception e) {
-            markRollbackOnlyForChildUpdate(sqlWrapper);
+            markRollbackOnlyForChildUpdate(stmt);
             throw e;
         } finally {
             // 3. clear
@@ -211,13 +211,13 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
     public long[] batchLargeDelete(Delete delete, final Visible visible) {
         assertSupportBatch();
         //1. parse update sql
-        final SQLWrapper sqlWrapper = parseDelete(delete, visible);
+        final Stmt stmt = parseDelete(delete, visible);
         try {
             //2. execute sql by connection
             return this.sessionFactory.updateSQLExecutor()
-                    .batchLargeUpdate(this, sqlWrapper, false);
+                    .batchLargeUpdate(this, stmt, false);
         } catch (Exception e) {
-            markRollbackOnlyForChildUpdate(sqlWrapper);
+            markRollbackOnlyForChildUpdate(stmt);
             throw e;
         } finally {
             // 3. clear
@@ -235,13 +235,13 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
         assertSessionActive(true);
 
         //1. parse update sql
-        List<SQLWrapper> sqlWrapperList = parseValueInsert(insert, null, visible);
+        List<Stmt> stmtList = parseValueInsert(insert, null, visible);
         try {
             //2. execute sql by connection
             this.sessionFactory.insertSQLExecutor()
-                    .valueInsert(this, sqlWrapperList);
+                    .valueInsert(this, stmtList);
         } catch (Exception e) {
-            markRollbackOnlyForChildInsert(sqlWrapperList);
+            markRollbackOnlyForChildInsert(stmtList);
             throw e;
         } finally {
             // 3. clear

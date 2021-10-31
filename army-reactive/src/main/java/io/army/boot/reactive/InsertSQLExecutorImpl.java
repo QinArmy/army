@@ -1,7 +1,7 @@
 package io.army.boot.reactive;
 
 import io.army.dialect.InsertException;
-import io.army.wrapper.*;
+import io.army.stmt.*;
 import io.jdbd.PreparedStatement;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -16,20 +16,20 @@ final class InsertSQLExecutorImpl extends SQLExecutorSupport implements InsertSQ
 
 
     @Override
-    public final Mono<Void> valueInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper)
+    public final Mono<Void> valueInsert(InnerGenericRmSession session, Stmt stmt)
             throws InsertException {
-        return doValueInsert(session, sqlWrapper);
+        return doValueInsert(session, stmt);
     }
 
     @Override
-    public <N extends Number> Mono<N> subQueryInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper
+    public <N extends Number> Mono<N> subQueryInsert(InnerGenericRmSession session, Stmt stmt
             , Class<N> resultClass) throws InsertException {
 
         Mono<? extends Number> mono;
         if (resultClass == Integer.class) {
-            mono = internalSubQueryInsert(session, sqlWrapper, PreparedStatement::executeUpdate, "subQueryInsert");
+            mono = internalSubQueryInsert(session, stmt, PreparedStatement::executeUpdate, "subQueryInsert");
         } else if (resultClass == Long.class) {
-            mono = internalSubQueryInsert(session, sqlWrapper, PreparedStatement::executeLargeUpdate
+            mono = internalSubQueryInsert(session, stmt, PreparedStatement::executeLargeUpdate
                     , "subQueryInsert");
         } else {
             mono = Mono.error(new IllegalArgumentException("ResultClass error"));
@@ -38,26 +38,26 @@ final class InsertSQLExecutorImpl extends SQLExecutorSupport implements InsertSQ
     }
 
     @Override
-    public final <T> Flux<T> returningInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper, Class<T> resultClass)
+    public final <T> Flux<T> returningInsert(InnerGenericRmSession session, Stmt stmt, Class<T> resultClass)
             throws InsertException {
-        return doReturningUpdate(session, sqlWrapper, resultClass, false, "returningInsert");
+        return doReturningUpdate(session, stmt, resultClass, false, "returningInsert");
     }
 
 
     /*################################## blow private method ##################################*/
 
-    private Mono<Void> doValueInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper) {
+    private Mono<Void> doValueInsert(InnerGenericRmSession session, Stmt stmt) {
         Mono<Void> mono;
-        if (sqlWrapper instanceof SimpleSQLWrapper) {
-            final SimpleSQLWrapper simpleSQLWrapper = (SimpleSQLWrapper) sqlWrapper;
+        if (stmt instanceof SimpleStmt) {
+            final SimpleStmt simpleSQLWrapper = (SimpleStmt) stmt;
             // 1. execute insert sql
             mono = doExecuteUpdate(session, simpleSQLWrapper, PreparedStatement::executeUpdate)
                     // 2. assert  insert rows equals 1
                     .flatMap(insertRows -> assertValueInsertRows(insertRows, simpleSQLWrapper));
-        } else if (sqlWrapper instanceof ChildSQLWrapper) {
-            ChildSQLWrapper childSQLWrapper = (ChildSQLWrapper) sqlWrapper;
-            final SimpleSQLWrapper parentWrapper = childSQLWrapper.parentWrapper();
-            final SimpleSQLWrapper childWrapper = childSQLWrapper.childWrapper();
+        } else if (stmt instanceof ChildStmt) {
+            ChildStmt childSQLWrapper = (ChildStmt) stmt;
+            final SimpleStmt parentWrapper = childSQLWrapper.parentWrapper();
+            final SimpleStmt childWrapper = childSQLWrapper.childWrapper();
             // 1. execute parent insert sql
             mono = doExecuteUpdate(session, parentWrapper, PreparedStatement::executeUpdate)
                     // 2. assert parent insert rows equals 1
@@ -67,17 +67,17 @@ final class InsertSQLExecutorImpl extends SQLExecutorSupport implements InsertSQ
                     // 4. assert child insert rows equals 1
                     .flatMap(insertRows -> assertValueInsertRows(insertRows, childWrapper))
             ;
-        } else if (sqlWrapper instanceof BatchSimpleSQLWrapper) {
-            final BatchSimpleSQLWrapper batchSQLWrapper = (BatchSimpleSQLWrapper) sqlWrapper;
+        } else if (stmt instanceof BatchSimpleStmt) {
+            final BatchSimpleStmt batchSQLWrapper = (BatchSimpleStmt) stmt;
             // 1. execute batch insert sql
             mono = doExecuteBatchUpdate(session, batchSQLWrapper, PreparedStatement::executeBatch)
                     // 2. assert each insert rows equals 1
                     .flatMap(insertRows -> assertValueInsertRows(insertRows, batchSQLWrapper))
                     .then();
-        } else if (sqlWrapper instanceof ChildBatchSQLWrapper) {
-            ChildBatchSQLWrapper batchSQLWrapper = (ChildBatchSQLWrapper) sqlWrapper;
-            final BatchSimpleSQLWrapper parentWrapper = batchSQLWrapper.parentWrapper();
-            final BatchSimpleSQLWrapper childWrapper = batchSQLWrapper.childWrapper();
+        } else if (stmt instanceof ChildBatchStmt) {
+            ChildBatchStmt batchSQLWrapper = (ChildBatchStmt) stmt;
+            final BatchSimpleStmt parentWrapper = batchSQLWrapper.parentWrapper();
+            final BatchSimpleStmt childWrapper = batchSQLWrapper.childWrapper();
 
             // 1. execute parent batch insert sql
             mono = doExecuteBatchUpdate(session, parentWrapper, PreparedStatement::executeBatch)
@@ -89,12 +89,12 @@ final class InsertSQLExecutorImpl extends SQLExecutorSupport implements InsertSQ
                     .flatMap(parentRows -> doExecuteBatchChildValueInsert(session, childWrapper, parentRows))
             ;
         } else {
-            mono = Mono.error(createUnSupportedSQLWrapperException(sqlWrapper, "valueInsert"));
+            mono = Mono.error(createUnSupportedSQLWrapperException(stmt, "valueInsert"));
         }
         return mono;
     }
 
-    private Mono<Void> doExecuteBatchChildValueInsert(InnerGenericRmSession session, BatchSimpleSQLWrapper childWrapper
+    private Mono<Void> doExecuteBatchChildValueInsert(InnerGenericRmSession session, BatchSimpleStmt childWrapper
             , Long parentRows) {
         // 1. execute child  batch insert sql
         return doExecuteBatchUpdate(session, childWrapper, PreparedStatement::executeBatch)
@@ -108,7 +108,7 @@ final class InsertSQLExecutorImpl extends SQLExecutorSupport implements InsertSQ
     }
 
     private Mono<Void> assertParentChildBatchMatch(Long parentRows, Long childRows
-            , BatchSimpleSQLWrapper childWrapper) {
+            , BatchSimpleStmt childWrapper) {
         Mono<Void> mono;
         if (childRows.equals(parentRows)) {
             mono = Mono.empty();
@@ -118,7 +118,7 @@ final class InsertSQLExecutorImpl extends SQLExecutorSupport implements InsertSQ
         return mono;
     }
 
-    private Mono<Void> assertValueInsertRows(Integer insertRows, GenericSimpleWrapper sqlWrapper) {
+    private Mono<Void> assertValueInsertRows(Integer insertRows, GenericSimpleStmt sqlWrapper) {
         Mono<Void> mono;
         if (insertRows != 1) {
             mono = Mono.error(createValueInsertException(insertRows, sqlWrapper));
@@ -137,17 +137,17 @@ final class InsertSQLExecutorImpl extends SQLExecutorSupport implements InsertSQ
      *                        </ul>
      * @param <N>             result typed of update rows ,must be  {@link Integer} or {@link Long}
      * @return {@code Mono<Integer> or Mono<Long>}
-     * @see #doExecuteUpdate(InnerGenericRmSession, SimpleSQLWrapper, Function)
+     * @see #doExecuteUpdate(InnerGenericRmSession, SimpleStmt, Function)
      */
-    private <N extends Number> Mono<N> internalSubQueryInsert(InnerGenericRmSession session, SQLWrapper sqlWrapper
+    private <N extends Number> Mono<N> internalSubQueryInsert(InnerGenericRmSession session, Stmt stmt
             , Function<PreparedStatement, Mono<N>> executeFunction, String methodName) {
         Mono<N> mono;
-        if (sqlWrapper instanceof SimpleSQLWrapper) {
-            mono = doExecuteUpdate(session, (SimpleSQLWrapper) sqlWrapper, executeFunction);
-        } else if (sqlWrapper instanceof ChildSQLWrapper) {
-            final ChildSQLWrapper childSQLWrapper = ((ChildSQLWrapper) sqlWrapper);
-            final SimpleSQLWrapper parentWrapper = childSQLWrapper.parentWrapper();
-            final SimpleSQLWrapper childWrapper = childSQLWrapper.childWrapper();
+        if (stmt instanceof SimpleStmt) {
+            mono = doExecuteUpdate(session, (SimpleStmt) stmt, executeFunction);
+        } else if (stmt instanceof ChildStmt) {
+            final ChildStmt childSQLWrapper = ((ChildStmt) stmt);
+            final SimpleStmt parentWrapper = childSQLWrapper.parentWrapper();
+            final SimpleStmt childWrapper = childSQLWrapper.childWrapper();
 
             // 1. execute parent sub query insert
             mono = doExecuteUpdate(session, parentWrapper, executeFunction)
@@ -155,7 +155,7 @@ final class InsertSQLExecutorImpl extends SQLExecutorSupport implements InsertSQ
                     .flatMap(parentRows -> doChildSubQueryInsert(session, childWrapper, parentRows, executeFunction))
             ;
         } else {
-            mono = Mono.error(createUnSupportedSQLWrapperException(sqlWrapper, methodName));
+            mono = Mono.error(createUnSupportedSQLWrapperException(stmt, methodName));
         }
         return mono;
     }
@@ -168,10 +168,10 @@ final class InsertSQLExecutorImpl extends SQLExecutorSupport implements InsertSQ
      *                        </ul>
      * @param <N>             result typed of update rows ,must be  {@link Integer} or {@link Long}
      * @return {@code Mono<Integer> or Mono<Long>}
-     * @see #doExecuteUpdate(InnerGenericRmSession, SimpleSQLWrapper, Function)
+     * @see #doExecuteUpdate(InnerGenericRmSession, SimpleStmt, Function)
      */
     private <N extends Number> Mono<N> doChildSubQueryInsert(InnerGenericRmSession session
-            , SimpleSQLWrapper childWrapper, N parentRows, Function<PreparedStatement, Mono<N>> executeFunction) {
+            , SimpleStmt childWrapper, N parentRows, Function<PreparedStatement, Mono<N>> executeFunction) {
         Mono<N> mono;
         if (parentRows.longValue() < 1L) {
             mono = Mono.just(parentRows);
@@ -187,7 +187,7 @@ final class InsertSQLExecutorImpl extends SQLExecutorSupport implements InsertSQ
 
 
     private <N extends Number> Mono<N> assertParentChildSubQueryInsertMatch(N parentRows, N childRows
-            , SimpleSQLWrapper childWrapper) {
+            , SimpleStmt childWrapper) {
         Mono<N> mono;
         if (childRows.equals(parentRows)) {
             mono = Mono.just(childRows);

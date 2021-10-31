@@ -5,8 +5,8 @@ import io.army.criteria.Visible;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
-import io.army.meta.mapping.MappingMeta;
-import io.army.wrapper.ParamWrapper;
+import io.army.meta.mapping.MappingType;
+import io.army.stmt.ParamValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,7 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
 
     protected final SQLBuilder sqlBuilder;
 
-    protected final List<ParamWrapper> paramList;
+    protected final List<ParamValue> paramList;
 
     protected final TableContextSQLContext parentContext;
 
@@ -70,16 +70,16 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
 
     @Override
     public final void appendConstant(ParamMeta paramMeta, Object value) {
-        MappingMeta mappingMeta = paramMeta.mappingMeta();
-        if (mappingMeta instanceof FieldMeta) {
+        MappingType mappingType = paramMeta.mappingMeta();
+        if (mappingType instanceof FieldMeta) {
             this.sqlBuilder
                     .append(" ")
-                    .append(mappingMeta.toConstant((FieldMeta<?, ?>) mappingMeta, value))
+                    .append(mappingType.toConstant((FieldMeta<?, ?>) mappingType, value))
             ;
         } else {
             this.sqlBuilder
                     .append(" ")
-                    .append(mappingMeta.toConstant(null, value))
+                    .append(mappingType.toConstant(null, value))
             ;
         }
     }
@@ -96,12 +96,12 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
     }
 
     @Override
-    public final void appendParam(ParamWrapper paramWrapper) {
-        this.paramList.add(paramWrapper);
+    public final void appendParam(ParamValue paramValue) {
+        this.paramList.add(paramValue);
     }
 
     @Override
-    public final List<ParamWrapper> paramList() {
+    public final List<ParamValue> paramList() {
         return this.paramList;
     }
 

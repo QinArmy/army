@@ -1,6 +1,6 @@
 package io.army.sync;
 
-import io.army.wrapper.SimpleSQLWrapper;
+import io.army.stmt.SimpleStmt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +17,7 @@ final class SelectSQLExecutorImpl extends SQLExecutorSupport implements SelectSQ
 
 
     @Override
-    public final <T> List<T> select(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper, Class<T> resultClass) {
+    public final <T> List<T> select(InnerGenericRmSession session, SimpleStmt sqlWrapper, Class<T> resultClass) {
         return doExecuteSimpleQuery(session, sqlWrapper, resultClass);
     }
 

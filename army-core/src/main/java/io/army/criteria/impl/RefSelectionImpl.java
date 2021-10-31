@@ -8,7 +8,7 @@ import io.army.dialect.NotSupportDialectException;
 import io.army.dialect.SQL;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.MappingType;
 import io.army.meta.mapping.ResultColumnMeta;
 import io.army.sqldatatype.SQLDataType;
 import io.army.util.Assert;
@@ -22,8 +22,8 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
 
 
     static <E> RefSelectionImpl<E> buildImmutable(String subQueryAlias, String derivedFieldName
-            , MappingMeta mappingMeta) {
-        return new ImmutableRefSelection<>(subQueryAlias, derivedFieldName, mappingMeta);
+            , MappingType mappingType) {
+        return new ImmutableRefSelection<>(subQueryAlias, derivedFieldName, mappingType);
     }
 
 
@@ -79,12 +79,12 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
 
     private static final class ImmutableRefSelection<E> extends RefSelectionImpl<E> {
 
-        private final MappingMeta mappingMeta;
+        private final MappingType mappingType;
 
 
-        private ImmutableRefSelection(String subQueryAlias, String derivedFieldName, MappingMeta mappingMeta) {
+        private ImmutableRefSelection(String subQueryAlias, String derivedFieldName, MappingType mappingType) {
             super(subQueryAlias, derivedFieldName);
-            this.mappingMeta = mappingMeta;
+            this.mappingType = mappingType;
         }
 
         @Override
@@ -93,8 +93,8 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
         }
 
         @Override
-        public MappingMeta mappingMeta() {
-            return this.mappingMeta;
+        public MappingType mappingMeta() {
+            return this.mappingType;
         }
 
         @Override
@@ -114,14 +114,14 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
 
         @Override
         public boolean finished() {
-            return this.proxyMappingType.mappingMeta != null;
+            return this.proxyMappingType.mappingType != null;
         }
 
         @Override
-        public MappingMeta mappingMeta() {
-            return proxyMappingType.mappingMeta == null
+        public MappingType mappingMeta() {
+            return proxyMappingType.mappingType == null
                     ? proxyMappingType
-                    : proxyMappingType.mappingMeta;
+                    : proxyMappingType.mappingType;
         }
 
         @Override
@@ -138,62 +138,62 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
     }
 
 
-    private static final class ProxyMappingType implements MappingMeta {
+    private static final class ProxyMappingType implements MappingType {
 
-        private MappingMeta mappingMeta;
+        private MappingType mappingType;
 
         private ProxyMappingType() {
 
         }
 
-        private void mappingMeta(MappingMeta mappingMeta) {
-            Assert.state(this.mappingMeta == null, "mappingMeta not null.");
-            this.mappingMeta = mappingMeta;
+        private void mappingMeta(MappingType mappingType) {
+            Assert.state(this.mappingType == null, "mappingMeta not null.");
+            this.mappingType = mappingType;
         }
 
         @Override
         public Class<?> javaType() {
-            Assert.state(this.mappingMeta != null, "no mappingMeta.");
-            return this.mappingMeta.javaType();
+            Assert.state(this.mappingType != null, "no mappingMeta.");
+            return this.mappingType.javaType();
         }
 
         @Override
         public JDBCType jdbcType() {
-            Assert.state(this.mappingMeta != null, "no mappingMeta.");
-            return this.mappingMeta.jdbcType();
+            Assert.state(this.mappingType != null, "no mappingMeta.");
+            return this.mappingType.jdbcType();
         }
 
 
         @Override
         public void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context)
                 throws SQLException {
-            Assert.state(this.mappingMeta != null, "no mappingMeta.");
-            this.mappingMeta.nonNullSet(st, nonNullValue, index, context);
+            Assert.state(this.mappingType != null, "no mappingMeta.");
+            this.mappingType.nonNullSet(st, nonNullValue, index, context);
         }
 
         @Override
         public Object nullSafeGet(ResultSet resultSet, String alias, ResultColumnMeta resultColumnMeta
                 , MappingContext context) throws SQLException {
-            Assert.state(this.mappingMeta != null, "no mappingMeta.");
-            return this.mappingMeta.nullSafeGet(resultSet, alias, resultColumnMeta, context);
+            Assert.state(this.mappingType != null, "no mappingMeta.");
+            return this.mappingType.nullSafeGet(resultSet, alias, resultColumnMeta, context);
         }
 
         @Override
         public String toConstant(@Nullable FieldMeta<?, ?> paramMeta, Object nonNullValue) {
-            Assert.state(this.mappingMeta != null, "no mappingMeta.");
-            return this.mappingMeta.toConstant(paramMeta, nonNullValue);
+            Assert.state(this.mappingType != null, "no mappingMeta.");
+            return this.mappingType.toConstant(paramMeta, nonNullValue);
         }
 
         @Override
         public SQLDataType sqlDataType(Database database) throws NotSupportDialectException {
-            Assert.state(this.mappingMeta != null, "no mappingMeta.");
-            return this.mappingMeta.sqlDataType(database);
+            Assert.state(this.mappingType != null, "no mappingMeta.");
+            return this.mappingType.sqlDataType(database);
         }
 
         @Override
-        public MappingMeta mappingMeta() {
-            Assert.state(this.mappingMeta != null, "no mappingMeta.");
-            return this.mappingMeta;
+        public MappingType mappingMeta() {
+            Assert.state(this.mappingType != null, "no mappingMeta.");
+            return this.mappingType;
         }
     }
 

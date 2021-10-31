@@ -11,7 +11,7 @@ public abstract class Predicates {
     }
 
     public static PrimaryValueEqualPredicate primaryValueEquals(PrimaryFieldMeta<?, ?> primary, Object value) {
-        return DualPredicate.buildPrimaryValueEqual(primary, SQLS.param(value, primary.mappingMeta()));
+        return DualPredicate.buildPrimaryValueEqual(primary, Sqls.param(value, primary.mappingMeta()));
     }
 
     public static PrimaryValueEqualPredicate primaryValueEquals(PrimaryFieldMeta<?, ?> primary

@@ -69,8 +69,8 @@ class MySQL57Dialect extends AbstractDialect {
     }
 
     @Override
-    protected DML createDML() {
-        return new MySQL57DML(this);
+    protected DmlDialect createDML() {
+        return new MySQL57DmlDialect(this);
     }
 
     @Override

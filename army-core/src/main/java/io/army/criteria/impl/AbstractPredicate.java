@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.IPredicate;
 import io.army.lang.Nullable;
 import io.army.meta.mapping.MappingFactory;
-import io.army.meta.mapping.MappingMeta;
+import io.army.meta.mapping.MappingType;
 import io.army.util.ArrayUtils;
 
 import java.util.Collections;
@@ -15,7 +15,7 @@ import java.util.List;
 abstract class AbstractPredicate extends AbstractExpression<Boolean> implements IPredicate {
 
     @Override
-    public final MappingMeta mappingMeta() {
+    public final MappingType mappingMeta() {
         return MappingFactory.getDefaultMapping(Boolean.class);
     }
 

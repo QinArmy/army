@@ -11,8 +11,8 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.meta.ParamMeta;
-import io.army.meta.mapping.MappingMeta;
-import io.army.wrapper.*;
+import io.army.meta.mapping.MappingType;
+import io.army.stmt.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +48,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     }
 
 
-    final Integer integerUpdate(PreparedStatement st, SimpleSQLWrapper sqlWrapper) {
+    final Integer integerUpdate(PreparedStatement st, SimpleStmt sqlWrapper) {
         try {
             return st.executeUpdate();
         } catch (SQLException e) {
@@ -56,7 +56,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
         }
     }
 
-    final Long longUpdate(PreparedStatement st, SimpleSQLWrapper sqlWrapper) {
+    final Long longUpdate(PreparedStatement st, SimpleStmt sqlWrapper) {
         try {
             return st.executeLargeUpdate();
         } catch (SQLException e) {
@@ -67,7 +67,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     /**
      * @return a unmodifiable list
      */
-    final List<Integer> integerBatchUpdate(PreparedStatement st, BatchSimpleSQLWrapper sqlWrapper) {
+    final List<Integer> integerBatchUpdate(PreparedStatement st, BatchSimpleStmt sqlWrapper) {
         try {
             int[] batchResult;
             batchResult = st.executeBatch();
@@ -89,7 +89,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
         }
     }
 
-    final List<Long> longBatchUpdate(PreparedStatement st, BatchSimpleSQLWrapper sqlWrapper) {
+    final List<Long> longBatchUpdate(PreparedStatement st, BatchSimpleStmt sqlWrapper) {
         try {
             long[] batchResult;
             batchResult = st.executeLargeBatch();
@@ -110,18 +110,18 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     /**
      * @param executeFunction execute update method ,must be below:
      *                        <ul>
-     *                          <li>{@link #integerUpdate(PreparedStatement, SimpleSQLWrapper)}</li>
-     *                          <li>{@link #longUpdate(PreparedStatement, SimpleSQLWrapper)}</li>
+     *                          <li>{@link #integerUpdate(PreparedStatement, SimpleStmt)}</li>
+     *                          <li>{@link #longUpdate(PreparedStatement, SimpleStmt)}</li>
      *                        </ul>
      * @param <N>             result typed of update rows ,must be  {@link Integer} or {@link Long}
      * @return {@code Integer or Long}
      */
-    final <N extends Number> N doExecuteUpdate(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper
-            , BiFunction<PreparedStatement, SimpleSQLWrapper, N> executeFunction) {
+    final <N extends Number> N doExecuteUpdate(InnerGenericRmSession session, SimpleStmt sqlWrapper
+            , BiFunction<PreparedStatement, SimpleStmt, N> executeFunction) {
         //1. create statement
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
             // 2. set params
-            bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramList());
+            bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramGroup());
             // 3. set timeout
             int timeout = session.timeToLiveInSeconds();
             if (timeout >= 0) {
@@ -147,18 +147,18 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     /**
      * @param executeFunction execute update method ,must be below:
      *                        <ul>
-     *                          <li>{@link #integerBatchUpdate(PreparedStatement, BatchSimpleSQLWrapper)}</li>
-     *                          <li>{@link #longBatchUpdate(PreparedStatement, BatchSimpleSQLWrapper)}</li>
+     *                          <li>{@link #integerBatchUpdate(PreparedStatement, BatchSimpleStmt)}</li>
+     *                          <li>{@link #longBatchUpdate(PreparedStatement, BatchSimpleStmt)}</li>
      *                        </ul>
      * @param <N>             result typed of update rows ,must be  {@link Integer} or {@link Long}
      * @return a unmodifiable list,{@code List<Integer> or List<Long>}
      */
-    final <N extends Number> List<N> doExecuteBatch(InnerGenericRmSession session, BatchSimpleSQLWrapper sqlWrapper
-            , BiFunction<PreparedStatement, BatchSimpleSQLWrapper, List<N>> executeFunction) {
+    final <N extends Number> List<N> doExecuteBatch(InnerGenericRmSession session, BatchSimpleStmt sqlWrapper
+            , BiFunction<PreparedStatement, BatchSimpleStmt, List<N>> executeFunction) {
         // 1. create statement
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
             StatementType statementType = sqlWrapper.statementType();
-            for (List<ParamWrapper> paramList : sqlWrapper.paramGroupList()) {
+            for (List<ParamValue> paramList : sqlWrapper.paramGroupList()) {
                 // 2. bind param list
                 bindParamList(st, statementType, paramList);
                 st.addBatch();
@@ -180,12 +180,12 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     }
 
 
-    final <T> List<T> doExecuteSimpleQuery(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper
+    final <T> List<T> doExecuteSimpleQuery(InnerGenericRmSession session, SimpleStmt sqlWrapper
             , Class<T> resultClass) {
         // 1. create statement
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql())) {
             // 2. set params
-            bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramList());
+            bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramGroup());
             if (this.sessionFactory.showSQL()) {
                 LOG.info("Army will execute {} sql:\n{}", sqlWrapper.statementType()
                         , this.sessionFactory.dialect().showSQL(sqlWrapper));
@@ -211,18 +211,18 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     }
 
 
-    final <T> List<T> doExecuteReturning(InnerGenericRmSession session, SQLWrapper sqlWrapper
+    final <T> List<T> doExecuteReturning(InnerGenericRmSession session, Stmt stmt
             , Class<T> resultClass, boolean updateStatement, String methodName) {
         List<T> resultList;
-        if (sqlWrapper instanceof SimpleSQLWrapper) {
-            resultList = doExecuteSimpleQuery(session, (SimpleSQLWrapper) sqlWrapper, resultClass);
-        } else if (sqlWrapper instanceof ChildSQLWrapper) {
-            final ChildSQLWrapper childSQLWrapper = (ChildSQLWrapper) sqlWrapper;
-            final SimpleSQLWrapper firstWrapper = updateStatement
+        if (stmt instanceof SimpleStmt) {
+            resultList = doExecuteSimpleQuery(session, (SimpleStmt) stmt, resultClass);
+        } else if (stmt instanceof ChildStmt) {
+            final ChildStmt childSQLWrapper = (ChildStmt) stmt;
+            final SimpleStmt firstWrapper = updateStatement
                     ? childSQLWrapper.childWrapper()
                     : childSQLWrapper.parentWrapper();
 
-            final SimpleSQLWrapper secondWrapper = updateStatement
+            final SimpleStmt secondWrapper = updateStatement
                     ? childSQLWrapper.parentWrapper()
                     : childSQLWrapper.childWrapper();
 
@@ -235,7 +235,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
             // 2. execute second sql
             resultList = doExecuteSecondSQLReturning(session, secondWrapper, resultClass, objectWrapperMap);
         } else {
-            throw createUnSupportedSQLWrapperException(sqlWrapper, methodName);
+            throw createUnSupportedSQLWrapperException(stmt, methodName);
         }
         return resultList;
     }
@@ -244,11 +244,11 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     /*################################## blow private method ##################################*/
 
     private Map<Object, ObjectWrapper> doExecuteFirstSQLReturning(InnerGenericRmSession session
-            , SimpleSQLWrapper sqlWrapper, Class<?> resultClass, boolean onlyIdReturning) {
+            , SimpleStmt sqlWrapper, Class<?> resultClass, boolean onlyIdReturning) {
         // 1. create statement
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql())) {
             //2. bind param list
-            bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramList());
+            bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramGroup());
             if (this.sessionFactory.showSQL()) {
                 LOG.info("Army will execute {} sql:\n{}", sqlWrapper.statementType()
                         , this.sessionFactory.dialect().showSQL(sqlWrapper));
@@ -264,12 +264,12 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
         }
     }
 
-    private <T> List<T> doExecuteSecondSQLReturning(InnerGenericRmSession session, SimpleSQLWrapper sqlWrapper
+    private <T> List<T> doExecuteSecondSQLReturning(InnerGenericRmSession session, SimpleStmt sqlWrapper
             , Class<T> resultClass, Map<Object, ObjectWrapper> objectWrapperMap) {
         // 1. create statement
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql())) {
             //2. bind param list
-            bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramList());
+            bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramGroup());
             if (this.sessionFactory.showSQL()) {
                 LOG.info("Army will execute {} sql:\n{}", sqlWrapper.statementType()
                         , this.sessionFactory.dialect().showSQL(sqlWrapper));
@@ -289,7 +289,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
      * @return a unmodifiable map
      */
     private Map<Object, ObjectWrapper> extractFirstSQLResult(InnerGenericRmSession session, ResultSet resultSet
-            , SimpleSQLWrapper sqlWrapper, Class<?> resultClass, boolean onlyIdReturning) throws SQLException {
+            , SimpleStmt sqlWrapper, Class<?> resultClass, boolean onlyIdReturning) throws SQLException {
 
         final List<Selection> selectionList = sqlWrapper.selectionList();
         final Selection primaryFieldSelection = obtainPrimaryFieldForReturning(selectionList);
@@ -320,7 +320,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     }
 
     private <T> List<T> extractSecondSQLResult(ResultSet resultSet, Map<Object, ObjectWrapper> objectWrapperMap
-            , SimpleSQLWrapper sqlWrapper, Class<T> resultClass) throws SQLException {
+            , SimpleStmt sqlWrapper, Class<T> resultClass) throws SQLException {
 
         final List<Selection> selectionList = sqlWrapper.selectionList();
         final Selection primaryFieldSelection = obtainPrimaryFieldForReturning(selectionList);
@@ -368,7 +368,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     }
 
 
-    private <T> List<T> extractSingleResultList(ResultSet resultSet, SimpleSQLWrapper sqlWrapper
+    private <T> List<T> extractSingleResultList(ResultSet resultSet, SimpleStmt sqlWrapper
             , Class<T> resultClass) throws SQLException {
 
         final Selection selection = sqlWrapper.selectionList().get(0);
@@ -384,7 +384,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     }
 
     private <T> List<T> extractRowResultList(InnerGenericRmSession session, ResultSet resultSet
-            , SimpleSQLWrapper sqlWrapper, Class<T> resultClass) throws SQLException {
+            , SimpleStmt sqlWrapper, Class<T> resultClass) throws SQLException {
 
         List<T> resultList = new ArrayList<>();
         while (resultSet.next()) {
@@ -397,7 +397,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
 
 
     private <T> T extractRowResult(InnerGenericRmSession session, ResultSet resultSet
-            , SimpleSQLWrapper sqlWrapper, Class<T> resultClass) throws SQLException {
+            , SimpleStmt sqlWrapper, Class<T> resultClass) throws SQLException {
 
         final ObjectWrapper beanWrapper = createObjectWrapper(resultClass, session);
 
@@ -419,16 +419,16 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     private <T> T extractColumnResult(ResultSet resultSet, Selection selection, StatementType statementType
             , Class<T> columnClass) throws SQLException {
 
-        final MappingMeta mappingMeta = selection.mappingMeta();
+        final MappingType mappingType = selection.mappingMeta();
 
-        Object columnResult = mappingMeta.nullSafeGet(resultSet, selection.alias(), this.mappingContext);
+        Object columnResult = mappingType.nullSafeGet(resultSet, selection.alias(), this.mappingContext);
         if (columnResult == null) {
             return null;
         }
-        if (!mappingMeta.javaType().isInstance(columnResult)) {
+        if (!mappingType.javaType().isInstance(columnResult)) {
             throw new MetaException("%s nullSafeGet return value isn't %s's instance."
-                    , mappingMeta.getClass().getName()
-                    , mappingMeta.javaType().getName());
+                    , mappingType.getClass().getName()
+                    , mappingType.javaType().getName());
         }
         if (selection instanceof FieldSelection) {
             FieldMeta<?, ?> fieldMeta = ((FieldSelection) selection).fieldMeta();
@@ -440,16 +440,16 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     }
 
 
-    private void bindParamList(PreparedStatement st, StatementType statementType, List<ParamWrapper> paramList)
+    private void bindParamList(PreparedStatement st, StatementType statementType, List<ParamValue> paramList)
             throws SQLException {
-        ParamWrapper paramWrapper;
+        ParamValue paramValue;
         Object value;
 
         final int size = paramList.size();
         for (int i = 0; i < size; i++) {
-            paramWrapper = paramList.get(i);
-            ParamMeta paramMeta = paramWrapper.paramMeta();
-            value = paramWrapper.value();
+            paramValue = paramList.get(i);
+            ParamMeta paramMeta = paramValue.paramMeta();
+            value = paramValue.value();
             if (value == null) {
                 st.setNull(i + 1, paramMeta.mappingMeta().jdbcType().getVendorTypeNumber());
             } else {

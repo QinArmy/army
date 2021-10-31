@@ -39,8 +39,8 @@ class Postgre11Dialect extends AbstractDialect {
     }
 
     @Override
-    protected DML createDML() {
-        return new Postgre11DML(this);
+    protected DmlDialect createDML() {
+        return new Postgre11DmlDialect(this);
     }
 
     @Override

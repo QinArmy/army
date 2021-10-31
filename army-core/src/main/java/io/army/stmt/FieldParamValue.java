@@ -1,4 +1,4 @@
-package io.army.wrapper;
+package io.army.stmt;
 
 import io.army.meta.FieldMeta;
 
@@ -6,7 +6,7 @@ import io.army.meta.FieldMeta;
  * place holder for batch sql .
  *
  */
-public interface FieldParamWrapper extends ParamWrapper {
+public interface FieldParamValue extends ParamValue {
 
     @Override
     FieldMeta<?, ?> paramMeta();
