@@ -60,13 +60,13 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
             SimpleStmt simpleSQLWrapper = (SimpleStmt) stmt;
             ///1. execute update sql
             rows = doExecuteUpdate(session, simpleSQLWrapper, executeFunction);
-        } else if (stmt instanceof ChildStmt) {
-            final ChildStmt childSQLWrapper = (ChildStmt) stmt;
-            final SimpleStmt childWrapper = childSQLWrapper.childWrapper();
+        } else if (stmt instanceof PairStmt) {
+            final PairStmt childSQLWrapper = (PairStmt) stmt;
+            final SimpleStmt childWrapper = childSQLWrapper.childStmt();
             //1. execute child update sql
             rows = doExecuteUpdate(session, childWrapper, executeFunction);
             if (rows.longValue() > 1L) {
-                final SimpleStmt parentWrapper = childSQLWrapper.parentWrapper();
+                final SimpleStmt parentWrapper = childSQLWrapper.parentStmt();
                 N parentRows;
                 //2. execute parent insert sql
                 parentRows = doExecuteUpdate(session, parentWrapper, executeFunction);

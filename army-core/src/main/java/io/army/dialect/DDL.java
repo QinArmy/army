@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * This interface represents the abstract of debugSQL tableMeta ,that is a part of DDL.
  */
-public interface DDL extends SQL {
+public interface DDL extends SqlDialect {
 
     List<String> createTable(TableMeta<?> tableMeta, @Nullable String tableSuffix);
 

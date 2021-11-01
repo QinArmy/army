@@ -164,19 +164,19 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
         Flux<R> flux;
         if (stmt instanceof SimpleStmt) {
             flux = doExecuteSimpleQuery(session, (SimpleStmt) stmt, resultClass);
-        } else if (stmt instanceof ChildStmt) {
-            final ChildStmt childSQLWrapper = (ChildStmt) stmt;
+        } else if (stmt instanceof PairStmt) {
+            final PairStmt childSQLWrapper = (PairStmt) stmt;
             final SimpleStmt firstWrapper = updateStatement
-                    ? childSQLWrapper.childWrapper()
-                    : childSQLWrapper.parentWrapper();
+                    ? childSQLWrapper.childStmt()
+                    : childSQLWrapper.parentStmt();
 
             final SimpleStmt secondWrapper = updateStatement
-                    ? childSQLWrapper.parentWrapper()
-                    : childSQLWrapper.childWrapper();
+                    ? childSQLWrapper.parentStmt()
+                    : childSQLWrapper.childStmt();
 
 
-            final boolean onlyIdReturning = onlyIdReturning(childSQLWrapper.parentWrapper()
-                    , childSQLWrapper.childWrapper());
+            final boolean onlyIdReturning = onlyIdReturning(childSQLWrapper.parentStmt()
+                    , childSQLWrapper.childStmt());
 
             // 1. execute child returning update
             flux = doExecuteFirstSQLReturning(session, firstWrapper, resultClass, onlyIdReturning)

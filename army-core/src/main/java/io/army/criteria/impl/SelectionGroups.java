@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.criteria.*;
-import io.army.dialect.SQL;
+import io.army.dialect.SqlDialect;
 import io.army.dialect.SQLBuilder;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
@@ -34,7 +34,7 @@ abstract class SelectionGroups implements SelectionGroup {
     @Override
     public void appendSQL(SQLContext context) {
         SQLBuilder builder = context.sqlBuilder().append(" ");
-        final SQL sql = context.dql();
+        final SqlDialect sql = context.dql();
         final String safeTableAlias = sql.quoteIfNeed(tableAlias());
         int index = 0;
         for (Selection selection : selectionList()) {
@@ -80,7 +80,7 @@ abstract class SelectionGroups implements SelectionGroup {
         @Override
         public void appendSQL(SQLContext context) {
             SQLBuilder builder = context.sqlBuilder().append(" ");
-            final SQL sql = context.dql();
+            final SqlDialect sql = context.dql();
             final String safeTableAlias = sql.quoteIfNeed(this.tableAlias);
             int index = 0;
             for (FieldMeta<T, ?> fieldMeta : this.fieldMetaList) {

@@ -54,10 +54,10 @@ final class InsertSQLExecutorImpl extends SQLExecutorSupport implements InsertSQ
             mono = doExecuteUpdate(session, simpleSQLWrapper, PreparedStatement::executeUpdate)
                     // 2. assert  insert rows equals 1
                     .flatMap(insertRows -> assertValueInsertRows(insertRows, simpleSQLWrapper));
-        } else if (stmt instanceof ChildStmt) {
-            ChildStmt childSQLWrapper = (ChildStmt) stmt;
-            final SimpleStmt parentWrapper = childSQLWrapper.parentWrapper();
-            final SimpleStmt childWrapper = childSQLWrapper.childWrapper();
+        } else if (stmt instanceof PairStmt) {
+            PairStmt childSQLWrapper = (PairStmt) stmt;
+            final SimpleStmt parentWrapper = childSQLWrapper.parentStmt();
+            final SimpleStmt childWrapper = childSQLWrapper.childStmt();
             // 1. execute parent insert sql
             mono = doExecuteUpdate(session, parentWrapper, PreparedStatement::executeUpdate)
                     // 2. assert parent insert rows equals 1
@@ -144,10 +144,10 @@ final class InsertSQLExecutorImpl extends SQLExecutorSupport implements InsertSQ
         Mono<N> mono;
         if (stmt instanceof SimpleStmt) {
             mono = doExecuteUpdate(session, (SimpleStmt) stmt, executeFunction);
-        } else if (stmt instanceof ChildStmt) {
-            final ChildStmt childSQLWrapper = ((ChildStmt) stmt);
-            final SimpleStmt parentWrapper = childSQLWrapper.parentWrapper();
-            final SimpleStmt childWrapper = childSQLWrapper.childWrapper();
+        } else if (stmt instanceof PairStmt) {
+            final PairStmt childSQLWrapper = ((PairStmt) stmt);
+            final SimpleStmt parentWrapper = childSQLWrapper.parentStmt();
+            final SimpleStmt childWrapper = childSQLWrapper.childStmt();
 
             // 1. execute parent sub query insert
             mono = doExecuteUpdate(session, parentWrapper, executeFunction)

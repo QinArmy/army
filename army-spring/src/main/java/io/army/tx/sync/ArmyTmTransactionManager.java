@@ -1,6 +1,6 @@
 package io.army.tx.sync;
 
-import io.army.DataAccessException;
+import io.army.DataAccessException_0;
 import io.army.SessionException;
 import io.army.sync.TmSession;
 import io.army.sync.TmSessionFactory;
@@ -177,7 +177,7 @@ public class ArmyTmTransactionManager extends AbstractPlatformTransactionManager
         try {
             tmSession.sessionTransaction().close();
             tmSession.close();
-        } catch (DataAccessException e) {
+        } catch (DataAccessException_0 e) {
             throw SpringUtils.convertArmyAccessException(e);
         }
     }

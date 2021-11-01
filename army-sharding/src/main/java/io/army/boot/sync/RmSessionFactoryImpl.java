@@ -199,7 +199,7 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
                         .migrate(conn, this);
             }
         } catch (SQLException e) {
-            throw new DataAccessException(ErrorCode.CODEC_DATA_ERROR, e, "%s migration failure.", this);
+            throw new DataAccessException_0(ErrorCode.CODEC_DATA_ERROR, e, "%s migration failure.", this);
         } finally {
             if (xaConn != null) {
                 closeXAConnection(xaConn);
@@ -211,7 +211,7 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
         try {
             xaConn.close();
         } catch (SQLException e) {
-            throw new DataAccessException(ErrorCode.CODEC_DATA_ERROR, e, "%s migration failure.", this);
+            throw new DataAccessException_0(ErrorCode.CODEC_DATA_ERROR, e, "%s migration failure.", this);
         }
     }
 }

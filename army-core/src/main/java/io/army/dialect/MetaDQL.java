@@ -18,7 +18,7 @@ import io.army.stmt.SimpleStmt;
  *     This interface design for reactive database driver(eg:R2DBC).
  * </p>
  */
-public interface MetaDQL extends SQL {
+public interface MetaDQL extends SqlDialect {
 
 
     SimpleStmt currentSchemaMeta();

@@ -6,7 +6,7 @@ import io.army.criteria.SubQuery;
 import io.army.criteria.Visible;
 import io.army.stmt.SimpleStmt;
 
-public interface DQL extends SQL {
+public interface DQL extends SqlDialect {
 
     SimpleStmt select(Select select, Visible visible);
 

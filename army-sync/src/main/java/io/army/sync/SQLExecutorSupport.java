@@ -216,19 +216,19 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
         List<T> resultList;
         if (stmt instanceof SimpleStmt) {
             resultList = doExecuteSimpleQuery(session, (SimpleStmt) stmt, resultClass);
-        } else if (stmt instanceof ChildStmt) {
-            final ChildStmt childSQLWrapper = (ChildStmt) stmt;
+        } else if (stmt instanceof PairStmt) {
+            final PairStmt childSQLWrapper = (PairStmt) stmt;
             final SimpleStmt firstWrapper = updateStatement
-                    ? childSQLWrapper.childWrapper()
-                    : childSQLWrapper.parentWrapper();
+                    ? childSQLWrapper.childStmt()
+                    : childSQLWrapper.parentStmt();
 
             final SimpleStmt secondWrapper = updateStatement
-                    ? childSQLWrapper.parentWrapper()
-                    : childSQLWrapper.childWrapper();
+                    ? childSQLWrapper.parentStmt()
+                    : childSQLWrapper.childStmt();
 
 
-            final boolean onlyIdReturning = onlyIdReturning(childSQLWrapper.parentWrapper()
-                    , childSQLWrapper.childWrapper());
+            final boolean onlyIdReturning = onlyIdReturning(childSQLWrapper.parentStmt()
+                    , childSQLWrapper.childStmt());
             // 1. execute first sql
             Map<Object, ObjectWrapper> objectWrapperMap = doExecuteFirstSQLReturning(session, firstWrapper
                     , resultClass, onlyIdReturning);

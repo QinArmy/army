@@ -10,7 +10,7 @@ import io.army.stmt.Stmt;
 import java.util.List;
 import java.util.Set;
 
-public interface DmlDialect extends SQL {
+public interface DmlDialect extends SqlDialect {
 
     List<Stmt> valueInsert(Insert insert, @Nullable Set<Integer> domainIndexSet, Visible visible);
 

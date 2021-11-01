@@ -66,9 +66,9 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
         Mono<N> mono;
         if (stmt instanceof SimpleStmt) {
             mono = doExecuteUpdate(session, (SimpleStmt) stmt, executeFunction);
-        } else if (stmt instanceof ChildStmt) {
-            final ChildStmt childSQLWrapper = (ChildStmt) stmt;
-            final SimpleStmt childWrapper = childSQLWrapper.childWrapper();
+        } else if (stmt instanceof PairStmt) {
+            final PairStmt childSQLWrapper = (PairStmt) stmt;
+            final SimpleStmt childWrapper = childSQLWrapper.childStmt();
 
             // 1. execute child update sql
             mono = doExecuteUpdate(session, childWrapper, executeFunction)
@@ -91,15 +91,15 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
      * @return {@code Mono<Integer> or Mono<Long>}
      * @see #doExecuteUpdate(InnerGenericRmSession, SimpleStmt, Function)
      */
-    private <N extends Number> Mono<N> doParentUpdate(InnerGenericRmSession session, ChildStmt childSQLWrapper
+    private <N extends Number> Mono<N> doParentUpdate(InnerGenericRmSession session, PairStmt childSQLWrapper
             , Function<PreparedStatement, Mono<N>> executeFunction, N childRows) {
         Mono<N> mono;
         if (childRows.longValue() < 1L) {
             mono = Mono.just(childRows);
         } else {
-            final SimpleStmt childWrapper = childSQLWrapper.childWrapper();
+            final SimpleStmt childWrapper = childSQLWrapper.childStmt();
             // 1. execute parent update sql.
-            mono = doExecuteUpdate(session, childSQLWrapper.parentWrapper(), executeFunction)
+            mono = doExecuteUpdate(session, childSQLWrapper.parentStmt(), executeFunction)
                     // 2. assert parent updated rows and child match
                     .flatMap(parentRows -> assertParentChildUpdateMatch(parentRows, childRows, childWrapper))
             ;

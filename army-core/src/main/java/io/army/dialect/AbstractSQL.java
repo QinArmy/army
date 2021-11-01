@@ -5,7 +5,7 @@ import io.army.GenericRmSessionFactory;
 
 import java.time.ZoneId;
 
-public abstract class AbstractSQL implements SQL {
+public abstract class AbstractSQL implements SqlDialect {
 
     protected final Dialect dialect;
 

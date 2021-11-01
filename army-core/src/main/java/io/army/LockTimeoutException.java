@@ -1,6 +1,6 @@
 package io.army;
 
-public class LockTimeoutException extends DataAccessException {
+public class LockTimeoutException extends DataAccessException_0 {
 
     public LockTimeoutException(ErrorCode errorCode, String format, Object... args) {
         super(errorCode, format, args);

@@ -29,15 +29,15 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
                 rows = doExecuteUpdate(session, simpleSQLWrapper, this::integerUpdate);
                 //2. assert insert rows equals 1 .
                 assertValueInsertResult(rows, simpleSQLWrapper);
-            } else if (stmt instanceof ChildStmt) {
-                final ChildStmt childSQLWrapper = (ChildStmt) stmt;
-                final SimpleStmt parentWrapper = childSQLWrapper.parentWrapper();
+            } else if (stmt instanceof PairStmt) {
+                final PairStmt childSQLWrapper = (PairStmt) stmt;
+                final SimpleStmt parentWrapper = childSQLWrapper.parentStmt();
                 int rows;
                 //1. execute parent insert sql
                 rows = doExecuteUpdate(session, parentWrapper, this::integerUpdate);
                 //2. assert parent insert rows equals 1 .
                 assertValueInsertResult(rows, parentWrapper);
-                final SimpleStmt childWrapper = childSQLWrapper.childWrapper();
+                final SimpleStmt childWrapper = childSQLWrapper.childStmt();
                 //3. execute child insert sql
                 rows = doExecuteUpdate(session, childWrapper, this::integerUpdate);
                 //4. assert child insert rows equals 1 .
@@ -106,15 +106,15 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
         N rows;
         if (stmt instanceof SimpleStmt) {
             rows = doExecuteUpdate(session, (SimpleStmt) stmt, executeFunction);
-        } else if (stmt instanceof ChildStmt) {
-            final ChildStmt childSQLWrapper = (ChildStmt) stmt;
-            final SimpleStmt parentWrapper = childSQLWrapper.parentWrapper();
+        } else if (stmt instanceof PairStmt) {
+            final PairStmt childSQLWrapper = (PairStmt) stmt;
+            final SimpleStmt parentWrapper = childSQLWrapper.parentStmt();
             N parentRows;
             //1. execute parent sub query insert sql
             parentRows = doExecuteUpdate(session, parentWrapper, executeFunction);
             //2. assert parent insert rows equals 1 .
             if (parentRows.longValue() > 0L) {
-                final SimpleStmt childWrapper = childSQLWrapper.childWrapper();
+                final SimpleStmt childWrapper = childSQLWrapper.childStmt();
                 //2. execute child sub query insert sql
                 rows = doExecuteUpdate(session, childWrapper, executeFunction);
                 if (!rows.equals(parentRows)) {

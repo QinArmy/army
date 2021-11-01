@@ -1,6 +1,6 @@
 package io.army.boot.sync;
 
-import io.army.DataAccessException;
+import io.army.DataAccessException_0;
 import io.army.NoCurrentSessionException;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.sync.GenericSyncApiSession;
@@ -26,7 +26,7 @@ final class SpringCurrentSessionContext implements CurrentSessionContext {
     }
 
     @Override
-    public GenericSyncApiSession currentSession() throws DataAccessException {
+    public GenericSyncApiSession currentSession() throws DataAccessException_0 {
         GenericSyncApiSession session = (GenericSyncApiSession) TransactionSynchronizationManager
                 .getResource(this.sessionFactory);
         if (session == null) {

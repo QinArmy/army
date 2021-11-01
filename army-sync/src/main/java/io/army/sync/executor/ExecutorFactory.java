@@ -5,7 +5,7 @@ public interface ExecutorFactory {
 
     MetaExecutor createMetaExecutor()throws Exception;
 
-    SqlExecutor createSqlExecutor()throws Exception;
+    StmtExecutor createSqlExecutor()throws Exception;
 
 
 }

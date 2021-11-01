@@ -1,7 +1,7 @@
 package io.army;
 
 
-public final class NonUniqueException extends DataAccessException {
+public final class NonUniqueException extends DataAccessException_0 {
 
     public NonUniqueException(String format, Object... args) {
         super(ErrorCode.CRITERIA_ERROR, format, args);

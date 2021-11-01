@@ -384,11 +384,11 @@ abstract class DMLUtils {
         SimpleStmt parentWrapper, childWrapper;
         List<ParamValue> parentPlaceholderList;
         // extract parentWrapper,childWrapper
-        if (stmt instanceof ChildStmt) {
-            ChildStmt childSQLWrapper = (ChildStmt) stmt;
-            parentWrapper = childSQLWrapper.parentWrapper();
+        if (stmt instanceof PairStmt) {
+            PairStmt childSQLWrapper = (PairStmt) stmt;
+            parentWrapper = childSQLWrapper.parentStmt();
             parentPlaceholderList = parentWrapper.paramGroup();
-            childWrapper = childSQLWrapper.childWrapper();
+            childWrapper = childSQLWrapper.childStmt();
             parentParamGroupList = new ArrayList<>(domainWrapperList.size());
         } else if (stmt instanceof SimpleStmt) {
             parentWrapper = null;
@@ -418,7 +418,7 @@ abstract class DMLUtils {
         // 4. create BatchSimpleSQLWrapper
         BatchSimpleStmt childBatchWrapper = BatchSimpleStmt.build(childWrapper.sql(), childParamGroupList);
         Stmt batchStmt;
-        if (stmt instanceof ChildStmt) {
+        if (stmt instanceof PairStmt) {
             BatchSimpleStmt parentBatchWrapper = BatchSimpleStmt.build(
                     parentWrapper.sql(), parentParamGroupList);
             batchStmt = ChildBatchStmt.build(parentBatchWrapper, childBatchWrapper);
@@ -460,11 +460,11 @@ abstract class DMLUtils {
         SimpleStmt parentWrapper, childWrapper;
         // extract parentWrapper,childWrapper
         List<ParamValue> parentPlaceholderList;
-        if (stmt instanceof ChildStmt) {
-            ChildStmt childSQLWrapper = (ChildStmt) stmt;
-            parentWrapper = childSQLWrapper.parentWrapper();
+        if (stmt instanceof PairStmt) {
+            PairStmt childSQLWrapper = (PairStmt) stmt;
+            parentWrapper = childSQLWrapper.parentStmt();
             parentPlaceholderList = parentWrapper.paramGroup();
-            childWrapper = childSQLWrapper.childWrapper();
+            childWrapper = childSQLWrapper.childStmt();
             parentParamGroupList = new ArrayList<>(namedParamList.size());
         } else if (stmt instanceof SimpleStmt) {
             parentWrapper = null;
@@ -480,7 +480,7 @@ abstract class DMLUtils {
         for (ReadonlyWrapper readonlyWrapper : namedParamList) {
             // 1. create access object
             // 2. create param group list
-            if (stmt instanceof ChildStmt) {
+            if (stmt instanceof PairStmt) {
                 parentParamGroupList.add(
                         // create paramWrapperList for parent
                         createBatchNamedParamList(readonlyWrapper, parentPlaceholderList)
@@ -496,7 +496,7 @@ abstract class DMLUtils {
         BatchSimpleStmt childBatchWrapper = BatchSimpleStmt.build(childWrapper.sql()
                 , childParamGroupList, childWrapper.hasVersion());
         Stmt batchStmt;
-        if (stmt instanceof ChildStmt) {
+        if (stmt instanceof PairStmt) {
             BatchSimpleStmt parentBatchWrapper = BatchSimpleStmt.build(
                     parentWrapper.sql(), parentParamGroupList, parentWrapper.hasVersion());
             batchStmt = ChildBatchStmt.build(parentBatchWrapper, childBatchWrapper);

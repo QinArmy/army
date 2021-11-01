@@ -14,7 +14,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
-import io.army.stmt.ChildStmt;
+import io.army.stmt.PairStmt;
 import io.army.stmt.Stmt;
 import io.army.stmt.SimpleStmt;
 
@@ -285,7 +285,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
         return stmt;
     }
 
-    private ChildStmt standardChildQueryInsert(InnerStandardChildSubQueryInsert insert, final Visible visible) {
+    private PairStmt standardChildQueryInsert(InnerStandardChildSubQueryInsert insert, final Visible visible) {
         final ChildTableMeta<?> childMeta = insert.tableMeta();
         final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
 
@@ -297,7 +297,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
         SubQueryInsertContext childContext = SubQueryInsertContext.buildChild(insert, this.dialect, visible);
         parseStandardSimpleSubQueryInsert(childContext, childMeta, insert.fieldList(), insert.subQuery());
 
-        return ChildStmt.build(parentContext.build(), childContext.build());
+        return PairStmt.build(parentContext.build(), childContext.build());
     }
 
     private void parseStandardSimpleSubQueryInsert(SubQueryInsertContext context
@@ -344,7 +344,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
     /**
      * @param mergedFields merged by {@link DMLUtils#mergeInsertFields(TableMeta, Dialect, Collection)}
      */
-    private ChildStmt createInsertForChild(ReadonlyWrapper beanWrapper, Collection<FieldMeta<?, ?>> mergedFields
+    private PairStmt createInsertForChild(ReadonlyWrapper beanWrapper, Collection<FieldMeta<?, ?>> mergedFields
             , InnerStandardInsert insert, final Visible visible) {
 
         Assert.notEmpty(mergedFields, "mergedFields must not empty.");
@@ -370,7 +370,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
                 , this.dialect, visible);
         DMLUtils.createValueInsertForSimple(childMeta, childMeta,childFields, beanWrapper, childContext);
 
-        return ChildStmt.build(parentContext.build(), childContext.build());
+        return PairStmt.build(parentContext.build(), childContext.build());
     }
 
 
@@ -424,7 +424,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
     }
 
 
-    private ChildStmt standardBatchInsertForChild(InnerStandardBatchInsert insert, final Visible visible) {
+    private PairStmt standardBatchInsertForChild(InnerStandardBatchInsert insert, final Visible visible) {
         final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) insert.tableMeta();
         final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
 
@@ -445,7 +445,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
                 insert, null, this.dialect, visible);
         DMLUtils.createStandardBatchInsertForSimple(childMeta,childMeta, childFieldSet, childContext);
 
-        return ChildStmt.build(parentContext.build(), childContext.build());
+        return PairStmt.build(parentContext.build(), childContext.build());
     }
 
     /*################################## blow update private method ##################################*/
@@ -511,7 +511,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
             parseStandardUpdate(childContext, childMeta, update.tableAlias()
                     , childFieldList, childExpList, update.predicateList());
 
-            stmt = ChildStmt.build(parentContext.build(), childContext.build());
+            stmt = PairStmt.build(parentContext.build(), childContext.build());
         }
         return stmt;
     }
@@ -638,7 +638,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
         StandardDeleteContext childContext = StandardDeleteContext.buildChild(delete, this.dialect, visible);
         parseStandardDelete(childMeta, delete.tableAlias(), delete.predicateList(), childContext);
 
-        return ChildStmt.build(parentContext.build(), childContext.build());
+        return PairStmt.build(parentContext.build(), childContext.build());
     }
 
     private void parseStandardDelete(TableMeta<?> tableMeta, String tableAlias, List<IPredicate> predicateList

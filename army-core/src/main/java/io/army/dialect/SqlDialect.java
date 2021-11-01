@@ -4,7 +4,7 @@ import io.army.GenericRmSessionFactory;
 
 import java.time.ZoneId;
 
-public interface SQL {
+public interface SqlDialect {
 
     String quoteIfNeed(String identifier);
 

@@ -10,7 +10,7 @@ import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
-import io.army.stmt.ChildStmt;
+import io.army.stmt.PairStmt;
 import io.army.stmt.Stmt;
 import io.army.stmt.SimpleStmt;
 
@@ -76,11 +76,11 @@ public abstract class AbstractDialect implements InnerDialect {
         String sql;
         if (stmt instanceof SimpleStmt) {
             sql = ((SimpleStmt) stmt).sql();
-        } else if (stmt instanceof ChildStmt) {
-            ChildStmt childSQLWrapper = (ChildStmt) stmt;
-            sql = childSQLWrapper.parentWrapper().sql();
+        } else if (stmt instanceof PairStmt) {
+            PairStmt childSQLWrapper = (PairStmt) stmt;
+            sql = childSQLWrapper.parentStmt().sql();
             sql += "\n";
-            sql += childSQLWrapper.childWrapper().sql();
+            sql += childSQLWrapper.childStmt().sql();
         } else {
             throw new UnKnownTypeException(stmt);
         }

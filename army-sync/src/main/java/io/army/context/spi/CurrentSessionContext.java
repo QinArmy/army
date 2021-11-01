@@ -1,6 +1,6 @@
 package io.army.context.spi;
 
-import io.army.DataAccessException;
+import io.army.DataAccessException_0;
 import io.army.NoCurrentSessionException;
 import io.army.sync.GenericSyncApiSession;
 
@@ -24,7 +24,7 @@ public interface CurrentSessionContext {
      * by this implementation.
      *
      * @return The current session.
-     * @throws DataAccessException Typically indicates an issue
+     * @throws DataAccessException_0 Typically indicates an issue
      *                             locating or creating the current session.
      */
     GenericSyncApiSession currentSession() throws NoCurrentSessionException;

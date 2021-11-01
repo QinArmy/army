@@ -1,6 +1,6 @@
 package io.army;
 
-public abstract class SessionException extends DataAccessException {
+public abstract class SessionException extends DataAccessException_0 {
 
     public SessionException(ErrorCode errorCode, String format, Object... args) {
         super(errorCode, format, args);

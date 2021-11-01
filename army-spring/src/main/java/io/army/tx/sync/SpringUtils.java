@@ -1,6 +1,6 @@
 package io.army.tx.sync;
 
-import io.army.DataAccessException;
+import io.army.DataAccessException_0;
 import io.army.SessionException;
 import io.army.tx.Isolation;
 import io.army.tx.TransactionException;
@@ -20,7 +20,7 @@ public abstract class SpringUtils {
         };
     }
 
-    public static org.springframework.dao.DataAccessException convertArmyAccessException(DataAccessException ex) {
+    public static org.springframework.dao.DataAccessException convertArmyAccessException(DataAccessException_0 ex) {
         return new org.springframework.dao.DataAccessException(ex.getMessage(), ex) {
 
         };

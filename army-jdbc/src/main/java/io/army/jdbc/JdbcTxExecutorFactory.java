@@ -1,9 +1,8 @@
 package io.army.jdbc;
 
-import io.army.meta.ServerMeta;
 import io.army.sync.executor.ExecutorFactory;
 import io.army.sync.executor.MetaExecutor;
-import io.army.sync.executor.SqlExecutor;
+import io.army.sync.executor.StmtExecutor;
 
 import javax.sql.DataSource;
 
@@ -26,7 +25,7 @@ final class JdbcTxExecutorFactory implements ExecutorFactory {
     }
 
     @Override
-    public SqlExecutor createSqlExecutor() throws Exception {
+    public StmtExecutor createSqlExecutor() throws Exception {
         return null;
     }
 

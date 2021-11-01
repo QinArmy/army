@@ -192,8 +192,8 @@ public abstract class GenericSQLExecutorSupport {
                 , fieldCodec, fieldMeta);
     }
 
-    protected static DataAccessException convertSQLException(SQLException e, String sql) {
-        return new DataAccessException(ErrorCode.ACCESS_ERROR, e, "army execute sql occur error ,sql[%s]", sql);
+    protected static DataAccessException_0 convertSQLException(SQLException e, String sql) {
+        return new DataAccessException_0(ErrorCode.ACCESS_ERROR, e, "army execute sql occur error ,sql[%s]", sql);
     }
 
     protected static MetaException createNoFieldCodecException(FieldMeta<?, ?> fieldMeta) {

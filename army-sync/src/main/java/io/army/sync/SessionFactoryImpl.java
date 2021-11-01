@@ -235,7 +235,7 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
         return "SessionFactory[" + this.name + "]";
     }
 
-    boolean initializeSessionFactory() throws DataAccessException {
+    boolean initializeSessionFactory() throws DataAccessException_0 {
         if (this.initFinished.get()) {
             return false;
         }
@@ -260,7 +260,7 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
             SyncMetaMigrator.build()
                     .migrate(conn, this);
         } catch (SQLException e) {
-            throw new DataAccessException(ErrorCode.CODEC_DATA_ERROR, e, "%s migration failure.", this);
+            throw new DataAccessException_0(ErrorCode.CODEC_DATA_ERROR, e, "%s migration failure.", this);
         }
     }
 
