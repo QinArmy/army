@@ -7,7 +7,6 @@ import io.army.tx.*;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.EnumSet;
 
@@ -41,12 +40,8 @@ final class XaResourceTransaction extends AbstractGenericTransaction implements 
     private final XAResource xaResource;
 
     private final Xid xid;
-    /**
-     * status maybe read by parallelly .
-     *
-     * @see SyncCommitTransactionManager#commit()
-     * @see SyncCommitTransactionManager#rollback()
-     */
+
+
     private XATransactionStatus status = XATransactionStatus.NOT_ACTIVE;
 
     private boolean rollBackOnly = false;
@@ -82,29 +77,29 @@ final class XaResourceTransaction extends AbstractGenericTransaction implements 
 
     @Override
     public void start() throws TransactionException {
-
-        if (this.status != XATransactionStatus.NOT_ACTIVE) {
-            throw new IllegalTransactionStateException("transaction status[%s] isn't %s,can't start transaction."
-                    , this.status, XATransactionStatus.NOT_ACTIVE);
-        }
-        try {
-            final Connection conn = this.session.connection();
-            if (this.isolation != Isolation.DEFAULT) {
-                conn.setTransactionIsolation(this.isolation.level);
-            }
-
-            if (this.readOnly) {
-                conn.setReadOnly(true);
-            } else {
-                conn.setAutoCommit(false);
-                this.xaResource.start(this.xid, XAResource.TMNOFLAGS);
-                this.xaResource.setTransactionTimeout(this.timeToLiveInSeconds());
-            }
-            this.status = XATransactionStatus.ACTIVE;
-        } catch (XAException | SQLException e) {
-            throw new CannotCreateTransactionException(ErrorCode.START_TRANSACTION_FAILURE
-                    , e, "army XA start failure");
-        }
+//
+//        if (this.status != XATransactionStatus.NOT_ACTIVE) {
+//            throw new IllegalTransactionStateException("transaction status[%s] isn't %s,can't start transaction."
+//                    , this.status, XATransactionStatus.NOT_ACTIVE);
+//        }
+//        try {
+//            final Connection conn = this.session.connection();
+//            if (this.isolation != Isolation.DEFAULT) {
+//                conn.setTransactionIsolation(this.isolation.level);
+//            }
+//
+//            if (this.readOnly) {
+//                conn.setReadOnly(true);
+//            } else {
+//                conn.setAutoCommit(false);
+//                this.xaResource.start(this.xid, XAResource.TMNOFLAGS);
+//                this.xaResource.setTransactionTimeout(this.timeToLiveInSeconds());
+//            }
+//            this.status = XATransactionStatus.ACTIVE;
+//        } catch (XAException | SQLException e) {
+//            throw new CannotCreateTransactionException(ErrorCode.START_TRANSACTION_FAILURE
+//                    , e, "army XA start failure");
+//        }
     }
 
     @Override

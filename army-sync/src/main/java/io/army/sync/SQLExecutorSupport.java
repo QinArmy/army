@@ -4,14 +4,9 @@ import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ObjectWrapper;
 import io.army.boot.GenericSQLExecutorSupport;
 import io.army.codec.StatementType;
-import io.army.criteria.FieldSelection;
 import io.army.criteria.Selection;
 import io.army.dialect.MappingContext;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
-import io.army.meta.FieldMeta;
-import io.army.meta.MetaException;
-import io.army.meta.ParamMeta;
 import io.army.stmt.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -418,51 +413,52 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     @Nullable
     private <T> T extractColumnResult(ResultSet resultSet, Selection selection, StatementType statementType
             , Class<T> columnClass) throws SQLException {
-
-        final MappingType mappingType = selection.mappingMeta();
-
-        Object columnResult = mappingType.nullSafeGet(resultSet, selection.alias(), this.mappingContext);
-        if (columnResult == null) {
-            return null;
-        }
-        if (!mappingType.javaType().isInstance(columnResult)) {
-            throw new MetaException("%s nullSafeGet return value isn't %s's instance."
-                    , mappingType.getClass().getName()
-                    , mappingType.javaType().getName());
-        }
-        if (selection instanceof FieldSelection) {
-            FieldMeta<?, ?> fieldMeta = ((FieldSelection) selection).fieldMeta();
-            if (fieldMeta.codec()) {
-                columnResult = doDecodeResult(statementType, fieldMeta, columnResult);
-            }
-        }
-        return columnClass.cast(columnResult);
+//
+//        final MappingType mappingType = selection.mappingMeta();
+//
+//        Object columnResult = mappingType.nullSafeGet(resultSet, selection.alias(), this.mappingContext);
+//        if (columnResult == null) {
+//            return null;
+//        }
+//        if (!mappingType.javaType().isInstance(columnResult)) {
+//            throw new MetaException("%s nullSafeGet return value isn't %s's instance."
+//                    , mappingType.getClass().getName()
+//                    , mappingType.javaType().getName());
+//        }
+//        if (selection instanceof FieldSelection) {
+//            FieldMeta<?, ?> fieldMeta = ((FieldSelection) selection).fieldMeta();
+//            if (fieldMeta.codec()) {
+//                columnResult = doDecodeResult(statementType, fieldMeta, columnResult);
+//            }
+//        }
+//        return columnClass.cast(columnResult);
+        return null;
     }
 
 
     private void bindParamList(PreparedStatement st, StatementType statementType, List<ParamValue> paramList)
             throws SQLException {
-        ParamValue paramValue;
-        Object value;
-
-        final int size = paramList.size();
-        for (int i = 0; i < size; i++) {
-            paramValue = paramList.get(i);
-            ParamMeta paramMeta = paramValue.paramMeta();
-            value = paramValue.value();
-            if (value == null) {
-                st.setNull(i + 1, paramMeta.mappingMeta().jdbcType().getVendorTypeNumber());
-            } else {
-                if (paramMeta instanceof FieldMeta) {
-                    FieldMeta<?, ?> fieldMeta = (FieldMeta<?, ?>) paramMeta;
-                    if (fieldMeta.codec()) {
-                        value = doEncodeParam(statementType, fieldMeta, value);
-                    }
-                }
-                // bind param
-                paramMeta.mappingMeta().nonNullSet(st, value, i + 1, this.mappingContext);
-            }
-        }
+//        ParamValue paramValue;
+//        Object value;
+//
+//        final int size = paramList.size();
+//        for (int i = 0; i < size; i++) {
+//            paramValue = paramList.get(i);
+//            ParamMeta paramMeta = paramValue.paramMeta();
+//            value = paramValue.value();
+//            if (value == null) {
+//                st.setNull(i + 1, paramMeta.mappingMeta().jdbcType().getVendorTypeNumber());
+//            } else {
+//                if (paramMeta instanceof FieldMeta) {
+//                    FieldMeta<?, ?> fieldMeta = (FieldMeta<?, ?>) paramMeta;
+//                    if (fieldMeta.codec()) {
+//                        value = doEncodeParam(statementType, fieldMeta, value);
+//                    }
+//                }
+//                // bind param
+//                paramMeta.mappingMeta().nonNullSet(st, value, i + 1, this.mappingContext);
+//            }
+//        }
 
     }
 

@@ -2,8 +2,8 @@ package io.army.dialect.mysql;
 
 import io.army.GenericRmSessionFactory;
 import io.army.dialect.DDL;
-import io.army.dialect.DmlDialect;
 import io.army.dialect.Database;
+import io.army.dialect.DmlDialect;
 import io.army.dialect.TCL;
 
 import java.util.Set;
@@ -21,7 +21,7 @@ class MySQL80Dialect extends MySQL57Dialect {
 
     @Override
     public Database database() {
-        return Database.MySQL80;
+        return Database.MySQL;
     }
 
     /*################################## blow AbstractDialect method ##################################*/

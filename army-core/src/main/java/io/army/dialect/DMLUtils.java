@@ -416,16 +416,16 @@ abstract class DMLUtils {
         }
 
         // 4. create BatchSimpleSQLWrapper
-        BatchSimpleStmt childBatchWrapper = BatchSimpleStmt.build(childWrapper.sql(), childParamGroupList);
-        Stmt batchStmt;
-        if (stmt instanceof PairStmt) {
-            BatchSimpleStmt parentBatchWrapper = BatchSimpleStmt.build(
-                    parentWrapper.sql(), parentParamGroupList);
-            batchStmt = PairBatchStmt.build(parentBatchWrapper, childBatchWrapper);
-        } else {
-            batchStmt = childBatchWrapper;
-        }
-        return batchStmt;
+        // BatchSimpleStmt childBatchWrapper = BatchSimpleStmt.build(childWrapper.sql(), childParamGroupList);
+//        Stmt batchStmt;
+//        if (stmt instanceof PairStmt) {
+//            BatchSimpleStmt parentBatchWrapper = BatchSimpleStmt.build(
+//                    parentWrapper.sql(), parentParamGroupList);
+//            batchStmt = PairBatchStmt.build(parentBatchWrapper, childBatchWrapper);
+//        } else {
+//            batchStmt = childBatchWrapper;
+//        }
+        return null;
     }
 
 
@@ -493,17 +493,17 @@ abstract class DMLUtils {
         }
 
         // 3. create BatchSimpleSQLWrapper
-        BatchSimpleStmt childBatchWrapper = BatchSimpleStmt.build(childWrapper.sql()
-                , childParamGroupList, childWrapper.hasVersion());
-        Stmt batchStmt;
-        if (stmt instanceof PairStmt) {
-            BatchSimpleStmt parentBatchWrapper = BatchSimpleStmt.build(
-                    parentWrapper.sql(), parentParamGroupList, parentWrapper.hasVersion());
-            batchStmt = PairBatchStmt.build(parentBatchWrapper, childBatchWrapper);
-        } else {
-            batchStmt = childBatchWrapper;
-        }
-        return batchStmt;
+//        BatchSimpleStmt childBatchWrapper = BatchSimpleStmt.build(childWrapper.sql()
+//                , childParamGroupList, childWrapper.hasVersion());
+//        Stmt batchStmt;
+//        if (stmt instanceof PairStmt) {
+//            BatchSimpleStmt parentBatchWrapper = BatchSimpleStmt.build(
+//                    parentWrapper.sql(), parentParamGroupList, parentWrapper.hasVersion());
+//            batchStmt = PairBatchStmt.build(parentBatchWrapper, childBatchWrapper);
+//        } else {
+//            batchStmt = childBatchWrapper;
+//        }
+        return null;
     }
 
 

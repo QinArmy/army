@@ -2,8 +2,8 @@ package io.army.dialect;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.impl.inner.InnerSubQuery;
-import io.army.lang.NonNull;
 import io.army.meta.FieldMeta;
+import io.army.stmt.SimpleStmt;
 
 
 class SubQueryContextImpl extends AbstractQueryStatementContext implements SubQueryContext {
@@ -37,4 +37,9 @@ class SubQueryContextImpl extends AbstractQueryStatementContext implements SubQu
         return tableAlias;
     }
 
+
+    @Override
+    public SimpleStmt build() {
+        return null;
+    }
 }

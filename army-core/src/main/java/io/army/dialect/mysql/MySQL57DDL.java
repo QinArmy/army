@@ -43,15 +43,15 @@ class MySQL57DDL extends AbstractDDL {
 
     @Override
     protected void doDefaultExpression(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) {
-        SqlDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database());
-        String defaultExp = fieldMeta.defaultValue();
-        if (sqlDataType instanceof MySQLDataType) {
-            if (MySQL57DDLUtils.needQuoteForDefault((MySQLDataType) sqlDataType)
-                    && !(defaultExp.startsWith("'") && defaultExp.endsWith("'"))) {
-                throw DDLUtils.createDefaultValueSyntaxException(fieldMeta);
-            }
-        }
-        builder.append(defaultExp);
+//        SqlDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database());
+//        String defaultExp = fieldMeta.defaultValue();
+//        if (sqlDataType instanceof MySQLDataType) {
+//            if (MySQL57DDLUtils.needQuoteForDefault((MySQLDataType) sqlDataType)
+//                    && !(defaultExp.startsWith("'") && defaultExp.endsWith("'"))) {
+//                throw DDLUtils.createDefaultValueSyntaxException(fieldMeta);
+//            }
+//        }
+//        builder.append(defaultExp);
     }
 
     @Override

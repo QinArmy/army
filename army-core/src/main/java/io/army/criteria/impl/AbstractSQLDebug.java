@@ -17,7 +17,7 @@ abstract class AbstractSQLDebug implements SQLStatement.SQLAble, SQLDebug {
 
     @Override
     public final String debugSQL() {
-        return debugSQL(Database.MySQL57, Visible.ONLY_VISIBLE);
+        return debugSQL(Database.MySQL, Visible.ONLY_VISIBLE);
     }
 
     @Override

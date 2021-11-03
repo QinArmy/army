@@ -17,9 +17,9 @@ import io.army.reactive.advice.ReactiveDomainDeleteAdvice;
 import io.army.reactive.advice.ReactiveDomainInsertAdvice;
 import io.army.reactive.advice.ReactiveDomainUpdateAdvice;
 import io.army.sharding.TableRoute;
-import io.jdbd.DatabaseSession;
-import io.jdbd.DatabaseSessionFactory;
 import io.jdbd.meta.DatabaseSchemaMetaData;
+import io.jdbd.session.DatabaseSession;
+import io.jdbd.session.DatabaseSessionFactory;
 import reactor.core.publisher.Mono;
 
 import java.util.EnumSet;
@@ -239,13 +239,14 @@ class ReactiveSessionFactoryImpl extends AbstractGenericSessionFactory implement
         if (this.initialized.get()) {
             return Mono.empty();
         }
-        return SessionFactoryUtils.tryObtainPrimaryFactory(this.databaseSessionFactory)
-                .getSession()
-                .flatMap(this::validateSchemaMeta)
-                .flatMap(this::migrateMetaToDatabase)
-                .flatMap(DatabaseSession::close)
-                .doOnSuccess(e -> this.initialized.compareAndSet(false, true))
-                .then();
+//        return SessionFactoryUtils.tryObtainPrimaryFactory(this.databaseSessionFactory)
+//                .getSession()
+//                .flatMap(this::validateSchemaMeta)
+//                .flatMap(this::migrateMetaToDatabase)
+//                .flatMap(DatabaseSession::close)
+//                .doOnSuccess(e -> this.initialized.compareAndSet(false, true))
+//                .then();
+        return Mono.empty();
     }
 
 
@@ -263,10 +264,11 @@ class ReactiveSessionFactoryImpl extends AbstractGenericSessionFactory implement
         if (this.schemaMeta.defaultSchema()) {
             return Mono.just(session);
         }
-        return session.getDatabaseMetaData()
-                .getSchema()
-                .flatMap(this::assertSchemaMatch)
-                .thenReturn(session);
+//        return session.getDatabaseMetaData()
+//                .getSchema()
+//             //   .flatMap(this::assertSchemaMatch)
+//                .thenReturn(session);
+        return Mono.empty();
     }
 
     private Mono<Void> assertSchemaMatch(DatabaseSchemaMetaData databaseSchema) {
@@ -308,13 +310,14 @@ class ReactiveSessionFactoryImpl extends AbstractGenericSessionFactory implement
 
         @Override
         public Mono<ReactiveSession> build() throws SessionException {
-            if (this.sessionFactory.readOnly && !this.readOnly) {
-                throw new CreateSessionException("%s is read only,cannot create read-write session."
-                        , this.sessionFactory);
-            }
-            return this.sessionFactory.databaseSessionFactory.getSession()
-                    .flatMap(this::createSession)
-                    ;
+//            if (this.sessionFactory.readOnly && !this.readOnly) {
+//                throw new CreateSessionException("%s is read only,cannot create read-write session."
+//                        , this.sessionFactory);
+//            }
+//            return this.sessionFactory.databaseSessionFactory.getSession()
+//                    .flatMap(this::createSession)
+//                    ;
+            return Mono.empty();
         }
 
         private Mono<ReactiveSession> createSession(DatabaseSession databaseSession) {

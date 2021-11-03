@@ -1,11 +1,8 @@
 package io.army.dialect;
 
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
-import io.army.sqltype.SQLDataTypeUtils;
 import io.army.sqltype.SqlDataType;
-import io.army.sqltype.UnsupportedSQLDataTypeException;
 import io.army.util.StringUtils;
 
 import java.util.Collection;
@@ -255,13 +252,13 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
 
 
     protected final void dataTypeClause(FieldMeta<?, ?> fieldMeta, DDLContext context) throws MetaException {
-        SqlDataType dataType = fieldMeta.mappingMeta().sqlDataType(database());
-        if (!supportSQLDateType(dataType)) {
-            throw new UnsupportedSQLDataTypeException("%s,database[%s] not support SQLDataType[%s]."
-                    , fieldMeta, database(), dataType);
-        }
-
-        dataType.dataTypeClause(fieldMeta, context.sqlBuilder().append(" "));
+//        SqlDataType dataType = fieldMeta.mappingMeta().sqlDataType(database());
+//        if (!supportSQLDateType(dataType)) {
+//            throw new UnsupportedSQLDataTypeException("%s,database[%s] not support SQLDataType[%s]."
+//                    , fieldMeta, database(), dataType);
+//        }
+//
+//        dataType.dataTypeClause(fieldMeta, context.sqlBuilder().append(" "));
 
     }
 
@@ -293,14 +290,14 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
                 builder.append(defaultKeyWord);
                 handleDefaultExpression(fieldMeta, builder);
             } else if (DDLUtils.simpleJavaType(fieldMeta)) {
-                Database database = database();
-                SqlDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database);
-                if (sqlDataType.supportZeroValue(database)) {
-                    builder.append(defaultKeyWord);
-                    sqlDataType.zeroValue(fieldMeta, builder, database);
-                } else {
-                    throw SQLDataTypeUtils.createNotSupportZeroValueException(sqlDataType, fieldMeta, database);
-                }
+//                Database database = database();
+//                SqlDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database);
+//                if (sqlDataType.supportZeroValue(database)) {
+//                    builder.append(defaultKeyWord);
+//                    sqlDataType.zeroValue(fieldMeta, builder, database);
+//                } else {
+//                    throw SQLDataTypeUtils.createNotSupportZeroValueException(sqlDataType, fieldMeta, database);
+//                }
             } else if (!fieldMeta.nullable()) {
                 throw new MetaException(fieldMeta + " nullable and no default" +
                         ",only [reserved properties,discriminator, simple java type] can no default value."
@@ -353,35 +350,35 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     /*################################## blow private method ##################################*/
 
     private void reservedPropDefaultValue(FieldMeta<?, ?> fieldMeta, DDLContext context) {
-        Database database = database();
-        SqlDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database);
-        SQLBuilder builder = context.sqlBuilder();
-        final String defaultKey = " DEFAULT ";
-        switch (fieldMeta.propertyName()) {
-            case TableMeta.ID:
-                // no-op
-                break;
-            case TableMeta.CREATE_TIME:
-            case TableMeta.UPDATE_TIME:
-                if (sqlDataType.supportNowValue(database)) {
-                    builder.append(defaultKey);
-                    sqlDataType.nowValue(fieldMeta, builder, database);
-                } else {
-                    throw SQLDataTypeUtils.createNotSupportNowExpressionException(sqlDataType, fieldMeta, database);
-                }
-                break;
-            case TableMeta.VISIBLE:
-            case TableMeta.VERSION:
-                if (sqlDataType.supportZeroValue(database)) {
-                    builder.append(defaultKey);
-                    sqlDataType.zeroValue(fieldMeta, builder, database);
-                } else {
-                    throw SQLDataTypeUtils.createNotSupportZeroValueException(sqlDataType, fieldMeta, database);
-                }
-                break;
-            default:
-                throw new IllegalArgumentException(String.format("%s isn't reserved property.", fieldMeta));
-        }
+//        Database database = database();
+//        SqlDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database);
+//        SQLBuilder builder = context.sqlBuilder();
+//        final String defaultKey = " DEFAULT ";
+//        switch (fieldMeta.propertyName()) {
+//            case TableMeta.ID:
+//                // no-op
+//                break;
+//            case TableMeta.CREATE_TIME:
+//            case TableMeta.UPDATE_TIME:
+//                if (sqlDataType.supportNowValue(database)) {
+//                    builder.append(defaultKey);
+//                    sqlDataType.nowValue(fieldMeta, builder, database);
+//                } else {
+//                    throw SQLDataTypeUtils.createNotSupportNowExpressionException(sqlDataType, fieldMeta, database);
+//                }
+//                break;
+//            case TableMeta.VISIBLE:
+//            case TableMeta.VERSION:
+//                if (sqlDataType.supportZeroValue(database)) {
+//                    builder.append(defaultKey);
+//                    sqlDataType.zeroValue(fieldMeta, builder, database);
+//                } else {
+//                    throw SQLDataTypeUtils.createNotSupportZeroValueException(sqlDataType, fieldMeta, database);
+//                }
+//                break;
+//            default:
+//                throw new IllegalArgumentException(String.format("%s isn't reserved property.", fieldMeta));
+//        }
     }
 
     private void columnListDefinitions(DDLContext context) {
@@ -417,26 +414,26 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     }
 
     private void handleDefaultExpression(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) {
-        Database database = database();
-        SqlDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database);
-        switch (fieldMeta.defaultValue()) {
-            case IDomain.NOW:
-                if (sqlDataType.supportNowValue(database)) {
-                    sqlDataType.nowValue(fieldMeta, builder, database);
-                } else {
-                    throw SQLDataTypeUtils.createNotSupportNowExpressionException(sqlDataType, fieldMeta, database);
-                }
-                break;
-            case IDomain.ZERO_VALUE:
-                if (sqlDataType.supportZeroValue(database)) {
-                    sqlDataType.zeroValue(fieldMeta, builder, database);
-                } else {
-                    throw SQLDataTypeUtils.createNotSupportZeroValueException(sqlDataType, fieldMeta, database);
-                }
-                break;
-            default:
-                doDefaultExpression(fieldMeta, builder);
-        }
+//        Database database = database();
+//        SqlDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database);
+//        switch (fieldMeta.defaultValue()) {
+//            case IDomain.NOW:
+//                if (sqlDataType.supportNowValue(database)) {
+//                    sqlDataType.nowValue(fieldMeta, builder, database);
+//                } else {
+//                    throw SQLDataTypeUtils.createNotSupportNowExpressionException(sqlDataType, fieldMeta, database);
+//                }
+//                break;
+//            case IDomain.ZERO_VALUE:
+//                if (sqlDataType.supportZeroValue(database)) {
+//                    sqlDataType.zeroValue(fieldMeta, builder, database);
+//                } else {
+//                    throw SQLDataTypeUtils.createNotSupportZeroValueException(sqlDataType, fieldMeta, database);
+//                }
+//                break;
+//            default:
+//                doDefaultExpression(fieldMeta, builder);
+//        }
     }
 
     private void primaryKeyClause(DDLContext context) {

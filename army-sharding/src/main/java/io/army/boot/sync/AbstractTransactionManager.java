@@ -1,6 +1,5 @@
 package io.army.boot.sync;
 
-import io.army.sync.AbstractSyncTransaction;
 import io.army.sync.TmSession;
 import io.army.tx.*;
 import org.slf4j.Logger;
@@ -11,7 +10,7 @@ import org.slf4j.LoggerFactory;
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
  */
-abstract class AbstractTransactionManager extends AbstractSyncTransaction implements TmTransaction {
+abstract class AbstractTransactionManager implements TmTransaction {
 
     final Logger LOG = LoggerFactory.getLogger(getClass());
 
@@ -21,7 +20,7 @@ abstract class AbstractTransactionManager extends AbstractSyncTransaction implem
     TransactionStatus status = TransactionStatus.NOT_ACTIVE;
 
     AbstractTransactionManager(TmSession session, TransactionOption option) {
-        super(option);
+        //  super(option);
         this.session = session;
     }
 
@@ -56,13 +55,13 @@ abstract class AbstractTransactionManager extends AbstractSyncTransaction implem
 
     @Override
     public void markRollbackOnly() throws TransactionException {
-        checkReadWrite("markRollbackOnly");
-
-        if (!TransactionStatus.ROLL_BACK_ONLY_ABLE_SET.contains(this.status())) {
-            throw new IllegalTransactionStateException("transaction status[%s] not in %s,can't mark roll back only."
-                    , this.status, TransactionStatus.ROLL_BACK_ONLY_ABLE_SET);
-        }
-        this.status = TransactionStatus.MARKED_ROLLBACK;
+//        checkReadWrite("markRollbackOnly");
+//
+//        if (!TransactionStatus.ROLL_BACK_ONLY_ABLE_SET.contains(this.status())) {
+//            throw new IllegalTransactionStateException("transaction status[%s] not in %s,can't mark roll back only."
+//                    , this.status, TransactionStatus.ROLL_BACK_ONLY_ABLE_SET);
+//        }
+//        this.status = TransactionStatus.MARKED_ROLLBACK;
     }
 
     /*################################## blow private method ##################################*/

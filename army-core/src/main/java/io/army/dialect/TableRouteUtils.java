@@ -37,9 +37,10 @@ abstract class TableRouteUtils extends RouteUtils {
             throw new NotFoundRouteException("Value insert ,TableMeta[%s] not found primary route.", tableMeta);
         }
         // route table suffix by route key
-        return dialect.sessionFactory()
-                .tableRoute(tableMeta)
-                .tableSuffix(routeKey);
+//        return dialect.sessionFactory()
+//                .tableRoute(tableMeta)
+//                .tableSuffix(routeKey);
+        return null;
     }
 
     static String subQueryInsertPrimaryRouteSuffix(InnerSingleDML innerSingleDML, Dialect dialect) {
@@ -53,9 +54,10 @@ abstract class TableRouteUtils extends RouteUtils {
                     , innerSingleDML.tableMeta());
         }
         // route table suffix by route key
-        return dialect.sessionFactory()
-                .tableRoute(tableMeta)
-                .tableSuffix(tableMeta);
+//        return dialect.sessionFactory()
+//                .tableRoute(tableMeta)
+//                .tableSuffix(tableMeta);
+        return null;
     }
 
     static String singleDmlPrimaryRouteSuffix(InnerSingleDML singleTableSQL, Dialect dialect) {
@@ -93,14 +95,14 @@ abstract class TableRouteUtils extends RouteUtils {
         Object routeKey = findRouteKeyFromWhereClause(routeFieldList, predicateList);
         TableRoute tableRoute = dialect.sessionFactory().tableRoute(tableMeta);
         String routeSuffix = null;
-        if (routeKey == null) {
-            if (tableIndex >= 0) {
-                routeSuffix = tableRoute.convertToSuffix(tableIndex);
-            }
-        } else {
-            routeSuffix = tableRoute.tableSuffix(routeKey);
-        }
-        return routeSuffix;
+//        if (routeKey == null) {
+//            if (tableIndex >= 0) {
+//                routeSuffix = tableRoute.convertToSuffix(tableIndex);
+//            }
+//        } else {
+//            routeSuffix = tableRoute.tableSuffix(routeKey);
+//        }
+        return null;
     }
 
 
@@ -113,16 +115,16 @@ abstract class TableRouteUtils extends RouteUtils {
         // 1. try to find route key from where clause.
         routeKey = findRouteKeyFromWhereClause(routeFieldList, predicateList);
         String suffix = null;
-        TableRoute route = dialect.sessionFactory().tableRoute(tableMeta);
-        if (routeKey == null) {
-            // 2. step 1 failure,try find table index from table info.
-            if (tableIndex >= 0) {
-                suffix = route.convertToSuffix(tableIndex);
-            }
-        } else {
-            suffix = route.tableSuffix(routeKey);
-        }
-        return suffix;
+//        TableRoute route = dialect.sessionFactory().tableRoute(tableMeta);
+//        if (routeKey == null) {
+//            // 2. step 1 failure,try find table index from table info.
+//            if (tableIndex >= 0) {
+//                suffix = route.convertToSuffix(tableIndex);
+//            }
+//        } else {
+//            suffix = route.tableSuffix(routeKey);
+//        }
+        return null;
 
     }
 

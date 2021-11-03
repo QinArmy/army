@@ -7,6 +7,7 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
+import io.army.stmt.SimpleStmt;
 
 class StandardDeleteContext extends AbstractStandardDomainContext implements DeleteContext {
 
@@ -35,7 +36,7 @@ class StandardDeleteContext extends AbstractStandardDomainContext implements Del
 
     static StandardDeleteContext buildChild(InnerStandardDelete delete, Dialect dialect, final Visible visible) {
         ChildTableMeta<?> childMeta = (ChildTableMeta<?>) delete.tableMeta();
-        String primarySuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(delete,dialect);
+        String primarySuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(delete, dialect);
 
         TableContext tableContext = TableContext.singleTable(delete, false, primarySuffix);
         return new DomainDeleteContext(dialect, visible
@@ -43,6 +44,11 @@ class StandardDeleteContext extends AbstractStandardDomainContext implements Del
                 , childMeta
                 , childMeta.parentMeta()
         );
+    }
+
+    @Override
+    public SimpleStmt build() {
+        return null;
     }
 
     private StandardDeleteContext(Dialect dialect, Visible visible, TableContext tableContext

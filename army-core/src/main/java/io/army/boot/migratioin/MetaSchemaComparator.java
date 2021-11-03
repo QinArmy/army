@@ -20,14 +20,9 @@ interface MetaSchemaComparator {
         MetaSchemaComparator comparator;
         switch (sessionFactory.actualDatabase()) {
             case MySQL:
-            case MySQL57:
                 comparator = new MySQL57MetaSchemaComparator(sessionFactory);
                 break;
-            case MySQL80:
-                comparator = new MySQL80MetaSchemaComparator(sessionFactory);
-                break;
             case Postgre:
-            case Postgre11:
                 comparator = new Postgre11MetaSchemaComparator(sessionFactory);
                 break;
             case Oracle:

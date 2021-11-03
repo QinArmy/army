@@ -5,16 +5,12 @@ import io.army.NoCurrentSessionException;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.sync.GenericSyncApiSession;
 import io.army.sync.GenericSyncApiSessionFactory;
-import io.army.sync.InnerGenericSyncApiSessionFactory;
-import io.army.sync.SyncSessionFactoryUtils;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @SuppressWarnings("unused")
 final class SpringCurrentSessionContext implements CurrentSessionContext {
 
-    /**
-     * This method invoked by {@link SyncSessionFactoryUtils#buildCurrentSessionContext(InnerGenericSyncApiSessionFactory)}
-     */
+
     public static SpringCurrentSessionContext build(GenericSyncApiSessionFactory sessionFactory) {
         return new SpringCurrentSessionContext(sessionFactory);
     }

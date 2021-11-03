@@ -7,10 +7,10 @@ import io.army.advice.GenericSessionFactoryAdvice;
 import io.army.advice.sync.DomainAdvice;
 import io.army.codec.FieldCodec;
 import io.army.env.ArmyEnvironment;
-import io.army.util.Assert;
 
 import javax.sql.DataSource;
 import java.util.Collection;
+import java.util.function.Function;
 
 final class SessionFactoryBuilderImpl extends AbstractSyncSessionFactoryBuilder implements SessionFactoryBuilder {
 
@@ -21,25 +21,38 @@ final class SessionFactoryBuilderImpl extends AbstractSyncSessionFactoryBuilder 
 
     private DataSource dataSource;
 
+    public SessionFactoryBuilderImpl(boolean springApplication, DataSource dataSource) {
+        super(springApplication);
+        this.dataSource = dataSource;
+    }
+
+
     private SessionFactoryBuilderImpl(boolean springApplication) {
         super(springApplication);
     }
 
+
+    @Override
+    public SessionFactoryBuilder exceptionFunction(Function<RuntimeException, RuntimeException> exceptionFunction) {
+        return null;
+    }
+
+
     @Override
     public final SessionFactoryBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs) {
-        this.fieldCodecs = fieldCodecs;
+        //  this.fieldCodecs = fieldCodecs;
         return this;
     }
 
     @Override
     public final SessionFactoryBuilder name(String sessionFactoryName) {
-        this.name = sessionFactoryName;
+        // this.name = sessionFactoryName;
         return this;
     }
 
     @Override
     public final SessionFactoryBuilder environment(ArmyEnvironment environment) {
-        this.environment = environment;
+        //this.environment = environment;
         return this;
     }
 
@@ -81,23 +94,23 @@ final class SessionFactoryBuilderImpl extends AbstractSyncSessionFactoryBuilder 
 
     @Override
     public final SessionFactory build() throws SessionFactoryException {
-        Assert.notNull(this.name, "name required");
-        Assert.notNull(this.dataSource, "dataSource required");
-        Assert.notNull(this.environment, "environment required");
-        Assert.notNull(this.shardingMode, "shardingMode required");
+//        Assert.notNull(this.name, "name required");
+//        Assert.notNull(this.dataSource, "dataSource required");
+//        Assert.notNull(this.environment, "environment required");
+//        Assert.notNull(this.shardingMode, "shardingMode required");
 
-        final GenericSessionFactoryAdvice factoryAdvice = getFactoryAdviceComposite();
+        // final GenericSessionFactoryAdvice factoryAdvice = getFactoryAdviceComposite();
         try {
             //1. beforeInstance
-            composite.beforeInstance(this.environment);
+            //  composite.beforeInstance(this.environment);
             //2. create SessionFactory instance
             SessionFactoryImpl sessionFactory = createSessionFactory();
             //3. beforeInitialize
-            composite.beforeInitialize(sessionFactory);
+            //  composite.beforeInitialize(sessionFactory);
             //4. init session factory
             if (initializeSessionFactory(sessionFactory)) {
                 //5. afterInitialize
-                composite.afterInitialize(sessionFactory);
+                // composite.afterInitialize(sessionFactory);
             }
             return sessionFactory;
         } catch (SessionFactoryException e) {

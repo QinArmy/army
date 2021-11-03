@@ -12,9 +12,11 @@ import io.army.meta.TableMeta;
 import io.army.sharding.DatabaseRoute;
 import io.army.sharding.ShardingRoute;
 import io.army.sharding.TableRoute;
-import io.army.sync.*;
+import io.army.sync.ProxyTmSession;
+import io.army.sync.TmSession;
+import io.army.sync.TmSessionFactory;
+import io.army.sync.TmSessionFactoryCloseException;
 import io.army.tx.Isolation;
-import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 
 import java.util.HashMap;
@@ -34,51 +36,51 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 class TmSessionFactoryImpl extends AbstractGenericSessionFactory implements InnerTmSessionFactory {
 
-    private final Map<TableMeta<?>, DomainAdvice> domainAdviceMap;
+    private Map<TableMeta<?>, DomainAdvice> domainAdviceMap;
 
-    private final List<RmSessionFactory> rmSessionFactoryList;
+    private List<RmSessionFactory> rmSessionFactoryList;
 
-    private final List<Database> actualDatabaseList;
+    private List<Database> actualDatabaseList;
 
-    private final CurrentSessionContext currentSessionContext;
+    private CurrentSessionContext currentSessionContext;
 
-    private final int tableCountPerDatabase;
+    private int tableCountPerDatabase;
 
-    private final Map<TableMeta<?>, ShardingRoute> shardingRouteMap;
+    private Map<TableMeta<?>, ShardingRoute> shardingRouteMap;
 
-    private final ProxyTmSession proxySession;
+    private ProxyTmSession proxySession;
 
-    private final SessionCacheFactory sessionCacheFactory;
+    private SessionCacheFactory sessionCacheFactory;
 
-    private final DomainValuesGenerator domainValuesGenerator;
+    private DomainValuesGenerator domainValuesGenerator;
 
-    private final boolean supportZone;
+    private boolean supportZone;
 
-    private final AtomicBoolean initFinished = new AtomicBoolean(false);
+    private AtomicBoolean initFinished = new AtomicBoolean(false);
 
 
     private boolean closed;
 
     TmSessionFactoryImpl(TmSessionFactionBuilderImpl builder) {
-        super(builder);
-        Assert.isTrue(this.shardingMode == ShardingMode.SHARDING
-                , () -> String.format("%s support only SHARDING ShardingMode", TmSessionFactoryImpl.this));
-
-        this.domainAdviceMap = SyncSessionFactoryUtils.createDomainAdviceMap(builder.domainInterceptors());
-        final TmSessionFactoryUtils.RmSessionFactoryWrapper wrapper = TmSessionFactoryUtils.createRmSessionFactoryMap(
-                this, builder);
-        this.rmSessionFactoryList = wrapper.rmSessionFactoryList;
-        this.actualDatabaseList = wrapper.databaseList;
-        this.supportZone = wrapper.supportZone;
-
-        this.currentSessionContext = SyncSessionFactoryUtils.buildCurrentSessionContext(this);
-        this.tableCountPerDatabase = builder.tableCountPerDatabase();
-        this.shardingRouteMap = SyncSessionFactoryUtils.routeMap(this, ShardingRoute.class
-                , this.rmSessionFactoryList.size(), this.tableCountPerDatabase);
-        this.proxySession = new ProxyTmSessionImpl(this, this.currentSessionContext);
-
-        this.sessionCacheFactory = SessionCacheFactory.build(this);
-        this.domainValuesGenerator = DomainValuesGenerator.build(this);
+        super(null);
+//        Assert.isTrue(this.shardingMode == ShardingMode.SHARDING
+//                , () -> String.format("%s support only SHARDING ShardingMode", TmSessionFactoryImpl.this));
+//
+//        this.domainAdviceMap = SyncSessionFactoryUtils.createDomainAdviceMap(builder.domainInterceptors());
+//        final TmSessionFactoryUtils.RmSessionFactoryWrapper wrapper = TmSessionFactoryUtils.createRmSessionFactoryMap(
+//                this, builder);
+//        this.rmSessionFactoryList = wrapper.rmSessionFactoryList;
+//        this.actualDatabaseList = wrapper.databaseList;
+//        this.supportZone = wrapper.supportZone;
+//
+//        this.currentSessionContext = SyncSessionFactoryUtils.buildCurrentSessionContext(this);
+//        this.tableCountPerDatabase = builder.tableCountPerDatabase();
+//        this.shardingRouteMap = SyncSessionFactoryUtils.routeMap(this, ShardingRoute.class
+//                , this.rmSessionFactoryList.size(), this.tableCountPerDatabase);
+//        this.proxySession = new ProxyTmSessionImpl(this, this.currentSessionContext);
+//
+//        this.sessionCacheFactory = SessionCacheFactory.build(this);
+//        this.domainValuesGenerator = DomainValuesGenerator.build(this);
     }
 
 
@@ -146,10 +148,6 @@ class TmSessionFactoryImpl extends AbstractGenericSessionFactory implements Inne
         return this.currentSessionContext.hasCurrentSession();
     }
 
-    @Override
-    public boolean currentSessionContextIsInstanceOf(Class<?> currentSessionContextClass) {
-        return currentSessionContextClass.isInstance(this.currentSessionContext);
-    }
 
     @Nullable
     @Override
@@ -208,10 +206,7 @@ class TmSessionFactoryImpl extends AbstractGenericSessionFactory implements Inne
         return this.rmSessionFactoryList;
     }
 
-    @Override
-    public boolean springApplication() {
-        return this.springApplication;
-    }
+
 
     /*################################## blow package method ##################################*/
 

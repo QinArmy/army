@@ -2,7 +2,11 @@ package io.army.dialect.mysql;
 
 
 import io.army.GenericRmSessionFactory;
+import io.army.criteria.Delete;
+import io.army.criteria.Update;
+import io.army.criteria.Visible;
 import io.army.dialect.*;
+import io.army.stmt.Stmt;
 
 import java.util.Set;
 
@@ -19,10 +23,19 @@ class MySQL57Dialect extends AbstractDialect {
 
     /*################################## blow interfaces method ##################################*/
 
+    @Override
+    public Stmt returningUpdate(Update update, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public Stmt returningDelete(Delete delete, Visible visible) {
+        return null;
+    }
 
     @Override
     public Database database() {
-        return Database.MySQL57;
+        return Database.MySQL;
     }
 
     @Override

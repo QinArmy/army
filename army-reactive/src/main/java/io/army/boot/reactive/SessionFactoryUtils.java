@@ -17,10 +17,8 @@ import io.army.reactive.advice.ReactiveDomainUpdateAdvice;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 import io.army.util.ReflectionUtils;
-import io.jdbd.DatabaseProductMetaData;
-import io.jdbd.DatabaseSessionFactory;
-import io.jdbd.StatelessDatabaseSession;
-import io.jdbd.pool.ReadWriteSplittingSessionFactory;
+import io.jdbd.session.DatabaseSession;
+import io.jdbd.session.DatabaseSessionFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -33,22 +31,24 @@ abstract class SessionFactoryUtils extends GenericSessionFactoryUtils {
 
     static DatabaseSessionFactory tryObtainPrimaryFactory(DatabaseSessionFactory factory) {
         DatabaseSessionFactory actualFactory;
-        if (factory instanceof ReadWriteSplittingSessionFactory) {
-            ReadWriteSplittingSessionFactory rwFactory = (ReadWriteSplittingSessionFactory) factory;
-            actualFactory = rwFactory.getPrimaryFactory();
-            if (actualFactory == null) {
-                throw new IllegalArgumentException(factory.getClass().getName() + ".getPrimaryFactory() return null.");
-            }
-        } else {
-            actualFactory = factory;
-        }
-        return actualFactory;
+//        if (factory instanceof ReadWriteSplittingSessionFactory) {
+//            ReadWriteSplittingSessionFactory rwFactory = (ReadWriteSplittingSessionFactory) factory;
+//            actualFactory = rwFactory.getPrimaryFactory();
+//            if (actualFactory == null) {
+//                throw new IllegalArgumentException(factory.getClass().getName() + ".getPrimaryFactory() return null.");
+//            }
+//        } else {
+//            actualFactory = factory;
+//        }
+//        return actualFactory;
+        return null;
     }
 
-    static Mono<Database> queryDatabase(StatelessDatabaseSession session) {
-        return session.getDatabaseMetaData()
-                .getDatabaseProduct()
-                .map(SessionFactoryUtils::mapDatabase);
+    static Mono<Database> queryDatabase(DatabaseSession session) {
+//        return session.getDatabaseMetaData()
+//                .getDatabaseProduct()
+//                .map(SessionFactoryUtils::mapDatabase);
+        return Mono.empty();
     }
 
     static Dialect createDialect(GenericRmSessionFactory rmSessionFactory, Database queriedDatabase) {
@@ -131,11 +131,11 @@ abstract class SessionFactoryUtils extends GenericSessionFactoryUtils {
         return Collections.unmodifiableMap(adviceMap);
     }
 
-    private static Database mapDatabase(DatabaseProductMetaData productMetaData) {
-        return convertToDatabase(productMetaData.getProductName()
-                , productMetaData.getMajorVersion()
-                , productMetaData.getMinorVersion());
-    }
+//    private static Database mapDatabase(DatabaseProductMetaData productMetaData) {
+//        return convertToDatabase(productMetaData.getProductName()
+//                , productMetaData.getMajorVersion()
+//                , productMetaData.getMinorVersion());
+//    }
 
 
     /*################################## blow static inner class ##################################*/

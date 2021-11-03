@@ -16,7 +16,7 @@ abstract class Postgre11DDLUtils extends DDLUtils {
             PostgreDataType.INTERVAL,
             PostgreDataType.POINT,
             PostgreDataType.LINE,
-            PostgreDataType.LSEG,
+           // PostgreDataType.LSEG,
             PostgreDataType.BOX,
             PostgreDataType.PATH,
             PostgreDataType.POLYGON,

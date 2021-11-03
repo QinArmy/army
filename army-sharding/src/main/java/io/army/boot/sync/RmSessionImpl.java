@@ -2,23 +2,22 @@ package io.army.boot.sync;
 
 import io.army.SessionCloseFailureException;
 import io.army.SessionException;
-import io.army.criteria.Insert;
-import io.army.criteria.Select;
-import io.army.criteria.Visible;
-import io.army.criteria.impl.inner.InnerSQL;
+import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.sync.AbstractGenericSyncRmSession;
-import io.army.tx.*;
+import io.army.tx.ArmyXid;
+import io.army.tx.NoSessionTransactionException;
+import io.army.tx.TransactionNotCloseException;
+import io.army.tx.XaTransactionOption;
 import io.army.util.CriteriaUtils;
-import io.army.stmt.Stmt;
 
 import javax.sql.XAConnection;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -27,7 +26,7 @@ import java.util.Set;
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
  */
-final class RmSessionImpl extends AbstractGenericSyncRmSession implements InnerRmSession {
+final class RmSessionImpl implements InnerRmSession {
 
     private final InnerRmSessionFactory sessionFactory;
 
@@ -39,7 +38,7 @@ final class RmSessionImpl extends AbstractGenericSyncRmSession implements InnerR
 
     RmSessionImpl(InnerRmSessionFactory sessionFactory, XAConnection xaConnection, XaTransactionOption txOption)
             throws SessionException {
-        super(sessionFactory, TmSessionFactoryUtils.getConnection(xaConnection));
+        // super(sessionFactory, TmSessionFactoryUtils.getConnection(xaConnection));
         this.sessionFactory = sessionFactory;
         this.xaConnection = xaConnection;
 
@@ -90,7 +89,7 @@ final class RmSessionImpl extends AbstractGenericSyncRmSession implements InnerR
             return;
         }
         // first super close
-        super.close();
+        //   super.close();
 
         if (!this.transaction.transactionEnded()) {
             throw new TransactionNotCloseException("Session transaction not close,tx status[%s]"
@@ -124,26 +123,180 @@ final class RmSessionImpl extends AbstractGenericSyncRmSession implements InnerR
 
     @Override
     public final void valueInsert(Insert insert, @Nullable Set<Integer> domainIndexSet, Visible visible) {
-        assertSessionActive(true);
-
-        List<Stmt> stmtList = parseValueInsert(insert, domainIndexSet, visible);
-        try {
-            this.sessionFactory.insertSQLExecutor()
-                    .valueInsert(this, stmtList);
-        } catch (Throwable e) {
-            markRollbackOnlyForChildInsert(stmtList);
-            throw e;
-        } finally {
-            ((InnerSQL) insert).clear();
-        }
+//        assertSessionActive(true);
+//
+//        List<Stmt> stmtList = parseValueInsert(insert, domainIndexSet, visible);
+//        try {
+//            this.sessionFactory.insertSQLExecutor()
+//                    .valueInsert(this, stmtList);
+//        } catch (Throwable e) {
+//            markRollbackOnlyForChildInsert(stmtList);
+//            throw e;
+//        } finally {
+//            ((InnerSQL) insert).clear();
+//        }
     }
+
+    @Override
+    public <R extends IDomain> R get(TableMeta<R> tableMeta, Object id) {
+        return null;
+    }
+
+    @Override
+    public <R extends IDomain> R getByUnique(TableMeta<R> tableMeta, List<String> propNameList, List<Object> valueList) {
+        return null;
+    }
+
+    @Override
+    public <R> R selectOne(Select select, Class<R> resultClass) {
+        return null;
+    }
+
+    @Override
+    public <R> R selectOne(Select select, Class<R> resultClass, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public Map<String, Object> selectOneAsUnmodifiableMap(Select select) {
+        return null;
+    }
+
+    @Override
+    public Map<String, Object> selectOneAsUnmodifiableMap(Select select, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public <R> List<R> select(Select select, Class<R> resultClass) {
+        return null;
+    }
+
+    @Override
+    public <R> List<R> select(Select select, Class<R> resultClass, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public List<Map<String, Object>> selectAsUnmodifiableMap(Select select) {
+        return null;
+    }
+
+    @Override
+    public List<Map<String, Object>> selectAsUnmodifiableMap(Select select, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public void valueInsert(Insert insert) {
+
+    }
+
+    @Override
+    public void valueInsert(Insert insert, Visible visible) {
+
+    }
+
+    @Override
+    public int subQueryInsert(Insert insert) {
+        return 0;
+    }
+
+    @Override
+    public int subQueryInsert(Insert insert, Visible visible) {
+        return 0;
+    }
+
+    @Override
+    public long subQueryLargeInsert(Insert insert) {
+        return 0;
+    }
+
+    @Override
+    public long largeSubQueryInsert(Insert insert, Visible visible) {
+        return 0;
+    }
+
+    @Override
+    public <R> List<R> returningInsert(Insert insert, Class<R> resultClass) {
+        return null;
+    }
+
+    @Override
+    public <R> List<R> returningInsert(Insert insert, Class<R> resultClass, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public int update(Update update) {
+        return 0;
+    }
+
+    @Override
+    public int update(Update update, Visible visible) {
+        return 0;
+    }
+
+    @Override
+    public long largeUpdate(Update update) {
+        return 0;
+    }
+
+    @Override
+    public long largeUpdate(Update update, Visible visible) {
+        return 0;
+    }
+
+    @Override
+    public <R> List<R> returningUpdate(Update update, Class<R> resultClass) {
+        return null;
+    }
+
+    @Override
+    public <R> List<R> returningUpdate(Update update, Class<R> resultClass, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public int delete(Delete delete) {
+        return 0;
+    }
+
+    @Override
+    public int delete(Delete delete, Visible visible) {
+        return 0;
+    }
+
+    @Override
+    public long largeDelete(Delete delete) {
+        return 0;
+    }
+
+    @Override
+    public long largeDelete(Delete delete, Visible visible) {
+        return 0;
+    }
+
+    @Override
+    public <R> List<R> returningDelete(Delete delete, Class<R> resultClass) {
+        return null;
+    }
+
+    @Override
+    public <R> List<R> returningDelete(Delete delete, Class<R> resultClass, Visible visible) {
+        return null;
+    }
+
+
+//    @Override
+//    public InnerCodecContext codecContext() {
+//        return null;
+//    }
+
 
     /*################################## blow package method ##################################*/
 
-    @Override
-    final GenericTransaction obtainTransaction() {
-        return this.transaction;
-    }
+
 
     /*################################## blow InnerGenericRmSession method ##################################*/
 
@@ -152,10 +305,4 @@ final class RmSessionImpl extends AbstractGenericSyncRmSession implements InnerR
         return this.xaConnection.getXAResource();
     }
 
-    @Override
-    public final void closeTransaction(GenericSyncTransaction transaction) {
-        if (transaction != this.transaction) {
-            throw new IllegalArgumentException("transaction not match.");
-        }
-    }
 }

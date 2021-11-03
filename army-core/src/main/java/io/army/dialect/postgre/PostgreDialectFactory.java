@@ -17,10 +17,8 @@ public abstract class PostgreDialectFactory {
         Dialect dialect;
         switch (database) {
             case Postgre:
-            case Postgre11:
                 dialect = new Postgre11Dialect(sessionFactory);
                 break;
-            case Postgre12:
             default:
                 throw new IllegalArgumentException(String.format("database[%s] not Postgre.", database));
         }

@@ -4,27 +4,21 @@ import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ObjectWrapper;
 import io.army.boot.GenericSQLExecutorSupport;
 import io.army.codec.StatementType;
-import io.army.criteria.FieldSelection;
 import io.army.criteria.Selection;
 import io.army.dialect.Database;
 import io.army.dialect.MappingContext;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
-import io.army.meta.MetaException;
 import io.army.meta.ParamMeta;
-import io.army.sqltype.SqlDataType;
 import io.army.stmt.*;
-import io.jdbd.PreparedStatement;
-import io.jdbd.ReactiveSQLException;
-import io.jdbd.ResultRow;
+import io.jdbd.result.ResultRow;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Collections;
+import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -114,27 +108,28 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
             , Class<R> resultClass) {
 
         //1. create statement
-        Flux<? extends ResultRow> resultRowFlux = session.createPreparedStatement(sqlWrapper.sql())
-                //2. bind param list
-                .map(st -> bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramGroup()))
-                .doOnNext(st -> printSQL(sqlWrapper))
-                //3. execute sql
-                .flatMapMany(PreparedStatement::executeQuery)
-                //4. assert optimistic lock
-                .switchIfEmpty(assertOptimisticLockWhenEmpty(sqlWrapper));
+//        Flux< ResultRow> resultRowFlux = session.createPreparedStatement(sqlWrapper.sql())
+//                //2. bind param list
+//                .map(st -> bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramGroup()))
+//                .doOnNext(st -> printSQL(sqlWrapper))
+//                .cast(ResultRow.class)
+        //3. execute sql
+        // .flatMapMany(PreparedStatement::executeQuery)
+        //4. assert optimistic lock
+        // .switchIfEmpty(assertOptimisticLockWhenEmpty(sqlWrapper));
 
         //5. map result
-        Flux<R> flux;
-        if (singleType(sqlWrapper.selectionList(), resultClass)) {
-            Selection selection = sqlWrapper.selectionList().get(0);
-            StatementType statementType = sqlWrapper.statementType();
-            // map single column result
-            flux = resultRowFlux.flatMap(row -> flatMapColumnResult(row, selection, statementType, resultClass));
-        } else {
-            // map complex result
-            flux = resultRowFlux.map(row -> extractRowResult(session, row, sqlWrapper, resultClass));
-        }
-        return flux;
+//        Flux<R> flux;
+//        if (singleType(sqlWrapper.selectionList(), resultClass)) {
+//            Selection selection = sqlWrapper.selectionList().get(0);
+//            StatementType statementType = sqlWrapper.statementType();
+//            // map single column result
+//            flux = resultRowFlux.flatMap(row -> flatMapColumnResult(row, selection, statementType, resultClass));
+//        } else {
+//            // map complex result
+//            flux = resultRowFlux.map(row -> extractRowResult(session, row, sqlWrapper, resultClass));
+//        }
+        return Flux.empty();
     }
 
     protected final <R> Flux<Optional<R>> doExecuteColumnQuery(InnerGenericRmSession session
@@ -147,15 +142,15 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
         final Selection selection = selectionList.get(0);
         final StatementType statementType = sqlWrapper.statementType();
         //1. create statement
-        return session.createPreparedStatement(sqlWrapper.sql())
-                //2. bind param list
-                .map(st -> bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramGroup()))
-                .doOnNext(st -> printSQL(sqlWrapper))
-                //3. execute sql
-                .flatMapMany(PreparedStatement::executeQuery)
-                .map(row -> Optional.ofNullable(extractColumnResult(row, selection, statementType, columnClass)))
-                ;
-
+//        return session.createPreparedStatement(sqlWrapper.sql())
+//                //2. bind param list
+//                .map(st -> bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramGroup()))
+//                .doOnNext(st -> printSQL(sqlWrapper))
+        //3. execute sql
+        // .flatMapMany(PreparedStatement::executeQuery)
+        // .map(row -> Optional.ofNullable(extractColumnResult(row, selection, statementType, columnClass)))
+        ;
+        return Flux.empty();
     }
 
 
@@ -204,17 +199,18 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
                 .map(st -> bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramGroup()))
                 .doOnNext(st -> printSQL(sqlWrapper))
                 //3. execute sql
-                .flatMapMany(PreparedStatement::executeQuery)
+                // .flatMapMany(PreparedStatement::executeQuery)
                 //4. assert optimistic lock
-                .switchIfEmpty(assertOptimisticLockWhenEmpty(sqlWrapper))
+                // .switchIfEmpty(assertOptimisticLockWhenEmpty(sqlWrapper))
                 //5. map ResultRow to ObjectWrapper
-                .map(resultRow -> mapFirstSQLResult(session, resultRow, sqlWrapper, resultClass, onlyIdReturning))
+                //  .map(resultRow -> mapFirstSQLResult(session, resultRow, sqlWrapper, resultClass, onlyIdReturning))
                 // convert exception for print sql
                 .onErrorMap(ex -> convertExceptionWithSQL(ex, sqlWrapper))
                 //6. collect bean wrapper to java.util.Map with primaryKeyValue as key.
-                .collectMap(beanWrapper -> keyExtractor(beanWrapper, primaryFieldSelection))
+                // .collectMap(beanWrapper -> keyExtractor(beanWrapper, primaryFieldSelection))
                 // make java.util.Map unmodifiable.
-                .map(Collections::unmodifiableMap)
+                //  .map(Collections::unmodifiableMap)
+                .then(Mono.empty())
                 ;
     }
 
@@ -230,18 +226,19 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
                 .map(st -> bindParamList(st, sqlWrapper.statementType(), sqlWrapper.paramGroup()))
                 .doOnNext(st -> printSQL(sqlWrapper))
                 //3. execute sql
-                .flatMapMany(PreparedStatement::executeQuery)
+                // .flatMapMany(PreparedStatement::executeQuery)
                 //4. assert optimistic lock
-                .switchIfEmpty(assertOptimisticLockWhenEmpty(sqlWrapper))
+                //  .switchIfEmpty(assertOptimisticLockWhenEmpty(sqlWrapper))
                 //5. map ResultRow to T
-                .map(resultRow -> mapSecondSQLResult(resultRow, objectWrapperMap, sqlWrapper, resultClass))
+                // .map(resultRow -> mapSecondSQLResult(resultRow, objectWrapperMap, sqlWrapper, resultClass))
 
                 // convert exception for print sql
                 .onErrorMap(ex -> convertExceptionWithSQL(ex, sqlWrapper))
-                .collectList()
+                // .collectList()
                 // 6. assert first sql updated row and second sql updated rows match
-                .flatMap(listOfSecond -> assertFirstSQLAndSecondSQLResultMatch(listOfSecond, objectWrapperMap, sqlWrapper))
-                .flatMapMany(Flux::fromIterable)
+                // .flatMap(listOfSecond -> assertFirstSQLAndSecondSQLResultMatch(listOfSecond, objectWrapperMap, sqlWrapper))
+                // .flatMapMany(Flux::fromIterable)
+                .thenMany(Mono.empty())
                 ;
     }
 
@@ -342,27 +339,27 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
             , Class<R> columnResultClass) {
 
         // 1. obtain column result
-        Object columnResult = resultRow.getObject(selection.alias());
-        if (columnResult == null) {
-            return null;
-        }
-        MappingType mappingType = selection.mappingMeta();
-        // 2. decode columnResult with mappingMeta
-        columnResult = mappingType.decodeForReactive(columnResult, this.mappingContext);
-        if (!mappingType.javaType().isInstance(columnResult)) {
-            throw new MetaException("%s decodeForReactive return value isn't %s's instance."
-                    , mappingType.getClass().getName()
-                    , mappingType.javaType().getName());
-        }
-
-        if (selection instanceof FieldSelection) {
-            FieldMeta<?, ?> fieldMeta = ((FieldSelection) selection).fieldMeta();
-            if (fieldMeta.codec()) {
-                // 3. decode cipher field
-                columnResult = doDecodeResult(statementType, fieldMeta, columnResult);
-            }
-        }
-        return columnResultClass.cast(columnResult);
+//        Object columnResult = resultRow.getObject(selection.alias());
+//        if (columnResult == null) {
+//            return null;
+//        }
+//        MappingType mappingType = selection.mappingMeta();
+//        // 2. decode columnResult with mappingMeta
+//        columnResult = mappingType.decodeForReactive(columnResult, this.mappingContext);
+//        if (!mappingType.javaType().isInstance(columnResult)) {
+//            throw new MetaException("%s decodeForReactive return value isn't %s's instance."
+//                    , mappingType.getClass().getName()
+//                    , mappingType.javaType().getName());
+//        }
+//
+//        if (selection instanceof FieldSelection) {
+//            FieldMeta<?, ?> fieldMeta = ((FieldSelection) selection).fieldMeta();
+//            if (fieldMeta.codec()) {
+//                // 3. decode cipher field
+//                columnResult = doDecodeResult(statementType, fieldMeta, columnResult);
+//            }
+//        }
+        return columnResultClass.cast(null);
     }
 
     private <R> Publisher<R> assertOptimisticLockWhenEmpty(SimpleStmt sqlWrapper) {
@@ -412,18 +409,17 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
 
 
     private PreparedStatement bindParamGroupList(final PreparedStatement st, BatchSimpleStmt sqlWrapper) {
-        final StatementType statementType = sqlWrapper.statementType();
-        for (List<ParamValue> paramList : sqlWrapper.groupList()) {
-            bindParamList(st, statementType, paramList);
-            st.addBatch();
-        }
+//        final StatementType statementType = sqlWrapper.statementType();
+//        for (List<ParamValue> paramList : sqlWrapper.groupList()) {
+//            bindParamList(st, statementType, paramList);
+//            st.addBatch();
+//        }
         return st;
     }
 
 
     private PreparedStatement bindParamList(final PreparedStatement st, StatementType statementType
-            , List<ParamValue> paramList)
-            throws ReactiveSQLException {
+            , List<ParamValue> paramList) {
 
         final MappingContext mappingContext = this.mappingContext;
         final Database database = mappingContext.database();
@@ -433,10 +429,10 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
             ParamValue paramValue = paramList.get(i);
             Object value = paramValue.value();
             ParamMeta paramMeta = paramValue.paramMeta();
-            SqlDataType sqlDataType = paramMeta.mappingMeta().sqlDataType(database);
+            //  SqlDataType sqlDataType = paramMeta.mappingMeta().sqlDataType(database);
 
             if (value == null) {
-                st.bindNull(i + 1, sqlDataType.typeName());
+                //  st.bindNull(i + 1, sqlDataType.typeName());
             } else {
                 if (paramMeta instanceof FieldMeta) {
                     FieldMeta<?, ?> fieldMeta = (FieldMeta<?, ?>) paramMeta;
@@ -444,8 +440,8 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
                         value = doEncodeParam(statementType, fieldMeta, value);
                     }
                 }
-                value = paramValue.paramMeta().mappingMeta().encodeForReactive(value, mappingContext);
-                st.bind(i + 1, sqlDataType.typeName(), value);
+                //  value = paramValue.paramMeta().mappingMeta().encodeForReactive(value, mappingContext);
+                // st.bind(i + 1, sqlDataType.typeName(), value);
             }
         }
         return st;

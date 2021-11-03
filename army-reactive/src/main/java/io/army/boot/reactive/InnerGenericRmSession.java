@@ -1,9 +1,9 @@
 package io.army.boot.reactive;
 
 import io.army.GenericSession;
-import io.jdbd.PreparedStatement;
-import io.jdbd.ReactiveSQLException;
 import reactor.core.publisher.Mono;
+
+import java.sql.PreparedStatement;
 
 /**
  * This interface design for below:
@@ -15,6 +15,6 @@ import reactor.core.publisher.Mono;
  */
 interface InnerGenericRmSession extends GenericSession {
 
-    Mono<PreparedStatement> createPreparedStatement(String sql) throws ReactiveSQLException;
+    Mono<PreparedStatement> createPreparedStatement(String sql);
 
 }

@@ -1,19 +1,17 @@
 package io.army.boot.migratioin;
 
-import io.army.lang.Nullable;
-import io.jdbd.StatelessSession;
+import io.army.meta.SchemaMeta;
 import reactor.core.publisher.Mono;
 
 final class ReactiveSchemaExtractorImpl implements ReactiveSchemaExtractor {
 
-    private final StatelessSession databaseSession;
 
-    ReactiveSchemaExtractorImpl(StatelessSession databaseSession) {
-        this.databaseSession = databaseSession;
+    ReactiveSchemaExtractorImpl(Object databaseSession) {
+
     }
 
     @Override
-    public Mono<SchemaInfo> extract(@Nullable String routeSuffix) throws SchemaExtractException {
-        return Mono.empty();
+    public Mono<SchemaInfo> extract(SchemaMeta schemaMeta, String routeSuffix) throws SchemaExtractException {
+        return null;
     }
 }

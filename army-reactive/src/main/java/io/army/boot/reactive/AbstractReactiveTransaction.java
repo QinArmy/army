@@ -72,32 +72,33 @@ abstract class AbstractReactiveTransaction extends AbstractGenericTransaction im
     }
 
 
-    static io.jdbd.Isolation convertToDatabaseIsolation(io.army.tx.Isolation arnyIsolation) {
-        io.jdbd.Isolation databaseOption;
-        switch (arnyIsolation) {
-            case READ_COMMITTED:
-                databaseOption = io.jdbd.Isolation.READ_COMMITTED;
-                break;
-            case REPEATABLE_READ:
-                databaseOption = io.jdbd.Isolation.REPEATABLE_READ;
-                break;
-            case SERIALIZABLE:
-                databaseOption = io.jdbd.Isolation.SERIALIZABLE;
-                break;
-            case DEFAULT:
-                databaseOption = io.jdbd.Isolation.DEFAULT;
-                break;
-            case READ_UNCOMMITTED:
-                databaseOption = io.jdbd.Isolation.READ_UNCOMMITTED;
-                break;
-            default:
-                throw new IllegalArgumentException(String.format("unknown io.army.tx.Isolation[%s]"
-                        , arnyIsolation));
-        }
-        return databaseOption;
+    static io.jdbd.session.Isolation convertToDatabaseIsolation(io.army.tx.Isolation arnyIsolation) {
+//        io.jdbd.Isolation databaseOption;
+//        switch (arnyIsolation) {
+//            case READ_COMMITTED:
+//                databaseOption = io.jdbd.Isolation.READ_COMMITTED;
+//                break;
+//            case REPEATABLE_READ:
+//                databaseOption = io.jdbd.Isolation.REPEATABLE_READ;
+//                break;
+//            case SERIALIZABLE:
+//                databaseOption = io.jdbd.Isolation.SERIALIZABLE;
+//                break;
+//            case DEFAULT:
+//                databaseOption = io.jdbd.Isolation.DEFAULT;
+//                break;
+//            case READ_UNCOMMITTED:
+//                databaseOption = io.jdbd.Isolation.READ_UNCOMMITTED;
+//                break;
+//            default:
+//                throw new IllegalArgumentException(String.format("unknown io.army.tx.Isolation[%s]"
+//                        , arnyIsolation));
+//        }
+//        return databaseOption;
+        return null;
     }
 
-    static io.army.tx.Isolation convertToArmyIsolation(io.jdbd.Isolation databaseIsolation) {
+    static io.army.tx.Isolation convertToArmyIsolation(Isolation databaseIsolation) {
         io.army.tx.Isolation databaseOption;
         switch (databaseIsolation) {
             case READ_COMMITTED:

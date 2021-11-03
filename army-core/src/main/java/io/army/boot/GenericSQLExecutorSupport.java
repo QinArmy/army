@@ -16,8 +16,8 @@ import io.army.meta.MetaException;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.stmt.BatchSimpleStmt;
 import io.army.stmt.GenericSimpleStmt;
-import io.army.stmt.Stmt;
 import io.army.stmt.SimpleStmt;
+import io.army.stmt.Stmt;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -33,34 +33,36 @@ public abstract class GenericSQLExecutorSupport {
 
 
     protected final Object doEncodeParam(StatementType statementType, FieldMeta<?, ?> fieldMeta, final Object value) {
-        FieldCodec fieldCodec = this.genericSessionFactory.fieldCodec(fieldMeta);
-        Object paramValue;
-        if (fieldCodec == null) {
-            throw createNoFieldCodecException(fieldMeta);
-        } else {
-            // encode filed param
-            paramValue = fieldCodec.encode(fieldMeta, value, statementType);
-            if (!fieldMeta.javaType().isInstance(paramValue)) {
-                throw createCodecReturnTypeException(fieldCodec, fieldMeta);
-            }
-        }
-        return paramValue;
+//        FieldCodec fieldCodec = this.genericSessionFactory.fieldCodec(fieldMeta);
+//        Object paramValue;
+//        if (fieldCodec == null) {
+//            throw createNoFieldCodecException(fieldMeta);
+//        } else {
+//            // encode filed param
+//            paramValue = fieldCodec.encode(fieldMeta, value, statementType);
+//            if (!fieldMeta.javaType().isInstance(paramValue)) {
+//                throw createCodecReturnTypeException(fieldCodec, fieldMeta);
+//            }
+//        }
+//        return paramValue;
+        return null;
     }
 
     protected final Object doDecodeResult(StatementType statementType, FieldMeta<?, ?> fieldMeta
             , final Object resultFromDB) {
-        FieldCodec fieldCodec = this.genericSessionFactory.fieldCodec(fieldMeta);
-        Object result;
-        if (fieldCodec == null) {
-            throw createNoFieldCodecException(fieldMeta);
-        } else {
-            // decode result
-            result = fieldCodec.decode(fieldMeta, resultFromDB, statementType);
-            if (result.getClass() != resultFromDB.getClass()) {
-                throw GenericSQLExecutorSupport.createCodecReturnTypeException(fieldCodec, fieldMeta);
-            }
-        }
-        return result;
+//        FieldCodec fieldCodec = this.genericSessionFactory.fieldCodec(fieldMeta);
+//        Object result;
+//        if (fieldCodec == null) {
+//            throw createNoFieldCodecException(fieldMeta);
+//        } else {
+//            // decode result
+//            result = fieldCodec.decode(fieldMeta, resultFromDB, statementType);
+//            if (result.getClass() != resultFromDB.getClass()) {
+//                throw GenericSQLExecutorSupport.createCodecReturnTypeException(fieldCodec, fieldMeta);
+//            }
+//        }
+//        return result;
+        return null;
     }
 
     protected final InsertRowsNotMatchException createBatchChildInsertNotMatchException(

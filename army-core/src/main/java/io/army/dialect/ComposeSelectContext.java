@@ -71,7 +71,7 @@ final class ComposeSelectContext implements SelectContext {
 
     @Override
     public SimpleStmt build() {
-        return SimpleStmt.build(this.sqlBuilder.toString(), this.paramList);
+        return null;
     }
 
     @Override

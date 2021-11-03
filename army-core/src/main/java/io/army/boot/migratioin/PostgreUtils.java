@@ -17,8 +17,8 @@ abstract class PostgreUtils extends ComparatorUtils {
 
     static Set<PostgreDataType> createFloatSet() {
         return EnumSet.of(
-                PostgreDataType.REAL,
-                PostgreDataType.DOUBLE_PRECISION
+                PostgreDataType.REAL
+                //PostgreDataType.DOUBLE_PRECISION
         );
     }
 
@@ -45,14 +45,14 @@ abstract class PostgreUtils extends ComparatorUtils {
         map.put(PostgreDataType.DECIMAL, Collections.singletonList("NUMERIC"));
 
         map.put(PostgreDataType.REAL, Collections.singletonList("FLOAT"));
-        map.put(PostgreDataType.DOUBLE_PRECISION, Collections.singletonList("FLOAT"));
+        // map.put(PostgreDataType.DOUBLE_PRECISION, Collections.singletonList("FLOAT"));
         map.put(PostgreDataType.CHAR, Collections.singletonList("CHARACTER"));
         map.put(PostgreDataType.VARCHAR, Collections.singletonList("CHARACTER VARYING"));
 
-        map.put(PostgreDataType.TIME_WITHOUT_TIME_ZONE, Collections.singletonList("TIME"));
-        map.put(PostgreDataType.TIME_WITH_TIME_ZONE, Collections.singletonList("TIME"));
-        map.put(PostgreDataType.TIMESTAMP_WITHOUT_TIME_ZONE, Collections.singletonList("TIMESTAMP"));
-        map.put(PostgreDataType.TIMESTAMP_WITH_TIME_ZONE, Collections.singletonList("TIMESTAMP"));
+        // map.put(PostgreDataType.TIME_WITHOUT_TIME_ZONE, Collections.singletonList("TIME"));
+        // map.put(PostgreDataType.TIME_WITH_TIME_ZONE, Collections.singletonList("TIME"));
+        //map.put(PostgreDataType.TIMESTAMP_WITHOUT_TIME_ZONE, Collections.singletonList("TIMESTAMP"));
+        // map.put(PostgreDataType.TIMESTAMP_WITH_TIME_ZONE, Collections.singletonList("TIMESTAMP"));
 
         return Collections.unmodifiableMap(map);
     }

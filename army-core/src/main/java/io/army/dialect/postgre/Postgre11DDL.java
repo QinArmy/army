@@ -1,10 +1,12 @@
 package io.army.dialect.postgre;
 
-import io.army.dialect.*;
+import io.army.dialect.AbstractDDL;
+import io.army.dialect.DDLContext;
+import io.army.dialect.DDLUtils;
+import io.army.dialect.SQLBuilder;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexFieldMeta;
 import io.army.meta.IndexMeta;
-import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlDataType;
 import io.army.util.StringUtils;
 
@@ -37,22 +39,23 @@ class Postgre11DDL extends AbstractDDL {
 
     @Override
     protected final void doDefaultExpression(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) {
-        SqlDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database());
-        String defaultExp = fieldMeta.defaultValue();
-        if (sqlDataType instanceof PostgreDataType) {
-            PostgreDataType dataType = (PostgreDataType) sqlDataType;
-            if (Postgre11DDLUtils.needQuoteForDefault(dataType)
-                    && (!defaultExp.startsWith("'") || !defaultExp.endsWith("'"))) {
-                throw DDLUtils.createDefaultValueSyntaxException(fieldMeta);
-            }
-
-        }
-        builder.append(defaultExp);
+        //   SqlDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database());
+//        String defaultExp = fieldMeta.defaultValue();
+//        if (sqlDataType instanceof PostgreDataType) {
+//            PostgreDataType dataType = (PostgreDataType) sqlDataType;
+//            if (Postgre11DDLUtils.needQuoteForDefault(dataType)
+//                    && (!defaultExp.startsWith("'") || !defaultExp.endsWith("'"))) {
+//                throw DDLUtils.createDefaultValueSyntaxException(fieldMeta);
+//            }
+//
+//        }
+        //  builder.append(defaultExp);
     }
 
     @Override
     protected final boolean supportSQLDateType(SqlDataType dataType) {
-        return dataType instanceof PostgreDataType || dataType.database().family() == Database.Postgre;
+        //  return dataType instanceof PostgreDataType || dataType.database().family() == Database.Postgre;
+        return false;
     }
 
     @Override

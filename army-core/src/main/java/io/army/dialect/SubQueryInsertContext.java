@@ -9,6 +9,7 @@ import io.army.criteria.impl.inner.InnerStandardSubQueryInsert;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.stmt.SimpleStmt;
 
 final class SubQueryInsertContext extends AbstractTableContextSQLContext implements InsertContext {
 
@@ -72,5 +73,10 @@ final class SubQueryInsertContext extends AbstractTableContextSQLContext impleme
     protected final String parseTableSuffix(TableMeta<?> tableMeta, @Nullable String tableAlias) {
         assertSupportRoute(this.dialect);
         return this.primaryRouteSuffix();
+    }
+
+    @Override
+    public SimpleStmt build() {
+        return null;
     }
 }

@@ -7,7 +7,6 @@ import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.schema.SchemaInfoException;
 import io.army.sqltype.MySQLDataType;
-import io.army.sqltype.SqlDataType;
 import io.army.util.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,9 +49,9 @@ class MySQL57MetaSchemaComparator extends AbstractMetaSchemaComparator {
     private static Set<MySQLDataType> createStringTypeSet() {
         EnumSet<MySQLDataType> set = EnumSet.of(
                 MySQLDataType.CHAR,
-                MySQLDataType.NCHAR,
+                //MySQLDataType.NCHAR,
                 MySQLDataType.VARCHAR,
-                MySQLDataType.NVARCHAR,
+                // MySQLDataType.NVARCHAR,
 
                 MySQLDataType.BINARY,
                 MySQLDataType.VARBINARY,
@@ -108,7 +107,7 @@ class MySQL57MetaSchemaComparator extends AbstractMetaSchemaComparator {
      */
     private static Set<MySQLDataType> createSpatialTypeSet() {
         EnumSet<MySQLDataType> set = EnumSet.of(
-                MySQLDataType.GEOMETRY,
+                // MySQLDataType.GEOMETRY,
                 MySQLDataType.POINT,
                 MySQLDataType.LINESTRING,
                 MySQLDataType.POLYGON,
@@ -148,66 +147,68 @@ class MySQL57MetaSchemaComparator extends AbstractMetaSchemaComparator {
     @Override
     protected boolean needModifyPrecisionOrScale(FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo)
             throws SchemaInfoException, MetaException {
-        MySQLDataType sqlDataType = (MySQLDataType) fieldMeta.mappingMeta().sqlDataType(database());
-        boolean alter = false;
-        if (STRING_TYPE_SET.contains(sqlDataType)) {
-            alter = fieldMeta.precision() > columnInfo.columnSize();
-        } else if (sqlDataType == MySQLDataType.DECIMAL) {
-            alter = fieldMeta.precision() > columnInfo.columnSize() || fieldMeta.scale() > columnInfo.scale();
-        } else if (sqlDataType == MySQLDataType.TIME) {
-            alter = fieldMeta.precision() > (columnInfo.columnSize() - 9);
-        } else if (sqlDataType == MySQLDataType.DATETIME) {
-            alter = fieldMeta.precision() > (columnInfo.columnSize() - 20);
-        }
-        return alter;
+        // MySQLDataType sqlDataType = (MySQLDataType) fieldMeta.mappingMeta().sqlDataType(database());
+//        boolean alter = false;
+//        if (STRING_TYPE_SET.contains(sqlDataType)) {
+//            alter = fieldMeta.precision() > columnInfo.columnSize();
+//        } else if (sqlDataType == MySQLDataType.DECIMAL) {
+//            alter = fieldMeta.precision() > columnInfo.columnSize() || fieldMeta.scale() > columnInfo.scale();
+//        } else if (sqlDataType == MySQLDataType.TIME) {
+//            alter = fieldMeta.precision() > (columnInfo.columnSize() - 9);
+//        } else if (sqlDataType == MySQLDataType.DATETIME) {
+//            alter = fieldMeta.precision() > (columnInfo.columnSize() - 20);
+//        }
+//        return alter;
+        return false;
     }
 
     protected Database database() {
-        return Database.MySQL57;
+        return Database.MySQL;
     }
 
     @Override
     protected boolean needModifyDefault(FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo)
             throws SchemaInfoException, MetaException {
-        MySQLDataType mysqlType = (MySQLDataType) fieldMeta.mappingMeta().sqlDataType(database());
-        if (MYSQL57_NO_DEFAULT_TYPE_SET.contains(mysqlType)) {
-            return false;
-        }
-        final String defaultValue = obtainDefaultValue(fieldMeta);
-        boolean need = false;
-        if (NUMERIC_TYPE_SET.contains(mysqlType)) {
-            if (mysqlType == MySQLDataType.BIT) {
-                need = !defaultValue.equals(columnInfo.defaultValue())
-                        && bitValueLiteral(defaultValue);
-            } else {
-                need = !defaultValue.equals(columnInfo.defaultValue())
-                        && (numericLiteral(defaultValue)
-                        || hexadecimalLiterals(defaultValue));
-            }
-        } else if (STRING_TYPE_SET.contains(mysqlType)) {
-            need = !defaultValue.equals(columnInfo.defaultValue())
-                    && stringLiteral(defaultValue);
-        } else if (TIME_TYPE_SET.contains(mysqlType)) {
-            String timeLiteralValue = tryExtractDateOrTimeLiteralValue(mysqlType, defaultValue);
-            if (timeLiteralValue == null) {
-                need = mysqlType == MySQLDataType.DATETIME && equalsCurrentTimestamp(fieldMeta, defaultValue);
-            } else {
-                need = !timeLiteralValue.equals(columnInfo.defaultValue());
-            }
-        }
-        return need;
+        //MySQLDataType mysqlType = (MySQLDataType) fieldMeta.mappingMeta().sqlDataType(database());
+//        if (MYSQL57_NO_DEFAULT_TYPE_SET.contains(mysqlType)) {
+//            return false;
+//        }
+//        final String defaultValue = obtainDefaultValue(fieldMeta);
+//        boolean need = false;
+//        if (NUMERIC_TYPE_SET.contains(mysqlType)) {
+//            if (mysqlType == MySQLDataType.BIT) {
+//                need = !defaultValue.equals(columnInfo.defaultValue())
+//                        && bitValueLiteral(defaultValue);
+//            } else {
+//                need = !defaultValue.equals(columnInfo.defaultValue())
+//                        && (numericLiteral(defaultValue)
+//                        || hexadecimalLiterals(defaultValue));
+//            }
+//        } else if (STRING_TYPE_SET.contains(mysqlType)) {
+//            need = !defaultValue.equals(columnInfo.defaultValue())
+//                    && stringLiteral(defaultValue);
+//        } else if (TIME_TYPE_SET.contains(mysqlType)) {
+//            String timeLiteralValue = tryExtractDateOrTimeLiteralValue(mysqlType, defaultValue);
+//            if (timeLiteralValue == null) {
+//                need = mysqlType == MySQLDataType.DATETIME && equalsCurrentTimestamp(fieldMeta, defaultValue);
+//            } else {
+//                need = !timeLiteralValue.equals(columnInfo.defaultValue());
+//            }
+//        }
+//        return need;
+        return false;
     }
 
     @Override
     protected boolean synonyms(FieldMeta<?, ?> fieldMeta, String sqlTypeName) {
-        String upperCaseTypName = sqlTypeName.toUpperCase();
-        SqlDataType fieldDataType = fieldMeta.mappingMeta().sqlDataType(database());
-        boolean match = fieldDataType.typeName().equals(upperCaseTypName);
-        if (!match && fieldDataType instanceof MySQLDataType) {
-            List<String> synonymsList = SYNONYMS_MAP.get(fieldDataType);
-            match = synonymsList != null && synonymsList.contains(upperCaseTypName);
-        }
-        return match;
+//        String upperCaseTypName = sqlTypeName.toUpperCase();
+//        SqlDataType fieldDataType = fieldMeta.mappingMeta().sqlDataType(database());
+//        boolean match = fieldDataType.typeName().equals(upperCaseTypName);
+//        if (!match && fieldDataType instanceof MySQLDataType) {
+//            List<String> synonymsList = SYNONYMS_MAP.get(fieldDataType);
+//            match = synonymsList != null && synonymsList.contains(upperCaseTypName);
+//        }
+        return false;
     }
 
 

@@ -198,15 +198,15 @@ public abstract class RouteUtils {
     }
 
     protected static String convertToSuffix(RouteWrapper routeWrapper, Dialect dialect) {
-        String routeSuffix;
+        String routeSuffix = null;
         if (routeWrapper.routeIndex()) {
-            routeSuffix = dialect.sessionFactory()
-                    .tableRoute(routeWrapper.tableMeta())
-                    .convertToSuffix(routeWrapper.routeIndexValue());
+//            routeSuffix = dialect.sessionFactory()
+//                    .tableRoute(routeWrapper.tableMeta())
+//                    .convertToSuffix(routeWrapper.routeIndexValue());
         } else {
-            routeSuffix = dialect.sessionFactory()
-                    .tableRoute(routeWrapper.tableMeta())
-                    .tableSuffix(routeWrapper.routeKey());
+//            routeSuffix = dialect.sessionFactory()
+//                    .tableRoute(routeWrapper.tableMeta())
+//                    .tableSuffix(routeWrapper.routeKey());
         }
         if (!routeSuffix.startsWith("_")) {
             TableRoute tableRoute = dialect.sessionFactory()

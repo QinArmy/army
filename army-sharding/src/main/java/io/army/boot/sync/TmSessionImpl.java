@@ -1,9 +1,6 @@
 package io.army.boot.sync;
 
-import io.army.CreateSessionException;
-import io.army.ErrorCode;
 import io.army.SessionException;
-import io.army.SessionUsageException;
 import io.army.beans.DomainWrapper;
 import io.army.boot.DomainValuesGenerator;
 import io.army.cache.SessionCache;
@@ -15,16 +12,11 @@ import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.sharding.DatabaseRoute;
 import io.army.sharding.RouteWrapper;
-import io.army.sync.AbstractGenericSyncSession;
 import io.army.sync.TmSession;
-import io.army.sync.TmSessionCloseException;
 import io.army.sync.TmSessionFactory;
 import io.army.tx.TmTransaction;
-import io.army.tx.TransactionNotCloseException;
-import io.army.tx.TransactionStatus;
 import io.army.tx.XaTransactionOption;
 import io.army.util.Assert;
-import io.army.util.CollectionUtils;
 import io.army.util.CriteriaUtils;
 
 import java.util.*;
@@ -36,7 +28,7 @@ import java.util.*;
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
  */
-final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmSession {
+final class TmSessionImpl implements InnerTmSession {
 
     private final InnerTmSessionFactory sessionFactory;
 
@@ -69,6 +61,97 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
         }
     }
 
+
+    @Override
+    public <R extends IDomain> R get(TableMeta<R> tableMeta, Object id) {
+        return null;
+    }
+
+    @Override
+    public <R extends IDomain> R getByUnique(TableMeta<R> tableMeta, List<String> propNameList, List<Object> valueList) {
+        return null;
+    }
+
+    @Override
+    public <R> R selectOne(Select select, Class<R> resultClass) {
+        return null;
+    }
+
+    @Override
+    public <R> R selectOne(Select select, Class<R> resultClass, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public Map<String, Object> selectOneAsUnmodifiableMap(Select select) {
+        return null;
+    }
+
+    @Override
+    public Map<String, Object> selectOneAsUnmodifiableMap(Select select, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public <R> List<R> select(Select select, Class<R> resultClass) {
+        return null;
+    }
+
+    @Override
+    public List<Map<String, Object>> selectAsUnmodifiableMap(Select select) {
+        return null;
+    }
+
+    @Override
+    public List<Map<String, Object>> selectAsUnmodifiableMap(Select select, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public int subQueryInsert(Insert insert) {
+        return 0;
+    }
+
+    @Override
+    public long subQueryLargeInsert(Insert insert) {
+        return 0;
+    }
+
+    @Override
+    public <R> List<R> returningInsert(Insert insert, Class<R> resultClass) {
+        return null;
+    }
+
+    @Override
+    public int update(Update update) {
+        return 0;
+    }
+
+    @Override
+    public long largeUpdate(Update update) {
+        return 0;
+    }
+
+    @Override
+    public <R> List<R> returningUpdate(Update update, Class<R> resultClass) {
+        return null;
+    }
+
+    @Override
+    public int delete(Delete delete) {
+        return 0;
+    }
+
+    @Override
+    public long largeDelete(Delete delete) {
+        return 0;
+    }
+
+    @Override
+    public <R> List<R> returningDelete(Delete delete, Class<R> resultClass) {
+        return null;
+    }
+
     @Override
     public final TmSessionFactory sessionFactory() {
         return this.sessionFactory;
@@ -76,7 +159,8 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
 
     @Override
     public final TmTransaction sessionTransaction() {
-        return this.tmTransaction;
+        // return this.tmTransaction;
+        return null;
     }
 
 
@@ -368,36 +452,36 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
 
     @Override
     public final void close() throws SessionException {
-        if (this.closed) {
-            return;
-        }
-        if (!TransactionStatus.END_STATUS_SET.contains(this.tmTransaction.status())) {
-            throw new TransactionNotCloseException("Transaction[%s] not close.", this.tmTransaction.name());
-        }
-
-        Map<Integer, SessionException> failSessionMap = null;
-
-        for (Map.Entry<Integer, RmSession> entry : this.rmSessionMap.entrySet()) {
-            try {
-                entry.getValue().close();
-            } catch (SessionException e) {
-                if (failSessionMap == null) {
-                    failSessionMap = new HashMap<>();
-                }
-                failSessionMap.put(entry.getKey(), e);
-            }
-        }
-
-        if (CollectionUtils.isEmpty(failSessionMap)) {
-            if (this.current) {
-                this.sessionFactory.currentSessionContext().removeCurrentSession(this);
-            }
-            this.closed = true;
-        } else {
-            throw new TmSessionCloseException(failSessionMap
-                    , "%s TmSession[%s] close occur error,%s RmSession close error."
-                    , this.sessionFactory, this.transactionOption.name(), failSessionMap.size());
-        }
+//        if (this.closed) {
+//            return;
+//        }
+//        if (!TransactionStatus.END_STATUS_SET.contains(this.tmTransaction.status())) {
+//            throw new TransactionNotCloseException("Transaction[%s] not close.", this.tmTransaction.name());
+//        }
+//
+//        Map<Integer, SessionException> failSessionMap = null;
+//
+//        for (Map.Entry<Integer, RmSession> entry : this.rmSessionMap.entrySet()) {
+//            try {
+//                entry.getValue().close();
+//            } catch (SessionException e) {
+//                if (failSessionMap == null) {
+//                    failSessionMap = new HashMap<>();
+//                }
+//                failSessionMap.put(entry.getKey(), e);
+//            }
+//        }
+//
+//        if (CollectionUtils.isEmpty(failSessionMap)) {
+//            if (this.current) {
+//                this.sessionFactory.currentSessionContext().removeCurrentSession(this);
+//            }
+//            this.closed = true;
+//        } else {
+//            throw new TmSessionCloseException(failSessionMap
+//                    , "%s TmSession[%s] close occur error,%s RmSession close error."
+//                    , this.sessionFactory, this.transactionOption.name(), failSessionMap.size());
+//        }
     }
 
 
@@ -511,10 +595,10 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
     }
 
     private void assertSessionActive() {
-        if (this.closed || this.tmTransaction.nonActive()) {
-            throw new SessionUsageException(ErrorCode.SESSION_CLOSED, "TmSession[%s] closed or Transaction[%s] ended."
-                    , transactionOption.name(), this.tmTransaction.name());
-        }
+//        if (this.closed || this.tmTransaction.nonActive()) {
+//            throw new SessionUsageException(ErrorCode.SESSION_CLOSED, "TmSession[%s] closed or Transaction[%s] ended."
+//                    , transactionOption.name(), this.tmTransaction.name());
+//        }
     }
 
 
@@ -523,22 +607,22 @@ final class TmSessionImpl extends AbstractGenericSyncSession implements InnerTmS
     }
 
     private RmSession createRmSession(int databaseIndex) {
-        List<RmSessionFactory> rmSessionFactoryList = this.sessionFactory.rmSessionFactoryList();
-        if (databaseIndex >= rmSessionFactoryList.size()) {
-            throw new CreateSessionException(ErrorCode.SESSION_CREATE_ERROR
-                    , "%s TmSession create RmSession occur error,databaseIndex[%s] error."
-                    , this.sessionFactory, databaseIndex);
-        }
-        RmSessionFactory rmSessionFactory = rmSessionFactoryList.get(databaseIndex);
-        if (rmSessionFactory == null) {
-            throw new CreateSessionException(ErrorCode.SESSION_CREATE_ERROR
-                    , "%s TmSession create RmSession occur error,databaseIndex[%s] error."
-                    , this.sessionFactory, databaseIndex);
-        }
-        RmSession rmSession = rmSessionFactory.build(this.transactionOption);
-        // rm xa transaction add to tm and start rm xa transaction
-        this.tmTransaction.addXaTransaction(this, rmSession.sessionTransaction());
-        return rmSession;
+//        List<RmSessionFactory> rmSessionFactoryList = this.sessionFactory.rmSessionFactoryList();
+//        if (databaseIndex >= rmSessionFactoryList.size()) {
+//            throw new CreateSessionException(ErrorCode.SESSION_CREATE_ERROR
+//                    , "%s TmSession create RmSession occur error,databaseIndex[%s] error."
+//                    , this.sessionFactory, databaseIndex);
+//        }
+//        RmSessionFactory rmSessionFactory = rmSessionFactoryList.get(databaseIndex);
+//        if (rmSessionFactory == null) {
+//            throw new CreateSessionException(ErrorCode.SESSION_CREATE_ERROR
+//                    , "%s TmSession create RmSession occur error,databaseIndex[%s] error."
+//                    , this.sessionFactory, databaseIndex);
+//        }
+//        RmSession rmSession = rmSessionFactory.build(this.transactionOption);
+//        // rm xa transaction add to tm and start rm xa transaction
+//        this.tmTransaction.addXaTransaction(this, rmSession.sessionTransaction());
+        return null;
     }
 
 

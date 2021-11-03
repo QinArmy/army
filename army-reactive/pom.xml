@@ -23,7 +23,6 @@
         <dependency>
             <groupId>io.jdbd</groupId>
             <artifactId>jdbd-spi</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.jdbd</groupId>

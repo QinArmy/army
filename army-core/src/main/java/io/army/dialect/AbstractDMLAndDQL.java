@@ -183,8 +183,8 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         }
         context.appendField(tableAlias, visibleField);
 
-        builder.append(" = ")
-                .append(visibleField.mappingMeta().toConstant(null, visible));
+//        builder.append(" = ")
+//                .append(visibleField.mappingMeta().toConstant(null, visible));
     }
 
     private void appendVisibleIfNeed(TableWrapper tableWrapper, @Nullable TableWrapper preTableWrapper

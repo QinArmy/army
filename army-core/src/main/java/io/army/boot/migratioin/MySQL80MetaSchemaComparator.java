@@ -15,25 +15,26 @@ class MySQL80MetaSchemaComparator extends MySQL57MetaSchemaComparator {
 
     @Override
     protected Database database() {
-        return Database.MySQL80;
+        return Database.MySQL;
     }
 
     @Override
     protected boolean needModifyDefault(FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo) throws SchemaInfoException, MetaException {
-        MySQLDataType mysqlType = (MySQLDataType) fieldMeta.mappingMeta().sqlDataType(database());
-        //TODO zoro support MYSQL57_NO_DEFAULT_TYPE_SET eLiteral value
-        boolean need;
-        if (TIME_TYPE_SET.contains(mysqlType)) {
-            String defaultValue = obtainDefaultValue(fieldMeta);
-            if (defaultExpression(defaultValue)) {
-                need = needModifyTimeTypeDefault(defaultValue, mysqlType, fieldMeta, columnInfo);
-            } else {
-                need = super.needModifyDefault(fieldMeta, columnInfo);
-            }
-        } else {
-            need = super.needModifyDefault(fieldMeta, columnInfo);
-        }
-        return need;
+//        MySQLDataType mysqlType = (MySQLDataType) fieldMeta.mappingMeta().sqlDataType(database());
+//        //TODO zoro support MYSQL57_NO_DEFAULT_TYPE_SET eLiteral value
+//        boolean need;
+//        if (TIME_TYPE_SET.contains(mysqlType)) {
+//            String defaultValue = obtainDefaultValue(fieldMeta);
+//            if (defaultExpression(defaultValue)) {
+//                need = needModifyTimeTypeDefault(defaultValue, mysqlType, fieldMeta, columnInfo);
+//            } else {
+//                need = super.needModifyDefault(fieldMeta, columnInfo);
+//            }
+//        } else {
+//            need = super.needModifyDefault(fieldMeta, columnInfo);
+//        }
+//        return need;
+        return false;
     }
 
 

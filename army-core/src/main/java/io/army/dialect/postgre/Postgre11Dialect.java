@@ -1,7 +1,11 @@
 package io.army.dialect.postgre;
 
 import io.army.GenericRmSessionFactory;
+import io.army.criteria.Delete;
+import io.army.criteria.Update;
+import io.army.criteria.Visible;
 import io.army.dialect.*;
+import io.army.stmt.Stmt;
 
 import java.util.Set;
 
@@ -11,10 +15,19 @@ class Postgre11Dialect extends AbstractDialect {
         super(sessionFactory);
     }
 
+    @Override
+    public Stmt returningUpdate(Update update, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public Stmt returningDelete(Delete delete, Visible visible) {
+        return null;
+    }
 
     @Override
     public Database database() {
-        return Database.Postgre11;
+        return Database.Postgre;
     }
 
     @Override

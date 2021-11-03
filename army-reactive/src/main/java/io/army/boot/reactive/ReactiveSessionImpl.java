@@ -15,19 +15,18 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.reactive.ReactiveSession;
 import io.army.reactive.ReactiveSessionFactory;
+import io.army.stmt.Stmt;
 import io.army.tx.CannotCreateTransactionException;
 import io.army.tx.Isolation;
 import io.army.tx.NoSessionTransactionException;
 import io.army.tx.TransactionOptionImpl;
 import io.army.tx.reactive.GenericReactiveTransaction;
 import io.army.tx.reactive.ReactiveTransaction;
-import io.army.stmt.Stmt;
-import io.jdbd.DatabaseSession;
-import io.jdbd.PreparedStatement;
-import io.jdbd.ReactiveSQLException;
+import io.jdbd.session.DatabaseSession;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -168,7 +167,7 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
                 // 2. remove current session if need
                 .then(Mono.defer(this::removeCurrentSessionInNeed))
                 //3. close database session
-                .then(Mono.defer(this.databaseSession::close))
+                // .then(Mono.defer(this.databaseSession::close))
                 //4. set session close status
                 .then(Mono.defer(() -> Mono.just(this.sessionClosed.compareAndSet(false, true))))
                 // if error convert exception for application developer
@@ -178,7 +177,7 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
     }
 
     private Mono<Void> removeCurrentSessionInNeed() {
-
+        return Mono.empty();
     }
 
     @Override
@@ -220,8 +219,8 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
     /*################################## blow InnerGenericRmSession method ##################################*/
 
     @Override
-    public Mono<PreparedStatement> createPreparedStatement(String sql) throws ReactiveSQLException {
-        return this.databaseSession.prepareStatement(sql);
+    public Mono<PreparedStatement> createPreparedStatement(String sql) {
+        return Mono.empty();
     }
 
     @Override

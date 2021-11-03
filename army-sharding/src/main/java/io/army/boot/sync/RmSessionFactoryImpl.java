@@ -3,7 +3,6 @@ package io.army.boot.sync;
 
 import io.army.*;
 import io.army.boot.DomainValuesGenerator;
-import io.army.boot.migratioin.SyncMetaMigrator;
 import io.army.criteria.NotFoundRouteException;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
@@ -11,14 +10,13 @@ import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.sharding.TableRoute;
-import io.army.sync.*;
+import io.army.sync.SessionFactory;
 import io.army.tx.TransactionException;
 import io.army.tx.XaTransactionOption;
 import io.army.util.Assert;
 
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -46,11 +44,6 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
 
     private final DomainValuesGenerator domainValuesGenerator;
 
-    private final InsertSQLExecutor insertSQLExecutor;
-
-    private final SelectSQLExecutor selectSQLExecutor;
-
-    private final UpdateSQLExecutor updateSQLExecutor;
 
     private final AtomicBoolean initFinished = new AtomicBoolean(false);
 
@@ -70,9 +63,9 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
 
         // executor after dialect
         this.domainValuesGenerator = sessionFactory.domainValuesGenerator();
-        this.insertSQLExecutor = InsertSQLExecutor.build(this);
-        this.selectSQLExecutor = SelectSQLExecutor.build(this);
-        this.updateSQLExecutor = UpdateSQLExecutor.build(this);
+//        this.insertSQLExecutor = InsertSQLExecutor.build(this);
+//        this.selectSQLExecutor = SelectSQLExecutor.build(this);
+//        this.updateSQLExecutor = UpdateSQLExecutor.build(this);
 
     }
 
@@ -92,25 +85,6 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
         return this.dialect;
     }
 
-    @Override
-    public final InsertSQLExecutor insertSQLExecutor() {
-        return this.insertSQLExecutor;
-    }
-
-    @Override
-    public final SelectSQLExecutor selectSQLExecutor() {
-        return this.selectSQLExecutor;
-    }
-
-    @Override
-    public final UpdateSQLExecutor updateSQLExecutor() {
-        return this.updateSQLExecutor;
-    }
-
-    @Override
-    public final boolean springApplication() {
-        return this.springApplication;
-    }
 
     @Override
     public final boolean supportZone() {
@@ -185,26 +159,26 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
     /*################################## blow private method ##################################*/
 
     private void migrationMeta() {
-        String keyName = String.format(ArmyConfigConstant.MIGRATION_MODE, this.tmSessionFactory.name());
-        if (!this.env.getProperty(keyName, Boolean.class, Boolean.FALSE)) {
-            return;
-        }
-        XADataSource primary = SyncSessionFactoryUtils.obtainPrimaryDataSource(this.dataSource);
-        XAConnection xaConn = null;
-        try {
-            xaConn = primary.getXAConnection();
-            try (Connection conn = xaConn.getConnection()) {
-                // execute migration
-                SyncMetaMigrator.build()
-                        .migrate(conn, this);
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException_0(ErrorCode.CODEC_DATA_ERROR, e, "%s migration failure.", this);
-        } finally {
-            if (xaConn != null) {
-                closeXAConnection(xaConn);
-            }
-        }
+//        String keyName = String.format(ArmyConfigConstant.MIGRATION_MODE, this.tmSessionFactory.name());
+//        if (!this.env.getProperty(keyName, Boolean.class, Boolean.FALSE)) {
+//            return;
+//        }
+//        XADataSource primary = SyncSessionFactoryUtils.obtainPrimaryDataSource(this.dataSource);
+//        XAConnection xaConn = null;
+//        try {
+//            xaConn = primary.getXAConnection();
+//            try (Connection conn = xaConn.getConnection()) {
+//                // execute migration
+//                SyncMetaMigrator.build()
+//                        .migrate(conn, this);
+//            }
+//        } catch (SQLException e) {
+//            throw new DataAccessException_0(ErrorCode.CODEC_DATA_ERROR, e, "%s migration failure.", this);
+//        } finally {
+//            if (xaConn != null) {
+//                closeXAConnection(xaConn);
+//            }
+//        }
     }
 
     private void closeXAConnection(XAConnection xaConn) {

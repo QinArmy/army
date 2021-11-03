@@ -2,13 +2,10 @@ package com.example.fortune.domain.user;
 
 import io.army.annotation.Codec;
 import io.army.annotation.Column;
-import io.army.annotation.DiscriminatorValue;
-import io.army.annotation.Table;
-import org.qinarmy.depository.CertificateType;
 
 
-@Table(name = "cer_person", comment = "certificate of person")
-@DiscriminatorValue(CertificateType.Constant.PERSON_ID)
+//@Table(name = "cer_person", comment = "certificate of person")
+//@DiscriminatorValue(CertificateType.Constant.PERSON_ID)
 public class PersonCertificate extends Certificate<PersonCertificate> {
 
 

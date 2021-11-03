@@ -2,10 +2,10 @@ package io.army.boot.reactive;
 
 import io.army.dialect.InsertException;
 import io.army.stmt.*;
-import io.jdbd.PreparedStatement;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.sql.PreparedStatement;
 import java.util.function.Function;
 
 final class InsertSQLExecutorImpl extends SQLExecutorSupport implements InsertSQLExecutor {
@@ -24,87 +24,90 @@ final class InsertSQLExecutorImpl extends SQLExecutorSupport implements InsertSQ
     @Override
     public <N extends Number> Mono<N> subQueryInsert(InnerGenericRmSession session, Stmt stmt
             , Class<N> resultClass) throws InsertException {
-
-        Mono<? extends Number> mono;
-        if (resultClass == Integer.class) {
-            mono = internalSubQueryInsert(session, stmt, PreparedStatement::executeUpdate, "subQueryInsert");
-        } else if (resultClass == Long.class) {
-            mono = internalSubQueryInsert(session, stmt, PreparedStatement::executeLargeUpdate
-                    , "subQueryInsert");
-        } else {
-            mono = Mono.error(new IllegalArgumentException("ResultClass error"));
-        }
-        return mono.cast(resultClass);
+//
+//        Mono<? extends Number> mono;
+//        if (resultClass == Integer.class) {
+//            mono = internalSubQueryInsert(session, stmt, PreparedStatement::executeUpdate, "subQueryInsert");
+//        } else if (resultClass == Long.class) {
+//            mono = internalSubQueryInsert(session, stmt, PreparedStatement::executeLargeUpdate
+//                    , "subQueryInsert");
+//        } else {
+//            mono = Mono.error(new IllegalArgumentException("ResultClass error"));
+//        }
+//        return mono.cast(resultClass);
+        return Mono.empty();
     }
 
     @Override
     public final <T> Flux<T> returningInsert(InnerGenericRmSession session, Stmt stmt, Class<T> resultClass)
             throws InsertException {
-        return doReturningUpdate(session, stmt, resultClass, false, "returningInsert");
+        // return doReturningUpdate(session, stmt, resultClass, false, "returningInsert");
+        return Flux.empty();
     }
 
 
     /*################################## blow private method ##################################*/
 
     private Mono<Void> doValueInsert(InnerGenericRmSession session, Stmt stmt) {
-        Mono<Void> mono;
-        if (stmt instanceof SimpleStmt) {
-            final SimpleStmt simpleSQLWrapper = (SimpleStmt) stmt;
-            // 1. execute insert sql
-            mono = doExecuteUpdate(session, simpleSQLWrapper, PreparedStatement::executeUpdate)
-                    // 2. assert  insert rows equals 1
-                    .flatMap(insertRows -> assertValueInsertRows(insertRows, simpleSQLWrapper));
-        } else if (stmt instanceof PairStmt) {
-            PairStmt childSQLWrapper = (PairStmt) stmt;
-            final SimpleStmt parentWrapper = childSQLWrapper.parentStmt();
-            final SimpleStmt childWrapper = childSQLWrapper.childStmt();
-            // 1. execute parent insert sql
-            mono = doExecuteUpdate(session, parentWrapper, PreparedStatement::executeUpdate)
-                    // 2. assert parent insert rows equals 1
-                    .flatMap(insertRows -> assertValueInsertRows(insertRows, parentWrapper))
-                    //3. execute child insert sql
-                    .then(doExecuteUpdate(session, childWrapper, PreparedStatement::executeUpdate))
-                    // 4. assert child insert rows equals 1
-                    .flatMap(insertRows -> assertValueInsertRows(insertRows, childWrapper))
-            ;
-        } else if (stmt instanceof BatchSimpleStmt) {
-            final BatchSimpleStmt batchSQLWrapper = (BatchSimpleStmt) stmt;
-            // 1. execute batch insert sql
-            mono = doExecuteBatchUpdate(session, batchSQLWrapper, PreparedStatement::executeBatch)
-                    // 2. assert each insert rows equals 1
-                    .flatMap(insertRows -> assertValueInsertRows(insertRows, batchSQLWrapper))
-                    .then();
-        } else if (stmt instanceof PairBatchStmt) {
-            PairBatchStmt batchSQLWrapper = (PairBatchStmt) stmt;
-            final BatchSimpleStmt parentWrapper = batchSQLWrapper.parentStmt();
-            final BatchSimpleStmt childWrapper = batchSQLWrapper.childStmt();
-
-            // 1. execute parent batch insert sql
-            mono = doExecuteBatchUpdate(session, parentWrapper, PreparedStatement::executeBatch)
-                    // 2. assert each parent insert rows equals 1
-                    .flatMap(insertRows -> assertValueInsertRows(insertRows, parentWrapper))
-                    // 3. statistics parent insert count
-                    .count()
-                    // 4. execute child batch insert sql
-                    .flatMap(parentRows -> doExecuteBatchChildValueInsert(session, childWrapper, parentRows))
-            ;
-        } else {
-            mono = Mono.error(createUnSupportedSQLWrapperException(stmt, "valueInsert"));
-        }
-        return mono;
+//        Mono<Void> mono;
+//        if (stmt instanceof SimpleStmt) {
+//            final SimpleStmt simpleSQLWrapper = (SimpleStmt) stmt;
+//            // 1. execute insert sql
+//            mono = doExecuteUpdate(session, simpleSQLWrapper, PreparedStatement::executeUpdate)
+//                    // 2. assert  insert rows equals 1
+//                    .flatMap(insertRows -> assertValueInsertRows(insertRows, simpleSQLWrapper));
+//        } else if (stmt instanceof PairStmt) {
+//            PairStmt childSQLWrapper = (PairStmt) stmt;
+//            final SimpleStmt parentWrapper = childSQLWrapper.parentStmt();
+//            final SimpleStmt childWrapper = childSQLWrapper.childStmt();
+//            // 1. execute parent insert sql
+//            mono = doExecuteUpdate(session, parentWrapper, PreparedStatement::executeUpdate)
+//                    // 2. assert parent insert rows equals 1
+//                    .flatMap(insertRows -> assertValueInsertRows(insertRows, parentWrapper))
+//                    //3. execute child insert sql
+//                    .then(doExecuteUpdate(session, childWrapper, PreparedStatement::executeUpdate))
+//                    // 4. assert child insert rows equals 1
+//                    .flatMap(insertRows -> assertValueInsertRows(insertRows, childWrapper))
+//            ;
+//        } else if (stmt instanceof BatchSimpleStmt) {
+//            final BatchSimpleStmt batchSQLWrapper = (BatchSimpleStmt) stmt;
+//            // 1. execute batch insert sql
+//            mono = doExecuteBatchUpdate(session, batchSQLWrapper, PreparedStatement::executeBatch)
+//                    // 2. assert each insert rows equals 1
+//                    .flatMap(insertRows -> assertValueInsertRows(insertRows, batchSQLWrapper))
+//                    .then();
+//        } else if (stmt instanceof PairBatchStmt) {
+//            PairBatchStmt batchSQLWrapper = (PairBatchStmt) stmt;
+//            final BatchSimpleStmt parentWrapper = batchSQLWrapper.parentStmt();
+//            final BatchSimpleStmt childWrapper = batchSQLWrapper.childStmt();
+//
+//            // 1. execute parent batch insert sql
+//            mono = doExecuteBatchUpdate(session, parentWrapper, PreparedStatement::executeBatch)
+//                    // 2. assert each parent insert rows equals 1
+//                    .flatMap(insertRows -> assertValueInsertRows(insertRows, parentWrapper))
+//                    // 3. statistics parent insert count
+//                    .count()
+//                    // 4. execute child batch insert sql
+//                    .flatMap(parentRows -> doExecuteBatchChildValueInsert(session, childWrapper, parentRows))
+//            ;
+//        } else {
+//            mono = Mono.error(createUnSupportedSQLWrapperException(stmt, "valueInsert"));
+//        }
+        return Mono.empty();
     }
 
     private Mono<Void> doExecuteBatchChildValueInsert(InnerGenericRmSession session, BatchSimpleStmt childWrapper
             , Long parentRows) {
-        // 1. execute child  batch insert sql
-        return doExecuteBatchUpdate(session, childWrapper, PreparedStatement::executeBatch)
-                // 2. assert each child insert rows equals 1
-                .flatMap(insertRows -> assertValueInsertRows(insertRows, childWrapper))
-                // 3. statistics child insert count
-                .count()
-                // 4. assert parentRows and childRows match
-                .flatMap(childRows -> assertParentChildBatchMatch(parentRows, childRows, childWrapper))
-                ;
+//        // 1. execute child  batch insert sql
+//        return doExecuteBatchUpdate(session, childWrapper, PreparedStatement::executeBatch)
+//                // 2. assert each child insert rows equals 1
+//                .flatMap(insertRows -> assertValueInsertRows(insertRows, childWrapper))
+//                // 3. statistics child insert count
+//                .count()
+//                // 4. assert parentRows and childRows match
+//                .flatMap(childRows -> assertParentChildBatchMatch(parentRows, childRows, childWrapper))
+//                ;
+        return Mono.empty();
     }
 
     private Mono<Void> assertParentChildBatchMatch(Long parentRows, Long childRows

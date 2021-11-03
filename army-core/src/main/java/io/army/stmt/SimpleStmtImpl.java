@@ -34,6 +34,11 @@ final class SimpleStmtImpl implements SimpleStmt {
     }
 
     @Override
+    public int getTimeout() {
+        return 0;
+    }
+
+    @Override
     public final String sql() {
         return sql;
     }

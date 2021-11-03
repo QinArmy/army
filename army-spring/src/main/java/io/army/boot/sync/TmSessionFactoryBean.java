@@ -1,8 +1,5 @@
 package io.army.boot.sync;
 
-import io.army.advice.GenericSessionFactoryAdvice;
-import io.army.advice.sync.DomainAdvice;
-import io.army.codec.FieldCodec;
 import io.army.dialect.Database;
 import io.army.env.ArmyConfigurableArmyEnvironment;
 import io.army.sync.TmSessionFactory;
@@ -17,8 +14,6 @@ import javax.sql.XADataSource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import static io.army.boot.sync.LocalSessionFactoryBean.obtainEnvironment;
 
 /**
  * {@link FactoryBean} that creates a Army {@link io.army.sync.TmSessionFactory}. This is the usual
@@ -58,19 +53,19 @@ public class TmSessionFactoryBean implements FactoryBean<TmSessionFactory>
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        this.tmSessionFactory = TmSessionFactionBuilder.builder(true)
-
-                .name(obtainSessionFactoryName())
-                .dataSourceList(obtainDataSourceList())
-                .environment(obtainEnvironment(this.environment, applicationContext))
-                .domainInterceptor(this.applicationContext.getBeansOfType(DomainAdvice.class).values())
-
-                .fieldCodecs(this.applicationContext.getBeansOfType(FieldCodec.class).values())
-                .factoryAdvice(this.applicationContext.getBeansOfType(GenericSessionFactoryAdvice.class).values())
-                .tableCountPerDatabase(this.tableCountPerDatabase)
-                .databaseMap(this.databaseMap)
-
-                .build();
+//        this.tmSessionFactory = TmSessionFactionBuilder.builder(true)
+//
+//                .name(obtainSessionFactoryName())
+//                .dataSourceList(obtainDataSourceList())
+//                .environment(obtainEnvironment(this.environment, applicationContext))
+//                .domainInterceptor(this.applicationContext.getBeansOfType(DomainAdvice.class).values())
+//
+//                .fieldCodecs(this.applicationContext.getBeansOfType(FieldCodec.class).values())
+//                .factoryAdvice(this.applicationContext.getBeansOfType(GenericSessionFactoryAdvice.class).values())
+//                .tableCountPerDatabase(this.tableCountPerDatabase)
+//                .databaseMap(this.databaseMap)
+//
+//                .build();
     }
 
     @Override

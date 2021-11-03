@@ -26,6 +26,11 @@ final class BatchSimpleStmtImpl implements BatchSimpleStmt {
     }
 
     @Override
+    public int getTimeout() {
+        return 0;
+    }
+
+    @Override
     public final String sql() {
         return this.sql;
     }

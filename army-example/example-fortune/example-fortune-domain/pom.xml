@@ -20,10 +20,10 @@
             <groupId>io.army</groupId>
             <artifactId>example-common</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.qinarmy.depository</groupId>
-            <artifactId>depository-struct</artifactId>
-        </dependency>
+        <!--        <dependency>-->
+        <!--            <groupId>org.qinarmy.depository</groupId>-->
+        <!--            <artifactId>depository-struct</artifactId>-->
+        <!--        </dependency>-->
         <!-- <dependency>
              <groupId>org.hibernate</groupId>
              <artifactId>hibernate-jpamodelgen</artifactId>
@@ -39,20 +39,20 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <annotationProcessors>
-                        io.army.modelgen.ArmyMetaModelEntityProcessor
-                    </annotationProcessors>
-                    <!--    <compilerArguments>
-                            <processor>io.army.modelgen.ArmyMetaModelEntityProcessor</processor>
-                        </compilerArguments>-->
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+    <!--    <build>-->
+    <!--        <plugins>-->
+    <!--            <plugin>-->
+    <!--                <groupId>org.apache.maven.plugins</groupId>-->
+    <!--                <artifactId>maven-compiler-plugin</artifactId>-->
+    <!--                <configuration>-->
+    <!--                    <annotationProcessors>-->
+    <!--                        io.army.modelgen.ArmyMetaModelEntityProcessor-->
+    <!--                    </annotationProcessors>-->
+    <!--                    &lt;!&ndash;    <compilerArguments>-->
+    <!--                            <processor>io.army.modelgen.ArmyMetaModelEntityProcessor</processor>-->
+    <!--                        </compilerArguments>&ndash;&gt;-->
+    <!--                </configuration>-->
+    <!--            </plugin>-->
+    <!--        </plugins>-->
+    <!--    </build>-->
 </project>

@@ -3,7 +3,6 @@ package io.army.dialect;
 import io.army.criteria.FieldPredicate;
 import io.army.criteria.Visible;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
@@ -70,18 +69,18 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
 
     @Override
     public final void appendConstant(ParamMeta paramMeta, Object value) {
-        MappingType mappingType = paramMeta.mappingMeta();
-        if (mappingType instanceof FieldMeta) {
-            this.sqlBuilder
-                    .append(" ")
-                    .append(mappingType.toConstant((FieldMeta<?, ?>) mappingType, value))
-            ;
-        } else {
-            this.sqlBuilder
-                    .append(" ")
-                    .append(mappingType.toConstant(null, value))
-            ;
-        }
+//        MappingType mappingType = paramMeta.mappingMeta();
+//        if (mappingType instanceof FieldMeta) {
+//            this.sqlBuilder
+//                    .append(" ")
+//                    .append(mappingType.toConstant((FieldMeta<?, ?>) mappingType, value))
+//            ;
+//        } else {
+//            this.sqlBuilder
+//                    .append(" ")
+//                    .append(mappingType.toConstant(null, value))
+//            ;
+//        }
     }
 
 

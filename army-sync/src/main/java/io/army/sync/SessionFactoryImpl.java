@@ -64,7 +64,7 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
 
     SessionFactoryImpl(SessionFactoryBuilderImpl factoryBuilder)
             throws SessionFactoryException {
-        super(factoryBuilder);
+        super(null);
 
         if (!SUPPORT_SHARDING_SET.contains(this.shardingMode)) {
             throw new SessionFactoryException("ShardingMode[%s] is supported by %s.", getClass().getName());
@@ -79,7 +79,7 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
         this.domainAdviceMap = SyncSessionFactoryUtils.createDomainAdviceMap(
                 factoryBuilder.domainInterceptors());
 
-        this.tableCountPerDatabase = factoryBuilder.tableCountPerDatabase();
+        this.tableCountPerDatabase = 0;
         SyncSessionFactoryUtils.assertSyncTableCountOfSharding(this.tableCountPerDatabase, this);
         this.currentSessionContext = SyncSessionFactoryUtils.buildCurrentSessionContext(this);
         this.proxySession = new ProxySessionImpl(this, this.currentSessionContext);

@@ -1,11 +1,10 @@
 package io.army.boot.sync;
 
-import io.army.sync.InnerGenericRmSession;
 
 import javax.transaction.xa.XAResource;
 import java.sql.SQLException;
 
-interface InnerRmSession extends RmSession, InnerGenericRmSession {
+interface InnerRmSession extends RmSession {
 
     XAResource xaResource() throws SQLException;
 }

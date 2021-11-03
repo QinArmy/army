@@ -60,7 +60,7 @@ class StandardUpdateContext extends AbstractStandardDomainContext implements Upd
 
     @Override
     public final SimpleStmt build() {
-        return SimpleStmt.build(this.sqlBuilder.toString(), this.paramList, this.hasVersion);
+        return null;
     }
 
 

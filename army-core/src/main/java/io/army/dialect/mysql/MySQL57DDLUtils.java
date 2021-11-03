@@ -11,9 +11,9 @@ abstract class MySQL57DDLUtils extends DDLUtils {
 
     private static final Set<MySQLDataType> NEED_QUOTE_TYPE_SET = EnumSet.of(
             MySQLDataType.CHAR,
-            MySQLDataType.NCHAR,
+           // MySQLDataType.NCHAR,
             MySQLDataType.VARCHAR,
-            MySQLDataType.NVARCHAR,
+            // MySQLDataType.NVARCHAR,
 
             MySQLDataType.BINARY,
             MySQLDataType.VARBINARY,

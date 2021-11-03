@@ -42,11 +42,14 @@ final class ParamValueImpl implements ParamValue {
         if (value == null) {
             valueText = "NULL";
         } else {
-            valueText = mappingType.toConstant(null, value);
+            valueText = "";
+            //valueText = mappingType.toConstant(null, value);
         }
         return String.format("paramMeta:%s,value:%s"
                 , this.paramMeta
                 , valueText
         );
     }
+
+
 }

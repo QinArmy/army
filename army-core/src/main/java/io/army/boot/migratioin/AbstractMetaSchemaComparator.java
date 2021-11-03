@@ -85,7 +85,7 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
     }
 
     @Override
-    public final List<List<MigrationMember>> compare(SchemaInfo schemaInfo)
+    public final List<List<Migration>> compare(SchemaInfo schemaInfo)
             throws SchemaInfoException, MetaException {
 
         final Map<String, TableInfo> tableInfoMap = schemaInfo.tableMap();
@@ -133,7 +133,7 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
         if (this.dataTypeErrorBuilder.length() > 0) {
             throw new SchemaInfoException(ErrorCode.SCHEMA_ERROR, this.dataTypeErrorBuilder.toString());
         }
-        return shardingList.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(shardingList);
+        return Collections.emptyList();
     }
 
 
@@ -157,17 +157,17 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
     protected final String obtainDefaultValue(FieldMeta<?, ?> fieldMeta) {
         String defaultValue = fieldMeta.defaultValue();
         Database database = database();
-        SqlDataType dataType = fieldMeta.mappingMeta().sqlDataType(database);
+        SqlDataType dataType;// = fieldMeta.mappingMeta().sqlDataType(database);
         SQLBuilder builder;
         switch (defaultValue) {
             case IDomain.NOW:
                 builder = DialectUtils.createSQLBuilder();
-                dataType.nowValue(fieldMeta, builder, database);
+                // dataType.nowValue(fieldMeta, builder, database);
                 defaultValue = builder.toString();
                 break;
             case IDomain.ZERO_VALUE:
                 builder = DialectUtils.createSQLBuilder();
-                dataType.zeroValue(fieldMeta, builder, database);
+                // dataType.zeroValue(fieldMeta, builder, database);
                 defaultValue = builder.toString();
                 break;
             default:
@@ -213,7 +213,7 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
                         .append("\n")
                         .append(fieldMeta)
                         .append(", SQLDataType[")
-                        .append(fieldMeta.mappingMeta().sqlDataType(database()).typeName())
+                        //  .append(fieldMeta.mappingMeta().sqlDataType(database()).typeName())
                         .append("] and ")
                         .append(columnInfo.sqlType())
                         .append(" not match.");

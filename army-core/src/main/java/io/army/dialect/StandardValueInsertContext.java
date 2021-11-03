@@ -102,6 +102,6 @@ final class StandardValueInsertContext extends AbstractTableContextSQLContext im
 
     @Override
     public final SimpleStmt build() {
-        return SimpleStmt.build(this.fieldBuilder.toString() + this.sqlBuilder.toString(), this.paramList);
+        return null;
     }
 }

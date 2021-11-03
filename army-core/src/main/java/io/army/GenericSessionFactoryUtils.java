@@ -6,10 +6,7 @@ import io.army.criteria.impl.SchemaMetaFactory;
 import io.army.criteria.impl.TableMetaFactory;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
-import io.army.dialect.DialectNotMatchException;
 import io.army.dialect.UnsupportedDatabaseException;
-import io.army.dialect.mysql.MySQLDialectFactory;
-import io.army.dialect.postgre.PostgreDialectFactory;
 import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGenerator;
 import io.army.generator.GeneratorFactory;
@@ -66,32 +63,33 @@ public abstract class GenericSessionFactoryUtils {
 
         Database actualDatabase = decideActualDatabase(database, extractedDatabase);
         Dialect dialect;
-        switch (actualDatabase.family()) {
-            case MySQL:
-                dialect = MySQLDialectFactory.createMySQLDialect(actualDatabase, sessionFactory);
-                break;
-            case Postgre:
-                dialect = PostgreDialectFactory.createPostgreDialect(actualDatabase, sessionFactory);
-                break;
-            //  case Db2:
-            case Oracle:
-                // case SQL_Server:
-            default:
-                throw new RuntimeException(String.format("unknown Database[%s]", actualDatabase));
-        }
-        return dialect;
+//        switch (actualDatabase.family()) {
+//            case MySQL:
+//                dialect = MySQLDialectFactory.createMySQLDialect(actualDatabase, sessionFactory);
+//                break;
+//            case Postgre:
+//                dialect = PostgreDialectFactory.createPostgreDialect(actualDatabase, sessionFactory);
+//                break;
+//            //  case Db2:
+//            case Oracle:
+//                // case SQL_Server:
+//            default:
+//                throw new RuntimeException(String.format("unknown Database[%s]", actualDatabase));
+//        }
+//        return dialect;
+        return null;
     }
 
 
     protected static Database decideActualDatabase(@Nullable Database database, Database extractedDatabase) {
-        Database actual = database;
-        if (actual == null) {
-            actual = extractedDatabase;
-        } else if (!extractedDatabase.compatible(database)) {
-            throw new DialectNotMatchException(ErrorCode.META_ERROR, "Database[%s] and extract database[%s] not match."
-                    , database, extractedDatabase);
-        }
-        return actual;
+//        Database actual = database;
+//        if (actual == null) {
+//            actual = extractedDatabase;
+//        } else if (!extractedDatabase.compatible(database)) {
+//            throw new DialectNotMatchException(ErrorCode.META_ERROR, "Database[%s] and extract database[%s] not match."
+//                    , database, extractedDatabase);
+//        }
+        return null;
     }
 
 
@@ -432,34 +430,34 @@ public abstract class GenericSessionFactoryUtils {
     }
 
     private static Database convertPostgreDatabase(String productName, int major, int minor) {
-        Database database;
-        switch (major) {
-            case 11:
-                database = Database.Postgre11;
-                break;
-            case 12:
-                database = Database.Postgre12;
-                break;
-            default:
-                throw new UnsupportedDatabaseException(productName, major, minor);
-        }
-        return database;
+//        Database database;
+//        switch (major) {
+//            case 11:
+//                database = Database.Postgre11;
+//                break;
+//            case 12:
+//                database = Database.Postgre12;
+//                break;
+//            default:
+//                throw new UnsupportedDatabaseException(productName, major, minor);
+//        }
+        return null;
 
     }
 
 
     private static Database convertToMySQLDatabase(String minorVersion, int major, int minor) {
-        Database database;
+        Database database = null;
         switch (major) {
             case 5:
                 if (minor < 7) {
                     throw new UnsupportedDatabaseException(minorVersion, major, minor);
                 }
-                database = Database.MySQL57;
+                // database = Database.MySQL57;
                 break;
             case 8:
                 if (minor == 0) {
-                    database = Database.MySQL80;
+                    // database = Database.MySQL80;
                 } else {
                     throw new UnsupportedDatabaseException(minorVersion, major, minor);
                 }

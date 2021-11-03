@@ -167,12 +167,13 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
 
     private Mono<ReactiveTransaction> createSessionTransaction(ReactiveSession session
             , TransactionDefinition definition) {
-        return session.builder()
-                .isolation(SpringUtils.convertTotArmyIsolation(definition.getIsolationLevel()))
-                .readOnly(definition.isReadOnly())
-                .timeout(definition.getTimeout())
-                .name(definition.getName())
-                .build();
+//        return session.builder()
+//                .isolation(SpringUtils.convertTotArmyIsolation(definition.getIsolationLevel()))
+//                .readOnly(definition.isReadOnly())
+//                .timeout(definition.getTimeout())
+//                .name(definition.getName())
+//                .build();
+        return Mono.empty();
 
     }
 

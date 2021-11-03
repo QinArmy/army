@@ -41,16 +41,16 @@
             </dependency>
 
 
-            <dependency>
-                <groupId>org.qinarmy.depository</groupId>
-                <artifactId>depository-api</artifactId>
-                <version>${depository.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.qinarmy.depository</groupId>
-                <artifactId>depository-struct</artifactId>
-                <version>${depository.version}</version>
-            </dependency>
+            <!--            <dependency>-->
+            <!--                <groupId>org.qinarmy.depository</groupId>-->
+            <!--                <artifactId>depository-api</artifactId>-->
+            <!--                <version>${depository.version}</version>-->
+            <!--            </dependency>-->
+            <!--            <dependency>-->
+            <!--                <groupId>org.qinarmy.depository</groupId>-->
+            <!--                <artifactId>depository-struct</artifactId>-->
+            <!--                <version>${depository.version}</version>-->
+            <!--            </dependency>-->
         </dependencies>
     </dependencyManagement>
 

@@ -12,10 +12,10 @@ import io.army.reactive.GenericReactiveApiSessionFactory;
 import io.army.reactive.advice.ReactiveDomainDeleteAdvice;
 import io.army.reactive.advice.ReactiveDomainInsertAdvice;
 import io.army.reactive.advice.ReactiveDomainUpdateAdvice;
+import io.army.stmt.Stmt;
 import io.army.tx.GenericTransaction;
 import io.army.tx.Isolation;
-import io.army.stmt.Stmt;
-import io.jdbd.StatelessDatabaseSession;
+import io.jdbd.session.DatabaseSession;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -24,7 +24,7 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-abstract class AbstractGenericReactiveRmSession<S extends StatelessDatabaseSession, F extends InnerGenericRmSessionFactory>
+abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F extends InnerGenericRmSessionFactory>
         extends AbstractGenericReactiveSession implements InnerGenericRmSession {
 
     final F sessionFactory;
