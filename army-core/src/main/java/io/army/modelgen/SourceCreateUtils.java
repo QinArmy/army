@@ -10,7 +10,7 @@ import io.army.meta.*;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 import io.army.util.StringUtils;
-import io.army.util.TimeUtils;
+import io.army.util.Times;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -148,7 +148,7 @@ abstract class SourceCreateUtils {
                 .append("\"\n")
                 .append(ANNOTATION_PRE)
                 .append(",date = \"")
-                .append(ZonedDateTime.now().format(TimeUtils.dateTimeFormatter(TimeUtils.FULL_ZONE_DATE_TIME_FORMAT)))
+                .append(ZonedDateTime.now().format(Times.dateTimeFormatter(Times.FULL_ZONE_DATE_TIME_FORMAT)))
                 .append("\"\n")
                 .append(ANNOTATION_PRE)
                 .append(",comments = \"")

@@ -1,9 +1,8 @@
 package io.army.mapping;
 
+import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
-import io.army.sqldatatype.MySQLDataType;
-import io.army.sqldatatype.PostgreDataType;
-import io.army.sqldatatype.SqlType;
+import io.army.sqltype.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -11,11 +10,11 @@ import java.sql.JDBCType;
 
 public final class BigDecimalType extends AbstractMappingType {
 
-    private static final BigDecimalType INSTANCE = new BigDecimalType();
+    public static final BigDecimalType INSTANCE = new BigDecimalType();
 
     public static BigDecimalType build(Class<?> typeClass) {
         if (typeClass != BigDecimal.class) {
-            throw MappingMetaUtils.createNotSupportJavaTypeException(BigDecimalType.class, typeClass);
+            throw AbstractMappingType.createNotSupportJavaTypeException(BigDecimalType.class, typeClass);
         }
         return INSTANCE;
     }
@@ -36,8 +35,8 @@ public final class BigDecimalType extends AbstractMappingType {
     }
 
     @Override
-    public SqlType sqlDataType(final ServerMeta serverMeta) throws NoMappingException {
-        final SqlType sqlDataType;
+    public SqlDataType sqlDataType(final ServerMeta serverMeta) throws NotSupportDialectException {
+        final SqlDataType sqlDataType;
         switch (serverMeta.database()) {
             case MySQL:
                 sqlDataType = MySQLDataType.DECIMAL;
@@ -45,15 +44,21 @@ public final class BigDecimalType extends AbstractMappingType {
             case Postgre:
                 sqlDataType = PostgreDataType.DECIMAL;
                 break;
+            case H2:
+                sqlDataType = H2DataType.DECIMAL;
+                break;
+            case Oracle:
+                sqlDataType = OracleDataType.NUMBER;
+                break;
             default:
-                throw noMappingError(javaType(), serverMeta);
+                throw noMappingError(serverMeta);
 
         }
         return sqlDataType;
     }
 
     @Override
-    public Object convertBeforeBind(final ServerMeta serverMeta, final Object nonNull) {
+    public BigDecimal convertBeforeBind(SqlDataType sqlDataType, final Object nonNull) {
         final BigDecimal value;
         if (nonNull instanceof BigDecimal) {
             value = (BigDecimal) nonNull;
@@ -75,7 +80,7 @@ public final class BigDecimalType extends AbstractMappingType {
     }
 
     @Override
-    public Object convertAfterGet(final ServerMeta serverMeta, final Object nonNull) {
+    public Object convertAfterGet(SqlDataType sqlDataType, final Object nonNull) {
         if (!(nonNull instanceof BigDecimal)) {
             throw notSupportConvertAfterGet(nonNull);
         }

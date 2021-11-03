@@ -1,6 +1,9 @@
 package io.army.mapping;
 
 import io.army.lang.Nullable;
+import io.army.mapping.optional.OffsetDateTimeType;
+import io.army.mapping.optional.OffsetTimeType;
+import io.army.mapping.optional.ZonedDateTimeType;
 import io.army.meta.MetaException;
 import io.army.util.ReflectionUtils;
 
@@ -33,7 +36,7 @@ abstract class DefaultMappingFactory {
         map.put(BigDecimal.class, BigDecimalType.build(BigDecimal.class));
         map.put(String.class, StringType.build(String.class));
 
-        map.put(Boolean.class, YesNoType.build(Boolean.class));
+        map.put(Boolean.class, TrueFalseType.build(Boolean.class));
         map.put(LocalDateTime.class, LocalDateTimeType.build(LocalDateTime.class));
         map.put(LocalDate.class, LocalDateType.build(LocalDate.class));
         map.put(Double.class, DoubleType.build(Double.class));
@@ -112,12 +115,7 @@ abstract class DefaultMappingFactory {
     /*################################## blow private method ##################################*/
 
     private static void assertMappingMeta(Class<?> javaType, MappingType mappingType) {
-        if (mappingType.singleton()) {
-            if (mappingType.javaType() != javaType) {
-                throw new MetaException("MappingMeta[%s] is singleton,javaType() must == Class[%s]"
-                        , mappingType.getClass().getName(), javaType.getName());
-            }
-        } else if (mappingType.javaType().isAssignableFrom(javaType)) {
+        if (mappingType.javaType().isAssignableFrom(javaType)) {
             throw new MetaException("MappingMeta[%s] isn't singleton,javaType() must be base class/interface of %s ."
                     , mappingType.getClass().getName(), javaType.getName());
         }

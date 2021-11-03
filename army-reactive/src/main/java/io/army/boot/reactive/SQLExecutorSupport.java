@@ -13,7 +13,7 @@ import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.meta.ParamMeta;
-import io.army.sqldatatype.SqlType;
+import io.army.sqltype.SqlDataType;
 import io.army.stmt.*;
 import io.jdbd.PreparedStatement;
 import io.jdbd.ReactiveSQLException;
@@ -433,7 +433,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
             ParamValue paramValue = paramList.get(i);
             Object value = paramValue.value();
             ParamMeta paramMeta = paramValue.paramMeta();
-            SqlType sqlDataType = paramMeta.mappingMeta().sqlDataType(database);
+            SqlDataType sqlDataType = paramMeta.mappingMeta().sqlDataType(database);
 
             if (value == null) {
                 st.bindNull(i + 1, sqlDataType.typeName());

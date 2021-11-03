@@ -1,4 +1,4 @@
-package io.army.sqldatatype;
+package io.army.sqltype;
 
 import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;

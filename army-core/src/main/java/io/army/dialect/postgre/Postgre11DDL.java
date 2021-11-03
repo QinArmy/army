@@ -4,8 +4,8 @@ import io.army.dialect.*;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexFieldMeta;
 import io.army.meta.IndexMeta;
-import io.army.sqldatatype.PostgreDataType;
-import io.army.sqldatatype.SqlType;
+import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.SqlDataType;
 import io.army.util.StringUtils;
 
 /**
@@ -37,7 +37,7 @@ class Postgre11DDL extends AbstractDDL {
 
     @Override
     protected final void doDefaultExpression(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) {
-        SqlType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database());
+        SqlDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database());
         String defaultExp = fieldMeta.defaultValue();
         if (sqlDataType instanceof PostgreDataType) {
             PostgreDataType dataType = (PostgreDataType) sqlDataType;
@@ -51,7 +51,7 @@ class Postgre11DDL extends AbstractDDL {
     }
 
     @Override
-    protected final boolean supportSQLDateType(SqlType dataType) {
+    protected final boolean supportSQLDateType(SqlDataType dataType) {
         return dataType instanceof PostgreDataType || dataType.database().family() == Database.Postgre;
     }
 

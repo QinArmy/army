@@ -1,5 +1,7 @@
 package io.army.util;
 
+import io.qinarmy.util.TimeUtils;
+
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -12,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 /**
  *
  */
-public abstract class TimeUtils {
+public abstract class Times extends TimeUtils {
 
     public static final String CHINA_ZONE = "+08:00";
 

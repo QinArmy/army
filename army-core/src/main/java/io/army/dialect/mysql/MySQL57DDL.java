@@ -7,8 +7,8 @@ import io.army.dialect.SQLBuilder;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
-import io.army.sqldatatype.MySQLDataType;
-import io.army.sqldatatype.SqlType;
+import io.army.sqltype.MySQLDataType;
+import io.army.sqltype.SqlDataType;
 import io.army.util.Assert;
 
 import java.util.Collections;
@@ -43,7 +43,7 @@ class MySQL57DDL extends AbstractDDL {
 
     @Override
     protected void doDefaultExpression(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) {
-        SqlType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database());
+        SqlDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database());
         String defaultExp = fieldMeta.defaultValue();
         if (sqlDataType instanceof MySQLDataType) {
             if (MySQL57DDLUtils.needQuoteForDefault((MySQLDataType) sqlDataType)
@@ -55,7 +55,7 @@ class MySQL57DDL extends AbstractDDL {
     }
 
     @Override
-    protected boolean supportSQLDateType(SqlType dataType) {
+    protected boolean supportSQLDateType(SqlDataType dataType) {
         return dataType instanceof MySQLDataType;
     }
 

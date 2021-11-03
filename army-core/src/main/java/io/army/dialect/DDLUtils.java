@@ -7,7 +7,7 @@ import io.army.meta.TableMeta;
 import io.army.modelgen.MetaConstant;
 import io.army.struct.CodeEnum;
 import io.army.util.StringUtils;
-import io.army.util.TimeUtils;
+import io.army.util.Times;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -38,7 +38,7 @@ public abstract class DDLUtils {
                 throw new MetaException("%s ,precision must in [0,6].", fieldMeta);
             }
             zeroValue = StringUtils.quote(
-                    TimeUtils.ZERO_DATE_TIME.format(formatterForTimeTypeDefaultValue(fieldMeta.javaType(), precision))
+                    Times.ZERO_DATE_TIME.format(formatterForTimeTypeDefaultValue(fieldMeta.javaType(), precision))
             );
         }
         return zeroValue;
@@ -141,26 +141,26 @@ public abstract class DDLUtils {
 
         String format;
         if (javaType == LocalDateTime.class) {
-            format = sixFraction ? TimeUtils.SIX_FRACTION_DATE_TIME_FORMAT : TimeUtils.DATE_TIME_FORMAT;
+            format = sixFraction ? Times.SIX_FRACTION_DATE_TIME_FORMAT : Times.DATE_TIME_FORMAT;
         } else if (javaType == LocalDate.class) {
-            format = TimeUtils.DATE_FORMAT;
+            format = Times.DATE_FORMAT;
         } else if (javaType == LocalTime.class) {
-            format = sixFraction ? TimeUtils.SIX_FRACTION_TIME_FORMAT : TimeUtils.TIME_FORMAT;
+            format = sixFraction ? Times.SIX_FRACTION_TIME_FORMAT : Times.TIME_FORMAT;
         } else if (javaType == ZonedDateTime.class || javaType == OffsetDateTime.class) {
-            format = sixFraction ? TimeUtils.SIX_FRACTION_ZONE_DATE_TIME_FORMAT : TimeUtils.ZONE_DATE_TIME_FORMAT;
+            format = sixFraction ? Times.SIX_FRACTION_ZONE_DATE_TIME_FORMAT : Times.ZONE_DATE_TIME_FORMAT;
         } else if (javaType == OffsetTime.class) {
-            format = sixFraction ? TimeUtils.SIX_FRACTION_ZONED_TIME_FORMAT : TimeUtils.ZONE_TIME_FORMAT;
+            format = sixFraction ? Times.SIX_FRACTION_ZONED_TIME_FORMAT : Times.ZONE_TIME_FORMAT;
         } else if (javaType == Year.class) {
-            format = TimeUtils.YEAR_FORMAT;
+            format = Times.YEAR_FORMAT;
         } else if (javaType == YearMonth.class) {
-            format = TimeUtils.YEAR_MONTH_FORMAT;
+            format = Times.YEAR_MONTH_FORMAT;
         } else if (javaType == MonthDay.class) {
-            format = TimeUtils.MONTH_DAY_FORMAT;
+            format = Times.MONTH_DAY_FORMAT;
         } else {
             throw new IllegalArgumentException(String.format("Class[%s| not supported."
                     , javaType.getName()));
         }
-        return TimeUtils.dateTimeFormatter(format);
+        return Times.dateTimeFormatter(format);
     }
 
 

@@ -1,38 +1,38 @@
-package io.army.mapping;
+package io.army.mapping.optional;
 
 import io.army.dialect.NotSupportDialectException;
+import io.army.mapping.AbstractMappingType;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLDataType;
+import io.army.sqltype.OracleDataType;
 import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlDataType;
 
 import java.sql.JDBCType;
-import java.time.LocalDateTime;
+import java.time.OffsetTime;
 
-public final class LocalDateTimeType extends AbstractMappingType {
+public final class OffsetTimeType extends AbstractMappingType {
 
 
-    public static final LocalDateTimeType INSTANCE = new LocalDateTimeType();
+    public static final OffsetTimeType INSTANCE = new OffsetTimeType();
 
-    public static LocalDateTimeType build(Class<?> typeClass) {
-        if (typeClass != LocalDateTime.class) {
-            throw AbstractMappingType.createNotSupportJavaTypeException(LocalDateTimeType.class, typeClass);
+    public static OffsetTimeType build(Class<?> typeClass) {
+        if (typeClass != OffsetTime.class) {
+            throw createNotSupportJavaTypeException(OffsetTimeType.class, typeClass);
         }
         return INSTANCE;
     }
 
-
-    private LocalDateTimeType() {
+    private OffsetTimeType() {
     }
 
     @Override
     public Class<?> javaType() {
-        return LocalDateTime.class;
+        return OffsetTime.class;
     }
 
     @Override
     public JDBCType jdbcType() {
-        return JDBCType.TIMESTAMP;
+        return JDBCType.TIME_WITH_TIMEZONE;
     }
 
 
@@ -40,11 +40,11 @@ public final class LocalDateTimeType extends AbstractMappingType {
     public SqlDataType sqlDataType(ServerMeta serverMeta) throws NotSupportDialectException {
         final SqlDataType sqlDataType;
         switch (serverMeta.database()) {
-            case MySQL:
-                sqlDataType = MySQLDataType.DATETIME;
-                break;
             case Postgre:
-                sqlDataType = PostgreDataType.TIMESTAMP;
+                sqlDataType = PostgreDataType.TIMETZ;
+                break;
+            case Oracle:
+                sqlDataType = OracleDataType.TIMESTAMPTZ;
                 break;
             default:
                 throw noMappingError(serverMeta);
@@ -54,10 +54,10 @@ public final class LocalDateTimeType extends AbstractMappingType {
     }
 
     @Override
-    public Object convertBeforeBind(SqlDataType sqlDataType, final Object nonNull) {
-        final LocalDateTime value;
-        if (nonNull instanceof LocalDateTime) {
-            value = (LocalDateTime) nonNull;
+    public Object convertBeforeBind(SqlDataType sqlDataType, Object nonNull) {
+        final OffsetTime value;
+        if (nonNull instanceof OffsetTime) {
+            value = (OffsetTime) nonNull;
         } else {
             throw notSupportConvertBeforeBind(nonNull);
         }
@@ -66,10 +66,11 @@ public final class LocalDateTimeType extends AbstractMappingType {
 
     @Override
     public Object convertAfterGet(SqlDataType sqlDataType, Object nonNull) {
-        if (!(nonNull instanceof LocalDateTime)) {
+        if (!(nonNull instanceof OffsetTime)) {
             throw notSupportConvertAfterGet(nonNull);
         }
         return nonNull;
     }
+
 
 }

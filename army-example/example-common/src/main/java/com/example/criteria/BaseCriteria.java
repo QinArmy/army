@@ -1,7 +1,7 @@
 package com.example.criteria;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.army.util.TimeUtils;
+import io.army.util.Times;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
@@ -13,12 +13,12 @@ public class BaseCriteria {
 
     private Integer rowCount;
 
-    @DateTimeFormat(pattern = TimeUtils.DATE_TIME_FORMAT)
-    @JsonFormat(pattern = TimeUtils.DATE_TIME_FORMAT)
+    @DateTimeFormat(pattern = Times.DATE_TIME_FORMAT)
+    @JsonFormat(pattern = Times.DATE_TIME_FORMAT)
     private LocalDateTime startCreateTime;
 
-    @DateTimeFormat(pattern = TimeUtils.DATE_TIME_FORMAT)
-    @JsonFormat(pattern = TimeUtils.DATE_TIME_FORMAT)
+    @DateTimeFormat(pattern = Times.DATE_TIME_FORMAT)
+    @JsonFormat(pattern = Times.DATE_TIME_FORMAT)
     private LocalDateTime endCreateTime;
 
     private Long lastId;

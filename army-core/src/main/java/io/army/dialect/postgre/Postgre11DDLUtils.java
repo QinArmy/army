@@ -1,7 +1,7 @@
 package io.army.dialect.postgre;
 
 import io.army.dialect.DDLUtils;
-import io.army.sqldatatype.PostgreDataType;
+import io.army.sqltype.PostgreDataType;
 
 import java.util.EnumSet;
 import java.util.Set;

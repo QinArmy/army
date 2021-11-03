@@ -1,7 +1,7 @@
 package io.army.dialect.mysql;
 
 import io.army.dialect.DDLUtils;
-import io.army.sqldatatype.MySQLDataType;
+import io.army.sqltype.MySQLDataType;
 import io.army.util.StringUtils;
 
 import java.util.EnumSet;

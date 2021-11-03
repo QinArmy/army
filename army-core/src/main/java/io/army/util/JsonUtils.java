@@ -27,8 +27,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-import static io.army.util.TimeUtils.DATE_FORMAT;
-import static io.army.util.TimeUtils.DATE_TIME_FORMAT;
+import static io.army.util.Times.DATE_FORMAT;
+import static io.army.util.Times.DATE_TIME_FORMAT;
 
 /**
  * @since 1.0
@@ -45,17 +45,17 @@ public abstract class JsonUtils {
     private static final ObjectMapper OBJECT_MAPPER;
 
 
-    public static final LocalDateTimeDeserializer LOCALDATETIME_DESERIALIZER = new LocalDateTimeDeserializer(TimeUtils.dateTimeFormatter(DATE_TIME_FORMAT));
+    public static final LocalDateTimeDeserializer LOCALDATETIME_DESERIALIZER = new LocalDateTimeDeserializer(Times.dateTimeFormatter(DATE_TIME_FORMAT));
 
-    public static final LocalDateTimeSerializer LOCALDATETIME_SERIALIZER = new LocalDateTimeSerializer(TimeUtils.dateTimeFormatter(DATE_TIME_FORMAT));
+    public static final LocalDateTimeSerializer LOCALDATETIME_SERIALIZER = new LocalDateTimeSerializer(Times.dateTimeFormatter(DATE_TIME_FORMAT));
 
-    public static final LocalDateDeserializer LOCALDATE_DESERIALIZER = new LocalDateDeserializer(TimeUtils.dateTimeFormatter(DATE_FORMAT));
+    public static final LocalDateDeserializer LOCALDATE_DESERIALIZER = new LocalDateDeserializer(Times.dateTimeFormatter(DATE_FORMAT));
 
-    public static final LocalDateSerializer LOCALDATE_SERIALIZER = new LocalDateSerializer(TimeUtils.dateTimeFormatter(TimeUtils.DATE_FORMAT));
+    public static final LocalDateSerializer LOCALDATE_SERIALIZER = new LocalDateSerializer(Times.dateTimeFormatter(Times.DATE_FORMAT));
 
-    public static final LocalTimeSerializer LOCAL_TIME_SERIALIZER = new LocalTimeSerializer(TimeUtils.dateTimeFormatter(TimeUtils.TIME_FORMAT));
+    public static final LocalTimeSerializer LOCAL_TIME_SERIALIZER = new LocalTimeSerializer(Times.dateTimeFormatter(Times.TIME_FORMAT));
 
-    public static final LocalTimeDeserializer LOCAL_TIME_DESERIALIZER = new LocalTimeDeserializer(TimeUtils.dateTimeFormatter(TimeUtils.TIME_FORMAT));
+    public static final LocalTimeDeserializer LOCAL_TIME_DESERIALIZER = new LocalTimeDeserializer(Times.dateTimeFormatter(Times.TIME_FORMAT));
 
 
     /**
@@ -104,7 +104,7 @@ public abstract class JsonUtils {
 
     public static ObjectMapper createDefaultObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
-        mapper.setTimeZone(TimeUtils.TIME_ZONE8);
+        mapper.setTimeZone(Times.TIME_ZONE8);
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         mapper.setDateFormat(dateFormat);
 

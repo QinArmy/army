@@ -1,6 +1,6 @@
 package io.army.convert;
 
-import io.army.util.TimeUtils;
+import io.army.util.Times;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
@@ -28,13 +28,13 @@ public abstract class Converters {
     public static final Converter<String, BigDecimal> STRING_TO_BIG_DECIMAL = BigDecimal::new;
 
     public static final Converter<String, LocalTime> STRING_TO_TIME = source ->
-            LocalTime.parse(source, TimeUtils.dateTimeFormatter(TimeUtils.TIME_FORMAT));
+            LocalTime.parse(source, Times.dateTimeFormatter(Times.TIME_FORMAT));
 
     public static final Converter<String, LocalDate> STRING_TO_DATE = source ->
-            LocalDate.parse(source, TimeUtils.dateTimeFormatter(TimeUtils.DATE_FORMAT));
+            LocalDate.parse(source, Times.dateTimeFormatter(Times.DATE_FORMAT));
 
     public static final Converter<String, LocalDateTime> STRING_TO_DATE_TIME = source ->
-            LocalDateTime.parse(source, TimeUtils.dateTimeFormatter(TimeUtils.DATE_TIME_FORMAT));
+            LocalDateTime.parse(source, Times.dateTimeFormatter(Times.DATE_TIME_FORMAT));
 
     private static final Map<Class<?>, Converter<String, ?>> CONVERTER_MAP = createConverterMap();
 

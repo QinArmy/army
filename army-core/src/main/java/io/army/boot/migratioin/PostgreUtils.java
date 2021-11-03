@@ -1,6 +1,6 @@
 package io.army.boot.migratioin;
 
-import io.army.sqldatatype.PostgreDataType;
+import io.army.sqltype.PostgreDataType;
 import io.army.util.ArrayUtils;
 
 import java.util.*;

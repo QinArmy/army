@@ -1,20 +1,17 @@
 package io.army.util;
 
 
+import io.qinarmy.util.NumberUtils;
+
+import java.math.BigInteger;
+
 public abstract class Numbers {
 
     protected Numbers() {
         throw new UnsupportedOperationException();
     }
 
-
-    public static int intArraySum(int[] intArray) {
-        int sum = 0;
-        for (int i : intArray) {
-            sum += i;
-        }
-        return sum;
-    }
+    public static final BigInteger MAX_UNSIGNED_LONG = NumberUtils.MAX_UNSIGNED_LONG;
 
 
 }

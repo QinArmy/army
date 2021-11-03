@@ -6,7 +6,7 @@ import io.army.codec.FieldCodecReturnException;
 import io.army.generator.PostFieldGenerator;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
-import io.army.sqldatatype.SqlType;
+import io.army.sqltype.SqlDataType;
 import io.army.stmt.*;
 import io.army.sync.executor.StmtExecutor;
 import io.army.sync.utils.SyncExceptions;
@@ -90,7 +90,7 @@ abstract class AbstractStmtExecutor implements StmtExecutor {
 
     /*################################## blow packet template ##################################*/
 
-    abstract void bind(PreparedStatement stmt, int index, SqlType sqlDataType, Object nonNull)
+    abstract void bind(PreparedStatement stmt, int index, SqlDataType sqlDataType, Object nonNull)
             throws SQLException;
 
 
@@ -289,6 +289,7 @@ abstract class AbstractStmtExecutor implements StmtExecutor {
         Object value;
         MappingType mappingType;
         ParamMeta paramMeta;
+        SqlDataType sqlDataType;
         for (int i = 0; i < size; i++) {
             paramValue = paramGroup.get(i);
             value = paramValue.value();
@@ -309,8 +310,9 @@ abstract class AbstractStmtExecutor implements StmtExecutor {
                     value = encodeField(fieldMeta, value);
                 }
             }
-            value = mappingType.convertBeforeBind(serverMeta, value);
-            bind(statement, i + 1, mappingType.sqlDataType(serverMeta), value);
+            sqlDataType = mappingType.sqlDataType(serverMeta);
+            value = mappingType.convertBeforeBind(sqlDataType, value);
+            bind(statement, i + 1, sqlDataType, value);
 
         }
 

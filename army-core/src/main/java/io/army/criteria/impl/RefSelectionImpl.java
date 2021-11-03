@@ -2,21 +2,14 @@ package io.army.criteria.impl;
 
 import io.army.criteria.SQLContext;
 import io.army.criteria.Selection;
-import io.army.dialect.Database;
-import io.army.dialect.MappingContext;
 import io.army.dialect.NotSupportDialectException;
 import io.army.dialect.SqlDialect;
-import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
-import io.army.mapping.ResultColumnMeta;
-import io.army.meta.FieldMeta;
-import io.army.sqldatatype.SqlType;
+import io.army.meta.ServerMeta;
+import io.army.sqltype.SqlDataType;
 import io.army.util.Assert;
 
 import java.sql.JDBCType;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefSelection<E> {
 
@@ -165,35 +158,23 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
 
 
         @Override
-        public void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context)
-                throws SQLException {
-            Assert.state(this.mappingType != null, "no mappingMeta.");
-            this.mappingType.nonNullSet(st, nonNullValue, index, context);
+        public SqlDataType sqlDataType(ServerMeta serverMeta) throws NotSupportDialectException {
+            return null;
         }
 
         @Override
-        public Object nullSafeGet(ResultSet resultSet, String alias, ResultColumnMeta resultColumnMeta
-                , MappingContext context) throws SQLException {
-            Assert.state(this.mappingType != null, "no mappingMeta.");
-            return this.mappingType.nullSafeGet(resultSet, alias, resultColumnMeta, context);
+        public Object convertBeforeBind(SqlDataType sqlDataType, Object nonNull) {
+            return null;
         }
 
         @Override
-        public String toConstant(@Nullable FieldMeta<?, ?> paramMeta, Object nonNullValue) {
-            Assert.state(this.mappingType != null, "no mappingMeta.");
-            return this.mappingType.toConstant(paramMeta, nonNullValue);
-        }
-
-        @Override
-        public SqlType sqlDataType(Database database) throws NotSupportDialectException {
-            Assert.state(this.mappingType != null, "no mappingMeta.");
-            return this.mappingType.sqlDataType(database);
+        public Object convertAfterGet(SqlDataType sqlDataType, Object nonNull) {
+            return null;
         }
 
         @Override
         public MappingType mappingMeta() {
-            Assert.state(this.mappingType != null, "no mappingMeta.");
-            return this.mappingType;
+            return null;
         }
     }
 

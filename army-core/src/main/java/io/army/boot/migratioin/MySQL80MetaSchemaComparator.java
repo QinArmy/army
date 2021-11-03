@@ -5,7 +5,7 @@ import io.army.dialect.Database;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.schema.SchemaInfoException;
-import io.army.sqldatatype.MySQLDataType;
+import io.army.sqltype.MySQLDataType;
 
 class MySQL80MetaSchemaComparator extends MySQL57MetaSchemaComparator {
 

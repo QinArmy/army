@@ -1,8 +1,8 @@
 package io.army.jdbc;
 
 
-import io.army.sqldatatype.MySQLDataType;
-import io.army.sqldatatype.SqlType;
+import io.army.sqltype.MySQLDataType;
+import io.army.sqltype.SqlDataType;
 import io.army.sync.utils.SyncExceptions;
 
 import java.io.IOException;
@@ -30,7 +30,7 @@ final class MySqlStmtExecutor extends AbstractStmtExecutor {
 
 
     @Override
-    void bind(final PreparedStatement stmt, final int index, final SqlType sqlDataType, final Object nonNull)
+    void bind(final PreparedStatement stmt, final int index, final SqlDataType sqlDataType, final Object nonNull)
             throws SQLException {
         switch ((MySQLDataType) sqlDataType) {
             case BOOLEAN:

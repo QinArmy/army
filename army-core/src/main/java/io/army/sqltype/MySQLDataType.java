@@ -1,8 +1,8 @@
-package io.army.sqldatatype;
+package io.army.sqltype;
 
 import io.army.dialect.Database;
 
-public enum MySQLDataType implements SqlType {
+public enum MySQLDataType implements SqlDataType {
 
     BOOLEAN,
 

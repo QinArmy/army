@@ -1,9 +1,10 @@
 package io.army.mapping;
 
+import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
-import io.army.sqldatatype.MySQLDataType;
-import io.army.sqldatatype.PostgreDataType;
-import io.army.sqldatatype.SqlType;
+import io.army.sqltype.MySQLDataType;
+import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.SqlDataType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -16,7 +17,7 @@ public final class BooleanType extends AbstractMappingType {
 
     public static BooleanType build(Class<?> typeClass) {
         if (typeClass != Boolean.class) {
-            throw MappingMetaUtils.createNotSupportJavaTypeException(BooleanType.class, typeClass);
+            throw AbstractMappingType.createNotSupportJavaTypeException(BooleanType.class, typeClass);
         }
         return INSTANCE;
     }
@@ -40,8 +41,8 @@ public final class BooleanType extends AbstractMappingType {
     }
 
     @Override
-    public SqlType sqlDataType(final ServerMeta serverMeta) throws NoMappingException {
-        final SqlType sqlType;
+    public SqlDataType sqlDataType(final ServerMeta serverMeta) throws NotSupportDialectException {
+        final SqlDataType sqlType;
         switch (serverMeta.database()) {
             case MySQL:
                 sqlType = MySQLDataType.BOOLEAN;
@@ -50,14 +51,14 @@ public final class BooleanType extends AbstractMappingType {
                 sqlType = PostgreDataType.BOOLEAN;
                 break;
             default:
-                throw noMappingError(javaType(), serverMeta);
+                throw noMappingError(serverMeta);
         }
         return sqlType;
     }
 
 
     @Override
-    public Object convertBeforeBind(ServerMeta serverMeta, final Object nonNull) {
+    public Boolean convertBeforeBind(SqlDataType sqlDataType, final Object nonNull) {
         final Boolean value;
         if (nonNull instanceof Boolean) {
             value = (Boolean) nonNull;
@@ -84,7 +85,7 @@ public final class BooleanType extends AbstractMappingType {
     }
 
     @Override
-    public Object convertAfterGet(ServerMeta serverMeta, final Object nonNull) {
+    public Object convertAfterGet(SqlDataType sqlDataType, final Object nonNull) {
         if (!(nonNull instanceof Boolean)) {
             throw notSupportConvertAfterGet(nonNull);
         }

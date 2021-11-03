@@ -1,44 +1,28 @@
 package io.army.mapping;
 
-import io.army.dialect.Database;
-import io.army.dialect.MappingContext;
-import io.army.lang.Nullable;
-import io.army.meta.FieldMeta;
-import io.army.sqldatatype.MySQLDataType;
-import io.army.sqldatatype.PostgreDataType;
-import io.army.sqldatatype.SqlType;
-import io.army.util.Assert;
+import io.army.dialect.NotSupportDialectException;
+import io.army.meta.ServerMeta;
+import io.army.sqltype.MySQLDataType;
+import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.SqlDataType;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.JDBCType;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.Map;
 
 public final class IntegerType extends AbstractMappingType {
 
-    static final Map<Database, SqlType> DATA_TYPE_MAP = createDataTypeMap();
 
-    private static final IntegerType INSTANCE = new IntegerType();
+    public static final IntegerType INSTANCE = new IntegerType();
 
 
     public static IntegerType build(Class<?> typeClass) {
         if (typeClass != Integer.class) {
-            throw MappingMetaUtils.createNotSupportJavaTypeException(IntegerType.class, typeClass);
+            throw AbstractMappingType.createNotSupportJavaTypeException(IntegerType.class, typeClass);
         }
         return INSTANCE;
     }
 
-    private static Map<Database, SqlType> createDataTypeMap() {
-        EnumMap<Database, SqlType> map = new EnumMap<>(Database.class);
-
-        map.put(Database.MySQL, MySQLDataType.INT);
-        map.put(Database.Postgre, PostgreDataType.INTEGER);
-
-        return Collections.unmodifiableMap(map);
-    }
 
     private IntegerType() {
     }
@@ -54,33 +38,69 @@ public final class IntegerType extends AbstractMappingType {
     }
 
     @Override
-    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context)
-            throws SQLException {
-        Assert.isInstanceOf(Integer.class, nonNullValue, "");
-        st.setInt(index, (Integer) nonNullValue);
+    public SqlDataType sqlDataType(ServerMeta serverMeta) throws NotSupportDialectException {
+        final SqlDataType sqlDataType;
+        switch (serverMeta.database()) {
+            case MySQL:
+                sqlDataType = MySQLDataType.INT;
+                break;
+            case Postgre:
+                sqlDataType = PostgreDataType.INTEGER;
+                break;
+            default:
+                throw noMappingError(serverMeta);
+
+        }
+        return sqlDataType;
     }
 
     @Override
-    public Object nullSafeGet(ResultSet st, String alias, ResultColumnMeta resultColumnMeta
-            , MappingContext context) throws SQLException {
-        Object value = st.getObject(alias);
-        if (value != null && !(value instanceof Integer)) {
-            throw new SQLException(String.format(
-                    "Alis[%s] return error,value[Class %s] from database isn't Integer type."
-                    , alias, value.getClass().getName()));
+    public Object convertBeforeBind(SqlDataType sqlDataType, final Object nonNull) {
+        final int value;
+        if (nonNull instanceof Integer) {
+            value = (Integer) nonNull;
+        } else if (nonNull instanceof Long) {
+            final long v = (Long) nonNull;
+            if (v > Integer.MAX_VALUE || v < Integer.MIN_VALUE) {
+                throw outRangeOfType(nonNull, null);
+            }
+            value = (int) v;
+        } else if (nonNull instanceof Short || nonNull instanceof Byte) {
+            value = ((Number) nonNull).intValue();
+        } else if (nonNull instanceof BigDecimal) {
+            final BigDecimal v = ((BigDecimal) nonNull).stripTrailingZeros();
+            if (v.scale() != 0
+                    || v.compareTo(BigDecimal.valueOf(Integer.MAX_VALUE)) > 0
+                    || v.compareTo(BigDecimal.valueOf(Integer.MIN_VALUE)) < 0) {
+                throw outRangeOfType(nonNull, null);
+            }
+            value = v.intValue();
+        } else if (nonNull instanceof BigInteger) {
+            final BigInteger v = ((BigInteger) nonNull);
+            if (v.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) > 0
+                    || v.compareTo(BigInteger.valueOf(Integer.MIN_VALUE)) < 0) {
+                throw outRangeOfType(nonNull, null);
+            }
+            value = v.intValue();
+        } else if (nonNull instanceof String) {
+            try {
+                value = Integer.parseInt((String) nonNull);
+            } catch (NumberFormatException e) {
+                throw outRangeOfType(nonNull, e);
+            }
+        } else {
+            throw notSupportConvertBeforeBind(nonNull);
         }
         return value;
     }
 
-    /*################################## blow protected method ##################################*/
-
     @Override
-    protected Map<Database, SqlType> sqlDataTypeMap() {
-        return DATA_TYPE_MAP;
+    public Object convertAfterGet(SqlDataType sqlDataType, Object nonNull) {
+        if (!(nonNull instanceof Integer)) {
+            throw notSupportConvertAfterGet(nonNull);
+        }
+        return nonNull;
     }
 
-    @Override
-    protected String doToConstant(@Nullable FieldMeta<?, ?> paramMeta, Object nonNullValue) {
-        return nonNullValue.toString();
-    }
+
 }

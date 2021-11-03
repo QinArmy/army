@@ -2,6 +2,7 @@ package io.army.mapping;
 
 import java.sql.JDBCType;
 
+@Deprecated
 public interface ResultColumnMeta {
 
     /**

@@ -1,9 +1,10 @@
 package io.army.mapping;
 
+import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
-import io.army.sqldatatype.MySQLDataType;
-import io.army.sqldatatype.PostgreDataType;
-import io.army.sqldatatype.SqlType;
+import io.army.sqltype.MySQLDataType;
+import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.SqlDataType;
 import io.army.struct.CodeEnum;
 
 import java.sql.JDBCType;
@@ -23,7 +24,7 @@ public final class CodeEnumType extends AbstractMappingType {
         if (javaType.isEnum() && CodeEnum.class.isAssignableFrom(javaType)) {
             return INSTANCE_MAP.computeIfAbsent(javaType, CodeEnumType::new);
         } else {
-            throw MappingMetaUtils.createNotSupportJavaTypeException(CodeEnumType.class, javaType);
+            throw createNotSupportJavaTypeException(CodeEnumType.class, javaType);
         }
     }
 
@@ -47,8 +48,8 @@ public final class CodeEnumType extends AbstractMappingType {
 
 
     @Override
-    public SqlType sqlDataType(ServerMeta serverMeta) throws NoMappingException {
-        final SqlType sqlDataType;
+    public SqlDataType sqlDataType(ServerMeta serverMeta) throws NotSupportDialectException {
+        final SqlDataType sqlDataType;
         switch (serverMeta.database()) {
             case MySQL:
                 sqlDataType = MySQLDataType.INT;
@@ -57,18 +58,18 @@ public final class CodeEnumType extends AbstractMappingType {
                 sqlDataType = PostgreDataType.INTEGER;
                 break;
             default:
-                throw noMappingError(javaType(), serverMeta);
+                throw noMappingError(serverMeta);
         }
         return sqlDataType;
     }
 
     @Override
-    public Object convertBeforeBind(ServerMeta serverMeta, Object nonNull) {
+    public Object convertBeforeBind(SqlDataType sqlDataType, Object nonNull) {
         return ((CodeEnum) nonNull).code();
     }
 
     @Override
-    public Object convertAfterGet(ServerMeta serverMeta, Object nonNull) {
+    public Object convertAfterGet(SqlDataType sqlDataType, Object nonNull) {
         if (!(nonNull instanceof Integer)) {
             throw notSupportConvertAfterGet(nonNull);
         }

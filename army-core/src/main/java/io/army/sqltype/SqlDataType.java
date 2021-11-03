@@ -1,11 +1,11 @@
-package io.army.sqldatatype;
+package io.army.sqltype;
 
 import io.army.dialect.Database;
 import io.army.dialect.SQLBuilder;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 
-public interface SqlType {
+public interface SqlDataType {
 
     Database database();
 

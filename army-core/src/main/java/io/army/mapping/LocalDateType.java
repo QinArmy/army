@@ -1,39 +1,24 @@
 package io.army.mapping;
 
-import io.army.dialect.DDLUtils;
-import io.army.dialect.Database;
-import io.army.dialect.MappingContext;
-import io.army.lang.Nullable;
-import io.army.meta.FieldMeta;
-import io.army.sqldatatype.MySQLDataType;
-import io.army.sqldatatype.PostgreDataType;
-import io.army.sqldatatype.SqlType;
-import io.army.util.Assert;
+import io.army.dialect.NotSupportDialectException;
+import io.army.meta.ServerMeta;
+import io.army.sqltype.MySQLDataType;
+import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.SqlDataType;
 
-import java.sql.Date;
-import java.sql.*;
+import java.sql.JDBCType;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
 
 public final class LocalDateType extends AbstractMappingType {
 
-    private static final Map<Database, SqlType> DATA_TYPE_MAP = createDataTypeMap();
 
-    private static final LocalDateType INSTANCE = new LocalDateType();
+    public static final LocalDateType INSTANCE = new LocalDateType();
 
-    public static LocalDateType build(Class<?> typeClass) {
-        Assert.isTrue(LocalDate.class == typeClass, "");
+    public static LocalDateType build(Class<?> javaType) {
+        if (javaType != LocalDate.class) {
+            throw createNotSupportJavaTypeException(LocalDateType.class, javaType);
+        }
         return INSTANCE;
-    }
-
-    private static Map<Database, SqlType> createDataTypeMap() {
-        EnumMap<Database, SqlType> map = new EnumMap<>(Database.class);
-
-        map.put(Database.MySQL, MySQLDataType.DATE);
-        map.put(Database.Postgre, PostgreDataType.DATE);
-
-        return Collections.unmodifiableMap(map);
     }
 
 
@@ -51,38 +36,40 @@ public final class LocalDateType extends AbstractMappingType {
     }
 
     @Override
-    public void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context)
-            throws SQLException {
-        Assert.isInstanceOf(LocalDate.class, nonNullValue, "");
-        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone(context.zoneId()));
-        st.setDate(index, Date.valueOf((LocalDate) nonNullValue), calendar);
-    }
+    public SqlDataType sqlDataType(ServerMeta serverMeta) throws NotSupportDialectException {
+        final SqlDataType sqlDataType;
+        switch (serverMeta.database()) {
+            case MySQL:
+                sqlDataType = MySQLDataType.DATE;
+                break;
+            case Postgre:
+                sqlDataType = PostgreDataType.DATE;
+                break;
+            default:
+                throw noMappingError(serverMeta);
 
-    @Override
-    public Object nullSafeGet(ResultSet st, String alias, ResultColumnMeta resultColumnMeta
-            , MappingContext context) throws SQLException {
-        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone(context.zoneId()));
-        Date date = st.getDate(alias, calendar);
-        LocalDate localDate = null;
-        if (date != null) {
-            localDate = date.toLocalDate();
         }
-        return localDate;
-    }
-
-    /*################################## blow protected method ##################################*/
-
-    @Override
-    protected Map<Database, SqlType> sqlDataTypeMap() {
-        return DATA_TYPE_MAP;
+        return sqlDataType;
     }
 
     @Override
-    protected String doToConstant(@Nullable FieldMeta<?, ?> paramMeta, Object nonNullValue) {
-        int precision = 0;
-        if (paramMeta != null) {
-            precision = paramMeta.precision();
+    public Object convertBeforeBind(SqlDataType sqlDataType, Object nonNull) {
+        final LocalDate value;
+        if (nonNull instanceof LocalDate) {
+            value = (LocalDate) nonNull;
+        } else {
+            throw notSupportConvertBeforeBind(nonNull);
         }
-        return DDLUtils.constantForTimeType((LocalDateTime) nonNullValue, precision);
+        return value;
     }
+
+    @Override
+    public Object convertAfterGet(SqlDataType sqlDataType, Object nonNull) {
+        if (!(nonNull instanceof LocalDate)) {
+            throw notSupportConvertAfterGet(nonNull);
+        }
+        return nonNull;
+    }
+    
+    
 }
