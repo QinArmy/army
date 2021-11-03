@@ -1,6 +1,6 @@
 package io.army.criteria;
 
-import io.army.meta.mapping.MappingType;
+import io.army.mapping.MappingType;
 
 public interface MappingMetaAble {
 

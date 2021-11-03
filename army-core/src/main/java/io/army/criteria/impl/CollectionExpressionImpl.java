@@ -3,10 +3,10 @@ package io.army.criteria.impl;
 import io.army.criteria.SQLContext;
 import io.army.criteria.ValueExpression;
 import io.army.dialect.SQLBuilder;
+import io.army.mapping.MappingType;
 import io.army.meta.ParamMeta;
-import io.army.meta.mapping.MappingType;
-import io.army.util.Assert;
 import io.army.stmt.ParamValue;
+import io.army.util.Assert;
 
 import java.util.Collection;
 

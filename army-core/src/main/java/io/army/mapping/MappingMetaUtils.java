@@ -1,4 +1,4 @@
-package io.army.meta.mapping;
+package io.army.mapping;
 
 import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;

@@ -3,8 +3,8 @@ package io.army.dialect;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
-import io.army.sqldatatype.SQLDataType;
 import io.army.sqldatatype.SQLDataTypeUtils;
+import io.army.sqldatatype.SqlType;
 import io.army.sqldatatype.UnsupportedSQLDataTypeException;
 import io.army.util.StringUtils;
 
@@ -160,7 +160,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     protected abstract void independentColumnComment(FieldMeta<?, ?> fieldMeta, DDLContext context);
 
 
-    protected abstract boolean supportSQLDateType(SQLDataType dataType);
+    protected abstract boolean supportSQLDateType(SqlType dataType);
 
 
     /*####################################### below protected method #################################*/
@@ -255,7 +255,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
 
 
     protected final void dataTypeClause(FieldMeta<?, ?> fieldMeta, DDLContext context) throws MetaException {
-        SQLDataType dataType = fieldMeta.mappingMeta().sqlDataType(database());
+        SqlType dataType = fieldMeta.mappingMeta().sqlDataType(database());
         if (!supportSQLDateType(dataType)) {
             throw new UnsupportedSQLDataTypeException("%s,database[%s] not support SQLDataType[%s]."
                     , fieldMeta, database(), dataType);
@@ -294,7 +294,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
                 handleDefaultExpression(fieldMeta, builder);
             } else if (DDLUtils.simpleJavaType(fieldMeta)) {
                 Database database = database();
-                SQLDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database);
+                SqlType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database);
                 if (sqlDataType.supportZeroValue(database)) {
                     builder.append(defaultKeyWord);
                     sqlDataType.zeroValue(fieldMeta, builder, database);
@@ -354,7 +354,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
 
     private void reservedPropDefaultValue(FieldMeta<?, ?> fieldMeta, DDLContext context) {
         Database database = database();
-        SQLDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database);
+        SqlType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database);
         SQLBuilder builder = context.sqlBuilder();
         final String defaultKey = " DEFAULT ";
         switch (fieldMeta.propertyName()) {
@@ -418,7 +418,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
 
     private void handleDefaultExpression(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) {
         Database database = database();
-        SQLDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database);
+        SqlType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database);
         switch (fieldMeta.defaultValue()) {
             case IDomain.NOW:
                 if (sqlDataType.supportNowValue(database)) {

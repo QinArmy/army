@@ -5,7 +5,7 @@ import io.army.dialect.SQLBuilder;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 
-public interface SQLDataType {
+public interface SqlType {
 
     Database database();
 

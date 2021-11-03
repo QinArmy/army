@@ -17,7 +17,7 @@ final class MapWrapperImpl extends MapReadonlyWrapper implements MapWrapper {
     }
 
     @Override
-    public void setPropertyValue(String propertyName, Object value) throws BeansException {
+    public void set(String propertyName, Object value) throws BeansException {
         this.map.put(propertyName, value);
     }
 

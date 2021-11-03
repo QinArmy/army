@@ -3,9 +3,9 @@ package io.army.dialect;
 import io.army.criteria.FieldPredicate;
 import io.army.criteria.Visible;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
-import io.army.meta.mapping.MappingType;
 import io.army.stmt.ParamValue;
 
 import java.util.ArrayList;

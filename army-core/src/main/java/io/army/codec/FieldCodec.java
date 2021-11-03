@@ -11,10 +11,10 @@ public interface FieldCodec {
 
     Set<FieldMeta<?, ?>> fieldMetaSet();
 
-    Object encode(FieldMeta<?, ?> fieldMeta, Object nonNullFieldValue, StatementType statementType)
+    Object encode(FieldMeta<?, ?> fieldMeta, Object nonNullFieldValue)
             throws FieldCodecException;
 
-    Object decode(FieldMeta<?, ?> fieldMeta, Object nonNullValueFromDB, StatementType statementType)
+    Object decode(FieldMeta<?, ?> fieldMeta, Object nonNullValueFromDB)
             throws FieldCodecException;
 
 }

@@ -2,12 +2,18 @@ package io.army.sync;
 
 import io.army.context.spi.CurrentSessionContext;
 import io.army.criteria.Delete;
+import io.army.criteria.Select;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
 import io.army.domain.IDomain;
 import io.army.env.ArmyEnvironment;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.tx.GenericTransaction;
+import io.army.tx.NoSessionTransactionException;
+
+import java.util.List;
+import java.util.Map;
 
 class ProxySessionImpl extends AbstractProxySyncSession implements ProxySession {
 
@@ -36,43 +42,68 @@ class ProxySessionImpl extends AbstractProxySyncSession implements ProxySession 
     }
 
     @Override
-    public int[] batchUpdate(Update update) {
-        return this.obtainSessionForBatch().batchUpdate(update);
+    public GenericTransaction sessionTransaction() throws NoSessionTransactionException {
+        return null;
     }
 
     @Override
-    public int[] batchUpdate(Update update, Visible visible) {
-        return this.obtainSessionForBatch().batchUpdate(update, visible);
+    public Map<String, Object> selectOneAsUnmodifiableMap(Select select) {
+        return null;
     }
 
     @Override
-    public long[] batchLargeUpdate(Update update) {
-        return this.obtainSessionForBatch().batchLargeUpdate(update);
+    public Map<String, Object> selectOneAsUnmodifiableMap(Select select, Visible visible) {
+        return null;
     }
 
     @Override
-    public long[] batchLargeUpdate(Update update, Visible visible) {
-        return this.obtainSessionForBatch().batchLargeUpdate(update, visible);
+    public List<Map<String, Object>> selectAsUnmodifiableMap(Select select) {
+        return null;
     }
 
     @Override
-    public int[] batchDelete(Delete delete) {
-        return this.obtainSessionForBatch().batchDelete(delete);
+    public List<Map<String, Object>> selectAsUnmodifiableMap(Select select, Visible visible) {
+        return null;
     }
 
     @Override
-    public int[] batchDelete(Delete delete, Visible visible) {
-        return this.obtainSessionForBatch().batchDelete(delete, visible);
+    public List<Integer> batchUpdate(Update update) {
+        return null;
     }
 
     @Override
-    public long[] batchLargeDelete(Delete delete) {
-        return this.obtainSessionForBatch().batchLargeDelete(delete);
+    public List<Integer> batchUpdate(Update update, Visible visible) {
+        return null;
     }
 
     @Override
-    public long[] batchLargeDelete(Delete delete, Visible visible) {
-        return this.obtainSessionForBatch().batchLargeDelete(delete, visible);
+    public List<Long> batchLargeUpdate(Update update) {
+        return null;
+    }
+
+    @Override
+    public List<Long> batchLargeUpdate(Update update, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public List<Integer> batchDelete(Delete delete) {
+        return null;
+    }
+
+    @Override
+    public List<Integer> batchDelete(Delete delete, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public List<Long> batchLargeDelete(Delete delete) {
+        return null;
+    }
+
+    @Override
+    public List<Long> batchLargeDelete(Delete delete, Visible visible) {
+        return null;
     }
 
     private Session obtainSessionForBatch() {

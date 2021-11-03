@@ -1,10 +1,8 @@
 package io.army.util;
 
-import io.army.session.DataAccessException;
 import io.army.session.TimeoutException;
 import io.army.stmt.Stmt;
-
-import java.sql.SQLException;
+import io.qinarmy.util.ExceptionUtils;
 
 public abstract class Exceptions extends ExceptionUtils {
 

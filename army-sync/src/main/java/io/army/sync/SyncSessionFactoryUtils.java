@@ -144,12 +144,12 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
         Map<TableMeta<?>, DomainAdvice> domainAdviceMap = new HashMap<>();
 
         for (DomainAdvice domainAdvice : domainAdvices) {
-            for (TableMeta<?> tableMeta : domainAdvice.tableMetaSet()) {
-                if (domainAdviceMap.putIfAbsent(tableMeta, domainAdvice) != null) {
-                    throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
-                            , "TableMeta[%s] DomainAdvice duplication.", tableMeta);
-                }
-            }
+//            for (TableMeta<?> tableMeta : domainAdvice.tableMetaSet()) {
+//                if (domainAdviceMap.putIfAbsent(tableMeta, domainAdvice) != null) {
+//                    throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
+//                            , "TableMeta[%s] DomainAdvice duplication.", tableMeta);
+//                }
+//            }
         }
 
         return Collections.unmodifiableMap(domainAdviceMap);
@@ -164,7 +164,7 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
 
             Database database;
 
-            return database;
+            return null;
         } catch (SQLException e) {
             throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
                     , e, "extract database version error.");
@@ -231,11 +231,6 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
             throw new RouteCreateException(ErrorCode.ROUTE_ERROR, "Class[%s] build(RouteMetaData) method error.");
         }
     }
-
-
-
-
-
 
 
     static final class DatabaseMetaForSync extends DatabaseMeta {

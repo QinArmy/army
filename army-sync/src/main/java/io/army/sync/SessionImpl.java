@@ -5,17 +5,16 @@ import io.army.cache.DomainUpdateAdvice;
 import io.army.cache.SessionCache;
 import io.army.cache.UniqueKey;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.InnerSQL;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.tx.*;
 import io.army.util.CriteriaUtils;
-import io.army.stmt.Stmt;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSession {
 
@@ -134,121 +133,74 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
     }
 
     @Override
-    public final int[] batchUpdate(Update update) {
-        return this.batchUpdate(update, Visible.ONLY_VISIBLE);
+    public Map<String, Object> selectOneAsUnmodifiableMap(Select select) {
+        return null;
     }
 
     @Override
-    public int[] batchUpdate(Update update, final Visible visible) {
-        assertSupportBatch();
-        //1. parse update sql
-        final Stmt stmt = parseUpdate(update, visible);
-        try {
-            //2. execute sql by connection
-            return this.sessionFactory.updateSQLExecutor()
-                    .batchUpdate(this, stmt, true);
-        } catch (Exception e) {
-            markRollbackOnlyForChildUpdate(stmt);
-            throw e;
-        } finally {
-            // 3. clear
-            ((InnerSQL) update).clear();
-        }
+    public Map<String, Object> selectOneAsUnmodifiableMap(Select select, Visible visible) {
+        return null;
     }
 
     @Override
-    public long[] batchLargeUpdate(Update update) {
-        return this.batchLargeUpdate(update, Visible.ONLY_VISIBLE);
+    public List<Map<String, Object>> selectAsUnmodifiableMap(Select select) {
+        return null;
     }
 
     @Override
-    public long[] batchLargeUpdate(Update update, final Visible visible) {
-        assertSupportBatch();
-        //1. parse update sql
-        final Stmt stmt = parseUpdate(update, visible);
-        try {
-            //2. execute sql by connection
-            return this.sessionFactory.updateSQLExecutor()
-                    .batchLargeUpdate(this, stmt, true);
-        } catch (Exception e) {
-            markRollbackOnlyForChildUpdate(stmt);
-            throw e;
-        } finally {
-            // 3. clear
-            ((InnerSQL) update).clear();
-        }
+    public List<Map<String, Object>> selectAsUnmodifiableMap(Select select, Visible visible) {
+        return null;
     }
 
     @Override
-    public int[] batchDelete(Delete delete) {
-        return this.batchDelete(delete, Visible.ONLY_VISIBLE);
+    public void valueInsert(Insert insert) {
+
     }
 
     @Override
-    public int[] batchDelete(Delete delete, final Visible visible) {
-        assertSupportBatch();
-        //1. parse update sql
-        final Stmt stmt = parseDelete(delete, visible);
-        try {
-            //2. execute sql by connection
-            return this.sessionFactory.updateSQLExecutor()
-                    .batchUpdate(this, stmt, false);
-        } catch (Exception e) {
-            markRollbackOnlyForChildUpdate(stmt);
-            throw e;
-        } finally {
-            // 3. clear
-            ((InnerSQL) delete).clear();
-        }
+    public void valueInsert(Insert insert, Visible visible) {
+
     }
 
     @Override
-    public long[] batchLargeDelete(Delete delete) {
-        return this.batchLargeDelete(delete, Visible.ONLY_VISIBLE);
+    public List<Integer> batchUpdate(Update update) {
+        return null;
     }
 
     @Override
-    public long[] batchLargeDelete(Delete delete, final Visible visible) {
-        assertSupportBatch();
-        //1. parse update sql
-        final Stmt stmt = parseDelete(delete, visible);
-        try {
-            //2. execute sql by connection
-            return this.sessionFactory.updateSQLExecutor()
-                    .batchLargeUpdate(this, stmt, false);
-        } catch (Exception e) {
-            markRollbackOnlyForChildUpdate(stmt);
-            throw e;
-        } finally {
-            // 3. clear
-            ((InnerSQL) delete).clear();
-        }
+    public List<Integer> batchUpdate(Update update, Visible visible) {
+        return null;
     }
 
     @Override
-    public final void valueInsert(Insert insert) {
-        valueInsert(insert, Visible.ONLY_VISIBLE);
+    public List<Long> batchLargeUpdate(Update update) {
+        return null;
     }
 
     @Override
-    public final void valueInsert(Insert insert, final Visible visible) {
-        assertSessionActive(true);
-
-        //1. parse update sql
-        List<Stmt> stmtList = parseValueInsert(insert, null, visible);
-        try {
-            //2. execute sql by connection
-            this.sessionFactory.insertSQLExecutor()
-                    .valueInsert(this, stmtList);
-        } catch (Exception e) {
-            markRollbackOnlyForChildInsert(stmtList);
-            throw e;
-        } finally {
-            // 3. clear
-            ((InnerSQL) insert).clear();
-        }
+    public List<Long> batchLargeUpdate(Update update, Visible visible) {
+        return null;
     }
 
+    @Override
+    public List<Integer> batchDelete(Delete delete) {
+        return null;
+    }
+
+    @Override
+    public List<Integer> batchDelete(Delete delete, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public List<Long> batchLargeDelete(Delete delete) {
+        return null;
+    }
+
+    @Override
+    public List<Long> batchLargeDelete(Delete delete, Visible visible) {
+        return null;
+    }
 
     @Override
     public boolean closed() {
@@ -333,11 +285,6 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
 
     /*################################## blow package method ##################################*/
 
-    @Nullable
-    @Override
-    final GenericTransaction obtainTransaction() {
-        return this.transaction;
-    }
 
     /**
      * invoke by {@link Transaction#close()}
@@ -378,7 +325,7 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
         if (this.shardingMode != ShardingMode.NO_SHARDING) {
             throw new SessionUsageException("not support batch operation in SHARDING mode.");
         }
-        assertSessionActive(true);
+
     }
 
     /*################################## blow private multiInsert method ##################################*/

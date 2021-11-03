@@ -7,7 +7,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.schema.SchemaInfoException;
 import io.army.sqldatatype.MySQLDataType;
-import io.army.sqldatatype.SQLDataType;
+import io.army.sqldatatype.SqlType;
 import io.army.util.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -201,7 +201,7 @@ class MySQL57MetaSchemaComparator extends AbstractMetaSchemaComparator {
     @Override
     protected boolean synonyms(FieldMeta<?, ?> fieldMeta, String sqlTypeName) {
         String upperCaseTypName = sqlTypeName.toUpperCase();
-        SQLDataType fieldDataType = fieldMeta.mappingMeta().sqlDataType(database());
+        SqlType fieldDataType = fieldMeta.mappingMeta().sqlDataType(database());
         boolean match = fieldDataType.typeName().equals(upperCaseTypName);
         if (!match && fieldDataType instanceof MySQLDataType) {
             List<String> synonymsList = SYNONYMS_MAP.get(fieldDataType);

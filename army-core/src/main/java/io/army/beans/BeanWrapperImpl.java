@@ -19,7 +19,7 @@ class BeanWrapperImpl implements ObjectWrapper {
     }
 
     @Override
-    public final void setPropertyValue(String propertyName, Object value) throws BeansException {
+    public final void set(String propertyName, Object value) throws BeansException {
         try {
             actualWrapper.setPropertyValue(propertyName, value);
         } catch (org.springframework.beans.BeansException e) {
@@ -33,7 +33,7 @@ class BeanWrapperImpl implements ObjectWrapper {
     }
 
     @Override
-    public final Class<?> getPropertyType(String propertyName) throws BeansException {
+    public final Class<?> getType(String propertyName) throws BeansException {
         try {
             return actualWrapper.getPropertyType(propertyName);
         } catch (org.springframework.beans.BeansException e) {

@@ -4,9 +4,9 @@ import io.army.criteria.LogicalField;
 import io.army.criteria.SQLContext;
 import io.army.criteria.Selection;
 import io.army.domain.IDomain;
+import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
 
 import java.util.Collection;

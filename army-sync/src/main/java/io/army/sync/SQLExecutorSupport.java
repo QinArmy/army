@@ -8,10 +8,10 @@ import io.army.criteria.FieldSelection;
 import io.army.criteria.Selection;
 import io.army.dialect.MappingContext;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.meta.ParamMeta;
-import io.army.meta.mapping.MappingType;
 import io.army.stmt.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -158,7 +158,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
         // 1. create statement
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
             StatementType statementType = sqlWrapper.statementType();
-            for (List<ParamValue> paramList : sqlWrapper.paramGroupList()) {
+            for (List<ParamValue> paramList : sqlWrapper.groupList()) {
                 // 2. bind param list
                 bindParamList(st, statementType, paramList);
                 st.addBatch();
@@ -307,7 +307,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
                     continue;
                 }
                 // set columnResult to object
-                objectWrapper.setPropertyValue(selection.alias(), columnResult);
+                objectWrapper.set(selection.alias(), columnResult);
             }
             Object idValue = objectWrapper.getPropertyValue(primaryFieldSelection.alias());
             if (idValue == null) {
@@ -340,7 +340,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
                 if (columnResult == null) {
                     continue;
                 }
-                objectWrapper.setPropertyValue(selection.alias(), columnResult);
+                objectWrapper.set(selection.alias(), columnResult);
             }
             resultList.add(resultClass.cast(objectWrapper.getWrappedInstance()));
         }
@@ -410,7 +410,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
                 continue;
             }
             // 2. set bean property value.
-            beanWrapper.setPropertyValue(selection.alias(), columnResult);
+            beanWrapper.set(selection.alias(), columnResult);
         }
         return getWrapperInstance(beanWrapper);
     }

@@ -189,7 +189,7 @@ public abstract class RouteUtils {
 
         Object routeKey = null;
         for (FieldMeta<?, ?> routeField : routeFieldList) {
-            routeKey = namedParamWrapper.getPropertyType(routeField.propertyName());
+            routeKey = namedParamWrapper.getType(routeField.propertyName());
             if (routeKey != null) {
                 break;
             }

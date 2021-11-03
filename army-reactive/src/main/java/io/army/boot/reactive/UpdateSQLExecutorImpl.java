@@ -134,9 +134,9 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
         Flux<N> flux;
         if (stmt instanceof BatchSimpleStmt) {
             flux = doExecuteBatchUpdate(session, (BatchSimpleStmt) stmt, executeFunction);
-        } else if (stmt instanceof ChildBatchStmt) {
-            final ChildBatchStmt childSQLWrapper = (ChildBatchStmt) stmt;
-            final BatchSimpleStmt childWrapper = childSQLWrapper.childWrapper();
+        } else if (stmt instanceof PairBatchStmt) {
+            final PairBatchStmt childSQLWrapper = (PairBatchStmt) stmt;
+            final BatchSimpleStmt childWrapper = childSQLWrapper.childStmt();
 
             // 1. execute child batch update sql
             flux = doExecuteBatchUpdate(session, childWrapper, executeFunction)
@@ -161,12 +161,12 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
      * @see #doExecuteUpdate(InnerGenericRmSession, SimpleStmt, Function)
      */
     private <N extends Number> Flux<N> doParentBatchUpdate(InnerGenericRmSession session
-            , ChildBatchStmt childSQLWrapper, Function<PreparedStatement, Flux<N>> executeFunction
+            , PairBatchStmt childSQLWrapper, Function<PreparedStatement, Flux<N>> executeFunction
             , List<N> childList) {
 
-        final BatchSimpleStmt childWrapper = childSQLWrapper.childWrapper();
+        final BatchSimpleStmt childWrapper = childSQLWrapper.childStmt();
         return // 1. execute parent update sql.
-                doExecuteBatchUpdate(session, childSQLWrapper.parentWrapper(), executeFunction)
+                doExecuteBatchUpdate(session, childSQLWrapper.parentStmt(), executeFunction)
                         .collectList()
                         // 2. assert parent updated rows and child match
                         .flatMap(parentList -> assertParentChildBatchUpdateMatch(parentList, childList, childWrapper))

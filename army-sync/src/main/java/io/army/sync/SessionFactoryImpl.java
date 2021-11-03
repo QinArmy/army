@@ -126,7 +126,7 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
 
     @Override
     public boolean supportsSavePoints() {
-        return this.supportsSavePoints;
+      throw new UnsupportedOperationException();
     }
 
     @Override
@@ -145,10 +145,6 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
         return this.currentSessionContext.hasCurrentSession();
     }
 
-    @Override
-    public boolean currentSessionContextIsInstanceOf(Class<?> currentSessionContextClass) {
-        return currentSessionContextClass.isInstance(this.currentSessionContext);
-    }
 
     @Override
     public CurrentSessionContext currentSessionContext() {

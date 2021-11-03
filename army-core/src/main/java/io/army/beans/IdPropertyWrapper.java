@@ -19,7 +19,7 @@ final class IdPropertyWrapper implements ObjectWrapper {
     }
 
     @Override
-    public void setPropertyValue(String propertyName, @Nullable Object value) throws BeansException {
+    public void set(String propertyName, @Nullable Object value) throws BeansException {
         if (TableMeta.ID.equals(propertyName)) {
             if (value == null || idClass.isInstance(value)) {
                 this.id = value;
@@ -48,7 +48,7 @@ final class IdPropertyWrapper implements ObjectWrapper {
     }
 
     @Override
-    public Class<?> getPropertyType(String propertyName) throws BeansException {
+    public Class<?> getType(String propertyName) throws BeansException {
         if (TableMeta.ID.equals(propertyName)) {
             return this.idClass;
         }

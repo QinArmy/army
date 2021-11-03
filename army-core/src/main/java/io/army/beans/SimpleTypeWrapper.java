@@ -25,7 +25,7 @@ final class SimpleTypeWrapper implements ObjectWrapper {
     }
 
     @Override
-    public void setPropertyValue(String propertyName, Object value) throws BeansException {
+    public void set(String propertyName, Object value) throws BeansException {
         if (this.propName.equals(propertyName)) {
             if (value == null || simpleType.isInstance(value)) {
                 this.value = value;
@@ -55,7 +55,7 @@ final class SimpleTypeWrapper implements ObjectWrapper {
     }
 
     @Override
-    public Class<?> getPropertyType(String propertyName) throws BeansException {
+    public Class<?> getType(String propertyName) throws BeansException {
         if (this.propName.equals(propertyName)) {
             return this.simpleType;
         }

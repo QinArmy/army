@@ -2,10 +2,10 @@ package io.army.criteria.impl;
 
 import io.army.criteria.FieldSelection;
 import io.army.criteria.SQLContext;
+import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.GenericField;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingType;
 
 import java.util.Collection;
 

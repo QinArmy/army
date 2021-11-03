@@ -20,7 +20,7 @@ class ReadonlyWrapperImpl implements ReadonlyWrapper {
     }
 
     @Override
-    public final Class<?> getPropertyType(String propertyName) throws BeansException {
+    public final Class<?> getType(String propertyName) throws BeansException {
         try {
             return beanWrapper.getPropertyType(propertyName);
         } catch (org.springframework.beans.BeansException e) {

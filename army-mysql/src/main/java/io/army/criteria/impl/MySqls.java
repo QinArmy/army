@@ -2,8 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.EmptyObject;
 import io.army.criteria.mysql.*;
-import io.army.meta.mapping.MappingFactory;
-import io.army.meta.mapping.MappingType;
+import io.army.mapping.MappingFactory;
+import io.army.mapping.MappingType;
 
 public abstract class MySqls extends Sqls {
 

@@ -4,17 +4,14 @@ import io.army.ShardingMode;
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.IPredicate;
 import io.army.criteria.NotFoundRouteException;
-import io.army.criteria.TableAble;
 import io.army.criteria.impl.inner.InnerSelect;
 import io.army.criteria.impl.inner.InnerSingleDML;
-import io.army.criteria.impl.inner.TableWrapper;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.sharding.RouteUtils;
 import io.army.sharding.RouteWrapper;
 import io.army.sharding.TableRoute;
-import io.army.util.StringUtils;
 
 import java.util.List;
 
@@ -30,7 +27,7 @@ abstract class TableRouteUtils extends RouteUtils {
         // obtain route key
         Object routeKey = null;
         for (FieldMeta<?, ?> routeField : routeFields) {
-            Object value = beanWrapper.getPropertyType(routeField.propertyName());
+            Object value = beanWrapper.getType(routeField.propertyName());
             if (value != null) {
                 routeKey = value;
                 break;

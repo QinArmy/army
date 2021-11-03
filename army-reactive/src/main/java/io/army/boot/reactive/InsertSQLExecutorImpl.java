@@ -74,10 +74,10 @@ final class InsertSQLExecutorImpl extends SQLExecutorSupport implements InsertSQ
                     // 2. assert each insert rows equals 1
                     .flatMap(insertRows -> assertValueInsertRows(insertRows, batchSQLWrapper))
                     .then();
-        } else if (stmt instanceof ChildBatchStmt) {
-            ChildBatchStmt batchSQLWrapper = (ChildBatchStmt) stmt;
-            final BatchSimpleStmt parentWrapper = batchSQLWrapper.parentWrapper();
-            final BatchSimpleStmt childWrapper = batchSQLWrapper.childWrapper();
+        } else if (stmt instanceof PairBatchStmt) {
+            PairBatchStmt batchSQLWrapper = (PairBatchStmt) stmt;
+            final BatchSimpleStmt parentWrapper = batchSQLWrapper.parentStmt();
+            final BatchSimpleStmt childWrapper = batchSQLWrapper.childStmt();
 
             // 1. execute parent batch insert sql
             mono = doExecuteBatchUpdate(session, parentWrapper, PreparedStatement::executeBatch)

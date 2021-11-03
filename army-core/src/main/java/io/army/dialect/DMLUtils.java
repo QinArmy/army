@@ -13,10 +13,10 @@ import io.army.criteria.impl.inner.InnerUpdate;
 import io.army.generator.FieldGenerator;
 import io.army.generator.PreFieldGenerator;
 import io.army.meta.*;
+import io.army.stmt.*;
 import io.army.struct.CodeEnum;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
-import io.army.stmt.*;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -421,7 +421,7 @@ abstract class DMLUtils {
         if (stmt instanceof PairStmt) {
             BatchSimpleStmt parentBatchWrapper = BatchSimpleStmt.build(
                     parentWrapper.sql(), parentParamGroupList);
-            batchStmt = ChildBatchStmt.build(parentBatchWrapper, childBatchWrapper);
+            batchStmt = PairBatchStmt.build(parentBatchWrapper, childBatchWrapper);
         } else {
             batchStmt = childBatchWrapper;
         }
@@ -499,7 +499,7 @@ abstract class DMLUtils {
         if (stmt instanceof PairStmt) {
             BatchSimpleStmt parentBatchWrapper = BatchSimpleStmt.build(
                     parentWrapper.sql(), parentParamGroupList, parentWrapper.hasVersion());
-            batchStmt = ChildBatchStmt.build(parentBatchWrapper, childBatchWrapper);
+            batchStmt = PairBatchStmt.build(parentBatchWrapper, childBatchWrapper);
         } else {
             batchStmt = childBatchWrapper;
         }

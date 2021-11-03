@@ -2,13 +2,13 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingFactory;
+import io.army.mapping.MappingType;
+import io.army.mapping.StringType;
 import io.army.meta.FieldMeta;
 import io.army.meta.GenericField;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingFactory;
-import io.army.meta.mapping.MappingType;
-import io.army.meta.mapping.StringType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

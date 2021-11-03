@@ -19,15 +19,16 @@ public interface ObjectWrapper extends ReadonlyWrapper {
 
     /**
      * Set the specified value asType current property value.
+     *
      * @param propertyName the name of the property to set the value of
-     * (may be a nested path then/or an indexed/mapped property)
-     * @param value the new value
+     *                     (may be a nested path then/or an indexed/mapped property)
+     * @param value        the new value
      * @throws InvalidPropertyException if there is no such property or
-     * if the property isn'field writable
-     * @throws PropertyAccessException if the property was valid but the
-     * accessor method failed or a type mismatch occurred
+     *                                  if the property isn'field writable
+     * @throws PropertyAccessException  if the property was valid but the
+     *                                  accessor method failed or a type mismatch occurred
      */
-    void setPropertyValue(String propertyName, @Nullable Object value) throws BeansException;
+    void set(String propertyName, @Nullable Object value) throws BeansException;
 
     /**
      * Return the bean instance wrapped by this object.

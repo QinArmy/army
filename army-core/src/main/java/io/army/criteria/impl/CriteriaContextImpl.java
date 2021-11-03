@@ -4,9 +4,9 @@ import io.army.ErrorCode;
 import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingType;
 import io.army.util.CollectionUtils;
 
 import java.util.*;

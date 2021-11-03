@@ -4,7 +4,7 @@ package io.army.stmt;
  * @see SimpleStmt
  * @see PairStmt
  * @see BatchSimpleStmt
- * @see ChildBatchStmt
+ * @see PairBatchStmt
  */
 public interface Stmt {
 

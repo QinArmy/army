@@ -1,9 +1,9 @@
 package io.army.stmt;
 
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
-import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
 
 final class ParamValueImpl implements ParamValue {

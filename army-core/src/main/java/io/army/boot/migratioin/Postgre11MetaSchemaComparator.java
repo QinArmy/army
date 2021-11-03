@@ -6,7 +6,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.schema.SchemaInfoException;
 import io.army.sqldatatype.PostgreDataType;
-import io.army.sqldatatype.SQLDataType;
+import io.army.sqldatatype.SqlType;
 
 import java.util.List;
 import java.util.Map;
@@ -43,7 +43,7 @@ class Postgre11MetaSchemaComparator extends AbstractMetaSchemaComparator {
     @Override
     protected boolean synonyms(FieldMeta<?, ?> fieldMeta, String sqlTypeName) {
         String upperCaseTypName = sqlTypeName.toUpperCase();
-        SQLDataType fieldDataType = fieldMeta.mappingMeta().sqlDataType(database());
+        SqlType fieldDataType = fieldMeta.mappingMeta().sqlDataType(database());
         boolean match = fieldDataType.typeName().equals(upperCaseTypName);
         if (!match && fieldDataType instanceof PostgreDataType) {
             List<String> synonymsList = SYNONYMS_MAP.get(fieldDataType);

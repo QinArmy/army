@@ -9,7 +9,7 @@ import io.army.meta.TableMeta;
 
 import java.util.List;
 
-abstract class AbstractProxySyncSession implements GenericSyncApiSession, GenericProxySession {
+abstract class AbstractProxySyncSession implements GenericSyncApiSession, GenericProxySession, GenericSyncProxySession {
 
 
     final CurrentSessionContext sessionContext;

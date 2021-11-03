@@ -29,7 +29,7 @@ final class PairBeanWrapperImpl implements PairWrapper {
     }
 
     @Override
-    public void setPropertyValue(String propertyName, Object value) throws BeansException {
+    public void set(String propertyName, Object value) throws BeansException {
         if (FIRST.equals(propertyName)) {
             this.first = value;
         } else if (SECOND.equals(propertyName)) {
@@ -63,7 +63,7 @@ final class PairBeanWrapperImpl implements PairWrapper {
     }
 
     @Override
-    public Class<?> getPropertyType(String propertyName) throws BeansException {
+    public Class<?> getType(String propertyName) throws BeansException {
         Class<?> clazz = Object.class;
         if (FIRST.equals(propertyName)) {
             if (this.first != null) {

@@ -8,8 +8,8 @@ import io.army.criteria.Selection;
 import io.army.domain.IDomain;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
 import io.army.meta.*;
-import io.army.meta.mapping.MappingType;
 import io.army.util.AnnotationUtils;
 import io.army.util.Assert;
 

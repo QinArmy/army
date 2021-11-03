@@ -105,7 +105,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
                         , fieldMeta
                         , generator));
 
-        entityWrapper.setPropertyValue(fieldMeta.propertyName(), value);
+        entityWrapper.set(fieldMeta.propertyName(), value);
     }
 
     /**
@@ -126,7 +126,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
             createCreateOrUpdateTime(parentMeta.getField(TableMeta.UPDATE_TIME), now, entityWrapper);
             if (parentMeta.mappingProp(TableMeta.VERSION)) {
                 // create version value
-                entityWrapper.setPropertyValue(TableMeta.VERSION, 0);
+                entityWrapper.set(TableMeta.VERSION, 0);
             }
         }
         // discriminator
@@ -141,15 +141,15 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
             return;
         }
         CodeEnum codeEnum = CodeEnum.resolve(discriminator.javaType(), tableMeta.discriminatorValue());
-        entityWrapper.setPropertyValue(discriminator.propertyName(), codeEnum);
+        entityWrapper.set(discriminator.propertyName(), codeEnum);
     }
 
     private void createCreateOrUpdateTime(FieldMeta<?, ?> fieldMeta, ZonedDateTime now, ObjectWrapper entityWrapper) {
         if (fieldMeta.javaType() == LocalDateTime.class) {
-            entityWrapper.setPropertyValue(fieldMeta.propertyName(), now.toLocalDateTime());
+            entityWrapper.set(fieldMeta.propertyName(), now.toLocalDateTime());
         } else if (fieldMeta.javaType() == ZonedDateTime.class) {
             assertDialectSupportedZone();
-            entityWrapper.setPropertyValue(fieldMeta.propertyName(), now);
+            entityWrapper.set(fieldMeta.propertyName(), now);
         } else {
             throw new MetaException("createTime or updateTime only support LocalDateTime or ZonedDateTime");
         }

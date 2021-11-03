@@ -1,8 +1,8 @@
 package io.army.sync;
 
 import io.army.dialect.InsertException;
-import io.army.util.Assert;
 import io.army.stmt.*;
+import io.army.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,16 +49,16 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
                 // 2. execute batch insert sql
                 doExecuteBatch(session, simpleSQLWrapper, this::integerBatchUpdate);
 
-            } else if (stmt instanceof ChildBatchStmt) {
-                final ChildBatchStmt childSQLWrapper = (ChildBatchStmt) stmt;
-                final BatchSimpleStmt parentWrapper = childSQLWrapper.parentWrapper();
+            } else if (stmt instanceof PairBatchStmt) {
+                final PairBatchStmt childSQLWrapper = (PairBatchStmt) stmt;
+                final BatchSimpleStmt parentWrapper = childSQLWrapper.parentStmt();
                 List<Integer> parentList, childList;
                 //1. assert StatementType for integerBatchUpdate function
                 Assert.isTrue(parentWrapper.statementType().insertStatement(), "sqlWrapper error");
                 //2. execute parent batch insert sql
                 parentList = doExecuteBatch(session, parentWrapper, this::integerBatchUpdate);
 
-                final BatchSimpleStmt childWrapper = childSQLWrapper.childWrapper();
+                final BatchSimpleStmt childWrapper = childSQLWrapper.childStmt();
                 //3. assert StatementType for integerBatchUpdate function
                 Assert.isTrue(childWrapper.statementType().insertStatement(), "sqlWrapper error");
                 //4. execute child batch insert sql

@@ -1,79 +1,77 @@
-package io.army.meta.mapping;
+package io.army.mapping;
 
 import io.army.dialect.DDLUtils;
 import io.army.dialect.Database;
 import io.army.dialect.MappingContext;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
-import io.army.sqldatatype.MySQLDataType;
 import io.army.sqldatatype.PostgreDataType;
-import io.army.sqldatatype.SQLDataType;
-import io.army.util.Assert;
+import io.army.sqldatatype.SqlType;
 
-import java.sql.Date;
 import java.sql.*;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetTime;
 import java.util.*;
 
-public final class LocalDateType extends AbstractMappingType {
+public final class OffsetTimeType extends AbstractMappingType {
 
-    private static final Map<Database, SQLDataType> DATA_TYPE_MAP = createDataTypeMap();
+    private static final Map<Database, SqlType> DATA_TYPE_MAP = createDataTypeMap();
 
-    private static final LocalDateType INSTANCE = new LocalDateType();
+    private static final OffsetTimeType INSTANCE = new OffsetTimeType();
 
-    public static LocalDateType build(Class<?> typeClass) {
-        Assert.isTrue(LocalDate.class == typeClass, "");
+    public static OffsetTimeType build(Class<?> typeClass) {
+        if (typeClass != OffsetTime.class) {
+            throw MappingMetaUtils.createNotSupportJavaTypeException(OffsetTimeType.class, typeClass);
+        }
         return INSTANCE;
     }
 
-    private static Map<Database, SQLDataType> createDataTypeMap() {
-        EnumMap<Database, SQLDataType> map = new EnumMap<>(Database.class);
+    private static Map<Database, SqlType> createDataTypeMap() {
+        EnumMap<Database, SqlType> map = new EnumMap<>(Database.class);
 
-        map.put(Database.MySQL, MySQLDataType.DATE);
-        map.put(Database.Postgre, PostgreDataType.DATE);
+        map.put(Database.Postgre, PostgreDataType.TIME_WITH_TIME_ZONE);
 
         return Collections.unmodifiableMap(map);
     }
 
-
-    private LocalDateType() {
+    private OffsetTimeType() {
     }
 
     @Override
     public Class<?> javaType() {
-        return LocalDate.class;
+        return OffsetTime.class;
     }
 
     @Override
     public JDBCType jdbcType() {
-        return JDBCType.DATE;
+        return JDBCType.TIME_WITH_TIMEZONE;
+    }
+
+    @Override
+    public boolean singleton() {
+        return true;
     }
 
     @Override
     public void nonNullSet(PreparedStatement st, Object nonNullValue, int index, MappingContext context)
             throws SQLException {
-        Assert.isInstanceOf(LocalDate.class, nonNullValue, "");
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone(context.zoneId()));
-        st.setDate(index, Date.valueOf((LocalDate) nonNullValue), calendar);
+        st.setTime(index, Time.valueOf((LocalTime) nonNullValue), calendar);
     }
 
     @Override
-    public Object nullSafeGet(ResultSet st, String alias, ResultColumnMeta resultColumnMeta
+    public Object nullSafeGet(ResultSet resultSet, String alias, ResultColumnMeta resultColumnMeta
             , MappingContext context) throws SQLException {
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone(context.zoneId()));
-        Date date = st.getDate(alias, calendar);
-        LocalDate localDate = null;
-        if (date != null) {
-            localDate = date.toLocalDate();
-        }
-        return localDate;
+        Time time = resultSet.getTime(alias, calendar);
+        return time == null ? null : time.toLocalTime();
     }
 
     /*################################## blow protected method ##################################*/
 
     @Override
-    protected Map<Database, SQLDataType> sqlDataTypeMap() {
+    protected Map<Database, SqlType> sqlDataTypeMap() {
         return DATA_TYPE_MAP;
     }
 

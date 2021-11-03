@@ -5,8 +5,8 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner.InnerStandardSubQuery;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
 
 import java.util.List;

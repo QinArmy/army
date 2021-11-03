@@ -1,4 +1,4 @@
-package io.army.meta.mapping;
+package io.army.mapping;
 
 import java.sql.JDBCType;
 

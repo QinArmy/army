@@ -1,6 +1,6 @@
 package io.army.meta;
 
-import io.army.meta.mapping.MappingType;
+import io.army.mapping.MappingType;
 
 /**
  * @see MappingType

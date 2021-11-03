@@ -4,10 +4,10 @@ import io.army.criteria.DualOperator;
 import io.army.criteria.Expression;
 import io.army.criteria.FieldExpression;
 import io.army.criteria.SQLContext;
+import io.army.mapping.MappingFactory;
+import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingFactory;
-import io.army.meta.mapping.MappingType;
 
 import java.math.BigInteger;
 import java.util.Collection;

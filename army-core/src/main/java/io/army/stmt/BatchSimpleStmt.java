@@ -7,7 +7,7 @@ import java.util.List;
 public interface BatchSimpleStmt extends GenericSimpleStmt {
 
 
-    List<List<ParamValue>> paramGroupList();
+    List<List<ParamValue>> groupList();
 
     static Builder builder() {
         return new BatchSimpleStmtImpl.Builder();

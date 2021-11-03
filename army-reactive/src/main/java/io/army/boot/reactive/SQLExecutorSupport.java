@@ -9,11 +9,11 @@ import io.army.criteria.Selection;
 import io.army.dialect.Database;
 import io.army.dialect.MappingContext;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.meta.ParamMeta;
-import io.army.meta.mapping.MappingType;
-import io.army.sqldatatype.SQLDataType;
+import io.army.sqldatatype.SqlType;
 import io.army.stmt.*;
 import io.jdbd.PreparedStatement;
 import io.jdbd.ReactiveSQLException;
@@ -260,7 +260,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
                 continue;
             }
             // set columnResult to object
-            beanWrapper.setPropertyValue(selection.alias(), columnResult);
+            beanWrapper.set(selection.alias(), columnResult);
         }
         if (beanWrapper.getPropertyValue(selectionList.get(0).alias()) == null) {
             // first selection must be Primary Field
@@ -302,7 +302,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
             if (columnResult == null) {
                 continue;
             }
-            objectWrapper.setPropertyValue(selection.alias(), columnResult);
+            objectWrapper.set(selection.alias(), columnResult);
         }
         return resultClass.cast(objectWrapper.getWrappedInstance());
     }
@@ -322,7 +322,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
                 continue;
             }
             // 2. set bean property value.
-            beanWrapper.setPropertyValue(selection.alias(), columnResult);
+            beanWrapper.set(selection.alias(), columnResult);
         }
         return getWrapperInstance(beanWrapper);
     }
@@ -413,7 +413,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
 
     private PreparedStatement bindParamGroupList(final PreparedStatement st, BatchSimpleStmt sqlWrapper) {
         final StatementType statementType = sqlWrapper.statementType();
-        for (List<ParamValue> paramList : sqlWrapper.paramGroupList()) {
+        for (List<ParamValue> paramList : sqlWrapper.groupList()) {
             bindParamList(st, statementType, paramList);
             st.addBatch();
         }
@@ -433,7 +433,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
             ParamValue paramValue = paramList.get(i);
             Object value = paramValue.value();
             ParamMeta paramMeta = paramValue.paramMeta();
-            SQLDataType sqlDataType = paramMeta.mappingMeta().sqlDataType(database);
+            SqlType sqlDataType = paramMeta.mappingMeta().sqlDataType(database);
 
             if (value == null) {
                 st.bindNull(i + 1, sqlDataType.typeName());

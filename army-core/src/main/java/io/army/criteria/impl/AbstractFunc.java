@@ -4,7 +4,7 @@ import io.army.criteria.Expression;
 import io.army.criteria.FuncExpression;
 import io.army.criteria.SQLContext;
 import io.army.dialect.SQLBuilder;
-import io.army.meta.mapping.MappingType;
+import io.army.mapping.MappingType;
 import io.army.util.ArrayUtils;
 import io.army.util.Assert;
 

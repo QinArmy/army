@@ -2,12 +2,12 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.domain.IDomain;
+import io.army.mapping.MappingFactory;
+import io.army.mapping.MappingType;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingFactory;
-import io.army.meta.mapping.MappingType;
 import io.army.tx.Isolation;
 
 import java.util.ArrayList;

@@ -5,7 +5,7 @@ import io.army.dialect.Database;
 /**
  * @see <a href="https://www.postgresql.org/docs/11/datatype.html">Postgre Data Types</a>
  */
-public enum PostgreDataType implements SQLDataType {
+public enum PostgreDataType implements SqlType {
 
 
     BOOLEAN,

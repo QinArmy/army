@@ -86,12 +86,12 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
             BatchSimpleStmt simpleSQLWrapper = (BatchSimpleStmt) stmt;
             // 1. execute batch update sql
             resultList = doExecuteBatch(session, simpleSQLWrapper, executeFunction);
-        } else if (stmt instanceof ChildBatchStmt) {
-            final ChildBatchStmt childSQLWrapper = (ChildBatchStmt) stmt;
-            final BatchSimpleStmt childWrapper = childSQLWrapper.childWrapper();
+        } else if (stmt instanceof PairBatchStmt) {
+            final PairBatchStmt childSQLWrapper = (PairBatchStmt) stmt;
+            final BatchSimpleStmt childWrapper = childSQLWrapper.childStmt();
             //1. execute child batch update sql
             resultList = doExecuteBatch(session, childWrapper, executeFunction);
-            final BatchSimpleStmt parentWrapper = childSQLWrapper.parentWrapper();
+            final BatchSimpleStmt parentWrapper = childSQLWrapper.parentStmt();
             List<N> parentList;
             //2. execute parent batch update sql
             parentList = doExecuteBatch(session, parentWrapper, executeFunction);

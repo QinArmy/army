@@ -7,10 +7,10 @@ import io.army.dialect.MappingContext;
 import io.army.dialect.NotSupportDialectException;
 import io.army.dialect.SqlDialect;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
+import io.army.mapping.ResultColumnMeta;
 import io.army.meta.FieldMeta;
-import io.army.meta.mapping.MappingType;
-import io.army.meta.mapping.ResultColumnMeta;
-import io.army.sqldatatype.SQLDataType;
+import io.army.sqldatatype.SqlType;
 import io.army.util.Assert;
 
 import java.sql.JDBCType;
@@ -185,7 +185,7 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
         }
 
         @Override
-        public SQLDataType sqlDataType(Database database) throws NotSupportDialectException {
+        public SqlType sqlDataType(Database database) throws NotSupportDialectException {
             Assert.state(this.mappingType != null, "no mappingMeta.");
             return this.mappingType.sqlDataType(database);
         }

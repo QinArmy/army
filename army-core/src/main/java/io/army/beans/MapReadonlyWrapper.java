@@ -39,7 +39,7 @@ class MapReadonlyWrapper implements ReadonlyWrapper {
     }
 
     @Override
-    public Class<?> getPropertyType(String propertyName) throws BeansException {
+    public Class<?> getType(String propertyName) throws BeansException {
         Object object = this.map.get(propertyName);
         if (object == null) {
             throw new InvalidPropertyException(ErrorCode.BEAN_ACCESS_ERROR, propertyName, this.map.getClass()

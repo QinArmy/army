@@ -31,7 +31,7 @@ final class BatchSimpleStmtImpl implements BatchSimpleStmt {
     }
 
     @Override
-    public final List<List<ParamValue>> paramGroupList() {
+    public final List<List<ParamValue>> groupList() {
         return this.paramGroupList;
     }
 

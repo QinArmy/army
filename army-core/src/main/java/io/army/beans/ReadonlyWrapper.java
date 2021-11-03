@@ -25,17 +25,18 @@ public interface ReadonlyWrapper {
      * @throws PropertyAccessException if the property was valid but the
      * accessor method failed
      */
-    @Nullable
-    Class<?> getPropertyType(String propertyName) throws BeansException;
+    Class<?> getType(String propertyName) throws BeansException;
+
     /**
      * Get the current value of the specified property.
+     *
      * @param propertyName the name of the property to get the value of
-     * (may be a nested path then/or an indexed/mapped property)
+     *                     (may be a nested path then/or an indexed/mapped property)
      * @return the value of the property
      * @throws InvalidPropertyException if there is no such property or
-     * if the property isn'field readable
-     * @throws PropertyAccessException if the property was valid but the
-     * accessor method failed
+     *                                  if the property isn'field readable
+     * @throws PropertyAccessException  if the property was valid but the
+     *                                  accessor method failed
      */
     @Nullable
     Object getPropertyValue(String propertyName) throws BeansException;

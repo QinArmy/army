@@ -20,7 +20,7 @@ public abstract class SQLDataTypeUtils {
         throw new UnsupportedOperationException();
     }
 
-    public static int obtainTimePrecision(SQLDataType dataType, FieldMeta<?, ?> fieldMeta) {
+    public static int obtainTimePrecision(SqlType dataType, FieldMeta<?, ?> fieldMeta) {
         int precision = fieldMeta.precision();
         if (precision < 0) {
             precision = 0;
@@ -30,7 +30,7 @@ public abstract class SQLDataTypeUtils {
         return precision;
     }
 
-    public static void appendDataTypeWithMaxPrecision(SQLDataType dataType, FieldMeta<?, ?> fieldMeta
+    public static void appendDataTypeWithMaxPrecision(SqlType dataType, FieldMeta<?, ?> fieldMeta
             , int maxPrecision, int defaultPrecision, SQLBuilder builder) {
         int precision = fieldMeta.precision();
         if (precision < 0) {
@@ -42,7 +42,7 @@ public abstract class SQLDataTypeUtils {
     }
 
 
-    public static void appendDataTypeWithPrecision(SQLDataType dataType, int precision, SQLBuilder builder) {
+    public static void appendDataTypeWithPrecision(SqlType dataType, int precision, SQLBuilder builder) {
         builder.append(dataType.typeName());
         if (precision > 0) {
             builder.append("(")
@@ -51,7 +51,7 @@ public abstract class SQLDataTypeUtils {
         }
     }
 
-    public static void decimalDataTypeClause(SQLDataType dataType, int maxPrecision, int maxScale
+    public static void decimalDataTypeClause(SqlType dataType, int maxPrecision, int maxScale
             , FieldMeta<?, ?> fieldMeta, SQLBuilder builder) {
 
         int precision = fieldMeta.precision(), scale = fieldMeta.scale();
@@ -93,35 +93,35 @@ public abstract class SQLDataTypeUtils {
         return text;
     }
 
-    public static MetaException createNotSupportDefaultClause(SQLDataType dataType, FieldMeta<?, ?> fieldMeta
+    public static MetaException createNotSupportDefaultClause(SqlType dataType, FieldMeta<?, ?> fieldMeta
             , Database database) {
         return new MetaException("%s,%s not support default clause for %s.", fieldMeta, dataType, database);
     }
 
 
-    public static MetaException createPrecisionException(SQLDataType dataType, int includeMin, int includeMax
+    public static MetaException createPrecisionException(SqlType dataType, int includeMin, int includeMax
             , FieldMeta<?, ?> fieldMeta) {
         throw new MetaException(ErrorCode.META_ERROR, "%s,%s precision must in[%s,%s]."
                 , fieldMeta, dataType.name(), includeMin, includeMax);
     }
 
-    public static MetaException createNotJavaTypeException(SQLDataType dataType, FieldMeta<?, ?> fieldMeta) {
+    public static MetaException createNotJavaTypeException(SqlType dataType, FieldMeta<?, ?> fieldMeta) {
         return new MetaException("%s,%s not support java type[%s]"
                 , fieldMeta, dataType, fieldMeta.javaType().getName());
     }
 
-    public static MetaException createScaleException(SQLDataType dataType, int includeMin, int includeMax
+    public static MetaException createScaleException(SqlType dataType, int includeMin, int includeMax
             , FieldMeta<?, ?> fieldMeta) {
         throw new MetaException(ErrorCode.META_ERROR, "%s,%s scale must in[%s,%s]."
                 , fieldMeta, dataType.name(), includeMin, includeMax);
     }
 
-    public static MetaException createNotSupportZeroValueException(SQLDataType dataType, FieldMeta<?, ?> fieldMeta
+    public static MetaException createNotSupportZeroValueException(SqlType dataType, FieldMeta<?, ?> fieldMeta
             , Database database) {
         return new MetaException("%s,%s not support \"zero value\" for %s.", fieldMeta, dataType, database);
     }
 
-    public static MetaException createNotSupportNowExpressionException(SQLDataType dataType, FieldMeta<?, ?> fieldMeta
+    public static MetaException createNotSupportNowExpressionException(SqlType dataType, FieldMeta<?, ?> fieldMeta
             , Database database) {
         return new MetaException("%s,%s not support io.army.domain.IDomain.NOW for %s.", fieldMeta, dataType, database);
     }
@@ -166,7 +166,7 @@ public abstract class SQLDataTypeUtils {
         }
     }
 
-    static <E extends Enum<E> & SQLDataType> Map<String, E> createTypeNameMap(Class<E> dataTypeEnumClass) {
+    static <E extends Enum<E> & SqlType> Map<String, E> createTypeNameMap(Class<E> dataTypeEnumClass) {
         E[] array = dataTypeEnumClass.getEnumConstants();
         Map<String, E> map = new HashMap<>((int) (array.length % 0.75F));
         for (E dataType : array) {

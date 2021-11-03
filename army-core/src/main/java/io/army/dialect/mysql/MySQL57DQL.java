@@ -7,8 +7,8 @@ import io.army.dialect.AbstractDQL;
 import io.army.dialect.Keywords;
 import io.army.dialect.SQLBuilder;
 import io.army.dialect.TableContextSQLContext;
-import io.army.meta.mapping.MappingFactory;
-import io.army.meta.mapping.MappingType;
+import io.army.mapping.MappingFactory;
+import io.army.mapping.MappingType;
 import io.army.stmt.ParamValue;
 
 class MySQL57DQL extends AbstractDQL {

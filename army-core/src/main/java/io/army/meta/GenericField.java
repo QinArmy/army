@@ -1,10 +1,10 @@
 package io.army.meta;
 
+import io.army.criteria.FieldExpression;
 import io.army.criteria.FieldSelection;
 import io.army.criteria.LogicalField;
-import io.army.criteria.FieldExpression;
 import io.army.domain.IDomain;
-import io.army.meta.mapping.MappingType;
+import io.army.mapping.MappingType;
 
 /**
  * This interface is base interface of below interface:

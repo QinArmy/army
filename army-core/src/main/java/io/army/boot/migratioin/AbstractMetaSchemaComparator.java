@@ -11,7 +11,7 @@ import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.schema.SchemaInfoException;
 import io.army.sharding.RouteUtils;
-import io.army.sqldatatype.SQLDataType;
+import io.army.sqldatatype.SqlType;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
 
@@ -157,7 +157,7 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
     protected final String obtainDefaultValue(FieldMeta<?, ?> fieldMeta) {
         String defaultValue = fieldMeta.defaultValue();
         Database database = database();
-        SQLDataType dataType = fieldMeta.mappingMeta().sqlDataType(database);
+        SqlType dataType = fieldMeta.mappingMeta().sqlDataType(database);
         SQLBuilder builder;
         switch (defaultValue) {
             case IDomain.NOW:

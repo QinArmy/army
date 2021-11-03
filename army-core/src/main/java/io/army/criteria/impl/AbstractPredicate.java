@@ -2,8 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.IPredicate;
 import io.army.lang.Nullable;
-import io.army.meta.mapping.MappingFactory;
-import io.army.meta.mapping.MappingType;
+import io.army.mapping.MappingFactory;
+import io.army.mapping.MappingType;
 import io.army.util.ArrayUtils;
 
 import java.util.Collections;

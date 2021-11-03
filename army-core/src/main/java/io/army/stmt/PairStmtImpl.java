@@ -20,4 +20,9 @@ final class PairStmtImpl implements PairStmt {
     public final SimpleStmt childStmt() {
         return this.childWrapper;
     }
+
+    @Override
+    public int getTimeout() {
+        return 0;
+    }
 }

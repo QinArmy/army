@@ -6,8 +6,8 @@ import io.army.criteria.impl.inner.TableWrapper;
 import io.army.criteria.impl.inner.mysql.InnerMySQL57SubQuery;
 import io.army.criteria.mysql.*;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
-import io.army.meta.mapping.MappingType;
 import io.army.util.Assert;
 
 import java.util.List;

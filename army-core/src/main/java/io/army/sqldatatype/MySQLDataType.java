@@ -2,9 +2,7 @@ package io.army.sqldatatype;
 
 import io.army.dialect.Database;
 
-import java.util.Map;
-
-public enum MySQLDataType implements SQLDataType {
+public enum MySQLDataType implements SqlType {
 
     BOOLEAN,
 
@@ -51,14 +49,13 @@ public enum MySQLDataType implements SQLDataType {
     SET,
     JSON,
 
-//    POINT,
-//    LINESTRING,
-//    POLYGON,
-//    MULTIPOINT,
-//    MULTILINESTRING,
-//    MULTIPOLYGON,
-//    GEOMETRYCOLLECTION
-    ;
+    POINT,
+    LINESTRING,
+    POLYGON,
+    MULTIPOINT,
+    MULTILINESTRING,
+    MULTIPOLYGON,
+    GEOMETRYCOLLECTION;
 
     @Override
     public final Database database() {
