@@ -20,12 +20,12 @@ public enum UserType implements CodeEnum {
         return this.code;
     }
 
-    interface Constant {
-        byte PERSON = 10;
-        byte ENTERPRISE = 20;
-        byte PARTNER = 30;
-        byte SELF = 40;
-    }
+   public interface Constant {
+       byte PERSON = 10;
+       byte ENTERPRISE = 20;
+       byte PARTNER = 30;
+       byte SELF = 40;
+   }
 
 
 }

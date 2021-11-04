@@ -1,10 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.domain.IDomain;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.FieldMeta;
-import io.army.meta.ParentTableMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 
 import java.util.Set;
 
@@ -27,12 +24,21 @@ public abstract class TableMetaFactory {
         return DefaultTableMeta.getTableMeta(entityClass);
     }
 
+    public static <T extends IDomain> SimpleTableMeta<T> getSimpleTableMeta(Class<T> entityClass) throws IllegalArgumentException {
+        return null;
+    }
+
     public static <T extends IDomain> ParentTableMeta<T> getParentTableMeta(Class<T> entityClass)
             throws IllegalArgumentException {
         return DefaultTableMeta.getParentTableMeta(entityClass);
     }
 
     public static <T extends IDomain> ChildTableMeta<T> getChildTableMeta(Class<T> entityClass)
+            throws IllegalArgumentException {
+        return DefaultTableMeta.getChildTableMeta(entityClass);
+    }
+
+    public static <T extends IDomain> ChildTableMeta<T> getChildTableMeta(ParentTableMeta<? super T> parentTableMeta, Class<T> entityClass)
             throws IllegalArgumentException {
         return DefaultTableMeta.getChildTableMeta(entityClass);
     }

@@ -21,7 +21,7 @@ public enum AccountType implements CodeEnum {
     }
 
 
-    interface Constant {
+    public interface Constant {
         byte LENDER = 10;
         byte BORROWER = 20;
         byte GUARANTOR = 30;
