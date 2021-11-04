@@ -3,31 +3,25 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>army</artifactId>
-        <groupId>io.army</groupId>
-        <version>1.0-SNAPSHOT</version><!--Army version find and replace-->
+        <artifactId>army-example</artifactId>
+        <groupId>io.army.example</groupId>
+        <version>1.0-SNAPSHOT</version><!--Army example version find and replace-->
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>army-annotation</artifactId>
+    <artifactId>army-example-common</artifactId>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
     </properties>
 
+
     <dependencies>
         <dependency>
             <groupId>io.army</groupId>
-            <artifactId>army-struct</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
+            <artifactId>army-annotation</artifactId>
+            <version>${io.army.version}</version>
         </dependency>
     </dependencies>
 

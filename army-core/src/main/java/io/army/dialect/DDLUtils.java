@@ -21,9 +21,6 @@ public abstract class DDLUtils {
     }
 
 
-    /**
-     * @see io.army.domain.IDomain#ZERO_VALUE
-     */
     public static String zeroForTimeType(FieldMeta<?, ?> fieldMeta) {
         // TODO 验证 precision 大于 0 时 以 6 精度 是否能插入.
         Class<?> javaType = fieldMeta.javaType();

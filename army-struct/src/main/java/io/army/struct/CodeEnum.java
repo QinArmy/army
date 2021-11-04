@@ -4,8 +4,6 @@ package io.army.struct;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -32,10 +30,8 @@ public interface CodeEnum extends Compare<CodeEnum> {
     /**
      * @return 用于展示到前端的名称
      */
-    String display();
-
-    default String localizedDisplay() {
-        return display();
+    default String display() {
+        return name();
     }
 
     default CodeEnum family() {
@@ -45,13 +41,14 @@ public interface CodeEnum extends Compare<CodeEnum> {
 
     /*################# static method ############################*/
 
+    @Deprecated
     @NonNull
     @Override
     default CompareResult compare(@NonNull CodeEnum o) {
         return compare(this, o);
     }
 
-
+    @Deprecated
     static CompareResult compare(CodeEnum codeEnum1, CodeEnum codeEnum2) {
         return CompareResult.resolve(codeEnum1.code() - codeEnum2.code());
     }
@@ -65,26 +62,7 @@ public interface CodeEnum extends Compare<CodeEnum> {
 
 
     static <T extends Enum<T> & CodeEnum> Map<Integer, T> getCodeMap(Class<T> clazz) throws CodeEnumException {
-        CodeEnumHelper.assertCodeEnum(clazz);
-
-        Map<Integer, T> map = CodeEnumHelper.getMap(clazz);
-
-        if (map != null) {
-            return map;
-        }
-
-        T[] types = clazz.getEnumConstants();
-        map = new HashMap<>((int) (types.length / 0.75f));
-
-        for (T type : types) {
-            if (map.containsKey(type.code())) {
-                throw new CodeEnumException(String.format("Enum[%s] code[%s]duplicate", clazz.getName(), type.code()));
-            }
-            map.put(type.code(), type);
-        }
-        map = Collections.unmodifiableMap(map);
-        CodeEnumHelper.addMap(clazz, map);
-        return map;
+        return CodeEnumHelper.getMap(clazz);
     }
 
 

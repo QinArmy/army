@@ -6,7 +6,6 @@ import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.sync.GenericSyncSession;
 
 import java.util.List;
 

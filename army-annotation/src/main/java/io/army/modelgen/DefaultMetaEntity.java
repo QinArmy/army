@@ -23,12 +23,13 @@ class DefaultMetaEntity implements MetaEntity {
         indexMetaMap = MetaUtils.createIndexColumnNameSet(domainElement
                 , parentMappedElementList.isEmpty());
 
-        final Collection<VariableElement> mappingProps = metaParser.generateAttributes(
+        final Collection<VariableElement> mappingProps;
+        mappingProps = metaParser.generateAttributes(
                 domainMappedElementList,
                 parentMappedElementList,
                 indexMetaMap.keySet()
         );
-        parentElement = MetaUtils.domainElement(domainMappedElementList);
+        parentElement = MetaUtils.domainElement(parentMappedElementList);
         final String importsBlock, classDefinition, body;
 
         importsBlock = SourceCreateUtils.generateImport(domainElement, parentElement, mappingProps);

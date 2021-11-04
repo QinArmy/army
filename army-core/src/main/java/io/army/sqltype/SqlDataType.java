@@ -37,7 +37,7 @@ public interface SqlDataType {
     @Deprecated
     default void nowValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder, Database database)
             throws MetaException {
-        throw new MetaException("%s,SQLDataType[%s] not support io.army.domain.IDomain.NOW.", fieldMeta, name());
+        throw new MetaException("%s,SQLDataType[%s] not support IDomain.NOW.", fieldMeta, name());
     }
 
     @Deprecated

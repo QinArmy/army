@@ -4,14 +4,10 @@ import io.army.ErrorCode;
 import io.army.GenericRmSessionFactory;
 import io.army.dialect.DDLUtils;
 import io.army.dialect.Database;
-import io.army.dialect.DialectUtils;
-import io.army.dialect.SQLBuilder;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.schema.SchemaInfoException;
 import io.army.sharding.RouteUtils;
-import io.army.sqltype.SqlDataType;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
 
@@ -155,24 +151,24 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
     /*################################## blow protected final method ##################################*/
 
     protected final String obtainDefaultValue(FieldMeta<?, ?> fieldMeta) {
-        String defaultValue = fieldMeta.defaultValue();
-        Database database = database();
-        SqlDataType dataType;// = fieldMeta.mappingMeta().sqlDataType(database);
-        SQLBuilder builder;
-        switch (defaultValue) {
-            case IDomain.NOW:
-                builder = DialectUtils.createSQLBuilder();
-                // dataType.nowValue(fieldMeta, builder, database);
-                defaultValue = builder.toString();
-                break;
-            case IDomain.ZERO_VALUE:
-                builder = DialectUtils.createSQLBuilder();
-                // dataType.zeroValue(fieldMeta, builder, database);
-                defaultValue = builder.toString();
-                break;
-            default:
-        }
-        return defaultValue;
+//        String defaultValue = fieldMeta.defaultValue();
+//        Database database = database();
+//        SqlDataType dataType;// = fieldMeta.mappingMeta().sqlDataType(database);
+//        SQLBuilder builder;
+//        switch (defaultValue) {
+//            case IDomain.NOW:
+//                builder = DialectUtils.createSQLBuilder();
+//                // dataType.nowValue(fieldMeta, builder, database);
+//                defaultValue = builder.toString();
+//                break;
+//            case IDomain.ZERO_VALUE:
+//                builder = DialectUtils.createSQLBuilder();
+//                // dataType.zeroValue(fieldMeta, builder, database);
+//                defaultValue = builder.toString();
+//                break;
+//            default:
+//        }
+        return null;
     }
 
     /*################################## blow private method ##################################*/

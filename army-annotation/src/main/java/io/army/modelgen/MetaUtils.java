@@ -61,7 +61,7 @@ abstract class MetaUtils {
         final String propName = mappedProp.getSimpleName().toString();
         final boolean reservedProp = MetaConstant.RESERVED_PROPS.contains(propName);
         // check nullable
-        if (reservedProp || (discriminatorColumn != null && !columnName.equals(discriminatorColumn))) {
+        if (reservedProp || (columnName.equals(discriminatorColumn))) {
             if (column.alwaysNullable()) {
                 String m = String.format("Domain[%s] mapping property[%s]  must be non-nullable.",
                         entityElement.getQualifiedName(),

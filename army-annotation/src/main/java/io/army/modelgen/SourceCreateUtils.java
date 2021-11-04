@@ -37,6 +37,9 @@ abstract class SourceCreateUtils {
     static final String ANNOTATION_PRE = "        ";
 
     private static final DateTimeFormatter ISO_OFFSET_DATETIME_FORMATTER = new DateTimeFormatterBuilder()
+            .append(DateTimeFormatter.ISO_LOCAL_DATE)
+            .appendLiteral(' ')
+
             .appendValue(HOUR_OF_DAY, 2)
             .appendLiteral(':')
             .appendValue(MINUTE_OF_HOUR, 2)
@@ -120,6 +123,7 @@ abstract class SourceCreateUtils {
             // parent domain
             builder.append("protected ").
                     append(className)
+                    .append(MetaConstant.META_CLASS_NAME_SUFFIX)
                     .append("(){\n")
                     .append(MEMBER_PRE)
                     .append("\tthrow new UnsupportedOperationException();\n")
@@ -130,6 +134,7 @@ abstract class SourceCreateUtils {
             // simple domain
             builder.append("private ").
                     append(className)
+                    .append(MetaConstant.META_CLASS_NAME_SUFFIX)
                     .append("(){\n")
                     .append(MEMBER_PRE)
                     .append("\tthrow new UnsupportedOperationException();\n")
@@ -139,6 +144,7 @@ abstract class SourceCreateUtils {
             // child domain
             builder.append("private ").
                     append(className)
+                    .append(MetaConstant.META_CLASS_NAME_SUFFIX)
                     .append("(){\n")
                     .append(MEMBER_PRE)
                     .append('}');
@@ -186,19 +192,24 @@ abstract class SourceCreateUtils {
                 .append(MEMBER_PRE)
                 .append("\t")
 
-                .append("Assert.state(")
+                .append("if(")
                 .append(MetaConstant.TABLE_META)
-                .append(".fieldCollection().size() == ")
+                .append(".fieldCollection().size() != ")
                 .append(MetaConstant.FIELD_COUNT)
-
-                .append(",()->\n")
+                .append("){\n")
                 .append(MEMBER_PRE)
                 .append("\t\t")
-                .append("String.format(\"domain[%s] field count[%s] error.\",")
+                .append("String m = String.format(\"Domain[%s] field count[%s] error.\",")
                 .append(entityElement.getSimpleName())
                 .append(".class.getName(),")
                 .append(MetaConstant.FIELD_COUNT)
-                .append("));\n\t}\n\n")
+                .append(");\n")
+                .append(MEMBER_PRE)
+                .append("\t\tthrow new IllegalStateException(m);\n")
+                .append(MEMBER_PRE)
+                .append("\t}\n")
+                .append(MEMBER_PRE)
+                .append("}\n\n")
         ;
     }
 
@@ -211,7 +222,7 @@ abstract class SourceCreateUtils {
                 methodName = "getSimpleTableMeta";
                 tableMetaName = "SimpleTableMeta";
             } else {
-                methodName = "getParentTableMta";
+                methodName = "getParentTableMeta";
                 tableMetaName = "ParentTableMeta";
             }
             parentTableMetaText = "";
@@ -377,12 +388,12 @@ abstract class SourceCreateUtils {
      * @return reference of parentMeta entity class name
      * @see #generateClassDefinition(TypeElement, TypeElement)
      */
-    private static String parentEntityClassRef(TypeElement entityElement, TypeElement parentEntityElement) {
+    private static String parentEntityClassRef(TypeElement domainElement, TypeElement parentElement) {
         final String parentRef;
-        if (sameClassName(entityElement, parentEntityElement)) {
-            parentRef = parentEntityElement.getQualifiedName().toString();
+        if (sameClassName(domainElement, parentElement)) {
+            parentRef = parentElement.getQualifiedName().toString();
         } else {
-            parentRef = parentEntityElement.getSimpleName().toString();
+            parentRef = parentElement.getSimpleName().toString();
         }
         return parentRef;
     }

@@ -123,7 +123,7 @@ public abstract class SQLDataTypeUtils {
 
     public static MetaException createNotSupportNowExpressionException(SqlDataType dataType, FieldMeta<?, ?> fieldMeta
             , Database database) {
-        return new MetaException("%s,%s not support io.army.domain.IDomain.NOW for %s.", fieldMeta, dataType, database);
+        return new MetaException("%s,%s not support IDomain.NOW for %s.", fieldMeta, dataType, database);
     }
 
     /*################################## blow package method ##################################*/
