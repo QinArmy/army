@@ -1,6 +1,6 @@
 package io.army.mapping;
 
-import io.army.util.ArmyException;
+import io.army.ArmyException;
 
 @Deprecated
 public class NoMappingException extends ArmyException {

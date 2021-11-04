@@ -1,5 +1,6 @@
 package io.army.util;
 
+import io.army.ArmyException;
 import io.army.session.TimeoutException;
 import io.army.stmt.Stmt;
 import io.qinarmy.util.ExceptionUtils;

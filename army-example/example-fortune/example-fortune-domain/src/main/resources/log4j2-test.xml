@@ -19,7 +19,7 @@
     </Appenders>
     <Loggers>
 
-        <Logger name="io.army.modelgen.ArmyMetaModelEntityProcessor" level="INFO" additivity="false">
+        <Logger name="io.army.modelgen.ArmyMetaModelDomainProcessor" level="INFO" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
         <Root level="INFO">

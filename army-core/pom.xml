@@ -5,7 +5,7 @@
     <parent>
         <artifactId>army</artifactId>
         <groupId>io.army</groupId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0-SNAPSHOT</version><!--Army version find and replace-->
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -15,6 +15,10 @@
         <dependency>
             <groupId>io.army</groupId>
             <artifactId>army-struct</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.army</groupId>
+            <artifactId>army-annotation</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

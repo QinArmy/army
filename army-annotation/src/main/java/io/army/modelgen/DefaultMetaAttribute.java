@@ -2,18 +2,15 @@ package io.army.modelgen;
 
 import io.army.annotation.Column;
 import io.army.lang.Nullable;
-import io.army.meta.TableMeta;
-import io.army.util.ClassUtils;
-import io.army.util.StringUtils;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.NoType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import java.util.*;
 
 /**
  * this class is a implement of {@link MetaAttribute}
@@ -21,6 +18,33 @@ import javax.lang.model.type.TypeMirror;
  * @since 1.0
  */
 class DefaultMetaAttribute implements MetaAttribute {
+
+    /**
+     * @return a unmodifiable List
+     */
+    static List<MetaAttribute> createMetaAttributes(TypeElement domainElement
+            , Collection<VariableElement> mappingPropSet, Map<String, IndexMode> indexMetaMa) {
+
+        final List<MetaAttribute> list = new ArrayList<>(mappingPropSet.size());
+        Column column;
+        MetaAttribute attribute;
+        String columnName, propName;
+        for (VariableElement mappingProp : mappingPropSet) {
+            propName = mappingProp.getSimpleName().toString();
+            column = mappingProp.getAnnotation(Column.class);
+            columnName = MetaUtils.columnName(domainElement, propName, column);
+            // make column name lower case
+            columnName = Strings.toLowerCase(columnName);
+            IndexMode indexMode = indexMetaMa.get(columnName);
+            if (indexMode == null && propName.equals(MetaConstant.ID)) {
+                indexMode = IndexMode.PRIMARY;
+            }
+            attribute = new DefaultMetaAttribute(domainElement, mappingProp, column, indexMode);
+            list.add(attribute);
+        }
+        return Collections.unmodifiableList(list);
+    }
+
 
     private final TypeElement entityElement;
 
@@ -31,7 +55,7 @@ class DefaultMetaAttribute implements MetaAttribute {
     private final String commentLine;
 
 
-    DefaultMetaAttribute(TypeElement entityElement, VariableElement mappingPropElement
+    private DefaultMetaAttribute(TypeElement entityElement, VariableElement mappingPropElement
             , Column column, @Nullable IndexMode indexMode) {
         this.entityElement = entityElement;
         this.mappingPropElement = mappingPropElement;
@@ -44,8 +68,8 @@ class DefaultMetaAttribute implements MetaAttribute {
     @Override
     public String getDefinition() {
         String format = "%s\n%s %s<%s%s> %s = %s.%s(%s%s.class);";
-        String qualifiedName = mappingPropElement.asType().toString();
-        final String typeSimpleName = ClassUtils.getShortName(qualifiedName);
+        final String qualifiedName = this.mappingPropElement.asType().toString();
+        final String typeSimpleName = Strings.getShortName(qualifiedName);
         String typeParameter = "," + typeSimpleName;
         String propName = getName();
 
@@ -76,7 +100,7 @@ class DefaultMetaAttribute implements MetaAttribute {
         }
 
         if (propRef == null) {
-            propRef = StringUtils.camelToUpperCase(propName) + ",";
+            propRef = MetaConstant.camelToUpperCase(propName) + ",";
         }
 
         return String.format(format,
@@ -108,7 +132,7 @@ class DefaultMetaAttribute implements MetaAttribute {
         return String.format(format,
                 commentLine,
                 SourceCreateUtils.PROP_PRE,
-                StringUtils.camelToUpperCase(name),
+                MetaConstant.camelToUpperCase(name),
                 name
         );
     }
@@ -116,8 +140,8 @@ class DefaultMetaAttribute implements MetaAttribute {
     /*################################## blow private method ##################################*/
 
     private static String createComment(VariableElement mappingPropElement, String comment) {
-        String actualComment;
-        if (StringUtils.hasText(comment)) {
+        final String actualComment;
+        if (Strings.hasText(comment)) {
             actualComment = comment;
         } else if (MetaUtils.isReservedProp(mappingPropElement)
                 || MetaUtils.isCodeEnum(mappingPropElement)) {
@@ -129,22 +153,22 @@ class DefaultMetaAttribute implements MetaAttribute {
     }
 
     private static String commentManagedByArmy(VariableElement mappingPropElement) {
-        String comment = "";
+        final String comment;
         switch (mappingPropElement.getSimpleName().toString()) {
-            case TableMeta.ID:
+            case MetaConstant.ID:
                 comment = "primary key";
                 break;
-            case TableMeta.CREATE_TIME:
+            case MetaConstant.CREATE_TIME:
                 comment = "create time";
                 break;
-            case TableMeta.UPDATE_TIME:
+            case MetaConstant.UPDATE_TIME:
                 comment = "update time";
                 break;
-            case TableMeta.VERSION:
+            case MetaConstant.VERSION:
                 comment = "version for optimistic lock";
                 break;
-            case TableMeta.VISIBLE:
-                comment = "visible for logic singleDelete";
+            case MetaConstant.VISIBLE:
+                comment = "visible for logic delete";
                 break;
             default:
                 comment = "@see " + mappingPropElement.asType().toString();
@@ -152,25 +176,6 @@ class DefaultMetaAttribute implements MetaAttribute {
         return comment;
     }
 
-    private static boolean isNumberType(VariableElement mappingPropElement) {
-        TypeMirror typeMirror = mappingPropElement.asType();
-        boolean match = false;
-        for (int i = 0; i < 3; i++) {
-            TypeElement typeElement = convertToTypeElement(typeMirror);
-            if (typeElement == null) {
-                break;
-            }
-            typeMirror = typeElement.getSuperclass();
-            if (typeMirror == null || typeMirror instanceof NoType) {
-                break;
-            }
-            if ("java.lang.Number".equals(typeMirror.toString())) {
-                match = true;
-                break;
-            }
-        }
-        return match;
-    }
 
     @Nullable
     private static TypeElement convertToTypeElement(TypeMirror typeMirror) {

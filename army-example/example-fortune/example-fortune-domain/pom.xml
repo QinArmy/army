@@ -46,10 +46,10 @@
     <!--                <artifactId>maven-compiler-plugin</artifactId>-->
     <!--                <configuration>-->
     <!--                    <annotationProcessors>-->
-    <!--                        io.army.modelgen.ArmyMetaModelEntityProcessor-->
+    <!--                        io.army.modelgen.ArmyMetaModelDomainProcessor-->
     <!--                    </annotationProcessors>-->
     <!--                    &lt;!&ndash;    <compilerArguments>-->
-    <!--                            <processor>io.army.modelgen.ArmyMetaModelEntityProcessor</processor>-->
+    <!--                            <processor>io.army.modelgen.ArmyMetaModelDomainProcessor</processor>-->
     <!--                        </compilerArguments>&ndash;&gt;-->
     <!--                </configuration>-->
     <!--            </plugin>-->

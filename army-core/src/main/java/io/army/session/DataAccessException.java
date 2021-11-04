@@ -1,6 +1,6 @@
 package io.army.session;
 
-import io.army.util.ArmyException;
+import io.army.ArmyException;
 
 public class DataAccessException extends ArmyException {
 

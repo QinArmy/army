@@ -10,7 +10,7 @@ import java.util.Set;
 
 public abstract class TableMetaFactory {
 
-    public static <T extends IDomain> TableMeta<T> createTableMeta(Class<T> entityClass) {
+    public static <T extends IDomain> TableMeta<T> createSimpleTableMeta(Class<T> entityClass) {
         return DefaultTableMeta.createTableInstance(entityClass);
     }
 

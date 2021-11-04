@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.util.ArmyException;
+import io.army.ArmyException;
 
 public final class NotSupportDialectException extends ArmyException {
 

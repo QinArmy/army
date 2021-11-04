@@ -27,7 +27,9 @@ public @interface Column {
      */
     String name() default "";
 
-    boolean nullable() default false;
+    boolean nullable() default true;
+
+    boolean alwaysNullable() default false;
 
 
     /**

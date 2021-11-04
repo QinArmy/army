@@ -1,0 +1,27 @@
+package io.army.modelgen;
+
+import io.army.annotation.Index;
+
+enum IndexMode {
+
+    GENERIC,
+    UNIQUE,
+    PRIMARY;
+
+    static IndexMode resolve(final Index index) {
+        final IndexMode mode;
+        if (index.unique()) {
+            final String[] columnList = index.columnList();
+            if (columnList.length == 1) {
+                mode = MetaConstant.ID.equals(columnList[0]) ? IndexMode.PRIMARY : IndexMode.UNIQUE;
+            } else {
+                mode = IndexMode.GENERIC;
+            }
+        } else {
+            mode = IndexMode.GENERIC;
+        }
+        return mode;
+    }
+
+
+}

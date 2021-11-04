@@ -61,6 +61,9 @@ public @interface Table {
      */
     boolean immutable() default false;
 
+
+    boolean defaultNullable() default true;
+
     /**
      * (Optional) The charset of the tableMeta.
      * <p>

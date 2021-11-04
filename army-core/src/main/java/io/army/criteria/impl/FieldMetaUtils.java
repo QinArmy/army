@@ -193,7 +193,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
     }
 
     static boolean columnNullable(Column column, FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
-        if (TableMeta.VERSION_PROPS.contains(fieldMeta.propertyName())
+        if (TableMeta.UPDATE_PROPS.contains(fieldMeta.propertyName())
                 || isDiscriminator) {
             if (column.nullable()) {
                 throw new MetaException("mapped class[%s] column[%s] columnNullable must be false.",

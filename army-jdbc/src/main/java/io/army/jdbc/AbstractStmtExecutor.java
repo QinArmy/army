@@ -1,5 +1,6 @@
 package io.army.jdbc;
 
+import io.army.ArmyException;
 import io.army.beans.ObjectWrapper;
 import io.army.codec.FieldCodec;
 import io.army.codec.FieldCodecReturnException;
@@ -10,7 +11,6 @@ import io.army.sqltype.SqlDataType;
 import io.army.stmt.*;
 import io.army.sync.executor.StmtExecutor;
 import io.army.sync.utils.SyncExceptions;
-import io.army.util.ArmyException;
 import io.army.util.Exceptions;
 
 import java.io.IOException;

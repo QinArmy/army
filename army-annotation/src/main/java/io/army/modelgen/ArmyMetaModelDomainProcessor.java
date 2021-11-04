@@ -4,9 +4,7 @@ import io.army.annotation.DiscriminatorValue;
 import io.army.annotation.Inheritance;
 import io.army.annotation.MappedSuperclass;
 import io.army.annotation.Table;
-import io.army.meta.MetaException;
-import io.army.util.Pair;
-import io.army.util.StringUtils;
+import io.army.lang.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,9 +27,9 @@ import java.util.*;
         "io.army.annotation.Inheritance"
 })
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
+public class ArmyMetaModelDomainProcessor extends AbstractProcessor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ArmyMetaModelEntityProcessor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ArmyMetaModelDomainProcessor.class);
 
     private static final boolean ALLOW_OTHER_PROCESSORS_TO_CLAIM_ANNOTATIONS = false;
 
@@ -48,89 +46,101 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         final long startTime = System.currentTimeMillis();
         // 1. crate MetaEntity
-        List<MetaEntity> entityList = createEntity(roundEnv);
+        final List<MetaEntity> entityList;
+        entityList = createEntityList(roundEnv);
 
         //2. create source code file
         writeSources(entityList);
-        LOG.info("{} cost {} ms", ArmyMetaModelEntityProcessor.class.getSimpleName(),
+        LOG.info("{} cost {} ms", ArmyMetaModelDomainProcessor.class.getSimpleName(),
                 System.currentTimeMillis() - startTime);
         return ALLOW_OTHER_PROCESSORS_TO_CLAIM_ANNOTATIONS;
     }
 
     /*################################## blow private method ##################################*/
 
-    private List<MetaEntity> createEntity(RoundEnvironment roundEnv) {
+    private List<MetaEntity> createEntityList(final RoundEnvironment roundEnv) {
 
         final Map<String, TypeElement> mappedSuperMap = createClassNameToElementMap(roundEnv, MappedSuperclass.class);
         final Map<String, TypeElement> inheritanceMap = createClassNameToElementMap(roundEnv, Inheritance.class);
         final Map<String, TypeElement> domainElementMap = createClassNameToElementMap(roundEnv, Table.class);
 
         final List<MetaEntity> domainList = new ArrayList<>();
-
-        List<TypeElement> domainMappedElementList, domainEntityMappedElementList;
-        TypeElement parentEntityElement;
-        Pair<List<TypeElement>, TypeElement> pair;
+        final AttributeMetaParser metaParser = new AttributeMetaParser();
+        List<TypeElement> domainMappedElementList, parentMappedElementList;
+        TypeElement parentElement;
+        Pair pair;
 
         Set<String> tableNameSet = new HashSet<>();
-
+        final Map<String, List<TypeElement>> parentMappedElementsCache = new HashMap<>();
         for (TypeElement domainElement : domainElementMap.values()) {
-            assertDomain(domainElement, tableNameSet);
+            assertDomainTable(domainElement, tableNameSet);
+            assertDomainInheritance(domainElement);
 
             pair = createDomainMappedElementList(domainElement, mappedSuperMap, inheritanceMap, domainElementMap);
 
-            domainMappedElementList = pair.getFirst();
-            parentEntityElement = pair.getSecond();
+            domainMappedElementList = pair.mappedElementList;
+            parentElement = pair.parentElement;
 
-            if (parentEntityElement == null) {
-                domainEntityMappedElementList = Collections.emptyList();
+            if (parentElement == null) {
+                parentMappedElementList = Collections.emptyList();
+                if (domainElement.getAnnotation(Inheritance.class) != null) {
+                    MetaUtils.assertMappingParent(domainElement);
+                    // cache parent domainMappedElementList
+                    parentMappedElementsCache.put(MetaUtils.domainClassName(domainElement), domainMappedElementList);
+                }
             } else {
-                Pair<List<TypeElement>, TypeElement> parentPair;
-                // debugSQL super class(annotated by Inheritance ) 的 mapped list
-                parentPair = createDomainMappedElementList(parentEntityElement, mappedSuperMap, inheritanceMap,
-                        domainElementMap);
-                domainEntityMappedElementList = parentPair.getFirst();
+                final String parentClassName = MetaUtils.domainClassName(domainElement);
+                parentMappedElementList = parentMappedElementsCache.get(parentClassName);
+                if (parentMappedElementList == null) {
+                    Pair parentPair;
+                    parentPair = createDomainMappedElementList(parentElement, mappedSuperMap, inheritanceMap,
+                            domainElementMap);
+                    parentMappedElementList = parentPair.mappedElementList;
+                    MetaUtils.assertMappingParent(parentElement);
+                    // cache parent domainMappedElementList
+                    parentMappedElementsCache.put(parentClassName, parentMappedElementList);
+                }
+                MetaUtils.assertMappingChild(domainElement, parentElement);
             }
 
             domainList.add(
-                    new DefaultMetaEntity(domainMappedElementList, domainEntityMappedElementList)
+                    DefaultMetaEntity.create(domainMappedElementList, parentMappedElementList, metaParser)
             );
         }
         return Collections.unmodifiableList(domainList);
     }
 
-    private static void assertDomain(TypeElement domainElement, Set<String> tableNameSet) throws MetaException {
-        assertDomainTable(domainElement, tableNameSet);
-        assertDomainInheritance(domainElement);
-    }
+
+
+
+    /*################################## blow static method ##################################*/
+
+
+    /*################################## blow private static method ##################################*/
+
 
     private static void assertDomainInheritance(TypeElement domainElement) {
-        DiscriminatorValue discriminatorValue = domainElement.getAnnotation(DiscriminatorValue.class);
+        final DiscriminatorValue discriminatorValue = domainElement.getAnnotation(DiscriminatorValue.class);
         if (discriminatorValue == null) {
             return;
         }
-        Inheritance inheritance = domainElement.getAnnotation(Inheritance.class);
-
         if (discriminatorValue.value() < 0) {
-            throw new MetaException(
-                    "domain[%s] DiscriminatorValue.value() must great than or equals 0",
-                    domainElement.getQualifiedName()
-            );
+            String m = String.format("domain[%s] DiscriminatorValue.value() must great than or equals 0",
+                    domainElement.getQualifiedName());
+            throw new AnnotationMetaException(m);
         }
+        final Inheritance inheritance = domainElement.getAnnotation(Inheritance.class);
 
         if (inheritance == null) {
             if (discriminatorValue.value() == 0) {
-                throw new MetaException(
-                        "child domain[%s] DiscriminatorValue.value() cannot equals 0.",
-                        domainElement.getQualifiedName()
-                );
+                String m = String.format("child domain[%s] DiscriminatorValue.value() cannot equals 0.",
+                        domainElement.getQualifiedName());
+                throw new AnnotationMetaException(m);
             }
-        } else {
-            if (discriminatorValue.value() != 0) {
-                throw new MetaException(
-                        "parentMeta domain[%s] DiscriminatorValue.value() must equals 0.",
-                        domainElement.getQualifiedName()
-                );
-            }
+        } else if (discriminatorValue.value() != 0) {
+            String m = String.format("parentMeta domain[%s] DiscriminatorValue.value() must equals 0.",
+                    domainElement.getQualifiedName());
+            throw new AnnotationMetaException(m);
         }
 
         if (discriminatorValue.value() % 100 != 0) {
@@ -140,47 +150,45 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
     }
 
     private static void assertDomainTable(TypeElement domainElement, Set<String> tableNameSet) {
-        Table table = domainElement.getAnnotation(Table.class);
-        if (!StringUtils.hasText(table.name())) {
-            throw new MetaException("domain[%s] tableMeta name required."
-                    , domainElement.getQualifiedName());
+        final Table table = domainElement.getAnnotation(Table.class);
+        if (!Strings.hasText(table.name())) {
+            String m = String.format("domain[%s] tableMeta name required.", domainElement.getQualifiedName());
+            throw new AnnotationMetaException(m);
         }
         if (domainElement.getNestingKind() != NestingKind.TOP_LEVEL) {
-            throw new MetaException("domain[%s] must be top level class."
-                    , domainElement.getQualifiedName());
+            String m = String.format("domain[%s] must be top level class.", domainElement.getQualifiedName());
+            throw new AnnotationMetaException(m);
         }
 
-        String qualifiedTableName = table.catalog() + "." + table.schema() + "." + table.name();
         // make qualifiedTableName lower case
-        qualifiedTableName = StringUtils.toLowerCase(qualifiedTableName);
+        final String qualifiedTableName = (table.catalog() + "." + table.schema() + "." + table.name()).toLowerCase();
+
         if (tableNameSet.contains(qualifiedTableName)) {
-            throw new MetaException("domain[%s] tableMeta name[%s] duplication.",
-                    domainElement.getQualifiedName(),
-                    table.name()
-            );
+            String m = String.format("domain[%s] tableMeta name[%s] duplication.", domainElement.getQualifiedName(),
+                    table.name());
+            throw new AnnotationMetaException(m);
         } else {
             tableNameSet.add(qualifiedTableName);
         }
 
-        if (!StringUtils.hasText(table.comment())) {
-            throw new MetaException("domain[%s] tableMeta comment required."
-                    , domainElement.getQualifiedName(),
-                    table.comment()
-            );
+        if (!Strings.hasText(table.comment())) {
+            String m = String.format("domain[%s] tableMeta comment required.", domainElement.getQualifiedName());
+            throw new AnnotationMetaException(m);
         }
+
     }
 
     /**
      * @return first: super class (annotated by {@link MappedSuperclass} then {@link Table}) list (asSort by extends)
      * util encounter {@link Inheritance}, second: class annotated by {@link Inheritance}
      */
-    private Pair<List<TypeElement>, TypeElement> createDomainMappedElementList(
+    private Pair createDomainMappedElementList(
             TypeElement domainElement,
             Map<String, TypeElement> mappedSuperMap,
             Map<String, TypeElement> inheritanceMap,
             Map<String, TypeElement> domainElementMap) {
 
-        List<TypeElement> domainMappedElementList = new ArrayList<>(6);
+        final List<TypeElement> domainMappedElementList = new ArrayList<>(6);
         // add entity class firstly
         domainMappedElementList.add(domainElement);
         TypeElement parentDomainElement = null;
@@ -191,16 +199,16 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
         for (TypeElement parentMappedElement = domainElement; ; ) {
             // key is  parentMeta class name
             parentClassName = parentMappedElement.getSuperclass().toString();
-            int index = parentClassName.indexOf("<");
+            int index = parentClassName.indexOf('<');
             if (index > 0) {
                 parentClassName = parentClassName.substring(0, index);
             }
             if (inheritanceMap.containsKey(parentClassName)) {
                 if (domainAnnotatedInheritance) {
-                    throw MetaUtils.createInheritanceDuplication(domainElement);
+                    throw Exceptions.inheritanceDuplication(domainElement);
                 }
                 if (tableCount > 0) {
-                    MetaUtils.throwMultiLevelInheritance(domainElement);
+                    throw Exceptions.multiLevelInheritance(domainElement);
                 }
                 parentDomainElement = inheritanceMap.get(parentClassName);
                 break;
@@ -208,7 +216,6 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
                 // get super class
                 parentMappedElement = mappedSuperMap.get(parentClassName);
                 domainMappedElementList.add(parentMappedElement);
-
             } else if (domainElementMap.containsKey(parentClassName)) {
                 // get super class
                 parentMappedElement = domainElementMap.get(parentClassName);
@@ -221,9 +228,7 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
         // reverse mapped element list
         Collections.reverse(domainMappedElementList);
 
-        return new Pair<>(
-                Collections.unmodifiableList(domainMappedElementList)
-                , parentDomainElement);
+        return new Pair(domainMappedElementList, parentDomainElement);
     }
 
 
@@ -264,7 +269,21 @@ public class ArmyMetaModelEntityProcessor extends AbstractProcessor {
                 }
             }
         } catch (Exception e) {
-            throw new MetaException(e.getMessage(), e);
+            throw new AnnotationMetaException(e.getMessage(), e);
+        }
+
+    }
+
+
+    private static final class Pair {
+
+        private final List<TypeElement> mappedElementList;
+
+        private final TypeElement parentElement;
+
+        private Pair(List<TypeElement> mappedElementList, @Nullable TypeElement parentElement) {
+            this.mappedElementList = Collections.unmodifiableList(mappedElementList);
+            this.parentElement = parentElement;
         }
 
     }
