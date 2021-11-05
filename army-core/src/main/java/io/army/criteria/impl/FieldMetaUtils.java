@@ -11,7 +11,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 import io.army.meta.MetaException;
 import io.army.meta.TableMeta;
-import io.army.modelgen.MetaConstant;
+import io.army.modelgen.MetaBridge;
 import io.army.struct.CodeEnum;
 import io.army.util.AnnotationUtils;
 import io.army.util.ClassUtils;
@@ -90,7 +90,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
 
     @Nullable
     static GeneratorMeta columnGeneratorMeta(Field field, FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
-        if (TableMeta.ID.equals(fieldMeta.propertyName())
+        if (MetaBridge.ID.equals(fieldMeta.propertyName())
                 && fieldMeta.tableMeta().parentMeta() != null) {
             return null;
         }
@@ -156,7 +156,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
 
     static boolean columnInsertable(FieldMeta<?, ?> fieldMeta, Column column, boolean isDiscriminator) {
         boolean insertable = column.insertable();
-        if (TableMeta.RESERVED_PROPS.contains(fieldMeta.propertyName())
+        if (MetaBridge.RESERVED_PROPS.contains(fieldMeta.propertyName())
                 || isDiscriminator) {
             insertable = true;
         }
@@ -166,8 +166,8 @@ abstract class FieldMetaUtils extends TableMetaUtils {
     static boolean columnUpdatable(TableMeta<?> tableMeta, String propName, Column column, boolean isDiscriminator) {
         boolean updatable = column.updatable();
         if (tableMeta.immutable()
-                || TableMeta.ID.equals(propName)
-                || TableMeta.CREATE_TIME.equals(propName)
+                || MetaBridge.ID.equals(propName)
+                || MetaBridge.CREATE_TIME.equals(propName)
                 || isDiscriminator) {
             updatable = false;
         }
@@ -178,7 +178,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
     @NonNull
     static String columnComment(Column column, FieldMeta<?, ?> fieldMeta) {
         String comment = column.comment().trim();
-        if (TableMeta.RESERVED_PROPS.contains(fieldMeta.propertyName())
+        if (MetaBridge.RESERVED_PROPS.contains(fieldMeta.propertyName())
                 || CodeEnum.class.isAssignableFrom(fieldMeta.javaType())) {
 
             if (!StringUtils.hasText(comment)) {
@@ -193,7 +193,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
     }
 
     static boolean columnNullable(Column column, FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
-        if (TableMeta.UPDATE_PROPS.contains(fieldMeta.propertyName())
+        if (MetaBridge.UPDATE_PROPS.contains(fieldMeta.propertyName())
                 || isDiscriminator) {
             if (column.nullable()) {
                 throw new MetaException("mapped class[%s] column[%s] columnNullable must be false.",
@@ -211,7 +211,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         if (!fieldMeta.nullable()
                 && !StringUtils.hasText(defaultValue)
                 && !managedByArmy(fieldMeta)
-                && !MetaConstant.MAYBE_NO_DEFAULT_TYPES.contains(fieldMeta.javaType())) {
+                && !MetaBridge.MAYBE_NO_DEFAULT_TYPES.contains(fieldMeta.javaType())) {
             throw new MetaException("%s non-null ,please specified defaultValue() for it.", fieldMeta);
         }
         return defaultValue;
@@ -222,19 +222,19 @@ abstract class FieldMetaUtils extends TableMetaUtils {
     private static String commentManagedByArmy(FieldMeta<?, ?> fieldMeta) {
         String comment = "";
         switch (fieldMeta.propertyName()) {
-            case TableMeta.ID:
+            case MetaBridge.ID:
                 comment = "primary key";
                 break;
-            case TableMeta.CREATE_TIME:
+            case MetaBridge.CREATE_TIME:
                 comment = "create time";
                 break;
-            case TableMeta.UPDATE_TIME:
+            case MetaBridge.UPDATE_TIME:
                 comment = "singleUpdate time";
                 break;
-            case TableMeta.VERSION:
+            case MetaBridge.VERSION:
                 comment = "version for optimistic lock";
                 break;
-            case TableMeta.VISIBLE:
+            case MetaBridge.VISIBLE:
                 comment = "visible for logic singleDelete";
                 break;
             default:
@@ -248,7 +248,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
 
     private static boolean managedByArmy(FieldMeta<?, ?> fieldMeta) {
         Inheritance inheritance = AnnotationUtils.getAnnotation(fieldMeta.tableMeta().javaType(), Inheritance.class);
-        return TableMeta.RESERVED_PROPS.contains(fieldMeta.propertyName())
+        return MetaBridge.RESERVED_PROPS.contains(fieldMeta.propertyName())
                 || (inheritance != null
                 && inheritance.value().equalsIgnoreCase(fieldMeta.fieldName()))
                 ;
@@ -279,8 +279,8 @@ abstract class FieldMetaUtils extends TableMetaUtils {
     }
 
     private static void assertManagedByArmyForGenerator(FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
-        if (!TableMeta.ID.equals(fieldMeta.propertyName())) {
-            if (TableMeta.RESERVED_PROPS.contains(fieldMeta.propertyName())
+        if (!MetaBridge.ID.equals(fieldMeta.propertyName())) {
+            if (MetaBridge.RESERVED_PROPS.contains(fieldMeta.propertyName())
                     || isDiscriminator) {
                 throw new MetaException("Domain[%s].prop[%s] must no Generator"
                         , fieldMeta.tableMeta().javaType().getName()

@@ -13,6 +13,7 @@ import io.army.generator.GeneratorFactory;
 import io.army.generator.PreFieldGenerator;
 import io.army.lang.Nullable;
 import io.army.meta.*;
+import io.army.modelgen.MetaBridge;
 import io.army.sharding.RouteMetaData;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
@@ -365,7 +366,7 @@ public abstract class GenericSessionFactoryUtils {
         TableMeta<?> parentMeta = tableMeta.parentMeta();
         Assert.isTrue(parentMeta != null, "entity no parentMeta");
 
-        Assert.isTrue(!thisGeneratorMap.containsKey(TableMeta.ID)
+        Assert.isTrue(!thisGeneratorMap.containsKey(MetaBridge.ID)
                 , () -> String.format("child entity[%s] cannot have id generator.", tableMeta.javaType().getName()));
 
         for (FieldMeta<?, ?> fieldMeta : parentMeta.fieldCollection()) {

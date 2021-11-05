@@ -13,6 +13,7 @@ import io.army.criteria.impl.inner.InnerUpdate;
 import io.army.generator.FieldGenerator;
 import io.army.generator.PreFieldGenerator;
 import io.army.meta.*;
+import io.army.modelgen.MetaBridge;
 import io.army.stmt.*;
 import io.army.struct.CodeEnum;
 import io.army.util.Assert;
@@ -195,7 +196,7 @@ abstract class DMLUtils {
     static void setClauseFieldsManagedByArmy(TableContextSQLContext context, TableMeta<?> tableMeta
             , String tableAlias) {
         //1. version field
-        final FieldMeta<?, ?> versionField = tableMeta.getField(TableMeta.VERSION);
+        final FieldMeta<?, ?> versionField = tableMeta.getField(MetaBridge.VERSION);
         SQLBuilder builder = context.sqlBuilder();
 
         context.appendField(tableAlias, versionField);
@@ -205,7 +206,7 @@ abstract class DMLUtils {
         builder.append(" + 1 ,");
 
         //2. updateTime field
-        final FieldMeta<?, ?> updateTimeField = tableMeta.getField(TableMeta.UPDATE_TIME);
+        final FieldMeta<?, ?> updateTimeField = tableMeta.getField(MetaBridge.UPDATE_TIME);
         // updateTime field self-describe
         context.appendField(tableAlias, updateTimeField);
         builder.append(" =");
@@ -233,8 +234,8 @@ abstract class DMLUtils {
             throw new NonUpdateAbleException("FieldMeta[%s] is non-updatable."
                     , fieldMeta);
         }
-        if (TableMeta.VERSION.equals(fieldMeta.propertyName())
-                || TableMeta.UPDATE_TIME.equals(fieldMeta.propertyName())) {
+        if (MetaBridge.VERSION.equals(fieldMeta.propertyName())
+                || MetaBridge.UPDATE_TIME.equals(fieldMeta.propertyName())) {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "version or updateTime is managed by army.");
         }
     }
@@ -244,7 +245,7 @@ abstract class DMLUtils {
         for (IPredicate predicate : predicateList) {
             if (predicate instanceof FieldValuePredicate) {
                 GenericField<?, ?> fieldExp = ((FieldValuePredicate) predicate).fieldMeta();
-                if (TableMeta.VERSION.equals(fieldExp.propertyName())) {
+                if (MetaBridge.VERSION.equals(fieldExp.propertyName())) {
                     hasVersion = true;
                     break;
                 }
@@ -273,14 +274,14 @@ abstract class DMLUtils {
         if (discriminator != null) {
             fieldMetaSet.add(discriminator);
         }
-        if (parentMeta.mappingProp(TableMeta.CREATE_TIME)) {
-            fieldMetaSet.add(parentMeta.getField(TableMeta.CREATE_TIME));
+        if (parentMeta.mappingProp(MetaBridge.CREATE_TIME)) {
+            fieldMetaSet.add(parentMeta.getField(MetaBridge.CREATE_TIME));
         }
-        if (parentMeta.mappingProp(TableMeta.UPDATE_TIME)) {
-            fieldMetaSet.add(parentMeta.getField(TableMeta.UPDATE_TIME));
+        if (parentMeta.mappingProp(MetaBridge.UPDATE_TIME)) {
+            fieldMetaSet.add(parentMeta.getField(MetaBridge.UPDATE_TIME));
         }
-        if (parentMeta.mappingProp(TableMeta.VERSION)) {
-            fieldMetaSet.add(parentMeta.getField(TableMeta.VERSION));
+        if (parentMeta.mappingProp(MetaBridge.VERSION)) {
+            fieldMetaSet.add(parentMeta.getField(MetaBridge.VERSION));
         }
         return Collections.unmodifiableSet(fieldMetaSet);
     }
@@ -430,14 +431,14 @@ abstract class DMLUtils {
 
 
     static boolean isConstant(FieldMeta<?, ?> fieldMeta) {
-        return TableMeta.VERSION.equals(fieldMeta.propertyName())
+        return MetaBridge.VERSION.equals(fieldMeta.propertyName())
                 || fieldMeta == fieldMeta.tableMeta().discriminator()
                 ;
     }
 
     static Object createConstant(FieldMeta<?, ?> fieldMeta, TableMeta<?> logicalTable) {
         Object value;
-        if (TableMeta.VERSION.equals(fieldMeta.propertyName())) {
+        if (MetaBridge.VERSION.equals(fieldMeta.propertyName())) {
             value = 0;
         } else if (fieldMeta == logicalTable.discriminator()) {
             value = CodeEnum.resolve(fieldMeta.javaType(), logicalTable.discriminatorValue());

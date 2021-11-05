@@ -6,7 +6,7 @@ import io.army.criteria.impl.TableMetaFactory;
 import io.army.meta.MetaException;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
-import io.army.modelgen.MetaConstant;
+import io.army.modelgen.MetaBridge;
 import io.army.util.ClassUtils;
 import io.army.util.ReflectionUtils;
 import org.slf4j.Logger;
@@ -133,14 +133,14 @@ class TableMetaLoaderIml implements TableMetaLoader {
         if (!ClassUtils.isMatchMetaClass(domainClass, metaClass)) {
             throw new TableMetaLoadException(ErrorCode.META_CLASS_NOT_MATCH,
                     "domain[%s] not found meta class[%s%s]",
-                    domainClass.getName(), domainClass.getName(), MetaConstant.META_CLASS_NAME_SUFFIX);
+                    domainClass.getName(), domainClass.getName(), MetaBridge.META_CLASS_NAME_SUFFIX);
         }
-        Field field = ReflectionUtils.findField(metaClass, MetaConstant.TABLE_META);
+        Field field = ReflectionUtils.findField(metaClass, MetaBridge.TABLE_META);
         if (field == null
                 || !TableMeta.class.isAssignableFrom(field.getType())) {
             throw new TableMetaLoadException(ErrorCode.NOT_FOUND_META_CLASS
                     , "not meta class,class[%s] not found static property[%s]"
-                    , metaClass, MetaConstant.TABLE_META);
+                    , metaClass, MetaBridge.TABLE_META);
         }
         try {
             TableMeta<?> tableMeta = (TableMeta<?>) ReflectionUtils.getField(field, null);

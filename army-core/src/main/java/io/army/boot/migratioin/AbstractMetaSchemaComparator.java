@@ -6,6 +6,7 @@ import io.army.dialect.DDLUtils;
 import io.army.dialect.Database;
 import io.army.lang.Nullable;
 import io.army.meta.*;
+import io.army.modelgen.MetaBridge;
 import io.army.schema.SchemaInfoException;
 import io.army.sharding.RouteUtils;
 import io.army.util.Assert;
@@ -261,7 +262,7 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
         } else if (indexInfo.unique()) {
             Map<String, IndexColumnInfo> indexColumnInfoMap = indexInfo.columnMap();
             yes = indexColumnInfoMap.size() == 1
-                    && indexColumnInfoMap.containsKey(TableMeta.ID);
+                    && indexColumnInfoMap.containsKey(MetaBridge.ID);
         }
         return yes;
     }

@@ -35,6 +35,11 @@
             <artifactId>spring-boot-starter-log4j2</artifactId>
             <version>${spring.boot.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

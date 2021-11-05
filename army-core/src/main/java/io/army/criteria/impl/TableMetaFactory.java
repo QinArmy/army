@@ -1,46 +1,44 @@
 package io.army.criteria.impl;
 
+import io.army.asm.TableMetaLoadException;
 import io.army.domain.IDomain;
 import io.army.meta.*;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public abstract class TableMetaFactory {
 
-    public static <T extends IDomain> TableMeta<T> createSimpleTableMeta(Class<T> entityClass) {
-        return DefaultTableMeta.createTableInstance(entityClass);
+    private TableMetaFactory() {
+        throw new UnsupportedOperationException();
     }
 
-    public static <T extends IDomain> ParentTableMeta<T> createParentTableMta(Class<T> entityClass) {
-        return DefaultTableMeta.createParentInstance(entityClass);
+    public static <T extends IDomain> TableMeta<T> getTableMeta(Class<T> domainClass) {
+        return DefaultTableMeta.getTableMeta(domainClass);
     }
 
-    public static <T extends IDomain> ChildTableMeta<T> createChildTableMeta(ParentTableMeta<? super T> parentTableMeta
-            , Class<T> entityClass) {
-        return DefaultTableMeta.createChildInstance(parentTableMeta, entityClass);
+    public static <T extends IDomain> SimpleTableMeta<T> getSimpleTableMeta(Class<T> domainClass) {
+        return DefaultTableMeta.getSimpleTableMeta(domainClass);
     }
 
-    public static <T extends IDomain> TableMeta<T> getTableMeta(Class<T> entityClass) throws IllegalArgumentException {
-        return DefaultTableMeta.getTableMeta(entityClass);
+    public static <T extends IDomain> ParentTableMeta<T> getParentTableMeta(Class<T> domainClass) {
+        return DefaultTableMeta.getParentTableMeta(domainClass);
     }
 
-    public static <T extends IDomain> SimpleTableMeta<T> getSimpleTableMeta(Class<T> entityClass) throws IllegalArgumentException {
-        return null;
+    public static <T extends IDomain> ChildTableMeta<T> getChildTableMeta(Class<T> domainClass) {
+        return DefaultTableMeta.getChildTableMeta(domainClass);
     }
 
-    public static <T extends IDomain> ParentTableMeta<T> getParentTableMeta(Class<T> entityClass)
-            throws IllegalArgumentException {
-        return DefaultTableMeta.getParentTableMeta(entityClass);
+    public static <S extends IDomain, T extends S> ChildTableMeta<T> getChildTableMeta(
+            ParentTableMeta<S> parentTableMeta, Class<T> domainClass) {
+        return DefaultTableMeta.getChildTableMeta(parentTableMeta, domainClass);
     }
 
-    public static <T extends IDomain> ChildTableMeta<T> getChildTableMeta(Class<T> entityClass)
-            throws IllegalArgumentException {
-        return DefaultTableMeta.getChildTableMeta(entityClass);
-    }
-
-    public static <T extends IDomain> ChildTableMeta<T> getChildTableMeta(ParentTableMeta<? super T> parentTableMeta, Class<T> entityClass)
-            throws IllegalArgumentException {
-        return DefaultTableMeta.getChildTableMeta(entityClass);
+    public static Map<Class<?>, TableMeta<?>> getTableMetaMap(final SchemaMeta schemaMeta
+            , final List<String> basePackages) throws TableMetaLoadException {
+        return Collections.emptyMap();
     }
 
     public static Set<FieldMeta<?, ?>> codecFieldMetaSet() {

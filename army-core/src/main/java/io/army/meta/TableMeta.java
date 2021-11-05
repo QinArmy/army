@@ -5,11 +5,9 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.sharding.Route;
 import io.army.struct.CodeEnum;
-import io.army.util.ArrayUtils;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @see SchemaMeta
@@ -19,23 +17,6 @@ import java.util.Set;
  */
 public interface TableMeta<T extends IDomain> extends TableAble, Meta {
 
-    String ID = "id";
-
-    String CREATE_TIME = "createTime";
-
-    Set<String> DOMAIN_PROPS = ArrayUtils.asUnmodifiableSet(ID, CREATE_TIME);
-
-    String UPDATE_TIME = "updateTime";
-
-
-    String VISIBLE = "visible";
-
-    String VERSION = "version";
-
-    Set<String> UPDATE_PROPS = ArrayUtils.asUnmodifiableSet(
-            DOMAIN_PROPS, UPDATE_TIME);
-
-    Set<String> RESERVED_PROPS = ArrayUtils.asUnmodifiableSet(ID, CREATE_TIME, UPDATE_TIME, VISIBLE, VERSION);
 
     Class<T> javaType();
 

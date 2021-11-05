@@ -2,6 +2,7 @@ package io.army.dialect;
 
 import io.army.lang.Nullable;
 import io.army.meta.*;
+import io.army.modelgen.MetaBridge;
 import io.army.sqltype.SqlDataType;
 import io.army.util.StringUtils;
 
@@ -279,7 +280,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
 
         SQLBuilder builder = context.sqlBuilder();
         final String defaultKeyWord = " DEFAULT ";
-        if (TableMeta.RESERVED_PROPS.contains(fieldMeta.propertyName())) {
+        if (MetaBridge.RESERVED_PROPS.contains(fieldMeta.propertyName())) {
             // defaultKeyWord in reservedPropDefaultValue
             reservedPropDefaultValue(fieldMeta, context);
         } else if (fieldMeta.tableMeta().discriminator() == fieldMeta) {

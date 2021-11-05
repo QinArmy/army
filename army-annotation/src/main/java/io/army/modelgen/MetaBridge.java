@@ -13,10 +13,9 @@ import java.util.Set;
 /**
  * Meta Constant set
  */
-public abstract class MetaConstant {
+public abstract class MetaBridge {
 
-
-    private MetaConstant() {
+    private MetaBridge() {
         throw new UnsupportedOperationException();
     }
 

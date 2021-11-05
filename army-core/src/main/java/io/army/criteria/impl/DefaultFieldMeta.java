@@ -10,6 +10,7 @@ import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
+import io.army.modelgen.MetaBridge;
 import io.army.util.AnnotationUtils;
 import io.army.util.Assert;
 
@@ -24,15 +25,15 @@ import java.util.concurrent.ConcurrentMap;
  */
 class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> implements FieldMeta<T, F>, Selection {
 
-    private static final String ID = TableMeta.ID;
+    private static final String ID = MetaBridge.ID;
 
     private static final ConcurrentMap<String, FieldMeta<?, ?>> INSTANCE_MAP = new ConcurrentHashMap<>();
 
     private static final ConcurrentMap<FieldMeta<?, ?>, Boolean> CODEC_MAP = new ConcurrentHashMap<>();
 
     @SuppressWarnings("unchecked")
-    static <T extends IDomain> FieldMeta<T, ?> createFieldMeta(final @NonNull TableMeta<T> table
-            , final @NonNull Field field) {
+    static <T extends IDomain> FieldMeta<T, ?> createFieldMeta(final TableMeta<T> table
+            , final Field field) {
         final String fieldMetaKey = table.javaType().getName() + "." + field.getName();
         FieldMeta<T, ?> fieldMeta;
         fieldMeta = (FieldMeta<T, ?>) INSTANCE_MAP.get(fieldMetaKey);
@@ -90,7 +91,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     private static void assertNotParentFiled(TableMeta<?> table, Field field) {
         if ((table instanceof ChildTableMeta)
-                && !TableMeta.ID.equals(field.getName())) {
+                && !MetaBridge.ID.equals(field.getName())) {
             ChildTableMeta<?> childMeta = (ChildTableMeta<?>) table;
             if (childMeta.parentMeta().mappingProp(field.getName())) {
                 throw new MetaException("mapping property belong to ParentTableMeta[%s]"

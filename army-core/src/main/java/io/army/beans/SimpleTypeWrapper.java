@@ -1,10 +1,11 @@
 package io.army.beans;
 
 import io.army.ErrorCode;
+import io.army.modelgen.MetaBridge;
 import io.army.util.Pair;
 
 /**
- * @see io.army.modelgen.MetaConstant#SIMPLE_JAVA_TYPE_SET
+ * @see MetaBridge#SIMPLE_JAVA_TYPE_SET
  */
 final class SimpleTypeWrapper implements ObjectWrapper {
 

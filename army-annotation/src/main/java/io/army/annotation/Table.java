@@ -65,7 +65,7 @@ public @interface Table {
     boolean defaultNullable() default true;
 
     /**
-     * (Optional) The charset of the tableMeta.
+     * (Optional) The charset of the table in database.
      * <p>
      * Default:
      *     <ul>

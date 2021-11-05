@@ -6,6 +6,7 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.IPredicate;
 import io.army.criteria.impl.Predicates;
 import io.army.meta.*;
+import io.army.modelgen.MetaBridge;
 import io.army.util.Assert;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -39,11 +40,11 @@ final class DomainSetterInterceptor implements MethodInterceptor, DomainUpdateAd
         if (tableMeta instanceof ChildTableMeta) {
             ChildTableMeta<?> childMeta = (ChildTableMeta<?>) tableMeta;
             ParentTableMeta<?> parentMeta = childMeta.parentMeta();
-            if (parentMeta.mappingProp(TableMeta.VERSION)) {
-                versionMeta = parentMeta.getField(TableMeta.VERSION);
+            if (parentMeta.mappingProp(MetaBridge.VERSION)) {
+                versionMeta = parentMeta.getField(MetaBridge.VERSION);
             }
-        } else if (tableMeta.mappingProp(TableMeta.VERSION)) {
-            versionMeta = tableMeta.getField(TableMeta.VERSION);
+        } else if (tableMeta.mappingProp(MetaBridge.VERSION)) {
+            versionMeta = tableMeta.getField(MetaBridge.VERSION);
         }
 
         if (versionMeta != null) {

@@ -6,7 +6,11 @@ import io.army.codec.FieldCodec;
 import io.army.codec.FieldCodecReturnException;
 import io.army.generator.PostFieldGenerator;
 import io.army.mapping.MappingType;
-import io.army.meta.*;
+import io.army.meta.FieldMeta;
+import io.army.meta.MetaException;
+import io.army.meta.ParamMeta;
+import io.army.meta.ServerMeta;
+import io.army.modelgen.MetaBridge;
 import io.army.sqltype.SqlDataType;
 import io.army.stmt.*;
 import io.army.sync.executor.StmtExecutor;
@@ -349,7 +353,7 @@ abstract class AbstractStmtExecutor implements StmtExecutor {
             }
             final CacheFunction<ResultSet, Object> function = getAutoIdFunction(stmt.idMeta().javaType());
             while (resultSet.next()) {
-                domainList.get(index).set(TableMeta.ID, function.apply(resultSet));
+                domainList.get(index).set(MetaBridge.ID, function.apply(resultSet));
                 index++;
             }
             if (index != insertedRows) {
@@ -375,7 +379,7 @@ abstract class AbstractStmtExecutor implements StmtExecutor {
 
             CacheFunction<ResultSet, Object> function = getAutoIdFunction((stmt).idMeta().javaType());
             while (resultSet.next()) {
-                domainList.get(index).set(TableMeta.ID, function.apply(resultSet));
+                domainList.get(index).set(MetaBridge.ID, function.apply(resultSet));
                 index++;
             }
             if (index != domainList.size()) {

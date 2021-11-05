@@ -51,7 +51,10 @@ public @interface Column {
      * </ol>
      * </p>
      */
+    @Deprecated
     boolean updatable() default true;
+
+    UpdateMode updateMode() default UpdateMode.ALWAYS;
 
     /**
      * (Optional) The columnSize for a decimal (exact numeric)

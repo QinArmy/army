@@ -4,6 +4,7 @@ import io.army.criteria.SQLContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
+import io.army.modelgen.MetaBridge;
 import io.army.sharding.Route;
 import io.army.struct.CodeEnum;
 
@@ -153,7 +154,7 @@ final class Dual implements IDomain {
 
         @Override
         public <F> PrimaryFieldMeta<Dual, F> id(Class<F> propClass) throws MetaException {
-            throw new MetaException("no field[%s]", TableMeta.ID);
+            throw new MetaException("no field[%s]", MetaBridge.ID);
         }
     }
 

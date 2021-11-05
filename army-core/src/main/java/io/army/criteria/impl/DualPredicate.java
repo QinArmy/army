@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.meta.*;
+import io.army.modelgen.MetaBridge;
 import io.army.util.Assert;
 
 import java.util.Collection;
@@ -120,7 +121,7 @@ class DualPredicate extends AbstractPredicate {
             , GenericField<?, ?> right, ChildTableMeta<?> childMeta) {
         DualPredicate predicate = null;
         if (operator == DualPredicateOperator.EQ) {
-            if (TableMeta.ID.equals(left.propertyName()) && TableMeta.ID.equals(right.propertyName())) {
+            if (MetaBridge.ID.equals(left.propertyName()) && MetaBridge.ID.equals(right.propertyName())) {
                 predicate = new ParentChildJoinPredicateImpl(left, operator, right, childMeta);
             }
         }

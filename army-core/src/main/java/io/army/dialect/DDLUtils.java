@@ -4,7 +4,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.MetaException;
 import io.army.meta.TableMeta;
-import io.army.modelgen.MetaConstant;
+import io.army.modelgen.MetaBridge;
 import io.army.struct.CodeEnum;
 import io.army.util.StringUtils;
 import io.army.util.Times;
@@ -67,7 +67,7 @@ public abstract class DDLUtils {
 
 
     static boolean simpleJavaType(FieldMeta<?, ?> fieldMeta) {
-        return MetaConstant.MAYBE_NO_DEFAULT_TYPES.contains(fieldMeta.javaType())
+        return MetaBridge.MAYBE_NO_DEFAULT_TYPES.contains(fieldMeta.javaType())
                 || (Enum.class.isAssignableFrom(fieldMeta.javaType())
                 && CodeEnum.class.isAssignableFrom(fieldMeta.javaType()));
     }
@@ -90,17 +90,17 @@ public abstract class DDLUtils {
         List<FieldMeta<?, ?>> fieldMetaList = new ArrayList<>(fieldMetas.size());
 
         fieldMetaList.add(tableMeta.id());
-        if (tableMeta.mappingProp(TableMeta.CREATE_TIME)) {
-            fieldMetaList.add(tableMeta.getField(TableMeta.CREATE_TIME));
+        if (tableMeta.mappingProp(MetaBridge.CREATE_TIME)) {
+            fieldMetaList.add(tableMeta.getField(MetaBridge.CREATE_TIME));
         }
-        if (tableMeta.mappingProp(TableMeta.UPDATE_TIME)) {
-            fieldMetaList.add(tableMeta.getField(TableMeta.UPDATE_TIME));
+        if (tableMeta.mappingProp(MetaBridge.UPDATE_TIME)) {
+            fieldMetaList.add(tableMeta.getField(MetaBridge.UPDATE_TIME));
         }
-        if (tableMeta.mappingProp(TableMeta.VERSION)) {
-            fieldMetaList.add(tableMeta.getField(TableMeta.VERSION));
+        if (tableMeta.mappingProp(MetaBridge.VERSION)) {
+            fieldMetaList.add(tableMeta.getField(MetaBridge.VERSION));
         }
-        if (tableMeta.mappingProp(TableMeta.VISIBLE)) {
-            fieldMetaList.add(tableMeta.getField(TableMeta.VISIBLE));
+        if (tableMeta.mappingProp(MetaBridge.VISIBLE)) {
+            fieldMetaList.add(tableMeta.getField(MetaBridge.VISIBLE));
         }
         FieldMeta<?, ?> fieldMeta = tableMeta.discriminator();
         if (fieldMeta != null && fieldMeta.tableMeta() == tableMeta) {

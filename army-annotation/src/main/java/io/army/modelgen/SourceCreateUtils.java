@@ -107,13 +107,13 @@ abstract class SourceCreateUtils {
                 .append("\n")
                 .append("public abstract class ")
                 .append(className)
-                .append(MetaConstant.META_CLASS_NAME_SUFFIX)
+                .append(MetaBridge.META_CLASS_NAME_SUFFIX)
         ;
 
         if (parentElement != null) {
             builder.append(" extends ")
                     .append(parentEntityClassRef(domainElement, parentElement))
-                    .append(MetaConstant.META_CLASS_NAME_SUFFIX);
+                    .append(MetaBridge.META_CLASS_NAME_SUFFIX);
         }
         builder.append(" {\n\n");
 
@@ -123,7 +123,7 @@ abstract class SourceCreateUtils {
             // parent domain
             builder.append("protected ").
                     append(className)
-                    .append(MetaConstant.META_CLASS_NAME_SUFFIX)
+                    .append(MetaBridge.META_CLASS_NAME_SUFFIX)
                     .append("(){\n")
                     .append(MEMBER_PRE)
                     .append("\tthrow new UnsupportedOperationException();\n")
@@ -134,7 +134,7 @@ abstract class SourceCreateUtils {
             // simple domain
             builder.append("private ").
                     append(className)
-                    .append(MetaConstant.META_CLASS_NAME_SUFFIX)
+                    .append(MetaBridge.META_CLASS_NAME_SUFFIX)
                     .append("(){\n")
                     .append(MEMBER_PRE)
                     .append("\tthrow new UnsupportedOperationException();\n")
@@ -144,7 +144,7 @@ abstract class SourceCreateUtils {
             // child domain
             builder.append("private ").
                     append(className)
-                    .append(MetaConstant.META_CLASS_NAME_SUFFIX)
+                    .append(MetaBridge.META_CLASS_NAME_SUFFIX)
                     .append("(){\n")
                     .append(MEMBER_PRE)
                     .append('}');
@@ -193,16 +193,16 @@ abstract class SourceCreateUtils {
                 .append("\t")
 
                 .append("if(")
-                .append(MetaConstant.TABLE_META)
+                .append(MetaBridge.TABLE_META)
                 .append(".fieldCollection().size() != ")
-                .append(MetaConstant.FIELD_COUNT)
+                .append(MetaBridge.FIELD_COUNT)
                 .append("){\n")
                 .append(MEMBER_PRE)
                 .append("\t\t")
                 .append("String m = String.format(\"Domain[%s] field count[%s] error.\",")
                 .append(entityElement.getSimpleName())
                 .append(".class.getName(),")
-                .append(MetaConstant.FIELD_COUNT)
+                .append(MetaBridge.FIELD_COUNT)
                 .append(");\n")
                 .append(MEMBER_PRE)
                 .append("\t\tthrow new IllegalStateException(m);\n")
@@ -231,15 +231,15 @@ abstract class SourceCreateUtils {
             tableMetaName = "ChildTableMeta";
             parentTableMetaText = String.format("%s%s.%s,",
                     parentEntityClassRef(domainElement, parentElement),
-                    MetaConstant.META_CLASS_NAME_SUFFIX,
-                    MetaConstant.TABLE_META
+                    MetaBridge.META_CLASS_NAME_SUFFIX,
+                    MetaBridge.TABLE_META
             );
         }
         builder.append(String.format(format,
                 PROP_PRE,
                 tableMetaName,
                 domainElement.getSimpleName(),
-                MetaConstant.TABLE_META,
+                MetaBridge.TABLE_META,
                 methodName,
                 parentTableMetaText,
                 domainElement.getSimpleName()
@@ -252,14 +252,14 @@ abstract class SourceCreateUtils {
 
         builder.append(PROP_PRE)
                 .append(" String ")
-                .append(MetaConstant.TABLE_NAME)
+                .append(MetaBridge.TABLE_NAME)
                 .append(" = \"")
                 .append(table.name())
                 .append("\";\n\n");
 
         builder.append(PROP_PRE)
                 .append(" int ")
-                .append(MetaConstant.FIELD_COUNT)
+                .append(MetaBridge.FIELD_COUNT)
                 .append(" = ");
 
         builder.append(attributeList.size());
@@ -267,17 +267,17 @@ abstract class SourceCreateUtils {
         builder.append(";\n\n")
                 .append(PROP_PRE)
                 .append(" int ")
-                .append(MetaConstant.FIELD_TOTAL)
+                .append(MetaBridge.FIELD_TOTAL)
                 .append(" = ")
-                .append(MetaConstant.FIELD_COUNT)
+                .append(MetaBridge.FIELD_COUNT)
         ;
 
         if (parentEntityElement != null) {
             builder.append(" + ")
                     .append(parentEntityClassRef(entityElement, parentEntityElement))
-                    .append(MetaConstant.META_CLASS_NAME_SUFFIX)
+                    .append(MetaBridge.META_CLASS_NAME_SUFFIX)
                     .append(".")
-                    .append(MetaConstant.FIELD_TOTAL)
+                    .append(MetaBridge.FIELD_TOTAL)
             ;
         }
         builder.append(";\n\n");
@@ -316,7 +316,7 @@ abstract class SourceCreateUtils {
 
             builder.append(parentElement.getQualifiedName());
 
-            builder.append(MetaConstant.META_CLASS_NAME_SUFFIX)
+            builder.append(MetaBridge.META_CLASS_NAME_SUFFIX)
                     .append(";\n")
             ;
         }

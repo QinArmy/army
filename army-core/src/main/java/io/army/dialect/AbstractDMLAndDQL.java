@@ -8,6 +8,7 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
+import io.army.modelgen.MetaBridge;
 
 import java.util.HashMap;
 import java.util.List;
@@ -103,7 +104,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
                 if (tableAble instanceof ChildTableMeta) {
                     temp = ((ChildTableMeta<?>) temp).parentMeta();
                 }
-                if (temp.mappingProp(TableMeta.VISIBLE)) {
+                if (temp.mappingProp(MetaBridge.VISIBLE)) {
                     appendVisibleIfNeed(tableWrapper, preTableWrapper, context, childMap, hasPredicate);
                 }
             }
@@ -174,7 +175,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     private void doVisibleConstantPredicate(TableContextSQLContext context, Boolean visible
             , TableMeta<?> tableMeta, String tableAlias, boolean hasPredicate) {
 
-        final FieldMeta<?, ?> visibleField = tableMeta.getField(TableMeta.VISIBLE);
+        final FieldMeta<?, ?> visibleField = tableMeta.getField(MetaBridge.VISIBLE);
 
         SQLBuilder builder = context.sqlBuilder();
 
