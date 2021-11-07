@@ -70,7 +70,7 @@ public class ArmyMetaModelDomainProcessor extends AbstractProcessor {
         TypeElement parentElement;
         Pair pair;
 
-        Set<String> tableNameSet = new HashSet<>();
+        final Set<String> tableNameSet = new HashSet<>();
         final Map<String, List<TypeElement>> parentMappedElementsCache = new HashMap<>();
         for (TypeElement domainElement : domainElementMap.values()) {
             assertDomainTable(domainElement, tableNameSet);
@@ -149,7 +149,7 @@ public class ArmyMetaModelDomainProcessor extends AbstractProcessor {
 
     }
 
-    private static void assertDomainTable(TypeElement domainElement, Set<String> tableNameSet) {
+    private static void assertDomainTable(final TypeElement domainElement, final Set<String> tableNameSet) {
         final Table table = domainElement.getAnnotation(Table.class);
         if (!Strings.hasText(table.name())) {
             String m = String.format("domain[%s] tableMeta name required.", domainElement.getQualifiedName());
@@ -161,7 +161,8 @@ public class ArmyMetaModelDomainProcessor extends AbstractProcessor {
         }
 
         // make qualifiedTableName lower case
-        final String qualifiedTableName = (table.catalog() + "." + table.schema() + "." + table.name()).toLowerCase();
+        final String qualifiedTableName;
+        qualifiedTableName = Strings.toLowerCase(table.catalog() + "." + table.schema() + "." + table.name());
 
         if (tableNameSet.contains(qualifiedTableName)) {
             String m = String.format("domain[%s] tableMeta name[%s] duplication.", domainElement.getQualifiedName(),

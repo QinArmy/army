@@ -144,7 +144,7 @@ class DefaultMetaAttribute implements MetaAttribute {
         if (Strings.hasText(comment)) {
             actualComment = comment;
         } else if (MetaUtils.isReservedProp(mappingPropElement)
-                || MetaUtils.isCodeEnum(mappingPropElement)) {
+                || MetaUtils.getEnumElement(mappingPropElement) != null) {
             actualComment = commentManagedByArmy(mappingPropElement);
         } else {
             actualComment = "";

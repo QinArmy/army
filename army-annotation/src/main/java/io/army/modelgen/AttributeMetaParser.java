@@ -154,7 +154,7 @@ final class AttributeMetaParser {
                 MetaUtils.assertColumn(domainElement, mappedProp, column, columnName, defaultNullable, discriminatorColumn);
                 // assert io.army.annotation.DiscriminatorValue , io.army.annotation.Inheritance
                 if (columnName.equals(discriminatorColumn)) {
-                    if (!MetaUtils.isCodeEnum(mappedProp)) {
+                    if (MetaUtils.getEnumElement(mappedProp) == null) {
                         throw Exceptions.discriminatorNotCodeEnum(domainElement, propName);
                     }
                     foundDiscriminatorColumn = true;

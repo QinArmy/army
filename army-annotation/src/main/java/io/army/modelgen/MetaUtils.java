@@ -146,8 +146,9 @@ abstract class MetaUtils {
         enumElement = getEnumElement(propElement);
         boolean match = false;
         if (enumElement != null) {
+            final String codeEnumClassName = CodeEnum.class.getName();
             for (TypeMirror enumInterface : enumElement.getInterfaces()) {
-                if (enumInterface.toString().equals(CodeEnum.class.getName())) {
+                if (codeEnumClassName.equals(enumInterface.toString())) {
                     match = true;
                     break;
                 }

@@ -28,6 +28,10 @@ import java.util.Map;
  */
 abstract class FieldMetaUtils extends TableMetaUtils {
 
+    private FieldMetaUtils() {
+
+    }
+
     static final class GeneratorMetaImpl implements GeneratorMeta {
 
         private final FieldMeta<?, ?> fieldMeta;

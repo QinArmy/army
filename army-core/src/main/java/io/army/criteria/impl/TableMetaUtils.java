@@ -22,19 +22,51 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 abstract class TableMetaUtils {
 
+    TableMetaUtils() {
+        throw new UnsupportedOperationException();
+    }
+
     private static final String PRIMARY_FIELD = MetaBridge.ID;
 
     private static final String ASC = "ASC";
 
     private static final String DESC = "DESC";
 
-    static Map<Class<?>, Map<Integer, Class<?>>> discriminatorCodeMap = new HashMap<>();
+    private static Map<Class<?>, Map<Integer, Class<?>>> discriminatorCodeMap = new HashMap<>();
 
-    private static final Map<Class<?>, Pair<Set<String>, Field>> PARENT_FIELD_PAIR_CACHE = new ConcurrentHashMap<>();
+    private static Map<Class<?>, Pair<Set<String>, Field>> parentFieldPairCache = new ConcurrentHashMap<>();
 
 
-    protected TableMetaUtils() {
+    static synchronized void clearCache() {
+        final Map<Class<?>, Map<Integer, Class<?>>> discriminatorCodeMap = TableMetaUtils.discriminatorCodeMap;
+        if (discriminatorCodeMap != null) {
+            discriminatorCodeMap.clear();
+            TableMetaUtils.discriminatorCodeMap = null;
+        }
+        final Map<Class<?>, Pair<Set<String>, Field>> parentFieldPairCache = TableMetaUtils.parentFieldPairCache;
+        if (parentFieldPairCache != null) {
+            parentFieldPairCache.clear();
+            TableMetaUtils.parentFieldPairCache = null;
+        }
 
+    }
+
+    private static synchronized Map<Class<?>, Map<Integer, Class<?>>> createDiscriminatorCodeMap() {
+        Map<Class<?>, Map<Integer, Class<?>>> map = TableMetaUtils.discriminatorCodeMap;
+        if (map == null) {
+            map = new ConcurrentHashMap<>();
+            TableMetaUtils.discriminatorCodeMap = map;
+        }
+        return map;
+    }
+
+    private static synchronized Map<Class<?>, Pair<Set<String>, Field>> createParentFieldPairCache() {
+        Map<Class<?>, Pair<Set<String>, Field>> map = TableMetaUtils.parentFieldPairCache;
+        if (map == null) {
+            map = new ConcurrentHashMap<>();
+            TableMetaUtils.parentFieldPairCache = map;
+        }
+        return map;
     }
 
 
@@ -333,7 +365,15 @@ abstract class TableMetaUtils {
      * @see #createFieldMetaPair(TableMeta)
      */
     private static Pair<Set<String>, Field> parentFieldPair(final Class<?> parentDomainClass) throws MetaException {
-        final Pair<Set<String>, Field> cache = PARENT_FIELD_PAIR_CACHE.get(parentDomainClass);
+        Map<Class<?>, Pair<Set<String>, Field>> parentFieldPairCache = TableMetaUtils.parentFieldPairCache;
+
+        final Pair<Set<String>, Field> cache;
+        if (parentFieldPairCache == null) {
+            cache = null;
+            parentFieldPairCache = createParentFieldPairCache();
+        } else {
+            cache = parentFieldPairCache.get(parentDomainClass);
+        }
         if (cache != null) {
             return cache;
         }
@@ -368,7 +408,7 @@ abstract class TableMetaUtils {
         }
         final Pair<Set<String>, Field> fieldPair;
         fieldPair = new Pair<>(Collections.unmodifiableSet(fieldNameSet), idField);
-        PARENT_FIELD_PAIR_CACHE.putIfAbsent(parentDomainClass, fieldPair);
+        parentFieldPairCache.putIfAbsent(parentDomainClass, fieldPair);
         return fieldPair;
     }
 
@@ -558,10 +598,11 @@ abstract class TableMetaUtils {
         final TableMeta<?> parentMeta = tableMeta.parentMeta();
         Assert.notNull(parentMeta, () -> String.format("domain[%s] parentMeta error", tableMeta.javaType().getName()));
 
-        Map<Integer, Class<?>> codeMap;
+        Map<Class<?>, Map<Integer, Class<?>>> discriminatorCodeMap = TableMetaUtils.discriminatorCodeMap;
         if (discriminatorCodeMap == null) {
-            discriminatorCodeMap = new HashMap<>();
+            discriminatorCodeMap = createDiscriminatorCodeMap();
         }
+        Map<Integer, Class<?>> codeMap;
         codeMap = discriminatorCodeMap.computeIfAbsent(parentMeta.javaType(), key -> new HashMap<>());
         Class<?> actualClass = codeMap.get(value);
         if (actualClass != null && actualClass != tableMeta.javaType()) {
