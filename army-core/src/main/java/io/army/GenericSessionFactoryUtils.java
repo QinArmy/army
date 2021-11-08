@@ -1,6 +1,5 @@
 package io.army;
 
-import io.army.asm.TableMetaLoader;
 import io.army.codec.FieldCodec;
 import io.army.criteria.impl.SchemaMetaFactory;
 import io.army.criteria.impl._TableMetaFactory;
@@ -13,7 +12,7 @@ import io.army.generator.GeneratorFactory;
 import io.army.generator.PreFieldGenerator;
 import io.army.lang.Nullable;
 import io.army.meta.*;
-import io.army.modelgen.MetaBridge;
+import io.army.modelgen._MetaBridge;
 import io.army.sharding.RouteMetaData;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
@@ -191,8 +190,7 @@ public abstract class GenericSessionFactoryUtils {
     static Map<Class<?>, TableMeta<?>> scanPackagesForMeta(SchemaMeta schemaMeta, String factoryName, ArmyEnvironment env) {
         List<String> packagesToScan = env.getRequiredPropertyList(
                 String.format(ArmyConfigConstant.PACKAGE_TO_SCAN, factoryName), String[].class);
-        return TableMetaLoader.build()
-                .scanTableMeta(schemaMeta, packagesToScan);
+        return _TableMetaFactory.getTableMetaMap(schemaMeta, packagesToScan);
     }
 
 
@@ -217,7 +215,7 @@ public abstract class GenericSessionFactoryUtils {
                 generatorMap.put(fieldMeta, generator);
 
                 if (generator instanceof PreFieldGenerator) {
-                    propGeneratorMap.put(fieldMeta.propertyName(), generatorMeta);
+                    propGeneratorMap.put(fieldMeta.fieldName(), generatorMeta);
                 }
             }
 
@@ -366,7 +364,7 @@ public abstract class GenericSessionFactoryUtils {
         TableMeta<?> parentMeta = tableMeta.parentMeta();
         Assert.isTrue(parentMeta != null, "entity no parentMeta");
 
-        Assert.isTrue(!thisGeneratorMap.containsKey(MetaBridge.ID)
+        Assert.isTrue(!thisGeneratorMap.containsKey(_MetaBridge.ID)
                 , () -> String.format("child entity[%s] cannot have id generator.", tableMeta.javaType().getName()));
 
         for (FieldMeta<?, ?> fieldMeta : parentMeta.fieldCollection()) {
@@ -374,12 +372,12 @@ public abstract class GenericSessionFactoryUtils {
             if (generatorMeta == null) {
                 continue;
             }
-            if (thisGeneratorMap.containsKey(fieldMeta.propertyName())) {
+            if (thisGeneratorMap.containsKey(fieldMeta.fieldName())) {
                 throw new MetaException(ErrorCode.META_ERROR, "entity[%s] prop[%s] couldn'field override parentMeta's generator"
-                        , tableMeta.javaType().getName(), fieldMeta.fieldName());
+                        , tableMeta.javaType().getName(), fieldMeta.columnName());
             }
 
-            thisGeneratorMap.put(fieldMeta.propertyName(), generatorMeta);
+            thisGeneratorMap.put(fieldMeta.fieldName(), generatorMeta);
         }
     }
 
@@ -409,7 +407,7 @@ public abstract class GenericSessionFactoryUtils {
     private static MetaException createDependException(FieldMeta<?, ?> fieldMeta) {
         return new MetaException(ErrorCode.META_ERROR, "Entity[%s] propName[%s] generator depend error"
                 , fieldMeta.tableMeta().javaType().getName()
-                , fieldMeta.propertyName());
+                , fieldMeta.fieldName());
     }
 
     private static void assertPreGenerator(GeneratorMeta generatorMeta) {

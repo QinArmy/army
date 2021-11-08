@@ -2,8 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.criteria.*;
-import io.army.dialect.SqlDialect;
 import io.army.dialect.SQLBuilder;
+import io.army.dialect.SqlDialect;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.util.Assert;
@@ -89,9 +89,9 @@ abstract class SelectionGroups implements SelectionGroup {
                 }
                 builder.append(safeTableAlias)
                         .append(".")
-                        .append(sql.quoteIfNeed(fieldMeta.fieldName()))
+                        .append(sql.quoteIfNeed(fieldMeta.columnName()))
                         .append(" AS ")
-                        .append(sql.quoteIfNeed(fieldMeta.propertyName()));
+                        .append(sql.quoteIfNeed(fieldMeta.fieldName()));
                 index++;
             }
         }

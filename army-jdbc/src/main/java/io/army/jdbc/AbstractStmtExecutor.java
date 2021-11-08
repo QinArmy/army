@@ -10,7 +10,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.meta.ParamMeta;
 import io.army.meta.ServerMeta;
-import io.army.modelgen.MetaBridge;
+import io.army.modelgen._MetaBridge;
 import io.army.sqltype.SqlDataType;
 import io.army.stmt.*;
 import io.army.sync.executor.StmtExecutor;
@@ -353,7 +353,7 @@ abstract class AbstractStmtExecutor implements StmtExecutor {
             }
             final CacheFunction<ResultSet, Object> function = getAutoIdFunction(stmt.idMeta().javaType());
             while (resultSet.next()) {
-                domainList.get(index).set(MetaBridge.ID, function.apply(resultSet));
+                domainList.get(index).set(_MetaBridge.ID, function.apply(resultSet));
                 index++;
             }
             if (index != insertedRows) {
@@ -379,7 +379,7 @@ abstract class AbstractStmtExecutor implements StmtExecutor {
 
             CacheFunction<ResultSet, Object> function = getAutoIdFunction((stmt).idMeta().javaType());
             while (resultSet.next()) {
-                domainList.get(index).set(MetaBridge.ID, function.apply(resultSet));
+                domainList.get(index).set(_MetaBridge.ID, function.apply(resultSet));
                 index++;
             }
             if (index != domainList.size()) {

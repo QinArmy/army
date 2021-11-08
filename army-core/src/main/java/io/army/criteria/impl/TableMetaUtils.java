@@ -6,7 +6,7 @@ import io.army.domain.IDomain;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.*;
-import io.army.modelgen.MetaBridge;
+import io.army.modelgen._MetaBridge;
 import io.army.sharding.Route;
 import io.army.sharding.TableRoute;
 import io.army.struct.CodeEnum;
@@ -26,7 +26,7 @@ abstract class TableMetaUtils {
         throw new UnsupportedOperationException();
     }
 
-    private static final String PRIMARY_FIELD = MetaBridge.ID;
+    private static final String PRIMARY_FIELD = _MetaBridge.ID;
 
     private static final String ASC = "ASC";
 
@@ -189,9 +189,10 @@ abstract class TableMetaUtils {
     }
 
 
-    static <T extends IDomain> FieldMetaPair<T> createFieldMetaPair(final TableMeta<T> tableMeta) {
-        final Class<T> domainClass = tableMeta.javaType();
 
+    static <T extends IDomain> FieldMetaPair<T> createFieldMetaPair(final TableMeta<T> tableMeta) {
+
+        final Class<T> domainClass = tableMeta.javaType();
         // 1. create columnNameSet
         final Table table = domainClass.getAnnotation(Table.class);
         final Index[] indices = table.indexes();
@@ -239,7 +240,7 @@ abstract class TableMetaUtils {
                 fieldNameSet.add(fieldName);
 
                 final String columnName = columnName(column, field);
-                if (MetaBridge.ID.equals(fieldName) || indexColumnNameSet.contains(columnName)) {
+                if (_MetaBridge.ID.equals(fieldName) || indexColumnNameSet.contains(columnName)) {
                     if (indexColumnToFieldMap.putIfAbsent(columnName, field) != null) {
                         throw columnNameDuplication(mappedClass, columnName);
                     }
@@ -268,7 +269,7 @@ abstract class TableMetaUtils {
                 createdPrimaryIndex = true;
             }
             for (IndexFieldMeta<T, ?> fieldMeta : indexMeta.fieldList()) {
-                if (fieldMetaMap.putIfAbsent(fieldMeta.propertyName(), fieldMeta) != null) {
+                if (fieldMetaMap.putIfAbsent(fieldMeta.fieldName(), fieldMeta) != null) {
                     throw fieldMetaDuplication(fieldMeta);
                 }
             }
@@ -277,7 +278,7 @@ abstract class TableMetaUtils {
             final IndexMeta<T> indexMeta;
             indexMeta = new DefaultIndexMeta<>(tableMeta, null, indexColumnToFieldMap, columnNameSet);
             final IndexFieldMeta<T, ?> fieldMeta = indexMeta.fieldList().get(0);
-            if (fieldMetaMap.putIfAbsent(fieldMeta.propertyName(), fieldMeta) != null) {
+            if (fieldMetaMap.putIfAbsent(fieldMeta.fieldName(), fieldMeta) != null) {
                 throw fieldMetaDuplication(fieldMeta);
             }
             indexMetaList.add(indexMeta);
@@ -303,9 +304,9 @@ abstract class TableMetaUtils {
         final String customColumnName = StringUtils.toUpperCase(column.name()), fieldName = field.getName();
         final String columnName;
         if (customColumnName.isEmpty()) {
-            columnName = MetaBridge.camelToLowerCase(fieldName);
-        } else if (MetaBridge.RESERVED_PROPS.contains(fieldName)) {
-            columnName = MetaBridge.camelToLowerCase(fieldName);
+            columnName = _MetaBridge.camelToLowerCase(fieldName);
+        } else if (_MetaBridge.RESERVED_PROPS.contains(fieldName)) {
+            columnName = _MetaBridge.camelToLowerCase(fieldName);
             if (StringUtils.hasText(customColumnName) && !customColumnName.equals(columnName)) {
                 String m = String.format("Mapped class [%s] reserved prop[%s] column name must use default value.",
                         field.getDeclaringClass().getName(), fieldName);
@@ -394,7 +395,7 @@ abstract class TableMetaUtils {
                     continue;
                 }
                 final String fieldName = field.getName();
-                if (MetaBridge.ID.equals(fieldName)) {
+                if (_MetaBridge.ID.equals(fieldName)) {
                     if (idField != null) {
                         throw fieldOverride(mappedClass, field);
                     }
@@ -404,7 +405,7 @@ abstract class TableMetaUtils {
             }
         }
         if (idField == null) {
-            throw missingProperties(parentDomainClass, Collections.singleton(MetaBridge.ID));
+            throw missingProperties(parentDomainClass, Collections.singleton(_MetaBridge.ID));
         }
         final Pair<Set<String>, Field> fieldPair;
         fieldPair = new Pair<>(Collections.unmodifiableSet(fieldNameSet), idField);
@@ -568,13 +569,13 @@ abstract class TableMetaUtils {
         if (columnNameSet.contains(lowerColumnName)) {
             throw new MetaException(ErrorCode.META_ERROR, "domain[%s] column[%s]  duplication",
                     fieldMeta.tableMeta().javaType(),
-                    fieldMeta.fieldName()
+                    fieldMeta.columnName()
             );
         }
-        if (propNameSet.contains(fieldMeta.propertyName())) {
+        if (propNameSet.contains(fieldMeta.fieldName())) {
             throw new MetaException(ErrorCode.META_ERROR, "domain[%s] property[%s]  duplication",
                     fieldMeta.tableMeta().javaType(),
-                    fieldMeta.propertyName()
+                    fieldMeta.fieldName()
             );
         }
     }
@@ -654,7 +655,7 @@ abstract class TableMetaUtils {
         }
         FieldMeta<T, ?> fieldMeta = propNameToFieldMeta.get(field.getName());
         if (fieldMeta == null
-                || !fieldMeta.fieldName().equals(inheritance.value())
+                || !fieldMeta.columnName().equals(inheritance.value())
                 || fieldMeta.tableMeta() != tableMeta) {
             throw new MetaException(ErrorCode.META_ERROR, "domain[%s] discriminator column[%s] not found",
                     tableMeta.javaType().getName(),
@@ -831,7 +832,7 @@ abstract class TableMetaUtils {
      */
     private static IllegalStateException fieldMetaDuplication(IndexFieldMeta<?, ?> fieldMeta) {
         String m = String.format("Domain[%s] filed meta[%s] duplication.",
-                fieldMeta.tableMeta().javaType().getName(), fieldMeta.propertyName());
+                fieldMeta.tableMeta().javaType().getName(), fieldMeta.fieldName());
         throw new MetaException(m);
     }
 
@@ -867,14 +868,14 @@ abstract class TableMetaUtils {
                 this.unique = true;
                 this.type = "";
                 primaryKey = true;
-                final Field field = Objects.requireNonNull(columnToFieldMap.get(MetaBridge.ID));
+                final Field field = Objects.requireNonNull(columnToFieldMap.get(_MetaBridge.ID));
                 final IndexFieldMeta<T, ?> idFieldMeta;
                 idFieldMeta = DefaultFieldMeta.createIndexFieldMeta(table, field, this, 1, null);
                 this.fieldList = Collections.singletonList(idFieldMeta);
             } else {
                 this.name = index.name();
                 final String[] columnArray = index.columnList();
-                this.primaryKey = columnArray.length == 1 && MetaBridge.ID.equals(columnArray[0].split(" ")[0]);
+                this.primaryKey = columnArray.length == 1 && _MetaBridge.ID.equals(columnArray[0].split(" ")[0]);
                 this.unique = this.primaryKey || index.unique();
                 this.type = index.type();
                 this.fieldList = createIndexFieldMetaList(columnArray, this, columnToFieldMap, createdColumnSet);
@@ -896,7 +897,7 @@ abstract class TableMetaUtils {
                 if (index > 0) {
                     builder.append(',');
                 }
-                builder.append(fieldMeta.propertyName());
+                builder.append(fieldMeta.fieldName());
                 index++;
             }
             return builder

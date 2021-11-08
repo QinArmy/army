@@ -10,7 +10,7 @@ import io.army.criteria.impl.inner.TableWrapper;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
-import io.army.modelgen.MetaBridge;
+import io.army.modelgen._MetaBridge;
 import io.army.util.StringUtils;
 
 import java.sql.JDBCType;
@@ -92,7 +92,7 @@ public abstract class DialectUtils {
 
         boolean appendedId = false;
         for (FieldMeta<?, ?> fieldMeta : mergedFields) {
-            if (!appendedId && MetaBridge.ID.equals(fieldMeta.propertyName())) {
+            if (!appendedId && _MetaBridge.ID.equals(fieldMeta.fieldName())) {
                 childFields.add(childMeta.id());
                 parentFields.add(parentMeta.id());
                 appendedId = true;
@@ -137,7 +137,7 @@ public abstract class DialectUtils {
         if (temp instanceof ChildTableMeta) {
             temp = ((ChildTableMeta<?>) temp).parentMeta();
         }
-        return temp.mappingProp(MetaBridge.VISIBLE);
+        return temp.mappingProp(_MetaBridge.VISIBLE);
     }
 
     public static boolean needAppendVisible(List<? extends TableWrapper> tableWrapperList) {
@@ -152,7 +152,7 @@ public abstract class DialectUtils {
                 if (tableAble instanceof ChildTableMeta) {
                     temp = ((ChildTableMeta<?>) temp).parentMeta();
                 }
-                if (temp.mappingProp(MetaBridge.VISIBLE)) {
+                if (temp.mappingProp(_MetaBridge.VISIBLE)) {
                     need = true;
                     break;
                 }

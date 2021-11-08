@@ -7,7 +7,7 @@ import io.army.domain.IDomain;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
-import io.army.modelgen.MetaBridge;
+import io.army.modelgen._MetaBridge;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -108,7 +108,7 @@ public abstract class CriteriaUtils {
         String propName;
         for (int i = 0; i < size; i++) {
             propName = propNameList.get(i);
-            if (MetaBridge.ID.equals(propName)) {
+            if (_MetaBridge.ID.equals(propName)) {
                 list.add(tableMeta.id().equal(valueList.get(i)));
             } else if (tableMeta.mappingProp(propName)) {
                 list.add(tableMeta.getField(propName).equal(valueList.get(i)));

@@ -6,7 +6,7 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.IPredicate;
 import io.army.criteria.impl.Predicates;
 import io.army.meta.*;
-import io.army.modelgen.MetaBridge;
+import io.army.modelgen._MetaBridge;
 import io.army.util.Assert;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -32,7 +32,7 @@ final class DomainSetterInterceptor implements MethodInterceptor, DomainUpdateAd
 
         // 1. id predicate
         final PrimaryFieldMeta<?, Object> idMeta = tableMeta.id();
-        final Object idValue = readonlyWrapper.getPropertyValue(idMeta.propertyName());
+        final Object idValue = readonlyWrapper.getPropertyValue(idMeta.fieldName());
         Assert.notNull(idValue, "Domain Id is null");
         predicateList.add(Predicates.primaryValueEquals(idMeta, idValue));
 
@@ -40,16 +40,16 @@ final class DomainSetterInterceptor implements MethodInterceptor, DomainUpdateAd
         if (tableMeta instanceof ChildTableMeta) {
             ChildTableMeta<?> childMeta = (ChildTableMeta<?>) tableMeta;
             ParentTableMeta<?> parentMeta = childMeta.parentMeta();
-            if (parentMeta.mappingProp(MetaBridge.VERSION)) {
-                versionMeta = parentMeta.getField(MetaBridge.VERSION);
+            if (parentMeta.mappingProp(_MetaBridge.VERSION)) {
+                versionMeta = parentMeta.getField(_MetaBridge.VERSION);
             }
-        } else if (tableMeta.mappingProp(MetaBridge.VERSION)) {
-            versionMeta = tableMeta.getField(MetaBridge.VERSION);
+        } else if (tableMeta.mappingProp(_MetaBridge.VERSION)) {
+            versionMeta = tableMeta.getField(_MetaBridge.VERSION);
         }
 
         if (versionMeta != null) {
             // 2. version predicate
-            Object versionValue = readonlyWrapper.getPropertyValue(versionMeta.propertyName());
+            Object versionValue = readonlyWrapper.getPropertyValue(versionMeta.fieldName());
             Assert.notNull(versionValue, "Domain version is null");
             predicateList.add(versionMeta.equal(versionValue));
         }
@@ -90,11 +90,11 @@ final class DomainSetterInterceptor implements MethodInterceptor, DomainUpdateAd
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "FieldMeta[%s] not updatable.", fieldMeta);
         }
         //2. obtain old value
-        final Object oldValue = this.readonlyWrapper.getPropertyValue(fieldMeta.propertyName());
+        final Object oldValue = this.readonlyWrapper.getPropertyValue(fieldMeta.fieldName());
         //3. invoke setter
         final Object result = invocation.proceed();
         //4. obtain new value
-        Object newObject = this.readonlyWrapper.getPropertyValue(fieldMeta.propertyName());
+        Object newObject = this.readonlyWrapper.getPropertyValue(fieldMeta.fieldName());
         if (!Objects.equals(newObject, oldValue)) {
             if (this.targetFieldSet == null) {
                 this.targetFieldSet = new HashSet<>();

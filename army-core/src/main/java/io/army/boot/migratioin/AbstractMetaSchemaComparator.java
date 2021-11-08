@@ -6,7 +6,7 @@ import io.army.dialect.DDLUtils;
 import io.army.dialect.Database;
 import io.army.lang.Nullable;
 import io.army.meta.*;
-import io.army.modelgen.MetaBridge;
+import io.army.modelgen._MetaBridge;
 import io.army.schema.SchemaInfoException;
 import io.army.sharding.RouteUtils;
 import io.army.util.Assert;
@@ -201,7 +201,7 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
 
         for (FieldMeta<?, ?> fieldMeta : tableMeta.fieldCollection()) {
             // make key lower case
-            ColumnInfo columnInfo = columnInfoMap.get(StringUtils.toLowerCase(fieldMeta.fieldName()));
+            ColumnInfo columnInfo = columnInfoMap.get(StringUtils.toLowerCase(fieldMeta.columnName()));
             if (columnInfo == null) {
                 // alter tableMeta add column
                 migration.addColumnToAdd(fieldMeta);
@@ -262,7 +262,7 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
         } else if (indexInfo.unique()) {
             Map<String, IndexColumnInfo> indexColumnInfoMap = indexInfo.columnMap();
             yes = indexColumnInfoMap.size() == 1
-                    && indexColumnInfoMap.containsKey(MetaBridge.ID);
+                    && indexColumnInfoMap.containsKey(_MetaBridge.ID);
         }
         return yes;
     }
@@ -287,7 +287,7 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
         Map<String, IndexColumnInfo> columnInfoMap = indexInfo.columnMap();
         boolean need = false;
         for (IndexFieldMeta<?, ?> indexFieldMeta : indexMeta.fieldList()) {
-            IndexColumnInfo info = columnInfoMap.get(StringUtils.toLowerCase(indexFieldMeta.fieldName()));
+            IndexColumnInfo info = columnInfoMap.get(StringUtils.toLowerCase(indexFieldMeta.columnName()));
 
             if (info == null) {
                 // index column not exists

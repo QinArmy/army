@@ -51,7 +51,7 @@ abstract class Exceptions {
     static AnnotationMetaException domainNoIdProp(TypeElement domainElement) {
         String m = String.format("Domain[%s] no property[%s]"
                 , domainElement.getQualifiedName()
-                , MetaBridge.ID);
+                , _MetaBridge.ID);
         return new AnnotationMetaException(m);
     }
 

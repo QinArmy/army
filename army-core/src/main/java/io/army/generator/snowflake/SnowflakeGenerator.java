@@ -369,7 +369,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
         }
         Assert.isTrue(entityWrapper.isReadableProperty(dependOnProp)
                 , () -> String.format("paramMeta[%s.%s] depend not readable"
-                        , fieldMeta.javaType().getName(), fieldMeta.propertyName()));
+                        , fieldMeta.javaType().getName(), fieldMeta.fieldName()));
 
         Object dependValue = entityWrapper.getPropertyValue(dependOnProp);
 

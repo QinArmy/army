@@ -10,12 +10,13 @@ import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
-import io.army.modelgen.MetaBridge;
+import io.army.modelgen._MetaBridge;
 import io.army.util.AnnotationUtils;
 import io.army.util.Assert;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -25,46 +26,27 @@ import java.util.concurrent.ConcurrentMap;
  */
 class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> implements FieldMeta<T, F>, Selection {
 
-    private static final String ID = MetaBridge.ID;
+    private static final String ID = _MetaBridge.ID;
 
-    private static final ConcurrentMap<String, FieldMeta<?, ?>> INSTANCE_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<DefaultFieldMeta<?, ?>, Boolean> INSTANCE_MAP = new ConcurrentHashMap<>();
 
     private static final ConcurrentMap<FieldMeta<?, ?>, Boolean> CODEC_MAP = new ConcurrentHashMap<>();
 
-    @SuppressWarnings("unchecked")
-    static <T extends IDomain> FieldMeta<T, ?> createFieldMeta(final TableMeta<T> table
+    static <T extends IDomain, F> FieldMeta<T, F> createFieldMeta(final TableMeta<T> table
             , final Field field) {
-        final String fieldMetaKey = table.javaType().getName() + "." + field.getName();
-        FieldMeta<T, ?> fieldMeta;
-        fieldMeta = (FieldMeta<T, ?>) INSTANCE_MAP.get(fieldMetaKey);
-        if (fieldMeta != null) {
-            return fieldMeta;
-        }
-
-        assertNotParentFiled(table, field);
-
+        final DefaultFieldMeta<T, F> fieldMeta;
         fieldMeta = new DefaultFieldMeta<>(table, field, false, false);
-        FieldMeta<?, ?> actualFieldMeta = INSTANCE_MAP.putIfAbsent(fieldMetaKey, fieldMeta);
-
-        if (actualFieldMeta != null && actualFieldMeta != fieldMeta) {
-            throw new MetaException("domain[%s] property[%s] is duplication."
-                    , table.javaType().getName(), field.getName());
+        if (INSTANCE_MAP.putIfAbsent(fieldMeta, Boolean.TRUE) != null) {
+            String m = String.format("%s duplication.", fieldMeta);
+            throw new IllegalStateException(m);
         }
         return fieldMeta;
+
     }
 
-    @SuppressWarnings("unchecked")
-    static <T extends IDomain, F> IndexFieldMeta<T, F> createIndexFieldMeta(TableMeta<T> table, Field field
-            , IndexMeta<T> indexMeta, int columnCount, @Nullable Boolean fieldAsc) {
-
-        final String fieldMetaKey = table.javaType().getName() + "." + field.getName();
-        IndexFieldMeta<T, F> fieldMeta;
-        fieldMeta = (IndexFieldMeta<T, F>) INSTANCE_MAP.get(fieldMetaKey);
-        if (fieldMeta != null) {
-            return fieldMeta;
-        }
-        assertNotParentFiled(table, field);
-
+    static <T extends IDomain, F> IndexFieldMeta<T, F> createIndexFieldMeta(final TableMeta<T> table, final Field field
+            , final IndexMeta<T> indexMeta, final int columnCount, final @Nullable Boolean fieldAsc) {
+        final DefaultIndexFieldMeta<T, F> fieldMeta;
         // create new IndexFieldMeta
         if (indexMeta.unique() && columnCount == 1) {
             if (ID.equals(field.getName())) {
@@ -75,12 +57,9 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
         } else {
             fieldMeta = new DefaultIndexFieldMeta<>(table, field, indexMeta, false, fieldAsc);
         }
-
-        FieldMeta<?, ?> actualFieldMeta = INSTANCE_MAP.putIfAbsent(fieldMetaKey, fieldMeta);
-
-        if (actualFieldMeta != null && actualFieldMeta != fieldMeta) {
-            throw new MetaException("domain[%s] property[%s] is duplication."
-                    , table.javaType().getName(), field.getName());
+        if (INSTANCE_MAP.putIfAbsent(fieldMeta, Boolean.TRUE) != null) {
+            String m = String.format("%s duplication.", fieldMeta);
+            throw new IllegalStateException(m);
         }
         return fieldMeta;
     }
@@ -90,35 +69,28 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     }
 
     private static void assertNotParentFiled(TableMeta<?> table, Field field) {
-        if ((table instanceof ChildTableMeta)
-                && !MetaBridge.ID.equals(field.getName())) {
+        if ((table instanceof ChildTableMeta) && !_MetaBridge.ID.equals(field.getName())) {
             ChildTableMeta<?> childMeta = (ChildTableMeta<?>) table;
             if (childMeta.parentMeta().mappingProp(field.getName())) {
-                throw new MetaException("mapping property belong to ParentTableMeta[%s]"
+                String m = String.format("mapping field belong to ParentTableMeta[%s]"
                         , childMeta.parentMeta());
+                throw new MetaException(m);
             }
-        }
-    }
-
-    private static void assertNotDuplication(Field field, Class<?> domainClass) {
-        if (INSTANCE_MAP.containsKey(domainClass.getName() + "." + field.getName())) {
-            throw new IllegalStateException(String.format("domain[%s] FieldMeta[%s] duplication."
-                    , domainClass.getName(), field.getName()));
         }
     }
 
 
     private final TableMeta<T> table;
 
-    private final String propertyName;
+    private final String fieldName;
 
     private final boolean unique;
 
     private final boolean index;
 
-    private final Class<F> propertyClass;
+    private final Class<F> javaType;
 
-    private final String fieldName;
+    private final String columnName;
 
     private final String comment;
 
@@ -141,32 +113,32 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     private final boolean codec;
 
     @SuppressWarnings("unchecked")
-    private DefaultFieldMeta(final @NonNull TableMeta<T> table, final @NonNull Field field, final boolean unique,
-                             final boolean index)
-            throws MetaException {
-        Assert.notNull(table, "tableMeta required");
-        Assert.notNull(field, "field required");
+    private DefaultFieldMeta(final TableMeta<T> table, final @NonNull Field field, final boolean unique,
+                             final boolean index) throws MetaException {
+        Objects.requireNonNull(table);
+        Objects.requireNonNull(field);
+
         Assert.isAssignable(field.getDeclaringClass(), table.javaType());
-        assertNotDuplication(field, table.javaType());
+        assertNotParentFiled(table, field);
 
         this.table = table;
-        this.propertyName = field.getName();
-        this.propertyClass = (Class<F>) field.getType();
+        this.fieldName = field.getName();
+        this.javaType = (Class<F>) field.getType();
         try {
             this.unique = unique;
             this.index = index;
 
-            Column column = FieldMetaUtils.columnMeta(table.javaType(), field);
+            final Column column = FieldMetaUtils.columnMeta(table.javaType(), field);
 
             this.precision = column.precision();
             this.scale = column.scale();
-            this.fieldName = FieldMetaUtils.columnName(column, field);
+            this.columnName = FieldMetaUtils.columnName(column, field);
             this.mappingType = FieldMetaUtils.columnMappingMeta(field);
 
             final boolean isDiscriminator = FieldMetaUtils.isDiscriminator(this);
 
             this.insertable = FieldMetaUtils.columnInsertable(this, column, isDiscriminator);
-            this.updatable = FieldMetaUtils.columnUpdatable(table, this.propertyName, column, isDiscriminator);
+            this.updatable = FieldMetaUtils.columnUpdatable(table, this.fieldName, column, isDiscriminator);
 
             this.comment = FieldMetaUtils.columnComment(column, this);
             this.nullable = FieldMetaUtils.columnNullable(column, this, isDiscriminator);
@@ -181,14 +153,14 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
             throw e;
         } catch (RuntimeException e) {
             throw new MetaException(e, "debugSQL entity[%s] mapping property[%s] meta error"
-                    , table.javaType().getName(), propertyName);
+                    , table.javaType().getName(), fieldName);
         }
     }
 
 
     @Override
     public final String alias() {
-        return this.propertyName;
+        return this.fieldName;
     }
 
     @Override
@@ -203,7 +175,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     @Override
     public final boolean primary() {
-        return ID.equals(propertyName);
+        return ID.equals(fieldName);
     }
 
     @Override
@@ -228,7 +200,7 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
 
     @Override
     public final Class<F> javaType() {
-        return propertyClass;
+        return this.javaType;
     }
 
     @Override
@@ -272,14 +244,14 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     }
 
     @Override
-    public final String fieldName() {
-        return fieldName;
+    public final String columnName() {
+        return columnName;
     }
 
 
     @Override
-    public final String propertyName() {
-        return propertyName;
+    public final String fieldName() {
+        return fieldName;
     }
 
     @Nullable
@@ -289,32 +261,40 @@ class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F> imple
     }
 
     @Override
-    public final boolean equals(Object obj) {
-        // save column only one FieldMeta instance
-        return this == obj;
+    public final boolean equals(final Object obj) {
+        final boolean match;
+        if (obj == this) {
+            match = true;
+        } else if (obj instanceof DefaultFieldMeta) {
+            final DefaultFieldMeta<?, ?> o = (DefaultFieldMeta<?, ?>) obj;
+            match = this.table.javaType() == o.table.javaType()
+                    && this.fieldName.equals(o.fieldName);
+        } else {
+            match = false;
+        }
+        return match;
     }
 
     @Override
     public final int hashCode() {
-        // save column only one FieldMeta instance
-        return super.hashCode();
+        return Objects.hash(this.table.javaType(), this.fieldName);
     }
 
     @Override
     public final String toString() {
-        StringBuilder builder = new StringBuilder();
+        final StringBuilder builder = new StringBuilder();
         if (this instanceof PrimaryFieldMeta) {
-            builder.append("PrimaryFieldMeta[");
+            builder.append(PrimaryFieldMeta.class.getSimpleName());
         } else if (this instanceof IndexFieldMeta) {
-            builder.append("IndexFieldMeta[");
+            builder.append(IndexFieldMeta.class.getSimpleName());
         } else {
-            builder.append("FieldMeta[");
+            builder.append(FieldMeta.class.getSimpleName());
         }
-        builder.append(this.table.javaType().getName())
-                .append(".")
-                .append(this.propertyName)
-                .append("]");
-        return builder.toString();
+        return builder.append('[')
+                .append(this.table.javaType().getName())
+                .append('.')
+                .append(this.fieldName)
+                .append(']').toString();
     }
 
     @Override

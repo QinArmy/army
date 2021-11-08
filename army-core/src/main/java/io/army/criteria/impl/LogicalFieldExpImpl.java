@@ -35,7 +35,7 @@ final class LogicalFieldExpImpl<T extends IDomain, F> extends AbstractExpression
 
     @Override
     public final String alias() {
-        return this.fieldMeta.propertyName();
+        return this.fieldMeta.fieldName();
     }
 
     @Override
@@ -45,7 +45,7 @@ final class LogicalFieldExpImpl<T extends IDomain, F> extends AbstractExpression
 
     @Override
     public String toString() {
-        return tableAlias + "." + fieldMeta.fieldName();
+        return tableAlias + "." + fieldMeta.columnName();
     }
 
     @Override
@@ -69,8 +69,8 @@ final class LogicalFieldExpImpl<T extends IDomain, F> extends AbstractExpression
     }
 
     @Override
-    public String propertyName() {
-        return fieldMeta.propertyName();
+    public String fieldName() {
+        return fieldMeta.fieldName();
     }
 
     @Override

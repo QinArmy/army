@@ -5,7 +5,7 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen.ArmyMetaModelDomainProcessor;
-import io.army.modelgen.MetaBridge;
+import io.army.modelgen._MetaBridge;
 import io.army.util.StringUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -33,24 +33,17 @@ public abstract class _TableMetaFactory {
         throw new UnsupportedOperationException();
     }
 
-    public static <T extends IDomain> TableMeta<T> getTableMeta(Class<T> domainClass) {
-        return DefaultTableMeta.getTableMeta(domainClass);
-    }
-
-    public static <T extends IDomain> SimpleTableMeta<T> getSimpleTableMeta(Class<T> domainClass) {
+    public static <T extends IDomain> SimpleTableMeta<T> getSimpleTableMeta(final Class<T> domainClass) {
         return DefaultTableMeta.getSimpleTableMeta(domainClass);
     }
 
-    public static <T extends IDomain> ParentTableMeta<T> getParentTableMeta(Class<T> domainClass) {
+    public static <T extends IDomain> ParentTableMeta<T> getParentTableMeta(final Class<T> domainClass) {
         return DefaultTableMeta.getParentTableMeta(domainClass);
-    }
-
-    public static <T extends IDomain> ChildTableMeta<T> getChildTableMeta(Class<T> domainClass) {
-        return DefaultTableMeta.getChildTableMeta(domainClass);
     }
 
     public static <S extends IDomain, T extends S> ChildTableMeta<T> getChildTableMeta(
             ParentTableMeta<S> parentTableMeta, Class<T> domainClass) {
+
         return DefaultTableMeta.getChildTableMeta(parentTableMeta, domainClass);
     }
 
@@ -119,7 +112,7 @@ public abstract class _TableMetaFactory {
             if (url == null) {
                 m = e.getMessage();
             } else {
-                m = String.format("url[%s] scan occur error %s .", url, e.getMessage());
+                m = String.format("url[%s] scan occur error: %s .", url, e.getMessage());
             }
             throw new TableMetaLoadException(m, e);
         } finally {
@@ -187,7 +180,7 @@ public abstract class _TableMetaFactory {
      */
     private static void loadDomainMetaHolder(Class<?> domainClass) {
         try {
-            Class.forName(domainClass.getName() + MetaBridge.META_CLASS_NAME_SUFFIX);
+            Class.forName(domainClass.getName() + _MetaBridge.META_CLASS_NAME_SUFFIX);
         } catch (ClassNotFoundException e) {
             String m = String.format("You compile %s without %s", domainClass.getName()
                     , ArmyMetaModelDomainProcessor.class.getName());
@@ -273,13 +266,19 @@ public abstract class _TableMetaFactory {
         if (buffer.getInt() != 0xCAFEBABE) {
             throw classFileFormatError();
         }
+        final int bit16 = 0xFFFF;
         // 2. read version
-        assertSupportClassFileVersion(buffer);
+        final int major, minor;
+        minor = buffer.getShort() & bit16;
+        major = buffer.getShort() & bit16;
+        if (major < 49 || major > 61) { // less than java 1.5 or great than java 17
+            String m = String.format("class file version[%s.%s] unsupported.", major, minor);
+            throw new IllegalArgumentException(m);
+        }
         // 3. read constant pool
         final Item[] poolItems;
         poolItems = readConstantPool(buffer);
 
-        final int bit16 = 0xFFFF;
         // 4. read access_flags
         final int accessFlags = buffer.getShort() & bit16;
         final int ACC_PUBLIC = 0x0001, ACC_INTERFACE = 0x0200, ACC_ABSTRACT = 0x0400, ACC_ANNOTATION = 0x2000, ACC_ENUM = 0x4000;
@@ -548,10 +547,6 @@ public abstract class _TableMetaFactory {
 
     private static IllegalArgumentException classFileFormatError() {
         return new IllegalArgumentException("class file format error");
-    }
-
-    private static void assertSupportClassFileVersion(ByteBuffer buffer) {
-        buffer.position(buffer.position() + 4);
     }
 
 

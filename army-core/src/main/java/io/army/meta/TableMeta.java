@@ -77,4 +77,9 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
 
     @Override
     int hashCode();
+
+    @Override
+    String toString();
+
+
 }

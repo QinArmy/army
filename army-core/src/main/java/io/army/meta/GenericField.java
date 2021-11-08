@@ -29,5 +29,5 @@ public interface GenericField<T extends IDomain, F> extends FieldExpression<F>, 
 
     MappingType mappingMeta();
 
-    String propertyName();
+    String fieldName();
 }

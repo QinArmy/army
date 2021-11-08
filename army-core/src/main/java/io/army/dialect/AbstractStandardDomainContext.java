@@ -127,7 +127,7 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
         SQLBuilder builder = this.sqlBuilder.append(" ( SELECT ")
                 .append(safeRelationAlias)
                 .append(".")
-                .append(dialect.quoteIfNeed(relationField.fieldName()))
+                .append(dialect.quoteIfNeed(relationField.columnName()))
                 .append(" FROM");
         appendTable(relationTable, this.relationAlias);
         if (dialect.tableAliasAfterAs()) {
@@ -138,11 +138,11 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
                 .append(" WHERE ")
                 .append(safeRelationAlias)
                 .append(".")
-                .append(dialect.quoteIfNeed(relationTable.id().fieldName()))
+                .append(dialect.quoteIfNeed(relationTable.id().columnName()))
                 .append(" = ")
                 .append(dialect.quoteIfNeed(this.primaryAlias))
                 .append(".")
-                .append(dialect.quoteIfNeed(this.primaryTable.id().fieldName()))
+                .append(dialect.quoteIfNeed(this.primaryTable.id().columnName()))
                 .append(" )")
         ;
     }
@@ -152,7 +152,7 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
         final Dialect dialect = this.dialect;
         final String safeRelationAlias = dialect.quoteIfNeed(this.relationAlias);
 
-        final String safeRelationId = dialect.quoteIfNeed(this.relationTable.id().fieldName());
+        final String safeRelationId = dialect.quoteIfNeed(this.relationTable.id().columnName());
         final SQLBuilder builder = this.sqlBuilder
                 .append(" EXISTS ( SELECT ")
                 .append(safeRelationAlias)
@@ -172,7 +172,7 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
                 .append(" = ")
                 .append(dialect.quoteIfNeed(this.primaryAlias))
                 .append(".")
-                .append(dialect.quoteIfNeed(this.primaryTable.id().fieldName()))
+                .append(dialect.quoteIfNeed(this.primaryTable.id().columnName()))
                 .append(" ADN");
         // append special predicate
         predicate.appendPredicate(this);

@@ -131,7 +131,7 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
             builder.append(dialect.quoteIfNeed(tableAlias))
                     .append(".");
         }
-        builder.append(dialect.quoteIfNeed(fieldMeta.fieldName()));
+        builder.append(dialect.quoteIfNeed(fieldMeta.columnName()));
     }
 
     /*################################## blow protected template method ##################################*/

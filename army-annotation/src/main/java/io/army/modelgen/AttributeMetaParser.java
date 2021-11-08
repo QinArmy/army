@@ -28,7 +28,7 @@ final class AttributeMetaParser {
      * <p>
      * five key point :
      * <ol>
-     *     <li>check required field , eg : {@link MetaBridge#DOMAIN_PROPS}</li>
+     *     <li>check required field , eg : {@link _MetaBridge#DOMAIN_PROPS}</li>
      *     <li>check property override</li>
      *     <li>check column duplication in a tableMeta</li>
      *     <li>check index filed validation</li>
@@ -82,14 +82,14 @@ final class AttributeMetaParser {
                     this.domainPropMap.put(domainClassName, entityPropMap);
                 }
             } else {
-                final VariableElement idProp = parentPropMap.get(MetaBridge.ID);
+                final VariableElement idProp = parentPropMap.get(_MetaBridge.ID);
                 if (idProp == null) {
                     final TypeElement parentElement = MetaUtils.domainElement(parentMappedElementList);
                     assert parentElement != null;
                     throw Exceptions.domainNoIdProp(parentElement);
                 }
                 // add id property to child domain
-                entityPropMap.put(MetaBridge.ID, idProp);
+                entityPropMap.put(_MetaBridge.ID, idProp);
                 entityPropMap = Collections.unmodifiableMap(entityPropMap);
             }
             return entityPropMap.values();

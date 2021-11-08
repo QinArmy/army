@@ -1,7 +1,7 @@
 package io.army.util;
 
 import io.army.lang.NonNull;
-import io.army.modelgen.MetaBridge;
+import io.army.modelgen._MetaBridge;
 
 import java.lang.reflect.Modifier;
 
@@ -12,7 +12,7 @@ public abstract class ClassUtils extends org.springframework.util.ClassUtils {
 
 
     public static Class<?> loadDomainMetaClass(@NonNull Class<?> entityClass) throws ClassNotFoundException {
-        return forName(entityClass.getName() + MetaBridge.META_CLASS_NAME_SUFFIX, getDefaultClassLoader());
+        return forName(entityClass.getName() + _MetaBridge.META_CLASS_NAME_SUFFIX, getDefaultClassLoader());
     }
 
 

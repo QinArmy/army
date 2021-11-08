@@ -27,8 +27,8 @@ abstract class MetaUtils {
     private static final Set<String> WITHOUT_DEFAULT_TYPE_NAMES = createWithoutDefaultTypeNameSet();
 
     private static Set<String> createWithoutDefaultTypeNameSet() {
-        Set<String> set = new HashSet<>(MetaBridge.WITHOUT_DEFAULT_TYPES.size() + 6);
-        for (Class<?> clazz : MetaBridge.WITHOUT_DEFAULT_TYPES) {
+        Set<String> set = new HashSet<>(_MetaBridge.WITHOUT_DEFAULT_TYPES.size() + 6);
+        for (Class<?> clazz : _MetaBridge.WITHOUT_DEFAULT_TYPES) {
             set.add(clazz.getName());
         }
         set.add("org.reactivestreams.Publisher");
@@ -44,9 +44,9 @@ abstract class MetaUtils {
             // parent or simple table
             final Set<String> missingProps;
             if (tableImmutable) {
-                missingProps = MetaUtils.createMissingPropNameSet(entityPropNameSet, MetaBridge.DOMAIN_PROPS);
+                missingProps = MetaUtils.createMissingPropNameSet(entityPropNameSet, _MetaBridge.DOMAIN_PROPS);
             } else {
-                missingProps = MetaUtils.createMissingPropNameSet(entityPropNameSet, MetaBridge.UPDATE_PROPS);
+                missingProps = MetaUtils.createMissingPropNameSet(entityPropNameSet, _MetaBridge.UPDATE_PROPS);
             }
             if (!missingProps.isEmpty()) {
                 throw Exceptions.missingProps(domainElement, missingProps);
@@ -59,7 +59,7 @@ abstract class MetaUtils {
     static void assertColumn(TypeElement entityElement, VariableElement mappedProp, Column column
             , String columnName, final boolean defaultNullable, @Nullable String discriminatorColumn) {
         final String propName = mappedProp.getSimpleName().toString();
-        final boolean reservedProp = MetaBridge.RESERVED_PROPS.contains(propName);
+        final boolean reservedProp = _MetaBridge.RESERVED_PROPS.contains(propName);
         // check nullable
         if (reservedProp || (columnName.equals(discriminatorColumn))) {
             if (column.alwaysNullable()) {
@@ -176,7 +176,7 @@ abstract class MetaUtils {
     }
 
     static boolean isReservedProp(VariableElement mappingPropElement) {
-        return MetaBridge.RESERVED_PROPS.contains(mappingPropElement.getSimpleName().toString());
+        return _MetaBridge.RESERVED_PROPS.contains(mappingPropElement.getSimpleName().toString());
     }
 
     /*################################## blow private method ##################################*/
@@ -246,17 +246,17 @@ abstract class MetaUtils {
     static String columnName(TypeElement entityElement, final String propName, Column column) {
         final String customColumnName = column.name();
         final String columnName;
-        if (MetaBridge.RESERVED_PROPS.contains(propName)) {
-            columnName = MetaBridge.camelToLowerCase(propName);
+        if (_MetaBridge.RESERVED_PROPS.contains(propName)) {
+            columnName = _MetaBridge.camelToLowerCase(propName);
             if (!customColumnName.isEmpty() && !customColumnName.equals(columnName)) {
                 String m = String.format("Domain[%s] reserved prop[%s] column name must use default value .",
                         entityElement.getQualifiedName(), propName);
                 throw new AnnotationMetaException(m);
             }
         } else if (customColumnName.isEmpty()) {
-            columnName = MetaBridge.camelToLowerCase(propName);
+            columnName = _MetaBridge.camelToLowerCase(propName);
         } else {
-            columnName = MetaBridge.camelToLowerCase(customColumnName);
+            columnName = _MetaBridge.camelToLowerCase(customColumnName);
         }
         return columnName;
 
@@ -303,7 +303,7 @@ abstract class MetaUtils {
             }
         }
         if (noParent || domainElement.getAnnotation(Inheritance.class) != null) {
-            indexMetaMap.put(MetaBridge.ID, IndexMode.PRIMARY);
+            indexMetaMap.put(_MetaBridge.ID, IndexMode.PRIMARY);
         }
         return Collections.unmodifiableMap(indexMetaMap);
     }

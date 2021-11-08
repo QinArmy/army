@@ -1,7 +1,7 @@
 package io.army.util;
 
 
-import io.army.modelgen.MetaBridge;
+import io.army.modelgen._MetaBridge;
 
 import java.util.Locale;
 
@@ -20,12 +20,12 @@ public abstract class StringUtils extends org.springframework.util.StringUtils {
     }
 
     public static String camelToUpperCase(String camel) {
-        return MetaBridge.camelToUpperCase(camel);
+        return _MetaBridge.camelToUpperCase(camel);
     }
 
 
     public static String camelToLowerCase(String camel) {
-        return MetaBridge.camelToLowerCase(camel);
+        return _MetaBridge.camelToLowerCase(camel);
     }
 
 

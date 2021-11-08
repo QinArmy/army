@@ -36,7 +36,7 @@ class DefaultMetaAttribute implements MetaAttribute {
             // make column name lower case
             columnName = Strings.toLowerCase(columnName);
             IndexMode indexMode = indexMetaMa.get(columnName);
-            if (indexMode == null && propName.equals(MetaBridge.ID)) {
+            if (indexMode == null && propName.equals(_MetaBridge.ID)) {
                 indexMode = IndexMode.PRIMARY;
             }
             attribute = new DefaultMetaAttribute(domainElement, mappingProp, column, indexMode);
@@ -100,7 +100,7 @@ class DefaultMetaAttribute implements MetaAttribute {
         }
 
         if (propRef == null) {
-            propRef = MetaBridge.camelToUpperCase(propName) + ",";
+            propRef = _MetaBridge.camelToUpperCase(propName) + ",";
         }
 
         return String.format(format,
@@ -111,7 +111,7 @@ class DefaultMetaAttribute implements MetaAttribute {
                 typeParameter, // field type parameter name
 
                 propName,
-                MetaBridge.TABLE_META,
+                _MetaBridge.TABLE_META,
                 methodName,
                 propRef,
 
@@ -132,7 +132,7 @@ class DefaultMetaAttribute implements MetaAttribute {
         return String.format(format,
                 commentLine,
                 SourceCreateUtils.PROP_PRE,
-                MetaBridge.camelToUpperCase(name),
+                _MetaBridge.camelToUpperCase(name),
                 name
         );
     }
@@ -155,19 +155,19 @@ class DefaultMetaAttribute implements MetaAttribute {
     private static String commentManagedByArmy(VariableElement mappingPropElement) {
         final String comment;
         switch (mappingPropElement.getSimpleName().toString()) {
-            case MetaBridge.ID:
+            case _MetaBridge.ID:
                 comment = "primary key";
                 break;
-            case MetaBridge.CREATE_TIME:
+            case _MetaBridge.CREATE_TIME:
                 comment = "create time";
                 break;
-            case MetaBridge.UPDATE_TIME:
+            case _MetaBridge.UPDATE_TIME:
                 comment = "update time";
                 break;
-            case MetaBridge.VERSION:
+            case _MetaBridge.VERSION:
                 comment = "version for optimistic lock";
                 break;
-            case MetaBridge.VISIBLE:
+            case _MetaBridge.VISIBLE:
                 comment = "visible for logic delete";
                 break;
             default:

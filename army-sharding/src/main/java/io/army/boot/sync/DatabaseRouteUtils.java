@@ -40,7 +40,7 @@ abstract class DatabaseRouteUtils extends RouteUtils {
         // obtain route key
         Object routeKey = null;
         for (FieldMeta<?, ?> routeField : routeFieldList) {
-            Object value = wrapper.getType(routeField.propertyName());
+            Object value = wrapper.getType(routeField.fieldName());
             if (value != null) {
                 routeKey = value;
                 break;

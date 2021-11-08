@@ -10,7 +10,7 @@ import io.army.domain.IDomain;
 import io.army.generator.FieldGenerator;
 import io.army.generator.PreFieldGenerator;
 import io.army.meta.*;
-import io.army.modelgen.MetaBridge;
+import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
@@ -106,7 +106,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
                         , fieldMeta
                         , generator));
 
-        entityWrapper.set(fieldMeta.propertyName(), value);
+        entityWrapper.set(fieldMeta.fieldName(), value);
     }
 
     /**
@@ -121,13 +121,13 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
             parentMeta = tableMeta;
         }
         ZonedDateTime now = ZonedDateTime.now(this.sessionFactory.zoneId());
-        createCreateOrUpdateTime(parentMeta.getField(MetaBridge.CREATE_TIME), now, entityWrapper);
+        createCreateOrUpdateTime(parentMeta.getField(_MetaBridge.CREATE_TIME), now, entityWrapper);
 
         if (!tableMeta.immutable()) {
-            createCreateOrUpdateTime(parentMeta.getField(MetaBridge.UPDATE_TIME), now, entityWrapper);
-            if (parentMeta.mappingProp(MetaBridge.VERSION)) {
+            createCreateOrUpdateTime(parentMeta.getField(_MetaBridge.UPDATE_TIME), now, entityWrapper);
+            if (parentMeta.mappingProp(_MetaBridge.VERSION)) {
                 // create version value
-                entityWrapper.set(MetaBridge.VERSION, 0);
+                entityWrapper.set(_MetaBridge.VERSION, 0);
             }
         }
         // discriminator
@@ -142,15 +142,15 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
             return;
         }
         CodeEnum codeEnum = CodeEnum.resolve(discriminator.javaType(), tableMeta.discriminatorValue());
-        entityWrapper.set(discriminator.propertyName(), codeEnum);
+        entityWrapper.set(discriminator.fieldName(), codeEnum);
     }
 
     private void createCreateOrUpdateTime(FieldMeta<?, ?> fieldMeta, ZonedDateTime now, ObjectWrapper entityWrapper) {
         if (fieldMeta.javaType() == LocalDateTime.class) {
-            entityWrapper.set(fieldMeta.propertyName(), now.toLocalDateTime());
+            entityWrapper.set(fieldMeta.fieldName(), now.toLocalDateTime());
         } else if (fieldMeta.javaType() == ZonedDateTime.class) {
             assertDialectSupportedZone();
-            entityWrapper.set(fieldMeta.propertyName(), now);
+            entityWrapper.set(fieldMeta.fieldName(), now);
         } else {
             throw new MetaException("createTime or updateTime only support LocalDateTime or ZonedDateTime");
         }

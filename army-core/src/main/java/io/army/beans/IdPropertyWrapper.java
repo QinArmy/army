@@ -1,7 +1,7 @@
 package io.army.beans;
 
 import io.army.lang.Nullable;
-import io.army.modelgen.MetaBridge;
+import io.army.modelgen._MetaBridge;
 
 final class IdPropertyWrapper implements ObjectWrapper {
 
@@ -15,12 +15,12 @@ final class IdPropertyWrapper implements ObjectWrapper {
 
     @Override
     public boolean isWritableProperty(String propertyName) {
-        return MetaBridge.ID.equals(propertyName);
+        return _MetaBridge.ID.equals(propertyName);
     }
 
     @Override
     public void set(String propertyName, @Nullable Object value) throws BeansException {
-        if (MetaBridge.ID.equals(propertyName)) {
+        if (_MetaBridge.ID.equals(propertyName)) {
             if (value == null || idClass.isInstance(value)) {
                 this.id = value;
             } else {
@@ -44,12 +44,12 @@ final class IdPropertyWrapper implements ObjectWrapper {
 
     @Override
     public boolean isReadableProperty(String propertyName) {
-        return MetaBridge.ID.equals(propertyName);
+        return _MetaBridge.ID.equals(propertyName);
     }
 
     @Override
     public Class<?> getType(String propertyName) throws BeansException {
-        if (MetaBridge.ID.equals(propertyName)) {
+        if (_MetaBridge.ID.equals(propertyName)) {
             return this.idClass;
         }
         throw new InvalidPropertyException(propertyName, Object.class
@@ -58,7 +58,7 @@ final class IdPropertyWrapper implements ObjectWrapper {
 
     @Override
     public Object getPropertyValue(String propertyName) throws BeansException {
-        if (MetaBridge.ID.equals(propertyName)) {
+        if (_MetaBridge.ID.equals(propertyName)) {
             return this.id;
         }
         throw new InvalidPropertyException(propertyName, Object.class

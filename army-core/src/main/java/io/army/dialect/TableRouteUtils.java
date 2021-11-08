@@ -27,7 +27,7 @@ abstract class TableRouteUtils extends RouteUtils {
         // obtain route key
         Object routeKey = null;
         for (FieldMeta<?, ?> routeField : routeFields) {
-            Object value = beanWrapper.getType(routeField.propertyName());
+            Object value = beanWrapper.getType(routeField.fieldName());
             if (value != null) {
                 routeKey = value;
                 break;

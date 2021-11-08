@@ -11,7 +11,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 import io.army.meta.MetaException;
 import io.army.meta.TableMeta;
-import io.army.modelgen.MetaBridge;
+import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
 import io.army.util.AnnotationUtils;
 import io.army.util.ClassUtils;
@@ -83,10 +83,10 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         }
     }
 
-    static Column columnMeta(@NonNull Class<? extends IDomain> entityClass, @NonNull Field field) throws MetaException {
-        Column column = AnnotationUtils.getAnnotation(field, Column.class);
+    static Column columnMeta(final Class<? extends IDomain> domainClass, final Field field) throws MetaException {
+        final Column column = field.getAnnotation(Column.class);
         if (column == null) {
-            throw createNonAnnotationException(entityClass, Column.class);
+            throw createNonAnnotationException(domainClass, Column.class);
         }
         return column;
     }
@@ -94,7 +94,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
 
     @Nullable
     static GeneratorMeta columnGeneratorMeta(Field field, FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
-        if (MetaBridge.ID.equals(fieldMeta.propertyName())
+        if (_MetaBridge.ID.equals(fieldMeta.fieldName())
                 && fieldMeta.tableMeta().parentMeta() != null) {
             return null;
         }
@@ -155,12 +155,12 @@ abstract class FieldMetaUtils extends TableMetaUtils {
     static boolean isDiscriminator(FieldMeta<?, ?> fieldMeta) {
         Inheritance inheritance = AnnotationUtils.getAnnotation(fieldMeta.tableMeta().javaType(), Inheritance.class);
         return inheritance != null
-                && fieldMeta.fieldName().equalsIgnoreCase(inheritance.value());
+                && fieldMeta.columnName().equalsIgnoreCase(inheritance.value());
     }
 
     static boolean columnInsertable(FieldMeta<?, ?> fieldMeta, Column column, boolean isDiscriminator) {
         boolean insertable = column.insertable();
-        if (MetaBridge.RESERVED_PROPS.contains(fieldMeta.propertyName())
+        if (_MetaBridge.RESERVED_PROPS.contains(fieldMeta.fieldName())
                 || isDiscriminator) {
             insertable = true;
         }
@@ -170,8 +170,8 @@ abstract class FieldMetaUtils extends TableMetaUtils {
     static boolean columnUpdatable(TableMeta<?> tableMeta, String propName, Column column, boolean isDiscriminator) {
         boolean updatable = column.updatable();
         if (tableMeta.immutable()
-                || MetaBridge.ID.equals(propName)
-                || MetaBridge.CREATE_TIME.equals(propName)
+                || _MetaBridge.ID.equals(propName)
+                || _MetaBridge.CREATE_TIME.equals(propName)
                 || isDiscriminator) {
             updatable = false;
         }
@@ -182,7 +182,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
     @NonNull
     static String columnComment(Column column, FieldMeta<?, ?> fieldMeta) {
         String comment = column.comment().trim();
-        if (MetaBridge.RESERVED_PROPS.contains(fieldMeta.propertyName())
+        if (_MetaBridge.RESERVED_PROPS.contains(fieldMeta.fieldName())
                 || CodeEnum.class.isAssignableFrom(fieldMeta.javaType())) {
 
             if (!StringUtils.hasText(comment)) {
@@ -191,18 +191,18 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         } else if (!StringUtils.hasText(comment)) {
             throw new MetaException("Entity[%s] column[%s] no comment."
                     , fieldMeta.tableMeta().javaType().getName()
-                    , fieldMeta.fieldName());
+                    , fieldMeta.columnName());
         }
         return comment;
     }
 
     static boolean columnNullable(Column column, FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
-        if (MetaBridge.UPDATE_PROPS.contains(fieldMeta.propertyName())
+        if (_MetaBridge.UPDATE_PROPS.contains(fieldMeta.fieldName())
                 || isDiscriminator) {
             if (column.nullable()) {
                 throw new MetaException("mapped class[%s] column[%s] columnNullable must be false.",
                         fieldMeta.tableMeta().javaType(),
-                        fieldMeta.fieldName()
+                        fieldMeta.columnName()
                 );
             }
 
@@ -215,7 +215,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         if (!fieldMeta.nullable()
                 && !StringUtils.hasText(defaultValue)
                 && !managedByArmy(fieldMeta)
-                && !MetaBridge.MAYBE_NO_DEFAULT_TYPES.contains(fieldMeta.javaType())) {
+                && !_MetaBridge.MAYBE_NO_DEFAULT_TYPES.contains(fieldMeta.javaType())) {
             throw new MetaException("%s non-null ,please specified defaultValue() for it.", fieldMeta);
         }
         return defaultValue;
@@ -225,20 +225,20 @@ abstract class FieldMetaUtils extends TableMetaUtils {
 
     private static String commentManagedByArmy(FieldMeta<?, ?> fieldMeta) {
         String comment = "";
-        switch (fieldMeta.propertyName()) {
-            case MetaBridge.ID:
+        switch (fieldMeta.fieldName()) {
+            case _MetaBridge.ID:
                 comment = "primary key";
                 break;
-            case MetaBridge.CREATE_TIME:
+            case _MetaBridge.CREATE_TIME:
                 comment = "create time";
                 break;
-            case MetaBridge.UPDATE_TIME:
+            case _MetaBridge.UPDATE_TIME:
                 comment = "singleUpdate time";
                 break;
-            case MetaBridge.VERSION:
+            case _MetaBridge.VERSION:
                 comment = "version for optimistic lock";
                 break;
-            case MetaBridge.VISIBLE:
+            case _MetaBridge.VISIBLE:
                 comment = "visible for logic singleDelete";
                 break;
             default:
@@ -252,9 +252,9 @@ abstract class FieldMetaUtils extends TableMetaUtils {
 
     private static boolean managedByArmy(FieldMeta<?, ?> fieldMeta) {
         Inheritance inheritance = AnnotationUtils.getAnnotation(fieldMeta.tableMeta().javaType(), Inheritance.class);
-        return MetaBridge.RESERVED_PROPS.contains(fieldMeta.propertyName())
+        return _MetaBridge.RESERVED_PROPS.contains(fieldMeta.fieldName())
                 || (inheritance != null
-                && inheritance.value().equalsIgnoreCase(fieldMeta.fieldName()))
+                && inheritance.value().equalsIgnoreCase(fieldMeta.columnName()))
                 ;
     }
 
@@ -267,7 +267,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
                 && !ClassUtils.isAssignable(PreFieldGenerator.class, generatorClass)) {
             throw new MetaException("Entity[%s] prop[%s] generator cannot have %s value"
                     , fieldMeta.tableMeta().javaType().getName()
-                    , fieldMeta.propertyName()
+                    , fieldMeta.fieldName()
                     , PreFieldGenerator.DEPEND_PROP_NAME);
         }
     }
@@ -277,18 +277,18 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         if (!ClassUtils.isAssignable(PreFieldGenerator.class, generatorClass)) {
             throw new MetaException("Domain[%s] prop[%s] generator error, isn't %s"
                     , fieldMeta.tableMeta()
-                    , fieldMeta.propertyName()
+                    , fieldMeta.fieldName()
                     , PreFieldGenerator.class.getName());
         }
     }
 
     private static void assertManagedByArmyForGenerator(FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
-        if (!MetaBridge.ID.equals(fieldMeta.propertyName())) {
-            if (MetaBridge.RESERVED_PROPS.contains(fieldMeta.propertyName())
+        if (!_MetaBridge.ID.equals(fieldMeta.fieldName())) {
+            if (_MetaBridge.RESERVED_PROPS.contains(fieldMeta.fieldName())
                     || isDiscriminator) {
                 throw new MetaException("Domain[%s].prop[%s] must no Generator"
                         , fieldMeta.tableMeta().javaType().getName()
-                        , fieldMeta.propertyName());
+                        , fieldMeta.fieldName());
             }
         }
     }
@@ -296,13 +296,13 @@ abstract class FieldMetaUtils extends TableMetaUtils {
     private static Class<?> loadGeneratorClass(FieldMeta<?, ?> fieldMeta, String className) {
         if (!StringUtils.hasText(className)) {
             throw new MetaException("Domain[%s] prop[%s] generator no class name"
-                    , fieldMeta.tableMeta().javaType().getName(), fieldMeta.propertyName());
+                    , fieldMeta.tableMeta().javaType().getName(), fieldMeta.fieldName());
         }
         try {
             return ClassUtils.forName(className, ClassUtils.getDefaultClassLoader());
         } catch (ClassNotFoundException e) {
             throw new MetaException(e, "Domain[%s] prop[%s] generator class not found."
-                    , fieldMeta.tableMeta().javaType().getName(), fieldMeta.propertyName());
+                    , fieldMeta.tableMeta().javaType().getName(), fieldMeta.fieldName());
         }
 
     }

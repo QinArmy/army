@@ -13,7 +13,7 @@ import io.army.criteria.impl.inner.InnerUpdate;
 import io.army.generator.FieldGenerator;
 import io.army.generator.PreFieldGenerator;
 import io.army.meta.*;
-import io.army.modelgen.MetaBridge;
+import io.army.modelgen._MetaBridge;
 import io.army.stmt.*;
 import io.army.struct.CodeEnum;
 import io.army.util.Assert;
@@ -196,7 +196,7 @@ abstract class DMLUtils {
     static void setClauseFieldsManagedByArmy(TableContextSQLContext context, TableMeta<?> tableMeta
             , String tableAlias) {
         //1. version field
-        final FieldMeta<?, ?> versionField = tableMeta.getField(MetaBridge.VERSION);
+        final FieldMeta<?, ?> versionField = tableMeta.getField(_MetaBridge.VERSION);
         SQLBuilder builder = context.sqlBuilder();
 
         context.appendField(tableAlias, versionField);
@@ -206,7 +206,7 @@ abstract class DMLUtils {
         builder.append(" + 1 ,");
 
         //2. updateTime field
-        final FieldMeta<?, ?> updateTimeField = tableMeta.getField(MetaBridge.UPDATE_TIME);
+        final FieldMeta<?, ?> updateTimeField = tableMeta.getField(_MetaBridge.UPDATE_TIME);
         // updateTime field self-describe
         context.appendField(tableAlias, updateTimeField);
         builder.append(" =");
@@ -234,8 +234,8 @@ abstract class DMLUtils {
             throw new NonUpdateAbleException("FieldMeta[%s] is non-updatable."
                     , fieldMeta);
         }
-        if (MetaBridge.VERSION.equals(fieldMeta.propertyName())
-                || MetaBridge.UPDATE_TIME.equals(fieldMeta.propertyName())) {
+        if (_MetaBridge.VERSION.equals(fieldMeta.fieldName())
+                || _MetaBridge.UPDATE_TIME.equals(fieldMeta.fieldName())) {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "version or updateTime is managed by army.");
         }
     }
@@ -245,7 +245,7 @@ abstract class DMLUtils {
         for (IPredicate predicate : predicateList) {
             if (predicate instanceof FieldValuePredicate) {
                 GenericField<?, ?> fieldExp = ((FieldValuePredicate) predicate).fieldMeta();
-                if (MetaBridge.VERSION.equals(fieldExp.propertyName())) {
+                if (_MetaBridge.VERSION.equals(fieldExp.fieldName())) {
                     hasVersion = true;
                     break;
                 }
@@ -274,14 +274,14 @@ abstract class DMLUtils {
         if (discriminator != null) {
             fieldMetaSet.add(discriminator);
         }
-        if (parentMeta.mappingProp(MetaBridge.CREATE_TIME)) {
-            fieldMetaSet.add(parentMeta.getField(MetaBridge.CREATE_TIME));
+        if (parentMeta.mappingProp(_MetaBridge.CREATE_TIME)) {
+            fieldMetaSet.add(parentMeta.getField(_MetaBridge.CREATE_TIME));
         }
-        if (parentMeta.mappingProp(MetaBridge.UPDATE_TIME)) {
-            fieldMetaSet.add(parentMeta.getField(MetaBridge.UPDATE_TIME));
+        if (parentMeta.mappingProp(_MetaBridge.UPDATE_TIME)) {
+            fieldMetaSet.add(parentMeta.getField(_MetaBridge.UPDATE_TIME));
         }
-        if (parentMeta.mappingProp(MetaBridge.VERSION)) {
-            fieldMetaSet.add(parentMeta.getField(MetaBridge.VERSION));
+        if (parentMeta.mappingProp(_MetaBridge.VERSION)) {
+            fieldMetaSet.add(parentMeta.getField(_MetaBridge.VERSION));
         }
         return Collections.unmodifiableSet(fieldMetaSet);
     }
@@ -305,7 +305,7 @@ abstract class DMLUtils {
             if (!fieldMeta.insertalbe()) {
                 continue;
             }
-            value = domainWrapper.getPropertyValue(fieldMeta.propertyName());
+            value = domainWrapper.getPropertyValue(fieldMeta.fieldName());
             if (value == null && !fieldMeta.nullable()) {
                 continue;
             }
@@ -431,14 +431,14 @@ abstract class DMLUtils {
 
 
     static boolean isConstant(FieldMeta<?, ?> fieldMeta) {
-        return MetaBridge.VERSION.equals(fieldMeta.propertyName())
+        return _MetaBridge.VERSION.equals(fieldMeta.fieldName())
                 || fieldMeta == fieldMeta.tableMeta().discriminator()
                 ;
     }
 
     static Object createConstant(FieldMeta<?, ?> fieldMeta, TableMeta<?> logicalTable) {
         Object value;
-        if (MetaBridge.VERSION.equals(fieldMeta.propertyName())) {
+        if (_MetaBridge.VERSION.equals(fieldMeta.fieldName())) {
             value = 0;
         } else if (fieldMeta == logicalTable.discriminator()) {
             value = CodeEnum.resolve(fieldMeta.javaType(), logicalTable.discriminatorValue());
@@ -449,7 +449,7 @@ abstract class DMLUtils {
         } else {
             throw new IllegalArgumentException(String.format("Entity[%s] prop[%s] cannot create constant value"
                     , fieldMeta.tableMeta().javaType().getName()
-                    , fieldMeta.propertyName()));
+                    , fieldMeta.fieldName()));
         }
         return value;
     }
@@ -539,7 +539,7 @@ abstract class DMLUtils {
         for (ParamValue placeHolder : placeHolderList) {
             if (placeHolder instanceof FieldParamValue) {
                 FieldMeta<?, ?> fieldMeta = ((FieldParamValue) placeHolder).paramMeta();
-                Object value = beanWrapper.getPropertyValue(fieldMeta.propertyName());
+                Object value = beanWrapper.getPropertyValue(fieldMeta.fieldName());
                 paramValueList.add(ParamValue.build(fieldMeta, value));
             } else {
                 paramValueList.add(placeHolder);

@@ -52,7 +52,7 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
     public final <T extends IDomain, F> LogicalField<T, F> aliasField(
             String tableAlias, FieldMeta<T, F> fieldMeta) {
         LogicalField<T, F> aliasField = (LogicalField<T, F>) aliasTableFieldCache.computeIfAbsent(
-                tableAlias + fieldMeta.fieldName()
+                tableAlias + fieldMeta.columnName()
                 , k -> new LogicalFieldExpImpl<>(tableAlias, fieldMeta)
         );
         if (aliasField.fieldMeta() != fieldMeta) {

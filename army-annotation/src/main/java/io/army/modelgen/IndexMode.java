@@ -13,7 +13,7 @@ enum IndexMode {
         if (index.unique()) {
             final String[] columnList = index.columnList();
             if (columnList.length == 1) {
-                mode = MetaBridge.ID.equals(columnList[0]) ? IndexMode.PRIMARY : IndexMode.UNIQUE;
+                mode = _MetaBridge.ID.equals(columnList[0]) ? IndexMode.PRIMARY : IndexMode.UNIQUE;
             } else {
                 mode = IndexMode.GENERIC;
             }

@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.dialect.SqlDialect;
 import io.army.dialect.SQLBuilder;
+import io.army.dialect.SqlDialect;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 
@@ -38,8 +38,8 @@ final class ExpressionRowImpl<T extends IDomain> implements ExpressionRow<T> {
             if(index > 0){
                 builder.append(",");
             }
-            builder.append(sql.quoteIfNeed(fieldMeta.propertyName()));
-            index ++;
+            builder.append(sql.quoteIfNeed(fieldMeta.fieldName()));
+            index++;
         }
         builder.append(" )");
     }
@@ -54,8 +54,8 @@ final class ExpressionRowImpl<T extends IDomain> implements ExpressionRow<T> {
             if(index > 0){
                 builder.append(",");
             }
-            builder.append(fieldMeta.propertyName());
-            index ++;
+            builder.append(fieldMeta.fieldName());
+            index++;
         }
         builder.append(")");
         return builder.toString();

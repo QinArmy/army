@@ -3,7 +3,7 @@ package io.army.meta;
 import io.army.criteria.SetTargetPart;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
-import io.army.modelgen.MetaBridge;
+import io.army.modelgen._MetaBridge;
 
 /**
  * <p> this interface representing a Java class then tableMeta column mapping.</p>
@@ -23,7 +23,7 @@ public interface FieldMeta<T extends IDomain, F> extends GenericField<T, F>, Par
 
     /**
      * <p>
-     * if this field representing {@link MetaBridge#ID}
+     * if this field representing {@link _MetaBridge#ID}
      * then field's tableMeta is {@link MappingMode#CHILD},always return null.
      * </p>
      */
@@ -45,7 +45,7 @@ public interface FieldMeta<T extends IDomain, F> extends GenericField<T, F>, Par
     int scale();
 
 
-    String fieldName();
+    String columnName();
 
     boolean insertalbe();
 
@@ -62,4 +62,6 @@ public interface FieldMeta<T extends IDomain, F> extends GenericField<T, F>, Par
 
     @Override
     int hashCode();
+
+
 }

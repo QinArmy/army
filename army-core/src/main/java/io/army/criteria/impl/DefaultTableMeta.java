@@ -9,7 +9,7 @@ import io.army.domain.IDomain;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.*;
-import io.army.modelgen.MetaBridge;
+import io.army.modelgen._MetaBridge;
 import io.army.sharding.Route;
 import io.army.struct.CodeEnum;
 import io.army.util.Assert;
@@ -28,177 +28,174 @@ import java.util.concurrent.ConcurrentMap;
  */
 abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
-    private static final ConcurrentMap<Class<?>, TableMeta<?>> INSTANCE_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<?>, DefaultTableMeta<?>> INSTANCE_MAP = new ConcurrentHashMap<>();
 
     @SuppressWarnings("unchecked")
     static <T extends IDomain> TableMeta<T> getTableMeta(final Class<T> domainClass) {
-        TableMeta<T> tableMeta = (TableMeta<T>) INSTANCE_MAP.get(domainClass);
-        if (tableMeta != null) {
-            if (tableMeta.javaType() != domainClass) {
-                throw new IllegalStateException("INSTANCE_MAP state error");
+        final TableMeta<T> cache = (TableMeta<T>) INSTANCE_MAP.get(domainClass);
+        final TableMeta<T> tableMeta;
+        if (cache != null) {
+            if (cache.javaType() != domainClass) {
+                throw instanceMapError();
             }
-            return tableMeta;
-        }
-        if (domainClass.getAnnotation(Inheritance.class) != null) {
-            tableMeta = getParentTableMeta(domainClass);
+            tableMeta = cache;
+        } else if (domainClass.getAnnotation(Table.class) == null) {
+            throw mappingError(TableMeta.class, domainClass);
+        } else if (domainClass.getAnnotation(Inheritance.class) != null) {
+            tableMeta = createParentTableMeta(domainClass);
         } else if (domainClass.getAnnotation(DiscriminatorValue.class) != null) {
-            tableMeta = getChildTableMeta(domainClass);
+            tableMeta = createChildTableMeta(domainClass);
         } else {
-            tableMeta = getSimpleTableMeta(domainClass);
+            tableMeta = createSimpleTableMeta(domainClass);
         }
         return tableMeta;
     }
 
-    @SuppressWarnings("unchecked")
     static <T extends IDomain> SimpleTableMeta<T> getSimpleTableMeta(final Class<T> domainClass) {
-        final TableMeta<?> tableMeta;
-        tableMeta = INSTANCE_MAP.get(domainClass);
-        final SimpleTableMeta<T> simpleTableMeta;
-        if (tableMeta == null) {
-            simpleTableMeta = createSimpleTableMeta(domainClass);
-        } else if (tableMeta instanceof DefaultSimpleTable) {
-            simpleTableMeta = (SimpleTableMeta<T>) tableMeta;
-        } else {
-            String m = String.format("Domain[%s] couldn't mapping to %s."
-                    , domainClass.getName(), SimpleTableMeta.class.getName());
-            throw new IllegalArgumentException(m);
+        SimpleTableMeta<T> simple;
+        simple = getSimpleFromCache(domainClass);
+        if (simple == null) {
+            simple = createSimpleTableMeta(domainClass);
         }
-        return simpleTableMeta;
+        return simple;
     }
 
-    @SuppressWarnings("unchecked")
+
     static <T extends IDomain> ParentTableMeta<T> getParentTableMeta(final Class<T> domainClass) {
-        final TableMeta<?> tableMeta;
-        tableMeta = INSTANCE_MAP.get(domainClass);
-        final ParentTableMeta<T> parentTableMeta;
-        if (tableMeta == null) {
-            parentTableMeta = createParentTableMeta(domainClass);
-        } else if (tableMeta instanceof DefaultParentTable) {
-            parentTableMeta = (ParentTableMeta<T>) tableMeta;
-        } else {
-            String m = String.format("Domain[%s] couldn't mapping to %s."
-                    , domainClass.getName(), ParentTableMeta.class.getName());
-            throw new IllegalArgumentException(m);
+        ParentTableMeta<T> parent;
+        parent = getParentFromCache(domainClass);
+        if (parent == null) {
+            parent = createParentTableMeta(domainClass);
         }
-        return parentTableMeta;
+        return parent;
     }
 
-    @SuppressWarnings("unchecked")
-    static <S extends IDomain, T extends S> ChildTableMeta<T> getChildTableMeta(final ParentTableMeta<S> parentTableMeta
+    static <S extends IDomain, T extends S> ChildTableMeta<T> getChildTableMeta(final ParentTableMeta<S> parent
             , final Class<T> domainClass) {
-        if (!(parentTableMeta instanceof DefaultParentTable)
-                || !parentTableMeta.javaType().isAssignableFrom(domainClass)) {
+        if (!(parent instanceof DefaultParentTable) || !parent.javaType().isAssignableFrom(domainClass)) {
             throw new IllegalArgumentException("parentTableMeta error");
         }
-        final TableMeta<?> tableMeta;
-        tableMeta = INSTANCE_MAP.get(domainClass);
-        final ChildTableMeta<T> childTableMeta;
-        if (tableMeta == null) {
-            childTableMeta = doCreateChildTableMeta(parentTableMeta, domainClass);
-        } else if (tableMeta instanceof DefaultChildTable) {
-            childTableMeta = (ChildTableMeta<T>) tableMeta;
-        } else {
-            String m = String.format("Domain[%s] couldn't mapping to %s."
-                    , domainClass.getName(), ChildTableMeta.class.getName());
-            throw new IllegalArgumentException(m);
+        ChildTableMeta<T> child;
+        child = getChildFromCache(domainClass);
+        if (child == null) {
+            child = createChildTableMeta(domainClass);
+            if (child.parentMeta() != parent) {
+                throw new IllegalArgumentException("parentTableMeta error");
+            }
         }
-        return childTableMeta;
+        return child;
+    }
+
+
+    @SuppressWarnings("unchecked")
+    @Nullable
+    private static <T extends IDomain> ChildTableMeta<T> getChildFromCache(final Class<T> domainClass) {
+        final TableMeta<?> tableMeta = INSTANCE_MAP.get(domainClass);
+        final ChildTableMeta<T> child;
+        if (tableMeta == null) {
+            child = null;
+        } else if (tableMeta.javaType() != domainClass) {
+            throw instanceMapError();
+        } else if (tableMeta instanceof ChildTableMeta) {
+            child = (ChildTableMeta<T>) tableMeta;
+        } else {
+            throw mappingError(ChildTableMeta.class, domainClass);
+        }
+        return child;
+    }
+
+
+    @SuppressWarnings("unchecked")
+    @Nullable
+    private static <T extends IDomain> ParentTableMeta<T> getParentFromCache(final Class<T> domainClass) {
+        final TableMeta<?> tableMeta = INSTANCE_MAP.get(domainClass);
+        final ParentTableMeta<T> parent;
+        if (tableMeta == null) {
+            parent = null;
+        } else if (tableMeta.javaType() != domainClass) {
+            throw instanceMapError();
+        } else if (tableMeta instanceof ParentTableMeta) {
+            parent = (ParentTableMeta<T>) tableMeta;
+        } else {
+            throw mappingError(ParentTableMeta.class, domainClass);
+        }
+        return parent;
     }
 
     @SuppressWarnings("unchecked")
-    static <T extends IDomain> ChildTableMeta<T> getChildTableMeta(final Class<T> domainClass) {
-        final TableMeta<?> tableMeta;
-        tableMeta = INSTANCE_MAP.get(domainClass);
-        final ChildTableMeta<T> childTableMeta;
+    @Nullable
+    private static <T extends IDomain> SimpleTableMeta<T> getSimpleFromCache(final Class<T> domainClass) {
+        final TableMeta<?> tableMeta = INSTANCE_MAP.get(domainClass);
+        final SimpleTableMeta<T> simple;
         if (tableMeta == null) {
-            childTableMeta = createChildTableMeta(domainClass);
-        } else if (tableMeta instanceof DefaultChildTable) {
-            childTableMeta = (ChildTableMeta<T>) tableMeta;
+            simple = null;
+        } else if (tableMeta.javaType() != domainClass) {
+            throw instanceMapError();
+        } else if (tableMeta instanceof SimpleTableMeta) {
+            simple = (SimpleTableMeta<T>) tableMeta;
         } else {
-            String m = String.format("Domain[%s] couldn't mapping to %s."
-                    , domainClass.getName(), ChildTableMeta.class.getName());
-            throw new IllegalArgumentException(m);
+            throw mappingError(SimpleTableMeta.class, domainClass);
         }
-        return childTableMeta;
+        return simple;
+    }
+
+    private static <T extends IDomain> ParentTableMeta<T> createParentTableMeta(final Class<T> domainClass) {
+        synchronized (DefaultParentTable.class) {
+            final ParentTableMeta<T> parent;
+            parent = getParentFromCache(domainClass);
+            if (parent != null) {
+                return parent;
+            }
+            if (domainClass.getAnnotation(Table.class) == null
+                    || domainClass.getAnnotation(Inheritance.class) == null) {
+                String m = String.format("Class[%s] isn't parent domain.", domainClass.getName());
+                throw new IllegalArgumentException(m);
+            }
+            return new DefaultParentTable<>(domainClass);
+        }
     }
 
     @SuppressWarnings("unchecked")
     private static <S extends IDomain, T extends S> ChildTableMeta<T> createChildTableMeta(final Class<T> domainClass) {
-        if (domainClass.getAnnotation(Table.class) == null
-                || domainClass.getAnnotation(DiscriminatorValue.class) == null) {
-            String m = String.format("Class[%s] isn't child domain.", domainClass.getName());
-            throw new IllegalArgumentException(m);
-        }
-        final Pair<List<Class<?>>, Class<?>> mappedClassPair;
-        mappedClassPair = TableMetaUtils.mappedClassPair(domainClass);
-        final Class<?> parentClass = mappedClassPair.getSecond();
-        if (parentClass == null) {
-            String m = String.format("Not found parent domain for domain[%s].", domainClass.getName());
-            throw new IllegalArgumentException(m);
-        }
-        return doCreateChildTableMeta(getParentTableMeta((Class<S>) parentClass), domainClass);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <S extends IDomain, T extends S> ChildTableMeta<T> doCreateChildTableMeta(
-            final ParentTableMeta<S> parentTableMeta, final Class<T> domainClass) {
-        ChildTableMeta<T> childTableMeta;
-        childTableMeta = new DefaultChildTable<>(parentTableMeta, domainClass);
-
-        final TableMeta<?> oldTableMeta;
-        oldTableMeta = INSTANCE_MAP.putIfAbsent(domainClass, childTableMeta);
-        if (oldTableMeta != null) {
-            if (!(oldTableMeta instanceof DefaultChildTable) || oldTableMeta.javaType() != domainClass) {
-                throw new IllegalStateException("INSTANCE_MAP state error");
+        synchronized (DefaultChildTable.class) {
+            final ChildTableMeta<T> child;
+            child = getChildFromCache(domainClass);
+            if (child != null) {
+                return child;
             }
-            // return old value created by other thead.
-            childTableMeta = (ChildTableMeta<T>) oldTableMeta;
-        }
-        return childTableMeta;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <T extends IDomain> ParentTableMeta<T> createParentTableMeta(final Class<T> domainClass) {
-        if (domainClass.getAnnotation(Table.class) == null
-                || domainClass.getAnnotation(Inheritance.class) == null) {
-            String m = String.format("Class[%s] isn't parent domain.", domainClass.getName());
-            throw new IllegalArgumentException(m);
-        }
-        ParentTableMeta<T> parentTableMeta;
-        parentTableMeta = new DefaultParentTable<>(domainClass);
-        final TableMeta<?> oldTableMeta;
-        oldTableMeta = INSTANCE_MAP.putIfAbsent(domainClass, parentTableMeta);
-        if (oldTableMeta != null) {
-            if (!(oldTableMeta instanceof DefaultParentTable) || oldTableMeta.javaType() != domainClass) {
-                throw new IllegalStateException("INSTANCE_MAP state error");
+            if (domainClass.getAnnotation(Table.class) == null
+                    || domainClass.getAnnotation(DiscriminatorValue.class) == null) {
+                String m = String.format("Class[%s] isn't child domain.", domainClass.getName());
+                throw new IllegalArgumentException(m);
             }
-            // return old value created by other thead.
-            parentTableMeta = (ParentTableMeta<T>) oldTableMeta;
+            final Pair<List<Class<?>>, Class<?>> mappedClassPair;
+            mappedClassPair = TableMetaUtils.mappedClassPair(domainClass);
+            final Class<?> parentClass = mappedClassPair.getSecond();
+            if (parentClass == null) {
+                String m = String.format("Not found parent domain for domain[%s].", domainClass.getName());
+                throw new IllegalArgumentException(m);
+            }
+            return new DefaultChildTable<>(getParentTableMeta((Class<S>) parentClass), domainClass);
         }
-        return parentTableMeta;
     }
 
-    @SuppressWarnings("unchecked")
+
     private static <T extends IDomain> SimpleTableMeta<T> createSimpleTableMeta(final Class<T> domainClass) {
-        if (domainClass.getAnnotation(Table.class) == null
-                || domainClass.getAnnotation(Inheritance.class) != null
-                || domainClass.getAnnotation(DiscriminatorValue.class) != null) {
-            String m = String.format("Class[%s] isn't simple domain.", domainClass.getName());
-            throw new IllegalArgumentException(m);
+        synchronized (DefaultSimpleTable.class) {
+            final SimpleTableMeta<T> simple;
+            simple = getSimpleFromCache(domainClass);
+            if (simple != null) {
+                return simple;
+            }
+            if (domainClass.getAnnotation(Table.class) == null
+                    || domainClass.getAnnotation(Inheritance.class) != null
+                    || domainClass.getAnnotation(DiscriminatorValue.class) != null) {
+                String m = String.format("Class[%s] isn't simple domain.", domainClass.getName());
+                throw new IllegalArgumentException(m);
+            }
+            return new DefaultSimpleTable<>(domainClass);
         }
 
-        SimpleTableMeta<T> simpleTableMeta;
-        simpleTableMeta = new DefaultSimpleTable<>(domainClass);
-        final TableMeta<?> oldTableMeta;
-        oldTableMeta = INSTANCE_MAP.putIfAbsent(domainClass, simpleTableMeta);
-        if (oldTableMeta != null) {
-            if (!(oldTableMeta instanceof DefaultSimpleTable) || oldTableMeta.javaType() != domainClass) {
-                throw new IllegalStateException("INSTANCE_MAP state error");
-            }
-            // return old value created by other thead.
-            simpleTableMeta = (SimpleTableMeta<T>) oldTableMeta;
-        }
-        return simpleTableMeta;
     }
 
 
@@ -212,7 +209,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         FieldMeta<? super T, ?> discriminator = null;
         final String discriminatorName = StringUtils.toLowerCase(inheritance.value());
         for (FieldMeta<T, ?> fieldMeta : fieldMetas) {
-            if (discriminatorName.equals(fieldMeta.fieldName())) {
+            if (discriminatorName.equals(fieldMeta.columnName())) {
                 discriminator = fieldMeta;
                 break;
             }
@@ -223,6 +220,16 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             throw new MetaException(m);
         }
         return discriminator;
+    }
+
+    private static IllegalStateException instanceMapError() {
+        return new IllegalStateException("INSTANCE_MAP state error.");
+    }
+
+    private static IllegalArgumentException mappingError(Class<?> tableMetaClass, Class<?> domainClass) {
+        String m = String.format("Domain class %s couldn't mapping to %s.", domainClass.getName()
+                , tableMetaClass.getName());
+        return new IllegalArgumentException(m);
     }
 
 
@@ -303,7 +310,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             this.routeClass = routeMeta.routeClass;
             this.discriminatorValue = TableMetaUtils.discriminatorValue(this.mappingMode, this);
 
-            this.primaryField = (PrimaryFieldMeta<T, Object>) this.propNameToFieldMeta.get(MetaBridge.ID);
+            this.primaryField = (PrimaryFieldMeta<T, Object>) this.propNameToFieldMeta.get(_MetaBridge.ID);
             if (this.primaryField == null) {
                 String m = String.format("Not found primary field meta in domain[%s]", domainClass.getName());
                 throw new NullPointerException(m);
@@ -313,6 +320,12 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         } catch (RuntimeException e) {
             throw new MetaException(e, e.getMessage());
         }
+
+        if (INSTANCE_MAP.putIfAbsent(this.javaType, this) != null) {
+            String m = String.format("%s[%s] duplication.", TableMeta.class.getSimpleName(), this.javaType.getName());
+            throw new IllegalStateException(m);
+        }
+
     }
 
 
@@ -455,7 +468,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     @Override
     public <F> PrimaryFieldMeta<T, F> id(Class<F> propClass) throws MetaException {
-        FieldMeta<T, F> fieldMeta = getField(MetaBridge.ID, propClass);
+        FieldMeta<T, F> fieldMeta = getField(_MetaBridge.ID, propClass);
         if (!(fieldMeta instanceof PrimaryFieldMeta)) {
             throw new MetaException("TableMeta[%s]'s PrimaryFieldMeta not found", this);
         }
@@ -485,29 +498,36 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     @Override
-    public final boolean equals(Object o) {
-        // save column only one FieldMeta instance
-        return this == o;
+    public final boolean equals(final Object obj) {
+        final boolean match;
+        if (obj == this) {
+            match = true;
+        } else if (obj instanceof DefaultTableMeta) {
+            match = this.javaType == ((DefaultTableMeta<?>) obj).javaType;
+        } else {
+            match = false;
+        }
+        return match;
     }
 
     @Override
     public final int hashCode() {
-        return super.hashCode();
+        return Objects.hash(this.javaType);
     }
 
     @Override
     public final String toString() {
-        StringBuilder builder = new StringBuilder();
+        final StringBuilder builder = new StringBuilder();
         if (this instanceof ChildTableMeta) {
-            builder.append("ChildTableMeta[");
+            builder.append(ChildTableMeta.class.getSimpleName());
         } else if (this instanceof ParentTableMeta) {
-            builder.append("ParentTableMeta[");
+            builder.append(ParentTableMeta.class.getSimpleName());
         } else {
-            builder.append("TableMeta[");
+            builder.append(SimpleTableMeta.class.getSimpleName());
         }
-        builder.append(this.javaType.getName())
-                .append("]");
-        return builder.toString();
+        return builder.append('[')
+                .append(this.javaType.getName())
+                .append(']').toString();
     }
 
 

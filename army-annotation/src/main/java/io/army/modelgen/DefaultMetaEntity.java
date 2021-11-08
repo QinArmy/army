@@ -61,7 +61,7 @@ class DefaultMetaEntity implements MetaEntity {
 
     @Override
     public String getQualifiedName() {
-        return MetaUtils.domainClassName(this.domainElement) + MetaBridge.META_CLASS_NAME_SUFFIX;
+        return MetaUtils.domainClassName(this.domainElement) + _MetaBridge.META_CLASS_NAME_SUFFIX;
     }
 
     @Override
