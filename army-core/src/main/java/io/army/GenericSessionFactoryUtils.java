@@ -3,7 +3,7 @@ package io.army;
 import io.army.asm.TableMetaLoader;
 import io.army.codec.FieldCodec;
 import io.army.criteria.impl.SchemaMetaFactory;
-import io.army.criteria.impl.TableMetaFactory;
+import io.army.criteria.impl._TableMetaFactory;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect.UnsupportedDatabaseException;
@@ -273,7 +273,7 @@ public abstract class GenericSessionFactoryUtils {
         }
         // check all codec field have FieldCodec
         Set<FieldMeta<?, ?>> codecFieldSet = new HashSet<>(fieldCodecMap.keySet());
-        codecFieldSet.removeAll(TableMetaFactory.codecFieldMetaSet());
+        codecFieldSet.removeAll(_TableMetaFactory.codecFieldMetaSet());
         if (!codecFieldSet.isEmpty()) {
             throw new SessionFactoryException("FieldMeta set [%s] not found FieldCodec.", codecFieldSet);
         }

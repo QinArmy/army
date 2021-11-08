@@ -4,21 +4,32 @@ import io.army.annotation.Table;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
+import io.army.modelgen.ArmyMetaModelDomainProcessor;
+import io.army.modelgen.MetaBridge;
 import io.army.util.StringUtils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.JarURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.stream.Stream;
 
-public abstract class TableMetaFactory {
+public abstract class _TableMetaFactory {
 
-    private TableMetaFactory() {
+    private _TableMetaFactory() {
         throw new UnsupportedOperationException();
     }
 
@@ -56,13 +67,15 @@ public abstract class TableMetaFactory {
      */
     public static synchronized Map<Class<?>, TableMeta<?>> getTableMetaMap(final SchemaMeta schemaMeta
             , final List<String> basePackages, @Nullable final ClassLoader classLoader) throws TableMetaLoadException {
+        URL url = null;
         try {
             final Map<Class<?>, TableMeta<?>> tableMetaMap = new HashMap<>();
+            final String jarProtocol = "jar", fileProtocol = "file";
             for (String basePackage : basePackages) {
-                //1. convert base package
-                if (basePackage.charAt(0) == '/') {
-                    basePackage = basePackage.substring(1);
+                if (!StringUtils.hasText(basePackage)) {
+                    throw new IllegalArgumentException("basePackage must have text.");
                 }
+                //1. convert base package
                 if (basePackage.indexOf('.') > 0) {
                     basePackage = basePackage.replace('.', '/');
                 }
@@ -75,34 +88,162 @@ public abstract class TableMetaFactory {
                 }
                 // 3. scan java class file in base package for get TableMeta.
                 while (enumeration.hasMoreElements()) {
-                    Files.find(Paths.get(enumeration.nextElement().getPath()), 2048, TableMetaFactory::isJavaClassFile)
-                            .map(javaClassFilePath -> readJavaClassFile(javaClassFilePath, schemaMeta)) // read java class file
+                    url = enumeration.nextElement();
+                    final String protocol = url.getProtocol();
+                    final Stream<ByteBuffer> stream;
+                    if (jarProtocol.equals(protocol)) {
+                        stream = scanJavaJarForJavaClassFile(url);
+                    } else if (fileProtocol.equals(protocol)) {
+                        stream = Files.find(Paths.get(url.getPath()), Integer.MAX_VALUE, _TableMetaFactory::isJavaClassFile)
+                                .map(_TableMetaFactory::readJavaClassFileBytes);
+                    } else {
+                        String m = String.format("url[%s] unsupported", url);
+                        throw new IllegalArgumentException(m);
+                    }
+                    stream.map(buffer -> readJavaClassFile(buffer, schemaMeta)) // read java class file and get class name if match.
                             .filter(StringUtils::hasText) // if empty string ,not domain class
-                            .map(TableMetaFactory::getTableMeta)// get or create table meta
-                            .forEach(tableMeta -> tableMetaMap.put(tableMeta.javaType(), tableMeta));
+                            .map(_TableMetaFactory::getOrCreateTableMeta)// get or create table meta
+                            .forEach(tableMeta -> {
+                                final Class<?> domainClass = tableMeta.javaType();
+                                tableMetaMap.put(domainClass, tableMeta);
+                                loadDomainMetaHolder(domainClass);
+                            });
                 }
+                url = null;
             }
             return Collections.unmodifiableMap(tableMetaMap);
+        } catch (TableMetaLoadException e) {
+            throw e;
         } catch (Exception e) {
-            throw new TableMetaLoadException(e.getMessage(), e);
+            String m;
+            if (url == null) {
+                m = e.getMessage();
+            } else {
+                m = String.format("url[%s] scan occur error %s .", url, e.getMessage());
+            }
+            throw new TableMetaLoadException(m, e);
         } finally {
             TableMetaUtils.clearCache();
         }
     }
 
+
     public static Set<FieldMeta<?, ?>> codecFieldMetaSet() {
         return DefaultFieldMeta.codecFieldMetaSet();
     }
 
+    /*################################## blow private method ##################################*/
 
+    /**
+     * @see #getTableMetaMap(SchemaMeta, List, ClassLoader)
+     */
+    private static Stream<ByteBuffer> scanJavaJarForJavaClassFile(final URL url) {
+        try {
+            final URLConnection conn = url.openConnection();
+            if (!(conn instanceof JarURLConnection)) {
+                String m = String.format("url[%s] can' open %s .", url, JarURLConnection.class.getName());
+                throw new IllegalArgumentException(m);
+            }
+            final JarURLConnection jarConn = (JarURLConnection) conn;
+            final String rootEntryName = jarConn.getEntryName();
+            final JarFile jarFile = jarConn.getJarFile();
+            return jarFile
+                    .stream()
+                    .filter(entry -> isJavaClassEntry(rootEntryName, entry))
+                    .map(entry -> readJavaClassEntryBytes(jarFile, entry));
+        } catch (IOException e) {
+            String m = String.format("jar[%s] scan occur error:%s", url, e.getMessage());
+            throw new TableMetaLoadException(m, e);
+        }
+    }
+
+
+    /**
+     * @see #getTableMetaMap(SchemaMeta, List, ClassLoader)
+     */
+    private static ByteBuffer readJavaClassFileBytes(final Path classFilePath) {
+        try (FileChannel channel = FileChannel.open(classFilePath, StandardOpenOption.READ)) {
+            final long fileSize;
+            fileSize = channel.size();
+            if (fileSize > (Integer.MAX_VALUE - 32)) {
+                String m = String.format("Class file[%s] too large,don't support read.", classFilePath);
+                throw new IllegalArgumentException(m);
+            }
+            final ByteBuffer buffer = ByteBuffer.wrap(new byte[(int) fileSize]);
+            if (channel.read(buffer) < 10) {
+                throw classFileFormatError();
+            }
+            buffer.flip();
+            return buffer;
+        } catch (IOException e) {
+            String m = String.format("class file[%s] read occur error:%s", classFilePath, e.getMessage());
+            throw new TableMetaLoadException(m, e);
+        }
+    }
+
+    /**
+     * @throws TableMetaLoadException when not found table meta holder class of domainClass.
+     * @see #getTableMetaMap(SchemaMeta, List, ClassLoader)
+     */
+    private static void loadDomainMetaHolder(Class<?> domainClass) {
+        try {
+            Class.forName(domainClass.getName() + MetaBridge.META_CLASS_NAME_SUFFIX);
+        } catch (ClassNotFoundException e) {
+            String m = String.format("You compile %s without %s", domainClass.getName()
+                    , ArmyMetaModelDomainProcessor.class.getName());
+            throw new TableMetaLoadException(m, e);
+        }
+
+    }
+
+    /**
+     * @throws TableMetaLoadException when occur {@link IOException}
+     * @see #scanJavaJarForJavaClassFile(URL)
+     */
+    private static ByteBuffer readJavaClassEntryBytes(final JarFile jarFile, final JarEntry entry) {
+        final long entrySize = entry.getSize();
+        if (entrySize > (Integer.MAX_VALUE - 32)) {
+            String m = String.format("Class file[%s] too large,don't support read.", entry.getName());
+            throw new IllegalArgumentException(m);
+        }
+        try (InputStream in = jarFile.getInputStream(entry);
+             ByteArrayOutputStream out = new ByteArrayOutputStream((int) entrySize)) {
+            final byte[] bufferArray = new byte[(int) Math.min(2048, entrySize)];
+            int length;
+            while ((length = in.read(bufferArray)) > 0) {
+                out.write(bufferArray, 0, length);
+            }
+            return ByteBuffer.wrap(out.toByteArray());
+        } catch (IOException e) {
+            String m = String.format("Jar class file[%s] read occur error:%s", entry.getName(), e.getMessage());
+            throw new TableMetaLoadException(m, e);
+        }
+    }
+
+    /**
+     * @see #scanJavaJarForJavaClassFile(URL)
+     */
+    private static boolean isJavaClassEntry(final String rootEntryName, final JarEntry entry) {
+        final String entryName = entry.getName();
+        return entryName.startsWith(rootEntryName)
+                && !entry.isDirectory()
+                && entryName.endsWith(".class");
+    }
+
+
+    /**
+     * @see #getTableMetaMap(SchemaMeta, List, ClassLoader)
+     */
     private static boolean isJavaClassFile(final Path path, BasicFileAttributes attributes) {
         return !Files.isDirectory(path)
                 && Files.isReadable(path)
                 && path.getFileName().toString().endsWith(".class");
     }
 
-
-    private static <T extends IDomain> TableMeta<T> getTableMeta(final String className) {
+    /**
+     * @see #getTableMetaMap(SchemaMeta, List, ClassLoader)
+     */
+    private static <T extends IDomain> TableMeta<T> getOrCreateTableMeta(final String className) {
         try {
             final Class<?> clazz;
             clazz = Class.forName(className);
@@ -116,7 +257,8 @@ public abstract class TableMetaFactory {
             return DefaultTableMeta.getTableMeta(domainClass);
         } catch (ClassNotFoundException e) {
             // no bug,never here.
-            throw new RuntimeException(e);
+            String m = String.format("Domain class[%s] not found.", className);
+            throw new TableMetaLoadException(m, e);
         }
 
     }
@@ -126,88 +268,71 @@ public abstract class TableMetaFactory {
      * @return if domain class return class name,or empty string
      * @see <a href="https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.1">The class File Format</a>
      */
-    private static String readJavaClassFile(final Path classFilePath, final SchemaMeta schemaMeta) {
-
-        try (FileChannel channel = FileChannel.open(classFilePath)) {
-            final long fileSize = channel.size();
-            if (fileSize > (Integer.MAX_VALUE - 32)) {
-                String m = String.format("Class file[%s] too large,don't support read.", classFilePath);
-                throw new IllegalArgumentException(m);
-            }
-            final ByteBuffer buffer = ByteBuffer.wrap(new byte[(int) fileSize]);
-            if (channel.read(buffer) < 10) {
-                throw classFileFormatError();
-            }
-            buffer.flip();
-
-            // 1. read magic
-            if (buffer.getInt() != 0xCAFEBABE) {
-                throw classFileFormatError();
-            }
-            // 2. read version
-            assertSupportClassFileVersion(buffer, classFilePath);
-            // 3. read constant pool
-            final Item[] poolItems;
-            poolItems = readConstantPool(buffer);
-
-            final int bit16 = 0xFFFF;
-            // 4. read access_flags
-            final int accessFlags = buffer.getShort() & bit16;
-            final int ACC_PUBLIC = 0x0001, ACC_INTERFACE = 0x0200, ACC_ABSTRACT = 0x0400, ACC_ANNOTATION = 0x2000, ACC_ENUM = 0x4000;
-            if ((accessFlags & (ACC_PUBLIC | ACC_INTERFACE | ACC_ABSTRACT | ACC_ANNOTATION | ACC_ENUM)) != ACC_PUBLIC) {
-                //The class that this class file representing isn't domain class
-                return "";
-            }
-            // 5. read this_class
-            final int thisClassIndex = buffer.getShort() & bit16;
-            // 6. skip super_class
-            buffer.position(buffer.position() + 2); // skip supper class
-            // 7. skip interfaces_count and interfaces
-            final int interfaceCount = buffer.getShort() & bit16;
-            if (interfaceCount > 0) {
-                buffer.position(buffer.position() + (interfaceCount << 1));
-            }
-            // 8. skip fields_count and fields
-            skipFieldOrMethod(buffer); // skip Fields
-            // 9. skip methods_count and methods
-            skipFieldOrMethod(buffer); // skip Methods
-
-            final String domainClassName;
-            // 10. read class file attributes_count and attributes
-            if (readAttributes(buffer, poolItems, thisClassIndex, schemaMeta)) {
-                // 11. get top class name of  this class file.
-                final DualItem thisClassItem = (DualItem) poolItems[thisClassIndex];
-                domainClassName = ((Utf8Item) poolItems[thisClassItem.index & bit16]).text.replace('/', '.');
-            } else {
-                // not domain class
-                domainClassName = "";
-            }
-            return domainClassName;
-        } catch (Exception e) {
-            String m = String.format("%s,class file[%s]", e.getMessage(), classFilePath);
-            throw new TableMetaLoadException(m, e);
+    private static String readJavaClassFile(final ByteBuffer buffer, final SchemaMeta schemaMeta) {
+        // 1. read magic
+        if (buffer.getInt() != 0xCAFEBABE) {
+            throw classFileFormatError();
         }
+        // 2. read version
+        assertSupportClassFileVersion(buffer);
+        // 3. read constant pool
+        final Item[] poolItems;
+        poolItems = readConstantPool(buffer);
 
+        final int bit16 = 0xFFFF;
+        // 4. read access_flags
+        final int accessFlags = buffer.getShort() & bit16;
+        final int ACC_PUBLIC = 0x0001, ACC_INTERFACE = 0x0200, ACC_ABSTRACT = 0x0400, ACC_ANNOTATION = 0x2000, ACC_ENUM = 0x4000;
+        if ((accessFlags & (ACC_PUBLIC | ACC_INTERFACE | ACC_ABSTRACT | ACC_ANNOTATION | ACC_ENUM)) != ACC_PUBLIC) {
+            //The class that this class file representing isn't domain class
+            return "";
+        }
+        // 5. read this_class
+        final int thisClassIndex = buffer.getShort() & bit16;
+        // 6. skip super_class
+        buffer.position(buffer.position() + 2); // skip supper class
+        // 7. skip interfaces_count and interfaces
+        final int interfaceCount = buffer.getShort() & bit16;
+        if (interfaceCount > 0) {
+            buffer.position(buffer.position() + (interfaceCount << 1));
+        }
+        // 8. skip fields_count and fields
+        skipFieldOrMethod(buffer); // skip Fields
+        // 9. skip methods_count and methods
+        skipFieldOrMethod(buffer); // skip Methods
+
+        final String domainClassName;
+        // 10. read class file attributes_count and attributes
+        if (readAttributes(buffer, poolItems, thisClassIndex, schemaMeta)) {
+            // 11. get top class name of  this class file.
+            final DualItem thisClassItem = (DualItem) poolItems[thisClassIndex];
+            domainClassName = ((Utf8Item) poolItems[thisClassItem.index & bit16]).text.replace('/', '.');
+        } else {
+            // not domain class
+            domainClassName = "";
+        }
+        return domainClassName;
     }
 
 
     /**
-     * @see #readJavaClassFile(Path, SchemaMeta)
+     * @see #readJavaClassFile(ByteBuffer, SchemaMeta)
      * @see <a href="https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.4">The Constant Pool</a>
      */
     private static Item[] readConstantPool(final ByteBuffer buffer) {
         final int bit16 = 0xFFFF;
-        final int constantPoolCount = buffer.getShort() & bit16;
-        final Item[] itemArray = new Item[constantPoolCount];
-        for (int index = 1; index < constantPoolCount; index++) {
+        final Item[] itemArray = new Item[buffer.getShort() & bit16];
+        for (int index = 1; index < itemArray.length; index++) {
             final byte tag = buffer.get();
             switch (tag) {
                 case Symbol.CONSTANT_CLASS_TAG:
                 case Symbol.CONSTANT_STRING_TAG:
+                    itemArray[index] = new DualItem(tag, buffer.getShort());
+                    break;
                 case Symbol.CONSTANT_METHOD_TYPE_TAG:
                 case Symbol.CONSTANT_MODULE_TAG:
                 case Symbol.CONSTANT_PACKAGE_TAG:
-                    itemArray[index] = new DualItem(tag, buffer.getShort());
+                    buffer.position(buffer.position() + 2); // skip
                     break;
                 case Symbol.CONSTANT_METHOD_HANDLE_TAG:
                     buffer.position(buffer.position() + 3); // skip
@@ -234,8 +359,12 @@ public abstract class TableMetaFactory {
                     itemArray[index] = new Utf8Item(tag, new String(bytes, StandardCharsets.UTF_8));
                 }
                 break;
-                default:
-                    throw new IllegalArgumentException(String.format("Unknown tag:%s,index:%s,constantPoolCount:%s", tag, index, constantPoolCount));
+                default: {
+                    String m = String.format("Unknown tag:%s,index:%s,constantPoolCount:%s"
+                            , tag, index, itemArray.length);
+                    throw new IllegalArgumentException(m);
+                }
+
             }
         }
         return itemArray;
@@ -399,7 +528,7 @@ public abstract class TableMetaFactory {
     }
 
     /**
-     * @see #readJavaClassFile(Path, SchemaMeta)
+     * @see #readJavaClassFile(ByteBuffer, SchemaMeta)
      * @see <a href="https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.5">Fields</a>
      * @see <a href="https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.6">Methods</a>
      */
@@ -421,7 +550,7 @@ public abstract class TableMetaFactory {
         return new IllegalArgumentException("class file format error");
     }
 
-    private static void assertSupportClassFileVersion(ByteBuffer buffer, Path path) {
+    private static void assertSupportClassFileVersion(ByteBuffer buffer) {
         buffer.position(buffer.position() + 4);
     }
 

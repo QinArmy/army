@@ -215,7 +215,7 @@ abstract class SourceCreateUtils {
 
     private static void appendTableMeta(final TypeElement domainElement, final StringBuilder builder,
                                         @Nullable final TypeElement parentElement) {
-        String format = "%s %s<%s> %s = TableMetaFactory.%s(%s%s.class);\n\n";
+        String format = "%s %s<%s> %s = _TableMetaFactory.%s(%s%s.class);\n\n";
         String parentTableMetaText, methodName, tableMetaName;
         if (parentElement == null) {
             if (domainElement.getAnnotation(Inheritance.class) == null) {
@@ -328,7 +328,7 @@ abstract class SourceCreateUtils {
                 .append("import io.army.meta.FieldMeta;\n")
                 .append("import io.army.meta.IndexFieldMeta;\n")
                 .append("import javax.annotation.Generated;\n")
-                .append("import io.army.criteria.impl.TableMetaFactory;\n")
+                .append("import io.army.criteria.impl._TableMetaFactory;\n")
 
                 .append("import io.army.meta.SimpleTableMeta;\n")
                 .append("import io.army.meta.ParentTableMeta;\n")

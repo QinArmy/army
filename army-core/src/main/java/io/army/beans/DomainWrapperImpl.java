@@ -1,6 +1,6 @@
 package io.army.beans;
 
-import io.army.criteria.impl.TableMetaFactory;
+import io.army.criteria.impl._TableMetaFactory;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
@@ -12,7 +12,7 @@ final class DomainWrapperImpl extends BeanWrapperImpl implements DomainWrapper {
 
     DomainWrapperImpl(IDomain domain) {
         super(domain);
-        this.tableMeta = TableMetaFactory.getTableMeta(domain.getClass());
+        this.tableMeta = _TableMetaFactory.getTableMeta(domain.getClass());
 
     }
 
