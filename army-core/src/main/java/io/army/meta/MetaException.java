@@ -20,6 +20,12 @@ public final class MetaException extends ArmyRuntimeException {
         super(errorCode, format, args);
     }
 
+
+    public MetaException(String message, Throwable cause) {
+        super(cause, message);
+    }
+
+    @Deprecated
     public MetaException(Throwable cause, String format, Object... args) {
         super(cause, format, args);
     }

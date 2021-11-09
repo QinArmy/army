@@ -2,8 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.EmptyObject;
 import io.army.criteria.mysql.*;
-import io.army.mapping.MappingFactory;
 import io.army.mapping.MappingType;
+import io.army.mapping._MappingFactory;
 
 public abstract class MySqls extends Sqls {
 
@@ -92,12 +92,12 @@ public abstract class MySqls extends Sqls {
 
     public static <E, C> MySQL57ScalarSubQuery.MySQLScalarSelectionSpec<E, C> mySQL57ScalarSubQuery(
             Class<E> javaType, C criteria) {
-        return MySQL57SubQueries.buildScalarSubQuery(javaType, MappingFactory.getDefaultMapping(javaType), criteria);
+        return MySQL57SubQueries.buildScalarSubQuery(javaType, _MappingFactory.getMapping(javaType), criteria);
     }
 
     public static <E> MySQL57ScalarSubQuery.MySQLScalarSelectionSpec<E, EmptyObject> mySQL57ScalarSubQuery(
             Class<E> javaType) {
-        return MySQL57SubQueries.buildScalarSubQuery(javaType, MappingFactory.getDefaultMapping(javaType)
+        return MySQL57SubQueries.buildScalarSubQuery(javaType, _MappingFactory.getMapping(javaType)
                 , EmptyObject.getInstance());
     }
 

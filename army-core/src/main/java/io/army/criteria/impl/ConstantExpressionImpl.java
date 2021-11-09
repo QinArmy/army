@@ -4,8 +4,8 @@ import io.army.criteria.ConstantExpression;
 import io.army.criteria.SQLContext;
 import io.army.criteria.Selection;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingFactory;
 import io.army.mapping.MappingType;
+import io.army.mapping._MappingFactory;
 import io.army.meta.ParamMeta;
 import io.army.util.ArrayUtils;
 
@@ -41,7 +41,7 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
 
         ParamMeta actualParamMeta;
         if (paramMeta == null) {
-            actualParamMeta = MappingFactory.getDefaultMapping(constant.getClass());
+            actualParamMeta = _MappingFactory.getMapping(constant.getClass());
         } else {
             if (paramMeta.mappingMeta().javaType() != constant.getClass()) {
                 throw new IllegalArgumentException(String.format("constant's class[%s] and paramMeta[%s] not match."

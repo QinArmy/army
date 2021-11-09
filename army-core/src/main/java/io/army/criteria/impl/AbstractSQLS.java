@@ -2,9 +2,9 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingFactory;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
+import io.army.mapping._MappingFactory;
 import io.army.meta.FieldMeta;
 import io.army.meta.GenericField;
 import io.army.meta.ParamMeta;
@@ -24,7 +24,7 @@ abstract class AbstractSQLS {
 
 
     public static <E> ParamExpression<E> asNull(Class<?> nullTypeClass) {
-        return ParamExpressionImp.build(MappingFactory.getDefaultMapping(nullTypeClass), null);
+        return ParamExpressionImp.build(_MappingFactory.getMapping(nullTypeClass), null);
     }
 
     public static <E> ParamExpression<E> asNull(MappingType mappingType) {
@@ -123,108 +123,108 @@ abstract class AbstractSQLS {
     }
 
     public static <E extends Number> Expression<Double> acos(Expression<E> x) {
-        return AbstractFunc.oneArgumentFunc("ACOS", MappingFactory.getDefaultMapping(Double.class), x);
+        return AbstractFunc.oneArgumentFunc("ACOS", _MappingFactory.getMapping(Double.class), x);
     }
 
 
     public static <E extends Number> Expression<Double> asin(Expression<E> x) {
-        return AbstractFunc.oneArgumentFunc("ASIN", MappingFactory.getDefaultMapping(Double.class), x);
+        return AbstractFunc.oneArgumentFunc("ASIN", _MappingFactory.getMapping(Double.class), x);
     }
 
     public static <E extends Number> Expression<Double> atan(Expression<E> x) {
-        return AbstractFunc.oneArgumentFunc("ATAN", MappingFactory.getDefaultMapping(Double.class), x);
+        return AbstractFunc.oneArgumentFunc("ATAN", _MappingFactory.getMapping(Double.class), x);
     }
 
     public static <E extends Number> Expression<Double> atan(Expression<E> one, Expression<E> two) {
-        return AbstractFunc.twoArgumentFunc("ATAN", MappingFactory.getDefaultMapping(Double.class), one, two);
+        return AbstractFunc.twoArgumentFunc("ATAN", _MappingFactory.getMapping(Double.class), one, two);
     }
 
     public static <E extends Number> Expression<Integer> cell(Expression<E> x) {
-        return AbstractFunc.oneArgumentFunc("CELL", MappingFactory.getDefaultMapping(Integer.class), x);
+        return AbstractFunc.oneArgumentFunc("CELL", _MappingFactory.getMapping(Integer.class), x);
     }
 
     public static <E extends Number> Expression<Long> cellAsLong(Expression<E> x) {
-        return AbstractFunc.oneArgumentFunc("CELL", MappingFactory.getDefaultMapping(Long.class), x);
+        return AbstractFunc.oneArgumentFunc("CELL", _MappingFactory.getMapping(Long.class), x);
     }
 
     public static <E extends Number> Expression<String> conv(Expression<E> number, int fromBase, int toBase) {
-        return new AbstractFunc.ThreeArgumentFunc<>("CONV", MappingFactory.getDefaultMapping(String.class), number
+        return new AbstractFunc.ThreeArgumentFunc<>("CONV", _MappingFactory.getMapping(String.class), number
                 , constant(fromBase), constant(toBase));
     }
 
     public static <E extends Number> Expression<Double> cos(Expression<E> x) {
-        return AbstractFunc.oneArgumentFunc("COS", MappingFactory.getDefaultMapping(Double.class), x);
+        return AbstractFunc.oneArgumentFunc("COS", _MappingFactory.getMapping(Double.class), x);
     }
 
     public static <E extends Number> Expression<Double> cot(Expression<E> x) {
-        return AbstractFunc.oneArgumentFunc("COT", MappingFactory.getDefaultMapping(Double.class), x);
+        return AbstractFunc.oneArgumentFunc("COT", _MappingFactory.getMapping(Double.class), x);
     }
 
     public static <E extends Number> Expression<Long> crc32(Expression<E> expression) {
-        return AbstractFunc.oneArgumentFunc("CRC32", MappingFactory.getDefaultMapping(Long.class), expression);
+        return AbstractFunc.oneArgumentFunc("CRC32", _MappingFactory.getMapping(Long.class), expression);
     }
 
     public static <E extends Number> Expression<Double> degrees(Expression<E> radian) {
-        return AbstractFunc.oneArgumentFunc("DEGREES", MappingFactory.getDefaultMapping(Double.class), radian);
+        return AbstractFunc.oneArgumentFunc("DEGREES", _MappingFactory.getMapping(Double.class), radian);
     }
 
     /**
      * @see #ln(Expression)
      */
     public static <E extends Number> Expression<Double> exp(Expression<E> index) {
-        return AbstractFunc.oneArgumentFunc("EXP", MappingFactory.getDefaultMapping(Double.class), index);
+        return AbstractFunc.oneArgumentFunc("EXP", _MappingFactory.getMapping(Double.class), index);
     }
 
     public static <E extends Number> Expression<Integer> floor(Expression<E> number) {
-        return AbstractFunc.oneArgumentFunc("FLOOR", MappingFactory.getDefaultMapping(Integer.class), number);
+        return AbstractFunc.oneArgumentFunc("FLOOR", _MappingFactory.getMapping(Integer.class), number);
     }
 
     public static <E extends Number> Expression<Long> floorAsLong(Expression<E> number) {
-        return AbstractFunc.oneArgumentFunc("FLOOR", MappingFactory.getDefaultMapping(Long.class), number);
+        return AbstractFunc.oneArgumentFunc("FLOOR", _MappingFactory.getMapping(Long.class), number);
     }
 
     public static <E extends Number> Expression<String> format(Expression<E> number, Expression<E> decimal) {
-        return AbstractFunc.twoArgumentFunc("FORMAT", MappingFactory.getDefaultMapping(String.class), number, decimal);
+        return AbstractFunc.twoArgumentFunc("FORMAT", _MappingFactory.getMapping(String.class), number, decimal);
     }
 
     public static <E extends Number> Expression<String> format(Expression<E> number, int decimal) {
-        return AbstractFunc.twoArgumentFunc("FORMAT", MappingFactory.getDefaultMapping(String.class)
+        return AbstractFunc.twoArgumentFunc("FORMAT", _MappingFactory.getMapping(String.class)
                 , number, constant(decimal));
     }
 
     public static <E extends Number> Expression<String> hex(Expression<E> number) {
-        return AbstractFunc.oneArgumentFunc("HEX", MappingFactory.getDefaultMapping(String.class), number);
+        return AbstractFunc.oneArgumentFunc("HEX", _MappingFactory.getMapping(String.class), number);
     }
 
     public static Expression<String> hex(Number number) {
-        return AbstractFunc.oneArgumentFunc("HEX", MappingFactory.getDefaultMapping(String.class), constant(number));
+        return AbstractFunc.oneArgumentFunc("HEX", _MappingFactory.getMapping(String.class), constant(number));
     }
 
     public static Expression<String> hex(String numberText) {
-        return AbstractFunc.oneArgumentFunc("HEX", MappingFactory.getDefaultMapping(String.class), constant(numberText));
+        return AbstractFunc.oneArgumentFunc("HEX", _MappingFactory.getMapping(String.class), constant(numberText));
     }
 
     public static Expression<String> hexForText(Expression<String> numberText) {
-        return AbstractFunc.oneArgumentFunc("HEX", MappingFactory.getDefaultMapping(String.class), numberText);
+        return AbstractFunc.oneArgumentFunc("HEX", _MappingFactory.getMapping(String.class), numberText);
     }
 
     /**
      * @see #exp(Expression)
      */
     public static <E extends Number> Expression<Double> ln(Expression<E> power) {
-        return AbstractFunc.oneArgumentFunc("LN", MappingFactory.getDefaultMapping(Double.class), power);
+        return AbstractFunc.oneArgumentFunc("LN", _MappingFactory.getMapping(Double.class), power);
     }
 
     /**
      * @see #ln(Expression)
      */
     public static <E extends Number> Expression<Double> log(Expression<E> power) {
-        return AbstractFunc.oneArgumentFunc("LOG", MappingFactory.getDefaultMapping(Double.class), power);
+        return AbstractFunc.oneArgumentFunc("LOG", _MappingFactory.getMapping(Double.class), power);
     }
 
     public static <B extends Number, P extends Number> Expression<Double> log(Expression<B> bottomNumber
             , Expression<P> power) {
-        return AbstractFunc.twoArgumentFunc("LOG", MappingFactory.getDefaultMapping(Double.class), bottomNumber, power);
+        return AbstractFunc.twoArgumentFunc("LOG", _MappingFactory.getMapping(Double.class), bottomNumber, power);
     }
 
     /**
@@ -248,18 +248,18 @@ abstract class AbstractSQLS {
 
 
     public static Expression<Double> pi() {
-        return AbstractFunc.noArgumentFunc("PI", MappingFactory.getDefaultMapping(Double.class));
+        return AbstractFunc.noArgumentFunc("PI", _MappingFactory.getMapping(Double.class));
     }
 
 
     /*################################## blow date time function method ##################################*/
 
     public static Expression<LocalDateTime> now() {
-        return AbstractFunc.noArgumentFunc("NOW", MappingFactory.getDefaultMapping(LocalDateTime.class));
+        return AbstractFunc.noArgumentFunc("NOW", _MappingFactory.getMapping(LocalDateTime.class));
     }
 
     public static Expression<LocalDate> currentDate() {
-        return AbstractFunc.noArgumentFunc("CURRENT_DATE", MappingFactory.getDefaultMapping(LocalDate.class));
+        return AbstractFunc.noArgumentFunc("CURRENT_DATE", _MappingFactory.getMapping(LocalDate.class));
     }
 
     /*################################## blow static inner class  ##################################*/

@@ -1,6 +1,7 @@
 package io.army.cache;
 
 import io.army.ErrorCode;
+import io.army.annotation.UpdateMode;
 import io.army.beans.DomainReadonlyWrapper;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.IPredicate;
@@ -40,10 +41,10 @@ final class DomainSetterInterceptor implements MethodInterceptor, DomainUpdateAd
         if (tableMeta instanceof ChildTableMeta) {
             ChildTableMeta<?> childMeta = (ChildTableMeta<?>) tableMeta;
             ParentTableMeta<?> parentMeta = childMeta.parentMeta();
-            if (parentMeta.mappingProp(_MetaBridge.VERSION)) {
+            if (parentMeta.mappingField(_MetaBridge.VERSION)) {
                 versionMeta = parentMeta.getField(_MetaBridge.VERSION);
             }
-        } else if (tableMeta.mappingProp(_MetaBridge.VERSION)) {
+        } else if (tableMeta.mappingField(_MetaBridge.VERSION)) {
             versionMeta = tableMeta.getField(_MetaBridge.VERSION);
         }
 
@@ -86,7 +87,7 @@ final class DomainSetterInterceptor implements MethodInterceptor, DomainUpdateAd
         if (fieldMeta == null) {
             throw new DomainProxyException("method[%s] not found FieldMeta.", invocation.getMethod());
         }
-        if (!fieldMeta.updatable()) {
+        if (fieldMeta.updateMode() == UpdateMode.IMMUTABLE) {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "FieldMeta[%s] not updatable.", fieldMeta);
         }
         //2. obtain old value

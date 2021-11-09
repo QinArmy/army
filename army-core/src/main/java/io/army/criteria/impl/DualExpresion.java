@@ -4,8 +4,8 @@ import io.army.criteria.DualOperator;
 import io.army.criteria.Expression;
 import io.army.criteria.FieldExpression;
 import io.army.criteria.SQLContext;
-import io.army.mapping.MappingFactory;
 import io.army.mapping.MappingType;
+import io.army.mapping._MappingFactory;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
@@ -49,7 +49,7 @@ class DualExpresion<E> extends AbstractExpression<E> {
     @Override
     public final MappingType mappingMeta() {
         return this.operator.bitOperator()
-                ? MappingFactory.getDefaultMapping(BigInteger.class)
+                ? _MappingFactory.getMapping(BigInteger.class)
                 : left.mappingMeta();
     }
 

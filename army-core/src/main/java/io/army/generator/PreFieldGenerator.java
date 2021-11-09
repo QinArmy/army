@@ -52,10 +52,10 @@ public interface PreFieldGenerator extends FieldGenerator {
     /**
      * @see GeneratorMeta#dependPropName()
      */
-    String DEPEND_PROP_NAME = "dependPropName";
+    String DEPEND_FIELD_NAME = "dependFieldName";
 
 
-    Object next(FieldMeta<?, ?> fieldMeta, ReadonlyWrapper entityWrapper) throws GeneratorException;
+    Object next(FieldMeta<?, ?> fieldMeta, ReadonlyWrapper domain) throws GeneratorException;
 
 
 }

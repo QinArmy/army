@@ -2,8 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.IPredicate;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingFactory;
 import io.army.mapping.MappingType;
+import io.army.mapping._MappingFactory;
 import io.army.util.ArrayUtils;
 
 import java.util.Collections;
@@ -16,7 +16,7 @@ abstract class AbstractPredicate extends AbstractExpression<Boolean> implements 
 
     @Override
     public final MappingType mappingMeta() {
-        return MappingFactory.getDefaultMapping(Boolean.class);
+        return _MappingFactory.getMapping(Boolean.class);
     }
 
     @Override

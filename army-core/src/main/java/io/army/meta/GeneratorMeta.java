@@ -12,7 +12,7 @@ public interface GeneratorMeta extends Meta {
 
     /**
      * @return prop name or empty.
-     * @see PreFieldGenerator#DEPEND_PROP_NAME
+     * @see PreFieldGenerator#DEPEND_FIELD_NAME
      */
     String dependPropName();
 

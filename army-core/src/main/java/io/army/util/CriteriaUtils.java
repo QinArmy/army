@@ -110,9 +110,9 @@ public abstract class CriteriaUtils {
             propName = propNameList.get(i);
             if (_MetaBridge.ID.equals(propName)) {
                 list.add(tableMeta.id().equal(valueList.get(i)));
-            } else if (tableMeta.mappingProp(propName)) {
+            } else if (tableMeta.mappingField(propName)) {
                 list.add(tableMeta.getField(propName).equal(valueList.get(i)));
-            } else if (parentMeta != null && parentMeta.mappingProp(propName)) {
+            } else if (parentMeta != null && parentMeta.mappingField(propName)) {
                 list.add(parentMeta.getField(propName).equal(valueList.get(i)));
             } else {
                 throw new IllegalArgumentException(String.format("propName[%s] isn't prop of TableMeta[%s]"

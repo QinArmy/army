@@ -137,7 +137,7 @@ public abstract class DialectUtils {
         if (temp instanceof ChildTableMeta) {
             temp = ((ChildTableMeta<?>) temp).parentMeta();
         }
-        return temp.mappingProp(_MetaBridge.VISIBLE);
+        return temp.mappingField(_MetaBridge.VISIBLE);
     }
 
     public static boolean needAppendVisible(List<? extends TableWrapper> tableWrapperList) {
@@ -152,7 +152,7 @@ public abstract class DialectUtils {
                 if (tableAble instanceof ChildTableMeta) {
                     temp = ((ChildTableMeta<?>) temp).parentMeta();
                 }
-                if (temp.mappingProp(_MetaBridge.VISIBLE)) {
+                if (temp.mappingField(_MetaBridge.VISIBLE)) {
                     need = true;
                     break;
                 }

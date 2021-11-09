@@ -2,8 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.domain.IDomain;
-import io.army.mapping.MappingFactory;
 import io.army.mapping.MappingType;
+import io.army.mapping._MappingFactory;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
@@ -171,11 +171,11 @@ public abstract class Sqls extends AbstractSQLS {
     }
 
     public static <E, C> ScalarSubQuery.ScalarSelectionSpec<E, C> scalarSubQuery(Class<E> javaType, C criteria) {
-        return StandardSubQueries.buildScalarSubQuery(javaType, MappingFactory.getDefaultMapping(javaType), criteria);
+        return StandardSubQueries.buildScalarSubQuery(javaType, _MappingFactory.getMapping(javaType), criteria);
     }
 
     public static <E> ScalarSubQuery.ScalarSelectionSpec<E, EmptyObject> scalarSubQuery(Class<E> javaType) {
-        return StandardSubQueries.buildScalarSubQuery(javaType, MappingFactory.getDefaultMapping(javaType)
+        return StandardSubQueries.buildScalarSubQuery(javaType, _MappingFactory.getMapping(javaType)
                 , EmptyObject.getInstance());
     }
 

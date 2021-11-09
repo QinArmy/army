@@ -2,7 +2,7 @@ package io.army.annotation;
 
 public enum UpdateMode {
 
-    ALWAYS,
+    UPDATABLE,
     IMMUTABLE,
     ONLY_NULL,
     ONLY_DEFAULT

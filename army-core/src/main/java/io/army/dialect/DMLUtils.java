@@ -3,6 +3,7 @@ package io.army.dialect;
 import io.army.ErrorCode;
 import io.army.GenericRmSessionFactory;
 import io.army.GenericSessionFactory;
+import io.army.annotation.UpdateMode;
 import io.army.beans.DomainWrapper;
 import io.army.beans.ReadonlyWrapper;
 import io.army.boot.DomainValuesGenerator;
@@ -154,7 +155,7 @@ abstract class DMLUtils {
             , List<FieldMeta<?, ?>> fieldMetaList, List<Expression<?>> valueExpList) {
         if (tableMeta.immutable()) {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "TableMeta[%s] alias[%s] is immutable."
-                    , tableMeta,tableAlias);
+                    , tableMeta, tableAlias);
         }
         Assert.isTrue(fieldMetaList.size() == valueExpList.size()
                 , "field list ifAnd value exp list size not match");
@@ -230,7 +231,7 @@ abstract class DMLUtils {
 
 
     static void assertSetClauseField(FieldMeta<?, ?> fieldMeta) {
-        if (!fieldMeta.updatable()) {
+        if (fieldMeta.updateMode() == UpdateMode.IMMUTABLE) {
             throw new NonUpdateAbleException("FieldMeta[%s] is non-updatable."
                     , fieldMeta);
         }
@@ -274,13 +275,13 @@ abstract class DMLUtils {
         if (discriminator != null) {
             fieldMetaSet.add(discriminator);
         }
-        if (parentMeta.mappingProp(_MetaBridge.CREATE_TIME)) {
+        if (parentMeta.mappingField(_MetaBridge.CREATE_TIME)) {
             fieldMetaSet.add(parentMeta.getField(_MetaBridge.CREATE_TIME));
         }
-        if (parentMeta.mappingProp(_MetaBridge.UPDATE_TIME)) {
+        if (parentMeta.mappingField(_MetaBridge.UPDATE_TIME)) {
             fieldMetaSet.add(parentMeta.getField(_MetaBridge.UPDATE_TIME));
         }
-        if (parentMeta.mappingProp(_MetaBridge.VERSION)) {
+        if (parentMeta.mappingField(_MetaBridge.VERSION)) {
             fieldMetaSet.add(parentMeta.getField(_MetaBridge.VERSION));
         }
         return Collections.unmodifiableSet(fieldMetaSet);
@@ -302,7 +303,7 @@ abstract class DMLUtils {
         Object value;
         int count = 0;
         for (FieldMeta<?, ?> fieldMeta : fieldMetas) {
-            if (!fieldMeta.insertalbe()) {
+            if (!fieldMeta.insertable()) {
                 continue;
             }
             value = domainWrapper.getPropertyValue(fieldMeta.fieldName());
@@ -353,7 +354,7 @@ abstract class DMLUtils {
 
         int index = 0;
         for (FieldMeta<?, ?> fieldMeta : fieldMetas) {
-            if (!fieldMeta.insertalbe()) {
+            if (!fieldMeta.insertable()) {
                 throw new CriteriaException(ErrorCode.CRITERIA_ERROR
                         , "FieldMeta[%s] can't insert ,can't create batch insert template.", fieldMeta);
             }

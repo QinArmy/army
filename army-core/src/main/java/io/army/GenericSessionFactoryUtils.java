@@ -414,9 +414,9 @@ public abstract class GenericSessionFactoryUtils {
         if (StringUtils.hasText(generatorMeta.dependPropName())) {
             TableMeta<?> tableMeta = generatorMeta.fieldMeta().tableMeta();
 
-            if (!tableMeta.mappingProp(generatorMeta.dependPropName())) {
+            if (!tableMeta.mappingField(generatorMeta.dependPropName())) {
                 TableMeta<?> parentMeta = tableMeta.parentMeta();
-                if (parentMeta == null || !parentMeta.mappingProp(generatorMeta.dependPropName())) {
+                if (parentMeta == null || !parentMeta.mappingField(generatorMeta.dependPropName())) {
                     throw createDependException(generatorMeta.fieldMeta());
                 }
             }

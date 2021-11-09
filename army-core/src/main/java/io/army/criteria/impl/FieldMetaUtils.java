@@ -2,19 +2,19 @@ package io.army.criteria.impl;
 
 import io.army.annotation.*;
 import io.army.domain.IDomain;
+import io.army.generator.PostFieldGenerator;
 import io.army.generator.PreFieldGenerator;
-import io.army.lang.NonNull;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingFactory;
+import io.army.mapping.CodeEnumType;
 import io.army.mapping.MappingType;
+import io.army.mapping.NameEnumType;
+import io.army.mapping._MappingFactory;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 import io.army.meta.MetaException;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
-import io.army.util.AnnotationUtils;
-import io.army.util.ClassUtils;
 import io.army.util.StringUtils;
 
 import java.lang.reflect.Field;
@@ -56,7 +56,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
             }
 
             if (PreFieldGenerator.class.isAssignableFrom(type)) {
-                this.dependPropName = this.params.getOrDefault(PreFieldGenerator.DEPEND_PROP_NAME, "");
+                this.dependPropName = this.params.getOrDefault(PreFieldGenerator.DEPEND_FIELD_NAME, "");
             } else {
                 this.dependPropName = "";
             }
@@ -86,7 +86,9 @@ abstract class FieldMetaUtils extends TableMetaUtils {
     static Column columnMeta(final Class<? extends IDomain> domainClass, final Field field) throws MetaException {
         final Column column = field.getAnnotation(Column.class);
         if (column == null) {
-            throw createNonAnnotationException(domainClass, Column.class);
+            String m = String.format("Field[%s.%s] isn't annotated by %s."
+                    , domainClass.getName(), field.getName(), Column.class.getName());
+            throw new MetaException(m);
         }
         return column;
     }
@@ -94,22 +96,22 @@ abstract class FieldMetaUtils extends TableMetaUtils {
 
     @Nullable
     static GeneratorMeta columnGeneratorMeta(Field field, FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
-        if (_MetaBridge.ID.equals(fieldMeta.fieldName())
-                && fieldMeta.tableMeta().parentMeta() != null) {
+        if (_MetaBridge.ID.equals(fieldMeta.fieldName()) && fieldMeta.tableMeta().parentMeta() != null) {
             return null;
         }
-        Generator generator = AnnotationUtils.getAnnotation(field, Generator.class);
+        final Generator generator = field.getAnnotation(Generator.class);
         if (generator == null) {
             return null;
         }
         assertManagedByArmyForGenerator(fieldMeta, isDiscriminator);
 
-        Class<?> generatorClass = loadGeneratorClass(fieldMeta, generator.value());
+        final Class<?> generatorClass;
+        generatorClass = loadGeneratorClass(fieldMeta, generator.value());
 
         assertProGenerator(generatorClass, fieldMeta);
 
-        Map<String, String> paramMap;
-        Param[] params = generator.params();
+        final Map<String, String> paramMap;
+        final Param[] params = generator.params();
         if (params.length == 0) {
             paramMap = Collections.emptyMap();
         } else {
@@ -118,103 +120,105 @@ abstract class FieldMetaUtils extends TableMetaUtils {
                 paramMap.put(param.name(), param.value());
             }
         }
-        assertPreGeneratorDependPropName(paramMap, fieldMeta, generatorClass);
+        if (generatorClass == PostFieldGenerator.class) {
+            if (!paramMap.isEmpty()) {
+                String m = String.format("%s no param", PostFieldGenerator.class.getName());
+                throw new MetaException(m);
+            }
+        } else if (!PostFieldGenerator.class.isAssignableFrom(generatorClass)) {
+            String m = String.format("%s value must be %s or %s", Generator.class.getName()
+                    , PostFieldGenerator.class.getName(), PreFieldGenerator.class.getName());
+            throw new MetaException(m);
+        } else if (paramMap.containsKey(PreFieldGenerator.DEPEND_FIELD_NAME)// assert DEPEND_PROP_NAME value
+                && !PreFieldGenerator.class.isAssignableFrom(generatorClass)) {
+            String m = String.format("Domain[%s] field[%s] generator cannot have %s value"
+                    , fieldMeta.tableMeta().javaType().getName()
+                    , fieldMeta.fieldName()
+                    , PreFieldGenerator.DEPEND_FIELD_NAME);
+            throw new MetaException(m);
+        }
         return new GeneratorMetaImpl(fieldMeta, generatorClass, paramMap);
     }
 
 
-    static MappingType columnMappingMeta(Field field) {
-        Mapping mapping = AnnotationUtils.getAnnotation(field, Mapping.class);
+    static MappingType columnMappingMeta(final TableMeta<?> tableMeta, final Field field
+            , final boolean isDiscriminator) {
+        final Class<?> mappingClass = getMappingClass(tableMeta, field);
 
-        Class<?> mappingClass;
-        if (mapping == null) {
-            mappingClass = null;
-        } else {
-            try {
-                mappingClass = ClassUtils.forName(mapping.value(), ClassUtils.getDefaultClassLoader());
-                if (!MappingType.class.isAssignableFrom(mappingClass)) {
-                    throw new MetaException("%s mapping class isn't %s type.", field, MappingType.class.getName());
-                }
-            } catch (ClassNotFoundException e) {
-                throw new MetaException(e, "%s.value() class not found."
-                        , Mapping.class.getName()
-                );
-            }
+        final Class<?> fieldJavaType = field.getType();
+        if (fieldJavaType.isEnum()
+                && mappingClass != null
+                && mappingClass != CodeEnumType.class
+                && mappingClass != NameEnumType.class) {
+            String m = String.format("enum must mapping to %s or %s.", CodeEnumType.class.getName()
+                    , NameEnumType.class.getName());
+            throw new MetaException(m);
         }
 
-        MappingType mappingType;
+        if (isDiscriminator && (!fieldJavaType.isEnum() || !CodeEnum.class.isAssignableFrom(fieldJavaType))) {
+            String m = String.format("discriminator java type must mapping to %s", CodeEnumType.class.getName());
+            throw new MetaException(m);
+        }
+
+        final MappingType mappingType;
         if (mappingClass == null) {
-            mappingType = MappingFactory.getDefaultMapping(field.getType());
+            mappingType = _MappingFactory.getMapping(fieldJavaType);
         } else {
-            mappingType = MappingFactory.build(mappingClass, field.getType());
+            mappingType = _MappingFactory.getMapping(mappingClass, fieldJavaType);
         }
         return mappingType;
 
     }
 
-    static boolean isDiscriminator(FieldMeta<?, ?> fieldMeta) {
-        Inheritance inheritance = AnnotationUtils.getAnnotation(fieldMeta.tableMeta().javaType(), Inheritance.class);
+    static boolean isDiscriminator(final FieldMeta<?, ?> fieldMeta) {
+        final Inheritance inheritance = fieldMeta.javaType().getAnnotation(Inheritance.class);
         return inheritance != null
                 && fieldMeta.columnName().equalsIgnoreCase(inheritance.value());
     }
 
-    static boolean columnInsertable(FieldMeta<?, ?> fieldMeta, Column column, boolean isDiscriminator) {
-        boolean insertable = column.insertable();
-        if (_MetaBridge.RESERVED_PROPS.contains(fieldMeta.fieldName())
-                || isDiscriminator) {
-            insertable = true;
+
+    static UpdateMode columnUpdatable(FieldMeta<?, ?> fieldMeta, final Column column, boolean isDiscriminator) {
+        final String fieldName = fieldMeta.fieldName();
+        final UpdateMode mode;
+        if (isDiscriminator
+                || _MetaBridge.ID.equals(fieldName)
+                || _MetaBridge.CREATE_TIME.equals(fieldName)) {
+            mode = UpdateMode.IMMUTABLE;
+        } else if (fieldMeta.tableMeta().immutable()) {
+            mode = UpdateMode.IMMUTABLE;
+        } else if (_MetaBridge.UPDATE_TIME.equals(fieldName)
+                || _MetaBridge.VERSION.equals(fieldName)
+                || _MetaBridge.VISIBLE.equals(fieldName)) {
+            mode = UpdateMode.UPDATABLE;
+        } else {
+            mode = column.updateMode();
         }
-        return insertable;
+        return mode;
     }
 
-    static boolean columnUpdatable(TableMeta<?> tableMeta, String propName, Column column, boolean isDiscriminator) {
-        boolean updatable = column.updatable();
-        if (tableMeta.immutable()
-                || _MetaBridge.ID.equals(propName)
-                || _MetaBridge.CREATE_TIME.equals(propName)
-                || isDiscriminator) {
-            updatable = false;
-        }
-        return updatable;
-    }
 
-
-    @NonNull
-    static String columnComment(Column column, FieldMeta<?, ?> fieldMeta) {
+    static String columnComment(final Column column, FieldMeta<?, ?> fieldMeta, final boolean isDiscriminator) {
         String comment = column.comment().trim();
-        if (_MetaBridge.RESERVED_PROPS.contains(fieldMeta.fieldName())
-                || CodeEnum.class.isAssignableFrom(fieldMeta.javaType())) {
-
+        if (_MetaBridge.RESERVED_PROPS.contains(fieldMeta.fieldName()) || isDiscriminator) {
             if (!StringUtils.hasText(comment)) {
                 comment = commentManagedByArmy(fieldMeta);
             }
         } else if (!StringUtils.hasText(comment)) {
-            throw new MetaException("Entity[%s] column[%s] no comment."
+            String m = String.format("Domain[%s] column[%s] isn't reserved properties or discriminator, so must have common"
                     , fieldMeta.tableMeta().javaType().getName()
                     , fieldMeta.columnName());
+            throw new MetaException(m);
         }
         return comment;
     }
 
-    static boolean columnNullable(Column column, FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
-        if (_MetaBridge.UPDATE_PROPS.contains(fieldMeta.fieldName())
-                || isDiscriminator) {
-            if (column.nullable()) {
-                throw new MetaException("mapped class[%s] column[%s] columnNullable must be false.",
-                        fieldMeta.tableMeta().javaType(),
-                        fieldMeta.columnName()
-                );
-            }
 
-        }
-        return column.nullable();
-    }
-
-    static String columnDefault(Column column, FieldMeta<?, ?> fieldMeta) {
-        String defaultValue = column.defaultValue().trim();
+    static String columnDefault(Column column, FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
+        final String defaultValue = column.defaultValue();
         if (!fieldMeta.nullable()
                 && !StringUtils.hasText(defaultValue)
-                && !managedByArmy(fieldMeta)
+                && !isDiscriminator
+                && !_MetaBridge.RESERVED_PROPS.contains(fieldMeta.fieldName())
                 && !_MetaBridge.MAYBE_NO_DEFAULT_TYPES.contains(fieldMeta.javaType())) {
             throw new MetaException("%s non-null ,please specified defaultValue() for it.", fieldMeta);
         }
@@ -222,6 +226,29 @@ abstract class FieldMetaUtils extends TableMetaUtils {
     }
 
     /*################################## blow private method ##################################*/
+
+    @Nullable
+    private static Class<?> getMappingClass(final TableMeta<?> tableMeta, final Field field) {
+        final Mapping mapping = field.getAnnotation(Mapping.class);
+        final Class<?> mappingClass;
+        if (mapping == null) {
+            mappingClass = null;
+        } else {
+            try {
+                mappingClass = Class.forName(mapping.value());
+                if (!MappingType.class.isAssignableFrom(mappingClass)) {
+                    String m = String.format("%s.%s mapping class isn't %s type.", tableMeta.javaType().getName()
+                            , field.getName(), MappingType.class.getName());
+                    throw new MetaException(m);
+                }
+            } catch (ClassNotFoundException e) {
+                String m = String.format("%s.value() class[%s] not found.", Mapping.class.getName(), mapping.value());
+                throw new MetaException(m, e);
+            }
+        }
+        return mappingClass;
+    }
+
 
     private static String commentManagedByArmy(FieldMeta<?, ?> fieldMeta) {
         String comment = "";
@@ -233,76 +260,66 @@ abstract class FieldMetaUtils extends TableMetaUtils {
                 comment = "create time";
                 break;
             case _MetaBridge.UPDATE_TIME:
-                comment = "singleUpdate time";
+                comment = "update time";
                 break;
             case _MetaBridge.VERSION:
                 comment = "version for optimistic lock";
                 break;
             case _MetaBridge.VISIBLE:
-                comment = "visible for logic singleDelete";
+                comment = "visible for logic delete";
                 break;
             default:
-                if (fieldMeta.javaType().isEnum()
-                        && CodeEnum.class.isAssignableFrom(fieldMeta.javaType())) {
+                if (fieldMeta.javaType().isEnum()) {
                     comment = "@see " + fieldMeta.javaType().getName();
                 }
         }
         return comment;
     }
 
-    private static boolean managedByArmy(FieldMeta<?, ?> fieldMeta) {
-        Inheritance inheritance = AnnotationUtils.getAnnotation(fieldMeta.tableMeta().javaType(), Inheritance.class);
-        return _MetaBridge.RESERVED_PROPS.contains(fieldMeta.fieldName())
-                || (inheritance != null
-                && inheritance.value().equalsIgnoreCase(fieldMeta.columnName()))
-                ;
-    }
 
-
-    private static void assertPreGeneratorDependPropName(Map<String, String> paramMap, FieldMeta<?, ?> fieldMeta
-            , Class<?> generatorClass) {
-
-        // assert DEPEND_PROP_NAME value
-        if (paramMap.containsKey(PreFieldGenerator.DEPEND_PROP_NAME)
-                && !ClassUtils.isAssignable(PreFieldGenerator.class, generatorClass)) {
-            throw new MetaException("Entity[%s] prop[%s] generator cannot have %s value"
-                    , fieldMeta.tableMeta().javaType().getName()
-                    , fieldMeta.fieldName()
-                    , PreFieldGenerator.DEPEND_PROP_NAME);
-        }
-    }
-
+    /**
+     * @see #columnGeneratorMeta(Field, FieldMeta, boolean)
+     */
     private static void assertProGenerator(Class<?> generatorClass, FieldMeta<?, ?> fieldMeta) {
         // assert Generator
-        if (!ClassUtils.isAssignable(PreFieldGenerator.class, generatorClass)) {
-            throw new MetaException("Domain[%s] prop[%s] generator error, isn't %s"
-                    , fieldMeta.tableMeta()
+        if (!PreFieldGenerator.class.isAssignableFrom(generatorClass)) {
+            String m = String.format("Domain[%s] field[%s] generator error, isn't %s"
+                    , fieldMeta.tableMeta().javaType().getName()
                     , fieldMeta.fieldName()
                     , PreFieldGenerator.class.getName());
+            throw new MetaException(m);
         }
     }
 
+    /**
+     * @see #columnGeneratorMeta(Field, FieldMeta, boolean)
+     */
     private static void assertManagedByArmyForGenerator(FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
-        if (!_MetaBridge.ID.equals(fieldMeta.fieldName())) {
-            if (_MetaBridge.RESERVED_PROPS.contains(fieldMeta.fieldName())
-                    || isDiscriminator) {
-                throw new MetaException("Domain[%s].prop[%s] must no Generator"
-                        , fieldMeta.tableMeta().javaType().getName()
-                        , fieldMeta.fieldName());
-            }
+        final String fieldName = fieldMeta.fieldName();
+        if (_MetaBridge.RESERVED_PROPS.contains(fieldName) && (!_MetaBridge.ID.equals(fieldName) || isDiscriminator)) {
+            String m = String.format("Domain[%s].field[%s] must no Generator"
+                    , fieldMeta.tableMeta().javaType().getName()
+                    , fieldMeta.fieldName());
+            throw new MetaException(m);
+
         }
     }
 
-    private static Class<?> loadGeneratorClass(FieldMeta<?, ?> fieldMeta, String className) {
+    /**
+     * @see #columnGeneratorMeta(Field, FieldMeta, boolean)
+     */
+    private static Class<?> loadGeneratorClass(FieldMeta<?, ?> fieldMeta, final String className) {
         if (!StringUtils.hasText(className)) {
-            throw new MetaException("Domain[%s] prop[%s] generator no class name"
+            String m = String.format("Domain[%s] field[%s] generator no class name"
                     , fieldMeta.tableMeta().javaType().getName(), fieldMeta.fieldName());
+            throw new MetaException(m);
         }
         try {
-            return ClassUtils.forName(className, ClassUtils.getDefaultClassLoader());
+            return Class.forName(className);
         } catch (ClassNotFoundException e) {
-            throw new MetaException(e, "Domain[%s] prop[%s] generator class not found."
+            String m = String.format("Domain[%s] field[%s] generator class not found."
                     , fieldMeta.tableMeta().javaType().getName(), fieldMeta.fieldName());
+            throw new MetaException(m, e);
         }
 
     }

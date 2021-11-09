@@ -3,8 +3,8 @@ package io.army.criteria.impl;
 import io.army.criteria.ParamExpression;
 import io.army.criteria.SQLContext;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingFactory;
 import io.army.mapping.MappingType;
+import io.army.mapping._MappingFactory;
 import io.army.meta.ParamMeta;
 import io.army.util.Assert;
 
@@ -43,7 +43,7 @@ final class ParamExpressionImp<E> extends AbstractNoNOperationExpression<E> impl
     private ParamExpressionImp(E value) {
         Assert.notNull(value, "");
         this.value = value;
-        this.paramMeta = MappingFactory.getDefaultMapping(this.value.getClass());
+        this.paramMeta = _MappingFactory.getMapping(this.value.getClass());
     }
 
 

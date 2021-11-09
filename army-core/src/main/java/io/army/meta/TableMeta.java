@@ -62,7 +62,7 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
 
     SchemaMeta schema();
 
-    boolean mappingProp(String propName);
+    boolean mappingField(String propName);
 
     FieldMeta<T, Object> getField(String propName) throws MetaException;
 

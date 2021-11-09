@@ -405,7 +405,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     @Override
-    public boolean mappingProp(String propName) {
+    public boolean mappingField(String propName) {
         return this.propNameToFieldMeta.containsKey(propName);
     }
 

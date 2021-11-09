@@ -189,7 +189,6 @@ abstract class TableMetaUtils {
     }
 
 
-
     static <T extends IDomain> FieldMetaPair<T> createFieldMetaPair(final TableMeta<T> tableMeta) {
 
         final Class<T> domainClass = tableMeta.javaType();
@@ -300,15 +299,15 @@ abstract class TableMetaUtils {
     }
 
 
-    static String columnName(Column column, Field field) throws MetaException {
-        final String customColumnName = StringUtils.toUpperCase(column.name()), fieldName = field.getName();
+    static String columnName(final Column column, final Field field) throws MetaException {
+        final String customColumnName = StringUtils.toLowerCase(column.name()), fieldName = field.getName();
         final String columnName;
         if (customColumnName.isEmpty()) {
             columnName = _MetaBridge.camelToLowerCase(fieldName);
         } else if (_MetaBridge.RESERVED_PROPS.contains(fieldName)) {
             columnName = _MetaBridge.camelToLowerCase(fieldName);
             if (StringUtils.hasText(customColumnName) && !customColumnName.equals(columnName)) {
-                String m = String.format("Mapped class [%s] reserved prop[%s] column name must use default value.",
+                String m = String.format("Mapped class[%s] reserved filed[%s] column name must use default value.",
                         field.getDeclaringClass().getName(), fieldName);
                 throw new MetaException(m);
             }

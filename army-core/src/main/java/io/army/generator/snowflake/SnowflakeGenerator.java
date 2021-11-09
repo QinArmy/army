@@ -335,7 +335,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
     /*################################## blow interface method ##################################*/
 
     @Override
-    public Object next(FieldMeta<?, ?> fieldMeta, ReadonlyWrapper entityWrapper) {
+    public Object next(FieldMeta<?, ?> fieldMeta, ReadonlyWrapper domain) {
         Object identifier;
 
         if (fieldMeta.javaType() == Long.class) {
@@ -344,10 +344,10 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
             if (fieldMeta.precision() >= 0 && fieldMeta.precision() <= 19) {
                 identifier = snowflake.nextAsString();
             } else {
-                identifier = nextAsStringWithDepend(fieldMeta, entityWrapper);
+                identifier = nextAsStringWithDepend(fieldMeta, domain);
             }
         } else if (fieldMeta.javaType() == BigInteger.class) {
-            identifier = new BigInteger(nextAsStringWithDepend(fieldMeta, entityWrapper));
+            identifier = new BigInteger(nextAsStringWithDepend(fieldMeta, domain));
         } else {
             throw new IllegalArgumentException(String.format("SnowflakeGenerator unsupported java type[%s]"
                     , fieldMeta.javaType().getName()));
