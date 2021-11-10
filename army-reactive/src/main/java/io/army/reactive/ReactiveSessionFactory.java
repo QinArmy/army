@@ -1,7 +1,7 @@
 package io.army.reactive;
 
-import io.army.GenericRmSessionFactory;
 import io.army.SessionException;
+import io.army.session.GenericRmSessionFactory;
 import reactor.core.publisher.Mono;
 
 public interface ReactiveSessionFactory extends GenericReactiveApiSessionFactory, GenericRmSessionFactory {

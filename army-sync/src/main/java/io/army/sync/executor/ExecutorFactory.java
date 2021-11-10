@@ -1,11 +1,15 @@
 package io.army.sync.executor;
 
 
+import io.army.meta.ServerMeta;
+
 public interface ExecutorFactory {
 
-    MetaExecutor createMetaExecutor()throws Exception;
+    ServerMeta serverMeta();
 
-    StmtExecutor createSqlExecutor()throws Exception;
+    MetaExecutor createMetaExecutor() throws Exception;
+
+    StmtExecutor createSqlExecutor() throws Exception;
 
 
 }

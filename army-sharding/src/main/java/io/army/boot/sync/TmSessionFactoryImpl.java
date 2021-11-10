@@ -1,6 +1,9 @@
 package io.army.boot.sync;
 
-import io.army.*;
+import io.army.CreateSessionException;
+import io.army.ErrorCode;
+import io.army.SessionException;
+import io.army.SessionFactoryException;
 import io.army.advice.sync.DomainAdvice;
 import io.army.boot.DomainValuesGenerator;
 import io.army.cache.SessionCacheFactory;
@@ -9,6 +12,8 @@ import io.army.criteria.NotFoundRouteException;
 import io.army.dialect.Database;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.session.AbstractGenericSessionFactory;
+import io.army.session.FactoryMode;
 import io.army.sharding.DatabaseRoute;
 import io.army.sharding.ShardingRoute;
 import io.army.sharding.TableRoute;
@@ -28,9 +33,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * this class is a implementation of {@link TmSessionFactory}.
  * Transaction Manager (TM) {@link TmSessionFactory}.
  * <p>
- * this class run only below {@link ShardingMode}:
+ * this class run only below {@link FactoryMode}:
  *     <ul>
- *         <li>{@link ShardingMode#SHARDING}</li>
+ *         <li>{@link FactoryMode#SHARDING}</li>
  *     </ul>
  * </p>
  */
@@ -62,7 +67,7 @@ class TmSessionFactoryImpl extends AbstractGenericSessionFactory implements Inne
     private boolean closed;
 
     TmSessionFactoryImpl(TmSessionFactionBuilderImpl builder) {
-        super(null);
+        super(null, null);
 //        Assert.isTrue(this.shardingMode == ShardingMode.SHARDING
 //                , () -> String.format("%s support only SHARDING ShardingMode", TmSessionFactoryImpl.this));
 //
@@ -114,7 +119,7 @@ class TmSessionFactoryImpl extends AbstractGenericSessionFactory implements Inne
     }
 
     @Override
-    public List<Database> actualDatabaseList() {
+    public List<Database> rmServerMetaList() {
         return this.actualDatabaseList;
     }
 
@@ -148,13 +153,6 @@ class TmSessionFactoryImpl extends AbstractGenericSessionFactory implements Inne
         return this.currentSessionContext.hasCurrentSession();
     }
 
-
-    @Nullable
-    @Override
-    public GenericTmSessionFactory tmSessionFactory() {
-        // always null
-        return null;
-    }
 
     @Override
     public void close() throws SessionFactoryException {

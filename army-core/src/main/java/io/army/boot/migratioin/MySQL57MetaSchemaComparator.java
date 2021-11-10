@@ -1,11 +1,11 @@
 package io.army.boot.migratioin;
 
-import io.army.GenericRmSessionFactory;
 import io.army.dialect.Database;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.schema.SchemaInfoException;
+import io.army.session.GenericRmSessionFactory;
 import io.army.sqltype.MySQLDataType;
 import io.army.util.ArrayUtils;
 import org.slf4j.Logger;

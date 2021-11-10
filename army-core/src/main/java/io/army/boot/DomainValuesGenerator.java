@@ -1,9 +1,9 @@
 package io.army.boot;
 
-import io.army.GenericSessionFactory;
 import io.army.beans.DomainWrapper;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
+import io.army.session.GenericSessionFactory;
 
 public interface DomainValuesGenerator {
 

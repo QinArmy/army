@@ -1,7 +1,6 @@
 package io.army.dialect;
 
 import io.army.ErrorCode;
-import io.army.ShardingMode;
 import io.army.beans.DomainWrapper;
 import io.army.beans.ReadonlyWrapper;
 import io.army.boot.DomainValuesGenerator;
@@ -13,10 +12,11 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
-import io.army.util.Assert;
+import io.army.session.FactoryMode;
 import io.army.stmt.PairStmt;
-import io.army.stmt.Stmt;
 import io.army.stmt.SimpleStmt;
+import io.army.stmt.Stmt;
+import io.army.util.Assert;
 
 import java.util.*;
 
@@ -391,7 +391,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
 
 
     private Stmt standardBatchInsert(InnerStandardBatchInsert insert, final Visible visible) {
-        if (this.dialect.sessionFactory().shardingMode() != ShardingMode.NO_SHARDING) {
+        if (this.dialect.sessionFactory().shardingMode() != FactoryMode.NO_SHARDING) {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "Batch insert only support NO_SHARDING mode.");
         }
         Stmt stmt;

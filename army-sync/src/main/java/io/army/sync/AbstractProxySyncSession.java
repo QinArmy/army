@@ -1,11 +1,11 @@
 package io.army.sync;
 
-import io.army.GenericProxySession;
 import io.army.SessionException;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
+import io.army.session.GenericProxySession;
 
 import java.util.List;
 

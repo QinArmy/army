@@ -12,6 +12,9 @@ import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.session.AbstractGenericSessionFactory;
+import io.army.session.FactoryMode;
+import io.army.session.GenericTmSessionFactory;
 import io.army.sharding.TableRoute;
 import io.army.util.Assert;
 import io.army.util.Pair;
@@ -29,9 +32,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 class SessionFactoryImpl extends AbstractGenericSessionFactory
         implements InnerSessionFactory {
 
-    private static final EnumSet<ShardingMode> SUPPORT_SHARDING_SET = EnumSet.of(
-            ShardingMode.NO_SHARDING
-            , ShardingMode.SINGLE_DATABASE_SHARDING);
+    private static final EnumSet<FactoryMode> SUPPORT_SHARDING_SET = EnumSet.of(
+            FactoryMode.NO_SHARDING
+            , FactoryMode.SINGLE_DATABASE_SHARDING);
 
     private final DataSource dataSource;
 
@@ -64,9 +67,9 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
 
     SessionFactoryImpl(SessionFactoryBuilderImpl factoryBuilder)
             throws SessionFactoryException {
-        super(null);
+        super(null, null);
 
-        if (!SUPPORT_SHARDING_SET.contains(this.shardingMode)) {
+        if (!SUPPORT_SHARDING_SET.contains(this.factoryMode)) {
             throw new SessionFactoryException("ShardingMode[%s] is supported by %s.", getClass().getName());
         }
 

@@ -1,8 +1,8 @@
 package io.army.cache;
 
-import io.army.GenericSession;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
+import io.army.session.GenericSession;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 import io.army.util.Pair;

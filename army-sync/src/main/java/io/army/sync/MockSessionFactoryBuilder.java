@@ -1,9 +1,9 @@
 package io.army.sync;
 
-import io.army.GenericRmSessionFactory;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialectFactory;
+import io.army.session.GenericRmSessionFactory;
 
 final class MockSessionFactoryBuilder extends AbstractSyncSessionFactoryBuilder {
 

@@ -1,19 +1,19 @@
-package io.army;
+package io.army.session;
 
-import io.army.advice.GenericSessionFactoryAdvice;
-import io.army.boot.GenericFactoryBuilder;
+import io.army.ArmyException;
+import io.army.advice.FactoryAdvice;
 import io.army.codec.FieldCodec;
 import io.army.env.ArmyEnvironment;
 import io.army.lang.Nullable;
 import io.army.util.CollectionUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 
-public abstract class GenericFactoryBuilderImpl<T extends GenericFactoryBuilder<T>>
-        implements GenericFactoryBuilder<T> {
-
-    private final boolean springApplication;
+public abstract class FactoryBuilderSupport {
 
     protected String name;
 
@@ -21,19 +21,16 @@ public abstract class GenericFactoryBuilderImpl<T extends GenericFactoryBuilder<
 
     protected Collection<FieldCodec> fieldCodecs;
 
-    protected ShardingMode shardingMode = ShardingMode.NO_SHARDING;
+    protected FactoryMode factoryMode = FactoryMode.NO_SHARDING;
 
     protected int tableCountPerDatabase;
 
-    protected Collection<GenericSessionFactoryAdvice> factoryAdvices;
+    protected Collection<FactoryAdvice> factoryAdvices;
 
-    protected Function<RuntimeException, RuntimeException> exceptionFunction;
+    protected Function<ArmyException, RuntimeException> exceptionFunction;
 
-    private GenericSessionFactoryAdvice factoryAdviceComposite;
+    private FactoryAdvice factoryAdviceComposite;
 
-    protected GenericFactoryBuilderImpl(boolean springApplication) {
-        this.springApplication = springApplication;
-    }
 
     public final String name() {
         return this.name;
@@ -49,16 +46,12 @@ public abstract class GenericFactoryBuilderImpl<T extends GenericFactoryBuilder<
     }
 
     @Nullable
-    public final ShardingMode shardingMode() {
-        return this.shardingMode;
+    public final FactoryMode shardingMode() {
+        return this.factoryMode;
     }
 
     public final int tableCountPerDatabase() {
         return this.tableCountPerDatabase;
-    }
-
-    public final boolean springApplication() {
-        return this.springApplication;
     }
 
     @Nullable
@@ -71,7 +64,7 @@ public abstract class GenericFactoryBuilderImpl<T extends GenericFactoryBuilder<
         return null;
     }
 
-    protected final GenericSessionFactoryAdvice getFactoryAdviceComposite() {
+    protected final FactoryAdvice getFactoryAdviceComposite() {
         if (this.factoryAdviceComposite == null) {
             this.factoryAdviceComposite = GenericSessionFactoryAdviceComposite.build(this.factoryAdvices);
         }
@@ -79,51 +72,46 @@ public abstract class GenericFactoryBuilderImpl<T extends GenericFactoryBuilder<
     }
 
 
-    private static final class GenericSessionFactoryAdviceComposite implements GenericSessionFactoryAdvice {
+    private static final class GenericSessionFactoryAdviceComposite implements FactoryAdvice {
 
         private static GenericSessionFactoryAdviceComposite build(
-                @Nullable Collection<GenericSessionFactoryAdvice> factoryAdvices) {
-            List<GenericSessionFactoryAdvice> orderedAdviceList;
+                @Nullable Collection<FactoryAdvice> factoryAdvices) {
+            List<FactoryAdvice> orderedAdviceList;
 
             if (CollectionUtils.isEmpty(factoryAdvices)) {
                 orderedAdviceList = Collections.emptyList();
             } else {
                 orderedAdviceList = new ArrayList<>(factoryAdvices);
-                orderedAdviceList.sort(Comparator.comparingInt(GenericSessionFactoryAdvice::order));
+                // orderedAdviceList.sort(Comparator.comparingInt(FactoryAdvice::order));
                 orderedAdviceList = Collections.unmodifiableList(orderedAdviceList);
             }
             return new GenericSessionFactoryAdviceComposite(orderedAdviceList);
         }
 
-        private final List<GenericSessionFactoryAdvice> adviceList;
+        private final List<FactoryAdvice> adviceList;
 
-        private GenericSessionFactoryAdviceComposite(List<GenericSessionFactoryAdvice> adviceList) {
+        private GenericSessionFactoryAdviceComposite(List<FactoryAdvice> adviceList) {
             this.adviceList = adviceList;
-        }
-
-        @Override
-        public int order() {
-            return Integer.MIN_VALUE;
         }
 
 
         @Override
         public void beforeInstance(ArmyEnvironment environment) {
-            for (GenericSessionFactoryAdvice factoryAdvice : this.adviceList) {
+            for (FactoryAdvice factoryAdvice : this.adviceList) {
                 factoryAdvice.beforeInstance(environment);
             }
         }
 
         @Override
         public void beforeInitialize(GenericSessionFactory sessionFactory) {
-            for (GenericSessionFactoryAdvice factoryAdvice : this.adviceList) {
+            for (FactoryAdvice factoryAdvice : this.adviceList) {
                 factoryAdvice.beforeInitialize(sessionFactory);
             }
         }
 
         @Override
         public void afterInitialize(GenericSessionFactory sessionFactory) {
-            for (GenericSessionFactoryAdvice factoryAdvice : this.adviceList) {
+            for (FactoryAdvice factoryAdvice : this.adviceList) {
                 factoryAdvice.afterInitialize(sessionFactory);
             }
         }

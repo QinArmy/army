@@ -1,13 +1,13 @@
 package io.army.boot.migratioin;
 
 import io.army.ErrorCode;
-import io.army.GenericRmSessionFactory;
 import io.army.dialect.DDLUtils;
 import io.army.dialect.Database;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.schema.SchemaInfoException;
+import io.army.session.GenericRmSessionFactory;
 import io.army.sharding.RouteUtils;
 import io.army.util.Assert;
 import io.army.util.StringUtils;

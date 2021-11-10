@@ -1,8 +1,6 @@
 package io.army.dialect;
 
 import io.army.ErrorCode;
-import io.army.GenericRmSessionFactory;
-import io.army.GenericSessionFactory;
 import io.army.annotation.UpdateMode;
 import io.army.beans.DomainWrapper;
 import io.army.beans.ReadonlyWrapper;
@@ -15,6 +13,8 @@ import io.army.generator.FieldGenerator;
 import io.army.generator.PreFieldGenerator;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
+import io.army.session.GenericRmSessionFactory;
+import io.army.session.GenericSessionFactory;
 import io.army.stmt.*;
 import io.army.struct.CodeEnum;
 import io.army.util.Assert;

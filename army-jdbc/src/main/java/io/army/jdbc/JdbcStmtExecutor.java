@@ -1,9 +1,12 @@
 package io.army.jdbc;
 
+import io.army.session.DataAccessException;
 import io.army.stmt.Stmt;
 import io.army.sync.executor.StmtExecutor;
+import io.army.sync.utils.SyncExceptions;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 final class JdbcStmtExecutor implements StmtExecutor {
@@ -35,8 +38,12 @@ final class JdbcStmtExecutor implements StmtExecutor {
     }
 
     @Override
-    public void close() throws Exception {
-        this.conn.close();
+    public void close() throws DataAccessException {
+        try {
+            this.conn.close();
+        } catch (SQLException e) {
+            throw SyncExceptions.wrapDataAccess(e);
+        }
     }
 
 

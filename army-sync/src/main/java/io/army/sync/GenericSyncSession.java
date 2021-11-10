@@ -1,10 +1,10 @@
 package io.army.sync;
 
-import io.army.GenericSession;
 import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.session.GenericSession;
 
 import java.util.List;
 import java.util.Map;
@@ -17,7 +17,7 @@ import java.util.Map;
  * <p>
  * This interface is base interface of below interface:
  *     <ul>
- *         <li>{@link io.army.sync.Session}</li>
+ *         <li>{@link Session}</li>
  *         <li>{@code io.army.boot.sync.RmSession}</li>
  *         <li>{@code io.army.sync.TmSession}</li>
  *     </ul>

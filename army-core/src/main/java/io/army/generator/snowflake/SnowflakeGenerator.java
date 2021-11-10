@@ -1,6 +1,8 @@
 package io.army.generator.snowflake;
 
-import io.army.*;
+import io.army.ArmyConfigConstant;
+import io.army.ArmyRuntimeException;
+import io.army.ErrorCode;
 import io.army.annotation.Param;
 import io.army.beans.ArmyBean;
 import io.army.beans.ReadonlyWrapper;
@@ -11,6 +13,8 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 import io.army.meta.MetaException;
+import io.army.session.FactoryMode;
+import io.army.session.GenericSessionFactory;
 import io.army.util.Assert;
 import io.army.util.ReflectionUtils;
 import io.army.util.StringUtils;
@@ -239,7 +243,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
         ArmyEnvironment env = sessionFactory.environment();
         String beanName = env.getRequiredProperty(ArmyConfigConstant.SNOWFLAKE_CLIENT_NAME);
         client = env.getBean(beanName, SnowflakeClient.class);
-        if (client == null && sessionFactory.shardingMode() == ShardingMode.NO_SHARDING) {
+        if (client == null && sessionFactory.shardingMode() == FactoryMode.NO_SHARDING) {
             boolean singleApplication = env.getProperty(
                     String.format(ArmyConfigConstant.SINGLE_APPLICATION, sessionFactory.name())
                     , Boolean.class, Boolean.TRUE);

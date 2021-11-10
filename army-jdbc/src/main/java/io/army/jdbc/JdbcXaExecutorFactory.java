@@ -6,22 +6,21 @@ import io.army.sync.executor.FactoryInfo;
 import io.army.sync.executor.MetaExecutor;
 import io.army.sync.executor.StmtExecutor;
 
-import javax.sql.DataSource;
+import javax.sql.XADataSource;
 
-final class JdbcTxExecutorFactory implements ExecutorFactory {
+final class JdbcXaExecutorFactory implements ExecutorFactory {
 
-    static JdbcTxExecutorFactory create(DataSource dataSource, ServerMeta serverMeta, FactoryInfo info) {
-        return new JdbcTxExecutorFactory(dataSource, serverMeta, info);
+    static JdbcXaExecutorFactory create(XADataSource dataSource, ServerMeta serverMeta, FactoryInfo info) {
+        return new JdbcXaExecutorFactory(dataSource, serverMeta, info);
     }
 
-    private final DataSource dataSource;
+    private final XADataSource dataSource;
 
     private final ServerMeta serverMeta;
 
     private final FactoryInfo info;
 
-
-    private JdbcTxExecutorFactory(DataSource dataSource, ServerMeta serverMeta, FactoryInfo info) {
+    private JdbcXaExecutorFactory(XADataSource dataSource, ServerMeta serverMeta, FactoryInfo info) {
         this.dataSource = dataSource;
         this.serverMeta = serverMeta;
         this.info = info;
@@ -34,7 +33,7 @@ final class JdbcTxExecutorFactory implements ExecutorFactory {
 
     @Override
     public MetaExecutor createMetaExecutor() throws Exception {
-        return JdbcMetaExecutor.create(this.dataSource.getConnection());
+        return null;
     }
 
     @Override

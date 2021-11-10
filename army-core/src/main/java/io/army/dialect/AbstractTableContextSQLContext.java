@@ -2,8 +2,6 @@ package io.army.dialect;
 
 import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
-import io.army.GenericRmSessionFactory;
-import io.army.ShardingMode;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.NotFoundRouteException;
 import io.army.criteria.Visible;
@@ -11,6 +9,8 @@ import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.session.FactoryMode;
+import io.army.session.GenericRmSessionFactory;
 import io.army.util.StringUtils;
 
 /**
@@ -24,7 +24,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
 
     protected final TableContext tableContext;
 
-    protected final ShardingMode shardingMode;
+    protected final FactoryMode factoryMode;
 
     protected final String primaryRouteSuffix;
 
@@ -36,7 +36,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         super(dialect, visible);
         GenericRmSessionFactory sessionFactory = dialect.sessionFactory();
 
-        this.shardingMode = dialect.sessionFactory().shardingMode();
+        this.factoryMode = dialect.sessionFactory().shardingMode();
         this.tableContext = tableContext;
         this.primaryTableContext = tableContext;
         this.childContext = false;
@@ -50,7 +50,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         super(parentContext);
         GenericRmSessionFactory sessionFactory = dialect.sessionFactory();
 
-        this.shardingMode = dialect.sessionFactory().shardingMode();
+        this.factoryMode = dialect.sessionFactory().shardingMode();
         this.tableContext = tableContext;
         if(parentContext instanceof ComposeSelectContext){
             this.primaryTableContext = this.tableContext;
@@ -80,8 +80,8 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         validateTableAndAlias(childMeta,childAlias);
         this.sqlBuilder.append(" ")
                 .append(this.dialect.quoteIfNeed(childMeta.parentMeta().tableName()));
-        if(this.shardingMode != ShardingMode.NO_SHARDING){
-            this.sqlBuilder.append(obtainRouteSuffix(childMeta,childAlias));
+        if (this.factoryMode != FactoryMode.NO_SHARDING) {
+            this.sqlBuilder.append(obtainRouteSuffix(childMeta, childAlias));
         }
     }
 
@@ -148,7 +148,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         SQLBuilder builder = obtainTablePartBuilder();
 
         String actualTableName = tableMeta.tableName();
-        if (this.shardingMode != ShardingMode.NO_SHARDING
+        if (this.factoryMode != FactoryMode.NO_SHARDING
                 && !tableMeta.routeFieldList(false).isEmpty()) {
             //2.  route suffix
             actualTableName += obtainRouteSuffix(tableMeta, tableAlias);
@@ -216,9 +216,9 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
 
 
     private void assertPrimaryRouteSuffix() {
-        if (this.shardingMode != ShardingMode.NO_SHARDING
+        if (this.factoryMode != FactoryMode.NO_SHARDING
                 && (this.primaryRouteSuffix == null || !this.primaryRouteSuffix.startsWith("_"))) {
-            throw new NotFoundRouteException("not found legal primary route[%s].",this.primaryRouteSuffix);
+            throw new NotFoundRouteException("not found legal primary route[%s].", this.primaryRouteSuffix);
         }
     }
 

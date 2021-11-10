@@ -1,8 +1,9 @@
-package io.army;
+package io.army.session;
 
-public enum ShardingMode {
+public enum FactoryMode {
 
     NO_SHARDING,
     SINGLE_DATABASE_SHARDING,
     SHARDING
+
 }

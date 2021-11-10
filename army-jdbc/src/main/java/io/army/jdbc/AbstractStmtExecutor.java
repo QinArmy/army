@@ -11,6 +11,7 @@ import io.army.meta.MetaException;
 import io.army.meta.ParamMeta;
 import io.army.meta.ServerMeta;
 import io.army.modelgen._MetaBridge;
+import io.army.session.DataAccessException;
 import io.army.sqltype.SqlDataType;
 import io.army.stmt.*;
 import io.army.sync.executor.StmtExecutor;
@@ -85,8 +86,12 @@ abstract class AbstractStmtExecutor implements StmtExecutor {
     }
 
     @Override
-    public final void close() throws Exception {
-        this.conn.close();
+    public final void close() throws DataAccessException {
+        try {
+            this.conn.close();
+        } catch (SQLException e) {
+            throw SyncExceptions.wrapDataAccess(e);
+        }
     }
 
 

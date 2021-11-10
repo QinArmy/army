@@ -1,8 +1,9 @@
-package io.army;
+package io.army.session;
 
 import io.army.boot.DomainValuesGenerator;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
+import io.army.meta.ServerMeta;
 
 /**
  * <p>
@@ -25,12 +26,19 @@ public interface GenericRmSessionFactory extends GenericSessionFactory {
 
     int tableCountPerDatabase();
 
+    @Deprecated
     Database actualDatabase();
+
+    default ServerMeta serverMeta() {
+        return null;
+    }
 
     Dialect dialect();
 
     DomainValuesGenerator domainValuesGenerator();
 
     boolean compareDefaultOnMigrating();
+
+    GenericTmSessionFactory tmSessionFactory();
 
 }

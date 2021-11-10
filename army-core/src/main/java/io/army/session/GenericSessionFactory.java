@@ -1,4 +1,4 @@
-package io.army;
+package io.army.session;
 
 import io.army.codec.FieldCodec;
 import io.army.criteria.NotFoundRouteException;
@@ -11,7 +11,7 @@ import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
 import io.army.sharding.TableRoute;
 
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 
@@ -21,7 +21,7 @@ public interface GenericSessionFactory {
 
     ArmyEnvironment environment();
 
-    ZoneId zoneId();
+    ZoneOffset zoneOffset();
 
     SchemaMeta schemaMeta();
 
@@ -35,19 +35,18 @@ public interface GenericSessionFactory {
     @Nullable
     FieldGenerator fieldGenerator(FieldMeta<?, ?> fieldMeta);
 
+    @Deprecated
     Map<TableMeta<?>, List<FieldMeta<?, ?>>> tableGeneratorChain();
 
+    @Deprecated
     List<FieldMeta<?, ?>> generatorChain(TableMeta<?> tableMeta);
 
     @Nullable
     FieldCodec fieldCodec(FieldMeta<?, ?> fieldMeta);
 
-    ShardingMode shardingMode();
+    FactoryMode shardingMode();
 
     boolean supportSessionCache();
-
-    @Nullable
-    GenericTmSessionFactory tmSessionFactory();
 
     boolean shardingSubQueryInsert();
 

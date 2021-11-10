@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.GenericRmSessionFactory;
+import io.army.session.GenericRmSessionFactory;
 
 import java.time.ZoneId;
 

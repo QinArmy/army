@@ -1,6 +1,5 @@
 package io.army.boot.reactive;
 
-import io.army.AbstractGenericSession;
 import io.army.NonUniqueException;
 import io.army.ReadOnlySessionException;
 import io.army.SessionUsageException;
@@ -13,6 +12,7 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.reactive.BaseReactiveSession;
 import io.army.reactive.GenericReactiveSessionFactory;
+import io.army.session.AbstractGenericSession;
 import io.army.tx.GenericTransaction;
 import io.army.tx.TransactionNotCloseException;
 import io.army.tx.reactive.GenericReactiveTransaction;

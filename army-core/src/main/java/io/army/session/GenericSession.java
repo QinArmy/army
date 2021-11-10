@@ -1,4 +1,4 @@
-package io.army;
+package io.army.session;
 
 import io.army.tx.GenericTransaction;
 import io.army.tx.NoSessionTransactionException;

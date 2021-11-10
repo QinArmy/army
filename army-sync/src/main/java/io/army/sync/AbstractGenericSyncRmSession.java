@@ -1,11 +1,11 @@
 package io.army.sync;
 
 import io.army.SessionException;
-import io.army.ShardingMode;
 import io.army.codec.StatementType;
 import io.army.criteria.*;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
+import io.army.session.FactoryMode;
 import io.army.tx.TransactionTimeOutException;
 
 import java.sql.Connection;
@@ -264,7 +264,7 @@ abstract class AbstractGenericSyncRmSession extends AbstractGenericSyncSession
 
     @Override
     public final boolean supportSharding() {
-        return this.sessionFactory().shardingMode() != ShardingMode.NO_SHARDING;
+        return this.sessionFactory().shardingMode() != FactoryMode.NO_SHARDING;
     }
 
     @Override

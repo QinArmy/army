@@ -1,9 +1,9 @@
 package io.army.env;
 
 
-import io.army.GenericSessionFactory;
 import io.army.beans.ArmyBean;
 import io.army.lang.Nullable;
+import io.army.session.GenericSessionFactory;
 
 import java.util.Collections;
 import java.util.List;

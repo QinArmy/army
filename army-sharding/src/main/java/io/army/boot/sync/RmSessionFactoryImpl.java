@@ -9,6 +9,9 @@ import io.army.dialect.Dialect;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.session.AbstractGenericSessionFactory;
+import io.army.session.FactoryMode;
+import io.army.session.GenericTmSessionFactory;
 import io.army.sharding.TableRoute;
 import io.army.sync.SessionFactory;
 import io.army.tx.TransactionException;
@@ -25,9 +28,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * this class is a implementation of {@link SessionFactory}
  * Resource Manager (RM) {@link SessionFactory}.
  * <p>
- * this class run only below {@link io.army.ShardingMode}:
+ * this class run only below {@link FactoryMode}:
  *     <ul>
- *         <li>{@link io.army.ShardingMode#SHARDING}</li>
+ *         <li>{@link FactoryMode#SHARDING}</li>
  *     </ul>
  * </p>
  */
@@ -52,7 +55,7 @@ final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
     RmSessionFactoryImpl(TmSessionFactoryImpl sessionFactory, XADataSource dataSource, int databaseIndex
             , @Nullable Database database) {
         super(sessionFactory, databaseIndex);
-        Assert.state(this.shardingMode == ShardingMode.SHARDING
+        Assert.state(this.factoryMode == FactoryMode.SHARDING
                 , () -> String.format("%s support only SHARDING ShardingMode", RmSessionFactoryImpl.class.getName()));
         Assert.notNull(dataSource, "dataSource required");
 

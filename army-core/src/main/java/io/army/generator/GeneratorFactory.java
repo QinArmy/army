@@ -1,9 +1,9 @@
 package io.army.generator;
 
 import io.army.ErrorCode;
-import io.army.GenericSessionFactory;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
+import io.army.session.GenericSessionFactory;
 import io.army.util.Assert;
 import io.army.util.ClassUtils;
 import io.army.util.ReflectionUtils;

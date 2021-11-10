@@ -8,6 +8,7 @@ import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.session.FactoryMode;
 import io.army.tx.*;
 import io.army.util.CriteriaUtils;
 
@@ -28,7 +29,7 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
 
     private final boolean readonly;
 
-    private final ShardingMode shardingMode;
+    private final FactoryMode factoryMode;
 
     private Transaction transaction;
 
@@ -47,7 +48,7 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
         } else {
             this.sessionCache = null;
         }
-        this.shardingMode = sessionFactory.shardingMode();
+        this.factoryMode = sessionFactory.shardingMode();
     }
 
     @Nullable
@@ -322,7 +323,7 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
     }
 
     private void assertSupportBatch() {
-        if (this.shardingMode != ShardingMode.NO_SHARDING) {
+        if (this.factoryMode != FactoryMode.NO_SHARDING) {
             throw new SessionUsageException("not support batch operation in SHARDING mode.");
         }
 

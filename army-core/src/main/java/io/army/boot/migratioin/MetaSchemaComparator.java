@@ -1,8 +1,8 @@
 package io.army.boot.migratioin;
 
-import io.army.GenericRmSessionFactory;
 import io.army.meta.MetaException;
 import io.army.schema.SchemaInfoException;
+import io.army.session.GenericRmSessionFactory;
 
 import java.util.List;
 

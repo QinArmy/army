@@ -1,11 +1,9 @@
 package io.army.advice;
 
-import io.army.GenericSessionFactory;
 import io.army.env.ArmyEnvironment;
+import io.army.session.GenericSessionFactory;
 
-public interface GenericSessionFactoryAdvice {
-
-    int order();
+public interface FactoryAdvice {
 
     void beforeInstance(ArmyEnvironment environment);
 

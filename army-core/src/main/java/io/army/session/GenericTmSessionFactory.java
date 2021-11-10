@@ -1,4 +1,4 @@
-package io.army;
+package io.army.session;
 
 import io.army.criteria.NotFoundRouteException;
 import io.army.dialect.Database;
@@ -21,7 +21,8 @@ public interface GenericTmSessionFactory extends GenericSessionFactory {
     /**
      * @return a unmodifiable list
      */
-    List<Database> actualDatabaseList();
+    @Deprecated
+    List<Database> rmServerMetaList();
 
     /**
      * @return a integer than great than 0 .

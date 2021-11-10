@@ -1,10 +1,10 @@
 package io.army.sharding;
 
-import io.army.ShardingMode;
+import io.army.session.FactoryMode;
 
     public interface RouteMetaData {
 
-        ShardingMode shardingMode();
+        FactoryMode shardingMode();
 
         int databaseCount();
 

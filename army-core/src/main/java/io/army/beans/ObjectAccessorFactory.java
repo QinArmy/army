@@ -1,7 +1,6 @@
 package io.army.beans;
 
 
-import io.army.criteria.impl._TableMetaFactory;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.util.BeanUtils;
@@ -80,7 +79,7 @@ public abstract class ObjectAccessorFactory {
     }
 
     public static DomainReadonlyWrapper forDomainReadonlyPropertyAccess(IDomain domain) {
-        return new DomainReadonlyWrapperImpl(domain, _TableMetaFactory.getTableMeta(domain.getClass()));
+        return null;
     }
 
     public static DomainReadonlyWrapper forDomainReadonlyPropertyAccess(IDomain domain, TableMeta<?> tableMeta) {

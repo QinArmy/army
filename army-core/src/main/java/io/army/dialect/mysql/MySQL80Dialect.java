@@ -1,10 +1,10 @@
 package io.army.dialect.mysql;
 
-import io.army.GenericRmSessionFactory;
 import io.army.dialect.DDL;
 import io.army.dialect.Database;
 import io.army.dialect.DmlDialect;
 import io.army.dialect.TCL;
+import io.army.session.GenericRmSessionFactory;
 
 import java.util.Set;
 

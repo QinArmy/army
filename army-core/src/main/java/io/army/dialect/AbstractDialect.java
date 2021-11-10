@@ -1,18 +1,18 @@
 package io.army.dialect;
 
 
-import io.army.GenericRmSessionFactory;
 import io.army.UnKnownTypeException;
 import io.army.criteria.*;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
+import io.army.session.GenericRmSessionFactory;
+import io.army.stmt.PairStmt;
+import io.army.stmt.SimpleStmt;
+import io.army.stmt.Stmt;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
-import io.army.stmt.PairStmt;
-import io.army.stmt.Stmt;
-import io.army.stmt.SimpleStmt;
 
 import java.time.ZoneId;
 import java.util.Collection;
@@ -54,7 +54,7 @@ public abstract class AbstractDialect implements InnerDialect {
         this.dql = createDQL();
         this.tcl = createTCL();
         assertDatabaseMatch();
-        this.mappingContext = new MappingContextImpl(this.sessionFactory.zoneId(), this.database());
+        this.mappingContext = new MappingContextImpl(this.sessionFactory.zoneOffset(), this.database());
     }
 
     @Override
@@ -89,7 +89,7 @@ public abstract class AbstractDialect implements InnerDialect {
 
     @Override
     public final ZoneId zoneId() {
-        return sessionFactory.zoneId();
+        return sessionFactory.zoneOffset();
     }
 
     @Override

@@ -1,7 +1,7 @@
 package io.army.cache;
 
-import io.army.GenericSession;
-import io.army.GenericSessionFactory;
+import io.army.session.GenericSession;
+import io.army.session.GenericSessionFactory;
 
 final class SessionCacheFactoryImpl implements SessionCacheFactory {
 

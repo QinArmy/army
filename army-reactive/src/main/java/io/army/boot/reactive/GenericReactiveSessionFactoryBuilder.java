@@ -1,6 +1,6 @@
 package io.army.boot.reactive;
 
-import io.army.boot.GenericFactoryBuilder;
+import io.army.boot.FactoryBuilder;
 import io.army.reactive.advice.ReactiveDomainDeleteAdvice;
 import io.army.reactive.advice.ReactiveDomainInsertAdvice;
 import io.army.reactive.advice.ReactiveDomainUpdateAdvice;
@@ -17,7 +17,7 @@ import java.util.Collection;
  * </p>
  */
 interface GenericReactiveSessionFactoryBuilder<T extends GenericReactiveSessionFactoryBuilder<T>>
-        extends GenericFactoryBuilder<T> {
+        extends FactoryBuilder<T> {
 
     T waitCreateSeconds(int seconds);
 

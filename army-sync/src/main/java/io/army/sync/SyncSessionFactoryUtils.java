@@ -1,6 +1,7 @@
 package io.army.sync;
 
-import io.army.*;
+import io.army.ErrorCode;
+import io.army.SessionFactoryException;
 import io.army.advice.sync.DomainAdvice;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.datasource.RoutingDataSource;
@@ -8,6 +9,9 @@ import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.session.AbstractGenericSessionFactory;
+import io.army.session.FactoryMode;
+import io.army.session.GenericSessionFactoryUtils;
 import io.army.sharding.Route;
 import io.army.sharding.RouteCreateException;
 import io.army.sharding.RouteMetaData;
@@ -178,8 +182,8 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
     protected static <T extends TableRoute> Map<TableMeta<?>, T> routeMap
     (AbstractGenericSessionFactory sessionFactory, Class<T> routeType, final int databaseCount
             , final int tableCountPerDatabase) {
-        final ShardingMode shardingMode = sessionFactory.shardingMode();
-        if (shardingMode == ShardingMode.NO_SHARDING) {
+        final FactoryMode factoryMode = sessionFactory.shardingMode();
+        if (factoryMode == FactoryMode.NO_SHARDING) {
             return Collections.emptyMap();
         }
         if (tableCountPerDatabase < 1) {
@@ -190,7 +194,7 @@ abstract class SyncSessionFactoryUtils extends GenericSessionFactoryUtils {
             throw new SessionFactoryException(ErrorCode.SESSION_FACTORY_CREATE_ERROR
                     , "databaseCount[%s] must great than 1 .", tableCountPerDatabase);
         }
-        final RouteMetaData routeMetaData = new RouteMetaDataImpl(shardingMode, databaseCount
+        final RouteMetaData routeMetaData = new RouteMetaDataImpl(factoryMode, databaseCount
                 , tableCountPerDatabase);
 
         Map<TableMeta<?>, T> tableRouteMap = new HashMap<>();

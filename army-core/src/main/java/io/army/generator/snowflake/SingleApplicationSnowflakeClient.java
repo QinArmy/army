@@ -1,7 +1,7 @@
 package io.army.generator.snowflake;
 
-import io.army.GenericSessionFactory;
 import io.army.env.ArmyEnvironment;
+import io.army.session.GenericSessionFactory;
 import io.army.util.Assert;
 import io.army.util.NetUtils;
 

@@ -1,8 +1,11 @@
 package io.army.sync.executor;
 
-import java.io.Closeable;
+
+import io.army.session.DataAccessException;
 
 public interface Executor extends AutoCloseable {
 
 
+    @Override
+    void close() throws DataAccessException;
 }

@@ -1,10 +1,10 @@
 package io.army.jdbc;
 
 import io.army.meta.ServerMeta;
+import io.army.session.DataAccessException;
 import io.army.sync.executor.MetaExecutor;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 
 final class JdbcMetaExecutor implements MetaExecutor {
 
@@ -24,9 +24,7 @@ final class JdbcMetaExecutor implements MetaExecutor {
     }
 
     @Override
-    public void close() throws SQLException {
-        this.conn.close();
+    public void close() throws DataAccessException {
+
     }
-
-
 }

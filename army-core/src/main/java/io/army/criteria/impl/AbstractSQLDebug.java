@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.GenericSessionFactory;
 import io.army.criteria.SQLDebug;
 import io.army.criteria.SQLStatement;
 import io.army.criteria.Visible;
@@ -8,6 +7,7 @@ import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.SchemaMeta;
+import io.army.session.GenericSessionFactory;
 import io.army.stmt.SimpleStmt;
 
 import java.util.Collections;

@@ -14,6 +14,8 @@ import io.army.dialect.InsertException;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.meta.PrimaryFieldMeta;
+import io.army.session.GenericSession;
+import io.army.session.GenericSessionFactory;
 import io.army.stmt.BatchSimpleStmt;
 import io.army.stmt.GenericSimpleStmt;
 import io.army.stmt.SimpleStmt;

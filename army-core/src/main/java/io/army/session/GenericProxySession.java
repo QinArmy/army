@@ -1,4 +1,4 @@
-package io.army;
+package io.army.session;
 
 import io.army.domain.IDomain;
 import io.army.env.ArmyEnvironment;

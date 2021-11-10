@@ -1,9 +1,9 @@
 package io.army.sync;
 
-import io.army.GenericProxySession;
 import io.army.advice.sync.DomainAdvice;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.session.GenericProxySession;
 
 import java.util.Map;
 

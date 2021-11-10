@@ -4,6 +4,7 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
+import io.army.session.GenericRmSessionFactory;
 
 import java.util.Collection;
 import java.util.List;
@@ -32,7 +33,7 @@ public interface DDL extends SqlDialect {
     List<String> modifyColumnComment(FieldMeta<?, ?> fieldMeta, @Nullable String tableSuffix);
 
     /**
-     * performance after {@link io.army.GenericRmSessionFactory}  initializing .
+     * performance after {@link GenericRmSessionFactory}  initializing .
      */
     void clearForDDL();
 

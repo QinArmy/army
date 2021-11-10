@@ -1,7 +1,7 @@
 package io.army.sync;
 
-import io.army.GenericRmSessionFactory;
 import io.army.dialect.Dialect;
+import io.army.session.GenericRmSessionFactory;
 
 interface InnerGenericRmSessionFactory extends GenericRmSessionFactory, GenericSyncSessionFactory {
 

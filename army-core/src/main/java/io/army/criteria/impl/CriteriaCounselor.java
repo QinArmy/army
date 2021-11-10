@@ -1,9 +1,9 @@
 package io.army.criteria.impl;
 
-import io.army.AbstractGenericSession;
 import io.army.criteria.ColumnSubQuery;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner.*;
+import io.army.session.AbstractGenericSession;
 
 public abstract class CriteriaCounselor {
 

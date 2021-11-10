@@ -1,6 +1,6 @@
 package io.army.reactive;
 
-import io.army.GenericSessionFactory;
+import io.army.session.GenericSessionFactory;
 import reactor.core.publisher.Mono;
 
 public interface GenericReactiveSessionFactory extends GenericSessionFactory {

@@ -1,8 +1,8 @@
 package io.army.dialect.postgre;
 
-import io.army.GenericRmSessionFactory;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
+import io.army.session.GenericRmSessionFactory;
 import io.army.util.Assert;
 
 public abstract class PostgreDialectFactory {

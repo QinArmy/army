@@ -16,6 +16,8 @@ public interface ServerMeta {
 
     int subMinor();
 
+    boolean meetsMinimum(int major, int minor);
+
     boolean supportSavePoint();
 
 

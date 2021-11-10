@@ -2,7 +2,6 @@ package io.army.boot.reactive;
 
 import io.army.SessionException;
 import io.army.SessionUsageException;
-import io.army.ShardingMode;
 import io.army.cache.UniqueKey;
 import io.army.criteria.Delete;
 import io.army.criteria.Insert;
@@ -15,6 +14,7 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.reactive.ReactiveSession;
 import io.army.reactive.ReactiveSessionFactory;
+import io.army.session.FactoryMode;
 import io.army.stmt.Stmt;
 import io.army.tx.CannotCreateTransactionException;
 import io.army.tx.Isolation;
@@ -300,7 +300,7 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
 
 
     private Mono<Void> assertForBatch() {
-        return this.sessionFactory.shardingMode() == ShardingMode.NO_SHARDING
+        return this.sessionFactory.shardingMode() == FactoryMode.NO_SHARDING
                 ? this.assertSessionActive(true)
                 : Mono.error(new SessionUsageException("not support batch operation in SHARDING mode."));
     }

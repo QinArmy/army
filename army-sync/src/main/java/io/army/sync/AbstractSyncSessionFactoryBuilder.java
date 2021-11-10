@@ -1,9 +1,9 @@
 package io.army.sync;
 
-import io.army.ShardingMode;
-import io.army.advice.GenericSessionFactoryAdvice;
+import io.army.advice.FactoryAdvice;
 import io.army.advice.sync.DomainAdvice;
 import io.army.lang.Nullable;
+import io.army.session.FactoryMode;
 
 import java.util.Collection;
 
@@ -11,11 +11,11 @@ abstract class AbstractSyncSessionFactoryBuilder {
 
     Collection<DomainAdvice> domainInterceptors;
 
-    Collection<GenericSessionFactoryAdvice> factoryAdvices;
+    Collection<FactoryAdvice> factoryAdvices;
 
     int tableCountPerDatabase = 1;
 
-    ShardingMode shardingMode = ShardingMode.NO_SHARDING;
+    FactoryMode factoryMode = FactoryMode.NO_SHARDING;
 
     //  private CompositeSessionFactoryAdvice compositeSessionFactoryAdvice;
 

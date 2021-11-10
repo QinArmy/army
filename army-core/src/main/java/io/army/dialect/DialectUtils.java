@@ -2,7 +2,6 @@ package io.army.dialect;
 
 import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
-import io.army.ShardingMode;
 import io.army.UnKnownTypeException;
 import io.army.criteria.*;
 import io.army.criteria.impl.Sqls;
@@ -11,6 +10,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
+import io.army.session.FactoryMode;
 import io.army.util.StringUtils;
 
 import java.sql.JDBCType;
@@ -204,7 +204,7 @@ public abstract class DialectUtils {
     }
 
     static void assertShardingMode(Dialect dialect, @Nullable Set<Integer> domainIndexSet) {
-        if (domainIndexSet != null && dialect.sessionFactory().shardingMode() == ShardingMode.NO_SHARDING) {
+        if (domainIndexSet != null && dialect.sessionFactory().shardingMode() == FactoryMode.NO_SHARDING) {
             throw new IllegalArgumentException("domainIndexSet must be null in NO_SHARDING mode.");
         }
     }

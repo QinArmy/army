@@ -1,8 +1,10 @@
 package io.army.sync;
 
-import io.army.GenericSession;
-import io.army.GenericSessionFactory;
 import io.army.SessionFactoryException;
+import io.army.session.GenericSession;
+import io.army.session.GenericSessionFactory;
+
+import java.io.Closeable;
 
 
 /**
@@ -14,7 +16,7 @@ import io.army.SessionFactoryException;
  *     <li>{@code io.army.TmSessionFactory}</li>
  * </ul>
  */
-public interface GenericSyncSessionFactory extends GenericSessionFactory, AutoCloseable {
+public interface GenericSyncSessionFactory extends GenericSessionFactory, Closeable {
 
 
     /**

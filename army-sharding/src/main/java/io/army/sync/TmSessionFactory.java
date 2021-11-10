@@ -1,8 +1,8 @@
 package io.army.sync;
 
-import io.army.GenericTmSessionFactory;
 import io.army.SessionException;
 import io.army.lang.Nullable;
+import io.army.session.GenericTmSessionFactory;
 import io.army.tx.Isolation;
 
 

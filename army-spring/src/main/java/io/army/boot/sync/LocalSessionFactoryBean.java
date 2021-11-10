@@ -1,8 +1,7 @@
 package io.army.boot.sync;
 
 
-import io.army.ShardingMode;
-import io.army.advice.GenericSessionFactoryAdvice;
+import io.army.advice.FactoryAdvice;
 import io.army.advice.sync.DomainAdvice;
 import io.army.beans.ArmyBean;
 import io.army.codec.FieldCodec;
@@ -10,8 +9,8 @@ import io.army.env.ArmyConfigurableArmyEnvironment;
 import io.army.env.ArmyEnvironment;
 import io.army.env.SpringEnvironmentAdaptor;
 import io.army.lang.Nullable;
+import io.army.session.FactoryMode;
 import io.army.sync.SessionFactory;
-import io.army.sync.SessionFactoryBuilder;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.FactoryBean;
@@ -41,7 +40,7 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
 
     private int tableCountPerDatabase = 1;
 
-    private ShardingMode shardingMode = ShardingMode.NO_SHARDING;
+    private FactoryMode factoryMode = FactoryMode.NO_SHARDING;
 
     private SessionFactory sessionFactory;
 
@@ -69,9 +68,9 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
                 .domainInterceptor(applicationContext.getBeansOfType(DomainAdvice.class).values())
 
                 .fieldCodecs(applicationContext.getBeansOfType(FieldCodec.class).values())
-                .factoryAdvice(applicationContext.getBeansOfType(GenericSessionFactoryAdvice.class).values())
+                .factoryAdvice(applicationContext.getBeansOfType(FactoryAdvice.class).values())
                 .tableCountPerDatabase(this.tableCountPerDatabase)
-                .shardingMode(this.shardingMode)
+                .shardingMode(this.factoryMode)
 
                 .build();
     }
@@ -117,8 +116,8 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
         return this;
     }
 
-    public LocalSessionFactoryBean setShardingMode(ShardingMode shardingMode) {
-        this.shardingMode = shardingMode;
+    public LocalSessionFactoryBean setShardingMode(FactoryMode factoryMode) {
+        this.factoryMode = factoryMode;
         return this;
     }
 

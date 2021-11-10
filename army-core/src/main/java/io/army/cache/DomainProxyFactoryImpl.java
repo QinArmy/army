@@ -1,10 +1,10 @@
 package io.army.cache;
 
-import io.army.GenericSessionFactory;
 import io.army.beans.DomainReadonlyWrapper;
 import io.army.beans.ObjectAccessorFactory;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
+import io.army.session.GenericSessionFactory;
 import io.army.util.Assert;
 import io.army.util.ClassUtils;
 import io.army.util.Pair;

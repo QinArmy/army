@@ -2,9 +2,10 @@ package io.army.tx;
 
 import io.army.ErrorCode;
 import io.army.SessionException;
+import io.army.session.GenericSession;
 
 /**
- * throw when try close {@link io.army.GenericSession} ,but {@link GenericTransaction} not close.
+ * throw when try close {@link GenericSession} ,but {@link GenericTransaction} not close.
  */
 public class TransactionNotCloseException extends SessionException {
 

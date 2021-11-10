@@ -1,6 +1,5 @@
 package io.army.dialect;
 
-import io.army.ShardingMode;
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.IPredicate;
 import io.army.criteria.NotFoundRouteException;
@@ -9,6 +8,7 @@ import io.army.criteria.impl.inner.InnerSingleDML;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.session.FactoryMode;
 import io.army.sharding.RouteUtils;
 import io.army.sharding.RouteWrapper;
 import io.army.sharding.TableRoute;
@@ -75,7 +75,7 @@ abstract class TableRouteUtils extends RouteUtils {
 
 
     static String selectPrimaryRouteSuffix(InnerSelect select, Dialect dialect) {
-        if (dialect.sessionFactory().shardingMode() == ShardingMode.NO_SHARDING) {
+        if (dialect.sessionFactory().shardingMode() == FactoryMode.NO_SHARDING) {
             return "";
         }
         RouteWrapper routeWrapper = findRouteForSelect(select, false);
@@ -134,7 +134,7 @@ abstract class TableRouteUtils extends RouteUtils {
     /*################################## blow private method ##################################*/
 
     private static boolean notSupportRoute(Dialect dialect, TableMeta<?> tableMeta) {
-        return dialect.sessionFactory().shardingMode() == ShardingMode.NO_SHARDING
+        return dialect.sessionFactory().shardingMode() == FactoryMode.NO_SHARDING
                 || tableMeta.routeFieldList(false).isEmpty();
     }
 

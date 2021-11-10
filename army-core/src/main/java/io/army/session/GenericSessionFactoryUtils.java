@@ -1,5 +1,6 @@
-package io.army;
+package io.army.session;
 
+import io.army.*;
 import io.army.codec.FieldCodec;
 import io.army.criteria.impl.SchemaMetaFactory;
 import io.army.criteria.impl._TableMetaFactory;
@@ -94,20 +95,21 @@ public abstract class GenericSessionFactoryUtils {
 
 
     static Function<Throwable, Throwable> createComposedExceptionFunction(
-            GenericFactoryBuilderImpl<?> builder) {
+            FactoryBuilderSupport builder) {
 
-        final Function<RuntimeException, RuntimeException> customFunction = builder.exceptionFunction();
-        final Function<RuntimeException, RuntimeException> springFunction = builder.springExceptionFunction();
-
-        return throwable -> convertToCustomException(throwable, springFunction, customFunction);
+//        final Function<RuntimeException, RuntimeException> customFunction = builder.exceptionFunction();
+//        final Function<RuntimeException, RuntimeException> springFunction = builder.springExceptionFunction();
+//
+//        return throwable -> convertToCustomException(throwable, springFunction, customFunction);
+        return null;
     }
 
-    static ShardingMode shardingMode(GenericFactoryBuilderImpl<?> builder) {
-        ShardingMode shardingMode = builder.shardingMode();
-        if (shardingMode == null) {
+    static FactoryMode shardingMode(FactoryBuilderSupport builder) {
+        FactoryMode factoryMode = builder.shardingMode();
+        if (factoryMode == null) {
             throw new SessionFactoryException("shardingMode required");
         }
-        return shardingMode;
+        return factoryMode;
     }
 
 
@@ -160,9 +162,9 @@ public abstract class GenericSessionFactoryUtils {
         }
     }
 
-    static boolean shardingSubQueryInsert(ArmyEnvironment env, String factoryName, ShardingMode shardingMode) {
+    static boolean shardingSubQueryInsert(ArmyEnvironment env, String factoryName, FactoryMode factoryMode) {
         boolean support;
-        if (shardingMode == ShardingMode.NO_SHARDING) {
+        if (factoryMode == FactoryMode.NO_SHARDING) {
             support = false;
         } else {
             support = env.getProperty(String.format(ArmyConfigConstant.SHARDING_SUB_QUERY_INSERT, factoryName)
@@ -171,9 +173,9 @@ public abstract class GenericSessionFactoryUtils {
         return support;
     }
 
-    static boolean allowSpanSharding(ArmyEnvironment env, String factoryName, ShardingMode shardingMode) {
+    static boolean allowSpanSharding(ArmyEnvironment env, String factoryName, FactoryMode factoryMode) {
         boolean allow;
-        if (shardingMode == ShardingMode.NO_SHARDING) {
+        if (factoryMode == FactoryMode.NO_SHARDING) {
             allow = false;
         } else {
             allow = env.getProperty(String.format(ArmyConfigConstant.ALLOW_SPAN_SHARDING, factoryName)
@@ -281,21 +283,21 @@ public abstract class GenericSessionFactoryUtils {
 
     protected static final class RouteMetaDataImpl implements RouteMetaData {
 
-        private final ShardingMode shardingMode;
+        private final FactoryMode factoryMode;
 
         private final int databaseCount;
 
         private final int tableContPerDatabase;
 
-        public RouteMetaDataImpl(ShardingMode shardingMode, int databaseCount, int tableContPerDatabase) {
-            this.shardingMode = shardingMode;
+        public RouteMetaDataImpl(FactoryMode factoryMode, int databaseCount, int tableContPerDatabase) {
+            this.factoryMode = factoryMode;
             this.databaseCount = databaseCount;
             this.tableContPerDatabase = tableContPerDatabase;
         }
 
         @Override
-        public ShardingMode shardingMode() {
-            return this.shardingMode;
+        public FactoryMode shardingMode() {
+            return this.factoryMode;
         }
 
         @Override

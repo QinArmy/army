@@ -1,6 +1,6 @@
 package io.army.sync;
 
-import io.army.GenericProxySession;
+import io.army.session.GenericProxySession;
 
 /**
  * This interface is a proxy of {@link TmSession} in current thread context.

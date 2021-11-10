@@ -1,7 +1,6 @@
 package io.army.boot;
 
 import io.army.ErrorCode;
-import io.army.GenericSessionFactory;
 import io.army.beans.DomainWrapper;
 import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ObjectWrapper;
@@ -11,6 +10,7 @@ import io.army.generator.FieldGenerator;
 import io.army.generator.PreFieldGenerator;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
+import io.army.session.GenericSessionFactory;
 import io.army.struct.CodeEnum;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
@@ -120,7 +120,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
         } else {
             parentMeta = tableMeta;
         }
-        ZonedDateTime now = ZonedDateTime.now(this.sessionFactory.zoneId());
+        ZonedDateTime now = ZonedDateTime.now(this.sessionFactory.zoneOffset());
         createCreateOrUpdateTime(parentMeta.getField(_MetaBridge.CREATE_TIME), now, entityWrapper);
 
         if (!tableMeta.immutable()) {

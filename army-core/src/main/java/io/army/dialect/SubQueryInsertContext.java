@@ -1,7 +1,6 @@
 package io.army.dialect;
 
 import io.army.ErrorCode;
-import io.army.GenericRmSessionFactory;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.InnerStandardChildSubQueryInsert;
@@ -9,6 +8,7 @@ import io.army.criteria.impl.inner.InnerStandardSubQueryInsert;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.session.GenericRmSessionFactory;
 import io.army.stmt.SimpleStmt;
 
 final class SubQueryInsertContext extends AbstractTableContextSQLContext implements InsertContext {

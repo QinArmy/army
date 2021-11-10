@@ -1,6 +1,6 @@
 package io.army.reactive;
 
-import io.army.GenericProxySession;
+import io.army.session.GenericProxySession;
 import reactor.core.publisher.Mono;
 
 /**

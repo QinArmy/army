@@ -1,6 +1,8 @@
 package io.army.boot.reactive;
 
-import io.army.*;
+import io.army.CreateSessionException;
+import io.army.SessionException;
+import io.army.SessionFactoryException;
 import io.army.boot.DomainValuesGenerator;
 import io.army.boot.migratioin.ReactiveMigrator;
 import io.army.cache.SessionCacheFactory;
@@ -16,6 +18,9 @@ import io.army.reactive.ReactiveSessionFactory;
 import io.army.reactive.advice.ReactiveDomainDeleteAdvice;
 import io.army.reactive.advice.ReactiveDomainInsertAdvice;
 import io.army.reactive.advice.ReactiveDomainUpdateAdvice;
+import io.army.session.AbstractGenericSessionFactory;
+import io.army.session.FactoryMode;
+import io.army.session.GenericTmSessionFactory;
 import io.army.sharding.TableRoute;
 import io.jdbd.meta.DatabaseSchemaMetaData;
 import io.jdbd.session.DatabaseSession;
@@ -33,9 +38,9 @@ import java.util.function.Function;
  */
 class ReactiveSessionFactoryImpl extends AbstractGenericSessionFactory implements InnerReactiveSessionFactory {
 
-    private static final EnumSet<ShardingMode> SUPPORT_SHARDING_SET = EnumSet.of(
-            ShardingMode.NO_SHARDING
-            , ShardingMode.SINGLE_DATABASE_SHARDING);
+    private static final EnumSet<FactoryMode> SUPPORT_SHARDING_SET = EnumSet.of(
+            FactoryMode.NO_SHARDING
+            , FactoryMode.SINGLE_DATABASE_SHARDING);
 
     private final DatabaseSessionFactory databaseSessionFactory;
 
@@ -68,8 +73,8 @@ class ReactiveSessionFactoryImpl extends AbstractGenericSessionFactory implement
     private final AtomicBoolean factoryClosed = new AtomicBoolean(false);
 
     ReactiveSessionFactoryImpl(ReactiveSessionFactoryBuilderImpl factoryBuilder, Database actualDatabase) {
-        super(factoryBuilder);
-        if (!SUPPORT_SHARDING_SET.contains(this.shardingMode)) {
+        super(factoryBuilder, null);
+        if (!SUPPORT_SHARDING_SET.contains(this.factoryMode)) {
             throw new SessionFactoryException("ShardingMode[%s] is supported by %s.", getClass().getName());
         }
 

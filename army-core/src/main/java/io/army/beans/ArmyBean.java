@@ -1,6 +1,6 @@
 package io.army.beans;
 
-import io.army.GenericSessionFactory;
+import io.army.session.GenericSessionFactory;
 
 public interface ArmyBean {
 

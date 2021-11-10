@@ -1,15 +1,15 @@
 package io.army.boot.reactive;
 
-import io.army.GenericFactoryBuilderImpl;
 import io.army.lang.Nullable;
 import io.army.reactive.advice.ReactiveDomainDeleteAdvice;
 import io.army.reactive.advice.ReactiveDomainInsertAdvice;
 import io.army.reactive.advice.ReactiveDomainUpdateAdvice;
+import io.army.session.FactoryBuilderSupport;
 
 import java.util.Collection;
 
 abstract class GenericReactiveSessionFactoryBuilderImpl<T extends GenericReactiveSessionFactoryBuilder<T>>
-        extends GenericFactoryBuilderImpl<T>
+        extends FactoryBuilderSupport
         implements GenericReactiveSessionFactoryBuilder<T> {
 
 

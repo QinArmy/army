@@ -1,14 +1,14 @@
 package io.army.boot.reactive;
 
 import io.army.SessionFactoryException;
-import io.army.ShardingMode;
-import io.army.advice.GenericSessionFactoryAdvice;
+import io.army.advice.FactoryAdvice;
 import io.army.codec.FieldCodec;
 import io.army.env.ArmyEnvironment;
 import io.army.reactive.ReactiveSessionFactory;
 import io.army.reactive.advice.ReactiveDomainDeleteAdvice;
 import io.army.reactive.advice.ReactiveDomainInsertAdvice;
 import io.army.reactive.advice.ReactiveDomainUpdateAdvice;
+import io.army.session.FactoryMode;
 import io.jdbd.session.DatabaseSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +43,7 @@ class ReactiveSessionFactoryBuilderImpl
     ReactiveSessionFactoryBuilderImpl(boolean springApplication) {
         super(springApplication);
         this.tableCountPerDatabase = 1;
-        this.shardingMode = ShardingMode.NO_SHARDING;
+        this.factoryMode = FactoryMode.NO_SHARDING;
     }
 
     @Override
@@ -77,7 +77,7 @@ class ReactiveSessionFactoryBuilderImpl
     }
 
     @Override
-    public ReactiveSessionFactoryBuilder factoryAdvice(Collection<GenericSessionFactoryAdvice> factoryAdvices) {
+    public ReactiveSessionFactoryBuilder factoryAdvice(Collection<FactoryAdvice> factoryAdvices) {
         this.factoryAdvices = factoryAdvices;
         return this;
     }
@@ -120,8 +120,8 @@ class ReactiveSessionFactoryBuilderImpl
 
 
     @Override
-    public ReactiveSessionFactoryBuilder shardingMode(ShardingMode shardingMode) {
-        this.shardingMode = shardingMode;
+    public ReactiveSessionFactoryBuilder shardingMode(FactoryMode factoryMode) {
+        this.factoryMode = factoryMode;
         return this;
     }
 
