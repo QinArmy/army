@@ -41,7 +41,7 @@ public final class StringType extends AbstractMappingType {
             case MySQL:
                 sqlDataType = MySQLDataType.VARCHAR;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 sqlDataType = PostgreDataType.VARCHAR;
                 break;
             case Oracle:

@@ -35,8 +35,8 @@ public abstract class GenericSessionFactoryUtils {
 
     @Nullable
     protected static Database readDatabase(GenericSessionFactory sessionFactory) {
-        String key = String.format(ArmyConfigConstant.DATABASE, sessionFactory.name());
-        return sessionFactory.environment().getProperty(key, Database.class);
+        String key = String.format(ArmyKey.DATABASE, sessionFactory.name());
+        return sessionFactory.environment().get(key, Database.class);
     }
 
 
@@ -94,14 +94,14 @@ public abstract class GenericSessionFactoryUtils {
     }
 
 
-    static Function<Throwable, Throwable> createComposedExceptionFunction(
-            FactoryBuilderSupport builder) {
+    static Function<ArmyException, RuntimeException> createComposedExceptionFunction(
+            Function<ArmyException, RuntimeException> function) {
 
 //        final Function<RuntimeException, RuntimeException> customFunction = builder.exceptionFunction();
 //        final Function<RuntimeException, RuntimeException> springFunction = builder.springExceptionFunction();
 //
 //        return throwable -> convertToCustomException(throwable, springFunction, customFunction);
-        return null;
+        return function;
     }
 
     static FactoryMode shardingMode(FactoryBuilderSupport builder) {
@@ -141,7 +141,7 @@ public abstract class GenericSessionFactoryUtils {
     }
 
     static boolean sessionCache(ArmyEnvironment env, String factoryName) {
-        return env.getProperty(String.format(ArmyConfigConstant.SESSION_CACHE, factoryName)
+        return env.get(String.format(ArmyKey.SESSION_CACHE, factoryName)
                 , Boolean.class, Boolean.TRUE);
     }
 
@@ -167,7 +167,7 @@ public abstract class GenericSessionFactoryUtils {
         if (factoryMode == FactoryMode.NO_SHARDING) {
             support = false;
         } else {
-            support = env.getProperty(String.format(ArmyConfigConstant.SHARDING_SUB_QUERY_INSERT, factoryName)
+            support = env.get(String.format(ArmyKey.SHARDING_SUB_QUERY_INSERT, factoryName)
                     , Boolean.class, Boolean.FALSE);
         }
         return support;
@@ -178,21 +178,39 @@ public abstract class GenericSessionFactoryUtils {
         if (factoryMode == FactoryMode.NO_SHARDING) {
             allow = false;
         } else {
-            allow = env.getProperty(String.format(ArmyConfigConstant.ALLOW_SPAN_SHARDING, factoryName)
+            allow = env.get(String.format(ArmyKey.ALLOW_SPAN_SHARDING, factoryName)
                     , Boolean.class, Boolean.FALSE);
         }
         return allow;
     }
 
     static boolean compareDefaultOnMigrating(ArmyEnvironment env, String factoryName) {
-        return env.getProperty(String.format(ArmyConfigConstant.COMPARE_DEFAULT_ON_MIGRATING, factoryName)
+        return env.get(String.format(ArmyKey.COMPARE_DEFAULT_ON_MIGRATING, factoryName)
                 , Boolean.class, Boolean.FALSE);
     }
 
-    static Map<Class<?>, TableMeta<?>> scanPackagesForMeta(SchemaMeta schemaMeta, String factoryName, ArmyEnvironment env) {
-        List<String> packagesToScan = env.getRequiredPropertyList(
-                String.format(ArmyConfigConstant.PACKAGE_TO_SCAN, factoryName), String[].class);
-        return _TableMetaFactory.getTableMetaMap(schemaMeta, packagesToScan);
+    static Map<Class<?>, TableMeta<?>> scanPackagesForMeta(SchemaMeta schemaMeta, List<String> packageList) {
+        final Map<Class<?>, TableMeta<?>> tableMetaMap;
+        tableMetaMap = _TableMetaFactory.getTableMetaMap(schemaMeta
+                , Objects.requireNonNull(packageList));
+        if (tableMetaMap.isEmpty()) {
+            String m;
+            if (schemaMeta.defaultSchema()) {
+                m = String.format("Not found any %s for default schema.", TableMeta.class.getName());
+            } else {
+                m = String.format("Not found any %s for %s.", TableMeta.class.getName(), schemaMeta);
+            }
+            throw new SessionFactoryException(m);
+        }
+        return tableMetaMap;
+    }
+
+    static int tableCountPerDatabase(final int tableCount) {
+        if (tableCount < 1) {
+            String m = String.format("Table count[%s] per database must great than 0 .", tableCount);
+            throw new SessionFactoryException(m);
+        }
+        return tableCount;
     }
 
 
@@ -231,13 +249,13 @@ public abstract class GenericSessionFactoryUtils {
     }
 
     static SchemaMeta obtainSchemaMeta(String factoryName, ArmyEnvironment env) {
-        String catalog = env.getProperty(String.format(ArmyConfigConstant.CATALOG, factoryName), "");
-        String schema = env.getProperty(String.format(ArmyConfigConstant.SCHEMA, factoryName), "");
+        String catalog = env.get(String.format(ArmyKey.CATALOG, factoryName), "");
+        String schema = env.get(String.format(ArmyKey.SCHEMA, factoryName), "");
         return SchemaMetaFactory.getSchema(catalog, schema);
     }
 
     static ZoneId createZoneId(ArmyEnvironment env, String factoryName) {
-        String zoneIdText = env.getProperty(String.format(ArmyConfigConstant.ZONE_ID, factoryName));
+        String zoneIdText = env.get(String.format(ArmyKey.ZONE_ID, factoryName));
         ZoneId zoneId;
         if (StringUtils.hasText(zoneIdText)) {
             zoneId = ZoneId.of(zoneIdText);
@@ -248,7 +266,7 @@ public abstract class GenericSessionFactoryUtils {
     }
 
     static boolean readOnly(String factoryName, ArmyEnvironment env) {
-        return env.getProperty(String.format(ArmyConfigConstant.READ_ONLY, factoryName), Boolean.class, Boolean.FALSE);
+        return env.get(String.format(ArmyKey.READ_ONLY, factoryName), Boolean.class, Boolean.FALSE);
     }
 
     static Map<FieldMeta<?, ?>, FieldCodec> createTableFieldCodecMap(

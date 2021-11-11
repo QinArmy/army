@@ -45,7 +45,7 @@ public final class NameEnumType extends AbstractMappingType {
             case MySQL:
                 sqlDataType = MySQLDataType.ENUM;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 sqlDataType = PostgreDataType.VARCHAR;
                 break;
             case H2:

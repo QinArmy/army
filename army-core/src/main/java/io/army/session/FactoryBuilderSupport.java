@@ -3,14 +3,15 @@ package io.army.session;
 import io.army.ArmyException;
 import io.army.advice.FactoryAdvice;
 import io.army.codec.FieldCodec;
+import io.army.criteria.impl.SchemaMetaFactory;
 import io.army.env.ArmyEnvironment;
+import io.army.generator.FieldGenerator;
 import io.army.lang.Nullable;
-import io.army.util.CollectionUtils;
+import io.army.meta.FieldMeta;
+import io.army.meta.SchemaMeta;
+import io.army.meta.ServerMeta;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 public abstract class FactoryBuilderSupport {
@@ -23,84 +24,54 @@ public abstract class FactoryBuilderSupport {
 
     protected FactoryMode factoryMode = FactoryMode.NO_SHARDING;
 
-    protected int tableCountPerDatabase;
+    protected int tableCountPerDatabase = 1;
 
-    protected Collection<FactoryAdvice> factoryAdvices;
+    protected SchemaMeta schemaMeta = SchemaMetaFactory.getSchema("", "");
 
     protected Function<ArmyException, RuntimeException> exceptionFunction;
 
-    private FactoryAdvice factoryAdviceComposite;
+    protected ServerMeta serverMeta;
 
+    protected Map<FieldMeta<?, ?>, FieldGenerator> generatorMap;
 
-    public final String name() {
-        return this.name;
-    }
+    protected Collection<FactoryAdvice> factoryAdvices;
 
-    public final ArmyEnvironment environment() {
-        return this.environment;
-    }
+    protected List<String> packagesToScan;
+
 
     @Nullable
-    public final Collection<FieldCodec> fieldCodecs() {
-        return this.fieldCodecs;
-    }
-
-    @Nullable
-    public final FactoryMode shardingMode() {
-        return this.factoryMode;
-    }
-
-    public final int tableCountPerDatabase() {
-        return this.tableCountPerDatabase;
-    }
-
-    @Nullable
-    final Function<RuntimeException, RuntimeException> exceptionFunction() {
-        return this.exceptionFunction;
-    }
-
-    @Nullable
-    protected Function<RuntimeException, RuntimeException> springExceptionFunction() {
-        return null;
-    }
-
-    protected final FactoryAdvice getFactoryAdviceComposite() {
-        if (this.factoryAdviceComposite == null) {
-            this.factoryAdviceComposite = GenericSessionFactoryAdviceComposite.build(this.factoryAdvices);
+    protected static FactoryAdvice createFactoryAdviceComposite(Collection<FactoryAdvice> factoryAdvices) {
+        if (factoryAdvices == null || factoryAdvices.isEmpty()) {
+            return null;
         }
-        return this.factoryAdviceComposite;
+        List<FactoryAdvice> orderedAdviceList;
+        orderedAdviceList = new ArrayList<>(factoryAdvices);
+        orderedAdviceList.sort(Comparator.comparingInt(FactoryAdvice::order));
+        orderedAdviceList = Collections.unmodifiableList(orderedAdviceList);
+        return new SessionFactoryAdviceComposite(orderedAdviceList);
     }
 
 
-    private static final class GenericSessionFactoryAdviceComposite implements FactoryAdvice {
-
-        private static GenericSessionFactoryAdviceComposite build(
-                @Nullable Collection<FactoryAdvice> factoryAdvices) {
-            List<FactoryAdvice> orderedAdviceList;
-
-            if (CollectionUtils.isEmpty(factoryAdvices)) {
-                orderedAdviceList = Collections.emptyList();
-            } else {
-                orderedAdviceList = new ArrayList<>(factoryAdvices);
-                // orderedAdviceList.sort(Comparator.comparingInt(FactoryAdvice::order));
-                orderedAdviceList = Collections.unmodifiableList(orderedAdviceList);
-            }
-            return new GenericSessionFactoryAdviceComposite(orderedAdviceList);
-        }
+    protected static final class SessionFactoryAdviceComposite implements FactoryAdvice {
 
         private final List<FactoryAdvice> adviceList;
 
-        private GenericSessionFactoryAdviceComposite(List<FactoryAdvice> adviceList) {
+        private SessionFactoryAdviceComposite(List<FactoryAdvice> adviceList) {
             this.adviceList = adviceList;
         }
 
+        @Override
+        public int order() {
+            return 0;
+        }
 
         @Override
-        public void beforeInstance(ArmyEnvironment environment) {
+        public void beforeInstance(ServerMeta serverMeta, ArmyEnvironment environment) {
             for (FactoryAdvice factoryAdvice : this.adviceList) {
-                factoryAdvice.beforeInstance(environment);
+                factoryAdvice.beforeInstance(serverMeta, environment);
             }
         }
+
 
         @Override
         public void beforeInitialize(GenericSessionFactory sessionFactory) {

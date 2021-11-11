@@ -32,22 +32,27 @@ public class StandardEnvironment extends AbstractArmyEnvironment {
     }
 
     @Override
-    public final String getProperty(String key) {
+    public final String get(String key) {
         return env.getProperty(key);
     }
 
     @Override
-    public final String getProperty(String key, String defaultValue) {
+    public final String get(String key, String defaultValue) {
         return env.getProperty(key, defaultValue);
     }
 
     @Override
-    public final <T> T getProperty(String key, Class<T> targetType) {
+    public final <T> T get(String key, Class<T> targetType) {
         return env.getProperty(key, targetType);
     }
 
     @Override
-    public final <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
+    public <T> T getNonNull(String key, Class<T> resultClass) {
+        return null;
+    }
+
+    @Override
+    public final <T> T get(String key, Class<T> targetType, T defaultValue) {
         return env.getProperty(key, targetType, defaultValue);
     }
 

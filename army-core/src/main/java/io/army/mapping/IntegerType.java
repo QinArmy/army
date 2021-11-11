@@ -44,7 +44,7 @@ public final class IntegerType extends AbstractMappingType {
             case MySQL:
                 sqlDataType = MySQLDataType.INT;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 sqlDataType = PostgreDataType.INTEGER;
                 break;
             default:

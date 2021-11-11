@@ -27,7 +27,7 @@ class Postgre11Dialect extends AbstractDialect {
 
     @Override
     public Database database() {
-        return Database.Postgre;
+        return Database.PostgreSQL;
     }
 
     @Override

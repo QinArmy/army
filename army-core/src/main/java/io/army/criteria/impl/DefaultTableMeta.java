@@ -366,7 +366,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     @Override
-    public PrimaryFieldMeta<? super T, Object> id() {
+    public PrimaryFieldMeta<T, Object> id() {
         return this.primaryField;
     }
 

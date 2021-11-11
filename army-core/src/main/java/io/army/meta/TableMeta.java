@@ -26,7 +26,7 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
 
     String comment();
 
-    PrimaryFieldMeta<? super T, Object> id();
+    PrimaryFieldMeta<T, Object> id();
 
     <F> PrimaryFieldMeta<T, F> id(Class<F> propClass) throws MetaException;
 

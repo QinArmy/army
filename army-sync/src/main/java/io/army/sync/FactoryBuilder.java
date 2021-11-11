@@ -28,7 +28,9 @@ import java.util.function.Function;
  */
 public interface FactoryBuilder {
 
-    FactoryBuilder name(String sessionFactoryName);
+    FactoryBuilder factoryName(String sessionFactoryName);
+
+    FactoryBuilder schema(String catalog, String schema);
 
     FactoryBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs);
 

@@ -47,7 +47,7 @@ public final class BooleanType extends AbstractMappingType {
             case MySQL:
                 sqlType = MySQLDataType.BOOLEAN;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 sqlType = PostgreDataType.BOOLEAN;
                 break;
             default:

@@ -40,7 +40,7 @@ public final class YearType extends AbstractMappingType {
             case MySQL:
                 sqlDataType = MySQLDataType.YEAR;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 sqlDataType = PostgreDataType.INTEGER;
                 break;
             default:
@@ -74,7 +74,7 @@ public final class YearType extends AbstractMappingType {
                 value = (Year) nonNull;
             }
             break;
-            case Postgre:
+            case PostgreSQL:
             case H2:
             case Oracle: {
                 if (!(nonNull instanceof Integer)) {

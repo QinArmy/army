@@ -37,7 +37,7 @@ public final class ByteArrayType extends AbstractMappingType {
             case MySQL:
                 sqlDataType = MySQLDataType.VARBINARY;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 sqlDataType = PostgreDataType.BYTEA;
                 break;
             case Oracle:
@@ -76,7 +76,7 @@ public final class ByteArrayType extends AbstractMappingType {
                 value = (byte[]) nonNull;
             }
             break;
-            case Postgre://TODO
+            case PostgreSQL://TODO
             case Oracle://TODO
             default:
                 throw notSupportConvertAfterGet(nonNull);

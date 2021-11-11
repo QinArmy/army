@@ -46,7 +46,7 @@ public final class TrueFalseType extends AbstractMappingType {
             case MySQL:
                 sqlDataType = MySQLDataType.CHAR;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 sqlDataType = PostgreDataType.BOOLEAN;
                 break;
             case Oracle:
@@ -64,7 +64,7 @@ public final class TrueFalseType extends AbstractMappingType {
         final Boolean v;
         v = BooleanType.INSTANCE.convertBeforeBind(sqlDataType, nonNull);
         final Object value;
-        if (sqlDataType.database() == Database.Postgre) {
+        if (sqlDataType.database() == Database.PostgreSQL) {
             value = v;
         } else {
             value = v ? T : F;
@@ -75,7 +75,7 @@ public final class TrueFalseType extends AbstractMappingType {
     @Override
     public Boolean convertAfterGet(SqlDataType sqlDataType, final Object nonNull) {
         final Boolean value;
-        if (sqlDataType.database() == Database.Postgre) {
+        if (sqlDataType.database() == Database.PostgreSQL) {
             if (!(nonNull instanceof Boolean)) {
                 throw notSupportConvertAfterGet(nonNull);
             }

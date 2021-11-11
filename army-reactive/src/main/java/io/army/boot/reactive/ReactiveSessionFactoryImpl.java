@@ -138,7 +138,7 @@ class ReactiveSessionFactoryImpl extends AbstractGenericSessionFactory implement
 
     @Override
     public Function<Throwable, Throwable> composeExceptionFunction() {
-        return this.composedExceptionFunction;
+        return this.exceptionFunction;
     }
 
     @Override

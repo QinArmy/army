@@ -56,7 +56,7 @@ final class MockSessionFactoryBuilder extends AbstractSyncSessionFactoryBuilder 
             case MySQL:
                 dialect = MySQLDialectFactory.createMySQLDialect(sqlDialect, sessionFactory);
                 break;
-            case Postgre:
+            case PostgreSQL:
             case Oracle:
             default:
                 throw new IllegalArgumentException();

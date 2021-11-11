@@ -54,7 +54,7 @@ public final class CodeEnumType extends AbstractMappingType {
             case MySQL:
                 sqlDataType = MySQLDataType.INT;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 sqlDataType = PostgreDataType.INTEGER;
                 break;
             default:

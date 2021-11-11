@@ -1,6 +1,5 @@
 package io.army.session;
 
-import io.army.codec.FieldCodec;
 import io.army.criteria.NotFoundRouteException;
 import io.army.domain.IDomain;
 import io.army.env.ArmyEnvironment;
@@ -8,6 +7,7 @@ import io.army.generator.FieldGenerator;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
+import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 import io.army.sharding.TableRoute;
 
@@ -25,9 +25,9 @@ public interface GenericSessionFactory {
 
     SchemaMeta schemaMeta();
 
-    Map<Class<?>, TableMeta<?>> tableMetaMap();
+    ServerMeta serverMeta();
 
-    boolean supportZone();
+    Map<Class<?>, TableMeta<?>> tableMetaMap();
 
     @Nullable
     <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass);
@@ -40,9 +40,6 @@ public interface GenericSessionFactory {
 
     @Deprecated
     List<FieldMeta<?, ?>> generatorChain(TableMeta<?> tableMeta);
-
-    @Nullable
-    FieldCodec fieldCodec(FieldMeta<?, ?> fieldMeta);
 
     FactoryMode shardingMode();
 

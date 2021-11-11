@@ -41,7 +41,7 @@ public final class OffsetDateTimeType extends AbstractMappingType {
     public SqlDataType sqlDataType(ServerMeta serverMeta) throws NotSupportDialectException {
         final SqlDataType sqlDataType;
         switch (serverMeta.database()) {
-            case Postgre:
+            case PostgreSQL:
                 sqlDataType = PostgreDataType.TIMESTAMPTZ;
                 break;
             case Oracle:

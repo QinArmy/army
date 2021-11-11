@@ -42,7 +42,7 @@ public final class LocalDateType extends AbstractMappingType {
             case MySQL:
                 sqlDataType = MySQLDataType.DATE;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 sqlDataType = PostgreDataType.DATE;
                 break;
             default:

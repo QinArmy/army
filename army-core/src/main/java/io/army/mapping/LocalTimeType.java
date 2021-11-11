@@ -42,7 +42,7 @@ public final class LocalTimeType extends AbstractMappingType {
             case MySQL:
                 sqlDataType = MySQLDataType.TIME;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 sqlDataType = PostgreDataType.TIME;
                 break;
             default:

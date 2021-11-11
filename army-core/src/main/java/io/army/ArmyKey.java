@@ -3,7 +3,9 @@ package io.army;
 import io.army.generator.snowflake.FiveBitWorkerSnowflake;
 import io.army.generator.snowflake.Snowflake;
 
-public interface ArmyConfigConstant {
+public interface ArmyKey {
+
+    String SYNC_EXECUTOR_PROVIDER = "army.%s.sync.executorProvider";
 
     String CATALOG = "army.%s.catalog";
 

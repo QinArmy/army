@@ -16,7 +16,7 @@ public abstract class PostgreDialectFactory {
 
         Dialect dialect;
         switch (database) {
-            case Postgre:
+            case PostgreSQL:
                 dialect = new Postgre11Dialect(sessionFactory);
                 break;
             default:

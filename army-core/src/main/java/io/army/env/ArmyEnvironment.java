@@ -54,12 +54,12 @@ public interface ArmyEnvironment {
      * or {@code null} if the key cannot be resolved.
      *
      * @param key the property name to resolve
-     * @see #getProperty(String, String)
-     * @see #getProperty(String, Class)
+     * @see #get(String, String)
+     * @see #get(String, Class)
      * @see #getRequiredProperty(String)
      */
     @Nullable
-    String getProperty(String key);
+    String get(String key);
 
     /**
      * Return the property value associated with the given key, or
@@ -68,9 +68,9 @@ public interface ArmyEnvironment {
      * @param key          the property name to resolve
      * @param defaultValue the default value to return if no value is found
      * @see #getRequiredProperty(String)
-     * @see #getProperty(String, Class)
+     * @see #get(String, Class)
      */
-    String getProperty(String key, String defaultValue);
+    String get(String key, String defaultValue);
 
     /**
      * Return the property value associated with the given key,
@@ -81,7 +81,9 @@ public interface ArmyEnvironment {
      * @see #getRequiredProperty(String, Class)
      */
     @Nullable
-    <T> T getProperty(String key, Class<T> targetType);
+    <T> T get(String key, Class<T> targetType);
+
+    <T> T getNonNull(String key, Class<T> resultClass);
 
     /**
      * Return the property value associated with the given key,but not {@link String} ,the the property value showSQL:
@@ -141,7 +143,7 @@ public interface ArmyEnvironment {
      * @param defaultValue the default value to return if no value is found
      * @see #getRequiredProperty(String, Class)
      */
-    <T> T getProperty(String key, Class<T> targetType, T defaultValue);
+    <T> T get(String key, Class<T> targetType, T defaultValue);
 
     /**
      * Return the property value associated with the given key (never {@code null}).
@@ -164,13 +166,13 @@ public interface ArmyEnvironment {
      * {@code value1,value2,...,valuen}
      * or empty list the key cannot be resolved.
      *
-     * @param key             the property name to resolve
-     * @param targetArrayType the expected type of the property value
+     * @param key          the property name to resolve
+     * @param elementClass the expected type of the property value
      * @return a  list
      * @throws IllegalStateException if the given key cannot be resolved
      * @see #getRequiredProperty(String, Class)
      */
-    <T> List<T> getRequiredPropertyList(String key, Class<T[]> targetArrayType) throws IllegalStateException;
+    <T> List<T> getList(String key, Class<T> elementClass) throws IllegalStateException;
 
     /**
      * Return the property value associated with the given key,but not {@link String} ,the the property value showSQL:
@@ -184,5 +186,6 @@ public interface ArmyEnvironment {
      * @see #getRequiredProperty(String, Class)
      */
     <T> Set<T> getRequiredPropertySet(String key, Class<T[]> targetArrayType) throws IllegalStateException;
+
 
 }

@@ -1,6 +1,6 @@
 package io.army.generator.snowflake;
 
-import io.army.ArmyConfigConstant;
+import io.army.ArmyKey;
 import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
 import io.army.annotation.Param;
@@ -223,7 +223,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
         if (startTime >= 0) {
             return startTime;
         }
-        startTime = env.getProperty(ArmyConfigConstant.SNOWFLAKE_DEFAULT_TIME, Long.class
+        startTime = env.get(ArmyKey.SNOWFLAKE_DEFAULT_TIME, Long.class
                 , DEFAULT_START_TIME_OF_DEFAULT);
         if (startTime < 0 || startTime > SystemClock.now()) {
             throw new IllegalStateException(String.format("default snowflake start time[%s] config error", startTime));
@@ -241,11 +241,11 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
             return client;
         }
         ArmyEnvironment env = sessionFactory.environment();
-        String beanName = env.getRequiredProperty(ArmyConfigConstant.SNOWFLAKE_CLIENT_NAME);
+        String beanName = env.getRequiredProperty(ArmyKey.SNOWFLAKE_CLIENT_NAME);
         client = env.getBean(beanName, SnowflakeClient.class);
         if (client == null && sessionFactory.shardingMode() == FactoryMode.NO_SHARDING) {
-            boolean singleApplication = env.getProperty(
-                    String.format(ArmyConfigConstant.SINGLE_APPLICATION, sessionFactory.name())
+            boolean singleApplication = env.get(
+                    String.format(ArmyKey.SINGLE_APPLICATION, sessionFactory.name())
                     , Boolean.class, Boolean.TRUE);
             if (singleApplication) {
                 client = SingleApplicationSnowflakeClient.build(sessionFactory);
@@ -267,7 +267,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
         if (method != null) {
             return method;
         }
-        final String className = env.getProperty(ArmyConfigConstant.SNOWFLAKE_CLASS
+        final String className = env.get(ArmyKey.SNOWFLAKE_CLASS
                 , FiveBitWorkerSnowflake.class.getName());
         try {
             Class<?> snowflakeClass = Class.forName(className);

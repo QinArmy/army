@@ -41,7 +41,7 @@ public final class BigDecimalType extends AbstractMappingType {
             case MySQL:
                 sqlDataType = MySQLDataType.DECIMAL;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 sqlDataType = PostgreDataType.DECIMAL;
                 break;
             case H2:

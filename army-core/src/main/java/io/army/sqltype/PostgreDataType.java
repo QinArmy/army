@@ -145,6 +145,6 @@ public enum PostgreDataType implements SqlDataType {
 
     @Override
     public final Database database() {
-        return Database.Postgre;
+        return Database.PostgreSQL;
     }
 }

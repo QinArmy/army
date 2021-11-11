@@ -40,7 +40,7 @@ public final class DoubleType extends AbstractMappingType {
             case MySQL:
                 sqlDataType = MySQLDataType.DOUBLE;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 sqlDataType = PostgreDataType.DOUBLE;
                 break;
             default:

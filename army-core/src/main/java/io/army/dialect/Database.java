@@ -5,7 +5,7 @@ public enum Database {
 
     MySQL,
     Oracle,
-    Postgre,
+    PostgreSQL,
     H2
 
 

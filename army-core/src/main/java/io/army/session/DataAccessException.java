@@ -4,7 +4,7 @@ import io.army.ArmyException;
 
 public class DataAccessException extends ArmyException {
 
-    DataAccessException(String message) {
+    public DataAccessException(String message) {
         super(message);
     }
 

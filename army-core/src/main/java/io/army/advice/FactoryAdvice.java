@@ -1,11 +1,14 @@
 package io.army.advice;
 
 import io.army.env.ArmyEnvironment;
+import io.army.meta.ServerMeta;
 import io.army.session.GenericSessionFactory;
 
 public interface FactoryAdvice {
 
-    void beforeInstance(ArmyEnvironment environment);
+    int order();
+
+    void beforeInstance(ServerMeta serverMeta, ArmyEnvironment environment);
 
     void beforeInitialize(GenericSessionFactory sessionFactory);
 

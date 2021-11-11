@@ -7,8 +7,8 @@ import io.army.util.NetUtils;
 
 import java.net.InetAddress;
 
-import static io.army.ArmyConfigConstant.DATA_CENTER_FORMAT;
-import static io.army.ArmyConfigConstant.WORKER_FORMAT;
+import static io.army.ArmyKey.DATA_CENTER_FORMAT;
+import static io.army.ArmyKey.WORKER_FORMAT;
 
 public final class SingleApplicationSnowflakeClient extends AbstractSnowflakeClient {
 

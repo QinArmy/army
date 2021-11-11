@@ -12,7 +12,7 @@ public abstract class AbstractArmyEnvironment implements ArmyConfigurableArmyEnv
 
     @Override
     public final boolean containsValue(String key, String targetValue) {
-        String[] valueArray = this.getProperty(key, String[].class);
+        String[] valueArray = this.get(key, String[].class);
         boolean contains = false;
         if (valueArray != null) {
 
@@ -28,15 +28,14 @@ public abstract class AbstractArmyEnvironment implements ArmyConfigurableArmyEnv
     }
 
 
-
     @Override
     public final boolean isOn(String key) {
-        return Boolean.parseBoolean(this.getProperty(key));
+        return Boolean.parseBoolean(this.get(key));
     }
 
     @Override
     public final boolean isOff(String key) {
-        return !Boolean.parseBoolean(this.getProperty(key));
+        return !Boolean.parseBoolean(this.get(key));
     }
 
     @Override
@@ -64,7 +63,7 @@ public abstract class AbstractArmyEnvironment implements ArmyConfigurableArmyEnv
 
     @Override
     public final <T> List<T> getPropertyList(String key, Class<T[]> targetArrayType, List<T> defaultList) {
-        T[] array = this.getProperty(key, targetArrayType);
+        T[] array = this.get(key, targetArrayType);
         List<T> list;
         if (array == null || array.length == 0) {
             list = defaultList;
@@ -85,7 +84,7 @@ public abstract class AbstractArmyEnvironment implements ArmyConfigurableArmyEnv
 
     @Override
     public final <T> Set<T> getPropertySet(String key, Class<T[]> targetArrayType, Set<T> defaultSet) {
-        T[] array = this.getProperty(key, targetArrayType);
+        T[] array = this.get(key, targetArrayType);
         Set<T> set;
         if (array == null || array.length == 0) {
             set = defaultSet;
@@ -99,14 +98,10 @@ public abstract class AbstractArmyEnvironment implements ArmyConfigurableArmyEnv
         return set;
     }
 
+
     @Override
-    public final <T> List<T> getRequiredPropertyList(String key, Class<T[]> targetArrayType) throws IllegalStateException {
-        List<T> list = getPropertyList(key, targetArrayType, Collections.emptyList());
-        if (list.isEmpty()) {
-            throw new IllegalStateException(String.format(
-                    "not found property value associated with the given key[%s]", key));
-        }
-        return list;
+    public final <T> List<T> getList(String key, Class<T> elementClass) throws IllegalStateException {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -131,7 +126,7 @@ public abstract class AbstractArmyEnvironment implements ArmyConfigurableArmyEnv
 
     private boolean isMatchDuration(String durationKey) {
 
-        LocalDateTime[] duration = this.getProperty(durationKey, LocalDateTime[].class, EMPTY_DATE_TIME);
+        LocalDateTime[] duration = this.get(durationKey, LocalDateTime[].class, EMPTY_DATE_TIME);
         boolean match = false;
         if (duration.length == 2) {
             LocalDateTime now = LocalDateTime.now();

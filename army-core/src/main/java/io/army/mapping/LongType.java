@@ -42,7 +42,7 @@ public final class LongType extends AbstractMappingType {
             case MySQL:
                 sqlDataType = MySQLDataType.BIGINT;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 sqlDataType = PostgreDataType.BIGINT;
                 break;
             default:

@@ -53,6 +53,6 @@ class Postgre11MetaSchemaComparator extends AbstractMetaSchemaComparator {
 
     @Override
     protected Database database() {
-        return Database.Postgre;
+        return Database.PostgreSQL;
     }
 }

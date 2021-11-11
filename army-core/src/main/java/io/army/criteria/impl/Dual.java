@@ -83,7 +83,7 @@ final class Dual implements IDomain {
         }
 
         @Override
-        public PrimaryFieldMeta<? super Dual, Object> id() {
+        public PrimaryFieldMeta<Dual, Object> id() {
             throw new UnsupportedOperationException();
         }
 

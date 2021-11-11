@@ -22,7 +22,7 @@ interface MetaSchemaComparator {
             case MySQL:
                 comparator = new MySQL57MetaSchemaComparator(sessionFactory);
                 break;
-            case Postgre:
+            case PostgreSQL:
                 comparator = new Postgre11MetaSchemaComparator(sessionFactory);
                 break;
             case Oracle:

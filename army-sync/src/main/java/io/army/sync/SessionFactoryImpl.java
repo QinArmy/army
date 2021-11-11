@@ -8,7 +8,6 @@ import io.army.boot.migratioin.SyncMetaMigrator;
 import io.army.cache.SessionCacheFactory;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.criteria.NotFoundRouteException;
-import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -16,7 +15,6 @@ import io.army.session.AbstractGenericSessionFactory;
 import io.army.session.FactoryMode;
 import io.army.session.GenericTmSessionFactory;
 import io.army.sharding.TableRoute;
-import io.army.util.Assert;
 import io.army.util.Pair;
 
 import javax.sql.DataSource;
@@ -29,8 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * This class is a implementation of {@link SessionFactory}
  */
-class SessionFactoryImpl extends AbstractGenericSessionFactory
-        implements InnerSessionFactory {
+class SessionFactoryImpl extends AbstractGenericSessionFactory implements SessionFactory {
 
     private static final EnumSet<FactoryMode> SUPPORT_SHARDING_SET = EnumSet.of(
             FactoryMode.NO_SHARDING
@@ -65,18 +62,13 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
     private boolean closed;
 
 
-    SessionFactoryImpl(SessionFactoryBuilderImpl factoryBuilder)
-            throws SessionFactoryException {
-        super(null, null);
+    SessionFactoryImpl(FactoryBuilderImpl factoryBuilder) throws SessionFactoryException {
+        super(factoryBuilder);
 
         if (!SUPPORT_SHARDING_SET.contains(this.factoryMode)) {
             throw new SessionFactoryException("ShardingMode[%s] is supported by %s.", getClass().getName());
         }
 
-        DataSource dataSource = factoryBuilder.dataSource();
-        Assert.notNull(dataSource, "dataSource required");
-
-        this.dataSource = dataSource;
         Pair<Dialect, Boolean> pair = SyncSessionFactoryUtils.getDatabaseMetaForSync(dataSource, this);
         this.dialect = pair.getFirst();
         this.domainAdviceMap = SyncSessionFactoryUtils.createDomainAdviceMap(
@@ -129,7 +121,7 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
 
     @Override
     public boolean supportsSavePoints() {
-      throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -149,16 +141,6 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
     }
 
 
-    @Override
-    public CurrentSessionContext currentSessionContext() {
-        return this.currentSessionContext;
-    }
-
-    @Override
-    public SessionCacheFactory sessionCacheFactory() {
-        return this.sessionCacheFactory;
-    }
-
     @Nullable
     @Override
     public GenericTmSessionFactory tmSessionFactory() {
@@ -168,15 +150,6 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
 
     /*################################## blow GenericRmSessionFactory method ##################################*/
 
-    @Override
-    public boolean supportZone() {
-        return this.dialect.supportZone();
-    }
-
-    @Override
-    public Database actualDatabase() {
-        return this.dialect.database();
-    }
 
     /*################################## blow InnerGenericRmSessionFactory method ##################################*/
 
@@ -185,25 +158,6 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
         return this.dialect;
     }
 
-    @Override
-    public InsertSQLExecutor insertSQLExecutor() {
-        return this.insertSQLExecutor;
-    }
-
-    @Override
-    public SelectSQLExecutor selectSQLExecutor() {
-        return this.selectSQLExecutor;
-    }
-
-    @Override
-    public UpdateSQLExecutor updateSQLExecutor() {
-        return this.updateSQLExecutor;
-    }
-
-    @Override
-    public boolean springApplication() {
-        return this.springApplication;
-    }
 
     @Override
     public DomainValuesGenerator domainValuesGenerator() {
@@ -234,23 +188,12 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory
         return "SessionFactory[" + this.name + "]";
     }
 
-    boolean initializeSessionFactory() throws DataAccessException_0 {
-        if (this.initFinished.get()) {
-            return false;
-        }
-        synchronized (this.initFinished) {
-            migrationMeta();
-            initializeArmyBeans();
-            this.initFinished.compareAndSet(false, true);
-        }
-        return true;
-    }
 
     /*################################## blow private method ##################################*/
 
     private void migrationMeta() {
-        String keyName = String.format(ArmyConfigConstant.MIGRATION_MODE, this.name);
-        if (!this.env.getProperty(keyName, Boolean.class, Boolean.FALSE)) {
+        String keyName = String.format(ArmyKey.MIGRATION_MODE, this.name);
+        if (!this.env.get(keyName, Boolean.class, Boolean.FALSE)) {
             return;
         }
         DataSource primary = SyncSessionFactoryUtils.obtainPrimaryDataSource(this.dataSource);
