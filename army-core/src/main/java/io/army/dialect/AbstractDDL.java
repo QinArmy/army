@@ -2,7 +2,6 @@ package io.army.dialect;
 
 import io.army.lang.Nullable;
 import io.army.meta.*;
-import io.army.modelgen._MetaBridge;
 import io.army.sqltype.SqlDataType;
 import io.army.util.StringUtils;
 
@@ -277,34 +276,34 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
         if (fieldMeta.nullable() && !StringUtils.hasText(fieldMeta.defaultValue())) {
             return;
         }
-
-        SQLBuilder builder = context.sqlBuilder();
-        final String defaultKeyWord = " DEFAULT ";
-        if (_MetaBridge.RESERVED_PROPS.contains(fieldMeta.fieldName())) {
-            // defaultKeyWord in reservedPropDefaultValue
-            reservedPropDefaultValue(fieldMeta, context);
-        } else if (fieldMeta.tableMeta().discriminator() == fieldMeta) {
-            builder.append(defaultKeyWord)
-                    .append(fieldMeta.tableMeta().discriminatorValue());
-        } else {
-            if (StringUtils.hasText(fieldMeta.defaultValue())) {
-                builder.append(defaultKeyWord);
-                handleDefaultExpression(fieldMeta, builder);
-            } else if (DDLUtils.simpleJavaType(fieldMeta)) {
-//                Database database = database();
-//                SqlDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database);
-//                if (sqlDataType.supportZeroValue(database)) {
-//                    builder.append(defaultKeyWord);
-//                    sqlDataType.zeroValue(fieldMeta, builder, database);
-//                } else {
-//                    throw SQLDataTypeUtils.createNotSupportZeroValueException(sqlDataType, fieldMeta, database);
-//                }
-            } else if (!fieldMeta.nullable()) {
-                throw new MetaException(fieldMeta + " nullable and no default" +
-                        ",only [reserved properties,discriminator, simple java type] can no default value."
-                );
-            }
-        }
+//
+//        SQLBuilder builder = context.sqlBuilder();
+//        final String defaultKeyWord = " DEFAULT ";
+//        if (_MetaBridge.RESERVED_PROPS.contains(fieldMeta.fieldName())) {
+//            // defaultKeyWord in reservedPropDefaultValue
+//            reservedPropDefaultValue(fieldMeta, context);
+//        } else if (fieldMeta.tableMeta().discriminator() == fieldMeta) {
+//            builder.append(defaultKeyWord)
+//                    .append(fieldMeta.tableMeta().discriminatorValue());
+//        } else {
+//            if (StringUtils.hasText(fieldMeta.defaultValue())) {
+//                builder.append(defaultKeyWord);
+//                handleDefaultExpression(fieldMeta, builder);
+//            } else if (DDLUtils.simpleJavaType(fieldMeta)) {
+////                Database database = database();
+////                SqlDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database);
+////                if (sqlDataType.supportZeroValue(database)) {
+////                    builder.append(defaultKeyWord);
+////                    sqlDataType.zeroValue(fieldMeta, builder, database);
+////                } else {
+////                    throw SQLDataTypeUtils.createNotSupportZeroValueException(sqlDataType, fieldMeta, database);
+////                }
+//            } else if (!fieldMeta.nullable()) {
+//                throw new MetaException(fieldMeta + " nullable and no default" +
+//                        ",only [reserved properties,discriminator, simple java type] can no default value."
+//                );
+//            }
+//        }
 
     }
 

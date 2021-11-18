@@ -1,10 +1,7 @@
 package io.army.boot.sync;
 
 
-import io.army.advice.FactoryAdvice;
-import io.army.advice.sync.DomainAdvice;
 import io.army.beans.ArmyBean;
-import io.army.codec.FieldCodec;
 import io.army.env.ArmyConfigurableArmyEnvironment;
 import io.army.env.ArmyEnvironment;
 import io.army.env.SpringEnvironmentAdaptor;
@@ -60,19 +57,7 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
 
     @Override
     public void afterPropertiesSet() {
-        this.sessionFactory = SessionFactoryBuilder.builder(true)
 
-                .name(getSessionFactoryName())
-                .datasource(obtainDataSource())
-                .environment(obtainEnvironment(this.environment, this.applicationContext))
-                .domainInterceptor(applicationContext.getBeansOfType(DomainAdvice.class).values())
-
-                .fieldCodecs(applicationContext.getBeansOfType(FieldCodec.class).values())
-                .factoryAdvice(applicationContext.getBeansOfType(FactoryAdvice.class).values())
-                .tableCountPerDatabase(this.tableCountPerDatabase)
-                .shardingMode(this.factoryMode)
-
-                .build();
     }
 
     @Override

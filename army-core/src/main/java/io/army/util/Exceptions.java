@@ -1,6 +1,8 @@
 package io.army.util;
 
 import io.army.ArmyException;
+import io.army.DialectMode;
+import io.army.meta.ServerMeta;
 import io.army.session.TimeoutException;
 import io.army.stmt.Stmt;
 import io.qinarmy.util.ExceptionUtils;
@@ -21,6 +23,12 @@ public abstract class Exceptions extends ExceptionUtils {
         String m;
         m = String.format("timout[%s] seconds,but overspend %s millis", timeout, overspend);
         throw new TimeoutException(m, overspend);
+    }
+
+    public static ArmyException notSupportDialectMode(DialectMode dialectMode, ServerMeta serverMeta) {
+        String m;
+        m = String.format("%s isn't supported by %s", dialectMode, serverMeta);
+        throw new ArmyException(m);
     }
 
 

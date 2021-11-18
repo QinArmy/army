@@ -3,7 +3,6 @@ package io.army.beans;
 
 import io.army.ErrorCode;
 import io.army.util.BeanUtils;
-import io.army.util.Pair;
 
 import java.lang.reflect.Constructor;
 

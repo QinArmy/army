@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.ErrorCode;
 import io.army.annotation.*;
 import io.army.domain.IDomain;
+import io.army.generator.PreFieldGenerator;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.*;
@@ -10,16 +11,16 @@ import io.army.modelgen._MetaBridge;
 import io.army.sharding.Route;
 import io.army.sharding.TableRoute;
 import io.army.struct.CodeEnum;
-import io.army.util.*;
+import io.army.util.AnnotationUtils;
+import io.army.util.StringUtils;
+import io.qinarmy.util.Pair;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- *
- */
+
 abstract class TableMetaUtils {
 
     TableMetaUtils() {
@@ -112,49 +113,69 @@ abstract class TableMetaUtils {
         }
     }
 
-    static SchemaMeta schemaMeta(Table table) {
-        return SchemaMetaFactory.getSchema(table.catalog(), table.schema());
-    }
+    static int discriminatorValue(final ParentTableMeta<?> parent, final Class<?> domainClass) {
 
-
-    static int discriminatorValue(final MappingMode mappingMode, final TableMeta<?> tableMeta) {
-        final int value;
         final DiscriminatorValue discriminatorValue;
-        discriminatorValue = tableMeta.javaType().getAnnotation(DiscriminatorValue.class);
-        switch (mappingMode) {
-            case CHILD: {
-                value = extractModeChildDiscriminatorValue(tableMeta, discriminatorValue);
-                final TableMeta<?> parentMeta = tableMeta.parentMeta();
-                Assert.notNull(parentMeta, () -> String.format("domain[%s] no parentMeta.", tableMeta.javaType().getName()));
-                assertDiscriminatorValueIsEnumCode(parentMeta, value);
-            }
-            break;
-            case PARENT: {
-                if (discriminatorValue != null && discriminatorValue.value() != 0) {
-                    String m = String.format("parentMeta domain[%s] DiscriminatorValue must equals 0"
-                            , tableMeta.javaType().getName());
-                    throw new MetaException(m);
-                }
-                value = 0;
-                assertDiscriminatorValueIsEnumCode(tableMeta, value);
-            }
-            break;
-            case SIMPLE:
-                value = 0;
-                break;
-            default:
-                throw Exceptions.createUnexpectedEnumException(mappingMode);
-
+        discriminatorValue = domainClass.getAnnotation(DiscriminatorValue.class);
+        if (discriminatorValue == null) {
+            String m = String.format("Domain[%s] isn't annotated by %s."
+                    , domainClass.getName(), DiscriminatorValue.class.getName());
+            throw new MetaException(m);
         }
 
+        Map<Class<?>, Map<Integer, Class<?>>> discriminatorCodeMap = TableMetaUtils.discriminatorCodeMap;
+        if (discriminatorCodeMap == null) {
+            discriminatorCodeMap = createDiscriminatorCodeMap();
+        }
+        final Map<Integer, Class<?>> codeMap;
+        codeMap = discriminatorCodeMap.computeIfAbsent(parent.javaType(), k -> new HashMap<>());
+
+        final int value;
+        value = discriminatorValue.value();
+        if (value == 0) {
+            String m = String.format("Child Domain[%s] must not 0 .", domainClass.getName());
+            throw new MetaException(m);
+        }
+        final Class<?> oldDomainClass;
+        oldDomainClass = codeMap.putIfAbsent(value, domainClass);
+        if (oldDomainClass != null && oldDomainClass != domainClass) {
+            String m = String.format("Domain[%s] and Domain[%s] %s duplication."
+                    , domainClass.getName(), parent.javaType().getName(), DiscriminatorValue.class.getName());
+            throw new MetaException(m);
+        }
         return value;
+    }
+
+    static <T extends IDomain> FieldMeta<T, ?> discriminator(final Map<String, FieldMeta<T, ?>> fieldMetaMap
+            , final Class<T> domainClass) {
+        final Inheritance inheritance = domainClass.getAnnotation(Inheritance.class);
+        assert inheritance != null;
+        final String fieldName = inheritance.value();
+        final FieldMeta<T, ?> discriminator = fieldMetaMap.get(fieldName);
+        if (discriminator == null) {
+            String m = String.format("Not found discriminator[%s] in domain[%s].", fieldName, domainClass.getName());
+            throw new MetaException(m);
+        }
+        final Class<?> fieldJavaType = discriminator.javaType();
+        if (!fieldJavaType.isEnum() || !CodeEnum.class.isAssignableFrom(fieldJavaType)) {
+            String m = String.format("Discriminator[%s] in domain[%s] isn't %s type."
+                    , fieldName, domainClass.getName(), CodeEnum.class.getName());
+            throw new MetaException(m);
+        }
+        final DiscriminatorValue discriminatorValue = domainClass.getAnnotation(DiscriminatorValue.class);
+        if (discriminatorValue != null && discriminatorValue.value() != 0) {
+            String m = String.format("%s.value[%s] of parent must be 0 ."
+                    , DiscriminatorValue.class.getName(), discriminatorValue.value());
+            throw new MetaException(m);
+        }
+        return discriminator;
     }
 
 
     /**
      * @see #createFieldMetaPair(TableMeta)
      */
-    static Pair<List<Class<?>>, Class<?>> mappedClassPair(final Class<?> domainClass) throws MetaException {
+    static DomainPair mappedClassPair(final Class<?> domainClass) throws MetaException {
         List<Class<?>> list = new ArrayList<>(6);
         // add entity class firstly
         list.add(domainClass);
@@ -185,7 +206,7 @@ abstract class TableMetaUtils {
             Collections.reverse(list);
             list = Collections.unmodifiableList(list);
         }
-        return new Pair<>(list, parentDomainClass);
+        return new DomainPair(list, parentDomainClass);
     }
 
 
@@ -203,10 +224,10 @@ abstract class TableMetaUtils {
             }
         }
         // 2. create mapped super class pair for domain class
-        final Pair<List<Class<?>>, Class<?>> pair;
+        final DomainPair pair;
         pair = mappedClassPair(domainClass);
-        final List<Class<?>> mappedClassList = pair.getFirst();
-        final Class<?> parentClass = pair.getSecond();
+        final List<Class<?>> mappedClassList = pair.mappedList;
+        final Class<?> parentClass = pair.parent;
 
         // 3. get field name set and parent id field, if need
         final Set<String> fieldNameSet = new HashSet<>(); // for check field override.
@@ -377,15 +398,15 @@ abstract class TableMetaUtils {
         if (cache != null) {
             return cache;
         }
-        final Pair<List<Class<?>>, Class<?>> pair;
+        final DomainPair pair;
         pair = mappedClassPair(parentDomainClass);
-        if (pair.getSecond() != null) {
+        if (pair.parent != null) {
             throw new IllegalStateException("mappedClassPair(Class) method error");
         }
 
         final Set<String> fieldNameSet = new HashSet<>();
         Field idField = null;
-        for (Class<?> mappedClass : pair.getFirst()) {
+        for (Class<?> mappedClass : pair.mappedList) {
             for (Field field : mappedClass.getDeclaredFields()) {
                 if (Modifier.isStatic(field.getModifiers())) {
                     continue;
@@ -421,7 +442,8 @@ abstract class TableMetaUtils {
             }
             return (Class<? extends Route>) routeClass;
         } catch (ClassNotFoundException e) {
-            throw new MetaException(e, "TableMeta[%s] not found route implementation class[%s]", tableMeta, className);
+            String m = String.format("TableMeta[%s] not found route implementation class[%s]", tableMeta, className);
+            throw new MetaException(m, e);
         }
     }
 
@@ -561,134 +583,59 @@ abstract class TableMetaUtils {
     }
 
 
-    private static void assertFieldMetaNotDuplication(String lowerColumnName, FieldMeta<?, ?> fieldMeta
-            , Set<String> columnNameSet
-            , Set<String> propNameSet) {
+    static <T extends IDomain> List<FieldMeta<T, ?>> createGeneratorChain(
+            final Map<String, FieldMeta<T, ?>> propNameToFieldMeta) throws MetaException {
 
-        if (columnNameSet.contains(lowerColumnName)) {
-            throw new MetaException(ErrorCode.META_ERROR, "domain[%s] column[%s]  duplication",
-                    fieldMeta.tableMeta().javaType(),
-                    fieldMeta.columnName()
-            );
+        final List<Pair<FieldMeta<T, ?>, Integer>> levelList = new ArrayList<>(4);
+        for (FieldMeta<T, ?> fieldMeta : propNameToFieldMeta.values()) {
+            GeneratorMeta generatorMeta = fieldMeta.generator();
+            if (generatorMeta == null) {
+                continue;
+            }
+            String depend;
+            depend = generatorMeta.params().get(PreFieldGenerator.DEPEND_FIELD_NAME);
+            int level = 0;
+            for (FieldMeta<?, ?> dependField; StringUtils.hasText(depend); ) {
+                dependField = propNameToFieldMeta.get(depend);
+                if (dependField == null) {
+                    String m = String.format("Not found dependent field[%s] in domain[%s]"
+                            , depend, fieldMeta.tableMeta());
+                    throw new MetaException(m);
+                }
+                level++;
+                generatorMeta = dependField.generator();
+                if (generatorMeta == null) {
+                    break;
+                }
+                depend = generatorMeta.params().get(PreFieldGenerator.DEPEND_FIELD_NAME);
+            }
+            levelList.add(new Pair<>(fieldMeta, level));
         }
-        if (propNameSet.contains(fieldMeta.fieldName())) {
-            throw new MetaException(ErrorCode.META_ERROR, "domain[%s] property[%s]  duplication",
-                    fieldMeta.tableMeta().javaType(),
-                    fieldMeta.fieldName()
-            );
+
+        final List<FieldMeta<T, ?>> generatorChain;
+        switch (levelList.size()) {
+            case 0:
+                generatorChain = Collections.emptyList();
+                break;
+            case 1:
+                generatorChain = Collections.singletonList(levelList.get(0).getFirst());
+                break;
+            default: {
+                levelList.sort(Comparator.comparingInt(Pair::getSecond));
+                final List<FieldMeta<T, ?>> list = new ArrayList<>(levelList.size());
+                for (Pair<FieldMeta<T, ?>, Integer> f : levelList) {
+                    list.add(f.getFirst());
+                }
+                generatorChain = Collections.unmodifiableList(list);
+            }
         }
+        return generatorChain;
     }
 
-    private static int extractModeChildDiscriminatorValue(TableMeta<?> tableMeta
-            , @Nullable DiscriminatorValue discriminatorValue) {
-
-        int value;
-        if (discriminatorValue == null) {
-            String m = String.format("child domain[%s] no %s"
-                    , tableMeta.javaType().getName()
-                    , DiscriminatorValue.class.getName());
-            throw new MetaException(m);
-        }
-        value = discriminatorValue.value();
-        if (value == 0) {
-            String m = String.format("child domain[%s] DiscriminatorValue cannot equals 0"
-                    , tableMeta.javaType().getName());
-            throw new MetaException(m);
-        }
-        final TableMeta<?> parentMeta = tableMeta.parentMeta();
-        Assert.notNull(parentMeta, () -> String.format("domain[%s] parentMeta error", tableMeta.javaType().getName()));
-
-        Map<Class<?>, Map<Integer, Class<?>>> discriminatorCodeMap = TableMetaUtils.discriminatorCodeMap;
-        if (discriminatorCodeMap == null) {
-            discriminatorCodeMap = createDiscriminatorCodeMap();
-        }
-        Map<Integer, Class<?>> codeMap;
-        codeMap = discriminatorCodeMap.computeIfAbsent(parentMeta.javaType(), key -> new HashMap<>());
-        Class<?> actualClass = codeMap.get(value);
-        if (actualClass != null && actualClass != tableMeta.javaType()) {
-            String m = String.format("child domain[%s] DiscriminatorValue duplication. ",
-                    tableMeta.javaType().getName());
-            throw new MetaException(m);
-        } else {
-            codeMap.putIfAbsent(value, tableMeta.javaType());
-        }
-        return value;
-    }
-
-
-    /**
-     * @param propNameToFieldMeta a unmodifiable map
-     * @param columnToFieldMap    a unmodifiable map
-     * @return discriminator FieldMeta
-     */
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <T extends IDomain> FieldMeta<? super T, ?> discriminator(TableMeta<T> tableMeta,
-                                                                             Map<String, FieldMeta<T, ?>> propNameToFieldMeta,
-                                                                             Map<String, Field> columnToFieldMap) {
-
-        Inheritance inheritance;
-        if (tableMeta instanceof ChildTableMeta) {
-            ChildTableMeta<?> childMeta = (ChildTableMeta<?>) tableMeta;
-            return (FieldMeta<? super T, ?>) childMeta.parentMeta().discriminator();
-        } else {
-            inheritance = AnnotationUtils.getAnnotation(tableMeta.javaType(), Inheritance.class);
-        }
-        if (inheritance == null) {
-            return null;
-        }
-        // make key lower case
-        Field field = columnToFieldMap.get(StringUtils.toLowerCase(inheritance.value()));
-        if (field == null) {
-            throw new MetaException(ErrorCode.META_ERROR, "domain[%s] discriminator column[%s] not found",
-                    tableMeta.javaType().getName(),
-                    inheritance.value()
-            );
-        }
-        if (field.getDeclaringClass() != tableMeta.javaType()) {
-            throw new MetaException(ErrorCode.META_ERROR, "domain[%s] discriminator property[%s.%s] not match.",
-                    tableMeta.javaType().getName(),
-                    field.getDeclaringClass().getName(),
-                    field.getName()
-            );
-        }
-        FieldMeta<T, ?> fieldMeta = propNameToFieldMeta.get(field.getName());
-        if (fieldMeta == null
-                || !fieldMeta.columnName().equals(inheritance.value())
-                || fieldMeta.tableMeta() != tableMeta) {
-            throw new MetaException(ErrorCode.META_ERROR, "domain[%s] discriminator column[%s] not found",
-                    tableMeta.javaType().getName(),
-                    inheritance.value()
-            );
-        }
-        if (!fieldMeta.javaType().isEnum()
-                || !CodeEnum.class.isAssignableFrom(fieldMeta.javaType())) {
-            throw new MetaException(ErrorCode.META_ERROR,
-                    "domain[%s] discriminator property java class[%s] isn'field a Enum that implements %s",
-                    tableMeta.javaType().getName(),
-                    fieldMeta.javaType().getName(),
-                    CodeEnum.class.getName()
-            );
-        }
-        return fieldMeta;
-    }
 
 
 
     /*################################# indexMap meta part private method  start ###################################*/
-
-    private static <E extends Enum<E> & CodeEnum, T extends IDomain> void assertDiscriminatorValueIsEnumCode(
-            TableMeta<T> tableMeta, int value) {
-        FieldMeta<?, E> fieldMeta = tableMeta.discriminator();
-        Assert.notNull(fieldMeta, () -> String.format("domain[%s] no discriminator", tableMeta.javaType().getName()));
-
-        if (CodeEnum.resolve(fieldMeta.javaType(), value) == null) {
-            String m = String.format("domain[%s] DiscriminatorValue not %s's code"
-                    , tableMeta.javaType().getName()
-                    , fieldMeta.javaType().getName());
-            throw new MetaException(m);
-        }
-    }
 
 
     /**
@@ -933,6 +880,20 @@ abstract class TableMetaUtils {
         public String type() {
             return this.type;
         }
+    }
+
+    static final class DomainPair {
+
+        final List<Class<?>> mappedList;
+
+        final Class<?> parent;
+
+        private DomainPair(List<Class<?>> mappedList, @Nullable Class<?> parent) {
+            this.mappedList = mappedList;
+            this.parent = parent;
+        }
+
+
     }
 
     static final class FieldMetaPair<T extends IDomain> {

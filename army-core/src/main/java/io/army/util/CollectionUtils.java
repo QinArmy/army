@@ -1,6 +1,6 @@
 package io.army.util;
 
-public abstract class CollectionUtils extends org.springframework.util.CollectionUtils {
+public abstract class CollectionUtils extends io.qinarmy.util.CollectionUtils {
 
 
 

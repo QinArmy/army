@@ -1,6 +1,7 @@
 package io.army.env;
 
 
+import io.army.ArmyKeys;
 import io.army.beans.ArmyBean;
 import io.army.lang.Nullable;
 import io.army.session.GenericSessionFactory;
@@ -84,6 +85,10 @@ public interface ArmyEnvironment {
     <T> T get(String key, Class<T> targetType);
 
     <T> T getNonNull(String key, Class<T> resultClass);
+
+    <T> T getOrDefault(ArmyKeys key, Class<T> resultClass);
+
+    <T> T get(ArmyKeys key, Class<T> resultClass, T defaultValue);
 
     /**
      * Return the property value associated with the given key,but not {@link String} ,the the property value showSQL:

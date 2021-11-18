@@ -2,7 +2,6 @@ package io.army.beans;
 
 import io.army.ErrorCode;
 import io.army.modelgen._MetaBridge;
-import io.army.util.Pair;
 
 /**
  * @see _MetaBridge#SIMPLE_JAVA_TYPE_SET

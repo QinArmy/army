@@ -9,6 +9,7 @@ import java.util.Map;
 /**
  * @since 1.0
  */
+@Deprecated
 public enum ErrorCode implements CodeEnum {
 
     NONE(0, "none"),

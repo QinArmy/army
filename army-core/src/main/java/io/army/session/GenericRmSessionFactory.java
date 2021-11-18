@@ -25,14 +25,11 @@ public interface GenericRmSessionFactory extends GenericSessionFactory {
 
     int tableCountPerDatabase();
 
-    default ServerMeta serverMeta() {
-        return null;
-    }
+     ServerMeta serverMeta();
 
     Dialect dialect();
 
     DomainValuesGenerator domainValuesGenerator();
 
-    boolean compareDefaultOnMigrating();
 
 }

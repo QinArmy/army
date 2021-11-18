@@ -7,10 +7,7 @@ import io.army.lang.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.*;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -136,7 +133,7 @@ final class AttributeMetaParser {
                 }
                 final VariableElement mappedProp = (VariableElement) element;
                 final Column column = mappedProp.getAnnotation(Column.class);
-                if (column == null) {
+                if (column == null || mappedProp.getModifiers().contains(Modifier.STATIC)) {
                     continue;
                 }
                 final String propName = mappedProp.getSimpleName().toString();

@@ -22,4 +22,6 @@ public interface DomainAdvice extends GenericDomainAdvice {
     void beforeDelete(TableMeta<?> tableMeta, ProxySession session);
 
     void afterDelete(TableMeta<?> tableMeta, ProxySession session);
+
+
 }

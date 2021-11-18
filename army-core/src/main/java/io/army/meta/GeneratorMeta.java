@@ -14,7 +14,8 @@ public interface GeneratorMeta extends Meta {
      * @return prop name or empty.
      * @see PreFieldGenerator#DEPEND_FIELD_NAME
      */
-    String dependPropName();
+    @Deprecated
+    String dependFieldName();
 
     /**
      * @return a immutable map

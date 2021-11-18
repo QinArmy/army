@@ -1,55 +1,43 @@
 package io.army.sync;
 
-import io.army.*;
+import io.army.CreateSessionException;
+import io.army.ErrorCode;
+import io.army.SessionException;
+import io.army.SessionFactoryException;
 import io.army.advice.sync.DomainAdvice;
 import io.army.beans.ArmyBean;
 import io.army.boot.DomainValuesGenerator;
-import io.army.boot.migratioin.SyncMetaMigrator;
 import io.army.cache.SessionCacheFactory;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.criteria.NotFoundRouteException;
 import io.army.dialect.Dialect;
+import io.army.dialect.DialectFactory;
 import io.army.lang.Nullable;
+import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
-import io.army.session.AbstractGenericSessionFactory;
-import io.army.session.FactoryMode;
-import io.army.session.GenericTmSessionFactory;
+import io.army.session.AbstractSessionFactory;
 import io.army.sharding.TableRoute;
-import io.army.util.Pair;
+import io.army.sync.executor.ExecutorFactory;
+import io.army.util.CollectionUtils;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.EnumSet;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Objects;
 
 /**
  * This class is a implementation of {@link SessionFactory}
  */
-class SessionFactoryImpl extends AbstractGenericSessionFactory implements SessionFactory {
+class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactory {
 
-    private static final EnumSet<FactoryMode> SUPPORT_SHARDING_SET = EnumSet.of(
-            FactoryMode.NO_SHARDING
-            , FactoryMode.SINGLE_DATABASE_SHARDING);
-
-    private final DataSource dataSource;
+    private final ExecutorFactory executorFactory;
 
     private final Dialect dialect;
 
     private final Map<TableMeta<?>, DomainAdvice> domainAdviceMap;
 
-    private final int tableCountPerDatabase;
-
     private final SessionCacheFactory sessionCacheFactory;
 
     private final DomainValuesGenerator domainValuesGenerator;
-
-    private final InsertSQLExecutor insertSQLExecutor;
-
-    private final SelectSQLExecutor selectSQLExecutor;
-
-    private final UpdateSQLExecutor updateSQLExecutor;
 
     private final ProxySession proxySession;
 
@@ -57,37 +45,23 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory implements Sessio
 
     private final Map<TableMeta<?>, TableRoute> tableRouteMap;
 
-    private final AtomicBoolean initFinished = new AtomicBoolean(false);
 
     private boolean closed;
 
 
-    SessionFactoryImpl(FactoryBuilderImpl factoryBuilder) throws SessionFactoryException {
-        super(factoryBuilder);
+    SessionFactoryImpl(FactoryBuilderImpl builder) throws SessionFactoryException {
+        super(builder);
 
-        if (!SUPPORT_SHARDING_SET.contains(this.factoryMode)) {
-            throw new SessionFactoryException("ShardingMode[%s] is supported by %s.", getClass().getName());
-        }
+        this.executorFactory = Objects.requireNonNull(builder.executorFactory);
+        this.dialect = DialectFactory.createDialect(this);//must after  this.executorFactory
+        this.domainAdviceMap = CollectionUtils.unmodifiableMap(builder.domainAdviceMap);
+        this.currentSessionContext = builder.currentSessionContext;
 
-        Pair<Dialect, Boolean> pair = SyncSessionFactoryUtils.getDatabaseMetaForSync(dataSource, this);
-        this.dialect = pair.getFirst();
-        this.domainAdviceMap = SyncSessionFactoryUtils.createDomainAdviceMap(
-                factoryBuilder.domainInterceptors());
-
-        this.tableCountPerDatabase = 0;
-        SyncSessionFactoryUtils.assertSyncTableCountOfSharding(this.tableCountPerDatabase, this);
-        this.currentSessionContext = SyncSessionFactoryUtils.buildCurrentSessionContext(this);
         this.proxySession = new ProxySessionImpl(this, this.currentSessionContext);
         this.tableRouteMap = SyncSessionFactoryUtils.routeMap(this, TableRoute.class
                 , 1, this.tableCountPerDatabase);
-
         this.sessionCacheFactory = SessionCacheFactory.build(this);
-
-        // executor after dialect
         this.domainValuesGenerator = DomainValuesGenerator.build(this);
-        this.insertSQLExecutor = InsertSQLExecutor.build(this);
-        this.selectSQLExecutor = SelectSQLExecutor.build(this);
-        this.updateSQLExecutor = UpdateSQLExecutor.build(this);
 
     }
 
@@ -106,7 +80,12 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory implements Sessio
 
     @Override
     public int tableCountPerDatabase() {
-        return this.tableCountPerDatabase;
+        return super.tableCountPerDatabase;
+    }
+
+    @Override
+    public ServerMeta serverMeta() {
+        return this.executorFactory.serverMeta();
     }
 
     @Override
@@ -141,13 +120,6 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory implements Sessio
     }
 
 
-    @Nullable
-    @Override
-    public GenericTmSessionFactory tmSessionFactory() {
-        // always null
-        return null;
-    }
-
     /*################################## blow GenericRmSessionFactory method ##################################*/
 
 
@@ -164,10 +136,6 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory implements Sessio
         return this.domainValuesGenerator;
     }
 
-    @Override
-    public boolean compareDefaultOnMigrating() {
-        return this.compareDefaultOnMigrating;
-    }
 
     @Override
     public boolean factoryClosed() {
@@ -191,20 +159,6 @@ class SessionFactoryImpl extends AbstractGenericSessionFactory implements Sessio
 
     /*################################## blow private method ##################################*/
 
-    private void migrationMeta() {
-        String keyName = String.format(ArmyKey.MIGRATION_MODE, this.name);
-        if (!this.env.get(keyName, Boolean.class, Boolean.FALSE)) {
-            return;
-        }
-        DataSource primary = SyncSessionFactoryUtils.obtainPrimaryDataSource(this.dataSource);
-        try (Connection conn = primary.getConnection()) {
-            // execute migration
-            SyncMetaMigrator.build()
-                    .migrate(conn, this);
-        } catch (SQLException e) {
-            throw new DataAccessException_0(ErrorCode.CODEC_DATA_ERROR, e, "%s migration failure.", this);
-        }
-    }
 
     private void initializeArmyBeans() {
         ArmyBean armyBean = null;

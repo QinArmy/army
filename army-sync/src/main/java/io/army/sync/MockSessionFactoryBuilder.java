@@ -1,10 +1,5 @@
 package io.army.sync;
 
-import io.army.dialect.Database;
-import io.army.dialect.Dialect;
-import io.army.dialect.mysql.MySQLDialectFactory;
-import io.army.session.GenericRmSessionFactory;
-
 final class MockSessionFactoryBuilder extends AbstractSyncSessionFactoryBuilder {
 
     public MockSessionFactoryBuilder() {
@@ -50,17 +45,5 @@ final class MockSessionFactoryBuilder extends AbstractSyncSessionFactoryBuilder 
 //        return null;
 //    }
 
-    private static Dialect createDialect(GenericRmSessionFactory sessionFactory, Database sqlDialect) {
-        Dialect dialect;
-        switch (sqlDialect) {
-            case MySQL:
-                dialect = MySQLDialectFactory.createMySQLDialect(sqlDialect, sessionFactory);
-                break;
-            case PostgreSQL:
-            case Oracle:
-            default:
-                throw new IllegalArgumentException();
-        }
-        return dialect;
-    }
+
 }

@@ -6,7 +6,6 @@ import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.sharding.Route;
-import io.army.struct.CodeEnum;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -58,12 +57,6 @@ final class Dual implements IDomain {
             return TABLE_NAME;
         }
 
-        @Nullable
-        @Override
-        public ParentTableMeta<? super Dual> parentMeta() {
-            return null;
-        }
-
         @Override
         public void appendSQL(SQLContext context) {
             context.sqlBuilder()
@@ -87,20 +80,6 @@ final class Dual implements IDomain {
             throw new UnsupportedOperationException();
         }
 
-        @Override
-        public MappingMode mappingMode() {
-            return MappingMode.SIMPLE;
-        }
-
-        @Override
-        public <E extends Enum<E> & CodeEnum> FieldMeta<Dual, E> discriminator() {
-            return null;
-        }
-
-        @Override
-        public int discriminatorValue() {
-            return 0;
-        }
 
         @Override
         public List<FieldMeta<?, ?>> routeFieldList(boolean database) {
@@ -124,37 +103,42 @@ final class Dual implements IDomain {
 
         @Override
         public SchemaMeta schema() {
-            return SchemaMetaFactory.getSchema("", "");
+            return _SchemaMetaFactory.getSchema("", "");
         }
 
         @Override
-        public boolean mappingField(String propName) {
+        public boolean mappingField(String fieldName) {
             return false;
         }
 
         @Override
-        public FieldMeta<Dual, Object> getField(String propName) throws MetaException {
-            throw new MetaException("no field[%s]", propName);
+        public FieldMeta<Dual, Object> getField(String fieldName) throws MetaException {
+            throw new MetaException("no field[%s]", fieldName);
         }
 
         @Override
-        public <F> FieldMeta<Dual, F> getField(String propName, Class<F> propClass) throws MetaException {
-            throw new MetaException("no field[%s]", propName);
+        public <F> FieldMeta<Dual, F> getField(String fieldName, Class<F> fieldClass) throws MetaException {
+            throw new MetaException("no field[%s]", fieldName);
         }
 
         @Override
-        public <F> IndexFieldMeta<Dual, F> getIndexField(String propName, Class<F> propClass) throws MetaException {
-            throw new MetaException("no field[%s]", propName);
+        public <F> IndexFieldMeta<Dual, F> getIndexField(String fieldName, Class<F> fieldClass) throws MetaException {
+            throw new MetaException("no field[%s]", fieldName);
         }
 
         @Override
-        public <F> UniqueFieldMeta<Dual, F> getUniqueField(String propName, Class<F> propClass) throws MetaException {
-            throw new MetaException("no field[%s]", propName);
+        public <F> UniqueFieldMeta<Dual, F> getUniqueField(String fieldName, Class<F> fieldClass) throws MetaException {
+            throw new MetaException("no field[%s]", fieldName);
         }
 
         @Override
-        public <F> PrimaryFieldMeta<Dual, F> id(Class<F> propClass) throws MetaException {
+        public <F> PrimaryFieldMeta<Dual, F> id(Class<F> idClass) throws MetaException {
             throw new MetaException("no field[%s]", _MetaBridge.ID);
+        }
+
+        @Override
+        public List<FieldMeta<Dual, ?>> generatorChain() {
+            return null;
         }
     }
 

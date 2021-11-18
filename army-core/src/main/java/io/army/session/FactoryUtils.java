@@ -2,7 +2,7 @@ package io.army.session;
 
 import io.army.*;
 import io.army.codec.FieldCodec;
-import io.army.criteria.impl.SchemaMetaFactory;
+import io.army.criteria.impl._SchemaMetaFactory;
 import io.army.criteria.impl._TableMetaFactory;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
@@ -13,9 +13,7 @@ import io.army.generator.GeneratorFactory;
 import io.army.generator.PreFieldGenerator;
 import io.army.lang.Nullable;
 import io.army.meta.*;
-import io.army.modelgen._MetaBridge;
 import io.army.sharding.RouteMetaData;
-import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 import io.army.util.StringUtils;
 
@@ -26,10 +24,10 @@ import java.util.function.Function;
 /**
  * @see GenericSessionFactory
  */
-public abstract class GenericSessionFactoryUtils {
+public abstract class FactoryUtils {
 
 
-    protected GenericSessionFactoryUtils() {
+    protected FactoryUtils() {
         throw new UnsupportedOperationException();
     }
 
@@ -94,7 +92,7 @@ public abstract class GenericSessionFactoryUtils {
     }
 
 
-    static Function<ArmyException, RuntimeException> createComposedExceptionFunction(
+    static Function<ArmyException, RuntimeException> exceptionFunction(
             Function<ArmyException, RuntimeException> function) {
 
 //        final Function<RuntimeException, RuntimeException> customFunction = builder.exceptionFunction();
@@ -105,11 +103,11 @@ public abstract class GenericSessionFactoryUtils {
     }
 
     static FactoryMode shardingMode(FactoryBuilderSupport builder) {
-        FactoryMode factoryMode = builder.shardingMode();
-        if (factoryMode == null) {
-            throw new SessionFactoryException("shardingMode required");
-        }
-        return factoryMode;
+//        FactoryMode factoryMode = builder.shardingMode();
+//        if (factoryMode == null) {
+//            throw new SessionFactoryException("shardingMode required");
+//        }
+        return null;
     }
 
 
@@ -140,56 +138,8 @@ public abstract class GenericSessionFactoryUtils {
         }
     }
 
-    static boolean sessionCache(ArmyEnvironment env, String factoryName) {
-        return env.get(String.format(ArmyKey.SESSION_CACHE, factoryName)
-                , Boolean.class, Boolean.TRUE);
-    }
 
-    protected static void assertTableCountOfSharding(final int tableCountOfSharding, GenericSessionFactory sessionFactory) {
-        switch (sessionFactory.shardingMode()) {
-            case NO_SHARDING:
-                if (tableCountOfSharding != 1) {
-                    throw new SessionFactoryException("%s tableCountOfSharding must equals 1 in NO_SHARDING mode.", sessionFactory);
-                }
-                break;
-            case SINGLE_DATABASE_SHARDING:
-            case SHARDING:
-                if (tableCountOfSharding < 1) {
-                    throw new SessionFactoryException("%s tableCountOfSharding must great than 0 in SHARDING mode.", sessionFactory);
-                }
-            default:
-                throw new IllegalArgumentException(String.format("not support %s", sessionFactory.shardingMode()));
-        }
-    }
-
-    static boolean shardingSubQueryInsert(ArmyEnvironment env, String factoryName, FactoryMode factoryMode) {
-        boolean support;
-        if (factoryMode == FactoryMode.NO_SHARDING) {
-            support = false;
-        } else {
-            support = env.get(String.format(ArmyKey.SHARDING_SUB_QUERY_INSERT, factoryName)
-                    , Boolean.class, Boolean.FALSE);
-        }
-        return support;
-    }
-
-    static boolean allowSpanSharding(ArmyEnvironment env, String factoryName, FactoryMode factoryMode) {
-        boolean allow;
-        if (factoryMode == FactoryMode.NO_SHARDING) {
-            allow = false;
-        } else {
-            allow = env.get(String.format(ArmyKey.ALLOW_SPAN_SHARDING, factoryName)
-                    , Boolean.class, Boolean.FALSE);
-        }
-        return allow;
-    }
-
-    static boolean compareDefaultOnMigrating(ArmyEnvironment env, String factoryName) {
-        return env.get(String.format(ArmyKey.COMPARE_DEFAULT_ON_MIGRATING, factoryName)
-                , Boolean.class, Boolean.FALSE);
-    }
-
-    static Map<Class<?>, TableMeta<?>> scanPackagesForMeta(SchemaMeta schemaMeta, List<String> packageList) {
+    static Map<Class<?>, TableMeta<?>> scanShema(SchemaMeta schemaMeta, List<String> packageList) {
         final Map<Class<?>, TableMeta<?>> tableMetaMap;
         tableMetaMap = _TableMetaFactory.getTableMetaMap(schemaMeta
                 , Objects.requireNonNull(packageList));
@@ -251,7 +201,7 @@ public abstract class GenericSessionFactoryUtils {
     static SchemaMeta obtainSchemaMeta(String factoryName, ArmyEnvironment env) {
         String catalog = env.get(String.format(ArmyKey.CATALOG, factoryName), "");
         String schema = env.get(String.format(ArmyKey.SCHEMA, factoryName), "");
-        return SchemaMetaFactory.getSchema(catalog, schema);
+        return _SchemaMetaFactory.getSchema(catalog, schema);
     }
 
     static ZoneId createZoneId(ArmyEnvironment env, String factoryName) {
@@ -265,9 +215,6 @@ public abstract class GenericSessionFactoryUtils {
         return zoneId;
     }
 
-    static boolean readOnly(String factoryName, ArmyEnvironment env) {
-        return env.get(String.format(ArmyKey.READ_ONLY, factoryName), Boolean.class, Boolean.FALSE);
-    }
 
     static Map<FieldMeta<?, ?>, FieldCodec> createTableFieldCodecMap(
             @Nullable Collection<FieldCodec> fieldCodecs) {
@@ -342,17 +289,17 @@ public abstract class GenericSessionFactoryUtils {
     private static List<FieldMeta<?, ?>> createTablePreGeneratorChain(TableMeta<?> tableMeta
             , Map<String, GeneratorMeta> thisGeneratorMap) {
 
-        if (tableMeta.parentMeta() != null) {
-            // appendText parentMeta generator
-            appendPrentTableGeneratorMap(tableMeta, thisGeneratorMap);
-        }
+//        if (tableMeta.parentMeta() != null) {
+//            // appendText parentMeta generator
+//            appendPrentTableGeneratorMap(tableMeta, thisGeneratorMap);
+//        }
 
         final List<Set<String>> dependLevelList = new ArrayList<>();
         final Set<String> ancestorLevelSet = new HashSet<>();
 
         //1. add ancestor level set, they have no dependence.
         for (Map.Entry<String, GeneratorMeta> e : thisGeneratorMap.entrySet()) {
-            if (!StringUtils.hasText(e.getValue().dependPropName())) {
+            if (!StringUtils.hasText(e.getValue().dependFieldName())) {
                 ancestorLevelSet.add(e.getKey());
             }
         }
@@ -381,24 +328,24 @@ public abstract class GenericSessionFactoryUtils {
      */
     private static void appendPrentTableGeneratorMap(TableMeta<?> tableMeta
             , Map<String, GeneratorMeta> thisGeneratorMap) {
-        TableMeta<?> parentMeta = tableMeta.parentMeta();
-        Assert.isTrue(parentMeta != null, "entity no parentMeta");
-
-        Assert.isTrue(!thisGeneratorMap.containsKey(_MetaBridge.ID)
-                , () -> String.format("child entity[%s] cannot have id generator.", tableMeta.javaType().getName()));
-
-        for (FieldMeta<?, ?> fieldMeta : parentMeta.fieldCollection()) {
-            GeneratorMeta generatorMeta = fieldMeta.generator();
-            if (generatorMeta == null) {
-                continue;
-            }
-            if (thisGeneratorMap.containsKey(fieldMeta.fieldName())) {
-                throw new MetaException(ErrorCode.META_ERROR, "entity[%s] prop[%s] couldn'field override parentMeta's generator"
-                        , tableMeta.javaType().getName(), fieldMeta.columnName());
-            }
-
-            thisGeneratorMap.put(fieldMeta.fieldName(), generatorMeta);
-        }
+//        TableMeta<?> parentMeta = tableMeta.parentMeta();
+//        Assert.isTrue(parentMeta != null, "entity no parentMeta");
+//
+//        Assert.isTrue(!thisGeneratorMap.containsKey(_MetaBridge.ID)
+//                , () -> String.format("child entity[%s] cannot have id generator.", tableMeta.javaType().getName()));
+//
+//        for (FieldMeta<?, ?> fieldMeta : parentMeta.fieldCollection()) {
+//            GeneratorMeta generatorMeta = fieldMeta.generator();
+//            if (generatorMeta == null) {
+//                continue;
+//            }
+//            if (thisGeneratorMap.containsKey(fieldMeta.fieldName())) {
+//                throw new MetaException(ErrorCode.META_ERROR, "entity[%s] prop[%s] couldn'field override parentMeta's generator"
+//                        , tableMeta.javaType().getName(), fieldMeta.columnName());
+//            }
+//
+//            thisGeneratorMap.put(fieldMeta.fieldName(), generatorMeta);
+//        }
     }
 
     /**
@@ -412,7 +359,7 @@ public abstract class GenericSessionFactoryUtils {
         final Set<String> thisLevelSet = new HashSet<>();
         int thisLevelCount = 0;
         for (Map.Entry<String, GeneratorMeta> e : propGeneratorMap.entrySet()) {
-            if (lastLevelPropSet.contains(e.getValue().dependPropName())) {
+            if (lastLevelPropSet.contains(e.getValue().dependFieldName())) {
                 thisLevelSet.add(e.getKey());
                 thisLevelCount++;
             }
@@ -431,17 +378,17 @@ public abstract class GenericSessionFactoryUtils {
     }
 
     private static void assertPreGenerator(GeneratorMeta generatorMeta) {
-        if (StringUtils.hasText(generatorMeta.dependPropName())) {
-            TableMeta<?> tableMeta = generatorMeta.fieldMeta().tableMeta();
-
-            if (!tableMeta.mappingField(generatorMeta.dependPropName())) {
-                TableMeta<?> parentMeta = tableMeta.parentMeta();
-                if (parentMeta == null || !parentMeta.mappingField(generatorMeta.dependPropName())) {
-                    throw createDependException(generatorMeta.fieldMeta());
-                }
-            }
-
-        }
+//        if (StringUtils.hasText(generatorMeta.dependFieldName())) {
+//            TableMeta<?> tableMeta = generatorMeta.fieldMeta().tableMeta();
+//
+//            if (!tableMeta.mappingField(generatorMeta.dependFieldName())) {
+//                TableMeta<?> parentMeta = tableMeta.parentMeta();
+//                if (parentMeta == null || !parentMeta.mappingField(generatorMeta.dependFieldName())) {
+//                    throw createDependException(generatorMeta.fieldMeta());
+//                }
+//            }
+//
+//        }
     }
 
     private static Database convertOracleDatabase(String productName, int major, int minor) {

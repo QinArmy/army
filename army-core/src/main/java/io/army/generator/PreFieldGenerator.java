@@ -50,7 +50,7 @@ import io.army.meta.GeneratorMeta;
 public interface PreFieldGenerator extends FieldGenerator {
 
     /**
-     * @see GeneratorMeta#dependPropName()
+     * @see GeneratorMeta#dependFieldName()
      */
     String DEPEND_FIELD_NAME = "dependFieldName";
 

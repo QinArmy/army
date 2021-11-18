@@ -6,7 +6,8 @@ public enum Database {
     MySQL,
     Oracle,
     PostgreSQL,
-    H2
+    H2,
+    Firebird
 
 
 }

@@ -18,7 +18,7 @@ import io.army.reactive.ReactiveSessionFactory;
 import io.army.reactive.advice.ReactiveDomainDeleteAdvice;
 import io.army.reactive.advice.ReactiveDomainInsertAdvice;
 import io.army.reactive.advice.ReactiveDomainUpdateAdvice;
-import io.army.session.AbstractGenericSessionFactory;
+import io.army.session.AbstractSessionFactory;
 import io.army.session.FactoryMode;
 import io.army.session.GenericTmSessionFactory;
 import io.army.sharding.TableRoute;
@@ -36,7 +36,7 @@ import java.util.function.Function;
 /**
  * This class is a implementation of {@link io.army.reactive.ReactiveSessionFactory}
  */
-class ReactiveSessionFactoryImpl extends AbstractGenericSessionFactory implements InnerReactiveSessionFactory {
+class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements InnerReactiveSessionFactory {
 
     private static final EnumSet<FactoryMode> SUPPORT_SHARDING_SET = EnumSet.of(
             FactoryMode.NO_SHARDING

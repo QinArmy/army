@@ -14,7 +14,7 @@ public @interface Inheritance {
 
 
     /**
-     * tableMeta's column name ,the column mapping property must is {@link Enum} that implements {@code io.army.struct.CodeEnum}.
+     * Domain's filed name ,the column mapping property must be {@link Enum} that implements {@code io.army.struct.CodeEnum}.
      */
     String value();
 

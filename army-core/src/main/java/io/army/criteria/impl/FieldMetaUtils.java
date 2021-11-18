@@ -73,7 +73,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         }
 
         @Override
-        public String dependPropName() {
+        public String dependFieldName() {
             return dependPropName;
         }
 

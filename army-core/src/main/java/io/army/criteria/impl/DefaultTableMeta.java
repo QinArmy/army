@@ -1,20 +1,16 @@
 package io.army.criteria.impl;
 
-import io.army.ArmyRuntimeException;
+import io.army.ArmyException;
 import io.army.annotation.DiscriminatorValue;
 import io.army.annotation.Inheritance;
 import io.army.annotation.Table;
 import io.army.criteria.SQLContext;
 import io.army.domain.IDomain;
-import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.sharding.Route;
 import io.army.struct.CodeEnum;
-import io.army.util.Assert;
-import io.army.util.Pair;
-import io.army.util.StringUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -44,7 +40,11 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         } else if (domainClass.getAnnotation(Inheritance.class) != null) {
             tableMeta = createParentTableMeta(domainClass);
         } else if (domainClass.getAnnotation(DiscriminatorValue.class) != null) {
-            tableMeta = createChildTableMeta(domainClass);
+            final ChildTableMeta<T> child;
+            child = createChildTableMeta(domainClass);
+            // cache
+            TableMetaUtils.discriminatorValue(child.parentMeta(), domainClass);
+            tableMeta = child;
         } else {
             tableMeta = createSimpleTableMeta(domainClass);
         }
@@ -151,7 +151,13 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
                 String m = String.format("Class[%s] isn't parent domain.", domainClass.getName());
                 throw new IllegalArgumentException(m);
             }
-            return new DefaultParentTable<>(domainClass);
+            final DefaultParentTable<T> parentTable;
+            parentTable = new DefaultParentTable<>(domainClass);
+            if (INSTANCE_MAP.putIfAbsent(domainClass, parentTable) != null) {
+                String m = String.format("Domain[%s] duplication.", domainClass);
+                throw new MetaException(m);
+            }
+            return parentTable;
         }
     }
 
@@ -168,14 +174,20 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
                 String m = String.format("Class[%s] isn't child domain.", domainClass.getName());
                 throw new IllegalArgumentException(m);
             }
-            final Pair<List<Class<?>>, Class<?>> mappedClassPair;
-            mappedClassPair = TableMetaUtils.mappedClassPair(domainClass);
-            final Class<?> parentClass = mappedClassPair.getSecond();
+            final TableMetaUtils.DomainPair pair;
+            pair = TableMetaUtils.mappedClassPair(domainClass);
+            final Class<?> parentClass = pair.parent;
             if (parentClass == null) {
                 String m = String.format("Not found parent domain for domain[%s].", domainClass.getName());
                 throw new IllegalArgumentException(m);
             }
-            return new DefaultChildTable<>(getParentTableMeta((Class<S>) parentClass), domainClass);
+            final DefaultChildTable<T> childTable;
+            childTable = new DefaultChildTable<>(getParentTableMeta((Class<S>) parentClass), domainClass);
+            if (INSTANCE_MAP.putIfAbsent(domainClass, childTable) != null) {
+                String m = String.format("Domain[%s] duplication.", domainClass);
+                throw new MetaException(m);
+            }
+            return childTable;
         }
     }
 
@@ -193,34 +205,17 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
                 String m = String.format("Class[%s] isn't simple domain.", domainClass.getName());
                 throw new IllegalArgumentException(m);
             }
-            return new DefaultSimpleTable<>(domainClass);
-        }
-
-    }
-
-
-    @Nullable
-    private static <T extends IDomain> FieldMeta<? super T, ?> findDiscriminator(Class<T> javaType
-            , Collection<FieldMeta<T, ?>> fieldMetas) throws MetaException {
-        final Inheritance inheritance = javaType.getAnnotation(Inheritance.class);
-        if (inheritance == null) {
-            return null;
-        }
-        FieldMeta<? super T, ?> discriminator = null;
-        final String discriminatorName = StringUtils.toLowerCase(inheritance.value());
-        for (FieldMeta<T, ?> fieldMeta : fieldMetas) {
-            if (discriminatorName.equals(fieldMeta.columnName())) {
-                discriminator = fieldMeta;
-                break;
+            final DefaultSimpleTable<T> simpleTable;
+            simpleTable = new DefaultSimpleTable<>(domainClass);
+            if (INSTANCE_MAP.putIfAbsent(domainClass, simpleTable) != null) {
+                String m = String.format("Domain[%s] duplication.", domainClass);
+                throw new MetaException(m);
             }
+            return simpleTable;
         }
-        if (discriminator == null) {
-            String m = String.format("Not found discriminator[%s] in domain[%s]."
-                    , discriminatorName, javaType.getName());
-            throw new MetaException(m);
-        }
-        return discriminator;
+
     }
+
 
     private static IllegalStateException instanceMapError() {
         return new IllegalStateException("INSTANCE_MAP state error.");
@@ -241,23 +236,15 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     private final String comment;
 
-    private final MappingMode mappingMode;
-
     private final String charset;
 
     private final SchemaMeta schemaMeta;
 
-    private final int discriminatorValue;
-
-    private final Map<String, FieldMeta<T, ?>> propNameToFieldMeta;
+    final Map<String, FieldMeta<T, ?>> fieldToFieldMeta;
 
     private final List<IndexMeta<T>> indexMetaList;
 
     private final PrimaryFieldMeta<T, Object> primaryField;
-
-    final ParentTableMeta<? super T> parentTableMeta;
-
-    final FieldMeta<? super T, ?> discriminator;
 
     private final boolean sharding;
 
@@ -267,18 +254,16 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     private final Class<? extends Route> routeClass;
 
+    private final List<FieldMeta<T, ?>> generatorChain;
+
     @SuppressWarnings("unchecked")
-    private DefaultTableMeta(@Nullable final ParentTableMeta<? super T> parentTableMeta, final Class<T> domainClass) {
+    private DefaultTableMeta(final Class<T> domainClass) {
         Objects.requireNonNull(domainClass, "javaType required");
         if (!IDomain.class.isAssignableFrom(domainClass)) {
             String m = String.format("Class[%s] not implements %s .", domainClass.getName(), IDomain.class.getName());
             throw new IllegalArgumentException(m);
         }
-        if (parentTableMeta != null) {
-            TableMetaUtils.assertParentTableMeta(parentTableMeta, domainClass);
-        }
         this.javaType = domainClass;
-        this.parentTableMeta = parentTableMeta;
         try {
 
             final Table table = TableMetaUtils.tableMeta(domainClass);
@@ -286,193 +271,158 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             this.tableName = TableMetaUtils.tableName(table, domainClass);
             this.comment = TableMetaUtils.tableComment(table, domainClass);
             this.immutable = table.immutable();
-            this.schemaMeta = TableMetaUtils.schemaMeta(table);
+            this.schemaMeta = _SchemaMetaFactory.getSchema(table.catalog(), table.schema());
 
-            this.mappingMode = this.decideMappingMode();
             this.charset = table.charset();
 
             final TableMetaUtils.FieldMetaPair<T> pair;
             pair = TableMetaUtils.createFieldMetaPair(this);
-            this.propNameToFieldMeta = pair.fieldMetaMap;
+            this.fieldToFieldMeta = pair.fieldMetaMap;
             this.indexMetaList = pair.indexMetaList;
 
-            if (parentTableMeta == null) {
-                this.discriminator = findDiscriminator(domainClass, this.propNameToFieldMeta.values());
-            } else {
-                this.discriminator = parentTableMeta.discriminator();
-            }
+            this.generatorChain = TableMetaUtils.createGeneratorChain(this.fieldToFieldMeta);
 
-            TableMetaUtils.RouteMeta routeMeta = TableMetaUtils.routeMeta(
-                    this, this.propNameToFieldMeta);
+            final TableMetaUtils.RouteMeta routeMeta;
+            routeMeta = TableMetaUtils.routeMeta(this, this.fieldToFieldMeta);
             this.databaseRouteFieldList = routeMeta.databaseRouteFieldList;
             this.tableRouteFieldList = routeMeta.tableRouteFieldList;
             this.sharding = !this.tableRouteFieldList.isEmpty();
             this.routeClass = routeMeta.routeClass;
-            this.discriminatorValue = TableMetaUtils.discriminatorValue(this.mappingMode, this);
 
-            this.primaryField = (PrimaryFieldMeta<T, Object>) this.propNameToFieldMeta.get(_MetaBridge.ID);
+            this.primaryField = (PrimaryFieldMeta<T, Object>) this.fieldToFieldMeta.get(_MetaBridge.ID);
             if (this.primaryField == null) {
                 String m = String.format("Not found primary field meta in domain[%s]", domainClass.getName());
                 throw new NullPointerException(m);
             }
-        } catch (ArmyRuntimeException e) {
+        } catch (ArmyException e) {
             throw e;
         } catch (RuntimeException e) {
-            throw new MetaException(e, e.getMessage());
+            throw new MetaException(e.getMessage(), e);
         }
 
-        if (INSTANCE_MAP.putIfAbsent(this.javaType, this) != null) {
-            String m = String.format("%s[%s] duplication.", TableMeta.class.getSimpleName(), this.javaType.getName());
-            throw new IllegalStateException(m);
+        if (INSTANCE_MAP.containsKey(domainClass)) {
+            String m = String.format("Domain[%s] duplication.", domainClass);
+            throw new MetaException(m);
         }
 
     }
-
-
-    private MappingMode decideMappingMode() {
-        final MappingMode mappingMode;
-        if (this instanceof SimpleTableMeta) {
-            mappingMode = MappingMode.SIMPLE;
-        } else if (this instanceof ChildTableMeta) {
-            mappingMode = MappingMode.CHILD;
-        } else if (this instanceof ParentTableMeta) {
-            mappingMode = MappingMode.PARENT;
-        } else {
-            throw new IllegalStateException("Unknown sub class.");
-        }
-        return mappingMode;
-    }
-
 
     @Override
-    public Class<T> javaType() {
+    public final Class<T> javaType() {
         return this.javaType;
     }
 
     @Override
-    public String tableName() {
+    public final String tableName() {
         return this.tableName;
     }
 
     @Override
-    public boolean immutable() {
+    public final boolean immutable() {
         return this.immutable;
     }
 
 
     @Override
-    public String comment() {
+    public final String comment() {
         return this.comment;
     }
 
     @Override
-    public PrimaryFieldMeta<T, Object> id() {
+    public final PrimaryFieldMeta<T, Object> id() {
         return this.primaryField;
     }
 
-
+    @SuppressWarnings("unchecked")
     @Override
-    public MappingMode mappingMode() {
-        return this.mappingMode;
+    public final <F> PrimaryFieldMeta<T, F> id(final Class<F> idClass) {
+        final PrimaryFieldMeta<T, ?> idFieldMeta = this.primaryField;
+        if (idClass != idFieldMeta.javaType()) {
+            String m = String.format("%s's %s[%s] java type not match", this
+                    , UniqueFieldMeta.class.getName(), idFieldMeta.fieldName());
+            throw new IllegalArgumentException(m);
+        }
+        return (PrimaryFieldMeta<T, F>) idFieldMeta;
     }
 
-    @Override
-    public int discriminatorValue() {
-        return discriminatorValue;
-    }
-
 
     @Override
-    public List<IndexMeta<T>> indexCollection() {
+    public final List<IndexMeta<T>> indexCollection() {
         return this.indexMetaList;
     }
 
     @Override
-    public Collection<FieldMeta<T, ?>> fieldCollection() {
-        return this.propNameToFieldMeta.values();
+    public final Collection<FieldMeta<T, ?>> fieldCollection() {
+        return this.fieldToFieldMeta.values();
     }
 
-
     @Override
-    public String charset() {
+    public final String charset() {
         return this.charset;
     }
 
-
     @Override
-    public SchemaMeta schema() {
+    public final SchemaMeta schema() {
         return this.schemaMeta;
     }
 
     @Override
-    public boolean mappingField(String propName) {
-        return this.propNameToFieldMeta.containsKey(propName);
+    public final boolean mappingField(final String fieldName) {
+        return this.fieldToFieldMeta.containsKey(fieldName);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <E extends Enum<E> & CodeEnum> FieldMeta<? super T, E> discriminator() {
-        return (FieldMeta<T, E>) this.discriminator;
-    }
-
-    @Nullable
-    @Override
-    public ParentTableMeta<? super T> parentMeta() {
-        return this.parentTableMeta;
-    }
-
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public FieldMeta<T, Object> getField(String propName) throws MetaException {
-        FieldMeta<?, ?> fieldMeta = propNameToFieldMeta.get(propName);
+    public final FieldMeta<T, Object> getField(final String fieldName) throws MetaException {
+        final FieldMeta<T, ?> fieldMeta;
+        fieldMeta = this.fieldToFieldMeta.get(fieldName);
         if (fieldMeta == null) {
-            throw new MetaException("TableMeta[%s]'s FieldMeta[%s] not found", this, propName);
+            String m = String.format("%s's %s[%s] not found", this, FieldMeta.class.getName(), fieldName);
+            throw new IllegalArgumentException(m);
         }
         return (FieldMeta<T, Object>) fieldMeta;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <F> FieldMeta<T, F> getField(String propName, Class<F> propClass) {
-        Assert.notNull(propName, "propName required");
-        Assert.notNull(propName, "propClass required");
-
-        FieldMeta<T, ?> fieldMeta = propNameToFieldMeta.get(propName);
-        if (fieldMeta == null || propClass != fieldMeta.javaType()) {
-            throw new MetaException("TableMeta[%s]'s FieldMeta[%s] not found", this, propName);
+    public final <F> FieldMeta<T, F> getField(final String fieldName, final Class<F> fieldClass) {
+        final FieldMeta<T, ?> fieldMeta;
+        fieldMeta = getField(fieldName);
+        if (fieldClass != fieldMeta.javaType()) {
+            String m = String.format("%s's %s[%s] java type not match", this, FieldMeta.class.getName(), fieldName);
+            throw new IllegalArgumentException(m);
         }
         return (FieldMeta<T, F>) fieldMeta;
     }
 
     @Override
-    public <F> IndexFieldMeta<T, F> getIndexField(String propName, Class<F> propClass) throws MetaException {
-        Assert.notNull(propName, "propName required");
-        Assert.notNull(propName, "propClass required");
-
-        FieldMeta<T, F> fieldMeta = getField(propName, propClass);
-        if (!(fieldMeta instanceof IndexFieldMeta) || propClass != fieldMeta.javaType()) {
-            throw new MetaException("TableMeta[%s]'s FieldMeta[%s] not found", this, propName);
+    public final <F> IndexFieldMeta<T, F> getIndexField(final String fieldName, final Class<F> fieldClass) {
+        final FieldMeta<T, F> fieldMeta;
+        fieldMeta = getField(fieldName, fieldClass);
+        if (!(fieldMeta instanceof IndexFieldMeta)) {
+            String m = String.format("%s's %s[%s] java type not match", this
+                    , IndexFieldMeta.class.getName(), fieldName);
+            throw new IllegalArgumentException(m);
         }
         return (IndexFieldMeta<T, F>) fieldMeta;
     }
 
     @Override
-    public <F> UniqueFieldMeta<T, F> getUniqueField(String propName, Class<F> propClass) throws MetaException {
-        FieldMeta<T, F> fieldMeta = getField(propName, propClass);
+    public final <F> UniqueFieldMeta<T, F> getUniqueField(final String fieldName, final Class<F> fieldClass) {
+        final IndexFieldMeta<T, F> fieldMeta;
+        fieldMeta = getIndexField(fieldName, fieldClass);
         if (!(fieldMeta instanceof UniqueFieldMeta)) {
-            throw new MetaException("TableMeta[%s]'s UniqueFieldMeta[%s] not found", this, propName);
+            String m = String.format("%s's %s[%s] java type not match", this
+                    , UniqueFieldMeta.class.getName(), fieldName);
+            throw new IllegalArgumentException(m);
         }
         return (UniqueFieldMeta<T, F>) fieldMeta;
     }
 
+
     @Override
-    public <F> PrimaryFieldMeta<T, F> id(Class<F> propClass) throws MetaException {
-        FieldMeta<T, F> fieldMeta = getField(_MetaBridge.ID, propClass);
-        if (!(fieldMeta instanceof PrimaryFieldMeta)) {
-            throw new MetaException("TableMeta[%s]'s PrimaryFieldMeta not found", this);
-        }
-        return (PrimaryFieldMeta<T, F>) fieldMeta;
+    public final List<FieldMeta<T, ?>> generatorChain() {
+        return this.generatorChain;
     }
 
     @Override
@@ -536,8 +486,8 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     private static final class DefaultSimpleTable<T extends IDomain> extends DefaultTableMeta<T>
             implements SimpleTableMeta<T> {
 
-        private DefaultSimpleTable(Class<T> domainClass) {
-            super(null, domainClass);
+        private DefaultSimpleTable(final Class<T> domainClass) {
+            super(domainClass);
         }
 
     }
@@ -545,20 +495,17 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     private static final class DefaultParentTable<T extends IDomain> extends DefaultTableMeta<T>
             implements ParentTableMeta<T> {
 
-        private DefaultParentTable(Class<T> domainClass) {
-            super(null, domainClass);
+        private final FieldMeta<T, ?> discriminator;
+
+        private DefaultParentTable(final Class<T> domainClass) {
+            super(domainClass);
+            this.discriminator = TableMetaUtils.discriminator(this.fieldToFieldMeta, domainClass);
         }
 
-        @NonNull
         @SuppressWarnings("unchecked")
         @Override
         public <E extends Enum<E> & CodeEnum> FieldMeta<T, E> discriminator() {
-            final FieldMeta<T, E> fieldMeta;
-            fieldMeta = (FieldMeta<T, E>) this.discriminator;
-            if (fieldMeta == null) {
-                throw new NullPointerException("discriminator() is null");
-            }
-            return fieldMeta;
+            return (FieldMeta<T, E>) this.discriminator;
         }
 
     }
@@ -566,32 +513,25 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     private static final class DefaultChildTable<T extends IDomain> extends DefaultTableMeta<T>
             implements ChildTableMeta<T> {
 
-        private DefaultChildTable(ParentTableMeta<? super T> parentTableMeta, Class<T> entityClass) {
-            super(parentTableMeta, entityClass);
-            Objects.requireNonNull(parentTableMeta);
+        private final ParentTableMeta<? super T> parentTableMeta;
+
+        private final int discriminatorValue;
+
+        private DefaultChildTable(final ParentTableMeta<? super T> parentTableMeta, final Class<T> domainClass) {
+            super(domainClass);
+            TableMetaUtils.assertParentTableMeta(parentTableMeta, domainClass);
+            this.parentTableMeta = parentTableMeta;
+            this.discriminatorValue = TableMetaUtils.discriminatorValue(parentTableMeta, domainClass);
         }
 
-        @SuppressWarnings("unchecked")
-        @NonNull
-        @Override
-        public <E extends Enum<E> & CodeEnum> FieldMeta<? super T, E> discriminator() {
-            final FieldMeta<T, E> fieldMeta;
-            fieldMeta = (FieldMeta<T, E>) this.discriminator;
-            if (fieldMeta == null) {
-                throw new NullPointerException("discriminator() is null");
-            }
-            return fieldMeta;
-        }
-
-        @NonNull
         @Override
         public ParentTableMeta<? super T> parentMeta() {
-            final ParentTableMeta<? super T> meta;
-            meta = this.parentTableMeta;
-            if (meta == null) {
-                throw new NullPointerException("parentMeta() is null");
-            }
-            return meta;
+            return this.parentTableMeta;
+        }
+
+        @Override
+        public int discriminatorValue() {
+            return this.discriminatorValue;
         }
 
 

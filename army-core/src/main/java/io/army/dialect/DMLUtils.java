@@ -17,7 +17,6 @@ import io.army.session.GenericRmSessionFactory;
 import io.army.session.GenericSessionFactory;
 import io.army.stmt.*;
 import io.army.struct.CodeEnum;
-import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 
 import java.time.LocalDateTime;
@@ -153,45 +152,45 @@ abstract class DMLUtils {
 
     static void standardSimpleUpdateSetClause(UpdateContext context, TableMeta<?> tableMeta, String tableAlias
             , List<FieldMeta<?, ?>> fieldMetaList, List<Expression<?>> valueExpList) {
-        if (tableMeta.immutable()) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "TableMeta[%s] alias[%s] is immutable."
-                    , tableMeta, tableAlias);
-        }
-        Assert.isTrue(fieldMetaList.size() == valueExpList.size()
-                , "field list ifAnd value exp list size not match");
-        final MappingMode mappingMode = tableMeta.mappingMode();
-
-        if (mappingMode != MappingMode.PARENT) {
-            Assert.notEmpty(fieldMetaList, "set clause must not empty");
-        }
-
-        SQLBuilder builder = context.sqlBuilder()
-                .append(" SET");
-
-        final int size = fieldMetaList.size();
-        for (int i = 0; i < size; i++) {
-            if (i > 0) {
-                builder.append(",");
-            }
-            FieldMeta<?, ?> fieldMeta = fieldMetaList.get(i);
-            Expression<?> valueExp = valueExpList.get(i);
-
-            DMLUtils.assertSingleUpdateSetClauseField(fieldMeta, tableMeta);
-
-            // fieldMeta self-describe
-            context.appendField(tableAlias, fieldMeta);
-            builder.append(" =");
-            // expression self-describe
-            valueExp.appendSQL(context);
-
-        }
-        if (mappingMode != MappingMode.CHILD) {
-            if (!fieldMetaList.isEmpty()) {
-                builder.append(",");
-            }
-            // appendText version And updateTime
-            DMLUtils.setClauseFieldsManagedByArmy(context, tableMeta, tableAlias);
-        }
+//        if (tableMeta.immutable()) {
+//            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "TableMeta[%s] alias[%s] is immutable."
+//                    , tableMeta, tableAlias);
+//        }
+//        Assert.isTrue(fieldMetaList.size() == valueExpList.size()
+//                , "field list ifAnd value exp list size not match");
+//        final MappingMode mappingMode = tableMeta.mappingMode();
+//
+//        if (mappingMode != MappingMode.PARENT) {
+//            Assert.notEmpty(fieldMetaList, "set clause must not empty");
+//        }
+//
+//        SQLBuilder builder = context.sqlBuilder()
+//                .append(" SET");
+//
+//        final int size = fieldMetaList.size();
+//        for (int i = 0; i < size; i++) {
+//            if (i > 0) {
+//                builder.append(",");
+//            }
+//            FieldMeta<?, ?> fieldMeta = fieldMetaList.get(i);
+//            Expression<?> valueExp = valueExpList.get(i);
+//
+//            DMLUtils.assertSingleUpdateSetClauseField(fieldMeta, tableMeta);
+//
+//            // fieldMeta self-describe
+//            context.appendField(tableAlias, fieldMeta);
+//            builder.append(" =");
+//            // expression self-describe
+//            valueExp.appendSQL(context);
+//
+//        }
+//        if (mappingMode != MappingMode.CHILD) {
+//            if (!fieldMetaList.isEmpty()) {
+//                builder.append(",");
+//            }
+//            // appendText version And updateTime
+//            DMLUtils.setClauseFieldsManagedByArmy(context, tableMeta, tableAlias);
+//        }
     }
 
     static void setClauseFieldsManagedByArmy(TableContextSQLContext context, TableMeta<?> tableMeta
@@ -260,80 +259,80 @@ abstract class DMLUtils {
      */
     static Set<FieldMeta<?, ?>> mergeInsertFields(TableMeta<?> logicalTable, Dialect dialect
             , Collection<FieldMeta<?, ?>> targetFields) {
-
-        Set<FieldMeta<?, ?>> fieldMetaSet = new HashSet<>(targetFields);
-
-        TableMeta<?> parentMeta = logicalTable;
-        if (parentMeta instanceof ChildTableMeta) {
-            ChildTableMeta<?> childMeta = (ChildTableMeta<?>) parentMeta;
-            parentMeta = childMeta.parentMeta();
-            appendGeneratorFields(fieldMetaSet, parentMeta, dialect.sessionFactory());
-        }
-        appendGeneratorFields(fieldMetaSet, logicalTable, dialect.sessionFactory());
-
-        FieldMeta<?, ?> discriminator = logicalTable.discriminator();
-        if (discriminator != null) {
-            fieldMetaSet.add(discriminator);
-        }
-        if (parentMeta.mappingField(_MetaBridge.CREATE_TIME)) {
-            fieldMetaSet.add(parentMeta.getField(_MetaBridge.CREATE_TIME));
-        }
-        if (parentMeta.mappingField(_MetaBridge.UPDATE_TIME)) {
-            fieldMetaSet.add(parentMeta.getField(_MetaBridge.UPDATE_TIME));
-        }
-        if (parentMeta.mappingField(_MetaBridge.VERSION)) {
-            fieldMetaSet.add(parentMeta.getField(_MetaBridge.VERSION));
-        }
-        return Collections.unmodifiableSet(fieldMetaSet);
+//
+//        Set<FieldMeta<?, ?>> fieldMetaSet = new HashSet<>(targetFields);
+//
+//        TableMeta<?> parentMeta = logicalTable;
+//        if (parentMeta instanceof ChildTableMeta) {
+//            ChildTableMeta<?> childMeta = (ChildTableMeta<?>) parentMeta;
+//            parentMeta = childMeta.parentMeta();
+//            appendGeneratorFields(fieldMetaSet, parentMeta, dialect.sessionFactory());
+//        }
+//        appendGeneratorFields(fieldMetaSet, logicalTable, dialect.sessionFactory());
+//
+//        FieldMeta<?, ?> discriminator = logicalTable.discriminator();
+//        if (discriminator != null) {
+//            fieldMetaSet.add(discriminator);
+//        }
+//        if (parentMeta.mappingField(_MetaBridge.CREATE_TIME)) {
+//            fieldMetaSet.add(parentMeta.getField(_MetaBridge.CREATE_TIME));
+//        }
+//        if (parentMeta.mappingField(_MetaBridge.UPDATE_TIME)) {
+//            fieldMetaSet.add(parentMeta.getField(_MetaBridge.UPDATE_TIME));
+//        }
+//        if (parentMeta.mappingField(_MetaBridge.VERSION)) {
+//            fieldMetaSet.add(parentMeta.getField(_MetaBridge.VERSION));
+//        }
+        return null;
     }
 
     static void createValueInsertForSimple(TableMeta<?> physicalTable, TableMeta<?> logicalTable
             , Collection<FieldMeta<?, ?>> fieldMetas, ReadonlyWrapper domainWrapper
             , StandardValueInsertContext context) {
-
-        final GenericSessionFactory sessionFactory = context.dialect.sessionFactory();
-        final SQLBuilder fieldBuilder = context.fieldsBuilder().append("INSERT INTO");
-        // append table name
-        context.appendTable(physicalTable, null);
-        context.fieldsBuilder().append(" (");
-
-        final SQLBuilder valueBuilder = context.sqlBuilder()
-                .append(" VALUE (");
-
-        Object value;
-        int count = 0;
-        for (FieldMeta<?, ?> fieldMeta : fieldMetas) {
-            if (!fieldMeta.insertable()) {
-                continue;
-            }
-            value = domainWrapper.getPropertyValue(fieldMeta.fieldName());
-            if (value == null && !fieldMeta.nullable()) {
-                continue;
-            }
-            if (count > 0) {
-                fieldBuilder.append(",");
-                valueBuilder.append(",");
-            }
-            // field
-            context.appendField(fieldMeta);
-            if (value == null) {
-                context.appendParam(ParamValue.build(fieldMeta.mappingMeta(), null));
-            } else if (isConstant(fieldMeta)) {
-                valueBuilder.append(createConstant(fieldMeta, logicalTable));
-            } else {
-                valueBuilder.append("?");
-                if (sessionFactory.fieldCodec(fieldMeta) != null) {
-                    context.appendParam(ParamValue.build(fieldMeta, value));
-                } else {
-                    context.appendParam(ParamValue.build(fieldMeta.mappingMeta(), value));
-                }
-
-            }
-            count++;
-        }
-
-        fieldBuilder.append(" )");
-        valueBuilder.append(" )");
+//
+//        final GenericSessionFactory sessionFactory = context.dialect.sessionFactory();
+//        final SQLBuilder fieldBuilder = context.fieldsBuilder().append("INSERT INTO");
+//        // append table name
+//        context.appendTable(physicalTable, null);
+//        context.fieldsBuilder().append(" (");
+//
+//        final SQLBuilder valueBuilder = context.sqlBuilder()
+//                .append(" VALUE (");
+//
+//        Object value;
+//        int count = 0;
+//        for (FieldMeta<?, ?> fieldMeta : fieldMetas) {
+//            if (!fieldMeta.insertable()) {
+//                continue;
+//            }
+//            value = domainWrapper.getPropertyValue(fieldMeta.fieldName());
+//            if (value == null && !fieldMeta.nullable()) {
+//                continue;
+//            }
+//            if (count > 0) {
+//                fieldBuilder.append(",");
+//                valueBuilder.append(",");
+//            }
+//            // field
+//            context.appendField(fieldMeta);
+//            if (value == null) {
+//                context.appendParam(ParamValue.build(fieldMeta.mappingMeta(), null));
+//            } else if (isConstant(fieldMeta)) {
+//                valueBuilder.append(createConstant(fieldMeta, logicalTable));
+//            } else {
+//                valueBuilder.append("?");
+//                if (sessionFactory.fieldCodec(fieldMeta) != null) {
+//                    context.appendParam(ParamValue.build(fieldMeta, value));
+//                } else {
+//                    context.appendParam(ParamValue.build(fieldMeta.mappingMeta(), value));
+//                }
+//
+//            }
+//            count++;
+//        }
+//
+//        fieldBuilder.append(" )");
+//        valueBuilder.append(" )");
 
     }
 
@@ -432,27 +431,25 @@ abstract class DMLUtils {
 
 
     static boolean isConstant(FieldMeta<?, ?> fieldMeta) {
-        return _MetaBridge.VERSION.equals(fieldMeta.fieldName())
-                || fieldMeta == fieldMeta.tableMeta().discriminator()
-                ;
+        return false;
     }
 
     static Object createConstant(FieldMeta<?, ?> fieldMeta, TableMeta<?> logicalTable) {
-        Object value;
-        if (_MetaBridge.VERSION.equals(fieldMeta.fieldName())) {
-            value = 0;
-        } else if (fieldMeta == logicalTable.discriminator()) {
-            value = CodeEnum.resolve(fieldMeta.javaType(), logicalTable.discriminatorValue());
-            if (value == null) {
-                throw new MetaException("CodeEnum[%s] not found enum for code[%s]"
-                        , fieldMeta.javaType().getName(), logicalTable.discriminatorValue());
-            }
-        } else {
-            throw new IllegalArgumentException(String.format("Entity[%s] prop[%s] cannot create constant value"
-                    , fieldMeta.tableMeta().javaType().getName()
-                    , fieldMeta.fieldName()));
-        }
-        return value;
+//        Object value;
+//        if (_MetaBridge.VERSION.equals(fieldMeta.fieldName())) {
+//            value = 0;
+//        } else if (fieldMeta == logicalTable.discriminator()) {
+//            value = CodeEnum.resolve(fieldMeta.javaType(), logicalTable.discriminatorValue());
+//            if (value == null) {
+//                throw new MetaException("CodeEnum[%s] not found enum for code[%s]"
+//                        , fieldMeta.javaType().getName(), logicalTable.discriminatorValue());
+//            }
+//        } else {
+//            throw new IllegalArgumentException(String.format("Entity[%s] prop[%s] cannot create constant value"
+//                    , fieldMeta.tableMeta().javaType().getName()
+//                    , fieldMeta.fieldName()));
+//        }
+        return null;
     }
 
     static Stmt createBatchSQLWrapper(List<? extends ReadonlyWrapper> namedParamList
@@ -595,17 +592,17 @@ abstract class DMLUtils {
 
 
     private static IPredicate createDiscriminatorPredicate(TableMeta<?> tableMeta) {
-        FieldMeta<?, ? extends CodeEnum> fieldMeta = tableMeta.discriminator();
-        Assert.notNull(fieldMeta, () -> String.format("TableMeta[%s] discriminator is null.", tableMeta));
-        @SuppressWarnings("unchecked")
-        FieldMeta<?, CodeEnum> enumFieldMeta = (FieldMeta<?, CodeEnum>) fieldMeta;
-        CodeEnum codeEnum = CodeEnum.resolve(enumFieldMeta.javaType(), tableMeta.discriminatorValue());
-
-        if (codeEnum == null) {
-            throw new MetaException("TableMeta[%s] discriminatorValue[%s] can't resolve CodeEnum."
-                    , tableMeta, tableMeta.discriminatorValue());
-        }
-        return enumFieldMeta.equal(codeEnum);
+//        FieldMeta<?, ? extends CodeEnum> fieldMeta = tableMeta.discriminator();
+//        Assert.notNull(fieldMeta, () -> String.format("TableMeta[%s] discriminator is null.", tableMeta));
+//        @SuppressWarnings("unchecked")
+//        FieldMeta<?, CodeEnum> enumFieldMeta = (FieldMeta<?, CodeEnum>) fieldMeta;
+//        CodeEnum codeEnum = CodeEnum.resolve(enumFieldMeta.javaType(), tableMeta.discriminatorValue());
+//
+//        if (codeEnum == null) {
+//            throw new MetaException("TableMeta[%s] discriminatorValue[%s] can't resolve CodeEnum."
+//                    , tableMeta, tableMeta.discriminatorValue());
+//        }
+        return null;
     }
 
     private static boolean hasDiscriminatorPredicate(List<IPredicate> predicateList

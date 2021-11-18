@@ -4,7 +4,6 @@ import io.army.criteria.TableAble;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.sharding.Route;
-import io.army.struct.CodeEnum;
 
 import java.util.Collection;
 import java.util.List;
@@ -28,11 +27,8 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
 
     PrimaryFieldMeta<T, Object> id();
 
-    <F> PrimaryFieldMeta<T, F> id(Class<F> propClass) throws MetaException;
+    <F> PrimaryFieldMeta<T, F> id(Class<F> idClass) throws MetaException;
 
-    MappingMode mappingMode();
-
-    int discriminatorValue();
 
     boolean sharding();
 
@@ -45,11 +41,6 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
     @Nullable
     Class<? extends Route> routeClass();
 
-    @Nullable
-    ParentTableMeta<? super T> parentMeta();
-
-    @Nullable
-    <E extends Enum<E> & CodeEnum> FieldMeta<? super T, E> discriminator();
 
     /**
      * contain primary key
@@ -62,15 +53,29 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
 
     SchemaMeta schema();
 
-    boolean mappingField(String propName);
+    boolean mappingField(String fieldName);
 
-    FieldMeta<T, Object> getField(String propName) throws MetaException;
+    /**
+     * @throws IllegalArgumentException when not found matched {@link FieldMeta} for fieldName
+     */
+    FieldMeta<T, Object> getField(String fieldName);
 
-    <F> FieldMeta<T, F> getField(String propName, Class<F> propClass) throws MetaException;
+    /**
+     * @throws IllegalArgumentException when not found matched {@link FieldMeta} for fieldName
+     */
+    <F> FieldMeta<T, F> getField(String fieldName, Class<F> fieldClass);
 
-    <F> IndexFieldMeta<T, F> getIndexField(String propName, Class<F> propClass) throws MetaException;
+    /**
+     * @throws IllegalArgumentException when not found matched {@link IndexFieldMeta} for fieldName
+     */
+    <F> IndexFieldMeta<T, F> getIndexField(String fieldName, Class<F> fieldClass);
 
-    <F> UniqueFieldMeta<T, F> getUniqueField(String propName, Class<F> propClass) throws MetaException;
+    /**
+     * @throws IllegalArgumentException when not found matched {@link UniqueFieldMeta} for fieldName
+     */
+    <F> UniqueFieldMeta<T, F> getUniqueField(String fieldName, Class<F> fieldClass);
+
+    List<FieldMeta<T, ?>> generatorChain();
 
     @Override
     boolean equals(Object o);

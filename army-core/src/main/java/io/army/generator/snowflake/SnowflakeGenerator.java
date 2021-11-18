@@ -367,7 +367,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
         GeneratorMeta generatorMeta = fieldMeta.generator();
         Assert.notNull(generatorMeta, "paramMeta must have generator");
 
-        String dependOnProp = generatorMeta.dependPropName();
+        String dependOnProp = generatorMeta.dependFieldName();
         if (!StringUtils.hasText(dependOnProp)) {
             return snowflake.nextAsString();
         }

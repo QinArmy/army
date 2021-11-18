@@ -84,14 +84,14 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
 
         Assert.state(generatorMeta != null
                 , () -> String.format("GeneratorMeta of FieldMeta[%s] error.", fieldMeta));
-        String dependencyName = generatorMeta.dependPropName();
+        String dependencyName = generatorMeta.dependFieldName();
         if (StringUtils.hasText(dependencyName) && (!domainWrapper.isReadableProperty(dependencyName)
                 || domainWrapper.getPropertyValue(dependencyName) == null)) {
 
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR
                     , "Domain[%s].%s is null,FieldGenerator can't work."
                     , fieldMeta.tableMeta().javaType().getName()
-                    , generatorMeta.dependPropName());
+                    , generatorMeta.dependFieldName());
         }
     }
 
@@ -136,13 +136,17 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
 
     private <T extends IDomain, E extends Enum<E> & CodeEnum> void createDiscriminatorValue(
             TableMeta<T> tableMeta, ObjectWrapper entityWrapper) {
-        FieldMeta<?, E> discriminator = tableMeta.discriminator();
 
-        if (discriminator == null) {
+        if (!(tableMeta instanceof ChildTableMeta)) {
             return;
         }
-        CodeEnum codeEnum = CodeEnum.resolve(discriminator.javaType(), tableMeta.discriminatorValue());
+        ChildTableMeta<T> child = ((ChildTableMeta<T>) tableMeta);
+        ParentTableMeta<?> parent = child.parentMeta();
+        final FieldMeta<?, E> discriminator;
+        discriminator = parent.discriminator();
+        CodeEnum codeEnum = CodeEnum.resolve(discriminator.javaType(), child.discriminatorValue());
         entityWrapper.set(discriminator.fieldName(), codeEnum);
+
     }
 
     private void createCreateOrUpdateTime(FieldMeta<?, ?> fieldMeta, ZonedDateTime now, ObjectWrapper entityWrapper) {
@@ -157,10 +161,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
     }
 
     private void assertDialectSupportedZone() {
-        if (!this.sessionFactory.supportZone()) {
-            throw new MetaException("%s not support zone"
-                    , this.sessionFactory);
-        }
+
     }
 
 

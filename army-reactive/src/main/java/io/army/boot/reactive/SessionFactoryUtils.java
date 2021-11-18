@@ -12,8 +12,8 @@ import io.army.reactive.GenericReactiveSessionFactory;
 import io.army.reactive.advice.ReactiveDomainDeleteAdvice;
 import io.army.reactive.advice.ReactiveDomainInsertAdvice;
 import io.army.reactive.advice.ReactiveDomainUpdateAdvice;
+import io.army.session.FactoryUtils;
 import io.army.session.GenericRmSessionFactory;
-import io.army.session.GenericSessionFactoryUtils;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 import io.army.util.ReflectionUtils;
@@ -27,7 +27,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
-abstract class SessionFactoryUtils extends GenericSessionFactoryUtils {
+abstract class SessionFactoryUtils extends FactoryUtils {
 
     static DatabaseSessionFactory tryObtainPrimaryFactory(DatabaseSessionFactory factory) {
         DatabaseSessionFactory actualFactory;

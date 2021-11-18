@@ -12,7 +12,7 @@ import io.army.criteria.NotFoundRouteException;
 import io.army.dialect.Database;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.session.AbstractGenericSessionFactory;
+import io.army.session.AbstractSessionFactory;
 import io.army.session.FactoryMode;
 import io.army.sharding.DatabaseRoute;
 import io.army.sharding.ShardingRoute;
@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *     </ul>
  * </p>
  */
-class TmSessionFactoryImpl extends AbstractGenericSessionFactory implements InnerTmSessionFactory {
+class TmSessionFactoryImpl extends AbstractSessionFactory implements InnerTmSessionFactory {
 
     private Map<TableMeta<?>, DomainAdvice> domainAdviceMap;
 

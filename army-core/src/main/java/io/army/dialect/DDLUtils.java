@@ -102,10 +102,10 @@ public abstract class DDLUtils {
         if (tableMeta.mappingField(_MetaBridge.VISIBLE)) {
             fieldMetaList.add(tableMeta.getField(_MetaBridge.VISIBLE));
         }
-        FieldMeta<?, ?> fieldMeta = tableMeta.discriminator();
-        if (fieldMeta != null && fieldMeta.tableMeta() == tableMeta) {
-            fieldMetaList.add(fieldMeta);
-        }
+//        FieldMeta<?, ?> fieldMeta = tableMeta.discriminator();
+//        if (fieldMeta != null && fieldMeta.tableMeta() == tableMeta) {
+//            fieldMetaList.add(fieldMeta);
+//        }
         // firstly
         fieldMetas.removeAll(fieldMetaList);
         // secondly

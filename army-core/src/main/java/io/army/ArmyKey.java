@@ -15,7 +15,7 @@ public interface ArmyKey {
 
     String PACKAGE_TO_SCAN = "army.%s.packageToScan";
 
-    String READ_ONLY = "army.%s.readOnly";
+    String READ_ONLY = "army.{0}.readOnly";
 
 
     String DATABASE = "army.%s.database";

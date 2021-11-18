@@ -3,7 +3,7 @@ package io.army.session;
 import io.army.ArmyException;
 import io.army.advice.FactoryAdvice;
 import io.army.codec.FieldCodec;
-import io.army.criteria.impl.SchemaMetaFactory;
+import io.army.criteria.impl._SchemaMetaFactory;
 import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGenerator;
 import io.army.lang.Nullable;
@@ -26,11 +26,8 @@ public abstract class FactoryBuilderSupport {
 
     protected int tableCountPerDatabase = 1;
 
-    protected SchemaMeta schemaMeta = SchemaMetaFactory.getSchema("", "");
-
+    protected SchemaMeta schemaMeta = _SchemaMetaFactory.getSchema("", "");
     protected Function<ArmyException, RuntimeException> exceptionFunction;
-
-    protected ServerMeta serverMeta;
 
     protected Map<FieldMeta<?, ?>, FieldGenerator> generatorMap;
 

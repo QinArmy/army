@@ -9,7 +9,7 @@ import io.army.dialect.Dialect;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.session.AbstractGenericSessionFactory;
+import io.army.session.AbstractSessionFactory;
 import io.army.session.FactoryMode;
 import io.army.session.GenericTmSessionFactory;
 import io.army.sharding.TableRoute;
@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *     </ul>
  * </p>
  */
-final class RmSessionFactoryImpl extends AbstractGenericSessionFactory
+final class RmSessionFactoryImpl extends AbstractSessionFactory
         implements InnerRmSessionFactory {
 
     private final TmSessionFactoryImpl tmSessionFactory;

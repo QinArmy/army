@@ -1,12 +1,13 @@
 package io.army.sync;
 
 import io.army.ArmyException;
-import io.army.ArmyKey;
+import io.army.ArmyKeys;
 import io.army.SessionFactoryException;
 import io.army.advice.FactoryAdvice;
 import io.army.advice.sync.DomainAdvice;
 import io.army.codec.FieldCodec;
-import io.army.criteria.impl.SchemaMetaFactory;
+import io.army.context.spi.CurrentSessionContext;
+import io.army.criteria.impl._SchemaMetaFactory;
 import io.army.criteria.impl._TableMetaFactory;
 import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGenerator;
@@ -33,6 +34,8 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
 
     ExecutorFactory executorFactory;
 
+    CurrentSessionContext currentSessionContext;
+
 
     @Override
     public FactoryBuilder factoryName(String sessionFactoryName) {
@@ -45,7 +48,7 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
 
     @Override
     public FactoryBuilder schema(String catalog, String schema) {
-        this.schemaMeta = SchemaMetaFactory.getSchema(catalog, schema);
+        this.schemaMeta = _SchemaMetaFactory.getSchema(catalog, schema);
         return this;
     }
 
@@ -100,16 +103,21 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
     }
 
     @Override
+    public FactoryBuilder currentSessionContext(CurrentSessionContext context) {
+        this.currentSessionContext = context;
+        return this;
+    }
+
+    @Override
     public SessionFactory build() throws SessionFactoryException {
 
         try {
             final ArmyEnvironment env = Objects.requireNonNull(this.environment);
             //1. create ExecutorFactory
             final ExecutorProvider provider;
-            provider = getExecutorProvider(Objects.requireNonNull(this.name, "factoryName"), env);
+            provider = getExecutorProvider(env);
             final ExecutorFactory executorFactory;
             executorFactory = provider.createTxFactory(Objects.requireNonNull(this.dataSource), createFactoryInfo());
-
 
             final FactoryAdvice factoryAdvice;
             factoryAdvice = createFactoryAdviceComposite(this.factoryAdvices);
@@ -189,21 +197,20 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
     }
 
 
-    private static ExecutorProvider getExecutorProvider(final String factoryName, final ArmyEnvironment env) {
+    private static ExecutorProvider getExecutorProvider(final ArmyEnvironment env) {
 
         final Class<?> providerClass;
-        final String key = String.format(ArmyKey.SYNC_EXECUTOR_PROVIDER, factoryName);
+        final String className = env.get(ArmyKeys.executorProvider, String.class, "io.army.jdbc.JdbcExecutorProvider");
         try {
-            providerClass = Class.forName(env.get(key, "io.army.jdbc.JdbcExecutorProvider"));
+            providerClass = Class.forName(className);
         } catch (Exception e) {
-            String m = String.format("%s value isn't implementation of %s."
-                    , key, ExecutorProvider.class.getName());
+            String m = String.format("Load class %s occur error.", ExecutorProvider.class.getName());
             throw new SessionFactoryException(e, m);
         }
 
         if (!ExecutorProvider.class.isAssignableFrom(providerClass)) {
             String m = String.format("%s value[%s] isn' the implementation of %s ."
-                    , key, providerClass.getName(), ExecutorProvider.class.getName());
+                    , ArmyKeys.executorProvider, providerClass.getName(), ExecutorProvider.class.getName());
             throw new SessionFactoryException(m);
         }
 
