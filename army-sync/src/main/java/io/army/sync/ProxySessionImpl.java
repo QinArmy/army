@@ -47,22 +47,22 @@ class ProxySessionImpl extends AbstractProxySyncSession implements ProxySession 
     }
 
     @Override
-    public Map<String, Object> selectOneAsUnmodifiableMap(Select select) {
+    public Map<String, Object> selectOneAsMap(Select select) {
         return null;
     }
 
     @Override
-    public Map<String, Object> selectOneAsUnmodifiableMap(Select select, Visible visible) {
+    public Map<String, Object> selectOneAsMap(Select select, Visible visible) {
         return null;
     }
 
     @Override
-    public List<Map<String, Object>> selectAsUnmodifiableMap(Select select) {
+    public List<Map<String, Object>> selectAsMap(Select select) {
         return null;
     }
 
     @Override
-    public List<Map<String, Object>> selectAsUnmodifiableMap(Select select, Visible visible) {
+    public List<Map<String, Object>> selectAsMap(Select select, Visible visible) {
         return null;
     }
 

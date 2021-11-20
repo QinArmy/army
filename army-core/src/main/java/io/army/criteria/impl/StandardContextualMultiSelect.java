@@ -2,11 +2,11 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Select;
 import io.army.criteria.SubQuery;
-import io.army.criteria.impl.inner.InnerStandardSelect;
+import io.army.criteria.impl.inner._StandardSelect;
 import io.army.meta.TableMeta;
 
 final class StandardContextualMultiSelect<C> extends AbstractStandardQuery<Select, C>
-        implements InnerStandardSelect, Select {
+        implements _StandardSelect, Select {
 
     static <C> StandardContextualMultiSelect<C> build(C criteria) {
         return new StandardContextualMultiSelect<>(criteria);

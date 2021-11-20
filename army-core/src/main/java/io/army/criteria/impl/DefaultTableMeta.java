@@ -4,7 +4,7 @@ import io.army.ArmyException;
 import io.army.annotation.DiscriminatorValue;
 import io.army.annotation.Inheritance;
 import io.army.annotation.Table;
-import io.army.criteria.SQLContext;
+import io.army.criteria.SqlContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
@@ -442,7 +442,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     @Override
-    public final void appendSQL(SQLContext context) {
+    public final void appendSQL(SqlContext context) {
         throw new UnsupportedOperationException(
                 "please use io.army.dialect.TableContextSQLContext.appendTable(TableMeta<?>,@Nullable  String)");
     }

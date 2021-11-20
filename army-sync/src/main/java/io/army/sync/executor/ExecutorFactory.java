@@ -10,9 +10,9 @@ public interface ExecutorFactory {
      */
     ServerMeta serverMeta();
 
-    MetaExecutor createMetaExecutor() throws Exception;
+    MetaExecutor createMetaExecutor();
 
-    StmtExecutor createSqlExecutor() throws Exception;
+    StmtExecutor createSqlExecutor();
 
 
 }

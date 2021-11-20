@@ -3,80 +3,54 @@ package io.army.sync;
 import io.army.*;
 import io.army.cache.DomainUpdateAdvice;
 import io.army.cache.SessionCache;
-import io.army.cache.UniqueKey;
 import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.meta.UniqueFieldMeta;
 import io.army.session.FactoryMode;
 import io.army.tx.*;
 import io.army.util.CriteriaUtils;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSession {
+final class SessionImpl extends AbstractRmSession implements Session {
 
-    private final InnerSessionFactory sessionFactory;
+    private final SessionFactoryImpl sessionFactory;
 
     private final boolean currentSession;
 
     private final SessionCache sessionCache;
 
-    private final ConnInitParam connInitParam;
-
     private final boolean readonly;
-
-    private final FactoryMode factoryMode;
 
     private Transaction transaction;
 
     private boolean closed;
 
-    SessionImpl(InnerSessionFactory sessionFactory, Connection connection
-            , SessionFactoryImpl.SessionBuilderImpl builder) throws SessionException {
-        super(sessionFactory, connection);
+    SessionImpl(SessionFactoryImpl sessionFactory, SessionFactoryImpl.SessionBuilderImpl builder) {
+        super(sessionFactory, sessionFactory.executorFactory.createSqlExecutor());
 
         this.sessionFactory = sessionFactory;
         this.currentSession = builder.currentSession();
-        this.connInitParam = createConnInitParam(connection, builder.resetConnection());
         this.readonly = builder.readOnly();
         if (sessionFactory.supportSessionCache()) {
-            this.sessionCache = sessionFactory.sessionCacheFactory().createSessionCache(this);
+            this.sessionCache = sessionFactory.createSessionCache(this);
         } else {
             this.sessionCache = null;
         }
-        this.factoryMode = sessionFactory.shardingMode();
     }
 
-    @Nullable
-    private ConnInitParam createConnInitParam(Connection conn, boolean resetConnection) {
-        try {
-            ConnInitParam initParam;
-            if (resetConnection) {
-                initParam = new ConnInitParam(
-                        conn.getTransactionIsolation()
-                        , conn.getAutoCommit()
-                        , conn.isReadOnly());
-            } else {
-                initParam = null;
-            }
-            return initParam;
-        } catch (SQLException e) {
-            throw new CreateSessionException(ErrorCode.SESSION_CREATE_ERROR, e, "connection query occur error.");
-        }
-
-    }
 
     @Override
-    public final SessionFactory sessionFactory() {
+    public SessionFactory sessionFactory() {
         return this.sessionFactory;
     }
 
     @Override
-    public final boolean readonly() {
+    public boolean readonly() {
         return this.readonly || (this.transaction != null && this.transaction.readOnly());
     }
 
@@ -107,49 +81,31 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
         return actualReturn;
     }
 
-    @Nullable
-    @Override
-    public <T extends IDomain> T getByUnique(TableMeta<T> tableMeta, List<String> propNameList
-            , List<Object> valueList, Visible visible) {
-        final UniqueKey uniqueKey = new UniqueKey(propNameList, valueList);
-        T actualReturn;
-        if (this.sessionCache != null) {
-            // try obtain cache
-            actualReturn = this.sessionCache.getDomain(tableMeta, uniqueKey);
-            if (actualReturn != null) {
-                return actualReturn;
-            }
-        }
-        // 1. create sql
-        Select select = CriteriaUtils.createSelectDomainByUnique(tableMeta, propNameList, valueList);
-        // 2. execute sql
-        T domain = this.selectOne(select, tableMeta.javaType(), visible);
-        if (domain != null && this.sessionCache != null) {
-            // 3. cache
-            actualReturn = this.sessionCache.cacheDomainByUnique(tableMeta, domain, uniqueKey);
-        } else {
-            actualReturn = domain;
-        }
-        return actualReturn;
-    }
 
     @Override
-    public Map<String, Object> selectOneAsUnmodifiableMap(Select select) {
+    public <R extends IDomain, F> R getByUnique(TableMeta<R> tableMeta, UniqueFieldMeta<R, F> fieldMeta, F fieldValue
+            , final Visible visible) {
+        return null;
+    }
+
+
+    @Override
+    public Map<String, Object> selectOneAsMap(Select select) {
         return null;
     }
 
     @Override
-    public Map<String, Object> selectOneAsUnmodifiableMap(Select select, Visible visible) {
+    public Map<String, Object> selectOneAsMap(Select select, Visible visible) {
         return null;
     }
 
     @Override
-    public List<Map<String, Object>> selectAsUnmodifiableMap(Select select) {
+    public List<Map<String, Object>> selectAsMap(Select select) {
         return null;
     }
 
     @Override
-    public List<Map<String, Object>> selectAsUnmodifiableMap(Select select, Visible visible) {
+    public List<Map<String, Object>> selectAsMap(Select select, Visible visible) {
         return null;
     }
 
@@ -286,11 +242,15 @@ final class SessionImpl extends AbstractGenericSyncRmSession implements InnerSes
 
     /*################################## blow package method ##################################*/
 
+    @Override
+    GenericTransaction obtainTransaction() {
+        return null;
+    }
 
     /**
      * invoke by {@link Transaction#close()}
      */
-    @Override
+
     public void closeTransaction(GenericSyncTransaction transaction) {
         if (this.transaction != transaction) {
             throw new IllegalArgumentException("transaction not match,can't close.");

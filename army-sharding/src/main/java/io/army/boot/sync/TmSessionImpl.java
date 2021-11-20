@@ -83,12 +83,12 @@ final class TmSessionImpl implements InnerTmSession {
     }
 
     @Override
-    public Map<String, Object> selectOneAsUnmodifiableMap(Select select) {
+    public Map<String, Object> selectOneAsMap(Select select) {
         return null;
     }
 
     @Override
-    public Map<String, Object> selectOneAsUnmodifiableMap(Select select, Visible visible) {
+    public Map<String, Object> selectOneAsMap(Select select, Visible visible) {
         return null;
     }
 
@@ -98,12 +98,12 @@ final class TmSessionImpl implements InnerTmSession {
     }
 
     @Override
-    public List<Map<String, Object>> selectAsUnmodifiableMap(Select select) {
+    public List<Map<String, Object>> selectAsMap(Select select) {
         return null;
     }
 
     @Override
-    public List<Map<String, Object>> selectAsUnmodifiableMap(Select select, Visible visible) {
+    public List<Map<String, Object>> selectAsMap(Select select, Visible visible) {
         return null;
     }
 
@@ -240,7 +240,7 @@ final class TmSessionImpl implements InnerTmSession {
     public final <R> List<R> select(Select select, Class<R> resultClass, final Visible visible) {
         assertSessionActive();
 
-        InnerSelect innerSelect = (InnerSelect) select;
+        _Select innerSelect = (_Select) select;
         //1. try find route
         RouteWrapper routeWrapper = DatabaseRouteUtils.findRouteForSelect(innerSelect);
 
@@ -269,8 +269,8 @@ final class TmSessionImpl implements InnerTmSession {
     public final void valueInsert(Insert insert, final Visible visible) {
         assertSessionActive();
 
-        if (insert instanceof InnerValuesInsert) {
-            InnerValuesInsert valuesInsert = (InnerValuesInsert) insert;
+        if (insert instanceof _ValuesInsert) {
+            _ValuesInsert valuesInsert = (_ValuesInsert) insert;
             if (valuesInsert.wrapperList().size() == 1) {
                 processSingleInsert(valuesInsert, visible);
             } else {
@@ -287,7 +287,7 @@ final class TmSessionImpl implements InnerTmSession {
     public final int subQueryInsert(Insert insert, final Visible visible) {
         assertSessionActive();
 
-        InnerSubQueryInsert subQueryInsert = (InnerSubQueryInsert) insert;
+        _SubQueryInsert subQueryInsert = (_SubQueryInsert) insert;
         int routeIndex = subQueryInsert.databaseIndex();
         if (routeIndex < 0) {
             throw new NotFoundRouteException("SubQuery insert ,TableMeta[%s] not found data source route."
@@ -301,7 +301,7 @@ final class TmSessionImpl implements InnerTmSession {
     public final long largeSubQueryInsert(Insert insert, Visible visible) {
         assertSessionActive();
 
-        InnerSubQueryInsert subQueryInsert = (InnerSubQueryInsert) insert;
+        _SubQueryInsert subQueryInsert = (_SubQueryInsert) insert;
         int routeIndex = subQueryInsert.databaseIndex();
         if (routeIndex < 0) {
             throw new NotFoundRouteException("SubQuery insert ,TableMeta[%s] not found data source route."
@@ -315,10 +315,10 @@ final class TmSessionImpl implements InnerTmSession {
     public final <R> List<R> returningInsert(Insert insert, Class<R> resultClass, final Visible visible) {
         assertSessionActive();
 
-        if (!(insert instanceof InnerReturningInsert)) {
+        if (!(insert instanceof _ReturningInsert)) {
             throw new IllegalArgumentException(String.format("Inert[%s] isn't supported by returningInsert.", insert));
         }
-        InnerReturningInsert returningInsert = (InnerReturningInsert) insert;
+        _ReturningInsert returningInsert = (_ReturningInsert) insert;
         DomainWrapper wrapper = returningInsert.wrapper();
         TableMeta<?> tableMeta = returningInsert.tableMeta();
         // 1. create required properties value.
@@ -344,11 +344,11 @@ final class TmSessionImpl implements InnerTmSession {
         assertSessionActive();
 
         int updateRow;
-        if (update instanceof InnerSingleDML) {
-            updateRow = obtainRmSession(processSingleDml((InnerSingleDML) update))
+        if (update instanceof _SingleDml) {
+            updateRow = obtainRmSession(processSingleDml((_SingleDml) update))
                     .update(update, visible);
-        } else if (update instanceof InnerMultiDML) {
-            updateRow = obtainRmSession(processMultiDml((InnerMultiDML) update))
+        } else if (update instanceof _MultiDML) {
+            updateRow = obtainRmSession(processMultiDml((_MultiDML) update))
                     .update(update, visible);
         } else {
             throw new IllegalArgumentException(String.format("Update[%s] isn't supported by update method.", update));
@@ -361,11 +361,11 @@ final class TmSessionImpl implements InnerTmSession {
         assertSessionActive();
 
         long updateRow;
-        if (update instanceof InnerSingleDML) {
-            updateRow = obtainRmSession(processSingleDml((InnerSingleDML) update))
+        if (update instanceof _SingleDml) {
+            updateRow = obtainRmSession(processSingleDml((_SingleDml) update))
                     .largeUpdate(update, visible);
-        } else if (update instanceof InnerMultiDML) {
-            updateRow = obtainRmSession(processMultiDml((InnerMultiDML) update))
+        } else if (update instanceof _MultiDML) {
+            updateRow = obtainRmSession(processMultiDml((_MultiDML) update))
                     .largeUpdate(update, visible);
         } else {
             throw new IllegalArgumentException(String.format("Update[%s] isn't supported by update largeUpdate."
@@ -379,11 +379,11 @@ final class TmSessionImpl implements InnerTmSession {
         assertSessionActive();
 
         List<R> list;
-        if (update instanceof InnerSingleDML) {
-            list = obtainRmSession(processSingleDml((InnerSingleDML) update))
+        if (update instanceof _SingleDml) {
+            list = obtainRmSession(processSingleDml((_SingleDml) update))
                     .returningUpdate(update, resultClass, visible);
-        } else if (update instanceof InnerMultiDML) {
-            list = obtainRmSession(processMultiDml((InnerMultiDML) update))
+        } else if (update instanceof _MultiDML) {
+            list = obtainRmSession(processMultiDml((_MultiDML) update))
                     .returningUpdate(update, resultClass, visible);
         } else {
             throw new IllegalArgumentException(String.format("Update[%s] isn't supported by returningUpdate method."
@@ -397,11 +397,11 @@ final class TmSessionImpl implements InnerTmSession {
         assertSessionActive();
 
         int deleteRow;
-        if (delete instanceof InnerSingleDML) {
-            deleteRow = obtainRmSession(processSingleDml((InnerSingleDML) delete))
+        if (delete instanceof _SingleDml) {
+            deleteRow = obtainRmSession(processSingleDml((_SingleDml) delete))
                     .delete(delete, visible);
-        } else if (delete instanceof InnerMultiDML) {
-            deleteRow = obtainRmSession(processMultiDml((InnerMultiDML) delete))
+        } else if (delete instanceof _MultiDML) {
+            deleteRow = obtainRmSession(processMultiDml((_MultiDML) delete))
                     .delete(delete, visible);
         } else {
             throw new IllegalArgumentException(String.format("Delete[%s] isn't supported by delete method.", delete));
@@ -414,11 +414,11 @@ final class TmSessionImpl implements InnerTmSession {
         assertSessionActive();
 
         long deleteRow;
-        if (delete instanceof InnerSingleDML) {
-            deleteRow = obtainRmSession(processSingleDml((InnerSingleDML) delete))
+        if (delete instanceof _SingleDml) {
+            deleteRow = obtainRmSession(processSingleDml((_SingleDml) delete))
                     .largeDelete(delete, visible);
-        } else if (delete instanceof InnerMultiDML) {
-            deleteRow = obtainRmSession(processMultiDml((InnerMultiDML) delete))
+        } else if (delete instanceof _MultiDML) {
+            deleteRow = obtainRmSession(processMultiDml((_MultiDML) delete))
                     .largeDelete(delete, visible);
         } else {
             throw new IllegalArgumentException(String.format("Delete[%s] isn't supported by largeDelete method."
@@ -432,11 +432,11 @@ final class TmSessionImpl implements InnerTmSession {
         assertSessionActive();
 
         List<R> list;
-        if (delete instanceof InnerSingleDML) {
-            list = obtainRmSession(processSingleDml((InnerSingleDML) delete))
+        if (delete instanceof _SingleDml) {
+            list = obtainRmSession(processSingleDml((_SingleDml) delete))
                     .returningDelete(delete, resultClass, visible);
-        } else if (delete instanceof InnerMultiDML) {
-            list = obtainRmSession(processMultiDml((InnerMultiDML) delete))
+        } else if (delete instanceof _MultiDML) {
+            list = obtainRmSession(processMultiDml((_MultiDML) delete))
                     .returningDelete(delete, resultClass, visible);
         } else {
             throw new IllegalArgumentException(String.format("Delete[%s] isn't supported by returningDelete method."
@@ -494,9 +494,9 @@ final class TmSessionImpl implements InnerTmSession {
      * Single insert is High frequency operation, this method is for avoid create redundant object.
      * </p>
      *
-     * @see #processMultiInsert(InnerValuesInsert, Visible)
+     * @see #processMultiInsert(_ValuesInsert, Visible)
      */
-    private void processSingleInsert(final InnerValuesInsert insert, final Visible visible) {
+    private void processSingleInsert(final _ValuesInsert insert, final Visible visible) {
 
         final List<DomainWrapper> wrapperList = insert.wrapperList();
         Assert.isTrue(wrapperList.size() == 1, "wrapperList size isn't 1 .");
@@ -521,9 +521,9 @@ final class TmSessionImpl implements InnerTmSession {
     /**
      * process multi insert.
      *
-     * @see #processSingleInsert(InnerValuesInsert, Visible)
+     * @see #processSingleInsert(_ValuesInsert, Visible)
      */
-    private void processMultiInsert(final InnerValuesInsert insert, final Visible visible) {
+    private void processMultiInsert(final _ValuesInsert insert, final Visible visible) {
 
         final DomainValuesGenerator generator = this.sessionFactory.domainValuesGenerator();
         final TableMeta<?> tableMeta = insert.tableMeta();
@@ -558,7 +558,7 @@ final class TmSessionImpl implements InnerTmSession {
         }
     }
 
-    private int processSingleDml(InnerSingleDML singleDML) throws NotFoundRouteException {
+    private int processSingleDml(_SingleDml singleDML) throws NotFoundRouteException {
         //1. try find route
         RouteWrapper routeWrapper = DatabaseRouteUtils.findRouteForSingleDML(singleDML);
         if (routeWrapper == null) {
@@ -576,7 +576,7 @@ final class TmSessionImpl implements InnerTmSession {
         return routeIndex;
     }
 
-    private int processMultiDml(InnerMultiDML multiDML) throws NotFoundRouteException {
+    private int processMultiDml(_MultiDML multiDML) throws NotFoundRouteException {
         //1. try find route
         RouteWrapper routeWrapper = DatabaseRouteUtils.findRouteForMultiDML(multiDML);
         if (routeWrapper == null) {

@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.ConstantExpression;
-import io.army.criteria.SQLContext;
 import io.army.criteria.Selection;
+import io.army.criteria.SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
@@ -79,7 +79,7 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
     }
 
     @Override
-    public final void appendSQL(SQLContext context) {
+    public final void appendSQL(SqlContext context) {
         context.appendConstant(this.paramMeta.mappingMeta(), this.constant);
     }
 

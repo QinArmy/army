@@ -259,7 +259,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
             // set columnResult to object
             beanWrapper.set(selection.alias(), columnResult);
         }
-        if (beanWrapper.getPropertyValue(selectionList.get(0).alias()) == null) {
+        if (beanWrapper.get(selectionList.get(0).alias()) == null) {
             // first selection must be Primary Field
             throw createDomainFirstReturningNoIdException();
         }
@@ -387,7 +387,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
 
 
     private Object keyExtractor(ObjectWrapper beanWrapper, Selection primaryFieldSelection) {
-        Object idValue = beanWrapper.getPropertyValue(primaryFieldSelection.alias());
+        Object idValue = beanWrapper.get(primaryFieldSelection.alias());
         if (idValue == null) {
             throw new IllegalStateException(String.format(
                     "%s not found property[%s] value.", beanWrapper, primaryFieldSelection.alias()));

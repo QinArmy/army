@@ -50,7 +50,7 @@ final class SimpleTypeWrapper implements ObjectWrapper {
     }
 
     @Override
-    public boolean isReadableProperty(String propertyName) {
+    public boolean isReadable(String propertyName) {
         return this.propName.equals(propertyName);
     }
 
@@ -63,7 +63,7 @@ final class SimpleTypeWrapper implements ObjectWrapper {
     }
 
     @Override
-    public Object getPropertyValue(String propertyName) throws BeansException {
+    public Object get(String propertyName) throws BeansException {
         if (this.propName.equals(propertyName)) {
             return this.value;
         } else {

@@ -7,6 +7,7 @@ import io.army.SessionFactoryException;
 import io.army.advice.sync.DomainAdvice;
 import io.army.beans.ArmyBean;
 import io.army.boot.DomainValuesGenerator;
+import io.army.cache.SessionCache;
 import io.army.cache.SessionCacheFactory;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.criteria.NotFoundRouteException;
@@ -29,7 +30,7 @@ import java.util.Objects;
  */
 class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactory {
 
-    private final ExecutorFactory executorFactory;
+    final ExecutorFactory executorFactory;
 
     private final Dialect dialect;
 
@@ -99,11 +100,6 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
     }
 
     @Override
-    public boolean supportsSavePoints() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public Map<TableMeta<?>, DomainAdvice> domainInterceptorMap() {
         return this.domainAdviceMap;
     }
@@ -119,12 +115,6 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
         return this.currentSessionContext.hasCurrentSession();
     }
 
-
-    /*################################## blow GenericRmSessionFactory method ##################################*/
-
-
-    /*################################## blow InnerGenericRmSessionFactory method ##################################*/
-
     @Override
     public Dialect dialect() {
         return this.dialect;
@@ -135,7 +125,6 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
     public DomainValuesGenerator domainValuesGenerator() {
         return this.domainValuesGenerator;
     }
-
 
     @Override
     public boolean factoryClosed() {
@@ -153,7 +142,13 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
 
     @Override
     public String toString() {
-        return "SessionFactory[" + this.name + "]";
+        return String.format("%s[%s]", SessionFactory.class.getName(), this.name);
+    }
+
+    /*################################## blow package method ##################################*/
+
+    final SessionCache createSessionCache(Session session) {
+        return this.sessionCacheFactory.createSessionCache(session);
     }
 
 
@@ -188,13 +183,16 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
 
     final class SessionBuilderImpl implements SessionFactory.SessionBuilder {
 
+        private final SessionFactoryImpl sessionFactory;
+
         private boolean currentSession;
 
         private boolean readOnly = SessionFactoryImpl.this.readOnly;
 
         private boolean resetConnection = true;
 
-        private SessionBuilderImpl() {
+        private SessionBuilderImpl(SessionFactoryImpl sessionFactory) {
+            this.sessionFactory = sessionFactory;
         }
 
         @Override

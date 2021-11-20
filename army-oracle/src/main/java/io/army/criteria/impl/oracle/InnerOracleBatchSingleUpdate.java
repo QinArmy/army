@@ -1,10 +1,10 @@
 package io.army.criteria.impl.oracle;
 
 import io.army.criteria.impl.inner.DeveloperForbid;
-import io.army.criteria.impl.inner.InnerBatchDML;
+import io.army.criteria.impl.inner._BatchDML;
 
 @DeveloperForbid
-public interface InnerOracleBatchSingleUpdate extends InnerOracleSingleUpdate, InnerBatchDML {
+public interface InnerOracleBatchSingleUpdate extends InnerOracleSingleUpdate, _BatchDML {
 
 
 }

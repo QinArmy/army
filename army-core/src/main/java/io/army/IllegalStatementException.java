@@ -1,6 +1,6 @@
 package io.army;
 
-import io.army.criteria.SQLStatement;
+import io.army.criteria.Statement;
 
 /**
  * Exception thrown when <ul>
@@ -13,7 +13,7 @@ import io.army.criteria.SQLStatement;
  */
 public class IllegalStatementException extends ArmyRuntimeException {
 
-    public IllegalStatementException(SQLStatement sqlStatement) {
+    public IllegalStatementException(Statement sqlStatement) {
         super(ErrorCode.ILLEGAL_STATEMENT, "SQLStatement[%s] is illegal,deny execute", sqlStatement);
     }
 

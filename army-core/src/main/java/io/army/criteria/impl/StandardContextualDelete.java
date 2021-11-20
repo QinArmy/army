@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Delete;
 import io.army.criteria.IPredicate;
-import io.army.criteria.impl.inner.InnerStandardDelete;
+import io.army.criteria.impl.inner._StandardDelete;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -17,7 +17,7 @@ import java.util.function.Function;
 
 final class StandardContextualDelete<C> extends AbstractSQLDebug implements Delete
         , Delete.SingleDeleteSpec<C>, Delete.SingleDeleteTableRouteSpec<C>, Delete.SingleDeleteWhereAndSpec<C>
-        , InnerStandardDelete {
+        , _StandardDelete {
 
     static <C> StandardContextualDelete<C> buildDelete(C criteria) {
         return new StandardContextualDelete<>(criteria);

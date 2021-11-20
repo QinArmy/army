@@ -1,6 +1,6 @@
 package io.army.session;
 
-import io.army.DdlMode;
+import io.army.ArmyException;
 import io.army.criteria.NotFoundRouteException;
 import io.army.domain.IDomain;
 import io.army.env.ArmyEnvironment;
@@ -14,6 +14,7 @@ import io.army.sharding.TableRoute;
 
 import java.time.ZoneOffset;
 import java.util.Map;
+import java.util.function.Function;
 
 public interface GenericSessionFactory {
 
@@ -52,7 +53,8 @@ public interface GenericSessionFactory {
 
     boolean allowSpanSharding();
 
+    Function<ArmyException, RuntimeException> exceptionFunction();
+
     TableRoute tableRoute(TableMeta<?> tableMeta) throws NotFoundRouteException;
 
-    DdlMode ddlMode();
 }

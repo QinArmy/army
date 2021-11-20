@@ -5,7 +5,7 @@ import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Update;
-import io.army.criteria.impl.inner.InnerStandardBatchUpdate;
+import io.army.criteria.impl.inner._StandardBatchUpdate;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -22,7 +22,7 @@ import java.util.function.Predicate;
 final class StandardContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
         implements Update, Update.BatchUpdateSpec<T, C>, Update.BatchSetSpec<T, C>
         , Update.BatchWhereSpec<T, C>, Update.BatchTableRouteSpec<T, C>, Update.BatchWhereAndSpec<T, C>
-        , Update.BatchNamedParamSpec<C>, Update.UpdateSpec, InnerStandardBatchUpdate {
+        , Update.BatchNamedParamSpec<C>, Update.UpdateSpec, _StandardBatchUpdate {
 
     static <T extends IDomain, C> StandardContextualBatchUpdate<T, C> build(TableMeta<T> tableMeta, C criteria) {
         Assert.isTrue(!tableMeta.immutable(), () -> String.format("TableMeta[%s] immutable", tableMeta));
@@ -86,7 +86,7 @@ final class StandardContextualBatchUpdate<T extends IDomain, C> extends Abstract
     @Override
     public final <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> target, F value) {
         this.targetFieldList.add(target);
-        this.valueExpList.add(Sqls.param(value, target));
+        this.valueExpList.add(SQLs.param(value, target));
         return this;
     }
 

@@ -4,8 +4,8 @@ import io.army.UnKnownTypeException;
 import io.army.criteria.*;
 import io.army.criteria.impl.CriteriaCounselor;
 import io.army.criteria.impl.inner.*;
-import io.army.util.Assert;
 import io.army.stmt.SimpleStmt;
+import io.army.util.Assert;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,7 +17,7 @@ import java.util.Map;
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
  */
-public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
+public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialect {
 
     public AbstractDQL(Dialect dialect) {
         super(dialect);
@@ -30,8 +30,8 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
         Assert.isTrue(select.prepared(), "select not prepared");
 
         SimpleStmt sqlWrapper;
-        if (select instanceof InnerStandardComposeQuery) {
-            InnerStandardComposeQuery composeSelect = (InnerStandardComposeQuery) select;
+        if (select instanceof _StandardComposeQuery) {
+            _StandardComposeQuery composeSelect = (_StandardComposeQuery) select;
             //1. assert composeQuery legal
             CriteriaCounselor.assertStandardComposeSelect(composeSelect);
             // 2. create compose select context
@@ -42,8 +42,8 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             partQuery(composeSelect, context);
             sqlWrapper = context.build();
 
-        } else if (select instanceof InnerSpecialComposeQuery) {
-            InnerSpecialComposeQuery composeSelect = (InnerSpecialComposeQuery) select;
+        } else if (select instanceof _SpecialComposeQuery) {
+            _SpecialComposeQuery composeSelect = (_SpecialComposeQuery) select;
             //1. assert composeQuery legal
             assertSpecialComposeSelect(composeSelect);
             // 2. create compose select context
@@ -54,22 +54,22 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             partQuery(composeSelect, context);
             sqlWrapper = context.build();
 
-        } else if (select instanceof InnerStandardSelect) {
-            InnerStandardSelect standardSelect = (InnerStandardSelect) select;
+        } else if (select instanceof _StandardSelect) {
+            _StandardSelect standardSelect = (_StandardSelect) select;
             //1. assert standardSubQuery legal
             CriteriaCounselor.assertStandardSelect(standardSelect);
             // 2. create standard select context
-            SelectContext context = SelectContextImpl.build(standardSelect,this.dialect, visible);
+            SelectContext context = SelectContextImpl.build(standardSelect, this.dialect, visible);
             // 3. parse standard select
             standardSelect(standardSelect, context);
             sqlWrapper = context.build();
 
-        } else if (select instanceof InnerSpecialSelect) {
-            InnerSpecialSelect specialSelect = (InnerSpecialSelect) select;
+        } else if (select instanceof _SpecialSelect) {
+            _SpecialSelect specialSelect = (_SpecialSelect) select;
             //1. assert specialSubQuery legal
             assertSpecialSelect(specialSelect);
             // 2. create special context
-            SelectContext context = SelectContextImpl.build(specialSelect,this.dialect, visible);
+            SelectContext context = SelectContextImpl.build(specialSelect, this.dialect, visible);
             // 3. parse special select
             specialSelect(specialSelect, context);
             sqlWrapper = context.build();
@@ -82,11 +82,11 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
 
 
     @Override
-    public final void select(Select select, SQLContext original) {
+    public final void select(Select select, SqlContext original) {
         Assert.isTrue(select.prepared(), "select not prepared");
 
-        if (select instanceof InnerStandardComposeQuery) {
-            InnerStandardComposeQuery composeSelect = (InnerStandardComposeQuery) select;
+        if (select instanceof _StandardComposeQuery) {
+            _StandardComposeQuery composeSelect = (_StandardComposeQuery) select;
             //1. assert composeQuery legal
             CriteriaCounselor.assertStandardComposeSelect(composeSelect);
             // 2. adapt context
@@ -95,8 +95,8 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             composeSelect.appendSQL(context);
             // 4. append part query ,eg: order by ,limit
             partQuery(composeSelect, context);
-        } else if (select instanceof InnerSpecialComposeQuery) {
-            InnerSpecialComposeQuery composeSelect = (InnerSpecialComposeQuery) select;
+        } else if (select instanceof _SpecialComposeQuery) {
+            _SpecialComposeQuery composeSelect = (_SpecialComposeQuery) select;
             //1. assert composeQuery legal
             assertSpecialComposeSelect(composeSelect);
             // 2. adapt context
@@ -105,8 +105,8 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             composeSelect.appendSQL(context);
             // 4. append part query ,eg: order by ,limit
             partQuery(composeSelect, context);
-        } else if (select instanceof InnerStandardSelect) {
-            InnerStandardSelect standardSelect = (InnerStandardSelect) select;
+        } else if (select instanceof _StandardSelect) {
+            _StandardSelect standardSelect = (_StandardSelect) select;
             //1. assert standardSubQuery legal
             CriteriaCounselor.assertStandardSelect(standardSelect);
             // 2. adapt context
@@ -114,8 +114,8 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             // 3. parse standard select
             standardSelect(standardSelect, context);
 
-        } else if (select instanceof InnerSpecialSelect) {
-            InnerSpecialSelect specialSelect = (InnerSpecialSelect) select;
+        } else if (select instanceof _SpecialSelect) {
+            _SpecialSelect specialSelect = (_SpecialSelect) select;
             //1. assert specialSubQuery legal
             assertSpecialSelect(specialSelect);
             // 2. adapt context
@@ -130,10 +130,10 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
 
 
     @Override
-    public final void subQuery(SubQuery subQuery, SQLContext original) {
+    public final void subQuery(SubQuery subQuery, SqlContext original) {
         Assert.isTrue(subQuery.prepared(), "PartQuery not prepared");
-        if (subQuery instanceof InnerStandardComposeQuery) {
-            InnerStandardComposeQuery composeQuery = (InnerStandardComposeQuery) subQuery;
+        if (subQuery instanceof _StandardComposeQuery) {
+            _StandardComposeQuery composeQuery = (_StandardComposeQuery) subQuery;
             //1. assert composeQuery legal
             CriteriaCounselor.assertStandardComposeSubQuery(composeQuery);
             // 2. adapt context
@@ -142,8 +142,8 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             composeQuery.appendSQL(context);
             // 4. append part query ,eg: order by ,limit
             partQuery(composeQuery, context);
-        } else if (subQuery instanceof InnerSpecialComposeQuery) {
-            InnerSpecialComposeQuery composeQuery = (InnerSpecialComposeQuery) subQuery;
+        } else if (subQuery instanceof _SpecialComposeQuery) {
+            _SpecialComposeQuery composeQuery = (_SpecialComposeQuery) subQuery;
             //1. assert composeQuery legal
             assertSpecialComposeSubQuery(composeQuery);
             // 2. adapt context
@@ -152,8 +152,8 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             composeQuery.appendSQL(context);
             // 4. append part query ,eg: order by ,limit
             partQuery(composeQuery, context);
-        } else if (subQuery instanceof InnerStandardSubQuery) {
-            InnerStandardSubQuery standardSubQuery = (InnerStandardSubQuery) subQuery;
+        } else if (subQuery instanceof _StandardSubQuery) {
+            _StandardSubQuery standardSubQuery = (_StandardSubQuery) subQuery;
             //1. assert standardSubQuery legal
             CriteriaCounselor.assertStandardSubQuery(standardSubQuery);
             // 2. adapt context
@@ -161,8 +161,8 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
             // 3. parse standard sub query
             standardSubQuery(standardSubQuery, context);
 
-        } else if (subQuery instanceof InnerSpecialSubQuery) {
-            InnerSpecialSubQuery specialSubQuery = (InnerSpecialSubQuery) subQuery;
+        } else if (subQuery instanceof _SpecialSubQuery) {
+            _SpecialSubQuery specialSubQuery = (_SpecialSubQuery) subQuery;
             //1. assert specialSubQuery legal
             assertSpecialSubQuery(specialSubQuery);
             // 2. adapt context
@@ -180,42 +180,42 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
     /*################################## blow protected template method ##################################*/
 
 
-    protected void assertSpecialComposeSelect(InnerSpecialComposeQuery select) {
+    protected void assertSpecialComposeSelect(_SpecialComposeQuery select) {
         throw new UnsupportedOperationException();
     }
 
-    protected void assertSpecialSubQuery(InnerSpecialSubQuery subQuery) {
+    protected void assertSpecialSubQuery(_SpecialSubQuery subQuery) {
         throw new UnsupportedOperationException();
     }
 
-    protected void assertSpecialComposeSubQuery(InnerSpecialComposeQuery composeQuery) {
+    protected void assertSpecialComposeSubQuery(_SpecialComposeQuery composeQuery) {
         throw new UnsupportedOperationException();
     }
 
-    protected void assertSpecialSelect(InnerSpecialSelect select) {
+    protected void assertSpecialSelect(_SpecialSelect select) {
         throw new UnsupportedOperationException();
     }
 
-    protected void specialPartSelect(InnerSpecialComposeQuery select, TableContextSQLContext context) {
+    protected void specialPartSelect(_SpecialComposeQuery select, TableContextSQLContext context) {
         throw new UnsupportedOperationException();
     }
 
-    protected void specialSelect(InnerSpecialSelect specialSelect, TableContextSQLContext context) {
+    protected void specialSelect(_SpecialSelect specialSelect, TableContextSQLContext context) {
         throw new UnsupportedOperationException();
     }
 
-    protected void specialSubQuery(InnerSpecialSubQuery composeQuery, TableContextSQLContext context) {
+    protected void specialSubQuery(_SpecialSubQuery composeQuery, TableContextSQLContext context) {
         throw new UnsupportedOperationException();
     }
 
-    protected final TableContextSQLContext adaptContext(InnerGeneralQuery query, SQLContext context) {
+    protected final TableContextSQLContext adaptContext(_GeneralQuery query, SqlContext context) {
         TableContextSQLContext adaptedContext;
-        if (query instanceof InnerComposeQuery) {
+        if (query instanceof _ComposeQuery) {
             adaptedContext = (TableContextSQLContext) context;
-        } else if (query instanceof InnerSelect) {
-            adaptedContext = SelectContextImpl.build((TableContextSQLContext) context, (InnerSelect) query);
-        } else if (query instanceof InnerSubQuery) {
-            adaptedContext = SubQueryContextImpl.build((TableContextSQLContext) context, (InnerSubQuery) query);
+        } else if (query instanceof _Select) {
+            adaptedContext = SelectContextImpl.build((TableContextSQLContext) context, (_Select) query);
+        } else if (query instanceof _SubQuery) {
+            adaptedContext = SubQueryContextImpl.build((TableContextSQLContext) context, (_SubQuery) query);
         } else {
             throw new UnKnownTypeException(query);
         }
@@ -320,7 +320,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
     /*################################## blow private method ##################################*/
 
 
-    private void standardSelect(InnerStandardSelect select, TableContextSQLContext context) {
+    private void standardSelect(_StandardSelect select, TableContextSQLContext context) {
         genericQuery(select, context);
         // lock clause
         LockMode lockMode = select.lockMode();
@@ -330,7 +330,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
 
     }
 
-    private void standardSubQuery(InnerStandardSubQuery subQuery, TableContextSQLContext context) {
+    private void standardSubQuery(_StandardSubQuery subQuery, TableContextSQLContext context) {
         SQLBuilder builder = context.sqlBuilder();
 
         final boolean standardSubQueryInsert = context.parentContext() instanceof SubQueryInsertContext;
@@ -349,7 +349,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
     }
 
 
-    private void genericQuery(InnerQuery query, TableContextSQLContext context) {
+    private void genericQuery(_Query query, TableContextSQLContext context) {
         // select clause
         selectClause(query.modifierList(), context);
         // select list clause
@@ -369,7 +369,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DQL {
     }
 
 
-    private void partQuery(InnerComposeQuery query, TableContextSQLContext context) {
+    private void partQuery(_ComposeQuery query, TableContextSQLContext context) {
         // order by clause
         orderByClause(query.orderByList(), context);
         // limit clause

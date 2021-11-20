@@ -60,7 +60,7 @@ final class ComposeSelectContext implements SelectContext {
     }
 
     @Override
-    public DQL dql() {
+    public DqlDialect dql() {
         return this.dialect;
     }
 

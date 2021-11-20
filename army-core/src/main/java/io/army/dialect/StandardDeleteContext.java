@@ -2,7 +2,7 @@ package io.army.dialect;
 
 import io.army.criteria.FieldPredicate;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner.InnerStandardDelete;
+import io.army.criteria.impl.inner._StandardDelete;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
@@ -11,9 +11,9 @@ import io.army.stmt.SimpleStmt;
 
 class StandardDeleteContext extends AbstractStandardDomainContext implements DeleteContext {
 
-    static StandardDeleteContext build(InnerStandardDelete delete, Dialect dialect, Visible visible) {
+    static StandardDeleteContext build(_StandardDelete delete, Dialect dialect, Visible visible) {
         TableMeta<?> tableMeta = delete.tableMeta();
-        String primarySuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(delete,dialect);
+        String primarySuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(delete, dialect);
 
         TableContext tableContext = TableContext.singleTable(delete, false, primarySuffix);
         return new StandardDeleteContext(dialect, visible
@@ -22,10 +22,10 @@ class StandardDeleteContext extends AbstractStandardDomainContext implements Del
                 , tableMeta);
     }
 
-    static StandardDeleteContext buildParent(InnerStandardDelete delete, Dialect dialect, final Visible visible) {
+    static StandardDeleteContext buildParent(_StandardDelete delete, Dialect dialect, final Visible visible) {
         ParentTableMeta<?> parentMeta = ((ChildTableMeta<?>) delete.tableMeta()).parentMeta();
 
-        String primarySuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(delete,dialect);
+        String primarySuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(delete, dialect);
 
         TableContext tableContext = TableContext.singleTable(delete, true, primarySuffix);
         return new StandardDeleteContext(dialect, visible
@@ -34,7 +34,7 @@ class StandardDeleteContext extends AbstractStandardDomainContext implements Del
                 , parentMeta);
     }
 
-    static StandardDeleteContext buildChild(InnerStandardDelete delete, Dialect dialect, final Visible visible) {
+    static StandardDeleteContext buildChild(_StandardDelete delete, Dialect dialect, final Visible visible) {
         ChildTableMeta<?> childMeta = (ChildTableMeta<?>) delete.tableMeta();
         String primarySuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(delete, dialect);
 

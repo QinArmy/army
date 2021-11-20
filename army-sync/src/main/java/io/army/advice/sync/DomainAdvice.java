@@ -1,6 +1,5 @@
 package io.army.advice.sync;
 
-import io.army.advice.GenericDomainAdvice;
 import io.army.beans.ReadonlyWrapper;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -8,7 +7,7 @@ import io.army.sync.ProxySession;
 
 import java.util.List;
 
-public interface DomainAdvice extends GenericDomainAdvice {
+public interface DomainAdvice {
 
 
     void beforeInsert(TableMeta<?> tableMeta, ReadonlyWrapper wrapper, ProxySession session);

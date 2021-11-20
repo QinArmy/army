@@ -40,10 +40,10 @@ abstract class AbstractSQLS {
     }
 
     /**
-     * @see Sqls#batchSingleUpdate(TableMeta)
-     * @see Sqls#batchSingleUpdate(TableMeta, Object)
-     * @see Sqls#batchSingleDelete()
-     * @see Sqls#batchSingleDelete(Object)
+     * @see SQLs#batchSingleUpdate(TableMeta)
+     * @see SQLs#batchSingleUpdate(TableMeta, Object)
+     * @see SQLs#batchSingleDelete()
+     * @see SQLs#batchSingleDelete(Object)
      */
     public static <E> NamedParamExpression<E> namedParam(String name, ParamMeta paramMeta) {
         return NamedParamExpressionImpl.build(name, paramMeta);
@@ -272,7 +272,7 @@ abstract class AbstractSQLS {
         }
 
         @Override
-        protected void afterSpace(SQLContext context) {
+        protected void afterSpace(SqlContext context) {
             context.sqlBuilder()
                     .append(" DEFAULT");
         }

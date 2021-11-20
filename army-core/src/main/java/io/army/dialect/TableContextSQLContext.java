@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.criteria.SQLContext;
+import io.army.criteria.SqlContext;
 import io.army.criteria.Visible;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
@@ -10,7 +10,7 @@ import io.army.stmt.SimpleStmt;
 
 import java.util.List;
 
-public interface TableContextSQLContext extends SQLContext {
+public interface TableContextSQLContext extends SqlContext {
 
     /**
      * <p>
@@ -19,7 +19,7 @@ public interface TableContextSQLContext extends SQLContext {
      *
      * @param tableMeta {@link TableMeta} that will be append table name .
      */
-    void appendTable(TableMeta<?> tableMeta,@Nullable  String tableAlias);
+    void appendTable(TableMeta<?> tableMeta, @Nullable String tableAlias);
 
     Visible visible();
 

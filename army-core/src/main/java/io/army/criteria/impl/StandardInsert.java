@@ -4,7 +4,7 @@ import io.army.beans.DomainWrapper;
 import io.army.beans.ObjectAccessorFactory;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Insert;
-import io.army.criteria.impl.inner.InnerStandardInsert;
+import io.army.criteria.impl.inner._StandardInsert;
 import io.army.domain.IDomain;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
@@ -18,9 +18,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
- class StandardInsert<T extends IDomain> extends AbstractSQLDebug implements Insert
-         , Insert.InsertSpec, Insert.InsertIntoSpec<T>, Insert.InsertValuesSpec<T>, Insert.InsertOptionSpec<T>
-         , InnerStandardInsert {
+class StandardInsert<T extends IDomain> extends AbstractSQLDebug implements Insert
+        , Insert.InsertSpec, Insert.InsertIntoSpec<T>, Insert.InsertValuesSpec<T>, Insert.InsertOptionSpec<T>
+        , _StandardInsert {
 
     static <T extends IDomain> StandardInsert<T> build(TableMeta<T> tableMeta) {
         return new StandardInsert<>(tableMeta);

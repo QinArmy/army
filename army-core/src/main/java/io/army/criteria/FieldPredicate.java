@@ -12,9 +12,9 @@ import java.util.Collection;
 public interface FieldPredicate extends IPredicate, FieldExpression<Boolean> {
 
     @Override
-    void appendSQL(SQLContext context);
+    void appendSQL(SqlContext context);
 
-    void appendPredicate(SQLContext context);
+    void appendPredicate(SqlContext context);
 
     @Override
     boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas);

@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public interface Insert extends SQLStatement, SQLDebug {
+public interface Insert extends Statement, SQLDebug {
 
 
     /*################################## blow interfaces  ##################################*/
@@ -50,6 +50,7 @@ public interface Insert extends SQLStatement, SQLDebug {
 
     /*################################## blow subQuery insert interfaces ##################################*/
 
+    @Deprecated
     interface SubQueryTargetFieldSpec<T extends IDomain, C> extends InsertSQLSpec {
 
         SimpleTableRouteSpec<C> insertInto(List<FieldMeta<T, ?>> fieldMetaList);
@@ -57,6 +58,7 @@ public interface Insert extends SQLStatement, SQLDebug {
         SimpleTableRouteSpec<C> insertInto(Function<C, List<FieldMeta<T, ?>>> function);
     }
 
+    @Deprecated
     interface SimpleTableRouteSpec<C> extends SubQueryValueSpec<C> {
 
         SubQueryValueSpec<C> route(int databaseIndex, int tableIndex);
@@ -64,6 +66,7 @@ public interface Insert extends SQLStatement, SQLDebug {
         SubQueryValueSpec<C> route(int tableIndex);
     }
 
+    @Deprecated
     interface SubQueryValueSpec<C> extends InsertSQLSpec {
 
         InsertSpec subQuery(Function<C, SubQuery> function);
@@ -71,6 +74,7 @@ public interface Insert extends SQLStatement, SQLDebug {
 
     /*################################## blow child sub query insert interfaces ##################################*/
 
+    @Deprecated
     interface ParentSubQueryTargetFieldSpec<T extends IDomain, C> extends InsertSQLSpec {
 
         ParentTableRouteSpec<T, C> parentFields(List<FieldMeta<T, ?>> fieldMetaList);
@@ -79,6 +83,7 @@ public interface Insert extends SQLStatement, SQLDebug {
 
     }
 
+    @Deprecated
     interface ParentTableRouteSpec<T extends IDomain, C> extends ParentSubQuerySpec<T, C> {
 
         ParentSubQuerySpec<T, C> route(int databaseIndex, int tableIndex);
@@ -86,6 +91,7 @@ public interface Insert extends SQLStatement, SQLDebug {
         ParentSubQuerySpec<T, C> route(int tableIndex);
     }
 
+    @Deprecated
     interface ChildSubQueryTargetFieldSpec<T extends IDomain, C> extends InsertSQLSpec {
 
         ChildSubQuerySpec<C> childFields(List<FieldMeta<T, ?>> fieldMetaList);
@@ -94,11 +100,13 @@ public interface Insert extends SQLStatement, SQLDebug {
 
     }
 
+    @Deprecated
     interface ParentSubQuerySpec<T extends IDomain, C> extends InsertSQLSpec {
 
         ChildSubQueryTargetFieldSpec<T, C> parentSubQuery(Function<C, SubQuery> function);
     }
 
+    @Deprecated
     interface ChildSubQuerySpec<C> extends InsertSQLSpec {
 
         InsertSpec childSubQuery(Function<C, SubQuery> function);

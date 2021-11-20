@@ -2,10 +2,10 @@ package io.army.boot.reactive;
 
 import io.army.DomainUpdateException;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.InnerMultiDML;
-import io.army.criteria.impl.inner.InnerSQL;
-import io.army.criteria.impl.inner.InnerSelect;
-import io.army.criteria.impl.inner.InnerSingleDML;
+import io.army.criteria.impl.inner._MultiDML;
+import io.army.criteria.impl.inner._Select;
+import io.army.criteria.impl.inner._SingleDml;
+import io.army.criteria.impl.inner._Statement;
 import io.army.dialect.Dialect;
 import io.army.meta.TableMeta;
 import io.army.reactive.GenericReactiveApiSessionFactory;
@@ -65,7 +65,7 @@ abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F ext
 
     @Override
     public final <R> Flux<Optional<R>> selectOptional(Select select, Class<R> columnClass, Visible visible) {
-        List<SelectPart> selectPartList = ((InnerSelect) select).selectPartList();
+        List<SelectPart> selectPartList = ((_Select) select).selectPartList();
         if (selectPartList.size() != 1 || !(selectPartList.get(0) instanceof Selection)) {
             return Flux.error(new IllegalArgumentException(
                     "select isn't single column query,please use select method."));
@@ -96,7 +96,7 @@ abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F ext
                 //5. execute insert after advice (concat empty)
                 .concatWith(Mono.defer(() -> this.invokeInsertAfterAdvice(insert)))
                 //6. clear insert
-                .doOnTerminate(((InnerSQL) insert)::clear)
+                .doOnTerminate(((_Statement) insert)::clear)
                 // if error convert exception for application developer
                 .onErrorMap(this::composedExceptionFunction);
 
@@ -138,7 +138,7 @@ abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F ext
                 //5. execute update after advice (concat empty)
                 .concatWith(Mono.defer(() -> this.invokeUpdateAfterAdvice(update)))
                 //6. clear update
-                .doOnTerminate(((InnerSQL) update)::clear)
+                .doOnTerminate(((_Statement) update)::clear)
                 // if error convert exception for application developer
                 .onErrorMap(this::composedExceptionFunction);
     }
@@ -168,7 +168,7 @@ abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F ext
                 //5. execute delete after advice (concat empty)
                 .concatWith(Mono.defer(() -> this.invokeDeleteAfterAdvice(delete)))
                 //6. clear delete
-                .doOnTerminate(((InnerSQL) delete)::clear)
+                .doOnTerminate(((_Statement) delete)::clear)
                 // if error convert exception for application developer
                 .onErrorMap(this::composedExceptionFunction);
     }
@@ -257,7 +257,7 @@ abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F ext
                 .concatWith(Mono.defer(() -> this.invokeInsertAfterAdvice(insert)))
                 .elementAt(0)
                 //6. clear insert
-                .doOnTerminate(((InnerSQL) insert)::clear)
+                .doOnTerminate(((_Statement) insert)::clear)
                 // if error convert exception for application developer
                 .onErrorMap(this::composedExceptionFunction);
     }
@@ -281,7 +281,7 @@ abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F ext
                 .concatWith(Mono.defer(() -> this.invokeUpdateAfterAdvice(update)))
                 .elementAt(0)
                 //6. clear update
-                .doOnTerminate(((InnerSQL) update)::clear)
+                .doOnTerminate(((_Statement) update)::clear)
                 // if error convert exception for application developer
                 .onErrorMap(this::composedExceptionFunction);
     }
@@ -305,23 +305,23 @@ abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F ext
                 .concatWith(Mono.defer(() -> this.invokeDeleteAfterAdvice(delete)))
                 .elementAt(0)
                 //6. clear delete
-                .doOnTerminate(((InnerSQL) delete)::clear)
+                .doOnTerminate(((_Statement) delete)::clear)
                 // if error convert exception for application developer
                 .onErrorMap(this::composedExceptionFunction);
     }
 
 
-    private Mono<Void> invokeDomainAdvice(SQLStatement sqlStatement
+    private Mono<Void> invokeDomainAdvice(Statement sqlStatement
             , Function<TableMeta<?>, Mono<Void>> function) {
         if (!(this.sessionFactory instanceof InnerReactiveApiSessionFactory)) {
             return Mono.empty();
         }
         Mono<Void> mono;
-        if (sqlStatement instanceof InnerSingleDML) {
-            mono = doInvokeInsertBeforeAdvice(((InnerSingleDML) sqlStatement).tableMeta());
-        } else if (sqlStatement instanceof InnerMultiDML) {
+        if (sqlStatement instanceof _SingleDml) {
+            mono = doInvokeInsertBeforeAdvice(((_SingleDml) sqlStatement).tableMeta());
+        } else if (sqlStatement instanceof _MultiDML) {
             // 1. iterate tableWrapperList
-            mono = Flux.fromIterable(((InnerMultiDML) sqlStatement).tableWrapperList())
+            mono = Flux.fromIterable(((_MultiDML) sqlStatement).tableWrapperList())
                     // 2. filter TableMeta
                     .filter(tableWrapper -> tableWrapper.tableAble() instanceof TableMeta)
                     // map tableWrapper to table meta
@@ -336,17 +336,17 @@ abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F ext
         return mono;
     }
 
-    private Mono<Void> invokeDomainThrowsAdvice(SQLStatement sqlStatement
+    private Mono<Void> invokeDomainThrowsAdvice(Statement sqlStatement
             , Throwable ex, BiFunction<TableMeta<?>, Throwable, Mono<Void>> function) {
         if (!(this.sessionFactory instanceof InnerReactiveApiSessionFactory)) {
             return Mono.empty();
         }
         Mono<Void> mono;
-        if (sqlStatement instanceof InnerSingleDML) {
-            mono = doInvokeInsertBeforeAdvice(((InnerSingleDML) sqlStatement).tableMeta());
-        } else if (sqlStatement instanceof InnerMultiDML) {
+        if (sqlStatement instanceof _SingleDml) {
+            mono = doInvokeInsertBeforeAdvice(((_SingleDml) sqlStatement).tableMeta());
+        } else if (sqlStatement instanceof _MultiDML) {
             // 1. iterate tableWrapperList
-            mono = Flux.fromIterable(((InnerMultiDML) sqlStatement).tableWrapperList())
+            mono = Flux.fromIterable(((_MultiDML) sqlStatement).tableWrapperList())
                     // 2. filter TableMeta
                     .filter(tableWrapper -> tableWrapper.tableAble() instanceof TableMeta)
                     // map tableWrapper to table meta

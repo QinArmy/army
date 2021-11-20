@@ -2,8 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.InnerStandardSubQuery;
 import io.army.criteria.impl.inner.TableWrapper;
+import io.army.criteria.impl.inner._StandardSubQuery;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
@@ -15,7 +15,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 abstract class StandardSubQueries<Q extends Query, C> extends AbstractStandardQuery<Q, C>
-        implements InnerStandardSubQuery, SubQuery {
+        implements _StandardSubQuery, SubQuery {
 
     static <C> StandardSubQueries<SubQuery, C> build(C criteria) {
         if (criteria != CriteriaContextHolder.getContext()) {
@@ -47,7 +47,7 @@ abstract class StandardSubQueries<Q extends Query, C> extends AbstractStandardQu
         return new ScalarSubQueryAdaptor<>(javaType, mappingType, criteria);
     }
 
-    static void assertStandardSubQuery(InnerStandardSubQuery subQuery) {
+    static void assertStandardSubQuery(_StandardSubQuery subQuery) {
         if (subQuery instanceof ScalarSubQuery) {
             if (!(subQuery instanceof ScalarSubQueryAdaptor)) {
                 throw new IllegalArgumentException(String.format("%s isn't instance of %s", subQuery
@@ -108,7 +108,7 @@ abstract class StandardSubQueries<Q extends Query, C> extends AbstractStandardQu
 
 
     @Override
-    public final void appendSQL(SQLContext context) {
+    public final void appendSQL(SqlContext context) {
         context.dql().subQuery(this, context);
     }
 
@@ -192,7 +192,7 @@ abstract class StandardSubQueries<Q extends Query, C> extends AbstractStandardQu
             , SelectPartSpec<ScalarSubQuery<E>, C>, FromSpec<ScalarSubQuery<E>, C>
             , TableRouteJoinSpec<ScalarSubQuery<E>, C>, WhereAndSpec<ScalarSubQuery<E>, C>
             , HavingSpec<ScalarSubQuery<E>, C>, ScalarSubQuery.ScalarSelectionSpec<E, C>
-            , InnerStandardSubQuery {
+            , _StandardSubQuery {
 
 
         private final MappingType mappingType;
@@ -212,7 +212,7 @@ abstract class StandardSubQueries<Q extends Query, C> extends AbstractStandardQu
         /*################################## blow AbstractExpression method ##################################*/
 
         @Override
-        public final void appendSQL(SQLContext context) {
+        public final void appendSQL(SqlContext context) {
             this.actualSelect.appendSQL(context);
         }
 

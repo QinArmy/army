@@ -25,7 +25,7 @@ final class ExpressionRowImpl<T extends IDomain> implements ExpressionRow<T> {
     }
 
     @Override
-    public void appendSQL(SQLContext context) {
+    public void appendSQL(SqlContext context) {
         SQLBuilder builder = context.sqlBuilder()
                 .append(" ");
         SqlDialect sql = context.dql();
@@ -35,7 +35,7 @@ final class ExpressionRowImpl<T extends IDomain> implements ExpressionRow<T> {
         builder.append("( ");
         int index = 0;
         for (FieldMeta<T, ?> fieldMeta : this.columnList) {
-            if(index > 0){
+            if (index > 0) {
                 builder.append(",");
             }
             builder.append(sql.quoteIfNeed(fieldMeta.fieldName()));

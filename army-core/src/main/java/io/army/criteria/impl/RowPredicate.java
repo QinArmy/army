@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.DualPredicateOperator;
 import io.army.criteria.ExpressionRow;
 import io.army.criteria.RowSubQuery;
-import io.army.criteria.SQLContext;
+import io.army.criteria.SqlContext;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
@@ -25,7 +25,7 @@ final class RowPredicate extends AbstractPredicate {
 
 
     @Override
-    public final void appendSQL(SQLContext context) {
+    public final void appendSQL(SqlContext context) {
         row.appendSQL(context);
         context.sqlBuilder()
                 .append(" ")

@@ -2,10 +2,9 @@ package io.army.dialect;
 
 import io.army.ErrorCode;
 import io.army.criteria.CriteriaException;
-import io.army.criteria.IPredicate;
 import io.army.criteria.TableAble;
-import io.army.criteria.impl.inner.InnerSingleDML;
 import io.army.criteria.impl.inner.TableWrapper;
+import io.army.criteria.impl.inner._SingleDml;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 
@@ -22,7 +21,7 @@ public final class TableContext {
 
     public static final String CHILD_ALIAS_PREFIX = "c_of_";
 
-    public static TableContext singleTable(InnerSingleDML singleTable, boolean parent, String primaryRouteSuffix) {
+    public static TableContext singleTable(_SingleDml singleTable, boolean parent, String primaryRouteSuffix) {
         TableMeta<?> tableMeta = singleTable.tableMeta();
         if (parent) {
             tableMeta = ((ChildTableMeta<?>) tableMeta).parentMeta();

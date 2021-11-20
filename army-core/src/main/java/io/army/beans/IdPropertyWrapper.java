@@ -43,7 +43,7 @@ final class IdPropertyWrapper implements ObjectWrapper {
     }
 
     @Override
-    public boolean isReadableProperty(String propertyName) {
+    public boolean isReadable(String propertyName) {
         return _MetaBridge.ID.equals(propertyName);
     }
 
@@ -57,7 +57,7 @@ final class IdPropertyWrapper implements ObjectWrapper {
     }
 
     @Override
-    public Object getPropertyValue(String propertyName) throws BeansException {
+    public Object get(String propertyName) throws BeansException {
         if (_MetaBridge.ID.equals(propertyName)) {
             return this.id;
         }

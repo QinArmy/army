@@ -4,7 +4,7 @@ import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.Delete;
 import io.army.criteria.IPredicate;
-import io.army.criteria.impl.inner.InnerStandardBatchDelete;
+import io.army.criteria.impl.inner._StandardBatchDelete;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -19,7 +19,7 @@ import java.util.function.Function;
 
 final class StandardContextualBatchDelete<C> implements Delete,
         Delete.BatchSingleDeleteSpec<C>, Delete.BatchSingleDeleteWhereSpec<C>
-        , Delete.BatchSingleDeleteWhereAndSpec<C>, Delete.BatchSingleDeleteNamedParamSpec<C>, Delete.DeleteSpec, InnerStandardBatchDelete {
+        , Delete.BatchSingleDeleteWhereAndSpec<C>, Delete.BatchSingleDeleteNamedParamSpec<C>, Delete.DeleteSpec, _StandardBatchDelete {
 
     static <C> StandardContextualBatchDelete<C> build(C criteria) {
         return new StandardContextualBatchDelete<>(criteria);

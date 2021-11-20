@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.FieldPredicate;
 import io.army.criteria.IPredicate;
-import io.army.criteria.SQLContext;
+import io.army.criteria.SqlContext;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
@@ -33,11 +33,11 @@ class NotPredicateImpl extends AbstractPredicate {
     }
 
     @Override
-    public void appendSQL(SQLContext context) {
+    public void appendSQL(SqlContext context) {
         doAppendSQL(context);
     }
 
-    final void doAppendSQL(SQLContext context) {
+    final void doAppendSQL(SqlContext context) {
         context.sqlBuilder()
                 .append(" ")
                 .append(UnaryOperator.NOT.rendered());
@@ -65,13 +65,13 @@ class NotPredicateImpl extends AbstractPredicate {
 
 
         @Override
-        public void appendSQL(SQLContext context) {
+        public void appendSQL(SqlContext context) {
             context.appendFieldPredicate(this);
         }
 
 
         @Override
-        public void appendPredicate(SQLContext context) {
+        public void appendPredicate(SqlContext context) {
             this.doAppendSQL(context);
         }
 

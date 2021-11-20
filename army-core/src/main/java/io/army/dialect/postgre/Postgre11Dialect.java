@@ -57,7 +57,7 @@ class Postgre11Dialect extends AbstractDialect {
     }
 
     @Override
-    protected DQL createDQL() {
+    protected DqlDialect createDQL() {
         return new Postgre11DQL(this);
     }
 

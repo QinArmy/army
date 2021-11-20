@@ -62,7 +62,7 @@ final class TripeWrapperImpl implements TripeWrapper {
     }
 
     @Override
-    public boolean isReadableProperty(String propertyName) {
+    public boolean isReadable(String propertyName) {
         return FIRST.equals(propertyName) || SECOND.equals(propertyName) || THIRD.equals(propertyName);
     }
 
@@ -89,7 +89,7 @@ final class TripeWrapperImpl implements TripeWrapper {
     }
 
     @Override
-    public Object getPropertyValue(String propertyName) throws BeansException {
+    public Object get(String propertyName) throws BeansException {
         Object value;
         if (FIRST.equals(propertyName)) {
             value = this.first;

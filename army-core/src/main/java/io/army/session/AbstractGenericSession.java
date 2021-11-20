@@ -6,8 +6,8 @@ import io.army.cache.DomainUpdateAdvice;
 import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Update;
-import io.army.criteria.impl.Sqls;
-import io.army.criteria.impl.inner.InnerStandardUpdate;
+import io.army.criteria.impl.SQLs;
+import io.army.criteria.impl.inner._StandardUpdate;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
@@ -18,11 +18,11 @@ import java.util.Set;
 
 public abstract class AbstractGenericSession implements GenericSession {
 
-    public static boolean cacheDomainUpdate(InnerStandardUpdate update) {
+    public static boolean cacheDomainUpdate(_StandardUpdate update) {
         return update instanceof AbstractGenericSession.CacheDomainUpdate;
     }
 
-    protected static final class CacheDomainUpdate implements Update, InnerStandardUpdate {
+    protected static final class CacheDomainUpdate implements Update, _StandardUpdate {
 
         public static CacheDomainUpdate build(DomainUpdateAdvice advice) {
 
@@ -34,11 +34,11 @@ public abstract class AbstractGenericSession implements GenericSession {
 
             for (FieldMeta<?, ?> fieldMeta : set) {
                 targetList.add(fieldMeta);
-                Object value = readonlyWrapper.getPropertyValue(fieldMeta.fieldName());
+                Object value = readonlyWrapper.get(fieldMeta.fieldName());
                 if (value == null) {
-                    valueList.add(Sqls.asNull(fieldMeta.mappingMeta()));
+                    valueList.add(SQLs.asNull(fieldMeta.mappingMeta()));
                 } else {
-                    valueList.add(Sqls.param(value, fieldMeta));
+                    valueList.add(SQLs.param(value, fieldMeta));
                 }
             }
             return new CacheDomainUpdate(advice, targetList, valueList);

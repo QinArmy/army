@@ -85,8 +85,8 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
         Assert.state(generatorMeta != null
                 , () -> String.format("GeneratorMeta of FieldMeta[%s] error.", fieldMeta));
         String dependencyName = generatorMeta.dependFieldName();
-        if (StringUtils.hasText(dependencyName) && (!domainWrapper.isReadableProperty(dependencyName)
-                || domainWrapper.getPropertyValue(dependencyName) == null)) {
+        if (StringUtils.hasText(dependencyName) && (!domainWrapper.isReadable(dependencyName)
+                || domainWrapper.get(dependencyName) == null)) {
 
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR
                     , "Domain[%s].%s is null,FieldGenerator can't work."

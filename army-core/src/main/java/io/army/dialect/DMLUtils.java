@@ -6,9 +6,9 @@ import io.army.beans.DomainWrapper;
 import io.army.beans.ReadonlyWrapper;
 import io.army.boot.DomainValuesGenerator;
 import io.army.criteria.*;
-import io.army.criteria.impl.Sqls;
-import io.army.criteria.impl.inner.InnerStandardBatchInsert;
-import io.army.criteria.impl.inner.InnerUpdate;
+import io.army.criteria.impl.SQLs;
+import io.army.criteria.impl.inner._StandardBatchInsert;
+import io.army.criteria.impl.inner._Update;
 import io.army.generator.FieldGenerator;
 import io.army.generator.PreFieldGenerator;
 import io.army.meta.*;
@@ -131,7 +131,7 @@ abstract class DMLUtils {
         return Collections.unmodifiableList(parentPredicates);
     }
 
-    static void assertUpdateSetAndWhereClause(InnerUpdate update) {
+    static void assertUpdateSetAndWhereClause(_Update update) {
         List<? extends SetTargetPart> targetFieldList = update.targetFieldList();
         if (CollectionUtils.isEmpty(targetFieldList)) {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "update must have set clause.");
@@ -215,13 +215,13 @@ abstract class DMLUtils {
         final ZonedDateTime now = ZonedDateTime.now(dialect.zoneId());
 
         if (updateTimeField.javaType() == LocalDateTime.class) {
-            Sqls.param(now.toLocalDateTime(), updateTimeField.mappingMeta())
+            SQLs.param(now.toLocalDateTime(), updateTimeField.mappingMeta())
                     .appendSQL(context);
         } else if (updateTimeField.javaType() == ZonedDateTime.class) {
             if (!dialect.supportZone()) {
                 throw new MetaException("dialec[%s]t not supported zone.", dialect.database());
             }
-            Sqls.param(now, updateTimeField.mappingMeta())
+            SQLs.param(now, updateTimeField.mappingMeta())
                     .appendSQL(context);
         } else {
             throw new MetaException("createTime or updateTime only support LocalDateTime or ZonedDateTime,please check.");
@@ -376,7 +376,7 @@ abstract class DMLUtils {
         valueBuilder.append(" )");
     }
 
-    static Stmt createBatchInsertWrapper(InnerStandardBatchInsert insert
+    static Stmt createBatchInsertWrapper(_StandardBatchInsert insert
             , final Stmt stmt, GenericRmSessionFactory sessionFactory) {
 
         final List<DomainWrapper> domainWrapperList = insert.wrapperList();
@@ -518,7 +518,7 @@ abstract class DMLUtils {
         List<ParamValue> paramValueList = new ArrayList<>(placeHolder.size());
         for (ParamValue paramValue : placeHolder) {
             if (paramValue instanceof NamedParamExpression) {
-                Object value = readonlyWrapper.getPropertyValue(((NamedParamExpression<?>) paramValue).name());
+                Object value = readonlyWrapper.get(((NamedParamExpression<?>) paramValue).name());
                 paramValueList.add(ParamValue.build(paramValue.paramMeta(), value));
             } else {
                 paramValueList.add(paramValue);
@@ -537,7 +537,7 @@ abstract class DMLUtils {
         for (ParamValue placeHolder : placeHolderList) {
             if (placeHolder instanceof FieldParamValue) {
                 FieldMeta<?, ?> fieldMeta = ((FieldParamValue) placeHolder).paramMeta();
-                Object value = beanWrapper.getPropertyValue(fieldMeta.fieldName());
+                Object value = beanWrapper.get(fieldMeta.fieldName());
                 paramValueList.add(ParamValue.build(fieldMeta, value));
             } else {
                 paramValueList.add(placeHolder);

@@ -8,6 +8,6 @@ package io.army.criteria;
  */
 public interface SortPart {
 
-    void appendSortPart(SQLContext context);
+    void appendSortPart(SqlContext context);
 
 }

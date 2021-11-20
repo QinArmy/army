@@ -1,7 +1,7 @@
 package io.army.dialect;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.Sqls;
+import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
@@ -33,7 +33,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     }
 
 
-    protected void tableOnlyModifier(SQLContext context) {
+    protected void tableOnlyModifier(SqlContext context) {
 
     }
 
@@ -92,7 +92,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     protected final void appendVisiblePredicate(List<? extends TableWrapper> tableWrapperList, TableContextSQLContext context
             , boolean hasPredicate) {
         // append visible predicates
-        final TableMeta<?> dual = Sqls.dual();
+        final TableMeta<?> dual = SQLs.dual();
         Map<String, ChildTableMeta<?>> childMap = new HashMap<>();
         TableWrapper preTableWrapper = null;
         for (TableWrapper tableWrapper : tableWrapperList) {

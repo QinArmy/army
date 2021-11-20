@@ -22,5 +22,7 @@ public interface StmtExecutor extends Executor {
      */
     int update(Stmt stmt, int txTimeout);
 
+    <T> List<T> select(Stmt stmt, int txTimeout, Class<T> resultClass);
+
 
 }

@@ -2,8 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.InnerQuery;
 import io.army.criteria.impl.inner.TableWrapper;
+import io.army.criteria.impl.inner._Query;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -14,7 +14,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implements Query, InnerQuery {
+abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implements Query, _Query {
 
     protected final C criteria;
 

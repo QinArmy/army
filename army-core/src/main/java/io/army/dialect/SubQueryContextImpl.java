@@ -1,21 +1,21 @@
 package io.army.dialect;
 
 import io.army.criteria.CriteriaException;
-import io.army.criteria.impl.inner.InnerSubQuery;
+import io.army.criteria.impl.inner._SubQuery;
 import io.army.meta.FieldMeta;
 import io.army.stmt.SimpleStmt;
 
 
 class SubQueryContextImpl extends AbstractQueryStatementContext implements SubQueryContext {
 
-    static SubQueryContextImpl build(TableContextSQLContext parentContext, InnerSubQuery subQuery) {
+    static SubQueryContextImpl build(TableContextSQLContext parentContext, _SubQuery subQuery) {
         TableContext tableContext = TableContext.multiTable(subQuery.tableWrapperList()
                 , parentContext.primaryRouteSuffix());
         return new SubQueryContextImpl(parentContext, tableContext, subQuery);
     }
 
     private SubQueryContextImpl(TableContextSQLContext parentContext, TableContext tableContext
-            , InnerSubQuery subQuery) {
+            , _SubQuery subQuery) {
         super(parentContext, tableContext, subQuery);
     }
 

@@ -1,6 +1,10 @@
 package io.army.session;
 
-import io.army.*;
+import io.army.ArmyException;
+import io.army.ArmyKey;
+import io.army.ArmyKeys;
+import io.army.SessionFactoryException;
+import io.army.criteria.impl._TableMetaFactory;
 import io.army.domain.IDomain;
 import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGenerator;
@@ -11,6 +15,7 @@ import io.army.meta.TableMeta;
 import io.army.util.Assert;
 
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,8 +48,6 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory {
 
     protected final boolean allowSpanSharding;
 
-    protected final DdlMode ddlMode;
-
 
     protected AbstractSessionFactory(final FactoryBuilderSupport support) throws SessionFactoryException {
         final String name = Assert.assertHasText(support.name, "factory name required");
@@ -56,18 +59,18 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory {
         this.name = name;
         this.env = env;
         this.schemaMeta = Objects.requireNonNull(support.schemaMeta);
-        this.tableMetaMap = FactoryUtils.scanShema(this.schemaMeta, support.packagesToScan);
+        this.tableMetaMap = scanShema(this.schemaMeta, support.packagesToScan);
 
-        this.tableCountPerDatabase = FactoryUtils.tableCountPerDatabase(support.tableCountPerDatabase);
-        this.exceptionFunction = FactoryUtils.exceptionFunction(support.exceptionFunction);
+        this.tableCountPerDatabase = tableCountPerDatabase(support.tableCountPerDatabase);
+        this.exceptionFunction = exceptionFunction(support.exceptionFunction);
         this.fieldGeneratorMap = Objects.requireNonNull(support.generatorMap);
         this.readOnly = env.getOrDefault(ArmyKeys.readOnly, Boolean.class);
 
         this.supportSessionCache = env.getOrDefault(ArmyKeys.sessionCache, Boolean.class);
         this.allowSpanSharding = this.tableCountPerDatabase > 1 && env.getOrDefault(ArmyKeys.allowSpanSharding, Boolean.class);
-        this.ddlMode = env.getOrDefault(ArmyKeys.ddlMode, DdlMode.class);
 
     }
+
 
     @Override
     public String name() {
@@ -135,11 +138,46 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory {
     }
 
     @Override
-    public final DdlMode ddlMode() {
-        return this.ddlMod;
+    public final Function<ArmyException, RuntimeException> exceptionFunction() {
+        return this.exceptionFunction;
     }
 
     /*################################## blow protected method ##################################*/
+
+
+    /*################################## blow private static method ##################################*/
+
+    private static Function<ArmyException, RuntimeException> exceptionFunction(
+            @Nullable Function<ArmyException, RuntimeException> function) {
+        if (function == null) {
+            function = e -> e;
+        }
+        return function;
+    }
+
+    private static Map<Class<?>, TableMeta<?>> scanShema(SchemaMeta schemaMeta, List<String> packageList) {
+        final Map<Class<?>, TableMeta<?>> tableMetaMap;
+        tableMetaMap = _TableMetaFactory.getTableMetaMap(schemaMeta
+                , Objects.requireNonNull(packageList));
+        if (tableMetaMap.isEmpty()) {
+            String m;
+            if (schemaMeta.defaultSchema()) {
+                m = String.format("Not found any %s for default schema.", TableMeta.class.getName());
+            } else {
+                m = String.format("Not found any %s for %s.", TableMeta.class.getName(), schemaMeta);
+            }
+            throw new SessionFactoryException(m);
+        }
+        return tableMetaMap;
+    }
+
+    private static int tableCountPerDatabase(final int tableCount) {
+        if (tableCount < 1) {
+            String m = String.format("Table count[%s] per database must great than 0 .", tableCount);
+            throw new SessionFactoryException(m);
+        }
+        return tableCount;
+    }
 
 
 }

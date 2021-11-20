@@ -6,9 +6,9 @@ import io.army.criteria.FieldValueEqualPredicate;
 import io.army.criteria.IPredicate;
 import io.army.criteria.SubQuery;
 import io.army.criteria.TableAble;
-import io.army.criteria.impl.inner.InnerSelect;
-import io.army.criteria.impl.inner.InnerSubQuery;
 import io.army.criteria.impl.inner.TableWrapper;
+import io.army.criteria.impl.inner._Select;
+import io.army.criteria.impl.inner._SubQuery;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -64,7 +64,7 @@ public abstract class RouteUtils {
     }
 
     @Nullable
-    protected static RouteWrapper findRouteForSelect(InnerSelect select, boolean dataSource) {
+    protected static RouteWrapper findRouteForSelect(_Select select, boolean dataSource) {
         RouteWrapper routeWrapper;
         routeWrapper = findRouteFromWhereClause(select.tableWrapperList(), select.predicateList(), dataSource);
         if (routeWrapper != null) {
@@ -131,7 +131,7 @@ public abstract class RouteUtils {
 
     @Nullable
     protected static RouteWrapper findRouteFromSubQuery(SubQuery subQuery, final boolean dataSource) {
-        InnerSubQuery innerSubQuery = (InnerSubQuery) subQuery;
+        _SubQuery innerSubQuery = (_SubQuery) subQuery;
         List<? extends TableWrapper> tableWrappers = innerSubQuery.tableWrapperList();
 
         RouteWrapper routeWrapper;

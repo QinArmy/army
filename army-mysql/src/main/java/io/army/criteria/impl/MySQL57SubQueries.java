@@ -74,7 +74,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
     }
 
     @Override
-    public final void appendSQL(SQLContext context) {
+    public final void appendSQL(SqlContext context) {
         context.dql().subQuery(this, context);
     }
 
@@ -174,7 +174,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         /*################################## blow AbstractExpression method ##################################*/
 
         @Override
-        public final void appendSQL(SQLContext context) {
+        public final void appendSQL(SqlContext context) {
             this.actualSelect.appendSQL(context);
         }
 

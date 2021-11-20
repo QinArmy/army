@@ -5,6 +5,7 @@ import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.meta.UniqueFieldMeta;
 import io.army.session.AbstractGenericSession;
 
 import java.util.List;
@@ -20,9 +21,8 @@ abstract class AbstractGenericSyncSession extends AbstractGenericSession impleme
 
     @Nullable
     @Override
-    public final <R extends IDomain> R getByUnique(TableMeta<R> tableMeta, List<String> propNameList
-            , List<Object> valueList) {
-        return this.getByUnique(tableMeta, propNameList, valueList, Visible.ONLY_VISIBLE);
+    public final <R extends IDomain, F> R getByUnique(TableMeta<R> tableMeta, UniqueFieldMeta<R, F> fieldMeta, F fieldValue) {
+        return this.getByUnique(tableMeta, fieldMeta, fieldValue, Visible.ONLY_VISIBLE);
     }
 
     @Nullable
@@ -66,16 +66,6 @@ abstract class AbstractGenericSyncSession extends AbstractGenericSession impleme
         return this.largeUpdate(update, Visible.ONLY_VISIBLE);
     }
 
-    @Override
-    public final int subQueryInsert(Insert insert) {
-        return this.subQueryInsert(insert, Visible.ONLY_VISIBLE);
-    }
-
-
-    @Override
-    public final long subQueryLargeInsert(Insert insert) {
-        return this.largeSubQueryInsert(insert, Visible.ONLY_VISIBLE);
-    }
 
     @Override
     public final <R> List<R> returningInsert(Insert insert, Class<R> resultClass) {

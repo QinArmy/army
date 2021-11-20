@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.InnerStandardQuery;
+import io.army.criteria.impl.inner._StandardQuery;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
@@ -14,7 +14,7 @@ import java.util.function.Predicate;
 
 abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q, C> implements
         Query.SelectPartSpec<Q, C>, Query.FromSpec<Q, C>, Query.TableRouteJoinSpec<Q, C>
-        , Query.WhereAndSpec<Q, C>, Query.HavingSpec<Q, C>, InnerStandardQuery {
+        , Query.WhereAndSpec<Q, C>, Query.HavingSpec<Q, C>, _StandardQuery {
 
     final TableRouteOnSpec<Q, C> tableRouteOnSpec;
 

@@ -85,7 +85,7 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
 
 
     @Override
-    public final DQL dql() {
+    public final DqlDialect dql() {
         return this.dialect;
     }
 
@@ -105,7 +105,6 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
     }
 
 
-
     @Override
     public final TableContextSQLContext parentContext() {
         return this.parentContext;
@@ -113,8 +112,8 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
 
     @Nullable
     @Override
-    public final   TableContext parentTableContext() {
-        return this.parentContext == null ? null :  this.parentContext.tableContext();
+    public final TableContext parentTableContext() {
+        return this.parentContext == null ? null : this.parentContext.tableContext();
     }
 
     /*################################## blow protected final method ##################################*/

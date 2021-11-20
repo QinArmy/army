@@ -304,7 +304,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
                 // set columnResult to object
                 objectWrapper.set(selection.alias(), columnResult);
             }
-            Object idValue = objectWrapper.getPropertyValue(primaryFieldSelection.alias());
+            Object idValue = objectWrapper.get(primaryFieldSelection.alias());
             if (idValue == null) {
                 // first selection must be Primary Field
                 throw createDomainFirstReturningNoIdException();

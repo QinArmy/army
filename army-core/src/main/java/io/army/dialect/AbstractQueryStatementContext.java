@@ -3,24 +3,23 @@ package io.army.dialect;
 import io.army.ErrorCode;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner.InnerQuery;
+import io.army.criteria.impl.inner._Query;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 
 abstract class AbstractQueryStatementContext extends AbstractTableContextSQLContext{
 
-    protected final InnerQuery query;
+    protected final _Query query;
 
 
-
-     AbstractQueryStatementContext(Dialect dialect, Visible visible, TableContext tableContext,InnerQuery query) {
+    AbstractQueryStatementContext(Dialect dialect, Visible visible, TableContext tableContext, _Query query) {
         super(dialect, visible, tableContext);
         this.query = query;
     }
 
-     AbstractQueryStatementContext(TableContextSQLContext original, TableContext tableContext,InnerQuery query) {
+    AbstractQueryStatementContext(TableContextSQLContext original, TableContext tableContext, _Query query) {
         super(original, tableContext);
-         this.query = query;
+        this.query = query;
     }
 
     @Override

@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Insert;
 import io.army.criteria.SubQuery;
-import io.army.criteria.impl.inner.InnerStandardChildSubQueryInsert;
+import io.army.criteria.impl.inner._StandardChildSubQueryInsert;
 import io.army.domain.IDomain;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.function.Function;
 
 final class StandardContextualChildSubQueryInsert<T extends IDomain, C> extends AbstractSQLDebug implements Insert
-        , InnerStandardChildSubQueryInsert, Insert.ParentSubQueryTargetFieldSpec<T, C>, Insert.ParentTableRouteSpec<T, C>
+        , _StandardChildSubQueryInsert, Insert.ParentSubQueryTargetFieldSpec<T, C>, Insert.ParentTableRouteSpec<T, C>
         , Insert.ChildSubQueryTargetFieldSpec<T, C>, Insert.ChildSubQuerySpec<C>, Insert.InsertSpec {
 
     static <T extends IDomain, C> StandardContextualChildSubQueryInsert<T, C> build(

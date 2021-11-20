@@ -6,7 +6,6 @@ import io.army.criteria.TableAble;
 
 import java.util.List;
 
-@DeveloperForbid
 public interface TableWrapper {
 
     TableAble tableAble();

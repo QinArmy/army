@@ -4,7 +4,7 @@ import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
 import io.army.UnKnownTypeException;
 import io.army.criteria.*;
-import io.army.criteria.impl.Sqls;
+import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
@@ -141,7 +141,7 @@ public abstract class DialectUtils {
     }
 
     public static boolean needAppendVisible(List<? extends TableWrapper> tableWrapperList) {
-        final TableMeta<?> dual = Sqls.dual();
+        final TableMeta<?> dual = SQLs.dual();
         boolean need = false;
         for (TableWrapper tableWrapper : tableWrapperList) {
             TableAble tableAble = tableWrapper.tableAble();

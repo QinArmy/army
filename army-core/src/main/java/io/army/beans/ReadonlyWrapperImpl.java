@@ -15,7 +15,7 @@ class ReadonlyWrapperImpl implements ReadonlyWrapper {
     }
 
     @Override
-    public final boolean isReadableProperty(String propertyName) {
+    public final boolean isReadable(String propertyName) {
         return beanWrapper.isReadableProperty(propertyName);
     }
 
@@ -29,7 +29,7 @@ class ReadonlyWrapperImpl implements ReadonlyWrapper {
     }
 
     @Override
-    public final Object getPropertyValue(String propertyName) throws BeansException {
+    public final Object get(String propertyName) throws BeansException {
         try {
             return beanWrapper.getPropertyValue(propertyName);
         } catch (org.springframework.beans.BeansException e) {

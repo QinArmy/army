@@ -5,7 +5,6 @@ import io.army.SessionFactoryException;
 import io.army.datasource.RoutingDataSource;
 import io.army.meta.TableMeta;
 import io.army.session.AbstractSessionFactory;
-import io.army.session.FactoryUtils;
 import io.army.sharding.Route;
 import io.army.sharding.RouteCreateException;
 import io.army.sharding.RouteMetaData;
@@ -20,7 +19,7 @@ import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.Map;
 
-abstract class SyncSessionFactoryUtils extends FactoryUtils {
+abstract class SyncSessionFactoryUtils {
 
     @SuppressWarnings("unchecked")
     static <T extends CommonDataSource> T obtainPrimaryDataSource(final T dataSource) {

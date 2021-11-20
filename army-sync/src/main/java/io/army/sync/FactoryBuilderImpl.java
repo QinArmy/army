@@ -28,7 +28,7 @@ import java.util.function.Function;
 
 final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryBuilder {
 
-    Map<TableMeta<?>, DomainAdvice> domainAdviceMap;
+    Map<TableMeta<?>, DomainAdvice> domainAdviceMap = Collections.emptyMap();
 
     Object dataSource;
 
@@ -60,7 +60,7 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
 
     @Override
     public FactoryBuilder environment(ArmyEnvironment environment) {
-        this.environment = Objects.requireNonNull(environment);
+        this.environment = environment;
         return this;
     }
 
@@ -87,7 +87,7 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
 
     @Override
     public FactoryBuilder domainAdvice(Map<TableMeta<?>, DomainAdvice> domainAdviceMap) {
-        this.domainAdviceMap = domainAdviceMap;
+        this.domainAdviceMap = Objects.requireNonNull(domainAdviceMap);
         return this;
     }
 

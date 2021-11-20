@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.InnerComposeQuery;
-import io.army.criteria.impl.inner.InnerGeneralQuery;
+import io.army.criteria.impl.inner._ComposeQuery;
+import io.army.criteria.impl.inner._GeneralQuery;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,7 +12,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 abstract class AbstractComposeQuery<Q extends Query, C> implements PartQuery, SelfDescribed, Query
-        , Query.QuerySpec<Q>, InnerComposeQuery {
+        , Query.QuerySpec<Q>, _ComposeQuery {
 
 
     final C criteria;
@@ -21,7 +21,7 @@ abstract class AbstractComposeQuery<Q extends Query, C> implements PartQuery, Se
 
     private List<SortPart> orderPartList;
 
-    private final InnerGeneralQuery generalQuery;
+    private final _GeneralQuery generalQuery;
 
     private int offset = -1;
 
@@ -31,7 +31,7 @@ abstract class AbstractComposeQuery<Q extends Query, C> implements PartQuery, Se
 
     AbstractComposeQuery(C criteria, Q query) {
         this.criteria = criteria;
-        this.generalQuery = (InnerGeneralQuery) query;
+        this.generalQuery = (_GeneralQuery) query;
         Map<String, Selection> selectionMap = CriteriaUtils.createSelectionMap(this.generalQuery.selectPartList());
         this.criteriaContext = new CriteriaContextImpl<>(criteria, selectionMap);
         CriteriaContextHolder.setContext(this.criteriaContext);

@@ -7,8 +7,8 @@ import io.army.criteria.Delete;
 import io.army.criteria.Insert;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner.InnerBatchDML;
-import io.army.criteria.impl.inner.InnerSQL;
+import io.army.criteria.impl.inner._BatchDML;
+import io.army.criteria.impl.inner._Statement;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -102,7 +102,7 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
                 //5. execute insert after advice (concat empty)
                 .concatWith(Mono.defer(() -> this.invokeInsertAfterAdvice(insert)))
                 //6. clear insert
-                .doOnTerminate(((InnerSQL) insert)::clear)
+                .doOnTerminate(((_Statement) insert)::clear)
                 // if error convert exception for application developer
                 .onErrorMap(this.sessionFactory.composeExceptionFunction())
                 .then();
@@ -270,7 +270,7 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
                 //5. execute update after advice (concat empty)
                 .concatWith(Mono.defer(() -> this.invokeUpdateAfterAdvice(update)))
                 //6. clear update
-                .doOnTerminate(((InnerSQL) update)::clear)
+                .doOnTerminate(((_Statement) update)::clear)
                 // if error convert exception for application developer
                 .onErrorMap(this.sessionFactory.composeExceptionFunction());
     }
@@ -293,7 +293,7 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
                 //5. execute delete after advice (concat empty)
                 .concatWith(Mono.defer(() -> this.invokeDeleteAfterAdvice(delete)))
                 //6. clear delete
-                .doOnTerminate(((InnerSQL) delete)::clear)
+                .doOnTerminate(((_Statement) delete)::clear)
                 // if error convert exception for application developer
                 .onErrorMap(this.sessionFactory.composeExceptionFunction());
     }
@@ -306,7 +306,7 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
     }
 
     private Mono<Void> assertForValueInsert(Insert insert) {
-        return insert instanceof InnerBatchDML
+        return insert instanceof _BatchDML
                 ? assertForBatch()
                 : this.assertSessionActive(true);
     }

@@ -32,7 +32,7 @@ abstract class SelectionGroups implements SelectionGroup {
     }
 
     @Override
-    public void appendSQL(SQLContext context) {
+    public void appendSQL(SqlContext context) {
         SQLBuilder builder = context.sqlBuilder().append(" ");
         final SqlDialect sql = context.dql();
         final String safeTableAlias = sql.quoteIfNeed(tableAlias());
@@ -78,7 +78,7 @@ abstract class SelectionGroups implements SelectionGroup {
         }
 
         @Override
-        public void appendSQL(SQLContext context) {
+        public void appendSQL(SqlContext context) {
             SQLBuilder builder = context.sqlBuilder().append(" ");
             final SqlDialect sql = context.dql();
             final String safeTableAlias = sql.quoteIfNeed(this.tableAlias);

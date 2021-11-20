@@ -87,7 +87,7 @@ class MySQL57Dialect extends AbstractDialect {
     }
 
     @Override
-    protected DQL createDQL() {
+    protected DqlDialect createDQL() {
         return new MySQL57DQL(this);
     }
 

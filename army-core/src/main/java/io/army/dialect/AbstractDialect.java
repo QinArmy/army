@@ -37,7 +37,7 @@ public abstract class AbstractDialect implements InnerDialect {
 
     private final DmlDialect dml;
 
-    private final DQL dql;
+    private final DqlDialect dql;
 
     private final TCL tcl;
 
@@ -156,13 +156,13 @@ public abstract class AbstractDialect implements InnerDialect {
     }
 
     @Override
-    public final void select(Select select, SQLContext original) {
+    public final void select(Select select, SqlContext original) {
         this.dql.select(select, original);
     }
 
 
     @Override
-    public final void subQuery(SubQuery subQuery, SQLContext original) {
+    public final void subQuery(SubQuery subQuery, SqlContext original) {
         this.dql.subQuery(subQuery, original);
     }
 
@@ -208,7 +208,7 @@ public abstract class AbstractDialect implements InnerDialect {
 
     protected abstract DmlDialect createDML();
 
-    protected abstract DQL createDQL();
+    protected abstract DqlDialect createDQL();
 
     protected abstract TCL createTCL();
 

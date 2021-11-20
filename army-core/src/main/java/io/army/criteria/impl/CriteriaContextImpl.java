@@ -210,7 +210,7 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
         }
 
         @Override
-        public void appendSQL(SQLContext context) {
+        public void appendSQL(SqlContext context) {
             context.sqlBuilder()
                     .append(" ")
                     .append(context.dql().quoteIfNeed(this.selection.alias()));

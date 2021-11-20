@@ -112,14 +112,7 @@ final class RmSessionImpl implements InnerRmSession {
         return this.selectOne(select, tableMeta.javaType(), visible);
     }
 
-    @Override
-    public final <R extends IDomain> R getByUnique(TableMeta<R> tableMeta, List<String> propNameList
-            , List<Object> valueList, final Visible visible) {
-        // 1. create sql
-        Select select = CriteriaUtils.createSelectDomainByUnique(tableMeta, propNameList, valueList);
-        // 2. execute sql
-        return this.selectOne(select, tableMeta.javaType(), visible);
-    }
+
 
     @Override
     public final void valueInsert(Insert insert, @Nullable Set<Integer> domainIndexSet, Visible visible) {
@@ -158,12 +151,12 @@ final class RmSessionImpl implements InnerRmSession {
     }
 
     @Override
-    public Map<String, Object> selectOneAsUnmodifiableMap(Select select) {
+    public Map<String, Object> selectOneAsMap(Select select) {
         return null;
     }
 
     @Override
-    public Map<String, Object> selectOneAsUnmodifiableMap(Select select, Visible visible) {
+    public Map<String, Object> selectOneAsMap(Select select, Visible visible) {
         return null;
     }
 
@@ -178,12 +171,12 @@ final class RmSessionImpl implements InnerRmSession {
     }
 
     @Override
-    public List<Map<String, Object>> selectAsUnmodifiableMap(Select select) {
+    public List<Map<String, Object>> selectAsMap(Select select) {
         return null;
     }
 
     @Override
-    public List<Map<String, Object>> selectAsUnmodifiableMap(Select select, Visible visible) {
+    public List<Map<String, Object>> selectAsMap(Select select, Visible visible) {
         return null;
     }
 

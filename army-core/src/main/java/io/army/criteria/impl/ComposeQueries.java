@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.InnerStandardComposeQuery;
-import io.army.dialect.DQL;
+import io.army.criteria.impl.inner._StandardComposeQuery;
+import io.army.dialect.DqlDialect;
 import io.army.dialect.SQLBuilder;
 import io.army.util.Assert;
 
@@ -12,7 +12,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 abstract class ComposeQueries<Q extends Query, C> extends AbstractComposeQuery<Q, C> implements
-        Query.UnionSpec<Q, C>, InnerStandardComposeQuery {
+        Query.UnionSpec<Q, C>, _StandardComposeQuery {
 
     static <Q extends Query, C> UnionSpec<Q, C> brackets(C criteria, Q enclosedQuery) {
         return new BracketsQuery<>(criteria, enclosedQuery);
@@ -147,7 +147,7 @@ abstract class ComposeQueries<Q extends Query, C> extends AbstractComposeQuery<Q
         }
 
         @Override
-        public void appendSQL(SQLContext context) {
+        public void appendSQL(SqlContext context) {
             SQLBuilder builder = context.sqlBuilder()
                     .append(" (");
             if (this.enclosedQuery instanceof Select) {
@@ -183,8 +183,8 @@ abstract class ComposeQueries<Q extends Query, C> extends AbstractComposeQuery<Q
         }
 
         @Override
-        public void appendSQL(SQLContext context) {
-            DQL dql = context.dql();
+        public void appendSQL(SqlContext context) {
+            DqlDialect dql = context.dql();
 
             if (this.leftQuery instanceof Select) {
                 dql.select((Select) this.leftQuery, context);

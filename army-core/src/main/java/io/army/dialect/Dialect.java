@@ -5,7 +5,7 @@ import io.army.stmt.Stmt;
 /**
  * A common interface to all dialect of dialect.
  */
-public interface Dialect extends DDL, DmlDialect, DQL, TCL {
+public interface Dialect extends DDL, DmlDialect, DqlDialect, TCL {
 
     String showSQL(Stmt stmt);
 

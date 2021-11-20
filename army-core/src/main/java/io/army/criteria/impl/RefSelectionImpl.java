@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.SQLContext;
 import io.army.criteria.Selection;
+import io.army.criteria.SqlContext;
 import io.army.dialect.NotSupportDialectException;
 import io.army.dialect.SqlDialect;
 import io.army.mapping.MappingType;
@@ -39,7 +39,7 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
     }
 
     @Override
-    public final void appendSQL(SQLContext context) {
+    public final void appendSQL(SqlContext context) {
         SqlDialect sql = context.dql();
 
         context.sqlBuilder()

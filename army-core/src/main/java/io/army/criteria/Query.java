@@ -13,7 +13,7 @@ import java.util.function.Predicate;
  * @see SubQuery
  * @see Update
  */
-public interface Query extends SQLStatement {
+public interface Query extends Statement {
 
     boolean requiredBrackets();
 

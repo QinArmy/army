@@ -146,11 +146,11 @@ class DualPredicate extends AbstractPredicate {
     }
 
     @Override
-    public void appendSQL(SQLContext context) {
+    public void appendSQL(SqlContext context) {
         doAppendSQL(context);
     }
 
-    final void doAppendSQL(SQLContext context) {
+    final void doAppendSQL(SqlContext context) {
         left.appendSQL(context);
         context.sqlBuilder()
                 .append(" ")
@@ -179,12 +179,12 @@ class DualPredicate extends AbstractPredicate {
         }
 
         @Override
-        public final void appendSQL(SQLContext context) {
+        public final void appendSQL(SqlContext context) {
             context.appendFieldPredicate(this);
         }
 
         @Override
-        public final void appendPredicate(SQLContext context) {
+        public final void appendPredicate(SqlContext context) {
             doAppendSQL(context);
         }
 

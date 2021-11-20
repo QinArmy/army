@@ -85,6 +85,12 @@ abstract class AbstractStmtExecutor implements StmtExecutor {
         return 0;
     }
 
+
+    @Override
+    public final <T> List<T> select(Stmt stmt, int txTimeout, Class<T> resultClass) {
+        return null;
+    }
+
     @Override
     public final void close() throws DataAccessException {
         try {

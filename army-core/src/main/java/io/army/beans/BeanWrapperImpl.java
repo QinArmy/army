@@ -28,7 +28,7 @@ class BeanWrapperImpl implements ObjectWrapper {
     }
 
     @Override
-    public final boolean isReadableProperty(String propertyName) {
+    public final boolean isReadable(String propertyName) {
         return actualWrapper.isReadableProperty(propertyName);
     }
 
@@ -42,7 +42,7 @@ class BeanWrapperImpl implements ObjectWrapper {
     }
 
     @Override
-    public final Object getPropertyValue(String propertyName) throws BeansException {
+    public final Object get(String propertyName) throws BeansException {
         try {
             return actualWrapper.getPropertyValue(propertyName);
         } catch (org.springframework.beans.BeansException e) {

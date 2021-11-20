@@ -2,7 +2,7 @@ package io.army.dialect;
 
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner.InnerStandardInsert;
+import io.army.criteria.impl.inner._StandardInsert;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
@@ -12,7 +12,7 @@ import io.army.stmt.SimpleStmt;
 
 final class StandardValueInsertContext extends AbstractTableContextSQLContext implements InsertContext {
 
-    static StandardValueInsertContext build(InnerStandardInsert insert, @Nullable ReadonlyWrapper beanWrapper
+    static StandardValueInsertContext build(_StandardInsert insert, @Nullable ReadonlyWrapper beanWrapper
             , Dialect dialect, final Visible visible) {
         TableMeta<?> tableMeta = insert.tableMeta();
         String primaryRouteSuffix = obtainPrimaryRouteSuffix(tableMeta, dialect, beanWrapper);
@@ -21,7 +21,7 @@ final class StandardValueInsertContext extends AbstractTableContextSQLContext im
         return new StandardValueInsertContext(dialect, visible, tableContext);
     }
 
-    static StandardValueInsertContext buildParent(InnerStandardInsert insert, @Nullable ReadonlyWrapper beanWrapper
+    static StandardValueInsertContext buildParent(_StandardInsert insert, @Nullable ReadonlyWrapper beanWrapper
             , Dialect dialect
             , final Visible visible) {
         ParentTableMeta<?> parentMeta = ((ChildTableMeta<?>) insert.tableMeta()).parentMeta();
@@ -32,7 +32,7 @@ final class StandardValueInsertContext extends AbstractTableContextSQLContext im
         return new StandardValueInsertContext(dialect, visible, tableContext);
     }
 
-    static StandardValueInsertContext buildChild(InnerStandardInsert insert, @Nullable ReadonlyWrapper beanWrapper
+    static StandardValueInsertContext buildChild(_StandardInsert insert, @Nullable ReadonlyWrapper beanWrapper
             , Dialect dialect
             , final Visible visible) {
         ChildTableMeta<?> childMeta = (ChildTableMeta<?>) insert.tableMeta();

@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
-import io.army.criteria.SQLContext;
 import io.army.criteria.Selection;
+import io.army.criteria.SqlContext;
 import io.army.mapping.MappingType;
 import io.army.util.Assert;
 
@@ -29,7 +29,7 @@ final class DefaultSelection implements Selection {
     }
 
     @Override
-    public final void appendSQL(SQLContext context) {
+    public final void appendSQL(SqlContext context) {
         this.expression.appendSQL(context);
         context.sqlBuilder()
                 .append(" AS ")
@@ -37,8 +37,8 @@ final class DefaultSelection implements Selection {
     }
 
     @Override
-    public final void appendSortPart(SQLContext context) {
-       context.appendText(this.alias);
+    public final void appendSortPart(SqlContext context) {
+        context.appendText(this.alias);
     }
 
     @Override

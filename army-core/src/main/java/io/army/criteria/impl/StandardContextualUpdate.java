@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Update;
-import io.army.criteria.impl.inner.InnerStandardUpdate;
+import io.army.criteria.impl.inner._StandardUpdate;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -18,7 +18,7 @@ import java.util.function.Predicate;
 
 final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug implements
         Update, Update.UpdateSpec, Update.SingleWhereSpec<T, C>, Update.SingleUpdateTableRouteSpec<T, C>
-        , Update.WhereAndSpec<T, C>, Update.SingleUpdateSpec<T, C>, InnerStandardUpdate {
+        , Update.WhereAndSpec<T, C>, Update.SingleUpdateSpec<T, C>, _StandardUpdate {
 
     static <T extends IDomain, C> StandardContextualUpdate<T, C> build(TableMeta<T> tableMeta, C criteria) {
         Assert.isTrue(!tableMeta.immutable(), () -> String.format("TableMeta[%s] immutable", tableMeta));
@@ -84,7 +84,7 @@ final class StandardContextualUpdate<T extends IDomain, C> extends AbstractSQLDe
     @Override
     public final <F> SingleWhereSpec<T, C> set(FieldMeta<? super T, F> target, F value) {
         this.targetFieldList.add(target);
-        this.valueExpList.add(Sqls.paramWithExp(value, target));
+        this.valueExpList.add(SQLs.paramWithExp(value, target));
         return this;
     }
 

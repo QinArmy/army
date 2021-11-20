@@ -3,8 +3,8 @@ package io.army.dialect;
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.IPredicate;
 import io.army.criteria.NotFoundRouteException;
-import io.army.criteria.impl.inner.InnerSelect;
-import io.army.criteria.impl.inner.InnerSingleDML;
+import io.army.criteria.impl.inner._Select;
+import io.army.criteria.impl.inner._SingleDml;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -43,7 +43,7 @@ abstract class TableRouteUtils extends RouteUtils {
         return null;
     }
 
-    static String subQueryInsertPrimaryRouteSuffix(InnerSingleDML innerSingleDML, Dialect dialect) {
+    static String subQueryInsertPrimaryRouteSuffix(_SingleDml innerSingleDML, Dialect dialect) {
         TableMeta<?> tableMeta = innerSingleDML.tableMeta();
         if (notSupportRoute(dialect, tableMeta)) {
             return "";
@@ -60,7 +60,7 @@ abstract class TableRouteUtils extends RouteUtils {
         return null;
     }
 
-    static String singleDmlPrimaryRouteSuffix(InnerSingleDML singleTableSQL, Dialect dialect) {
+    static String singleDmlPrimaryRouteSuffix(_SingleDml singleTableSQL, Dialect dialect) {
         TableMeta<?> tableMeta = singleTableSQL.tableMeta();
         if (notSupportRoute(dialect, tableMeta)) {
             return "";
@@ -74,7 +74,7 @@ abstract class TableRouteUtils extends RouteUtils {
     }
 
 
-    static String selectPrimaryRouteSuffix(InnerSelect select, Dialect dialect) {
+    static String selectPrimaryRouteSuffix(_Select select, Dialect dialect) {
         if (dialect.sessionFactory().shardingMode() == FactoryMode.NO_SHARDING) {
             return "";
         }

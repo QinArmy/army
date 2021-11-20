@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.meta.UniqueFieldMeta;
 import io.army.session.GenericSession;
 
 import java.util.List;
@@ -43,14 +44,10 @@ public interface GenericSyncSession extends GenericSession {
      * @param <R> representing select result Java Type.
      */
     @Nullable
-    <R extends IDomain> R getByUnique(TableMeta<R> tableMeta, List<String> propNameList, List<Object> valueList);
+    <R extends IDomain, F> R getByUnique(TableMeta<R> tableMeta, UniqueFieldMeta<R, F> fieldMeta, F fieldValue);
 
-    /**
-     * @param <R> representing select result Java Type.
-     */
     @Nullable
-    <R extends IDomain> R getByUnique(TableMeta<R> tableMeta, List<String> propNameList
-            , List<Object> valueList, Visible visible);
+    <R extends IDomain, F> R getByUnique(TableMeta<R> tableMeta, UniqueFieldMeta<R, F> fieldMeta, F fieldValue, Visible visible);
 
     /**
      * @param <R> representing select result Java Type.
@@ -64,9 +61,9 @@ public interface GenericSyncSession extends GenericSession {
     @Nullable
     <R> R selectOne(Select select, Class<R> resultClass, Visible visible);
 
-    Map<String, Object> selectOneAsUnmodifiableMap(Select select);
+    Map<String, Object> selectOneAsMap(Select select);
 
-    Map<String, Object> selectOneAsUnmodifiableMap(Select select, Visible visible);
+    Map<String, Object> selectOneAsMap(Select select, Visible visible);
 
     /**
      * @param <R> representing select result Java Type.
@@ -78,21 +75,14 @@ public interface GenericSyncSession extends GenericSession {
      */
     <R> List<R> select(Select select, Class<R> resultClass, Visible visible);
 
-    List<Map<String, Object>> selectAsUnmodifiableMap(Select select);
+    List<Map<String, Object>> selectAsMap(Select select);
 
-    List<Map<String, Object>> selectAsUnmodifiableMap(Select select, Visible visible);
+    List<Map<String, Object>> selectAsMap(Select select, Visible visible);
 
     void valueInsert(Insert insert);
 
     void valueInsert(Insert insert, Visible visible);
 
-    int subQueryInsert(Insert insert);
-
-    int subQueryInsert(Insert insert, Visible visible);
-
-    long subQueryLargeInsert(Insert insert);
-
-    long largeSubQueryInsert(Insert insert, Visible visible);
 
     <R> List<R> returningInsert(Insert insert, Class<R> resultClass);
 

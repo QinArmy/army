@@ -11,14 +11,14 @@ public abstract class CriteriaCounselor {
         throw new UnsupportedOperationException();
     }
 
-    public static void assertStandardComposeSelect(InnerStandardComposeQuery select) {
+    public static void assertStandardComposeSelect(_StandardComposeQuery select) {
         if (!(select instanceof ComposeQueries)) {
             throw new IllegalArgumentException(String.format("%s isn't instance of %s", select
                     , ComposeQueries.class.getName()));
         }
     }
 
-    public static void assertStandardComposeSubQuery(InnerStandardComposeQuery composeQuery) {
+    public static void assertStandardComposeSubQuery(_StandardComposeQuery composeQuery) {
 
         if (!(composeQuery instanceof ComposeQueries)) {
             throw new IllegalArgumentException(String.format("%s isn't instance of %s or %s.", composeQuery
@@ -28,20 +28,20 @@ public abstract class CriteriaCounselor {
         }
     }
 
-    public static void assertStandardSelect(InnerStandardSelect select) {
+    public static void assertStandardSelect(_StandardSelect select) {
         if (!(select instanceof StandardContextualMultiSelect)) {
             throw new IllegalArgumentException(String.format("%s isn't instance of %s", select
                     , StandardContextualMultiSelect.class.getName()));
         }
     }
 
-    public static void assertStandardSubQuery(InnerStandardSubQuery subQuery) {
+    public static void assertStandardSubQuery(_StandardSubQuery subQuery) {
         StandardSubQueries.assertStandardSubQuery(subQuery);
     }
 
 
-    public static void assertStandardUpdate(InnerStandardUpdate update) {
-        if (update instanceof InnerStandardBatchUpdate) {
+    public static void assertStandardUpdate(_StandardUpdate update) {
+        if (update instanceof _StandardBatchUpdate) {
             if (!(update instanceof StandardContextualBatchUpdate)) {
                 throw new IllegalArgumentException(String.format("%s isn't instance of %s", update
                         , StandardContextualBatchUpdate.class.getName()));
@@ -54,8 +54,8 @@ public abstract class CriteriaCounselor {
 
     }
 
-    public static void assertStandardDelete(InnerStandardDelete delete) {
-        if (delete instanceof InnerStandardBatchDelete) {
+    public static void assertStandardDelete(_StandardDelete delete) {
+        if (delete instanceof _StandardBatchDelete) {
             if (!(delete instanceof StandardContextualBatchDelete)) {
                 throw new IllegalArgumentException(String.format("%s isn't instance of %s", delete
                         , StandardContextualBatchDelete.class.getName()));
@@ -66,8 +66,8 @@ public abstract class CriteriaCounselor {
         }
     }
 
-    public static void assertStandardInsert(InnerStandardInsert insert) {
-        if (insert instanceof InnerStandardBatchInsert) {
+    public static void assertStandardInsert(_StandardInsert insert) {
+        if (insert instanceof _StandardBatchInsert) {
             if (!(insert instanceof StandardBatchInsert)) {
                 throw new IllegalArgumentException(String.format("%s isn't instance of %s", insert
                         , StandardBatchInsert.class.getName()));
@@ -78,8 +78,8 @@ public abstract class CriteriaCounselor {
         }
     }
 
-    public static void assertStandardSubQueryInsert(InnerStandardSubQueryInsert insert) {
-        if (insert instanceof InnerStandardChildSubQueryInsert) {
+    public static void assertStandardSubQueryInsert(_StandardSubQueryInsert insert) {
+        if (insert instanceof _StandardChildSubQueryInsert) {
             if (!(insert instanceof StandardContextualChildSubQueryInsert)) {
                 throw new IllegalArgumentException(String.format("%s isn't instance of %s", insert
                         , StandardContextualChildSubQueryInsert.class.getName()));

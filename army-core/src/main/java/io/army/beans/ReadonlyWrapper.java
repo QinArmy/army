@@ -7,11 +7,12 @@ public interface ReadonlyWrapper {
     /**
      * Determine whether the specified property is readable.
      * <p>Returns {@code false} if the property doesn'field exist.
+     *
      * @param propertyName the property to check
-     * (may be a nested path then/or an indexed/mapped property)
+     *                     (may be a nested path then/or an indexed/mapped property)
      * @return whether the property is readable
      */
-    boolean isReadableProperty(String propertyName);
+    boolean isReadable(String propertyName);
 
 
     /**
@@ -39,7 +40,7 @@ public interface ReadonlyWrapper {
      *                                  accessor method failed
      */
     @Nullable
-    Object getPropertyValue(String propertyName) throws BeansException;
+    Object get(String propertyName) throws BeansException;
 
 
     /**

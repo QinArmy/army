@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.SQLContext;
+import io.army.criteria.SqlContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
@@ -58,7 +58,7 @@ final class Dual implements IDomain {
         }
 
         @Override
-        public void appendSQL(SQLContext context) {
+        public void appendSQL(SqlContext context) {
             context.sqlBuilder()
                     .append(" ")
                     .append(TABLE_NAME);

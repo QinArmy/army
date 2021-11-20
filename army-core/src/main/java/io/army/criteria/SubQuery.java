@@ -1,7 +1,7 @@
 package io.army.criteria;
 
 
-public interface SubQuery extends SQLStatement, SelfDescribed, DerivedTable, Query {
+public interface SubQuery extends Statement, SelfDescribed, DerivedTable, Query {
 
 
 }

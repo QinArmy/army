@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-public interface Delete extends SQLStatement, SQLDebug {
+public interface Delete extends Statement, SQLDebug {
 
     interface DeleteSQLSpec {
 

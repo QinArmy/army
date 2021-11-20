@@ -2,9 +2,9 @@ package io.army.boot.sync;
 
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.IPredicate;
-import io.army.criteria.impl.inner.InnerMultiDML;
-import io.army.criteria.impl.inner.InnerSelect;
-import io.army.criteria.impl.inner.InnerSingleDML;
+import io.army.criteria.impl.inner._MultiDML;
+import io.army.criteria.impl.inner._Select;
+import io.army.criteria.impl.inner._SingleDml;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -17,7 +17,7 @@ abstract class DatabaseRouteUtils extends RouteUtils {
 
 
     @Nullable
-    static RouteWrapper findRouteForSelect(InnerSelect select) {
+    static RouteWrapper findRouteForSelect(_Select select) {
         RouteWrapper routeWrapper;
         List<IPredicate> predicateList = select.predicateList();
         if (predicateList.isEmpty()) {
@@ -51,7 +51,7 @@ abstract class DatabaseRouteUtils extends RouteUtils {
 
 
     @Nullable
-    static RouteWrapper findRouteForSingleDML(InnerSingleDML dml) {
+    static RouteWrapper findRouteForSingleDML(_SingleDml dml) {
         TableMeta<?> tableMeta = dml.tableMeta();
         List<FieldMeta<?, ?>> dataSourceRouteFields = tableMeta.routeFieldList(true);
         RouteWrapper routeWrapper = null;
@@ -72,7 +72,7 @@ abstract class DatabaseRouteUtils extends RouteUtils {
     }
 
     @Nullable
-    static RouteWrapper findRouteForMultiDML(InnerMultiDML dml) {
+    static RouteWrapper findRouteForMultiDML(_MultiDML dml) {
         RouteWrapper routeWrapper;
         routeWrapper = findRouteFromWhereClause(dml.tableWrapperList(), dml.predicateList(), true);
         if (routeWrapper == null) {

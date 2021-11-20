@@ -34,7 +34,7 @@ class MapReadonlyWrapper implements ReadonlyWrapper {
     }
 
     @Override
-    public boolean isReadableProperty(String propertyName) {
+    public boolean isReadable(String propertyName) {
         return map.containsKey(propertyName);
     }
 
@@ -49,7 +49,7 @@ class MapReadonlyWrapper implements ReadonlyWrapper {
     }
 
     @Override
-    public Object getPropertyValue(String propertyName) throws BeansException {
+    public Object get(String propertyName) throws BeansException {
         return this.map.get(propertyName);
     }
 
