@@ -10,17 +10,17 @@ import io.army.stmt.ParamValue;
 import java.util.ArrayList;
 import java.util.List;
 
-abstract class AbstractSQLContext implements TableContextSQLContext {
+abstract class AbstractSQLContext implements _TableSqlContext {
 
     protected final Dialect dialect;
 
     protected final Visible visible;
 
-    protected final SQLBuilder sqlBuilder;
+    protected final SqlBuilder sqlBuilder;
 
     protected final List<ParamValue> paramList;
 
-    protected final TableContextSQLContext parentContext;
+    protected final _TableSqlContext parentContext;
 
     protected AbstractSQLContext(Dialect dialect, Visible visible) {
         this.dialect = dialect;
@@ -30,7 +30,7 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
         this.parentContext = null;
     }
 
-    protected AbstractSQLContext(TableContextSQLContext parentContext) {
+    protected AbstractSQLContext(_TableSqlContext parentContext) {
         this.dialect = parentContext.dialect();
         this.visible = parentContext.visible();
         this.sqlBuilder = parentContext.sqlBuilder();
@@ -90,7 +90,7 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
     }
 
     @Override
-    public final SQLBuilder sqlBuilder() {
+    public final SqlBuilder sqlBuilder() {
         return this.sqlBuilder;
     }
 
@@ -106,7 +106,7 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
 
 
     @Override
-    public final TableContextSQLContext parentContext() {
+    public final _TableSqlContext parentContext() {
         return this.parentContext;
     }
 
@@ -118,12 +118,12 @@ abstract class AbstractSQLContext implements TableContextSQLContext {
 
     /*################################## blow protected final method ##################################*/
 
-    protected SQLBuilder obtainTablePartBuilder() {
+    protected SqlBuilder obtainTablePartBuilder() {
         return this.sqlBuilder;
     }
 
     protected final void doAppendField(@Nullable String tableAlias, FieldMeta<?, ?> fieldMeta) {
-        SQLBuilder builder = obtainTablePartBuilder();
+        SqlBuilder builder = obtainTablePartBuilder();
         Dialect dialect = this.dialect;
         builder.append(" ");
         if (tableAlias != null) {

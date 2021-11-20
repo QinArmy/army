@@ -47,7 +47,7 @@ class Postgre11Dialect extends AbstractDialect {
     }
 
     @Override
-    protected DDL createDDL() {
+    protected DdlDialect createDDL() {
         return new Postgre11DDL(this);
     }
 
@@ -62,7 +62,7 @@ class Postgre11Dialect extends AbstractDialect {
     }
 
     @Override
-    protected TCL createTCL() {
+    protected TclDialect createTCL() {
         return new Postgre11TCL(this);
     }
 

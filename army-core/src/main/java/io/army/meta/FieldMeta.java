@@ -2,6 +2,7 @@ package io.army.meta;
 
 import io.army.annotation.UpdateMode;
 import io.army.criteria.SetTargetPart;
+import io.army.criteria.SqlContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.modelgen._MetaBridge;
@@ -13,6 +14,20 @@ import io.army.modelgen._MetaBridge;
  * @param <F> representing Domain property Java Type
  */
 public interface FieldMeta<T extends IDomain, F> extends GenericField<T, F>, ParamMeta, SetTargetPart {
+
+
+    /**
+     * @throws UnsupportedOperationException throw always
+     */
+    @Override
+    void appendSortPart(SqlContext context);
+
+    /**
+     * @throws UnsupportedOperationException throw always
+     */
+    @Override
+    void appendSQL(SqlContext context);
+
 
     boolean primary();
 

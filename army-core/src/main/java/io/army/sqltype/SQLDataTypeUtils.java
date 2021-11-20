@@ -2,7 +2,7 @@ package io.army.sqltype;
 
 import io.army.ErrorCode;
 import io.army.dialect.Database;
-import io.army.dialect.SQLBuilder;
+import io.army.dialect.SqlBuilder;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 
@@ -31,7 +31,7 @@ public abstract class SQLDataTypeUtils {
     }
 
     public static void appendDataTypeWithMaxPrecision(SqlDataType dataType, FieldMeta<?, ?> fieldMeta
-            , int maxPrecision, int defaultPrecision, SQLBuilder builder) {
+            , int maxPrecision, int defaultPrecision, SqlBuilder builder) {
         int precision = fieldMeta.precision();
         if (precision < 0) {
             precision = defaultPrecision;
@@ -42,7 +42,7 @@ public abstract class SQLDataTypeUtils {
     }
 
 
-    public static void appendDataTypeWithPrecision(SqlDataType dataType, int precision, SQLBuilder builder) {
+    public static void appendDataTypeWithPrecision(SqlDataType dataType, int precision, SqlBuilder builder) {
         builder.append(dataType.typeName());
         if (precision > 0) {
             builder.append("(")
@@ -52,7 +52,7 @@ public abstract class SQLDataTypeUtils {
     }
 
     public static void decimalDataTypeClause(SqlDataType dataType, int maxPrecision, int maxScale
-            , FieldMeta<?, ?> fieldMeta, SQLBuilder builder) {
+            , FieldMeta<?, ?> fieldMeta, SqlBuilder builder) {
 
         int precision = fieldMeta.precision(), scale = fieldMeta.scale();
         if (precision < 0) {
@@ -132,7 +132,7 @@ public abstract class SQLDataTypeUtils {
     /**
      * @param database reserved param
      */
-    static void postgreDateNowValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) {
+    static void postgreDateNowValue(FieldMeta<?, ?> fieldMeta, SqlBuilder builder) {
         // builder.append("TRIM(TO_CHAR(CURRENT_DATE, 'MONTH'))");
         //  builder.append("TRIM(TO_CHAR(CURRENT_DATE, 'DAY'))");
         Class<?> javaClass = fieldMeta.javaType();
@@ -149,7 +149,7 @@ public abstract class SQLDataTypeUtils {
         }
     }
 
-    static void mySQLDateNowValue(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) {
+    static void mySQLDateNowValue(FieldMeta<?, ?> fieldMeta, SqlBuilder builder) {
         //  builder.append("(UPPER(MONTHNAME(CURRENT_DATE)))");
         //  builder.append("(UPPER(DATE_FORMAT(CURRENT_DATE,'%W')))");
         Class<?> javaClass = fieldMeta.javaType();

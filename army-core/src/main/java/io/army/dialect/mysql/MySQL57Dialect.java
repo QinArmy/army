@@ -77,7 +77,7 @@ class MySQL57Dialect extends AbstractDialect {
     }
 
     @Override
-    protected DDL createDDL() {
+    protected DdlDialect createDDL() {
         return new MySQL57DDL(this);
     }
 
@@ -92,7 +92,7 @@ class MySQL57Dialect extends AbstractDialect {
     }
 
     @Override
-    protected TCL createTCL() {
+    protected TclDialect createTCL() {
         return new MySQL57TCL(this);
     }
 }

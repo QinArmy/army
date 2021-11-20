@@ -305,7 +305,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
 
         DMLUtils.assertSubQueryInsert(fieldMetaList, subQuery);
 
-        SQLBuilder builder = context.sqlBuilder().append("INSERT INTO");
+        SqlBuilder builder = context.sqlBuilder().append("INSERT INTO");
         context.appendTable(physicalTable, null);
         builder.append(" ( ");
 
@@ -562,7 +562,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
         return context.build();
     }
 
-    private void simpleTableWhereClause(TableContextSQLContext context, TableMeta<?> tableMeta, String tableAlias
+    private void simpleTableWhereClause(_TableSqlContext context, TableMeta<?> tableMeta, String tableAlias
             , List<IPredicate> predicateList) {
 
         final boolean needAppendVisible = DialectUtils.needAppendVisible(tableMeta);
@@ -644,7 +644,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
     private void parseStandardDelete(TableMeta<?> tableMeta, String tableAlias, List<IPredicate> predicateList
             , StandardDeleteContext context) {
 
-        SQLBuilder builder = context.sqlBuilder().append("DELETE FROM");
+        SqlBuilder builder = context.sqlBuilder().append("DELETE FROM");
         tableOnlyModifier(context);
         // append table name
         context.appendTable(tableMeta,tableAlias);

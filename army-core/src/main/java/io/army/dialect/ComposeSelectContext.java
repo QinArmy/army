@@ -23,7 +23,7 @@ final class ComposeSelectContext implements SelectContext {
 
     private final Visible visible;
 
-    private final SQLBuilder sqlBuilder;
+    private final SqlBuilder sqlBuilder;
 
     private final List<ParamValue> paramList;
 
@@ -65,7 +65,7 @@ final class ComposeSelectContext implements SelectContext {
     }
 
     @Override
-    public SQLBuilder sqlBuilder() {
+    public SqlBuilder sqlBuilder() {
         return this.sqlBuilder;
     }
 
@@ -75,7 +75,7 @@ final class ComposeSelectContext implements SelectContext {
     }
 
     @Override
-    public TableContextSQLContext parentContext() {
+    public _TableSqlContext parentContext() {
         return null;
     }
 

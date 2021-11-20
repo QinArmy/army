@@ -4,7 +4,7 @@ import io.army.criteria.Expression;
 import io.army.criteria.FieldExpression;
 import io.army.criteria.FieldPredicate;
 import io.army.criteria.SqlContext;
-import io.army.dialect.SQLBuilder;
+import io.army.dialect.SqlBuilder;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
@@ -43,7 +43,7 @@ class BetweenPredicate extends AbstractPredicate {
 
     final void doAppendSQL(SqlContext context) {
         left.appendSQL(context);
-        SQLBuilder builder = context.sqlBuilder()
+        SqlBuilder builder = context.sqlBuilder()
                 .append(" BETWEEN");
         center.appendSQL(context);
         builder.append(" AND");

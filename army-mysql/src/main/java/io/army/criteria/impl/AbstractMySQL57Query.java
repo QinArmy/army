@@ -2,8 +2,8 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.mysql.InnerMySQL57Query;
 import io.army.criteria.impl.inner.mysql.MySQLTable57Wrapper;
+import io.army.criteria.impl.inner.mysql._MySQL57Query;
 import io.army.criteria.mysql.MySQL57IndexHint;
 import io.army.criteria.mysql.MySQL57Query;
 import io.army.lang.Nullable;
@@ -23,7 +23,7 @@ abstract class AbstractMySQL57Query<Q extends MySQL57Query, C> extends AbstractQ
         , MySQL57Query.MySQLTableRouteJoinSpec<Q, C>, MySQL57Query.MySQLWhereSpec<Q, C>
         , MySQL57Query.MySQLWhereAndSpec<Q, C>, MySQL57Query.MySQLGroupBySpec<Q, C>
         , MySQL57Query.MySQLWithRollUpSpec<Q, C>, MySQL57Query.MySQLHavingSpec<Q, C>
-        , InnerMySQL57Query {
+        , _MySQL57Query {
 
     final MySQLTableRouteOnSpec<Q, C> tableRouteOnSpec;
 

@@ -13,7 +13,7 @@ final class DDLContextImpl implements DDLContext {
 
     protected final Dialect dialect;
 
-    protected SQLBuilder sqlBuilder = DialectUtils.createSQLBuilder();
+    protected SqlBuilder sqlBuilder = DialectUtils.createSQLBuilder();
 
     protected final TableMeta<?> tableMeta;
 
@@ -30,7 +30,7 @@ final class DDLContextImpl implements DDLContext {
     }
 
     @Override
-    public final SQLBuilder sqlBuilder() {
+    public final SqlBuilder sqlBuilder() {
         return this.sqlBuilder;
     }
 

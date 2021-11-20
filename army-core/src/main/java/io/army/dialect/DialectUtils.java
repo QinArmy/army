@@ -38,7 +38,7 @@ public abstract class DialectUtils {
             JDBCType.TIMESTAMP_WITH_TIMEZONE
     );
 
-    public static SQLBuilder createSQLBuilder() {
+    public static SqlBuilder createSQLBuilder() {
         return new SQLBuilderImpl();
     }
 
@@ -106,9 +106,9 @@ public abstract class DialectUtils {
         }
     }
 
-    public static void appendPredicateList(List<IPredicate> predicateList, TableContextSQLContext context) {
+    public static void appendPredicateList(List<IPredicate> predicateList, _TableSqlContext context) {
 
-        SQLBuilder builder = context.sqlBuilder();
+        SqlBuilder builder = context.sqlBuilder();
         int count = 0;
         for (IPredicate predicate : predicateList) {
             if (count > 0) {
@@ -119,8 +119,8 @@ public abstract class DialectUtils {
         }
     }
 
-    public static void appendSortPartList(List<SortPart> sortPartList, TableContextSQLContext context) {
-        SQLBuilder builder = context.sqlBuilder();
+    public static void appendSortPartList(List<SortPart> sortPartList, _TableSqlContext context) {
+        SqlBuilder builder = context.sqlBuilder();
 
         int count = 0;
         for (SortPart sortPart : sortPartList) {
@@ -161,7 +161,7 @@ public abstract class DialectUtils {
         return need;
     }
 
-    public static ArmyRuntimeException createNotSupportClauseException(TableContextSQLContext context, Clause clause) {
+    public static ArmyRuntimeException createNotSupportClauseException(_TableSqlContext context, Clause clause) {
         return new ArmyRuntimeException(ErrorCode.NONE, "%s not support %s clause."
                 , context.getClass().getName(), clause);
     }
@@ -222,7 +222,7 @@ public abstract class DialectUtils {
 
     /*################################## blow private static innner class ##################################*/
 
-    private static final class SQLBuilderImpl implements SQLBuilder {
+    private static final class SQLBuilderImpl implements SqlBuilder {
 
         private final StringBuilder builder = new StringBuilder();
 
@@ -230,79 +230,79 @@ public abstract class DialectUtils {
         }
 
         @Override
-        public SQLBuilder append(boolean b) {
+        public SqlBuilder append(boolean b) {
             this.builder.append(b);
             return this;
         }
 
         @Override
-        public SQLBuilder append(char ch) {
+        public SqlBuilder append(char ch) {
             this.builder.append(ch);
             return this;
         }
 
         @Override
-        public SQLBuilder append(char[] charArray) {
+        public SqlBuilder append(char[] charArray) {
             this.builder.append(charArray);
             return this;
         }
 
         @Override
-        public SQLBuilder append(char[] charArray, int offset, int len) {
+        public SqlBuilder append(char[] charArray, int offset, int len) {
             this.builder.append(charArray, offset, len);
             return this;
         }
 
         @Override
-        public SQLBuilder append(CharSequence s) {
+        public SqlBuilder append(CharSequence s) {
             this.builder.append(s);
             return this;
         }
 
         @Override
-        public SQLBuilder append(CharSequence s, int start, int end) {
+        public SqlBuilder append(CharSequence s, int start, int end) {
             this.builder.append(s, start, end);
             return this;
         }
 
         @Override
-        public SQLBuilder append(double d) {
+        public SqlBuilder append(double d) {
             this.builder.append(d);
             return this;
         }
 
         @Override
-        public SQLBuilder append(float f) {
+        public SqlBuilder append(float f) {
             this.builder.append(f);
             return this;
         }
 
         @Override
-        public SQLBuilder append(int i) {
+        public SqlBuilder append(int i) {
             this.builder.append(i);
             return this;
         }
 
         @Override
-        public SQLBuilder append(long lng) {
+        public SqlBuilder append(long lng) {
             this.builder.append(lng);
             return this;
         }
 
         @Override
-        public SQLBuilder append(Object obj) {
+        public SqlBuilder append(Object obj) {
             this.builder.append(obj);
             return this;
         }
 
         @Override
-        public SQLBuilder append(String str) {
+        public SqlBuilder append(String str) {
             this.builder.append(str);
             return this;
         }
 
         @Override
-        public SQLBuilder appendCodePoint(int codePoint) {
+        public SqlBuilder appendCodePoint(int codePoint) {
             this.builder.append(codePoint);
             return this;
         }

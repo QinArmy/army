@@ -57,7 +57,7 @@ final class StandardValueInsertContext extends AbstractTableContextSQLContext im
     }
 
 
-    private final SQLBuilder fieldBuilder = DialectUtils.createSQLBuilder();
+    private final SqlBuilder fieldBuilder = DialectUtils.createSQLBuilder();
 
     private final TableMeta<?> physicalTable;
 
@@ -68,7 +68,7 @@ final class StandardValueInsertContext extends AbstractTableContextSQLContext im
 
 
     @Override
-    public final SQLBuilder fieldsBuilder() {
+    public final SqlBuilder fieldsBuilder() {
         return this.fieldBuilder;
     }
 
@@ -86,7 +86,7 @@ final class StandardValueInsertContext extends AbstractTableContextSQLContext im
     }
 
     @Override
-    protected final SQLBuilder obtainTablePartBuilder() {
+    protected final SqlBuilder obtainTablePartBuilder() {
         return this.fieldBuilder;
     }
 

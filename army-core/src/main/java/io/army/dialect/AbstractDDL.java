@@ -8,7 +8,7 @@ import io.army.util.StringUtils;
 import java.util.Collection;
 import java.util.List;
 
-public abstract class AbstractDDL extends AbstractSQL implements DDL {
+public abstract class AbstractDDL extends AbstractSQL implements DdlDialect {
 
     public AbstractDDL(Dialect dialect) {
         super(dialect);
@@ -138,7 +138,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
 
     protected abstract void tableOptionsClause(DDLContext context);
 
-    protected abstract void doDefaultExpression(FieldMeta<?, ?> fieldMeta, SQLBuilder builder);
+    protected abstract void doDefaultExpression(FieldMeta<?, ?> fieldMeta, SqlBuilder builder);
 
     protected abstract boolean useIndependentIndexDefinition();
 
@@ -180,7 +180,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     }
 
     protected void doDropIndex(String indexName, DDLContext context) {
-        SQLBuilder builder = context.sqlBuilder();
+        SqlBuilder builder = context.sqlBuilder();
         builder.append("ALTER TABLE ");
         context.appendTable();
         builder.append(" DROP INDEX ")
@@ -189,7 +189,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     }
 
     protected void doAddColumn(FieldMeta<?, ?> fieldMeta, DDLContext context) {
-        SQLBuilder builder = context.sqlBuilder();
+        SqlBuilder builder = context.sqlBuilder();
         builder.append("ALTER TABLE");
         context.appendTable();
         builder.append(" ADD COLUMN");
@@ -202,7 +202,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     }
 
     protected void doChangeColumn(FieldMeta<?, ?> fieldMeta, DDLContext context) {
-        SQLBuilder builder = context.sqlBuilder();
+        SqlBuilder builder = context.sqlBuilder();
         final String safeColumnName = this.dialect.quoteIfNeed(fieldMeta.columnName());
         builder.append("ALTER TABLE ");
         context.appendTable();
@@ -264,7 +264,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
 
 
     protected final void nullableClause(FieldMeta<?, ?> fieldMeta, DDLContext context) {
-        SQLBuilder builder = context.sqlBuilder();
+        SqlBuilder builder = context.sqlBuilder();
         if (fieldMeta.nullable()) {
             builder.append(" NULL");
         } else {
@@ -308,7 +308,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     }
 
     protected void createIndexDefinition(IndexMeta<?> indexMeta, DDLContext context) {
-        SQLBuilder builder = context.sqlBuilder()
+        SqlBuilder builder = context.sqlBuilder()
                 .append("ALTER TABLE ");
         context.appendTable();
         builder.append(" ADD ");
@@ -316,7 +316,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     }
 
     protected void inlineIndexDefinitionClause(IndexMeta<?> indexMeta, DDLContext context) {
-        SQLBuilder builder = context.sqlBuilder().append(" ");
+        SqlBuilder builder = context.sqlBuilder().append(" ");
         if (indexMeta.isPrimaryKey()) {
             builder.append("PRIMARY KEY ");
         } else if (indexMeta.unique()) {
@@ -382,7 +382,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     }
 
     private void columnListDefinitions(DDLContext context) {
-        SQLBuilder builder = context.sqlBuilder();
+        SqlBuilder builder = context.sqlBuilder();
         int index = 0;
         for (FieldMeta<?, ?> fieldMeta : DDLUtils.sortFieldMetaCollection(context.tableMeta())) {
             if (index > 0) {
@@ -394,7 +394,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     }
 
     private void inlineIndexListDefinitionClause(DDLContext context) {
-        SQLBuilder builder = context.sqlBuilder();
+        SqlBuilder builder = context.sqlBuilder();
         int index = 0;
         for (IndexMeta<?> indexMeta : DDLUtils.sortIndexMetaCollection(context.tableMeta())) {
             if (index > 0) {
@@ -413,7 +413,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
         }
     }
 
-    private void handleDefaultExpression(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) {
+    private void handleDefaultExpression(FieldMeta<?, ?> fieldMeta, SqlBuilder builder) {
 //        Database database = database();
 //        SqlDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database);
 //        switch (fieldMeta.defaultValue()) {
@@ -437,7 +437,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DDL {
     }
 
     private void primaryKeyClause(DDLContext context) {
-        SQLBuilder builder = context.sqlBuilder().append(",\n");
+        SqlBuilder builder = context.sqlBuilder().append(",\n");
         builder.append("PRIMARY KEY(");
         context.appendField(context.tableMeta().id());
         builder.append(")");

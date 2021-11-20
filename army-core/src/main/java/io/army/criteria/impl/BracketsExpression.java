@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.Expression;
 import io.army.criteria.FieldExpression;
 import io.army.criteria.SqlContext;
-import io.army.dialect.SQLBuilder;
+import io.army.dialect.SqlBuilder;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -30,7 +30,7 @@ class BracketsExpression<E> extends AbstractExpression<E> {
 
     @Override
     public final void appendSQL(SqlContext context) {
-        SQLBuilder builder = context.sqlBuilder();
+        SqlBuilder builder = context.sqlBuilder();
         builder.append(" ( ");
         exp.appendSQL(context);
         builder.append(" )");

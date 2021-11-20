@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface DDLContext {
 
-    SQLBuilder sqlBuilder();
+    SqlBuilder sqlBuilder();
 
     TableMeta<?> tableMeta();
 

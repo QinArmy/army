@@ -1,5 +1,6 @@
 package io.army.meta;
 
+import io.army.criteria.SqlContext;
 import io.army.criteria.TableAble;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
@@ -15,6 +16,13 @@ import java.util.List;
  * @see IndexFieldMeta
  */
 public interface TableMeta<T extends IDomain> extends TableAble, Meta {
+
+
+    /**
+     * @throws UnsupportedOperationException throw always
+     */
+    @Override
+    void appendSQL(SqlContext context);
 
 
     Class<T> javaType();

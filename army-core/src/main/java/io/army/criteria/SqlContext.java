@@ -1,7 +1,7 @@
 package io.army.criteria;
 
 import io.army.dialect.DqlDialect;
-import io.army.dialect.SQLBuilder;
+import io.army.dialect.SqlBuilder;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
@@ -23,7 +23,7 @@ public interface SqlContext {
 
     DqlDialect dql();
 
-    SQLBuilder sqlBuilder();
+    SqlBuilder sqlBuilder();
 
     void appendParam(ParamValue paramValue);
 

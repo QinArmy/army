@@ -18,7 +18,7 @@ import io.army.util.StringUtils;
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
  */
-public abstract class AbstractTableContextSQLContext extends AbstractSQLContext implements TableContextSQLContext {
+public abstract class AbstractTableContextSQLContext extends AbstractSQLContext implements _TableSqlContext {
 
     protected final TableContext primaryTableContext;
 
@@ -46,16 +46,16 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         assertPrimaryRouteSuffix();
     }
 
-    protected AbstractTableContextSQLContext(TableContextSQLContext parentContext, TableContext tableContext) {
+    protected AbstractTableContextSQLContext(_TableSqlContext parentContext, TableContext tableContext) {
         super(parentContext);
         GenericRmSessionFactory sessionFactory = dialect.sessionFactory();
 
         this.factoryMode = dialect.sessionFactory().shardingMode();
         this.tableContext = tableContext;
-        if(parentContext instanceof ComposeSelectContext){
+        if (parentContext instanceof ComposeSelectContext) {
             this.primaryTableContext = this.tableContext;
             this.primaryRouteSuffix = this.tableContext.primaryRouteSuffix;
-        }else {
+        } else {
             this.primaryTableContext = parentContext.primaryTableContext();
             this.primaryRouteSuffix = parentContext.primaryRouteSuffix();
         }
@@ -145,7 +145,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
      */
     protected final void doAppendTable(TableMeta<?> tableMeta, @Nullable String tableAlias) {
         final Dialect dialect = this.dialect;
-        SQLBuilder builder = obtainTablePartBuilder();
+        SqlBuilder builder = obtainTablePartBuilder();
 
         String actualTableName = tableMeta.tableName();
         if (this.factoryMode != FactoryMode.NO_SHARDING

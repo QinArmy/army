@@ -1,6 +1,6 @@
 package io.army.dialect.mysql;
 
-import io.army.dialect.SQLBuilder;
+import io.army.dialect.SqlBuilder;
 import io.army.meta.FieldMeta;
 
 class MySQL80DDL extends MySQL57DDL {
@@ -11,7 +11,7 @@ class MySQL80DDL extends MySQL57DDL {
 
 
     @Override
-    protected final void doDefaultExpression(FieldMeta<?, ?> fieldMeta, SQLBuilder builder) {
+    protected final void doDefaultExpression(FieldMeta<?, ?> fieldMeta, SqlBuilder builder) {
         String defaultExp = fieldMeta.defaultValue();
         if (defaultExp.startsWith("(") && defaultExp.endsWith(")")) {
             builder.append(defaultExp);

@@ -1,7 +1,7 @@
 package io.army.dialect;
 
 
-public interface SubQueryContext extends TableContextSQLContext {
+public interface SubQueryContext extends _TableSqlContext {
 
 
 }

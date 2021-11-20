@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.dialect.SQLBuilder;
+import io.army.dialect.SqlBuilder;
 import io.army.dialect.SqlDialect;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
@@ -26,7 +26,7 @@ final class ExpressionRowImpl<T extends IDomain> implements ExpressionRow<T> {
 
     @Override
     public void appendSQL(SqlContext context) {
-        SQLBuilder builder = context.sqlBuilder()
+        SqlBuilder builder = context.sqlBuilder()
                 .append(" ");
         SqlDialect sql = context.dql();
         if (sql.hasRowKeywords()) {

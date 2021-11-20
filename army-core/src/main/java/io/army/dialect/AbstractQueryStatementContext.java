@@ -17,7 +17,7 @@ abstract class AbstractQueryStatementContext extends AbstractTableContextSQLCont
         this.query = query;
     }
 
-    AbstractQueryStatementContext(TableContextSQLContext original, TableContext tableContext, _Query query) {
+    AbstractQueryStatementContext(_TableSqlContext original, TableContext tableContext, _Query query) {
         super(original, tableContext);
         this.query = query;
     }

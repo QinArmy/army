@@ -37,8 +37,8 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
 
     }
 
-    protected void doTableWrapper(TableWrapper tableWrapper, TableContextSQLContext context) {
-        final SQLBuilder builder = context.sqlBuilder();
+    protected void doTableWrapper(TableWrapper tableWrapper, _TableSqlContext context) {
+        final SqlBuilder builder = context.sqlBuilder();
         // 1. form/join type
         SQLModifier joinType = tableWrapper.jointType();
         if (!"".equals(joinType.render())) {
@@ -75,7 +75,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
 
 
     protected final void appendVisiblePredicate(TableMeta<?> tableMeta, String tableAlias
-            , TableContextSQLContext context, boolean hasPredicate) {
+            , _TableSqlContext context, boolean hasPredicate) {
         switch (tableMeta.mappingMode()) {
             case SIMPLE:
             case PARENT:
@@ -89,7 +89,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         }
     }
 
-    protected final void appendVisiblePredicate(List<? extends TableWrapper> tableWrapperList, TableContextSQLContext context
+    protected final void appendVisiblePredicate(List<? extends TableWrapper> tableWrapperList, _TableSqlContext context
             , boolean hasPredicate) {
         // append visible predicates
         final TableMeta<?> dual = SQLs.dual();
@@ -119,7 +119,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         }
     }
 
-    protected final void visibleConstantPredicate(TableContextSQLContext context
+    protected final void visibleConstantPredicate(_TableSqlContext context
             , TableMeta<?> tableMeta, String tableAlias, boolean hasPredicate) {
         switch (context.visible()) {
             case ONLY_VISIBLE:
@@ -135,7 +135,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         }
     }
 
-    protected final void visibleSubQueryPredicateForChild(TableContextSQLContext context
+    protected final void visibleSubQueryPredicateForChild(_TableSqlContext context
             , ChildTableMeta<?> childMeta, String childAlias, boolean hasPredicate) {
         if (context.visible() == Visible.BOTH) {
             return;
@@ -145,7 +145,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
 
         final String parentAlias = obtainParentAlias(context, childAlias);
         // append exists SubQuery
-        SQLBuilder builder = context.sqlBuilder();
+        SqlBuilder builder = context.sqlBuilder();
         if (hasPredicate) {
             builder.append(" AND");
         }
@@ -172,12 +172,12 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     }
 
 
-    private void doVisibleConstantPredicate(TableContextSQLContext context, Boolean visible
+    private void doVisibleConstantPredicate(_TableSqlContext context, Boolean visible
             , TableMeta<?> tableMeta, String tableAlias, boolean hasPredicate) {
 
         final FieldMeta<?, ?> visibleField = tableMeta.getField(_MetaBridge.VISIBLE);
 
-        SQLBuilder builder = context.sqlBuilder();
+        SqlBuilder builder = context.sqlBuilder();
 
         if (hasPredicate) {
             builder.append(" AND");
@@ -189,7 +189,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     }
 
     private void appendVisibleIfNeed(TableWrapper tableWrapper, @Nullable TableWrapper preTableWrapper
-            , TableContextSQLContext context, Map<String, ChildTableMeta<?>> childMap, boolean hasPredicate) {
+            , _TableSqlContext context, Map<String, ChildTableMeta<?>> childMap, boolean hasPredicate) {
 
         final TableMeta<?> tableMeta = (TableMeta<?>) tableWrapper.tableAble();
         switch (tableMeta.mappingMode()) {
@@ -218,7 +218,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     }
 
 
-    private static String obtainParentAlias(TableContextSQLContext context, String childAlias) {
+    private static String obtainParentAlias(_TableSqlContext context, String childAlias) {
         String parentAlias;
         if (context instanceof SingleTableDMLContext) {
             parentAlias = ((SingleTableDMLContext) context).relationAlias();

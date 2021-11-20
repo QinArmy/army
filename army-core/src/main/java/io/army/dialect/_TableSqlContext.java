@@ -10,7 +10,7 @@ import io.army.stmt.SimpleStmt;
 
 import java.util.List;
 
-public interface TableContextSQLContext extends SqlContext {
+public interface _TableSqlContext extends SqlContext {
 
     /**
      * <p>
@@ -41,7 +41,7 @@ public interface TableContextSQLContext extends SqlContext {
     SimpleStmt build();
 
     @Nullable
-    TableContextSQLContext parentContext();
+    _TableSqlContext parentContext();
 
 
 

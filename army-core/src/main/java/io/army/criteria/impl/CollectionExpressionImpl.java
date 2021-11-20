@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.SqlContext;
 import io.army.criteria.ValueExpression;
-import io.army.dialect.SQLBuilder;
+import io.army.dialect.SqlBuilder;
 import io.army.mapping.MappingType;
 import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
@@ -35,7 +35,7 @@ final class CollectionExpressionImpl<E> extends AbstractNoNOperationExpression<C
 
     @Override
     protected void afterSpace(SqlContext context) {
-        SQLBuilder builder = context.sqlBuilder();
+        SqlBuilder builder = context.sqlBuilder();
         builder.append("(");
 
         int index = 0;

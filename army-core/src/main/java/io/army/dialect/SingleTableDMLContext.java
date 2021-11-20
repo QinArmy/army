@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-public interface SingleTableDMLContext extends TableContextSQLContext{
+public interface SingleTableDMLContext extends _TableSqlContext {
 
     String relationAlias();
 }

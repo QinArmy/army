@@ -33,13 +33,13 @@ public abstract class AbstractDialect implements InnerDialect {
 
     protected final GenericRmSessionFactory sessionFactory;
 
-    private final DDL ddl;
+    private final DdlDialect ddl;
 
     private final DmlDialect dml;
 
     private final DqlDialect dql;
 
-    private final TCL tcl;
+    private final TclDialect tcl;
 
     private final MappingContext mappingContext;
 
@@ -204,13 +204,13 @@ public abstract class AbstractDialect implements InnerDialect {
 
     protected abstract String doQuote(String identifier);
 
-    protected abstract DDL createDDL();
+    protected abstract DdlDialect createDDL();
 
     protected abstract DmlDialect createDML();
 
     protected abstract DqlDialect createDQL();
 
-    protected abstract TCL createTCL();
+    protected abstract TclDialect createTCL();
 
     /*############################### sub class override method ####################################*/
 

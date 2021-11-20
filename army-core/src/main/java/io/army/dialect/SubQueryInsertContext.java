@@ -57,7 +57,7 @@ final class SubQueryInsertContext extends AbstractTableContextSQLContext impleme
     }
 
     @Override
-    public final SQLBuilder fieldsBuilder() {
+    public final SqlBuilder fieldsBuilder() {
         return this.sqlBuilder;
     }
 

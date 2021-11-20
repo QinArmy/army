@@ -8,13 +8,13 @@ import io.army.stmt.SimpleStmt;
 
 class SubQueryContextImpl extends AbstractQueryStatementContext implements SubQueryContext {
 
-    static SubQueryContextImpl build(TableContextSQLContext parentContext, _SubQuery subQuery) {
+    static SubQueryContextImpl build(_TableSqlContext parentContext, _SubQuery subQuery) {
         TableContext tableContext = TableContext.multiTable(subQuery.tableWrapperList()
                 , parentContext.primaryRouteSuffix());
         return new SubQueryContextImpl(parentContext, tableContext, subQuery);
     }
 
-    private SubQueryContextImpl(TableContextSQLContext parentContext, TableContext tableContext
+    private SubQueryContextImpl(_TableSqlContext parentContext, TableContext tableContext
             , _SubQuery subQuery) {
         super(parentContext, tableContext, subQuery);
     }

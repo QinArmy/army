@@ -193,11 +193,11 @@ abstract class DMLUtils {
 //        }
     }
 
-    static void setClauseFieldsManagedByArmy(TableContextSQLContext context, TableMeta<?> tableMeta
+    static void setClauseFieldsManagedByArmy(_TableSqlContext context, TableMeta<?> tableMeta
             , String tableAlias) {
         //1. version field
         final FieldMeta<?, ?> versionField = tableMeta.getField(_MetaBridge.VERSION);
-        SQLBuilder builder = context.sqlBuilder();
+        SqlBuilder builder = context.sqlBuilder();
 
         context.appendField(tableAlias, versionField);
 
@@ -341,14 +341,14 @@ abstract class DMLUtils {
             , Collection<FieldMeta<?, ?>> fieldMetas
             , StandardValueInsertContext context) {
 
-        SQLBuilder fieldBuilder = context.fieldsBuilder()
+        SqlBuilder fieldBuilder = context.fieldsBuilder()
                 .append("INSERT INTO");
         // append table name
         context.appendTable(physicalTable, null);
         fieldBuilder.append(" ( ");
 
         /// VALUE clause
-        SQLBuilder valueBuilder = context.sqlBuilder()
+        SqlBuilder valueBuilder = context.sqlBuilder()
                 .append(" VALUES ( ");
 
         int index = 0;

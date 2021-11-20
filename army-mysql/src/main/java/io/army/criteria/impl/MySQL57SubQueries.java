@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.ErrorCode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.TableWrapper;
-import io.army.criteria.impl.inner.mysql.InnerMySQL57SubQuery;
+import io.army.criteria.impl.inner.mysql._MySQL57SubQuery;
 import io.army.criteria.mysql.*;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
@@ -16,7 +16,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractMySQL57Query<Q, C>
-        implements InnerMySQL57SubQuery, MySQL57SubQuery {
+        implements _MySQL57SubQuery, MySQL57SubQuery {
 
 
     static <C> MySQL57SubQueries<MySQL57SubQuery, C> build(C criteria) {
@@ -154,7 +154,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
             , MySQLWhereAndSpec<MySQL57ScalarSubQuery<E>, C>, MySQLHavingSpec<MySQL57ScalarSubQuery<E>, C>
             , MySQL57ScalarSubQuery.MySQLScalarSelectionSpec<E, C>
             , MySQL57Query.MySQLWithRollUpSpec<MySQL57ScalarSubQuery<E>, C>
-            , InnerMySQL57SubQuery {
+            , _MySQL57SubQuery {
 
 
         private final MappingType mappingType;
