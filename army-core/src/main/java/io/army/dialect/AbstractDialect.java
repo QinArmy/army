@@ -156,21 +156,21 @@ public abstract class AbstractDialect implements InnerDialect {
     }
 
     @Override
-    public final void select(Select select, SqlContext original) {
+    public final void select(Select select, _SqlContext original) {
         this.dql.select(select, original);
     }
 
 
     @Override
-    public final void subQuery(SubQuery subQuery, SqlContext original) {
+    public final void subQuery(SubQuery subQuery, _SqlContext original) {
         this.dql.subQuery(subQuery, original);
     }
 
     /*################################## blow DML method ##################################*/
 
     @Override
-    public final List<Stmt> valueInsert(Insert insert, @Nullable Set<Integer> domainIndexSet, Visible visible) {
-        return this.dml.valueInsert(insert, domainIndexSet, visible);
+    public final Stmt valueInsert(Insert insert, Visible visible) {
+        return this.dml.valueInsert(insert, visible);
     }
 
     @Override
@@ -178,10 +178,6 @@ public abstract class AbstractDialect implements InnerDialect {
         return this.dml.returningInsert(insert, visible);
     }
 
-    @Override
-    public final Stmt subQueryInsert(Insert insert, Visible visible) {
-        return this.dml.subQueryInsert(insert, visible);
-    }
 
     @Override
     public final Stmt update(Update update, Visible visible) {

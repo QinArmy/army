@@ -40,7 +40,7 @@ class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements Inner
 
     private static final EnumSet<FactoryMode> SUPPORT_SHARDING_SET = EnumSet.of(
             FactoryMode.NO_SHARDING
-            , FactoryMode.SINGLE_DATABASE_SHARDING);
+            , FactoryMode.TABLE_SHARDING);
 
     private final DatabaseSessionFactory databaseSessionFactory;
 

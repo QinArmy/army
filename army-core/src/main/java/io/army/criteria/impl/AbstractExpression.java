@@ -818,7 +818,7 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
     /*################################## blow protected template method ##################################*/
 
     @Override
-    public final void appendSortPart(SqlContext context) {
+    public final void appendSortPart(_SqlContext context) {
         this.appendSQL(context);
     }
 

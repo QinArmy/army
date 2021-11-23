@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.FieldExpression;
-import io.army.criteria.SqlContext;
+import io.army.criteria._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -44,11 +44,11 @@ class UnaryExpression<E> extends AbstractExpression<E> {
 
 
     @Override
-    public void appendSQL(SqlContext context) {
+    public void appendSQL(_SqlContext context) {
         this.doAppendSQL(context);
     }
 
-    final void doAppendSQL(SqlContext context) {
+    final void doAppendSQL(_SqlContext context) {
         switch (this.operator.position()) {
             case LEFT:
                 context.sqlBuilder()

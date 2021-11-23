@@ -8,20 +8,20 @@ import io.army.stmt.SimpleStmt;
 
 class SubQueryContextImpl extends AbstractQueryStatementContext implements SubQueryContext {
 
-    static SubQueryContextImpl build(_TableSqlContext parentContext, _SubQuery subQuery) {
-        TableContext tableContext = TableContext.multiTable(subQuery.tableWrapperList()
+    static SubQueryContextImpl build(_TablesSqlContext parentContext, _SubQuery subQuery) {
+        TablesContext tableContext = TablesContext.multiTable(subQuery.tableWrapperList()
                 , parentContext.primaryRouteSuffix());
         return new SubQueryContextImpl(parentContext, tableContext, subQuery);
     }
 
-    private SubQueryContextImpl(_TableSqlContext parentContext, TableContext tableContext
+    private SubQueryContextImpl(_TablesSqlContext parentContext, TablesContext tableContext
             , _SubQuery subQuery) {
         super(parentContext, tableContext, subQuery);
     }
 
     @Override
     protected final String findTableAliasFromParent(FieldMeta<?, ?> fieldMeta) throws CriteriaException {
-        TableContext parentTableContext = this.parentTableContext();
+        TablesContext parentTableContext = this.parentTableContext();
         if(parentTableContext == null){
             throw new IllegalStateException(String.format("SubQuery[%s] no parent table context.",this.query));
         }

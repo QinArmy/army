@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.SqlContext;
+import io.army.criteria._SqlContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
@@ -58,7 +58,7 @@ final class Dual implements IDomain {
         }
 
         @Override
-        public void appendSQL(SqlContext context) {
+        public void appendSQL(_SqlContext context) {
             context.sqlBuilder()
                     .append(" ")
                     .append(TABLE_NAME);
@@ -84,6 +84,17 @@ final class Dual implements IDomain {
         @Override
         public List<FieldMeta<?, ?>> routeFieldList(boolean database) {
             throw new UnsupportedOperationException();
+        }
+
+
+        @Override
+        public List<FieldMeta<?, ?>> databaseRouteFields() {
+            return null;
+        }
+
+        @Override
+        public List<FieldMeta<?, ?>> tableRouteFields() {
+            return null;
         }
 
         @Override

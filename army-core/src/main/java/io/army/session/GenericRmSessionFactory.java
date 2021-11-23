@@ -25,11 +25,13 @@ public interface GenericRmSessionFactory extends GenericSessionFactory {
 
     int tableCountPerDatabase();
 
-     ServerMeta serverMeta();
+    ServerMeta serverMeta();
 
     Dialect dialect();
 
     DomainValuesGenerator domainValuesGenerator();
+
+    FactoryMode factoryMode();
 
 
 }

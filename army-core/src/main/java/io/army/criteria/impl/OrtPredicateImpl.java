@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.IPredicate;
 import io.army.criteria.OrPredicate;
-import io.army.criteria.SqlContext;
+import io.army.criteria._SqlContext;
 import io.army.dialect.SqlBuilder;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -34,7 +34,7 @@ final class OrtPredicateImpl extends AbstractPredicate implements OrPredicate {
     }
 
     @Override
-    public void appendSQL(SqlContext context) {
+    public void appendSQL(_SqlContext context) {
         SqlBuilder builder = context.sqlBuilder()
                 .append(" (");
         this.leftPredicate.appendSQL(context);

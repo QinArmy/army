@@ -12,12 +12,12 @@ abstract class AbstractQueryStatementContext extends AbstractTableContextSQLCont
     protected final _Query query;
 
 
-    AbstractQueryStatementContext(Dialect dialect, Visible visible, TableContext tableContext, _Query query) {
+    AbstractQueryStatementContext(Dialect dialect, Visible visible, TablesContext tableContext, _Query query) {
         super(dialect, visible, tableContext);
         this.query = query;
     }
 
-    AbstractQueryStatementContext(_TableSqlContext original, TableContext tableContext, _Query query) {
+    AbstractQueryStatementContext(_TablesSqlContext original, TablesContext tableContext, _Query query) {
         super(original, tableContext);
         this.query = query;
     }

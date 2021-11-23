@@ -1,6 +1,9 @@
 package io.army.sync;
 
-import io.army.*;
+import io.army.ArmyException;
+import io.army.ArmyUnknownException;
+import io.army.SessionException;
+import io.army.SessionUsageException;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Statement;
 import io.army.dialect.Dialect;
@@ -9,6 +12,7 @@ import io.army.session.GenericRmSessionFactory;
 import io.army.stmt.Stmt;
 import io.army.sync.executor.StmtExecutor;
 import io.army.tx.GenericTransaction;
+import io.army.tx.Isolation;
 import io.army.tx.TransactionTimeOutException;
 
 import java.util.Collections;
@@ -33,7 +37,7 @@ abstract class AbstractRmSession extends AbstractGenericSyncSession
     @Override
     public final <R> List<R> select(Select select, Class<R> resultClass, final Visible visible) {
         try {
-            assertSessionActive(false);
+            assertSessionActive(select);
             final Stmt stmt;
             stmt = this.dialect.select(select, visible);
             return this.stmtExecutor.select(stmt, timeToLiveInSeconds(), resultClass);
@@ -208,25 +212,31 @@ abstract class AbstractRmSession extends AbstractGenericSyncSession
 
     /*################################## blow package method ##################################*/
 
-    @Nullable
-    abstract GenericTransaction obtainTransaction();
-
-
-    /*################################## blow private method ##################################*/
-
-    final void assertSessionActive(final boolean write) {
-        GenericTransaction tx = obtainTransaction();
-        if (this.closed() || (tx != null && tx.nonActive())) {
-            String txName = this.sessionTransaction().name();
-            throw new SessionUsageException(ErrorCode.SESSION_CLOSED
-                    , "TmSession[%s] closed or Transaction[%s] not active.", txName, txName);
+    final void assertSessionActive(Statement statement) {
+        if (this.closed()) {
+            String m = String.format("%s have closed.", this);
+            throw new SessionUsageException(m);
         }
-        if (write && this.readonly()) {
-            throw new ReadOnlySessionException("%s read only");
+        final _Statement.SessionMode mode;
+        mode = ((_Statement) statement).sessionMode();
+        if (this.readonly() && mode != _Statement.SessionMode.READ) {
+            String m = String.format("%s is read only.", this);
+            throw new SessionUsageException(m);
         }
+        final GenericTransaction tx = obtainTransaction();
+        if (tx != null && tx.nonActive()) {
+            String m = String.format("%s %s non-active.", this, tx);
+            throw new SessionUsageException(m);
+        }
+        if (mode == _Statement.SessionMode.WRITE_TRANSACTION
+                && (tx == null || tx.isolation() == Isolation.READ_UNCOMMITTED)) {
+            String m = String.format("%s non-safe transaction,can't execute dml for Child table.", this);
+            throw new SessionUsageException(m);
+        }
+
     }
 
-    private int timeToLiveInSeconds() throws TransactionTimeOutException {
+    final int timeToLiveInSeconds() throws TransactionTimeOutException {
         final GenericTransaction tx = obtainTransaction();
         int liveInsSeconds;
         if (tx == null) {
@@ -236,5 +246,12 @@ abstract class AbstractRmSession extends AbstractGenericSyncSession
         }
         return liveInsSeconds;
     }
+
+    @Nullable
+    abstract GenericTransaction obtainTransaction();
+
+
+    /*################################## blow private method ##################################*/
+
 
 }

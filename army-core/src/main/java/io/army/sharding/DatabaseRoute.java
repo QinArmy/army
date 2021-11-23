@@ -1,10 +1,13 @@
 package io.army.sharding;
 
 
+import io.army.meta.FieldMeta;
+
 public interface DatabaseRoute extends Route {
 
     boolean containsDatabase(int databaseIndex);
 
-    int dataSourceRoute(Object routeKey);
+    byte database(FieldMeta<?, ?> fieldMeta, Object fieldValue);
+
 
 }

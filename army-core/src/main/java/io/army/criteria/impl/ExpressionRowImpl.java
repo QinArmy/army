@@ -25,7 +25,7 @@ final class ExpressionRowImpl<T extends IDomain> implements ExpressionRow<T> {
     }
 
     @Override
-    public void appendSQL(SqlContext context) {
+    public void appendSQL(_SqlContext context) {
         SqlBuilder builder = context.sqlBuilder()
                 .append(" ");
         SqlDialect sql = context.dql();

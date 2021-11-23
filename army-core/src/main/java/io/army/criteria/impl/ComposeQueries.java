@@ -147,7 +147,7 @@ abstract class ComposeQueries<Q extends Query, C> extends AbstractComposeQuery<Q
         }
 
         @Override
-        public void appendSQL(SqlContext context) {
+        public void appendSQL(_SqlContext context) {
             SqlBuilder builder = context.sqlBuilder()
                     .append(" (");
             if (this.enclosedQuery instanceof Select) {
@@ -183,7 +183,7 @@ abstract class ComposeQueries<Q extends Query, C> extends AbstractComposeQuery<Q
         }
 
         @Override
-        public void appendSQL(SqlContext context) {
+        public void appendSQL(_SqlContext context) {
             DqlDialect dql = context.dql();
 
             if (this.leftQuery instanceof Select) {

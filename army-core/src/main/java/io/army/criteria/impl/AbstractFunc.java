@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.FuncExpression;
-import io.army.criteria.SqlContext;
+import io.army.criteria._SqlContext;
 import io.army.dialect.SqlBuilder;
 import io.army.mapping.MappingType;
 import io.army.util.ArrayUtils;
@@ -54,7 +54,7 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
     }
 
     @Override
-    public final void appendSQL(SqlContext context) {
+    public final void appendSQL(_SqlContext context) {
         SqlBuilder builder = context.sqlBuilder()
                 .append(" ")
                 .append(this.name)
@@ -73,7 +73,7 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
         return String.format("%s(%s)", name, argumentToString());
     }
 
-    protected abstract void doAppendArgument(SqlContext context);
+    protected abstract void doAppendArgument(_SqlContext context);
 
     protected abstract String argumentToString();
 
@@ -86,7 +86,7 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
         }
 
         @Override
-        protected void doAppendArgument(SqlContext context) {
+        protected void doAppendArgument(_SqlContext context) {
 
         }
 
@@ -114,7 +114,7 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
         }
 
         @Override
-        protected void doAppendArgument(SqlContext context) {
+        protected void doAppendArgument(_SqlContext context) {
             one.appendSQL(context);
         }
 
@@ -160,7 +160,7 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
         }
 
         @Override
-        protected void doAppendArgument(SqlContext context) {
+        protected void doAppendArgument(_SqlContext context) {
             SqlBuilder builder = context.sqlBuilder();
             builder.append(format.get(0));
             one.appendSQL(context);
@@ -217,7 +217,7 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
 
 
         @Override
-        protected void doAppendArgument(SqlContext context) {
+        protected void doAppendArgument(_SqlContext context) {
             SqlBuilder builder = context.sqlBuilder();
             builder.append(format.get(0));
             one.appendSQL(context);

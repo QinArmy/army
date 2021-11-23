@@ -1,7 +1,6 @@
 package io.army.sharding;
 
-public interface ShardingRoute extends Route {
+public interface ShardingRoute extends DatabaseRoute, TableRoute {
 
-    RouteResult route(Object key);
 
 }

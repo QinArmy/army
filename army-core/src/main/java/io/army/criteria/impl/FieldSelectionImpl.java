@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.FieldSelection;
-import io.army.criteria.SqlContext;
+import io.army.criteria._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.GenericField;
@@ -35,7 +35,7 @@ final class FieldSelectionImpl<E> extends AbstractExpression<E> implements Field
     }
 
     @Override
-    public final void appendSQL(SqlContext context) {
+    public final void appendSQL(_SqlContext context) {
         this.fieldExp.appendSQL(context);
         context.sqlBuilder()
                 .append(" AS ")

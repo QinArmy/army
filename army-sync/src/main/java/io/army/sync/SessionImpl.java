@@ -4,11 +4,13 @@ import io.army.*;
 import io.army.cache.DomainUpdateAdvice;
 import io.army.cache.SessionCache;
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Statement;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
 import io.army.session.FactoryMode;
+import io.army.stmt.Stmt;
 import io.army.tx.*;
 import io.army.util.CriteriaUtils;
 
@@ -111,12 +113,23 @@ final class SessionImpl extends AbstractRmSession implements Session {
 
     @Override
     public void valueInsert(Insert insert) {
-
+        this.valueInsert(insert, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public void valueInsert(Insert insert, Visible visible) {
-
+    public void valueInsert(final Insert insert, final Visible visible) {
+        try {
+            assertSessionActive(insert);
+            final Stmt stmt;
+            stmt = this.dialect.valueInsert(insert, null, visible);
+            this.stmtExecutor.valueInsert(stmt, timeToLiveInSeconds());
+        } catch (ArmyException e) {
+            throw this.exceptionFunction.apply(e);
+        } catch (RuntimeException e) {
+            throw this.exceptionFunction.apply(new ArmyUnknownException(e));
+        } finally {
+            ((_Statement) insert).clear();
+        }
     }
 
     @Override

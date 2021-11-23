@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.LogicalField;
 import io.army.criteria.Selection;
-import io.army.criteria.SqlContext;
+import io.army.criteria._SqlContext;
 import io.army.domain.IDomain;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
@@ -29,7 +29,7 @@ final class LogicalFieldExpImpl<T extends IDomain, F> extends AbstractExpression
     }
 
     @Override
-    public final void appendSQL(SqlContext context) {
+    public final void appendSQL(_SqlContext context) {
         context.appendField(this.tableAlias, this.fieldMeta);
     }
 

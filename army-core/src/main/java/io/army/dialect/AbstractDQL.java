@@ -2,7 +2,7 @@ package io.army.dialect;
 
 import io.army.UnKnownTypeException;
 import io.army.criteria.*;
-import io.army.criteria.impl.CriteriaCounselor;
+import io.army.criteria.impl._CriteriaCounselor;
 import io.army.criteria.impl.inner.*;
 import io.army.stmt.SimpleStmt;
 import io.army.util.Assert;
@@ -33,7 +33,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
         if (select instanceof _StandardComposeQuery) {
             _StandardComposeQuery composeSelect = (_StandardComposeQuery) select;
             //1. assert composeQuery legal
-            CriteriaCounselor.assertStandardComposeSelect(composeSelect);
+            _CriteriaCounselor.assertStandardComposeSelect(composeSelect);
             // 2. create compose select context
             ComposeSelectContext context = ComposeSelectContext.build(this.dialect, visible);
             // 3. append composeQuery
@@ -57,7 +57,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
         } else if (select instanceof _StandardSelect) {
             _StandardSelect standardSelect = (_StandardSelect) select;
             //1. assert standardSubQuery legal
-            CriteriaCounselor.assertStandardSelect(standardSelect);
+            _CriteriaCounselor.assertStandardSelect(standardSelect);
             // 2. create standard select context
             SelectContext context = SelectContextImpl.build(standardSelect, this.dialect, visible);
             // 3. parse standard select
@@ -82,15 +82,15 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
 
 
     @Override
-    public final void select(Select select, SqlContext original) {
+    public final void select(Select select, _SqlContext original) {
         Assert.isTrue(select.prepared(), "select not prepared");
 
         if (select instanceof _StandardComposeQuery) {
             _StandardComposeQuery composeSelect = (_StandardComposeQuery) select;
             //1. assert composeQuery legal
-            CriteriaCounselor.assertStandardComposeSelect(composeSelect);
+            _CriteriaCounselor.assertStandardComposeSelect(composeSelect);
             // 2. adapt context
-            _TableSqlContext context = adaptContext(composeSelect, original);
+            _TablesSqlContext context = adaptContext(composeSelect, original);
             // 3. append composeQuery
             composeSelect.appendSQL(context);
             // 4. append part query ,eg: order by ,limit
@@ -100,7 +100,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
             //1. assert composeQuery legal
             assertSpecialComposeSelect(composeSelect);
             // 2. adapt context
-            _TableSqlContext context = adaptContext(composeSelect, original);
+            _TablesSqlContext context = adaptContext(composeSelect, original);
             // 3. append composeQuery
             composeSelect.appendSQL(context);
             // 4. append part query ,eg: order by ,limit
@@ -108,9 +108,9 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
         } else if (select instanceof _StandardSelect) {
             _StandardSelect standardSelect = (_StandardSelect) select;
             //1. assert standardSubQuery legal
-            CriteriaCounselor.assertStandardSelect(standardSelect);
+            _CriteriaCounselor.assertStandardSelect(standardSelect);
             // 2. adapt context
-            _TableSqlContext context = adaptContext(standardSelect, original);
+            _TablesSqlContext context = adaptContext(standardSelect, original);
             // 3. parse standard select
             standardSelect(standardSelect, context);
 
@@ -119,7 +119,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
             //1. assert specialSubQuery legal
             assertSpecialSelect(specialSelect);
             // 2. adapt context
-            _TableSqlContext context = adaptContext(specialSelect, original);
+            _TablesSqlContext context = adaptContext(specialSelect, original);
             // 3. parse special select
             specialSelect(specialSelect, context);
 
@@ -130,14 +130,14 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
 
 
     @Override
-    public final void subQuery(SubQuery subQuery, SqlContext original) {
+    public final void subQuery(SubQuery subQuery, _SqlContext original) {
         Assert.isTrue(subQuery.prepared(), "PartQuery not prepared");
         if (subQuery instanceof _StandardComposeQuery) {
             _StandardComposeQuery composeQuery = (_StandardComposeQuery) subQuery;
             //1. assert composeQuery legal
-            CriteriaCounselor.assertStandardComposeSubQuery(composeQuery);
+            _CriteriaCounselor.assertStandardComposeSubQuery(composeQuery);
             // 2. adapt context
-            _TableSqlContext context = adaptContext(composeQuery, original);
+            _TablesSqlContext context = adaptContext(composeQuery, original);
             // 3. append composeQuery
             composeQuery.appendSQL(context);
             // 4. append part query ,eg: order by ,limit
@@ -147,7 +147,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
             //1. assert composeQuery legal
             assertSpecialComposeSubQuery(composeQuery);
             // 2. adapt context
-            _TableSqlContext context = adaptContext(composeQuery, original);
+            _TablesSqlContext context = adaptContext(composeQuery, original);
             // 3. append composeQuery
             composeQuery.appendSQL(context);
             // 4. append part query ,eg: order by ,limit
@@ -155,9 +155,9 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
         } else if (subQuery instanceof _StandardSubQuery) {
             _StandardSubQuery standardSubQuery = (_StandardSubQuery) subQuery;
             //1. assert standardSubQuery legal
-            CriteriaCounselor.assertStandardSubQuery(standardSubQuery);
+            _CriteriaCounselor.assertStandardSubQuery(standardSubQuery);
             // 2. adapt context
-            _TableSqlContext context = adaptContext(standardSubQuery, original);
+            _TablesSqlContext context = adaptContext(standardSubQuery, original);
             // 3. parse standard sub query
             standardSubQuery(standardSubQuery, context);
 
@@ -166,7 +166,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
             //1. assert specialSubQuery legal
             assertSpecialSubQuery(specialSubQuery);
             // 2. adapt context
-            _TableSqlContext context = adaptContext(specialSubQuery, original);
+            _TablesSqlContext context = adaptContext(specialSubQuery, original);
             // 3. parse special sub query
             specialSubQuery(specialSubQuery, context);
 
@@ -196,26 +196,26 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
         throw new UnsupportedOperationException();
     }
 
-    protected void specialPartSelect(_SpecialComposeQuery select, _TableSqlContext context) {
+    protected void specialPartSelect(_SpecialComposeQuery select, _TablesSqlContext context) {
         throw new UnsupportedOperationException();
     }
 
-    protected void specialSelect(_SpecialSelect specialSelect, _TableSqlContext context) {
+    protected void specialSelect(_SpecialSelect specialSelect, _TablesSqlContext context) {
         throw new UnsupportedOperationException();
     }
 
-    protected void specialSubQuery(_SpecialSubQuery composeQuery, _TableSqlContext context) {
+    protected void specialSubQuery(_SpecialSubQuery composeQuery, _TablesSqlContext context) {
         throw new UnsupportedOperationException();
     }
 
-    protected final _TableSqlContext adaptContext(_GeneralQuery query, SqlContext context) {
-        _TableSqlContext adaptedContext;
+    protected final _TablesSqlContext adaptContext(_GeneralQuery query, _SqlContext context) {
+        _TablesSqlContext adaptedContext;
         if (query instanceof _ComposeQuery) {
-            adaptedContext = (_TableSqlContext) context;
+            adaptedContext = (_TablesSqlContext) context;
         } else if (query instanceof _Select) {
-            adaptedContext = SelectContextImpl.build((_TableSqlContext) context, (_Select) query);
+            adaptedContext = SelectContextImpl.build((_TablesSqlContext) context, (_Select) query);
         } else if (query instanceof _SubQuery) {
-            adaptedContext = SubQueryContextImpl.build((_TableSqlContext) context, (_SubQuery) query);
+            adaptedContext = SubQueryContextImpl.build((_TablesSqlContext) context, (_SubQuery) query);
         } else {
             throw new UnKnownTypeException(query);
         }
@@ -223,20 +223,20 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
     }
 
 
-    protected abstract _TableSqlContext createSpecialSelectContext(_TableSqlContext original);
+    protected abstract _TablesSqlContext createSpecialSelectContext(_TablesSqlContext original);
 
-    protected abstract _TableSqlContext createSpecialSubQueryContext(_TableSqlContext original);
+    protected abstract _TablesSqlContext createSpecialSubQueryContext(_TablesSqlContext original);
 
 
-    protected abstract void limitClause(int offset, int rowCount, _TableSqlContext context);
+    protected abstract void limitClause(int offset, int rowCount, _TablesSqlContext context);
 
-    protected abstract void lockClause(LockMode lockMode, _TableSqlContext context);
+    protected abstract void lockClause(LockMode lockMode, _TablesSqlContext context);
 
 
 
     /*################################## blow final protected method ##################################*/
 
-    protected final void selectClause(List<SQLModifier> modifierList, _TableSqlContext context) {
+    protected final void selectClause(List<SQLModifier> modifierList, _TablesSqlContext context) {
 
         SqlBuilder builder = context.sqlBuilder()
                 .append(" SELECT");
@@ -246,7 +246,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
         }
     }
 
-    protected final void selectListClause(List<SelectPart> selectPartList, _TableSqlContext context) {
+    protected final void selectListClause(List<SelectPart> selectPartList, _TablesSqlContext context) {
         SqlBuilder builder = context.sqlBuilder();
         int index = 0;
         for (SelectPart selectPart : selectPartList) {
@@ -258,7 +258,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
         }
     }
 
-    protected final void fromClause(List<? extends TableWrapper> tableWrapperList, _TableSqlContext context) {
+    protected final void fromClause(List<? extends TableWrapper> tableWrapperList, _TablesSqlContext context) {
         context.sqlBuilder()
                 .append(" FROM");
         Map<String, TableWrapper> aliasMap = new HashMap<>();
@@ -275,7 +275,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
     }
 
     protected final void whereClause(List<? extends TableWrapper> tableWrapperList, List<IPredicate> predicateList
-            , _TableSqlContext context) {
+            , _TablesSqlContext context) {
 
         final boolean needAppendVisible = DialectUtils.needAppendVisible(tableWrapperList);
         final boolean hasPredicate = !predicateList.isEmpty();
@@ -293,7 +293,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
         }
     }
 
-    protected final void groupByClause(List<SortPart> sortPartList, _TableSqlContext context) {
+    protected final void groupByClause(List<SortPart> sortPartList, _TablesSqlContext context) {
         if (!sortPartList.isEmpty()) {
             context.sqlBuilder()
                     .append(" GROUP BY");
@@ -301,7 +301,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
         }
     }
 
-    protected final void havingClause(List<IPredicate> havingList, _TableSqlContext context) {
+    protected final void havingClause(List<IPredicate> havingList, _TablesSqlContext context) {
         if (!havingList.isEmpty()) {
             context.sqlBuilder()
                     .append(" HAVING");
@@ -309,7 +309,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
         }
     }
 
-    protected final void orderByClause(List<SortPart> orderPartList, _TableSqlContext context) {
+    protected final void orderByClause(List<SortPart> orderPartList, _TablesSqlContext context) {
         if (!orderPartList.isEmpty()) {
             context.sqlBuilder()
                     .append(" ORDER BY");
@@ -320,7 +320,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
     /*################################## blow private method ##################################*/
 
 
-    private void standardSelect(_StandardSelect select, _TableSqlContext context) {
+    private void standardSelect(_StandardSelect select, _TablesSqlContext context) {
         genericQuery(select, context);
         // lock clause
         LockMode lockMode = select.lockMode();
@@ -330,7 +330,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
 
     }
 
-    private void standardSubQuery(_StandardSubQuery subQuery, _TableSqlContext context) {
+    private void standardSubQuery(_StandardSubQuery subQuery, _TablesSqlContext context) {
         SqlBuilder builder = context.sqlBuilder();
 
         final boolean standardSubQueryInsert = context.parentContext() instanceof SubQueryInsertContext;
@@ -349,7 +349,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
     }
 
 
-    private void genericQuery(_Query query, _TableSqlContext context) {
+    private void genericQuery(_Query query, _TablesSqlContext context) {
         // select clause
         selectClause(query.modifierList(), context);
         // select list clause
@@ -369,7 +369,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
     }
 
 
-    private void partQuery(_ComposeQuery query, _TableSqlContext context) {
+    private void partQuery(_ComposeQuery query, _TablesSqlContext context) {
         // order by clause
         orderByClause(query.orderByList(), context);
         // limit clause

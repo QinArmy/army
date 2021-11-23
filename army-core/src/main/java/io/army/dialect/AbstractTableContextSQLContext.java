@@ -18,11 +18,11 @@ import io.army.util.StringUtils;
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
  */
-public abstract class AbstractTableContextSQLContext extends AbstractSQLContext implements _TableSqlContext {
+public abstract class AbstractTableContextSQLContext extends AbstractSQLContext implements _TablesSqlContext {
 
-    protected final TableContext primaryTableContext;
+    protected final TablesContext primaryTableContext;
 
-    protected final TableContext tableContext;
+    protected final TablesContext tableContext;
 
     protected final FactoryMode factoryMode;
 
@@ -32,7 +32,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
 
     protected final boolean  allowSpanSharding;
 
-    protected AbstractTableContextSQLContext(Dialect dialect, Visible visible, TableContext tableContext) {
+    protected AbstractTableContextSQLContext(Dialect dialect, Visible visible, TablesContext tableContext) {
         super(dialect, visible);
         GenericRmSessionFactory sessionFactory = dialect.sessionFactory();
 
@@ -46,7 +46,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         assertPrimaryRouteSuffix();
     }
 
-    protected AbstractTableContextSQLContext(_TableSqlContext parentContext, TableContext tableContext) {
+    protected AbstractTableContextSQLContext(_TablesSqlContext parentContext, TablesContext tableContext) {
         super(parentContext);
         GenericRmSessionFactory sessionFactory = dialect.sessionFactory();
 
@@ -95,12 +95,12 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
 
 
     @Override
-    public final TableContext primaryTableContext() {
+    public final TablesContext primaryTableContext() {
         return this.primaryTableContext;
     }
 
     @Override
-    public final TableContext tableContext() {
+    public final TablesContext tableContext() {
         return this.tableContext;
     }
 

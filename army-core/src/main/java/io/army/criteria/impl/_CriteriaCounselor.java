@@ -5,9 +5,9 @@ import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner.*;
 import io.army.session.AbstractGenericSession;
 
-public abstract class CriteriaCounselor {
+public abstract class _CriteriaCounselor {
 
-    CriteriaCounselor() {
+    _CriteriaCounselor() {
         throw new UnsupportedOperationException();
     }
 
@@ -66,7 +66,7 @@ public abstract class CriteriaCounselor {
         }
     }
 
-    public static void assertStandardInsert(_StandardInsert insert) {
+    public static void standardInsert(_Insert insert) {
         if (insert instanceof _StandardBatchInsert) {
             if (!(insert instanceof StandardBatchInsert)) {
                 throw new IllegalArgumentException(String.format("%s isn't instance of %s", insert

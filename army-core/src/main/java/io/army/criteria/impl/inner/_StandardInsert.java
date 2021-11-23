@@ -6,6 +6,7 @@ import io.army.meta.TableMeta;
 /**
  * @see SQLs#domainInsert(TableMeta)
  */
+@Deprecated
 public interface _StandardInsert extends _ValuesInsert {
 
 

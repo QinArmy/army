@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
-import io.army.beans.DomainWrapper;
 import io.army.beans.ObjectAccessorFactory;
+import io.army.beans.ObjectWrapper;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Insert;
 import io.army.criteria.impl.inner._StandardInsert;
@@ -33,7 +33,7 @@ class StandardInsert<T extends IDomain> extends AbstractSQLDebug implements Inse
 
     private List<FieldMeta<?, ?>> fieldList;
 
-    private List<DomainWrapper> wrapperList;
+    private List<ObjectWrapper> wrapperList;
 
     private boolean prepared;
 
@@ -43,11 +43,11 @@ class StandardInsert<T extends IDomain> extends AbstractSQLDebug implements Inse
 
      /*################################## blow InsertOptionSpec method ##################################*/
 
-     @Override
-     public final InsertOptionSpec<T> dataMigration() {
-         this.dataMigration = true;
-         return this;
-     }
+    @Override
+    public final InsertOptionSpec<T> migration() {
+        this.dataMigration = true;
+        return this;
+    }
 
      /*################################## blow InsertIntoSpec method ##################################*/
 
@@ -89,7 +89,7 @@ class StandardInsert<T extends IDomain> extends AbstractSQLDebug implements Inse
 
      @Override
      public final InsertSpec values(List<T> domainList) {
-         List<DomainWrapper> wrapperList = new ArrayList<>(domainList.size());
+         List<ObjectWrapper> wrapperList = new ArrayList<>(domainList.size());
          for (IDomain domain : domainList) {
              wrapperList.add(ObjectAccessorFactory.forDomainPropertyAccess(domain, tableMeta));
          }
@@ -131,7 +131,7 @@ class StandardInsert<T extends IDomain> extends AbstractSQLDebug implements Inse
     }
 
     @Override
-    public final List<DomainWrapper> wrapperList() {
+    public final List<ObjectWrapper> domainList() {
         return this.wrapperList;
     }
 

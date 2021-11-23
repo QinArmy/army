@@ -50,8 +50,8 @@ final class ComposeSelectContext implements SelectContext {
     }
 
     @Override
-    public TableContext tableContext() {
-        return TableContext.EMPTY;
+    public TablesContext tableContext() {
+        return TablesContext.EMPTY;
     }
 
     @Override
@@ -75,7 +75,7 @@ final class ComposeSelectContext implements SelectContext {
     }
 
     @Override
-    public _TableSqlContext parentContext() {
+    public _TablesSqlContext parentContext() {
         return null;
     }
 
@@ -87,12 +87,12 @@ final class ComposeSelectContext implements SelectContext {
     }
 
     @Override
-    public final TableContext primaryTableContext() {
+    public final TablesContext primaryTableContext() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public TableContext parentTableContext() {
+    public TablesContext parentTableContext() {
         throw new UnsupportedOperationException();
     }
 

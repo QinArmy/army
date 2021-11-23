@@ -13,22 +13,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public final class TableContext {
+public final class TablesContext {
 
-    public static final TableContext EMPTY = new TableContext();
+    public static final TablesContext EMPTY = new TablesContext();
 
     public static final String PARENT_ALIAS_PREFIX = "p_of_";
 
     public static final String CHILD_ALIAS_PREFIX = "c_of_";
 
-    public static TableContext singleTable(_SingleDml singleTable, boolean parent, String primaryRouteSuffix) {
+    public static TablesContext singleTable(_SingleDml singleTable, boolean parent, String primaryRouteSuffix) {
         TableMeta<?> tableMeta = singleTable.tableMeta();
         if (parent) {
             tableMeta = ((ChildTableMeta<?>) tableMeta).parentMeta();
         }
         String tableAlias = singleTable.tableAlias();
 
-        return new TableContext(
+        return new TablesContext(
                 Collections.singletonMap(tableMeta, 1)
                 , Collections.singletonMap(tableAlias, tableMeta)
                 , Collections.singletonMap(tableMeta, tableAlias)
@@ -37,7 +37,7 @@ public final class TableContext {
         );
     }
 
-    public static TableContext multiTable(List<? extends TableWrapper> tableWrapperList, String primaryRouteSuffix) {
+    public static TablesContext multiTable(List<? extends TableWrapper> tableWrapperList, String primaryRouteSuffix) {
         Map<TableMeta<?>, Integer> tableCountMap = new HashMap<>();
         Map<String, TableMeta<?>> aliasTableMap = new HashMap<>();
         Map<String, Integer> tableIndexMap = new HashMap<>();
@@ -70,7 +70,7 @@ public final class TableContext {
             }
 
         }
-        return new TableContext(
+        return new TablesContext(
                 Collections.unmodifiableMap(tableCountMap)
                 , Collections.unmodifiableMap(aliasTableMap)
                 , Collections.unmodifiableMap(tableAliasMap)
@@ -90,7 +90,7 @@ public final class TableContext {
     final String primaryRouteSuffix;
 
 
-    private TableContext(Map<TableMeta<?>, Integer> tableCountMap, Map<String, TableMeta<?>> aliasTableMap
+    private TablesContext(Map<TableMeta<?>, Integer> tableCountMap, Map<String, TableMeta<?>> aliasTableMap
             , Map<TableMeta<?>, String> tableAliasMap, Map<String, Integer> tableIndexMap
             , String primaryRouteSuffix) {
         this.tableCountMap = tableCountMap;
@@ -102,7 +102,7 @@ public final class TableContext {
 
     }
 
-    private TableContext() {
+    private TablesContext() {
         this.tableCountMap = Collections.emptyMap();
         this.aliasTableMap = Collections.emptyMap();
         this.tableAliasMap = Collections.emptyMap();

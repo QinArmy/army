@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.DualOperator;
 import io.army.criteria.Expression;
 import io.army.criteria.FieldExpression;
-import io.army.criteria.SqlContext;
+import io.army.criteria._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.FieldMeta;
@@ -54,7 +54,7 @@ class DualExpresion<E> extends AbstractExpression<E> {
     }
 
     @Override
-    public final void appendSQL(SqlContext context) {
+    public final void appendSQL(_SqlContext context) {
         left.appendSQL(context);
         context.sqlBuilder()
                 .append(" ")

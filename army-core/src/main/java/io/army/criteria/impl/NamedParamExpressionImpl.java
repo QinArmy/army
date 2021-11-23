@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.NamedParamExpression;
-import io.army.criteria.SqlContext;
+import io.army.criteria._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.meta.ParamMeta;
 
@@ -37,7 +37,7 @@ final class NamedParamExpressionImpl<E> extends AbstractNoNOperationExpression<E
     }
 
     @Override
-    protected void afterSpace(SqlContext context) {
+    protected void afterSpace(_SqlContext context) {
         context.sqlBuilder()
                 .append("?");
         context.appendParam(this);

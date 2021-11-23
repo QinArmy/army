@@ -6,7 +6,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
 
-public interface SqlContext {
+public interface _SqlContext {
 
     void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta);
 

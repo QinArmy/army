@@ -33,11 +33,11 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     }
 
 
-    protected void tableOnlyModifier(SqlContext context) {
+    protected void tableOnlyModifier(_SqlContext context) {
 
     }
 
-    protected void doTableWrapper(TableWrapper tableWrapper, _TableSqlContext context) {
+    protected void doTableWrapper(TableWrapper tableWrapper, _TablesSqlContext context) {
         final SqlBuilder builder = context.sqlBuilder();
         // 1. form/join type
         SQLModifier joinType = tableWrapper.jointType();
@@ -75,7 +75,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
 
 
     protected final void appendVisiblePredicate(TableMeta<?> tableMeta, String tableAlias
-            , _TableSqlContext context, boolean hasPredicate) {
+            , _TablesSqlContext context, boolean hasPredicate) {
         switch (tableMeta.mappingMode()) {
             case SIMPLE:
             case PARENT:
@@ -89,7 +89,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         }
     }
 
-    protected final void appendVisiblePredicate(List<? extends TableWrapper> tableWrapperList, _TableSqlContext context
+    protected final void appendVisiblePredicate(List<? extends TableWrapper> tableWrapperList, _TablesSqlContext context
             , boolean hasPredicate) {
         // append visible predicates
         final TableMeta<?> dual = SQLs.dual();
@@ -119,7 +119,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         }
     }
 
-    protected final void visibleConstantPredicate(_TableSqlContext context
+    protected final void visibleConstantPredicate(_TablesSqlContext context
             , TableMeta<?> tableMeta, String tableAlias, boolean hasPredicate) {
         switch (context.visible()) {
             case ONLY_VISIBLE:
@@ -135,7 +135,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         }
     }
 
-    protected final void visibleSubQueryPredicateForChild(_TableSqlContext context
+    protected final void visibleSubQueryPredicateForChild(_TablesSqlContext context
             , ChildTableMeta<?> childMeta, String childAlias, boolean hasPredicate) {
         if (context.visible() == Visible.BOTH) {
             return;
@@ -172,7 +172,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     }
 
 
-    private void doVisibleConstantPredicate(_TableSqlContext context, Boolean visible
+    private void doVisibleConstantPredicate(_TablesSqlContext context, Boolean visible
             , TableMeta<?> tableMeta, String tableAlias, boolean hasPredicate) {
 
         final FieldMeta<?, ?> visibleField = tableMeta.getField(_MetaBridge.VISIBLE);
@@ -189,7 +189,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     }
 
     private void appendVisibleIfNeed(TableWrapper tableWrapper, @Nullable TableWrapper preTableWrapper
-            , _TableSqlContext context, Map<String, ChildTableMeta<?>> childMap, boolean hasPredicate) {
+            , _TablesSqlContext context, Map<String, ChildTableMeta<?>> childMap, boolean hasPredicate) {
 
         final TableMeta<?> tableMeta = (TableMeta<?>) tableWrapper.tableAble();
         switch (tableMeta.mappingMode()) {
@@ -218,12 +218,12 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     }
 
 
-    private static String obtainParentAlias(_TableSqlContext context, String childAlias) {
+    private static String obtainParentAlias(_TablesSqlContext context, String childAlias) {
         String parentAlias;
         if (context instanceof SingleTableDMLContext) {
             parentAlias = ((SingleTableDMLContext) context).relationAlias();
         } else {
-            parentAlias = TableContext.PARENT_ALIAS_PREFIX + childAlias;
+            parentAlias = TablesContext.PARENT_ALIAS_PREFIX + childAlias;
         }
         return parentAlias;
     }

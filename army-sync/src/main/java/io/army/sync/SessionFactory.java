@@ -9,7 +9,7 @@ import io.army.session.GenericRmSessionFactory;
  * This interface run only below:
  * <ul>
  *     <li>{@link FactoryMode#NO_SHARDING}</li>
- *     <li>{@link FactoryMode#SINGLE_DATABASE_SHARDING}</li>
+ *     <li>{@link FactoryMode#TABLE_SHARDING}</li>
  * </ul>
  */
 public interface SessionFactory extends GenericSyncApiSessionFactory, GenericRmSessionFactory {

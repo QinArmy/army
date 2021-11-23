@@ -14,102 +14,47 @@ public interface Insert extends Statement, SQLDebug {
 
     /*################################## blow interfaces  ##################################*/
 
-    interface InsertSQLSpec {
+    interface InsertSqlSpec {
 
     }
 
-    interface InsertSpec extends InsertSQLSpec {
+    interface InsertSpec extends InsertSqlSpec {
 
         Insert asInsert();
     }
 
     /*################################## blow multiInsert interfaces ##################################*/
 
-    interface InsertOptionSpec<T extends IDomain> extends InsertIntoSpec<T> {
+    interface InsertOptionSpec<T extends IDomain, C> extends InsertIntoSpec<T, C> {
 
-        InsertOptionSpec<T> dataMigration();
+        InsertOptionSpec<T, C> migration();
     }
 
-    interface InsertIntoSpec<T extends IDomain> extends InsertSQLSpec {
+    interface InsertIntoSpec<T extends IDomain, C> extends InsertSqlSpec {
 
-        InsertValuesSpec<T> insertInto(Collection<FieldMeta<? super T, ?>> fieldMetaList);
+        InsertSetSpec<T, C> insertInto(Collection<FieldMeta<? super T, ?>> fieldMetaList);
 
-        InsertValuesSpec<T> insertInto(Supplier<Collection<FieldMeta<? super T, ?>>> fieldMetaList);
+        InsertSetSpec<T, C> insertInto(Supplier<Collection<FieldMeta<? super T, ?>>> fieldMetaList);
 
-        InsertValuesSpec<T> insertInto(TableMeta<T> tableMeta);
+        InsertSetSpec<T, C> insertInto(TableMeta<T> tableMeta);
     }
 
-    interface InsertValuesSpec<T extends IDomain> extends InsertSQLSpec {
+    interface InsertValuesSpec<T extends IDomain> extends InsertSqlSpec {
 
         InsertSpec value(T domain);
 
         InsertSpec values(List<T> domainList);
     }
 
+    interface InsertSetSpec<T extends IDomain, C> extends InsertValuesSpec<T> {
 
+        <F> InsertSetSpec<T, C> set(FieldMeta<? super T, F> fieldMeta, F value);
 
-    /*################################## blow subQuery insert interfaces ##################################*/
+        <F> InsertSetSpec<T, C> set(FieldMeta<? super T, F> fieldMeta, Expression<F> value);
 
-    @Deprecated
-    interface SubQueryTargetFieldSpec<T extends IDomain, C> extends InsertSQLSpec {
+        <F> InsertSetSpec<T, C> set(FieldMeta<? super T, F> fieldMeta, Function<C, Expression<F>> function);
 
-        SimpleTableRouteSpec<C> insertInto(List<FieldMeta<T, ?>> fieldMetaList);
-
-        SimpleTableRouteSpec<C> insertInto(Function<C, List<FieldMeta<T, ?>>> function);
-    }
-
-    @Deprecated
-    interface SimpleTableRouteSpec<C> extends SubQueryValueSpec<C> {
-
-        SubQueryValueSpec<C> route(int databaseIndex, int tableIndex);
-
-        SubQueryValueSpec<C> route(int tableIndex);
-    }
-
-    @Deprecated
-    interface SubQueryValueSpec<C> extends InsertSQLSpec {
-
-        InsertSpec subQuery(Function<C, SubQuery> function);
-    }
-
-    /*################################## blow child sub query insert interfaces ##################################*/
-
-    @Deprecated
-    interface ParentSubQueryTargetFieldSpec<T extends IDomain, C> extends InsertSQLSpec {
-
-        ParentTableRouteSpec<T, C> parentFields(List<FieldMeta<T, ?>> fieldMetaList);
-
-        ParentTableRouteSpec<T, C> parentFields(Function<C, List<FieldMeta<T, ?>>> function);
-
-    }
-
-    @Deprecated
-    interface ParentTableRouteSpec<T extends IDomain, C> extends ParentSubQuerySpec<T, C> {
-
-        ParentSubQuerySpec<T, C> route(int databaseIndex, int tableIndex);
-
-        ParentSubQuerySpec<T, C> route(int tableIndex);
-    }
-
-    @Deprecated
-    interface ChildSubQueryTargetFieldSpec<T extends IDomain, C> extends InsertSQLSpec {
-
-        ChildSubQuerySpec<C> childFields(List<FieldMeta<T, ?>> fieldMetaList);
-
-        ChildSubQuerySpec<C> childFields(Function<C, List<FieldMeta<T, ?>>> function);
-
-    }
-
-    @Deprecated
-    interface ParentSubQuerySpec<T extends IDomain, C> extends InsertSQLSpec {
-
-        ChildSubQueryTargetFieldSpec<T, C> parentSubQuery(Function<C, SubQuery> function);
-    }
-
-    @Deprecated
-    interface ChildSubQuerySpec<C> extends InsertSQLSpec {
-
-        InsertSpec childSubQuery(Function<C, SubQuery> function);
+        <F> InsertSetSpec<T, C> setDefault(FieldMeta<? super T, F> fieldMeta);
     }
 
 

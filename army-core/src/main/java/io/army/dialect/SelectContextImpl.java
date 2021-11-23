@@ -12,22 +12,22 @@ final class SelectContextImpl extends AbstractQueryStatementContext implements S
     public static SelectContextImpl build(_Select select, Dialect dialect, final Visible visible) {
         String primaryRouteSuffix = TableRouteUtils.selectPrimaryRouteSuffix(select, dialect);
 
-        TableContext tableContext = TableContext.multiTable(select.tableWrapperList(), primaryRouteSuffix);
+        TablesContext tableContext = TablesContext.multiTable(select.tableWrapperList(), primaryRouteSuffix);
         return new SelectContextImpl(dialect, visible, tableContext, select);
     }
 
-    public static SelectContextImpl build(_TableSqlContext original, _Select select) {
+    public static SelectContextImpl build(_TablesSqlContext original, _Select select) {
 
-        TableContext tableContext = TableContext.multiTable(select.tableWrapperList(), original.primaryRouteSuffix());
+        TablesContext tableContext = TablesContext.multiTable(select.tableWrapperList(), original.primaryRouteSuffix());
         return new SelectContextImpl(original, tableContext, select);
     }
 
-    private SelectContextImpl(Dialect dialect, Visible visible, TableContext tableContext
+    private SelectContextImpl(Dialect dialect, Visible visible, TablesContext tableContext
             , _Select select) {
         super(dialect, visible, tableContext, select);
     }
 
-    private SelectContextImpl(_TableSqlContext original, TableContext tableContext, _Select select) {
+    private SelectContextImpl(_TablesSqlContext original, TablesContext tableContext, _Select select) {
         super(original, tableContext, select);
     }
 

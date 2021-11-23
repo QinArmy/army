@@ -8,13 +8,13 @@ import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.stmt.SimpleStmt;
 
-final class SubQueryInsertContext extends AbstractTableContextSQLContext implements InsertContext {
+final class SubQueryInsertContext extends AbstractTableContextSQLContext implements _ValueInsertContext {
 
     static SubQueryInsertContext build(_StandardSubQueryInsert insert, Dialect dialect, final Visible visible) {
 
         String primaryRouteSuffix = TableRouteUtils.subQueryInsertPrimaryRouteSuffix(insert, dialect);
 
-        TableContext tableContext = TableContext.singleTable(insert, false, primaryRouteSuffix);
+        TablesContext tableContext = TablesContext.singleTable(insert, false, primaryRouteSuffix);
         return new SubQueryInsertContext(dialect, visible, tableContext);
     }
 
@@ -22,7 +22,7 @@ final class SubQueryInsertContext extends AbstractTableContextSQLContext impleme
             , Visible visible) {
         String primaryRouteSuffix = TableRouteUtils.subQueryInsertPrimaryRouteSuffix(insert, dialect);
 
-        TableContext tableContext = TableContext.singleTable(insert, true, primaryRouteSuffix);
+        TablesContext tableContext = TablesContext.singleTable(insert, true, primaryRouteSuffix);
         return new SubQueryInsertContext(dialect, visible, tableContext);
     }
 
@@ -30,7 +30,7 @@ final class SubQueryInsertContext extends AbstractTableContextSQLContext impleme
             , Visible visible) {
         String primaryRouteSuffix = TableRouteUtils.subQueryInsertPrimaryRouteSuffix(insert, dialect);
 
-        TableContext tableContext = TableContext.singleTable(insert, false, primaryRouteSuffix);
+        TablesContext tableContext = TablesContext.singleTable(insert, false, primaryRouteSuffix);
         return new SubQueryInsertContext(dialect, visible, tableContext);
     }
 
@@ -43,7 +43,7 @@ final class SubQueryInsertContext extends AbstractTableContextSQLContext impleme
 
     private final TableMeta<?> physicalTable;
 
-    private SubQueryInsertContext(Dialect dialect, Visible visible, TableContext tableContext) {
+    private SubQueryInsertContext(Dialect dialect, Visible visible, TablesContext tableContext) {
         super(dialect, visible, tableContext);
         this.physicalTable = tableContext.singleTable();
     }

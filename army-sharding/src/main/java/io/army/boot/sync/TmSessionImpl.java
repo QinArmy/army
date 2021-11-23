@@ -253,7 +253,7 @@ final class TmSessionImpl implements InnerTmSession {
             databaseIndex = routeWrapper.routeIndexValue();
         } else {
             databaseIndex = this.sessionFactory.dataSourceRoute(routeWrapper.tableMeta())
-                    .dataSourceRoute(routeWrapper.routeKey());
+                    .database(routeWrapper.routeKey());
         }
         //3. obtain target session and execute
         return obtainRmSession(databaseIndex)
@@ -271,7 +271,7 @@ final class TmSessionImpl implements InnerTmSession {
 
         if (insert instanceof _ValuesInsert) {
             _ValuesInsert valuesInsert = (_ValuesInsert) insert;
-            if (valuesInsert.wrapperList().size() == 1) {
+            if (valuesInsert.domainList().size() == 1) {
                 processSingleInsert(valuesInsert, visible);
             } else {
                 processMultiInsert(valuesInsert, visible);
@@ -329,7 +329,7 @@ final class TmSessionImpl implements InnerTmSession {
             throw new NotFoundRouteException("Insert TableMeta[%s] not found database route.", tableMeta);
         }
         int dataSourceIndex = this.sessionFactory.dataSourceRoute(tableMeta)
-                .dataSourceRoute(routeKey);
+                .database(routeKey);
 
         // 3. obtain target rm session by data source index.
         return obtainRmSession(dataSourceIndex)
@@ -498,7 +498,7 @@ final class TmSessionImpl implements InnerTmSession {
      */
     private void processSingleInsert(final _ValuesInsert insert, final Visible visible) {
 
-        final List<DomainWrapper> wrapperList = insert.wrapperList();
+        final List<DomainWrapper> wrapperList = insert.domainList();
         Assert.isTrue(wrapperList.size() == 1, "wrapperList size isn't 1 .");
         final TableMeta<?> tableMeta = insert.tableMeta();
         DomainWrapper domainWrapper = wrapperList.get(0);
@@ -510,7 +510,7 @@ final class TmSessionImpl implements InnerTmSession {
             throw new NotFoundRouteException("Insert TableMeta[%s] not found database route.", tableMeta);
         }
         int dataSourceIndex = this.sessionFactory.dataSourceRoute(tableMeta)
-                .dataSourceRoute(routeKey);
+                .database(routeKey);
         // 3. obtain target rm session by data source index.
         obtainRmSession(dataSourceIndex)
                 // 4. execute insert sql with domain index set .
@@ -527,7 +527,7 @@ final class TmSessionImpl implements InnerTmSession {
 
         final DomainValuesGenerator generator = this.sessionFactory.domainValuesGenerator();
         final TableMeta<?> tableMeta = insert.tableMeta();
-        final List<DomainWrapper> wrapperList = insert.wrapperList();
+        final List<DomainWrapper> wrapperList = insert.domainList();
         final int size = wrapperList.size();
 
         final boolean migrationData = insert.migrationData();
@@ -544,7 +544,7 @@ final class TmSessionImpl implements InnerTmSession {
                 throw new NotFoundRouteException("Insert TableMeta[%s] index[%s] not found database route."
                         , tableMeta, i);
             }
-            int dataSourceIndex = route.dataSourceRoute(routeKey);
+            int dataSourceIndex = route.database(routeKey);
             // 3. cache data source index and domain index
             Set<Integer> domainIndexSet = domainIndexSetMap.computeIfAbsent(dataSourceIndex, k -> new HashSet<>());
             domainIndexSet.add(i);
@@ -571,7 +571,7 @@ final class TmSessionImpl implements InnerTmSession {
             routeIndex = routeWrapper.routeIndexValue();
         } else {
             routeIndex = this.sessionFactory.dataSourceRoute(routeWrapper.tableMeta())
-                    .dataSourceRoute(routeWrapper.routeKey());
+                    .database(routeWrapper.routeKey());
         }
         return routeIndex;
     }
@@ -589,7 +589,7 @@ final class TmSessionImpl implements InnerTmSession {
             routeIndex = routeWrapper.routeIndexValue();
         } else {
             routeIndex = this.sessionFactory.dataSourceRoute(routeWrapper.tableMeta())
-                    .dataSourceRoute(routeWrapper.routeKey());
+                    .database(routeWrapper.routeKey());
         }
         return routeIndex;
     }

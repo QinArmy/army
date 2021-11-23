@@ -1,7 +1,7 @@
 package io.army.dialect;
 
-import io.army.criteria.SqlContext;
 import io.army.criteria.Visible;
+import io.army.criteria._SqlContext;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
@@ -10,7 +10,7 @@ import io.army.stmt.SimpleStmt;
 
 import java.util.List;
 
-public interface _TableSqlContext extends SqlContext {
+public interface _TablesSqlContext extends _SqlContext {
 
     /**
      * <p>
@@ -25,12 +25,12 @@ public interface _TableSqlContext extends SqlContext {
 
     Dialect dialect();
 
-    TableContext tableContext();
+    TablesContext tableContext();
 
-    TableContext primaryTableContext();
+    TablesContext primaryTableContext();
 
     @Nullable
-    TableContext parentTableContext();
+    TablesContext parentTableContext();
 
     String primaryRouteSuffix();
 
@@ -41,7 +41,7 @@ public interface _TableSqlContext extends SqlContext {
     SimpleStmt build();
 
     @Nullable
-    _TableSqlContext parentContext();
+    _TablesSqlContext parentContext();
 
 
 

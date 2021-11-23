@@ -1,9 +1,9 @@
 package io.army.dialect.mysql;
 
 import io.army.criteria.Delete;
-import io.army.criteria.SqlContext;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
+import io.army.criteria._SqlContext;
 import io.army.dialect.AbstractDmlDialect;
 import io.army.stmt.Stmt;
 
@@ -30,7 +30,7 @@ class MySQL57DmlDialect extends AbstractDmlDialect {
     }
 
     @Override
-    protected final void tableOnlyModifier(SqlContext context) {
+    protected final void tableOnlyModifier(_SqlContext context) {
         // do nothing .
     }
 

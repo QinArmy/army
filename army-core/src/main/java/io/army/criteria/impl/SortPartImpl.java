@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.SortPart;
-import io.army.criteria.SqlContext;
+import io.army.criteria._SqlContext;
 
 final class SortPartImpl implements SortPart {
 
@@ -16,7 +16,7 @@ final class SortPartImpl implements SortPart {
 
 
     @Override
-    public void appendSortPart(SqlContext context) {
+    public void appendSortPart(_SqlContext context) {
 
         sortPart.appendSortPart(context);
 

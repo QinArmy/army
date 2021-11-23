@@ -10,7 +10,7 @@ import io.army.stmt.ParamValue;
 import java.util.ArrayList;
 import java.util.List;
 
-abstract class AbstractSQLContext implements _TableSqlContext {
+abstract class AbstractSQLContext implements _TablesSqlContext {
 
     protected final Dialect dialect;
 
@@ -20,7 +20,7 @@ abstract class AbstractSQLContext implements _TableSqlContext {
 
     protected final List<ParamValue> paramList;
 
-    protected final _TableSqlContext parentContext;
+    protected final _TablesSqlContext parentContext;
 
     protected AbstractSQLContext(Dialect dialect, Visible visible) {
         this.dialect = dialect;
@@ -30,7 +30,7 @@ abstract class AbstractSQLContext implements _TableSqlContext {
         this.parentContext = null;
     }
 
-    protected AbstractSQLContext(_TableSqlContext parentContext) {
+    protected AbstractSQLContext(_TablesSqlContext parentContext) {
         this.dialect = parentContext.dialect();
         this.visible = parentContext.visible();
         this.sqlBuilder = parentContext.sqlBuilder();
@@ -106,13 +106,13 @@ abstract class AbstractSQLContext implements _TableSqlContext {
 
 
     @Override
-    public final _TableSqlContext parentContext() {
+    public final _TablesSqlContext parentContext() {
         return this.parentContext;
     }
 
     @Nullable
     @Override
-    public final TableContext parentTableContext() {
+    public final TablesContext parentTableContext() {
         return this.parentContext == null ? null : this.parentContext.tableContext();
     }
 

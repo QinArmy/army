@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.ConvertExpression;
 import io.army.criteria.Expression;
 import io.army.criteria.FieldExpression;
-import io.army.criteria.SqlContext;
+import io.army.criteria._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -28,7 +28,7 @@ class ConvertExpressionImpl<E> extends AbstractExpression<E> implements ConvertE
     }
 
     @Override
-    public final void appendSQL(SqlContext context) {
+    public final void appendSQL(_SqlContext context) {
         this.original.appendSQL(context);
     }
 

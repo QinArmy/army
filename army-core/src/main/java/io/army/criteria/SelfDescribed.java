@@ -9,6 +9,6 @@ public interface SelfDescribed {
      *     <li>append SelfDescribed instance content in sql</li>
      * </ol>
      */
-    void appendSQL(SqlContext context);
+    void appendSQL(_SqlContext context);
 
 }

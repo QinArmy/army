@@ -9,8 +9,11 @@ public abstract class AbstractSQL implements SqlDialect {
 
     protected final Dialect dialect;
 
+    protected final boolean sharding;
+
     protected AbstractSQL(Dialect dialect) {
         this.dialect = dialect;
+        this.sharding = this.dialect.sessionFactory().tableCountPerDatabase() > 1;
     }
 
     @Override
@@ -57,4 +60,6 @@ public abstract class AbstractSQL implements SqlDialect {
     public final boolean hasRowKeywords() {
         return this.dialect.hasRowKeywords();
     }
+
+
 }

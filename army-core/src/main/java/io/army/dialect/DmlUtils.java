@@ -3,18 +3,22 @@ package io.army.dialect;
 import io.army.ErrorCode;
 import io.army.annotation.UpdateMode;
 import io.army.beans.DomainWrapper;
+import io.army.beans.ObjectWrapper;
 import io.army.beans.ReadonlyWrapper;
 import io.army.boot.DomainValuesGenerator;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._StandardBatchInsert;
 import io.army.criteria.impl.inner._Update;
+import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.generator.FieldGenerator;
 import io.army.generator.PreFieldGenerator;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.GenericRmSessionFactory;
 import io.army.session.GenericSessionFactory;
+import io.army.sharding.Route;
+import io.army.sharding.ShardingRoute;
 import io.army.stmt.*;
 import io.army.struct.CodeEnum;
 import io.army.util.CollectionUtils;
@@ -23,11 +27,56 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.*;
 
-abstract class DMLUtils {
+abstract class DmlUtils {
 
-    DMLUtils() {
+    DmlUtils() {
         throw new UnsupportedOperationException();
     }
+
+
+    static Map<Byte, List<ObjectWrapper>> sharding(GenericRmSessionFactory factory, _ValuesInsert insert) {
+        final TableMeta<?> tableMeta = insert.tableMeta();
+        final List<ObjectWrapper> domainList = insert.domainList();
+
+        final Route route = factory.tableRoute(tableMeta);
+
+        final int databaseIndex = factory.databaseIndex();
+        final List<FieldMeta<?, ?>> databaseFields, tableFields;
+        databaseFields = tableMeta.databaseRouteFields();
+        tableFields = tableMeta.tableRouteFields();
+
+
+        final ShardingRoute shardingRoute = (ShardingRoute) route;
+        for (ObjectWrapper domain : domainList) {
+            Object value = null;
+            for (FieldMeta<?, ?> fieldMeta : databaseFields) {
+                value = domain.get(fieldMeta.fieldName());
+                if (value == null) {
+                    continue;
+                }
+                if (shardingRoute.database(fieldMeta, value) != databaseIndex) {
+
+                }
+            }
+            if (value == null) {
+
+            }
+            Byte tableIndex = null;
+            for (FieldMeta<?, ?> fieldMeta : tableFields) {
+                value = domain.get(fieldMeta.fieldName());
+                if (value == null) {
+                    continue;
+                }
+                tableIndex = shardingRoute.table(fieldMeta, value);
+            }
+            if (tableIndex == null) {
+
+            }
+
+        }
+        return Collections.emptyMap();
+    }
+
 
     /**
      * @return a unmodifiable List
@@ -193,7 +242,7 @@ abstract class DMLUtils {
 //        }
     }
 
-    static void setClauseFieldsManagedByArmy(_TableSqlContext context, TableMeta<?> tableMeta
+    static void setClauseFieldsManagedByArmy(_TablesSqlContext context, TableMeta<?> tableMeta
             , String tableAlias) {
         //1. version field
         final FieldMeta<?, ?> versionField = tableMeta.getField(_MetaBridge.VERSION);
@@ -257,7 +306,7 @@ abstract class DMLUtils {
     /**
      * @return a unmodifiable set
      */
-    static Set<FieldMeta<?, ?>> mergeInsertFields(TableMeta<?> logicalTable, Dialect dialect
+    static Set<FieldMeta<?, ?>> mergeInsertFields(TableMeta<?> domainTable, Dialect dialect
             , Collection<FieldMeta<?, ?>> targetFields) {
 //
 //        Set<FieldMeta<?, ?>> fieldMetaSet = new HashSet<>(targetFields);
@@ -379,7 +428,7 @@ abstract class DMLUtils {
     static Stmt createBatchInsertWrapper(_StandardBatchInsert insert
             , final Stmt stmt, GenericRmSessionFactory sessionFactory) {
 
-        final List<DomainWrapper> domainWrapperList = insert.wrapperList();
+        final List<DomainWrapper> domainWrapperList = insert.domainList();
 
         List<List<ParamValue>> parentParamGroupList, childParamGroupList = new ArrayList<>(domainWrapperList.size());
         SimpleStmt parentWrapper, childWrapper;

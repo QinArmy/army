@@ -106,7 +106,7 @@ public abstract class DialectUtils {
         }
     }
 
-    public static void appendPredicateList(List<IPredicate> predicateList, _TableSqlContext context) {
+    public static void appendPredicateList(List<IPredicate> predicateList, _TablesSqlContext context) {
 
         SqlBuilder builder = context.sqlBuilder();
         int count = 0;
@@ -119,7 +119,7 @@ public abstract class DialectUtils {
         }
     }
 
-    public static void appendSortPartList(List<SortPart> sortPartList, _TableSqlContext context) {
+    public static void appendSortPartList(List<SortPart> sortPartList, _TablesSqlContext context) {
         SqlBuilder builder = context.sqlBuilder();
 
         int count = 0;
@@ -161,7 +161,7 @@ public abstract class DialectUtils {
         return need;
     }
 
-    public static ArmyRuntimeException createNotSupportClauseException(_TableSqlContext context, Clause clause) {
+    public static ArmyRuntimeException createNotSupportClauseException(_TablesSqlContext context, Clause clause) {
         return new ArmyRuntimeException(ErrorCode.NONE, "%s not support %s clause."
                 , context.getClass().getName(), clause);
     }
@@ -224,7 +224,7 @@ public abstract class DialectUtils {
 
     private static final class SQLBuilderImpl implements SqlBuilder {
 
-        private final StringBuilder builder = new StringBuilder();
+        private final StringBuilder builder = new StringBuilder(128);
 
         private SQLBuilderImpl() {
         }

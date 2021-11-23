@@ -10,7 +10,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
-import io.army.sharding.TableRoute;
+import io.army.sharding.Route;
 
 import java.time.ZoneOffset;
 import java.util.Map;
@@ -55,6 +55,6 @@ public interface GenericSessionFactory {
 
     Function<ArmyException, RuntimeException> exceptionFunction();
 
-    TableRoute tableRoute(TableMeta<?> tableMeta) throws NotFoundRouteException;
+    Route tableRoute(TableMeta<?> tableMeta) throws NotFoundRouteException;
 
 }

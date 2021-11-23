@@ -4,7 +4,7 @@ import io.army.criteria.LockMode;
 import io.army.dialect.AbstractDQL;
 import io.army.dialect.DialectUtils;
 import io.army.dialect.SqlBuilder;
-import io.army.dialect._TableSqlContext;
+import io.army.dialect._TablesSqlContext;
 
 class Postgre11DQL extends AbstractDQL {
 
@@ -13,17 +13,17 @@ class Postgre11DQL extends AbstractDQL {
     }
 
     @Override
-    protected _TableSqlContext createSpecialSelectContext(_TableSqlContext original) {
+    protected _TablesSqlContext createSpecialSelectContext(_TablesSqlContext original) {
         return null;
     }
 
     @Override
-    protected _TableSqlContext createSpecialSubQueryContext(_TableSqlContext original) {
+    protected _TablesSqlContext createSpecialSubQueryContext(_TablesSqlContext original) {
         return null;
     }
 
     @Override
-    protected void limitClause(int offset, int rowCount, _TableSqlContext context) {
+    protected void limitClause(int offset, int rowCount, _TablesSqlContext context) {
         SqlBuilder builder = context.sqlBuilder();
         if (rowCount > -1) {
             builder.append(" LIMIT ")
@@ -36,7 +36,7 @@ class Postgre11DQL extends AbstractDQL {
     }
 
     @Override
-    protected void lockClause(LockMode lockMode, _TableSqlContext context) {
+    protected void lockClause(LockMode lockMode, _TablesSqlContext context) {
         SqlBuilder builder = context.sqlBuilder();
         switch (lockMode) {
             case NONE:

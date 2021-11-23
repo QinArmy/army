@@ -2,6 +2,9 @@ package io.army.util;
 
 import io.army.ArmyException;
 import io.army.DialectMode;
+import io.army.criteria.CriteriaException;
+import io.army.lang.Nullable;
+import io.army.meta.FieldMeta;
 import io.army.meta.ServerMeta;
 import io.army.session.TimeoutException;
 import io.army.stmt.Stmt;
@@ -29,6 +32,21 @@ public abstract class Exceptions extends ExceptionUtils {
         String m;
         m = String.format("%s isn't supported by %s", dialectMode, serverMeta);
         throw new ArmyException(m);
+    }
+
+    public static CriteriaException unknownTableAlias(String tableAlias) {
+        String m = String.format("Unknown table alias[%s].", tableAlias);
+        return new CriteriaException(m);
+    }
+
+    public static CriteriaException unknownColumn(@Nullable String tableAlias, FieldMeta<?, ?> fieldMeta) {
+        final String m;
+        if (tableAlias == null) {
+            m = String.format("Unknown column %s,%s", fieldMeta.columnName(), fieldMeta);
+        } else {
+            m = String.format("Unknown column %s.%s,%s", tableAlias, fieldMeta.columnName(), fieldMeta);
+        }
+        return new CriteriaException(m);
     }
 
 

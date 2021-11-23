@@ -15,7 +15,7 @@ class StandardDeleteContext extends AbstractStandardDomainContext implements Del
         TableMeta<?> tableMeta = delete.tableMeta();
         String primarySuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(delete, dialect);
 
-        TableContext tableContext = TableContext.singleTable(delete, false, primarySuffix);
+        TablesContext tableContext = TablesContext.singleTable(delete, false, primarySuffix);
         return new StandardDeleteContext(dialect, visible
                 , tableContext
                 , tableMeta
@@ -27,7 +27,7 @@ class StandardDeleteContext extends AbstractStandardDomainContext implements Del
 
         String primarySuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(delete, dialect);
 
-        TableContext tableContext = TableContext.singleTable(delete, true, primarySuffix);
+        TablesContext tableContext = TablesContext.singleTable(delete, true, primarySuffix);
         return new StandardDeleteContext(dialect, visible
                 , tableContext
                 , parentMeta
@@ -38,7 +38,7 @@ class StandardDeleteContext extends AbstractStandardDomainContext implements Del
         ChildTableMeta<?> childMeta = (ChildTableMeta<?>) delete.tableMeta();
         String primarySuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(delete, dialect);
 
-        TableContext tableContext = TableContext.singleTable(delete, false, primarySuffix);
+        TablesContext tableContext = TablesContext.singleTable(delete, false, primarySuffix);
         return new DomainDeleteContext(dialect, visible
                 , tableContext
                 , childMeta
@@ -51,7 +51,7 @@ class StandardDeleteContext extends AbstractStandardDomainContext implements Del
         return null;
     }
 
-    private StandardDeleteContext(Dialect dialect, Visible visible, TableContext tableContext
+    private StandardDeleteContext(Dialect dialect, Visible visible, TablesContext tableContext
             , TableMeta<?> primaryTable, TableMeta<?> relationTable) {
         super(dialect, visible, tableContext, primaryTable, relationTable);
     }
@@ -60,7 +60,7 @@ class StandardDeleteContext extends AbstractStandardDomainContext implements Del
 
     private static final class DomainDeleteContext extends StandardDeleteContext {
 
-        private DomainDeleteContext(Dialect dialect, Visible visible, TableContext tableContext
+        private DomainDeleteContext(Dialect dialect, Visible visible, TablesContext tableContext
                 , TableMeta<?> primaryTable, TableMeta<?> relationTable) {
             super(dialect, visible, tableContext, primaryTable, relationTable);
         }

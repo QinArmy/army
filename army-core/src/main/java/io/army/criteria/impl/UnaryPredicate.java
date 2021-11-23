@@ -46,11 +46,11 @@ class UnaryPredicate extends AbstractPredicate {
     }
 
     @Override
-    public void appendSQL(SqlContext context) {
+    public void appendSQL(_SqlContext context) {
         this.doAppendSQL(context);
     }
 
-    final void doAppendSQL(SqlContext context) {
+    final void doAppendSQL(_SqlContext context) {
         switch (this.operator.position()) {
             case LEFT:
                 context.sqlBuilder()
@@ -104,12 +104,12 @@ class UnaryPredicate extends AbstractPredicate {
         }
 
         @Override
-        public void appendSQL(SqlContext context) {
+        public void appendSQL(_SqlContext context) {
             context.appendFieldPredicate(this);
         }
 
         @Override
-        public void appendPredicate(SqlContext context) {
+        public void appendPredicate(_SqlContext context) {
             this.doAppendSQL(context);
         }
 

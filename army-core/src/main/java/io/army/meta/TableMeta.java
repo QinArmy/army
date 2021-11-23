@@ -1,7 +1,7 @@
 package io.army.meta;
 
-import io.army.criteria.SqlContext;
 import io.army.criteria.TableAble;
+import io.army.criteria._SqlContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.sharding.Route;
@@ -22,7 +22,7 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
      * @throws UnsupportedOperationException throw always
      */
     @Override
-    void appendSQL(SqlContext context);
+    void appendSQL(_SqlContext context);
 
 
     Class<T> javaType();
@@ -44,7 +44,12 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
      * @param database true : database route field list,false : table route field list.
      * @return a unmodifiable list
      */
+    @Deprecated
     List<FieldMeta<?, ?>> routeFieldList(boolean database);
+
+    List<FieldMeta<?, ?>> databaseRouteFields();
+
+    List<FieldMeta<?, ?>> tableRouteFields();
 
     @Nullable
     Class<? extends Route> routeClass();

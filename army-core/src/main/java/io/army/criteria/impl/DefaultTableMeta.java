@@ -4,7 +4,7 @@ import io.army.ArmyException;
 import io.army.annotation.DiscriminatorValue;
 import io.army.annotation.Inheritance;
 import io.army.annotation.Table;
-import io.army.criteria.SqlContext;
+import io.army.criteria._SqlContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
@@ -435,6 +435,16 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         return database ? this.databaseRouteFieldList : this.tableRouteFieldList;
     }
 
+    @Override
+    public final List<FieldMeta<?, ?>> databaseRouteFields() {
+        return this.databaseRouteFieldList;
+    }
+
+    @Override
+    public final List<FieldMeta<?, ?>> tableRouteFields() {
+        return this.tableRouteFieldList;
+    }
+
     @Nullable
     @Override
     public final Class<? extends Route> routeClass() {
@@ -442,7 +452,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     @Override
-    public final void appendSQL(SqlContext context) {
+    public final void appendSQL(_SqlContext context) {
         throw new UnsupportedOperationException(
                 "please use io.army.dialect.TableContextSQLContext.appendTable(TableMeta<?>,@Nullable  String)");
     }

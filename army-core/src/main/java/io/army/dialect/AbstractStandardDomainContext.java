@@ -24,7 +24,7 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
 
     private boolean relationSubQueryContext = false;
 
-    AbstractStandardDomainContext(Dialect dialect, Visible visible, TableContext tableContext
+    AbstractStandardDomainContext(Dialect dialect, Visible visible, TablesContext tableContext
             , TableMeta<?> primaryTable, TableMeta<?> relationTable) {
         super(dialect, visible, tableContext);
         this.primaryTable = primaryTable;

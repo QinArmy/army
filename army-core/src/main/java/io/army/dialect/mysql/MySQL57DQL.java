@@ -6,7 +6,7 @@ import io.army.criteria.LockMode;
 import io.army.dialect.AbstractDQL;
 import io.army.dialect.Keywords;
 import io.army.dialect.SqlBuilder;
-import io.army.dialect._TableSqlContext;
+import io.army.dialect._TablesSqlContext;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 import io.army.stmt.ParamValue;
@@ -23,17 +23,17 @@ class MySQL57DQL extends AbstractDQL {
 
 
     @Override
-    protected _TableSqlContext createSpecialSelectContext(_TableSqlContext original) {
+    protected _TablesSqlContext createSpecialSelectContext(_TablesSqlContext original) {
         return null;
     }
 
     @Override
-    protected _TableSqlContext createSpecialSubQueryContext(_TableSqlContext original) {
+    protected _TablesSqlContext createSpecialSubQueryContext(_TablesSqlContext original) {
         return null;
     }
 
     @Override
-    protected final void limitClause(int offset, int rowCount, _TableSqlContext context) {
+    protected final void limitClause(int offset, int rowCount, _TablesSqlContext context) {
 
         if (offset > -1 || rowCount > -1) {
             SqlBuilder builder = context.sqlBuilder();
@@ -54,7 +54,7 @@ class MySQL57DQL extends AbstractDQL {
     }
 
     @Override
-    protected void lockClause(LockMode lockMode, _TableSqlContext context) {
+    protected void lockClause(LockMode lockMode, _TablesSqlContext context) {
         switch (lockMode) {
             case PESSIMISTIC_READ:
                 context.sqlBuilder().append(" LOCK IN SHARE MODE");
