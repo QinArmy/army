@@ -6,7 +6,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 import io.army.stmt.ParamValue;
-import io.army.util.Exceptions;
+import io.army.util._Exceptions;
 
 abstract class DomainDmlContext implements _DmlContext {
 
@@ -34,7 +34,7 @@ abstract class DomainDmlContext implements _DmlContext {
     @Override
     public final void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) {
         if (!tableAlias.equals(this.tableAlias) || fieldMeta.tableMeta() != this.tableMeta) {
-            throw Exceptions.unknownColumn(tableAlias, fieldMeta);
+            throw _Exceptions.unknownColumn(tableAlias, fieldMeta);
         }
         this.sqlBuilder.append(tableAlias)
                 .append('.')
@@ -44,7 +44,7 @@ abstract class DomainDmlContext implements _DmlContext {
     @Override
     public final void appendField(FieldMeta<?, ?> fieldMeta) {
         if (fieldMeta.tableMeta() != this.tableMeta) {
-            throw Exceptions.unknownColumn(null, fieldMeta);
+            throw _Exceptions.unknownColumn(null, fieldMeta);
         }
         final String tableAlias = this.tableAlias;
         if (tableAlias == null) {

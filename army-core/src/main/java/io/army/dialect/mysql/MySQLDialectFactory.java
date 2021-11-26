@@ -4,7 +4,7 @@ import io.army.ArmyKeys;
 import io.army.DialectMode;
 import io.army.dialect.Dialect;
 import io.army.session.GenericRmSessionFactory;
-import io.army.util.Exceptions;
+import io.army.util._Exceptions;
 
 public abstract class MySQLDialectFactory {
 
@@ -20,7 +20,7 @@ public abstract class MySQLDialectFactory {
                 dialect = new MySQL80Dialect(sessionFactory);
                 break;
             default:
-                throw Exceptions.notSupportDialectMode(dialectMode, sessionFactory.serverMeta());
+                throw _Exceptions.notSupportDialectMode(dialectMode, sessionFactory.serverMeta());
         }
         return dialect;
     }

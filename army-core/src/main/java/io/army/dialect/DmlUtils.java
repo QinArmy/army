@@ -11,17 +11,18 @@ import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._StandardBatchInsert;
 import io.army.criteria.impl.inner._Update;
 import io.army.criteria.impl.inner._ValuesInsert;
-import io.army.generator.FieldGenerator;
-import io.army.generator.PreFieldGenerator;
+import io.army.domain.IDomain;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
+import io.army.session.FactoryMode;
 import io.army.session.GenericRmSessionFactory;
-import io.army.session.GenericSessionFactory;
 import io.army.sharding.Route;
 import io.army.sharding.ShardingRoute;
+import io.army.sharding.TableRoute;
 import io.army.stmt.*;
 import io.army.struct.CodeEnum;
 import io.army.util.CollectionUtils;
+import io.army.util._Exceptions;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -33,48 +34,85 @@ abstract class DmlUtils {
         throw new UnsupportedOperationException();
     }
 
+    @SuppressWarnings("unchecked")
+    static <T extends IDomain> Collection<FieldMeta<?, ?>> tableFields(TableMeta<T> tableMeta) {
+        final Collection<?> collection = tableMeta.fieldCollection();
+        return (Collection<FieldMeta<?, ?>>) collection;
+    }
 
-    static Map<Byte, List<ObjectWrapper>> sharding(GenericRmSessionFactory factory, _ValuesInsert insert) {
+    /**
+     * @return a unmodified map
+     */
+    static Map<Byte, List<ObjectWrapper>> insertSharding(GenericRmSessionFactory factory, _ValuesInsert insert) {
+
+        final FactoryMode mode = factory.factoryMode();
+        if (mode == FactoryMode.NO_SHARDING) {
+            return Collections.singletonMap(factory.databaseIndex(), insert.domainList());
+        }
         final TableMeta<?> tableMeta = insert.tableMeta();
-        final List<ObjectWrapper> domainList = insert.domainList();
-
-        final Route route = factory.tableRoute(tableMeta);
-
         final int databaseIndex = factory.databaseIndex();
+
         final List<FieldMeta<?, ?>> databaseFields, tableFields;
         databaseFields = tableMeta.databaseRouteFields();
         tableFields = tableMeta.tableRouteFields();
+        if (databaseFields.size() == 0 && databaseIndex != 0) {
+            throw _Exceptions.databaseRouteError(insert, factory);
+        }
 
+        final int tableCount = factory.tableCountPerDatabase();
+        final Route route = factory.tableRoute(tableMeta);
+        final DomainValuesGenerator generator = factory.domainValuesGenerator();
 
-        final ShardingRoute shardingRoute = (ShardingRoute) route;
-        for (ObjectWrapper domain : domainList) {
-            Object value = null;
+        final boolean checkDatabase = mode == FactoryMode.SHARDING && databaseFields.size() > 0;
+        final boolean tableSharding = tableFields.size() > 0;
+        final boolean migration = insert.migrationData();
+        final Map<Byte, List<ObjectWrapper>> domainMap = new HashMap<>();
+        for (ObjectWrapper domain : insert.domainList()) {
+
+            generator.createValues(domain, migration); // create required values
+
+            Object value;
+            byte tableIndex;
+            if (tableSharding) {
+                tableIndex = -1;
+                for (FieldMeta<?, ?> fieldMeta : tableFields) {
+                    value = domain.get(fieldMeta.fieldName());
+                    if (value == null) {
+                        continue;
+                    }
+                    tableIndex = ((TableRoute) route).table(fieldMeta, value);
+                    break;
+                }
+            } else {
+                tableIndex = 0;
+            }
+            if (tableIndex < 0 || tableIndex >= tableCount) {
+                throw _Exceptions.noTableRoute(insert, factory);
+            }
+
+            domainMap.computeIfAbsent(tableIndex, k -> new ArrayList<>())
+                    .add(domain);
+
+            if (!checkDatabase) {
+                continue;
+            }
+            value = null;
             for (FieldMeta<?, ?> fieldMeta : databaseFields) {
                 value = domain.get(fieldMeta.fieldName());
                 if (value == null) {
                     continue;
                 }
-                if (shardingRoute.database(fieldMeta, value) != databaseIndex) {
-
+                if (((ShardingRoute) route).database(fieldMeta, value) != databaseIndex) {
+                    throw _Exceptions.databaseRouteError(insert, factory);
                 }
+                break;
             }
             if (value == null) {
-
-            }
-            Byte tableIndex = null;
-            for (FieldMeta<?, ?> fieldMeta : tableFields) {
-                value = domain.get(fieldMeta.fieldName());
-                if (value == null) {
-                    continue;
-                }
-                tableIndex = shardingRoute.table(fieldMeta, value);
-            }
-            if (tableIndex == null) {
-
+                throw _Exceptions.databaseRouteError(insert, factory);
             }
 
         }
-        return Collections.emptyMap();
+        return Collections.unmodifiableMap(domainMap);
     }
 
 
@@ -254,7 +292,7 @@ abstract class DmlUtils {
         context.appendField(tableAlias, versionField);
         builder.append(" + 1 ,");
 
-        //2. updateTime field
+        //2. updateTime fieldπ
         final FieldMeta<?, ?> updateTimeField = tableMeta.getField(_MetaBridge.UPDATE_TIME);
         // updateTime field self-describe
         context.appendField(tableAlias, updateTimeField);
@@ -303,36 +341,27 @@ abstract class DmlUtils {
         return hasVersion;
     }
 
-    /**
-     * @return a unmodifiable set
-     */
-    static Set<FieldMeta<?, ?>> mergeInsertFields(TableMeta<?> domainTable, Dialect dialect
-            , Collection<FieldMeta<?, ?>> targetFields) {
-//
-//        Set<FieldMeta<?, ?>> fieldMetaSet = new HashSet<>(targetFields);
-//
-//        TableMeta<?> parentMeta = logicalTable;
-//        if (parentMeta instanceof ChildTableMeta) {
-//            ChildTableMeta<?> childMeta = (ChildTableMeta<?>) parentMeta;
-//            parentMeta = childMeta.parentMeta();
-//            appendGeneratorFields(fieldMetaSet, parentMeta, dialect.sessionFactory());
-//        }
-//        appendGeneratorFields(fieldMetaSet, logicalTable, dialect.sessionFactory());
-//
-//        FieldMeta<?, ?> discriminator = logicalTable.discriminator();
-//        if (discriminator != null) {
-//            fieldMetaSet.add(discriminator);
-//        }
-//        if (parentMeta.mappingField(_MetaBridge.CREATE_TIME)) {
-//            fieldMetaSet.add(parentMeta.getField(_MetaBridge.CREATE_TIME));
-//        }
-//        if (parentMeta.mappingField(_MetaBridge.UPDATE_TIME)) {
-//            fieldMetaSet.add(parentMeta.getField(_MetaBridge.UPDATE_TIME));
-//        }
-//        if (parentMeta.mappingField(_MetaBridge.VERSION)) {
-//            fieldMetaSet.add(parentMeta.getField(_MetaBridge.VERSION));
-//        }
-        return null;
+
+    static void appendInsertFields(TableMeta<?> domainTable, Set<FieldMeta<?, ?>> targetFields) {
+
+        targetFields.addAll(domainTable.generatorChain());
+
+        targetFields.add(domainTable.id());
+        if (domainTable instanceof ParentTableMeta) {
+            targetFields.add(((ParentTableMeta<?>) domainTable).discriminator());
+        }
+        targetFields.add(domainTable.getField(_MetaBridge.CREATE_TIME));
+
+        if (domainTable.mappingField(_MetaBridge.UPDATE_TIME)) {
+            targetFields.add(domainTable.getField(_MetaBridge.UPDATE_TIME));
+        }
+        if (domainTable.mappingField(_MetaBridge.VERSION)) {
+            targetFields.add(domainTable.getField(_MetaBridge.VERSION));
+        }
+        if (domainTable.mappingField(_MetaBridge.VISIBLE)) {
+            targetFields.add(domainTable.getField(_MetaBridge.VISIBLE));
+        }
+
     }
 
     static void createValueInsertForSimple(TableMeta<?> physicalTable, TableMeta<?> logicalTable
@@ -595,21 +624,6 @@ abstract class DmlUtils {
         return Collections.unmodifiableList(paramValueList);
     }
 
-
-    private static void appendGeneratorFields(Set<FieldMeta<?, ?>> fieldMetaSet, TableMeta<?> physicalTable
-            , GenericSessionFactory factory) {
-
-        List<FieldMeta<?, ?>> chain = factory.generatorChain(physicalTable);
-        FieldGenerator fieldGenerator;
-        for (FieldMeta<?, ?> fieldMeta : chain) {
-            fieldGenerator = factory.fieldGenerator(fieldMeta);
-            if (fieldGenerator instanceof PreFieldGenerator) {
-                fieldMetaSet.add(fieldMeta);
-            }
-
-        }
-        fieldMetaSet.add(physicalTable.id());
-    }
 
     private static void doExtractParentPredicatesForUpdate(List<IPredicate> predicateList
             , Collection<FieldMeta<?, ?>> childUpdatedFields, List<IPredicate> newPredicates

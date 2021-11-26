@@ -16,7 +16,7 @@ import io.army.sqltype.SqlDataType;
 import io.army.stmt.*;
 import io.army.sync.executor.StmtExecutor;
 import io.army.sync.utils.SyncExceptions;
-import io.army.util.Exceptions;
+import io.army.util._Exceptions;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -67,7 +67,7 @@ abstract class AbstractStmtExecutor implements StmtExecutor {
             } else if (stmt instanceof PairBatchStmt) {
                 insertRows = this.executePairBatchInsert((PairBatchStmt) stmt, timeout);
             } else {
-                throw Exceptions.unexpectedStmt(stmt);
+                throw _Exceptions.unexpectedStmt(stmt);
             }
             return insertRows;
         } catch (SQLException e) {

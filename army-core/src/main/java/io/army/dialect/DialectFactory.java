@@ -2,7 +2,7 @@ package io.army.dialect;
 
 import io.army.dialect.mysql.MySQLDialectFactory;
 import io.army.session.GenericRmSessionFactory;
-import io.army.util.Exceptions;
+import io.army.util._Exceptions;
 
 public abstract class DialectFactory {
 
@@ -22,7 +22,7 @@ public abstract class DialectFactory {
             case Oracle:
             case H2:
             default:
-                throw Exceptions.createUnexpectedEnumException(database);
+                throw _Exceptions.createUnexpectedEnumException(database);
         }
         return dialect;
     }

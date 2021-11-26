@@ -21,9 +21,9 @@ import io.army.meta.ServerMeta;
 public interface GenericRmSessionFactory extends GenericSessionFactory {
 
 
-    int databaseIndex();
+    byte databaseIndex();
 
-    int tableCountPerDatabase();
+    byte tableCountPerDatabase();
 
     ServerMeta serverMeta();
 

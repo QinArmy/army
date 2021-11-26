@@ -18,12 +18,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
-class StandardInsert<T extends IDomain> extends AbstractSQLDebug implements Insert
-        , Insert.InsertSpec, Insert.InsertIntoSpec<T>, Insert.InsertValuesSpec<T>, Insert.InsertOptionSpec<T>
+class StandardInsert<T extends IDomain, C> extends AbstractSQLDebug implements Insert
+        , Insert.InsertSpec, Insert.InsertIntoSpec<T, C>, Insert.InsertValuesSpec<T>, Insert.InsertOptionSpec<T, C>
         , _StandardInsert {
 
-    static <T extends IDomain> StandardInsert<T> build(TableMeta<T> tableMeta) {
+    static <T extends IDomain> StandardInsert<T, Void> build(TableMeta<T> tableMeta) {
         return new StandardInsert<>(tableMeta);
+    }
+
+    static <T extends IDomain, C> StandardInsert<T, C> build(TableMeta<T> tableMeta, C criteria) {
+        return null;
     }
 
 
@@ -126,7 +130,7 @@ class StandardInsert<T extends IDomain> extends AbstractSQLDebug implements Inse
     }
 
     @Override
-    public final List<FieldMeta<?, ?>> fieldList() {
+    public final List<FieldMeta<?, ?>> fieldSet() {
         return this.fieldList;
     }
 

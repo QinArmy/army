@@ -90,12 +90,10 @@ public abstract class DialectUtils {
 
         final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
 
-        boolean appendedId = false;
         for (FieldMeta<?, ?> fieldMeta : mergedFields) {
-            if (!appendedId && _MetaBridge.ID.equals(fieldMeta.fieldName())) {
+            if (fieldMeta instanceof PrimaryFieldMeta && _MetaBridge.ID.equals(fieldMeta.fieldName())) {
                 childFields.add(childMeta.id());
                 parentFields.add(parentMeta.id());
-                appendedId = true;
             } else if (fieldMeta.tableMeta() == parentMeta) {
                 parentFields.add(fieldMeta);
             } else if (fieldMeta.tableMeta() == childMeta) {

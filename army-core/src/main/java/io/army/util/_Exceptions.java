@@ -3,16 +3,18 @@ package io.army.util;
 import io.army.ArmyException;
 import io.army.DialectMode;
 import io.army.criteria.CriteriaException;
+import io.army.criteria.impl.inner._Statement;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.ServerMeta;
+import io.army.session.GenericRmSessionFactory;
 import io.army.session.TimeoutException;
 import io.army.stmt.Stmt;
 import io.qinarmy.util.ExceptionUtils;
 
-public abstract class Exceptions extends ExceptionUtils {
+public abstract class _Exceptions extends ExceptionUtils {
 
-    protected Exceptions() {
+    protected _Exceptions() {
         throw new UnsupportedOperationException();
     }
 
@@ -46,6 +48,17 @@ public abstract class Exceptions extends ExceptionUtils {
         } else {
             m = String.format("Unknown column %s.%s,%s", tableAlias, fieldMeta.columnName(), fieldMeta);
         }
+        return new CriteriaException(m);
+    }
+
+
+    public static CriteriaException databaseRouteError(_Statement stmt, GenericRmSessionFactory factory) {
+        String m = String.format("%s database route and %s not match.", stmt, factory);
+        return new CriteriaException(m);
+    }
+
+    public static CriteriaException noTableRoute(_Statement stmt, GenericRmSessionFactory factory) {
+        String m = String.format("Not found table route in %s.Factory %s", stmt, factory);
         return new CriteriaException(m);
     }
 

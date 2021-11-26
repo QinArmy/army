@@ -41,7 +41,7 @@ public abstract class SQLs extends AbstractSQLS {
      * @param targetTable will insert to table meta
      * @return a standard insert api object.
      */
-    public static <T extends IDomain> Insert.InsertIntoSpec<T> domainInsert(TableMeta<T> targetTable) {
+    public static <T extends IDomain> Insert.InsertOptionSpec<T, Void> domainInsert(TableMeta<T> targetTable) {
         return StandardInsert.build(targetTable);
     }
 

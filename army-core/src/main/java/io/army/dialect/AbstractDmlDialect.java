@@ -232,13 +232,13 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
     private Stmt valueInsert(_ValuesInsert insert, List<ObjectWrapper> domainList, final Visible visible) {
 
         final TableMeta<?> tableMeta = insert.tableMeta();
-        final List<FieldMeta<?, ?>> targetFieldList = insert.fieldList();
+        final List<FieldMeta<?, ?>> targetFieldList = insert.fieldSet();
         // 1. merge target fields.
         Collection<FieldMeta<?, ?>> fieldMetas;
         if (targetFieldList.isEmpty()) {
 
         } else {
-            fieldMetas = DmlUtils.mergeInsertFields(tableMeta, this.dialect, insert.fieldList());
+            fieldMetas = DmlUtils.appendInsertFields(tableMeta, this.dialect, insert.fieldSet());
         }
         final List<ObjectWrapper> domainWrapperList = insert.domainList();
         final List<Stmt> stmtList = new ArrayList<>(domainWrapperList.size());
@@ -312,7 +312,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
             stmt = standardChildQueryInsert((_StandardChildSubQueryInsert) insert, visible);
         } else {
             SubQueryInsertContext context = SubQueryInsertContext.build(insert, this.dialect, visible);
-            parseStandardSimpleSubQueryInsert(context, insert.tableMeta(), insert.fieldList(), insert.subQuery());
+            parseStandardSimpleSubQueryInsert(context, insert.tableMeta(), insert.fieldSet(), insert.subQuery());
             stmt = context.build();
         }
         return stmt;
@@ -328,7 +328,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
 
         // secondly ,parse child insert sql
         SubQueryInsertContext childContext = SubQueryInsertContext.buildChild(insert, this.dialect, visible);
-        parseStandardSimpleSubQueryInsert(childContext, childMeta, insert.fieldList(), insert.subQuery());
+        parseStandardSimpleSubQueryInsert(childContext, childMeta, insert.fieldSet(), insert.subQuery());
 
         return PairStmt.build(parentContext.build(), childContext.build());
     }
@@ -375,7 +375,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
     }
 
     /**
-     * @param mergedFields merged by {@link DmlUtils#mergeInsertFields(TableMeta, Dialect, Collection)}
+     * @param mergedFields merged by {@link DmlUtils#appendInsertFields(TableMeta, Dialect, Collection)}
      */
     private PairStmt createInsertForChild(ReadonlyWrapper beanWrapper, Collection<FieldMeta<?, ?>> mergedFields
             , _StandardInsert insert, final Visible visible) {
@@ -408,7 +408,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
 
 
     /**
-     * @param mergedFields merged by {@link DmlUtils#mergeInsertFields(TableMeta, Dialect, Collection)}
+     * @param mergedFields merged by {@link DmlUtils#appendInsertFields(TableMeta, Dialect, Collection)}
      */
     private SimpleStmt createInsertForSimple(ReadonlyWrapper beanWrapper
             , Collection<FieldMeta<?, ?>> mergedFields, _StandardInsert insert
@@ -447,7 +447,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
             , final Visible visible) {
         TableMeta<?> tableMeta = insert.tableMeta();
         // 1.merge fields
-        Set<FieldMeta<?, ?>> fieldMetaSet = DmlUtils.mergeInsertFields(tableMeta, this.dialect, insert.fieldList());
+        Set<FieldMeta<?, ?>> fieldMetaSet = DmlUtils.appendInsertFields(tableMeta, this.dialect, insert.fieldSet());
 
         StandardValueInsertContext context = StandardValueInsertContext.build(insert, null, this.dialect, visible);
         // 2. parse single table insert sql
@@ -462,7 +462,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
         final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
 
         // 1. merge fields
-        Set<FieldMeta<?, ?>> mergeFieldSet = DmlUtils.mergeInsertFields(childMeta, this.dialect, insert.fieldList());
+        Set<FieldMeta<?, ?>> mergeFieldSet = DmlUtils.appendInsertFields(childMeta, this.dialect, insert.fieldSet());
 
         final Set<FieldMeta<?, ?>> parentFieldSet = new HashSet<>(), childFieldSet = new HashSet<>();
         // 2.  divide target fields

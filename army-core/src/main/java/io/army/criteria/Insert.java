@@ -21,6 +21,9 @@ public interface Insert extends Statement, SQLDebug {
     interface InsertSpec extends InsertSqlSpec {
 
         Insert asInsert();
+
+        Insert asInsert(Visible visible);
+
     }
 
     /*################################## blow multiInsert interfaces ##################################*/

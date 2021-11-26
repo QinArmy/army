@@ -118,7 +118,7 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
     }
 
     @Override
-    public final List<FieldMeta<?, ?>> fieldList() {
+    public final List<FieldMeta<?, ?>> fieldSet() {
         return this.fieldList;
     }
 

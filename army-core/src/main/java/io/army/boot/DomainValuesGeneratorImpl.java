@@ -43,7 +43,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
     }
 
     @Override
-    public final void createValues(DomainWrapper domainWrapper, boolean migrationData) {
+    public final void createValues(ObjectWrapper domainWrapper, boolean migrationData) {
         final TableMeta<?> tableMeta = domainWrapper.tableMeta();
         if (migrationData) {
             // discriminator
