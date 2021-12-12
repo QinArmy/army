@@ -1,24 +1,22 @@
 package io.army.dialect;
 
 import io.army.beans.ObjectWrapper;
-import io.army.criteria.Expression;
-import io.army.lang.Nullable;
+import io.army.criteria.impl.inner._Expression;
 import io.army.meta.FieldMeta;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 public interface _ValueInsertContext extends _DmlContext {
 
-    @Nullable
-    _ValueInsertContext parentContext();
+    boolean migration();
 
-    Collection<FieldMeta<?, ?>> fieldMetas();
+    List<FieldMeta<?, ?>> fields();
 
-    Map<FieldMeta<?, ?>, Expression<?>> commonExpMap();
+    List<FieldMeta<?, ?>> parentFields();
+
+    Map<FieldMeta<?, ?>, _Expression<?>> commonExpMap();
 
     List<ObjectWrapper> domainList();
-
 
 }

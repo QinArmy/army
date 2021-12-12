@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Expression;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
@@ -10,7 +11,7 @@ import java.math.BigInteger;
 import java.util.Collection;
 import java.util.function.Function;
 
-abstract class AbstractNoNOperationExpression<E> implements Expression<E>, ExpressionCounselor {
+abstract class AbstractNoNOperationExpression<E> implements _Expression<E> {
 
     final String ERROR_MSG = "Non Expression not support this method.";
 

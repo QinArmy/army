@@ -1,6 +1,7 @@
 package io.army.dialect;
 
 
+import io.army.session.FactoryMode;
 import io.army.session.GenericRmSessionFactory;
 
 import java.time.ZoneId;
@@ -13,7 +14,7 @@ public abstract class AbstractSQL implements SqlDialect {
 
     protected AbstractSQL(Dialect dialect) {
         this.dialect = dialect;
-        this.sharding = this.dialect.sessionFactory().tableCountPerDatabase() > 1;
+        this.sharding = this.dialect.sessionFactory().factoryMode() != FactoryMode.NO_SHARDING;
     }
 
     @Override

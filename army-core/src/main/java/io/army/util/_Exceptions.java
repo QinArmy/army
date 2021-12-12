@@ -3,6 +3,7 @@ package io.army.util;
 import io.army.ArmyException;
 import io.army.DialectMode;
 import io.army.criteria.CriteriaException;
+import io.army.criteria.Statement;
 import io.army.criteria.impl.inner._Statement;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -48,6 +49,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         } else {
             m = String.format("Unknown column %s.%s,%s", tableAlias, fieldMeta.columnName(), fieldMeta);
         }
+        return new CriteriaException(m);
+    }
+
+    public static CriteriaException unknownStatement(Statement stmt, GenericRmSessionFactory factory) {
+        String m = String.format("Unknown %s in %s", stmt, factory);
         return new CriteriaException(m);
     }
 

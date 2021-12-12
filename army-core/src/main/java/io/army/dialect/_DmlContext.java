@@ -1,9 +1,8 @@
 package io.army.dialect;
 
-import io.army.criteria._SqlContext;
 import io.army.meta.TableMeta;
 
-public interface _DmlContext extends _SqlContext {
+public interface _DmlContext extends _StmtContext {
 
 
     /**
@@ -17,5 +16,6 @@ public interface _DmlContext extends _SqlContext {
     byte tableIndex();
 
     String tableSuffix();
+
 
 }

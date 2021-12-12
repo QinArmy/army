@@ -22,42 +22,68 @@ public interface Insert extends Statement, SQLDebug {
 
         Insert asInsert();
 
-        Insert asInsert(Visible visible);
-
     }
 
     /*################################## blow multiInsert interfaces ##################################*/
 
     interface InsertOptionSpec<T extends IDomain, C> extends InsertIntoSpec<T, C> {
 
-        InsertOptionSpec<T, C> migration();
+        InsertIntoSpec<T, C> migration();
     }
 
     interface InsertIntoSpec<T extends IDomain, C> extends InsertSqlSpec {
 
-        InsertSetSpec<T, C> insertInto(Collection<FieldMeta<? super T, ?>> fieldMetaList);
+        InsertValuesSpec<T, C> insertInto(Collection<FieldMeta<? super T, ?>> fieldMetaList);
 
-        InsertSetSpec<T, C> insertInto(Supplier<Collection<FieldMeta<? super T, ?>>> fieldMetaList);
+        InsertValuesSpec<T, C> insertInto(Supplier<Collection<FieldMeta<? super T, ?>>> fieldMetaList);
 
-        InsertSetSpec<T, C> insertInto(TableMeta<T> tableMeta);
+        InsertValuesSpec<T, C> insertInto(TableMeta<T> tableMeta);
     }
 
-    interface InsertValuesSpec<T extends IDomain> extends InsertSqlSpec {
+    interface InsertValuesSpec<T extends IDomain, C> extends InsertSqlSpec {
+
+        <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, F> fieldMeta, Expression<F> value);
+
+        <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, F> fieldMeta, Function<C, Expression<F>> function);
+
+        <F> InsertValuesSpec<T, C> setDefault(FieldMeta<? super T, F> fieldMeta);
 
         InsertSpec value(T domain);
 
         InsertSpec values(List<T> domainList);
+
     }
 
-    interface InsertSetSpec<T extends IDomain, C> extends InsertValuesSpec<T> {
 
-        <F> InsertSetSpec<T, C> set(FieldMeta<? super T, F> fieldMeta, F value);
+    interface SubQueryInsertFieldSpec<T extends IDomain, C> {
 
-        <F> InsertSetSpec<T, C> set(FieldMeta<? super T, F> fieldMeta, Expression<F> value);
+        SubQueryInsertSpec<T, C> insertInto(List<FieldMeta<T, ?>> fieldList);
 
-        <F> InsertSetSpec<T, C> set(FieldMeta<? super T, F> fieldMeta, Function<C, Expression<F>> function);
+        SubQueryInsertSpec<T, C> insertInto(Function<C, List<FieldMeta<T, ?>>> function);
 
-        <F> InsertSetSpec<T, C> setDefault(FieldMeta<? super T, F> fieldMeta);
+        SubQueryInsertSpec<T, C> insertInto(Supplier<List<FieldMeta<T, ?>>> supplier);
+
+    }
+
+    interface SubQueryInsertSpec<T extends IDomain, C> {
+
+        InsertSpec values(Function<C, SubQuery> function);
+    }
+
+
+    interface ChildSubQueryInsertFieldSpec<T extends IDomain, C> {
+
+        ChildSubQueryInsertSpec<T, C> insertInto(List<FieldMeta<T, ?>> fieldList);
+
+        ChildSubQueryInsertSpec<T, C> insertInto(Function<C, List<FieldMeta<T, ?>>> function);
+
+        ChildSubQueryInsertSpec<T, C> insertInto(Supplier<List<FieldMeta<T, ?>>> supplier);
+
+    }
+
+    interface ChildSubQueryInsertSpec<T extends IDomain, C> {
+
+        InsertSpec values(Function<C, SubQuery> function);
     }
 
 

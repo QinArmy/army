@@ -2,56 +2,86 @@ package io.army.dialect;
 
 import io.army.beans.ObjectWrapper;
 import io.army.criteria.Expression;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._ValuesInsert;
+import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
 import io.army.session.FactoryMode;
+import io.army.session.GenericRmSessionFactory;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 final class StandardValueInsertContext extends DomainDmlContext implements _ValueInsertContext {
 
-    static StandardValueInsertContext create(_ValuesInsert insert, Dialect dialect) {
+    static StandardValueInsertContext create(_ValuesInsert insert, Dialect dialect, Visible visible) {
 
-        final TableMeta<?> tableMeta = insert.tableMeta();
-
-        final List<ObjectWrapper> domainList = insert.domainList();
-        final StandardValueInsertContext context;
-        if (dialect.sessionFactory().factoryMode() == FactoryMode.NO_SHARDING || domainList.size() == 1) {
-            context = new StandardValueInsertContext(tableMeta, )
-        } else {
-
+        if (dialect.sessionFactory().factoryMode() != FactoryMode.NO_SHARDING) {
+            final GenericRmSessionFactory factory = dialect.sessionFactory();
+            String m = String.format("%s %s[%s] isn't %s", factory, FactoryMode.class.getName()
+                    , factory.factoryMode(), FactoryMode.NO_SHARDING);
+            throw new IllegalArgumentException(m);
         }
+        return new StandardValueInsertContext(insert, dialect);
     }
 
-    private final Collection<FieldMeta<?, ?>> fieldMetas;
+    static StandardValueInsertContext sharding(_ValuesInsert insert, final byte database
+            , List<ObjectWrapper> domainList, Dialect dialect, Visible visible) {
+        return new StandardValueInsertContext(insert, database, domainList, dialect);
+    }
+
+    private final List<FieldMeta<?, ?>> fieldMetas;
 
     private final Map<FieldMeta<?, ?>, Expression<?>> commonExpMap;
 
     private final List<ObjectWrapper> domainList;
 
+    private final _ValueInsertContext parentContext;
+
     /**
      * <p>
-     * create instance for {@link FactoryMode#NO_SHARDING}.
+     * create parent context for {@link FactoryMode#NO_SHARDING}.
+     * </p>
+     */
+    private StandardValueInsertContext(Dialect dialect, _ValuesInsert insert) {
+        super(insert.tableMeta(), null, (byte) 0, dialect);
+        this.fieldMetas = insert.parentFieldSet();
+        this.commonExpMap = insert.commonExpMap();
+        this.domainList = insert.domainList();
+
+        this.parentContext = null;
+    }
+
+    /**
+     * <p>
+     * create table context for {@link FactoryMode#NO_SHARDING}.
      * </p>
      */
     private StandardValueInsertContext(_ValuesInsert insert, Dialect dialect) {
-        super(insert.tableMeta(), null, dialect);
-        this.fieldMetas = insert.fieldSet();
+        super(insert.tableMeta(), null, (byte) 0, dialect);
+        this.fieldMetas = insert.fieldList();
         this.commonExpMap = insert.commonExpMap();
         this.domainList = insert.domainList();
+
+        if (insert.tableMeta() instanceof ChildTableMeta) {
+            this.parentContext = new StandardValueInsertContext(dialect, insert);
+        } else {
+            this.parentContext = null;
+        }
+
     }
 
-
-    private StandardValueInsertContext(TableMeta<?> tableMeta, Dialect dialect
-            , _ValuesInsert insert, Collection<FieldMeta<?, ?>> fieldMetas
-            , List<ObjectWrapper> domainList) {
-        super(tableMeta, null, dialect);
+    /**
+     * <p>
+     * create parent context for {@link FactoryMode#SHARDING} or {@link FactoryMode#TABLE_SHARDING}.
+     * </p>
+     */
+    private StandardValueInsertContext(_ValuesInsert insert, final byte database
+            , List<ObjectWrapper> domainList, Dialect dialect) {
+        super(insert.tableMeta(), null, database, dialect);
         this.commonExpMap = insert.commonExpMap();
-        this.fieldMetas = fieldMetas;
+        this.fieldMetas = insert.fieldList();
         switch (domainList.size()) {
             case 0:
                 throw new IllegalArgumentException("domainList is empty");
@@ -61,22 +91,56 @@ final class StandardValueInsertContext extends DomainDmlContext implements _Valu
             default:
                 this.domainList = Collections.unmodifiableList(domainList);
         }
+        if (insert.tableMeta() instanceof ChildTableMeta) {
+            this.parentContext = new StandardValueInsertContext(dialect, insert, database, domainList);
+        } else {
+            this.parentContext = null;
+        }
 
     }
 
+    /**
+     * <p>
+     * create parent context for {@link FactoryMode#SHARDING} or {@link FactoryMode#TABLE_SHARDING}.
+     * </p>
+     *
+     * @see #StandardValueInsertContext(_ValuesInsert, byte, List, Dialect)
+     */
+    private StandardValueInsertContext(Dialect dialect, _ValuesInsert insert, final byte database
+            , List<ObjectWrapper> domainList) {
+        super(((ChildTableMeta<?>) insert.tableMeta()).parentMeta(), null, database, dialect);
+        this.commonExpMap = insert.commonExpMap();
+        this.fieldMetas = insert.fieldList();
+        switch (domainList.size()) {
+            case 0:
+                throw new IllegalArgumentException("domainList is empty");
+            case 1:
+                this.domainList = Collections.singletonList(domainList.get(0));
+                break;
+            default:
+                this.domainList = Collections.unmodifiableList(domainList);
+        }
+        this.parentContext = null;
+    }
+
     @Override
-    public Collection<FieldMeta<?, ?>> fieldMetas() {
-        return null;
+    public List<FieldMeta<?, ?>> fields() {
+        return this.fieldMetas;
     }
 
     @Override
     public Map<FieldMeta<?, ?>, Expression<?>> commonExpMap() {
-        return null;
+        return this.commonExpMap;
     }
 
     @Override
     public List<ObjectWrapper> domainList() {
-        return null;
+        return this.domainList;
+    }
+
+    @Override
+    public _ValueInsertContext parentContext() {
+        return this.parentContext;
     }
 
 

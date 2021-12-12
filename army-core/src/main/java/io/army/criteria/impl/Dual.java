@@ -118,7 +118,7 @@ final class Dual implements IDomain {
         }
 
         @Override
-        public boolean mappingField(String fieldName) {
+        public boolean containField(String fieldName) {
             return false;
         }
 

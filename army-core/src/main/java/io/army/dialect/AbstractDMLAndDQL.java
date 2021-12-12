@@ -104,7 +104,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
                 if (tableAble instanceof ChildTableMeta) {
                     temp = ((ChildTableMeta<?>) temp).parentMeta();
                 }
-                if (temp.mappingField(_MetaBridge.VISIBLE)) {
+                if (temp.containField(_MetaBridge.VISIBLE)) {
                     appendVisibleIfNeed(tableWrapper, preTableWrapper, context, childMap, hasPredicate);
                 }
             }

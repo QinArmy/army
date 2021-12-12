@@ -41,10 +41,10 @@ final class DomainSetterInterceptor implements MethodInterceptor, DomainUpdateAd
         if (tableMeta instanceof ChildTableMeta) {
             ChildTableMeta<?> childMeta = (ChildTableMeta<?>) tableMeta;
             ParentTableMeta<?> parentMeta = childMeta.parentMeta();
-            if (parentMeta.mappingField(_MetaBridge.VERSION)) {
+            if (parentMeta.containField(_MetaBridge.VERSION)) {
                 versionMeta = parentMeta.getField(_MetaBridge.VERSION);
             }
-        } else if (tableMeta.mappingField(_MetaBridge.VERSION)) {
+        } else if (tableMeta.containField(_MetaBridge.VERSION)) {
             versionMeta = tableMeta.getField(_MetaBridge.VERSION);
         }
 

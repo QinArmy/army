@@ -6,6 +6,7 @@ import io.army.annotation.Inheritance;
 import io.army.annotation.Table;
 import io.army.criteria._SqlContext;
 import io.army.domain.IDomain;
+import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
@@ -367,7 +368,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     @Override
-    public final boolean mappingField(final String fieldName) {
+    public final boolean containField(final String fieldName) {
         return this.fieldToFieldMeta.containsKey(fieldName);
     }
 
@@ -500,6 +501,17 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             super(domainClass);
         }
 
+        @Override
+        public <E extends Enum<E> & CodeEnum> FieldMeta<? super T, E> discriminator() {
+            // always null
+            return null;
+        }
+
+        @Override
+        public int discriminatorValue() {
+            // always 0
+            return 0;
+        }
     }
 
     private static final class DefaultParentTable<T extends IDomain> extends DefaultTableMeta<T>
@@ -518,6 +530,12 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             return (FieldMeta<T, E>) this.discriminator;
         }
 
+        @Override
+        public int discriminatorValue() {
+            // always 0
+            return 0;
+        }
+
     }
 
     private static final class DefaultChildTable<T extends IDomain> extends DefaultTableMeta<T>
@@ -532,6 +550,12 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             TableMetaUtils.assertParentTableMeta(parentTableMeta, domainClass);
             this.parentTableMeta = parentTableMeta;
             this.discriminatorValue = TableMetaUtils.discriminatorValue(parentTableMeta, domainClass);
+        }
+
+        @NonNull
+        @Override
+        public <E extends Enum<E> & CodeEnum> FieldMeta<? super T, E> discriminator() {
+            return this.parentTableMeta.discriminator();
         }
 
         @Override

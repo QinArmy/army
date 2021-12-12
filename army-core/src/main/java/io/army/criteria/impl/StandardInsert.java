@@ -130,7 +130,7 @@ class StandardInsert<T extends IDomain, C> extends AbstractSQLDebug implements I
     }
 
     @Override
-    public final List<FieldMeta<?, ?>> fieldSet() {
+    public final List<FieldMeta<?, ?>> fieldList() {
         return this.fieldList;
     }
 

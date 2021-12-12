@@ -5,6 +5,7 @@ import io.army.criteria._SqlContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.sharding.Route;
+import io.army.struct.CodeEnum;
 
 import java.util.Collection;
 import java.util.List;
@@ -37,6 +38,11 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
 
     <F> PrimaryFieldMeta<T, F> id(Class<F> idClass) throws MetaException;
 
+    @Nullable
+    <E extends Enum<E> & CodeEnum> FieldMeta<? super T, E> discriminator();
+
+    int discriminatorValue();
+
 
     boolean sharding();
 
@@ -66,7 +72,7 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
 
     SchemaMeta schema();
 
-    boolean mappingField(String fieldName);
+    boolean containField(String fieldName);
 
     /**
      * @throws IllegalArgumentException when not found matched {@link FieldMeta} for fieldName

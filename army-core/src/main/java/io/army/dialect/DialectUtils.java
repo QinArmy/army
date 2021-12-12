@@ -6,6 +6,7 @@ import io.army.UnKnownTypeException;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner.TableWrapper;
+import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
@@ -40,6 +41,12 @@ public abstract class DialectUtils {
 
     public static SqlBuilder createSQLBuilder() {
         return new SQLBuilderImpl();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends IDomain> Collection<FieldMeta<?, ?>> tableFields(TableMeta<T> tableMeta) {
+        final Collection<?> collection = tableMeta.fieldCollection();
+        return (Collection<FieldMeta<?, ?>>) collection;
     }
 
 
@@ -135,7 +142,7 @@ public abstract class DialectUtils {
         if (temp instanceof ChildTableMeta) {
             temp = ((ChildTableMeta<?>) temp).parentMeta();
         }
-        return temp.mappingField(_MetaBridge.VISIBLE);
+        return temp.containField(_MetaBridge.VISIBLE);
     }
 
     public static boolean needAppendVisible(List<? extends TableWrapper> tableWrapperList) {
@@ -150,7 +157,7 @@ public abstract class DialectUtils {
                 if (tableAble instanceof ChildTableMeta) {
                     temp = ((ChildTableMeta<?>) temp).parentMeta();
                 }
-                if (temp.mappingField(_MetaBridge.VISIBLE)) {
+                if (temp.containField(_MetaBridge.VISIBLE)) {
                     need = true;
                     break;
                 }
@@ -216,6 +223,8 @@ public abstract class DialectUtils {
         }
         return null;
     }
+
+
 
 
     /*################################## blow private static innner class ##################################*/

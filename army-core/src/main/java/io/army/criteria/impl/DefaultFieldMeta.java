@@ -118,7 +118,7 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression
     private static void assertNotParentFiled(TableMeta<?> table, Field field) {
         if ((table instanceof ChildTableMeta) && !_MetaBridge.ID.equals(field.getName())) {
             ChildTableMeta<?> childMeta = (ChildTableMeta<?>) table;
-            if (childMeta.parentMeta().mappingField(field.getName())) {
+            if (childMeta.parentMeta().containField(field.getName())) {
                 String m = String.format("mapping field belong to ParentTableMeta[%s]"
                         , childMeta.parentMeta());
                 throw new MetaException(m);

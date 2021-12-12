@@ -3,7 +3,7 @@ package io.army.criteria.impl.inner;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
-import java.util.Set;
+import java.util.List;
 
 public interface _Insert extends _Statement {
 
@@ -12,8 +12,6 @@ public interface _Insert extends _Statement {
     /**
      * @return a unmodifiable list , maybe empty.
      */
-    Set<FieldMeta<?, ?>> fieldSet();
-
-    Set<FieldMeta<?, ?>> parentFieldSet();
+    List<FieldMeta<?, ?>> fieldList();
 
 }

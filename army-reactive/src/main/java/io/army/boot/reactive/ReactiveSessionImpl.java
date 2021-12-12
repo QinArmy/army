@@ -92,7 +92,7 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
                 //2.invoke insert before advice
                 .then(Mono.defer(() -> this.invokeInsertBeforeAdvice(insert)))
                 //3. parse value insert sql
-                .thenMany(Flux.defer(() -> Flux.fromIterable(this.dialect.valueInsert(insert, null, visible))))
+                .thenMany(Flux.defer(() -> Flux.fromIterable(this.dialect.insert(insert, null, visible))))
                 // assert for child domain
                 .flatMap(this::assertChildDomain)
                 //4. execute value insert

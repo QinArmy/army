@@ -17,16 +17,16 @@ abstract class DomainDmlContext implements _DmlContext {
 
     protected final Dialect dialect;
 
-    protected final _StmtContext parentContext;
-
     protected final SqlBuilder sqlBuilder;
 
-    protected DomainDmlContext(TableMeta<?> tableMeta, @Nullable String tableAlias, Dialect dialect) {
+    protected final byte database;
+
+    protected DomainDmlContext(TableMeta<?> tableMeta, @Nullable String tableAlias, final byte database
+            , Dialect dialect) {
         this.tableMeta = tableMeta;
         this.tableAlias = tableAlias;
         this.dialect = dialect;
-        this.parentContext = null;
-
+        this.database = database;
         this.sqlBuilder = DialectUtils.createSQLBuilder();
     }
 

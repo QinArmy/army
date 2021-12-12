@@ -90,16 +90,16 @@ public abstract class DDLUtils {
         List<FieldMeta<?, ?>> fieldMetaList = new ArrayList<>(fieldMetas.size());
 
         fieldMetaList.add(tableMeta.id());
-        if (tableMeta.mappingField(_MetaBridge.CREATE_TIME)) {
+        if (tableMeta.containField(_MetaBridge.CREATE_TIME)) {
             fieldMetaList.add(tableMeta.getField(_MetaBridge.CREATE_TIME));
         }
-        if (tableMeta.mappingField(_MetaBridge.UPDATE_TIME)) {
+        if (tableMeta.containField(_MetaBridge.UPDATE_TIME)) {
             fieldMetaList.add(tableMeta.getField(_MetaBridge.UPDATE_TIME));
         }
-        if (tableMeta.mappingField(_MetaBridge.VERSION)) {
+        if (tableMeta.containField(_MetaBridge.VERSION)) {
             fieldMetaList.add(tableMeta.getField(_MetaBridge.VERSION));
         }
-        if (tableMeta.mappingField(_MetaBridge.VISIBLE)) {
+        if (tableMeta.containField(_MetaBridge.VISIBLE)) {
             fieldMetaList.add(tableMeta.getField(_MetaBridge.VISIBLE));
         }
 //        FieldMeta<?, ?> fieldMeta = tableMeta.discriminator();

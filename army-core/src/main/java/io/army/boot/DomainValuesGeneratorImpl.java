@@ -125,7 +125,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
 
         if (!tableMeta.immutable()) {
             createCreateOrUpdateTime(parentMeta.getField(_MetaBridge.UPDATE_TIME), now, entityWrapper);
-            if (parentMeta.mappingField(_MetaBridge.VERSION)) {
+            if (parentMeta.containField(_MetaBridge.VERSION)) {
                 // create version value
                 entityWrapper.set(_MetaBridge.VERSION, 0);
             }

@@ -11,7 +11,6 @@ import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._StandardBatchInsert;
 import io.army.criteria.impl.inner._Update;
 import io.army.criteria.impl.inner._ValuesInsert;
-import io.army.domain.IDomain;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.FactoryMode;
@@ -23,6 +22,7 @@ import io.army.stmt.*;
 import io.army.struct.CodeEnum;
 import io.army.util.CollectionUtils;
 import io.army.util._Exceptions;
+import io.qinarmy.util.Pair;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -34,21 +34,12 @@ abstract class DmlUtils {
         throw new UnsupportedOperationException();
     }
 
-    @SuppressWarnings("unchecked")
-    static <T extends IDomain> Collection<FieldMeta<?, ?>> tableFields(TableMeta<T> tableMeta) {
-        final Collection<?> collection = tableMeta.fieldCollection();
-        return (Collection<FieldMeta<?, ?>>) collection;
-    }
-
     /**
      * @return a unmodified map
      */
     static Map<Byte, List<ObjectWrapper>> insertSharding(GenericRmSessionFactory factory, _ValuesInsert insert) {
 
         final FactoryMode mode = factory.factoryMode();
-        if (mode == FactoryMode.NO_SHARDING) {
-            return Collections.singletonMap(factory.databaseIndex(), insert.domainList());
-        }
         final TableMeta<?> tableMeta = insert.tableMeta();
         final int databaseIndex = factory.databaseIndex();
 
@@ -156,6 +147,60 @@ abstract class DmlUtils {
         }
 
         assertSetClauseField(fieldMeta);
+    }
+
+
+    static Pair<List<FieldMeta<?, ?>>, List<FieldMeta<?, ?>>> divideField(_ValuesInsert insert) {
+        final TableMeta<?> tableMeta = insert.tableMeta();
+        final ParentTableMeta<?> parentMeta;
+
+        if (tableMeta instanceof ChildTableMeta) {
+            parentMeta = ((ChildTableMeta<?>) tableMeta).parentMeta();
+        } else {
+            parentMeta = null;
+        }
+        final List<FieldMeta<?, ?>> fieldMetas = insert.fieldList();
+        if (fieldMetas.isEmpty()) {
+            final List<FieldMeta<?, ?>> fieldList, parentFieldList;
+            fieldList = Collections.unmodifiableList(new ArrayList<>(tableMeta.fieldCollection()));
+
+            if (parentMeta == null) {
+                parentFieldList = Collections.emptyList();
+            } else {
+                parentFieldList = Collections.unmodifiableList(new ArrayList<>(parentMeta.fieldCollection()));
+            }
+            return new Pair<>(fieldList, parentFieldList);
+        }
+
+        TableMeta<?> belongOfTable;
+        final Set<FieldMeta<?, ?>> fieldSet = new HashSet<>(), parentFieldSet;
+        if (parentMeta == null) {
+            parentFieldSet = Collections.emptySet();
+        } else {
+            parentFieldSet = new HashSet<>();
+        }
+        for (FieldMeta<?, ?> fieldMeta : fieldMetas) {
+            belongOfTable = fieldMeta.tableMeta();
+            if (belongOfTable == tableMeta) {
+                fieldSet.add(fieldMeta);
+            } else if (belongOfTable == parentMeta) {
+                parentFieldSet.add(fieldMeta);
+            }
+        }
+        fieldSet.addAll(tableMeta.generatorChain());
+        fieldSet.add(tableMeta.id());
+        appendInsertFields(tableMeta, fieldSet);
+        if (parentMeta != null) {
+            appendInsertFields(parentMeta, parentFieldSet);
+        }
+        final List<FieldMeta<?, ?>> fieldList, parentFieldList;
+        fieldList = Collections.unmodifiableList(new ArrayList<>(fieldSet));
+        if (parentMeta == null) {
+            parentFieldList = Collections.emptyList();
+        } else {
+            parentFieldList = Collections.unmodifiableList(new ArrayList<>(parentFieldSet));
+        }
+        return new Pair<>(fieldList, parentFieldList);
     }
 
 
@@ -342,7 +387,7 @@ abstract class DmlUtils {
     }
 
 
-    static void appendInsertFields(TableMeta<?> domainTable, Set<FieldMeta<?, ?>> targetFields) {
+    static void appendInsertFields(final TableMeta<?> domainTable, final Set<FieldMeta<?, ?>> targetFields) {
 
         targetFields.addAll(domainTable.generatorChain());
 
@@ -350,17 +395,20 @@ abstract class DmlUtils {
         if (domainTable instanceof ParentTableMeta) {
             targetFields.add(((ParentTableMeta<?>) domainTable).discriminator());
         }
-        targetFields.add(domainTable.getField(_MetaBridge.CREATE_TIME));
+        if (!(domainTable instanceof ChildTableMeta)) {
+            targetFields.add(domainTable.getField(_MetaBridge.CREATE_TIME));
 
-        if (domainTable.mappingField(_MetaBridge.UPDATE_TIME)) {
-            targetFields.add(domainTable.getField(_MetaBridge.UPDATE_TIME));
+            if (domainTable.containField(_MetaBridge.UPDATE_TIME)) {
+                targetFields.add(domainTable.getField(_MetaBridge.UPDATE_TIME));
+            }
+            if (domainTable.containField(_MetaBridge.VERSION)) {
+                targetFields.add(domainTable.getField(_MetaBridge.VERSION));
+            }
+            if (domainTable.containField(_MetaBridge.VISIBLE)) {
+                targetFields.add(domainTable.getField(_MetaBridge.VISIBLE));
+            }
         }
-        if (domainTable.mappingField(_MetaBridge.VERSION)) {
-            targetFields.add(domainTable.getField(_MetaBridge.VERSION));
-        }
-        if (domainTable.mappingField(_MetaBridge.VISIBLE)) {
-            targetFields.add(domainTable.getField(_MetaBridge.VISIBLE));
-        }
+
 
     }
 
