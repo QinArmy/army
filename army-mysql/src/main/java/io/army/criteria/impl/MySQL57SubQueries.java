@@ -75,7 +75,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
 
     @Override
     public final void appendSQL(_SqlContext context) {
-        context.dql().subQuery(this, context);
+        context.dialect().subQuery(this, context);
     }
 
     @Override

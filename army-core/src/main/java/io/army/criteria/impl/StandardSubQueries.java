@@ -109,7 +109,7 @@ abstract class StandardSubQueries<Q extends Query, C> extends AbstractStandardQu
 
     @Override
     public final void appendSQL(_SqlContext context) {
-        context.dql().subQuery(this, context);
+        context.dialect().subQuery(this, context);
     }
 
 

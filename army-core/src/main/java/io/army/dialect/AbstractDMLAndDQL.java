@@ -56,7 +56,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
             if (this.tableAliasAfterAs()) {
                 builder.append(" AS");
             }
-            context.appendText(tableWrapper.alias());
+            context.appendIdentifier(tableWrapper.alias());
         }
 
         List<IPredicate> predicateList = tableWrapper.onPredicateList();
@@ -158,7 +158,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         if (tableAliasAfterAs()) {
             builder.append(" AS");
         }
-        context.appendText(parentAlias);
+        context.appendIdentifier(parentAlias);
         // where clause
         builder.append(" WHERE");
         context.appendField(parentAlias, parentMeta.id());

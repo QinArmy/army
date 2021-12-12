@@ -5,9 +5,11 @@ import io.army.DialectMode;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Statement;
 import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.ServerMeta;
+import io.army.meta.TableMeta;
 import io.army.session.GenericRmSessionFactory;
 import io.army.session.TimeoutException;
 import io.army.stmt.Stmt;
@@ -52,8 +54,22 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException unknownField(FieldMeta<?, ?> fieldMeta) {
+        return new CriteriaException(String.format("Unknown %s", fieldMeta));
+    }
+
+    public static CriteriaException notMatchInsertField(_ValuesInsert insert, FieldMeta<?, ?> fieldMeta) {
+        String m = String.format("Not match %s for %s in Statement %s", fieldMeta, insert.table(), insert);
+        return new CriteriaException(m);
+    }
+
     public static CriteriaException unknownStatement(Statement stmt, GenericRmSessionFactory factory) {
         String m = String.format("Unknown %s in %s", stmt, factory);
+        return new CriteriaException(m);
+    }
+
+    public static CriteriaException tableNotMatch(TableMeta<?> tableMeta1, TableMeta<?> tableMeta2) {
+        String m = String.format("%s and %s not match", tableMeta1, tableMeta2);
         return new CriteriaException(m);
     }
 
@@ -66,6 +82,10 @@ public abstract class _Exceptions extends ExceptionUtils {
     public static CriteriaException noTableRoute(_Statement stmt, GenericRmSessionFactory factory) {
         String m = String.format("Not found table route in %s.Factory %s", stmt, factory);
         return new CriteriaException(m);
+    }
+
+    public static IllegalStateException nonPrepared(_Statement statement) {
+        return new IllegalStateException(String.format("%s not prepared", statement));
     }
 
 

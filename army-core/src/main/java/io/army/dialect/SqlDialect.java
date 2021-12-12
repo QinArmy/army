@@ -1,6 +1,7 @@
 package io.army.dialect;
 
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.session.GenericRmSessionFactory;
@@ -31,5 +32,9 @@ public interface SqlDialect {
     boolean singleDeleteHasTableAlias();
 
     boolean hasRowKeywords();
+
+
+    String constant(MappingType type, Object value);
+
 
 }

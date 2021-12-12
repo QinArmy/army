@@ -72,9 +72,9 @@ public abstract class _CriteriaCounselor {
                 throw new IllegalArgumentException(String.format("%s isn't instance of %s", insert
                         , StandardBatchInsert.class.getName()));
             }
-        } else if (!(insert instanceof StandardInsert)) {
+        } else if (!(insert instanceof StandardValueInsert)) {
             throw new IllegalArgumentException(String.format("%s isn't instance of %s", insert
-                    , StandardInsert.class.getName()));
+                    , StandardValueInsert.class.getName()));
         }
     }
 

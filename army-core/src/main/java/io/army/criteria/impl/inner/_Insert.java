@@ -7,11 +7,13 @@ import java.util.List;
 
 public interface _Insert extends _Statement {
 
-    TableMeta<?> tableMeta();
+    TableMeta<?> table();
 
     /**
      * @return a unmodifiable list , maybe empty.
      */
     List<FieldMeta<?, ?>> fieldList();
+
+    List<FieldMeta<?, ?>> parentFieldList();
 
 }

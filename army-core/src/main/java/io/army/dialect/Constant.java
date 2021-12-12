@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-public interface Keywords {
+public interface Constant {
 
     String SELECT = " SELECT";
 
@@ -51,6 +51,12 @@ public interface Keywords {
     char LEFT_BRACKET = '(';
 
     char RIGHT_BRACKET = ')';
+
+    char SPACE = ' ';
+
+    char COMMA = ',';
+
+    char PLACEHOLDER = '?';
 
 
 }

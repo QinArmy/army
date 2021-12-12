@@ -17,8 +17,9 @@ import java.util.function.Function;
 @SuppressWarnings({"unused"})
 public abstract class SQLs extends AbstractSQLS {
 
-    SQLs() {
 
+    public static <T extends IDomain> Insert.InsertOptionSpec<T, Void> domainInsert(TableMeta<T> targetTable) {
+        return StandardValueInsert.create(targetTable);
     }
 
     /**
@@ -26,9 +27,9 @@ public abstract class SQLs extends AbstractSQLS {
      * <p>
      * a standard insert api support blow {@link io.army.meta.MappingMode}:
      *     <ul>
-     *         <li>{@link io.army.meta.MappingMode#SIMPLE}</li>
-     *         <li>{@link io.army.meta.MappingMode#PARENT},auto append {@link IPredicate} {@code discriminatorValue = 0}</li>
-     *        <li>{@link io.army.meta.MappingMode#CHILD},but must in {@link Isolation#READ_COMMITTED }+ level environment.</li>
+     *         <li>{@link io.army.meta.SimpleTableMeta}</li>
+     *         <li>{@link io.army.meta.ParentTableMeta},auto append {@link IPredicate} {@code discriminatorValue = 0}</li>
+     *        <li>{@link io.army.meta.ChildTableMeta},but must in {@link Isolation#READ_COMMITTED }+ level environment.</li>
      *     </ul>
      * </p>
      * <p>
@@ -41,36 +42,12 @@ public abstract class SQLs extends AbstractSQLS {
      * @param targetTable will insert to table meta
      * @return a standard insert api object.
      */
-    public static <T extends IDomain> Insert.InsertOptionSpec<T, Void> domainInsert(TableMeta<T> targetTable) {
-        return StandardInsert.build(targetTable);
+    public static <T extends IDomain, C> Insert.InsertOptionSpec<T, C> domainInsert(TableMeta<T> targetTable, C criteria) {
+        return StandardValueInsert.create(targetTable, criteria);
     }
 
-    /**
-     * create a standard batch insert api object.
-     * <p>
-     * a standard insert api support blow {@link io.army.meta.MappingMode}:
-     *     <ul>
-     *         <li>{@link io.army.meta.MappingMode#SIMPLE}</li>
-     *         <li>{@link io.army.meta.MappingMode#PARENT},auto append {@link IPredicate} {@code discriminatorValue = 0}</li>
-     *        <li>{@link io.army.meta.MappingMode#CHILD},but must in {@link Isolation#READ_COMMITTED }+ level environment.</li>
-     *     </ul>
-     * </p>
-     * <p>
-     *     <ul>
-     *         <li>see {@code io.army.sync.GenericSyncApiSession#valueInsert(io.army.criteria.Insert, io.army.criteria.Visible)}</li>
-     *         <li> see {@code io.army.reactive.GenericReactiveApiSession#valueInsert(io.army.criteria.Insert, io.army.criteria.Visible)}</li>
-     *     </ul>
-     * </p>
-     *
-     * @param targetTable will insert to table meta
-     * @return a standard insert api object.
-     */
-    public static <T extends IDomain> Insert.InsertIntoSpec<T> batchInsert(TableMeta<T> targetTable) {
-        return StandardBatchInsert.build(targetTable);
-    }
 
-    public static <T extends IDomain> Insert.SubQueryTargetFieldSpec<T, EmptyObject> subQueryInsert(
-            TableMeta<T> targetTable) {
+    public static <T extends IDomain> Insert.SubQueryInsertFieldSpec<T, Void> subQueryInsert(TableMeta<T> targetTable) {
         return StandardContextualSubQueryInsert.build(targetTable, EmptyObject.getInstance());
     }
 
@@ -263,6 +240,14 @@ public abstract class SQLs extends AbstractSQLS {
                 CriteriaContextHolder.getContext().criteria()
         ));*/
         return null;
+    }
+
+    /**
+     * package method.
+     */
+    @SuppressWarnings("unchecked")
+    static <E> DefaultKeyWord<E> defaultKeyWord() {
+        return (DefaultKeyWord<E>) DefaultKeyWord.INSTANCE;
     }
 
 }

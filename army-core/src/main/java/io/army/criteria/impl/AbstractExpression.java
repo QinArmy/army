@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Expression;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
@@ -15,7 +16,7 @@ import java.util.function.Function;
 /**
  * this class is a implementation of {@link Expression}
  */
-abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounselor {
+abstract class AbstractExpression<E> implements _Expression<E>, ExpressionCounselor {
 
     AbstractExpression() {
     }
@@ -23,7 +24,7 @@ abstract class AbstractExpression<E> implements Expression<E>, ExpressionCounsel
 
     @Override
     public Selection as(String alias) {
-       return new DefaultSelection(this,alias);
+        return new DefaultSelection(this, alias);
     }
 
     @Override

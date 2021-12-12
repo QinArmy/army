@@ -512,6 +512,8 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             // always 0
             return 0;
         }
+
+
     }
 
     private static final class DefaultParentTable<T extends IDomain> extends DefaultTableMeta<T>
@@ -535,6 +537,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             // always 0
             return 0;
         }
+
 
     }
 

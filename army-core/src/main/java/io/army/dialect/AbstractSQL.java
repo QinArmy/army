@@ -1,6 +1,8 @@
 package io.army.dialect;
 
 
+import io.army.lang.Nullable;
+import io.army.meta.TableMeta;
 import io.army.session.FactoryMode;
 import io.army.session.GenericRmSessionFactory;
 
@@ -60,6 +62,18 @@ public abstract class AbstractSQL implements SqlDialect {
     @Override
     public final boolean hasRowKeywords() {
         return this.dialect.hasRowKeywords();
+    }
+
+
+    @Override
+    public String safeTableName(TableMeta<?> tableMeta, @Nullable String suffix) {
+        final String name;
+        if (suffix == null) {
+            name = this.quoteIfNeed(tableMeta.tableName());
+        } else {
+            name = tableMeta.tableName() + suffix;
+        }
+        return name;
     }
 
 

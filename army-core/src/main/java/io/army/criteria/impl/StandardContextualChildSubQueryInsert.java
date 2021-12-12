@@ -163,7 +163,7 @@ final class StandardContextualChildSubQueryInsert<T extends IDomain, C> extends 
     }
 
     @Override
-    public final ChildTableMeta<?> tableMeta() {
+    public final ChildTableMeta<?> table() {
         return this.tableMeta;
     }
 

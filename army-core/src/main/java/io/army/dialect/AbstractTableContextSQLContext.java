@@ -107,9 +107,9 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
 
 
     @Override
-    public final void appendText(String textValue) {
+    public final void appendIdentifier(String identifier) {
         sqlBuilder.append(" ")
-                .append(dialect.quoteIfNeed(textValue));
+                .append(dialect.quoteIfNeed(identifier));
     }
 
     @Override

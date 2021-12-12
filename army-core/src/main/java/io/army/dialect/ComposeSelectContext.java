@@ -59,8 +59,7 @@ final class ComposeSelectContext implements SelectContext {
         return this.paramList;
     }
 
-    @Override
-    public DqlDialect dql() {
+    public DqlDialect dialect() {
         return this.dialect;
     }
 
@@ -80,10 +79,10 @@ final class ComposeSelectContext implements SelectContext {
     }
 
     @Override
-    public void appendText(String textValue) {
+    public void appendIdentifier(String identifier) {
         this.sqlBuilder
                 .append(" ")
-                .append(this.dialect.quoteIfNeed(textValue));
+                .append(this.dialect.quoteIfNeed(identifier));
     }
 
     @Override

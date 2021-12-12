@@ -12,7 +12,10 @@ import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 import io.army.session.FactoryMode;
-import io.army.stmt.*;
+import io.army.stmt.PairStmt;
+import io.army.stmt.SimpleStmt;
+import io.army.stmt.Stmt;
+import io.army.stmt.Stmts;
 import io.army.util.Assert;
 import io.army.util._Exceptions;
 
@@ -26,8 +29,6 @@ import java.util.*;
  */
 public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements DmlDialect {
 
-
-    private _ValueInsertContext con;
 
     protected AbstractDmlDialect(Dialect dialect) {
         super(dialect);
@@ -233,14 +234,25 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
         );
     }
 
-    protected Stmt standardValueInsert(final _ValueInsertContext context) {
-        final TableMeta<?> tableMeta;
-        tableMeta = context.tableMeta();
-        if (tableMeta instanceof ChildTableMeta) {
-            appendStandardValueInsert(true, context);
+    /**
+     * @see #createValueInsertContext(_ValuesInsert, byte, List, Visible)
+     */
+    protected Stmt standardValueInsert(final _ValueInsertContext ctx) {
+        final StandardValueInsertContext context = (StandardValueInsertContext) ctx;
+        final StandardValueInsertContext parentContext = context.parentContext();
+        if (parentContext != null) {
+            DmlUtils.appendStandardValueInsert(parentContext);
         }
-        appendStandardValueInsert(false, context);
+        DmlUtils.appendStandardValueInsert(context);
         return context.build();
+    }
+
+    /**
+     * @see #standardValueInsert(_ValueInsertContext)
+     */
+    protected _ValueInsertContext createValueInsertContext(_ValuesInsert insert, final byte tableIndex
+            , List<ObjectWrapper> domainList, Visible visible) {
+        return StandardValueInsertContext.create(insert, tableIndex, domainList, this.dialect, visible);
     }
 
 
@@ -248,65 +260,6 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
 
     /*################################## blow private batchInsert method ##################################*/
 
-    private void appendStandardValueInsert(final boolean parent, final _ValueInsertContext context) {
-        final TableMeta<?> tableMeta;
-        if (parent) {
-            tableMeta = ((ChildTableMeta<?>) context.tableMeta()).parentMeta();
-        } else {
-            tableMeta = context.tableMeta();
-        }
-        final StringBuilder builder = context.sqlBuilder();
-        builder.append(Keywords.INSERT_INTO)
-                .append(' ');
-        context.appendTable(tableMeta); // append table name
-        builder.append('(');
-        int index = 0;
-        for (FieldMeta<?, ?> fieldMeta : context.fields()) {
-            if (index > 0) {
-                builder.append(',');
-            }
-            context.appendField(fieldMeta);
-            index++;
-        }
-        builder.append(')')
-                .append(Keywords.VALUES);
-
-        final List<ObjectWrapper> domainList = context.domainList();
-        final FieldMeta<?, ?> discriminator = tableMeta.discriminator();
-        final List<FieldMeta<?, ?>> fieldList;
-        if (parent) {
-            fieldList = context.parentFields();
-        } else {
-            fieldList = context.fields();
-        }
-        int batch = 0;
-        final Map<FieldMeta<?, ?>, _Expression<?>> expMap = context.commonExpMap();
-        _Expression<?> expression;
-        for (ObjectWrapper domain : domainList) {
-            if (batch > 0) {
-                builder.append(',');
-            }
-            builder.append('(');
-            index = 0;
-            for (FieldMeta<?, ?> fieldMeta : fieldList) {
-                if (index > 0) {
-                    builder.append(',');
-                }
-                if (fieldMeta == discriminator) {
-                    builder.append(fieldMeta.tableMeta().discriminatorValue());
-                } else if ((expression = expMap.get(fieldMeta)) != null) {
-                    expression.appendSQL(context);
-                } else {
-                    builder.append('?');
-                    context.appendParam(ParamValue.build(fieldMeta, domain.get(fieldMeta.fieldName())));
-                }
-                index++;
-            }
-            builder.append(')');
-            batch++;
-        }
-
-    }
 
     /**
      * @see #insert(Insert)
@@ -323,66 +276,30 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
         // assert implementation class is legal
         _CriteriaCounselor.standardInsert(insert);
         final Stmt stmt;
-        if (this.sharding && insert.domainList().size() > 1) {
+        if (this.sharding) {
             final Map<Byte, List<ObjectWrapper>> domainMap;
             // sharding table and create domain property values.
             domainMap = DmlUtils.insertSharding(this.dialect.sessionFactory(), insert);
             _ValueInsertContext context;
             final List<Stmt> stmtList = new ArrayList<>(domainMap.size());
             for (Map.Entry<Byte, List<ObjectWrapper>> e : domainMap.entrySet()) {
-                context = StandardValueInsertContext.sharding(insert, e.getKey(), e.getValue(), this.dialect, visible);
+                context = createValueInsertContext(insert, e.getKey(), e.getValue(), visible);
                 stmtList.add(standardValueInsert(context));
             }
             stmt = Stmts.group(stmtList);
         } else {
             final DomainValuesGenerator generator = this.dialect.sessionFactory().domainValuesGenerator();
             final boolean migration = insert.migrationData();
-            for (ObjectWrapper domain : insert.domainList()) {
+            final List<ObjectWrapper> domainList = insert.domainList();
+            for (ObjectWrapper domain : domainList) {
                 generator.createValues(domain, migration);
             }
-            stmt = standardValueInsert(StandardValueInsertContext.create(insert, this.dialect, visible));
+            _ValueInsertContext context = createValueInsertContext(insert, (byte) 0, domainList, visible);
+            stmt = standardValueInsert(context);
         }
         return stmt;
     }
 
-
-    private Stmt createValueInsert(_ValueInsertContext context) {
-        final SqlBuilder builder = context.sqlBuilder();
-        builder.append(Keywords.INSERT_INTO)
-                .append(' ');
-
-        builder.append(Keywords.LEFT_BRACKET);
-        int index = 0;
-        for (FieldMeta<?, ?> fieldMeta : context.fields()) {
-            if (index > 0) {
-                builder.append(",");
-            }
-            context.appendField(fieldMeta);
-            index++;
-        }
-        builder.append(Keywords.RIGHT_BRACKET)
-                .append(Keywords.VALUES);
-        index = 0;
-        for (ObjectWrapper domain : shardingDomains) {
-            if (index > 0) {
-                builder.append(',');
-            }
-            builder.append('(');
-            for (FieldMeta<?, ?> fieldMeta : context.fields()) {
-                Object expValue = expMap.get(fieldMeta);
-
-            }
-            builder.append(')');
-            index++;
-        }
-        return null;
-    }
-
-
-    private Stmt valueInsertForSingleTable(_ValuesInsert insert, List<ObjectWrapper> shardingDomains, final Visible visible) {
-        TableMeta<?> tableMeta = insert.tableMeta();
-        return null;
-    }
 
     private Stmt standardSubQueryInsert(_StandardSubQueryInsert insert, final Visible visible) {
         Stmt stmt;
@@ -390,14 +307,14 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
             stmt = standardChildQueryInsert((_StandardChildSubQueryInsert) insert, visible);
         } else {
             SubQueryInsertContext context = SubQueryInsertContext.build(insert, this.dialect, visible);
-            parseStandardSimpleSubQueryInsert(context, insert.tableMeta(), insert.fieldList(), insert.subQuery());
+            parseStandardSimpleSubQueryInsert(context, insert.table(), insert.fieldList(), insert.subQuery());
             stmt = context.build();
         }
         return stmt;
     }
 
     private PairStmt standardChildQueryInsert(_StandardChildSubQueryInsert insert, final Visible visible) {
-        final ChildTableMeta<?> childMeta = insert.tableMeta();
+        final ChildTableMeta<?> childMeta = insert.table();
         final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
 
         // firstly ,parse parent insert sql
@@ -437,7 +354,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
             , _StandardInsert insert, final Visible visible) {
 
         Stmt stmt;
-        switch (insert.tableMeta().mappingMode()) {
+        switch (insert.table().mappingMode()) {
             case PARENT:// when PARENT,discriminatorValue is 0 .
             case SIMPLE:
                 stmt = createInsertForSimple(domainWrapper, fieldMetas, insert, visible);
@@ -446,7 +363,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
                 stmt = createInsertForChild(domainWrapper, fieldMetas, insert, visible);
                 break;
             default:
-                throw DialectUtils.createMappingModeUnknownException(insert.tableMeta().mappingMode());
+                throw DialectUtils.createMappingModeUnknownException(insert.table().mappingMode());
 
         }
         return stmt;
@@ -460,7 +377,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
 
         Assert.notEmpty(mergedFields, "mergedFields must not empty.");
 
-        final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) insert.tableMeta();
+        final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) insert.table();
         final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
         final Set<FieldMeta<?, ?>> parentFields = new HashSet<>(), childFields = new HashSet<>();
         // 1.divide fields
@@ -494,7 +411,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
 
         StandardValueInsertContext context = StandardValueInsertContext.build(insert, beanWrapper
                 , this.dialect, visible);
-        TableMeta<?> tableMeta = insert.tableMeta();
+        TableMeta<?> tableMeta = insert.table();
         DmlUtils.createValueInsertForSimple(tableMeta, tableMeta, mergedFields, beanWrapper, context);
 
         return context.build();
@@ -506,7 +423,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "Batch insert only support NO_SHARDING mode.");
         }
         Stmt stmt;
-        switch (insert.tableMeta().mappingMode()) {
+        switch (insert.table().mappingMode()) {
             case SIMPLE:
             case PARENT:
                 stmt = standardBatchInsertForSimple(insert, visible);
@@ -515,7 +432,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
                 stmt = standardBatchInsertForChild(insert, visible);
                 break;
             default:
-                throw DialectUtils.createMappingModeUnknownException(insert.tableMeta().mappingMode());
+                throw DialectUtils.createMappingModeUnknownException(insert.table().mappingMode());
 
         }
         return stmt;
@@ -523,7 +440,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
 
     private Stmt standardBatchInsertForSimple(_StandardBatchInsert insert
             , final Visible visible) {
-        TableMeta<?> tableMeta = insert.tableMeta();
+        TableMeta<?> tableMeta = insert.table();
         // 1.merge fields
         Set<FieldMeta<?, ?>> fieldMetaSet = DmlUtils.appendInsertFields(tableMeta, this.dialect, insert.fieldList());
 
@@ -536,7 +453,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
 
 
     private PairStmt standardBatchInsertForChild(_StandardBatchInsert insert, final Visible visible) {
-        final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) insert.tableMeta();
+        final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) insert.table();
         final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
 
         // 1. merge fields

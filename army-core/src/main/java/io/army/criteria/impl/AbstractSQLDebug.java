@@ -26,6 +26,8 @@ abstract class AbstractSQLDebug implements Statement.SQLAble, SQLDebug {
     }
 
 
+
+
     /*################################## blow protected template method ##################################*/
 
 

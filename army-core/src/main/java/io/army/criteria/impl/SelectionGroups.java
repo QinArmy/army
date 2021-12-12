@@ -34,7 +34,7 @@ abstract class SelectionGroups implements SelectionGroup {
     @Override
     public void appendSQL(_SqlContext context) {
         SqlBuilder builder = context.sqlBuilder().append(" ");
-        final SqlDialect sql = context.dql();
+        final SqlDialect sql = context.dialect();
         final String safeTableAlias = sql.quoteIfNeed(tableAlias());
         int index = 0;
         for (Selection selection : selectionList()) {
@@ -80,7 +80,7 @@ abstract class SelectionGroups implements SelectionGroup {
         @Override
         public void appendSQL(_SqlContext context) {
             SqlBuilder builder = context.sqlBuilder().append(" ");
-            final SqlDialect sql = context.dql();
+            final SqlDialect sql = context.dialect();
             final String safeTableAlias = sql.quoteIfNeed(this.tableAlias);
             int index = 0;
             for (FieldMeta<T, ?> fieldMeta : this.fieldMetaList) {

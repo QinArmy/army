@@ -35,8 +35,13 @@ abstract class AbstractSQLS {
         return ParamExpressionImp.build(null, param);
     }
 
+    @Deprecated
     public static <E> ParamExpression<E> param(E param, ParamMeta paramMeta) {
         return ParamExpressionImp.build(paramMeta, param);
+    }
+
+    public static <E> ParamExpression<E> param(ParamMeta paramMeta, E value) {
+        return ParamExpressionImp.build(paramMeta, value);
     }
 
     /**

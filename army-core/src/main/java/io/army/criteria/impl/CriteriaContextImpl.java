@@ -213,7 +213,7 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
         public void appendSQL(_SqlContext context) {
             context.sqlBuilder()
                     .append(" ")
-                    .append(context.dql().quoteIfNeed(this.selection.alias()));
+                    .append(context.dialect().quoteIfNeed(this.selection.alias()));
 
         }
 

@@ -16,7 +16,7 @@ abstract class AbstractSQLContext implements _TablesSqlContext {
 
     protected final Visible visible;
 
-    protected final SqlBuilder sqlBuilder;
+    protected final StringBuilder sqlBuilder;
 
     protected final List<ParamValue> paramList;
 
@@ -25,7 +25,7 @@ abstract class AbstractSQLContext implements _TablesSqlContext {
     protected AbstractSQLContext(Dialect dialect, Visible visible) {
         this.dialect = dialect;
         this.visible = visible;
-        this.sqlBuilder = DialectUtils.createSQLBuilder();
+        this.sqlBuilder = new StringBuilder(128);
         this.paramList = new ArrayList<>();
         this.parentContext = null;
     }
@@ -61,10 +61,10 @@ abstract class AbstractSQLContext implements _TablesSqlContext {
     }
 
     @Override
-    public void appendText(String textValue) {
+    public void appendIdentifier(String identifier) {
         this.sqlBuilder
                 .append(" ")
-                .append(this.dialect.quoteIfNeed(textValue));
+                .append(this.dialect.quoteIfNeed(identifier));
     }
 
     @Override
@@ -84,13 +84,12 @@ abstract class AbstractSQLContext implements _TablesSqlContext {
     }
 
 
-    @Override
-    public final DqlDialect dql() {
+    public final DqlDialect dialect() {
         return this.dialect;
     }
 
     @Override
-    public final SqlBuilder sqlBuilder() {
+    public final StringBuilder sqlBuilder() {
         return this.sqlBuilder;
     }
 
@@ -118,12 +117,12 @@ abstract class AbstractSQLContext implements _TablesSqlContext {
 
     /*################################## blow protected final method ##################################*/
 
-    protected SqlBuilder obtainTablePartBuilder() {
+    protected StringBuilder obtainTablePartBuilder() {
         return this.sqlBuilder;
     }
 
     protected final void doAppendField(@Nullable String tableAlias, FieldMeta<?, ?> fieldMeta) {
-        SqlBuilder builder = obtainTablePartBuilder();
+        StringBuilder builder = obtainTablePartBuilder();
         Dialect dialect = this.dialect;
         builder.append(" ");
         if (tableAlias != null) {

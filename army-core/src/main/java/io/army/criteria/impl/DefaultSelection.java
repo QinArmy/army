@@ -33,12 +33,12 @@ final class DefaultSelection implements Selection {
         this.expression.appendSQL(context);
         context.sqlBuilder()
                 .append(" AS ")
-                .append(context.dql().quoteIfNeed(this.alias));
+                .append(context.dialect().quoteIfNeed(this.alias));
     }
 
     @Override
     public final void appendSortPart(_SqlContext context) {
-        context.appendText(this.alias);
+        context.appendIdentifier(this.alias);
     }
 
     @Override

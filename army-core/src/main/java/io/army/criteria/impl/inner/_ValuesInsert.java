@@ -1,7 +1,6 @@
 package io.army.criteria.impl.inner;
 
 import io.army.beans.ObjectWrapper;
-import io.army.criteria.Expression;
 import io.army.meta.FieldMeta;
 
 import java.util.List;
@@ -11,7 +10,7 @@ public interface _ValuesInsert extends _Insert {
 
     boolean migrationData();
 
-    Map<FieldMeta<?, ?>, Expression<?>> commonExpMap();
+    Map<FieldMeta<?, ?>, _Expression<?>> commonExpMap();
 
     List<ObjectWrapper> domainList();
 

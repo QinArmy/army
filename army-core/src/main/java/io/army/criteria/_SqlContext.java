@@ -1,6 +1,6 @@
 package io.army.criteria;
 
-import io.army.dialect.DqlDialect;
+import io.army.dialect.Dialect;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
@@ -13,14 +13,14 @@ public interface _SqlContext {
 
     void appendFieldPredicate(FieldPredicate predicate);
 
-    void appendText(String textValue);
+    void appendIdentifier(String identifier);
 
     /**
      * @see ConstantExpression
      */
     void appendConstant(ParamMeta paramMeta, Object value);
 
-    DqlDialect dql();
+    Dialect dialect();
 
     StringBuilder sqlBuilder();
 

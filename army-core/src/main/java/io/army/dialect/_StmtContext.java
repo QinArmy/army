@@ -1,12 +1,19 @@
 package io.army.dialect;
 
 import io.army.criteria._SqlContext;
-import io.army.meta.TableMeta;
+import io.army.lang.Nullable;
 import io.army.stmt.Stmt;
 
 public interface _StmtContext extends _SqlContext {
 
-    void appendTable(TableMeta<?> tableMeta);
+
+    /**
+     * @return primary tableIndex
+     */
+    byte tableIndex();
+
+    @Nullable
+    String tableSuffix();
 
     Stmt build();
 

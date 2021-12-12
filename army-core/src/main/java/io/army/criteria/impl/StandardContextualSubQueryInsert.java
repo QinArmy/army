@@ -88,7 +88,7 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
     /*################################## blow InnerStandardSubQueryInsert method ##################################*/
 
     @Override
-    public final TableMeta<?> tableMeta() {
+    public final TableMeta<?> table() {
         return this.tableMeta;
     }
 

@@ -9,8 +9,6 @@ import java.util.Map;
 
 public interface _ValueInsertContext extends _DmlContext {
 
-    boolean migration();
-
     List<FieldMeta<?, ?>> fields();
 
     List<FieldMeta<?, ?>> parentFields();

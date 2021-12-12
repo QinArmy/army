@@ -291,7 +291,7 @@ final class TmSessionImpl implements InnerTmSession {
         int routeIndex = subQueryInsert.databaseIndex();
         if (routeIndex < 0) {
             throw new NotFoundRouteException("SubQuery insert ,TableMeta[%s] not found data source route."
-                    , subQueryInsert.tableMeta());
+                    , subQueryInsert.table());
         }
         return obtainRmSession(routeIndex)
                 .subQueryInsert(insert, visible);
@@ -305,7 +305,7 @@ final class TmSessionImpl implements InnerTmSession {
         int routeIndex = subQueryInsert.databaseIndex();
         if (routeIndex < 0) {
             throw new NotFoundRouteException("SubQuery insert ,TableMeta[%s] not found data source route."
-                    , subQueryInsert.tableMeta());
+                    , subQueryInsert.table());
         }
         return obtainRmSession(routeIndex)
                 .largeSubQueryInsert(insert, visible);
@@ -500,7 +500,7 @@ final class TmSessionImpl implements InnerTmSession {
 
         final List<DomainWrapper> wrapperList = insert.domainList();
         Assert.isTrue(wrapperList.size() == 1, "wrapperList size isn't 1 .");
-        final TableMeta<?> tableMeta = insert.tableMeta();
+        final TableMeta<?> tableMeta = insert.table();
         DomainWrapper domainWrapper = wrapperList.get(0);
         // 1. create required properties value.
         this.sessionFactory.domainValuesGenerator().createValues(domainWrapper, insert.migrationData());
@@ -526,7 +526,7 @@ final class TmSessionImpl implements InnerTmSession {
     private void processMultiInsert(final _ValuesInsert insert, final Visible visible) {
 
         final DomainValuesGenerator generator = this.sessionFactory.domainValuesGenerator();
-        final TableMeta<?> tableMeta = insert.tableMeta();
+        final TableMeta<?> tableMeta = insert.table();
         final List<DomainWrapper> wrapperList = insert.domainList();
         final int size = wrapperList.size();
 

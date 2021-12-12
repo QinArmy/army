@@ -8,6 +8,7 @@ import io.army.beans.ReadonlyWrapper;
 import io.army.boot.DomainValuesGenerator;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
+import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._StandardBatchInsert;
 import io.army.criteria.impl.inner._Update;
 import io.army.criteria.impl.inner._ValuesInsert;
@@ -40,7 +41,7 @@ abstract class DmlUtils {
     static Map<Byte, List<ObjectWrapper>> insertSharding(GenericRmSessionFactory factory, _ValuesInsert insert) {
 
         final FactoryMode mode = factory.factoryMode();
-        final TableMeta<?> tableMeta = insert.tableMeta();
+        final TableMeta<?> tableMeta = insert.table();
         final int databaseIndex = factory.databaseIndex();
 
         final List<FieldMeta<?, ?>> databaseFields, tableFields;
@@ -107,6 +108,85 @@ abstract class DmlUtils {
     }
 
 
+    static void appendStandardValueInsert(final StandardValueInsertContext context) {
+        final Dialect dialect = context.dialect;
+        final StringBuilder builder = context.sqlBuilder();
+        builder.append(Constant.INSERT_INTO)
+                .append(Constant.SPACE);
+        builder.append(dialect.safeTableName(context.actualTable, context.tableSuffix()));// append table name
+        builder.append(Constant.LEFT_BRACKET);
+        int index = 0;
+        for (FieldMeta<?, ?> fieldMeta : context.fields()) {
+            if (index > 0) {
+                builder.append(Constant.COMMA);
+            }
+            builder.append(dialect.safeFieldName(fieldMeta));
+            index++;
+        }
+        builder.append(Constant.RIGHT_BRACKET)
+                .append(Constant.VALUES);
+
+        final List<ObjectWrapper> domainList = context.domainList();
+        final FieldMeta<?, ?> discriminator = context.table.discriminator();
+        final List<FieldMeta<?, ?>> fieldList = context.fields();
+        int batch = 0;
+        final Map<FieldMeta<?, ?>, _Expression<?>> expMap = context.commonExpMap();
+        _Expression<?> expression;
+        for (ObjectWrapper domain : domainList) {
+            if (batch > 0) {
+                builder.append(Constant.COMMA);
+            }
+            builder.append(Constant.LEFT_BRACKET);
+            index = 0;
+            for (FieldMeta<?, ?> fieldMeta : fieldList) {
+                if (index > 0) {
+                    builder.append(Constant.COMMA);
+                }
+                if (fieldMeta == discriminator) {
+                    builder.append(fieldMeta.tableMeta().discriminatorValue());
+                } else if ((expression = expMap.get(fieldMeta)) != null) {
+                    expression.appendSQL(context);
+                } else {
+                    builder.append(Constant.PLACEHOLDER);
+                    context.appendParam(ParamValue.build(fieldMeta, domain.get(fieldMeta.fieldName())));
+                }
+                index++;
+            }
+            builder.append(Constant.RIGHT_BRACKET);
+            batch++;
+        }
+
+    }
+
+
+    static List<FieldMeta<?, ?>> mergeInsertFields(final boolean parent, final _ValuesInsert insert) {
+        final TableMeta<?> tableMeta;
+        final List<FieldMeta<?, ?>> fieldList;
+        if (parent) {
+            tableMeta = ((ChildTableMeta<?>) insert.table()).parentMeta();
+            fieldList = insert.parentFieldList();
+        } else {
+            tableMeta = insert.table();
+            fieldList = insert.fieldList();
+        }
+        final List<FieldMeta<?, ?>> mergeFieldList;
+        if (fieldList.isEmpty()) {
+            mergeFieldList = new ArrayList<>(tableMeta.fieldCollection());
+        } else {
+            final Set<FieldMeta<?, ?>> fieldSet = new HashSet<>();
+            for (FieldMeta<?, ?> fieldMeta : fieldList) {
+                if (fieldMeta.tableMeta() != tableMeta) {
+                    throw _Exceptions.notMatchInsertField(insert, fieldMeta);
+                }
+                fieldSet.add(fieldMeta);
+            }
+            appendInsertFields(tableMeta, fieldSet);
+            mergeFieldList = new ArrayList<>(fieldSet);
+        }
+        return Collections.unmodifiableList(mergeFieldList);
+    }
+
+
     /**
      * @return a unmodifiable List
      */
@@ -151,7 +231,7 @@ abstract class DmlUtils {
 
 
     static Pair<List<FieldMeta<?, ?>>, List<FieldMeta<?, ?>>> divideField(_ValuesInsert insert) {
-        final TableMeta<?> tableMeta = insert.tableMeta();
+        final TableMeta<?> tableMeta = insert.table();
         final ParentTableMeta<?> parentMeta;
 
         if (tableMeta instanceof ChildTableMeta) {
@@ -387,25 +467,25 @@ abstract class DmlUtils {
     }
 
 
-    static void appendInsertFields(final TableMeta<?> domainTable, final Set<FieldMeta<?, ?>> targetFields) {
+    static void appendInsertFields(final TableMeta<?> domainTable, final Set<FieldMeta<?, ?>> fieldSet) {
 
-        targetFields.addAll(domainTable.generatorChain());
+        fieldSet.addAll(domainTable.generatorChain());
 
-        targetFields.add(domainTable.id());
+        fieldSet.add(domainTable.id());
         if (domainTable instanceof ParentTableMeta) {
-            targetFields.add(((ParentTableMeta<?>) domainTable).discriminator());
+            fieldSet.add(((ParentTableMeta<?>) domainTable).discriminator());
         }
         if (!(domainTable instanceof ChildTableMeta)) {
-            targetFields.add(domainTable.getField(_MetaBridge.CREATE_TIME));
+            fieldSet.add(domainTable.getField(_MetaBridge.CREATE_TIME));
 
             if (domainTable.containField(_MetaBridge.UPDATE_TIME)) {
-                targetFields.add(domainTable.getField(_MetaBridge.UPDATE_TIME));
+                fieldSet.add(domainTable.getField(_MetaBridge.UPDATE_TIME));
             }
             if (domainTable.containField(_MetaBridge.VERSION)) {
-                targetFields.add(domainTable.getField(_MetaBridge.VERSION));
+                fieldSet.add(domainTable.getField(_MetaBridge.VERSION));
             }
             if (domainTable.containField(_MetaBridge.VISIBLE)) {
-                targetFields.add(domainTable.getField(_MetaBridge.VISIBLE));
+                fieldSet.add(domainTable.getField(_MetaBridge.VISIBLE));
             }
         }
 

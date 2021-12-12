@@ -4,7 +4,7 @@ import io.army.ErrorCode;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.LockMode;
 import io.army.dialect.AbstractDQL;
-import io.army.dialect.Keywords;
+import io.army.dialect.Constant;
 import io.army.dialect.SqlBuilder;
 import io.army.dialect._TablesSqlContext;
 import io.army.mapping.MappingType;
@@ -38,7 +38,7 @@ class MySQL57DQL extends AbstractDQL {
         if (offset > -1 || rowCount > -1) {
             SqlBuilder builder = context.sqlBuilder();
             builder.append(" ")
-                    .append(Keywords.LIMIT);
+                    .append(Constant.LIMIT);
             final MappingType integerType = _MappingFactory.getMapping(Integer.class);
             if (offset > -1) {
                 builder.append(" ?,");

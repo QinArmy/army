@@ -13,5 +13,13 @@ public abstract class Stmts {
         return null;
     }
 
+    public static SimpleStmt simple(String sql, List<ParamValue> paramList) {
+        return null;
+    }
+
+    public static PairStmt pair(SimpleStmt parent, SimpleStmt child) {
+        return null;
+    }
+
 
 }

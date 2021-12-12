@@ -151,9 +151,9 @@ abstract class ComposeQueries<Q extends Query, C> extends AbstractComposeQuery<Q
             SqlBuilder builder = context.sqlBuilder()
                     .append(" (");
             if (this.enclosedQuery instanceof Select) {
-                context.dql().select((Select) this.enclosedQuery, context);
+                context.dialect().select((Select) this.enclosedQuery, context);
             } else if (this.enclosedQuery instanceof SubQuery) {
-                context.dql().subQuery((SubQuery) this.enclosedQuery, context);
+                context.dialect().subQuery((SubQuery) this.enclosedQuery, context);
             } else {
                 throw new IllegalStateException(String.format("%s isn't Select or SubQuery.", this.enclosedQuery));
             }
@@ -184,7 +184,7 @@ abstract class ComposeQueries<Q extends Query, C> extends AbstractComposeQuery<Q
 
         @Override
         public void appendSQL(_SqlContext context) {
-            DqlDialect dql = context.dql();
+            DqlDialect dql = context.dialect();
 
             if (this.leftQuery instanceof Select) {
                 dql.select((Select) this.leftQuery, context);

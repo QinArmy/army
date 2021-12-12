@@ -62,7 +62,7 @@ abstract class DomainDmlContext implements _DmlContext {
     }
 
     @Override
-    public void appendText(String textValue) {
+    public void appendIdentifier(String identifier) {
 
     }
 
@@ -72,12 +72,12 @@ abstract class DomainDmlContext implements _DmlContext {
     }
 
     @Override
-    public DqlDialect dql() {
+    public DqlDialect dialect() {
         return null;
     }
 
     @Override
-    public SqlBuilder sqlBuilder() {
+    public StringBuilder sqlBuilder() {
         return null;
     }
 

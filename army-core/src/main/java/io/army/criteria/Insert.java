@@ -33,14 +33,18 @@ public interface Insert extends Statement, SQLDebug {
 
     interface InsertIntoSpec<T extends IDomain, C> extends InsertSqlSpec {
 
-        InsertValuesSpec<T, C> insertInto(Collection<FieldMeta<? super T, ?>> fieldMetaList);
+        InsertValuesSpec<T, C> insertInto(Collection<FieldMeta<? super T, ?>> fields);
 
-        InsertValuesSpec<T, C> insertInto(Supplier<Collection<FieldMeta<? super T, ?>>> fieldMetaList);
+        InsertValuesSpec<T, C> insertInto(Supplier<Collection<FieldMeta<? super T, ?>>> supplier);
 
-        InsertValuesSpec<T, C> insertInto(TableMeta<T> tableMeta);
+        InsertValuesSpec<T, C> insertInto(Function<C, Collection<FieldMeta<? super T, ?>>> function);
+
+        InsertValuesSpec<T, C> insertInto(TableMeta<T> table);
     }
 
     interface InsertValuesSpec<T extends IDomain, C> extends InsertSqlSpec {
+
+        <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, F> fieldMeta, F value);
 
         <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, F> fieldMeta, Expression<F> value);
 
@@ -50,7 +54,11 @@ public interface Insert extends Statement, SQLDebug {
 
         InsertSpec value(T domain);
 
+        InsertSpec value(Function<C, T> function);
+
         InsertSpec values(List<T> domainList);
+
+        InsertSpec values(Function<C, List<T>> function);
 
     }
 

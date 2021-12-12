@@ -49,6 +49,20 @@ public abstract class DialectUtils {
         return (Collection<FieldMeta<?, ?>>) collection;
     }
 
+    public static String tableSuffix(final byte tableIndex) {
+        final String suffix;
+        if (tableIndex < 0) {
+            throw new IllegalArgumentException(String.format("tableIndex[%s] must non-negative.", tableIndex));
+        } else if (tableIndex == 0) {
+            suffix = "";
+        } else if (tableIndex < 10) {
+            suffix = "_0" + tableIndex;
+        } else {
+            throw new IllegalArgumentException(String.format("tableIndex[%s] too large.", tableIndex));
+        }
+        return suffix;
+    }
+
 
     public static String quoteIfNeed(MappingType mappingType, String textValue) {
         if (TEXT_JDBC_TYPE.contains(mappingType.jdbcType())) {

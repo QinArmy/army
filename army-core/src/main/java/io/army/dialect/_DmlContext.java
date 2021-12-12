@@ -10,12 +10,6 @@ public interface _DmlContext extends _StmtContext {
      */
     TableMeta<?> tableMeta();
 
-    /**
-     * @return primary tableIndex
-     */
-    byte tableIndex();
-
-    String tableSuffix();
 
 
 }

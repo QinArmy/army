@@ -40,7 +40,7 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
 
     @Override
     public final void appendSQL(_SqlContext context) {
-        SqlDialect sql = context.dql();
+        SqlDialect sql = context.dialect();
 
         context.sqlBuilder()
                 .append(" ")

@@ -9,7 +9,7 @@ import java.util.List;
 public interface _StandardChildSubQueryInsert extends _StandardSubQueryInsert {
 
     @Override
-    ChildTableMeta<?> tableMeta();
+    ChildTableMeta<?> table();
 
     List<FieldMeta<?, ?>> parentFieldList();
 

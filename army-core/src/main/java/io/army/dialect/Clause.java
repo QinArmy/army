@@ -2,17 +2,17 @@ package io.army.dialect;
 
 public enum Clause {
 
-    SELECT(Keywords.SELECT),
+    SELECT(Constant.SELECT),
     SELECT_LIST(""),
-    INSERT_INTO(Keywords.INSERT_INTO),
-    VALUE(Keywords.VALUE),
-    VALUES(Keywords.VALUES),
-    FROM(Keywords.FROM),
-    ON(Keywords.ON),
-    WHERE(Keywords.WHERE),
-    GROUP_BY(Keywords.GROUP_BY),
-    HAVING(Keywords.HAVING),
-    ORDER_BY(Keywords.ORDER_BY),
+    INSERT_INTO(Constant.INSERT_INTO),
+    VALUE(Constant.VALUE),
+    VALUES(Constant.VALUES),
+    FROM(Constant.FROM),
+    ON(Constant.ON),
+    WHERE(Constant.WHERE),
+    GROUP_BY(Constant.GROUP_BY),
+    HAVING(Constant.HAVING),
+    ORDER_BY(Constant.ORDER_BY),
     SUB_QUERY(""),
     PART_START(""),
     PART_END("");
