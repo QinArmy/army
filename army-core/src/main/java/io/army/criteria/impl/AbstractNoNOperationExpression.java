@@ -383,52 +383,52 @@ abstract class AbstractNoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final <N extends Number> Expression<E> add(Expression<N> augend) {
+    public final <N extends Number> Expression<E> plus(Expression<N> augend) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <N extends Number> Expression<E> add(N augend) {
+    public final <N extends Number> Expression<E> plus(N augend) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final Expression<E> add(String subQueryAlias, String derivedFieldName) {
+    public final Expression<E> plus(String subQueryAlias, String derivedFieldName) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final Expression<E> add(String tableAlias, FieldMeta<?, E> fieldMeta) {
+    public final Expression<E> plus(String tableAlias, FieldMeta<?, E> fieldMeta) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, N extends Number, S extends Expression<N>> Expression<E> add(Function<C, S> expOrSubQuery) {
+    public final <C, N extends Number, S extends Expression<N>> Expression<E> plus(Function<C, S> expOrSubQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <N extends Number> Expression<E> subtract(Expression<N> subtrahend) {
+    public final <N extends Number> Expression<E> minus(Expression<N> subtrahend) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <N extends Number> Expression<E> subtract(N subtrahend) {
+    public final <N extends Number> Expression<E> minus(N subtrahend) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final Expression<E> subtract(String subQueryAlias, String derivedFieldName) {
+    public final Expression<E> minus(String subQueryAlias, String derivedFieldName) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final Expression<E> subtract(String tableAlias, FieldMeta<?, E> fieldMeta) {
+    public final Expression<E> minus(String tableAlias, FieldMeta<?, E> fieldMeta) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final <C, N extends Number, S extends Expression<N>> Expression<E> subtract(Function<C, S> expOrSubQuery) {
+    public final <C, N extends Number, S extends Expression<N>> Expression<E> minus(Function<C, S> expOrSubQuery) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 

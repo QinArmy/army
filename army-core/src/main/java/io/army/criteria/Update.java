@@ -32,27 +32,47 @@ public interface Update extends Statement, SQLDebug {
 
     interface SetSpec<T extends IDomain, C> extends UpdateSqlSpec {
 
-        <F> WhereSpec<T, C> set(FieldMeta<? super T, F> target, @Nullable F value);
+        <F> WhereSpec<T, C> set(FieldMeta<? super T, F> field, @Nullable F value);
+
+        <F> WhereSpec<T, C> set(FieldMeta<? super T, F> field, Expression<F> valueExp);
 
         /**
          * @see SQLs#defaultValue()
          */
-        <F> WhereSpec<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp);
+        <F> WhereSpec<T, C> setDefault(FieldMeta<? super T, F> field);
 
-        <F> WhereSpec<T, C> setDefault(FieldMeta<? super T, F> target);
+        <F extends Number> WhereSpec<T, C> setPlus(FieldMeta<? super T, F> field, F value);
 
-        <F> WhereSpec<T, C> ifSet(FieldMeta<? super T, F> target, @Nullable F value);
+        <F extends Number> WhereSpec<T, C> setPlus(FieldMeta<? super T, F> field, Expression<F> value);
 
-        <F> WhereSpec<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value);
+        <F extends Number> WhereSpec<T, C> setMinus(FieldMeta<? super T, F> field, F value);
 
-        <F> WhereSpec<T, C> ifSet(FieldMeta<? super T, F> target, Function<C, Expression<F>> function);
+        <F extends Number> WhereSpec<T, C> setMinus(FieldMeta<? super T, F> field, Expression<F> value);
+
+        <F extends Number> WhereSpec<T, C> setMultiply(FieldMeta<? super T, F> field, F value);
+
+        <F extends Number> WhereSpec<T, C> setMultiply(FieldMeta<? super T, F> field, Expression<F> value);
+
+        <F extends Number> WhereSpec<T, C> setDivide(FieldMeta<? super T, F> field, F value);
+
+        <F extends Number> WhereSpec<T, C> setDivide(FieldMeta<? super T, F> field, Expression<F> value);
+
+        <F extends Number> WhereSpec<T, C> setMod(FieldMeta<? super T, F> field, F value);
+
+        <F extends Number> WhereSpec<T, C> setMod(FieldMeta<? super T, F> field, Expression<F> value);
+
+        <F> WhereSpec<T, C> ifSet(FieldMeta<? super T, F> field, @Nullable F value);
+
+        <F> WhereSpec<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, @Nullable F value);
+
+        <F> WhereSpec<T, C> ifSet(FieldMeta<? super T, F> field, Function<C, Expression<F>> function);
 
     }
 
 
     interface WhereSpec<T extends IDomain, C> extends SetSpec<T, C> {
 
-        UpdateSpec where(List<IPredicate> predicateList);
+        UpdateSpec where(List<IPredicate> predicates);
 
         UpdateSpec where(Function<C, List<IPredicate>> function);
 
@@ -83,27 +103,30 @@ public interface Update extends Statement, SQLDebug {
 
     interface BatchSetSpec<T extends IDomain, C> extends UpdateSqlSpec {
 
+        <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> field, Expression<F> valueExp);
 
         <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> field);
 
         <F> BatchWhereSpec<T, C> setDefault(FieldMeta<? super T, F> field);
 
-        <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> field, @Nullable F value);
+        <F extends Number> BatchWhereSpec<T, C> setPlus(FieldMeta<? super T, F> field);
 
-        <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> field, Expression<F> valueExp);
+        <F extends Number> BatchWhereSpec<T, C> setMinus(FieldMeta<? super T, F> field);
+
+        <F extends Number> BatchWhereSpec<T, C> setMultiply(FieldMeta<? super T, F> field);
+
+        <F extends Number> BatchWhereSpec<T, C> setDivide(FieldMeta<? super T, F> field);
+
+        <F extends Number> BatchWhereSpec<T, C> setMod(FieldMeta<? super T, F> field);
 
         <F> BatchWhereSpec<T, C> ifSet(Predicate<C> test, FieldMeta<? super T, F> field);
-
-        <F> BatchWhereSpec<T, C> ifSet(FieldMeta<? super T, F> field, @Nullable F value);
-
-        <F> BatchWhereSpec<T, C> ifSet(Predicate<C> test, FieldMeta<? super T, F> field, F value);
 
         <F> BatchWhereSpec<T, C> ifSet(FieldMeta<? super T, F> filed, Function<C, Expression<F>> function);
     }
 
     interface BatchWhereSpec<T extends IDomain, C> extends BatchSetSpec<T, C> {
 
-        BatchParamSpec<C> where(List<IPredicate> predicateList);
+        BatchParamSpec<C> where(List<IPredicate> predicates);
 
         BatchParamSpec<C> where(Function<C, List<IPredicate>> function);
 

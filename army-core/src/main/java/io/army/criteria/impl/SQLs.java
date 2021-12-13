@@ -251,6 +251,7 @@ public abstract class SQLs extends AbstractSQLs {
      * package method.
      */
     @SuppressWarnings("unchecked")
+    @Deprecated
     static <E> Expression<E> defaultKeyWord() {
         return (DefaultKeyWord<E>) DefaultKeyWord.INSTANCE;
     }

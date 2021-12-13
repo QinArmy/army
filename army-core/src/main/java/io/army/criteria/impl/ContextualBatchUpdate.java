@@ -73,21 +73,6 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
     /*################################## blow BatchSetSpec method ##################################*/
 
     @Override
-    public <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> field) {
-        return this.set(field, SQLs.namedParam(field.fieldName(), field));
-    }
-
-    @Override
-    public <F> BatchWhereSpec<T, C> setDefault(FieldMeta<? super T, F> field) {
-        return this.set(field, SQLs.defaultKeyWord());
-    }
-
-    @Override
-    public <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> field, @Nullable F value) {
-        return this.set(field, SQLs.param(field, value));
-    }
-
-    @Override
     public <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> field, Expression<F> valueExp) {
         if (field.updateMode() == UpdateMode.IMMUTABLE) {
             throw _Exceptions.immutableField(field);
@@ -98,25 +83,44 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
     }
 
     @Override
+    public <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> field) {
+        return this.set(field, SQLs.namedParam(field));
+    }
+
+    @Override
+    public <F> BatchWhereSpec<T, C> setDefault(FieldMeta<? super T, F> field) {
+        return this.set(field, SQLs.defaultValue());
+    }
+
+    @Override
+    public <F extends Number> BatchWhereSpec<T, C> setPlus(FieldMeta<? super T, F> field) {
+        return this.set(field, field.plus(SQLs.namedParam(field)));
+    }
+
+    @Override
+    public <F extends Number> BatchWhereSpec<T, C> setMinus(FieldMeta<? super T, F> field) {
+        return this.set(field, field.minus(SQLs.namedParam(field)));
+    }
+
+    @Override
+    public <F extends Number> BatchWhereSpec<T, C> setMultiply(FieldMeta<? super T, F> field) {
+        return this.set(field, field.multiply(SQLs.namedParam(field)));
+    }
+
+    @Override
+    public <F extends Number> BatchWhereSpec<T, C> setDivide(FieldMeta<? super T, F> field) {
+        return this.set(field, field.divide(SQLs.namedParam(field)));
+    }
+
+    @Override
+    public <F extends Number> BatchWhereSpec<T, C> setMod(FieldMeta<? super T, F> field) {
+        return this.set(field, field.mod(SQLs.namedParam(field)));
+    }
+
+    @Override
     public <F> BatchWhereSpec<T, C> ifSet(Predicate<C> test, FieldMeta<? super T, F> field) {
         if (test.test(this.criteria)) {
             this.set(field, field);
-        }
-        return this;
-    }
-
-    @Override
-    public <F> BatchWhereSpec<T, C> ifSet(FieldMeta<? super T, F> field, @Nullable F value) {
-        if (value != null) {
-            this.set(field, value);
-        }
-        return this;
-    }
-
-    @Override
-    public <F> BatchWhereSpec<T, C> ifSet(Predicate<C> test, FieldMeta<? super T, F> field, F value) {
-        if (test.test(this.criteria)) {
-            this.set(field, value);
         }
         return this;
     }
@@ -135,9 +139,9 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
 
 
     @Override
-    public BatchParamSpec<C> where(List<IPredicate> predicateList) {
+    public BatchParamSpec<C> where(List<IPredicate> predicates) {
         final List<_Predicate> list = this.predicateList;
-        for (IPredicate predicate : predicateList) {
+        for (IPredicate predicate : predicates) {
             list.add((_Predicate) predicate);
         }
         return this;

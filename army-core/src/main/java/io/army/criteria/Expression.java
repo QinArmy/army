@@ -198,25 +198,25 @@ public interface Expression<E> extends SelectionAble, MappingMetaAble {
 
     <C, N extends Number, S extends Expression<N>> Expression<E> multiply(Function<C, S> expOrSubQuery);
 
-    <N extends Number> Expression<E> add(Expression<N> augend);
+    <N extends Number> Expression<E> plus(Expression<N> augend);
 
-    <N extends Number> Expression<E> add(N augend);
+    <N extends Number> Expression<E> plus(N augend);
 
-    Expression<E> add(String subQueryAlias, String derivedFieldName);
+    Expression<E> plus(String subQueryAlias, String derivedFieldName);
 
-    Expression<E> add(String tableAlias, FieldMeta<?, E> fieldMeta);
+    Expression<E> plus(String tableAlias, FieldMeta<?, E> fieldMeta);
 
-    <C, N extends Number, S extends Expression<N>> Expression<E> add(Function<C, S> expOrSubQuery);
+    <C, N extends Number, S extends Expression<N>> Expression<E> plus(Function<C, S> expOrSubQuery);
 
-    <N extends Number> Expression<E> subtract(Expression<N> subtrahend);
+    <N extends Number> Expression<E> minus(Expression<N> subtrahend);
 
-    <N extends Number> Expression<E> subtract(N subtrahend);
+    <N extends Number> Expression<E> minus(N subtrahend);
 
-    Expression<E> subtract(String subQueryAlias, String derivedFieldName);
+    Expression<E> minus(String subQueryAlias, String derivedFieldName);
 
-    Expression<E> subtract(String tableAlias, FieldMeta<?, E> fieldMeta);
+    Expression<E> minus(String tableAlias, FieldMeta<?, E> fieldMeta);
 
-    <C, N extends Number, S extends Expression<N>> Expression<E> subtract(Function<C, S> expOrSubQuery);
+    <C, N extends Number, S extends Expression<N>> Expression<E> minus(Function<C, S> expOrSubQuery);
 
     <N extends Number> Expression<E> divide(Expression<N> divisor);
 

@@ -113,9 +113,9 @@ abstract class AbstractSQLs {
     }
 
 
-    @SuppressWarnings("unchecked")
+   @SuppressWarnings("unchecked")
     public static <E> Expression<E> defaultValue() {
-        return (Expression<E>) DefaultValueExpression.INSTANCE;
+       return (Expression<E>) DefaultKeyWord.INSTANCE;
     }
 
     public static TableMeta<Dual> dual() {

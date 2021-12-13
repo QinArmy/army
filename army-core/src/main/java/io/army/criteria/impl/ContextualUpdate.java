@@ -69,32 +69,82 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
     /*################################## blow DomainSetAble method ##################################*/
 
     @Override
-    public <F> WhereSpec<T, C> set(FieldMeta<? super T, F> target, @Nullable F value) {
-        return this.set(target, SQLs.param(target, value));
+    public <F> WhereSpec<T, C> set(FieldMeta<? super T, F> field, @Nullable F value) {
+        return this.set(field, SQLs.param(field, value));
     }
 
     @Override
-    public <F> WhereSpec<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp) {
-        this.fieldList.add(target);
+    public <F> WhereSpec<T, C> set(FieldMeta<? super T, F> field, Expression<F> valueExp) {
+        this.fieldList.add(field);
         this.valueExpList.add((_Expression<?>) valueExp);
         return this;
     }
 
     @Override
-    public <F> WhereSpec<T, C> setDefault(FieldMeta<? super T, F> target) {
-        return this.set(target, SQLs.defaultKeyWord());
+    public <F> WhereSpec<T, C> setDefault(FieldMeta<? super T, F> field) {
+        return this.set(field, SQLs.defaultValue());
     }
 
     @Override
-    public <F> WhereSpec<T, C> ifSet(FieldMeta<? super T, F> target, @Nullable F value) {
+    public <F extends Number> WhereSpec<T, C> setPlus(FieldMeta<? super T, F> field, F value) {
+        return this.set(field, field.plus(value));
+    }
+
+    @Override
+    public <F extends Number> WhereSpec<T, C> setPlus(FieldMeta<? super T, F> field, Expression<F> value) {
+        return this.set(field, field.plus(value));
+    }
+
+    @Override
+    public <F extends Number> WhereSpec<T, C> setMinus(FieldMeta<? super T, F> field, F value) {
+        return this.set(field, field.minus(value));
+    }
+
+    @Override
+    public <F extends Number> WhereSpec<T, C> setMinus(FieldMeta<? super T, F> field, Expression<F> value) {
+        return this.set(field, field.minus(value));
+    }
+
+    @Override
+    public <F extends Number> WhereSpec<T, C> setMultiply(FieldMeta<? super T, F> field, F value) {
+        return this.set(field, field.multiply(value));
+    }
+
+    @Override
+    public <F extends Number> WhereSpec<T, C> setMultiply(FieldMeta<? super T, F> field, Expression<F> value) {
+        return this.set(field, field.multiply(value));
+    }
+
+    @Override
+    public <F extends Number> WhereSpec<T, C> setDivide(FieldMeta<? super T, F> field, F value) {
+        return this.set(field, field.divide(value));
+    }
+
+    @Override
+    public <F extends Number> WhereSpec<T, C> setDivide(FieldMeta<? super T, F> field, Expression<F> value) {
+        return this.set(field, field.divide(value));
+    }
+
+    @Override
+    public <F extends Number> WhereSpec<T, C> setMod(FieldMeta<? super T, F> field, F value) {
+        return this.set(field, field.mod(value));
+    }
+
+    @Override
+    public <F extends Number> WhereSpec<T, C> setMod(FieldMeta<? super T, F> field, Expression<F> value) {
+        return this.set(field, field.mod(value));
+    }
+
+    @Override
+    public <F> WhereSpec<T, C> ifSet(FieldMeta<? super T, F> field, @Nullable F value) {
         if (value != null) {
-            this.set(target, SQLs.param(target, value));
+            this.set(field, SQLs.param(field, value));
         }
         return this;
     }
 
     @Override
-    public <F> WhereSpec<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value) {
+    public <F> WhereSpec<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, @Nullable F value) {
         if (predicate.test(this.criteria)) {
             this.set(target, SQLs.param(target, value));
         }
@@ -102,23 +152,23 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
     }
 
     @Override
-    public <F> WhereSpec<T, C> ifSet(FieldMeta<? super T, F> target
+    public <F> WhereSpec<T, C> ifSet(FieldMeta<? super T, F> field
             , Function<C, Expression<F>> function) {
         final Expression<F> expression;
         expression = function.apply(this.criteria);
         if (expression != null) {
-            this.set(target, expression);
+            this.set(field, expression);
         }
         return this;
     }
 
-    /*################################## blow DomainWhereAble method ##################################*/
+    /*################################## blow DomainWhereSpec method ##################################*/
 
 
     @Override
-    public UpdateSpec where(List<IPredicate> predicateList) {
+    public UpdateSpec where(List<IPredicate> predicates) {
         final List<_Predicate> list = this.predicateList;
-        for (IPredicate predicate : predicateList) {
+        for (IPredicate predicate : predicates) {
             list.add((_Predicate) predicate);
         }
         return this;
