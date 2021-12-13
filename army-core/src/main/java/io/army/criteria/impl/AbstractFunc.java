@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.Expression;
 import io.army.criteria.FuncExpression;
 import io.army.criteria._SqlContext;
-import io.army.dialect.SqlBuilder;
+import io.army.criteria.impl.inner._Expression;
 import io.army.mapping.MappingType;
 import io.army.util.ArrayUtils;
 import io.army.util.Assert;
@@ -20,17 +20,17 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
     }
 
     static <E> FuncExpression<E> oneArgumentFunc(String name, MappingType returnType, Expression<?> one) {
-        return new OneArgumentFunc<>(name, returnType, one);
+        return new OneArgumentFunc<>(name, returnType, (_Expression<?>) one);
     }
 
     static <E> FuncExpression<E> twoArgumentFunc(String name, MappingType returnType, Expression<?> one
             , Expression<?> two) {
-        return new TwoArgumentFunc<>(name, returnType, one, two);
+        return new TwoArgumentFunc<>(name, returnType, (_Expression<?>) one, (_Expression<?>) two);
     }
 
     static <E> FuncExpression<E> twoArgumentFunc(String name, MappingType returnType, List<String> format
             , Expression<?> one, Expression<?> two) {
-        return new TwoArgumentFunc<>(name, returnType, format, one, two);
+        return new TwoArgumentFunc<>(name, returnType, format, (_Expression<?>) one, (_Expression<?>) two);
     }
 
 
@@ -54,8 +54,8 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
     }
 
     @Override
-    public final void appendSQL(_SqlContext context) {
-        SqlBuilder builder = context.sqlBuilder()
+    public final void appendSql(_SqlContext context) {
+        StringBuilder builder = context.sqlBuilder()
                 .append(" ")
                 .append(this.name)
                 .append("(");
@@ -103,11 +103,11 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
 
     static final class OneArgumentFunc<E> extends AbstractFunc<E> {
 
-        private final Expression<?> one;
+        private final _Expression<?> one;
 
         private final List<MappingType> argumentTypeList;
 
-        private OneArgumentFunc(String name, MappingType returnType, Expression<?> one) {
+        private OneArgumentFunc(String name, MappingType returnType, _Expression<?> one) {
             super(name, returnType);
             this.one = one;
             this.argumentTypeList = Collections.singletonList(one.mappingMeta());
@@ -115,7 +115,7 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
 
         @Override
         protected void doAppendArgument(_SqlContext context) {
-            one.appendSQL(context);
+
         }
 
         @Override
@@ -135,14 +135,14 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
 
         private final List<String> format;
 
-        private final Expression<?> one;
+        private final _Expression<?> one;
 
-        private final Expression<?> two;
+        private final _Expression<?> two;
 
         private final List<MappingType> argumentTypeList;
 
-        private TwoArgumentFunc(String name, MappingType returnType, List<String> format, Expression<?> one
-                , Expression<?> two) {
+        private TwoArgumentFunc(String name, MappingType returnType, List<String> format, _Expression<?> one
+                , _Expression<?> two) {
             super(name, returnType);
             Assert.isTrue(format.size() >= 3, "");
             this.format = format;
@@ -155,17 +155,17 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
             this.argumentTypeList = Collections.unmodifiableList(typeList);
         }
 
-        private TwoArgumentFunc(String name, MappingType returnType, Expression<?> one, Expression<?> two) {
+        private TwoArgumentFunc(String name, MappingType returnType, _Expression<?> one, _Expression<?> two) {
             this(name, returnType, FORMAT_LIST, one, two);
         }
 
         @Override
         protected void doAppendArgument(_SqlContext context) {
-            SqlBuilder builder = context.sqlBuilder();
+            StringBuilder builder = context.sqlBuilder();
             builder.append(format.get(0));
-            one.appendSQL(context);
+            one.appendSql(context);
             builder.append(format.get(1));
-            two.appendSQL(context);
+            two.appendSql(context);
             builder.append(format.get(2));
         }
 
@@ -186,11 +186,11 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
 
         private final List<String> format;
 
-        private final Expression<?> one;
+        private final _Expression<?> one;
 
-        private final Expression<?> two;
+        private final _Expression<?> two;
 
-        protected final Expression<?> three;
+        protected final _Expression<?> three;
 
         private final List<MappingType> argumentTypeList;
 
@@ -199,9 +199,9 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
             super(name, returnType);
             Assert.isTrue(format.size() >= 4, "showSQL error");
             this.format = format;
-            this.one = one;
-            this.two = two;
-            this.three = three;
+            this.one = (_Expression<?>) one;
+            this.two = (_Expression<?>) two;
+            this.three = (_Expression<?>) three;
 
             List<MappingType> typeList = new ArrayList<>(3);
             typeList.add(one.mappingMeta());
@@ -218,13 +218,13 @@ abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpr
 
         @Override
         protected void doAppendArgument(_SqlContext context) {
-            SqlBuilder builder = context.sqlBuilder();
+            StringBuilder builder = context.sqlBuilder();
             builder.append(format.get(0));
-            one.appendSQL(context);
+            one.appendSql(context);
             builder.append(format.get(1));
-            two.appendSQL(context);
+            two.appendSql(context);
             builder.append(format.get(2));
-            three.appendSQL(context);
+            three.appendSql(context);
             builder.append(format.get(3));
         }
 

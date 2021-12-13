@@ -1,7 +1,6 @@
 package io.army.sqltype;
 
 import io.army.dialect.Database;
-import io.army.dialect.SqlBuilder;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 
@@ -16,12 +15,12 @@ public interface SqlDataType {
 
 
     @Deprecated
-    default void zeroValue(FieldMeta<?, ?> fieldMeta, SqlBuilder builder, Database database) throws MetaException {
+    default void zeroValue(FieldMeta<?, ?> fieldMeta, StringBuilder builder, Database database) throws MetaException {
 
     }
 
     @Deprecated
-    default void dataTypeClause(FieldMeta<?, ?> fieldMeta, SqlBuilder builder) throws MetaException {
+    default void dataTypeClause(FieldMeta<?, ?> fieldMeta, StringBuilder builder) throws MetaException {
         builder.append(typeName());
     }
 
@@ -35,7 +34,7 @@ public interface SqlDataType {
     }
 
     @Deprecated
-    default void nowValue(FieldMeta<?, ?> fieldMeta, SqlBuilder builder, Database database)
+    default void nowValue(FieldMeta<?, ?> fieldMeta, StringBuilder builder, Database database)
             throws MetaException {
         throw new MetaException("%s,SQLDataType[%s] not support IDomain.NOW.", fieldMeta, name());
     }

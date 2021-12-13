@@ -54,12 +54,12 @@ class DualExpresion<E> extends AbstractExpression<E> {
     }
 
     @Override
-    public final void appendSQL(_SqlContext context) {
-        left.appendSQL(context);
+    public final void appendSql(_SqlContext context) {
+        left.appendSql(context);
         context.sqlBuilder()
                 .append(" ")
                 .append(operator.rendered());
-        right.appendSQL(context);
+        right.appendSql(context);
     }
 
     @Override

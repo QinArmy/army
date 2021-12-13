@@ -105,5 +105,9 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("%s is non-insertable.", field));
     }
 
+    public static CriteriaException unknownTableType(TableMeta<?> table) {
+        return new CriteriaException(String.format("%s is unknown type.", table));
+    }
+
 
 }

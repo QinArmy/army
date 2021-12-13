@@ -116,7 +116,7 @@ abstract class SubQueries<Q extends Query, C> extends AbstractStandardQuery<Q, C
 
 
     @Override
-    public final void appendSQL(_SqlContext context) {
+    public final void appendSql(_SqlContext context) {
         context.dialect().subQuery(this, context);
     }
 
@@ -220,8 +220,8 @@ abstract class SubQueries<Q extends Query, C> extends AbstractStandardQuery<Q, C
         /*################################## blow AbstractExpression method ##################################*/
 
         @Override
-        public final void appendSQL(_SqlContext context) {
-            this.actualSelect.appendSQL(context);
+        public final void appendSql(_SqlContext context) {
+            this.actualSelect.appendSql(context);
         }
 
         @Override

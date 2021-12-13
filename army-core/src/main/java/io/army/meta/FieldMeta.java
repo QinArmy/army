@@ -13,7 +13,7 @@ import io.army.modelgen._MetaBridge;
  * @param <T> representing Domain Java Type
  * @param <F> representing Domain property Java Type
  */
-public interface FieldMeta<T extends IDomain, F> extends GenericField<T, F>, ParamMeta, SetTargetPart {
+public interface FieldMeta<T extends IDomain, F> extends GenericField<T, F>, SetTargetPart {
 
 
     /**
@@ -26,7 +26,7 @@ public interface FieldMeta<T extends IDomain, F> extends GenericField<T, F>, Par
      * @throws UnsupportedOperationException throw always
      */
     @Override
-    void appendSQL(_SqlContext context);
+    void appendSql(_SqlContext context);
 
 
     boolean primary();

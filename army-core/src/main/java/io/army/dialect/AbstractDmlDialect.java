@@ -41,7 +41,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
      */
     @Override
     public final Stmt valueInsert(final Insert insert, final Visible visible) {
-        Assert.isTrue(insert.prepared(), "Insert don't invoke asInsert() method.");
+        insert.prepared();
         final Stmt stmt;
         if (insert instanceof _DialectStatement) {
             stmt = handleDialectValueInsert((_ValuesInsert) insert);
@@ -54,7 +54,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
 
     @Override
     public final Stmt returningInsert(Insert insert, final Visible visible) {
-        Assert.isTrue(insert.prepared(), "Insert don't invoke asInsert() method.");
+        insert.prepared();
 
         Stmt stmt;
         if (insert instanceof _SpecialValueInsert) {
@@ -70,7 +70,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
      */
     @Override
     public final Stmt subQueryInsert(Insert insert, Visible visible) {
-        Assert.isTrue(insert.prepared(), "Insert don't invoke asInsert() method.");
+        insert.prepared();
 
         Stmt stmt;
         if (insert instanceof _SubQueryInsert) {
@@ -90,7 +90,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
 
     @Override
     public final Stmt update(Update update, final Visible visible) {
-        Assert.isTrue(update.prepared(), "Update don't invoke asUpdate() method.");
+        update.prepared();
 
         Stmt stmt;
         if (update instanceof _StandardUpdate) {
@@ -118,7 +118,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
 
     @Override
     public final Stmt delete(Delete delete, final Visible visible) {
-        Assert.isTrue(delete.prepared(), "Delete don't invoke asDelete() method.");
+        delete.prepared();
 
         Stmt stmt;
         if (delete instanceof _StandardDelete) {
@@ -145,14 +145,14 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
     /*################################## blow protected template method ##################################*/
 
     /**
-     * @see #insert(Insert)
+     * @see #valueInsert(Insert, Visible)
      */
     protected Stmt handleDialectValueInsert(final _ValuesInsert insert) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * @see #insert(Insert)
+     * @see #subQueryInsert(Insert, Visible)
      */
     protected Stmt handleDialectSubQueryInsert(final _SubQueryInsert insert) {
         throw new UnsupportedOperationException();
@@ -291,7 +291,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
 
         DmlUtils.assertSubQueryInsert(fieldMetaList, subQuery);
 
-        SqlBuilder builder = context.sqlBuilder().append("INSERT INTO");
+        StringBuilder builder = context.sqlBuilder().append("INSERT INTO");
         context.appendTable(physicalTable, null);
         builder.append(" ( ");
 
@@ -304,7 +304,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
             index++;
         }
         builder.append(" )");
-        subQuery.appendSQL(context);
+        subQuery.appendSql(context);
     }
 
 
@@ -630,7 +630,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
     private void parseStandardDelete(TableMeta<?> tableMeta, String tableAlias, List<IPredicate> predicateList
             , StandardDeleteContext context) {
 
-        SqlBuilder builder = context.sqlBuilder().append("DELETE FROM");
+        StringBuilder builder = context.sqlBuilder().append("DELETE FROM");
         tableOnlyModifier(context);
         // append table name
         context.appendTable(tableMeta, tableAlias);

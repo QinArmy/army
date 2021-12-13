@@ -29,7 +29,7 @@ final class LogicalFieldExpImpl<T extends IDomain, F> extends AbstractExpression
     }
 
     @Override
-    public final void appendSQL(_SqlContext context) {
+    public final void appendSql(_SqlContext context) {
         context.appendField(this.tableAlias, this.fieldMeta);
     }
 

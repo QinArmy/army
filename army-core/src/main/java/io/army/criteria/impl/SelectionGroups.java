@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.criteria.*;
-import io.army.dialect.SqlBuilder;
 import io.army.dialect.SqlDialect;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
@@ -32,8 +31,8 @@ abstract class SelectionGroups implements SelectionGroup {
     }
 
     @Override
-    public void appendSQL(_SqlContext context) {
-        SqlBuilder builder = context.sqlBuilder().append(" ");
+    public void appendSql(_SqlContext context) {
+        StringBuilder builder = context.sqlBuilder().append(" ");
         final SqlDialect sql = context.dialect();
         final String safeTableAlias = sql.quoteIfNeed(tableAlias());
         int index = 0;
@@ -78,8 +77,8 @@ abstract class SelectionGroups implements SelectionGroup {
         }
 
         @Override
-        public void appendSQL(_SqlContext context) {
-            SqlBuilder builder = context.sqlBuilder().append(" ");
+        public void appendSql(_SqlContext context) {
+            StringBuilder builder = context.sqlBuilder().append(" ");
             final SqlDialect sql = context.dialect();
             final String safeTableAlias = sql.quoteIfNeed(this.tableAlias);
             int index = 0;

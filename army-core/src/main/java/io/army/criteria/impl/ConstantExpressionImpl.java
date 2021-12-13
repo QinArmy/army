@@ -79,7 +79,7 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
     }
 
     @Override
-    public final void appendSQL(_SqlContext context) {
+    public final void appendSql(_SqlContext context) {
         context.appendConstant(this.paramMeta.mappingMeta(), this.constant);
     }
 

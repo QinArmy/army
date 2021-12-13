@@ -453,7 +453,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     @Override
-    public final void appendSQL(_SqlContext context) {
+    public final void appendSql(_SqlContext context) {
         throw new UnsupportedOperationException(
                 "please use io.army.dialect.TableContextSQLContext.appendTable(TableMeta<?>,@Nullable  String)");
     }

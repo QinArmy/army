@@ -44,7 +44,7 @@ class UnaryExpression<E> extends AbstractExpression<E> {
 
 
     @Override
-    public void appendSQL(_SqlContext context) {
+    public void appendSql(_SqlContext context) {
         this.doAppendSQL(context);
     }
 
@@ -54,10 +54,10 @@ class UnaryExpression<E> extends AbstractExpression<E> {
                 context.sqlBuilder()
                         .append(" ")
                         .append(this.operator.rendered());
-                this.expression.appendSQL(context);
+                this.expression.appendSql(context);
                 break;
             case RIGHT:
-                this.expression.appendSQL(context);
+                this.expression.appendSql(context);
                 context.sqlBuilder()
                         .append(" ")
                         .append(this.operator.rendered());

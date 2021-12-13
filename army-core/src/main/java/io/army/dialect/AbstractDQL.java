@@ -37,7 +37,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
             // 2. create compose select context
             ComposeSelectContext context = ComposeSelectContext.build(this.dialect, visible);
             // 3. append composeQuery
-            composeSelect.appendSQL(context);
+            composeSelect.appendSql(context);
             // 4. append part query ,eg: order by ,limit
             partQuery(composeSelect, context);
             sqlWrapper = context.build();
@@ -49,7 +49,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
             // 2. create compose select context
             SelectContext context = ComposeSelectContext.build(this.dialect, visible);
             // 3. append composeQuery
-            composeSelect.appendSQL(context);
+            composeSelect.appendSql(context);
             // 4. append part query ,eg: order by ,limit
             partQuery(composeSelect, context);
             sqlWrapper = context.build();
@@ -92,7 +92,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
             // 2. adapt context
             _TablesSqlContext context = adaptContext(composeSelect, original);
             // 3. append composeQuery
-            composeSelect.appendSQL(context);
+            composeSelect.appendSql(context);
             // 4. append part query ,eg: order by ,limit
             partQuery(composeSelect, context);
         } else if (select instanceof _SpecialComposeQuery) {
@@ -102,7 +102,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
             // 2. adapt context
             _TablesSqlContext context = adaptContext(composeSelect, original);
             // 3. append composeQuery
-            composeSelect.appendSQL(context);
+            composeSelect.appendSql(context);
             // 4. append part query ,eg: order by ,limit
             partQuery(composeSelect, context);
         } else if (select instanceof _StandardSelect) {
@@ -139,7 +139,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
             // 2. adapt context
             _TablesSqlContext context = adaptContext(composeQuery, original);
             // 3. append composeQuery
-            composeQuery.appendSQL(context);
+            composeQuery.appendSql(context);
             // 4. append part query ,eg: order by ,limit
             partQuery(composeQuery, context);
         } else if (subQuery instanceof _SpecialComposeQuery) {
@@ -149,7 +149,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
             // 2. adapt context
             _TablesSqlContext context = adaptContext(composeQuery, original);
             // 3. append composeQuery
-            composeQuery.appendSQL(context);
+            composeQuery.appendSql(context);
             // 4. append part query ,eg: order by ,limit
             partQuery(composeQuery, context);
         } else if (subQuery instanceof _StandardSubQuery) {
@@ -238,7 +238,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
 
     protected final void selectClause(List<SQLModifier> modifierList, _TablesSqlContext context) {
 
-        SqlBuilder builder = context.sqlBuilder()
+        StringBuilder builder = context.sqlBuilder()
                 .append(" SELECT");
         for (SQLModifier sqlModifier : modifierList) {
             builder.append(" ")
@@ -247,13 +247,13 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
     }
 
     protected final void selectListClause(List<SelectPart> selectPartList, _TablesSqlContext context) {
-        SqlBuilder builder = context.sqlBuilder();
+        StringBuilder builder = context.sqlBuilder();
         int index = 0;
         for (SelectPart selectPart : selectPartList) {
             if (index > 0) {
                 builder.append(",");
             }
-            selectPart.appendSQL(context);
+            selectPart.appendSql(context);
             index++;
         }
     }
@@ -331,7 +331,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
     }
 
     private void standardSubQuery(_StandardSubQuery subQuery, _TablesSqlContext context) {
-        SqlBuilder builder = context.sqlBuilder();
+        StringBuilder builder = context.sqlBuilder();
 
         final boolean standardSubQueryInsert = context.parentContext() instanceof SubQueryInsertContext;
         if (standardSubQueryInsert) {

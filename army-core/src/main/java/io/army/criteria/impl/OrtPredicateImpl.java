@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.IPredicate;
 import io.army.criteria.OrPredicate;
 import io.army.criteria._SqlContext;
-import io.army.dialect.SqlBuilder;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
@@ -34,10 +33,10 @@ final class OrtPredicateImpl extends AbstractPredicate implements OrPredicate {
     }
 
     @Override
-    public void appendSQL(_SqlContext context) {
-        SqlBuilder builder = context.sqlBuilder()
+    public void appendSql(_SqlContext context) {
+        StringBuilder builder = context.sqlBuilder()
                 .append(" (");
-        this.leftPredicate.appendSQL(context);
+        this.leftPredicate.appendSql(context);
         builder.append(" OR");
         if (this.rightPredicate.size() > 1) {
             builder.append(" (");
@@ -47,7 +46,7 @@ final class OrtPredicateImpl extends AbstractPredicate implements OrPredicate {
             if (index > 0) {
                 builder.append(" AND");
             }
-            predicate.appendSQL(context);
+            predicate.appendSql(context);
             index++;
         }
         if (this.rightPredicate.size() > 1) {

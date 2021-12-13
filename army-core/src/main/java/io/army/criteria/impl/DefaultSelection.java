@@ -29,8 +29,8 @@ final class DefaultSelection implements Selection {
     }
 
     @Override
-    public final void appendSQL(_SqlContext context) {
-        this.expression.appendSQL(context);
+    public final void appendSql(_SqlContext context) {
+        this.expression.appendSql(context);
         context.sqlBuilder()
                 .append(" AS ")
                 .append(context.dialect().quoteIfNeed(this.alias));

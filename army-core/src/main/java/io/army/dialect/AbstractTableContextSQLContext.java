@@ -145,7 +145,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
      */
     protected final void doAppendTable(TableMeta<?> tableMeta, @Nullable String tableAlias) {
         final Dialect dialect = this.dialect;
-        SqlBuilder builder = obtainTablePartBuilder();
+        StringBuilder builder = obtainTablePartBuilder();
 
         String actualTableName = tableMeta.tableName();
         if (this.factoryMode != FactoryMode.NO_SHARDING

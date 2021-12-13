@@ -127,19 +127,19 @@ public abstract class DialectUtils {
 
     public static void appendPredicateList(List<IPredicate> predicateList, _TablesSqlContext context) {
 
-        SqlBuilder builder = context.sqlBuilder();
+        StringBuilder builder = context.sqlBuilder();
         int count = 0;
         for (IPredicate predicate : predicateList) {
             if (count > 0) {
                 builder.append(" AND");
             }
-            predicate.appendSQL(context);
+            predicate.appendSql(context);
             count++;
         }
     }
 
     public static void appendSortPartList(List<SortPart> sortPartList, _TablesSqlContext context) {
-        SqlBuilder builder = context.sqlBuilder();
+        StringBuilder builder = context.sqlBuilder();
 
         int count = 0;
         for (SortPart sortPart : sortPartList) {

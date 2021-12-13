@@ -155,7 +155,7 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
 //        String defaultValue = fieldMeta.defaultValue();
 //        Database database = database();
 //        SqlDataType dataType;// = fieldMeta.mappingMeta().sqlDataType(database);
-//        SQLBuilder builder;
+//        StringBuilder builder;
 //        switch (defaultValue) {
 //            case IDomain.NOW:
 //                builder = DialectUtils.createSQLBuilder();

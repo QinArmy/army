@@ -18,7 +18,7 @@ import io.army.mapping.MappingType;
  * @see FieldMeta
  * @see LogicalField
  */
-public interface GenericField<T extends IDomain, F> extends FieldExpression<F>, FieldSelection {
+public interface GenericField<T extends IDomain, F> extends FieldExpression<F>, FieldSelection, ParamMeta {
 
     TableMeta<T> tableMeta();
 

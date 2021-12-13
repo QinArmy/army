@@ -35,8 +35,8 @@ final class FieldSelectionImpl<E> extends AbstractExpression<E> implements Field
     }
 
     @Override
-    public final void appendSQL(_SqlContext context) {
-        this.fieldExp.appendSQL(context);
+    public final void appendSql(_SqlContext context) {
+        this.fieldExp.appendSql(context);
         context.sqlBuilder()
                 .append(" AS ")
                 .append(this.alias);

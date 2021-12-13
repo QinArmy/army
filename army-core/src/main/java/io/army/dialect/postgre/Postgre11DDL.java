@@ -1,6 +1,9 @@
 package io.army.dialect.postgre;
 
-import io.army.dialect.*;
+import io.army.dialect.AbstractDDL;
+import io.army.dialect.DDLContext;
+import io.army.dialect.DDLUtils;
+import io.army.dialect.DdlDialect;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexFieldMeta;
 import io.army.meta.IndexMeta;
@@ -35,7 +38,7 @@ class Postgre11DDL extends AbstractDDL {
     }
 
     @Override
-    protected final void doDefaultExpression(FieldMeta<?, ?> fieldMeta, SqlBuilder builder) {
+    protected final void doDefaultExpression(FieldMeta<?, ?> fieldMeta, StringBuilder builder) {
         //   SqlDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database());
 //        String defaultExp = fieldMeta.defaultValue();
 //        if (sqlDataType instanceof PostgreDataType) {
@@ -57,7 +60,7 @@ class Postgre11DDL extends AbstractDDL {
 
     @Override
     protected final void independentIndexDefinitionClause(IndexMeta<?> indexMeta, DDLContext context) {
-        SqlBuilder builder = context.sqlBuilder();
+        StringBuilder builder = context.sqlBuilder();
         builder.append("CREATE ");
         if (indexMeta.unique()) {
             builder.append("UNIQUE");
@@ -92,7 +95,7 @@ class Postgre11DDL extends AbstractDDL {
 
     @Override
     protected final void independentTableComment(DDLContext context) {
-        SqlBuilder builder = context.sqlBuilder();
+        StringBuilder builder = context.sqlBuilder();
         builder.append("COMMENT ON TABLE ");
         context.appendTable();
         builder.append(" IS '")
@@ -102,7 +105,7 @@ class Postgre11DDL extends AbstractDDL {
 
     @Override
     protected final void independentColumnComment(FieldMeta<?, ?> fieldMeta, DDLContext context) {
-        SqlBuilder builder = context.sqlBuilder();
+        StringBuilder builder = context.sqlBuilder();
         builder.append("COMMENT ON COLUMN ");
         context.appendFieldWithTable(fieldMeta);
         builder.append(" IS '")

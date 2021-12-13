@@ -23,7 +23,7 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
      * @throws UnsupportedOperationException throw always
      */
     @Override
-    void appendSQL(_SqlContext context);
+    void appendSql(_SqlContext context);
 
 
     Class<T> javaType();

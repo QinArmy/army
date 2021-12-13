@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._StandardComposeQuery;
 import io.army.dialect.DqlDialect;
-import io.army.dialect.SqlBuilder;
 import io.army.util.Assert;
 
 import java.util.Arrays;
@@ -147,8 +146,8 @@ abstract class ComposeQueries<Q extends Query, C> extends AbstractComposeQuery<Q
         }
 
         @Override
-        public void appendSQL(_SqlContext context) {
-            SqlBuilder builder = context.sqlBuilder()
+        public void appendSql(_SqlContext context) {
+            StringBuilder builder = context.sqlBuilder()
                     .append(" (");
             if (this.enclosedQuery instanceof Select) {
                 context.dialect().select((Select) this.enclosedQuery, context);
@@ -183,7 +182,7 @@ abstract class ComposeQueries<Q extends Query, C> extends AbstractComposeQuery<Q
         }
 
         @Override
-        public void appendSQL(_SqlContext context) {
+        public void appendSql(_SqlContext context) {
             DqlDialect dql = context.dialect();
 
             if (this.leftQuery instanceof Select) {

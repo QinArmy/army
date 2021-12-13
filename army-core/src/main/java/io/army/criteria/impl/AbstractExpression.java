@@ -820,7 +820,7 @@ abstract class AbstractExpression<E> implements _Expression<E> {
 
     @Override
     public final void appendSortPart(_SqlContext context) {
-        this.appendSQL(context);
+        this.appendSql(context);
     }
 
 

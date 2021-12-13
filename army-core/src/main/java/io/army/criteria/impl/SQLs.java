@@ -68,7 +68,11 @@ public abstract class SQLs extends AbstractSQLs {
         return ContextualUpdate.create();
     }
 
-    public static <T extends IDomain, C> Update.DomainUpdateSpec<C> domainUpdate(C criteria) {
+    /**
+     * @param criteria a object instance, map or bean
+     * @param <C>      criteria java type used to create dynamic update and sub query
+     */
+    public static <C> Update.DomainUpdateSpec<C> domainUpdate(C criteria) {
         return ContextualUpdate.create(criteria);
     }
 
@@ -80,6 +84,8 @@ public abstract class SQLs extends AbstractSQLs {
     }
 
     /**
+     * @param criteria a object instance, map or bean
+     * @param <C>      criteria java type used to create dynamic batch update and sub query
      * @see #namedParam(String, ParamMeta)
      */
     public static <C> Update.BatchUpdateSpec<C> batchUpdate(C criteria) {

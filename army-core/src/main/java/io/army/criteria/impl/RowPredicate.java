@@ -25,12 +25,12 @@ final class RowPredicate extends AbstractPredicate {
 
 
     @Override
-    public final void appendSQL(_SqlContext context) {
-        row.appendSQL(context);
+    public final void appendSql(_SqlContext context) {
+        row.appendSql(context);
         context.sqlBuilder()
                 .append(" ")
                 .append(operator.rendered());
-        rowSubQuery.appendSQL(context);
+        rowSubQuery.appendSql(context);
     }
 
     @Override

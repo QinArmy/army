@@ -28,8 +28,8 @@ class ConvertExpressionImpl<E> extends AbstractExpression<E> implements ConvertE
     }
 
     @Override
-    public final void appendSQL(_SqlContext context) {
-        this.original.appendSQL(context);
+    public final void appendSql(_SqlContext context) {
+        this.original.appendSql(context);
     }
 
 

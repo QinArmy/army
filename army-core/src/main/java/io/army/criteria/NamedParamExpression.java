@@ -12,4 +12,5 @@ public interface NamedParamExpression<E> extends Expression<E>, ParamValue {
      */
     @Override
     Object value() throws UnsupportedOperationException;
+
 }

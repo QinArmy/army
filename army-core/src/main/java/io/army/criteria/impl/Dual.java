@@ -58,7 +58,7 @@ final class Dual implements IDomain {
         }
 
         @Override
-        public void appendSQL(_SqlContext context) {
+        public void appendSql(_SqlContext context) {
             context.sqlBuilder()
                     .append(" ")
                     .append(TABLE_NAME);

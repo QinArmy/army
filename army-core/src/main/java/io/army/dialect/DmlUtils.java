@@ -145,7 +145,7 @@ abstract class DmlUtils {
                 if (fieldMeta == discriminator) {
                     builder.append(fieldMeta.tableMeta().discriminatorValue());
                 } else if ((expression = expMap.get(fieldMeta)) != null) {
-                    expression.appendSQL(context);
+                    expression.appendSql(context);
                 } else {
                     builder.append(Constant.PLACEHOLDER);
                     context.appendParam(ParamValue.build(fieldMeta, domain.get(fieldMeta.fieldName())));
@@ -387,7 +387,7 @@ abstract class DmlUtils {
 //            Assert.notEmpty(fieldMetaList, "set clause must not empty");
 //        }
 //
-//        SQLBuilder builder = context.sqlBuilder()
+//        StringBuilder builder = context.sqlBuilder()
 //                .append(" SET");
 //
 //        final int size = fieldMetaList.size();
@@ -404,7 +404,7 @@ abstract class DmlUtils {
 //            context.appendField(tableAlias, fieldMeta);
 //            builder.append(" =");
 //            // expression self-describe
-//            valueExp.appendSQL(context);
+//            valueExp.appendSql(context);
 //
 //        }
 //        if (mappingMode != MappingMode.CHILD) {
@@ -439,13 +439,13 @@ abstract class DmlUtils {
 
         if (updateTimeField.javaType() == LocalDateTime.class) {
             SQLs.param(now.toLocalDateTime(), updateTimeField.mappingMeta())
-                    .appendSQL(context);
+                    .appendSql(context);
         } else if (updateTimeField.javaType() == ZonedDateTime.class) {
             if (!dialect.supportZone()) {
                 throw new MetaException("dialec[%s]t not supported zone.", dialect.database());
             }
             SQLs.param(now, updateTimeField.mappingMeta())
-                    .appendSQL(context);
+                    .appendSql(context);
         } else {
             throw new MetaException("createTime or updateTime only support LocalDateTime or ZonedDateTime,please check.");
         }

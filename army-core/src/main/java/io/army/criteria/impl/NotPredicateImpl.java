@@ -33,7 +33,7 @@ class NotPredicateImpl extends AbstractPredicate {
     }
 
     @Override
-    public void appendSQL(_SqlContext context) {
+    public void appendSql(_SqlContext context) {
         doAppendSQL(context);
     }
 
@@ -41,7 +41,7 @@ class NotPredicateImpl extends AbstractPredicate {
         context.sqlBuilder()
                 .append(" ")
                 .append(UnaryOperator.NOT.rendered());
-        this.predicate.appendSQL(context);
+        this.predicate.appendSql(context);
     }
 
     @Override
@@ -65,7 +65,7 @@ class NotPredicateImpl extends AbstractPredicate {
 
 
         @Override
-        public void appendSQL(_SqlContext context) {
+        public void appendSql(_SqlContext context) {
             context.appendFieldPredicate(this);
         }
 

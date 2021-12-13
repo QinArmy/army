@@ -22,7 +22,7 @@ import java.util.function.Function;
  * This class representing standard batch domain delete statement.
  * </p>
  *
- * @param <C> criteria java type used to dynamic update and sub query
+ * @param <C> criteria java type used to create dynamic delete and sub query
  */
 final class ContextualBatchDelete<C> implements Delete,
         Delete.BatchDomainDeleteSpec<C>, Delete.BatchWhereSpec<C>

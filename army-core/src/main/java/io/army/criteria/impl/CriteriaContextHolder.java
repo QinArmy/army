@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Select;
+import io.army.criteria.CriteriaException;
 
 
 abstract class CriteriaContextHolder {
@@ -25,14 +25,10 @@ abstract class CriteriaContextHolder {
         return context;
     }
 
-
-    /**
-     * @see Select.SelectAble#asQuery()
-     */
     static void clearContext(CriteriaContext context) {
         final CriteriaContext current = HOLDER.get();
         if (current != context) {
-            throw new IllegalStateException(String.format("thread[%s]  CriteriaContext not match,criteria state error."
+            throw new CriteriaException(String.format("thread[%s]  CriteriaContext not match,criteria state error."
                     , Thread.currentThread().getName()));
         }
         HOLDER.remove();

@@ -3,7 +3,6 @@ package io.army.dialect.mysql;
 import io.army.dialect.AbstractDDL;
 import io.army.dialect.DDLContext;
 import io.army.dialect.DDLUtils;
-import io.army.dialect.SqlBuilder;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
@@ -27,7 +26,7 @@ class MySQL57DDL extends AbstractDDL {
 
     @Override
     protected final void internalModifyTableComment(DDLContext context) {
-        SqlBuilder builder = context.sqlBuilder()
+        StringBuilder builder = context.sqlBuilder()
                 .append("ALTER TABLE");
         context.appendTable();
         builder.append(" COMMENT = '")
@@ -42,7 +41,7 @@ class MySQL57DDL extends AbstractDDL {
     }
 
     @Override
-    protected void doDefaultExpression(FieldMeta<?, ?> fieldMeta, SqlBuilder builder) {
+    protected void doDefaultExpression(FieldMeta<?, ?> fieldMeta, StringBuilder builder) {
 //        SqlDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database());
 //        String defaultExp = fieldMeta.defaultValue();
 //        if (sqlDataType instanceof MySQLDataType) {

@@ -14,6 +14,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
+/**
+ * <p>
+ * This class representing standard domain delete statement.
+ * </p>
+ *
+ * @param <C> criteria java type used to crate dynamic delete and sub query
+ */
 final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
         , Delete.DomainDeleteSpec<C>, Delete.WhereSpec<C>, Delete.WhereAndSpec<C>
         , _StandardDelete {

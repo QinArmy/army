@@ -3,7 +3,6 @@ package io.army.dialect.postgre;
 import io.army.criteria.LockMode;
 import io.army.dialect.AbstractDQL;
 import io.army.dialect.DialectUtils;
-import io.army.dialect.SqlBuilder;
 import io.army.dialect._TablesSqlContext;
 
 class Postgre11DQL extends AbstractDQL {
@@ -24,7 +23,7 @@ class Postgre11DQL extends AbstractDQL {
 
     @Override
     protected void limitClause(int offset, int rowCount, _TablesSqlContext context) {
-        SqlBuilder builder = context.sqlBuilder();
+        StringBuilder builder = context.sqlBuilder();
         if (rowCount > -1) {
             builder.append(" LIMIT ")
                     .append(rowCount);
@@ -37,7 +36,7 @@ class Postgre11DQL extends AbstractDQL {
 
     @Override
     protected void lockClause(LockMode lockMode, _TablesSqlContext context) {
-        SqlBuilder builder = context.sqlBuilder();
+        StringBuilder builder = context.sqlBuilder();
         switch (lockMode) {
             case NONE:
                 //no-op

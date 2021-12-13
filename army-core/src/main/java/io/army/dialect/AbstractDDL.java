@@ -138,7 +138,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DdlDialect {
 
     protected abstract void tableOptionsClause(DDLContext context);
 
-    protected abstract void doDefaultExpression(FieldMeta<?, ?> fieldMeta, SqlBuilder builder);
+    protected abstract void doDefaultExpression(FieldMeta<?, ?> fieldMeta, StringBuilder builder);
 
     protected abstract boolean useIndependentIndexDefinition();
 
@@ -180,7 +180,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DdlDialect {
     }
 
     protected void doDropIndex(String indexName, DDLContext context) {
-        SqlBuilder builder = context.sqlBuilder();
+        StringBuilder builder = context.sqlBuilder();
         builder.append("ALTER TABLE ");
         context.appendTable();
         builder.append(" DROP INDEX ")
@@ -189,7 +189,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DdlDialect {
     }
 
     protected void doAddColumn(FieldMeta<?, ?> fieldMeta, DDLContext context) {
-        SqlBuilder builder = context.sqlBuilder();
+        StringBuilder builder = context.sqlBuilder();
         builder.append("ALTER TABLE");
         context.appendTable();
         builder.append(" ADD COLUMN");
@@ -202,7 +202,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DdlDialect {
     }
 
     protected void doChangeColumn(FieldMeta<?, ?> fieldMeta, DDLContext context) {
-        SqlBuilder builder = context.sqlBuilder();
+        StringBuilder builder = context.sqlBuilder();
         final String safeColumnName = this.dialect.quoteIfNeed(fieldMeta.columnName());
         builder.append("ALTER TABLE ");
         context.appendTable();
@@ -264,7 +264,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DdlDialect {
 
 
     protected final void nullableClause(FieldMeta<?, ?> fieldMeta, DDLContext context) {
-        SqlBuilder builder = context.sqlBuilder();
+        StringBuilder builder = context.sqlBuilder();
         if (fieldMeta.nullable()) {
             builder.append(" NULL");
         } else {
@@ -277,7 +277,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DdlDialect {
             return;
         }
 //
-//        SQLBuilder builder = context.sqlBuilder();
+//        StringBuilder builder = context.sqlBuilder();
 //        final String defaultKeyWord = " DEFAULT ";
 //        if (_MetaBridge.RESERVED_PROPS.contains(fieldMeta.fieldName())) {
 //            // defaultKeyWord in reservedPropDefaultValue
@@ -308,7 +308,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DdlDialect {
     }
 
     protected void createIndexDefinition(IndexMeta<?> indexMeta, DDLContext context) {
-        SqlBuilder builder = context.sqlBuilder()
+        StringBuilder builder = context.sqlBuilder()
                 .append("ALTER TABLE ");
         context.appendTable();
         builder.append(" ADD ");
@@ -316,7 +316,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DdlDialect {
     }
 
     protected void inlineIndexDefinitionClause(IndexMeta<?> indexMeta, DDLContext context) {
-        SqlBuilder builder = context.sqlBuilder().append(" ");
+        StringBuilder builder = context.sqlBuilder().append(" ");
         if (indexMeta.isPrimaryKey()) {
             builder.append("PRIMARY KEY ");
         } else if (indexMeta.unique()) {
@@ -352,7 +352,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DdlDialect {
     private void reservedPropDefaultValue(FieldMeta<?, ?> fieldMeta, DDLContext context) {
 //        Database database = database();
 //        SqlDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database);
-//        SQLBuilder builder = context.sqlBuilder();
+//        StringBuilder builder = context.sqlBuilder();
 //        final String defaultKey = " DEFAULT ";
 //        switch (fieldMeta.propertyName()) {
 //            case TableMeta.ID:
@@ -382,7 +382,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DdlDialect {
     }
 
     private void columnListDefinitions(DDLContext context) {
-        SqlBuilder builder = context.sqlBuilder();
+        StringBuilder builder = context.sqlBuilder();
         int index = 0;
         for (FieldMeta<?, ?> fieldMeta : DDLUtils.sortFieldMetaCollection(context.tableMeta())) {
             if (index > 0) {
@@ -394,7 +394,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DdlDialect {
     }
 
     private void inlineIndexListDefinitionClause(DDLContext context) {
-        SqlBuilder builder = context.sqlBuilder();
+        StringBuilder builder = context.sqlBuilder();
         int index = 0;
         for (IndexMeta<?> indexMeta : DDLUtils.sortIndexMetaCollection(context.tableMeta())) {
             if (index > 0) {
@@ -413,7 +413,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DdlDialect {
         }
     }
 
-    private void handleDefaultExpression(FieldMeta<?, ?> fieldMeta, SqlBuilder builder) {
+    private void handleDefaultExpression(FieldMeta<?, ?> fieldMeta, StringBuilder builder) {
 //        Database database = database();
 //        SqlDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database);
 //        switch (fieldMeta.defaultValue()) {
@@ -437,7 +437,7 @@ public abstract class AbstractDDL extends AbstractSQL implements DdlDialect {
     }
 
     private void primaryKeyClause(DDLContext context) {
-        SqlBuilder builder = context.sqlBuilder().append(",\n");
+        StringBuilder builder = context.sqlBuilder().append(",\n");
         builder.append("PRIMARY KEY(");
         context.appendField(context.tableMeta().id());
         builder.append(")");
