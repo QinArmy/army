@@ -23,20 +23,20 @@ final class ComposeSelectContext implements SelectContext {
 
     private final Visible visible;
 
-    private final SqlBuilder sqlBuilder;
+    private final StringBuilder sqlBuilder;
 
     private final List<ParamValue> paramList;
 
     ComposeSelectContext(Dialect dialect, Visible visible) {
         this.dialect = dialect;
         this.visible = visible;
-        this.sqlBuilder = DialectUtils.createSQLBuilder();
+        this.sqlBuilder = new StringBuilder(128);
         this.paramList = new ArrayList<>();
     }
 
     @Override
     public void appendFieldPredicate(FieldPredicate predicate) {
-        predicate.appendPredicate(this);
+        // predicate.appendPredicate(this);
     }
 
     @Override
@@ -59,12 +59,8 @@ final class ComposeSelectContext implements SelectContext {
         return this.paramList;
     }
 
-    public DqlDialect dialect() {
-        return this.dialect;
-    }
-
     @Override
-    public SqlBuilder sqlBuilder() {
+    public StringBuilder sqlBuilder() {
         return this.sqlBuilder;
     }
 

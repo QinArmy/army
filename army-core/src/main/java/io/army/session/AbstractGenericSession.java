@@ -10,6 +10,7 @@ import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._StandardUpdate;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.util.Assert;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -104,8 +105,8 @@ public abstract class AbstractGenericSession implements GenericSession {
         }
 
         @Override
-        public boolean prepared() {
-            return this.prepared;
+        public void prepared() {
+            Assert.prepared(this.prepared);
         }
     }
 

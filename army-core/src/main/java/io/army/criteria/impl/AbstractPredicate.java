@@ -1,18 +1,17 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.IPredicate;
+import io.army.criteria.impl.inner._Predicate;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
-import io.army.util.ArrayUtils;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
  * This class is base class of all {@link IPredicate} implementation .
  */
-abstract class AbstractPredicate extends AbstractExpression<Boolean> implements IPredicate {
+abstract class AbstractPredicate extends AbstractExpression<Boolean> implements _Predicate {
 
     @Override
     public final MappingType mappingMeta() {
@@ -24,22 +23,19 @@ abstract class AbstractPredicate extends AbstractExpression<Boolean> implements 
         if (andIPredicates == null || andIPredicates.length == 0) {
             return this;
         }
-        List<IPredicate> predicateList;
-        if (andIPredicates.length == 1) {
-            predicateList = Collections.singletonList(andIPredicates[0]);
-        } else {
-            predicateList = ArrayUtils.asList(andIPredicates);
-        }
-        return new OrtPredicateImpl(this, predicateList);
+        return new OrtPredicateImpl(this, andIPredicates);
     }
 
     @Override
     public final IPredicate or(List<IPredicate> andIPredicateList) {
+        if (andIPredicateList.size() == 0) {
+            return this;
+        }
         return new OrtPredicateImpl(this, andIPredicateList);
     }
 
     @Override
     public final IPredicate not(IPredicate predicate) {
-        return NotPredicateImpl.build(predicate);
+        return NotPredicateImpl.build((_Predicate) predicate);
     }
 }

@@ -1,12 +1,17 @@
 package io.army.dialect;
 
+import io.army.beans.ObjectWrapper;
 import io.army.criteria.Visible;
+import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._StandardChildSubQueryInsert;
 import io.army.criteria.impl.inner._StandardSubQueryInsert;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.stmt.SimpleStmt;
+
+import java.util.List;
+import java.util.Map;
 
 final class SubQueryInsertContext extends AbstractTableContextSQLContext implements _ValueInsertContext {
 
@@ -56,8 +61,7 @@ final class SubQueryInsertContext extends AbstractTableContextSQLContext impleme
        this.doAppendField(null,fieldMeta);
     }
 
-    @Override
-    public final SqlBuilder fieldsBuilder() {
+    public final StringBuilder fieldsBuilder() {
         return this.sqlBuilder;
     }
 
@@ -74,6 +78,42 @@ final class SubQueryInsertContext extends AbstractTableContextSQLContext impleme
 
     @Override
     public SimpleStmt build() {
+        return null;
+    }
+
+
+    @Override
+    public TableMeta<?> tableMeta() {
+        return null;
+    }
+
+    @Override
+    public byte tableIndex() {
+        return 0;
+    }
+
+    @Override
+    public String tableSuffix() {
+        return null;
+    }
+
+    @Override
+    public List<FieldMeta<?, ?>> fields() {
+        return null;
+    }
+
+    @Override
+    public List<FieldMeta<?, ?>> parentFields() {
+        return null;
+    }
+
+    @Override
+    public Map<FieldMeta<?, ?>, _Expression<?>> commonExpMap() {
+        return null;
+    }
+
+    @Override
+    public List<ObjectWrapper> domainList() {
         return null;
     }
 }

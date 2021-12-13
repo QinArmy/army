@@ -1,7 +1,7 @@
 package io.army.meta;
 
 import io.army.criteria.TableAble;
-import io.army.criteria._SqlContext;
+import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.sharding.Route;

@@ -2,7 +2,9 @@ package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._SelectionGroup;
 import io.army.dialect.SqlDialect;
+import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.util.Assert;
@@ -11,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-abstract class SelectionGroups implements SelectionGroup {
+abstract class SelectionGroups implements _SelectionGroup {
 
 
     static <T extends IDomain> SelectionGroups buildTableGroup(

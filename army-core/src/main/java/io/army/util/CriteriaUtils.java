@@ -101,7 +101,7 @@ public abstract class CriteriaUtils {
 
         Assert.isTrue(propNameList.size() == valueList.size(), "propNameList size and valueList size not match.");
 
-        ParentTableMeta<?> parentMeta = tableMeta.parentMeta();
+        ParentTableMeta<?> parentMeta = null;
 
         List<IPredicate> list = new ArrayList<>(propNameList.size());
         final int size = propNameList.size();

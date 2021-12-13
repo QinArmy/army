@@ -1,7 +1,6 @@
 package io.army.dialect;
 
 import io.army.criteria.FieldPredicate;
-import io.army.criteria.PrimaryValueEqualPredicate;
 import io.army.criteria.Visible;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
@@ -51,16 +50,16 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
 
 
     final void appendDomainFieldPredicate(FieldPredicate predicate) {
-        if (predicate instanceof PrimaryValueEqualPredicate) {
-            predicate.appendPredicate(this);
-        } else if (!predicate.containsSubQuery()
-                && predicate.containsFieldCount(this.relationTable) > 1) {
-            this.existsClauseContext = true;
-            doReplaceFieldPairWithExistsClause(predicate);
-            this.existsClauseContext = false;
-        } else {
-            predicate.appendPredicate(this);
-        }
+//        if (predicate instanceof PrimaryValueEqualPredicate) {
+//            predicate.appendPredicate(this);
+//        } else if (!predicate.containsSubQuery()
+//                && predicate.containsFieldCount(this.relationTable) > 1) {
+//            this.existsClauseContext = true;
+//            doReplaceFieldPairWithExistsClause(predicate);
+//            this.existsClauseContext = false;
+//        } else {
+//            predicate.appendPredicate(this);
+//        }
     }
 
 
@@ -175,7 +174,7 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
                 .append(dialect.quoteIfNeed(this.primaryTable.id().columnName()))
                 .append(" ADN");
         // append special predicate
-        predicate.appendPredicate(this);
+        //  predicate.appendPredicate(this);
 
         builder.append(" )");
     }

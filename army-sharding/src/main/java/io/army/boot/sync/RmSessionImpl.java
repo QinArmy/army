@@ -6,7 +6,7 @@ import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.tx.ArmyXid;
+import io.army.meta.UniqueFieldMeta;
 import io.army.tx.NoSessionTransactionException;
 import io.army.tx.TransactionNotCloseException;
 import io.army.tx.XaTransactionOption;
@@ -14,7 +14,6 @@ import io.army.util.CriteriaUtils;
 
 import javax.sql.XAConnection;
 import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -42,11 +41,11 @@ final class RmSessionImpl implements InnerRmSession {
         this.sessionFactory = sessionFactory;
         this.xaConnection = xaConnection;
 
-        final Xid xid = new ArmyXid(txOption.globalTransactionId()
-                , sessionFactory.actualDatabase()
-                , sessionFactory.databaseIndex());
+//        final Xid xid = new ArmyXid(txOption.globalTransactionId()
+//                , sessionFactory.actualDatabase()
+//                , sessionFactory.databaseIndex());
 
-        this.transaction = new XaResourceTransaction(this, xid, txOption);
+        this.transaction = new XaResourceTransaction(this, null, txOption);
     }
 
 
@@ -61,6 +60,16 @@ final class RmSessionImpl implements InnerRmSession {
             throw new NoSessionTransactionException("XA transaction[%s] ended.", this.transaction.name());
         }
         return this.transaction;
+    }
+
+    @Override
+    public <R extends IDomain, F> R getByUnique(TableMeta<R> tableMeta, UniqueFieldMeta<R, F> fieldMeta, F fieldValue) {
+        return null;
+    }
+
+    @Override
+    public <R extends IDomain, F> R getByUnique(TableMeta<R> tableMeta, UniqueFieldMeta<R, F> fieldMeta, F fieldValue, Visible visible) {
+        return null;
     }
 
     @Override
@@ -135,7 +144,7 @@ final class RmSessionImpl implements InnerRmSession {
         return null;
     }
 
-    @Override
+    // @Override
     public <R extends IDomain> R getByUnique(TableMeta<R> tableMeta, List<String> propNameList, List<Object> valueList) {
         return null;
     }
@@ -190,22 +199,22 @@ final class RmSessionImpl implements InnerRmSession {
 
     }
 
-    @Override
+    //@Override
     public int subQueryInsert(Insert insert) {
         return 0;
     }
 
-    @Override
+    // @Override
     public int subQueryInsert(Insert insert, Visible visible) {
         return 0;
     }
 
-    @Override
+    // @Override
     public long subQueryLargeInsert(Insert insert) {
         return 0;
     }
 
-    @Override
+    // @Override
     public long largeSubQueryInsert(Insert insert, Visible visible) {
         return 0;
     }

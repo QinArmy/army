@@ -1,6 +1,9 @@
 package io.army.dialect;
 
-import io.army.criteria.*;
+import io.army.criteria.IPredicate;
+import io.army.criteria.SQLModifier;
+import io.army.criteria.TableAble;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.lang.Nullable;
@@ -64,7 +67,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         }
         //5.  on clause
         builder.append(" ON");
-        DialectUtils.appendPredicateList(tableWrapper.onPredicateList(), context);
+        //DialectUtils.appendPredicateList(tableWrapper.onPredicateList(), context);
 
     }
 

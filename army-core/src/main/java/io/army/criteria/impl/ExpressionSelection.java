@@ -1,19 +1,19 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Expression;
-import io.army.criteria.Selection;
-import io.army.criteria._SqlContext;
+import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner._Selection;
+import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.util.Assert;
 
-final class DefaultSelection implements Selection {
+final class ExpressionSelection implements _Selection {
 
-    private final Expression<?> expression;
+    private final _Expression<?> expression;
 
     private final String alias;
 
-    DefaultSelection(Expression<?> expression, String alias) {
-        Assert.hasText(alias,"alias required for Selection");
+    ExpressionSelection(_Expression<?> expression, String alias) {
+        Assert.hasText(alias, "alias required for Selection");
         this.expression = expression;
         this.alias = alias;
     }

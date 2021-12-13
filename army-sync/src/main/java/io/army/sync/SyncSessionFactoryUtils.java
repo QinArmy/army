@@ -101,11 +101,4 @@ abstract class SyncSessionFactoryUtils {
     }
 
 
-    static final class DatabaseMetaForSync extends DatabaseMeta {
-
-        public DatabaseMetaForSync(String productName, int majorVersion, int minorVersion
-                , String catalog, String schema, boolean supportSavePoint) {
-            super(productName, majorVersion, minorVersion, catalog, schema, supportSavePoint);
-        }
-    }
 }

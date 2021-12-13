@@ -4,7 +4,7 @@ import io.army.ArmyException;
 import io.army.annotation.DiscriminatorValue;
 import io.army.annotation.Inheritance;
 import io.army.annotation.Table;
-import io.army.criteria._SqlContext;
+import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;

@@ -1,6 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Expression;
+import io.army.dialect._SqlContext;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.util.Assert;
@@ -12,7 +14,7 @@ import java.util.Collection;
  */
 class DualPredicate extends AbstractPredicate {
 
-    static DualPredicate build(Expression<?> left, DualPredicateOperator operator, Expression<?> right) {
+    static DualPredicate build(_Expression<?> left, DualPredicateOperator operator, _Expression<?> right) {
         DualPredicate predicate;
         if (left instanceof FieldExpression) {
             predicate = buildLeftFieldPredicate((FieldExpression<?>) left, operator, right);
@@ -31,19 +33,19 @@ class DualPredicate extends AbstractPredicate {
 
 
     private static DualPredicate buildLeftFieldPredicate(FieldExpression<?> left, DualPredicateOperator operator
-            , Expression<?> right) {
+            , _Expression<?> right) {
         DualPredicate predicate;
         if (right instanceof FieldExpression) {
             predicate = buildFieldPair(left, operator, (FieldExpression<?>) right);
         } else if (left instanceof GenericField) {
             predicate = buildLeftField((GenericField<?, ?>) left, operator, right);
         } else {
-            predicate = new FieldPredicateImpl(left, operator, right);
+            predicate = new FieldPredicateImpl((_Expression<?>) left, operator, right);
         }
         return predicate;
     }
 
-    private static DualPredicate buildRightFieldPredicate(Expression<?> left, DualPredicateOperator operator
+    private static DualPredicate buildRightFieldPredicate(_Expression<?> left, DualPredicateOperator operator
             , FieldExpression<?> right) {
         DualPredicate predicate;
         if (left instanceof FieldExpression) {
@@ -51,7 +53,7 @@ class DualPredicate extends AbstractPredicate {
         } else if (right instanceof GenericField) {
             predicate = buildRightField(left, operator, (GenericField<?, ?>) right);
         } else {
-            predicate = new FieldPredicateImpl(left, operator, right);
+            predicate = new FieldPredicateImpl(left, operator, (_Expression<?>) right);
         }
         return predicate;
     }
@@ -62,17 +64,17 @@ class DualPredicate extends AbstractPredicate {
         if (left instanceof GenericField && right instanceof GenericField) {
             predicate = buildFieldPair((GenericField<?, ?>) left, operator, (GenericField<?, ?>) right);
         } else if (left instanceof GenericField) {
-            predicate = buildLeftField((GenericField<?, ?>) left, operator, right);
+            predicate = buildLeftField((GenericField<?, ?>) left, operator, (_Expression<?>) right);
         } else if (right instanceof GenericField) {
-            predicate = buildRightField(left, operator, (GenericField<?, ?>) right);
+            predicate = buildRightField((_Expression<?>) left, operator, (GenericField<?, ?>) right);
         } else {
-            predicate = new FieldPredicateImpl(left, operator, right);
+            predicate = new FieldPredicateImpl((_Expression<?>) left, operator, (_Expression<?>) right);
         }
         return predicate;
     }
 
     private static DualPredicate buildLeftField(GenericField<?, ?> left, DualPredicateOperator operator
-            , Expression<?> right) {
+            , _Expression<?> right) {
         DualPredicate predicate;
         if (right instanceof ValueExpression) {
             if ((left instanceof PrimaryFieldMeta) && operator == DualPredicateOperator.EQ) {
@@ -83,12 +85,12 @@ class DualPredicate extends AbstractPredicate {
             }
 
         } else {
-            predicate = new FieldPredicateImpl(left, operator, right);
+            predicate = new FieldPredicateImpl((_Expression<?>) left, operator, right);
         }
         return predicate;
     }
 
-    private static DualPredicate buildRightField(Expression<?> left, DualPredicateOperator operator
+    private static DualPredicate buildRightField(_Expression<?> left, DualPredicateOperator operator
             , GenericField<?, ?> right) {
         DualPredicate predicate;
         if (left instanceof ValueExpression) {
@@ -99,22 +101,22 @@ class DualPredicate extends AbstractPredicate {
                 predicate = new RightFieldValuePredicate((ValueExpression<?>) left, operator, right);
             }
         } else {
-            predicate = new FieldPredicateImpl(left, operator, right);
+            predicate = new FieldPredicateImpl(left, operator, (_Expression<?>) right);
         }
         return predicate;
     }
 
     private static DualPredicate buildFieldPair(GenericField<?, ?> left, DualPredicateOperator operator
             , GenericField<?, ?> right) {
-        DualPredicate predicate;
-        if (left.tableMeta().parentMeta() == right.tableMeta()) {
-            predicate = buildParentChild(left, operator, right, (ChildTableMeta<?>) left.tableMeta());
-        } else if (right.tableMeta().parentMeta() == left.tableMeta()) {
-            predicate = buildParentChild(left, operator, right, (ChildTableMeta<?>) right.tableMeta());
-        } else {
-            predicate = new FieldPredicateImpl(left, operator, right);
-        }
-        return predicate;
+//        DualPredicate predicate;
+//        if (left.tableMeta().parentMeta() == right.tableMeta()) {
+//            predicate = buildParentChild(left, operator, right, (ChildTableMeta<?>) left.tableMeta());
+//        } else if (right.tableMeta().parentMeta() == left.tableMeta()) {
+//            predicate = buildParentChild(left, operator, right, (ChildTableMeta<?>) right.tableMeta());
+//        } else {
+//            predicate = new FieldPredicateImpl(left, operator, right);
+//        }
+        return null;
     }
 
     private static DualPredicate buildParentChild(GenericField<?, ?> left, DualPredicateOperator operator
@@ -122,24 +124,24 @@ class DualPredicate extends AbstractPredicate {
         DualPredicate predicate = null;
         if (operator == DualPredicateOperator.EQ) {
             if (_MetaBridge.ID.equals(left.fieldName()) && _MetaBridge.ID.equals(right.fieldName())) {
-                predicate = new ParentChildJoinPredicateImpl(left, operator, right, childMeta);
+                predicate = new ParentChildJoinPredicateImpl((_Expression<?>) left, operator, (_Expression<?>) right, childMeta);
             }
         }
         if (predicate == null) {
-            predicate = new FieldPredicateImpl(left, operator, right);
+            predicate = new FieldPredicateImpl((_Expression<?>) left, operator, (_Expression<?>) right);
         }
         return predicate;
     }
 
     /*################################## blow instance member ##################################*/
 
-    final Expression<?> left;
+    final _Expression<?> left;
 
     final DualPredicateOperator operator;
 
-    final Expression<?> right;
+    final _Expression<?> right;
 
-    private DualPredicate(Expression<?> left, DualPredicateOperator operator, Expression<?> right) {
+    private DualPredicate(_Expression<?> left, DualPredicateOperator operator, _Expression<?> right) {
         this.left = left;
         this.operator = operator;
         this.right = right;
@@ -174,7 +176,7 @@ class DualPredicate extends AbstractPredicate {
     private static class FieldPredicateImpl extends DualPredicate
             implements FieldPredicate {
 
-        private FieldPredicateImpl(Expression<?> left, DualPredicateOperator operator, Expression<?> right) {
+        private FieldPredicateImpl(_Expression<?> left, DualPredicateOperator operator, _Expression<?> right) {
             super(left, operator, right);
         }
 
@@ -183,7 +185,7 @@ class DualPredicate extends AbstractPredicate {
             context.appendFieldPredicate(this);
         }
 
-        @Override
+        //@Override
         public final void appendPredicate(_SqlContext context) {
             doAppendSQL(context);
         }
@@ -213,7 +215,7 @@ class DualPredicate extends AbstractPredicate {
 
         private LeftFieldValuePredicate(GenericField<?, ?> left, DualPredicateOperator operator
                 , ValueExpression<?> right) {
-            super(left, operator, right);
+            super((_Expression<?>) left, operator, (_Expression<?>) right);
         }
 
         @Override
@@ -256,7 +258,7 @@ class DualPredicate extends AbstractPredicate {
 
         private RightFieldValuePredicate(ValueExpression<?> left, DualPredicateOperator operator
                 , GenericField<?, ?> right) {
-            super(left, operator, right);
+            super((_Expression<?>) left, operator, (_Expression<?>) right);
         }
 
         @Override
@@ -330,7 +332,7 @@ class DualPredicate extends AbstractPredicate {
 
         private final ChildTableMeta<?> childMeta;
 
-        private ParentChildJoinPredicateImpl(Expression<?> left, DualPredicateOperator operator, Expression<?> right
+        private ParentChildJoinPredicateImpl(_Expression<?> left, DualPredicateOperator operator, _Expression<?> right
                 , ChildTableMeta<?> childMeta) {
             super(left, operator, right);
             this.childMeta = childMeta;

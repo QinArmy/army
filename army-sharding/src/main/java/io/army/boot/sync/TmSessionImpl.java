@@ -1,25 +1,26 @@
 package io.army.boot.sync;
 
 import io.army.SessionException;
-import io.army.beans.DomainWrapper;
-import io.army.boot.DomainValuesGenerator;
 import io.army.cache.SessionCache;
 import io.army.cache.SessionCacheException;
 import io.army.cache.UniqueKey;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.*;
+import io.army.criteria.impl.inner._MultiDML;
+import io.army.criteria.impl.inner._SingleDml;
+import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
-import io.army.sharding.DatabaseRoute;
-import io.army.sharding.RouteWrapper;
+import io.army.meta.UniqueFieldMeta;
 import io.army.sync.TmSession;
 import io.army.sync.TmSessionFactory;
 import io.army.tx.TmTransaction;
 import io.army.tx.XaTransactionOption;
-import io.army.util.Assert;
 import io.army.util.CriteriaUtils;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -67,8 +68,38 @@ final class TmSessionImpl implements InnerTmSession {
         return null;
     }
 
-    @Override
+    // @Override
     public <R extends IDomain> R getByUnique(TableMeta<R> tableMeta, List<String> propNameList, List<Object> valueList) {
+        return null;
+    }
+
+    @Override
+    public List<Long> batchLargeUpdate(Update update) {
+        return null;
+    }
+
+    @Override
+    public List<Long> batchLargeUpdate(Update update, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public List<Long> batchLargeDelete(Delete delete) {
+        return null;
+    }
+
+    @Override
+    public List<Long> batchLargeDelete(Delete delete, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public <R extends IDomain, F> R getByUnique(TableMeta<R> tableMeta, UniqueFieldMeta<R, F> fieldMeta, F fieldValue) {
+        return null;
+    }
+
+    @Override
+    public <R extends IDomain, F> R getByUnique(TableMeta<R> tableMeta, UniqueFieldMeta<R, F> fieldMeta, F fieldValue, Visible visible) {
         return null;
     }
 
@@ -107,12 +138,12 @@ final class TmSessionImpl implements InnerTmSession {
         return null;
     }
 
-    @Override
+    // @Override
     public int subQueryInsert(Insert insert) {
         return 0;
     }
 
-    @Override
+    //@Override
     public long subQueryLargeInsert(Insert insert) {
         return 0;
     }
@@ -207,7 +238,7 @@ final class TmSessionImpl implements InnerTmSession {
     }
 
 
-    @Override
+    // @Override
     public final <R extends IDomain> R getByUnique(TableMeta<R> tableMeta, List<String> propNameList
             , List<Object> valueList, final Visible visible) {
         final UniqueKey uniqueKey = new UniqueKey(propNameList, valueList);
@@ -238,26 +269,28 @@ final class TmSessionImpl implements InnerTmSession {
 
     @Override
     public final <R> List<R> select(Select select, Class<R> resultClass, final Visible visible) {
-        assertSessionActive();
+//        assertSessionActive();
+//
+//        _Select innerSelect = (_Select) select;
+//        //1. try find route
+//        RouteWrapper routeWrapper = DatabaseRouteUtils.findRouteForSelect(innerSelect);
+//
+//        if (routeWrapper == null) {
+//            throw new NotFoundRouteException("Select[%s]not found sharding route.", select);
+//        }
+//        //2. obtain route index
+//        int databaseIndex;
+//        if (routeWrapper.routeIndex()) {
+//            databaseIndex = routeWrapper.routeIndexValue();
+//        } else {
+//            databaseIndex = this.sessionFactory.dataSourceRoute(routeWrapper.tableMeta())
+//                    .database(routeWrapper.routeKey());
+//        }
+//        //3. obtain target session and execute
+//        return obtainRmSession(databaseIndex)
+//                .select(select, resultClass, visible);
 
-        _Select innerSelect = (_Select) select;
-        //1. try find route
-        RouteWrapper routeWrapper = DatabaseRouteUtils.findRouteForSelect(innerSelect);
-
-        if (routeWrapper == null) {
-            throw new NotFoundRouteException("Select[%s]not found sharding route.", select);
-        }
-        //2. obtain route index
-        int databaseIndex;
-        if (routeWrapper.routeIndex()) {
-            databaseIndex = routeWrapper.routeIndexValue();
-        } else {
-            databaseIndex = this.sessionFactory.dataSourceRoute(routeWrapper.tableMeta())
-                    .database(routeWrapper.routeKey());
-        }
-        //3. obtain target session and execute
-        return obtainRmSession(databaseIndex)
-                .select(select, resultClass, visible);
+        return Collections.emptyList();
     }
 
     @Override
@@ -283,59 +316,48 @@ final class TmSessionImpl implements InnerTmSession {
     }
 
 
-    @Override
+    // @Override
     public final int subQueryInsert(Insert insert, final Visible visible) {
-        assertSessionActive();
-
-        _SubQueryInsert subQueryInsert = (_SubQueryInsert) insert;
-        int routeIndex = subQueryInsert.databaseIndex();
-        if (routeIndex < 0) {
-            throw new NotFoundRouteException("SubQuery insert ,TableMeta[%s] not found data source route."
-                    , subQueryInsert.table());
-        }
-        return obtainRmSession(routeIndex)
-                .subQueryInsert(insert, visible);
+//        assertSessionActive();
+//
+//        _SubQueryInsert subQueryInsert = (_SubQueryInsert) insert;
+//        int routeIndex = subQueryInsert.databaseIndex();
+//        if (routeIndex < 0) {
+//            throw new NotFoundRouteException("SubQuery insert ,TableMeta[%s] not found data source route."
+//                    , subQueryInsert.table());
+//        }
+//        return obtainRmSession(routeIndex)
+//                .subQueryInsert(insert, visible);
+        return 0;
     }
 
-    @Override
-    public final long largeSubQueryInsert(Insert insert, Visible visible) {
-        assertSessionActive();
 
-        _SubQueryInsert subQueryInsert = (_SubQueryInsert) insert;
-        int routeIndex = subQueryInsert.databaseIndex();
-        if (routeIndex < 0) {
-            throw new NotFoundRouteException("SubQuery insert ,TableMeta[%s] not found data source route."
-                    , subQueryInsert.table());
-        }
-        return obtainRmSession(routeIndex)
-                .largeSubQueryInsert(insert, visible);
-    }
 
     @Override
     public final <R> List<R> returningInsert(Insert insert, Class<R> resultClass, final Visible visible) {
-        assertSessionActive();
-
-        if (!(insert instanceof _ReturningInsert)) {
-            throw new IllegalArgumentException(String.format("Inert[%s] isn't supported by returningInsert.", insert));
-        }
-        _ReturningInsert returningInsert = (_ReturningInsert) insert;
-        DomainWrapper wrapper = returningInsert.wrapper();
-        TableMeta<?> tableMeta = returningInsert.tableMeta();
-        // 1. create required properties value.
-        this.sessionFactory.domainValuesGenerator().createValues(wrapper, returningInsert.migrationData());
-        // 2. route index
-        Object routeKey = DatabaseRouteUtils.findRouteKeyInsert(tableMeta, wrapper);
-        if (routeKey == null) {
-            throw new NotFoundRouteException("Insert TableMeta[%s] not found database route.", tableMeta);
-        }
-        int dataSourceIndex = this.sessionFactory.dataSourceRoute(tableMeta)
-                .database(routeKey);
-
-        // 3. obtain target rm session by data source index.
-        return obtainRmSession(dataSourceIndex)
-                // 4. execute insert sql with domain index set .
-                .returningInsert(insert, resultClass, visible);
-
+//        assertSessionActive();
+//
+//        if (!(insert instanceof _ReturningInsert)) {
+//            throw new IllegalArgumentException(String.format("Inert[%s] isn't supported by returningInsert.", insert));
+//        }
+//        _ReturningInsert returningInsert = (_ReturningInsert) insert;
+//        DomainWrapper wrapper = returningInsert.wrapper();
+//        TableMeta<?> tableMeta = returningInsert.tableMeta();
+//        // 1. create required properties value.
+//        this.sessionFactory.domainValuesGenerator().createValues(wrapper, returningInsert.migrationData());
+//        // 2. route index
+//        Object routeKey = DatabaseRouteUtils.findRouteKeyInsert(tableMeta, wrapper);
+//        if (routeKey == null) {
+//            throw new NotFoundRouteException("Insert TableMeta[%s] not found database route.", tableMeta);
+//        }
+//        int dataSourceIndex = this.sessionFactory.dataSourceRoute(tableMeta)
+//                .database(routeKey);
+//
+//        // 3. obtain target rm session by data source index.
+//        return obtainRmSession(dataSourceIndex)
+//                // 4. execute insert sql with domain index set .
+//                .returningInsert(insert, resultClass, visible);
+        return Collections.emptyList();
     }
 
 
@@ -498,23 +520,23 @@ final class TmSessionImpl implements InnerTmSession {
      */
     private void processSingleInsert(final _ValuesInsert insert, final Visible visible) {
 
-        final List<DomainWrapper> wrapperList = insert.domainList();
-        Assert.isTrue(wrapperList.size() == 1, "wrapperList size isn't 1 .");
-        final TableMeta<?> tableMeta = insert.table();
-        DomainWrapper domainWrapper = wrapperList.get(0);
-        // 1. create required properties value.
-        this.sessionFactory.domainValuesGenerator().createValues(domainWrapper, insert.migrationData());
-        // 2. route index
-        Object routeKey = DatabaseRouteUtils.findRouteKeyInsert(tableMeta, domainWrapper);
-        if (routeKey == null) {
-            throw new NotFoundRouteException("Insert TableMeta[%s] not found database route.", tableMeta);
-        }
-        int dataSourceIndex = this.sessionFactory.dataSourceRoute(tableMeta)
-                .database(routeKey);
-        // 3. obtain target rm session by data source index.
-        obtainRmSession(dataSourceIndex)
-                // 4. execute insert sql with domain index set .
-                .valueInsert((Insert) insert, null, visible);
+//        final List<ObjectWrapper> wrapperList = insert.domainList();
+//        Assert.isTrue(wrapperList.size() == 1, "wrapperList size isn't 1 .");
+//        final TableMeta<?> tableMeta = insert.table();
+//        ObjectWrapper domainWrapper = wrapperList.get(0);
+//        // 1. create required properties value.
+//        this.sessionFactory.domainValuesGenerator().createValues(domainWrapper, insert.migrationData());
+//        // 2. route index
+//        Object routeKey = DatabaseRouteUtils.findRouteKeyInsert(tableMeta, domainWrapper);
+//        if (routeKey == null) {
+//            throw new NotFoundRouteException("Insert TableMeta[%s] not found database route.", tableMeta);
+//        }
+//        int dataSourceIndex = this.sessionFactory.dataSourceRoute(tableMeta)
+//                .database(routeKey);
+//        // 3. obtain target rm session by data source index.
+//        obtainRmSession(dataSourceIndex)
+//                // 4. execute insert sql with domain index set .
+//                .valueInsert((Insert) insert, null, visible);
     }
 
 
@@ -524,74 +546,74 @@ final class TmSessionImpl implements InnerTmSession {
      * @see #processSingleInsert(_ValuesInsert, Visible)
      */
     private void processMultiInsert(final _ValuesInsert insert, final Visible visible) {
-
-        final DomainValuesGenerator generator = this.sessionFactory.domainValuesGenerator();
-        final TableMeta<?> tableMeta = insert.table();
-        final List<DomainWrapper> wrapperList = insert.domainList();
-        final int size = wrapperList.size();
-
-        final boolean migrationData = insert.migrationData();
-        final DatabaseRoute route = this.sessionFactory.dataSourceRoute(tableMeta);
-
-        final Map<Integer, Set<Integer>> domainIndexSetMap = new HashMap<>();
-        for (int i = 0; i < size; i++) {
-            // 1. create required properties value.
-            DomainWrapper wrapper = wrapperList.get(i);
-            generator.createValues(wrapper, migrationData);
-            // 2. route target data source index.
-            Object routeKey = DatabaseRouteUtils.findRouteKeyInsert(tableMeta, wrapper);
-            if (routeKey == null) {
-                throw new NotFoundRouteException("Insert TableMeta[%s] index[%s] not found database route."
-                        , tableMeta, i);
-            }
-            int dataSourceIndex = route.database(routeKey);
-            // 3. cache data source index and domain index
-            Set<Integer> domainIndexSet = domainIndexSetMap.computeIfAbsent(dataSourceIndex, k -> new HashSet<>());
-            domainIndexSet.add(i);
-        }
-
-        for (Map.Entry<Integer, Set<Integer>> e : domainIndexSetMap.entrySet()) {
-            // 4. obtain target rm session by data source index.
-            obtainRmSession(e.getKey())
-                    // 5. execute insert sql with domain index set .
-                    .valueInsert((Insert) insert, Collections.unmodifiableSet(e.getValue()), visible);
-        }
+//
+//        final DomainValuesGenerator generator = this.sessionFactory.domainValuesGenerator();
+//        final TableMeta<?> tableMeta = insert.table();
+//        final List<DomainWrapper> wrapperList = insert.domainList();
+//        final int size = wrapperList.size();
+//
+//        final boolean migrationData = insert.migrationData();
+//        final DatabaseRoute route = this.sessionFactory.dataSourceRoute(tableMeta);
+//
+//        final Map<Integer, Set<Integer>> domainIndexSetMap = new HashMap<>();
+//        for (int i = 0; i < size; i++) {
+//            // 1. create required properties value.
+//            DomainWrapper wrapper = wrapperList.get(i);
+//            generator.createValues(wrapper, migrationData);
+//            // 2. route target data source index.
+//            Object routeKey = DatabaseRouteUtils.findRouteKeyInsert(tableMeta, wrapper);
+//            if (routeKey == null) {
+//                throw new NotFoundRouteException("Insert TableMeta[%s] index[%s] not found database route."
+//                        , tableMeta, i);
+//            }
+//            int dataSourceIndex = route.database(routeKey);
+//            // 3. cache data source index and domain index
+//            Set<Integer> domainIndexSet = domainIndexSetMap.computeIfAbsent(dataSourceIndex, k -> new HashSet<>());
+//            domainIndexSet.add(i);
+//        }
+//
+//        for (Map.Entry<Integer, Set<Integer>> e : domainIndexSetMap.entrySet()) {
+//            // 4. obtain target rm session by data source index.
+//            obtainRmSession(e.getKey())
+//                    // 5. execute insert sql with domain index set .
+//                    .valueInsert((Insert) insert, Collections.unmodifiableSet(e.getValue()), visible);
+//        }
     }
 
     private int processSingleDml(_SingleDml singleDML) throws NotFoundRouteException {
         //1. try find route
-        RouteWrapper routeWrapper = DatabaseRouteUtils.findRouteForSingleDML(singleDML);
-        if (routeWrapper == null) {
-            throw new NotFoundRouteException("Single dml ,TableMeta[%s] not found data source route."
-                    , singleDML.tableMeta());
-        }
-        //2. obtain route index
-        int routeIndex;
-        if (routeWrapper.routeIndex()) {
-            routeIndex = routeWrapper.routeIndexValue();
-        } else {
-            routeIndex = this.sessionFactory.dataSourceRoute(routeWrapper.tableMeta())
-                    .database(routeWrapper.routeKey());
-        }
-        return routeIndex;
+//        RouteWrapper routeWrapper = DatabaseRouteUtils.findRouteForSingleDML(singleDML);
+//        if (routeWrapper == null) {
+//            throw new NotFoundRouteException("Single dml ,TableMeta[%s] not found data source route."
+//                    , singleDML.tableMeta());
+//        }
+//        //2. obtain route index
+//        int routeIndex;
+//        if (routeWrapper.routeIndex()) {
+//            routeIndex = routeWrapper.routeIndexValue();
+//        } else {
+//            routeIndex = this.sessionFactory.dataSourceRoute(routeWrapper.tableMeta())
+//                    .database(routeWrapper.routeKey());
+//        }
+        return 0;
     }
 
     private int processMultiDml(_MultiDML multiDML) throws NotFoundRouteException {
-        //1. try find route
-        RouteWrapper routeWrapper = DatabaseRouteUtils.findRouteForMultiDML(multiDML);
-        if (routeWrapper == null) {
-            throw new NotFoundRouteException("Multi dml table list %s not found data source route."
-                    , multiDML.tableWrapperList());
-        }
-        //2. obtain route index
-        int routeIndex;
-        if (routeWrapper.routeIndex()) {
-            routeIndex = routeWrapper.routeIndexValue();
-        } else {
-            routeIndex = this.sessionFactory.dataSourceRoute(routeWrapper.tableMeta())
-                    .database(routeWrapper.routeKey());
-        }
-        return routeIndex;
+//        //1. try find route
+//        RouteWrapper routeWrapper = DatabaseRouteUtils.findRouteForMultiDML(multiDML);
+//        if (routeWrapper == null) {
+//            throw new NotFoundRouteException("Multi dml table list %s not found data source route."
+//                    , multiDML.tableWrapperList());
+//        }
+//        //2. obtain route index
+//        int routeIndex;
+//        if (routeWrapper.routeIndex()) {
+//            routeIndex = routeWrapper.routeIndexValue();
+//        } else {
+//            routeIndex = this.sessionFactory.dataSourceRoute(routeWrapper.tableMeta())
+//                    .database(routeWrapper.routeKey());
+//        }
+        return 0;
     }
 
     private void assertSessionActive() {

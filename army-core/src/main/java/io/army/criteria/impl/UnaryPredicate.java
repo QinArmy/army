@@ -1,6 +1,11 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.FieldExpression;
+import io.army.criteria.FieldPredicate;
+import io.army.criteria.SubQuery;
+import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner._SelfDescribed;
+import io.army.dialect._SqlContext;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
@@ -21,7 +26,7 @@ class UnaryPredicate extends AbstractPredicate {
 
     }
 
-    static UnaryPredicate build(UnaryOperator operator, Expression<?> expression) {
+    static UnaryPredicate build(UnaryOperator operator, _Expression<?> expression) {
         UnaryPredicate predicate;
         if (operator == UnaryOperator.NOT_EXISTS || operator == UnaryOperator.EXISTS) {
             throw new IllegalArgumentException(
@@ -36,9 +41,9 @@ class UnaryPredicate extends AbstractPredicate {
 
     private final UnaryOperator operator;
 
-    final SelfDescribed expressionOrSubQuery;
+    final _SelfDescribed expressionOrSubQuery;
 
-    private UnaryPredicate(UnaryOperator operator, SelfDescribed expressionOrSubQuery) {
+    private UnaryPredicate(UnaryOperator operator, _SelfDescribed expressionOrSubQuery) {
         Assert.notNull(expressionOrSubQuery, "expression required");
 
         this.operator = operator;
@@ -92,7 +97,7 @@ class UnaryPredicate extends AbstractPredicate {
     @Override
     public final boolean containsSubQuery() {
         return (this.expressionOrSubQuery instanceof SubQuery)
-                || ((Expression<?>) this.expressionOrSubQuery).containsSubQuery();
+                || ((_Expression<?>) this.expressionOrSubQuery).containsSubQuery();
     }
 
     /*################################## blow private static inner class ##################################*/
@@ -100,7 +105,7 @@ class UnaryPredicate extends AbstractPredicate {
     private static final class FieldUnaryPredicate extends UnaryPredicate implements FieldPredicate {
 
         private FieldUnaryPredicate(UnaryOperator operator, FieldExpression<?> expression) {
-            super(operator, expression);
+            super(operator, (_Expression<?>) expression);
         }
 
         @Override
@@ -108,24 +113,24 @@ class UnaryPredicate extends AbstractPredicate {
             context.appendFieldPredicate(this);
         }
 
-        @Override
+        // @Override
         public void appendPredicate(_SqlContext context) {
             this.doAppendSQL(context);
         }
 
         @Override
         public boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
-            return ((FieldExpression<?>) this.expressionOrSubQuery).containsField(fieldMetas);
+            return ((_Expression<?>) this.expressionOrSubQuery).containsField(fieldMetas);
         }
 
         @Override
         public boolean containsFieldOf(TableMeta<?> tableMeta) {
-            return ((FieldExpression<?>) this.expressionOrSubQuery).containsFieldOf(tableMeta);
+            return ((_Expression<?>) this.expressionOrSubQuery).containsFieldOf(tableMeta);
         }
 
         @Override
         public int containsFieldCount(TableMeta<?> tableMeta) {
-            return ((FieldExpression<?>) this.expressionOrSubQuery).containsFieldCount(tableMeta);
+            return ((_Expression<?>) this.expressionOrSubQuery).containsFieldCount(tableMeta);
         }
     }
 }

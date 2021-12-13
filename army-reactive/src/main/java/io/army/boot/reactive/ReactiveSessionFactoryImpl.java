@@ -10,6 +10,7 @@ import io.army.criteria.NotFoundRouteException;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
+import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 import io.army.reactive.GenericReactiveApiSession;
 import io.army.reactive.ProxyReactiveSession;
@@ -73,14 +74,14 @@ class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements Inner
     private final AtomicBoolean factoryClosed = new AtomicBoolean(false);
 
     ReactiveSessionFactoryImpl(ReactiveSessionFactoryBuilderImpl factoryBuilder, Database actualDatabase) {
-        super(factoryBuilder, null);
-        if (!SUPPORT_SHARDING_SET.contains(this.factoryMode)) {
-            throw new SessionFactoryException("ShardingMode[%s] is supported by %s.", getClass().getName());
-        }
+        super(factoryBuilder);
+//        if (!SUPPORT_SHARDING_SET.contains(this.factoryMode)) {
+//            throw new SessionFactoryException("ShardingMode[%s] is supported by %s.", getClass().getName());
+//        }
 
         this.databaseSessionFactory = Objects.requireNonNull(factoryBuilder.databaseSessionFactory());
         this.dialect = SessionFactoryUtils.createDialect(this, actualDatabase);
-        this.tableCountPerDatabase = factoryBuilder.tableCountPerDatabase();
+        this.tableCountPerDatabase = 0;
         SessionFactoryUtils.assertReactiveTableCountOfSharding(this.tableCountPerDatabase, this);
 
         this.currentSessionContext = SessionFactoryUtils.createCurrentSessionContext(this);
@@ -102,19 +103,28 @@ class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements Inner
         this.updateSQLExecutor = UpdateSQLExecutor.build(this);
     }
 
+    @Override
+    public FactoryMode factoryMode() {
+        return null;
+    }
 
     @Override
-    public int databaseIndex() {
+    public ServerMeta serverMeta() {
+        return null;
+    }
+
+    @Override
+    public byte databaseIndex() {
         // always 0,because of single database
         return 0;
     }
 
     @Override
-    public int tableCountPerDatabase() {
-        return this.tableCountPerDatabase;
+    public byte tableCountPerDatabase() {
+        return 0;
     }
 
-    @Override
+    // @Override
     public Database actualDatabase() {
         return this.dialect.database();
     }
@@ -124,10 +134,7 @@ class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements Inner
         return this.domainValuesGenerator;
     }
 
-    @Override
-    public boolean compareDefaultOnMigrating() {
-        return this.compareDefaultOnMigrating;
-    }
+
 
     /*################################## blow InnerReactiveApiSessionFactory method ##################################*/
 
@@ -138,7 +145,7 @@ class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements Inner
 
     @Override
     public Function<Throwable, Throwable> composeExceptionFunction() {
-        return this.exceptionFunction;
+        return null;
     }
 
     @Override
@@ -165,16 +172,12 @@ class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements Inner
     }
 
     public boolean springApplication() {
-        return this.springApplication;
-    }
-
-    @Override
-    public boolean supportZone() {
-        return this.dialect.supportZone();
+        // return this.springApplication;
+        return false;
     }
 
     @Nullable
-    @Override
+    //@Override
     public GenericTmSessionFactory tmSessionFactory() {
         // always null
         return null;

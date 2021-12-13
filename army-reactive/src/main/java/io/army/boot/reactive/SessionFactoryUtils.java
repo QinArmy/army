@@ -51,13 +51,14 @@ abstract class SessionFactoryUtils {
     }
 
     static Dialect createDialect(GenericRmSessionFactory rmSessionFactory, Database queriedDatabase) {
-        Database configDatabase = readDatabase(rmSessionFactory);
-        return createDialect(configDatabase, queriedDatabase, rmSessionFactory);
+//        Database configDatabase = readDatabase(rmSessionFactory);
+//        return createDialect(configDatabase, queriedDatabase, rmSessionFactory);
+        return null;
     }
 
     static void assertReactiveTableCountOfSharding(final int tableCountOfSharding
             , GenericReactiveSessionFactory sessionFactory) {
-        assertTableCountOfSharding(tableCountOfSharding, sessionFactory);
+        //assertTableCountOfSharding(tableCountOfSharding, sessionFactory);
     }
 
     static CurrentSessionContext createCurrentSessionContext(InnerReactiveApiSessionFactory sessionFactory) {

@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Expression;
 import io.army.criteria.FieldExpression;
-import io.army.criteria._SqlContext;
+import io.army.criteria.impl.inner._Expression;
+import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -11,7 +11,7 @@ import java.util.Collection;
 
 class BracketsExpression<E> extends AbstractExpression<E> {
 
-    static <E> BracketsExpression<E> build(Expression<E> expression) {
+    static <E> BracketsExpression<E> build(_Expression<E> expression) {
         BracketsExpression<E> bracketsExpression;
         if (expression instanceof FieldExpression) {
             bracketsExpression = new FieldBracketsExpression<>(expression);
@@ -21,9 +21,9 @@ class BracketsExpression<E> extends AbstractExpression<E> {
         return bracketsExpression;
     }
 
-    final Expression<E> exp;
+    final _Expression<E> exp;
 
-    private BracketsExpression(Expression<E> exp) {
+    private BracketsExpression(_Expression<E> exp) {
         this.exp = exp;
     }
 
@@ -53,7 +53,7 @@ class BracketsExpression<E> extends AbstractExpression<E> {
 
     private static final class FieldBracketsExpression<E> extends BracketsExpression<E> implements FieldExpression<E> {
 
-        private FieldBracketsExpression(Expression<E> exp) {
+        private FieldBracketsExpression(_Expression<E> exp) {
             super(exp);
         }
 

@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.criteria.*;
+import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
@@ -206,7 +207,7 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
 
         @Override
         public Selection as(String alias) {
-            return new DefaultSelection(this, this.selection.alias());
+            return new ExpressionSelection(this, this.selection.alias());
         }
 
         @Override

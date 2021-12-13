@@ -24,6 +24,7 @@ class MySQL57DDL extends AbstractDDL {
 
     /*################################## blow DDL method ##################################*/
 
+
     @Override
     protected final void internalModifyTableComment(DDLContext context) {
         StringBuilder builder = context.sqlBuilder()

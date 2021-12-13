@@ -44,7 +44,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
 
     @Override
     public final void createValues(ObjectWrapper domainWrapper, boolean migrationData) {
-        final TableMeta<?> tableMeta = domainWrapper.tableMeta();
+        final TableMeta<?> tableMeta = null;
         if (migrationData) {
             // discriminator
             createDiscriminatorValue(tableMeta, domainWrapper);
@@ -60,8 +60,8 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
 
     /*################################## blow private method ##################################*/
 
-    private void createValuesWithGenerator(TableMeta<?> tableMeta, ObjectWrapper domainWrapper) {
-        List<FieldMeta<?, ?>> chain = sessionFactory.tableGeneratorChain().get(tableMeta);
+    private <T extends IDomain> void createValuesWithGenerator(TableMeta<T> tableMeta, ObjectWrapper domainWrapper) {
+        List<FieldMeta<T, ?>> chain = tableMeta.generatorChain();
         if (CollectionUtils.isEmpty(chain)) {
             return;
         }

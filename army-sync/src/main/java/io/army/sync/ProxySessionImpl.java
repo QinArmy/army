@@ -9,6 +9,7 @@ import io.army.domain.IDomain;
 import io.army.env.ArmyEnvironment;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.meta.UniqueFieldMeta;
 import io.army.tx.GenericTransaction;
 import io.army.tx.NoSessionTransactionException;
 
@@ -66,15 +67,6 @@ class ProxySessionImpl extends AbstractProxySyncSession implements ProxySession 
         return null;
     }
 
-    @Override
-    public List<Integer> batchUpdate(Update update) {
-        return null;
-    }
-
-    @Override
-    public List<Integer> batchUpdate(Update update, Visible visible) {
-        return null;
-    }
 
     @Override
     public List<Long> batchLargeUpdate(Update update) {
@@ -86,13 +78,14 @@ class ProxySessionImpl extends AbstractProxySyncSession implements ProxySession 
         return null;
     }
 
+
     @Override
-    public List<Integer> batchDelete(Delete delete) {
+    public <R extends IDomain, F> R getByUnique(TableMeta<R> tableMeta, UniqueFieldMeta<R, F> fieldMeta, F fieldValue) {
         return null;
     }
 
     @Override
-    public List<Integer> batchDelete(Delete delete, Visible visible) {
+    public <R extends IDomain, F> R getByUnique(TableMeta<R> tableMeta, UniqueFieldMeta<R, F> fieldMeta, F fieldValue, Visible visible) {
         return null;
     }
 

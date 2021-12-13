@@ -5,8 +5,10 @@ import io.army.sync.executor.ExecutorFactory;
 import io.army.sync.executor.FactoryInfo;
 import io.army.sync.executor.MetaExecutor;
 import io.army.sync.executor.StmtExecutor;
+import io.army.sync.utils.SyncExceptions;
 
 import javax.sql.DataSource;
+import java.sql.SQLException;
 
 final class JdbcTxExecutorFactory implements ExecutorFactory {
 
@@ -33,12 +35,16 @@ final class JdbcTxExecutorFactory implements ExecutorFactory {
     }
 
     @Override
-    public MetaExecutor createMetaExecutor() throws Exception {
-        return JdbcMetaExecutor.create(this.dataSource.getConnection());
+    public MetaExecutor createMetaExecutor() {
+        try {
+            return JdbcMetaExecutor.create(this.dataSource.getConnection());
+        } catch (SQLException e) {
+            throw SyncExceptions.wrapDataAccess(e);
+        }
     }
 
     @Override
-    public StmtExecutor createSqlExecutor() throws Exception {
+    public StmtExecutor createSqlExecutor() {
         return null;
     }
 

@@ -36,7 +36,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         super(dialect, visible);
         GenericRmSessionFactory sessionFactory = dialect.sessionFactory();
 
-        this.factoryMode = dialect.sessionFactory().shardingMode();
+        this.factoryMode = dialect.sessionFactory().factoryMode();
         this.tableContext = tableContext;
         this.primaryTableContext = tableContext;
         this.childContext = false;
@@ -50,7 +50,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         super(parentContext);
         GenericRmSessionFactory sessionFactory = dialect.sessionFactory();
 
-        this.factoryMode = dialect.sessionFactory().shardingMode();
+        this.factoryMode = dialect.sessionFactory().factoryMode();
         this.tableContext = tableContext;
         if (parentContext instanceof ComposeSelectContext) {
             this.primaryTableContext = this.tableContext;

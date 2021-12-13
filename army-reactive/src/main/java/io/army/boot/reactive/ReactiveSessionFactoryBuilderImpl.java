@@ -46,37 +46,37 @@ class ReactiveSessionFactoryBuilderImpl
         this.factoryMode = FactoryMode.NO_SHARDING;
     }
 
-    @Override
+   // @Override
     public ReactiveSessionFactoryBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs) {
         this.fieldCodecs = fieldCodecs;
         return this;
     }
 
-    @Override
+    //@Override
     public ReactiveSessionFactoryBuilder name(String sessionFactoryName) {
         this.name = sessionFactoryName;
         return this;
     }
 
-    @Override
+    ///@Override
     public ReactiveSessionFactoryBuilder environment(ArmyEnvironment environment) {
         this.environment = environment;
         return this;
     }
 
-    @Override
+    // @Override
     public ReactiveSessionFactoryBuilder exceptionFunction(Function<RuntimeException, RuntimeException> function) {
-        this.exceptionFunction = function;
+        //this.exceptionFunction = function;
         return this;
     }
 
-    @Override
+    //@Override
     public ReactiveSessionFactoryBuilder tableCountPerDatabase(int tableCountPerDatabase) {
         this.tableCountPerDatabase = tableCountPerDatabase;
         return this;
     }
 
-    @Override
+    // @Override
     public ReactiveSessionFactoryBuilder factoryAdvice(Collection<FactoryAdvice> factoryAdvices) {
         this.factoryAdvices = factoryAdvices;
         return this;

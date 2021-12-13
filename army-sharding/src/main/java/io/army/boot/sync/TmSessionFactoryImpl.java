@@ -11,6 +11,7 @@ import io.army.context.spi.CurrentSessionContext;
 import io.army.criteria.NotFoundRouteException;
 import io.army.dialect.Database;
 import io.army.lang.Nullable;
+import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 import io.army.session.AbstractSessionFactory;
 import io.army.session.FactoryMode;
@@ -67,7 +68,7 @@ class TmSessionFactoryImpl extends AbstractSessionFactory implements InnerTmSess
     private boolean closed;
 
     TmSessionFactoryImpl(TmSessionFactionBuilderImpl builder) {
-        super(null, null);
+        super(null);
 //        Assert.isTrue(this.shardingMode == ShardingMode.SHARDING
 //                , () -> String.format("%s support only SHARDING ShardingMode", TmSessionFactoryImpl.this));
 //
@@ -111,6 +112,11 @@ class TmSessionFactoryImpl extends AbstractSessionFactory implements InnerTmSess
             throw new NotFoundRouteException("TableMeta[%s] not found TableRoute.", tableMeta);
         }
         return tableRoute;
+    }
+
+    @Override
+    public ServerMeta serverMeta() {
+        return null;
     }
 
     @Override
@@ -167,7 +173,7 @@ class TmSessionFactoryImpl extends AbstractSessionFactory implements InnerTmSess
                 if (exceptionMap == null) {
                     exceptionMap = new HashMap<>();
                 }
-                exceptionMap.putIfAbsent(rmSessionFactory.databaseIndex(), e);
+                // exceptionMap.putIfAbsent(rmSessionFactory.databaseIndex(), e);
             }
         }
         if (CollectionUtils.isEmpty(exceptionMap)) {

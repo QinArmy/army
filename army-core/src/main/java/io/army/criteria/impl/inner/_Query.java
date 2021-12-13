@@ -1,8 +1,5 @@
 package io.army.criteria.impl.inner;
 
-import io.army.criteria.IPredicate;
-import io.army.criteria.SortPart;
-
 import java.util.List;
 
 public interface _Query extends _GeneralBaseQuery {
@@ -11,22 +8,22 @@ public interface _Query extends _GeneralBaseQuery {
     /**
      * @return a unmodifiable list
      */
-    List<IPredicate> predicateList();
+    List<_Predicate> predicateList();
 
     /**
      * @return a unmodifiable list
      */
-    List<SortPart> groupPartList();
+    List<_SortPart> groupPartList();
 
     /**
      * @return a unmodifiable list
      */
-    List<IPredicate> havingList();
+    List<_Predicate> havingList();
 
     /**
      * @return a unmodifiable list
      */
-    List<SortPart> orderPartList();
+    List<_SortPart> orderPartList();
 
     int offset();
 

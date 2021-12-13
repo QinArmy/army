@@ -1,7 +1,6 @@
 package io.army.dialect;
 
 import io.army.criteria.Visible;
-import io.army.criteria._SqlContext;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;

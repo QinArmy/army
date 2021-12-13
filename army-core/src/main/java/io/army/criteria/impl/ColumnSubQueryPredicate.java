@@ -2,8 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.ColumnSubQuery;
 import io.army.criteria.DualPredicateOperator;
-import io.army.criteria.Expression;
-import io.army.criteria._SqlContext;
+import io.army.criteria.impl.inner._Expression;
+import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -13,7 +13,7 @@ import java.util.Collection;
 
 class ColumnSubQueryPredicate extends AbstractPredicate {
 
-    static ColumnSubQueryPredicate build(Expression<?> operand, DualPredicateOperator operator
+    static ColumnSubQueryPredicate build(_Expression<?> operand, DualPredicateOperator operator
             , SubQueryOperator subQueryOperator, ColumnSubQuery<?> subQuery) {
         Assert.isTrue(operator.relational(), "operator isn't relational.");
 
@@ -27,7 +27,7 @@ class ColumnSubQueryPredicate extends AbstractPredicate {
         }
     }
 
-    static ColumnSubQueryPredicate build(Expression<?> operand, DualPredicateOperator operator
+    static ColumnSubQueryPredicate build(_Expression<?> operand, DualPredicateOperator operator
             , ColumnSubQuery<?> subQuery) {
         switch (operator) {
             case IN:
@@ -38,13 +38,13 @@ class ColumnSubQueryPredicate extends AbstractPredicate {
         }
     }
 
-    private final Expression<?> operand;
+    private final _Expression<?> operand;
 
     private final DualPredicateOperator operator;
 
     private final ColumnSubQuery<?> subQuery;
 
-    private ColumnSubQueryPredicate(Expression<?> operand, DualPredicateOperator operator, ColumnSubQuery<?> subQuery) {
+    private ColumnSubQueryPredicate(_Expression<?> operand, DualPredicateOperator operator, ColumnSubQuery<?> subQuery) {
 
         this.operand = operand;
         this.operator = operator;
@@ -118,7 +118,7 @@ class ColumnSubQueryPredicate extends AbstractPredicate {
 
         private final SubQueryOperator subQueryOperator;
 
-        public RelationColumnSubQueryPredicate(Expression<?> operand, DualPredicateOperator operator
+        public RelationColumnSubQueryPredicate(_Expression<?> operand, DualPredicateOperator operator
                 , SubQueryOperator subQueryOperator, ColumnSubQuery<?> subQuery) {
             super(operand, operator, subQuery);
             this.subQueryOperator = subQueryOperator;

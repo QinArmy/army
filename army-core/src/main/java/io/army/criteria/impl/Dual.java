@@ -1,11 +1,12 @@
 package io.army.criteria.impl;
 
-import io.army.criteria._SqlContext;
+import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.sharding.Route;
+import io.army.struct.CodeEnum;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -150,6 +151,16 @@ final class Dual implements IDomain {
         @Override
         public List<FieldMeta<Dual, ?>> generatorChain() {
             return null;
+        }
+
+        @Override
+        public <E extends Enum<E> & CodeEnum> FieldMeta<? super Dual, E> discriminator() {
+            return null;
+        }
+
+        @Override
+        public int discriminatorValue() {
+            return 0;
         }
     }
 

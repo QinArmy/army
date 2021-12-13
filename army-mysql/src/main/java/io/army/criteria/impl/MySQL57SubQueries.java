@@ -3,8 +3,11 @@ package io.army.criteria.impl;
 import io.army.ErrorCode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.TableWrapper;
+import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.impl.inner._SortPart;
 import io.army.criteria.impl.inner.mysql._MySQL57SubQuery;
 import io.army.criteria.mysql.*;
+import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
@@ -616,8 +619,8 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public final boolean prepared() {
-            return this.actualSelect.prepared();
+        public final void prepared() {
+            this.actualSelect.prepared();
         }
 
         @Override
@@ -632,22 +635,22 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public final List<IPredicate> predicateList() {
+        public final List<_Predicate> predicateList() {
             return this.actualSelect.predicateList();
         }
 
         @Override
-        public final List<SortPart> groupPartList() {
+        public final List<_SortPart> groupPartList() {
             return this.actualSelect.groupPartList();
         }
 
         @Override
-        public final List<IPredicate> havingList() {
+        public final List<_Predicate> havingList() {
             return this.actualSelect.havingList();
         }
 
         @Override
-        public final List<SortPart> orderPartList() {
+        public final List<_SortPart> orderPartList() {
             return this.actualSelect.orderPartList();
         }
 
@@ -735,8 +738,8 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public boolean prepared() {
-            return this.mysql57Query.actualSelect.prepared();
+        public void prepared() {
+            this.mysql57Query.actualSelect.prepared();
         }
     }
 

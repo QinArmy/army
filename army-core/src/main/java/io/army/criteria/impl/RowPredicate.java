@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.DualPredicateOperator;
 import io.army.criteria.ExpressionRow;
 import io.army.criteria.RowSubQuery;
-import io.army.criteria._SqlContext;
+import io.army.dialect._SqlContext;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 

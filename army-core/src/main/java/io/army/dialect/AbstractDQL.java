@@ -5,7 +5,6 @@ import io.army.criteria.*;
 import io.army.criteria.impl._CriteriaCounselor;
 import io.army.criteria.impl.inner.*;
 import io.army.stmt.SimpleStmt;
-import io.army.util.Assert;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +26,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
 
     @Override
     public final SimpleStmt select(Select select, final Visible visible) {
-        Assert.isTrue(select.prepared(), "select not prepared");
+        select.prepared();
 
         SimpleStmt sqlWrapper;
         if (select instanceof _StandardComposeQuery) {
@@ -83,7 +82,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
 
     @Override
     public final void select(Select select, _SqlContext original) {
-        Assert.isTrue(select.prepared(), "select not prepared");
+        select.prepared();
 
         if (select instanceof _StandardComposeQuery) {
             _StandardComposeQuery composeSelect = (_StandardComposeQuery) select;
@@ -131,7 +130,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
 
     @Override
     public final void subQuery(SubQuery subQuery, _SqlContext original) {
-        Assert.isTrue(subQuery.prepared(), "PartQuery not prepared");
+        subQuery.prepared();
         if (subQuery instanceof _StandardComposeQuery) {
             _StandardComposeQuery composeQuery = (_StandardComposeQuery) subQuery;
             //1. assert composeQuery legal
@@ -253,7 +252,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
             if (index > 0) {
                 builder.append(",");
             }
-            selectPart.appendSql(context);
+            ((_SelfDescribed) selectPart).appendSql(context);
             index++;
         }
     }
@@ -274,7 +273,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
         }
     }
 
-    protected final void whereClause(List<? extends TableWrapper> tableWrapperList, List<IPredicate> predicateList
+    protected final void whereClause(List<? extends TableWrapper> tableWrapperList, List<_Predicate> predicateList
             , _TablesSqlContext context) {
 
         final boolean needAppendVisible = DialectUtils.needAppendVisible(tableWrapperList);
@@ -293,7 +292,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
         }
     }
 
-    protected final void groupByClause(List<SortPart> sortPartList, _TablesSqlContext context) {
+    protected final void groupByClause(List<_SortPart> sortPartList, _TablesSqlContext context) {
         if (!sortPartList.isEmpty()) {
             context.sqlBuilder()
                     .append(" GROUP BY");
@@ -301,7 +300,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
         }
     }
 
-    protected final void havingClause(List<IPredicate> havingList, _TablesSqlContext context) {
+    protected final void havingClause(List<_Predicate> havingList, _TablesSqlContext context) {
         if (!havingList.isEmpty()) {
             context.sqlBuilder()
                     .append(" HAVING");
@@ -309,7 +308,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
         }
     }
 
-    protected final void orderByClause(List<SortPart> orderPartList, _TablesSqlContext context) {
+    protected final void orderByClause(List<_SortPart> orderPartList, _TablesSqlContext context) {
         if (!orderPartList.isEmpty()) {
             context.sqlBuilder()
                     .append(" ORDER BY");

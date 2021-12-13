@@ -14,7 +14,9 @@ import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 import io.army.meta.MetaException;
 import io.army.session.FactoryMode;
+import io.army.session.GenericRmSessionFactory;
 import io.army.session.GenericSessionFactory;
+import io.army.session.GenericTmSessionFactory;
 import io.army.util.Assert;
 import io.army.util.ReflectionUtils;
 import io.army.util.StringUtils;
@@ -73,6 +75,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
     private static final AtomicReference<Method> SNOWFLAKE_BUILDER = new AtomicReference<>(null);
 
     /**
+     *
      */
     private static final AtomicReference<SnowflakeClient> SNOWFLAKE_CLIENT = new AtomicReference<>(null);
 
@@ -243,7 +246,13 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
         ArmyEnvironment env = sessionFactory.environment();
         String beanName = env.getRequiredProperty(ArmyKey.SNOWFLAKE_CLIENT_NAME);
         client = env.getBean(beanName, SnowflakeClient.class);
-        if (client == null && sessionFactory.shardingMode() == FactoryMode.NO_SHARDING) {
+        final boolean noSharding;
+        if (sessionFactory instanceof GenericTmSessionFactory) {
+            noSharding = false;
+        } else {
+            noSharding = ((GenericRmSessionFactory) sessionFactory).factoryMode() == FactoryMode.NO_SHARDING;
+        }
+        if (client == null && noSharding) {
             boolean singleApplication = env.get(
                     String.format(ArmyKey.SINGLE_APPLICATION, sessionFactory.name())
                     , Boolean.class, Boolean.TRUE);

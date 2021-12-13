@@ -40,7 +40,7 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory {
     protected final Map<FieldMeta<?, ?>, FieldGenerator> fieldGeneratorMap;
     protected final Function<ArmyException, RuntimeException> exceptionFunction;
 
-    protected final int tableCountPerDatabase;
+    protected final byte tableCountPerDatabase;
 
     protected final boolean readOnly;
 
@@ -171,12 +171,12 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory {
         return tableMetaMap;
     }
 
-    private static int tableCountPerDatabase(final int tableCount) {
-        if (tableCount < 1) {
+    private static byte tableCountPerDatabase(final int tableCount) {
+        if (tableCount < 1 || tableCount > 99) {
             String m = String.format("Table count[%s] per database must great than 0 .", tableCount);
             throw new SessionFactoryException(m);
         }
-        return tableCount;
+        return (byte) tableCount;
     }
 
 

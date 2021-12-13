@@ -9,10 +9,7 @@ import io.army.mapping.CodeEnumType;
 import io.army.mapping.MappingType;
 import io.army.mapping.NameEnumType;
 import io.army.mapping._MappingFactory;
-import io.army.meta.FieldMeta;
-import io.army.meta.GeneratorMeta;
-import io.army.meta.MetaException;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
 import io.army.util.StringUtils;
@@ -96,7 +93,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
 
     @Nullable
     static GeneratorMeta columnGeneratorMeta(Field field, FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
-        if (_MetaBridge.ID.equals(fieldMeta.fieldName()) && fieldMeta.tableMeta().parentMeta() != null) {
+        if (_MetaBridge.ID.equals(fieldMeta.fieldName()) && fieldMeta.tableMeta() instanceof ChildTableMeta) {
             return null;
         }
         final Generator generator = field.getAnnotation(Generator.class);

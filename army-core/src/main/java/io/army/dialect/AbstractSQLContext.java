@@ -46,7 +46,7 @@ abstract class AbstractSQLContext implements _TablesSqlContext {
 
     @Override
     public void appendFieldPredicate(FieldPredicate predicate) {
-        predicate.appendPredicate(this);
+       // predicate.appendPredicate(this);
     }
 
 
@@ -55,10 +55,6 @@ abstract class AbstractSQLContext implements _TablesSqlContext {
         return this.visible;
     }
 
-    @Override
-    public final Dialect dialect() {
-        return this.dialect;
-    }
 
     @Override
     public void appendIdentifier(String identifier) {
@@ -84,7 +80,7 @@ abstract class AbstractSQLContext implements _TablesSqlContext {
     }
 
 
-    public final DqlDialect dialect() {
+    public final Dialect dialect() {
         return this.dialect;
     }
 

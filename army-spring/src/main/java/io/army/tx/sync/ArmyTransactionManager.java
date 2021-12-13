@@ -190,7 +190,8 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
 
     @Override
     protected final boolean useSavepointForNestedTransaction() {
-        return this.isNestedTransactionAllowed() && this.sessionFactory.supportsSavePoints();
+        // return this.isNestedTransactionAllowed() && this.sessionFactory.supportsSavePoints();
+        return false;
     }
 
     /*################################## blow setter method ##################################*/

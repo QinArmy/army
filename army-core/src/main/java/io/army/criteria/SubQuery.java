@@ -1,7 +1,9 @@
 package io.army.criteria;
 
 
-public interface SubQuery extends Statement, SelfDescribed, DerivedTable, Query {
+import io.army.criteria.impl.inner._SelfDescribed;
+
+public interface SubQuery extends Statement, _SelfDescribed, DerivedTable, Query {
 
 
 }

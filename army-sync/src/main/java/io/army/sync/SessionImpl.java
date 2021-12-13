@@ -4,17 +4,13 @@ import io.army.*;
 import io.army.cache.DomainUpdateAdvice;
 import io.army.cache.SessionCache;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Statement;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
-import io.army.session.FactoryMode;
-import io.army.stmt.Stmt;
 import io.army.tx.*;
 import io.army.util.CriteriaUtils;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -118,26 +114,26 @@ final class SessionImpl extends AbstractRmSession implements Session {
 
     @Override
     public void valueInsert(final Insert insert, final Visible visible) {
-        try {
-            assertSessionActive(insert);
-            final Stmt stmt;
-            stmt = this.dialect.valueInsert(insert, null, visible);
-            this.stmtExecutor.valueInsert(stmt, timeToLiveInSeconds());
-        } catch (ArmyException e) {
-            throw this.exceptionFunction.apply(e);
-        } catch (RuntimeException e) {
-            throw this.exceptionFunction.apply(new ArmyUnknownException(e));
-        } finally {
-            ((_Statement) insert).clear();
-        }
+//        try {
+//            assertSessionActive(insert);
+//            final Stmt stmt;
+//            stmt = this.dialect.valueInsert(insert, null, visible);
+//            this.stmtExecutor.valueInsert(stmt, timeToLiveInSeconds());
+//        } catch (ArmyException e) {
+//            throw this.exceptionFunction.apply(e);
+//        } catch (RuntimeException e) {
+//            throw this.exceptionFunction.apply(new ArmyUnknownException(e));
+//        } finally {
+//            ((_Statement) insert).clear();
+//        }
     }
 
-    @Override
+    // @Override
     public List<Integer> batchUpdate(Update update) {
         return null;
     }
 
-    @Override
+    //@Override
     public List<Integer> batchUpdate(Update update, Visible visible) {
         return null;
     }
@@ -152,12 +148,12 @@ final class SessionImpl extends AbstractRmSession implements Session {
         return null;
     }
 
-    @Override
+    //@Override
     public List<Integer> batchDelete(Delete delete) {
         return null;
     }
 
-    @Override
+    // @Override
     public List<Integer> batchDelete(Delete delete, Visible visible) {
         return null;
     }
@@ -186,10 +182,10 @@ final class SessionImpl extends AbstractRmSession implements Session {
             if (this.transaction != null) {
                 throw new TransactionNotCloseException("Transaction not close.");
             }
-            if (this.currentSession) {
-                this.sessionFactory.currentSessionContext().removeCurrentSession(this);
-            }
-            this.connection.close();
+//            if (this.currentSession) {
+//                this.sessionFactory.currentSessionContext().removeCurrentSession(this);
+//            }
+            //  this.connection.close();
             this.closed = true;
         } catch (SessionException e) {
             throw e;
@@ -260,29 +256,6 @@ final class SessionImpl extends AbstractRmSession implements Session {
         return null;
     }
 
-    /**
-     * invoke by {@link Transaction#close()}
-     */
-
-    public void closeTransaction(GenericSyncTransaction transaction) {
-        if (this.transaction != transaction) {
-            throw new IllegalArgumentException("transaction not match,can't close.");
-        }
-        ((LocalTransaction) transaction).assertCanClose();
-        try {
-            if (this.connInitParam != null) {
-                // reset connection.
-                this.connection.setReadOnly(this.connInitParam.readonly);
-                this.connection.setTransactionIsolation(this.connInitParam.isolation);
-                this.connection.setAutoCommit(this.connInitParam.autoCommit);
-            }
-            this.transaction = null;
-        } catch (SQLException e) {
-            throw new TransactionSystemException(e, "army reset connection failure after transaction end.");
-        }
-    }
-
-
     private void setSessionTransaction(Transaction transaction) throws TransactionException {
         checkSessionTransaction();
         this.transaction = transaction;
@@ -295,12 +268,7 @@ final class SessionImpl extends AbstractRmSession implements Session {
         }
     }
 
-    private void assertSupportBatch() {
-        if (this.factoryMode != FactoryMode.NO_SHARDING) {
-            throw new SessionUsageException("not support batch operation in SHARDING mode.");
-        }
 
-    }
 
     /*################################## blow private multiInsert method ##################################*/
 
@@ -380,37 +348,21 @@ final class SessionImpl extends AbstractRmSession implements Session {
 
         @Override
         public Transaction build() throws TransactionException {
-            if (this.isolation == null) {
-                throw new CannotCreateTransactionException(ErrorCode.TRANSACTION_ERROR, "not specified isolation.");
-            }
-            if (!this.readOnly && SessionImpl.this.readonly) {
-                throw new CannotCreateTransactionException(ErrorCode.TRANSACTION_ERROR
-                        , "Readonly session can't create non-readonly transaction.");
-            }
-            Transaction tx = new LocalTransaction(SessionImpl.this, TransactionBuilderImpl.this);
-            SessionImpl.this.setSessionTransaction(tx);
-            return tx;
+//            if (this.isolation == null) {
+//                throw new CannotCreateTransactionException(ErrorCode.TRANSACTION_ERROR, "not specified isolation.");
+//            }
+//            if (!this.readOnly && SessionImpl.this.readonly) {
+//                throw new CannotCreateTransactionException(ErrorCode.TRANSACTION_ERROR
+//                        , "Readonly session can't create non-readonly transaction.");
+//            }
+//            Transaction tx = new LocalTransaction(SessionImpl.this, TransactionBuilderImpl.this);
+//            SessionImpl.this.setSessionTransaction(tx);
+            return null;
         }
     }
 
     /*################################## blow static inner class ##################################*/
 
 
-    private static class ConnInitParam {
-
-        private final int isolation;
-
-        private final boolean autoCommit;
-
-        private final boolean readonly;
-
-        ConnInitParam(int isolation, boolean autoCommit, boolean readonly) {
-            this.isolation = isolation;
-            this.autoCommit = autoCommit;
-            this.readonly = readonly;
-        }
-
-
-    }
 
 }

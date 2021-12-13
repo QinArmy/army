@@ -447,8 +447,8 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
         }
 
         @Override
-        public boolean prepared() {
-            return this.standardQuery.prepared();
+        public void prepared() {
+            this.standardQuery.prepared();
         }
     }
 

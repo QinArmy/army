@@ -1,7 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.FieldSelection;
-import io.army.criteria._SqlContext;
+import io.army.criteria.impl.inner._Expression;
+import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.GenericField;
@@ -36,7 +37,7 @@ final class FieldSelectionImpl<E> extends AbstractExpression<E> implements Field
 
     @Override
     public final void appendSql(_SqlContext context) {
-        this.fieldExp.appendSql(context);
+        ((_Expression<?>) this.fieldExp).appendSql(context);
         context.sqlBuilder()
                 .append(" AS ")
                 .append(this.alias);
@@ -55,17 +56,17 @@ final class FieldSelectionImpl<E> extends AbstractExpression<E> implements Field
 
     @Override
     public boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
-        return this.fieldExp.containsField(fieldMetas);
+        return ((_Expression<?>) this.fieldExp).containsField(fieldMetas);
     }
 
     @Override
     public boolean containsFieldOf(TableMeta<?> tableMeta) {
-        return this.fieldExp.containsFieldOf(tableMeta);
+        return ((_Expression<?>) this.fieldExp).containsFieldOf(tableMeta);
     }
 
     @Override
     public int containsFieldCount(TableMeta<?> tableMeta) {
-        return this.fieldExp.containsFieldCount(tableMeta);
+        return ((_Expression<?>) this.fieldExp).containsFieldCount(tableMeta);
     }
 
     @Override

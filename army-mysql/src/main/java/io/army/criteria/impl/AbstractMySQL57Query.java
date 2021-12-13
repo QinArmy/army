@@ -598,8 +598,8 @@ abstract class AbstractMySQL57Query<Q extends MySQL57Query, C> extends AbstractQ
         }
 
         @Override
-        public boolean prepared() {
-            return this.mySQL57Query.prepared();
+        public void prepared() {
+            this.mySQL57Query.prepared();
         }
     }
 

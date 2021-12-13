@@ -1,6 +1,8 @@
-package io.army.criteria;
+package io.army.criteria.impl.inner;
 
-public interface SelfDescribed {
+import io.army.dialect._SqlContext;
+
+public interface _SelfDescribed {
 
     /**
      * This method has below step:

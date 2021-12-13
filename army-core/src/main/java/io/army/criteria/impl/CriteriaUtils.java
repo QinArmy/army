@@ -2,11 +2,9 @@ package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.beans.ReadonlyWrapper;
-import io.army.criteria.CriteriaException;
-import io.army.criteria.SelectPart;
-import io.army.criteria.Selection;
-import io.army.criteria.SelectionGroup;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.impl.inner._SortPart;
 import io.army.lang.Nullable;
 
 import java.util.Collections;
@@ -86,6 +84,19 @@ abstract class CriteriaUtils {
                 list = Collections.unmodifiableList(wrapperList);
         }
         return list;
+    }
+
+
+    static void addPredicates(List<IPredicate> predicates, List<_Predicate> predicateList) {
+        for (IPredicate predicate : predicates) {
+            predicateList.add((_Predicate) predicate);
+        }
+    }
+
+    static void addSortParts(List<SortPart> sortParts, List<_SortPart> sortPartList) {
+        for (SortPart sortPart : sortParts) {
+            sortPartList.add((_SortPart) sortPart);
+        }
     }
 
 

@@ -67,26 +67,9 @@ public abstract class _CriteriaCounselor {
     }
 
     public static void standardInsert(_Insert insert) {
-        if (insert instanceof _StandardBatchInsert) {
-            if (!(insert instanceof StandardBatchInsert)) {
-                throw new IllegalArgumentException(String.format("%s isn't instance of %s", insert
-                        , StandardBatchInsert.class.getName()));
-            }
-        } else if (!(insert instanceof ContextualValueInsert)) {
+        if (!(insert instanceof ContextualValueInsert)) {
             throw new IllegalArgumentException(String.format("%s isn't instance of %s", insert
                     , ContextualValueInsert.class.getName()));
-        }
-    }
-
-    public static void assertStandardSubQueryInsert(_StandardSubQueryInsert insert) {
-        if (insert instanceof _StandardChildSubQueryInsert) {
-            if (!(insert instanceof StandardContextualChildSubQueryInsert)) {
-                throw new IllegalArgumentException(String.format("%s isn't instance of %s", insert
-                        , StandardContextualChildSubQueryInsert.class.getName()));
-            }
-        } else if (!(insert instanceof StandardContextualSubQueryInsert)) {
-            throw new IllegalArgumentException(String.format("%s isn't instance of %s", insert
-                    , StandardContextualSubQueryInsert.class.getName()));
         }
     }
 

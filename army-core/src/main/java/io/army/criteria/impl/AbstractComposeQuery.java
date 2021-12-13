@@ -3,6 +3,9 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._ComposeQuery;
 import io.army.criteria.impl.inner._GeneralQuery;
+import io.army.criteria.impl.inner._SelfDescribed;
+import io.army.criteria.impl.inner._SortPart;
+import io.army.util.Assert;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,7 +14,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class AbstractComposeQuery<Q extends Query, C> implements PartQuery, SelfDescribed, Query
+abstract class AbstractComposeQuery<Q extends Query, C> implements PartQuery, _SelfDescribed, Query
         , Query.QuerySpec<Q>, _ComposeQuery {
 
 
@@ -19,7 +22,7 @@ abstract class AbstractComposeQuery<Q extends Query, C> implements PartQuery, Se
 
     final CriteriaContext criteriaContext;
 
-    private List<SortPart> orderPartList;
+    private List<_SortPart> orderPartList;
 
     private final _GeneralQuery generalQuery;
 
@@ -42,14 +45,15 @@ abstract class AbstractComposeQuery<Q extends Query, C> implements PartQuery, Se
         if (this.orderPartList == null) {
             this.orderPartList = new ArrayList<>(1);
         }
-        this.orderPartList.add(sortPart);
+        this.orderPartList.add((_SortPart) sortPart);
     }
 
-    final void doOrderBy(List<SortPart> sortPartList) {
-        if (this.orderPartList == null) {
-            this.orderPartList = new ArrayList<>(sortPartList.size());
+    final void doOrderBy(final List<SortPart> sortPartList) {
+        List<_SortPart> orderPartList = this.orderPartList;
+        if (orderPartList == null) {
+            this.orderPartList = orderPartList = new ArrayList<>(sortPartList.size());
         }
-        this.orderPartList.addAll(sortPartList);
+        CriteriaUtils.addSortParts(sortPartList, orderPartList);
     }
 
     final void doOrderBy(Function<C, List<SortPart>> function) {
@@ -122,8 +126,8 @@ abstract class AbstractComposeQuery<Q extends Query, C> implements PartQuery, Se
     /*################################## blow SQLStatement method ##################################*/
 
     @Override
-    public final boolean prepared() {
-        return this.prepared;
+    public final void prepared() {
+        Assert.prepared(this.prepared);
     }
 
     @Override
@@ -133,7 +137,7 @@ abstract class AbstractComposeQuery<Q extends Query, C> implements PartQuery, Se
     /*################################## blow InnerQueryAfterSet method ##################################*/
 
     @Override
-    public final List<SortPart> orderByList() {
+    public final List<_SortPart> orderByList() {
         return this.orderPartList;
     }
 

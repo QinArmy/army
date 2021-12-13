@@ -2,24 +2,20 @@ package io.army.dialect;
 
 import io.army.ErrorCode;
 import io.army.beans.ObjectWrapper;
-import io.army.beans.ReadonlyWrapper;
 import io.army.boot.DomainValuesGenerator;
 import io.army.criteria.*;
 import io.army.criteria.impl._CriteriaCounselor;
 import io.army.criteria.impl.inner.*;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.FieldMeta;
-import io.army.meta.ParentTableMeta;
-import io.army.meta.TableMeta;
-import io.army.session.FactoryMode;
+import io.army.meta.*;
 import io.army.stmt.PairStmt;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
 import io.army.stmt.Stmts;
-import io.army.util.Assert;
 import io.army.util._Exceptions;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -117,6 +113,11 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
     }
 
     @Override
+    public Stmt returningUpdate(Update update, Visible visible) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public final Stmt delete(Delete delete, final Visible visible) {
         delete.prepared();
 
@@ -140,6 +141,11 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
             throw new IllegalArgumentException(String.format("Delete[%s] not supported by simpleDelete.", delete));
         }
         return stmt;
+    }
+
+    @Override
+    public Stmt returningDelete(Delete delete, Visible visible) {
+        throw new UnsupportedOperationException();
     }
 
     /*################################## blow protected template method ##################################*/
@@ -220,7 +226,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
 
 
     /**
-     * @see #insert(Insert)
+     * @see #subQueryInsert(Insert, Visible)
      */
     private Stmt handleStandardSubQueryInsert(final _SubQueryInsert insert) {
         return null;
@@ -307,160 +313,14 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
         subQuery.appendSql(context);
     }
 
-
-    private Stmt insertDomain(ReadonlyWrapper domainWrapper, Collection<FieldMeta<?, ?>> fieldMetas
-            , _StandardInsert insert, final Visible visible) {
-
-        Stmt stmt;
-        switch (insert.table().mappingMode()) {
-            case PARENT:// when PARENT,discriminatorValue is 0 .
-            case SIMPLE:
-                stmt = createInsertForSimple(domainWrapper, fieldMetas, insert, visible);
-                break;
-            case CHILD:
-                stmt = createInsertForChild(domainWrapper, fieldMetas, insert, visible);
-                break;
-            default:
-                throw DialectUtils.createMappingModeUnknownException(insert.table().mappingMode());
-
-        }
-        return stmt;
-    }
-
-    /**
-     * @param mergedFields merged by {@link DmlUtils#appendInsertFields(TableMeta, Dialect, Collection)}
-     */
-    private PairStmt createInsertForChild(ReadonlyWrapper beanWrapper, Collection<FieldMeta<?, ?>> mergedFields
-            , _StandardInsert insert, final Visible visible) {
-
-        Assert.notEmpty(mergedFields, "mergedFields must not empty.");
-
-        final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) insert.table();
-        final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
-        final Set<FieldMeta<?, ?>> parentFields = new HashSet<>(), childFields = new HashSet<>();
-        // 1.divide fields
-        DialectUtils.divideFields(childMeta, mergedFields, parentFields, childFields);
-        if (parentFields.isEmpty() || childFields.isEmpty()) {
-            throw new ArmyCriteriaException(ErrorCode.CRITERIA_ERROR
-                    , "multiInsert sql error,ChildMeta[%s] parent fields[%s] or child fields[%s]  is empty."
-                    , childMeta, parentFields, childFields);
-        }
-
-        //2.  create parent sql.
-        StandardValueInsertContext parentContext = StandardValueInsertContext.buildParent(insert, beanWrapper
-                , this.dialect, visible);
-        DmlUtils.createValueInsertForSimple(parentMeta, childMeta, parentFields, beanWrapper, parentContext);
-
-        //3. create child sql.
-        StandardValueInsertContext childContext = StandardValueInsertContext.buildChild(insert, beanWrapper
-                , this.dialect, visible);
-        DmlUtils.createValueInsertForSimple(childMeta, childMeta, childFields, beanWrapper, childContext);
-
-        return PairStmt.build(parentContext.build(), childContext.build());
-    }
-
-
-    /**
-     * @param mergedFields merged by {@link DmlUtils#appendInsertFields(TableMeta, Dialect, Collection)}
-     */
-    private SimpleStmt createInsertForSimple(ReadonlyWrapper beanWrapper
-            , Collection<FieldMeta<?, ?>> mergedFields, _StandardInsert insert
-            , final Visible visible) {
-
-        StandardValueInsertContext context = StandardValueInsertContext.build(insert, beanWrapper
-                , this.dialect, visible);
-        TableMeta<?> tableMeta = insert.table();
-        DmlUtils.createValueInsertForSimple(tableMeta, tableMeta, mergedFields, beanWrapper, context);
-
-        return context.build();
-    }
-
-
-    private Stmt standardBatchInsert(_StandardBatchInsert insert, final Visible visible) {
-        if (this.dialect.sessionFactory().shardingMode() != FactoryMode.NO_SHARDING) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "Batch insert only support NO_SHARDING mode.");
-        }
-        Stmt stmt;
-        switch (insert.table().mappingMode()) {
-            case SIMPLE:
-            case PARENT:
-                stmt = standardBatchInsertForSimple(insert, visible);
-                break;
-            case CHILD:
-                stmt = standardBatchInsertForChild(insert, visible);
-                break;
-            default:
-                throw DialectUtils.createMappingModeUnknownException(insert.table().mappingMode());
-
-        }
-        return stmt;
-    }
-
-    private Stmt standardBatchInsertForSimple(_StandardBatchInsert insert
-            , final Visible visible) {
-        TableMeta<?> tableMeta = insert.table();
-        // 1.merge fields
-        Set<FieldMeta<?, ?>> fieldMetaSet = DmlUtils.appendInsertFields(tableMeta, this.dialect, insert.fieldList());
-
-        StandardValueInsertContext context = StandardValueInsertContext.build(insert, null, this.dialect, visible);
-        // 2. parse single table insert sql
-        DmlUtils.createStandardBatchInsertForSimple(tableMeta, tableMeta, fieldMetaSet, context);
-        // 3. create batch sql wrapper
-        return DmlUtils.createBatchInsertWrapper(insert, context.build(), this.dialect.sessionFactory());
-    }
-
-
-    private PairStmt standardBatchInsertForChild(_StandardBatchInsert insert, final Visible visible) {
-        final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) insert.table();
-        final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
-
-        // 1. merge fields
-        Set<FieldMeta<?, ?>> mergeFieldSet = DmlUtils.appendInsertFields(childMeta, this.dialect, insert.fieldList());
-
-        final Set<FieldMeta<?, ?>> parentFieldSet = new HashSet<>(), childFieldSet = new HashSet<>();
-        // 2.  divide target fields
-        DialectUtils.divideFields(childMeta, mergeFieldSet, parentFieldSet, childFieldSet);
-
-        // 3. parent sql wrapper
-        final StandardValueInsertContext parentContext = StandardValueInsertContext.buildParent(
-                insert, null, this.dialect, visible);
-        DmlUtils.createStandardBatchInsertForSimple(parentMeta, childMeta, parentFieldSet, parentContext);
-
-        //4. child sql wrapper
-        final StandardValueInsertContext childContext = StandardValueInsertContext.buildChild(
-                insert, null, this.dialect, visible);
-        DmlUtils.createStandardBatchInsertForSimple(childMeta, childMeta, childFieldSet, childContext);
-
-        return PairStmt.build(parentContext.build(), childContext.build());
-    }
-
     /*################################## blow update private method ##################################*/
-
-    private Stmt standardGenericUpdate(_StandardUpdate update, final Visible visible) {
-
-        Stmt stmt;
-        switch (update.tableMeta().mappingMode()) {
-            case SIMPLE:
-                stmt = standardSimpleUpdate(update, visible);
-                break;
-            case PARENT:
-                stmt = standardParentUpdate(update, visible);
-                break;
-            case CHILD:
-                stmt = standardChildUpdate(update, visible);
-                break;
-            default:
-                throw DialectUtils.createMappingModeUnknownException(update.tableMeta().mappingMode());
-        }
-        return stmt;
-    }
 
     private Stmt standardChildUpdate(_StandardUpdate update, final Visible visible) {
         List<FieldMeta<?, ?>> targetFieldList = update.targetFieldList();
-        List<Expression<?>> valueExpList = update.valueExpList();
+        List<_Expression<?>> valueExpList = update.valueExpList();
 
         final List<FieldMeta<?, ?>> parentFieldList = new ArrayList<>(), childFieldList = new ArrayList<>();
-        final List<Expression<?>> parentExpList = new ArrayList<>(), childExpList = new ArrayList<>();
+        final List<_Expression<?>> parentExpList = new ArrayList<>(), childExpList = new ArrayList<>();
 
         final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) update.tableMeta();
         final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
@@ -483,7 +343,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
         //2. parse parent update sql
         StandardUpdateContext parentContext = StandardUpdateContext.buildParent(update, this.dialect, visible);
         // 2-1. create parent predicate
-        List<IPredicate> parentPredicateList = DmlUtils.extractParentPredicatesForUpdate(
+        List<_Predicate> parentPredicateList = DmlUtils.extractParentPredicatesForUpdate(
                 childMeta, childFieldList, update.predicateList());
         parseStandardUpdate(parentContext, parentMeta, update.tableAlias()
                 , parentFieldList, parentExpList, parentPredicateList);
@@ -502,9 +362,24 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
         return stmt;
     }
 
+    private Stmt standardGenericUpdate(_StandardUpdate update, final Visible visible) {
+        final TableMeta<?> table = update.tableMeta();
+        final Stmt stmt;
+        if (table instanceof SimpleTableMeta) {
+            stmt = standardSimpleUpdate(update, visible);
+        } else if (table instanceof ParentTableMeta) {
+            stmt = standardParentUpdate(update, visible);
+        } else if (table instanceof ChildTableMeta) {
+            stmt = standardChildUpdate(update, visible);
+        } else {
+            throw _Exceptions.unknownTableType(table);
+        }
+        return stmt;
+    }
+
 
     private void parseStandardUpdate(StandardUpdateContext context, TableMeta<?> tableMeta, String tableAlias
-            , List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueExpList, List<IPredicate> predicateList) {
+            , List<FieldMeta<?, ?>> fieldList, List<_Expression<?>> valueExpList, List<_Predicate> predicateList) {
 
         context.sqlBuilder().append("UPDATE");
         tableOnlyModifier(context);
@@ -540,7 +415,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
         StandardUpdateContext context = StandardUpdateContext.build(update, this.dialect, visible);
         final ParentTableMeta<?> parentMeta = (ParentTableMeta<?>) update.tableMeta();
         // create parent predicate
-        List<IPredicate> parentPredicateList = DmlUtils.createParentPredicates(parentMeta, update.predicateList());
+        List<_Predicate> parentPredicateList = DmlUtils.createParentPredicates(parentMeta, update.predicateList());
 
         parseStandardUpdate(context, parentMeta, update.tableAlias()
                 , update.targetFieldList(), update.valueExpList(), parentPredicateList);
@@ -549,7 +424,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
     }
 
     private void simpleTableWhereClause(_TablesSqlContext context, TableMeta<?> tableMeta, String tableAlias
-            , List<IPredicate> predicateList) {
+            , List<_Predicate> predicateList) {
 
         final boolean needAppendVisible = DialectUtils.needAppendVisible(tableMeta);
         final boolean hasPredicate = !predicateList.isEmpty();
@@ -576,19 +451,17 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
     }
 
     private Stmt standardGenericDelete(_StandardDelete delete, final Visible visible) {
-        Stmt stmt;
-        switch (delete.tableMeta().mappingMode()) {
-            case SIMPLE:
-                stmt = standardSimpleDelete(delete, visible);
-                break;
-            case PARENT:
-                stmt = standardParentDelete(delete, visible);
-                break;
-            case CHILD:
-                stmt = standardChildDelete(delete, visible);
-                break;
-            default:
-                throw DialectUtils.createMappingModeUnknownException(delete.tableMeta().mappingMode());
+
+        final TableMeta<?> table = delete.tableMeta();
+        final Stmt stmt;
+        if (table instanceof SimpleTableMeta) {
+            stmt = standardSimpleDelete(delete, visible);
+        } else if (table instanceof ParentTableMeta) {
+            stmt = standardParentDelete(delete, visible);
+        } else if (table instanceof ChildTableMeta) {
+            stmt = standardChildDelete(delete, visible);
+        } else {
+            throw _Exceptions.unknownTableType(table);
         }
         return stmt;
     }
@@ -604,7 +477,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
         StandardDeleteContext context = StandardDeleteContext.build(delete, this.dialect, visible);
         final ParentTableMeta<?> parentMeta = (ParentTableMeta<?>) delete.tableMeta();
         // create parent predicate list
-        List<IPredicate> parentPredicateList = DmlUtils.createParentPredicates(parentMeta, delete.predicateList());
+        List<_Predicate> parentPredicateList = DmlUtils.createParentPredicates(parentMeta, delete.predicateList());
         parseStandardDelete(parentMeta, delete.tableAlias(), parentPredicateList, context);
         return context.build();
     }
@@ -613,7 +486,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
         final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) delete.tableMeta();
         final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
         // 1. extract parent predicate list
-        List<IPredicate> parentPredicateList = DmlUtils.extractParentPredicateForDelete(childMeta
+        List<_Predicate> parentPredicateList = DmlUtils.extractParentPredicateForDelete(childMeta
                 , delete.predicateList());
 
         //2. create parent delete sql
@@ -627,7 +500,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
         return PairStmt.build(parentContext.build(), childContext.build());
     }
 
-    private void parseStandardDelete(TableMeta<?> tableMeta, String tableAlias, List<IPredicate> predicateList
+    private void parseStandardDelete(TableMeta<?> tableMeta, String tableAlias, List<_Predicate> predicateList
             , StandardDeleteContext context) {
 
         StringBuilder builder = context.sqlBuilder().append("DELETE FROM");

@@ -7,12 +7,6 @@ import io.army.criteria.Selection;
 public interface MySQL57ScalarSubQuery<E> extends ScalarSubQuery<E>, MySQL57ColumnSubQuery<E>, MySQL57RowSubQuery {
 
 
-    /**
-     * @return always true
-     */
-    @Override
-    boolean containsSubQuery();
-
     interface MySQLScalarSelectionSpec<E, C> extends QuerySQLSpec {
 
         MySQLFromSpec<MySQL57ScalarSubQuery<E>, C> select(Distinct distinct, Selection selection);

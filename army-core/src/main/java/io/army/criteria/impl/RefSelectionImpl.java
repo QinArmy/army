@@ -1,9 +1,9 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Selection;
-import io.army.criteria._SqlContext;
 import io.army.dialect.NotSupportDialectException;
 import io.army.dialect.SqlDialect;
+import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.SqlDataType;
@@ -35,7 +35,7 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
 
     @Override
     public final Selection as(String alias) {
-        return new DefaultSelection(this, alias);
+        return new ExpressionSelection(this, alias);
     }
 
     @Override

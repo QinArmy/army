@@ -32,7 +32,7 @@ public final class TablesContext {
                 Collections.singletonMap(tableMeta, 1)
                 , Collections.singletonMap(tableAlias, tableMeta)
                 , Collections.singletonMap(tableMeta, tableAlias)
-                , Collections.singletonMap(tableAlias, singleTable.tableIndex())
+                , Collections.singletonMap(tableAlias, 0)
                 , primaryRouteSuffix
         );
     }

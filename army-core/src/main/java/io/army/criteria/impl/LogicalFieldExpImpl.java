@@ -2,7 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.LogicalField;
 import io.army.criteria.Selection;
-import io.army.criteria._SqlContext;
+import io.army.criteria.impl.inner._Expression;
+import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
@@ -81,17 +82,17 @@ final class LogicalFieldExpImpl<T extends IDomain, F> extends AbstractExpression
 
     @Override
     public final boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
-        return this.fieldMeta.containsField(fieldMetas);
+        return ((_Expression<?>) this.fieldMeta).containsField(fieldMetas);
     }
 
     @Override
     public final boolean containsFieldOf(TableMeta<?> tableMeta) {
-        return this.fieldMeta.containsFieldOf(tableMeta);
+        return ((_Expression<?>) this.fieldMeta).containsFieldOf(tableMeta);
     }
 
     @Override
     public final int containsFieldCount(TableMeta<?> tableMeta) {
-        return this.fieldMeta.containsFieldCount(tableMeta);
+        return ((_Expression<?>) this.fieldMeta).containsFieldCount(tableMeta);
     }
 
     @Override

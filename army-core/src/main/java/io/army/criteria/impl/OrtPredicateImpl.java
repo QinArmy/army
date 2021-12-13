@@ -2,23 +2,44 @@ package io.army.criteria.impl;
 
 import io.army.criteria.IPredicate;
 import io.army.criteria.OrPredicate;
-import io.army.criteria._SqlContext;
+import io.army.criteria.impl.inner._Predicate;
+import io.army.dialect._SqlContext;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.util.ArrayUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 final class OrtPredicateImpl extends AbstractPredicate implements OrPredicate {
 
-    private final IPredicate leftPredicate;
+    private final _Predicate leftPredicate;
 
-    private final List<IPredicate> rightPredicate;
+    private final List<_Predicate> rightPredicate;
 
-    OrtPredicateImpl(IPredicate leftPredicate, List<IPredicate> rightPredicate) {
+    OrtPredicateImpl(_Predicate leftPredicate, IPredicate... andPredicates) {
         this.leftPredicate = leftPredicate;
-        this.rightPredicate = ArrayUtils.asUnmodifiableList(rightPredicate);
+        if (andPredicates.length == 1) {
+            this.rightPredicate = Collections.singletonList((_Predicate) andPredicates[0]);
+        } else {
+            final List<_Predicate> tempList = new ArrayList<>(andPredicates.length);
+            for (IPredicate predicate : andPredicates) {
+                tempList.add((_Predicate) predicate);
+            }
+            this.rightPredicate = Collections.unmodifiableList(tempList);
+        }
+
+    }
+
+    OrtPredicateImpl(_Predicate leftPredicate, List<IPredicate> predicateList) {
+        this.leftPredicate = leftPredicate;
+
+        final List<_Predicate> tempList = new ArrayList<>(predicateList.size());
+        for (IPredicate predicate : predicateList) {
+            tempList.add((_Predicate) predicate);
+        }
+        this.rightPredicate = Collections.unmodifiableList(tempList);
     }
 
 
@@ -29,7 +50,7 @@ final class OrtPredicateImpl extends AbstractPredicate implements OrPredicate {
 
     @Override
     public List<IPredicate> rightPredicate() {
-        return this.rightPredicate;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -42,7 +63,7 @@ final class OrtPredicateImpl extends AbstractPredicate implements OrPredicate {
             builder.append(" (");
         }
         int index = 0;
-        for (IPredicate predicate : this.rightPredicate) {
+        for (_Predicate predicate : this.rightPredicate) {
             if (index > 0) {
                 builder.append(" AND");
             }
@@ -83,7 +104,7 @@ final class OrtPredicateImpl extends AbstractPredicate implements OrPredicate {
     public boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
         boolean contains = this.leftPredicate.containsField(fieldMetas);
         if (!contains) {
-            for (IPredicate predicate : this.rightPredicate) {
+            for (_Predicate predicate : this.rightPredicate) {
                 if (predicate.containsField(fieldMetas)) {
                     contains = true;
                     break;
@@ -97,7 +118,7 @@ final class OrtPredicateImpl extends AbstractPredicate implements OrPredicate {
     public boolean containsFieldOf(TableMeta<?> tableMeta) {
         boolean contains = this.leftPredicate.containsFieldOf(tableMeta);
         if (!contains) {
-            for (IPredicate predicate : this.rightPredicate) {
+            for (_Predicate predicate : this.rightPredicate) {
                 if (predicate.containsFieldOf(tableMeta)) {
                     contains = true;
                     break;
@@ -110,7 +131,7 @@ final class OrtPredicateImpl extends AbstractPredicate implements OrPredicate {
     @Override
     public int containsFieldCount(TableMeta<?> tableMeta) {
         int count = this.leftPredicate.containsFieldCount(tableMeta);
-        for (IPredicate predicate : this.rightPredicate) {
+        for (_Predicate predicate : this.rightPredicate) {
             count += predicate.containsFieldCount(tableMeta);
         }
         return count;
@@ -120,7 +141,7 @@ final class OrtPredicateImpl extends AbstractPredicate implements OrPredicate {
     public boolean containsSubQuery() {
         boolean contains = this.leftPredicate.containsSubQuery();
         if (!contains) {
-            for (IPredicate predicate : this.rightPredicate) {
+            for (_Predicate predicate : this.rightPredicate) {
                 if (predicate.containsSubQuery()) {
                     contains = true;
                     break;

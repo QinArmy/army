@@ -1,12 +1,12 @@
 package io.army.sharding;
 
-import io.army.ErrorCode;
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.FieldValueEqualPredicate;
 import io.army.criteria.IPredicate;
 import io.army.criteria.SubQuery;
 import io.army.criteria.TableAble;
 import io.army.criteria.impl.inner.TableWrapper;
+import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Select;
 import io.army.criteria.impl.inner._SubQuery;
 import io.army.dialect.Dialect;
@@ -80,7 +80,7 @@ public abstract class RouteUtils {
 
     @Nullable
     protected static RouteWrapper findRouteFromWhereClause(List<? extends TableWrapper> tableWrapperList
-            , List<IPredicate> predicateList, final boolean dataSource) {
+            , List<_Predicate> predicateList, final boolean dataSource) {
         RouteWrapper routeWrapper = null;
 
         for (TableWrapper tableWrapper : tableWrapperList) {
@@ -167,7 +167,7 @@ public abstract class RouteUtils {
 
     @Nullable
     protected static Object findRouteKeyFromWhereClause(List<FieldMeta<?, ?>> routeFieldList
-            , List<IPredicate> predicateList) {
+            , List<_Predicate> predicateList) {
         Object routeKey = null;
 
         for (IPredicate predicate : predicateList) {
@@ -208,12 +208,12 @@ public abstract class RouteUtils {
 //                    .tableRoute(routeWrapper.tableMeta())
 //                    .tableSuffix(routeWrapper.routeKey());
         }
-        if (!routeSuffix.startsWith("_")) {
-            TableRoute tableRoute = dialect.sessionFactory()
-                    .tableRoute(routeWrapper.tableMeta());
-            throw new ShardingRouteException(ErrorCode.ROUTE_ERROR, "TableRoute[%s] return error.", tableRoute);
-        }
-        return routeSuffix;
+//        if (!routeSuffix.startsWith("_")) {
+//            TableRoute tableRoute = dialect.sessionFactory()
+//                    .tableRoute(routeWrapper.tableMeta());
+//            throw new ShardingRouteException(ErrorCode.ROUTE_ERROR, "TableRoute[%s] return error.", tableRoute);
+//        }
+        return null;
     }
 
 

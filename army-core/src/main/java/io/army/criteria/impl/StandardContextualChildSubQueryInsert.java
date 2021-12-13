@@ -131,8 +131,8 @@ final class StandardContextualChildSubQueryInsert<T extends IDomain, C> extends 
     /*################################## blow Insert method ##################################*/
 
     @Override
-    public final boolean prepared() {
-        return this.prepared;
+    public final void prepared() {
+        Assert.prepared(this.prepared);
     }
 
     /*################################## blow InnerStandardChildSubQueryInsert method ##################################*/

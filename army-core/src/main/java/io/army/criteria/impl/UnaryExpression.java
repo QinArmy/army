@@ -2,7 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.FieldExpression;
-import io.army.criteria._SqlContext;
+import io.army.criteria.impl.inner._Expression;
+import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -17,21 +18,21 @@ import java.util.Collection;
  */
 class UnaryExpression<E> extends AbstractExpression<E> {
 
-    static <E> UnaryExpression<E> build(Expression<E> expression, UnaryOperator unaryOperator) {
+    static <E> UnaryExpression<E> build(_Expression<E> expression, UnaryOperator unaryOperator) {
         UnaryExpression<E> unaryExpression;
         if (expression instanceof FieldExpression) {
-            unaryExpression = new FieldUnaryExpression<>((FieldExpression<E>) expression, unaryOperator);
+            unaryExpression = new FieldUnaryExpression<>(expression, unaryOperator);
         } else {
             unaryExpression = new UnaryExpression<>(expression, unaryOperator);
         }
         return unaryExpression;
     }
 
-    final Expression<E> expression;
+    final _Expression<E> expression;
 
     private final UnaryOperator operator;
 
-    private UnaryExpression(Expression<E> expression, UnaryOperator operator) {
+    private UnaryExpression(_Expression<E> expression, UnaryOperator operator) {
         this.expression = expression;
         this.operator = operator;
     }
@@ -97,7 +98,7 @@ class UnaryExpression<E> extends AbstractExpression<E> {
 
     private static final class FieldUnaryExpression<E> extends UnaryExpression<E> implements FieldExpression<E> {
 
-        private FieldUnaryExpression(FieldExpression<E> expression, UnaryOperator operator) {
+        private FieldUnaryExpression(_Expression<E> expression, UnaryOperator operator) {
             super(expression, operator);
         }
 

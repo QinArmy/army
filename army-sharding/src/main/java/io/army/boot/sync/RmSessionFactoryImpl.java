@@ -8,6 +8,7 @@ import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
+import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 import io.army.session.AbstractSessionFactory;
 import io.army.session.FactoryMode;
@@ -16,7 +17,6 @@ import io.army.sharding.TableRoute;
 import io.army.sync.SessionFactory;
 import io.army.tx.TransactionException;
 import io.army.tx.XaTransactionOption;
-import io.army.util.Assert;
 
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
@@ -54,10 +54,10 @@ final class RmSessionFactoryImpl extends AbstractSessionFactory
 
     RmSessionFactoryImpl(TmSessionFactoryImpl sessionFactory, XADataSource dataSource, int databaseIndex
             , @Nullable Database database) {
-        super(sessionFactory, databaseIndex);
-        Assert.state(this.factoryMode == FactoryMode.SHARDING
-                , () -> String.format("%s support only SHARDING ShardingMode", RmSessionFactoryImpl.class.getName()));
-        Assert.notNull(dataSource, "dataSource required");
+        super(null);
+//        Assert.state(this.factoryMode == FactoryMode.SHARDING
+//                , () -> String.format("%s support only SHARDING ShardingMode", RmSessionFactoryImpl.class.getName()));
+//        Assert.notNull(dataSource, "dataSource required");
 
         this.tmSessionFactory = sessionFactory;
         this.databaseIndex = databaseIndex;
@@ -72,6 +72,15 @@ final class RmSessionFactoryImpl extends AbstractSessionFactory
 
     }
 
+    @Override
+    public FactoryMode factoryMode() {
+        return null;
+    }
+
+    @Override
+    public ServerMeta serverMeta() {
+        return null;
+    }
 
     @Override
     public final void close() throws SessionFactoryException {
@@ -90,23 +99,13 @@ final class RmSessionFactoryImpl extends AbstractSessionFactory
 
 
     @Override
-    public final boolean supportZone() {
-        return this.dialect.supportZone();
+    public final byte databaseIndex() {
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public final Database actualDatabase() {
-        return this.dialect.database();
-    }
-
-    @Override
-    public final int databaseIndex() {
-        return this.databaseIndex;
-    }
-
-    @Override
-    public final int tableCountPerDatabase() {
-        return this.tmSessionFactory.tableCountPerDatabase();
+    public final byte tableCountPerDatabase() {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -128,13 +127,9 @@ final class RmSessionFactoryImpl extends AbstractSessionFactory
         return this.domainValuesGenerator;
     }
 
-    @Override
-    public boolean compareDefaultOnMigrating() {
-        return this.compareDefaultOnMigrating;
-    }
 
     @NonNull
-    @Override
+    // @Override
     public final GenericTmSessionFactory tmSessionFactory() {
         return this.tmSessionFactory;
     }

@@ -1,15 +1,15 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.SortPart;
-import io.army.criteria._SqlContext;
+import io.army.criteria.impl.inner._SortPart;
+import io.army.dialect._SqlContext;
 
-final class SortPartImpl implements SortPart {
+final class SortPartImpl implements _SortPart {
 
-    private final SortPart sortPart;
+    private final _SortPart sortPart;
 
     private final boolean ascExp;
 
-    SortPartImpl(SortPart sortPart, boolean ascExp) {
+    SortPartImpl(_SortPart sortPart, boolean ascExp) {
         this.sortPart = sortPart;
         this.ascExp = ascExp;
     }

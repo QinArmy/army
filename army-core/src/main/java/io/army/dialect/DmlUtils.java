@@ -2,14 +2,13 @@ package io.army.dialect;
 
 import io.army.ErrorCode;
 import io.army.annotation.UpdateMode;
-import io.army.beans.DomainWrapper;
 import io.army.beans.ObjectWrapper;
 import io.army.beans.ReadonlyWrapper;
 import io.army.boot.DomainValuesGenerator;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._StandardBatchInsert;
+import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Update;
 import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.meta.*;
@@ -295,11 +294,11 @@ abstract class DmlUtils {
     }
 
 
-    static List<IPredicate> extractParentPredicatesForUpdate(ChildTableMeta<?> childMeta
+    static List<_Predicate> extractParentPredicatesForUpdate(ChildTableMeta<?> childMeta
             , Collection<FieldMeta<?, ?>> childUpdatedFieldList
-            , List<IPredicate> predicateList) {
+            , List<_Predicate> predicateList) {
 
-        List<IPredicate> parentPredicates;
+        List<_Predicate> parentPredicates;
         // 1. extract parent predicate from where predicate list
         if (childUpdatedFieldList.isEmpty()) {
             parentPredicates = new ArrayList<>(predicateList.size() + 1);
@@ -317,8 +316,8 @@ abstract class DmlUtils {
         return Collections.unmodifiableList(parentPredicates);
     }
 
-    static List<IPredicate> createParentPredicates(ParentTableMeta<?> parentMeta, List<IPredicate> predicateList) {
-        List<IPredicate> parentPredicateList;
+    static List<_Predicate> createParentPredicates(ParentTableMeta<?> parentMeta, List<_Predicate> predicateList) {
+        List<_Predicate> parentPredicateList;
         if (hasDiscriminatorPredicate(predicateList, parentMeta.discriminator())) {
             parentPredicateList = predicateList;
         } else {
@@ -330,17 +329,17 @@ abstract class DmlUtils {
         return parentPredicateList;
     }
 
-    static List<IPredicate> extractParentPredicateForDelete(ChildTableMeta<?> childMeta
-            , List<IPredicate> predicateList) {
+    static List<_Predicate> extractParentPredicateForDelete(ChildTableMeta<?> childMeta
+            , List<_Predicate> predicateList) {
         // 1. extract parent predicate from where predicate list
-        final IPredicate firstPredicate = predicateList.get(0);
+        final _Predicate firstPredicate = predicateList.get(0);
         // 1-1. check first predicate
         if (!(firstPredicate instanceof PrimaryValueEqualPredicate)) {
             throw createNoPrimaryPredicateException(childMeta);
         }
-        List<IPredicate> parentPredicates = new ArrayList<>();
+        List<_Predicate> parentPredicates = new ArrayList<>();
         // do extract parent predicate
-        for (IPredicate predicate : predicateList) {
+        for (_Predicate predicate : predicateList) {
             if (predicate == firstPredicate) {
                 continue;
             }
@@ -374,7 +373,7 @@ abstract class DmlUtils {
 
 
     static void standardSimpleUpdateSetClause(UpdateContext context, TableMeta<?> tableMeta, String tableAlias
-            , List<FieldMeta<?, ?>> fieldMetaList, List<Expression<?>> valueExpList) {
+            , List<FieldMeta<?, ?>> fieldMetaList, List<_Expression<?>> valueExpList) {
 //        if (tableMeta.immutable()) {
 //            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "TableMeta[%s] alias[%s] is immutable."
 //                    , tableMeta, tableAlias);
@@ -438,13 +437,13 @@ abstract class DmlUtils {
         final ZonedDateTime now = ZonedDateTime.now(dialect.zoneId());
 
         if (updateTimeField.javaType() == LocalDateTime.class) {
-            SQLs.param(now.toLocalDateTime(), updateTimeField.mappingMeta())
+            ((_Expression<?>) SQLs.param(updateTimeField.mappingMeta(), now.toLocalDateTime()))
                     .appendSql(context);
         } else if (updateTimeField.javaType() == ZonedDateTime.class) {
             if (!dialect.supportZone()) {
                 throw new MetaException("dialec[%s]t not supported zone.", dialect.database());
             }
-            SQLs.param(now, updateTimeField.mappingMeta())
+            ((_Expression<?>) SQLs.param(updateTimeField.mappingMeta(), now))
                     .appendSql(context);
         } else {
             throw new MetaException("createTime or updateTime only support LocalDateTime or ZonedDateTime,please check.");
@@ -463,9 +462,9 @@ abstract class DmlUtils {
         }
     }
 
-    static boolean hasVersionPredicate(List<IPredicate> predicateList) {
+    static boolean hasVersionPredicate(List<_Predicate> predicateList) {
         boolean hasVersion = false;
-        for (IPredicate predicate : predicateList) {
+        for (_Predicate predicate : predicateList) {
             if (predicate instanceof FieldValuePredicate) {
                 GenericField<?, ?> fieldExp = ((FieldValuePredicate) predicate).fieldMeta();
                 if (_MetaBridge.VERSION.equals(fieldExp.fieldName())) {
@@ -551,99 +550,6 @@ abstract class DmlUtils {
 //        fieldBuilder.append(" )");
 //        valueBuilder.append(" )");
 
-    }
-
-
-    static void createStandardBatchInsertForSimple(TableMeta<?> physicalTable, TableMeta<?> logicalTable
-            , Collection<FieldMeta<?, ?>> fieldMetas
-            , StandardValueInsertContext context) {
-
-        SqlBuilder fieldBuilder = context.fieldsBuilder()
-                .append("INSERT INTO");
-        // append table name
-        context.appendTable(physicalTable, null);
-        fieldBuilder.append(" ( ");
-
-        /// VALUE clause
-        SqlBuilder valueBuilder = context.sqlBuilder()
-                .append(" VALUES ( ");
-
-        int index = 0;
-        for (FieldMeta<?, ?> fieldMeta : fieldMetas) {
-            if (!fieldMeta.insertable()) {
-                throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                        , "FieldMeta[%s] can't insert ,can't create batch insert template.", fieldMeta);
-            }
-            if (index > 0) {
-                fieldBuilder.append(",");
-                valueBuilder.append(",");
-            }
-            // field
-            context.appendField(fieldMeta);
-
-            if (isConstant(fieldMeta)) {
-                valueBuilder.append(createConstant(fieldMeta, logicalTable));
-            } else {
-                valueBuilder.append("?");
-                context.appendParam(new FieldParamValueImpl(fieldMeta));
-            }
-            index++;
-        }
-        fieldBuilder.append(" )");
-        valueBuilder.append(" )");
-    }
-
-    static Stmt createBatchInsertWrapper(_StandardBatchInsert insert
-            , final Stmt stmt, GenericRmSessionFactory sessionFactory) {
-
-        final List<DomainWrapper> domainWrapperList = insert.domainList();
-
-        List<List<ParamValue>> parentParamGroupList, childParamGroupList = new ArrayList<>(domainWrapperList.size());
-        SimpleStmt parentWrapper, childWrapper;
-        List<ParamValue> parentPlaceholderList;
-        // extract parentWrapper,childWrapper
-        if (stmt instanceof PairStmt) {
-            PairStmt childSQLWrapper = (PairStmt) stmt;
-            parentWrapper = childSQLWrapper.parentStmt();
-            parentPlaceholderList = parentWrapper.paramGroup();
-            childWrapper = childSQLWrapper.childStmt();
-            parentParamGroupList = new ArrayList<>(domainWrapperList.size());
-        } else if (stmt instanceof SimpleStmt) {
-            parentWrapper = null;
-            parentPlaceholderList = null;
-            parentParamGroupList = Collections.emptyList();
-            childWrapper = (SimpleStmt) stmt;
-        } else {
-            throw new IllegalArgumentException(String.format("SQLWrapper[%s] supported", stmt));
-        }
-
-        final List<ParamValue> childPlaceholderList = childWrapper.paramGroup();
-        final DomainValuesGenerator generator = sessionFactory.domainValuesGenerator();
-        final boolean migrationData = insert.migrationData();
-
-        for (DomainWrapper wrapper : domainWrapperList) {
-            //1. create domain  property value.
-            generator.createValues(wrapper, migrationData);
-            // 2. create paramWrapperList
-            if (parentPlaceholderList != null) {
-                // create paramWrapperList for parent
-                parentParamGroupList.add(createBatchInsertParamList(wrapper, parentPlaceholderList));
-            }
-            //3. create paramWrapperList for child
-            childParamGroupList.add(createBatchInsertParamList(wrapper, childPlaceholderList));
-        }
-
-        // 4. create BatchSimpleSQLWrapper
-        // BatchSimpleStmt childBatchWrapper = BatchSimpleStmt.build(childWrapper.sql(), childParamGroupList);
-//        Stmt batchStmt;
-//        if (stmt instanceof PairStmt) {
-//            BatchSimpleStmt parentBatchWrapper = BatchSimpleStmt.build(
-//                    parentWrapper.sql(), parentParamGroupList);
-//            batchStmt = PairBatchStmt.build(parentBatchWrapper, childBatchWrapper);
-//        } else {
-//            batchStmt = childBatchWrapper;
-//        }
-        return null;
     }
 
 
@@ -764,10 +670,10 @@ abstract class DmlUtils {
     }
 
 
-    private static void doExtractParentPredicatesForUpdate(List<IPredicate> predicateList
-            , Collection<FieldMeta<?, ?>> childUpdatedFields, List<IPredicate> newPredicates
+    private static void doExtractParentPredicatesForUpdate(List<_Predicate> predicateList
+            , Collection<FieldMeta<?, ?>> childUpdatedFields, List<_Predicate> newPredicates
             , final boolean firstIsPrimary) {
-        for (IPredicate predicate : predicateList) {
+        for (_Predicate predicate : predicateList) {
             if (predicate.containsField(childUpdatedFields)) {
                 if (!firstIsPrimary) {
                     throw createNoPrimaryPredicateException(childUpdatedFields);
@@ -793,7 +699,7 @@ abstract class DmlUtils {
     }
 
 
-    private static IPredicate createDiscriminatorPredicate(TableMeta<?> tableMeta) {
+    private static _Predicate createDiscriminatorPredicate(TableMeta<?> tableMeta) {
 //        FieldMeta<?, ? extends CodeEnum> fieldMeta = tableMeta.discriminator();
 //        Assert.notNull(fieldMeta, () -> String.format("TableMeta[%s] discriminator is null.", tableMeta));
 //        @SuppressWarnings("unchecked")
@@ -807,11 +713,11 @@ abstract class DmlUtils {
         return null;
     }
 
-    private static boolean hasDiscriminatorPredicate(List<IPredicate> predicateList
+    private static boolean hasDiscriminatorPredicate(List<_Predicate> predicateList
             , FieldMeta<?, ? extends CodeEnum> discriminator) {
         final Class<?> discriminatorClass = discriminator.javaType();
         boolean has = false;
-        for (IPredicate predicate : predicateList) {
+        for (_Predicate predicate : predicateList) {
             if (predicate instanceof FieldValuePredicate) {
                 FieldValuePredicate valuePredicate = (FieldValuePredicate) predicate;
                 if (valuePredicate.operator() == DualPredicateOperator.EQ

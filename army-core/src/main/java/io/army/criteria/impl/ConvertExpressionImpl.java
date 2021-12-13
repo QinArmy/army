@@ -3,7 +3,8 @@ package io.army.criteria.impl;
 import io.army.criteria.ConvertExpression;
 import io.army.criteria.Expression;
 import io.army.criteria.FieldExpression;
-import io.army.criteria._SqlContext;
+import io.army.criteria.impl.inner._Expression;
+import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -12,17 +13,17 @@ import java.util.Collection;
 
 class ConvertExpressionImpl<E> extends AbstractExpression<E> implements ConvertExpression<E> {
 
-    static <O> ConvertExpressionImpl<O> build(Expression<?> original, MappingType convertType) {
+    static <O> ConvertExpressionImpl<O> build(_Expression<?> original, MappingType convertType) {
         return original instanceof FieldExpression
                 ? new FieldConvertExpressionImpl<>(original, convertType)
                 : new ConvertExpressionImpl<>(original, convertType);
     }
 
-    final Expression<?> original;
+    final _Expression<?> original;
 
     private final MappingType convertType;
 
-    private ConvertExpressionImpl(Expression<?> original, MappingType convertType) {
+    private ConvertExpressionImpl(_Expression<?> original, MappingType convertType) {
         this.original = original;
         this.convertType = convertType;
     }
@@ -56,7 +57,7 @@ class ConvertExpressionImpl<E> extends AbstractExpression<E> implements ConvertE
     private static final class FieldConvertExpressionImpl<E> extends ConvertExpressionImpl<E>
             implements FieldExpression<E> {
 
-        private FieldConvertExpressionImpl(Expression<?> original, MappingType convertType) {
+        private FieldConvertExpressionImpl(_Expression<?> original, MappingType convertType) {
             super(original, convertType);
         }
 

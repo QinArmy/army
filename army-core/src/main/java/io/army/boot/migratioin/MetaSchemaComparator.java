@@ -17,19 +17,19 @@ interface MetaSchemaComparator {
             throws SchemaInfoException, MetaException;
 
     static MetaSchemaComparator build(GenericRmSessionFactory sessionFactory) {
-        MetaSchemaComparator comparator;
-        switch (sessionFactory.actualDatabase()) {
-            case MySQL:
-                comparator = new MySQL57MetaSchemaComparator(sessionFactory);
-                break;
-            case PostgreSQL:
-                comparator = new Postgre11MetaSchemaComparator(sessionFactory);
-                break;
-            case Oracle:
-            default:
-                throw new IllegalArgumentException(String.format("unsupported dialect %s"
-                        , sessionFactory.actualDatabase()));
-        }
-        return comparator;
+//        MetaSchemaComparator comparator;
+//        switch (sessionFactory.actualDatabase()) {
+//            case MySQL:
+//                comparator = new MySQL57MetaSchemaComparator(sessionFactory);
+//                break;
+//            case PostgreSQL:
+//                comparator = new Postgre11MetaSchemaComparator(sessionFactory);
+//                break;
+//            case Oracle:
+//            default:
+//                throw new IllegalArgumentException(String.format("unsupported dialect %s"
+//                        , sessionFactory.actualDatabase()));
+//        }
+        return null;
     }
 }

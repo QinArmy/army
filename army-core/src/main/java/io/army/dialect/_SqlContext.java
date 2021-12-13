@@ -1,6 +1,7 @@
-package io.army.criteria;
+package io.army.dialect;
 
-import io.army.dialect.Dialect;
+import io.army.criteria.ConstantExpression;
+import io.army.criteria.FieldPredicate;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;

@@ -11,6 +11,7 @@ import java.util.Set;
 
 class Postgre11Dialect extends AbstractDialect {
 
+
     Postgre11Dialect(GenericRmSessionFactory sessionFactory) {
         super(sessionFactory);
     }

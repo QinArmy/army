@@ -32,12 +32,12 @@ final class JdbcXaExecutorFactory implements ExecutorFactory {
     }
 
     @Override
-    public MetaExecutor createMetaExecutor() throws Exception {
+    public MetaExecutor createMetaExecutor() {
         return null;
     }
 
     @Override
-    public StmtExecutor createSqlExecutor() throws Exception {
+    public StmtExecutor createSqlExecutor() {
         return null;
     }
 

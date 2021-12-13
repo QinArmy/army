@@ -2,9 +2,9 @@ package io.army.dialect.mysql;
 
 import io.army.beans.ObjectWrapper;
 import io.army.criteria.Visible;
-import io.army.criteria._SqlContext;
 import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.dialect.AbstractDmlDialect;
+import io.army.dialect._SqlContext;
 import io.army.dialect._ValueInsertContext;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;

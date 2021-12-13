@@ -48,16 +48,16 @@ abstract class AbstractProxySyncSession implements GenericSyncApiSession, Generi
         return this.sessionContext.currentSession().get(tableMeta, id, visible);
     }
 
-    @Override
+    //@Override
     public <T extends IDomain> T getByUnique(TableMeta<T> tableMeta, List<String> propNameList
             , List<Object> valueList) {
-        return this.sessionContext.currentSession().getByUnique(tableMeta, propNameList, valueList);
+        return null;
     }
 
-    @Override
+    // @Override
     public <T extends IDomain> T getByUnique(TableMeta<T> tableMeta, List<String> propNameList
             , List<Object> valueList, Visible visible) {
-        return this.sessionContext.currentSession().getByUnique(tableMeta, propNameList, valueList, visible);
+        return null;
     }
 
     @Override
@@ -91,24 +91,28 @@ abstract class AbstractProxySyncSession implements GenericSyncApiSession, Generi
         this.sessionContext.currentSession().valueInsert(insert, visible);
     }
 
-    @Override
+    //@Override
     public int subQueryInsert(Insert insert) {
-        return this.sessionContext.currentSession().subQueryInsert(insert);
+        // return this.sessionContext.currentSession().subQueryInsert(insert);
+        return 0;
     }
 
-    @Override
+    //@Override
     public int subQueryInsert(Insert insert, Visible visible) {
-        return this.sessionContext.currentSession().subQueryInsert(insert, visible);
+        // return this.sessionContext.currentSession().subQueryInsert(insert, visible);
+        return 0;
     }
 
-    @Override
+    // @Override
     public long subQueryLargeInsert(Insert insert) {
-        return this.sessionContext.currentSession().subQueryLargeInsert(insert);
+        //return this.sessionContext.currentSession().subQueryLargeInsert(insert);
+        return 0;
     }
 
-    @Override
+    //@Override
     public long largeSubQueryInsert(Insert insert, Visible visible) {
-        return this.sessionContext.currentSession().largeSubQueryInsert(insert, visible);
+        // return this.sessionContext.currentSession().largeSubQueryInsert(insert, visible);
+        return 0;
     }
 
     @Override

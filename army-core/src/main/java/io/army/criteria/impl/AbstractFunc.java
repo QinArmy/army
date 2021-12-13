@@ -2,8 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.FuncExpression;
-import io.army.criteria._SqlContext;
 import io.army.criteria.impl.inner._Expression;
+import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.util.ArrayUtils;
 import io.army.util.Assert;

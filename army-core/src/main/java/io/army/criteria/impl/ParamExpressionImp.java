@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.ParamExpression;
-import io.army.criteria._SqlContext;
+import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;

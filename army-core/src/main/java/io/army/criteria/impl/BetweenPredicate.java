@@ -1,9 +1,9 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Expression;
 import io.army.criteria.FieldExpression;
 import io.army.criteria.FieldPredicate;
-import io.army.criteria._SqlContext;
+import io.army.criteria.impl.inner._Expression;
+import io.army.dialect._SqlContext;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
@@ -11,7 +11,7 @@ import java.util.Collection;
 
 class BetweenPredicate extends AbstractPredicate {
 
-    static BetweenPredicate build(Expression<?> left, Expression<?> center, Expression<?> right) {
+    static BetweenPredicate build(_Expression<?> left, _Expression<?> center, _Expression<?> right) {
         BetweenPredicate predicate;
         if ((left instanceof FieldExpression)
                 || (center instanceof FieldExpression)
@@ -23,13 +23,13 @@ class BetweenPredicate extends AbstractPredicate {
         return predicate;
     }
 
-    final Expression<?> left;
+    final _Expression<?> left;
 
-    final Expression<?> center;
+    final _Expression<?> center;
 
-    final Expression<?> right;
+    final _Expression<?> right;
 
-    private BetweenPredicate(Expression<?> left, Expression<?> center, Expression<?> right) {
+    private BetweenPredicate(_Expression<?> left, _Expression<?> center, _Expression<?> right) {
         this.left = left;
         this.center = center;
         this.right = right;
@@ -66,7 +66,7 @@ class BetweenPredicate extends AbstractPredicate {
 
     private static final class FieldBetweenPredicate extends BetweenPredicate implements FieldPredicate {
 
-        private FieldBetweenPredicate(Expression<?> left, Expression<?> center, Expression<?> right) {
+        private FieldBetweenPredicate(_Expression<?> left, _Expression<?> center, _Expression<?> right) {
             super(left, center, right);
         }
 
@@ -76,7 +76,7 @@ class BetweenPredicate extends AbstractPredicate {
             context.appendFieldPredicate(this);
         }
 
-        @Override
+        //@Override
         public void appendPredicate(_SqlContext context) {
             doAppendSQL(context);
         }

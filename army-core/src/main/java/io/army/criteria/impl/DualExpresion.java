@@ -3,7 +3,8 @@ package io.army.criteria.impl;
 import io.army.criteria.DualOperator;
 import io.army.criteria.Expression;
 import io.army.criteria.FieldExpression;
-import io.army.criteria._SqlContext;
+import io.army.criteria.impl.inner._Expression;
+import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.FieldMeta;
@@ -22,7 +23,7 @@ import java.util.Collection;
 class DualExpresion<E> extends AbstractExpression<E> {
 
 
-    static <E> DualExpresion<E> build(Expression<?> left, DualOperator operator, Expression<?> right) {
+    static <E> DualExpresion<E> build(_Expression<?> left, DualOperator operator, _Expression<?> right) {
         DualExpresion<E> dualExpresion;
         if (left instanceof FieldExpression || right instanceof FieldExpression) {
             dualExpresion = new FieldExpressionImpl<>(left, operator, right);
@@ -33,14 +34,14 @@ class DualExpresion<E> extends AbstractExpression<E> {
     }
 
 
-    final Expression<?> left;
+    final _Expression<?> left;
 
     final DualOperator operator;
 
-    final Expression<?> right;
+    final _Expression<?> right;
 
 
-    private DualExpresion(Expression<?> left, DualOperator operator, Expression<?> right) {
+    private DualExpresion(_Expression<?> left, DualOperator operator, _Expression<?> right) {
         this.left = left;
         this.operator = operator;
         this.right = right;
@@ -77,7 +78,7 @@ class DualExpresion<E> extends AbstractExpression<E> {
 
     private static class FieldExpressionImpl<E> extends DualExpresion<E> implements FieldExpression<E> {
 
-        private FieldExpressionImpl(Expression<?> left, DualOperator operator, Expression<?> right) {
+        private FieldExpressionImpl(_Expression<?> left, DualOperator operator, _Expression<?> right) {
             super(left, operator, right);
         }
 

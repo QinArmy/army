@@ -5,11 +5,6 @@ package io.army.criteria;
  */
 public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expression<E> {
 
-    /**
-     * @return always true
-     */
-    @Override
-    boolean containsSubQuery();
 
     interface ScalarSelectionSpec<E, C> extends QuerySQLSpec {
 

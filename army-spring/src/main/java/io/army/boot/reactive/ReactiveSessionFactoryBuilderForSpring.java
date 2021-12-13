@@ -14,7 +14,7 @@ final class ReactiveSessionFactoryBuilderForSpring extends ReactiveSessionFactor
         super(true);
     }
 
-    @Override
+   // @Override
     protected Function<RuntimeException, RuntimeException> springExceptionFunction() {
         return SpringUtils::convertToSpringException;
     }

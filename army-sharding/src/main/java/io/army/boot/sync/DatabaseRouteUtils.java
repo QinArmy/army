@@ -1,8 +1,8 @@
 package io.army.boot.sync;
 
 import io.army.beans.ReadonlyWrapper;
-import io.army.criteria.IPredicate;
 import io.army.criteria.impl.inner._MultiDML;
+import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Select;
 import io.army.criteria.impl.inner._SingleDml;
 import io.army.lang.Nullable;
@@ -19,7 +19,7 @@ abstract class DatabaseRouteUtils extends RouteUtils {
     @Nullable
     static RouteWrapper findRouteForSelect(_Select select) {
         RouteWrapper routeWrapper;
-        List<IPredicate> predicateList = select.predicateList();
+        List<_Predicate> predicateList = select.predicateList();
         if (predicateList.isEmpty()) {
             routeWrapper = findRouteFromTableList(select.tableWrapperList(), true);
         } else {
@@ -62,7 +62,7 @@ abstract class DatabaseRouteUtils extends RouteUtils {
         }
         if (routeWrapper == null) {
             // 2. try find from table .
-            int routeIndex = dml.databaseIndex();
+            int routeIndex = 0;
             if (routeIndex >= 0) {
                 //success ,find route index
                 routeWrapper = RouteWrapper.buildRouteIndex(routeIndex);
@@ -73,12 +73,12 @@ abstract class DatabaseRouteUtils extends RouteUtils {
 
     @Nullable
     static RouteWrapper findRouteForMultiDML(_MultiDML dml) {
-        RouteWrapper routeWrapper;
-        routeWrapper = findRouteFromWhereClause(dml.tableWrapperList(), dml.predicateList(), true);
-        if (routeWrapper == null) {
-            routeWrapper = findRouteFromTableList(dml.tableWrapperList(), true);
-        }
-        return routeWrapper;
+//        RouteWrapper routeWrapper;
+//        routeWrapper = findRouteFromWhereClause(dml.tableWrapperList(), dml.predicateList(), true);
+//        if (routeWrapper == null) {
+//            routeWrapper = findRouteFromTableList(dml.tableWrapperList(), true);
+//        }
+        return null;
     }
 
 

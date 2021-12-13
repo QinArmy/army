@@ -3,7 +3,9 @@ package io.army.criteria.impl;
 import io.army.ErrorCode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.TableWrapper;
+import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Query;
+import io.army.criteria.impl.inner._SortPart;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -24,13 +26,13 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
 
     private List<TableWrapperImpl> tableWrapperList = new ArrayList<>();
 
-    private List<IPredicate> predicateList = new ArrayList<>();
+    private List<_Predicate> predicateList = new ArrayList<>();
 
-    private List<SortPart> groupByList;
+    private List<_SortPart> groupByList;
 
-    private List<IPredicate> havingList;
+    private List<_Predicate> havingList;
 
-    private List<SortPart> orderByList;
+    private List<_SortPart> orderByList;
 
     private int offset = -1;
 
@@ -83,15 +85,13 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
     }
 
     @Override
-    public final boolean prepared() {
-        return this.prepared;
+    public final void prepared() {
+        Assert.prepared(this.prepared);
     }
 
     @Override
     public final void clear() {
-        if (!this.prepared) {
-            return;
-        }
+        Assert.nonPrepared(this.prepared);
         this.modifierList = null;
         this.selectPartList = null;
         this.tableWrapperList = null;
@@ -124,22 +124,22 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
     }
 
     @Override
-    public final List<IPredicate> predicateList() {
+    public final List<_Predicate> predicateList() {
         return this.predicateList;
     }
 
     @Override
-    public final List<SortPart> groupPartList() {
+    public final List<_SortPart> groupPartList() {
         return this.groupByList;
     }
 
     @Override
-    public final List<IPredicate> havingList() {
+    public final List<_Predicate> havingList() {
         return this.havingList;
     }
 
     @Override
-    public final List<SortPart> orderPartList() {
+    public final List<_SortPart> orderPartList() {
         return this.orderByList;
     }
 
@@ -252,26 +252,28 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
     }
 
     final void addPredicate(IPredicate predicate) {
-        this.predicateList.add(predicate);
+        this.predicateList.add((_Predicate) predicate);
     }
 
     final void addPredicateList(List<IPredicate> predicateList) {
-        this.predicateList.addAll(predicateList);
+        CriteriaUtils.addPredicates(predicateList, this.predicateList);
     }
 
     final void addGroupBy(SortPart sortPart) {
         if (this.groupByList == null) {
             this.groupByList = new ArrayList<>(1);
         }
-        this.groupByList.add(sortPart);
+        this.groupByList.add((_SortPart) sortPart);
     }
 
     final void addGroupByList(List<SortPart> sortPartList) {
         if (!CollectionUtils.isEmpty(sortPartList)) {
-            if (this.groupByList == null) {
-                this.groupByList = new ArrayList<>(sortPartList.size());
+            List<_SortPart> groupByList = this.groupByList;
+            if (groupByList == null) {
+                groupByList = new ArrayList<>(sortPartList.size());
+                this.groupByList = groupByList;
             }
-            this.groupByList.addAll(sortPartList);
+            CriteriaUtils.addSortParts(sortPartList, groupByList);
         }
     }
 
@@ -280,17 +282,19 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
             if (this.havingList == null) {
                 this.havingList = new ArrayList<>(1);
             }
-            this.havingList.add(predicate);
+            this.havingList.add((_Predicate) predicate);
         }
 
     }
 
     final void addHavingList(List<IPredicate> predicateList) {
         if (!CollectionUtils.isEmpty(this.groupByList) && !predicateList.isEmpty()) {
-            if (this.havingList == null) {
-                this.havingList = new ArrayList<>(predicateList.size());
+            List<_Predicate> havingList = this.havingList;
+            if (havingList == null) {
+                havingList = new ArrayList<>(predicateList.size());
+                this.havingList = havingList;
             }
-            this.havingList.addAll(predicateList);
+            CriteriaUtils.addPredicates(predicateList, havingList);
         }
     }
 
@@ -298,15 +302,17 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
         if (this.orderByList == null) {
             this.orderByList = new ArrayList<>(1);
         }
-        this.orderByList.add(sortPart);
+        this.orderByList.add((_SortPart) sortPart);
     }
 
-    final void addOrderByList(List<SortPart> sortPartList) {
+    final void addOrderByList(final List<SortPart> sortPartList) {
         if (!sortPartList.isEmpty()) {
-            if (this.orderByList == null) {
-                this.orderByList = new ArrayList<>(sortPartList.size());
+            List<_SortPart> orderByList = this.orderByList;
+            if (orderByList == null) {
+                orderByList = new ArrayList<>(sortPartList.size());
+                this.orderByList = orderByList;
             }
-            this.orderByList.addAll(sortPartList);
+            CriteriaUtils.addSortParts(sortPartList, orderByList);
         }
     }
 

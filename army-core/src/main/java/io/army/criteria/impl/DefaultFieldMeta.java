@@ -5,7 +5,7 @@ import io.army.annotation.Codec;
 import io.army.annotation.Column;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.Selection;
-import io.army.criteria._SqlContext;
+import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;

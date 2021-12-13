@@ -4,6 +4,7 @@ package io.army.dialect;
 import io.army.UnKnownTypeException;
 import io.army.criteria.*;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
@@ -55,6 +56,21 @@ public abstract class AbstractDialect implements InnerDialect {
         this.tcl = createTCL();
         assertDatabaseMatch();
         this.mappingContext = new MappingContextImpl(this.sessionFactory.zoneOffset(), this.database());
+    }
+
+    @Override
+    public String safeTableName(TableMeta<?> tableMeta, @Nullable String suffix) {
+        return null;
+    }
+
+    @Override
+    public String safeFieldName(FieldMeta<?, ?> fieldMeta) {
+        return null;
+    }
+
+    @Override
+    public String constant(MappingType type, Object value) {
+        return null;
     }
 
     @Override
@@ -178,6 +194,10 @@ public abstract class AbstractDialect implements InnerDialect {
         return this.dml.returningInsert(insert, visible);
     }
 
+    @Override
+    public final Stmt subQueryInsert(Insert insert, Visible visible) {
+        return this.dml.subQueryInsert(insert, visible);
+    }
 
     @Override
     public final Stmt update(Update update, Visible visible) {

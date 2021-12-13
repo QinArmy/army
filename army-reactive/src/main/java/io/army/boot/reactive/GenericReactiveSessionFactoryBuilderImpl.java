@@ -23,7 +23,7 @@ abstract class GenericReactiveSessionFactoryBuilderImpl<T extends GenericReactiv
 
 
     GenericReactiveSessionFactoryBuilderImpl(boolean springApplication) {
-        super(springApplication);
+        //super(springApplication);
     }
 
 

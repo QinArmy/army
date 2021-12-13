@@ -2,6 +2,8 @@ package io.army.dialect;
 
 
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
+import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.session.FactoryMode;
 import io.army.session.GenericRmSessionFactory;
@@ -76,5 +78,13 @@ public abstract class AbstractSQL implements SqlDialect {
         return name;
     }
 
+    @Override
+    public String safeFieldName(FieldMeta<?, ?> fieldMeta) {
+        return null;
+    }
 
+    @Override
+    public String constant(MappingType type, Object value) {
+        return null;
+    }
 }

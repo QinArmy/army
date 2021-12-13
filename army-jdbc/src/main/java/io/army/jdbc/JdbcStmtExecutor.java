@@ -46,5 +46,8 @@ final class JdbcStmtExecutor implements StmtExecutor {
         }
     }
 
-
+    @Override
+    public <T> List<T> select(Stmt stmt, int txTimeout, Class<T> resultClass) {
+        return null;
+    }
 }

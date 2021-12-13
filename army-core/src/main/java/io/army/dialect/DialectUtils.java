@@ -6,6 +6,8 @@ import io.army.UnKnownTypeException;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner.TableWrapper;
+import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.impl.inner._SortPart;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
@@ -125,11 +127,11 @@ public abstract class DialectUtils {
         }
     }
 
-    public static void appendPredicateList(List<IPredicate> predicateList, _TablesSqlContext context) {
+    public static void appendPredicateList(List<_Predicate> predicateList, _TablesSqlContext context) {
 
         StringBuilder builder = context.sqlBuilder();
         int count = 0;
-        for (IPredicate predicate : predicateList) {
+        for (_Predicate predicate : predicateList) {
             if (count > 0) {
                 builder.append(" AND");
             }
@@ -138,11 +140,11 @@ public abstract class DialectUtils {
         }
     }
 
-    public static void appendSortPartList(List<SortPart> sortPartList, _TablesSqlContext context) {
+    public static void appendSortPartList(List<_SortPart> sortPartList, _TablesSqlContext context) {
         StringBuilder builder = context.sqlBuilder();
 
         int count = 0;
-        for (SortPart sortPart : sortPartList) {
+        for (_SortPart sortPart : sortPartList) {
             if (count > 0) {
                 builder.append(",");
             }
@@ -223,7 +225,7 @@ public abstract class DialectUtils {
     }
 
     static void assertShardingMode(Dialect dialect, @Nullable Set<Integer> domainIndexSet) {
-        if (domainIndexSet != null && dialect.sessionFactory().shardingMode() == FactoryMode.NO_SHARDING) {
+        if (domainIndexSet != null && dialect.sessionFactory().factoryMode() == FactoryMode.NO_SHARDING) {
             throw new IllegalArgumentException("domainIndexSet must be null in NO_SHARDING mode.");
         }
     }

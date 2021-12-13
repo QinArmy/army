@@ -1,17 +1,15 @@
 package io.army.dialect;
 
 import io.army.beans.ReadonlyWrapper;
-import io.army.criteria.IPredicate;
 import io.army.criteria.NotFoundRouteException;
+import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Select;
 import io.army.criteria.impl.inner._SingleDml;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.session.FactoryMode;
 import io.army.sharding.RouteUtils;
 import io.army.sharding.RouteWrapper;
-import io.army.sharding.TableRoute;
 
 import java.util.List;
 
@@ -48,7 +46,7 @@ abstract class TableRouteUtils extends RouteUtils {
         if (notSupportRoute(dialect, tableMeta)) {
             return "";
         }
-        int tableIndex = innerSingleDML.tableIndex();
+        int tableIndex = 0;
         if (tableIndex < 0) {
             throw new NotFoundRouteException("Value insert ,TableMeta[%s] not found primary route."
                     , innerSingleDML.tableMeta());
@@ -65,7 +63,7 @@ abstract class TableRouteUtils extends RouteUtils {
         if (notSupportRoute(dialect, tableMeta)) {
             return "";
         }
-        String primaryRouteSuffix = findTableSuffix(tableMeta, singleTableSQL.tableIndex()
+        String primaryRouteSuffix = findTableSuffix(tableMeta, 0
                 , singleTableSQL.predicateList(), dialect);
         if (primaryRouteSuffix == null) {
             throw new NotFoundRouteException("Single dml ,TableMeta[%s] not found primary route.", tableMeta);
@@ -75,9 +73,9 @@ abstract class TableRouteUtils extends RouteUtils {
 
 
     static String selectPrimaryRouteSuffix(_Select select, Dialect dialect) {
-        if (dialect.sessionFactory().shardingMode() == FactoryMode.NO_SHARDING) {
-            return "";
-        }
+//        if (dialect.sessionFactory().shardingMode() == FactoryMode.NO_SHARDING) {
+//            return "";
+//        }
         RouteWrapper routeWrapper = findRouteForSelect(select, false);
         String routeSuffix;
         if (routeWrapper == null) {
@@ -89,11 +87,11 @@ abstract class TableRouteUtils extends RouteUtils {
     }
 
     @Nullable
-    static String findRouteSuffixForTable(TableMeta<?> tableMeta, int tableIndex, List<IPredicate> predicateList
+    static String findRouteSuffixForTable(TableMeta<?> tableMeta, int tableIndex, List<_Predicate> predicateList
             , Dialect dialect) {
-        List<FieldMeta<?, ?>> routeFieldList = tableMeta.routeFieldList(false);
-        Object routeKey = findRouteKeyFromWhereClause(routeFieldList, predicateList);
-        TableRoute tableRoute = dialect.sessionFactory().tableRoute(tableMeta);
+//        List<FieldMeta<?, ?>> routeFieldList = tableMeta.routeFieldList(false);
+//        Object routeKey = findRouteKeyFromWhereClause(routeFieldList, predicateList);
+//        TableRoute tableRoute = dialect.sessionFactory().tableRoute(tableMeta);
         String routeSuffix = null;
 //        if (routeKey == null) {
 //            if (tableIndex >= 0) {
@@ -107,7 +105,7 @@ abstract class TableRouteUtils extends RouteUtils {
 
 
     @Nullable
-    static String findTableSuffix(TableMeta<?> tableMeta, int tableIndex, List<IPredicate> predicateList
+    static String findTableSuffix(TableMeta<?> tableMeta, int tableIndex, List<_Predicate> predicateList
             , Dialect dialect) {
 
         List<FieldMeta<?, ?>> routeFieldList = tableMeta.routeFieldList(false);
@@ -134,8 +132,9 @@ abstract class TableRouteUtils extends RouteUtils {
     /*################################## blow private method ##################################*/
 
     private static boolean notSupportRoute(Dialect dialect, TableMeta<?> tableMeta) {
-        return dialect.sessionFactory().shardingMode() == FactoryMode.NO_SHARDING
-                || tableMeta.routeFieldList(false).isEmpty();
+//        return dialect.sessionFactory().shardingMode() == FactoryMode.NO_SHARDING
+//                || tableMeta.routeFieldList(false).isEmpty();
+        return false;
     }
 
 

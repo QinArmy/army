@@ -2,7 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.FieldPredicate;
 import io.army.criteria.IPredicate;
-import io.army.criteria._SqlContext;
+import io.army.criteria.impl.inner._Predicate;
+import io.army.dialect._SqlContext;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
@@ -13,8 +14,8 @@ import java.util.Collection;
  */
 class NotPredicateImpl extends AbstractPredicate {
 
-    static IPredicate build(final IPredicate predicate) {
-        IPredicate notPredicate;
+    static IPredicate build(final _Predicate predicate) {
+        _Predicate notPredicate;
         if (predicate instanceof NotPredicateImpl) {
             notPredicate = ((NotPredicateImpl) predicate).predicate;
         } else if (predicate instanceof FieldPredicate) {
@@ -25,9 +26,9 @@ class NotPredicateImpl extends AbstractPredicate {
         return notPredicate;
     }
 
-    final IPredicate predicate;
+    final _Predicate predicate;
 
-    private NotPredicateImpl(IPredicate predicate) {
+    private NotPredicateImpl(_Predicate predicate) {
         this.predicate = predicate;
 
     }
@@ -60,7 +61,7 @@ class NotPredicateImpl extends AbstractPredicate {
     private static final class FieldNotPredicate extends NotPredicateImpl implements FieldPredicate {
 
         private FieldNotPredicate(FieldPredicate predicate) {
-            super(predicate);
+            super((_Predicate) predicate);
         }
 
 
@@ -70,7 +71,7 @@ class NotPredicateImpl extends AbstractPredicate {
         }
 
 
-        @Override
+        //@Override
         public void appendPredicate(_SqlContext context) {
             this.doAppendSQL(context);
         }

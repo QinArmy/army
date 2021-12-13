@@ -72,7 +72,7 @@ abstract class DomainDmlContext implements _DmlContext {
     }
 
     @Override
-    public DqlDialect dialect() {
+    public Dialect dialect() {
         return null;
     }
 

@@ -78,7 +78,7 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
 
     AbstractMetaSchemaComparator(GenericRmSessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
-        this.compareDefaultOnMigrating = sessionFactory.compareDefaultOnMigrating();
+        this.compareDefaultOnMigrating = false;
     }
 
     @Override

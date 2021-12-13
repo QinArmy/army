@@ -1,7 +1,5 @@
 package io.army.sync;
 
-import io.army.CreateSessionException;
-import io.army.ErrorCode;
 import io.army.SessionException;
 import io.army.SessionFactoryException;
 import io.army.advice.sync.DomainAdvice;
@@ -17,11 +15,11 @@ import io.army.lang.Nullable;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 import io.army.session.AbstractSessionFactory;
+import io.army.session.FactoryMode;
 import io.army.sharding.TableRoute;
 import io.army.sync.executor.ExecutorFactory;
 import io.army.util.CollectionUtils;
 
-import java.sql.SQLException;
 import java.util.Map;
 import java.util.Objects;
 
@@ -74,13 +72,18 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
     }
 
     @Override
-    public int databaseIndex() {
+    public FactoryMode factoryMode() {
+        return null;
+    }
+
+    @Override
+    public byte databaseIndex() {
         // always 0
         return 0;
     }
 
     @Override
-    public int tableCountPerDatabase() {
+    public byte tableCountPerDatabase() {
         return super.tableCountPerDatabase;
     }
 
@@ -96,7 +99,7 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
 
     @Override
     public SessionFactory.SessionBuilder builder() {
-        return new SessionBuilderImpl();
+        return null;
     }
 
     @Override
@@ -227,32 +230,37 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
 
         @Override
         public Session build() throws SessionException {
-            final boolean current = this.currentSession;
-            try {
-                if (SessionFactoryImpl.this.readOnly && !this.readOnly) {
-                    throw new CreateSessionException(ErrorCode.SESSION_CREATE_ERROR
-                            , "%s can't create create non-readonly TmSession.", SessionFactoryImpl.this);
-                }
-                final Session session = new SessionImpl(SessionFactoryImpl.this
-                        , SessionFactoryImpl.this.dataSource.getConnection(), this);
-                if (current) {
-                    SessionFactoryImpl.this.currentSessionContext.currentSession(session);
-                }
-                return session;
-            } catch (SQLException e) {
-                throw new CreateSessionException(ErrorCode.CANNOT_GET_CONN, e
-                        , "Could not create Army-managed session,because can't get connection.");
-            } catch (IllegalStateException e) {
-                if (current) {
-                    throw new CreateSessionException(ErrorCode.DUPLICATION_CURRENT_SESSION, e
-                            , "Could not create Army-managed session,because duplication current session.");
-                } else {
-                    throw new CreateSessionException(ErrorCode.ACCESS_ERROR, e
-                            , "Could not create Army-managed session.");
-                }
+//            final boolean current = this.currentSession;
+//            try {
+//                if (SessionFactoryImpl.this.readOnly && !this.readOnly) {
+//                    throw new CreateSessionException(ErrorCode.SESSION_CREATE_ERROR
+//                            , "%s can't create create non-readonly TmSession.", SessionFactoryImpl.this);
+//                }
+//                final Session session = new SessionImpl(SessionFactoryImpl.this
+//                        , SessionFactoryImpl.this.dataSource.getConnection(), this);
+//                if (current) {
+//                    SessionFactoryImpl.this.currentSessionContext.currentSession(session);
+//                }
+//                return session;
+//            } catch (SQLException e) {
+//                throw new CreateSessionException(ErrorCode.CANNOT_GET_CONN, e
+//                        , "Could not create Army-managed session,because can't get connection.");
+//            } catch (IllegalStateException e) {
+//                if (current) {
+//                    throw new CreateSessionException(ErrorCode.DUPLICATION_CURRENT_SESSION, e
+//                            , "Could not create Army-managed session,because duplication current session.");
+//                } else {
+//                    throw new CreateSessionException(ErrorCode.ACCESS_ERROR, e
+//                            , "Could not create Army-managed session.");
+//                }
+//
+//            }
+            return null;
 
-            }
+
         }
+
+
     }
 
 

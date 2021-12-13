@@ -14,7 +14,6 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.reactive.ReactiveSession;
 import io.army.reactive.ReactiveSessionFactory;
-import io.army.session.FactoryMode;
 import io.army.stmt.Stmt;
 import io.army.tx.CannotCreateTransactionException;
 import io.army.tx.Isolation;
@@ -88,24 +87,25 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
     @Override
     public Mono<Void> valueInsert(Insert insert, final Visible visible) {
         //1.assert
-        return this.assertForValueInsert(insert)
-                //2.invoke insert before advice
-                .then(Mono.defer(() -> this.invokeInsertBeforeAdvice(insert)))
-                //3. parse value insert sql
-                .thenMany(Flux.defer(() -> Flux.fromIterable(this.dialect.valueInsert(insert, null, visible))))
-                // assert for child domain
-                .flatMap(this::assertChildDomain)
-                //4. execute value insert
-                .flatMap(sqlWrapper -> this.insertSQLExecutor.valueInsert(this, sqlWrapper))
-                // if upstream error, execute insert throws advice
-                .onErrorResume(ex -> this.invokeInsertThrowsAdvice(insert, ex))
-                //5. execute insert after advice (concat empty)
-                .concatWith(Mono.defer(() -> this.invokeInsertAfterAdvice(insert)))
-                //6. clear insert
-                .doOnTerminate(((_Statement) insert)::clear)
-                // if error convert exception for application developer
-                .onErrorMap(this.sessionFactory.composeExceptionFunction())
-                .then();
+//        return this.assertForValueInsert(insert)
+//                //2.invoke insert before advice
+//                .then(Mono.defer(() -> this.invokeInsertBeforeAdvice(insert)))
+//                //3. parse value insert sql
+//                .thenMany(Flux.defer(() -> Flux.fromIterable(this.dialect.valueInsert(insert, null, visible))))
+//                // assert for child domain
+//                .flatMap(this::assertChildDomain)
+//                //4. execute value insert
+//                .flatMap(sqlWrapper -> this.insertSQLExecutor.valueInsert(this, sqlWrapper))
+//                // if upstream error, execute insert throws advice
+//                .onErrorResume(ex -> this.invokeInsertThrowsAdvice(insert, ex))
+//                //5. execute insert after advice (concat empty)
+//                .concatWith(Mono.defer(() -> this.invokeInsertAfterAdvice(insert)))
+//                //6. clear insert
+//                .doOnTerminate(((_Statement) insert)::clear)
+//                // if error convert exception for application developer
+//                .onErrorMap(this.sessionFactory.composeExceptionFunction())
+//                .then();
+        return Mono.empty();
     }
 
     @Override
@@ -300,9 +300,10 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
 
 
     private Mono<Void> assertForBatch() {
-        return this.sessionFactory.shardingMode() == FactoryMode.NO_SHARDING
-                ? this.assertSessionActive(true)
-                : Mono.error(new SessionUsageException("not support batch operation in SHARDING mode."));
+//        return this.sessionFactory.shardingMode() == FactoryMode.NO_SHARDING
+//                ? this.assertSessionActive(true)
+//                : Mono.error(new SessionUsageException("not support batch operation in SHARDING mode."));
+        return Mono.empty();
     }
 
     private Mono<Void> assertForValueInsert(Insert insert) {

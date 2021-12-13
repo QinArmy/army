@@ -18,7 +18,7 @@ public interface MySQL57Delete extends Delete {
 
     /*################################## blow single-delete clause interface ##################################*/
 
-    interface MySQLSingleDeleteSpec<C> extends DeleteSQLSpec {
+    interface MySQLSingleDeleteSpec<C> {
 
         MySQLSingleDeleteTableRouteSpec<C> deleteFrom(TableMeta<?> tableMeta);
     }
@@ -30,7 +30,7 @@ public interface MySQL57Delete extends Delete {
         MySQLSingleDeleteWhereSpec<C> route(int tableIndex);
     }
 
-    interface MySQLSingleDeleteWhereSpec<C> extends DeleteSQLSpec {
+    interface MySQLSingleDeleteWhereSpec<C> {
 
         MySQLSingleDeleteWhereAndSpec<C> where(IPredicate predicate);
 
@@ -70,7 +70,7 @@ public interface MySQL57Delete extends Delete {
 
     /*################################## blow multi-delete clause interface ##################################*/
 
-    interface MySQLMultiDeleteSpec<C> extends DeleteSQLSpec {
+    interface MySQLMultiDeleteSpec<C> {
 
         MySQLMultiDeleteUsingSpec<C> deleteFrom(List<TableMeta<?>> tableMetaList);
 
@@ -78,7 +78,7 @@ public interface MySQL57Delete extends Delete {
 
     }
 
-    interface MySQLMultiDeleteUsingSpec<C> extends DeleteSQLSpec {
+    interface MySQLMultiDeleteUsingSpec<C> {
 
         MySQLMultiDeleteTableRouteJoinSpec<C> using(TableMeta<?> tableMeta, String tableAlias);
     }
@@ -134,7 +134,7 @@ public interface MySQL57Delete extends Delete {
         MySQLMultiDeleteOnSpec<C> ifIndexHintList(Function<C, List<MySQL57IndexHint>> function);
     }
 
-    interface MySQLMultiDeleteOnSpec<C> extends DeleteSQLSpec {
+    interface MySQLMultiDeleteOnSpec<C> {
 
         MySQLMultiDeleteJoinSpec<C> on(List<IPredicate> predicateList);
 
@@ -143,7 +143,7 @@ public interface MySQL57Delete extends Delete {
         MySQLMultiDeleteJoinSpec<C> on(Function<C, List<IPredicate>> function);
     }
 
-    interface MySQLMultiDeleteWhereSpec<C> extends DeleteSQLSpec {
+    interface MySQLMultiDeleteWhereSpec<C> {
 
         MySQLMultiDeleteWhereAndSpec<C> where(IPredicate predicate);
 
@@ -168,12 +168,12 @@ public interface MySQL57Delete extends Delete {
 
     /*################################## blow batch single-delete clause interface ##################################*/
 
-    interface MySQLBatchSingleDeleteSpec<C> extends DeleteSQLSpec {
+    interface MySQLBatchSingleDeleteSpec<C> {
 
         MySQLBatchSingleDeleteWhereSpec<C> deleteFrom(TableMeta<?> tableMeta);
     }
 
-    interface MySQLBatchSingleDeleteWhereSpec<C> extends DeleteSQLSpec {
+    interface MySQLBatchSingleDeleteWhereSpec<C> {
 
         MySQLBatchSingleDeleteWhereAndSpec<C> where(IPredicate predicate);
 
@@ -210,7 +210,7 @@ public interface MySQL57Delete extends Delete {
         MySQLBatchSingleDeleteNamedParamSpec<C> ifLimit(Function<C, Integer> function);
     }
 
-    interface MySQLBatchSingleDeleteNamedParamSpec<C> extends DeleteSQLSpec {
+    interface MySQLBatchSingleDeleteNamedParamSpec<C> {
 
         DeleteSpec namedParamMaps(List<Map<String, Object>> mapList);
 
@@ -226,7 +226,7 @@ public interface MySQL57Delete extends Delete {
 
     /*################################## blow batch multi-delete clause interface ##################################*/
 
-    interface MySQLBatchMultiDeleteSpec<C> extends DeleteSQLSpec {
+    interface MySQLBatchMultiDeleteSpec<C> {
 
         MySQLBatchMultiDeleteUsingSpec<C> deleteFrom(List<TableMeta<?>> tableMetaList);
 
@@ -234,7 +234,7 @@ public interface MySQL57Delete extends Delete {
 
     }
 
-    interface MySQLBatchMultiDeleteUsingSpec<C> extends DeleteSQLSpec {
+    interface MySQLBatchMultiDeleteUsingSpec<C> {
 
         MySQLBatchMultiDeleteIndexHintJoinSpec<C> using(TableMeta<?> tableMeta, String tableAlias);
     }
@@ -276,7 +276,7 @@ public interface MySQL57Delete extends Delete {
         MySQLBatchMultiDeleteOnSpec<C> ifIndexHintList(Function<C, List<MySQL57IndexHint>> function);
     }
 
-    interface MySQLBatchMultiDeleteOnSpec<C> extends DeleteSQLSpec {
+    interface MySQLBatchMultiDeleteOnSpec<C> {
 
         MySQLBatchMultiDeleteJoinSpec<C> on(List<IPredicate> predicateList);
 
@@ -285,7 +285,7 @@ public interface MySQL57Delete extends Delete {
         MySQLBatchMultiDeleteJoinSpec<C> on(Function<C, List<IPredicate>> function);
     }
 
-    interface MySQLBatchMultiDeleteWhereSpec<C> extends DeleteSQLSpec {
+    interface MySQLBatchMultiDeleteWhereSpec<C> {
 
         MySQLBatchMultiDeleteWhereAndSpec<C> where(IPredicate predicate);
 
@@ -306,7 +306,7 @@ public interface MySQL57Delete extends Delete {
         MySQLBatchMultiDeleteWhereAndSpec<C> ifAnd(Function<C, IPredicate> function);
     }
 
-    interface MySQLBatchMultiDeleteNamedParamSpec<C> extends DeleteSQLSpec {
+    interface MySQLBatchMultiDeleteNamedParamSpec<C> {
 
         DeleteSpec namedParamMaps(List<Map<String, Object>> mapList);
 

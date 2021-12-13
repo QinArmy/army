@@ -23,6 +23,7 @@ class MySQL57Dialect extends AbstractDialect {
 
     /*################################## blow interfaces method ##################################*/
 
+
     @Override
     public Stmt returningUpdate(Update update, Visible visible) {
         return null;
