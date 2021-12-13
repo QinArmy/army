@@ -33,7 +33,7 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
 
     private boolean clearFinished;
 
-    CriteriaContextImpl(C criteria) {
+    CriteriaContextImpl(@Nullable C criteria) {
         this.criteria = criteria;
         this.composeSelectMap = Collections.emptyMap();
         this.composeRefSelectionMap = Collections.emptyMap();

@@ -7,6 +7,7 @@ import io.army.meta.TableMeta;
 import io.army.session.GenericSessionFactory;
 import io.army.util.Assert;
 import io.army.util.ClassUtils;
+import io.qinarmy.util.Pair;
 import org.springframework.aop.framework.ProxyCreatorSupport;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
 

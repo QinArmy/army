@@ -5,18 +5,18 @@ import io.army.criteria._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.meta.ParamMeta;
 
-final class NamedParamExpressionImpl<E> extends AbstractNoNOperationExpression<E>
+final class NamedParamImpl<E> extends AbstractNoNOperationExpression<E>
         implements NamedParamExpression<E> {
 
-    static <E> NamedParamExpressionImpl<E> build(String name, ParamMeta paramMeta) {
-        return new NamedParamExpressionImpl<>(name, paramMeta);
+    static <E> NamedParamImpl<E> create(String name, ParamMeta paramMeta) {
+        return new NamedParamImpl<>(name, paramMeta);
     }
 
     private final String name;
 
     private final ParamMeta paramMeta;
 
-    private NamedParamExpressionImpl(String name, ParamMeta paramMeta) {
+    private NamedParamImpl(String name, ParamMeta paramMeta) {
         this.name = name;
         this.paramMeta = paramMeta;
     }

@@ -171,12 +171,23 @@ abstract class DmlUtils {
         }
         final List<FieldMeta<?, ?>> mergeFieldList;
         if (fieldList.isEmpty()) {
-            mergeFieldList = new ArrayList<>(tableMeta.fieldCollection());
+            final Collection<?> fieldCollection = tableMeta.fieldCollection();
+            mergeFieldList = new ArrayList<>(fieldCollection.size());
+            @SuppressWarnings("unchecked")
+            Collection<FieldMeta<?, ?>> tableFields = (Collection<FieldMeta<?, ?>>) fieldCollection;
+            for (FieldMeta<?, ?> fieldMeta : tableFields) {
+                if (fieldMeta.insertable()) {
+                    mergeFieldList.add(fieldMeta);
+                }
+            }
         } else {
             final Set<FieldMeta<?, ?>> fieldSet = new HashSet<>();
             for (FieldMeta<?, ?> fieldMeta : fieldList) {
                 if (fieldMeta.tableMeta() != tableMeta) {
                     throw _Exceptions.notMatchInsertField(insert, fieldMeta);
+                }
+                if (!fieldMeta.insertable()) {
+                    throw _Exceptions.nonInsertable(fieldMeta);
                 }
                 fieldSet.add(fieldMeta);
             }
@@ -333,9 +344,9 @@ abstract class DmlUtils {
             if (predicate == firstPredicate) {
                 continue;
             }
-            if (!predicate.containsFieldOf(childMeta)) {
-                parentPredicates.add(predicate);
-            }
+//            if (!predicate.containsFieldOf(childMeta)) {
+//                parentPredicates.add(predicate);
+//            }
         }
 
         // 2. append discriminator predicate
@@ -409,7 +420,7 @@ abstract class DmlUtils {
             , String tableAlias) {
         //1. version field
         final FieldMeta<?, ?> versionField = tableMeta.getField(_MetaBridge.VERSION);
-        SqlBuilder builder = context.sqlBuilder();
+        StringBuilder builder = context.sqlBuilder();
 
         context.appendField(tableAlias, versionField);
 

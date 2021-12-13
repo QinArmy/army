@@ -121,7 +121,7 @@ final class SessionImpl extends AbstractRmSession implements Session {
         try {
             assertSessionActive(insert);
             final Stmt stmt;
-            stmt = this.dialect.insert(insert, null, visible);
+            stmt = this.dialect.valueInsert(insert, null, visible);
             this.stmtExecutor.valueInsert(stmt, timeToLiveInSeconds());
         } catch (ArmyException e) {
             throw this.exceptionFunction.apply(e);

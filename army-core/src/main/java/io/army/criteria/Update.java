@@ -14,46 +14,43 @@ import java.util.function.Predicate;
 
 public interface Update extends Statement, SQLDebug {
 
-    interface UpdateSQLSpec {
+    interface UpdateSqlSpec {
 
     }
 
-    interface UpdateSpec extends UpdateSQLSpec {
+    interface UpdateSpec extends UpdateSqlSpec {
 
         Update asUpdate();
     }
 
 
-    interface SingleUpdateSpec<T extends IDomain, C> extends UpdateSQLSpec {
+    interface DomainUpdateSpec<C> extends UpdateSqlSpec {
 
-        SingleUpdateTableRouteSpec<T, C> update(TableMeta<T> tableMeta, String tableAlias);
+        <T extends IDomain> SetSpec<T, C> update(TableMeta<T> table, String tableAlias);
     }
 
 
-    interface SingleUpdateTableRouteSpec<T extends IDomain, C> extends SingleSetSpec<T, C> {
+    interface SetSpec<T extends IDomain, C> extends UpdateSqlSpec {
 
-        SingleSetSpec<T, C> route(int databaseIndex, int tableIndex);
-
-        SingleSetSpec<T, C> route(int tableIndex);
-    }
-
-
-    interface SingleSetSpec<T extends IDomain, C> extends UpdateSQLSpec {
-
-        <F> SingleWhereSpec<T, C> set(FieldMeta<? super T, F> target, F value);
+        <F> WhereSpec<T, C> set(FieldMeta<? super T, F> target, @Nullable F value);
 
         /**
          * @see SQLs#defaultValue()
          */
-        <F> SingleWhereSpec<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp);
+        <F> WhereSpec<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp);
 
-        <F> SingleWhereSpec<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value);
+        <F> WhereSpec<T, C> setDefault(FieldMeta<? super T, F> target);
 
-        <F> SingleWhereSpec<T, C> ifSet(FieldMeta<? super T, F> target, Function<C, Expression<F>> function);
+        <F> WhereSpec<T, C> ifSet(FieldMeta<? super T, F> target, @Nullable F value);
+
+        <F> WhereSpec<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value);
+
+        <F> WhereSpec<T, C> ifSet(FieldMeta<? super T, F> target, Function<C, Expression<F>> function);
+
     }
 
 
-    interface SingleWhereSpec<T extends IDomain, C> extends SingleSetSpec<T, C> {
+    interface WhereSpec<T extends IDomain, C> extends SetSpec<T, C> {
 
         UpdateSpec where(List<IPredicate> predicateList);
 
@@ -78,64 +75,63 @@ public interface Update extends Statement, SQLDebug {
 
     /*################################## blow batch update interface ##################################*/
 
-    interface BatchUpdateSpec<T extends IDomain, C> extends UpdateSQLSpec {
+    interface BatchUpdateSpec<C> extends UpdateSqlSpec {
 
-        BatchTableRouteSpec<T, C> update(TableMeta<T> tableMeta, String tableAlias);
+        <T extends IDomain> BatchSetSpec<T, C> update(TableMeta<T> table, String tableAlias);
     }
 
-    interface BatchTableRouteSpec<T extends IDomain, C> extends BatchSetSpec<T, C> {
 
-        BatchSetSpec<T, C> route(int databaseIndex, int tableIndex);
+    interface BatchSetSpec<T extends IDomain, C> extends UpdateSqlSpec {
 
-        BatchSetSpec<T, C> route(int tableIndex);
-    }
 
-    interface BatchSetSpec<T extends IDomain, C> extends UpdateSQLSpec {
+        <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> field);
 
-        <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> target, F value);
+        <F> BatchWhereSpec<T, C> setDefault(FieldMeta<? super T, F> field);
 
-        /**
-         * @see SQLs#defaultValue()
-         */
-        <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp);
+        <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> field, @Nullable F value);
 
-        <F> BatchWhereSpec<T, C> ifSet(Predicate<C> test, FieldMeta<? super T, F> target, F value);
+        <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> field, Expression<F> valueExp);
 
-        <F> BatchWhereSpec<T, C> ifSet(FieldMeta<? super T, F> target, Function<C, Expression<F>> function);
+        <F> BatchWhereSpec<T, C> ifSet(Predicate<C> test, FieldMeta<? super T, F> field);
+
+        <F> BatchWhereSpec<T, C> ifSet(FieldMeta<? super T, F> field, @Nullable F value);
+
+        <F> BatchWhereSpec<T, C> ifSet(Predicate<C> test, FieldMeta<? super T, F> field, F value);
+
+        <F> BatchWhereSpec<T, C> ifSet(FieldMeta<? super T, F> filed, Function<C, Expression<F>> function);
     }
 
     interface BatchWhereSpec<T extends IDomain, C> extends BatchSetSpec<T, C> {
 
+        BatchParamSpec<C> where(List<IPredicate> predicateList);
 
-        BatchNamedParamSpec<C> where(List<IPredicate> predicateList);
+        BatchParamSpec<C> where(Function<C, List<IPredicate>> function);
 
-        BatchNamedParamSpec<C> where(Function<C, List<IPredicate>> function);
-
-        BatchWhereAndSpec<T, C> where(IPredicate predicate);
+        BatchWhereAndSpec<C> where(IPredicate predicate);
     }
 
-    interface BatchWhereAndSpec<T extends IDomain, C> extends BatchNamedParamSpec<C> {
+    interface BatchWhereAndSpec<C> extends UpdateSqlSpec {
 
-        BatchWhereAndSpec<T, C> and(IPredicate predicate);
+        BatchWhereAndSpec<C> and(IPredicate predicate);
 
         /**
          * @see Expression#equalIfNonNull(Object)
          */
-        BatchWhereAndSpec<T, C> ifAnd(@Nullable IPredicate predicate);
+        BatchWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
 
-        BatchWhereAndSpec<T, C> ifAnd(Function<C, IPredicate> function);
+        BatchWhereAndSpec<C> ifAnd(Function<C, IPredicate> function);
 
     }
 
-    interface BatchNamedParamSpec<C> extends UpdateSQLSpec {
+    interface BatchParamSpec<C> extends UpdateSqlSpec {
 
-        UpdateSpec namedParamMaps(List<Map<String, Object>> mapList);
+        UpdateSpec paramMaps(List<Map<String, Object>> mapList);
 
-        UpdateSpec namedParamMaps(Function<C, List<Map<String, Object>>> function);
+        UpdateSpec paramMaps(Function<C, List<Map<String, Object>>> function);
 
-        UpdateSpec namedParamBeans(List<Object> beanList);
+        UpdateSpec paramBeans(List<Object> beanList);
 
-        UpdateSpec namedParamBeans(Function<C, List<Object>> function);
+        UpdateSpec paramBeans(Function<C, List<Object>> function);
     }
 
 

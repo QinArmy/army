@@ -47,7 +47,7 @@ public interface Expression<E> extends SelectionAble, MappingMetaAble {
      *
      * @see Query.WhereAndSpec#ifAnd(IPredicate)
      * @see Update.WhereAndSpec#ifAnd(IPredicate)
-     * @see Delete.SingleDeleteWhereAndSpec#ifAnd(IPredicate)
+     * @see Delete.WhereAndSpec#ifAnd(IPredicate)
      */
     @Nullable
     IPredicate equalIfNonNull(@Nullable E constant);

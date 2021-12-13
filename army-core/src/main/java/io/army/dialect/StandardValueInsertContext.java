@@ -61,7 +61,7 @@ final class StandardValueInsertContext implements _ValueInsertContext {
 
     private final List<ObjectWrapper> domainList;
 
-    private final StandardValueInsertContext parentContext;
+     final StandardValueInsertContext parentContext;
 
 
     /**

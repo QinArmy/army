@@ -10,7 +10,10 @@ package io.army.criteria;
  */
 public interface Statement {
 
-    boolean prepared();
+    /**
+     * assert statement prepared
+     */
+    void prepared();
 
     interface SQLAble {
 

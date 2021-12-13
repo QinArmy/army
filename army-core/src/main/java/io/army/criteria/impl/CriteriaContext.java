@@ -4,6 +4,7 @@ import io.army.criteria.Expression;
 import io.army.criteria.LogicalField;
 import io.army.criteria.SubQuery;
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
@@ -21,6 +22,7 @@ interface CriteriaContext {
 
     <E> Expression<E> composeRef(String selectionAlias);
 
+    @Nullable
     <C> C criteria();
 
     void clear();

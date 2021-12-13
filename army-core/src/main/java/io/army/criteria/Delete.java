@@ -10,88 +10,82 @@ import java.util.function.Function;
 
 public interface Delete extends Statement, SQLDebug {
 
-    interface DeleteSQLSpec {
 
-    }
-
-    interface DeleteSpec extends DeleteSQLSpec {
+    interface DeleteSpec {
 
         Delete asDelete();
     }
 
-    interface SingleDeleteSpec<C> extends DeleteSQLSpec {
+    interface DomainDeleteSpec<C> {
 
-        SingleDeleteTableRouteSpec<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias);
+        WhereSpec<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias);
     }
 
-    interface SingleDeleteTableRouteSpec<C> extends SingleDeleteWhereSpec<C> {
 
-        SingleDeleteTableRouteSpec<C> route(int databaseIndex, int tableIndex);
-
-        SingleDeleteTableRouteSpec<C> route(int tableIndex);
-    }
-
-    interface SingleDeleteWhereSpec<C> extends DeleteSQLSpec {
+    interface WhereSpec<C> {
 
         DeleteSpec where(List<IPredicate> predicateList);
 
         DeleteSpec where(Function<C, List<IPredicate>> function);
 
-        SingleDeleteWhereAndSpec<C> where(IPredicate predicate);
+        WhereAndSpec<C> where(IPredicate predicate);
     }
 
 
-    interface SingleDeleteWhereAndSpec<C> extends DeleteSpec {
+    interface WhereAndSpec<C> extends DeleteSpec {
 
-        SingleDeleteWhereAndSpec<C> and(IPredicate predicate);
+        WhereAndSpec<C> and(IPredicate predicate);
 
         /**
          * @see Expression#equalIfNonNull(Object)
          */
-        SingleDeleteWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
+        WhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
 
-        SingleDeleteWhereAndSpec<C> ifAnd(Function<C, IPredicate> function);
+        WhereAndSpec<C> ifAnd(Function<C, IPredicate> function);
 
     }
 
     /*################################## blow batch delete ##################################*/
 
-    interface BatchSingleDeleteSpec<C> extends DeleteSQLSpec {
+    interface BatchDomainDeleteSpec<C> {
 
-        BatchSingleDeleteWhereSpec<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias);
+        BatchWhereSpec<C> deleteFrom(TableMeta<? extends IDomain> table, String tableAlias);
     }
 
 
-    interface BatchSingleDeleteWhereSpec<C> extends DeleteSQLSpec {
+    interface BatchWhereSpec<C> {
 
-        BatchSingleDeleteNamedParamSpec<C> where(List<IPredicate> predicateList);
+        BatchParamSpec<C> where(List<IPredicate> predicateList);
 
-        BatchSingleDeleteNamedParamSpec<C> where(Function<C, List<IPredicate>> function);
+        BatchParamSpec<C> where(Function<C, List<IPredicate>> function);
 
-        BatchSingleDeleteWhereAndSpec<C> where(IPredicate predicate);
+        BatchWhereAndSpec<C> where(IPredicate predicate);
     }
 
-    interface BatchSingleDeleteWhereAndSpec<C> extends BatchSingleDeleteNamedParamSpec<C> {
+    interface BatchWhereAndSpec<C> extends BatchParamSpec<C> {
 
-        BatchSingleDeleteWhereAndSpec<C> and(IPredicate predicate);
+        BatchWhereAndSpec<C> and(IPredicate predicate);
 
         /**
          * @see Expression#equalIfNonNull(Object)
          */
-        BatchSingleDeleteWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
+        BatchWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
 
-        BatchSingleDeleteWhereAndSpec<C> ifAnd(Function<C, IPredicate> function);
+        BatchWhereAndSpec<C> ifAnd(Function<C, IPredicate> function);
 
     }
 
-    interface BatchSingleDeleteNamedParamSpec<C> extends DeleteSQLSpec {
+    interface BatchParamSpec<C> {
 
-        DeleteSpec namedParamMaps(List<Map<String, Object>> mapList);
+        DeleteSpec paramMaps(List<Map<String, Object>> mapList);
 
-        DeleteSpec namedParamMaps(Function<C, List<Map<String, Object>>> function);
+        DeleteSpec paramMaps(Function<C, List<Map<String, Object>>> function);
 
-        DeleteSpec namedParamBeans(List<Object> beanList);
+        DeleteSpec paramBeans(List<Object> beanList);
 
-        DeleteSpec namedParamBeans(Function<C, List<Object>> function);
+        DeleteSpec paramBeans(Function<C, List<Object>> function);
+
     }
+
+
 }

@@ -14,6 +14,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.util.ArrayUtils;
+import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 import io.army.util._Exceptions;
 
@@ -21,17 +22,25 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-final class StandardValueInsert<T extends IDomain, C> extends AbstractSQLDebug implements Insert
+/**
+ * <p>
+ * This class representing standard value insert statement.
+ * </p>
+ *
+ * @param <T> domain java type.
+ * @param <C> criteria java type used to dynamic statement.
+ */
+final class ContextualValueInsert<T extends IDomain, C> extends AbstractSQLDebug implements Insert
         , Insert.InsertSpec, Insert.InsertIntoSpec<T, C>, Insert.InsertValuesSpec<T, C>, Insert.InsertOptionSpec<T, C>
         , _ValuesInsert {
 
-    static <T extends IDomain> StandardValueInsert<T, Void> create(TableMeta<T> table) {
-        return new StandardValueInsert<>(table, null);
+    static <T extends IDomain> ContextualValueInsert<T, Void> create(TableMeta<T> table) {
+        return new ContextualValueInsert<>(table, null);
     }
 
-    static <T extends IDomain, C> StandardValueInsert<T, C> create(TableMeta<T> table, C criteria) {
+    static <T extends IDomain, C> ContextualValueInsert<T, C> create(TableMeta<T> table, C criteria) {
         Objects.requireNonNull(criteria);
-        return new StandardValueInsert<>(table, criteria);
+        return new ContextualValueInsert<>(table, criteria);
     }
 
     private static final Set<String> FIELD_NAMES = ArrayUtils.asSet(
@@ -43,6 +52,8 @@ final class StandardValueInsert<T extends IDomain, C> extends AbstractSQLDebug i
     private final TableMeta<T> table;
 
     private final C criteria;
+
+    private final CriteriaContext criteriaContext;
 
     private boolean migration;
 
@@ -56,10 +67,11 @@ final class StandardValueInsert<T extends IDomain, C> extends AbstractSQLDebug i
 
     private boolean prepared;
 
-    private StandardValueInsert(final TableMeta<T> table, @Nullable C criteria) {
+    private ContextualValueInsert(final TableMeta<T> table, @Nullable C criteria) {
         this.table = table;
         this.criteria = criteria;
-
+        this.criteriaContext = new CriteriaContextImpl<>(criteria);
+        CriteriaContextHolder.setContext(this.criteriaContext);
     }
 
     /*################################## blow InsertOptionSpec method ##################################*/
@@ -85,6 +97,9 @@ final class StandardValueInsert<T extends IDomain, C> extends AbstractSQLDebug i
         }
         TableMeta<?> belongOf;
         for (FieldMeta<? super T, ?> fieldMeta : fieldMetas) {
+            if (!fieldMeta.insertable()) {
+                throw _Exceptions.nonInsertable(fieldMeta);
+            }
             belongOf = fieldMeta.tableMeta();
             if (belongOf == table) {
                 fieldList.add(fieldMeta);
@@ -124,7 +139,7 @@ final class StandardValueInsert<T extends IDomain, C> extends AbstractSQLDebug i
     /*################################## blow InsertValuesSpec method ##################################*/
 
     @Override
-    public <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, F> fieldMeta, F value) {
+    public <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, F> fieldMeta, @Nullable F value) {
         this.set(fieldMeta, SQLs.param(fieldMeta, value));
         return this;
     }
@@ -249,9 +264,10 @@ final class StandardValueInsert<T extends IDomain, C> extends AbstractSQLDebug i
 
     @Override
     public Insert asInsert() {
-        if (this.prepared) {
-            return this;
-        }
+        Assert.nonPrepared(this.prepared);
+
+        CriteriaContextHolder.clearContext(this.criteriaContext);
+
         final List<FieldMeta<?, ?>> fieldList = this.fieldList, parentFieldList = this.parentFieldList;
         if (CollectionUtils.isEmpty(fieldList)) {
             this.fieldList = Collections.emptyList();
@@ -287,8 +303,8 @@ final class StandardValueInsert<T extends IDomain, C> extends AbstractSQLDebug i
     /*################################## blow SQLStatement method ##################################*/
 
     @Override
-    public boolean prepared() {
-        return this.prepared;
+    public void prepared() {
+        Assert.prepared(this.prepared);
     }
 
 

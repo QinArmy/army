@@ -3,10 +3,10 @@ package io.army.session;
 
 import io.army.beans.DomainReadonlyWrapper;
 import io.army.cache.DomainUpdateAdvice;
-import io.army.criteria.Expression;
-import io.army.criteria.IPredicate;
 import io.army.criteria.Update;
 import io.army.criteria.impl.SQLs;
+import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._StandardUpdate;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -29,16 +29,16 @@ public abstract class AbstractGenericSession implements GenericSession {
             final Set<FieldMeta<?, ?>> set = advice.targetFieldSet();
 
             List<FieldMeta<?, ?>> targetList = new ArrayList<>(set.size());
-            List<Expression<?>> valueList = new ArrayList<>(set.size());
+            List<_Expression<?>> valueList = new ArrayList<>(set.size());
             DomainReadonlyWrapper readonlyWrapper = advice.readonlyWrapper();
 
             for (FieldMeta<?, ?> fieldMeta : set) {
                 targetList.add(fieldMeta);
                 Object value = readonlyWrapper.get(fieldMeta.fieldName());
                 if (value == null) {
-                    valueList.add(SQLs.asNull(fieldMeta.mappingMeta()));
+                    valueList.add((_Expression<?>) SQLs.asNull(fieldMeta.mappingMeta()));
                 } else {
-                    valueList.add(SQLs.param(value, fieldMeta));
+                    valueList.add((_Expression<?>) SQLs.param(fieldMeta, value));
                 }
             }
             return new CacheDomainUpdate(advice, targetList, valueList);
@@ -50,14 +50,14 @@ public abstract class AbstractGenericSession implements GenericSession {
 
         private List<FieldMeta<?, ?>> targetFieldList;
 
-        private List<Expression<?>> valueExpList;
+        private List<_Expression<?>> valueExpList;
 
-        private List<IPredicate> predicateList;
+        private List<_Predicate> predicateList;
 
         private boolean prepared;
 
         private CacheDomainUpdate(DomainUpdateAdvice advice, List<FieldMeta<?, ?>> targetFieldList
-                , List<Expression<?>> valueExpList) {
+                , List<_Expression<?>> valueExpList) {
 
             this.tableMeta = advice.readonlyWrapper().tableMeta();
             this.tableAlias = "t";
@@ -71,42 +71,32 @@ public abstract class AbstractGenericSession implements GenericSession {
 
 
         @Override
-        public final TableMeta<?> tableMeta() {
+        public TableMeta<?> tableMeta() {
             return this.tableMeta;
         }
 
         @Override
-        public final String tableAlias() {
+        public String tableAlias() {
             return this.tableAlias;
         }
 
         @Override
-        public final int databaseIndex() {
-            return -1;
-        }
-
-        @Override
-        public final int tableIndex() {
-            return -1;
-        }
-
-        @Override
-        public final List<FieldMeta<?, ?>> targetFieldList() {
+        public List<FieldMeta<?, ?>> targetFieldList() {
             return this.targetFieldList;
         }
 
         @Override
-        public final List<Expression<?>> valueExpList() {
+        public List<_Expression<?>> valueExpList() {
             return this.valueExpList;
         }
 
         @Override
-        public final List<IPredicate> predicateList() {
+        public List<_Predicate> predicateList() {
             return this.predicateList;
         }
 
         @Override
-        public final void clear() {
+        public void clear() {
             this.targetFieldList = null;
             this.valueExpList = null;
             this.predicateList = null;
@@ -114,7 +104,7 @@ public abstract class AbstractGenericSession implements GenericSession {
         }
 
         @Override
-        public final boolean prepared() {
+        public boolean prepared() {
             return this.prepared;
         }
     }

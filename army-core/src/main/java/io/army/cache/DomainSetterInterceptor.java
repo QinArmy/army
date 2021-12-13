@@ -4,8 +4,8 @@ import io.army.ErrorCode;
 import io.army.annotation.UpdateMode;
 import io.army.beans.DomainReadonlyWrapper;
 import io.army.criteria.CriteriaException;
-import io.army.criteria.IPredicate;
 import io.army.criteria.impl.Predicates;
+import io.army.criteria.impl.inner._Predicate;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.util.Assert;
@@ -26,10 +26,10 @@ final class DomainSetterInterceptor implements MethodInterceptor, DomainUpdateAd
                 , pointcut.setterFieldMap());
     }
 
-    private static List<IPredicate> createPredicateList(DomainReadonlyWrapper readonlyWrapper) {
+    private static List<_Predicate> createPredicateList(DomainReadonlyWrapper readonlyWrapper) {
         TableMeta<?> tableMeta = readonlyWrapper.tableMeta();
 
-        List<IPredicate> predicateList = new ArrayList<>(2);
+        List<_Predicate> predicateList = new ArrayList<>(2);
 
         // 1. id predicate
         final PrimaryFieldMeta<?, Object> idMeta = tableMeta.id();
@@ -52,7 +52,7 @@ final class DomainSetterInterceptor implements MethodInterceptor, DomainUpdateAd
             // 2. version predicate
             Object versionValue = readonlyWrapper.get(versionMeta.fieldName());
             Assert.notNull(versionValue, "Domain version is null");
-            predicateList.add(versionMeta.equal(versionValue));
+            predicateList.add((_Predicate) versionMeta.equal(versionValue));
         }
         return predicateList;
     }
@@ -60,13 +60,13 @@ final class DomainSetterInterceptor implements MethodInterceptor, DomainUpdateAd
 
     private final DomainReadonlyWrapper readonlyWrapper;
 
-    private final List<IPredicate> predicateList;
+    private final List<_Predicate> predicateList;
 
     private final Map<Method, FieldMeta<?, ?>> setterFieldMap;
 
     private Set<FieldMeta<?, ?>> targetFieldSet;
 
-    private DomainSetterInterceptor(DomainReadonlyWrapper readonlyWrapper, List<IPredicate> predicateList
+    private DomainSetterInterceptor(DomainReadonlyWrapper readonlyWrapper, List<_Predicate> predicateList
             , Map<Method, FieldMeta<?, ?>> setterFieldMap) {
         this.readonlyWrapper = readonlyWrapper;
         this.predicateList = Collections.unmodifiableList(predicateList);
@@ -138,7 +138,7 @@ final class DomainSetterInterceptor implements MethodInterceptor, DomainUpdateAd
     }
 
     @Override
-    public List<IPredicate> predicateList() {
+    public List<_Predicate> predicateList() {
         return this.predicateList;
     }
 }

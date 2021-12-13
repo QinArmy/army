@@ -4,10 +4,7 @@ import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.FieldMeta;
-import io.army.meta.ParamMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 import io.army.tx.Isolation;
 
 import java.util.ArrayList;
@@ -15,11 +12,11 @@ import java.util.List;
 import java.util.function.Function;
 
 @SuppressWarnings({"unused"})
-public abstract class SQLs extends AbstractSQLS {
+public abstract class SQLs extends AbstractSQLs {
 
 
     public static <T extends IDomain> Insert.InsertOptionSpec<T, Void> domainInsert(TableMeta<T> targetTable) {
-        return StandardValueInsert.create(targetTable);
+        return ContextualValueInsert.create(targetTable);
     }
 
     /**
@@ -43,116 +40,118 @@ public abstract class SQLs extends AbstractSQLS {
      * @return a standard insert api object.
      */
     public static <T extends IDomain, C> Insert.InsertOptionSpec<T, C> domainInsert(TableMeta<T> targetTable, C criteria) {
-        return StandardValueInsert.create(targetTable, criteria);
+        return ContextualValueInsert.create(targetTable, criteria);
     }
 
 
-    public static <T extends IDomain> Insert.SubQueryInsertFieldSpec<T, Void> subQueryInsert(TableMeta<T> targetTable) {
-        return StandardContextualSubQueryInsert.build(targetTable, EmptyObject.getInstance());
+    public static <T extends IDomain> Insert.SubQueryInsertFieldSpec<T, Void> subQueryInsert(SingleTableMeta<T> table) {
+        return null;
     }
 
-    public static <T extends IDomain, C> Insert.SubQueryTargetFieldSpec<T, C> subQueryInsert(
-            TableMeta<T> targetTable, C criteria) {
-        return StandardContextualSubQueryInsert.build(targetTable, criteria);
+
+    public static <T extends IDomain, C> Insert.SubQueryInsertFieldSpec<T, C> subQueryInsert(SingleTableMeta<T> table, C criteria) {
+        return null;
     }
 
-    public static <T extends IDomain> Insert.ParentSubQueryTargetFieldSpec<T, EmptyObject> subQueryInsert(
-            ChildTableMeta<T> tableMeta) {
-        return StandardContextualChildSubQueryInsert.build(tableMeta, EmptyObject.getInstance());
+
+    public static <T extends IDomain> Insert.SubQueryInsertParentFieldSpec<T, Void> subQueryInsert(ChildTableMeta<T> table) {
+        return null;
     }
 
-    public static <T extends IDomain, C> Insert.ParentSubQueryTargetFieldSpec<T, C> subQueryInsert(
-            ChildTableMeta<T> tableMeta, C criteria) {
-        return StandardContextualChildSubQueryInsert.build(tableMeta, criteria);
+
+    public static <T extends IDomain, C> Insert.SubQueryInsertParentFieldSpec<T, C> subQueryInsert(ChildTableMeta<T> table, C criteria) {
+        return null;
     }
 
-    public static <T extends IDomain> Update.SingleUpdateSpec<T, EmptyObject> singleUpdate(TableMeta<T> targetTable) {
-        return StandardContextualUpdate.build(targetTable, EmptyObject.getInstance());
+
+    public static Update.DomainUpdateSpec<Void> domainUpdate() {
+        return ContextualUpdate.create();
     }
 
-    public static <T extends IDomain, C> Update.SingleUpdateSpec<T, C> singleUpdate(TableMeta<T> targetTable
-            , C criteria) {
-        return StandardContextualUpdate.build(targetTable, criteria);
-    }
-
-    /**
-     * @see #namedParam(String, ParamMeta)
-     */
-    public static <T extends IDomain> Update.BatchUpdateSpec<T, EmptyObject> batchSingleUpdate(
-            TableMeta<T> targetTable) {
-        return StandardContextualBatchUpdate.build(targetTable, EmptyObject.getInstance());
+    public static <T extends IDomain, C> Update.DomainUpdateSpec<C> domainUpdate(C criteria) {
+        return ContextualUpdate.create(criteria);
     }
 
     /**
      * @see #namedParam(String, ParamMeta)
      */
-    public static <T extends IDomain, C> Update.BatchUpdateSpec<T, C> batchSingleUpdate(TableMeta<T> targetTable
-            , C criteria) {
-        return StandardContextualBatchUpdate.build(targetTable, criteria);
-    }
-
-    public static Delete.SingleDeleteSpec<EmptyObject> singleDelete() {
-        return StandardContextualDelete.buildDelete(EmptyObject.getInstance());
-    }
-
-    public static <C> Delete.SingleDeleteSpec<C> singleDelete(C criteria) {
-        return StandardContextualDelete.buildDelete(criteria);
+    public static Update.BatchUpdateSpec<Void> batchUpdate() {
+        return ContextualBatchUpdate.create();
     }
 
     /**
      * @see #namedParam(String, ParamMeta)
      */
-    public static Delete.BatchSingleDeleteSpec<EmptyObject> batchSingleDelete() {
-        return StandardContextualBatchDelete.build(EmptyObject.getInstance());
+    public static <C> Update.BatchUpdateSpec<C> batchUpdate(C criteria) {
+        return ContextualBatchUpdate.create(criteria);
+    }
+
+    public static Delete.DomainDeleteSpec<Void> domainDelete() {
+        return ContextualDelete.create();
+    }
+
+    public static <C> Delete.DomainDeleteSpec<C> domainDelete(C criteria) {
+        return ContextualDelete.create(criteria);
     }
 
     /**
      * @see #namedParam(String, ParamMeta)
      */
-    public static <C> Delete.BatchSingleDeleteSpec<C> batchSingleDelete(C criteria) {
-        return StandardContextualBatchDelete.build(criteria);
+    public static Delete.BatchDomainDeleteSpec<Void> batchDelete() {
+        return ContextualBatchDelete.create();
     }
 
-    public static Query.SelectPartSpec<Select, EmptyObject> multiSelect() {
+    /**
+     * @see #namedParam(String, ParamMeta)
+     */
+    public static <C> Delete.BatchDomainDeleteSpec<C> batchDelete(C criteria) {
+        return ContextualBatchDelete.create(criteria);
+    }
+
+    public static Query.SelectPartSpec<Select, EmptyObject> tableSelect() {
         return StandardContextualMultiSelect.build(EmptyObject.getInstance());
     }
 
-    public static <C> Query.SelectPartSpec<Select, C> multiSelect(C criteria) {
+    public static <C> Query.SelectPartSpec<Select, C> tableSelect(C criteria) {
         return StandardContextualMultiSelect.build(criteria);
     }
 
+    public static Query.SelectPartSpec<SubQuery, Void> subQuery() {
+        return SubQueries.subQuery();
+    }
+
     public static <C> Query.SelectPartSpec<SubQuery, C> subQuery(C criteria) {
-        return StandardSubQueries.build(criteria);
+        return SubQueries.subQuery(criteria);
     }
 
     public static <C> Query.SelectPartSpec<RowSubQuery, C> rowSubQuery(C criteria) {
-        return StandardSubQueries.buildRowSubQuery(criteria);
+        return SubQueries.buildRowSubQuery(criteria);
     }
 
     public static <E, C> ColumnSubQuery.ColumnSelectionSpec<E, C> columnSubQuery(Class<E> columnType, C criteria) {
-        return StandardSubQueries.buildColumnSubQuery(columnType, criteria);
+        return SubQueries.buildColumnSubQuery(columnType, criteria);
     }
 
     public static <E> ColumnSubQuery.ColumnSelectionSpec<E, EmptyObject> columnSubQuery(Class<E> columnType) {
-        return StandardSubQueries.buildColumnSubQuery(columnType, EmptyObject.getInstance());
+        return SubQueries.buildColumnSubQuery(columnType, EmptyObject.getInstance());
     }
 
     public static <E, C> ScalarSubQuery.ScalarSelectionSpec<E, C> scalarSubQuery(
             Class<E> javaType, MappingType mappingType, C criteria) {
-        return StandardSubQueries.buildScalarSubQuery(javaType, mappingType, criteria);
+        return SubQueries.buildScalarSubQuery(javaType, mappingType, criteria);
     }
 
     public static <E> ScalarSubQuery.ScalarSelectionSpec<E, EmptyObject> scalarSubQuery(
             Class<E> javaType, MappingType mappingType) {
-        return StandardSubQueries.buildScalarSubQuery(javaType, mappingType, EmptyObject.getInstance());
+        return SubQueries.buildScalarSubQuery(javaType, mappingType, EmptyObject.getInstance());
     }
 
     public static <E, C> ScalarSubQuery.ScalarSelectionSpec<E, C> scalarSubQuery(Class<E> javaType, C criteria) {
-        return StandardSubQueries.buildScalarSubQuery(javaType, _MappingFactory.getMapping(javaType), criteria);
+        return SubQueries.buildScalarSubQuery(javaType, _MappingFactory.getMapping(javaType), criteria);
     }
 
     public static <E> ScalarSubQuery.ScalarSelectionSpec<E, EmptyObject> scalarSubQuery(Class<E> javaType) {
-        return StandardSubQueries.buildScalarSubQuery(javaType, _MappingFactory.getMapping(javaType)
+        return SubQueries.buildScalarSubQuery(javaType, _MappingFactory.getMapping(javaType)
                 , EmptyObject.getInstance());
     }
 
@@ -246,7 +245,7 @@ public abstract class SQLs extends AbstractSQLS {
      * package method.
      */
     @SuppressWarnings("unchecked")
-    static <E> DefaultKeyWord<E> defaultKeyWord() {
+    static <E> Expression<E> defaultKeyWord() {
         return (DefaultKeyWord<E>) DefaultKeyWord.INSTANCE;
     }
 

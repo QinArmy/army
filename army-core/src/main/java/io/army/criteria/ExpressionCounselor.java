@@ -1,10 +1,5 @@
 package io.army.criteria;
 
-import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
-
-import java.util.Collection;
-
 /**
  * design for {@link FieldExpression} and {@link SpecialPredicate}
  * <p>
@@ -16,11 +11,6 @@ import java.util.Collection;
  */
 public interface ExpressionCounselor {
 
-    boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas);
 
-    boolean containsFieldOf(TableMeta<?> tableMeta);
 
-    int containsFieldCount(TableMeta<?> tableMeta);
-
-    boolean containsSubQuery();
 }

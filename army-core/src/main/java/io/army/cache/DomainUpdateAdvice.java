@@ -1,7 +1,7 @@
 package io.army.cache;
 
 import io.army.beans.DomainReadonlyWrapper;
-import io.army.criteria.IPredicate;
+import io.army.criteria.impl.inner._Predicate;
 import io.army.meta.FieldMeta;
 
 import java.util.List;
@@ -17,6 +17,6 @@ public interface DomainUpdateAdvice {
 
     Set<FieldMeta<?, ?>> targetFieldSet();
 
-    List<IPredicate> predicateList();
+    List<_Predicate> predicateList();
 
 }

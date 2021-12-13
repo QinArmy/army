@@ -1,10 +1,12 @@
 package io.army.criteria.impl;
 
 import io.army.ErrorCode;
+import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.SelectPart;
 import io.army.criteria.Selection;
 import io.army.criteria.SelectionGroup;
+import io.army.criteria.impl.inner._Predicate;
 import io.army.lang.Nullable;
 
 import java.util.Collections;
@@ -49,6 +51,7 @@ abstract class CriteriaUtils {
         return Collections.unmodifiableMap(selectionMap);
     }
 
+
     static <T> List<T> unmodifiableList(@Nullable List<T> original) {
         return original == null ? Collections.emptyList() : Collections.unmodifiableList(original);
     }
@@ -56,5 +59,34 @@ abstract class CriteriaUtils {
     static <K, V> Map<K, V> unmodifiableMap(@Nullable Map<K, V> original) {
         return original == null ? Collections.emptyMap() : Collections.unmodifiableMap(original);
     }
+
+    static List<_Predicate> predicateList(final List<_Predicate> predicateList) {
+        final List<_Predicate> list;
+        switch (predicateList.size()) {
+            case 0:
+                throw new IllegalStateException("no where clause.");
+            case 1:
+                list = Collections.singletonList(predicateList.get(0));
+                break;
+            default:
+                list = Collections.unmodifiableList(predicateList);
+        }
+        return list;
+    }
+
+    static List<ReadonlyWrapper> namedParamList(final List<ReadonlyWrapper> wrapperList) {
+        final List<ReadonlyWrapper> list;
+        switch (wrapperList.size()) {
+            case 0:
+                throw new IllegalStateException("no any name param.");
+            case 1:
+                list = Collections.singletonList(wrapperList.get(0));
+                break;
+            default:
+                list = Collections.unmodifiableList(wrapperList);
+        }
+        return list;
+    }
+
 
 }

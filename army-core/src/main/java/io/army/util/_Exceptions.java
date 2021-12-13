@@ -4,6 +4,7 @@ import io.army.ArmyException;
 import io.army.DialectMode;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Statement;
+import io.army.criteria.Update;
 import io.army.criteria.impl.inner._Statement;
 import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.lang.Nullable;
@@ -86,6 +87,22 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static IllegalStateException nonPrepared(_Statement statement) {
         return new IllegalStateException(String.format("%s not prepared", statement));
+    }
+
+    public static CriteriaException noUpdateField(Update update) {
+        return new CriteriaException(String.format("%s no any update field", update));
+    }
+
+    public static IllegalStateException updateFieldExpNotMatch() {
+        return new IllegalStateException("Field and value expression count not match.");
+    }
+
+    public static CriteriaException immutableField(FieldMeta<?, ?> field) {
+        return new CriteriaException(String.format("%s is immutable.", field));
+    }
+
+    public static CriteriaException nonInsertable(FieldMeta<?, ?> field) {
+        return new CriteriaException(String.format("%s is non-insertable.", field));
     }
 
 

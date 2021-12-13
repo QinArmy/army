@@ -16,7 +16,7 @@ import java.util.function.Function;
 /**
  * this class is a implementation of {@link Expression}
  */
-abstract class AbstractExpression<E> implements _Expression<E>, ExpressionCounselor {
+abstract class AbstractExpression<E> implements _Expression<E> {
 
     AbstractExpression() {
     }

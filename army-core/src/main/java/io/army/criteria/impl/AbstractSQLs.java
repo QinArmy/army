@@ -15,10 +15,10 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.function.Function;
 
-abstract class AbstractSQLS {
+abstract class AbstractSQLs {
 
 
-    AbstractSQLS() {
+    AbstractSQLs() {
         throw new UnsupportedOperationException();
     }
 
@@ -40,18 +40,18 @@ abstract class AbstractSQLS {
         return ParamExpressionImp.build(paramMeta, param);
     }
 
-    public static <E> ParamExpression<E> param(ParamMeta paramMeta, E value) {
+    public static <E> ParamExpression<E> param(ParamMeta paramMeta, @Nullable E value) {
         return ParamExpressionImp.build(paramMeta, value);
     }
 
     /**
      * @see SQLs#batchSingleUpdate(TableMeta)
-     * @see SQLs#batchSingleUpdate(TableMeta, Object)
-     * @see SQLs#batchSingleDelete()
-     * @see SQLs#batchSingleDelete(Object)
+     * @see SQLs#batchDomainUpdate(TableMeta, Object)
+     * @see SQLs#batchDelete()
+     * @see SQLs#batchDelete(Object)
      */
     public static <E> NamedParamExpression<E> namedParam(String name, ParamMeta paramMeta) {
-        return NamedParamExpressionImpl.build(name, paramMeta);
+        return NamedParamImpl.create(name, paramMeta);
     }
 
     public static ParamMeta obtainParamMeta(Expression<?> expression) {

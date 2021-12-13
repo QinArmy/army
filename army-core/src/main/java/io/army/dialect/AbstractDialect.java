@@ -170,7 +170,7 @@ public abstract class AbstractDialect implements InnerDialect {
 
     @Override
     public final Stmt valueInsert(Insert insert, Visible visible) {
-        return this.dml.insert(insert, visible);
+        return this.dml.valueInsert(insert, visible);
     }
 
     @Override

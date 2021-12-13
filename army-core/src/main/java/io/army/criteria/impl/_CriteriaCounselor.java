@@ -36,33 +36,33 @@ public abstract class _CriteriaCounselor {
     }
 
     public static void assertStandardSubQuery(_StandardSubQuery subQuery) {
-        StandardSubQueries.assertStandardSubQuery(subQuery);
+        SubQueries.assertStandardSubQuery(subQuery);
     }
 
 
     public static void assertStandardUpdate(_StandardUpdate update) {
         if (update instanceof _StandardBatchUpdate) {
-            if (!(update instanceof StandardContextualBatchUpdate)) {
+            if (!(update instanceof ContextualBatchUpdate)) {
                 throw new IllegalArgumentException(String.format("%s isn't instance of %s", update
-                        , StandardContextualBatchUpdate.class.getName()));
+                        , ContextualBatchUpdate.class.getName()));
             }
         } else if (!AbstractGenericSession.cacheDomainUpdate(update)
-                && !(update instanceof StandardContextualUpdate)) {
+                && !(update instanceof ContextualUpdate)) {
             throw new IllegalArgumentException(String.format("%s isn't instance of %s", update
-                    , StandardContextualUpdate.class.getName()));
+                    , ContextualUpdate.class.getName()));
         }
 
     }
 
     public static void assertStandardDelete(_StandardDelete delete) {
         if (delete instanceof _StandardBatchDelete) {
-            if (!(delete instanceof StandardContextualBatchDelete)) {
+            if (!(delete instanceof ContextualBatchDelete)) {
                 throw new IllegalArgumentException(String.format("%s isn't instance of %s", delete
-                        , StandardContextualBatchDelete.class.getName()));
+                        , ContextualBatchDelete.class.getName()));
             }
-        } else if (!(delete instanceof StandardContextualDelete)) {
+        } else if (!(delete instanceof ContextualDelete)) {
             throw new IllegalArgumentException(String.format("%s isn't instance of %s", delete
-                    , StandardContextualDelete.class.getName()));
+                    , ContextualDelete.class.getName()));
         }
     }
 
@@ -72,9 +72,9 @@ public abstract class _CriteriaCounselor {
                 throw new IllegalArgumentException(String.format("%s isn't instance of %s", insert
                         , StandardBatchInsert.class.getName()));
             }
-        } else if (!(insert instanceof StandardValueInsert)) {
+        } else if (!(insert instanceof ContextualValueInsert)) {
             throw new IllegalArgumentException(String.format("%s isn't instance of %s", insert
-                    , StandardValueInsert.class.getName()));
+                    , ContextualValueInsert.class.getName()));
         }
     }
 

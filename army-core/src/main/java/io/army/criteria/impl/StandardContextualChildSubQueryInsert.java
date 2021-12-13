@@ -1,22 +1,17 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.IPredicate;
 import io.army.criteria.Insert;
 import io.army.criteria.SubQuery;
-import io.army.criteria.impl.inner._StandardChildSubQueryInsert;
 import io.army.domain.IDomain;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.util.Assert;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
 
 final class StandardContextualChildSubQueryInsert<T extends IDomain, C> extends AbstractSQLDebug implements Insert
-        , _StandardChildSubQueryInsert, Insert.ParentSubQueryTargetFieldSpec<T, C>, Insert.ParentTableRouteSpec<T, C>
-        , Insert.ChildSubQueryTargetFieldSpec<T, C>, Insert.ChildSubQuerySpec<C>, Insert.InsertSpec {
+        , Insert.InsertSpec {
 
     static <T extends IDomain, C> StandardContextualChildSubQueryInsert<T, C> build(
             ChildTableMeta<T> tableMeta, C criteria) {
@@ -55,62 +50,62 @@ final class StandardContextualChildSubQueryInsert<T extends IDomain, C> extends 
     }
 
     /*################################## blow ParentSubQueryTargetFieldSpec method ##################################*/
-
-    @Override
-    public final ParentTableRouteSpec<T, C> parentFields(List<FieldMeta<T, ?>> fieldMetas) {
-        this.parentFieldList = new ArrayList<>(fieldMetas);
-        return this;
-    }
-
-    @Override
-    public final ParentTableRouteSpec<T, C> parentFields(Function<C, List<FieldMeta<T, ?>>> function) {
-        this.parentFieldList = new ArrayList<>(function.apply(this.criteria));
-        return this;
-    }
+//
+//    @Override
+//    public final ParentTableRouteSpec<T, C> parentFields(List<FieldMeta<T, ?>> fieldMetas) {
+//        this.parentFieldList = new ArrayList<>(fieldMetas);
+//        return this;
+//    }
+//
+//    @Override
+//    public final ParentTableRouteSpec<T, C> parentFields(Function<C, List<FieldMeta<T, ?>>> function) {
+//        this.parentFieldList = new ArrayList<>(function.apply(this.criteria));
+//        return this;
+//    }
 
     /*################################## blow ParentSubQuerySpec method ##################################*/
-
-    @Override
-    public final ParentSubQuerySpec<T, C> route(int databaseIndex, int tableIndex) {
-        this.databaseIndex = databaseIndex;
-        this.tableIndex = tableIndex;
-        return this;
-    }
-
-    @Override
-    public final ParentSubQuerySpec<T, C> route(int tableIndex) {
-        this.tableIndex = tableIndex;
-        return this;
-    }
-
-    @Override
-    public final ChildSubQueryTargetFieldSpec<T, C> parentSubQuery(Function<C, SubQuery> function) {
-        this.parentSubQuery = function.apply(this.criteria);
-        return this;
-    }
+//
+//    @Override
+//    public final ParentSubQuerySpec<T, C> route(int databaseIndex, int tableIndex) {
+//        this.databaseIndex = databaseIndex;
+//        this.tableIndex = tableIndex;
+//        return this;
+//    }
+//
+//    @Override
+//    public final ParentSubQuerySpec<T, C> route(int tableIndex) {
+//        this.tableIndex = tableIndex;
+//        return this;
+//    }
+//
+//    @Override
+//    public final ChildSubQueryTargetFieldSpec<T, C> parentSubQuery(Function<C, SubQuery> function) {
+//        this.parentSubQuery = function.apply(this.criteria);
+//        return this;
+//    }
 
 
     /*################################## blow ChildSubQueryTargetFieldSpec method ##################################*/
-
-    @Override
-    public final ChildSubQuerySpec<C> childFields(List<FieldMeta<T, ?>> fieldMetas) {
-        this.childFieldList = new ArrayList<>(fieldMetas);
-        return this;
-    }
-
-    @Override
-    public final ChildSubQuerySpec<C> childFields(Function<C, List<FieldMeta<T, ?>>> function) {
-        this.childFieldList = new ArrayList<>(function.apply(this.criteria));
-        return this;
-    }
+//
+//    @Override
+//    public final ChildSubQuerySpec<C> childFields(List<FieldMeta<T, ?>> fieldMetas) {
+//        this.childFieldList = new ArrayList<>(fieldMetas);
+//        return this;
+//    }
+//
+//    @Override
+//    public final ChildSubQuerySpec<C> childFields(Function<C, List<FieldMeta<T, ?>>> function) {
+//        this.childFieldList = new ArrayList<>(function.apply(this.criteria));
+//        return this;
+//    }
 
     /*################################## blow ChildSubQuerySpec method ##################################*/
 
-    @Override
-    public final InsertSpec childSubQuery(Function<C, SubQuery> function) {
-        this.childSubQuery = function.apply(this.criteria);
-        return this;
-    }
+//    @Override
+//    public final InsertSpec childSubQuery(Function<C, SubQuery> function) {
+//        this.childSubQuery = function.apply(this.criteria);
+//        return this;
+//    }
 
 
     /*################################## blow InsertSpec method ##################################*/
@@ -141,58 +136,60 @@ final class StandardContextualChildSubQueryInsert<T extends IDomain, C> extends 
     }
 
     /*################################## blow InnerStandardChildSubQueryInsert method ##################################*/
+//
+//    @Override
+//    public final List<IPredicate> predicateList() {
+//       throw new UnsupportedOperationException();
+//    }
+//
+//    @Override
+//    public final List<FieldMeta<?, ?>> parentFieldList() {
+//        return this.parentFieldList;
+//    }
+//
+//    @Override
+//    public final SubQuery parentSubQuery() {
+//        return this.parentSubQuery;
+//    }
+//
+//    @Override
+//    public final SubQuery subQuery() {
+//        return this.childSubQuery;
+//    }
+//
+//    @Override
+//    public final ChildTableMeta<?> table() {
+//        return this.tableMeta;
+//    }
+//
+//    @Override
+//    public final List<FieldMeta<?, ?>> fieldList() {
+//        return this.childFieldList;
+//    }
+//
+//    @Override
+//    public final String tableAlias() {
+//        return "";
+//    }
+//
+//    @Override
+//    public final int databaseIndex() {
+//        return this.databaseIndex;
+//    }
+//
+//    @Override
+//    public final int tableIndex() {
+//        return this.tableIndex;
+//    }
+//
+//    @Override
+//    public final void clear() {
+//        this.parentFieldList = null;
+//        this.parentSubQuery = null;
+//        this.childFieldList = null;
+//        this.childSubQuery = null;
+//        this.prepared = false;
+//    }
 
-    @Override
-    public final List<IPredicate> predicateList() {
-       throw new UnsupportedOperationException();
-    }
 
-    @Override
-    public final List<FieldMeta<?, ?>> parentFieldList() {
-        return this.parentFieldList;
-    }
-
-    @Override
-    public final SubQuery parentSubQuery() {
-        return this.parentSubQuery;
-    }
-
-    @Override
-    public final SubQuery subQuery() {
-        return this.childSubQuery;
-    }
-
-    @Override
-    public final ChildTableMeta<?> table() {
-        return this.tableMeta;
-    }
-
-    @Override
-    public final List<FieldMeta<?, ?>> fieldList() {
-        return this.childFieldList;
-    }
-
-    @Override
-    public final String tableAlias() {
-        return "";
-    }
-
-    @Override
-    public final int databaseIndex() {
-        return this.databaseIndex;
-    }
-
-    @Override
-    public final int tableIndex() {
-        return this.tableIndex;
-    }
-
-    @Override
-    public final void clear() {
-        this.parentFieldList = null;
-        this.parentSubQuery = null;
-        this.childFieldList = null;
-        this.childSubQuery = null;
-        this.prepared = false;
-    }
 }

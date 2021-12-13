@@ -1,12 +1,11 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Select;
-import org.springframework.core.NamedThreadLocal;
 
 
 abstract class CriteriaContextHolder {
 
-    private static final NamedThreadLocal<CriteriaContext> HOLDER = new NamedThreadLocal<>("CriteriaContext holder");
+    private static final ThreadLocal<CriteriaContext> HOLDER = new ThreadLocal<>();
 
     private CriteriaContextHolder() {
         throw new UnsupportedOperationException();
@@ -26,11 +25,12 @@ abstract class CriteriaContextHolder {
         return context;
     }
 
+
     /**
      * @see Select.SelectAble#asQuery()
      */
     static void clearContext(CriteriaContext context) {
-        CriteriaContext current = HOLDER.get();
+        final CriteriaContext current = HOLDER.get();
         if (current != context) {
             throw new IllegalStateException(String.format("thread[%s]  CriteriaContext not match,criteria state error."
                     , Thread.currentThread().getName()));

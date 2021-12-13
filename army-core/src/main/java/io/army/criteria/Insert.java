@@ -1,6 +1,7 @@
 package io.army.criteria;
 
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
@@ -44,7 +45,7 @@ public interface Insert extends Statement, SQLDebug {
 
     interface InsertValuesSpec<T extends IDomain, C> extends InsertSqlSpec {
 
-        <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, F> fieldMeta, F value);
+        <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, F> fieldMeta, @Nullable F value);
 
         <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, F> fieldMeta, Expression<F> value);
 
@@ -63,7 +64,7 @@ public interface Insert extends Statement, SQLDebug {
     }
 
 
-    interface SubQueryInsertFieldSpec<T extends IDomain, C> {
+    interface SubQueryInsertFieldSpec<T extends IDomain, C> extends InsertSqlSpec {
 
         SubQueryInsertSpec<T, C> insertInto(List<FieldMeta<T, ?>> fieldList);
 
@@ -73,25 +74,25 @@ public interface Insert extends Statement, SQLDebug {
 
     }
 
-    interface SubQueryInsertSpec<T extends IDomain, C> {
+    interface SubQueryInsertSpec<T extends IDomain, C> extends InsertSqlSpec {
 
         InsertSpec values(Function<C, SubQuery> function);
     }
 
 
-    interface ChildSubQueryInsertFieldSpec<T extends IDomain, C> {
+    interface SubQueryInsertParentFieldSpec<T extends IDomain, C> {
 
-        ChildSubQueryInsertSpec<T, C> insertInto(List<FieldMeta<T, ?>> fieldList);
+        SubQueryInsertParentSpec<T, C> insertInto(List<FieldMeta<? super T, ?>> fieldList);
 
-        ChildSubQueryInsertSpec<T, C> insertInto(Function<C, List<FieldMeta<T, ?>>> function);
+        SubQueryInsertParentSpec<T, C> insertInto(Function<C, List<FieldMeta<? super T, ?>>> function);
 
-        ChildSubQueryInsertSpec<T, C> insertInto(Supplier<List<FieldMeta<T, ?>>> supplier);
-
+        SubQueryInsertParentSpec<T, C> insertInto(Supplier<List<FieldMeta<? super T, ?>>> supplier);
     }
 
-    interface ChildSubQueryInsertSpec<T extends IDomain, C> {
+    interface SubQueryInsertParentSpec<T extends IDomain, C> extends InsertSqlSpec {
 
-        InsertSpec values(Function<C, SubQuery> function);
+        SubQueryInsertFieldSpec<T, C> values(Function<C, SubQuery> function);
+
     }
 
 

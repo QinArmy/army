@@ -40,23 +40,13 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
      * {@inheritDoc}
      */
     @Override
-    public final Stmt insert(final Insert insert, final Visible visible) {
+    public final Stmt valueInsert(final Insert insert, final Visible visible) {
         Assert.isTrue(insert.prepared(), "Insert don't invoke asInsert() method.");
         final Stmt stmt;
-        if (insert instanceof _ValuesInsert) {
-            if (insert instanceof _DialectStatement) {
-                stmt = handleDialectValueInsert((_ValuesInsert) insert);
-            } else {
-                stmt = handleStandardValueInsert((_ValuesInsert) insert, visible);
-            }
-        } else if (insert instanceof _SubQueryInsert) {
-            if (insert instanceof _DialectStatement) {
-                stmt = handleDialectSubQueryInsert((_SubQueryInsert) insert);
-            } else {
-                stmt = handleStandardSubQueryInsert((_SubQueryInsert) insert);
-            }
+        if (insert instanceof _DialectStatement) {
+            stmt = handleDialectValueInsert((_ValuesInsert) insert);
         } else {
-            throw _Exceptions.unknownStatement(insert, this.dialect.sessionFactory());
+            stmt = handleStandardValueInsert((_ValuesInsert) insert, visible);
         }
         return stmt;
     }
@@ -83,19 +73,14 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
         Assert.isTrue(insert.prepared(), "Insert don't invoke asInsert() method.");
 
         Stmt stmt;
-        if (insert instanceof _StandardSubQueryInsert) {
-            _StandardSubQueryInsert subQueryInsert = (_StandardSubQueryInsert) insert;
-            // assert implementation class is legal
-            _CriteriaCounselor.assertStandardSubQueryInsert(subQueryInsert);
-            // parse sql
-            stmt = standardSubQueryInsert(subQueryInsert, visible);
-        } else if (insert instanceof _SpecialSubQueryInsert) {
-            _SpecialSubQueryInsert subQueryInsert = (_SpecialSubQueryInsert) insert;
-            // assert implementation class is legal
-            assertSpecialSubQueryInsert(subQueryInsert);
-            stmt = specialSubQueryInsert(subQueryInsert, visible);
+        if (insert instanceof _SubQueryInsert) {
+            if (insert instanceof _DialectStatement) {
+                stmt = handleDialectSubQueryInsert((_SubQueryInsert) insert);
+            } else {
+                stmt = handleStandardSubQueryInsert((_SubQueryInsert) insert);
+            }
         } else {
-            throw new IllegalArgumentException(String.format("Insert[%s] type unknown.", insert.getClass().getName()));
+            throw _Exceptions.unknownStatement(insert, this.dialect.sessionFactory());
         }
         return stmt;
     }
@@ -175,33 +160,6 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
 
     /*################################## blow multiInsert template method ##################################*/
 
-    /**
-     * @see #valueInsert(Insert, Visible)
-     */
-    protected void assertDialectInsert(_ValuesInsert insert) {
-        throw new UnsupportedOperationException(String.format("dialect [%s] not support special general multiInsert."
-                , database())
-        );
-    }
-
-
-    protected Stmt dialectValueInsert(_ValuesInsert insert, Visible visible) {
-        throw new UnsupportedOperationException(String.format("dialect[%s] not support special general multiInsert."
-                , database())
-        );
-    }
-
-    protected List<Stmt> specialBatchInsert(_SpecialBatchInsert insert, Visible visible) {
-        throw new UnsupportedOperationException(String.format("dialect[%s] not support special batch multiInsert."
-                , database())
-        );
-    }
-
-    protected Stmt specialSubQueryInsert(_SpecialSubQueryInsert insert, Visible visible) {
-        throw new UnsupportedOperationException(String.format("dialect[%s] not support special sub query multiInsert."
-                , database())
-        );
-    }
 
 
 
@@ -239,7 +197,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
      */
     protected Stmt standardValueInsert(final _ValueInsertContext ctx) {
         final StandardValueInsertContext context = (StandardValueInsertContext) ctx;
-        final StandardValueInsertContext parentContext = context.parentContext();
+        final StandardValueInsertContext parentContext = context.parentContext;
         if (parentContext != null) {
             DmlUtils.appendStandardValueInsert(parentContext);
         }
@@ -270,7 +228,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
 
 
     /**
-     * @see #insert(Insert, Visible)
+     * @see #valueInsert(Insert, Visible)
      */
     private Stmt handleStandardValueInsert(final _ValuesInsert insert, final Visible visible) {
         // assert implementation class is legal

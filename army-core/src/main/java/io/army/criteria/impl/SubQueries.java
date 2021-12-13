@@ -14,18 +14,26 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class StandardSubQueries<Q extends Query, C> extends AbstractStandardQuery<Q, C>
+abstract class SubQueries<Q extends Query, C> extends AbstractStandardQuery<Q, C>
         implements _StandardSubQuery, SubQuery {
 
-    static <C> StandardSubQueries<SubQuery, C> build(C criteria) {
-        if (criteria != CriteriaContextHolder.getContext()) {
+    static SubQueries<SubQuery, Void> subQuery() {
+        if (CriteriaContextHolder.getContext().criteria() != null) {
+            throw new IllegalArgumentException("criteria isn't current context.");
+        }
+        return new StandardSubQuery<>(null);
+    }
+
+    static <C> SubQueries<SubQuery, C> subQuery(C criteria) {
+        if (criteria != CriteriaContextHolder.getContext().criteria()) {
             throw new IllegalArgumentException("criteria isn't current context.");
         }
         return new StandardSubQuery<>(criteria);
     }
 
-    static <C> StandardSubQueries<RowSubQuery, C> buildRowSubQuery(C criteria) {
-        if (criteria != CriteriaContextHolder.getContext()) {
+
+    static <C> SubQueries<RowSubQuery, C> buildRowSubQuery(C criteria) {
+        if (criteria != CriteriaContextHolder.getContext().criteria()) {
             throw new IllegalArgumentException("criteria isn't current context.");
         }
         return new StandardRowSubQuery<>(criteria);
@@ -72,7 +80,7 @@ abstract class StandardSubQueries<Q extends Query, C> extends AbstractStandardQu
 
     private Map<String, Selection> selectionMap;
 
-    private StandardSubQueries(C criteria) {
+    private SubQueries(@Nullable C criteria) {
         super(criteria);
     }
 
@@ -142,14 +150,14 @@ abstract class StandardSubQueries<Q extends Query, C> extends AbstractStandardQu
 
     /*################################## blow private static inner class ##################################*/
 
-    private static final class StandardSubQuery<C> extends StandardSubQueries<SubQuery, C> {
+    private static final class StandardSubQuery<C> extends SubQueries<SubQuery, C> {
 
-        private StandardSubQuery(C criteria) {
+        private StandardSubQuery(@Nullable C criteria) {
             super(criteria);
         }
     }
 
-    private static final class StandardRowSubQuery<C> extends StandardSubQueries<RowSubQuery, C>
+    private static final class StandardRowSubQuery<C> extends SubQueries<RowSubQuery, C>
             implements RowSubQuery {
 
         private StandardRowSubQuery(C criteria) {
@@ -158,7 +166,7 @@ abstract class StandardSubQueries<Q extends Query, C> extends AbstractStandardQu
 
     }
 
-    private static final class StandardColumnSubQuery<E, C> extends StandardSubQueries<ColumnSubQuery<E>, C>
+    private static final class StandardColumnSubQuery<E, C> extends SubQueries<ColumnSubQuery<E>, C>
             implements ColumnSubQuery<E>, ColumnSubQuery.ColumnSelectionSpec<E, C> {
 
 

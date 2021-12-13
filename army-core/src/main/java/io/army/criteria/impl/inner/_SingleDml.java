@@ -1,6 +1,5 @@
 package io.army.criteria.impl.inner;
 
-import io.army.criteria.IPredicate;
 import io.army.meta.TableMeta;
 
 import java.util.List;
@@ -11,12 +10,8 @@ public interface _SingleDml extends _Statement {
 
     TableMeta<?> tableMeta();
 
-    int databaseIndex();
-
-    int tableIndex();
-
     /**
      * @return a unmodifiable list
      */
-    List<IPredicate> predicateList();
+    List<_Predicate> predicateList();
 }

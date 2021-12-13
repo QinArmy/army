@@ -21,7 +21,7 @@ public interface MySQL57Update extends Update {
 
     /*################################## blow single-update clause interface ##################################*/
 
-    interface MySQLSingleUpdateSpec<T extends IDomain, C> extends UpdateSQLSpec {
+    interface MySQLSingleUpdateSpec<T extends IDomain, C> extends UpdateSqlSpec {
 
         MySQLSingleUpdateTableRouteSpec<T, C> update(TableMeta<T> tableMeta, String tableAlias);
     }
@@ -33,7 +33,7 @@ public interface MySQL57Update extends Update {
         MySQLSingleUpdateSetSpec<T, C> route(int tableIndex);
     }
 
-    interface MySQLSingleUpdateSetSpec<T extends IDomain, C> extends UpdateSQLSpec {
+    interface MySQLSingleUpdateSetSpec<T extends IDomain, C> extends UpdateSqlSpec {
 
         <F> MySQLSingleUpdateWhereSpec<T, C> set(FieldMeta<? super T, F> target, F value);
 
@@ -91,7 +91,7 @@ public interface MySQL57Update extends Update {
     /*################################## blow multi-update clause interface ##################################*/
 
 
-    interface MySQLMultiUpdateSpec<C> extends UpdateSQLSpec {
+    interface MySQLMultiUpdateSpec<C> extends UpdateSqlSpec {
 
         MySQLMultiUpdateTableRoutJoinSpec<C> update(TableMeta<?> tableMeta, String tableAlias);
 
@@ -151,7 +151,7 @@ public interface MySQL57Update extends Update {
         MySQLMultiUpdateOnSpec<C> ifIndexHintList(Function<C, List<MySQL57IndexHint>> function);
     }
 
-    interface MySQLMultiUpdateOnSpec<C> extends UpdateSQLSpec {
+    interface MySQLMultiUpdateOnSpec<C> extends UpdateSqlSpec {
 
         MySQLMultiUpdateJoinSpec<C> on(List<IPredicate> predicateList);
 
@@ -161,7 +161,7 @@ public interface MySQL57Update extends Update {
     }
 
 
-    interface MySQLMultiUpdateSetSpec<C> extends UpdateSQLSpec {
+    interface MySQLMultiUpdateSetSpec<C> extends UpdateSqlSpec {
 
         <F> MySQLMultiUpdateWhereSpec<C> set(FieldMeta<?, F> target, F value);
 
@@ -201,13 +201,13 @@ public interface MySQL57Update extends Update {
 
     /*################################## blow batch single-update clause interface ##################################*/
 
-    interface MySQLBatchSingleUpdateSpec<T extends IDomain, C> extends UpdateSQLSpec {
+    interface MySQLBatchSingleUpdateSpec<T extends IDomain, C> extends UpdateSqlSpec {
 
         MySQLBatchSingleUpdateSetSpec<T, C> update(TableMeta<T> tableMeta, String tableAlias);
     }
 
 
-    interface MySQLBatchSingleUpdateSetSpec<T extends IDomain, C> extends UpdateSQLSpec {
+    interface MySQLBatchSingleUpdateSetSpec<T extends IDomain, C> extends UpdateSqlSpec {
 
         <F> MySQLBatchSingleUpdateWhereSpec<T, C> set(FieldMeta<? super T, F> target, F value);
 
@@ -262,7 +262,7 @@ public interface MySQL57Update extends Update {
         MySQLBatchSingleUpdateNamedParamSpec<C> ifLimit(Function<C, Integer> function);
     }
 
-    interface MySQLBatchSingleUpdateNamedParamSpec<C> extends UpdateSQLSpec {
+    interface MySQLBatchSingleUpdateNamedParamSpec<C> extends UpdateSqlSpec {
 
         UpdateSpec namedParamMaps(List<Map<String, Object>> mapList);
 
@@ -278,7 +278,7 @@ public interface MySQL57Update extends Update {
     /*################################## blow batch multi-update clause interface ##################################*/
 
 
-    interface MySQLBatchMultiUpdateSpec<C> extends UpdateSQLSpec {
+    interface MySQLBatchMultiUpdateSpec<C> extends UpdateSqlSpec {
 
         MySQLBatchAfterUpdateIndexHintSpec<C> update(TableMeta<?> tableMeta, String tableAlias);
     }
@@ -321,7 +321,7 @@ public interface MySQL57Update extends Update {
         MySQLBatchMultiUpdateOnSpec<C> ifIndexHintList(Function<C, List<MySQL57IndexHint>> function);
     }
 
-    interface MySQLBatchMultiUpdateOnSpec<C> extends UpdateSQLSpec {
+    interface MySQLBatchMultiUpdateOnSpec<C> extends UpdateSqlSpec {
 
         MySQLBatchMultiUpdateJoinSpec<C> on(List<IPredicate> predicateList);
 
@@ -331,7 +331,7 @@ public interface MySQL57Update extends Update {
     }
 
 
-    interface MySQLBatchMultiUpdateSetSpec<C> extends UpdateSQLSpec {
+    interface MySQLBatchMultiUpdateSetSpec<C> extends UpdateSqlSpec {
 
         <F> MySQLBatchMultiUpdateWhereSpec<C> set(FieldMeta<?, F> target, F value);
 
@@ -368,7 +368,7 @@ public interface MySQL57Update extends Update {
 
     }
 
-    interface MySQLBatchMultiUpdateNamedParamSpec<C> extends UpdateSQLSpec {
+    interface MySQLBatchMultiUpdateNamedParamSpec<C> extends UpdateSqlSpec {
 
         UpdateSpec namedParamMaps(List<Map<String, Object>> mapList);
 
