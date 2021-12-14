@@ -7,7 +7,7 @@ import io.army.criteria.Update;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner._StandardUpdate;
+import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util.Assert;
@@ -19,11 +19,11 @@ import java.util.Set;
 
 public abstract class AbstractGenericSession implements GenericSession {
 
-    public static boolean cacheDomainUpdate(_StandardUpdate update) {
+    public static boolean cacheDomainUpdate(_SingleUpdate update) {
         return update instanceof AbstractGenericSession.CacheDomainUpdate;
     }
 
-    protected static final class CacheDomainUpdate implements Update, _StandardUpdate {
+    protected static final class CacheDomainUpdate implements Update, _SingleUpdate {
 
         public static CacheDomainUpdate build(DomainUpdateAdvice advice) {
 
@@ -72,8 +72,20 @@ public abstract class AbstractGenericSession implements GenericSession {
 
 
         @Override
-        public TableMeta<?> tableMeta() {
+        public TableMeta<?> table() {
             return this.tableMeta;
+        }
+
+        @Override
+        public int databaseIndex() {
+            // always negative
+            return -1;
+        }
+
+        @Override
+        public int tableIndex() {
+            // always negative
+            return -1;
         }
 
         @Override
@@ -82,7 +94,7 @@ public abstract class AbstractGenericSession implements GenericSession {
         }
 
         @Override
-        public List<FieldMeta<?, ?>> targetFieldList() {
+        public List<FieldMeta<?, ?>> fieldList() {
             return this.targetFieldList;
         }
 

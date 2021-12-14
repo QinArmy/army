@@ -22,7 +22,7 @@ public final class TablesContext {
     public static final String CHILD_ALIAS_PREFIX = "c_of_";
 
     public static TablesContext singleTable(_SingleDml singleTable, boolean parent, String primaryRouteSuffix) {
-        TableMeta<?> tableMeta = singleTable.tableMeta();
+        TableMeta<?> tableMeta = singleTable.table();
         if (parent) {
             tableMeta = ((ChildTableMeta<?>) tableMeta).parentMeta();
         }

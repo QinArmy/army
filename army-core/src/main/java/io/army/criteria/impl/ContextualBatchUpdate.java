@@ -6,9 +6,9 @@ import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Update;
+import io.army.criteria.impl.inner._BatchUpdate;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner._StandardBatchUpdate;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -29,9 +29,9 @@ import java.util.function.Predicate;
  * @param <C> criteria java type used to dynamic update and sub query
  */
 final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
-        implements Update, Update.BatchSetSpec<T, C>, Update.BatchWhereSpec<T, C>
+        implements Update, Update.BatchRouteSpec<T, C>, Update.BatchWhereSpec<T, C>
         , Update.BatchWhereAndSpec<C>, Update.BatchParamSpec<C>, Update.UpdateSpec
-        , _StandardBatchUpdate {
+        , _BatchUpdate {
 
     static BatchUpdateSpec<Void> create() {
         return new BatchUpdateSpecImpl<>(null);
@@ -48,6 +48,10 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
     private final C criteria;
 
     private final CriteriaContext criteriaContext;
+
+    private int databaseIndex = -1;
+
+    private int tableIndex = -1;
 
     private List<FieldMeta<?, ?>> fieldList = new ArrayList<>();
 
@@ -68,7 +72,20 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
         CriteriaContextHolder.setContext(this.criteriaContext);
     }
 
-    /*################################## blow BatchUpdateSpec method ##################################*/
+    /*################################## blow BatchRouteSpec method ##################################*/
+
+    @Override
+    public BatchSetSpec<T, C> route(int databaseIndex, int tableIndex) {
+        this.databaseIndex = databaseIndex;
+        this.tableIndex = tableIndex;
+        return this;
+    }
+
+    @Override
+    public BatchSetSpec<T, C> route(int tableIndex) {
+        this.tableIndex = tableIndex;
+        return this;
+    }
 
     /*################################## blow BatchSetSpec method ##################################*/
 
@@ -264,7 +281,7 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
     }
 
     @Override
-    public TableMeta<?> tableMeta() {
+    public TableMeta<?> table() {
         return this.tableMeta;
     }
 
@@ -274,7 +291,17 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
     }
 
     @Override
-    public List<FieldMeta<?, ?>> targetFieldList() {
+    public int databaseIndex() {
+        return this.databaseIndex;
+    }
+
+    @Override
+    public int tableIndex() {
+        return this.tableIndex;
+    }
+
+    @Override
+    public List<FieldMeta<?, ?>> fieldList() {
         return this.fieldList;
     }
 
@@ -291,11 +318,15 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
 
     @Override
     public void clear() {
+        this.prepared = false;
+
         this.fieldList = null;
         this.valueExpList = null;
         this.predicateList = null;
         this.paramList = null;
-        this.prepared = false;
+
+        this.databaseIndex = -1;
+        this.tableIndex = -1;
     }
 
 
@@ -308,7 +339,7 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
         }
 
         @Override
-        public <T extends IDomain> BatchSetSpec<T, C> update(TableMeta<T> table, String tableAlias) {
+        public <T extends IDomain> BatchRouteSpec<T, C> update(TableMeta<T> table, String tableAlias) {
             return new ContextualBatchUpdate<>(table, tableAlias, this.criteria);
         }
 

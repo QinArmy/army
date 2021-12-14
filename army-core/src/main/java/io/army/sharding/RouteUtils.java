@@ -22,6 +22,29 @@ public abstract class RouteUtils {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * @see #encodeSubQueryRoute(byte)
+     */
+    public static byte decodeRoute(final byte route) {
+        final byte r;
+        if (route == Byte.MIN_VALUE) {// MIN_VALUE representing negative zero.
+            r = 0;
+        } else if (route < 0) { // negative representing route from sub query.
+            r = (byte) -route;
+        } else {
+            r = route;
+        }
+        return r;
+    }
+
+    /**
+     * @param subQueryRoute route from sub query.
+     * @see #decodeRoute(byte)
+     */
+    public static byte encodeSubQueryRoute(final byte subQueryRoute) {
+        return subQueryRoute == 0 ? Byte.MIN_VALUE : ((byte) -subQueryRoute);
+    }
+
     @Nullable
     public static String convertToSuffix(final int tableCountPerDatabase, final int tableIndex) {
         if (tableCountPerDatabase <= 0) {

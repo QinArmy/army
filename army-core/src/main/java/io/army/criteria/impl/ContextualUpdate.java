@@ -5,7 +5,7 @@ import io.army.criteria.IPredicate;
 import io.army.criteria.Update;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner._StandardUpdate;
+import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -29,8 +29,8 @@ import java.util.function.Predicate;
  * @param <C> criteria java type used to dynamic update and sub query
  */
 final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug implements
-        Update, Update.UpdateSpec, Update.WhereSpec<T, C>, Update.SetSpec<T, C>
-        , Update.WhereAndSpec<T, C>, _StandardUpdate {
+        Update, Update.UpdateSpec, Update.WhereSpec<T, C>, Update.RouteSpec<T, C>
+        , Update.WhereAndSpec<T, C>, _SingleUpdate {
 
     static DomainUpdateSpec<Void> create() {
         return new DomainUpdateSpecImpl<>(null);
@@ -48,11 +48,16 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
 
     private final CriteriaContext criteriaContext;
 
+    private int databaseIndex = -1;
+
+    private int tableIndex = -1;
+
     private List<FieldMeta<?, ?>> fieldList = new ArrayList<>();
 
     private List<_Expression<?>> valueExpList = new ArrayList<>();
 
     private List<_Predicate> predicateList = new ArrayList<>();
+
 
     private boolean prepared;
 
@@ -65,6 +70,20 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
         CriteriaContextHolder.setContext(this.criteriaContext);
     }
 
+    /*################################## blow RouteSpec method ##################################*/
+
+    @Override
+    public SetSpec<T, C> route(int databaseIndex, int tableIndex) {
+        this.databaseIndex = databaseIndex;
+        this.tableIndex = tableIndex;
+        return this;
+    }
+
+    @Override
+    public SetSpec<T, C> route(int tableIndex) {
+        this.tableIndex = tableIndex;
+        return this;
+    }
 
     /*################################## blow SetSpec method ##################################*/
 
@@ -341,7 +360,7 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
     /*################################## blow InnerStandardDomainUpdate method ##################################*/
 
     @Override
-    public TableMeta<?> tableMeta() {
+    public TableMeta<?> table() {
         return this.table;
     }
 
@@ -351,13 +370,23 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
     }
 
     @Override
+    public int databaseIndex() {
+        return this.databaseIndex;
+    }
+
+    @Override
+    public int tableIndex() {
+        return this.tableIndex;
+    }
+
+    @Override
     public List<_Predicate> predicateList() {
         Assert.prepared(this.prepared);
         return this.predicateList;
     }
 
     @Override
-    public List<FieldMeta<?, ?>> targetFieldList() {
+    public List<FieldMeta<?, ?>> fieldList() {
         return this.fieldList;
     }
 
@@ -368,10 +397,13 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
 
     @Override
     public void clear() {
+        this.prepared = false;
+
         this.fieldList = null;
         this.valueExpList = null;
         this.predicateList = null;
-        this.prepared = false;
+        this.databaseIndex = -1;
+        this.tableIndex = -1;
     }
 
 
@@ -384,7 +416,7 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
         }
 
         @Override
-        public <T extends IDomain> SetSpec<T, C> update(TableMeta<T> table, String tableAlias) {
+        public <T extends IDomain> RouteSpec<T, C> update(TableMeta<T> table, String tableAlias) {
             return new ContextualUpdate<>(table, tableAlias, this.criteria);
         }
 

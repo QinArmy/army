@@ -8,12 +8,56 @@ import io.army.criteria.impl.inner._SingleDml;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.sharding.RouteUtils;
-import io.army.sharding.RouteWrapper;
+import io.army.session.GenericRmSessionFactory;
+import io.army.sharding.*;
 
 import java.util.List;
 
 abstract class TableRouteUtils extends RouteUtils {
+
+
+    static byte singleDmlRoute(_SingleDml update, GenericRmSessionFactory factory) {
+        final TableMeta<?> table = update.table();
+
+        final List<FieldMeta<?, ?>> databaseFields, tableFields;
+        databaseFields = table.databaseRouteFields();
+        tableFields = table.tableRouteFields();
+
+        final Route route = factory.tableRoute(table);
+        Byte tableIndex = null, databaseIndex = null, index;
+        for (_Predicate predicate : update.predicateList()) {
+
+            if (tableIndex == null || tableIndex < 0) {
+                index = predicate.tableIndex((TableRoute) route, tableFields);
+                if (index != null && (tableIndex == null || index >= 0)) {
+                    tableIndex = index;
+                }
+            }
+
+            if (!(route instanceof DatabaseRoute) || (databaseIndex != null && databaseIndex >= 0)) {
+                continue;
+            }
+            index = predicate.databaseIndex((DatabaseRoute) route, databaseFields);
+            if (index != null && (databaseIndex == null || index >= 0)) {
+                databaseIndex = index;
+            }
+
+        }
+
+
+        final byte databaseRoute, tableRoute;
+        if (databaseIndex != null) {
+            if (databaseIndex == Byte.MIN_VALUE) {// MIN_VALUE representing negative zero.
+                databaseRoute = 0;
+            } else {
+                databaseRoute = databaseIndex;
+            }
+        }
+
+        final int database = factory.databaseIndex();
+
+        return 0;
+    }
 
 
     static String valueInsertPrimaryRouteSuffix(TableMeta<?> tableMeta, Dialect dialect, ReadonlyWrapper beanWrapper) {
@@ -42,14 +86,14 @@ abstract class TableRouteUtils extends RouteUtils {
     }
 
     static String subQueryInsertPrimaryRouteSuffix(_SingleDml innerSingleDML, Dialect dialect) {
-        TableMeta<?> tableMeta = innerSingleDML.tableMeta();
+        TableMeta<?> tableMeta = innerSingleDML.table();
         if (notSupportRoute(dialect, tableMeta)) {
             return "";
         }
         int tableIndex = 0;
         if (tableIndex < 0) {
             throw new NotFoundRouteException("Value insert ,TableMeta[%s] not found primary route."
-                    , innerSingleDML.tableMeta());
+                    , innerSingleDML.table());
         }
         // route table suffix by route key
 //        return dialect.sessionFactory()
@@ -59,7 +103,7 @@ abstract class TableRouteUtils extends RouteUtils {
     }
 
     static String singleDmlPrimaryRouteSuffix(_SingleDml singleTableSQL, Dialect dialect) {
-        TableMeta<?> tableMeta = singleTableSQL.tableMeta();
+        TableMeta<?> tableMeta = singleTableSQL.table();
         if (notSupportRoute(dialect, tableMeta)) {
             return "";
         }

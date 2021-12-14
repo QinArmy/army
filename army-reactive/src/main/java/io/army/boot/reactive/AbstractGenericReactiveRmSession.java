@@ -318,7 +318,7 @@ abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F ext
         }
         Mono<Void> mono;
         if (sqlStatement instanceof _SingleDml) {
-            mono = doInvokeInsertBeforeAdvice(((_SingleDml) sqlStatement).tableMeta());
+            mono = doInvokeInsertBeforeAdvice(((_SingleDml) sqlStatement).table());
         } else if (sqlStatement instanceof _MultiDML) {
             // 1. iterate tableWrapperList
             mono = Flux.fromIterable(((_MultiDML) sqlStatement).tableWrapperList())
@@ -343,7 +343,7 @@ abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F ext
         }
         Mono<Void> mono;
         if (sqlStatement instanceof _SingleDml) {
-            mono = doInvokeInsertBeforeAdvice(((_SingleDml) sqlStatement).tableMeta());
+            mono = doInvokeInsertBeforeAdvice(((_SingleDml) sqlStatement).table());
         } else if (sqlStatement instanceof _MultiDML) {
             // 1. iterate tableWrapperList
             mono = Flux.fromIterable(((_MultiDML) sqlStatement).tableWrapperList())

@@ -146,7 +146,7 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
     /*################################## blow InnerStandardSingleDelete method ##################################*/
 
     @Override
-    public TableMeta<?> tableMeta() {
+    public TableMeta<?> table() {
         Assert.prepared(this.prepared);
         return this.tableMeta;
     }

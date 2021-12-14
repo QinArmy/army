@@ -354,20 +354,19 @@ abstract class DmlUtils {
     }
 
     static void assertUpdateSetAndWhereClause(_Update update) {
-        List<? extends SetTargetPart> targetFieldList = update.targetFieldList();
-        if (CollectionUtils.isEmpty(targetFieldList)) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "update must have set clause.");
+        final List<FieldMeta<?, ?>> fieldList = update.fieldList();
+        if (CollectionUtils.isEmpty(fieldList)) {
+            throw new CriteriaException("update must have set clause.");
         }
-        List<? extends SetValuePart> valueExpList = update.valueExpList();
-        if (CollectionUtils.isEmpty(valueExpList)) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "update must have set clause.");
-        }
-        if (targetFieldList.size() != valueExpList.size()) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                    , "update set clause target field list size and value expression list size not match.");
+        final List<? extends SetValuePart> valueExpList = update.valueExpList();
+        if (fieldList.size() != valueExpList.size()) {
+            String m;
+            m = String.format("update set clause field list size[%s] and value expression list size[%s] not match."
+                    , fieldList.size(), valueExpList.size());
+            throw new CriteriaException(m);
         }
         if (CollectionUtils.isEmpty(update.predicateList())) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "update must have where clause.");
+            throw new CriteriaException("update must have where clause.");
         }
     }
 

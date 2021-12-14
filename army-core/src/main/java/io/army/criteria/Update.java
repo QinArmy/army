@@ -23,7 +23,14 @@ public interface Update extends Statement, SQLDebug {
 
     interface DomainUpdateSpec<C> {
 
-        <T extends IDomain> SetSpec<T, C> update(TableMeta<T> table, String tableAlias);
+        <T extends IDomain> RouteSpec<T, C> update(TableMeta<T> table, String tableAlias);
+    }
+
+    interface RouteSpec<T extends IDomain, C> extends SetSpec<T, C> {
+
+        SetSpec<T, C> route(int databaseIndex, int tableIndex);
+
+        SetSpec<T, C> route(int tableIndex);
     }
 
 
@@ -114,7 +121,14 @@ public interface Update extends Statement, SQLDebug {
 
     interface BatchUpdateSpec<C> {
 
-        <T extends IDomain> BatchSetSpec<T, C> update(TableMeta<T> table, String tableAlias);
+        <T extends IDomain> BatchRouteSpec<T, C> update(TableMeta<T> table, String tableAlias);
+    }
+
+    interface BatchRouteSpec<T extends IDomain, C> extends BatchSetSpec<T, C> {
+
+        BatchSetSpec<T, C> route(int databaseIndex, int tableIndex);
+
+        BatchSetSpec<T, C> route(int tableIndex);
     }
 
 

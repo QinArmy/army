@@ -8,7 +8,7 @@ public interface _SingleDml extends _Statement {
 
     String tableAlias();
 
-    TableMeta<?> tableMeta();
+    TableMeta<?> table();
 
     /**
      * @return a unmodifiable list

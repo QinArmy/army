@@ -2,7 +2,7 @@ package io.army.dialect;
 
 import io.army.criteria.FieldPredicate;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner._StandardUpdate;
+import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
@@ -11,8 +11,8 @@ import io.army.stmt.SimpleStmt;
 
 class StandardUpdateContext extends AbstractStandardDomainContext implements UpdateContext {
 
-    static StandardUpdateContext build(_StandardUpdate update, Dialect dialect, final Visible visible) {
-        TableMeta<?> tableMeta = update.tableMeta();
+    static StandardUpdateContext build(_SingleUpdate update, Dialect dialect, final Visible visible) {
+        TableMeta<?> tableMeta = update.table();
         String primaryRouteSuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(update, dialect);
 
         TablesContext tableContext = TablesContext.singleTable(update, false, primaryRouteSuffix);
@@ -23,8 +23,8 @@ class StandardUpdateContext extends AbstractStandardDomainContext implements Upd
                 , DmlUtils.hasVersionPredicate(update.predicateList()));
     }
 
-    static StandardUpdateContext buildParent(_StandardUpdate update, Dialect dialect, final Visible visible) {
-        ChildTableMeta<?> childMeta = (ChildTableMeta<?>) update.tableMeta();
+    static StandardUpdateContext buildParent(_SingleUpdate update, Dialect dialect, final Visible visible) {
+        ChildTableMeta<?> childMeta = (ChildTableMeta<?>) update.table();
         String primaryRouteSuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(update, dialect);
 
         TablesContext tableContext = TablesContext.singleTable(update, true, primaryRouteSuffix);
@@ -36,8 +36,8 @@ class StandardUpdateContext extends AbstractStandardDomainContext implements Upd
         );
     }
 
-    static StandardUpdateContext buildChild(_StandardUpdate update, Dialect dialect, final Visible visible) {
-        ChildTableMeta<?> childMeta = (ChildTableMeta<?>) update.tableMeta();
+    static StandardUpdateContext buildChild(_SingleUpdate update, Dialect dialect, final Visible visible) {
+        ChildTableMeta<?> childMeta = (ChildTableMeta<?>) update.table();
         String primaryRouteSuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(update, dialect);
 
         TablesContext tableContext = TablesContext.singleTable(update, false, primaryRouteSuffix);

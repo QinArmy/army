@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.ColumnSubQuery;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner.*;
-import io.army.session.AbstractGenericSession;
 
 public abstract class _CriteriaCounselor {
 
@@ -40,17 +39,18 @@ public abstract class _CriteriaCounselor {
     }
 
 
-    public static void assertStandardUpdate(_StandardUpdate update) {
-        if (update instanceof _StandardBatchUpdate) {
-            if (!(update instanceof ContextualBatchUpdate)) {
-                throw new IllegalArgumentException(String.format("%s isn't instance of %s", update
-                        , ContextualBatchUpdate.class.getName()));
-            }
-        } else if (!AbstractGenericSession.cacheDomainUpdate(update)
-                && !(update instanceof ContextualUpdate)) {
-            throw new IllegalArgumentException(String.format("%s isn't instance of %s", update
-                    , ContextualUpdate.class.getName()));
-        }
+    public static void assertStandardUpdate(_Update update) {
+        throw new UnsupportedOperationException();
+//        if (update instanceof _BatchUpdate) {
+//            if (!(update instanceof ContextualBatchUpdate)) {
+//                throw new IllegalArgumentException(String.format("%s isn't instance of %s", update
+//                        , ContextualBatchUpdate.class.getName()));
+//            }
+//        } else if (!AbstractGenericSession.cacheDomainUpdate(update)
+//                && !(update instanceof ContextualUpdate)) {
+//            throw new IllegalArgumentException(String.format("%s isn't instance of %s", update
+//                    , ContextualUpdate.class.getName()));
+//        }
 
     }
 

@@ -52,7 +52,7 @@ abstract class DatabaseRouteUtils extends RouteUtils {
 
     @Nullable
     static RouteWrapper findRouteForSingleDML(_SingleDml dml) {
-        TableMeta<?> tableMeta = dml.tableMeta();
+        TableMeta<?> tableMeta = dml.table();
         List<FieldMeta<?, ?>> dataSourceRouteFields = tableMeta.routeFieldList(true);
         RouteWrapper routeWrapper = null;
         // 1. try find from where clause.

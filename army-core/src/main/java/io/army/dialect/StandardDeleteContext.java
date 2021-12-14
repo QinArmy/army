@@ -12,7 +12,7 @@ import io.army.stmt.SimpleStmt;
 class StandardDeleteContext extends AbstractStandardDomainContext implements DeleteContext {
 
     static StandardDeleteContext build(_StandardDelete delete, Dialect dialect, Visible visible) {
-        TableMeta<?> tableMeta = delete.tableMeta();
+        TableMeta<?> tableMeta = delete.table();
         String primarySuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(delete, dialect);
 
         TablesContext tableContext = TablesContext.singleTable(delete, false, primarySuffix);
@@ -23,7 +23,7 @@ class StandardDeleteContext extends AbstractStandardDomainContext implements Del
     }
 
     static StandardDeleteContext buildParent(_StandardDelete delete, Dialect dialect, final Visible visible) {
-        ParentTableMeta<?> parentMeta = ((ChildTableMeta<?>) delete.tableMeta()).parentMeta();
+        ParentTableMeta<?> parentMeta = ((ChildTableMeta<?>) delete.table()).parentMeta();
 
         String primarySuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(delete, dialect);
 
@@ -35,7 +35,7 @@ class StandardDeleteContext extends AbstractStandardDomainContext implements Del
     }
 
     static StandardDeleteContext buildChild(_StandardDelete delete, Dialect dialect, final Visible visible) {
-        ChildTableMeta<?> childMeta = (ChildTableMeta<?>) delete.tableMeta();
+        ChildTableMeta<?> childMeta = (ChildTableMeta<?>) delete.table();
         String primarySuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(delete, dialect);
 
         TablesContext tableContext = TablesContext.singleTable(delete, false, primarySuffix);

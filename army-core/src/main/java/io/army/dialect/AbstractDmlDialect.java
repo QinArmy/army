@@ -85,29 +85,22 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
     /*################################## blow update method ##################################*/
 
     @Override
-    public final Stmt update(Update update, final Visible visible) {
+    public final Stmt update(final Update update, final Visible visible) {
         update.prepared();
-
-        Stmt stmt;
-        if (update instanceof _StandardUpdate) {
-            _StandardUpdate standardUpdate = (_StandardUpdate) update;
+        final _Update updateStmt = (_Update) update;
+        DmlUtils.assertUpdateSetAndWhereClause(updateStmt);
+        final Stmt stmt;
+        if (updateStmt instanceof _DialectStatement) {
             // assert implementation class is legal
-            _CriteriaCounselor.assertStandardUpdate(standardUpdate);
-            DmlUtils.assertUpdateSetAndWhereClause(standardUpdate);
-            if (update instanceof _StandardBatchUpdate) {
-                stmt = standardBatchUpdate((_StandardBatchUpdate) update, visible);
-            } else {
-                stmt = standardGenericUpdate(standardUpdate, visible);
-            }
-
-        } else if (update instanceof _SpecialUpdate) {
-            _SpecialUpdate specialUpdate = (_SpecialUpdate) update;
-            // assert implementation class is legal
-            assertSpecialUpdate(specialUpdate);
-            DmlUtils.assertUpdateSetAndWhereClause(specialUpdate);
-            stmt = specialUpdate(specialUpdate, visible);
+            assertDialectUpdate(updateStmt);
+            stmt = dialectUpdate(updateStmt, visible);
         } else {
-            throw new IllegalArgumentException(String.format("Update[%s] not supported by simpleUpdate.", update));
+            _CriteriaCounselor.assertStandardUpdate(updateStmt);
+            if (updateStmt instanceof _BatchUpdate) {
+                stmt = standardBatchUpdate((_BatchUpdate) update, visible);
+            } else {
+                stmt = handleStandardUpdate(updateStmt, visible);
+            }
         }
         return stmt;
     }
@@ -172,13 +165,13 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
     /*################################## blow update template method ##################################*/
 
 
-    protected void assertSpecialUpdate(_SpecialUpdate update) {
+    protected void assertDialectUpdate(_Update update) {
         throw new UnsupportedOperationException(String.format("dialect[%s] not support special domain update."
                 , database())
         );
     }
 
-    protected Stmt specialUpdate(_SpecialUpdate update, Visible visible) {
+    protected Stmt dialectUpdate(_Update update, Visible visible) {
         throw new UnsupportedOperationException(String.format("dialect [%s] not support special update."
                 , database())
         );
@@ -315,14 +308,38 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
 
     /*################################## blow update private method ##################################*/
 
-    private Stmt standardChildUpdate(_StandardUpdate update, final Visible visible) {
-        List<FieldMeta<?, ?>> targetFieldList = update.targetFieldList();
+
+    protected UpdateContext createUpdateContext(final _Update update, byte tableIndex, final Visible visible) {
+        throw new UnsupportedOperationException();
+    }
+
+
+    /**
+     * @see #update(Update, Visible)
+     */
+    private Stmt handleStandardUpdate(final _Update update, final Visible visible) {
+        final TableMeta<?> table = update.table();
+        if (table instanceof SimpleTableMeta) {
+
+        } else if (table instanceof ChildTableMeta) {
+
+        } else if (table instanceof ParentTableMeta) {
+
+        } else {
+            throw _Exceptions.unknownTableType(table);
+        }
+        return null;
+    }
+
+
+    private Stmt standardChildUpdate(_SingleUpdate update, final Visible visible) {
+        List<FieldMeta<?, ?>> targetFieldList = update.fieldList();
         List<_Expression<?>> valueExpList = update.valueExpList();
 
         final List<FieldMeta<?, ?>> parentFieldList = new ArrayList<>(), childFieldList = new ArrayList<>();
         final List<_Expression<?>> parentExpList = new ArrayList<>(), childExpList = new ArrayList<>();
 
-        final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) update.tableMeta();
+        final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) update.table();
         final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
         // 1. divide target fields and value expressions with parentMeta and childMeta.
         final int size = targetFieldList.size();
@@ -362,21 +379,6 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
         return stmt;
     }
 
-    private Stmt standardGenericUpdate(_StandardUpdate update, final Visible visible) {
-        final TableMeta<?> table = update.tableMeta();
-        final Stmt stmt;
-        if (table instanceof SimpleTableMeta) {
-            stmt = standardSimpleUpdate(update, visible);
-        } else if (table instanceof ParentTableMeta) {
-            stmt = standardParentUpdate(update, visible);
-        } else if (table instanceof ChildTableMeta) {
-            stmt = standardChildUpdate(update, visible);
-        } else {
-            throw _Exceptions.unknownTableType(table);
-        }
-        return stmt;
-    }
-
 
     private void parseStandardUpdate(StandardUpdateContext context, TableMeta<?> tableMeta, String tableAlias
             , List<FieldMeta<?, ?>> fieldList, List<_Expression<?>> valueExpList, List<_Predicate> predicateList) {
@@ -394,31 +396,31 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
 
     }
 
-    private Stmt standardBatchUpdate(_StandardBatchUpdate update, final Visible visible) {
+    private Stmt standardBatchUpdate(_BatchUpdate update, final Visible visible) {
         // create batch update wrapper
         return DmlUtils.createBatchSQLWrapper(
                 update.wrapperList()
-                , standardGenericUpdate(update, visible)
+                , handleStandardUpdate(update, visible)
         );
     }
 
-    private SimpleStmt standardSimpleUpdate(_StandardUpdate update, final Visible visible) {
+    private SimpleStmt standardSimpleUpdate(_SingleUpdate update, final Visible visible) {
         StandardUpdateContext context = StandardUpdateContext.build(update, this.dialect, visible);
 
-        parseStandardUpdate(context, update.tableMeta(), update.tableAlias()
-                , update.targetFieldList(), update.valueExpList(), update.predicateList());
+        parseStandardUpdate(context, update.table(), update.tableAlias()
+                , update.fieldList(), update.valueExpList(), update.predicateList());
 
         return context.build();
     }
 
-    private SimpleStmt standardParentUpdate(_StandardUpdate update, final Visible visible) {
+    private SimpleStmt standardParentUpdate(_SingleUpdate update, final Visible visible) {
         StandardUpdateContext context = StandardUpdateContext.build(update, this.dialect, visible);
-        final ParentTableMeta<?> parentMeta = (ParentTableMeta<?>) update.tableMeta();
+        final ParentTableMeta<?> parentMeta = (ParentTableMeta<?>) update.table();
         // create parent predicate
         List<_Predicate> parentPredicateList = DmlUtils.createParentPredicates(parentMeta, update.predicateList());
 
         parseStandardUpdate(context, parentMeta, update.tableAlias()
-                , update.targetFieldList(), update.valueExpList(), parentPredicateList);
+                , update.fieldList(), update.valueExpList(), parentPredicateList);
 
         return context.build();
     }
@@ -452,7 +454,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
 
     private Stmt standardGenericDelete(_StandardDelete delete, final Visible visible) {
 
-        final TableMeta<?> table = delete.tableMeta();
+        final TableMeta<?> table = delete.table();
         final Stmt stmt;
         if (table instanceof SimpleTableMeta) {
             stmt = standardSimpleDelete(delete, visible);
@@ -469,13 +471,13 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
 
     private Stmt standardSimpleDelete(_StandardDelete delete, final Visible visible) {
         StandardDeleteContext context = StandardDeleteContext.build(delete, this.dialect, visible);
-        parseStandardDelete(delete.tableMeta(), delete.tableAlias(), delete.predicateList(), context);
+        parseStandardDelete(delete.table(), delete.tableAlias(), delete.predicateList(), context);
         return context.build();
     }
 
     private Stmt standardParentDelete(_StandardDelete delete, final Visible visible) {
         StandardDeleteContext context = StandardDeleteContext.build(delete, this.dialect, visible);
-        final ParentTableMeta<?> parentMeta = (ParentTableMeta<?>) delete.tableMeta();
+        final ParentTableMeta<?> parentMeta = (ParentTableMeta<?>) delete.table();
         // create parent predicate list
         List<_Predicate> parentPredicateList = DmlUtils.createParentPredicates(parentMeta, delete.predicateList());
         parseStandardDelete(parentMeta, delete.tableAlias(), parentPredicateList, context);
@@ -483,7 +485,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
     }
 
     private Stmt standardChildDelete(_StandardDelete delete, final Visible visible) {
-        final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) delete.tableMeta();
+        final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) delete.table();
         final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
         // 1. extract parent predicate list
         List<_Predicate> parentPredicateList = DmlUtils.extractParentPredicateForDelete(childMeta

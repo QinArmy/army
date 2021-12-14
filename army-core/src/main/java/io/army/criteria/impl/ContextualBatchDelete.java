@@ -176,7 +176,7 @@ final class ContextualBatchDelete<C> implements Delete,
     }
 
     @Override
-    public TableMeta<?> tableMeta() {
+    public TableMeta<?> table() {
         Assert.prepared(this.prepared);
         return this.table;
     }
