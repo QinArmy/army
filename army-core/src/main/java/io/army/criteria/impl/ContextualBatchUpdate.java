@@ -120,7 +120,7 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
     @Override
     public <F> BatchWhereSpec<T, C> ifSet(Predicate<C> test, FieldMeta<? super T, F> field) {
         if (test.test(this.criteria)) {
-            this.set(field, field);
+            this.set(field, SQLs.namedParam(field));
         }
         return this;
     }

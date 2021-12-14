@@ -28,7 +28,7 @@ final class SyncCommitTransactionManager {
 
 //
 //    @Override
-//    public final void commit() throws TransactionException {
+//    void commit() throws TransactionException {
 //        checkReadWrite("commit");
 //        if (this.status != TransactionStatus.ACTIVE) {
 //            throw new IllegalTransactionStateException("tm transaction status[%s] isn't %s,can't commit."
@@ -43,7 +43,7 @@ final class SyncCommitTransactionManager {
 //    }
 //
 //    @Override
-//    public final void rollback() throws TransactionException {
+//    void rollback() throws TransactionException {
 //        checkReadWrite("rollback");
 //        if (!TransactionStatus.ROLL_BACK_ABLE_SET.contains(this.status)) {
 //            throw new IllegalTransactionStateException("transaction status[%s] don't in %s,can't rollback."
@@ -72,7 +72,7 @@ final class SyncCommitTransactionManager {
 //    }
 //
 //    @Override
-//    public final boolean transactionEnded() {
+//    boolean transactionEnded() {
 //        return TransactionStatus.END_STATUS_SET.contains(this.status);
 //    }
 //

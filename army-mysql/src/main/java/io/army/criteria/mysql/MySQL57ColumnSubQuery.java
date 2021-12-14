@@ -6,7 +6,7 @@ import io.army.criteria.Selection;
 
 public interface MySQL57ColumnSubQuery<E> extends ColumnSubQuery<E>, MySQL57SubQuery {
 
-    interface MySQLColumnSelectionSpec<E, C> extends QuerySQLSpec {
+    interface MySQLColumnSelectionSpec<E, C> {
 
         MySQLFromSpec<MySQL57ColumnSubQuery<E>, C> select(Distinct distinct, Selection selection);
 

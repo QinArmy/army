@@ -14,23 +14,20 @@ import java.util.function.Predicate;
 
 public interface Update extends Statement, SQLDebug {
 
-    interface UpdateSqlSpec {
 
-    }
-
-    interface UpdateSpec extends UpdateSqlSpec {
+    interface UpdateSpec {
 
         Update asUpdate();
     }
 
 
-    interface DomainUpdateSpec<C> extends UpdateSqlSpec {
+    interface DomainUpdateSpec<C> {
 
         <T extends IDomain> SetSpec<T, C> update(TableMeta<T> table, String tableAlias);
     }
 
 
-    interface SetSpec<T extends IDomain, C> extends UpdateSqlSpec {
+    interface SetSpec<T extends IDomain, C> {
 
         <F> WhereSpec<T, C> set(FieldMeta<? super T, F> field, @Nullable F value);
 
@@ -67,6 +64,26 @@ public interface Update extends Statement, SQLDebug {
 
         <F> WhereSpec<T, C> ifSet(FieldMeta<? super T, F> field, Function<C, Expression<F>> function);
 
+        <F extends Number> WhereSpec<T, C> ifSetPlus(FieldMeta<? super T, F> field, @Nullable F value);
+
+        <F extends Number> WhereSpec<T, C> ifSetMinus(FieldMeta<? super T, F> field, @Nullable F value);
+
+        <F extends Number> WhereSpec<T, C> ifSetMultiply(FieldMeta<? super T, F> field, @Nullable F value);
+
+        <F extends Number> WhereSpec<T, C> ifSetDivide(FieldMeta<? super T, F> field, @Nullable F value);
+
+        <F extends Number> WhereSpec<T, C> ifSetMod(FieldMeta<? super T, F> field, @Nullable F value);
+
+        <F extends Number> WhereSpec<T, C> ifSetPlus(Predicate<C> test, FieldMeta<? super T, F> field, F value);
+
+        <F extends Number> WhereSpec<T, C> ifSetMinus(Predicate<C> test, FieldMeta<? super T, F> field, F value);
+
+        <F extends Number> WhereSpec<T, C> ifSetMultiply(Predicate<C> test, FieldMeta<? super T, F> field, F value);
+
+        <F extends Number> WhereSpec<T, C> ifSetDivide(Predicate<C> test, FieldMeta<? super T, F> field, F value);
+
+        <F extends Number> WhereSpec<T, C> ifSetMod(Predicate<C> test, FieldMeta<? super T, F> field, F value);
+
     }
 
 
@@ -95,13 +112,13 @@ public interface Update extends Statement, SQLDebug {
 
     /*################################## blow batch update interface ##################################*/
 
-    interface BatchUpdateSpec<C> extends UpdateSqlSpec {
+    interface BatchUpdateSpec<C> {
 
         <T extends IDomain> BatchSetSpec<T, C> update(TableMeta<T> table, String tableAlias);
     }
 
 
-    interface BatchSetSpec<T extends IDomain, C> extends UpdateSqlSpec {
+    interface BatchSetSpec<T extends IDomain, C> {
 
         <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> field, Expression<F> valueExp);
 
@@ -122,6 +139,7 @@ public interface Update extends Statement, SQLDebug {
         <F> BatchWhereSpec<T, C> ifSet(Predicate<C> test, FieldMeta<? super T, F> field);
 
         <F> BatchWhereSpec<T, C> ifSet(FieldMeta<? super T, F> filed, Function<C, Expression<F>> function);
+
     }
 
     interface BatchWhereSpec<T extends IDomain, C> extends BatchSetSpec<T, C> {
@@ -133,7 +151,7 @@ public interface Update extends Statement, SQLDebug {
         BatchWhereAndSpec<C> where(IPredicate predicate);
     }
 
-    interface BatchWhereAndSpec<C> extends UpdateSqlSpec {
+    interface BatchWhereAndSpec<C> {
 
         BatchWhereAndSpec<C> and(IPredicate predicate);
 
@@ -146,7 +164,7 @@ public interface Update extends Statement, SQLDebug {
 
     }
 
-    interface BatchParamSpec<C> extends UpdateSqlSpec {
+    interface BatchParamSpec<C> {
 
         UpdateSpec paramMaps(List<Map<String, Object>> mapList);
 

@@ -21,7 +21,7 @@ public interface MySQL57Query extends Query {
     /*################################## blow select clause  interfaces ##################################*/
 
 
-    interface MySQLSelectPartSpec<Q extends MySQL57Query, C> extends QuerySQLSpec {
+    interface MySQLSelectPartSpec<Q extends MySQL57Query, C> {
 
         <S extends SelectPart> MySQLFromSpec<Q, C> select(Distinct distinct, Function<C, List<S>> function);
 
@@ -63,7 +63,7 @@ public interface MySQL57Query extends Query {
     }
 
 
-    interface MySQLOnSpec<Q extends MySQL57Query, C> extends QuerySQLSpec {
+    interface MySQLOnSpec<Q extends MySQL57Query, C> {
 
         MySQLJoinSpec<Q, C> on(List<IPredicate> predicateList);
 

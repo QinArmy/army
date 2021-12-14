@@ -176,15 +176,15 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
         this.selectPartList.addAll(selectPartList);
     }
 
-    final <S extends SelectPart> void doSelectClause(@Nullable Distinct distinct, S selectPart) {
+    final <S extends SelectPart> void doSelectClause(@Nullable Distinct distinct, S... selectParts) {
         Assert.state(this.selectPartList.isEmpty(), "select clause ended.");
         if (distinct != null) {
             this.modifierList = Collections.singletonList(distinct);
         }
-        if (this instanceof ColumnSubQuery && !(selectPart instanceof Selection)) {
+        if (this instanceof ColumnSubQuery && (selectParts.length != 1 || !(selectParts[0] instanceof Selection))) {
             throw new IllegalArgumentException("ColumnSubQuery only one selection.");
         }
-        this.selectPartList.add(selectPart);
+        Collections.addAll(this.selectPartList, selectParts);
     }
 
     final <M extends SQLModifier, S extends SelectPart> void doSelectClause(List<M> modifierList, S selectPart) {

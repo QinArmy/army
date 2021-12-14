@@ -2,7 +2,7 @@ package io.army.criteria;
 
 public interface ColumnSubQuery<E> extends SubQuery {
 
-  interface ColumnSelectionSpec<E, C> extends QuerySQLSpec {
+  interface ColumnSelectionSpec<E, C> {
 
       FromSpec<ColumnSubQuery<E>, C> select(Distinct distinct, Selection selection);
 

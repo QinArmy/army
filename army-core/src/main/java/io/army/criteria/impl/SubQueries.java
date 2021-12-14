@@ -283,6 +283,16 @@ abstract class SubQueries<Q extends Query, C> extends AbstractStandardQuery<Q, C
         }
 
         @Override
+        public FromSpec<ScalarSubQuery<E>, C> select(SelectPart selectPart1, SelectPart selectPart2) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public FromSpec<ScalarSubQuery<E>, C> select(SelectPart selectPart1, SelectPart selectPart2, SelectPart selectPart3) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public <S extends SelectPart> FromSpec<ScalarSubQuery<E>, C> select(Distinct distinct
                 , List<S> selectPartList) {
             throw new UnsupportedOperationException();

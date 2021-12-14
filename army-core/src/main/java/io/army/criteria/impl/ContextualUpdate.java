@@ -66,7 +66,7 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
     }
 
 
-    /*################################## blow DomainSetAble method ##################################*/
+    /*################################## blow SetSpec method ##################################*/
 
     @Override
     public <F> WhereSpec<T, C> set(FieldMeta<? super T, F> field, @Nullable F value) {
@@ -158,6 +158,86 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
         expression = function.apply(this.criteria);
         if (expression != null) {
             this.set(field, expression);
+        }
+        return this;
+    }
+
+    @Override
+    public <F extends Number> WhereSpec<T, C> ifSetPlus(FieldMeta<? super T, F> field, @Nullable F value) {
+        if (value != null) {
+            this.set(field, field.plus(value));
+        }
+        return this;
+    }
+
+    @Override
+    public <F extends Number> WhereSpec<T, C> ifSetMinus(FieldMeta<? super T, F> field, @Nullable F value) {
+        if (value != null) {
+            this.set(field, field.minus(value));
+        }
+        return this;
+    }
+
+    @Override
+    public <F extends Number> WhereSpec<T, C> ifSetMultiply(FieldMeta<? super T, F> field, @Nullable F value) {
+        if (value != null) {
+            this.set(field, field.multiply(value));
+        }
+        return this;
+    }
+
+    @Override
+    public <F extends Number> WhereSpec<T, C> ifSetDivide(FieldMeta<? super T, F> field, @Nullable F value) {
+        if (value != null) {
+            this.set(field, field.divide(value));
+        }
+        return this;
+    }
+
+    @Override
+    public <F extends Number> WhereSpec<T, C> ifSetMod(FieldMeta<? super T, F> field, @Nullable F value) {
+        if (value != null) {
+            this.set(field, field.mod(value));
+        }
+        return this;
+    }
+
+    @Override
+    public <F extends Number> WhereSpec<T, C> ifSetPlus(Predicate<C> test, FieldMeta<? super T, F> field, F value) {
+        if (test.test(this.criteria)) {
+            this.set(field, field.plus(value));
+        }
+        return this;
+    }
+
+    @Override
+    public <F extends Number> WhereSpec<T, C> ifSetMinus(Predicate<C> test, FieldMeta<? super T, F> field, F value) {
+        if (test.test(this.criteria)) {
+            this.set(field, field.minus(value));
+        }
+        return this;
+    }
+
+    @Override
+    public <F extends Number> WhereSpec<T, C> ifSetMultiply(Predicate<C> test, FieldMeta<? super T, F> field, F value) {
+        if (test.test(this.criteria)) {
+            this.set(field, field.multiply(value));
+        }
+        return this;
+    }
+
+    @Override
+    public <F extends Number> WhereSpec<T, C> ifSetDivide(Predicate<C> test, FieldMeta<? super T, F> field, F value) {
+        if (test.test(this.criteria)) {
+            this.set(field, field.divide(value));
+        }
+        return this;
+    }
+
+    @Override
+    public <F extends Number> WhereSpec<T, C> ifSetMod(Predicate<C> test, FieldMeta<? super T, F> field, F value) {
+        if (test.test(this.criteria)) {
+            this.set(field, field.mod(value));
         }
         return this;
     }

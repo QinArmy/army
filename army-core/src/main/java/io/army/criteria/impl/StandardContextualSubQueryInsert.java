@@ -48,13 +48,13 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
     /*################################## blow SubQueryTargetFieldSpec method ##################################*/
 //
 //    @Override
-//    public final SimpleTableRouteSpec<C> insertInto(List<FieldMeta<T, ?>> fieldMetaList) {
+//    SimpleTableRouteSpec<C> insertInto(List<FieldMeta<T, ?>> fieldMetaList) {
 //        this.fieldList = new ArrayList<>(fieldMetaList);
 //        return this;
 //    }
 //
 //    @Override
-//    public final SimpleTableRouteSpec<C> insertInto(Function<C, List<FieldMeta<T, ?>>> function) {
+//    SimpleTableRouteSpec<C> insertInto(Function<C, List<FieldMeta<T, ?>>> function) {
 //        this.fieldList = new ArrayList<>(function.apply(this.criteria));
 //        return this;
 //    }
@@ -62,20 +62,20 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
 //    /*################################## blow SubQueryValueSpec method ##################################*/
 //
 //    @Override
-//    public final SubQueryValueSpec<C> route(int databaseIndex, int tableIndex) {
+//    SubQueryValueSpec<C> route(int databaseIndex, int tableIndex) {
 //        this.databaseIndex = databaseIndex;
 //        this.tableIndex = tableIndex;
 //        return this;
 //    }
 //
 //    @Override
-//    public final SubQueryValueSpec<C> route(int tableIndex) {
+//    SubQueryValueSpec<C> route(int tableIndex) {
 //        this.tableIndex = tableIndex;
 //        return this;
 //    }
 //
 //    @Override
-//    public final InsertSpec subQuery(Function<C, SubQuery> function) {
+//    InsertSpec subQuery(Function<C, SubQuery> function) {
 //        this.subQuery = function.apply(this.criteria);
 //        return this;
 //    }
@@ -83,42 +83,42 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
     /*################################## blow InnerStandardSubQueryInsert method ##################################*/
 //
 //    @Override
-//    public final TableMeta<?> table() {
+//    TableMeta<?> table() {
 //        return this.tableMeta;
 //    }
 //
 //    @Override
-//    public final String tableAlias() {
+//    String tableAlias() {
 //        return "";
 //    }
 //
 //    @Override
-//    public final int tableIndex() {
+//    int tableIndex() {
 //        return this.tableIndex;
 //    }
 //
 //    @Override
-//    public final int databaseIndex() {
+//    int databaseIndex() {
 //        return this.databaseIndex;
 //    }
 //
 //    @Override
-//    public final List<IPredicate> predicateList() {
+//    List<IPredicate> predicateList() {
 //       throw new UnsupportedOperationException();
 //    }
 //
 //    @Override
-//    public final SubQuery subQuery() {
+//    SubQuery subQuery() {
 //        return this.subQuery;
 //    }
 //
 //    @Override
-//    public final List<FieldMeta<?, ?>> fieldList() {
+//    List<FieldMeta<?, ?>> fieldList() {
 //        return this.fieldList;
 //    }
 //
 //    @Override
-//    public final void clear() {
+//    void clear() {
 //        this.fieldList = null;
 //        this.subQuery = null;
 //        this.prepared = false;
@@ -127,7 +127,7 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
     /*################################## blow InsertSpec method ##################################*/
 
     @Override
-    public final Insert asInsert() {
+    public Insert asInsert() {
         if (this.prepared) {
             return this;
         }

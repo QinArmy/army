@@ -17,11 +17,8 @@ public interface Query extends Statement {
 
     boolean requiredBrackets();
 
-    interface QuerySQLSpec {
 
-    }
-
-    interface QuerySpec<Q extends Query> extends QuerySQLSpec {
+    interface QuerySpec<Q extends Query> {
 
         Q asQuery();
     }
@@ -30,7 +27,7 @@ public interface Query extends Statement {
     /*################################## blow select clause  interfaces ##################################*/
 
 
-    interface SelectPartSpec<Q extends Query, C> extends QuerySQLSpec {
+    interface SelectPartSpec<Q extends Query, C> {
 
         <S extends SelectPart> FromSpec<Q, C> select(Distinct distinct, Function<C, List<S>> function);
 
@@ -39,6 +36,10 @@ public interface Query extends Statement {
         FromSpec<Q, C> select(Distinct distinct, SelectPart selectPart);
 
         FromSpec<Q, C> select(SelectPart selectPart);
+
+        FromSpec<Q, C> select(SelectPart selectPart1, SelectPart selectPart2);
+
+        FromSpec<Q, C> select(SelectPart selectPart1, SelectPart selectPart2, SelectPart selectPart3);
 
         <S extends SelectPart> FromSpec<Q, C> select(Distinct distinct, List<S> selectPartList);
 
@@ -62,7 +63,7 @@ public interface Query extends Statement {
     }
 
 
-    interface OnSpec<Q extends Query, C> extends QuerySQLSpec {
+    interface OnSpec<Q extends Query, C> {
 
         JoinSpec<Q, C> on(List<IPredicate> predicateList);
 

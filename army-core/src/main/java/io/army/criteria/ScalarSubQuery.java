@@ -6,7 +6,7 @@ package io.army.criteria;
 public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expression<E> {
 
 
-    interface ScalarSelectionSpec<E, C> extends QuerySQLSpec {
+    interface ScalarSelectionSpec<E, C> {
 
         FromSpec<ScalarSubQuery<E>, C> select(Distinct distinct, Selection selection);
 

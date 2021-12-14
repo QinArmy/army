@@ -23,49 +23,49 @@ class TmSessionFactionBuilderImpl {
 //
 //
 //    @Override
-//    public final TmSessionFactionBuilder dataSourceList(List<XADataSource> dataSourceList) {
+//    TmSessionFactionBuilder dataSourceList(List<XADataSource> dataSourceList) {
 //        this.dataSourceList = dataSourceList;
 //        return this;
 //    }
 //
 //    @Override
-//    public final TmSessionFactionBuilder databaseMap(Map<Integer, Database> databaseMap) {
+//    TmSessionFactionBuilder databaseMap(Map<Integer, Database> databaseMap) {
 //        this.databaseMap = databaseMap;
 //        return this;
 //    }
 //
 //    @Override
-//    public final TmSessionFactionBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs) {
+//    TmSessionFactionBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs) {
 //        this.fieldCodecs = fieldCodecs;
 //        return this;
 //    }
 //
 //    @Override
-//    public final TmSessionFactionBuilder name(String sessionFactoryName) {
+//    TmSessionFactionBuilder name(String sessionFactoryName) {
 //        this.name = sessionFactoryName;
 //        return this;
 //    }
 //
 //    @Override
-//    public final TmSessionFactionBuilder environment(ArmyEnvironment environment) {
+//    TmSessionFactionBuilder environment(ArmyEnvironment environment) {
 //        this.environment = environment;
 //        return this;
 //    }
 //
 //    @Override
-//    public final TmSessionFactionBuilder factoryAdvice(Collection<GenericSessionFactoryAdvice> factoryAdvices) {
+//    TmSessionFactionBuilder factoryAdvice(Collection<GenericSessionFactoryAdvice> factoryAdvices) {
 //        this.factoryAdvices = factoryAdvices;
 //        return this;
 //    }
 //
 //    @Override
-//    public final TmSessionFactionBuilder domainInterceptor(Collection<DomainAdvice> domainInterceptors) {
+//    TmSessionFactionBuilder domainInterceptor(Collection<DomainAdvice> domainInterceptors) {
 //        this.domainInterceptors = domainInterceptors;
 //        return this;
 //    }
 //
 //    @Override
-//    public final TmSessionFactionBuilder tableCountPerDatabase(int tableCountPerDatabase) {
+//    TmSessionFactionBuilder tableCountPerDatabase(int tableCountPerDatabase) {
 //        this.tableCountPerDatabase = tableCountPerDatabase;
 //        return this;
 //    }
@@ -90,7 +90,7 @@ class TmSessionFactionBuilderImpl {
 //    }
 //
 //    @Override
-//    public final TmSessionFactory build() throws SessionFactoryException {
+//    TmSessionFactory build() throws SessionFactoryException {
 //        Assert.hasText(this.name, "name required");
 //        Assert.notEmpty(this.dataSourceList, "dataSource list required");
 //        Assert.notNull(this.environment, "environment required");

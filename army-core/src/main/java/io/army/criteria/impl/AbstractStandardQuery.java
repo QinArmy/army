@@ -52,6 +52,18 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
     }
 
     @Override
+    public final FromSpec<Q, C> select(SelectPart selectPart1, SelectPart selectPart2) {
+        doSelectClause((Distinct) null, selectPart1, selectPart2);
+        return this;
+    }
+
+    @Override
+    public final FromSpec<Q, C> select(SelectPart selectPart1, SelectPart selectPart2, SelectPart selectPart3) {
+        doSelectClause((Distinct) null, selectPart1, selectPart2, selectPart3);
+        return this;
+    }
+
+    @Override
     public final <S extends SelectPart> FromSpec<Q, C> select(Distinct distinct, List<S> selectPartList) {
         doSelectClause(distinct, selectPartList);
         return this;

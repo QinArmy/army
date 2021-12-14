@@ -15,7 +15,7 @@ import java.util.Collection;
 import java.util.function.Function;
 
 /**
- * this class is a implementation of {@link Expression}
+ * this class is base class of most implementation of {@link Expression}
  */
 abstract class AbstractExpression<E> implements _Expression<E> {
 
