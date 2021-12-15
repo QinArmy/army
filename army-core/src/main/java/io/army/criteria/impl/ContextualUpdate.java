@@ -74,6 +74,7 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
 
     @Override
     public SetSpec<T, C> route(int databaseIndex, int tableIndex) {
+        Assert.supportRoute(this.table, databaseIndex, tableIndex);
         this.databaseIndex = databaseIndex;
         this.tableIndex = tableIndex;
         return this;
@@ -81,6 +82,7 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
 
     @Override
     public SetSpec<T, C> route(int tableIndex) {
+        Assert.supportRoute(this.table, -1, tableIndex);
         this.tableIndex = tableIndex;
         return this;
     }

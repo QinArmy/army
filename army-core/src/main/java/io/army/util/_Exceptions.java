@@ -109,5 +109,23 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("%s is unknown type.", table));
     }
 
+    public static CriteriaException routeKeyValueError(TableMeta<?> table, int databaseIndex, int factoryDatabase) {
+        String m = String.format("%s route database[%s] and primary statement database[%s] not match."
+                , table, databaseIndex, factoryDatabase);
+        return new CriteriaException(m);
+    }
+
+    public static CriteriaException notSupportSharding(TableMeta<?> table) {
+        return new CriteriaException(String.format("%s not support sharding.", table));
+    }
+
+    public static CriteriaException notSupportDatabaseSharding(TableMeta<?> table) {
+        return new CriteriaException(String.format("%s not support database sharding.", table));
+    }
+
+    public static CriteriaException notSupportTableSharding(TableMeta<?> table) {
+        return new CriteriaException(String.format("%s not support table sharding.", table));
+    }
+
 
 }

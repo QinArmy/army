@@ -4,6 +4,8 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.Statement;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.sharding.DatabaseRoute;
+import io.army.sharding.TableRoute;
 
 /**
  * @since 1.0
@@ -40,6 +42,24 @@ public abstract class Assert extends org.springframework.util.Assert {
         if (table == null) {
             throw new CriteriaException("Criteria must has table.");
         }
+    }
+
+    public static void supportRoute(final TableMeta<?> table, final int databaseIndex, final int tableIndex) {
+        final Class<?> routeClass = table.routeClass();
+        if (routeClass == null) {
+            if (databaseIndex > 0 || tableIndex > 0) {
+                throw _Exceptions.notSupportSharding(table);
+            }
+
+        } else {
+            if (databaseIndex > 0 && !DatabaseRoute.class.isAssignableFrom(routeClass)) {
+                throw _Exceptions.notSupportDatabaseSharding(table);
+            }
+            if (tableIndex > 0 && !TableRoute.class.isAssignableFrom(routeClass)) {
+                throw _Exceptions.notSupportTableSharding(table);
+            }
+        }
+
     }
 
 }

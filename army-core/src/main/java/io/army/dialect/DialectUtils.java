@@ -182,10 +182,6 @@ public abstract class DialectUtils {
         return need;
     }
 
-    public static ArmyRuntimeException createNotSupportClauseException(_TablesSqlContext context, Clause clause) {
-        return new ArmyRuntimeException(ErrorCode.NONE, "%s not support %s clause."
-                , context.getClass().getName(), clause);
-    }
 
     public static CriteriaException createNoLogicalTableException(FieldMeta<?, ?> fieldMeta) {
         throw new CriteriaException(ErrorCode.CRITERIA_ERROR

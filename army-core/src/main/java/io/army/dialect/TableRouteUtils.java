@@ -10,22 +10,36 @@ import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.session.GenericRmSessionFactory;
 import io.army.sharding.*;
+import io.army.util._Exceptions;
 
 import java.util.List;
 
 abstract class TableRouteUtils extends RouteUtils {
 
 
-    static byte singleDmlRoute(_SingleDml update, GenericRmSessionFactory factory) {
-        final TableMeta<?> table = update.table();
+    /**
+     * @return negative : not found table route.
+     */
+    static byte tableRouteFromWhereClause(final TableMeta<?> table, final List<_Predicate> predicateList
+            , final GenericRmSessionFactory factory) {
 
         final List<FieldMeta<?, ?>> databaseFields, tableFields;
         databaseFields = table.databaseRouteFields();
         tableFields = table.tableRouteFields();
 
+        final boolean supportDatabaseRoute;
+        supportDatabaseRoute = databaseFields.size() > 0;
+
+        final int database = factory.databaseIndex();
+
+        if (!supportDatabaseRoute && database != 0) {
+            throw _Exceptions.routeKeyValueError(table, 0, database);
+        }
+
         final Route route = factory.tableRoute(table);
+
         Byte tableIndex = null, databaseIndex = null, index;
-        for (_Predicate predicate : update.predicateList()) {
+        for (_Predicate predicate : predicateList) {
 
             if (tableIndex == null || tableIndex < 0) {
                 index = predicate.tableIndex((TableRoute) route, tableFields);
@@ -34,7 +48,13 @@ abstract class TableRouteUtils extends RouteUtils {
                 }
             }
 
-            if (!(route instanceof DatabaseRoute) || (databaseIndex != null && databaseIndex >= 0)) {
+            if (supportDatabaseRoute) {
+                if (tableIndex != null && tableIndex >= 0 && databaseIndex != null && databaseIndex >= 0) {
+                    break;
+                }
+            } else if (tableIndex != null && tableIndex >= 0) {
+                break;
+            } else {
                 continue;
             }
             index = predicate.databaseIndex((DatabaseRoute) route, databaseFields);
@@ -44,19 +64,10 @@ abstract class TableRouteUtils extends RouteUtils {
 
         }
 
-
-        final byte databaseRoute, tableRoute;
-        if (databaseIndex != null) {
-            if (databaseIndex == Byte.MIN_VALUE) {// MIN_VALUE representing negative zero.
-                databaseRoute = 0;
-            } else {
-                databaseRoute = databaseIndex;
-            }
+        if (supportDatabaseRoute && databaseIndex != null && databaseIndex != database) {
+            throw _Exceptions.routeKeyValueError(table, databaseIndex, database);
         }
-
-        final int database = factory.databaseIndex();
-
-        return 0;
+        return tableIndex == null ? -1 : tableIndex;
     }
 
 
