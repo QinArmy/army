@@ -6,6 +6,7 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Query;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.sharding._TableRouteUtils;
 
 abstract class AbstractQueryStatementContext extends AbstractTableContextSQLContext{
 
@@ -33,7 +34,7 @@ abstract class AbstractQueryStatementContext extends AbstractTableContextSQLCont
             throw new IllegalStateException(String.format("Query[%s] TableMeta[%s] table index is null."
                     ,this.query, tableMeta));
         }
-        String routeSuffix = TableRouteUtils.findRouteSuffixForTable(tableMeta, tableIndex
+        String routeSuffix = _TableRouteUtils.findRouteSuffixForTable(tableMeta, tableIndex
                 , this.query.predicateList(), this.dialect);
         if (routeSuffix == null) {
             routeSuffix = this.primaryRouteSuffix();

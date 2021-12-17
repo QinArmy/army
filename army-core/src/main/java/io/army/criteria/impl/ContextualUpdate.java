@@ -48,9 +48,9 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
 
     private final CriteriaContext criteriaContext;
 
-    private int databaseIndex = -1;
+    private byte databaseIndex = -1;
 
-    private int tableIndex = -1;
+    private byte tableIndex = -1;
 
     private List<FieldMeta<?, ?>> fieldList = new ArrayList<>();
 
@@ -74,16 +74,20 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
 
     @Override
     public SetSpec<T, C> route(int databaseIndex, int tableIndex) {
-        Assert.supportRoute(this.table, databaseIndex, tableIndex);
-        this.databaseIndex = databaseIndex;
-        this.tableIndex = tableIndex;
+        this.databaseIndex = Assert.databaseRoute(this.table, databaseIndex);
+        this.tableIndex = Assert.tableRoute(this.table, tableIndex);
         return this;
     }
 
     @Override
     public SetSpec<T, C> route(int tableIndex) {
-        Assert.supportRoute(this.table, -1, tableIndex);
-        this.tableIndex = tableIndex;
+        this.tableIndex = Assert.tableRoute(this.table, tableIndex);
+        return this;
+    }
+
+    @Override
+    public SetSpec<T, C> routeAll() {
+        this.databaseIndex = this.tableIndex = Byte.MIN_VALUE;
         return this;
     }
 
@@ -372,12 +376,12 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
     }
 
     @Override
-    public int databaseIndex() {
+    public byte databaseIndex() {
         return this.databaseIndex;
     }
 
     @Override
-    public int tableIndex() {
+    public byte tableIndex() {
         return this.tableIndex;
     }
 

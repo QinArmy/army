@@ -1,4 +1,4 @@
-package io.army.boot.sync;
+package io.army.sharding;
 
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.impl.inner._MultiDML;
@@ -8,12 +8,10 @@ import io.army.criteria.impl.inner._SingleDml;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.sharding.RouteUtils;
-import io.army.sharding.RouteWrapper;
 
 import java.util.List;
 
-abstract class DatabaseRouteUtils extends RouteUtils {
+public abstract class _DatabaseRouteUtils extends _RouteUtils {
 
 
     @Nullable

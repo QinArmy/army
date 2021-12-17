@@ -135,7 +135,7 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
     }
 
     @Override
-    public TableRoute tableRoute(TableMeta<?> tableMeta) throws NotFoundRouteException {
+    public TableRoute route(TableMeta<?> tableMeta) throws NotFoundRouteException {
         TableRoute tableRoute = this.tableRouteMap.get(tableMeta);
         if (tableRoute == null) {
             throw new NotFoundRouteException("TableMeta[%s] not found table route.", tableMeta);

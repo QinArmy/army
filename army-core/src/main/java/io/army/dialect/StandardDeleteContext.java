@@ -7,13 +7,14 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
+import io.army.sharding._TableRouteUtils;
 import io.army.stmt.SimpleStmt;
 
 class StandardDeleteContext extends AbstractStandardDomainContext implements DeleteContext {
 
     static StandardDeleteContext build(_StandardDelete delete, Dialect dialect, Visible visible) {
         TableMeta<?> tableMeta = delete.table();
-        String primarySuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(delete, dialect);
+        String primarySuffix = _TableRouteUtils.singleDmlPrimaryRouteSuffix(delete, dialect);
 
         TablesContext tableContext = TablesContext.singleTable(delete, false, primarySuffix);
         return new StandardDeleteContext(dialect, visible
@@ -25,7 +26,7 @@ class StandardDeleteContext extends AbstractStandardDomainContext implements Del
     static StandardDeleteContext buildParent(_StandardDelete delete, Dialect dialect, final Visible visible) {
         ParentTableMeta<?> parentMeta = ((ChildTableMeta<?>) delete.table()).parentMeta();
 
-        String primarySuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(delete, dialect);
+        String primarySuffix = _TableRouteUtils.singleDmlPrimaryRouteSuffix(delete, dialect);
 
         TablesContext tableContext = TablesContext.singleTable(delete, true, primarySuffix);
         return new StandardDeleteContext(dialect, visible
@@ -36,7 +37,7 @@ class StandardDeleteContext extends AbstractStandardDomainContext implements Del
 
     static StandardDeleteContext buildChild(_StandardDelete delete, Dialect dialect, final Visible visible) {
         ChildTableMeta<?> childMeta = (ChildTableMeta<?>) delete.table();
-        String primarySuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(delete, dialect);
+        String primarySuffix = _TableRouteUtils.singleDmlPrimaryRouteSuffix(delete, dialect);
 
         TablesContext tableContext = TablesContext.singleTable(delete, false, primarySuffix);
         return new DomainDeleteContext(dialect, visible

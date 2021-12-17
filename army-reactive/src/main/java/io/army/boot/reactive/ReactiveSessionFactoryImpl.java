@@ -189,7 +189,7 @@ class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements Inner
     }
 
     @Override
-    public TableRoute tableRoute(TableMeta<?> tableMeta) throws NotFoundRouteException {
+    public TableRoute route(TableMeta<?> tableMeta) throws NotFoundRouteException {
         return null;
     }
 

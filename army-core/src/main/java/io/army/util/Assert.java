@@ -2,8 +2,10 @@ package io.army.util;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Statement;
+import io.army.criteria.impl.inner._Statement;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.session.GenericRmSessionFactory;
 import io.army.sharding.DatabaseRoute;
 import io.army.sharding.TableRoute;
 
@@ -60,6 +62,35 @@ public abstract class Assert extends org.springframework.util.Assert {
             }
         }
 
+    }
+
+    public static byte databaseRoute(final TableMeta<?> table, final int databaseIndex) {
+        if (table.databaseRouteFields().isEmpty()) {
+            if (databaseIndex != -1) {
+                throw _Exceptions.notSupportSharding(table);
+            }
+        } else if (databaseIndex > 99) {
+            throw new CriteriaException(String.format("databaseIndex[%s] not in [0,99].", databaseIndex));
+        }
+        return (byte) (databaseIndex < 0 ? -1 : databaseIndex);
+    }
+
+    public static byte tableRoute(final TableMeta<?> table, final int tableIndex) {
+        final byte tableCount = table.tableCount();
+        if (tableCount == 1) {
+            if (tableIndex != -1) {
+                throw _Exceptions.notSupportSharding(table);
+            }
+        } else if (tableIndex > 99) {
+            throw new CriteriaException(String.format("%s tableIndex[%s] not in [0,%s].", table, tableIndex, tableCount));
+        }
+        return (byte) (tableIndex < 0 ? -1 : tableIndex);
+    }
+
+    public static void databaseRoute(_Statement stmt, final int routeDatabase, GenericRmSessionFactory factory) {
+        if (routeDatabase >= 0 && routeDatabase != factory.databaseIndex()) {
+            throw _Exceptions.databaseRouteError(stmt, factory);
+        }
     }
 
 }

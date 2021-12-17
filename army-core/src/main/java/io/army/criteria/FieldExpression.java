@@ -7,6 +7,7 @@ import io.army.meta.GenericField;
  *
  * @param <E> the result type of {@link Expression}
  */
+@Deprecated
 public interface FieldExpression<E> extends Expression<E> {
 
 

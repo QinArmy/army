@@ -7,10 +7,14 @@ import io.army.criteria.*;
 import io.army.criteria.impl._CriteriaCounselor;
 import io.army.criteria.impl.inner.*;
 import io.army.meta.*;
+import io.army.session.FactoryMode;
+import io.army.session.GenericRmSessionFactory;
+import io.army.sharding._RouteUtils;
 import io.army.stmt.PairStmt;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
 import io.army.stmt.Stmts;
+import io.army.util.Assert;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -94,13 +98,15 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
             // assert implementation class is legal
             assertDialectUpdate(updateStmt);
             stmt = dialectUpdate(updateStmt, visible);
-        } else {
+        } else if (update instanceof _SingleUpdate) {
             _CriteriaCounselor.assertStandardUpdate(updateStmt);
             if (updateStmt instanceof _BatchUpdate) {
                 stmt = standardBatchUpdate((_BatchUpdate) update, visible);
             } else {
-                stmt = handleStandardUpdate(updateStmt, visible);
+                stmt = handleStandardUpdate((_SingleUpdate) updateStmt, visible);
             }
+        } else {
+            throw _Exceptions.unknownStatement(update, this.dialect.sessionFactory());
         }
         return stmt;
     }
@@ -309,7 +315,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
     /*################################## blow update private method ##################################*/
 
 
-    protected UpdateContext createUpdateContext(final _Update update, byte tableIndex, final Visible visible) {
+    protected Stmt standardChildUpdateContext(final _SingleUpdate update, byte tableIndex, final Visible visible) {
         throw new UnsupportedOperationException();
     }
 
@@ -317,18 +323,70 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
     /**
      * @see #update(Update, Visible)
      */
-    private Stmt handleStandardUpdate(final _Update update, final Visible visible) {
+    private Stmt handleStandardUpdate(final _SingleUpdate update, final Visible visible) {
+        final GenericRmSessionFactory factory = this.dialect.sessionFactory();
+        Assert.databaseRoute(update, update.databaseIndex(), factory);
+
         final TableMeta<?> table = update.table();
-        if (table instanceof SimpleTableMeta) {
+        final List<_Predicate> predicateList = update.predicateList();
 
-        } else if (table instanceof ChildTableMeta) {
-
-        } else if (table instanceof ParentTableMeta) {
-
+        byte tableIndex;
+        if (factory.factoryMode() == FactoryMode.NO_SHARDING || table.tableCount() == 1) {
+            tableIndex = 0;
         } else {
-            throw _Exceptions.unknownTableType(table);
+            tableIndex = _RouteUtils.tableRouteFromRouteField(table, predicateList, factory);
         }
+        final byte tableRoute = update.tableIndex();
+        if (tableIndex < 0) {
+            tableIndex = tableRoute;
+        } else if (tableRoute >= 0) {
+            throw _Exceptions.tableIndexAmbiguity(update, update.tableIndex(), tableIndex);
+        }
+
+        final Stmt stmt;
+        if (tableIndex < 0) {
+            if (tableRoute == Byte.MIN_VALUE) {
+                stmt = standardUpdateWithAllRoute(update, visible);
+            } else {
+                throw _Exceptions.noTableRoute(update, factory);
+            }
+        } else if (tableIndex >= table.tableCount()) {
+            throw _Exceptions.tableIndexParseError(update, table, tableIndex);
+        } else {
+            if (table instanceof ChildTableMeta) {
+                stmt = standardChildUpdateContext(update, tableIndex, visible);
+            } else {
+                stmt = standardSingleTableUpdate(update, tableIndex, visible);
+            }
+        }
+        return stmt;
+    }
+
+    /**
+     * @see #handleStandardUpdate(_SingleUpdate, Visible)
+     * @see #standardChildUpdateContext(_SingleUpdate, byte, Visible)
+     */
+    private Stmt standardSingleTableUpdate(final _SingleUpdate update, final byte tableIndex, final Visible visible) {
         return null;
+    }
+
+    /**
+     * @see #handleStandardUpdate(_SingleUpdate, Visible)
+     */
+    private Stmt standardUpdateWithAllRoute(final _SingleUpdate update, final Visible visible) {
+        final TableMeta<?> table = update.table();
+        final int tableCount = table.tableCount();
+        final List<Stmt> stmtList = new ArrayList<>(tableCount);
+        for (int i = 0; i < tableCount; i++) {
+            Stmt stmt;
+            if (table instanceof ChildTableMeta) {
+                stmt = standardChildUpdateContext(update, (byte) i, visible);
+            } else {
+                stmt = standardSingleTableUpdate(update, (byte) i, visible);
+            }
+            stmtList.add(stmt);
+        }
+        return Stmts.group(stmtList);
     }
 
 

@@ -51,7 +51,7 @@ abstract class DmlUtils {
         }
 
         final int tableCount = factory.tableCountPerDatabase();
-        final Route route = factory.tableRoute(tableMeta);
+        final Route route = factory.route(tableMeta);
         final DomainValuesGenerator generator = factory.domainValuesGenerator();
 
         final boolean checkDatabase = mode == FactoryMode.SHARDING && databaseFields.size() > 0;

@@ -13,13 +13,52 @@ import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.util._Exceptions;
 
 import java.util.List;
+import java.util.function.Function;
 
-public abstract class RouteUtils {
+public abstract class _RouteUtils {
 
-    protected RouteUtils() {
+    _RouteUtils() {
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @return negative : not found table route.
+     */
+    public static byte databaseRouteFromRouteField(final List<_Predicate> predicateList
+            , final Function<TableMeta<?>, Route> function) {
+        byte databaseIndex = -1, index;
+        for (_Predicate predicate : predicateList) {
+            index = predicate.databaseIndex(function);
+            if (index >= 0) {
+                databaseIndex = index;
+                break;
+            }
+        }
+        return databaseIndex;
+    }
+
+
+    /**
+     * @return negative : not found table route.
+     */
+    public static byte tableRouteFromRouteField(final TableMeta<?> table, final List<_Predicate> predicateList
+            , final RouteContext context) {
+
+        if (table.databaseRouteFields().size() == 0 && context.databaseIndex() != 0) {
+            throw _Exceptions.routeKeyValueError(table, 0, context.databaseIndex());
+        }
+        byte tableIndex = -1, index;
+        for (_Predicate predicate : predicateList) {
+            index = predicate.tableIndex(table, context);
+            if (index >= 0) {
+                tableIndex = index;
+                break;
+            }
+        }
+        return tableIndex;
     }
 
     /**

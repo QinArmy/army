@@ -1,77 +1,21 @@
-package io.army.dialect;
+package io.army.sharding;
 
 import io.army.beans.ReadonlyWrapper;
 import io.army.criteria.NotFoundRouteException;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Select;
 import io.army.criteria.impl.inner._SingleDml;
+import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.session.GenericRmSessionFactory;
-import io.army.sharding.*;
-import io.army.util._Exceptions;
 
 import java.util.List;
 
-abstract class TableRouteUtils extends RouteUtils {
+public abstract class _TableRouteUtils extends _RouteUtils {
 
 
-    /**
-     * @return negative : not found table route.
-     */
-    static byte tableRouteFromWhereClause(final TableMeta<?> table, final List<_Predicate> predicateList
-            , final GenericRmSessionFactory factory) {
-
-        final List<FieldMeta<?, ?>> databaseFields, tableFields;
-        databaseFields = table.databaseRouteFields();
-        tableFields = table.tableRouteFields();
-
-        final boolean supportDatabaseRoute;
-        supportDatabaseRoute = databaseFields.size() > 0;
-
-        final int database = factory.databaseIndex();
-
-        if (!supportDatabaseRoute && database != 0) {
-            throw _Exceptions.routeKeyValueError(table, 0, database);
-        }
-
-        final Route route = factory.tableRoute(table);
-
-        Byte tableIndex = null, databaseIndex = null, index;
-        for (_Predicate predicate : predicateList) {
-
-            if (tableIndex == null || tableIndex < 0) {
-                index = predicate.tableIndex((TableRoute) route, tableFields);
-                if (index != null && (tableIndex == null || index >= 0)) {
-                    tableIndex = index;
-                }
-            }
-
-            if (supportDatabaseRoute) {
-                if (tableIndex != null && tableIndex >= 0 && databaseIndex != null && databaseIndex >= 0) {
-                    break;
-                }
-            } else if (tableIndex != null && tableIndex >= 0) {
-                break;
-            } else {
-                continue;
-            }
-            index = predicate.databaseIndex((DatabaseRoute) route, databaseFields);
-            if (index != null && (databaseIndex == null || index >= 0)) {
-                databaseIndex = index;
-            }
-
-        }
-
-        if (supportDatabaseRoute && databaseIndex != null && databaseIndex != database) {
-            throw _Exceptions.routeKeyValueError(table, databaseIndex, database);
-        }
-        return tableIndex == null ? -1 : tableIndex;
-    }
-
-
-    static String valueInsertPrimaryRouteSuffix(TableMeta<?> tableMeta, Dialect dialect, ReadonlyWrapper beanWrapper) {
+    public static String valueInsertPrimaryRouteSuffix(TableMeta<?> tableMeta, Dialect dialect, ReadonlyWrapper beanWrapper) {
         if (notSupportRoute(dialect, tableMeta)) {
             return "";
         }
@@ -96,7 +40,7 @@ abstract class TableRouteUtils extends RouteUtils {
         return null;
     }
 
-    static String subQueryInsertPrimaryRouteSuffix(_SingleDml innerSingleDML, Dialect dialect) {
+    public static String subQueryInsertPrimaryRouteSuffix(_SingleDml innerSingleDML, Dialect dialect) {
         TableMeta<?> tableMeta = innerSingleDML.table();
         if (notSupportRoute(dialect, tableMeta)) {
             return "";
@@ -113,21 +57,12 @@ abstract class TableRouteUtils extends RouteUtils {
         return null;
     }
 
-    static String singleDmlPrimaryRouteSuffix(_SingleDml singleTableSQL, Dialect dialect) {
-        TableMeta<?> tableMeta = singleTableSQL.table();
-        if (notSupportRoute(dialect, tableMeta)) {
-            return "";
-        }
-        String primaryRouteSuffix = findTableSuffix(tableMeta, 0
-                , singleTableSQL.predicateList(), dialect);
-        if (primaryRouteSuffix == null) {
-            throw new NotFoundRouteException("Single dml ,TableMeta[%s] not found primary route.", tableMeta);
-        }
-        return primaryRouteSuffix;
+    public static String singleDmlPrimaryRouteSuffix(Object singleTableSQL, Dialect dialect) {
+        throw new UnsupportedOperationException();
     }
 
 
-    static String selectPrimaryRouteSuffix(_Select select, Dialect dialect) {
+    public static String selectPrimaryRouteSuffix(_Select select, Dialect dialect) {
 //        if (dialect.sessionFactory().shardingMode() == FactoryMode.NO_SHARDING) {
 //            return "";
 //        }
@@ -142,7 +77,7 @@ abstract class TableRouteUtils extends RouteUtils {
     }
 
     @Nullable
-    static String findRouteSuffixForTable(TableMeta<?> tableMeta, int tableIndex, List<_Predicate> predicateList
+    public static String findRouteSuffixForTable(TableMeta<?> tableMeta, int tableIndex, List<_Predicate> predicateList
             , Dialect dialect) {
 //        List<FieldMeta<?, ?>> routeFieldList = tableMeta.routeFieldList(false);
 //        Object routeKey = findRouteKeyFromWhereClause(routeFieldList, predicateList);
@@ -160,7 +95,7 @@ abstract class TableRouteUtils extends RouteUtils {
 
 
     @Nullable
-    static String findTableSuffix(TableMeta<?> tableMeta, int tableIndex, List<_Predicate> predicateList
+    public static String findTableSuffix(TableMeta<?> tableMeta, int tableIndex, List<_Predicate> predicateList
             , Dialect dialect) {
 
         List<FieldMeta<?, ?>> routeFieldList = tableMeta.routeFieldList(false);

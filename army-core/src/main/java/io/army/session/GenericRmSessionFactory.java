@@ -3,6 +3,7 @@ package io.army.session;
 import io.army.boot.DomainValuesGenerator;
 import io.army.dialect.Dialect;
 import io.army.meta.ServerMeta;
+import io.army.sharding.RouteContext;
 
 /**
  * <p>
@@ -18,7 +19,7 @@ import io.army.meta.ServerMeta;
  *     </ul>
  * </p>
  */
-public interface GenericRmSessionFactory extends GenericSessionFactory {
+public interface GenericRmSessionFactory extends GenericSessionFactory, RouteContext {
 
 
     byte databaseIndex();

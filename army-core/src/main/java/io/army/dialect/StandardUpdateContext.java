@@ -7,13 +7,14 @@ import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.sharding._TableRouteUtils;
 import io.army.stmt.SimpleStmt;
 
 class StandardUpdateContext extends AbstractStandardDomainContext implements UpdateContext {
 
     static StandardUpdateContext build(_SingleUpdate update, Dialect dialect, final Visible visible) {
         TableMeta<?> tableMeta = update.table();
-        String primaryRouteSuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(update, dialect);
+        String primaryRouteSuffix = _TableRouteUtils.singleDmlPrimaryRouteSuffix(update, dialect);
 
         TablesContext tableContext = TablesContext.singleTable(update, false, primaryRouteSuffix);
         return new StandardUpdateContext(dialect, visible
@@ -25,7 +26,7 @@ class StandardUpdateContext extends AbstractStandardDomainContext implements Upd
 
     static StandardUpdateContext buildParent(_SingleUpdate update, Dialect dialect, final Visible visible) {
         ChildTableMeta<?> childMeta = (ChildTableMeta<?>) update.table();
-        String primaryRouteSuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(update, dialect);
+        String primaryRouteSuffix = _TableRouteUtils.singleDmlPrimaryRouteSuffix(update, dialect);
 
         TablesContext tableContext = TablesContext.singleTable(update, true, primaryRouteSuffix);
         return new DomainUpdateContext(dialect, visible
@@ -38,7 +39,7 @@ class StandardUpdateContext extends AbstractStandardDomainContext implements Upd
 
     static StandardUpdateContext buildChild(_SingleUpdate update, Dialect dialect, final Visible visible) {
         ChildTableMeta<?> childMeta = (ChildTableMeta<?>) update.table();
-        String primaryRouteSuffix = TableRouteUtils.singleDmlPrimaryRouteSuffix(update, dialect);
+        String primaryRouteSuffix = _TableRouteUtils.singleDmlPrimaryRouteSuffix(update, dialect);
 
         TablesContext tableContext = TablesContext.singleTable(update, false, primaryRouteSuffix);
         return new DomainUpdateContext(dialect, visible

@@ -8,6 +8,7 @@ import io.army.criteria.impl.inner._StandardSubQueryInsert;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.sharding._TableRouteUtils;
 import io.army.stmt.SimpleStmt;
 
 import java.util.List;
@@ -17,7 +18,7 @@ final class SubQueryInsertContext extends AbstractTableContextSQLContext impleme
 
     static SubQueryInsertContext build(_StandardSubQueryInsert insert, Dialect dialect, final Visible visible) {
 
-        String primaryRouteSuffix = TableRouteUtils.subQueryInsertPrimaryRouteSuffix(insert, dialect);
+        String primaryRouteSuffix = _TableRouteUtils.subQueryInsertPrimaryRouteSuffix(insert, dialect);
 
         TablesContext tableContext = TablesContext.singleTable(insert, false, primaryRouteSuffix);
         return new SubQueryInsertContext(dialect, visible, tableContext);
@@ -25,7 +26,7 @@ final class SubQueryInsertContext extends AbstractTableContextSQLContext impleme
 
     static SubQueryInsertContext buildParent(_StandardChildSubQueryInsert insert, Dialect dialect
             , Visible visible) {
-        String primaryRouteSuffix = TableRouteUtils.subQueryInsertPrimaryRouteSuffix(insert, dialect);
+        String primaryRouteSuffix = _TableRouteUtils.subQueryInsertPrimaryRouteSuffix(insert, dialect);
 
         TablesContext tableContext = TablesContext.singleTable(insert, true, primaryRouteSuffix);
         return new SubQueryInsertContext(dialect, visible, tableContext);
@@ -33,7 +34,7 @@ final class SubQueryInsertContext extends AbstractTableContextSQLContext impleme
 
     static SubQueryInsertContext buildChild(_StandardChildSubQueryInsert insert, Dialect dialect
             , Visible visible) {
-        String primaryRouteSuffix = TableRouteUtils.subQueryInsertPrimaryRouteSuffix(insert, dialect);
+        String primaryRouteSuffix = _TableRouteUtils.subQueryInsertPrimaryRouteSuffix(insert, dialect);
 
         TablesContext tableContext = TablesContext.singleTable(insert, false, primaryRouteSuffix);
         return new SubQueryInsertContext(dialect, visible, tableContext);

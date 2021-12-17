@@ -8,7 +8,7 @@ import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.schema.SchemaInfoException;
 import io.army.session.GenericRmSessionFactory;
-import io.army.sharding.RouteUtils;
+import io.army.sharding._RouteUtils;
 import io.army.util.Assert;
 import io.army.util.StringUtils;
 
@@ -92,7 +92,7 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
         final Collection<TableMeta<?>> tableMetas = this.sessionFactory.tableMetaMap().values();
         for (int i = 0; i < tableCount; i++) {
             //1. obtain table suffix
-            final String tableSuffix = RouteUtils.convertToSuffix(tableCount, i);
+            final String tableSuffix = _RouteUtils.convertToSuffix(tableCount, i);
             List<MigrationMember> migrationList = new ArrayList<>();
 
             for (TableMeta<?> tableMeta : tableMetas) {

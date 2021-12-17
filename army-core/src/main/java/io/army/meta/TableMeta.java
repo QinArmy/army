@@ -57,6 +57,8 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
 
     List<FieldMeta<?, ?>> tableRouteFields();
 
+    byte tableCount();
+
     @Nullable
     Class<? extends Route> routeClass();
 

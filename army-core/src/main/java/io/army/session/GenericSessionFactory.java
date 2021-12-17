@@ -55,6 +55,6 @@ public interface GenericSessionFactory {
 
     Function<ArmyException, RuntimeException> exceptionFunction();
 
-    Route tableRoute(TableMeta<?> tableMeta) throws NotFoundRouteException;
+    Route route(TableMeta<?> tableMeta) throws NotFoundRouteException;
 
 }

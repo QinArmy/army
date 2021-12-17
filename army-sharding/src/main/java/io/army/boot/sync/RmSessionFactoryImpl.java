@@ -135,8 +135,8 @@ final class RmSessionFactoryImpl extends AbstractSessionFactory
     }
 
     @Override
-    public final TableRoute tableRoute(TableMeta<?> tableMeta) throws NotFoundRouteException {
-        return this.tmSessionFactory.tableRoute(tableMeta);
+    public final TableRoute route(TableMeta<?> tableMeta) throws NotFoundRouteException {
+        return this.tmSessionFactory.route(tableMeta);
     }
 
 

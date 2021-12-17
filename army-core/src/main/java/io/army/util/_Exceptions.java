@@ -128,4 +128,16 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
 
+    public static CriteriaException tableIndexAmbiguity(_Statement stmt, final int tableRoute
+            , final int predicateTableIndex) {
+        return new CriteriaException(String.format("%s table route[%s] and where clause table route[%s] ambiguity."
+                , stmt, tableRoute, predicateTableIndex));
+    }
+
+    public static ArmyException tableIndexParseError(_Statement stmt, TableMeta<?> table, int tableIndex) {
+        return new ArmyException(String.format("%s %s parsed table index[%s] and table count[%s] not match."
+                , stmt, table, tableIndex, table.tableCount()));
+    }
+
+
 }

@@ -31,6 +31,8 @@ public interface Update extends Statement, SQLDebug {
         SetSpec<T, C> route(int databaseIndex, int tableIndex);
 
         SetSpec<T, C> route(int tableIndex);
+
+        SetSpec<T, C> routeAll();
     }
 
 
