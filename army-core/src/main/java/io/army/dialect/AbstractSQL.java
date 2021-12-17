@@ -79,7 +79,7 @@ public abstract class AbstractSQL implements SqlDialect {
     }
 
     @Override
-    public String safeFieldName(FieldMeta<?, ?> fieldMeta) {
+    public String safeColumnName(FieldMeta<?, ?> fieldMeta) {
         return null;
     }
 

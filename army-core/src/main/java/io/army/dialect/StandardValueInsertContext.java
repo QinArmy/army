@@ -156,7 +156,7 @@ final class StandardValueInsertContext implements _ValueInsertContext {
         if (fieldMeta.tableMeta() != this.actualTable) {
             throw _Exceptions.unknownColumn(null, fieldMeta);
         }
-        this.sqlBuilder.append(this.dialect.safeFieldName(fieldMeta));
+        this.sqlBuilder.append(this.dialect.safeColumnName(fieldMeta));
     }
 
     @Override

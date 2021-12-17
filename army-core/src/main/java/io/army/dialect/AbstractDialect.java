@@ -64,7 +64,7 @@ public abstract class AbstractDialect implements InnerDialect {
     }
 
     @Override
-    public String safeFieldName(FieldMeta<?, ?> fieldMeta) {
+    public String safeColumnName(FieldMeta<?, ?> fieldMeta) {
         return null;
     }
 

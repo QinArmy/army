@@ -2,24 +2,31 @@ package io.army.util;
 
 import io.army.ArmyException;
 import io.army.DialectMode;
-import io.army.criteria.CriteriaException;
-import io.army.criteria.Statement;
-import io.army.criteria.Update;
+import io.army.annotation.UpdateMode;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.impl.inner._Update;
 import io.army.criteria.impl.inner._ValuesInsert;
+import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
+import io.army.meta.MetaException;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 import io.army.session.GenericRmSessionFactory;
 import io.army.session.TimeoutException;
 import io.army.stmt.Stmt;
 import io.qinarmy.util.ExceptionUtils;
+import io.qinarmy.util.UnexpectedEnumException;
 
 public abstract class _Exceptions extends ExceptionUtils {
 
     protected _Exceptions() {
         throw new UnsupportedOperationException();
+    }
+
+    public static UnexpectedEnumException unexpectedEnum(Enum<?> e) {
+        return ExceptionUtils.createUnexpectedEnumException(e);
     }
 
     public static ArmyException unexpectedStmt(Stmt stmt) {
@@ -137,6 +144,34 @@ public abstract class _Exceptions extends ExceptionUtils {
     public static ArmyException tableIndexParseError(_Statement stmt, TableMeta<?> table, int tableIndex) {
         return new ArmyException(String.format("%s %s parsed table index[%s] and table count[%s] not match."
                 , stmt, table, tableIndex, table.tableCount()));
+    }
+
+    public CriteriaException setClauseSizeError(_Update update) {
+        String m = String.format("%s set clause target size[%s] and value size[%s] not match."
+                , update, update.fieldList().size(), update.valueExpList().size());
+        return new CriteriaException(m);
+    }
+
+    public CriteriaException fieldImmutable(FieldMeta<?, ?> field) {
+        return new CriteriaException(String.format("%s is immutable.", field));
+    }
+
+    public static MetaException dontSupportOnlyDefault(Dialect dialect) {
+        return new MetaException(String.format("%s isn't support UpdateMode[%s].", dialect, UpdateMode.ONLY_DEFAULT));
+    }
+
+    public static CriteriaException noWhereClause(_Statement stmt) {
+        return new CriteriaException(String.format("%s no where clause.", stmt));
+    }
+
+
+    public static CriteriaException unknownSetTargetPart(SetTargetPart target) {
+        return new CriteriaException(String.format("Unknown %s type[%s].", SetTargetPart.class.getName(), target));
+    }
+
+    public static CriteriaException setTargetAndValuePartNotMatch(SetTargetPart target, SetValuePart value) {
+        return new CriteriaException(String.format("%s[%s] and %s[%s] not match.", SetTargetPart.class.getName(), target
+                , SetValuePart.class.getName(), value));
     }
 
 

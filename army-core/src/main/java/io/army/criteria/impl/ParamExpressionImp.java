@@ -64,6 +64,11 @@ final class ParamExpressionImp<E> extends AbstractNoNOperationExpression<E> impl
 
 
     @Override
+    public void appendSql(_SqlContext context) {
+        context.appendParam(this);
+    }
+
+    @Override
     protected void afterSpace(_SqlContext context) {
         context.sqlBuilder().append("?");
         context.appendParam(this);
@@ -71,7 +76,7 @@ final class ParamExpressionImp<E> extends AbstractNoNOperationExpression<E> impl
 
     @Override
     public String toString() {
-        return "?";
+        return " ?";
     }
 
 }

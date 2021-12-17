@@ -14,7 +14,7 @@ public interface SqlDialect {
 
     String safeTableName(TableMeta<?> tableMeta, @Nullable String suffix);
 
-    String safeFieldName(FieldMeta<?, ?> fieldMeta);
+    String safeColumnName(FieldMeta<?, ?> fieldMeta);
 
     boolean isKeyWord(String identifier);
 
@@ -22,6 +22,8 @@ public interface SqlDialect {
     ZoneId zoneId();
 
     boolean supportZone();
+
+    boolean supportOnlyDefault();
 
     GenericRmSessionFactory sessionFactory();
 

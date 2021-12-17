@@ -1,5 +1,7 @@
 package io.army.dialect;
 
+import io.army.DialectMode;
+import io.army.meta.FieldMeta;
 import io.army.stmt.Stmt;
 
 /**
@@ -15,5 +17,9 @@ public interface Dialect extends DdlDialect, DmlDialect, DqlDialect, TclDialect 
      * @return always same a instance.
      */
     MappingContext mappingContext();
+
+    DialectMode mode();
+
+    void defaultFunc(FieldMeta<?, ?> field, StringBuilder builder);
 
 }

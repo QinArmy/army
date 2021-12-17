@@ -119,7 +119,7 @@ abstract class DmlUtils {
             if (index > 0) {
                 builder.append(Constant.COMMA);
             }
-            builder.append(dialect.safeFieldName(fieldMeta));
+            builder.append(dialect.safeColumnName(fieldMeta));
             index++;
         }
         builder.append(Constant.RIGHT_BRACKET)
@@ -371,7 +371,7 @@ abstract class DmlUtils {
     }
 
 
-    static void standardSimpleUpdateSetClause(UpdateContext context, TableMeta<?> tableMeta, String tableAlias
+    static void standardSimpleUpdateSetClause(_UpdateContext context, TableMeta<?> tableMeta, String tableAlias
             , List<FieldMeta<?, ?>> fieldMetaList, List<_Expression<?>> valueExpList) {
 //        if (tableMeta.immutable()) {
 //            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "TableMeta[%s] alias[%s] is immutable."

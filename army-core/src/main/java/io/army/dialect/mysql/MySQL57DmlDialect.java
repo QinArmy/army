@@ -25,7 +25,7 @@ class MySQL57DmlDialect extends AbstractDmlDialect {
 
 
     @Override
-    public String safeFieldName(FieldMeta<?, ?> fieldMeta) {
+    public String safeColumnName(FieldMeta<?, ?> fieldMeta) {
         return null;
     }
 

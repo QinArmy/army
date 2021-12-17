@@ -22,7 +22,7 @@ public abstract class DialectFactory {
             case Oracle:
             case H2:
             default:
-                throw _Exceptions.createUnexpectedEnumException(database);
+                throw _Exceptions.unexpectedEnum(database);
         }
         return dialect;
     }

@@ -59,6 +59,8 @@ public abstract class DialectUtils {
             suffix = "";
         } else if (tableIndex < 10) {
             suffix = "_0" + tableIndex;
+        } else if (tableIndex < 100) {
+            suffix = Byte.toString(tableIndex);
         } else {
             throw new IllegalArgumentException(String.format("tableIndex[%s] too large.", tableIndex));
         }

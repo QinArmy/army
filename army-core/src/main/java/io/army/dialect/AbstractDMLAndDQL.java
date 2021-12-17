@@ -1,20 +1,17 @@
 package io.army.dialect;
 
-import io.army.criteria.IPredicate;
-import io.army.criteria.SQLModifier;
-import io.army.criteria.TableAble;
-import io.army.criteria.Visible;
+import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner.TableWrapper;
+import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner._Predicate;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
+import io.army.util.CollectionUtils;
 import io.army.util._Exceptions;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 
 /**
@@ -116,6 +113,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         }
     }
 
+    @Deprecated
     protected final void visibleConstantPredicate(_TablesSqlContext context
             , TableMeta<?> tableMeta, String tableAlias, boolean hasPredicate) {
         switch (context.visible()) {
@@ -131,6 +129,213 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
                 throw new IllegalArgumentException(String.format("unknown Visible[%s]", context.visible()));
         }
     }
+
+
+    protected final void visibleConstantPredicate(SingleTableMeta<?> table, @Nullable String safeTableAlias
+            , _StmtContext context) {
+
+        final FieldMeta<?, ?> field = table.getField(_MetaBridge.VISIBLE);
+        final Boolean visibleValue;
+        switch (context.visible()) {
+            case ONLY_VISIBLE:
+                visibleValue = Boolean.TRUE;
+                break;
+            case ONLY_NON_VISIBLE:
+                visibleValue = Boolean.FALSE;
+                break;
+            case BOTH:
+                visibleValue = null;
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(context.visible());
+        }
+        if (visibleValue != null) {
+            final Dialect dialect = context.dialect();
+            final StringBuilder sqlBuilder = context.sqlBuilder();
+
+            sqlBuilder.append(Constant.SPACE)
+                    .append(Constant.AND)
+                    .append(Constant.SPACE);
+            if (safeTableAlias != null) {
+                sqlBuilder.append(safeTableAlias)
+                        .append(Constant.POINT);
+            }
+            sqlBuilder.append(dialect.safeColumnName(field))
+                    .append(Constant.SPACE)
+                    .append(Constant.EQUAL)
+                    .append(Constant.SPACE)
+                    .append(dialect.constant(field.mappingMeta(), visibleValue));
+        }
+
+    }
+
+
+    protected final void conditionUpdate(String safeTableAlias, List<FieldMeta<?, ?>> conditionFields
+            , _StmtContext context) {
+
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+        final Dialect dialect = context.dialect();
+        for (FieldMeta<?, ?> field : conditionFields) {
+            sqlBuilder
+                    .append(Constant.SPACE)
+                    .append(Constant.AND)
+                    .append(Constant.SPACE)
+                    .append(safeTableAlias)
+                    .append(Constant.POINT)
+                    .append(dialect.safeColumnName(field))
+                    .append(Constant.SPACE);
+
+            switch (field.updateMode()) {
+                case ONLY_NULL:
+                    sqlBuilder.append(Constant.IS_NULL);
+                    break;
+                case ONLY_DEFAULT: {
+                    sqlBuilder.append(Constant.EQUAL);
+                    dialect.defaultFunc(field, sqlBuilder);
+                }
+                break;
+                default:
+                    throw _Exceptions.unexpectedEnum(field.updateMode());
+            }
+
+        }
+
+    }
+
+    protected final List<GenericField<?, ?>> setClause(final boolean childTable, final _UpdateContext context) {
+
+        final List<? extends SetTargetPart> targetPartList;
+        final List<? extends SetValuePart> valuePartList;
+        final TableMeta<?> table;
+        final String safeTableAlias;
+        if (childTable) {
+            final _ChildUpdateContext childCtx = (_ChildUpdateContext) context;
+            targetPartList = childCtx.childTargetParts();
+            valuePartList = childCtx.childValueParts();
+            table = childCtx.childTable();
+            safeTableAlias = childCtx.childTableAlias();
+        } else {
+            targetPartList = context.targetParts();
+            valuePartList = context.valueParts();
+            table = context.table();
+            safeTableAlias = context.safeTableAlias();
+        }
+        final int targetCount = targetPartList.size();
+
+        final Dialect dialect = context.dialect();
+        final boolean supportOnlyDefault = dialect.supportOnlyDefault();
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+
+        List<GenericField<?, ?>> conditionFields = null;
+        for (int i = 0; i < targetCount; i++) {
+            if (i > 0) {
+                sqlBuilder
+                        .append(Constant.SPACE)
+                        .append(Constant.COMMA);
+            }
+            final SetTargetPart targetPart = targetPartList.get(i);
+            final SetValuePart valuePart = valuePartList.get(i);
+            if (targetPart instanceof Row) {
+                if (!(valuePart instanceof RowSubQuery)) {
+                    throw _Exceptions.setTargetAndValuePartNotMatch(targetPart, valuePart);
+                }
+                sqlBuilder.append(Constant.LEFT_BRACKET);
+                int index = 0;
+                for (FieldMeta<?, ?> field : ((Row<?>) targetPart).columnList()) {
+                    if (field.tableMeta() != table) {
+                        throw _Exceptions.unknownColumn(safeTableAlias, field);
+                    }
+                    if (index > 0) {
+                        sqlBuilder
+                                .append(Constant.SPACE)
+                                .append(Constant.COMMA);
+                    }
+                    if (context instanceof _MultiUpdateContext) {
+                        sqlBuilder.append(Constant.SPACE)
+                                .append(safeTableAlias)
+                                .append(Constant.POINT);
+                    }
+                    sqlBuilder.append(dialect.quoteIfNeed(field.columnName()));
+                    index++;
+                }
+                sqlBuilder.append(Constant.RIGHT_BRACKET)
+                        .append(Constant.SPACE)
+                        .append(Constant.EQUAL);
+                dialect.subQuery((SubQuery) targetPart, context);
+                continue;
+            } else if (!(targetPart instanceof FieldMeta)) {
+                throw _Exceptions.unknownSetTargetPart(targetPart);
+            } else if (!(valuePart instanceof _Expression)) {
+                throw _Exceptions.setTargetAndValuePartNotMatch(targetPart, valuePart);
+            }
+            final FieldMeta<?, ?> field = (FieldMeta<?, ?>) targetPart;
+            switch (field.updateMode()) {
+                case UPDATABLE:
+                    // no-op
+                    break;
+                case IMMUTABLE:
+                    throw _Exceptions.immutableField(field);
+
+                case ONLY_DEFAULT: {
+                    if (!supportOnlyDefault) {
+                        throw _Exceptions.dontSupportOnlyDefault(dialect);
+                    }
+                    if (conditionFields == null) {
+                        conditionFields = new ArrayList<>();
+                    }
+                    conditionFields.add(field);
+                }
+                break;
+                case ONLY_NULL: {
+                    if (conditionFields == null) {
+                        conditionFields = new ArrayList<>();
+                    }
+                    conditionFields.add(field);
+                }
+                break;
+                default:
+                    throw _Exceptions.unexpectedEnum(field.updateMode());
+            }
+            sqlBuilder.append(Constant.SPACE)
+                    .append(Constant.SET)
+                    .append(Constant.SPACE)
+                    .append(dialect.safeColumnName(field));
+
+            sqlBuilder.append(Constant.SPACE)
+                    .append(Constant.EQUAL);
+
+            ((_Expression<?>) valuePart).appendSql(context);
+        }
+
+        final List<FieldMeta<?, ?>> list;
+        if (conditionFields == null) {
+            list = Collections.emptyList();
+        } else {
+            list = CollectionUtils.unmodifiableList(conditionFields);
+        }
+        return list;
+    }
+
+    protected final void dmlWhereClause(_DmlContext context) {
+        final List<_Predicate> predicateList = context.predicateList();
+        final int predicateCount = predicateList.size();
+        if (predicateCount == 0) {
+            throw _Exceptions.noWhereClause(context.statement());
+        }
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+        sqlBuilder.append(Constant.SPACE)
+                .append(Constant.WHERE);
+        for (int i = 0; i < predicateCount; i++) {
+            if (i > 0) {
+                sqlBuilder
+                        .append(Constant.SPACE)
+                        .append(Constant.AND);
+            }
+            predicateList.get(i).appendSql(context);
+        }
+
+    }
+
 
     protected final void visibleSubQueryPredicateForChild(_TablesSqlContext context
             , ChildTableMeta<?> childMeta, String childAlias, boolean hasPredicate) {
@@ -167,6 +372,9 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         visibleConstantPredicate(context, childMeta.parentMeta(), parentAlias, true);
         builder.append(')');
     }
+
+
+    private GenericField<?, ?> appendTargetValue()
 
 
     private void doVisibleConstantPredicate(_TablesSqlContext context, Boolean visible

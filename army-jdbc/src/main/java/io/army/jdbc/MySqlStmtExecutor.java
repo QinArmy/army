@@ -156,7 +156,7 @@ final class MySqlStmtExecutor extends AbstractStmtExecutor {
                 }
             }
             default:
-                throw SyncExceptions.createUnexpectedEnumException((MySQLDataType) sqlDataType);
+                throw SyncExceptions.unexpectedEnum((MySQLDataType) sqlDataType);
 
         }
 

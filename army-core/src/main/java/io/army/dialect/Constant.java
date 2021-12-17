@@ -2,51 +2,53 @@ package io.army.dialect;
 
 public interface Constant {
 
-    String SELECT = " SELECT";
+    String SELECT = "SELECT";
 
-    String UPDATE = " UPDATE";
+    String UPDATE = "UPDATE";
 
-    String FROM = " FROM";
+    String FROM = "FROM";
 
-    String JOIN = " JOIN";
+    String JOIN = "JOIN";
 
-    String LEFT_JOIN = " LEFT JOIN";
+    String LEFT_JOIN = "LEFT JOIN";
 
-    String RIGHT_JOIN = " RIGHT JOIN";
+    String RIGHT_JOIN = "RIGHT JOIN";
 
-    String FULL_JOIN = " FULL JOIN";
+    String FULL_JOIN = "FULL JOIN";
 
-    String ON = " ON";
+    String ON = "ON";
 
-    String WHERE = " WHERE";
+    String WHERE = "WHERE";
 
-    String AND = " AND";
+    String AND = "AND";
 
-    String OR = " OR";
+    String OR = "OR";
 
-    String GROUP_BY = " GROUP BY";
+    String GROUP_BY = "GROUP BY";
 
-    String HAVING = " HAVING";
+    String HAVING = "HAVING";
 
-    String ORDER_BY = " ORDER BY";
+    String ORDER_BY = "ORDER BY";
 
-    String EXISTS = " EXISTS";
+    String EXISTS = "EXISTS";
 
-    String AS = " AS";
+    String AS = "AS";
 
-    String INSERT_INTO = " INSERT INTO";
+    String INSERT_INTO = "INSERT INTO";
 
-    String VALUE = " VALUE";
+    String VALUE = "VALUE";
 
-    String VALUES = " VALUES";
+    String VALUES = "VALUES";
 
-    String DEFAULT = " DEFAULT";
+    String DEFAULT = "DEFAULT";
 
-    String SET = " SET";
+    String SET = "SET";
 
-    String LOCK = " LOCK";
+    String LOCK = "LOCK";
 
-    String LIMIT = " LIMIT";
+    String LIMIT = "LIMIT";
+
+    String IS_NULL = "IS NULL";
 
     char LEFT_BRACKET = '(';
 
@@ -56,7 +58,11 @@ public interface Constant {
 
     char COMMA = ',';
 
+    char POINT = '.';
+
     char PLACEHOLDER = '?';
+
+    char EQUAL = '=';
 
 
 }

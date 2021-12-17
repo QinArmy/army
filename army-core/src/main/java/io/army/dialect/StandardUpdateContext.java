@@ -10,7 +10,7 @@ import io.army.meta.TableMeta;
 import io.army.sharding._TableRouteUtils;
 import io.army.stmt.SimpleStmt;
 
-class StandardUpdateContext extends AbstractStandardDomainContext implements UpdateContext {
+class StandardUpdateContext extends AbstractStandardDomainContext implements _UpdateContext {
 
     static StandardUpdateContext build(_SingleUpdate update, Dialect dialect, final Visible visible) {
         TableMeta<?> tableMeta = update.table();

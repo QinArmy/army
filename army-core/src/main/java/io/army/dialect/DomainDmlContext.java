@@ -1,59 +1,59 @@
 package io.army.dialect;
 
 import io.army.criteria.FieldPredicate;
+import io.army.criteria.Visible;
 import io.army.lang.Nullable;
-import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 import io.army.stmt.ParamValue;
-import io.army.util._Exceptions;
+
+import java.util.ArrayList;
+import java.util.List;
 
 abstract class DomainDmlContext implements _DmlContext {
 
 
-    protected final TableMeta<?> tableMeta;
+    protected final TableMeta<?> table;
 
-    protected final String tableAlias;
+    protected final String safeTableAlias;
 
     protected final Dialect dialect;
 
-    protected final SqlBuilder sqlBuilder;
+    protected final StringBuilder sqlBuilder;
 
-    protected final byte database;
+    protected final List<ParamValue> paramList;
 
-    protected DomainDmlContext(TableMeta<?> tableMeta, @Nullable String tableAlias, final byte database
-            , Dialect dialect) {
-        this.tableMeta = tableMeta;
-        this.tableAlias = tableAlias;
-        this.dialect = dialect;
-        this.database = database;
-        this.sqlBuilder = DialectUtils.createSQLBuilder();
-    }
+    protected final byte tableIndex;
+
+    private final String tableSuffix;
+
+    protected final Visible visible;
 
 
-    @Override
-    public final void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) {
-        if (!tableAlias.equals(this.tableAlias) || fieldMeta.tableMeta() != this.tableMeta) {
-            throw _Exceptions.unknownColumn(tableAlias, fieldMeta);
-        }
-        this.sqlBuilder.append(tableAlias)
-                .append('.')
-                .append(fieldMeta.columnName());
-    }
+    protected DomainDmlContext(TableMeta<?> table, @Nullable String tableAlias, final byte tableIndex
+            , Dialect dialect, Visible visible) {
+        this.table = table;
 
-    @Override
-    public final void appendField(FieldMeta<?, ?> fieldMeta) {
-        if (fieldMeta.tableMeta() != this.tableMeta) {
-            throw _Exceptions.unknownColumn(null, fieldMeta);
-        }
-        final String tableAlias = this.tableAlias;
         if (tableAlias == null) {
-            this.sqlBuilder.append(this.dialect.quoteIfNeed(fieldMeta.columnName()));
+            this.safeTableAlias = null;
         } else {
-            this.sqlBuilder.append(tableAlias)
-                    .append('.')
-                    .append(fieldMeta.columnName());
+            this.safeTableAlias = dialect.quoteIfNeed(tableAlias);
         }
+        this.dialect = dialect;
+        this.visible = visible;
+
+        this.tableIndex = tableIndex;
+        this.tableSuffix = DialectUtils.tableSuffix(tableIndex);
+        this.sqlBuilder = new StringBuilder(128);
+        this.paramList = new ArrayList<>();
+
+
+    }
+
+
+    @Override
+    public final Visible visible() {
+        return this.visible;
     }
 
     @Override
@@ -62,43 +62,45 @@ abstract class DomainDmlContext implements _DmlContext {
     }
 
     @Override
-    public void appendIdentifier(String identifier) {
-
+    public final void appendIdentifier(String identifier) {
+        this.sqlBuilder.append(this.dialect.quoteIfNeed(identifier));
     }
 
     @Override
     public void appendConstant(ParamMeta paramMeta, Object value) {
-
+        this.dialect.constant(paramMeta.mappingMeta(), value);
     }
 
     @Override
-    public Dialect dialect() {
-        return null;
+    public final Dialect dialect() {
+        return this.dialect;
     }
 
     @Override
-    public StringBuilder sqlBuilder() {
-        return null;
+    public final StringBuilder sqlBuilder() {
+        return this.sqlBuilder;
     }
 
     @Override
     public void appendParam(ParamValue paramValue) {
-
+        this.sqlBuilder.append(Constant.SPACE)
+                .append(Constant.PLACEHOLDER);
+        this.paramList.add(paramValue);
     }
 
     @Override
-    public TableMeta<?> tableMeta() {
-        return null;
+    public final TableMeta<?> tableMeta() {
+        return this.table;
     }
 
     @Override
-    public byte tableIndex() {
-        return 0;
+    public final byte tableIndex() {
+        return this.tableIndex;
     }
 
     @Override
-    public String tableSuffix() {
-        return null;
+    public final String tableSuffix() {
+        return this.tableSuffix;
     }
 
 

@@ -733,7 +733,7 @@ abstract class AbstractNoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final void appendSql(_SqlContext context) {
+    public void appendSql(_SqlContext context) {
         context.sqlBuilder()
                 .append(" ");
         this.afterSpace(context);
@@ -744,6 +744,7 @@ abstract class AbstractNoNOperationExpression<E> implements _Expression<E> {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
+    @Deprecated
     protected abstract void afterSpace(_SqlContext context);
 
 }

@@ -7,6 +7,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl._CriteriaCounselor;
 import io.army.criteria.impl.inner.*;
 import io.army.meta.*;
+import io.army.modelgen._MetaBridge;
 import io.army.session.FactoryMode;
 import io.army.session.GenericRmSessionFactory;
 import io.army.sharding._RouteUtils;
@@ -367,7 +368,41 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
      * @see #standardChildUpdateContext(_SingleUpdate, byte, Visible)
      */
     private Stmt standardSingleTableUpdate(final _SingleUpdate update, final byte tableIndex, final Visible visible) {
-        return null;
+        final Dialect dialect = this.dialect;
+        final SingleUpdateContext context;
+        context = SingleUpdateContext.create(update, tableIndex, dialect, visible);
+
+        final TableMeta<?> table = update.table();
+        final StringBuilder sqlBuilder = context.sqlBuilder;
+
+        sqlBuilder.append(Constant.UPDATE);
+        sqlBuilder.append(Constant.SPACE);
+        if (context.tableIndex == 0) {
+            sqlBuilder.append(dialect.safeTableName(table, null));
+        } else {
+            sqlBuilder.append(dialect.safeTableName(table, context.tableSuffix()));
+        }
+        if (dialect.tableAliasAfterAs()) {
+            sqlBuilder.append(Constant.SPACE)
+                    .append(Constant.AS);
+        }
+        sqlBuilder.append(Constant.SPACE)
+                .append(dialect.quoteIfNeed(context.safeTableAlias));
+
+        final List<FieldMeta<?, ?>> conditionFields;
+        // set clause
+        conditionFields = this.setClause(context);
+
+        // where clause
+        this.dmlWhereClause(context);
+
+        if (conditionFields.size() > 0) {
+            this.conditionUpdate(context.safeTableAlias, conditionFields, context);
+        }
+        if (table.containField(_MetaBridge.VISIBLE)) {
+            this.visibleConstantPredicate((SingleTableMeta<?>) table, context.safeTableAlias, context);
+        }
+        return context.build();
     }
 
     /**
@@ -378,7 +413,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
         final int tableCount = table.tableCount();
         final List<Stmt> stmtList = new ArrayList<>(tableCount);
         for (int i = 0; i < tableCount; i++) {
-            Stmt stmt;
+            final Stmt stmt;
             if (table instanceof ChildTableMeta) {
                 stmt = standardChildUpdateContext(update, (byte) i, visible);
             } else {
