@@ -132,7 +132,21 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     }
 
 
-    protected final void visiblePredicate(SingleTableMeta<?> table, final char[] safeTableAlias
+    protected final void discriminator(ParentTableMeta<?> table, String safeTableAlias, _StmtContext context) {
+        final FieldMeta<?, ?> field = table.discriminator();
+        final Dialect dialect = context.dialect();
+        context.sqlBuilder()
+                .append(AND)
+                .append(Constant.SPACE)
+                .append(safeTableAlias)
+                .append(Constant.POINT)
+                .append(dialect.quoteIfNeed(field.columnName()))
+                .append(EQUAL)
+                .append(Constant.SPACE)
+                .append(dialect.constant(field.mappingMeta(), table.discriminatorValue()));
+    }
+
+    protected final void visiblePredicate(SingleTableMeta<?> table, final String safeTableAlias
             , _StmtContext context) {
 
         final FieldMeta<?, ?> field = table.getField(_MetaBridge.VISIBLE);
@@ -166,7 +180,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     }
 
 
-    protected final void conditionUpdate(char[] safeTableAlias, List<GenericField<?, ?>> conditionFields
+    protected final void conditionUpdate(String safeTableAlias, List<GenericField<?, ?>> conditionFields
             , _StmtContext context) {
 
         final StringBuilder sqlBuilder = context.sqlBuilder();
@@ -215,13 +229,10 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
             throw _Exceptions.noWhereClause(context);
         }
         final StringBuilder sqlBuilder = context.sqlBuilder();
-        sqlBuilder.append(Constant.SPACE)
-                .append(Constant.WHERE);
+        sqlBuilder.append(WHERE_WORD);
         for (int i = 0; i < predicateCount; i++) {
             if (i > 0) {
-                sqlBuilder
-                        .append(Constant.SPACE)
-                        .append(Constant.AND);
+                sqlBuilder.append(AND);
             }
             predicateList.get(i).appendSql(context);
         }

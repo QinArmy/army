@@ -26,9 +26,13 @@ public abstract class AbstractSQL implements SqlDialect {
 
     protected static final char[] SET_WORD = new char[]{' ', 'S', 'E', 'T'};
 
+    protected static final char[] WHERE_WORD = new char[]{' ', 'W', 'H', 'E', 'R', 'E'};
+
     protected static final char[] UPDATE = new char[]{'U', 'P', 'D', 'A', 'T', 'E'};
 
     protected static final char[] AS_WORD = new char[]{' ', 'A', 'S'};
+
+    protected static final char[] JOIN_WORD = new char[]{' ', 'J', 'O', 'I', 'N'};
 
 
     protected final Dialect dialect;

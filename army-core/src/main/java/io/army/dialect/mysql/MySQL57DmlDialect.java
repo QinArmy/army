@@ -3,7 +3,7 @@ package io.army.dialect.mysql;
 import io.army.beans.ObjectWrapper;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._ValuesInsert;
-import io.army.dialect.AbstractDmlDialect;
+import io.army.dialect.AbstractDm;
 import io.army.dialect._SqlContext;
 import io.army.dialect._ValueInsertContext;
 import io.army.mapping.MappingType;
@@ -12,7 +12,7 @@ import io.army.stmt.Stmt;
 
 import java.util.List;
 
-class MySQL57DmlDialect extends AbstractDmlDialect {
+class MySQL57DmlDialect extends AbstractDm {
 
     MySQL57DmlDialect(MySQL57Dialect dialect) {
         super(dialect);

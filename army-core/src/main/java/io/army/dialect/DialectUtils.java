@@ -45,6 +45,7 @@ public abstract class DialectUtils {
         return new SQLBuilderImpl();
     }
 
+
     @SuppressWarnings("unchecked")
     public static <T extends IDomain> Collection<FieldMeta<?, ?>> tableFields(TableMeta<T> tableMeta) {
         final Collection<?> collection = tableMeta.fieldCollection();

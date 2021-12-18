@@ -34,6 +34,18 @@ abstract class DmlUtils {
         throw new UnsupportedOperationException();
     }
 
+
+    public static String parentAlias(String tableAlias) {
+        return "p_of_" + tableAlias;
+    }
+
+    public static _SetClause createSetClause(TableMeta<?> table, String tableAlias
+            , String safeTableAlias, boolean selfJoin
+            , List<? extends SetTargetPart> targetParts, List<? extends SetValuePart> valueParts) {
+        return new SetClauseImpl(table, tableAlias, safeTableAlias, selfJoin, targetParts, valueParts);
+    }
+
+
     /**
      * @return a unmodified map
      */
@@ -750,4 +762,63 @@ abstract class DmlUtils {
             throw new UnsupportedOperationException();
         }
     }
+
+
+    private static final class SetClauseImpl implements _SetClause {
+
+        private final TableMeta<?> table;
+
+        private final String tableAlias;
+
+        private final String safeTableAlias;
+
+        private final boolean selfJoin;
+
+        private final List<? extends SetTargetPart> targetParts;
+
+        private final List<? extends SetValuePart> valueParts;
+
+        private SetClauseImpl(TableMeta<?> table, String tableAlias
+                , String safeTableAlias, boolean selfJoin
+                , List<? extends SetTargetPart> targetParts, List<? extends SetValuePart> valueParts) {
+            this.table = table;
+            this.tableAlias = tableAlias;
+            this.safeTableAlias = safeTableAlias;
+            this.selfJoin = selfJoin;
+            this.targetParts = CollectionUtils.unmodifiableList(targetParts);
+            this.valueParts = CollectionUtils.unmodifiableList(valueParts);
+        }
+
+        @Override
+        public TableMeta<?> table() {
+            return this.table;
+        }
+
+        @Override
+        public String tableAlias() {
+            return this.tableAlias;
+        }
+
+        @Override
+        public boolean hasSelfJoint() {
+            return this.selfJoin;
+        }
+
+        @Override
+        public String safeTableAlias() {
+            return this.safeTableAlias;
+        }
+
+        @Override
+        public List<? extends SetTargetPart> targetParts() {
+            return this.targetParts;
+        }
+
+        @Override
+        public List<? extends SetValuePart> valueParts() {
+            return this.valueParts;
+        }
+    }
+
+
 }

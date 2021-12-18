@@ -11,14 +11,15 @@ import io.army.modelgen._MetaBridge;
 import io.army.session.FactoryMode;
 import io.army.session.GenericRmSessionFactory;
 import io.army.sharding._RouteUtils;
-import io.army.stmt.PairStmt;
-import io.army.stmt.SimpleStmt;
-import io.army.stmt.Stmt;
-import io.army.stmt.Stmts;
+import io.army.stmt.*;
 import io.army.util.ArrayUtils;
 import io.army.util.Assert;
 import io.army.util._Exceptions;
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 
@@ -27,13 +28,13 @@ import java.util.*;
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
  */
-public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements DmlDialect {
+public abstract class AbstractDm extends AbstractDMLAndDQL implements DmlDialect {
 
     private static final Collection<String> FORBID_SET_FIELD = ArrayUtils.asUnmodifiableList(
             _MetaBridge.UPDATE_TIME, _MetaBridge.VERSION);
 
 
-    protected AbstractDmlDialect(Dialect dialect) {
+    protected AbstractDm(Dialect dialect) {
         super(dialect);
     }
 
@@ -318,18 +319,19 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
     /*################################## blow update private method ##################################*/
 
 
-    protected Stmt standardChildUpdateContext(final _SingleUpdate update, byte tableIndex, final Visible visible) {
+    /**
+     * @see #handleStandardUpdate(_SingleUpdate, Visible)
+     */
+    protected Stmt standardChildUpdateContext(_SingleUpdateContext context) {
         throw new UnsupportedOperationException();
     }
 
 
-    protected final List<GenericField<?, ?>> setClause(final _SetClause clause
-            , final _UpdateContext context) {
+    protected final List<GenericField<?, ?>> setClause(final _SetClause clause, final _UpdateContext context) {
 
         final List<? extends SetTargetPart> targetPartList = clause.targetParts();
         final List<? extends SetValuePart> valuePartList = clause.valueParts();
-        final String tableAlias = clause.tableAlias();
-        final char[] safeTableAlias = clause.safeTableAlias();
+        final String tableAlias = clause.tableAlias(), safeTableAlias = clause.safeTableAlias();
         final int targetCount = targetPartList.size();
 
         final Dialect dialect = context.dialect();
@@ -403,7 +405,61 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
             }
             ((_Expression<?>) valuePart).appendSql(context);
         }
+        final TableMeta<?> table = clause.table();
+        if (table instanceof SingleTableMeta) {
+            this.appendArmyManageFieldsToSetClause((SingleTableMeta<?>) table, safeTableAlias, context);
+        }
         return Collections.unmodifiableList(conditionFields);
+    }
+
+    /**
+     * @see #setClause(_SetClause, _UpdateContext)
+     */
+    private void appendArmyManageFieldsToSetClause(final SingleTableMeta<?> table, final String safeTableAlias
+            , final _UpdateContext context) {
+
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+        final Dialect dialect = context.dialect();
+        final FieldMeta<?, ?> updateTime = table.getField(_MetaBridge.UPDATE_TIME);
+
+        sqlBuilder.append(COMMA)
+                .append(Constant.SPACE)
+                .append(safeTableAlias)
+                .append(Constant.POINT)
+                .append(dialect.quoteIfNeed(updateTime.columnName()))
+                .append(EQUAL);
+
+        final Class<?> javaType = updateTime.javaType();
+        if (javaType == LocalDateTime.class) {
+            context.appendParam(ParamValue.build(updateTime, LocalDateTime.now()));
+        } else if (javaType == OffsetDateTime.class) {
+            final ZoneOffset zoneOffset = dialect.sessionFactory().zoneOffset();
+            context.appendParam(ParamValue.build(updateTime, OffsetDateTime.now(zoneOffset)));
+        } else if (javaType == ZonedDateTime.class) {
+            final ZoneOffset zoneOffset = dialect.sessionFactory().zoneOffset();
+            context.appendParam(ParamValue.build(updateTime, ZonedDateTime.now(zoneOffset)));
+        } else {
+            String m = String.format("%s don't support java type[%s]", updateTime, javaType);
+            throw new MetaException(m);
+        }
+
+        if (table.containField(_MetaBridge.VERSION)) {
+            final FieldMeta<?, ?> version = table.getField(_MetaBridge.VERSION);
+            final String versionColumnName = dialect.quoteIfNeed(version.columnName());
+            sqlBuilder.append(COMMA)
+                    .append(Constant.SPACE)
+                    .append(safeTableAlias)
+                    .append(Constant.POINT)
+                    .append(versionColumnName)
+                    .append(EQUAL)
+                    .append(Constant.SPACE)
+                    .append(safeTableAlias)
+                    .append(Constant.POINT)
+                    .append(versionColumnName)
+                    .append(" + 1");
+
+        }
+
     }
 
     /**
@@ -416,8 +472,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
         final boolean supportOnlyDefault = dialect.supportOnlyDefault();
 
         final TableMeta<?> table = clause.table();
-        final String tableAlias = clause.tableAlias();
-        final char[] safeTableAlias = clause.safeTableAlias();
+        final String tableAlias = clause.tableAlias(), safeTableAlias = clause.safeTableAlias();
         final boolean hasSelfJoin = context.setClauseTableAlias(), supportTableAlias = context.setClauseTableAlias();
         sqlBuilder.append(LEFT_BRACKET);
         int index = 0;
@@ -509,7 +564,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
             throw _Exceptions.tableIndexParseError(update, table, tableIndex);
         } else {
             if (table instanceof ChildTableMeta) {
-                stmt = standardChildUpdateContext(update, tableIndex, visible);
+                stmt = standardChildUpdateContext(SingleUpdateContext.child(update, tableIndex, this.dialect, visible));
             } else {
                 stmt = standardSingleTableUpdate(update, tableIndex, visible);
             }
@@ -519,12 +574,12 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
 
     /**
      * @see #handleStandardUpdate(_SingleUpdate, Visible)
-     * @see #standardChildUpdateContext(_SingleUpdate, byte, Visible)
+     * @see #standardChildUpdateContext(_SingleUpdateContext)
      */
     private Stmt standardSingleTableUpdate(final _SingleUpdate update, final byte tableIndex, final Visible visible) {
         final Dialect dialect = this.dialect;
         final SingleUpdateContext context;
-        context = SingleUpdateContext.create(update, tableIndex, dialect, visible);
+        context = SingleUpdateContext.single(update, tableIndex, dialect, visible);
 
         final SingleTableMeta<?> table = context.table();
         final StringBuilder sqlBuilder = context.sqlBuilder;
@@ -547,13 +602,18 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
         conditionFields = this.setClause(context, context);
         //3. where clause
         this.dmlWhereClause(context);
-        //3.1 append condition update fields
-        if (conditionFields.size() > 0) {
-            this.conditionUpdate(context.safeTableAlias, conditionFields, context);
+
+        //3.1 append discriminator
+        if (table instanceof ParentTableMeta) {
+            this.discriminator((ParentTableMeta<?>) table, context.safeTableAlias, context);
         }
         //3.2 append visible
         if (table.containField(_MetaBridge.VISIBLE)) {
             this.visiblePredicate(table, context.safeTableAlias, context);
+        }
+        //3.3 append condition update fields
+        if (conditionFields.size() > 0) {
+            this.conditionUpdate(context.safeTableAlias, conditionFields, context);
         }
         return context.build();
     }
@@ -568,7 +628,7 @@ public abstract class AbstractDmlDialect extends AbstractDMLAndDQL implements Dm
         for (int i = 0; i < tableCount; i++) {
             final Stmt stmt;
             if (table instanceof ChildTableMeta) {
-                stmt = standardChildUpdateContext(update, (byte) i, visible);
+                stmt = standardChildUpdateContext(SingleUpdateContext.child(update, (byte) i, this.dialect, visible));
             } else {
                 stmt = standardSingleTableUpdate(update, (byte) i, visible);
             }

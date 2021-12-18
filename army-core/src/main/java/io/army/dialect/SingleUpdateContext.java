@@ -13,8 +13,11 @@ import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 import io.army.stmt.Stmt;
 import io.army.stmt.Stmts;
+import io.army.util.CollectionUtils;
 import io.army.util._Exceptions;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -24,37 +27,100 @@ import java.util.List;
  */
 final class SingleUpdateContext extends _BaseSqlContext implements _SingleUpdateContext {
 
-    static SingleUpdateContext create(_SingleUpdate update, final byte tableIndex, Dialect dialect, Visible visible) {
-
+    static SingleUpdateContext single(_SingleUpdate update, final byte tableIndex, Dialect dialect, Visible visible) {
         return new SingleUpdateContext(update, tableIndex, dialect, visible);
+    }
+
+    static SingleUpdateContext child(_SingleUpdate update, final byte tableIndex, Dialect dialect, Visible visible) {
+        return new SingleUpdateContext(tableIndex, update, dialect, visible);
     }
 
     final SingleTableMeta<?> table;
 
     final String tableAlias;
 
-    final char[] safeTableAlias;
+    final String safeTableAlias;
 
     final List<FieldMeta<?, ?>> fieldList;
 
     final List<_Expression<?>> valueExpList;
+
     final List<_Predicate> predicateList;
+
+    private final _SetClause childSetClause;
 
     private SingleUpdateContext(_SingleUpdate update, byte tableIndex, Dialect dialect, Visible visible) {
         super(dialect, tableIndex, visible);
 
-        final TableMeta<?> table = update.table();
-        if (update.table() instanceof ChildTableMeta) {
-            String m = String.format("table[%s] isn't %s", update.table(), SingleTableMeta.class.getName());
-            throw new IllegalArgumentException(m);
+        final SingleTableMeta<?> table = (SingleTableMeta<?>) update.table();
+        final List<FieldMeta<?, ?>> fieldList = update.fieldList();
+        for (FieldMeta<?, ?> field : fieldList) {
+            if (field.tableMeta() != table) {
+                throw _Exceptions.unknownColumn(update.tableAlias(), field);
+            }
         }
-        this.table = (SingleTableMeta<?>) table;
-        this.fieldList = update.fieldList();
+        this.table = table;
+        this.fieldList = fieldList;
         this.valueExpList = update.valueExpList();
         this.predicateList = update.predicateList();
 
         this.tableAlias = update.tableAlias();
-        this.safeTableAlias = dialect.quoteIfNeed(this.tableAlias).toCharArray();
+        this.safeTableAlias = dialect.quoteIfNeed(this.tableAlias);
+
+        this.childSetClause = null;
+    }
+
+    private SingleUpdateContext(byte tableIndex, _SingleUpdate update, Dialect dialect, Visible visible) {
+        super(dialect, tableIndex, visible);
+
+        final ChildTableMeta<?> childTable = (ChildTableMeta<?>) update.table();
+        final SingleTableMeta<?> parentTable = childTable.parentMeta();
+        final List<FieldMeta<?, ?>> fieldList = update.fieldList();
+        final List<_Expression<?>> valueExpList = update.valueExpList();
+        final int fieldCount = fieldList.size();
+
+        final List<FieldMeta<?, ?>> parenFields = new ArrayList<>(), fields = new ArrayList<>();
+        final List<_Expression<?>> parentValues = new ArrayList<>(), values = new ArrayList<>();
+
+        FieldMeta<?, ?> field;
+        TableMeta<?> belongOf;
+        for (int i = 0; i < fieldCount; i++) {
+            field = fieldList.get(i);
+            belongOf = field.tableMeta();
+            if (belongOf == parentTable) {
+                parenFields.add(field);
+                parentValues.add(valueExpList.get(i));
+            } else if (belongOf == childTable) {
+                fields.add(field);
+                values.add(valueExpList.get(i));
+            } else {
+                throw _Exceptions.unknownColumn(update.tableAlias(), field);
+            }
+        }
+        this.table = parentTable;
+        if (parenFields.size() == 0) {
+            this.fieldList = Collections.emptyList();
+            this.valueExpList = Collections.emptyList();
+        } else if (fields.size() == 0) {
+            this.fieldList = fieldList;
+            this.valueExpList = valueExpList;
+        } else {
+            this.fieldList = CollectionUtils.unmodifiableList(parenFields);
+            this.valueExpList = CollectionUtils.unmodifiableList(parentValues);
+        }
+        this.predicateList = update.predicateList();
+        final String tableAlias = update.tableAlias();
+
+        this.tableAlias = DmlUtils.parentAlias(tableAlias);
+        this.safeTableAlias = this.tableAlias;
+
+        if (fields.size() == 0) {
+            this.childSetClause = null;
+        } else {
+            this.childSetClause = DmlUtils.createSetClause(childTable, tableAlias
+                    , dialect.quoteIfNeed(tableAlias), false
+                    , fieldList, values);
+        }
     }
 
     /*################################## blow _SqlContext method ##################################*/
@@ -96,8 +162,7 @@ final class SingleUpdateContext extends _BaseSqlContext implements _SingleUpdate
     @Nullable
     @Override
     public _SetClause childSetClause() {
-        // always null
-        return null;
+        return this.childSetClause;
     }
 
     /*################################## blow _SetClause method ##################################*/
@@ -114,12 +179,12 @@ final class SingleUpdateContext extends _BaseSqlContext implements _SingleUpdate
 
     @Override
     public boolean hasSelfJoint() {
-        // always false
+        //single update always false
         return false;
     }
 
     @Override
-    public char[] safeTableAlias() {
+    public String safeTableAlias() {
         return this.safeTableAlias;
     }
 

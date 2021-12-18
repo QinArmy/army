@@ -27,7 +27,7 @@ public interface _SetClause {
 
     boolean hasSelfJoint();
 
-    char[] safeTableAlias();
+    String safeTableAlias();
 
     List<? extends SetTargetPart> targetParts();
 
