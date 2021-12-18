@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.beans.ObjectAccessorFactory;
-import io.army.beans.ReadonlyWrapper;
+import io.army.beans.ReadWrapper;
 import io.army.criteria.Delete;
 import io.army.criteria.IPredicate;
 import io.army.criteria.impl.inner._Predicate;
@@ -46,7 +46,7 @@ final class ContextualBatchDelete<C> implements Delete,
 
     private List<_Predicate> predicateList = new ArrayList<>();
 
-    private List<ReadonlyWrapper> paramList = new ArrayList<>();
+    private List<ReadWrapper> paramList = new ArrayList<>();
 
     private boolean prepared;
 
@@ -118,7 +118,7 @@ final class ContextualBatchDelete<C> implements Delete,
 
     @Override
     public DeleteSpec paramMaps(List<Map<String, Object>> mapList) {
-        final List<ReadonlyWrapper> paramList = this.paramList;
+        final List<ReadWrapper> paramList = this.paramList;
         for (Map<String, Object> map : mapList) {
             paramList.add(ObjectAccessorFactory.forReadonlyAccess(map));
         }
@@ -132,7 +132,7 @@ final class ContextualBatchDelete<C> implements Delete,
 
     @Override
     public DeleteSpec paramBeans(List<Object> beanList) {
-        final List<ReadonlyWrapper> paramList = this.paramList;
+        final List<ReadWrapper> paramList = this.paramList;
         for (Object bean : beanList) {
             paramList.add(ObjectAccessorFactory.forReadonlyAccess(bean));
         }
@@ -170,7 +170,7 @@ final class ContextualBatchDelete<C> implements Delete,
     /*################################## blow InnerStandardBatchDelete method ##################################*/
 
     @Override
-    public List<ReadonlyWrapper> wrapperList() {
+    public List<ReadWrapper> wrapperList() {
         Assert.prepared(this.prepared);
         return this.paramList;
     }

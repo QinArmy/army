@@ -2,7 +2,7 @@ package io.army.beans;
 
 import io.army.ErrorCode;
 
-class ReadonlyWrapperImpl implements ReadonlyWrapper {
+class ReadonlyWrapperImpl implements ReadWrapper {
 
     private final org.springframework.beans.BeanWrapper beanWrapper;
 

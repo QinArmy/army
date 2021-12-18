@@ -6,7 +6,7 @@ class BeanWrapperImpl implements ObjectWrapper {
 
     final org.springframework.beans.BeanWrapper actualWrapper;
 
-    ReadonlyWrapper readonlyWrapper;
+    ReadWrapper readonlyWrapper;
 
     BeanWrapperImpl(Object target) {
         this.actualWrapper = PropertyAccessorFactory.forBeanPropertyAccess(target);
@@ -61,7 +61,7 @@ class BeanWrapperImpl implements ObjectWrapper {
     }
 
     @Override
-    public ReadonlyWrapper getReadonlyWrapper() {
+    public ReadWrapper getReadonlyWrapper() {
         if (this.readonlyWrapper == null) {
             this.readonlyWrapper = new ReadonlyWrapperImpl(this.actualWrapper);
         }

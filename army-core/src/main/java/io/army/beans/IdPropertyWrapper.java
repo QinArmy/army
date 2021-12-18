@@ -38,7 +38,7 @@ final class IdPropertyWrapper implements ObjectWrapper {
     }
 
     @Override
-    public ReadonlyWrapper getReadonlyWrapper() {
+    public ReadWrapper getReadonlyWrapper() {
         return this;
     }
 

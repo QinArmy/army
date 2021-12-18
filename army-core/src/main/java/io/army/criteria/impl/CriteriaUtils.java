@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.ErrorCode;
-import io.army.beans.ReadonlyWrapper;
+import io.army.beans.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._SortPart;
@@ -72,8 +72,8 @@ abstract class CriteriaUtils {
         return list;
     }
 
-    static List<ReadonlyWrapper> namedParamList(final List<ReadonlyWrapper> wrapperList) {
-        final List<ReadonlyWrapper> list;
+    static List<ReadWrapper> namedParamList(final List<ReadWrapper> wrapperList) {
+        final List<ReadWrapper> list;
         switch (wrapperList.size()) {
             case 0:
                 throw new IllegalStateException("no any name param.");

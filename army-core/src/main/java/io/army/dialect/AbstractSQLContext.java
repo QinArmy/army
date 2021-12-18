@@ -40,8 +40,8 @@ abstract class AbstractSQLContext implements _TablesSqlContext {
 
 
     @Override
-    public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) {
-        doAppendField(tableAlias, fieldMeta);
+    public void appendField(String tableAlias, FieldMeta<?, ?> field) {
+        doAppendField(tableAlias, field);
     }
 
     @Override

@@ -5,7 +5,7 @@ import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
 import io.army.annotation.Param;
 import io.army.beans.ArmyBean;
-import io.army.beans.ReadonlyWrapper;
+import io.army.beans.ReadWrapper;
 import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGenerator;
 import io.army.generator.PreFieldGenerator;
@@ -348,7 +348,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
     /*################################## blow interface method ##################################*/
 
     @Override
-    public Object next(FieldMeta<?, ?> fieldMeta, ReadonlyWrapper domain) {
+    public Object next(FieldMeta<?, ?> fieldMeta, ReadWrapper domain) {
         Object identifier;
 
         if (fieldMeta.javaType() == Long.class) {
@@ -372,7 +372,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
         return this.snowflake;
     }
 
-    private String nextAsStringWithDepend(FieldMeta<?, ?> fieldMeta, ReadonlyWrapper entityWrapper) {
+    private String nextAsStringWithDepend(FieldMeta<?, ?> fieldMeta, ReadWrapper entityWrapper) {
         GeneratorMeta generatorMeta = fieldMeta.generator();
         Assert.notNull(generatorMeta, "paramMeta must have generator");
 

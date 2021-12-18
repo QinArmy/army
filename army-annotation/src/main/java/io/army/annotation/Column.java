@@ -29,6 +29,7 @@ public @interface Column {
 
     boolean nullable() default true;
 
+    @Deprecated
     boolean alwaysNullable() default false;
 
 

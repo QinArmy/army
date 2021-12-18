@@ -58,15 +58,6 @@ public abstract class AbstractDialect implements InnerDialect {
         this.mappingContext = new MappingContextImpl(this.sessionFactory.zoneOffset(), this.database());
     }
 
-    @Override
-    public String safeTableName(TableMeta<?> tableMeta, @Nullable String suffix) {
-        return null;
-    }
-
-    @Override
-    public String safeColumnName(FieldMeta<?, ?> fieldMeta) {
-        return null;
-    }
 
     @Override
     public String constant(MappingType type, Object value) {

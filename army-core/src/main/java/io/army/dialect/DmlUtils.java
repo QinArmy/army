@@ -3,7 +3,7 @@ package io.army.dialect;
 import io.army.ErrorCode;
 import io.army.annotation.UpdateMode;
 import io.army.beans.ObjectWrapper;
-import io.army.beans.ReadonlyWrapper;
+import io.army.beans.ReadWrapper;
 import io.army.boot.DomainValuesGenerator;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
@@ -119,7 +119,7 @@ abstract class DmlUtils {
     }
 
 
-    static void appendStandardValueInsert(final StandardValueInsertContext context) {
+    static void appendStandardValueInsert(final ValueInsertContext context) {
         final Dialect dialect = context.dialect;
         final StringBuilder builder = context.sqlBuilder();
         builder.append(Constant.INSERT_INTO)
@@ -171,18 +171,24 @@ abstract class DmlUtils {
 
 
     static List<FieldMeta<?, ?>> mergeInsertFields(final boolean parent, final _ValuesInsert insert) {
-        final TableMeta<?> tableMeta;
-        final List<FieldMeta<?, ?>> fieldList;
+        final TableMeta<?> table, relativeTable;
+        final List<FieldMeta<?, ?>> fieldList = insert.fieldList();
+        final ParentTableMeta<?> parentTable;
         if (parent) {
-            tableMeta = ((ChildTableMeta<?>) insert.table()).parentMeta();
-            fieldList = insert.parentFieldList();
+            relativeTable = insert.table();
+            parentTable = ((ChildTableMeta<?>) relativeTable).parentMeta();
+            table = parentTable;
         } else {
-            tableMeta = insert.table();
-            fieldList = insert.fieldList();
+            table = insert.table();
+            if (table instanceof ChildTableMeta) {
+                relativeTable = ((ChildTableMeta<?>) table).parentMeta();
+            } else {
+                relativeTable = null;
+            }
         }
         final List<FieldMeta<?, ?>> mergeFieldList;
         if (fieldList.isEmpty()) {
-            final Collection<?> fieldCollection = tableMeta.fieldCollection();
+            final Collection<?> fieldCollection = table.fieldCollection();
             mergeFieldList = new ArrayList<>(fieldCollection.size());
             @SuppressWarnings("unchecked")
             Collection<FieldMeta<?, ?>> tableFields = (Collection<FieldMeta<?, ?>>) fieldCollection;
@@ -193,16 +199,21 @@ abstract class DmlUtils {
             }
         } else {
             final Set<FieldMeta<?, ?>> fieldSet = new HashSet<>();
-            for (FieldMeta<?, ?> fieldMeta : fieldList) {
-                if (fieldMeta.tableMeta() != tableMeta) {
-                    throw _Exceptions.notMatchInsertField(insert, fieldMeta);
+            TableMeta<?> belongOf;
+            for (FieldMeta<?, ?> field : fieldList) {
+                belongOf = field.tableMeta();
+                if (belongOf == relativeTable) {
+                    continue;
                 }
-                if (!fieldMeta.insertable()) {
-                    throw _Exceptions.nonInsertable(fieldMeta);
+                if (belongOf != table) {
+                    throw _Exceptions.unknownColumn(null, field);
                 }
-                fieldSet.add(fieldMeta);
+                if (!field.insertable()) {
+                    throw _Exceptions.nonInsertableField(field);
+                }
+                fieldSet.add(field);
             }
-            appendInsertFields(tableMeta, fieldSet);
+            appendInsertFields(table, fieldSet);
             mergeFieldList = new ArrayList<>(fieldSet);
         }
         return Collections.unmodifiableList(mergeFieldList);
@@ -514,8 +525,8 @@ abstract class DmlUtils {
     }
 
     static void createValueInsertForSimple(TableMeta<?> physicalTable, TableMeta<?> logicalTable
-            , Collection<FieldMeta<?, ?>> fieldMetas, ReadonlyWrapper domainWrapper
-            , StandardValueInsertContext context) {
+            , Collection<FieldMeta<?, ?>> fieldMetas, ReadWrapper domainWrapper
+            , ValueInsertContext context) {
 //
 //        final GenericSessionFactory sessionFactory = context.dialect.sessionFactory();
 //        final SQLBuilder fieldBuilder = context.fieldsBuilder().append("INSERT INTO");
@@ -586,7 +597,7 @@ abstract class DmlUtils {
         return null;
     }
 
-    static Stmt createBatchSQLWrapper(List<? extends ReadonlyWrapper> namedParamList
+    static Stmt createBatchSQLWrapper(List<? extends ReadWrapper> namedParamList
             , final Stmt stmt) {
 
         List<List<ParamValue>> parentParamGroupList, childParamGroupList = new ArrayList<>(namedParamList.size());
@@ -610,7 +621,7 @@ abstract class DmlUtils {
 
         final List<ParamValue> childPlaceholderList = childWrapper.paramGroup();
         final int size = namedParamList.size();
-        for (ReadonlyWrapper readonlyWrapper : namedParamList) {
+        for (ReadWrapper readonlyWrapper : namedParamList) {
             // 1. create access object
             // 2. create param group list
             if (stmt instanceof PairStmt) {
@@ -646,7 +657,7 @@ abstract class DmlUtils {
     /**
      * @return a unmodifiable list
      */
-    private static List<ParamValue> createBatchNamedParamList(ReadonlyWrapper readonlyWrapper
+    private static List<ParamValue> createBatchNamedParamList(ReadWrapper readonlyWrapper
             , List<ParamValue> placeHolder) {
 
         List<ParamValue> paramValueList = new ArrayList<>(placeHolder.size());
@@ -664,7 +675,7 @@ abstract class DmlUtils {
     /**
      * @return a unmodifiable list
      */
-    private static List<ParamValue> createBatchInsertParamList(ReadonlyWrapper beanWrapper
+    private static List<ParamValue> createBatchInsertParamList(ReadWrapper beanWrapper
             , List<ParamValue> placeHolderList) {
 
         List<ParamValue> paramValueList = new ArrayList<>(placeHolderList.size());

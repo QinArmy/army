@@ -16,6 +16,12 @@ abstract class MysqlDml extends AbstractDm {
         super(dialect);
     }
 
+    @Override
+    public final boolean supportOnlyDefault() {
+        // MySQL has DEFAULT(col_name) function.
+        return true;
+    }
+
 
     @Override
     protected final Stmt standardChildUpdateContext(final _SingleUpdateContext context) {
@@ -35,6 +41,7 @@ abstract class MysqlDml extends AbstractDm {
         sqlBuilder.append(Constant.SPACE);
         final byte tableIndex = context.tableIndex();
         final String tableSuffix = context.tableSuffix();
+        // append child table name
         if (tableIndex == 0) {
             sqlBuilder.append(dialect.quoteIfNeed(childTable.tableName()));
         } else {
@@ -47,7 +54,7 @@ abstract class MysqlDml extends AbstractDm {
         //2. join clause
         sqlBuilder.append(JOIN_WORD)
                 .append(Constant.SPACE);
-
+        // append parent table name
         if (tableIndex == 0) {
             sqlBuilder.append(dialect.quoteIfNeed(parentTable.tableName()));
         } else {
@@ -57,6 +64,18 @@ abstract class MysqlDml extends AbstractDm {
                 .append(Constant.SPACE)
                 .append(safeParentTableAlias);
 
+        //2.1 on clause
+        sqlBuilder.append(ON_WORD)
+                .append(Constant.SPACE)
+                .append(safeChildTableAlias)
+                .append(Constant.POINT)
+                .append(_MetaBridge.ID)
+                .append(EQUAL)
+                .append(Constant.SPACE)
+                .append(safeParentTableAlias)
+                .append(Constant.POINT)
+                .append(_MetaBridge.ID);
+
         final List<GenericField<?, ?>> childConditionFields, parentConditionFields;
         //3. set clause
         childConditionFields = this.setClause(childSetClause, context);
@@ -65,8 +84,8 @@ abstract class MysqlDml extends AbstractDm {
         //4. where clause
         this.dmlWhereClause(context);
 
-        //4.1 append discriminator
-        this.discriminator(parentTable, safeParentTableAlias, context);
+        //4.1 append discriminator for child
+        this.discriminator(childTable, safeParentTableAlias, context);
 
         //4.2 append visible
         if (parentTable.containField(_MetaBridge.VISIBLE)) {

@@ -113,6 +113,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("%s is immutable.", field));
     }
 
+    public static CriteriaException immutableTable(TableMeta<?> table) {
+        return new CriteriaException(String.format("%s is immutable.", table));
+    }
+
     public static CriteriaException armyManageField(FieldMeta<?, ?> field) {
         return new CriteriaException(String.format("%s is managed by Army.", field));
     }
@@ -121,7 +125,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("%s is non-null.", field));
     }
 
-    public static CriteriaException nonInsertable(FieldMeta<?, ?> field) {
+    public static CriteriaException nonInsertableField(FieldMeta<?, ?> field) {
         return new CriteriaException(String.format("%s is non-insertable.", field));
     }
 

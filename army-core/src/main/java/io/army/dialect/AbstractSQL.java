@@ -1,10 +1,7 @@
 package io.army.dialect;
 
 
-import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
-import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
 import io.army.session.FactoryMode;
 import io.army.session.GenericRmSessionFactory;
 
@@ -31,6 +28,8 @@ public abstract class AbstractSQL implements SqlDialect {
     protected static final char[] UPDATE = new char[]{'U', 'P', 'D', 'A', 'T', 'E'};
 
     protected static final char[] AS_WORD = new char[]{' ', 'A', 'S'};
+
+    protected static final char[] ON_WORD = new char[]{' ', 'O', 'N'};
 
     protected static final char[] JOIN_WORD = new char[]{' ', 'J', 'O', 'I', 'N'};
 
@@ -89,22 +88,6 @@ public abstract class AbstractSQL implements SqlDialect {
         return this.dialect.hasRowKeywords();
     }
 
-
-    @Override
-    public String safeTableName(TableMeta<?> tableMeta, @Nullable String suffix) {
-        final String name;
-        if (suffix == null) {
-            name = this.quoteIfNeed(tableMeta.tableName());
-        } else {
-            name = tableMeta.tableName() + suffix;
-        }
-        return name;
-    }
-
-    @Override
-    public String safeColumnName(FieldMeta<?, ?> fieldMeta) {
-        return null;
-    }
 
     @Override
     public String constant(MappingType type, Object value) {

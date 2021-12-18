@@ -61,29 +61,20 @@ abstract class MetaUtils {
         final String propName = mappedProp.getSimpleName().toString();
         final boolean reservedProp = _MetaBridge.RESERVED_PROPS.contains(propName);
         // check nullable
-        if (reservedProp || (columnName.equals(discriminatorColumn))) {
-            if (column.alwaysNullable()) {
-                String m = String.format("Domain[%s] mapping property[%s]  must be non-nullable.",
-                        entityElement.getQualifiedName(),
-                        propName);
-                throw new AnnotationMetaException(m);
-            }
-        } else {
-            // check comment
-            if (!Strings.hasText(column.comment())) {
-                String m;
-                m = String.format("Domain[%s] column[%s] no comment,non-reserved(or discriminator) property must has comment.",
-                        entityElement.getQualifiedName(),
-                        columnName);
-                throw new AnnotationMetaException(m);
-            }
-            final boolean nullable = column.alwaysNullable() || (defaultNullable && column.nullable());
-            if (!nullable && !isSpecifyTypeWithoutDefaultValue(mappedProp) && !Strings.hasText(column.defaultValue())) {
-                String m = String.format("Domain[%s] column[%s] no defaultValue.",
-                        entityElement.getQualifiedName(),
-                        columnName);
-                throw new AnnotationMetaException(m);
-            }
+        // check comment
+        if (!Strings.hasText(column.comment())) {
+            String m;
+            m = String.format("Domain[%s] column[%s] no comment,non-reserved(or discriminator) property must has comment.",
+                    entityElement.getQualifiedName(),
+                    columnName);
+            throw new AnnotationMetaException(m);
+        }
+        final boolean nullable = column.alwaysNullable() || (defaultNullable && column.nullable());
+        if (!nullable && !isSpecifyTypeWithoutDefaultValue(mappedProp) && !Strings.hasText(column.defaultValue())) {
+            String m = String.format("Domain[%s] column[%s] no defaultValue.",
+                    entityElement.getQualifiedName(),
+                    columnName);
+            throw new AnnotationMetaException(m);
         }
         // assert @Mapping annotation
         final Mapping mapping = mappedProp.getAnnotation(Mapping.class);

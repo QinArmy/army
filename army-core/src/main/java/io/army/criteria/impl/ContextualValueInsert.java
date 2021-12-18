@@ -98,7 +98,7 @@ final class ContextualValueInsert<T extends IDomain, C> extends AbstractSQLDebug
         TableMeta<?> belongOf;
         for (FieldMeta<? super T, ?> fieldMeta : fieldMetas) {
             if (!fieldMeta.insertable()) {
-                throw _Exceptions.nonInsertable(fieldMeta);
+                throw _Exceptions.nonInsertableField(fieldMeta);
             }
             belongOf = fieldMeta.tableMeta();
             if (belongOf == table) {

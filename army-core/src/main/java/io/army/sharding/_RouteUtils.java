@@ -1,6 +1,6 @@
 package io.army.sharding;
 
-import io.army.beans.ReadonlyWrapper;
+import io.army.beans.ReadWrapper;
 import io.army.criteria.FieldValueEqualPredicate;
 import io.army.criteria.IPredicate;
 import io.army.criteria.SubQuery;
@@ -263,7 +263,7 @@ public abstract class _RouteUtils {
 
     @Nullable
     protected static Object findRouteKeyFormNamedParams(List<FieldMeta<?, ?>> routeFieldList
-            , ReadonlyWrapper namedParamWrapper) {
+            , ReadWrapper namedParamWrapper) {
 
         Object routeKey = null;
         for (FieldMeta<?, ?> routeField : routeFieldList) {

@@ -80,13 +80,13 @@ class StandardUpdateContext extends AbstractStandardDomainContext implements _Up
 
 
         @Override
-        public final void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) {
-            appendDomainField(tableAlias, fieldMeta);
+        public final void appendField(String tableAlias, FieldMeta<?, ?> field) {
+            appendDomainField(tableAlias, field);
         }
 
         @Override
-        public final void appendField(FieldMeta<?, ?> fieldMeta) {
-            appendDomainField(fieldMeta);
+        public final void appendField(FieldMeta<?, ?> field) {
+            appendDomainField(field);
         }
 
         @Override

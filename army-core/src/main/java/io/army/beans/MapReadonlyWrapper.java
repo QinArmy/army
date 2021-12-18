@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-class MapReadonlyWrapper implements ReadonlyWrapper {
+class MapReadonlyWrapper implements ReadWrapper {
 
     final Map<String, Object> map;
 

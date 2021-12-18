@@ -1,6 +1,6 @@
 package io.army.sharding;
 
-import io.army.beans.ReadonlyWrapper;
+import io.army.beans.ReadWrapper;
 import io.army.criteria.impl.inner._MultiDML;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Select;
@@ -33,7 +33,7 @@ public abstract class _DatabaseRouteUtils extends _RouteUtils {
     }
 
     @Nullable
-    static Object findRouteKeyInsert(TableMeta<?> tableMeta, ReadonlyWrapper wrapper) {
+    static Object findRouteKeyInsert(TableMeta<?> tableMeta, ReadWrapper wrapper) {
         List<FieldMeta<?, ?>> routeFieldList = tableMeta.routeFieldList(true);
         // obtain route key
         Object routeKey = null;

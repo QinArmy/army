@@ -58,7 +58,7 @@ final class TripeWrapperImpl implements TripeWrapper {
     }
 
     @Override
-    public ReadonlyWrapper getReadonlyWrapper() {
+    public ReadWrapper getReadonlyWrapper() {
         return this;
     }
 

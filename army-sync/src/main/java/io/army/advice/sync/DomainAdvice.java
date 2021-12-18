@@ -1,6 +1,6 @@
 package io.army.advice.sync;
 
-import io.army.beans.ReadonlyWrapper;
+import io.army.beans.ReadWrapper;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.sync.ProxySession;
@@ -10,9 +10,9 @@ import java.util.List;
 public interface DomainAdvice {
 
 
-    void beforeInsert(TableMeta<?> tableMeta, ReadonlyWrapper wrapper, ProxySession session);
+    void beforeInsert(TableMeta<?> tableMeta, ReadWrapper wrapper, ProxySession session);
 
-    void afterInsert(TableMeta<?> tableMeta, ReadonlyWrapper wrapper, ProxySession session);
+    void afterInsert(TableMeta<?> tableMeta, ReadWrapper wrapper, ProxySession session);
 
     void beforeUpdate(TableMeta<?> tableMeta, List<FieldMeta<?, ?>> targetFieldList, ProxySession session);
 

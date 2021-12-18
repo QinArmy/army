@@ -11,7 +11,7 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
-import io.army.stmt.Stmt;
+import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmts;
 import io.army.util.CollectionUtils;
 import io.army.util._Exceptions;
@@ -25,14 +25,14 @@ import java.util.List;
  * This class representing standard single update context.
  * </p>
  */
-final class SingleUpdateContext extends _BaseSqlContext implements _SingleUpdateContext {
+final class UpdateContext extends _BaseSqlContext implements _SingleUpdateContext {
 
-    static SingleUpdateContext single(_SingleUpdate update, final byte tableIndex, Dialect dialect, Visible visible) {
-        return new SingleUpdateContext(update, tableIndex, dialect, visible);
+    static UpdateContext single(_SingleUpdate update, final byte tableIndex, Dialect dialect, Visible visible) {
+        return new UpdateContext(update, tableIndex, dialect, visible);
     }
 
-    static SingleUpdateContext child(_SingleUpdate update, final byte tableIndex, Dialect dialect, Visible visible) {
-        return new SingleUpdateContext(tableIndex, update, dialect, visible);
+    static UpdateContext child(_SingleUpdate update, final byte tableIndex, Dialect dialect, Visible visible) {
+        return new UpdateContext(tableIndex, update, dialect, visible);
     }
 
     final SingleTableMeta<?> table;
@@ -49,7 +49,7 @@ final class SingleUpdateContext extends _BaseSqlContext implements _SingleUpdate
 
     private final _SetClause childSetClause;
 
-    private SingleUpdateContext(_SingleUpdate update, byte tableIndex, Dialect dialect, Visible visible) {
+    private UpdateContext(_SingleUpdate update, byte tableIndex, Dialect dialect, Visible visible) {
         super(dialect, tableIndex, visible);
 
         final SingleTableMeta<?> table = (SingleTableMeta<?>) update.table();
@@ -70,7 +70,7 @@ final class SingleUpdateContext extends _BaseSqlContext implements _SingleUpdate
         this.childSetClause = null;
     }
 
-    private SingleUpdateContext(byte tableIndex, _SingleUpdate update, Dialect dialect, Visible visible) {
+    private UpdateContext(byte tableIndex, _SingleUpdate update, Dialect dialect, Visible visible) {
         super(dialect, tableIndex, visible);
 
         final ChildTableMeta<?> childTable = (ChildTableMeta<?>) update.table();
@@ -126,23 +126,36 @@ final class SingleUpdateContext extends _BaseSqlContext implements _SingleUpdate
     /*################################## blow _SqlContext method ##################################*/
 
     @Override
-    public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) {
-        if (!this.tableAlias.equals(tableAlias)) {
-            throw _Exceptions.unknownColumn(tableAlias, fieldMeta);
+    public void appendField(final String tableAlias, final FieldMeta<?, ?> field) {
+        final _SetClause childSetClause = this.childSetClause;
+        if (childSetClause == null) {
+            if (!this.tableAlias.equals(tableAlias)) {
+                throw _Exceptions.unknownColumn(tableAlias, field);
+            }
+        } else if (!childSetClause.tableAlias().equals(tableAlias)) {
+            throw _Exceptions.unknownColumn(tableAlias, field);
         }
-        this.appendField(fieldMeta);
+        this.appendField(field);
     }
 
     @Override
-    public void appendField(FieldMeta<?, ?> fieldMeta) {
-        if (fieldMeta.tableMeta() != this.table) {
-            throw _Exceptions.unknownColumn(null, fieldMeta);
+    public void appendField(final FieldMeta<?, ?> field) {
+        final String safeTableAlias;
+        final TableMeta<?> belongOf = field.tableMeta();
+        if (belongOf == this.table) {
+            safeTableAlias = this.safeTableAlias;
+        } else {
+            final _SetClause childSetClause = this.childSetClause;
+            if (childSetClause == null || belongOf != childSetClause.table()) {
+                throw _Exceptions.unknownColumn(null, field);
+            }
+            safeTableAlias = childSetClause.safeTableAlias();
         }
         this.sqlBuilder
                 .append(Constant.SPACE)
-                .append(this.safeTableAlias)
+                .append(safeTableAlias)
                 .append(Constant.POINT)
-                .append(this.dialect.quoteIfNeed(fieldMeta.columnName()));
+                .append(this.dialect.safeColumnName(field.columnName()));
     }
 
     /*################################## blow _UpdateContext method ##################################*/
@@ -199,7 +212,7 @@ final class SingleUpdateContext extends _BaseSqlContext implements _SingleUpdate
     }
 
     @Override
-    public Stmt build() {
+    public SimpleStmt build() {
         return Stmts.simple(this.sqlBuilder.toString(), this.paramList);
     }
 

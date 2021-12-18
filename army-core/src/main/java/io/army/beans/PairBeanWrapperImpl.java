@@ -53,7 +53,7 @@ final class PairBeanWrapperImpl implements PairWrapper {
     }
 
     @Override
-    public ReadonlyWrapper getReadonlyWrapper() {
+    public ReadWrapper getReadonlyWrapper() {
         return this;
     }
 

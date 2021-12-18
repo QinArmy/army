@@ -65,13 +65,13 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
 
 
     @Override
-    public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) {
-        doAppendField(tableAlias, fieldMeta);
+    public void appendField(String tableAlias, FieldMeta<?, ?> field) {
+        doAppendField(tableAlias, field);
     }
 
     @Override
-    public void appendField(FieldMeta<?, ?> fieldMeta) {
-        doAppendField(findTableAlias(fieldMeta), fieldMeta);
+    public void appendField(FieldMeta<?, ?> field) {
+        doAppendField(findTableAlias(field), field);
     }
 
 

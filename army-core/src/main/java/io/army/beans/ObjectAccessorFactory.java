@@ -68,8 +68,8 @@ public abstract class ObjectAccessorFactory {
     }
 
     @SuppressWarnings("unchecked")
-    public static ReadonlyWrapper forReadonlyAccess(Object target) {
-        ReadonlyWrapper readonlyWrapper;
+    public static ReadWrapper forReadonlyAccess(Object target) {
+        ReadWrapper readonlyWrapper;
         if (target instanceof Map) {
             readonlyWrapper = new MapReadonlyWrapper((Map<String, Object>) target);
         } else {

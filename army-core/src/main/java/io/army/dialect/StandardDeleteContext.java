@@ -67,13 +67,13 @@ class StandardDeleteContext extends AbstractStandardDomainContext implements Del
         }
 
         @Override
-        public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) {
-            appendDomainField(tableAlias, fieldMeta);
+        public void appendField(String tableAlias, FieldMeta<?, ?> field) {
+            appendDomainField(tableAlias, field);
         }
 
         @Override
-        public void appendField(FieldMeta<?, ?> fieldMeta) {
-            appendDomainField(fieldMeta);
+        public void appendField(FieldMeta<?, ?> field) {
+            appendDomainField(field);
         }
 
         @Override

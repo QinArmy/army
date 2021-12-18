@@ -46,7 +46,7 @@ final class SimpleTypeWrapper implements ObjectWrapper {
     }
 
     @Override
-    public ReadonlyWrapper getReadonlyWrapper() {
+    public ReadWrapper getReadonlyWrapper() {
         return this;
     }
 

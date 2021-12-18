@@ -112,12 +112,12 @@ final class ComposeSelectContext implements SelectContext {
     }
 
     @Override
-    public void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta) {
+    public void appendField(String tableAlias, FieldMeta<?, ?> field) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void appendField(FieldMeta<?, ?> fieldMeta) {
+    public void appendField(FieldMeta<?, ?> field) {
         throw new UnsupportedOperationException();
     }
 

@@ -1,6 +1,6 @@
 package io.army.generator;
 
-import io.army.beans.ReadonlyWrapper;
+import io.army.beans.ReadWrapper;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 
@@ -55,7 +55,7 @@ public interface PreFieldGenerator extends FieldGenerator {
     String DEPEND_FIELD_NAME = "dependFieldName";
 
 
-    Object next(FieldMeta<?, ?> fieldMeta, ReadonlyWrapper domain) throws GeneratorException;
+    Object next(FieldMeta<?, ?> fieldMeta, ReadWrapper domain) throws GeneratorException;
 
 
 }

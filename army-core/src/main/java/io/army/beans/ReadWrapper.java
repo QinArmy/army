@@ -2,7 +2,7 @@ package io.army.beans;
 
 import io.army.lang.Nullable;
 
-public interface ReadonlyWrapper {
+public interface ReadWrapper {
 
     /**
      * Determine whether the specified property is readable.

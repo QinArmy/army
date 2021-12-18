@@ -40,7 +40,7 @@ final class MapWrapperImpl extends MapReadonlyWrapper implements MapWrapper {
     }
 
     @Override
-    public ReadonlyWrapper getReadonlyWrapper() {
+    public ReadWrapper getReadonlyWrapper() {
         return new MapReadonlyWrapper(this.map);
     }
 }

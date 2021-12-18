@@ -31,7 +31,11 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         return "_" + parentTableName + random.nextInt(4) + "_";
     }
 
+    protected boolean supportTableOnly() {
+        return false;
+    }
 
+    @Deprecated
     protected void tableOnlyModifier(_SqlContext context) {
 
     }
@@ -132,8 +136,15 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     }
 
 
-    protected final void discriminator(ParentTableMeta<?> table, String safeTableAlias, _StmtContext context) {
-        final FieldMeta<?, ?> field = table.discriminator();
+    protected final void discriminator(TableMeta<?> table, String safeTableAlias, _StmtContext context) {
+        final FieldMeta<?, ?> field;
+        if (table instanceof ChildTableMeta) {
+            field = ((ChildTableMeta<?>) table).discriminator();
+        } else if (table instanceof ParentTableMeta) {
+            field = ((ParentTableMeta<?>) table).discriminator();
+        } else {
+            throw new IllegalArgumentException("table error");
+        }
         final Dialect dialect = context.dialect();
         context.sqlBuilder()
                 .append(AND)

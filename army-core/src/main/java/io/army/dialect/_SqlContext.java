@@ -21,7 +21,7 @@ public interface _SqlContext {
      *     </ol>
      * </p>
      */
-    void appendField(String tableAlias, FieldMeta<?, ?> fieldMeta);
+    void appendField(String tableAlias, FieldMeta<?, ?> field);
 
     /**
      * <p>
@@ -35,7 +35,7 @@ public interface _SqlContext {
      *     </ol>
      * </p>
      */
-    void appendField(FieldMeta<?, ?> fieldMeta);
+    void appendField(FieldMeta<?, ?> field);
 
     @Deprecated
     default void appendFieldPredicate(FieldPredicate predicate) {

@@ -1,6 +1,6 @@
 package io.army.sharding;
 
-import io.army.beans.ReadonlyWrapper;
+import io.army.beans.ReadWrapper;
 import io.army.criteria.NotFoundRouteException;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Select;
@@ -15,7 +15,7 @@ import java.util.List;
 public abstract class _TableRouteUtils extends _RouteUtils {
 
 
-    public static String valueInsertPrimaryRouteSuffix(TableMeta<?> tableMeta, Dialect dialect, ReadonlyWrapper beanWrapper) {
+    public static String valueInsertPrimaryRouteSuffix(TableMeta<?> tableMeta, Dialect dialect, ReadWrapper beanWrapper) {
         if (notSupportRoute(dialect, tableMeta)) {
             return "";
         }
