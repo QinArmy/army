@@ -17,4 +17,9 @@ public interface _Expression<E> extends Expression<E>, _SortPart, SetValuePart, 
 
     boolean containsSubQuery();
 
+    /**
+     * design for non batch update
+     */
+    boolean nullableExp();
+
 }

@@ -2,20 +2,14 @@ package io.army.dialect;
 
 import io.army.criteria.FieldPredicate;
 import io.army.criteria.Visible;
-import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
-import io.army.meta.TableMeta;
 import io.army.stmt.ParamValue;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 abstract class DomainDmlContext implements _DmlContext {
-
-
-    protected final TableMeta<?> table;
-
-    protected final String safeTableAlias;
 
     protected final Dialect dialect;
 
@@ -30,15 +24,8 @@ abstract class DomainDmlContext implements _DmlContext {
     protected final Visible visible;
 
 
-    protected DomainDmlContext(TableMeta<?> table, @Nullable String tableAlias, final byte tableIndex
+    protected DomainDmlContext(final byte tableIndex
             , Dialect dialect, Visible visible) {
-        this.table = table;
-
-        if (tableAlias == null) {
-            this.safeTableAlias = null;
-        } else {
-            this.safeTableAlias = dialect.quoteIfNeed(tableAlias);
-        }
         this.dialect = dialect;
         this.visible = visible;
 
@@ -82,16 +69,12 @@ abstract class DomainDmlContext implements _DmlContext {
     }
 
     @Override
-    public void appendParam(ParamValue paramValue) {
+    public final void appendParam(ParamValue paramValue) {
         this.sqlBuilder.append(Constant.SPACE)
                 .append(Constant.PLACEHOLDER);
         this.paramList.add(paramValue);
     }
 
-    @Override
-    public final TableMeta<?> tableMeta() {
-        return this.table;
-    }
 
     @Override
     public final byte tableIndex() {

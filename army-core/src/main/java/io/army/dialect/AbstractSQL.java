@@ -12,6 +12,25 @@ import java.time.ZoneId;
 
 public abstract class AbstractSQL implements SqlDialect {
 
+    protected static final char[] COMMA = new char[]{' ', ','};
+
+    protected static final char[] EQUAL = new char[]{' ', '='};
+
+    protected static final char[] AND = new char[]{' ', 'A', 'N', 'D'};
+
+    protected static final char[] IS_NULL = new char[]{' ', 'I', 'S', ' ', 'N', 'U', 'L', 'L'};
+
+    protected static final char[] LEFT_BRACKET = new char[]{' ', '('};
+
+    protected static final char[] RIGHT_BRACKET = new char[]{' ', ')'};
+
+    protected static final char[] SET_WORD = new char[]{' ', 'S', 'E', 'T'};
+
+    protected static final char[] UPDATE = new char[]{'U', 'P', 'D', 'A', 'T', 'E'};
+
+    protected static final char[] AS_WORD = new char[]{' ', 'A', 'S'};
+
+
     protected final Dialect dialect;
 
     protected final boolean sharding;

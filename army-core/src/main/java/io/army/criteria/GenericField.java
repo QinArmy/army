@@ -1,10 +1,11 @@
-package io.army.meta;
+package io.army.criteria;
 
-import io.army.criteria.FieldExpression;
-import io.army.criteria.FieldSelection;
-import io.army.criteria.LogicalField;
+import io.army.annotation.UpdateMode;
 import io.army.domain.IDomain;
 import io.army.mapping.MappingType;
+import io.army.meta.FieldMeta;
+import io.army.meta.ParamMeta;
+import io.army.meta.TableMeta;
 
 /**
  * This interface is base interface of below interface:
@@ -18,7 +19,7 @@ import io.army.mapping.MappingType;
  * @see FieldMeta
  * @see LogicalField
  */
-public interface GenericField<T extends IDomain, F> extends FieldExpression<F>, FieldSelection, ParamMeta {
+public interface GenericField<T extends IDomain, F> extends FieldExpression<F>, FieldSelection, ParamMeta, SetTargetPart {
 
     TableMeta<T> tableMeta();
 
@@ -30,4 +31,10 @@ public interface GenericField<T extends IDomain, F> extends FieldExpression<F>, 
     MappingType mappingMeta();
 
     String fieldName();
+
+    String columnName();
+
+    UpdateMode updateMode();
+
+    boolean nullable();
 }

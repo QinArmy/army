@@ -5,6 +5,8 @@ package io.army.criteria;
  */
 public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expression<E> {
 
+    Selection selection();
+
 
     interface ScalarSelectionSpec<E, C> {
 

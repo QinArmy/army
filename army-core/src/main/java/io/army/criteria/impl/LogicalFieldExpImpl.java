@@ -16,27 +16,27 @@ import java.util.Collection;
 final class LogicalFieldExpImpl<T extends IDomain, F> extends AbstractExpression<F>
         implements LogicalField<T, F> {
 
-    private final FieldMeta<T, F> fieldMeta;
+    private final FieldMeta<T, F> field;
 
     private final String tableAlias;
 
-    LogicalFieldExpImpl(String tableAlias, FieldMeta<T, F> fieldMeta) {
-        Assert.notNull(fieldMeta, "fieldMeta required");
+    LogicalFieldExpImpl(String tableAlias, FieldMeta<T, F> field) {
+        Assert.notNull(field, "fieldMeta required");
         Assert.hasText(tableAlias, "tableAlias required");
         Assert.isTrue(!tableAlias.contains("."), "tableAlias must no '.'");
 
-        this.fieldMeta = fieldMeta;
+        this.field = field;
         this.tableAlias = tableAlias;
     }
 
     @Override
     public final void appendSql(_SqlContext context) {
-        context.appendField(this.tableAlias, this.fieldMeta);
+        context.appendField(this.tableAlias, this.field);
     }
 
     @Override
     public final String alias() {
-        return this.fieldMeta.fieldName();
+        return this.field.fieldName();
     }
 
     @Override
@@ -46,7 +46,7 @@ final class LogicalFieldExpImpl<T extends IDomain, F> extends AbstractExpression
 
     @Override
     public String toString() {
-        return tableAlias + "." + fieldMeta.columnName();
+        return tableAlias + "." + field.columnName();
     }
 
     @Override
@@ -56,43 +56,48 @@ final class LogicalFieldExpImpl<T extends IDomain, F> extends AbstractExpression
 
     @Override
     public FieldMeta<T, F> fieldMeta() {
-        return this.fieldMeta;
+        return this.field;
     }
 
     @Override
     public TableMeta<T> tableMeta() {
-        return fieldMeta.tableMeta();
+        return this.field.tableMeta();
     }
 
     @Override
     public Class<F> javaType() {
-        return fieldMeta.javaType();
+        return this.field.javaType();
     }
 
     @Override
     public String fieldName() {
-        return fieldMeta.fieldName();
+        return this.field.fieldName();
+    }
+
+    @Override
+    public String columnName() {
+        return this.field.columnName();
     }
 
     @Override
     public MappingType mappingMeta() {
-        return fieldMeta.mappingMeta();
+        return this.field.mappingMeta();
     }
 
 
     @Override
     public final boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
-        return ((_Expression<?>) this.fieldMeta).containsField(fieldMetas);
+        return ((_Expression<?>) this.field).containsField(fieldMetas);
     }
 
     @Override
     public final boolean containsFieldOf(TableMeta<?> tableMeta) {
-        return ((_Expression<?>) this.fieldMeta).containsFieldOf(tableMeta);
+        return ((_Expression<?>) this.field).containsFieldOf(tableMeta);
     }
 
     @Override
     public final int containsFieldCount(TableMeta<?> tableMeta) {
-        return ((_Expression<?>) this.fieldMeta).containsFieldCount(tableMeta);
+        return ((_Expression<?>) this.field).containsFieldCount(tableMeta);
     }
 
     @Override

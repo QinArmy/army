@@ -1,7 +1,6 @@
 package io.army.meta;
 
-import io.army.annotation.UpdateMode;
-import io.army.criteria.SetTargetPart;
+import io.army.criteria.GenericField;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.modelgen._MetaBridge;
@@ -12,8 +11,7 @@ import io.army.modelgen._MetaBridge;
  * @param <T> representing Domain Java Type
  * @param <F> representing Domain property Java Type
  */
-public interface FieldMeta<T extends IDomain, F> extends GenericField<T, F>, SetTargetPart {
-
+public interface FieldMeta<T extends IDomain, F> extends GenericField<T, F> {
 
 
     boolean primary();
@@ -22,7 +20,6 @@ public interface FieldMeta<T extends IDomain, F> extends GenericField<T, F>, Set
 
     boolean index();
 
-    boolean nullable();
 
     /**
      * <p>
@@ -48,11 +45,7 @@ public interface FieldMeta<T extends IDomain, F> extends GenericField<T, F>, Set
     int scale();
 
 
-    String columnName();
-
     boolean insertable();
-
-    UpdateMode updateMode();
 
     String comment();
 

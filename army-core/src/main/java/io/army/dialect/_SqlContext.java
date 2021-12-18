@@ -2,6 +2,7 @@ package io.army.dialect;
 
 import io.army.criteria.ConstantExpression;
 import io.army.criteria.FieldPredicate;
+import io.army.criteria.Visible;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
@@ -9,6 +10,9 @@ import io.army.stmt.ParamValue;
 public interface _SqlContext {
 
     /**
+     * <p>
+     * This method is used by non {@link io.army.criteria.SetTargetPart}.
+     * </p>
      * <p>
      *     <ol>
      *         <li>append one space</li>
@@ -21,6 +25,9 @@ public interface _SqlContext {
 
     /**
      * <p>
+     * This method is used by non {@link io.army.criteria.SetTargetPart}.
+     * </p>
+     * <p> steps:
      *     <ol>
      *         <li>append one space</li>
      *         <li>append table alias and point if need</li>
@@ -31,7 +38,9 @@ public interface _SqlContext {
     void appendField(FieldMeta<?, ?> fieldMeta);
 
     @Deprecated
-    void appendFieldPredicate(FieldPredicate predicate);
+    default void appendFieldPredicate(FieldPredicate predicate) {
+        throw new UnsupportedOperationException();
+    }
 
 
     void appendIdentifier(String identifier);
@@ -55,5 +64,7 @@ public interface _SqlContext {
      * </p>
      */
     void appendParam(ParamValue paramValue);
+
+    Visible visible();
 
 }

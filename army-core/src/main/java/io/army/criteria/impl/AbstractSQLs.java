@@ -8,7 +8,6 @@ import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.FieldMeta;
-import io.army.meta.GenericField;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 
@@ -113,11 +112,12 @@ abstract class AbstractSQLs {
     }
 
 
-   @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     public static <E> Expression<E> defaultValue() {
-       return (Expression<E>) DefaultKeyWord.INSTANCE;
+        return (Expression<E>) DefaultKeyWord.INSTANCE;
     }
 
+    @Deprecated
     public static TableMeta<Dual> dual() {
         return Dual.DualTableMeta.INSTANCE;
     }

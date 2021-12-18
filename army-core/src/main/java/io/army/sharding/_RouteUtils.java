@@ -40,6 +40,22 @@ public abstract class _RouteUtils {
         return databaseIndex;
     }
 
+    public static String tableSuffix(final byte tableIndex) {
+        final String suffix;
+        if (tableIndex < 0) {
+            throw new ShardingRouteException(String.format("tableIndex[%s] < 0", tableIndex));
+        } else if (tableIndex == 0) {
+            suffix = "";
+        } else if (tableIndex < 10) {
+            suffix = "_0" + tableIndex;
+        } else if (tableIndex < 100) {
+            suffix = "_" + tableIndex;
+        } else {
+            throw new ShardingRouteException(String.format("tableIndex[%s] > 100", tableIndex));
+        }
+        return suffix;
+    }
+
 
     /**
      * @return negative : not found table route.

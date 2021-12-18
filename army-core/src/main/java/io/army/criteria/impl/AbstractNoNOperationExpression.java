@@ -21,6 +21,17 @@ abstract class AbstractNoNOperationExpression<E> implements _Expression<E> {
 
 
     @Override
+    public final boolean nullableExp() {
+        final boolean nullable;
+        if (this instanceof ParamExpression) {
+            nullable = ((ParamExpression<?>) this).value() == null;
+        } else {
+            nullable = this instanceof NullKeyWord;
+        }
+        return nullable;
+    }
+
+    @Override
     public final IPredicate equal(Expression<E> expression) {
         throw new UnsupportedOperationException();
     }

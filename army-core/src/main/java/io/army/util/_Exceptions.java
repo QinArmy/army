@@ -8,6 +8,7 @@ import io.army.criteria.impl.inner._Statement;
 import io.army.criteria.impl.inner._Update;
 import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.dialect.Dialect;
+import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
@@ -62,6 +63,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException unknownColumn(LogicalField<?, ?> field) {
+        return new CriteriaException(String.format("Unknown %s", field));
+    }
+
     public static CriteriaException unknownField(FieldMeta<?, ?> fieldMeta) {
         return new CriteriaException(String.format("Unknown %s", fieldMeta));
     }
@@ -106,6 +111,14 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static CriteriaException immutableField(FieldMeta<?, ?> field) {
         return new CriteriaException(String.format("%s is immutable.", field));
+    }
+
+    public static CriteriaException armyManageField(FieldMeta<?, ?> field) {
+        return new CriteriaException(String.format("%s is managed by Army.", field));
+    }
+
+    public static CriteriaException nonNullField(FieldMeta<?, ?> field) {
+        return new CriteriaException(String.format("%s is non-null.", field));
     }
 
     public static CriteriaException nonInsertable(FieldMeta<?, ?> field) {
@@ -160,8 +173,8 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new MetaException(String.format("%s isn't support UpdateMode[%s].", dialect, UpdateMode.ONLY_DEFAULT));
     }
 
-    public static CriteriaException noWhereClause(_Statement stmt) {
-        return new CriteriaException(String.format("%s no where clause.", stmt));
+    public static CriteriaException noWhereClause(_SqlContext context) {
+        return new CriteriaException(String.format("%s no where clause.", context));
     }
 
 
@@ -172,6 +185,11 @@ public abstract class _Exceptions extends ExceptionUtils {
     public static CriteriaException setTargetAndValuePartNotMatch(SetTargetPart target, SetValuePart value) {
         return new CriteriaException(String.format("%s[%s] and %s[%s] not match.", SetTargetPart.class.getName(), target
                 , SetValuePart.class.getName(), value));
+    }
+
+    public static CriteriaException selfJoinNoLogicField(GenericField<?, ?> field) {
+        return new CriteriaException(String.format("%s self join but don't use %s."
+                , field.tableMeta(), LogicalField.class.getName()));
     }
 
 

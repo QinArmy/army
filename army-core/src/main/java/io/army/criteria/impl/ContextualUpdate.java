@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.annotation.UpdateMode;
 import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Update;
@@ -100,6 +101,12 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
 
     @Override
     public <F> WhereSpec<T, C> set(FieldMeta<? super T, F> field, Expression<F> valueExp) {
+        if (field.updateMode() == UpdateMode.IMMUTABLE) {
+            throw _Exceptions.immutableField(field);
+        }
+        if (!field.nullable() && ((_Expression<?>) valueExp).nullableExp()) {
+            throw _Exceptions.nonNullField(field);
+        }
         this.fieldList.add(field);
         this.valueExpList.add((_Expression<?>) valueExp);
         return this;

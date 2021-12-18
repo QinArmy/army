@@ -29,6 +29,19 @@ abstract class AbstractExpression<E> implements _Expression<E> {
     }
 
     @Override
+    public final boolean nullableExp() {
+        final boolean nullable;
+        if (this instanceof Selection) {
+            nullable = ((Selection) this).nullable();
+        } else if (this instanceof ScalarSubQuery) {
+            nullable = ((ScalarSubQuery<?>) this).selection().nullable();
+        } else {
+            nullable = false;
+        }
+        return nullable;
+    }
+
+    @Override
     public final IPredicate equal(Expression<E> expression) {
         return DualPredicate.build(this, DualPredicateOperator.EQ, (_Expression<?>) expression);
     }

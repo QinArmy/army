@@ -233,6 +233,7 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression
         return this.nullable;
     }
 
+
     @Override
     public final TableMeta<T> tableMeta() {
         return this.table;

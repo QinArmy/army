@@ -19,7 +19,7 @@ public final class DefaultKeyWord<E> extends AbstractNoNOperationExpression<E> {
 
     @Override
     protected void afterSpace(_SqlContext context) {
-        context.sqlBuilder().append("DEFAULT");
+        context.sqlBuilder().append(" DEFAULT");
     }
 
 

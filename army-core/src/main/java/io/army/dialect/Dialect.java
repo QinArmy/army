@@ -1,7 +1,6 @@
 package io.army.dialect;
 
 import io.army.DialectMode;
-import io.army.meta.FieldMeta;
 import io.army.stmt.Stmt;
 
 /**
@@ -13,6 +12,8 @@ public interface Dialect extends DdlDialect, DmlDialect, DqlDialect, TclDialect 
 
     boolean supportSavePoint();
 
+    boolean setClauseTableAlias();
+
     /**
      * @return always same a instance.
      */
@@ -20,6 +21,6 @@ public interface Dialect extends DdlDialect, DmlDialect, DqlDialect, TclDialect 
 
     DialectMode mode();
 
-    void defaultFunc(FieldMeta<?, ?> field, StringBuilder builder);
+    String defaultFuncName();
 
 }

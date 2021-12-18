@@ -1,11 +1,11 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.FieldSelection;
+import io.army.criteria.GenericField;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
-import io.army.meta.GenericField;
 import io.army.meta.TableMeta;
 
 import java.util.Collection;
