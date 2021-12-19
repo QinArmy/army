@@ -121,7 +121,7 @@ public interface Query extends Statement {
         WhereAndSpec<Q, C> and(IPredicate predicate);
 
         /**
-         * @see Expression#equalIfNonNull(Object)
+         * @see Expression#ifEqual(Object)
          */
         WhereAndSpec<Q, C> ifAnd(@Nullable IPredicate predicate);
 

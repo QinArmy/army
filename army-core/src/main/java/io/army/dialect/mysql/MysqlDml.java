@@ -6,9 +6,9 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.Stmt;
+import io.army.stmt.Stmts;
 
 import java.util.List;
-import java.util.Objects;
 
 abstract class MysqlDml extends AbstractDml {
 
@@ -24,9 +24,31 @@ abstract class MysqlDml extends AbstractDml {
 
 
     @Override
+    protected final Stmt standardChildValueInsert(final _ValueInsertContext parentContext) {
+        // 1. create parent insert statement
+        _DmlUtils.appendStandardValueInsert(parentContext, parentContext);
+        // 2. create child insert context
+        final ChildValueInsertContext childContext;
+        childContext = ChildValueInsertContext.child(parentContext);
+        // 3. create child insert statement
+        _DmlUtils.appendStandardValueInsert(childContext.childBlock, childContext);
+        return Stmts.group(parentContext.build(), childContext.build());
+    }
+
+    /**
+     * <p>
+     * MySQL {@link Dialect#independentlyUpdateChild()} always return false
+     * ,so this method always use multi-table syntax update child table.
+     * </p>
+     *
+     * @see Dialect#independentlyUpdateChild()
+     */
+    @Override
     protected final Stmt standardChildUpdate(final _SingleUpdateContext context) {
+        assert !context.independentlyUpdateChild();
+
         final _SetBlock childSetClause = context.childSetClause();
-        Objects.requireNonNull(childSetClause);
+        assert childSetClause != null;
 
         final Dialect dialect = context.dialect();
         final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childSetClause.table();
@@ -45,7 +67,8 @@ abstract class MysqlDml extends AbstractDml {
         if (tableIndex == 0) {
             sqlBuilder.append(dialect.quoteIfNeed(childTable.tableName()));
         } else {
-            sqlBuilder.append(dialect.quoteIfNeed(childTable.tableName() + tableSuffix));
+            sqlBuilder.append(childTable.tableName())
+                    .append(tableSuffix);
         }
         sqlBuilder.append(AS_WORD)
                 .append(Constant.SPACE)
@@ -58,7 +81,8 @@ abstract class MysqlDml extends AbstractDml {
         if (tableIndex == 0) {
             sqlBuilder.append(dialect.quoteIfNeed(parentTable.tableName()));
         } else {
-            sqlBuilder.append(dialect.quoteIfNeed(parentTable.tableName() + tableSuffix));
+            sqlBuilder.append(parentTable.tableName())
+                    .append(tableSuffix);
         }
         sqlBuilder.append(AS_WORD)
                 .append(Constant.SPACE)

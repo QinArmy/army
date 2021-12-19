@@ -1,22 +1,38 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.ColumnSubQuery;
-import io.army.criteria.DualPredicateOperator;
+import io.army.criteria.Expression;
+import io.army.criteria.GenericField;
 import io.army.criteria.impl.inner._Expression;
+import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
-import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.util.Assert;
+import io.army.modelgen._MetaBridge;
+import io.army.util._Exceptions;
 
 import java.util.Collection;
+import java.util.function.Function;
 
 class ColumnSubQueryPredicate extends AbstractPredicate {
 
-    static ColumnSubQueryPredicate build(_Expression<?> operand, DualPredicateOperator operator
-            , SubQueryOperator subQueryOperator, ColumnSubQuery<?> subQuery) {
-        Assert.isTrue(operator.relational(), "operator isn't relational.");
+    static <C, E> ColumnSubQueryPredicate create(
+            Expression<E> operand, DualOperator operator
+            , SubQueryOperator subQueryOperator, Function<C, ColumnSubQuery<?>> function) {
+        final ColumnSubQuery<?> functionResult;
+        functionResult = function.apply(CriteriaContextStack.getCriteria());
+        assert functionResult != null;
+        return ColumnSubQueryPredicate.create(operand, operator, subQueryOperator, functionResult);
+    }
 
+    static ColumnSubQueryPredicate create(Expression<?> operand, DualOperator operator
+            , SubQueryOperator subQueryOperator, ColumnSubQuery<?> subQuery) {
+        if (operator == DualOperator.EQ) {
+            if (operand instanceof GenericField
+                    && _MetaBridge.VISIBLE.equals(((GenericField<?, ?>) operand).fieldName())) {
+                throw _Exceptions.visibleFieldNoPredicate((GenericField<?, ?>) operand);
+            }
+        }
         switch (subQueryOperator) {
             case ALL:
             case ANY:
@@ -27,8 +43,11 @@ class ColumnSubQueryPredicate extends AbstractPredicate {
         }
     }
 
-    static ColumnSubQueryPredicate build(_Expression<?> operand, DualPredicateOperator operator
-            , ColumnSubQuery<?> subQuery) {
+    static ColumnSubQueryPredicate create(Expression<?> operand, DualOperator operator, ColumnSubQuery<?> subQuery) {
+        if (operand instanceof GenericField
+                && _MetaBridge.VISIBLE.equals(((GenericField<?, ?>) operand).fieldName())) {
+            throw _Exceptions.visibleFieldNoPredicate((GenericField<?, ?>) operand);
+        }
         switch (operator) {
             case IN:
             case NOT_IN:
@@ -40,59 +59,46 @@ class ColumnSubQueryPredicate extends AbstractPredicate {
 
     private final _Expression<?> operand;
 
-    private final DualPredicateOperator operator;
+    private final DualOperator operator;
 
     private final ColumnSubQuery<?> subQuery;
 
-    private ColumnSubQueryPredicate(_Expression<?> operand, DualPredicateOperator operator, ColumnSubQuery<?> subQuery) {
-
-        this.operand = operand;
+    private ColumnSubQueryPredicate(Expression<?> operand, DualOperator operator, ColumnSubQuery<?> subQuery) {
+        this.operand = (_Expression<?>) operand;
         this.operator = operator;
         this.subQuery = subQuery;
     }
 
 
     @Override
-    public void appendSql(_SqlContext context) {
+    public final void appendSql(_SqlContext context) {
         this.operand.appendSql(context);
-        StringBuilder builder = context.sqlBuilder()
-                .append(" ")
+        final StringBuilder builder = context.sqlBuilder()
+                .append(Constant.SPACE)
                 .append(this.operator.rendered());
-        SubQueryOperator subQueryOperator = subQueryOperator();
-        if (subQueryOperator != null) {
-            builder.append(" ")
-                    .append(subQueryOperator.rendered());
+        if (this instanceof RelationColumnSubQueryPredicate) {
+            builder.append(Constant.SPACE)
+                    .append(((RelationColumnSubQueryPredicate) this).subQueryOperator.rendered());
         }
         this.subQuery.appendSql(context);
     }
 
     @SuppressWarnings("all")
     @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder()
-                .append("(")
-                .append(operand)
-                .append(" ")
-                .append(operator.rendered());
-
-        SubQueryOperator subQueryOperator = subQueryOperator();
-        if (subQueryOperator != null) {
-            builder.append(" ")
-                    .append(subQueryOperator.rendered());
+    public final String toString() {
+        final StringBuilder builder = new StringBuilder();
+        builder.append(this.operand)
+                .append(Constant.SPACE)
+                .append(this.operator.rendered());
+        if (this instanceof RelationColumnSubQueryPredicate) {
+            builder.append(Constant.SPACE)
+                    .append(((RelationColumnSubQueryPredicate) this).subQueryOperator.rendered());
         }
-        builder.append(" ")
-                .append(subQuery)
-                .append(")")
+        return builder
+                .append(this.subQuery)
                 .toString();
-
-        return builder.toString();
-
     }
 
-    @Nullable
-    SubQueryOperator subQueryOperator() {
-        return null;
-    }
 
     @Override
     public final boolean containsSubQuery() {
@@ -114,19 +120,18 @@ class ColumnSubQueryPredicate extends AbstractPredicate {
         return this.operand.containsFieldCount(tableMeta);
     }
 
+
     private static final class RelationColumnSubQueryPredicate extends ColumnSubQueryPredicate {
 
         private final SubQueryOperator subQueryOperator;
 
-        public RelationColumnSubQueryPredicate(_Expression<?> operand, DualPredicateOperator operator
+        private RelationColumnSubQueryPredicate(Expression<?> operand, DualOperator operator
                 , SubQueryOperator subQueryOperator, ColumnSubQuery<?> subQuery) {
             super(operand, operator, subQuery);
             this.subQueryOperator = subQueryOperator;
         }
 
-        @Override
-        SubQueryOperator subQueryOperator() {
-            return this.subQueryOperator;
-        }
     }
+
+
 }

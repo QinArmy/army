@@ -17,7 +17,7 @@ final class StandardContextualMultiSelect<C> extends AbstractStandardQuery<Selec
     private StandardContextualMultiSelect(C criteria) {
         super(criteria);
         this.criteriaContext = new CriteriaContextImpl<>(criteria);
-        CriteriaContextHolder.setContext(this.criteriaContext);
+        CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 
 
@@ -37,7 +37,7 @@ final class StandardContextualMultiSelect<C> extends AbstractStandardQuery<Selec
 
     @Override
     final void internalAsSelect() {
-        CriteriaContextHolder.clearContext(this.criteriaContext);
+        CriteriaContextStack.clearContextStack(this.criteriaContext);
     }
 
 

@@ -49,7 +49,7 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
     private ContextualDelete(@Nullable C criteria) {
         this.criteria = criteria;
         this.criteriaContext = new CriteriaContextImpl<>(this.criteria);
-        CriteriaContextHolder.setContext(criteriaContext);
+        CriteriaContextStack.setContextStack(criteriaContext);
     }
 
     /*################################## blow SingleDeleteSpec method ##################################*/
@@ -125,7 +125,7 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
     public Delete asDelete() {
         Assert.nonPrepared(this.prepared);
 
-        CriteriaContextHolder.clearContext(this.criteriaContext);
+        CriteriaContextStack.clearContextStack(this.criteriaContext);
 
         Assert.hasTable(this.tableMeta);
         Assert.identifierHasText(this.tableAlias);

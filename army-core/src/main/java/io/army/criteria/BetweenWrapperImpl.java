@@ -1,23 +1,23 @@
 package io.army.criteria;
 
-final class BetweenWrapperImpl<E> implements BetweenWrapper<E> {
+final class BetweenWrapperImpl implements BetweenWrapper {
 
-    private final Expression<E> first;
+    private final Expression<?> first;
 
-    private final Expression<E> second;
+    private final Expression<?> second;
 
-    BetweenWrapperImpl(Expression<E> first, Expression<E> second) {
+    BetweenWrapperImpl(Expression<?> first, Expression<?> second) {
         this.first = first;
         this.second = second;
     }
 
     @Override
-    public Expression<E> first() {
+    public Expression<?> first() {
         return this.first;
     }
 
     @Override
-    public Expression<E> second() {
+    public Expression<?> second() {
         return this.second;
     }
 }

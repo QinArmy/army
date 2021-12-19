@@ -1,20 +1,17 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.FieldExpression;
-import io.army.criteria.FieldPredicate;
+import io.army.criteria.GenericField;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._SelfDescribed;
+import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
-import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
-import io.army.util.Assert;
+import io.army.modelgen._MetaBridge;
+import io.army.util._Exceptions;
 
-import java.util.Collection;
+final class UnaryPredicate extends AbstractPredicate {
 
-class UnaryPredicate extends AbstractPredicate {
-
-    static UnaryPredicate build(UnaryOperator operator, SubQuery subQuery) {
+    static UnaryPredicate create(UnaryOperator operator, SubQuery subQuery) {
         switch (operator) {
             case NOT_EXISTS:
             case EXISTS:
@@ -26,111 +23,89 @@ class UnaryPredicate extends AbstractPredicate {
 
     }
 
-    static UnaryPredicate build(UnaryOperator operator, _Expression<?> expression) {
-        UnaryPredicate predicate;
-        if (operator == UnaryOperator.NOT_EXISTS || operator == UnaryOperator.EXISTS) {
-            throw new IllegalArgumentException(
-                    String.format("operator[%s] can't in [EXISTS,NOT_EXISTS]", operator));
-        } else if (expression instanceof FieldExpression) {
-            predicate = new FieldUnaryPredicate(operator, (FieldExpression<?>) expression);
-        } else {
-            predicate = new UnaryPredicate(operator, expression);
+    static UnaryPredicate create(final UnaryOperator operator, final _Expression<?> expression) {
+        if (expression instanceof SubQuery) {
+            throw new IllegalArgumentException("expression couldn't be sub query.");
         }
-        return predicate;
+        if (expression instanceof GenericField
+                && _MetaBridge.VISIBLE.equals(((GenericField<?, ?>) expression).fieldName())) {
+            throw _Exceptions.visibleFieldNoPredicate((GenericField<?, ?>) expression);
+        }
+        switch (operator) {
+            case IS_NULL:
+            case IS_NOT_NULL:
+                return new UnaryPredicate(operator, expression);
+            default:
+                throw new IllegalArgumentException("operator error");
+        }
     }
 
     private final UnaryOperator operator;
 
-    final _SelfDescribed expressionOrSubQuery;
+    private final _SelfDescribed expressionOrSubQuery;
 
     private UnaryPredicate(UnaryOperator operator, _SelfDescribed expressionOrSubQuery) {
-        Assert.notNull(expressionOrSubQuery, "expression required");
-
         this.operator = operator;
         this.expressionOrSubQuery = expressionOrSubQuery;
     }
 
     @Override
-    public void appendSql(_SqlContext context) {
-        this.doAppendSQL(context);
+    public void appendSql(final _SqlContext context) {
+        switch (this.operator) {
+            case IS_NOT_NULL:
+            case IS_NULL: {
+                this.expressionOrSubQuery.appendSql(context);
+                context.sqlBuilder()
+                        .append(Constant.SPACE)
+                        .append(this.operator.rendered());
+            }
+            break;
+            case EXISTS:
+            case NOT_EXISTS: {
+                context.sqlBuilder()
+                        .append(Constant.SPACE)
+                        .append(this.operator.rendered());
+                this.expressionOrSubQuery.appendSql(context);
+            }
+            break;
+            default:
+                throw _Exceptions.unexpectedEnum(this.operator);
+        }
+
     }
 
-    final void doAppendSQL(_SqlContext context) {
-        switch (this.operator.position()) {
-            case LEFT:
-                context.sqlBuilder()
-                        .append(" ")
-                        .append(this.operator.rendered());
-                this.expressionOrSubQuery.appendSql(context);
-                break;
-            case RIGHT:
-                this.expressionOrSubQuery.appendSql(context);
-                context.sqlBuilder()
-                        .append(" ")
-                        .append(this.operator.rendered());
-                break;
-            default:
-                throw new IllegalStateException(String.format("UnaryOperator[%s]'s position error.", operator));
-        }
-    }
 
     @Override
-    public final String toString() {
-        StringBuilder builder = new StringBuilder();
-        switch (this.operator.position()) {
-            case LEFT:
-                builder.append(this.operator.rendered())
-                        .append(" ")
-                        .append(this.expressionOrSubQuery);
-                break;
-            case RIGHT:
+    public String toString() {
+        final StringBuilder builder = new StringBuilder();
+        switch (this.operator) {
+            case IS_NOT_NULL:
+            case IS_NULL: {
                 builder.append(this.expressionOrSubQuery)
-                        .append(" ")
-                        .append(operator.rendered());
-                break;
+                        .append(Constant.SPACE)
+                        .append(this.operator.rendered());
+            }
+            break;
+            case EXISTS:
+            case NOT_EXISTS: {
+                builder.append(Constant.SPACE)
+                        .append(this.operator.rendered())
+                        .append(this.expressionOrSubQuery);
+            }
+            break;
             default:
-                throw new IllegalStateException(String.format("UnaryOperator[%s]'s position error.", operator));
+                throw _Exceptions.unexpectedEnum(this.operator);
         }
         return builder.toString();
     }
 
     @Override
-    public final boolean containsSubQuery() {
+    public boolean containsSubQuery() {
         return (this.expressionOrSubQuery instanceof SubQuery)
                 || ((_Expression<?>) this.expressionOrSubQuery).containsSubQuery();
     }
 
     /*################################## blow private static inner class ##################################*/
 
-    private static final class FieldUnaryPredicate extends UnaryPredicate implements FieldPredicate {
 
-        private FieldUnaryPredicate(UnaryOperator operator, FieldExpression<?> expression) {
-            super(operator, (_Expression<?>) expression);
-        }
-
-        @Override
-        public void appendSql(_SqlContext context) {
-            context.appendFieldPredicate(this);
-        }
-
-        // @Override
-        public void appendPredicate(_SqlContext context) {
-            this.doAppendSQL(context);
-        }
-
-        @Override
-        public boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
-            return ((_Expression<?>) this.expressionOrSubQuery).containsField(fieldMetas);
-        }
-
-        @Override
-        public boolean containsFieldOf(TableMeta<?> tableMeta) {
-            return ((_Expression<?>) this.expressionOrSubQuery).containsFieldOf(tableMeta);
-        }
-
-        @Override
-        public int containsFieldCount(TableMeta<?> tableMeta) {
-            return ((_Expression<?>) this.expressionOrSubQuery).containsFieldCount(tableMeta);
-        }
-    }
 }

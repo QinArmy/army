@@ -78,17 +78,17 @@ public abstract class _DmlUtils {
     }
 
 
-    static void appendStandardValueInsert(final _InsertBlock block, final _ValueInsertContext context) {
-        final Dialect dialect = context.dialect();
-        final StringBuilder builder = context.sqlBuilder();
+  public static void appendStandardValueInsert(final _InsertBlock block, final _ValueInsertContext context) {
+      final Dialect dialect = context.dialect();
+      final StringBuilder builder = context.sqlBuilder();
 
-        final TableMeta<?> table = block.table();
+      final TableMeta<?> table = block.table();
 
-        // 1. INSERT INTO clause
-        builder.append(AbstractDml.INSERT_INTO)
-                .append(Constant.SPACE);
-        //append table name
-        if (context.tableIndex() == 0) {
+      // 1. INSERT INTO clause
+      builder.append(AbstractDml.INSERT_INTO)
+              .append(Constant.SPACE);
+      //append table name
+      if (context.tableIndex() == 0) {
             builder.append(dialect.safeTableName(table.tableName()));
         } else {
             builder.append(table.tableName())
@@ -519,7 +519,7 @@ public abstract class _DmlUtils {
 
     static void createValueInsertForSimple(TableMeta<?> physicalTable, TableMeta<?> logicalTable
             , Collection<FieldMeta<?, ?>> fieldMetas, ReadWrapper domainWrapper
-            , ValueInsertContexts context) {
+            , ValueInsertContext context) {
 //
 //        final GenericSessionFactory sessionFactory = context.dialect.sessionFactory();
 //        final SQLBuilder fieldBuilder = context.fieldsBuilder().append("INSERT INTO");
@@ -730,20 +730,8 @@ public abstract class _DmlUtils {
 
     private static boolean hasDiscriminatorPredicate(List<_Predicate> predicateList
             , FieldMeta<?, ? extends CodeEnum> discriminator) {
-        final Class<?> discriminatorClass = discriminator.javaType();
-        boolean has = false;
-        for (_Predicate predicate : predicateList) {
-            if (predicate instanceof FieldValuePredicate) {
-                FieldValuePredicate valuePredicate = (FieldValuePredicate) predicate;
-                if (valuePredicate.operator() == DualPredicateOperator.EQ
-                        && valuePredicate.fieldMeta().fieldMeta() == discriminator
-                        && discriminatorClass.isInstance(valuePredicate.value())) {
-                    has = true;
-                    break;
-                }
-            }
-        }
-        return has;
+
+        return false;
     }
 
 

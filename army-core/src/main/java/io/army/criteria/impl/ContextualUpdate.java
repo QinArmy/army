@@ -11,6 +11,7 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.modelgen._MetaBridge;
 import io.army.util.Assert;
 import io.army.util._Exceptions;
 
@@ -68,7 +69,7 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
         this.criteria = criteria;
         this.tableAlias = tableAlias;
         this.criteriaContext = new CriteriaContextImpl<>(criteria);
-        CriteriaContextHolder.setContext(this.criteriaContext);
+        CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 
     /*################################## blow RouteSpec method ##################################*/
@@ -100,15 +101,19 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
     }
 
     @Override
-    public <F> WhereSpec<T, C> set(FieldMeta<? super T, F> field, Expression<F> valueExp) {
+    public <F> WhereSpec<T, C> set(final FieldMeta<? super T, F> field, final Expression<F> value) {
         if (field.updateMode() == UpdateMode.IMMUTABLE) {
             throw _Exceptions.immutableField(field);
         }
-        if (!field.nullable() && ((_Expression<?>) valueExp).nullableExp()) {
+        final String fieldName = field.fieldName();
+        if (fieldName.equals(_MetaBridge.UPDATE_TIME) || fieldName.equals(_MetaBridge.VERSION)) {
+            throw _Exceptions.armyManageField(field);
+        }
+        if (!field.nullable() && ((_Expression<?>) value).nullableExp()) {
             throw _Exceptions.nonNullField(field);
         }
         this.fieldList.add(field);
-        this.valueExpList.add((_Expression<?>) valueExp);
+        this.valueExpList.add((_Expression<?>) value);
         return this;
     }
 
@@ -336,7 +341,7 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
     public Update asUpdate() {
         Assert.nonPrepared(this.prepared);
 
-        CriteriaContextHolder.clearContext(this.criteriaContext);
+        CriteriaContextStack.clearContextStack(this.criteriaContext);
 
         final List<FieldMeta<?, ?>> fieldList = this.fieldList;
         final List<_Expression<?>> valueExpList = this.valueExpList;

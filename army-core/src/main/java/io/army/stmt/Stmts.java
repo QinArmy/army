@@ -13,6 +13,10 @@ public abstract class Stmts {
         return null;
     }
 
+    public static GroupStmt group(Stmt stmt1, Stmt stmt2) {
+        return null;
+    }
+
     public static SimpleStmt simple(String sql, List<ParamValue> paramList) {
         return null;
     }

@@ -64,7 +64,7 @@ public interface MySQL57Update extends Update {
         MySQLSingleUpdateWhereAndSpec<C> and(IPredicate predicate);
 
         /**
-         * @see Expression#equalIfNonNull(Object)
+         * @see Expression#ifEqual(Object)
          */
         MySQLSingleUpdateWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
 
@@ -190,7 +190,7 @@ public interface MySQL57Update extends Update {
         MySQLMultiUpdateWhereAndSpec<C> and(IPredicate predicate);
 
         /**
-         * @see Expression#equalIfNonNull(Object)
+         * @see Expression#ifEqual(Object)
          */
         MySQLMultiUpdateWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
 
@@ -238,7 +238,7 @@ public interface MySQL57Update extends Update {
         MySQLBatchSingleUpdateWhereAndSpec<C> and(IPredicate predicate);
 
         /**
-         * @see Expression#equalIfNonNull(Object)
+         * @see Expression#ifEqual(Object)
          */
         MySQLBatchSingleUpdateWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
 
@@ -360,7 +360,7 @@ public interface MySQL57Update extends Update {
         MySQLBatchMultiUpdateWhereAndSpec<C> and(IPredicate predicate);
 
         /**
-         * @see Expression#equalIfNonNull(Object)
+         * @see Expression#ifEqual(Object)
          */
         MySQLBatchMultiUpdateWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
 

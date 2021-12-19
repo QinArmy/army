@@ -46,7 +46,7 @@ final class StandardContextualChildSubQueryInsert<T extends IDomain, C> extends 
         this.tableMeta = tableMeta;
         this.criteria = criteria;
         this.criteriaContext = new CriteriaContextImpl<>(this.criteria);
-        CriteriaContextHolder.setContext(this.criteriaContext);
+        CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 
     /*################################## blow ParentSubQueryTargetFieldSpec method ##################################*/
@@ -115,7 +115,7 @@ final class StandardContextualChildSubQueryInsert<T extends IDomain, C> extends 
         if (this.prepared) {
             return this;
         }
-        CriteriaContextHolder.clearContext(this.criteriaContext);
+        CriteriaContextStack.clearContextStack(this.criteriaContext);
 
         Assert.notEmpty(this.parentFieldList, "parent fields required");
         Assert.notNull(this.parentSubQuery, "parent sub query required");

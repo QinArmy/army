@@ -141,20 +141,6 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
 
     /*################################## blow protected template method ##################################*/
 
-    /**
-     * @see #valueInsert(Insert, Visible)
-     */
-    protected Stmt handleDialectValueInsert(final _ValuesInsert insert) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @see #subQueryInsert(Insert, Visible)
-     */
-    protected Stmt handleDialectSubQueryInsert(final _SubQueryInsert insert) {
-        throw new UnsupportedOperationException();
-    }
-
     /*################################## blow multiInsert template method ##################################*/
 
 
@@ -230,9 +216,9 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
             final List<Stmt> stmtList = new ArrayList<>(domainMap.size());
             for (Map.Entry<Byte, List<ObjectWrapper>> e : domainMap.entrySet()) {
                 if (table instanceof ChildTableMeta) {
-                    context = ValueInsertContexts.child(insert, e.getKey(), e.getValue(), this.dialect, visible);
+                    context = ValueInsertContext.child(insert, e.getKey(), e.getValue(), this.dialect, visible);
                 } else {
-                    context = ValueInsertContexts.single(insert, e.getKey(), e.getValue(), this.dialect, visible);
+                    context = ValueInsertContext.single(insert, e.getKey(), e.getValue(), this.dialect, visible);
                 }
                 stmtList.add(standardValueInsert(context));
             }
@@ -246,51 +232,15 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
             }
             final _ValueInsertContext context;
             if (table instanceof ChildTableMeta) {
-                context = ValueInsertContexts.child(insert, (byte) 0, domainList, this.dialect, visible);
+                context = ValueInsertContext.child(insert, (byte) 0, domainList, this.dialect, visible);
             } else {
-                context = ValueInsertContexts.single(insert, (byte) 0, domainList, this.dialect, visible);
+                context = ValueInsertContext.single(insert, (byte) 0, domainList, this.dialect, visible);
             }
             stmt = standardValueInsert(context);
         }
         return stmt;
     }
 
-
-    private PairStmt standardChildQueryInsert(_StandardChildSubQueryInsert insert, final Visible visible) {
-        final ChildTableMeta<?> childMeta = insert.table();
-        final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
-
-        // firstly ,parse parent insert sql
-        SubQueryInsertContext parentContext = SubQueryInsertContext.buildParent(insert, this.dialect, visible);
-        parseStandardSimpleSubQueryInsert(parentContext, parentMeta, insert.parentFieldList(), insert.parentSubQuery());
-
-        // secondly ,parse child insert sql
-        SubQueryInsertContext childContext = SubQueryInsertContext.buildChild(insert, this.dialect, visible);
-        parseStandardSimpleSubQueryInsert(childContext, childMeta, insert.fieldList(), insert.subQuery());
-
-        return PairStmt.build(parentContext.build(), childContext.build());
-    }
-
-    private void parseStandardSimpleSubQueryInsert(SubQueryInsertContext context
-            , TableMeta<?> physicalTable, List<FieldMeta<?, ?>> fieldMetaList, SubQuery subQuery) {
-
-        _DmlUtils.assertSubQueryInsert(fieldMetaList, subQuery);
-
-        StringBuilder builder = context.sqlBuilder().append("INSERT INTO");
-        context.appendTable(physicalTable, null);
-        builder.append(" ( ");
-
-        int index = 0;
-        for (FieldMeta<?, ?> fieldMeta : fieldMetaList) {
-            if (index > 0) {
-                builder.append(",");
-            }
-            context.appendField(fieldMeta);
-            index++;
-        }
-        builder.append(" )");
-        subQuery.appendSql(context);
-    }
 
     /*################################## blow update private method ##################################*/
 

@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.Expression;
 import io.army.criteria.FieldExpression;
 import io.army.criteria.FieldPredicate;
 import io.army.criteria.impl.inner._Expression;
@@ -11,14 +12,14 @@ import java.util.Collection;
 
 class BetweenPredicate extends AbstractPredicate {
 
-    static BetweenPredicate build(_Expression<?> left, _Expression<?> center, _Expression<?> right) {
+    static BetweenPredicate build(Expression<?> left, Expression<?> center, Expression<?> right) {
         BetweenPredicate predicate;
         if ((left instanceof FieldExpression)
                 || (center instanceof FieldExpression)
                 || (right instanceof FieldExpression)) {
-            predicate = new FieldBetweenPredicate(left, center, right);
+            predicate = new FieldBetweenPredicate((_Expression<?>) left, (_Expression<?>) center, (_Expression<?>) right);
         } else {
-            predicate = new BetweenPredicate(left, center, right);
+            predicate = new BetweenPredicate((_Expression<?>) left, (_Expression<?>) center, (_Expression<?>) right);
         }
         return predicate;
     }

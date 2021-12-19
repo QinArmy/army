@@ -11,7 +11,7 @@ import io.army.util.Assert;
 final class ParamExpressionImp<E> extends AbstractNoNOperationExpression<E> implements ParamExpression<E> {
 
 
-    static <E> ParamExpressionImp<E> build(@Nullable ParamMeta paramMeta, @Nullable E value) {
+    static <E> ParamExpressionImp<E> create(@Nullable ParamMeta paramMeta, @Nullable E value) {
         ParamExpressionImp<E> paramExpression;
         if (paramMeta != null && value != null) {
             paramExpression = new ParamExpressionImp<>(paramMeta, value);

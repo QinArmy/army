@@ -40,7 +40,7 @@ public interface Update extends Statement, SQLDebug {
 
         <F> WhereSpec<T, C> set(FieldMeta<? super T, F> field, @Nullable F value);
 
-        <F> WhereSpec<T, C> set(FieldMeta<? super T, F> field, Expression<F> valueExp);
+        <F> WhereSpec<T, C> set(FieldMeta<? super T, F> field, Expression<F> value);
 
         /**
          * @see SQLs#defaultValue()
@@ -111,7 +111,7 @@ public interface Update extends Statement, SQLDebug {
         WhereAndSpec<T, C> and(IPredicate predicate);
 
         /**
-         * @see Expression#equalIfNonNull(Object)
+         * @see Expression#ifEqual(Object)
          */
         WhereAndSpec<T, C> ifAnd(@Nullable IPredicate predicate);
 
@@ -172,7 +172,7 @@ public interface Update extends Statement, SQLDebug {
         BatchWhereAndSpec<C> and(IPredicate predicate);
 
         /**
-         * @see Expression#equalIfNonNull(Object)
+         * @see Expression#ifEqual(Object)
          */
         BatchWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
 

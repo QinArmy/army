@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.DualPredicateOperator;
 import io.army.criteria.ExpressionRow;
 import io.army.criteria.IPredicate;
 import io.army.criteria.RowSubQuery;
@@ -66,41 +65,41 @@ final class ExpressionRowImpl<T extends IDomain> implements ExpressionRow<T> {
 
     @Override
     public IPredicate eq(RowSubQuery rowSubQuery) {
-        return new RowPredicate(this, DualPredicateOperator.EQ, rowSubQuery);
+        return new RowPredicate(this, DualOperator.EQ, rowSubQuery);
     }
 
     @Override
     public IPredicate notEq(RowSubQuery rowSubQuery) {
-        return new RowPredicate(this, DualPredicateOperator.NOT_EQ, rowSubQuery);
+        return new RowPredicate(this, DualOperator.NOT_EQ, rowSubQuery);
     }
 
     @Override
     public IPredicate lt(RowSubQuery rowSubQuery) {
-        return new RowPredicate(this, DualPredicateOperator.LT, rowSubQuery);
+        return new RowPredicate(this, DualOperator.LT, rowSubQuery);
     }
 
     @Override
     public IPredicate le(RowSubQuery rowSubQuery) {
-        return new RowPredicate(this, DualPredicateOperator.LE, rowSubQuery);
+        return new RowPredicate(this, DualOperator.LE, rowSubQuery);
     }
 
     @Override
     public IPredicate gt(RowSubQuery rowSubQuery) {
-        return new RowPredicate(this, DualPredicateOperator.GT, rowSubQuery);
+        return new RowPredicate(this, DualOperator.GT, rowSubQuery);
     }
 
     @Override
     public IPredicate ge(RowSubQuery rowSubQuery) {
-        return new RowPredicate(this, DualPredicateOperator.GE, rowSubQuery);
+        return new RowPredicate(this, DualOperator.GE, rowSubQuery);
     }
 
     @Override
     public IPredicate in(RowSubQuery rowSubQuery) {
-        return new RowPredicate(this, DualPredicateOperator.IN, rowSubQuery);
+        return new RowPredicate(this, DualOperator.IN, rowSubQuery);
     }
 
     @Override
     public IPredicate notIn(RowSubQuery rowSubQuery) {
-        return new RowPredicate(this, DualPredicateOperator.NOT_IN, rowSubQuery);
+        return new RowPredicate(this, DualOperator.NOT_IN, rowSubQuery);
     }
 }

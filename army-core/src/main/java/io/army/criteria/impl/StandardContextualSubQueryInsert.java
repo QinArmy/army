@@ -42,7 +42,7 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
         this.criteria = criteria;
         this.tableMeta = tableMeta;
         this.criteriaContext = new CriteriaContextImpl<>(this.criteria);
-        CriteriaContextHolder.setContext(this.criteriaContext);
+        CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 
     /*################################## blow SubQueryTargetFieldSpec method ##################################*/
@@ -132,7 +132,7 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
             return this;
         }
 
-        CriteriaContextHolder.clearContext(this.criteriaContext);
+        CriteriaContextStack.clearContextStack(this.criteriaContext);
 
         Assert.state(!CollectionUtils.isEmpty(this.fieldList), "fieldList is empty,error.");
         Assert.state(this.subQuery != null, "values(SubQuery) or values(Function<C, SubQuery> ) must be invoked.");

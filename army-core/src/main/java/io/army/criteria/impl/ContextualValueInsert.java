@@ -60,7 +60,7 @@ final class ContextualValueInsert<T extends IDomain, C> extends AbstractSQLDebug
         this.table = table;
         this.criteria = criteria;
         this.criteriaContext = new CriteriaContextImpl<>(criteria);
-        CriteriaContextHolder.setContext(this.criteriaContext);
+        CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 
     /*################################## blow InsertOptionSpec method ##################################*/
@@ -224,7 +224,7 @@ final class ContextualValueInsert<T extends IDomain, C> extends AbstractSQLDebug
     public Insert asInsert() {
         Assert.nonPrepared(this.prepared);
 
-        CriteriaContextHolder.clearContext(this.criteriaContext);
+        CriteriaContextStack.clearContextStack(this.criteriaContext);
 
         final List<FieldMeta<?, ?>> fieldList = this.fieldList;
         if (CollectionUtils.isEmpty(fieldList)) {

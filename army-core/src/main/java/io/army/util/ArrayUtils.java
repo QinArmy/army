@@ -46,7 +46,7 @@ public abstract class ArrayUtils {
     @SuppressWarnings("varargs")
     @NonNull
     public static <T> List<T> asUnmodifiableList(@Nullable T... e) {
-        List<T> list;
+        final List<T> list;
         if (e == null) {
             list = Collections.emptyList();
         } else {

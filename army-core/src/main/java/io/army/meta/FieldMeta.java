@@ -51,8 +51,6 @@ public interface FieldMeta<T extends IDomain, F> extends GenericField<T, F> {
 
     String defaultValue();
 
-    boolean codec();
-
     @Override
     boolean equals(Object o);
 

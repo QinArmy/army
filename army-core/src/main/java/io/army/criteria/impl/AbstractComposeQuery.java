@@ -37,7 +37,7 @@ abstract class AbstractComposeQuery<Q extends Query, C> implements PartQuery, _S
         this.generalQuery = (_GeneralQuery) query;
         Map<String, Selection> selectionMap = CriteriaUtils.createSelectionMap(this.generalQuery.selectPartList());
         this.criteriaContext = new CriteriaContextImpl<>(criteria, selectionMap);
-        CriteriaContextHolder.setContext(this.criteriaContext);
+        CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 
 

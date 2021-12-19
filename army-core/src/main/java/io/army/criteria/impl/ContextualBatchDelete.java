@@ -53,7 +53,7 @@ final class ContextualBatchDelete<C> implements Delete,
     private ContextualBatchDelete(@Nullable C criteria) {
         this.criteria = criteria;
         this.criteriaContext = new CriteriaContextImpl<>(this.criteria);
-        CriteriaContextHolder.setContext(this.criteriaContext);
+        CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 
     /*################################## blow BatchSingleDeleteSpec method ##################################*/
@@ -149,7 +149,7 @@ final class ContextualBatchDelete<C> implements Delete,
     @Override
     public Delete asDelete() {
         Assert.nonPrepared(this.prepared);
-        CriteriaContextHolder.clearContext(this.criteriaContext);
+        CriteriaContextStack.clearContextStack(this.criteriaContext);
 
         Assert.hasTable(this.table);
         Assert.identifierHasText(this.tableAlias);

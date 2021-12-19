@@ -164,17 +164,16 @@ public abstract class SQLs extends AbstractSQLs {
     /*################################## blow sql reference method ##################################*/
 
     public static <T extends IDomain, F> LogicalField<T, F> field(String tableAlias, FieldMeta<T, F> fieldMeta) {
-        return CriteriaContextHolder.getContext()
+        return CriteriaContextStack.pop()
                 .aliasField(tableAlias, fieldMeta);
     }
 
     public static <E> Expression<E> ref(String subQueryAlias, String derivedFieldName) {
-        return CriteriaContextHolder.getContext()
-                .ref(subQueryAlias, derivedFieldName);
+        return CriteriaContextStack.pop().ref(subQueryAlias, derivedFieldName);
     }
 
     public static <E> Expression<E> ref(String subQueryAlias, String derivedFieldName, Class<E> selectionType) {
-        return CriteriaContextHolder.getContext()
+        return CriteriaContextStack.pop()
                 .ref(subQueryAlias, derivedFieldName, selectionType);
     }
 
@@ -184,7 +183,7 @@ public abstract class SQLs extends AbstractSQLs {
      * </p>
      */
     public static <E> Expression<E> composeRef(String selectionAlias) {
-        return CriteriaContextHolder.getContext()
+        return CriteriaContextStack.pop()
                 .composeRef(selectionAlias);
     }
 
@@ -215,24 +214,24 @@ public abstract class SQLs extends AbstractSQLs {
     /*################################## blow sql key word operate method ##################################*/
 
     public static IPredicate exists(SubQuery subQuery) {
-        return UnaryPredicate.build(UnaryOperator.EXISTS, subQuery);
+        return UnaryPredicate.create(UnaryOperator.EXISTS, subQuery);
     }
 
     public static <C> IPredicate exists(Function<C, SubQuery> function) {
-        return UnaryPredicate.build(
+        return UnaryPredicate.create(
                 UnaryOperator.EXISTS, function.apply(
-                        CriteriaContextHolder.getContext().criteria()
+                        CriteriaContextStack.pop().criteria()
                 ));
     }
 
     public static IPredicate notExists(SubQuery subQuery) {
-        return UnaryPredicate.build(UnaryOperator.NOT_EXISTS, subQuery);
+        return UnaryPredicate.create(UnaryOperator.NOT_EXISTS, subQuery);
     }
 
     public static <C> IPredicate notExists(Function<C, SubQuery> function) {
-        return UnaryPredicate.build(
+        return UnaryPredicate.create(
                 UnaryOperator.NOT_EXISTS, function.apply(
-                        CriteriaContextHolder.getContext().criteria()
+                        CriteriaContextStack.pop().criteria()
                 ));
     }
 

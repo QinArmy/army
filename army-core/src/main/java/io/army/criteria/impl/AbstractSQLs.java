@@ -25,25 +25,48 @@ abstract class AbstractSQLs {
 
 
     public static <E> ParamExpression<E> asNull(Class<?> nullTypeClass) {
-        return ParamExpressionImp.build(_MappingFactory.getMapping(nullTypeClass), null);
+        return ParamExpressionImp.create(_MappingFactory.getMapping(nullTypeClass), null);
     }
 
     public static <E> ParamExpression<E> asNull(MappingType mappingType) {
-        return ParamExpressionImp.build(mappingType, null);
+        return ParamExpressionImp.create(mappingType, null);
     }
 
     public static <E> ParamExpression<E> param(E param) {
-        return ParamExpressionImp.build(null, param);
+        return ParamExpressionImp.create(null, param);
     }
 
     @Deprecated
     public static <E> ParamExpression<E> param(E param, ParamMeta paramMeta) {
-        return ParamExpressionImp.build(paramMeta, param);
+        return ParamExpressionImp.create(paramMeta, param);
     }
 
-    public static <E> ParamExpression<E> param(ParamMeta paramMeta, @Nullable E value) {
-        return ParamExpressionImp.build(paramMeta, value);
+    public static Expression<?> param(MappingType mappingType, @Nullable Object value) {
+        final Expression<?> resultExpression;
+        if (value instanceof Expression) {
+            resultExpression = (Expression<?>) value;
+        } else {
+            resultExpression = ParamExpressionImp.create(mappingType, value);
+        }
+        return resultExpression;
     }
+
+    public static Expression<?> param(final Expression<?> expression, @Nullable Object value) {
+        final Expression<?> resultExpression;
+        if (value instanceof Expression) {
+            resultExpression = (Expression<?>) value;
+        } else {
+            final ParamMeta paramMeta;
+            if (expression instanceof GenericField) {
+                paramMeta = (GenericField<?, ?>) expression;
+            } else {
+                paramMeta = expression.mappingType();
+            }
+            resultExpression = ParamExpressionImp.create(paramMeta, value);
+        }
+        return resultExpression;
+    }
+
 
     /**
      * @see SQLs#batchUpdate()
@@ -66,6 +89,7 @@ abstract class AbstractSQLs {
     }
 
 
+    @Deprecated
     public static ParamMeta obtainParamMeta(Expression<?> expression) {
         ParamMeta paramMeta;
         if (expression instanceof GenericField) {
@@ -85,14 +109,15 @@ abstract class AbstractSQLs {
      * package method
      */
     @SuppressWarnings("unchecked")
+    @Deprecated
     static Expression<?> paramWithExp(Object value, Expression<?> expression) {
-        Expression<?> actualExp;
+        final Expression<?> actualExp;
         if (value instanceof Expression) {
             actualExp = (Expression<?>) value;
         } else if (value instanceof Function) {
-            actualExp = ((Function<Object, Expression<?>>) value).apply(CriteriaContextHolder.getContext().criteria());
+            actualExp = ((Function<Object, Expression<?>>) value).apply(CriteriaContextStack.pop().criteria());
         } else {
-            actualExp = ParamExpressionImp.build(obtainParamMeta(expression), value);
+            actualExp = param(expression, value);
         }
         return actualExp;
     }
@@ -126,8 +151,14 @@ abstract class AbstractSQLs {
         return CollectionExpressionImpl.build(paramMeta, collection);
     }
 
-    public static <E> Expression<Collection<E>> collectionWithExp(Expression<E> expression, Collection<E> collection) {
-        return CollectionExpressionImpl.build(obtainParamMeta(expression), collection);
+    public static <E> Expression<Collection<E>> collectionWithExp(Expression<?> expression, Collection<E> collection) {
+        final ParamMeta paramMeta;
+        if (expression instanceof GenericField) {
+            paramMeta = (GenericField<?, ?>) expression;
+        } else {
+            paramMeta = expression.mappingType();
+        }
+        return CollectionExpressionImpl.build(paramMeta, collection);
     }
 
     /*################################## blow number function method ##################################*/

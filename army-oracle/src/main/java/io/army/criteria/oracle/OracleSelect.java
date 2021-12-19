@@ -126,7 +126,7 @@ public interface OracleSelect extends Select {
 
         */
 /**
- * @see Expression#equalIfNonNull(Object)
+ * @see Expression#ifEqual(Object)
  *//*
 
         WhereAndAble<C> and(@Nullable IPredicate predicate);

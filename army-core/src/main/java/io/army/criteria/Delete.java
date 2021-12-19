@@ -37,7 +37,7 @@ public interface Delete extends Statement, SQLDebug {
         WhereAndSpec<C> and(IPredicate predicate);
 
         /**
-         * @see Expression#equalIfNonNull(Object)
+         * @see Expression#ifEqual(Object)
          */
         WhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
 
@@ -67,7 +67,7 @@ public interface Delete extends Statement, SQLDebug {
         BatchWhereAndSpec<C> and(IPredicate predicate);
 
         /**
-         * @see Expression#equalIfNonNull(Object)
+         * @see Expression#ifEqual(Object)
          */
         BatchWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
 

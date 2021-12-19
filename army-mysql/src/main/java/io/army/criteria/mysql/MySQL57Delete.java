@@ -44,7 +44,7 @@ public interface MySQL57Delete extends Delete {
         MySQLSingleDeleteWhereAndSpec<C> and(IPredicate predicate);
 
         /**
-         * @see Expression#equalIfNonNull(Object)
+         * @see Expression#ifEqual(Object)
          */
         MySQLSingleDeleteWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
 
@@ -157,7 +157,7 @@ public interface MySQL57Delete extends Delete {
         MySQLMultiDeleteWhereAndSpec<C> and(IPredicate predicate);
 
         /**
-         * @see Expression#equalIfNonNull(Object)
+         * @see Expression#ifEqual(Object)
          */
         MySQLMultiDeleteWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
 
@@ -187,7 +187,7 @@ public interface MySQL57Delete extends Delete {
         MySQLBatchSingleDeleteWhereAndSpec<C> and(IPredicate predicate);
 
         /**
-         * @see Expression#equalIfNonNull(Object)
+         * @see Expression#ifEqual(Object)
          */
         MySQLBatchSingleDeleteWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
 
@@ -299,7 +299,7 @@ public interface MySQL57Delete extends Delete {
         MySQLBatchMultiDeleteWhereAndSpec<C> and(IPredicate predicate);
 
         /**
-         * @see Expression#equalIfNonNull(Object)
+         * @see Expression#ifEqual(Object)
          */
         MySQLBatchMultiDeleteWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
 

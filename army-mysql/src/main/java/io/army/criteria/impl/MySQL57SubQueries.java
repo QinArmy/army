@@ -23,14 +23,14 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
 
 
     static <C> MySQL57SubQueries<MySQL57SubQuery, C> build(C criteria) {
-        if (criteria != CriteriaContextHolder.getContext()) {
+        if (criteria != CriteriaContextStack.pop()) {
             throw new IllegalArgumentException("criteria isn't current context.");
         }
         return new MySQL57SubQueryImpl<>(criteria);
     }
 
     static <C> MySQL57SubQueries<MySQL57RowSubQuery, C> buildRowSubQuery(C criteria) {
-        if (criteria != CriteriaContextHolder.getContext()) {
+        if (criteria != CriteriaContextStack.pop()) {
             throw new IllegalArgumentException("criteria isn't current context.");
         }
         return new MySQL57RowSubQueryImpl<>(criteria);
@@ -38,7 +38,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
 
 
     static <E, C> MySQL57ColumnSubQuery.MySQLColumnSelectionSpec<E, C> buildColumnSubQuery(Class<E> columnType, C criteria) {
-        if (criteria != CriteriaContextHolder.getContext()) {
+        if (criteria != CriteriaContextStack.pop()) {
             throw new IllegalArgumentException("criteria isn't current context.");
         }
         return new MySQL57ColumnSubQueryImpl<>(criteria, columnType);
@@ -46,7 +46,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
 
     static <E, C> MySQL57ScalarSubQueryAdaptor<E, C> buildScalarSubQuery(Class<E> javaType, MappingType mappingType
             , C criteria) {
-        if (criteria != CriteriaContextHolder.getContext()) {
+        if (criteria != CriteriaContextStack.pop()) {
             throw new IllegalArgumentException("criteria isn't current context.");
         }
         return new MySQL57ScalarSubQueryAdaptor<>(javaType, mappingType, criteria);
@@ -83,13 +83,13 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
 
     @Override
     final void onMySQLAddTable(TableMeta<?> table, String tableAlias) {
-        CriteriaContextHolder.getContext()
+        CriteriaContextStack.pop()
                 .onAddTable(table, tableAlias);
     }
 
     @Override
     final void onAddSubQuery(SubQuery subQuery, String subQueryAlias) {
-        CriteriaContextHolder.getContext()
+        CriteriaContextStack.pop()
                 .onAddSubQuery(subQuery, subQueryAlias);
     }
 

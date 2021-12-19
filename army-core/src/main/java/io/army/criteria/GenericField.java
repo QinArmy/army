@@ -36,6 +36,8 @@ public interface GenericField<T extends IDomain, F> extends FieldExpression<F>, 
 
     UpdateMode updateMode();
 
+    boolean codec();
+
     boolean databaseRoute();
 
     boolean tableRoute();

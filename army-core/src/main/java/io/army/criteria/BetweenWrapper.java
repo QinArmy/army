@@ -6,14 +6,14 @@ import java.util.function.Function;
  * @param <E> between expression's Java Type
  * @see Expression#between(Function)
  */
-public interface BetweenWrapper<E> {
+public interface BetweenWrapper {
 
-    Expression<E> first();
+    Expression<?> first();
 
-    Expression<E> second();
+    Expression<?> second();
 
-    static <E> BetweenWrapper<E> build(Expression<E> first, Expression<E> second) {
-        return new BetweenWrapperImpl<>(first, second);
+    static BetweenWrapper build(Expression<?> first, Expression<?> second) {
+        return new BetweenWrapperImpl(first, second);
     }
 
 }

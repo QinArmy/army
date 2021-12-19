@@ -17,7 +17,7 @@ final class MySQL57ContextualSelect<C> extends AbstractMySQL57Query<MySQL57Selec
     private MySQL57ContextualSelect(C criteria) {
         super(criteria);
         this.criteriaContext = new CriteriaContextImpl<>(criteria);
-        CriteriaContextHolder.setContext(this.criteriaContext);
+        CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 
     @Override
@@ -32,7 +32,7 @@ final class MySQL57ContextualSelect<C> extends AbstractMySQL57Query<MySQL57Selec
 
     @Override
     final void internalAsSelect() {
-        CriteriaContextHolder.clearContext(this.criteriaContext);
+        CriteriaContextStack.clearContextStack(this.criteriaContext);
     }
 
 

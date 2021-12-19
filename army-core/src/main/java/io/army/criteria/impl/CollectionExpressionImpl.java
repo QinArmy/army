@@ -12,7 +12,7 @@ import java.util.Collection;
 final class CollectionExpressionImpl<E> extends AbstractNoNOperationExpression<Collection<E>>
         implements ValueExpression<Collection<E>> {
 
-    static <E> CollectionExpressionImpl<E> build(ParamMeta paramMeta, Collection<E> collection) {
+    static <E> CollectionExpressionImpl<Collection<E>> build(ParamMeta paramMeta, Collection<E> collection) {
         Assert.notEmpty(collection, "collection must not empty.");
 
         return new CollectionExpressionImpl<>(paramMeta, collection);

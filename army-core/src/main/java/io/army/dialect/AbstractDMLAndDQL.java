@@ -158,7 +158,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     }
 
     protected final void visiblePredicate(SingleTableMeta<?> table, final String safeTableAlias
-            , _StmtContext context) {
+            , final _StmtContext context) {
 
         final FieldMeta<?, ?> field = table.getField(_MetaBridge.VISIBLE);
         final Boolean visibleValue;

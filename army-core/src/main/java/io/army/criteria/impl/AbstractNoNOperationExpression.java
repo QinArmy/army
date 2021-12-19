@@ -42,18 +42,18 @@ abstract class AbstractNoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final IPredicate equal(String tableAlias, FieldMeta<?, E> fieldMeta) {
+    public final IPredicate equal(String tableAlias, FieldMeta<?, E> field) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate equal(E constant) {
+    public final IPredicate equal(E parameter) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Nullable
     @Override
-    public final IPredicate equalIfNonNull(@Nullable E constant) {
+    public final IPredicate ifEqual(@Nullable E parameter) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -73,17 +73,12 @@ abstract class AbstractNoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final <C, S extends ColumnSubQuery<E>> IPredicate equalAll(Function<C, S> subQuery) {
-        throw new UnsupportedOperationException(ERROR_MSG);
-    }
-
-    @Override
     public final IPredicate lessThan(Expression<E> expression) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
     @Override
-    public final IPredicate lessThan(E constant) {
+    public final IPredicate lessThan(E parameter) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -93,7 +88,7 @@ abstract class AbstractNoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final IPredicate lessThan(String tableAlias, FieldMeta<?, E> fieldMeta) {
+    public final IPredicate lessThan(String tableAlias, FieldMeta<?, E> field) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -123,7 +118,7 @@ abstract class AbstractNoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final IPredicate lessEqual(E constant) {
+    public final IPredicate lessEqual(E parameter) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -133,7 +128,7 @@ abstract class AbstractNoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final IPredicate lessEqual(String tableAlias, FieldMeta<?, E> fieldMeta) {
+    public final IPredicate lessEqual(String tableAlias, FieldMeta<?, E> field) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -163,7 +158,7 @@ abstract class AbstractNoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final IPredicate greatThan(E constant) {
+    public final IPredicate greatThan(E parameter) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -173,7 +168,7 @@ abstract class AbstractNoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final IPredicate greatThan(String tableAlias, FieldMeta<?, E> fieldMeta) {
+    public final IPredicate greatThan(String tableAlias, FieldMeta<?, E> field) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -203,7 +198,7 @@ abstract class AbstractNoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final IPredicate greatEqual(E constant) {
+    public final IPredicate greatEqual(E parameter) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -479,7 +474,7 @@ abstract class AbstractNoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final Expression<BigInteger> and(Long operand) {
+    public final Expression<BigInteger> and(Long parameter) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -529,7 +524,7 @@ abstract class AbstractNoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final Expression<BigInteger> xor(Long operand) {
+    public final Expression<BigInteger> xor(Long parameter) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 
@@ -554,7 +549,7 @@ abstract class AbstractNoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final Expression<BigInteger> inversion(Long operand) {
+    public final Expression<BigInteger> inversion(Long parameter) {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 

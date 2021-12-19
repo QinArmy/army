@@ -1,12 +1,20 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.GenericField;
 import io.army.criteria.IPredicate;
+import io.army.criteria.ValueExpression;
 import io.army.criteria.impl.inner._Predicate;
-import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.TableMeta;
+import io.army.sharding.DatabaseRoute;
+import io.army.sharding.Route;
+import io.army.sharding.RouteContext;
+import io.army.sharding.TableRoute;
 
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * This class is base class of all {@link IPredicate} implementation .
@@ -19,23 +27,90 @@ abstract class AbstractPredicate extends AbstractExpression<Boolean> implements 
     }
 
     @Override
-    public final IPredicate or(@Nullable IPredicate... andIPredicates) {
-        if (andIPredicates == null || andIPredicates.length == 0) {
-            return this;
-        }
-        return new OrtPredicateImpl(this, andIPredicates);
+    public final IPredicate or(IPredicate predicate) {
+        return OrtPredicate.create(this, predicate);
     }
 
     @Override
-    public final IPredicate or(List<IPredicate> andIPredicateList) {
-        if (andIPredicateList.size() == 0) {
-            return this;
-        }
-        return new OrtPredicateImpl(this, andIPredicateList);
+    public final IPredicate or(IPredicate predicate1, IPredicate predicate2) {
+        return OrtPredicate.create(this, predicate1, predicate2);
     }
 
     @Override
-    public final IPredicate not(IPredicate predicate) {
-        return NotPredicateImpl.build((_Predicate) predicate);
+    public final IPredicate or(IPredicate predicate1, IPredicate predicate2, IPredicate predicate3) {
+        return OrtPredicate.create(this, predicate1, predicate2, predicate3);
     }
+
+    @Override
+    public final IPredicate or(List<IPredicate> predicates) {
+        return OrtPredicate.create(this, predicates);
+    }
+
+    @Override
+    public final IPredicate not() {
+        return NotPredicate.not(this);
+    }
+
+    @Override
+    public final byte databaseIndex(Function<TableMeta<?>, Route> function) {
+        if (!(this instanceof DualPredicate)) {
+            return -1;
+        }
+        final DualPredicate predicate = (DualPredicate) this;
+        if (predicate.operator != DualOperator.EQ
+                || !(predicate.left instanceof GenericField)
+                || !(predicate.right instanceof ValueExpression)) {
+            return -1;
+        }
+        final GenericField<?, ?> field = (GenericField<?, ?>) predicate.left;
+        if (!field.databaseRoute()) {
+            return -1;
+        }
+        final byte index;
+        final DatabaseRoute route = (DatabaseRoute) function.apply(field.tableMeta());
+        final Object value = ((ValueExpression<?>) predicate.right).value();
+        if (value == null) {
+            index = -1;
+        } else {
+            index = route.database(value);
+        }
+        return index;
+    }
+
+    @Override
+    public final byte tableIndex(final TableMeta<?> table, final RouteContext context) {
+        if (!(this instanceof DualPredicate)) {
+            return -1;
+        }
+        final DualPredicate predicate = (DualPredicate) this;
+        if (predicate.operator != DualOperator.EQ
+                || !(predicate.left instanceof GenericField)
+                || !(predicate.right instanceof ValueExpression)) {
+            return -1;
+        }
+        final GenericField<?, ?> field = (GenericField<?, ?>) predicate.left;
+        if (!field.tableRoute()) {
+            return -1;
+        }
+        final TableMeta<?> belongOf = field.tableMeta();
+        if (table instanceof ChildTableMeta) {
+            if (belongOf != table && belongOf != ((ChildTableMeta<?>) table).parentMeta()) {
+                return -1;
+            }
+        } else if (belongOf != table) {
+            return -1;
+        }
+
+        final byte index;
+        final TableRoute route = (TableRoute) (context.route(field.tableMeta()));
+        final Object value = ((ValueExpression<?>) predicate.right).value();
+        if (value == null) {
+            index = -1;
+        } else {
+            index = route.table(value);
+        }
+        return index;
+    }
+
+
 }

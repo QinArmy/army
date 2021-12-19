@@ -7,18 +7,6 @@ import io.army.criteria.SQLOperator;
  */
 enum UnaryOperator implements SQLOperator {
 
-    NOT {
-
-        @Override
-        public String rendered() {
-            return "NOT";
-        }
-
-        @Override
-        public Position position() {
-            return Position.LEFT;
-        }
-    },
     EXISTS {
 
         @Override

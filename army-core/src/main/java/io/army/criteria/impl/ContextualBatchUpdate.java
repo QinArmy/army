@@ -69,7 +69,7 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
         this.tableAlias = tableAlias;
         this.criteria = criteria;
         this.criteriaContext = new CriteriaContextImpl<>(this.criteria);
-        CriteriaContextHolder.setContext(this.criteriaContext);
+        CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 
     /*################################## blow BatchRouteSpec method ##################################*/
@@ -243,7 +243,7 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
     @Override
     public Update asUpdate() {
         Assert.nonPrepared(this.prepared);
-        CriteriaContextHolder.clearContext(this.criteriaContext);
+        CriteriaContextStack.clearContextStack(this.criteriaContext);
 
         final List<FieldMeta<?, ?>> fieldList = this.fieldList;
         final List<_Expression<?>> valueExpList = this.valueExpList;

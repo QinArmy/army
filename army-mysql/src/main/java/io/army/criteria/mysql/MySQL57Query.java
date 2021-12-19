@@ -139,7 +139,7 @@ public interface MySQL57Query extends Query {
         MySQLWhereAndSpec<Q, C> and(IPredicate predicate);
 
         /**
-         * @see Expression#equalIfNonNull(Object)
+         * @see Expression#ifEqual(Object)
          */
         MySQLWhereAndSpec<Q, C> ifAnd(@Nullable IPredicate predicate);
 
