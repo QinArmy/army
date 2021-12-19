@@ -111,13 +111,13 @@ final class UpdateContext extends _BaseSqlContext implements _SingleUpdateContex
         this.predicateList = update.predicateList();
         final String tableAlias = update.tableAlias();
 
-        this.tableAlias = DmlUtils.parentAlias(tableAlias);
+        this.tableAlias = _DmlUtils.parentAlias(tableAlias);
         this.safeTableAlias = this.tableAlias;
 
         if (fields.size() == 0) {
             this.childSetClause = null;
         } else {
-            this.childSetClause = DmlUtils.createSetClause(childTable, tableAlias
+            this.childSetClause = _DmlUtils.createSetClause(childTable, tableAlias
                     , dialect.quoteIfNeed(tableAlias), false
                     , fieldList, values);
         }

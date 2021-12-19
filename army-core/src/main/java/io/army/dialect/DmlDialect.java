@@ -8,6 +8,7 @@ import io.army.stmt.Stmt;
 
 public interface DmlDialect extends SqlDialect {
 
+
     Stmt valueInsert(Insert insert, Visible visible);
 
     Stmt returningInsert(Insert insert, Visible visible);

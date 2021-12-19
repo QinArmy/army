@@ -10,7 +10,7 @@ import io.army.stmt.Stmt;
 import java.util.List;
 import java.util.Objects;
 
-abstract class MysqlDml extends AbstractDm {
+abstract class MysqlDml extends AbstractDml {
 
     MysqlDml(Dialect dialect) {
         super(dialect);
@@ -24,7 +24,7 @@ abstract class MysqlDml extends AbstractDm {
 
 
     @Override
-    protected final Stmt standardChildUpdateContext(final _SingleUpdateContext context) {
+    protected final Stmt standardChildUpdate(final _SingleUpdateContext context) {
         final _SetClause childSetClause = context.childSetClause();
         Objects.requireNonNull(childSetClause);
 

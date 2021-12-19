@@ -20,6 +20,7 @@ import io.army.sharding.ShardingRoute;
 import io.army.sharding.TableRoute;
 import io.army.stmt.*;
 import io.army.struct.CodeEnum;
+import io.army.util.ArrayUtils;
 import io.army.util.CollectionUtils;
 import io.army.util._Exceptions;
 import io.qinarmy.util.Pair;
@@ -28,10 +29,47 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.*;
 
-abstract class DmlUtils {
+public abstract class _DmlUtils {
 
-    DmlUtils() {
+    _DmlUtils() {
         throw new UnsupportedOperationException();
+    }
+
+
+    static final Collection<String> FORBID_INSERT_FIELDS = ArrayUtils.asUnmodifiableList(
+            _MetaBridge.CREATE_TIME, _MetaBridge.UPDATE_TIME, _MetaBridge.VERSION
+    );
+
+
+    public static void checkInsertExpField(final TableMeta<?> table, final FieldMeta<?, ?> field
+            , final _Expression<?> value) {
+
+        if (table instanceof ChildTableMeta) {
+            final TableMeta<?> belongOf = field.tableMeta();
+            if (belongOf != table && belongOf != ((ChildTableMeta<?>) table).parentMeta()) {
+                throw _Exceptions.unknownColumn(null, field);
+            }
+        } else if (field.tableMeta() != table) {
+            throw _Exceptions.unknownColumn(null, field);
+        }
+        if (!field.insertable()) {
+            throw _Exceptions.nonInsertableField(field);
+        }
+        if (field == table.discriminator()) {
+            throw _Exceptions.armyManageField(field);
+        }
+        if (!field.nullable() && value.nullableExp()) {
+            throw _Exceptions.nonNullField(field);
+        }
+        if (FORBID_INSERT_FIELDS.contains(field.fieldName())) {
+            throw _Exceptions.armyManageField(field);
+        }
+        if (field.databaseRoute() || field.tableRoute()) {
+            throw _Exceptions.insertExpDontSupportField(field);
+        }
+        if (field.generator() != null) {
+            throw _Exceptions.insertExpDontSupportField(field);
+        }
     }
 
 
@@ -119,51 +157,85 @@ abstract class DmlUtils {
     }
 
 
-    static void appendStandardValueInsert(final ValueInsertContext context) {
-        final Dialect dialect = context.dialect;
+    static void appendStandardValueInsert(final _InsertBlock block, final _ValueInsertContext context) {
+        final Dialect dialect = context.dialect();
         final StringBuilder builder = context.sqlBuilder();
-        builder.append(Constant.INSERT_INTO)
+
+        final TableMeta<?> table = block.table();
+
+        // 1. INSERT INTO clause
+        builder.append(AbstractDml.INSERT_INTO)
                 .append(Constant.SPACE);
-        builder.append(dialect.safeTableName(context.actualTable, context.tableSuffix()));// append table name
-        builder.append(Constant.LEFT_BRACKET);
+        //append table name
+        if (context.tableIndex() == 0) {
+            builder.append(dialect.safeTableName(table.tableName()));
+        } else {
+            builder.append(table.tableName())
+                    .append(context.tableSuffix());
+        }
+        final List<FieldMeta<?, ?>> fieldList = block.fieldLis();
+        // 1.1 append table fields
+        builder.append(AbstractSQL.LEFT_BRACKET);
         int index = 0;
-        for (FieldMeta<?, ?> fieldMeta : context.fields()) {
+        for (FieldMeta<?, ?> field : fieldList) {
             if (index > 0) {
-                builder.append(Constant.COMMA);
+                builder.append(AbstractSQL.COMMA);
             }
-            builder.append(dialect.safeColumnName(fieldMeta));
+            builder.append(dialect.safeColumnName(field.columnName()));
             index++;
         }
-        builder.append(Constant.RIGHT_BRACKET)
-                .append(Constant.VALUES);
+        builder.append(AbstractSQL.RIGHT_BRACKET);
 
-        final List<ObjectWrapper> domainList = context.domainList();
-        final FieldMeta<?, ?> discriminator = context.table.discriminator();
-        final List<FieldMeta<?, ?>> fieldList = context.fields();
+        // 2. values clause
+        builder.append(AbstractSQL.VALUES_WORD);
+
+        final List<? extends ReadWrapper> domainList = context.domainList();
+        //2.1 get domainTable and discriminator
+        final TableMeta<?> domainTable;
+        final FieldMeta<?, ?> discriminator;
+        if (table instanceof ParentTableMeta) {
+            final _InsertBlock childBlock = context.childBlock();
+            if (childBlock == null) {
+                domainTable = table;
+                discriminator = ((ParentTableMeta<?>) domainTable).discriminator();
+            } else {
+                domainTable = childBlock.table();
+                discriminator = ((ChildTableMeta<?>) domainTable).discriminator();
+            }
+        } else {
+            domainTable = null;
+            discriminator = null;
+        }
+
         int batch = 0;
         final Map<FieldMeta<?, ?>, _Expression<?>> expMap = context.commonExpMap();
         _Expression<?> expression;
-        for (ObjectWrapper domain : domainList) {
+        Object value;
+        //2.2 append values
+        for (ReadWrapper domain : domainList) {
             if (batch > 0) {
-                builder.append(Constant.COMMA);
+                builder.append(AbstractSQL.COMMA);
             }
-            builder.append(Constant.LEFT_BRACKET);
+            builder.append(AbstractSQL.LEFT_BRACKET);
             index = 0;
-            for (FieldMeta<?, ?> fieldMeta : fieldList) {
+            for (FieldMeta<?, ?> field : fieldList) {
                 if (index > 0) {
-                    builder.append(Constant.COMMA);
+                    builder.append(AbstractSQL.COMMA);
                 }
-                if (fieldMeta == discriminator) {
-                    builder.append(fieldMeta.tableMeta().discriminatorValue());
-                } else if ((expression = expMap.get(fieldMeta)) != null) {
+                if (field == discriminator) {
+                    builder.append(dialect.constant(discriminator.mappingMeta(), domainTable.discriminatorValue()));
+                } else if ((expression = expMap.get(field)) != null) {
                     expression.appendSql(context);
                 } else {
-                    builder.append(Constant.PLACEHOLDER);
-                    context.appendParam(ParamValue.build(fieldMeta, domain.get(fieldMeta.fieldName())));
+                    value = domain.get(field.fieldName());
+                    if (value == null && !field.nullable()) {
+                        throw _Exceptions.nonNullField(field);
+                    }
+                    context.appendParam(ParamValue.build(field, value));
                 }
                 index++;
             }
-            builder.append(Constant.RIGHT_BRACKET);
+            builder.append(AbstractSQL.RIGHT_BRACKET);
             batch++;
         }
 

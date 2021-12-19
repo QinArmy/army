@@ -21,7 +21,7 @@ class StandardUpdateContext extends AbstractStandardDomainContext implements _Up
                 , tableContext
                 , tableMeta
                 , tableMeta
-                , DmlUtils.hasVersionPredicate(update.predicateList()));
+                , _DmlUtils.hasVersionPredicate(update.predicateList()));
     }
 
     static StandardUpdateContext buildParent(_SingleUpdate update, Dialect dialect, final Visible visible) {
@@ -33,7 +33,7 @@ class StandardUpdateContext extends AbstractStandardDomainContext implements _Up
                 , tableContext
                 , childMeta.parentMeta()
                 , childMeta
-                , DmlUtils.hasVersionPredicate(update.predicateList())
+                , _DmlUtils.hasVersionPredicate(update.predicateList())
         );
     }
 
@@ -46,7 +46,7 @@ class StandardUpdateContext extends AbstractStandardDomainContext implements _Up
                 , tableContext
                 , childMeta
                 , childMeta.parentMeta()
-                , DmlUtils.hasVersionPredicate(update.predicateList())
+                , _DmlUtils.hasVersionPredicate(update.predicateList())
         );
     }
 

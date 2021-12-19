@@ -8,6 +8,7 @@ import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
+import io.army.meta.TableMeta;
 import io.army.stmt.Stmt;
 import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
@@ -24,12 +25,22 @@ final class ValueInsertContext extends _BaseSqlContext implements _ValueInsertCo
 
     static ValueInsertContext single(_ValuesInsert insert, final byte tableIndex
             , List<ObjectWrapper> domainList, Dialect dialect, Visible visible) {
+        checkCommonExpMap(insert);
         return new ValueInsertContext(insert, tableIndex, domainList, dialect, visible);
     }
 
     static ValueInsertContext child(_ValuesInsert insert, final byte tableIndex
             , List<ObjectWrapper> domainList, Dialect dialect, Visible visible) {
+        checkCommonExpMap(insert);
         return new ValueInsertContext(tableIndex, insert, domainList, dialect, visible);
+    }
+
+
+    private static void checkCommonExpMap(_ValuesInsert insert) {
+        final TableMeta<?> table = insert.table();
+        for (Map.Entry<FieldMeta<?, ?>, _Expression<?>> e : insert.commonExpMap().entrySet()) {
+            _DmlUtils.checkInsertExpField(table, e.getKey(), e.getValue());
+        }
     }
 
     final SingleTableMeta<?> table;
@@ -46,7 +57,7 @@ final class ValueInsertContext extends _BaseSqlContext implements _ValueInsertCo
         super(dialect, tableIndex, visible);
 
         this.table = (SingleTableMeta<?>) insert.table();
-        this.fieldList = DmlUtils.mergeInsertFields(false, insert);
+        this.fieldList = _DmlUtils.mergeInsertFields(false, insert);
         this.commonExpMap = insert.commonExpMap();
         this.domainList = domainList;
 
@@ -59,13 +70,11 @@ final class ValueInsertContext extends _BaseSqlContext implements _ValueInsertCo
 
         final ChildTableMeta<?> childTable = (ChildTableMeta<?>) insert.table();
         this.table = childTable.parentMeta();
-        this.fieldList = DmlUtils.mergeInsertFields(true, insert);
+        this.fieldList = _DmlUtils.mergeInsertFields(true, insert);
         this.commonExpMap = insert.commonExpMap();
         this.domainList = domainList;
 
-        final List<FieldMeta<?, ?>> childFieldList;
-        childFieldList = DmlUtils.mergeInsertFields(false, insert);
-        this.childBlock = new _InsertBlockImpl(childTable, childFieldList, domainList);
+        this.childBlock = new _InsertBlockImpl(childTable, _DmlUtils.mergeInsertFields(false, insert));
     }
 
 
@@ -118,13 +127,9 @@ final class ValueInsertContext extends _BaseSqlContext implements _ValueInsertCo
 
         private final List<FieldMeta<?, ?>> fieldList;
 
-        private final List<? extends ReadWrapper> domainList;
-
-        private _InsertBlockImpl(ChildTableMeta<?> table, List<FieldMeta<?, ?>> fieldList
-                , List<? extends ReadWrapper> domainList) {
+        private _InsertBlockImpl(ChildTableMeta<?> table, List<FieldMeta<?, ?>> fieldList) {
             this.table = table;
             this.fieldList = fieldList;
-            this.domainList = domainList;
         }
 
         @Override
@@ -135,11 +140,6 @@ final class ValueInsertContext extends _BaseSqlContext implements _ValueInsertCo
         @Override
         public List<FieldMeta<?, ?>> fieldLis() {
             return this.fieldList;
-        }
-
-        @Override
-        public List<? extends ReadWrapper> domainList() {
-            return this.domainList;
         }
 
     }

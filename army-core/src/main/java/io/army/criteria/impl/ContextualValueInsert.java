@@ -2,25 +2,22 @@ package io.army.criteria.impl;
 
 import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ObjectWrapper;
-import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.Insert;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ValuesInsert;
+import io.army.dialect._DmlUtils;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.modelgen._MetaBridge;
-import io.army.util.ArrayUtils;
 import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * <p>
@@ -43,12 +40,6 @@ final class ContextualValueInsert<T extends IDomain, C> extends AbstractSQLDebug
         return new ContextualValueInsert<>(table, criteria);
     }
 
-    private static final Set<String> FIELD_NAMES = ArrayUtils.asSet(
-            _MetaBridge.ID,
-            _MetaBridge.CREATE_TIME,
-            _MetaBridge.UPDATE_TIME,
-            _MetaBridge.VERSION);
-
     private final TableMeta<T> table;
 
     private final C criteria;
@@ -58,8 +49,6 @@ final class ContextualValueInsert<T extends IDomain, C> extends AbstractSQLDebug
     private boolean migration;
 
     private List<FieldMeta<?, ?>> fieldList;
-
-    private List<FieldMeta<?, ?>> parentFieldList;
 
     private Map<FieldMeta<?, ?>, _Expression<?>> commonExpMap;
 
@@ -85,38 +74,27 @@ final class ContextualValueInsert<T extends IDomain, C> extends AbstractSQLDebug
     /*################################## blow InsertIntoSpec method ##################################*/
 
     @Override
-    public InsertValuesSpec<T, C> insertInto(Collection<FieldMeta<? super T, ?>> fieldMetas) {
-        final List<FieldMeta<?, ?>> fieldList = new ArrayList<>(), parentFieldList;
+    public InsertValuesSpec<T, C> insertInto(Collection<FieldMeta<? super T, ?>> fields) {
+        final List<FieldMeta<?, ?>> fieldList = new ArrayList<>(fields.size());
         final TableMeta<?> table = this.table, parentTable;
         if (table instanceof ChildTableMeta) {
             parentTable = ((ChildTableMeta<?>) table).parentMeta();
-            parentFieldList = new ArrayList<>();
         } else {
             parentTable = null;
-            parentFieldList = Collections.emptyList();
         }
         TableMeta<?> belongOf;
-        for (FieldMeta<? super T, ?> fieldMeta : fieldMetas) {
+        for (FieldMeta<? super T, ?> fieldMeta : fields) {
             if (!fieldMeta.insertable()) {
                 throw _Exceptions.nonInsertableField(fieldMeta);
             }
             belongOf = fieldMeta.tableMeta();
-            if (belongOf == table) {
+            if (belongOf == table || belongOf == parentTable) {
                 fieldList.add(fieldMeta);
-            } else if (belongOf == parentTable) {
-                parentFieldList.add(fieldMeta);
             } else {
                 throw _Exceptions.unknownField(fieldMeta);
             }
         }
         this.fieldList = fieldList;
-        this.parentFieldList = parentFieldList;
-        return this;
-    }
-
-    @Override
-    public InsertValuesSpec<T, C> insertInto(Supplier<Collection<FieldMeta<? super T, ?>>> supplier) {
-        this.insertInto(Objects.requireNonNull(supplier.get()));
         return this;
     }
 
@@ -131,7 +109,7 @@ final class ContextualValueInsert<T extends IDomain, C> extends AbstractSQLDebug
         if (table != this.table) {
             throw _Exceptions.tableNotMatch(table, this.table);
         }
-        this.parentFieldList = this.fieldList = null;
+        this.fieldList = null;
         return this;
     }
 
@@ -145,30 +123,15 @@ final class ContextualValueInsert<T extends IDomain, C> extends AbstractSQLDebug
     }
 
     @Override
-    public <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, F> fieldMeta, Expression<F> value) {
-        final TableMeta<?> table = this.table;
-        if (fieldMeta == table.discriminator()) {
-            throw new CriteriaException("field couldn't be discriminator.");
-        } else if (!this.migration) {
-            if (FIELD_NAMES.contains(fieldMeta.fieldName())) {
-                String m = String.format("Non-migration,field couldn't in %s", FIELD_NAMES);
-                throw new CriteriaException(m);
-            } else if (table.generatorChain().contains(fieldMeta)) {
-                String m = String.format("Non-migration,field couldn't be generator field of %s", table);
-                throw new CriteriaException(m);
-            } else if (table instanceof ChildTableMeta
-                    && ((ChildTableMeta<?>) table).parentMeta().generatorChain().contains(fieldMeta)) {
-                String m = String.format("Non-migration,field couldn't be generator field of %s"
-                        , ((ChildTableMeta<?>) table).parentMeta());
-                throw new CriteriaException(m);
-            }
-        }
+    public <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, F> field, Expression<F> value) {
+        _DmlUtils.checkInsertExpField(this.table, field, (_Expression<?>) value);
+
         Map<FieldMeta<?, ?>, _Expression<?>> commonExpMap = this.commonExpMap;
         if (commonExpMap == null) {
             commonExpMap = new HashMap<>();
             this.commonExpMap = commonExpMap;
         }
-        commonExpMap.put(fieldMeta, (_Expression<?>) value);
+        commonExpMap.put(field, (_Expression<?>) value);
         return this;
     }
 
@@ -232,11 +195,6 @@ final class ContextualValueInsert<T extends IDomain, C> extends AbstractSQLDebug
     }
 
     @Override
-    public List<FieldMeta<?, ?>> parentFieldList() {
-        return this.parentFieldList;
-    }
-
-    @Override
     public Map<FieldMeta<?, ?>, _Expression<?>> commonExpMap() {
         return this.commonExpMap;
     }
@@ -268,17 +226,11 @@ final class ContextualValueInsert<T extends IDomain, C> extends AbstractSQLDebug
 
         CriteriaContextHolder.clearContext(this.criteriaContext);
 
-        final List<FieldMeta<?, ?>> fieldList = this.fieldList, parentFieldList = this.parentFieldList;
+        final List<FieldMeta<?, ?>> fieldList = this.fieldList;
         if (CollectionUtils.isEmpty(fieldList)) {
             this.fieldList = Collections.emptyList();
         } else {
             this.fieldList = Collections.unmodifiableList(fieldList);
-        }
-
-        if (CollectionUtils.isEmpty(parentFieldList)) {
-            this.parentFieldList = Collections.emptyList();
-        } else {
-            this.parentFieldList = Collections.unmodifiableList(parentFieldList);
         }
 
         final List<ObjectWrapper> domainList = this.domainList;

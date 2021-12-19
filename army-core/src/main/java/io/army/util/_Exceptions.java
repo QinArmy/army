@@ -121,6 +121,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("%s is managed by Army.", field));
     }
 
+    public static CriteriaException insertExpDontSupportField(FieldMeta<?, ?> field) {
+        String m = String.format("%s isn't supported by insert statement common expression.", field);
+        return new CriteriaException(m);
+    }
+
     public static CriteriaException nonNullField(FieldMeta<?, ?> field) {
         return new CriteriaException(String.format("%s is non-null.", field));
     }
