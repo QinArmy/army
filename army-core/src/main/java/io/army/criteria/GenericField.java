@@ -28,7 +28,7 @@ public interface GenericField<T extends IDomain, F> extends FieldExpression<F>, 
      */
     Class<F> javaType();
 
-    MappingType mappingMeta();
+    MappingType mappingType();
 
     String fieldName();
 

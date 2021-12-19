@@ -225,14 +225,14 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
         if (this.sharding) {
             final Map<Byte, List<ObjectWrapper>> domainMap;
             // sharding table and create domain property values.
-            domainMap = _DmlUtils.insertSharding(this.dialect.sessionFactory(), insert);
+            domainMap = _RouteUtils.insertSharding(this.dialect.sessionFactory(), insert);
             _ValueInsertContext context;
             final List<Stmt> stmtList = new ArrayList<>(domainMap.size());
             for (Map.Entry<Byte, List<ObjectWrapper>> e : domainMap.entrySet()) {
                 if (table instanceof ChildTableMeta) {
-                    context = ValueInsertContext.child(insert, e.getKey(), e.getValue(), this.dialect, visible);
+                    context = ValueInsertContexts.child(insert, e.getKey(), e.getValue(), this.dialect, visible);
                 } else {
-                    context = ValueInsertContext.single(insert, e.getKey(), e.getValue(), this.dialect, visible);
+                    context = ValueInsertContexts.single(insert, e.getKey(), e.getValue(), this.dialect, visible);
                 }
                 stmtList.add(standardValueInsert(context));
             }
@@ -246,9 +246,9 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
             }
             final _ValueInsertContext context;
             if (table instanceof ChildTableMeta) {
-                context = ValueInsertContext.child(insert, (byte) 0, domainList, this.dialect, visible);
+                context = ValueInsertContexts.child(insert, (byte) 0, domainList, this.dialect, visible);
             } else {
-                context = ValueInsertContext.single(insert, (byte) 0, domainList, this.dialect, visible);
+                context = ValueInsertContexts.single(insert, (byte) 0, domainList, this.dialect, visible);
             }
             stmt = standardValueInsert(context);
         }
@@ -303,7 +303,7 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
     }
 
 
-    protected final List<GenericField<?, ?>> setClause(final _SetClause clause, final _UpdateContext context) {
+    protected final List<GenericField<?, ?>> setClause(final _SetBlock clause, final _UpdateContext context) {
 
         final List<? extends SetTargetPart> targetPartList = clause.targetParts();
         final List<? extends SetValuePart> valuePartList = clause.valueParts();
@@ -387,9 +387,9 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
     }
 
     /**
-     * @see #setClause(_SetClause, _UpdateContext)
+     * @see #setClause(_SetBlock, _UpdateContext)
      */
-    private void appendRowTarget(final _SetClause clause, final Row<?> row
+    private void appendRowTarget(final _SetBlock clause, final Row<?> row
             , List<GenericField<?, ?>> conditionFields, final _UpdateContext context) {
         final StringBuilder sqlBuilder = context.sqlBuilder();
         final Dialect dialect = context.dialect();
@@ -453,7 +453,7 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
 
 
     /**
-     * @see #setClause(_SetClause, _UpdateContext)
+     * @see #setClause(_SetBlock, _UpdateContext)
      */
     private void appendArmyManageFieldsToSetClause(final SingleTableMeta<?> table, final String safeTableAlias
             , final _UpdateContext context) {
@@ -551,7 +551,7 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
         if (update.table() instanceof ChildTableMeta) {
             final UpdateContext context;
             context = UpdateContext.child(update, tableIndex, this.dialect, visible);
-            final _SetClause childSetClause = context.childSetClause();
+            final _SetBlock childSetClause = context.childSetClause();
             assert childSetClause != null;
             if (childSetClause.targetParts().size() == 0) {
                 stmt = standardSingleTableUpdate(context);
@@ -572,7 +572,7 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
      * @see #standardChildUpdate(_SingleUpdateContext)
      */
     private Stmt standardSingleTableUpdate(final UpdateContext context) {
-        final _SetClause childSetClause = context.childSetClause();
+        final _SetBlock childSetClause = context.childSetClause();
         if (childSetClause != null && childSetClause.targetParts().size() > 0) {
             throw new IllegalArgumentException("context error");
         }

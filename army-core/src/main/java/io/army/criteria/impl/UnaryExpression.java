@@ -39,8 +39,8 @@ class UnaryExpression<E> extends AbstractExpression<E> {
 
 
     @Override
-    public final MappingType mappingMeta() {
-        return expression.mappingMeta();
+    public final MappingType mappingType() {
+        return expression.mappingType();
     }
 
 

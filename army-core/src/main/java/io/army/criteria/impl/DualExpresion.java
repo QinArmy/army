@@ -48,10 +48,10 @@ class DualExpresion<E> extends AbstractExpression<E> {
     }
 
     @Override
-    public final MappingType mappingMeta() {
+    public final MappingType mappingType() {
         return this.operator.bitOperator()
                 ? _MappingFactory.getMapping(BigInteger.class)
-                : left.mappingMeta();
+                : left.mappingType();
     }
 
     @Override

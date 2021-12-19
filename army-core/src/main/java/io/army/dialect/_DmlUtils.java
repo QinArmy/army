@@ -2,9 +2,7 @@ package io.army.dialect;
 
 import io.army.ErrorCode;
 import io.army.annotation.UpdateMode;
-import io.army.beans.ObjectWrapper;
 import io.army.beans.ReadWrapper;
-import io.army.boot.DomainValuesGenerator;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._Expression;
@@ -13,11 +11,6 @@ import io.army.criteria.impl.inner._Update;
 import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.session.FactoryMode;
-import io.army.session.GenericRmSessionFactory;
-import io.army.sharding.Route;
-import io.army.sharding.ShardingRoute;
-import io.army.sharding.TableRoute;
 import io.army.stmt.*;
 import io.army.struct.CodeEnum;
 import io.army.util.ArrayUtils;
@@ -77,83 +70,11 @@ public abstract class _DmlUtils {
         return "p_of_" + tableAlias;
     }
 
-    public static _SetClause createSetClause(TableMeta<?> table, String tableAlias
+    @Deprecated
+    public static _SetBlock createSetClause(TableMeta<?> table, String tableAlias
             , String safeTableAlias, boolean selfJoin
             , List<? extends SetTargetPart> targetParts, List<? extends SetValuePart> valueParts) {
-        return new SetClauseImpl(table, tableAlias, safeTableAlias, selfJoin, targetParts, valueParts);
-    }
-
-
-    /**
-     * @return a unmodified map
-     */
-    static Map<Byte, List<ObjectWrapper>> insertSharding(GenericRmSessionFactory factory, _ValuesInsert insert) {
-
-        final FactoryMode mode = factory.factoryMode();
-        final TableMeta<?> tableMeta = insert.table();
-        final int databaseIndex = factory.databaseIndex();
-
-        final List<FieldMeta<?, ?>> databaseFields, tableFields;
-        databaseFields = tableMeta.databaseRouteFields();
-        tableFields = tableMeta.tableRouteFields();
-        if (databaseFields.size() == 0 && databaseIndex != 0) {
-            throw _Exceptions.databaseRouteError(insert, factory);
-        }
-
-        final int tableCount = factory.tableCountPerDatabase();
-        final Route route = factory.route(tableMeta);
-        final DomainValuesGenerator generator = factory.domainValuesGenerator();
-
-        final boolean checkDatabase = mode == FactoryMode.SHARDING && databaseFields.size() > 0;
-        final boolean tableSharding = tableFields.size() > 0;
-        final boolean migration = insert.migrationData();
-        final Map<Byte, List<ObjectWrapper>> domainMap = new HashMap<>();
-        for (ObjectWrapper domain : insert.domainList()) {
-
-            generator.createValues(domain, migration); // create required values
-
-            Object value;
-            byte tableIndex;
-            if (tableSharding) {
-                tableIndex = -1;
-                for (FieldMeta<?, ?> fieldMeta : tableFields) {
-                    value = domain.get(fieldMeta.fieldName());
-                    if (value == null) {
-                        continue;
-                    }
-                    tableIndex = ((TableRoute) route).table(fieldMeta, value);
-                    break;
-                }
-            } else {
-                tableIndex = 0;
-            }
-            if (tableIndex < 0 || tableIndex >= tableCount) {
-                throw _Exceptions.noTableRoute(insert, factory);
-            }
-
-            domainMap.computeIfAbsent(tableIndex, k -> new ArrayList<>())
-                    .add(domain);
-
-            if (!checkDatabase) {
-                continue;
-            }
-            value = null;
-            for (FieldMeta<?, ?> fieldMeta : databaseFields) {
-                value = domain.get(fieldMeta.fieldName());
-                if (value == null) {
-                    continue;
-                }
-                if (((ShardingRoute) route).database(fieldMeta, value) != databaseIndex) {
-                    throw _Exceptions.databaseRouteError(insert, factory);
-                }
-                break;
-            }
-            if (value == null) {
-                throw _Exceptions.databaseRouteError(insert, factory);
-            }
-
-        }
-        return Collections.unmodifiableMap(domainMap);
+        throw new UnsupportedOperationException();
     }
 
 
@@ -223,7 +144,7 @@ public abstract class _DmlUtils {
                     builder.append(AbstractSQL.COMMA);
                 }
                 if (field == discriminator) {
-                    builder.append(dialect.constant(discriminator.mappingMeta(), domainTable.discriminatorValue()));
+                    builder.append(dialect.constant(discriminator.mappingType(), domainTable.discriminatorValue()));
                 } else if ((expression = expMap.get(field)) != null) {
                     expression.appendSql(context);
                 } else {
@@ -316,10 +237,10 @@ public abstract class _DmlUtils {
         }
         final int size = fieldMetaList.size();
         for (int i = 0; i < size; i++) {
-            if (fieldMetaList.get(i).mappingMeta() != selectionList.get(i).mappingMeta()) {
+            if (fieldMetaList.get(i).mappingType() != selectionList.get(i).mappingType()) {
                 throw new CriteriaException(ErrorCode.CRITERIA_ERROR
                         , "SubQuery Insert,index[%s] field MappingMeta[%s] and sub query MappingMeta[%s] not match."
-                        , i, fieldMetaList.get(i).mappingMeta(), selectionList.get(i).mappingMeta());
+                        , i, fieldMetaList.get(i).mappingType(), selectionList.get(i).mappingType());
             }
         }
     }
@@ -531,13 +452,13 @@ public abstract class _DmlUtils {
         final ZonedDateTime now = ZonedDateTime.now(dialect.zoneId());
 
         if (updateTimeField.javaType() == LocalDateTime.class) {
-            ((_Expression<?>) SQLs.param(updateTimeField.mappingMeta(), now.toLocalDateTime()))
+            ((_Expression<?>) SQLs.param(updateTimeField.mappingType(), now.toLocalDateTime()))
                     .appendSql(context);
         } else if (updateTimeField.javaType() == ZonedDateTime.class) {
             if (!dialect.supportZone()) {
                 throw new MetaException("dialec[%s]t not supported zone.", dialect.database());
             }
-            ((_Expression<?>) SQLs.param(updateTimeField.mappingMeta(), now))
+            ((_Expression<?>) SQLs.param(updateTimeField.mappingType(), now))
                     .appendSql(context);
         } else {
             throw new MetaException("createTime or updateTime only support LocalDateTime or ZonedDateTime,please check.");
@@ -598,7 +519,7 @@ public abstract class _DmlUtils {
 
     static void createValueInsertForSimple(TableMeta<?> physicalTable, TableMeta<?> logicalTable
             , Collection<FieldMeta<?, ?>> fieldMetas, ReadWrapper domainWrapper
-            , ValueInsertContext context) {
+            , ValueInsertContexts context) {
 //
 //        final GenericSessionFactory sessionFactory = context.dialect.sessionFactory();
 //        final SQLBuilder fieldBuilder = context.fieldsBuilder().append("INSERT INTO");
@@ -823,84 +744,6 @@ public abstract class _DmlUtils {
             }
         }
         return has;
-    }
-
-    private static final class FieldParamValueImpl implements FieldParamValue {
-
-
-        private final FieldMeta<?, ?> fieldMeta;
-
-        private FieldParamValueImpl(FieldMeta<?, ?> fieldMeta) {
-            this.fieldMeta = fieldMeta;
-        }
-
-
-        @Override
-        public final FieldMeta<?, ?> paramMeta() {
-            return this.fieldMeta;
-        }
-
-        @Override
-        public final Object value() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-
-    private static final class SetClauseImpl implements _SetClause {
-
-        private final TableMeta<?> table;
-
-        private final String tableAlias;
-
-        private final String safeTableAlias;
-
-        private final boolean selfJoin;
-
-        private final List<? extends SetTargetPart> targetParts;
-
-        private final List<? extends SetValuePart> valueParts;
-
-        private SetClauseImpl(TableMeta<?> table, String tableAlias
-                , String safeTableAlias, boolean selfJoin
-                , List<? extends SetTargetPart> targetParts, List<? extends SetValuePart> valueParts) {
-            this.table = table;
-            this.tableAlias = tableAlias;
-            this.safeTableAlias = safeTableAlias;
-            this.selfJoin = selfJoin;
-            this.targetParts = CollectionUtils.unmodifiableList(targetParts);
-            this.valueParts = CollectionUtils.unmodifiableList(valueParts);
-        }
-
-        @Override
-        public TableMeta<?> table() {
-            return this.table;
-        }
-
-        @Override
-        public String tableAlias() {
-            return this.tableAlias;
-        }
-
-        @Override
-        public boolean hasSelfJoint() {
-            return this.selfJoin;
-        }
-
-        @Override
-        public String safeTableAlias() {
-            return this.safeTableAlias;
-        }
-
-        @Override
-        public List<? extends SetTargetPart> targetParts() {
-            return this.targetParts;
-        }
-
-        @Override
-        public List<? extends SetValuePart> valueParts() {
-            return this.valueParts;
-        }
     }
 
 

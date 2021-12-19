@@ -86,7 +86,7 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
         }
 
         @Override
-        public MappingType mappingMeta() {
+        public MappingType mappingType() {
             return this.mappingType;
         }
 
@@ -111,7 +111,7 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
         }
 
         @Override
-        public MappingType mappingMeta() {
+        public MappingType mappingType() {
             return proxyMappingType.mappingType == null
                     ? proxyMappingType
                     : proxyMappingType.mappingType;
@@ -120,7 +120,7 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
         @Override
         public void selection(String subQueryAlias, Selection selection) {
             if (this.subQueryAlias.equals(subQueryAlias) && this.derivedFieldName.equals(selection.alias())) {
-                this.proxyMappingType.mappingMeta(selection.mappingMeta());
+                this.proxyMappingType.mappingMeta(selection.mappingType());
             } else {
                 throw new IllegalArgumentException(String.format(
                         "this.subQueryAlias[%s] this.derivedFieldName[%s] and  subQueryAlias[%s] selection.alias[%s]"
@@ -173,7 +173,7 @@ abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefS
         }
 
         @Override
-        public MappingType mappingMeta() {
+        public MappingType mappingType() {
             return null;
         }
     }

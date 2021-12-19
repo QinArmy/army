@@ -12,7 +12,7 @@ import io.army.mapping.MappingType;
  *     </ul>
  * </p>
  */
-public interface MappingMetaAble {
+public interface MappingTypeAble {
 
-    MappingType mappingMeta();
+    MappingType mappingType();
 }

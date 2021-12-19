@@ -245,7 +245,7 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression
     }
 
     @Override
-    public final MappingType mappingMeta() {
+    public final MappingType mappingType() {
         return this.mappingType;
     }
 

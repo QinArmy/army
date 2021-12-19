@@ -35,7 +35,7 @@ class ConvertExpressionImpl<E> extends AbstractExpression<E> implements ConvertE
 
 
     @Override
-    public final MappingType mappingMeta() {
+    public final MappingType mappingType() {
         return this.convertType;
     }
 

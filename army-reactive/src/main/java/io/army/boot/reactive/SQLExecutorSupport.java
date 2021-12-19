@@ -252,7 +252,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
         final List<Selection> selectionList = sqlWrapper.selectionList();
         for (Selection selection : selectionList) {
             Object columnResult = extractColumnResult(resultRow, selection, sqlWrapper.statementType()
-                    , selection.mappingMeta().javaType());
+                    , selection.mappingType().javaType());
             if (columnResult == null) {
                 continue;
             }
@@ -278,7 +278,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
         final StatementType statementType = sqlWrapper.statementType();
 
         final Object primaryFieldValue = extractColumnResult(resultRow, primaryFieldSelection, statementType
-                , primaryFieldSelection.mappingMeta().javaType());
+                , primaryFieldSelection.mappingType().javaType());
 
         if (primaryFieldValue == null) {
             throw createDomainSecondReturningNoIdException();
@@ -295,7 +295,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
         for (int i = 1; i < size; i++) {
             Selection selection = selectionList.get(i);
             Object columnResult = extractColumnResult(resultRow, selection, statementType
-                    , selection.mappingMeta().javaType());
+                    , selection.mappingType().javaType());
             if (columnResult == null) {
                 continue;
             }
@@ -314,7 +314,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
         for (Selection selection : sqlWrapper.selectionList()) {
             // 1. obtain column result
             Object columnResult = extractColumnResult(resultRow, selection, statementType
-                    , selection.mappingMeta().javaType());
+                    , selection.mappingType().javaType());
             if (columnResult == null) {
                 continue;
             }

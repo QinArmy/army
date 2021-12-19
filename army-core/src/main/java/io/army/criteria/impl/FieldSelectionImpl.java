@@ -31,8 +31,8 @@ final class FieldSelectionImpl<E> extends AbstractExpression<E> implements Field
     }
 
     @Override
-    public final MappingType mappingMeta() {
-        return this.fieldExp.mappingMeta();
+    public final MappingType mappingType() {
+        return this.fieldExp.mappingType();
     }
 
     @Override

@@ -36,8 +36,8 @@ class BracketsExpression<E> extends AbstractExpression<E> {
     }
 
     @Override
-    public final MappingType mappingMeta() {
-        return exp.mappingMeta();
+    public final MappingType mappingType() {
+        return exp.mappingType();
     }
 
     @Override

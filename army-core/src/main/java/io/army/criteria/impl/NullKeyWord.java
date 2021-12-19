@@ -22,7 +22,7 @@ final class NullKeyWord<E> extends AbstractNoNOperationExpression<E> {
     }
 
     @Override
-    public MappingType mappingMeta() {
+    public MappingType mappingType() {
         return null;
     }
 

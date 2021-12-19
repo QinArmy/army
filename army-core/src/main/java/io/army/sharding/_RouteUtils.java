@@ -1,21 +1,22 @@
 package io.army.sharding;
 
+import io.army.beans.ObjectWrapper;
 import io.army.beans.ReadWrapper;
+import io.army.boot.DomainValuesGenerator;
 import io.army.criteria.FieldValueEqualPredicate;
 import io.army.criteria.IPredicate;
 import io.army.criteria.SubQuery;
 import io.army.criteria.TableAble;
-import io.army.criteria.impl.inner.TableWrapper;
-import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner._Select;
-import io.army.criteria.impl.inner._SubQuery;
+import io.army.criteria.impl.inner.*;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.session.FactoryMode;
+import io.army.session.GenericRmSessionFactory;
 import io.army.util._Exceptions;
 
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 public abstract class _RouteUtils {
@@ -292,6 +293,79 @@ public abstract class _RouteUtils {
 //            throw new ShardingRouteException(ErrorCode.ROUTE_ERROR, "TableRoute[%s] return error.", tableRoute);
 //        }
         return null;
+    }
+
+
+    /**
+     * @return a unmodified map
+     */
+    public static Map<Byte, List<ObjectWrapper>> insertSharding(GenericRmSessionFactory factory, _ValuesInsert insert) {
+
+        final FactoryMode mode = factory.factoryMode();
+        final TableMeta<?> tableMeta = insert.table();
+        final int databaseIndex = factory.databaseIndex();
+
+        final List<FieldMeta<?, ?>> databaseFields, tableFields;
+        databaseFields = tableMeta.databaseRouteFields();
+        tableFields = tableMeta.tableRouteFields();
+        if (databaseFields.size() == 0 && databaseIndex != 0) {
+            throw _Exceptions.databaseRouteError(insert, factory);
+        }
+
+        final int tableCount = factory.tableCountPerDatabase();
+        final Route route = factory.route(tableMeta);
+        final DomainValuesGenerator generator = factory.domainValuesGenerator();
+
+        final boolean checkDatabase = mode == FactoryMode.SHARDING && databaseFields.size() > 0;
+        final boolean tableSharding = tableFields.size() > 0;
+        final boolean migration = insert.migrationData();
+        final Map<Byte, List<ObjectWrapper>> domainMap = new HashMap<>();
+        for (ObjectWrapper domain : insert.domainList()) {
+
+            generator.createValues(domain, migration); // create required values
+
+            Object value;
+            byte tableIndex;
+            if (tableSharding) {
+                tableIndex = -1;
+                for (FieldMeta<?, ?> fieldMeta : tableFields) {
+                    value = domain.get(fieldMeta.fieldName());
+                    if (value == null) {
+                        continue;
+                    }
+                    tableIndex = ((TableRoute) route).table(fieldMeta, value);
+                    break;
+                }
+            } else {
+                tableIndex = 0;
+            }
+            if (tableIndex < 0 || tableIndex >= tableCount) {
+                throw _Exceptions.noTableRoute(insert, factory);
+            }
+
+            domainMap.computeIfAbsent(tableIndex, k -> new ArrayList<>())
+                    .add(domain);
+
+            if (!checkDatabase) {
+                continue;
+            }
+            value = null;
+            for (FieldMeta<?, ?> fieldMeta : databaseFields) {
+                value = domain.get(fieldMeta.fieldName());
+                if (value == null) {
+                    continue;
+                }
+                if (((ShardingRoute) route).database(fieldMeta, value) != databaseIndex) {
+                    throw _Exceptions.databaseRouteError(insert, factory);
+                }
+                break;
+            }
+            if (value == null) {
+                throw _Exceptions.databaseRouteError(insert, factory);
+            }
+
+        }
+        return Collections.unmodifiableMap(domainMap);
     }
 
 

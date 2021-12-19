@@ -55,7 +55,7 @@ abstract class DomainDmlContext implements _DmlContext {
 
     @Override
     public void appendConstant(ParamMeta paramMeta, Object value) {
-        this.dialect.constant(paramMeta.mappingMeta(), value);
+        this.dialect.constant(paramMeta.mappingType(), value);
     }
 
     @Override

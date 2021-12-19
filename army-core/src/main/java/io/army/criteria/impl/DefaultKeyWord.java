@@ -13,7 +13,7 @@ public final class DefaultKeyWord<E> extends AbstractNoNOperationExpression<E> {
 
 
     @Override
-    public MappingType mappingMeta() {
+    public MappingType mappingType() {
         throw new UnsupportedOperationException(ERROR_MSG);
     }
 

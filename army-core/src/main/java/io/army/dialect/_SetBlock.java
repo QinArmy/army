@@ -6,13 +6,12 @@ import io.army.criteria.SetValuePart;
 
 import java.util.List;
 
-public interface _SetClause extends _Clause {
+public interface _SetBlock extends _Block {
 
     boolean hasSelfJoint();
 
     List<? extends SetTargetPart> targetParts();
 
     List<? extends SetValuePart> valueParts();
-
 
 }

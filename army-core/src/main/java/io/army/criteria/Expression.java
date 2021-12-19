@@ -20,7 +20,7 @@ import java.util.function.Function;
  * @since 1.0
  */
 @SuppressWarnings("unused")
-public interface Expression<E> extends SelectionAble, MappingMetaAble {
+public interface Expression<E> extends SelectionAble, MappingTypeAble {
 
     /**
      * relational operate with {@code =}

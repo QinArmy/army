@@ -308,7 +308,7 @@ abstract class AbstractStmtExecutor implements StmtExecutor {
         for (int i = 0; i < size; i++) {
             paramValue = paramGroup.get(i);
             value = paramValue.value();
-            mappingType = paramValue.paramMeta().mappingMeta();
+            mappingType = paramValue.paramMeta().mappingType();
             if (value == null) {
                 // bind null
                 statement.setNull(i + 1, mappingType.jdbcType().getVendorTypeNumber());

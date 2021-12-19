@@ -21,7 +21,7 @@ public abstract class AbstractMappingType implements MappingType {
     }
 
     @Override
-    public final MappingType mappingMeta() {
+    public final MappingType mappingType() {
         return this;
     }
 

@@ -159,7 +159,7 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
             refSelectionSet.add(refSelection);
         } else {
             refSelection = RefSelectionImpl.buildImmutable(subQueryAlias, derivedFieldName
-                    , targetSelection.mappingMeta());
+                    , targetSelection.mappingType());
         }
         // 3. cache refSelection
         this.refSelectionCache.putIfAbsent(subQueryAlias + derivedFieldName, refSelection);
@@ -229,8 +229,8 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
         }
 
         @Override
-        public MappingType mappingMeta() {
-            return this.selection.mappingMeta();
+        public MappingType mappingType() {
+            return this.selection.mappingType();
         }
     }
 

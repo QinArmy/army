@@ -80,8 +80,8 @@ final class LogicalFieldExpImpl<T extends IDomain, F> extends AbstractExpression
     }
 
     @Override
-    public MappingType mappingMeta() {
-        return this.field.mappingMeta();
+    public MappingType mappingType() {
+        return this.field.mappingType();
     }
 
 

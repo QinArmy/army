@@ -1,13 +1,13 @@
 package io.army.meta;
 
-import io.army.criteria.MappingMetaAble;
+import io.army.criteria.MappingTypeAble;
 import io.army.mapping.MappingType;
 
 /**
  * @see MappingType
  * @see FieldMeta
  */
-public interface ParamMeta extends Meta, MappingMetaAble {
+public interface ParamMeta extends Meta, MappingTypeAble {
 
-    MappingType mappingMeta();
+    MappingType mappingType();
 }

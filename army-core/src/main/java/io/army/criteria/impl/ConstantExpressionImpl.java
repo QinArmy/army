@@ -43,7 +43,7 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
         if (paramMeta == null) {
             actualParamMeta = _MappingFactory.getMapping(constant.getClass());
         } else {
-            if (paramMeta.mappingMeta().javaType() != constant.getClass()) {
+            if (paramMeta.mappingType().javaType() != constant.getClass()) {
                 throw new IllegalArgumentException(String.format("constant's class[%s] and paramMeta[%s] not match."
                         , constant.getClass().getName(), paramMeta.getClass().getName()));
             }
@@ -52,7 +52,7 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
         final ConstantExpression<E> cacheExp = (ConstantExpression<E>) CONSTANT_EXP_CACHE.get(constant);
 
         ConstantExpression<E> exp;
-        if (cacheExp != null && cacheExp.mappingMeta() == actualParamMeta.mappingMeta()) {
+        if (cacheExp != null && cacheExp.mappingType() == actualParamMeta.mappingType()) {
             exp = cacheExp;
         } else {
             exp = new ConstantExpressionImpl<>(actualParamMeta, constant);
@@ -80,12 +80,12 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
 
     @Override
     public final void appendSql(_SqlContext context) {
-        context.appendConstant(this.paramMeta.mappingMeta(), this.constant);
+        context.appendConstant(this.paramMeta.mappingType(), this.constant);
     }
 
     @Override
-    public final MappingType mappingMeta() {
-        return this.paramMeta.mappingMeta();
+    public final MappingType mappingType() {
+        return this.paramMeta.mappingType();
     }
 
     @Override

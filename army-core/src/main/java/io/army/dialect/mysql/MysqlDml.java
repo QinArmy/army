@@ -25,7 +25,7 @@ abstract class MysqlDml extends AbstractDml {
 
     @Override
     protected final Stmt standardChildUpdate(final _SingleUpdateContext context) {
-        final _SetClause childSetClause = context.childSetClause();
+        final _SetBlock childSetClause = context.childSetClause();
         Objects.requireNonNull(childSetClause);
 
         final Dialect dialect = context.dialect();

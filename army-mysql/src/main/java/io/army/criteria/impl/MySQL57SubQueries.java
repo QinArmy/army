@@ -187,7 +187,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public final MappingType mappingMeta() {
+        public final MappingType mappingType() {
             return mappingType;
         }
 

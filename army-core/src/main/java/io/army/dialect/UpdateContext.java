@@ -47,7 +47,7 @@ final class UpdateContext extends _BaseSqlContext implements _SingleUpdateContex
 
     final List<_Predicate> predicateList;
 
-    private final _SetClause childSetClause;
+    private final _SetBlock childSetClause;
 
     private UpdateContext(_SingleUpdate update, byte tableIndex, Dialect dialect, Visible visible) {
         super(dialect, tableIndex, visible);
@@ -127,7 +127,7 @@ final class UpdateContext extends _BaseSqlContext implements _SingleUpdateContex
 
     @Override
     public void appendField(final String tableAlias, final FieldMeta<?, ?> field) {
-        final _SetClause childSetClause = this.childSetClause;
+        final _SetBlock childSetClause = this.childSetClause;
         if (childSetClause == null) {
             if (!this.tableAlias.equals(tableAlias)) {
                 throw _Exceptions.unknownColumn(tableAlias, field);
@@ -145,7 +145,7 @@ final class UpdateContext extends _BaseSqlContext implements _SingleUpdateContex
         if (belongOf == this.table) {
             safeTableAlias = this.safeTableAlias;
         } else {
-            final _SetClause childSetClause = this.childSetClause;
+            final _SetBlock childSetClause = this.childSetClause;
             if (childSetClause == null || belongOf != childSetClause.table()) {
                 throw _Exceptions.unknownColumn(null, field);
             }
@@ -174,7 +174,7 @@ final class UpdateContext extends _BaseSqlContext implements _SingleUpdateContex
 
     @Nullable
     @Override
-    public _SetClause childSetClause() {
+    public _SetBlock childSetClause() {
         return this.childSetClause;
     }
 

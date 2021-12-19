@@ -233,7 +233,7 @@ abstract class SubQueries<Q extends Query, C> extends AbstractStandardQuery<Q, C
         }
 
         @Override
-        public MappingType mappingMeta() {
+        public MappingType mappingType() {
             return mappingType;
         }
 

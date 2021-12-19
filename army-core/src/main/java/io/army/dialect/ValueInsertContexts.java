@@ -21,18 +21,18 @@ import java.util.Map;
  * This class representing standard value insert context.
  * </p>
  */
-final class ValueInsertContext extends _BaseSqlContext implements _ValueInsertContext {
+final class ValueInsertContexts extends _BaseSqlContext implements _ValueInsertContext {
 
-    static ValueInsertContext single(_ValuesInsert insert, final byte tableIndex
+    static ValueInsertContexts single(_ValuesInsert insert, final byte tableIndex
             , List<ObjectWrapper> domainList, Dialect dialect, Visible visible) {
         checkCommonExpMap(insert);
-        return new ValueInsertContext(insert, tableIndex, domainList, dialect, visible);
+        return new ValueInsertContexts(insert, tableIndex, domainList, dialect, visible);
     }
 
-    static ValueInsertContext child(_ValuesInsert insert, final byte tableIndex
+    static ValueInsertContexts child(_ValuesInsert insert, final byte tableIndex
             , List<ObjectWrapper> domainList, Dialect dialect, Visible visible) {
         checkCommonExpMap(insert);
-        return new ValueInsertContext(tableIndex, insert, domainList, dialect, visible);
+        return new ValueInsertContexts(tableIndex, insert, domainList, dialect, visible);
     }
 
 
@@ -52,7 +52,7 @@ final class ValueInsertContext extends _BaseSqlContext implements _ValueInsertCo
 
     private final _InsertBlockImpl childBlock;
 
-    private ValueInsertContext(_ValuesInsert insert, final byte tableIndex
+    private ValueInsertContexts(_ValuesInsert insert, final byte tableIndex
             , List<ObjectWrapper> domainList, Dialect dialect, Visible visible) {
         super(dialect, tableIndex, visible);
 
@@ -64,7 +64,7 @@ final class ValueInsertContext extends _BaseSqlContext implements _ValueInsertCo
         this.childBlock = null;
     }
 
-    private ValueInsertContext(final byte tableIndex, _ValuesInsert insert
+    private ValueInsertContexts(final byte tableIndex, _ValuesInsert insert
             , List<ObjectWrapper> domainList, Dialect dialect, Visible visible) {
         super(dialect, tableIndex, visible);
 
@@ -76,7 +76,6 @@ final class ValueInsertContext extends _BaseSqlContext implements _ValueInsertCo
 
         this.childBlock = new _InsertBlockImpl(childTable, _DmlUtils.mergeInsertFields(false, insert));
     }
-
 
     @Override
     public List<FieldMeta<?, ?>> fieldLis() {

@@ -45,7 +45,7 @@ final class NamedParamImpl<E> extends AbstractNoNOperationExpression<E>
     }
 
     @Override
-    public final MappingType mappingMeta() {
+    public final MappingType mappingType() {
         throw new UnsupportedOperationException();
     }
 }

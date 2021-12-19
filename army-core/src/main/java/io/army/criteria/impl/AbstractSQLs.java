@@ -73,10 +73,10 @@ abstract class AbstractSQLs {
             if (fieldMeta.codec()) {
                 paramMeta = fieldMeta;
             } else {
-                paramMeta = fieldMeta.mappingMeta();
+                paramMeta = fieldMeta.mappingType();
             }
         } else {
-            paramMeta = expression.mappingMeta();
+            paramMeta = expression.mappingType();
         }
         return paramMeta;
     }
@@ -137,7 +137,7 @@ abstract class AbstractSQLs {
      * MySQL ABS function</a>
      */
     public static <E extends Number> FuncExpression<E> abs(Expression<E> x) {
-        return AbstractFunc.oneArgumentFunc("ABS", x.mappingMeta(), (_Expression<?>) x);
+        return AbstractFunc.oneArgumentFunc("ABS", x.mappingType(), (_Expression<?>) x);
     }
 
     public static <E extends Number> Expression<Double> acos(Expression<E> x) {
@@ -261,7 +261,7 @@ abstract class AbstractSQLs {
 
     public static <E extends Number> Expression<E> mod(Expression<E> dividend
             , Expression<E> divisor) {
-        return AbstractFunc.twoArgumentFunc("MOD", dividend.mappingMeta(), dividend, divisor);
+        return AbstractFunc.twoArgumentFunc("MOD", dividend.mappingType(), dividend, divisor);
     }
 
 
@@ -296,7 +296,7 @@ abstract class AbstractSQLs {
         }
 
         @Override
-        public MappingType mappingMeta() {
+        public MappingType mappingType() {
             return StringType.build(String.class);
         }
     }

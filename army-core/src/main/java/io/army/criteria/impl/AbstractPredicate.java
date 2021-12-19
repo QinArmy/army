@@ -14,7 +14,7 @@ import java.util.List;
 abstract class AbstractPredicate extends AbstractExpression<Boolean> implements _Predicate {
 
     @Override
-    public final MappingType mappingMeta() {
+    public final MappingType mappingType() {
         return _MappingFactory.getMapping(Boolean.class);
     }
 

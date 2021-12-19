@@ -26,8 +26,8 @@ final class ExpressionSelection implements Selection, _SelfDescribed, _SortPart 
     }
 
     @Override
-    public MappingType mappingMeta() {
-        return this.expression.mappingMeta();
+    public MappingType mappingType() {
+        return this.expression.mappingType();
     }
 
     @Override

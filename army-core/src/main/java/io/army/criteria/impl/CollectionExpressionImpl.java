@@ -51,8 +51,8 @@ final class CollectionExpressionImpl<E> extends AbstractNoNOperationExpression<C
     }
 
     @Override
-    public MappingType mappingMeta() {
-        return this.paramMeta.mappingMeta();
+    public MappingType mappingType() {
+        return this.paramMeta.mappingType();
     }
 
 }

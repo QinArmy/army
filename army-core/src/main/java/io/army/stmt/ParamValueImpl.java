@@ -34,7 +34,7 @@ final class ParamValueImpl implements ParamValue {
 
         MappingType mappingType;
         if (this.paramMeta instanceof FieldMeta) {
-            mappingType = ((FieldMeta<?, ?>) this.paramMeta).mappingMeta();
+            mappingType = ((FieldMeta<?, ?>) this.paramMeta).mappingType();
         } else {
             mappingType = (MappingType) this.paramMeta;
         }
