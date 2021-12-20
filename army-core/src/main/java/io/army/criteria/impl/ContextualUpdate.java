@@ -9,6 +9,7 @@ import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
+import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
@@ -435,6 +436,9 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
 
         @Override
         public <T extends IDomain> RouteSpec<T, C> update(TableMeta<T> table, String tableAlias) {
+            if (!(table instanceof ChildTableMeta) && table.immutable()) {
+                throw _Exceptions.immutableTable(table);
+            }
             return new ContextualUpdate<>(table, tableAlias, this.criteria);
         }
 

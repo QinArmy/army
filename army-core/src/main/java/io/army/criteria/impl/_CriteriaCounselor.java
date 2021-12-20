@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.ColumnSubQuery;
+import io.army.criteria.Delete;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner.*;
 
@@ -54,7 +55,7 @@ public abstract class _CriteriaCounselor {
 
     }
 
-    public static void assertStandardDelete(_StandardDelete delete) {
+    public static void assertStandardDelete(Delete delete) {
         if (delete instanceof _StandardBatchDelete) {
             if (!(delete instanceof ContextualBatchDelete)) {
                 throw new IllegalArgumentException(String.format("%s isn't instance of %s", delete

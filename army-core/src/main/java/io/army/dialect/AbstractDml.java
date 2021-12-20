@@ -109,27 +109,21 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
     }
 
     @Override
-    public final Stmt delete(Delete delete, final Visible visible) {
+    public final Stmt delete(final Delete delete, final Visible visible) {
         delete.prepared();
-
-        Stmt stmt;
-        if (delete instanceof _StandardDelete) {
-            _StandardDelete standardDelete = (_StandardDelete) delete;
-            _CriteriaCounselor.assertStandardDelete(standardDelete);
-            if (standardDelete instanceof _StandardBatchDelete) {
-                stmt = standardBatchDelete((_StandardBatchDelete) delete, visible);
+        final Stmt stmt;
+        if (delete instanceof _DialectStatement) {
+            assertDialectDelete((_Delete) delete);
+            stmt = dialectDelete((_Delete) delete, visible);
+        } else if (delete instanceof _SingleDelete) {
+            _CriteriaCounselor.assertStandardDelete(delete);
+            if (delete instanceof _BatchDelete) {
+                throw new UnsupportedOperationException();
             } else {
-                stmt = standardGenericDelete(standardDelete, visible);
+                stmt = this.handleStandardDelete((_SingleDelete) delete, visible);
             }
-        } else if (delete instanceof _SpecialDelete) {
-            _SpecialDelete specialDelete = (_SpecialDelete) delete;
-            assertSpecialDelete(specialDelete);
-            if (specialDelete instanceof _SpecialBatchDelete) {
-                throw new IllegalArgumentException(String.format("Delete[%s] not supported by simpleDelete.", delete));
-            }
-            stmt = specialDelete(specialDelete, visible);
         } else {
-            throw new IllegalArgumentException(String.format("Delete[%s] not supported by simpleDelete.", delete));
+            throw _Exceptions.unknownStatement(delete, this.dialect.sessionFactory());
         }
         return stmt;
     }
@@ -163,13 +157,13 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
 
     /*################################## blow delete template method ##################################*/
 
-    protected void assertSpecialDelete(_SpecialDelete delete) {
+    protected void assertDialectDelete(_Delete delete) {
         throw new UnsupportedOperationException(String.format("dialect[%s] not support special delete."
                 , database())
         );
     }
 
-    protected Stmt specialDelete(_SpecialDelete delete, Visible visible) {
+    protected Stmt dialectDelete(_Delete delete, Visible visible) {
         throw new UnsupportedOperationException(String.format("dialect[%s] not support special delete."
                 , database())
         );
@@ -239,6 +233,94 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
             stmt = standardValueInsert(context);
         }
         return stmt;
+    }
+
+    /**
+     * @see #delete(Delete, Visible)
+     */
+    private Stmt handleStandardDelete(final _SingleDelete delete, final Visible visible) {
+        final GenericRmSessionFactory factory = this.dialect.sessionFactory();
+        Assert.databaseRoute(delete, delete.databaseIndex(), factory);
+        final byte tableIndex;
+        tableIndex = singleDmlTableRoute(delete);
+
+        final Stmt stmt;
+        if (tableIndex >= 0) {
+            stmt = standardDeleteStmt(delete, tableIndex, visible);
+        } else {
+            stmt = standardDeleteWithAllRoute(delete, visible);
+        }
+        return stmt;
+    }
+
+    /**
+     * @see #handleStandardDelete(_SingleDelete, Visible)
+     */
+    private Stmt standardDeleteStmt(final _SingleDelete delete, final byte tableIndex, final Visible visible) {
+        final Stmt stmt;
+        if (delete.table() instanceof ChildTableMeta) {
+            final UpdateContext context;
+            context = UpdateContext.child(update, tableIndex, this.dialect, visible);
+            final _SetBlock childSetClause = context.childSetClause();
+            assert childSetClause != null;
+            if (childSetClause.targetParts().size() == 0) {
+                stmt = standardSingleTableUpdate(context);
+            } else {
+                stmt = standardChildUpdate(context);
+            }
+        } else {
+            final UpdateContext context;
+            context = UpdateContext.single(update, tableIndex, this.dialect, visible);
+            stmt = standardSingleTableUpdate(context);
+        }
+        return stmt;
+    }
+
+    /**
+     * @see #handleStandardDelete(_SingleDelete, Visible)
+     */
+    private Stmt standardDeleteWithAllRoute(final _SingleDelete delete, final Visible visible) {
+        final TableMeta<?> table = delete.table();
+        final int tableCount = table.tableCount();
+        final List<Stmt> stmtList = new ArrayList<>(tableCount);
+        for (int i = 0; i < tableCount; i++) {
+            stmtList.add(standardDeleteStmt(delete, (byte) i, visible));
+        }
+        return Stmts.group(stmtList);
+    }
+
+    /**
+     * @return <ul>
+     * <li>{@link Byte#MIN_VALUE} route all</li>
+     * <li>non-negative : table index</li>
+     * </ul>
+     * @throws CriteriaException when return negative and not equal {@link Byte#MIN_VALUE}
+     */
+    private byte singleDmlTableRoute(final _SingleDml dml) {
+        final TableMeta<?> table = dml.table();
+
+        final List<_Predicate> predicateList = dml.predicateList();
+        final GenericRmSessionFactory factory = this.dialect.sessionFactory();
+        byte tableIndex;
+        if (factory.factoryMode() == FactoryMode.NO_SHARDING || table.tableCount() == 1) {
+            tableIndex = 0;
+        } else {
+            tableIndex = _RouteUtils.tableRouteFromRouteField(table, predicateList, factory);
+        }
+        final byte tableRoute = dml.tableIndex();
+        if (tableIndex < 0) {
+            tableIndex = tableRoute;
+        } else if (tableRoute >= 0) {
+            throw _Exceptions.tableIndexAmbiguity(dml, dml.tableIndex(), tableIndex);
+        }
+        if (tableIndex < 0) {
+            if (tableRoute != Byte.MIN_VALUE) {
+                throw _Exceptions.noTableRoute(dml, factory);
+            }
+        } else if (tableIndex >= table.tableCount()) {
+            throw _Exceptions.tableIndexParseError(dml, table, tableIndex);
+        }
+        return tableIndex;
     }
 
 
@@ -463,32 +545,15 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
         }
         final GenericRmSessionFactory factory = this.dialect.sessionFactory();
         Assert.databaseRoute(update, update.databaseIndex(), factory);
-        final List<_Predicate> predicateList = update.predicateList();
 
-        byte tableIndex;
-        if (factory.factoryMode() == FactoryMode.NO_SHARDING || table.tableCount() == 1) {
-            tableIndex = 0;
-        } else {
-            tableIndex = _RouteUtils.tableRouteFromRouteField(table, predicateList, factory);
-        }
-        final byte tableRoute = update.tableIndex();
-        if (tableIndex < 0) {
-            tableIndex = tableRoute;
-        } else if (tableRoute >= 0) {
-            throw _Exceptions.tableIndexAmbiguity(update, update.tableIndex(), tableIndex);
-        }
+        final byte tableIndex;
+        tableIndex = singleDmlTableRoute(update);
 
         final Stmt stmt;
-        if (tableIndex < 0) {
-            if (tableRoute == Byte.MIN_VALUE) {
-                stmt = standardUpdateWithAllRoute(update, visible);
-            } else {
-                throw _Exceptions.noTableRoute(update, factory);
-            }
-        } else if (tableIndex >= table.tableCount()) {
-            throw _Exceptions.tableIndexParseError(update, table, tableIndex);
-        } else {
+        if (tableIndex >= 0) {
             stmt = standardUpdateStmt(update, tableIndex, visible);
+        } else {
+            stmt = standardUpdateWithAllRoute(update, visible);
         }
         return stmt;
     }
@@ -617,14 +682,8 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
 
     /*################################## blow delete private method ##################################*/
 
-    private Stmt standardBatchDelete(_StandardBatchDelete delete, final Visible visible) {
-        return _DmlUtils.createBatchSQLWrapper(
-                delete.wrapperList()
-                , standardGenericDelete(delete, visible)
-        );
-    }
 
-    private Stmt standardGenericDelete(_StandardDelete delete, final Visible visible) {
+    private Stmt standardGenericDelete(_SingleDelete delete, final Visible visible) {
 
         final TableMeta<?> table = delete.table();
         final Stmt stmt;
@@ -641,13 +700,13 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
     }
 
 
-    private Stmt standardSimpleDelete(_StandardDelete delete, final Visible visible) {
+    private Stmt standardSimpleDelete(_SingleDelete delete, final Visible visible) {
         StandardDeleteContext context = StandardDeleteContext.build(delete, this.dialect, visible);
         parseStandardDelete(delete.table(), delete.tableAlias(), delete.predicateList(), context);
         return context.build();
     }
 
-    private Stmt standardParentDelete(_StandardDelete delete, final Visible visible) {
+    private Stmt standardParentDelete(_SingleDelete delete, final Visible visible) {
         StandardDeleteContext context = StandardDeleteContext.build(delete, this.dialect, visible);
         final ParentTableMeta<?> parentMeta = (ParentTableMeta<?>) delete.table();
         // create parent predicate list
@@ -656,7 +715,7 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
         return context.build();
     }
 
-    private Stmt standardChildDelete(_StandardDelete delete, final Visible visible) {
+    private Stmt standardChildDelete(_SingleDelete delete, final Visible visible) {
         final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) delete.table();
         final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
         // 1. extract parent predicate list

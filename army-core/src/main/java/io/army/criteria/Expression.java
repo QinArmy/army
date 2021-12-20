@@ -10,13 +10,8 @@ import java.util.function.Function;
 
 /**
  * Interface representing the sql expression, eg: column,function.
- * <p>
- * the implementation of this interface must implement {@link ExpressionCounselor}
- * </p>
- *
  * @param <E> expression result java type
  * @see FieldMeta
- * @see ExpressionCounselor
  * @since 1.0
  */
 @SuppressWarnings("unused")
@@ -24,8 +19,10 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble {
 
     /**
      * relational operate with {@code =}
+     *
+     * @param operand right operand of {@code =},operand is weak weakly instance, because sql is weakly typed.
      */
-    IPredicate equal(Expression<?> expression);
+    IPredicate equal(Expression<?> operand);
 
     /**
      * relational operate with {@code =}
@@ -39,12 +36,22 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble {
 
     /**
      * relational operate with {@code =}
+     * <p>
+     * Operand will append parameter list.
+     * </p>
+     *
+     * @param parameter right operand of {@code =},operand is weak weakly instance, because sql is weakly typed.
      */
     IPredicate equal(Object parameter);
 
     /**
      * relational operate with {@code =}
+     * <p>
+     * If operand non-null than operand will append parameter list.
+     * </p>
      *
+     * @param parameter right operand of {@code =},operand is weak weakly instance, because sql is weakly typed.
+     * @return If operand null return null,or return predicate instance.
      * @see Query.WhereAndSpec#ifAnd(IPredicate)
      * @see Update.WhereAndSpec#ifAnd(IPredicate)
      * @see Delete.WhereAndSpec#ifAnd(IPredicate)
@@ -67,6 +74,7 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble {
      */
     <C, O> IPredicate equalSome(Function<C, ColumnSubQuery<O>> subQuery);
 
+
     IPredicate lessThan(Expression<?> expression);
 
     IPredicate lessThan(Object parameter);
@@ -78,15 +86,15 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble {
 
     IPredicate lessThan(String tableAlias, FieldMeta<?, ?> field);
 
-    <C, O> IPredicate lessThan(Function<C, Expression<O>> expOrSubQuery);
+    <C, O> IPredicate lessThan(Function<C, Expression<O>> function);
 
-    <C, O> IPredicate lessThanAny(Function<C, ColumnSubQuery<O>> subQuery);
+    <C, O> IPredicate lessThanAny(Function<C, ColumnSubQuery<O>> function);
 
-    <C, O> IPredicate lessThanSome(Function<C, ColumnSubQuery<O>> subQuery);
+    <C, O> IPredicate lessThanSome(Function<C, ColumnSubQuery<O>> function);
 
-    <C, O> IPredicate lessThanAll(Function<C, ColumnSubQuery<O>> subQuery);
+    <C, O> IPredicate lessThanAll(Function<C, ColumnSubQuery<O>> function);
 
-    IPredicate lessEqual(Expression<?> expression);
+    IPredicate lessEqual(Expression<?> operand);
 
     IPredicate lessEqual(Object parameter);
 
@@ -97,15 +105,15 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble {
 
     IPredicate lessEqual(String tableAlias, FieldMeta<?, ?> field);
 
-    <C, O> IPredicate lessEqual(Function<C, Expression<O>> expOrSubQuery);
+    <C, O> IPredicate lessEqual(Function<C, Expression<O>> function);
 
-    <C, O> IPredicate lessEqualAny(Function<C, ColumnSubQuery<O>> subQuery);
+    <C, O> IPredicate lessEqualAny(Function<C, ColumnSubQuery<O>> function);
 
-    <C, O> IPredicate lessEqualSome(Function<C, ColumnSubQuery<O>> subQuery);
+    <C, O> IPredicate lessEqualSome(Function<C, ColumnSubQuery<O>> function);
 
-    <C, O> IPredicate lessEqualAll(Function<C, ColumnSubQuery<O>> subQuery);
+    <C, O> IPredicate lessEqualAll(Function<C, ColumnSubQuery<O>> function);
 
-    IPredicate greatThan(Expression<?> expression);
+    IPredicate greatThan(Expression<?> operand);
 
     IPredicate greatThan(Object parameter);
 
@@ -116,15 +124,15 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble {
 
     IPredicate greatThan(String tableAlias, FieldMeta<?, ?> field);
 
-    <C, O> IPredicate greatThan(Function<C, Expression<O>> expOrSubQuery);
+    <C, O> IPredicate greatThan(Function<C, Expression<O>> function);
 
-    <C, O> IPredicate greatThanAny(Function<C, ColumnSubQuery<O>> subQuery);
+    <C, O> IPredicate greatThanAny(Function<C, ColumnSubQuery<O>> function);
 
-    <C, O> IPredicate greatThanSome(Function<C, ColumnSubQuery<O>> subQuery);
+    <C, O> IPredicate greatThanSome(Function<C, ColumnSubQuery<O>> function);
 
-    <C, O> IPredicate greatThanAll(Function<C, ColumnSubQuery<O>> subQuery);
+    <C, O> IPredicate greatThanAll(Function<C, ColumnSubQuery<O>> function);
 
-    IPredicate greatEqual(Expression<?> expression);
+    IPredicate greatEqual(Expression<?> operand);
 
     IPredicate greatEqual(Object parameter);
 
@@ -133,56 +141,53 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble {
 
     IPredicate greatEqual(String subQueryAlias, String fieldAlias);
 
-    IPredicate greatEqual(String tableAlias, FieldMeta<?, ?> fieldMeta);
+    IPredicate greatEqual(String tableAlias, FieldMeta<?, ?> field);
 
-    <C, O> IPredicate greatEqual(Function<C, Expression<O>> expOrSubQuery);
+    <C, O> IPredicate greatEqual(Function<C, Expression<O>> function);
 
-    <C, O> IPredicate greatEqualAny(Function<C, ColumnSubQuery<O>> subQuery);
+    <C, O> IPredicate greatEqualAny(Function<C, ColumnSubQuery<O>> function);
 
-    <C, O> IPredicate greatEqualSome(Function<C, ColumnSubQuery<O>> subQuery);
+    <C, O> IPredicate greatEqualSome(Function<C, ColumnSubQuery<O>> function);
 
-    <C, O> IPredicate greatEqualAll(Function<C, ColumnSubQuery<O>> subQuery);
+    <C, O> IPredicate greatEqualAll(Function<C, ColumnSubQuery<O>> function);
 
     IPredicate notEqual(Expression<?> expression);
 
-    IPredicate notEqual(Object constant);
+    IPredicate notEqual(Object parameter);
 
     @Nullable
-    IPredicate ifNotEqual(@Nullable Object constant);
+    IPredicate ifNotEqual(@Nullable Object parameter);
 
     IPredicate notEqual(String subQueryAlias, String fieldAlias);
 
-    IPredicate notEqual(String tableAlias, FieldMeta<?, ?> fieldMeta);
+    IPredicate notEqual(String tableAlias, FieldMeta<?, ?> field);
 
-    <C, O> IPredicate notEqual(Function<C, Expression<O>> expOrSubQuery);
+    <C, O> IPredicate notEqual(Function<C, Expression<O>> function);
 
-    <C, O> IPredicate notEqualAny(Function<C, ColumnSubQuery<O>> subQuery);
+    <C, O> IPredicate notEqualAny(Function<C, ColumnSubQuery<O>> function);
 
-    <C, O> IPredicate notEqualSome(Function<C, ColumnSubQuery<O>> subQuery);
+    <C, O> IPredicate notEqualSome(Function<C, ColumnSubQuery<O>> function);
 
-    <C, O> IPredicate notEqualAll(Function<C, ColumnSubQuery<O>> subQuery);
+    <C, O> IPredicate notEqualAll(Function<C, ColumnSubQuery<O>> function);
 
-    IPredicate between(Expression<?> first, Expression<?> second);
+    IPredicate between(Expression<?> first, Expression<?> parameter);
 
-    IPredicate between(Object first, Object second);
-
-    @Nullable
-    IPredicate ifBetween(@Nullable Object first, @Nullable Object second);
-
-    IPredicate between(Expression<?> first, Object second);
+    IPredicate between(Object firstParameter, Object secondParameter);
 
     @Nullable
-    IPredicate ifBetween(Expression<?> first, @Nullable Object second);
+    IPredicate ifBetween(@Nullable Object firstParameter, @Nullable Object secondParameter);
 
-    IPredicate between(Object first, Expression<?> second);
+    IPredicate between(Expression<?> first, Object parameter);
 
     @Nullable
-    IPredicate ifBetween(@Nullable Object first, Expression<?> second);
+    IPredicate ifBetween(Expression<?> first, @Nullable Object parameter);
+
+    IPredicate between(Object parameter, Expression<?> second);
+
+    @Nullable
+    IPredicate ifBetween(@Nullable Object firstParameter, Expression<?> second);
 
     <C> IPredicate between(Function<C, BetweenWrapper> function);
-
-    @Nullable
-    <C> IPredicate IfBetween(Function<C, BetweenWrapper> function);
 
     IPredicate isNull();
 
@@ -193,18 +198,18 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble {
     @Nullable
     <O> IPredicate ifIn(@Nullable Collection<O> parameters);
 
-    <O> IPredicate in(Expression<Collection<O>> values);
+    <O> IPredicate in(Expression<Collection<O>> parameters);
 
-    <C, O> IPredicate in(Function<C, ColumnSubQuery<O>> subQuery);
+    <C, O> IPredicate in(Function<C, ColumnSubQuery<O>> function);
 
-    <O> IPredicate notIn(Collection<O> values);
+    <O> IPredicate notIn(Collection<O> parameters);
 
     @Nullable
-    IPredicate ifNotIn(@Nullable Collection<?> values);
+    IPredicate ifNotIn(@Nullable Collection<?> parameters);
 
     <O> IPredicate notIn(Expression<Collection<O>> values);
 
-    <C, O> IPredicate notIn(Function<C, ColumnSubQuery<O>> subQuery);
+    <C, O> IPredicate notIn(Function<C, ColumnSubQuery<O>> function);
 
     Expression<E> mod(Expression<?> operator);
 
@@ -214,7 +219,7 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble {
 
     Expression<E> mod(String tableAlias, FieldMeta<?, ?> field);
 
-    <C, O> Expression<E> mod(Function<C, Expression<O>> expOrSubQuery);
+    <C, O> Expression<E> mod(Function<C, Expression<O>> function);
 
     Expression<E> multiply(Expression<?> multiplicand);
 
@@ -224,17 +229,17 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble {
 
     Expression<E> multiply(String tableAlias, FieldMeta<?, ?> field);
 
-    <C, O> Expression<E> multiply(Function<C, Expression<O>> expOrSubQuery);
+    <C, O> Expression<E> multiply(Function<C, Expression<O>> function);
 
     Expression<E> plus(Expression<?> augend);
 
-    Expression<E> plus(Object augend);
+    Expression<E> plus(Object parameter);
 
     Expression<E> plus(String subQueryAlias, String derivedFieldName);
 
-    Expression<E> plus(String tableAlias, FieldMeta<?, ?> fieldMeta);
+    Expression<E> plus(String tableAlias, FieldMeta<?, ?> field);
 
-    <C, O> Expression<E> plus(Function<C, Expression<O>> expOrSubQuery);
+    <C, O> Expression<E> plus(Function<C, Expression<O>> function);
 
     Expression<E> minus(Expression<?> subtrahend);
 
@@ -244,9 +249,9 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble {
 
     Expression<E> minus(String tableAlias, FieldMeta<?, ?> field);
 
-    <C, O> Expression<E> minus(Function<C, Expression<O>> expOrSubQuery);
+    <C, O> Expression<E> minus(Function<C, Expression<O>> function);
 
-    Expression<E> divide(Expression<?> parameter);
+    Expression<E> divide(Expression<?> divisor);
 
     Expression<E> divide(Object parameter);
 
@@ -255,7 +260,7 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble {
 
     Expression<E> divide(String tableAlias, FieldMeta<?, ?> field);
 
-    <C, O> Expression<E> divide(Function<C, Expression<O>> expOrSubQuery);
+    <C, O> Expression<E> divide(Function<C, Expression<O>> function);
 
     Expression<E> negate();
 
@@ -295,7 +300,7 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble {
      * @param <O> the type maybe different from this.
      * @return {@link BigInteger} expression
      */
-    <C, O> Expression<E> and(Function<C, Expression<O>> expOrSubQuery);
+    <C, O> Expression<E> and(Function<C, Expression<O>> function);
 
     /**
      * Bitwise OR
@@ -330,7 +335,7 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble {
      *
      * @return {@link BigInteger} expression
      */
-    <C, O> Expression<E> or(Function<C, Expression<O>> expOrSubQuery);
+    <C, O> Expression<E> or(Function<C, Expression<O>> function);
 
     /**
      * Bitwise XOR
@@ -366,7 +371,7 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble {
      *
      * @return {@link BigInteger} expression
      */
-    <C, O> Expression<E> xor(Function<C, Expression<O>> expOrSubQuery);
+    <C, O> Expression<E> xor(Function<C, Expression<O>> function);
 
     /**
      * Bitwise Inversion
@@ -380,7 +385,7 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble {
      *
      * @return {@link BigInteger} expression
      */
-    Expression<E> rightShift(Number bitNumber);
+    Expression<E> rightShift(Number bitNumberParameter);
 
     /**
      * Shifts a  number to the right.
@@ -407,17 +412,17 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble {
     /**
      * Shifts a  number to the right.
      *
-     * @param <O> the type maybe different from this.
+     * @param <N> the type maybe different from this.
      * @return {@link BigInteger} expression
      */
-    <C, N extends Number> Expression<E> rightShift(Function<C, Expression<N>> expOrSubQuery);
+    <C, N extends Number> Expression<E> rightShift(Function<C, Expression<N>> function);
 
     /**
      * Shifts a  number to the left.
      *
      * @return {@link BigInteger} expression
      */
-    Expression<E> leftShift(Number bitNumber);
+    Expression<E> leftShift(Number bitNumberParameter);
 
     /**
      * Shifts a  number to the left.
@@ -445,10 +450,10 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble {
     /**
      * Shifts a  number to the left.
      *
-     * @param <O> the type maybe different from this.
+     * @param <N> the type maybe different from this.
      * @return {@link BigInteger} expression
      */
-    <C, N extends Number> Expression<E> leftShift(Function<C, Expression<N>> expOrSubQuery);
+    <C, N extends Number> Expression<E> leftShift(Function<C, Expression<N>> function);
 
     <O> Expression<O> asType(Class<O> convertType);
 
@@ -462,17 +467,17 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble {
 
     SortPart desc();
 
-    IPredicate like(String pattern);
+    IPredicate like(String patternParameter);
 
     <C> IPredicate like(Function<C, Expression<String>> expOrSubQuery);
 
-    IPredicate notLike(String pattern);
+    IPredicate notLike(String patternParameter);
 
     IPredicate like(Expression<String> pattern);
 
     IPredicate notLike(Expression<String> pattern);
 
-    <C> IPredicate notLike(Function<C, Expression<String>> expOrSubQuery);
+    <C> IPredicate notLike(Function<C, Expression<String>> functioin);
 
 
 }

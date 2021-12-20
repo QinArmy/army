@@ -174,9 +174,9 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
 
     protected boolean canAppendTableAlias(TableMeta<?> tableMeta) {
         boolean can ;
-        if(this instanceof DeleteContext ){
-            can =  this.dialect.singleDeleteHasTableAlias();
-        }else {
+        if (this instanceof DeleteContext_) {
+            can = this.dialect.singleDeleteHasTableAlias();
+        } else {
             can = true;
         }
         return can;

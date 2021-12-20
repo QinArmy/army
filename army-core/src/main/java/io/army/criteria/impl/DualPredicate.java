@@ -5,6 +5,7 @@ import io.army.criteria.GenericField;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
+import io.army.lang.Nullable;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Exceptions;
 
@@ -35,6 +36,33 @@ final class DualPredicate extends AbstractPredicate {
         return new DualPredicate(left, operator, right);
     }
 
+
+    @Deprecated
+    @Nullable
+    static DualPredicate ifParamCreate(Expression<?> left, DualOperator operator, @Nullable Object right) {
+        final DualPredicate predicate;
+        if (right == null) {
+            predicate = null;
+        } else {
+            predicate = create(left, operator, SQLs.param(left, right));
+        }
+        return predicate;
+    }
+
+    @Nullable
+    static <C, O> DualPredicate ifFunctionCreate(Expression<?> left, DualOperator operator
+            , Function<C, Expression<O>> function) {
+
+        final DualPredicate predicate;
+        final Expression<O> functionResult;
+        functionResult = function.apply(CriteriaContextStack.getCriteria());
+        if (functionResult == null) {
+            predicate = null;
+        } else {
+            predicate = create(left, operator, functionResult);
+        }
+        return predicate;
+    }
 
 
     /*################################## blow instance member ##################################*/

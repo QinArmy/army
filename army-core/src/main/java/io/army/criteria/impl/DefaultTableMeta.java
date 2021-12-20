@@ -271,7 +271,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
             this.tableName = TableMetaUtils.tableName(table, domainClass);
             this.comment = TableMetaUtils.tableComment(table, domainClass);
-            this.immutable = table.immutable();
+            this.immutable = TableMetaUtils.immutable(table, domainClass);
             this.schemaMeta = _SchemaMetaFactory.getSchema(table.catalog(), table.schema());
 
             this.charset = table.charset();

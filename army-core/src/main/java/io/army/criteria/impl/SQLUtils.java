@@ -28,7 +28,7 @@ import java.util.function.Function;
 abstract class SQLUtils {
 
     /**
-     * package constructor,forbid application developer extend this util class.
+     * package constructor,forbid application developer directly extend this util class.
      */
     SQLUtils() {
         throw new UnsupportedOperationException();
@@ -64,26 +64,43 @@ abstract class SQLUtils {
         return resultExpression;
     }
 
+
+    /**
+     * package method
+     */
+    @SuppressWarnings("unchecked")
+    @Nullable
+    static Expression<?> ifParamWithExp(final Expression<?> type, final Object value) {
+        final Expression<?> resultExpression;
+        if (value instanceof Function) {
+            //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
+            resultExpression = ((Function<Object, Expression<?>>) value).apply(CriteriaContextStack.getCriteria());
+        } else {
+            resultExpression = ParamExpression.create(type, value);
+        }
+        return resultExpression;
+    }
+
     public static <E> Expression<Collection<E>> collectionParam(Expression<?> type, Collection<E> value) {
         return CollectionParamExpression.create(type, value);
     }
 
 
     /**
-     * @see SQLs#batchUpdate()
-     * @see SQLs#batchUpdate(Object)
-     * @see SQLs#batchDelete()
-     * @see SQLs#batchDelete(Object)
+     * @see SQLs#batchDomainUpdate()
+     * @see SQLs#batchDomainUpdate(Object)
+     * @see SQLs#batchDomainDelete()
+     * @see SQLs#batchDomainDelete(Object)
      */
     public static <E> NamedParam<E> namedParam(String name, ParamMeta paramMeta) {
         return NamedParamImpl.named(name, paramMeta);
     }
 
     /**
-     * @see SQLs#batchUpdate()
-     * @see SQLs#batchUpdate(Object)
-     * @see SQLs#batchDelete()
-     * @see SQLs#batchDelete(Object)
+     * @see SQLs#batchDomainUpdate()
+     * @see SQLs#batchDomainUpdate(Object)
+     * @see SQLs#batchDomainDelete()
+     * @see SQLs#batchDomainDelete(Object)
      */
     public static <E> NamedParam<E> namedParam(GenericField<?, ?> field) {
         return NamedParamImpl.named(field.fieldName(), field);
@@ -91,20 +108,20 @@ abstract class SQLUtils {
 
 
     /**
-     * @see SQLs#batchUpdate()
-     * @see SQLs#batchUpdate(Object)
-     * @see SQLs#batchDelete()
-     * @see SQLs#batchDelete(Object)
+     * @see SQLs#batchDomainUpdate()
+     * @see SQLs#batchDomainUpdate(Object)
+     * @see SQLs#batchDomainDelete()
+     * @see SQLs#batchDomainDelete(Object)
      */
     public static <E> NamedParam<E> nonNullNamedParam(String name, ParamMeta paramMeta) {
         return NamedParamImpl.nonNull(name, paramMeta);
     }
 
     /**
-     * @see SQLs#batchUpdate()
-     * @see SQLs#batchUpdate(Object)
-     * @see SQLs#batchDelete()
-     * @see SQLs#batchDelete(Object)
+     * @see SQLs#batchDomainUpdate()
+     * @see SQLs#batchDomainUpdate(Object)
+     * @see SQLs#batchDomainDelete()
+     * @see SQLs#batchDomainDelete(Object)
      */
     public static <E> NamedParam<E> nonNullNamedParam(GenericField<?, ?> field) {
         return NamedParamImpl.nonNull(field.fieldName(), field);

@@ -18,7 +18,16 @@ public interface Delete extends Statement, SQLDebug {
 
     interface DomainDeleteSpec<C> {
 
-        WhereSpec<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias);
+        DeleteRoute<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias);
+    }
+
+    interface DeleteRoute<C> extends WhereSpec<C> {
+
+        WhereSpec<C> route(int databaseIndex, int tableIndex);
+
+        WhereSpec<C> route(int tableIndex);
+
+        WhereSpec<C> routeAll();
     }
 
 

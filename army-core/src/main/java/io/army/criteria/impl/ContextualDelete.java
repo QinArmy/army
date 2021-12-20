@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.Delete;
 import io.army.criteria.IPredicate;
 import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner._StandardDelete;
+import io.army.criteria.impl.inner._SingleDelete;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -22,8 +22,8 @@ import java.util.function.Function;
  * @param <C> criteria java type used to crate dynamic delete and sub query
  */
 final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
-        , Delete.DomainDeleteSpec<C>, Delete.WhereSpec<C>, Delete.WhereAndSpec<C>
-        , _StandardDelete {
+        , Delete.DomainDeleteSpec<C>, Delete.DeleteRoute<C>, Delete.WhereAndSpec<C>
+        , _SingleDelete {
 
     static DomainDeleteSpec<Void> create() {
         return new ContextualDelete<>(null);
@@ -38,9 +38,13 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
 
     private final CriteriaContext criteriaContext;
 
-    private TableMeta<?> tableMeta;
+    private TableMeta<?> table;
 
     private String tableAlias;
+
+    private byte databaseIndex = -1;
+
+    private byte tableIndex = -1;
 
     private List<_Predicate> predicateList = new ArrayList<>();
 
@@ -56,13 +60,32 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
 
 
     @Override
-    public WhereSpec<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, final String tableAlias) {
+    public DeleteRoute<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, final String tableAlias) {
         Assert.identifierHasText(tableAlias);
-        this.tableMeta = tableMeta;
+        this.table = tableMeta;
         this.tableAlias = tableAlias;
         return this;
     }
 
+    @Override
+    public WhereSpec<C> route(int databaseIndex, int tableIndex) {
+        this.databaseIndex = Assert.databaseRoute(this.table, databaseIndex);
+        this.tableIndex = Assert.tableRoute(this.table, tableIndex);
+        return this;
+    }
+
+    @Override
+    public WhereSpec<C> route(int tableIndex) {
+        this.tableIndex = Assert.tableRoute(this.table, tableIndex);
+        return this;
+    }
+
+    @Override
+    public WhereSpec<C> routeAll() {
+        this.databaseIndex = Byte.MIN_VALUE;
+        this.tableIndex = Byte.MIN_VALUE;
+        return this;
+    }
 
     /*################################## blow SingleWhereSpec method ##################################*/
 
@@ -127,7 +150,7 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
 
         CriteriaContextStack.clearContextStack(this.criteriaContext);
 
-        Assert.hasTable(this.tableMeta);
+        Assert.hasTable(this.table);
         Assert.identifierHasText(this.tableAlias);
         this.predicateList = CriteriaUtils.predicateList(this.predicateList);
 
@@ -137,9 +160,13 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
 
     @Override
     public void clear() {
-        this.tableMeta = null;
+        this.table = null;
         this.tableAlias = null;
         this.predicateList = null;
+
+        this.databaseIndex = -1;
+        this.tableIndex = -1;
+
         this.prepared = false;
     }
 
@@ -148,7 +175,24 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
     @Override
     public TableMeta<?> table() {
         Assert.prepared(this.prepared);
-        return this.tableMeta;
+        return this.table;
+    }
+
+    @Override
+    public String tableAlias() {
+        return this.tableAlias;
+    }
+
+    @Override
+    public byte databaseIndex() {
+        Assert.prepared(this.prepared);
+        return this.databaseIndex;
+    }
+
+    @Override
+    public byte tableIndex() {
+        Assert.prepared(this.prepared);
+        return this.tableIndex;
     }
 
     @Override
@@ -157,10 +201,7 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
         return this.predicateList;
     }
 
-    @Override
-    public String tableAlias() {
-        return this.tableAlias;
-    }
+
 
 
     /*################################## blow static inner class ##################################*/

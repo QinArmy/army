@@ -2,7 +2,7 @@ package io.army.dialect;
 
 import io.army.criteria.FieldPredicate;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner._StandardDelete;
+import io.army.criteria.impl.inner._SingleDelete;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
@@ -10,9 +10,9 @@ import io.army.meta.TableMeta;
 import io.army.sharding._TableRouteUtils;
 import io.army.stmt.SimpleStmt;
 
-class StandardDeleteContext extends AbstractStandardDomainContext implements DeleteContext {
+class StandardDeleteContext extends AbstractStandardDomainContext implements DeleteContext_ {
 
-    static StandardDeleteContext build(_StandardDelete delete, Dialect dialect, Visible visible) {
+    static StandardDeleteContext build(_SingleDelete delete, Dialect dialect, Visible visible) {
         TableMeta<?> tableMeta = delete.table();
         String primarySuffix = _TableRouteUtils.singleDmlPrimaryRouteSuffix(delete, dialect);
 
@@ -23,7 +23,7 @@ class StandardDeleteContext extends AbstractStandardDomainContext implements Del
                 , tableMeta);
     }
 
-    static StandardDeleteContext buildParent(_StandardDelete delete, Dialect dialect, final Visible visible) {
+    static StandardDeleteContext buildParent(_SingleDelete delete, Dialect dialect, final Visible visible) {
         ParentTableMeta<?> parentMeta = ((ChildTableMeta<?>) delete.table()).parentMeta();
 
         String primarySuffix = _TableRouteUtils.singleDmlPrimaryRouteSuffix(delete, dialect);
@@ -35,7 +35,7 @@ class StandardDeleteContext extends AbstractStandardDomainContext implements Del
                 , parentMeta);
     }
 
-    static StandardDeleteContext buildChild(_StandardDelete delete, Dialect dialect, final Visible visible) {
+    static StandardDeleteContext buildChild(_SingleDelete delete, Dialect dialect, final Visible visible) {
         ChildTableMeta<?> childMeta = (ChildTableMeta<?>) delete.table();
         String primarySuffix = _TableRouteUtils.singleDmlPrimaryRouteSuffix(delete, dialect);
 

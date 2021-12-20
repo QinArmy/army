@@ -98,6 +98,15 @@ abstract class TableMetaUtils {
         return comment;
     }
 
+    static boolean immutable(Table table, Class<? extends IDomain> domainClass) {
+        final boolean immutable = table.immutable();
+        if (immutable && domainClass.getAnnotation(Inheritance.class) != null) {
+            String m = String.format("Parent Domain[%s] couldn't be immutable.", domainClass.getName());
+            throw new MetaException(m);
+        }
+        return immutable;
+    }
+
     static <T extends IDomain> void assertParentTableMeta(ParentTableMeta<? super T> parentTableMeta
             , Class<T> domainClass) {
         if (!(parentTableMeta instanceof DefaultTableMeta)) {
@@ -304,19 +313,6 @@ abstract class TableMetaUtils {
             indexMetaList.add(indexMeta);
         }
         return new FieldMetaPair<>(indexMetaList, fieldMetaMap);
-    }
-
-
-    static MappingMode tableMappingMode(final Class<? extends IDomain> domainClass) throws MetaException {
-        final MappingMode mode;
-        if (domainClass.getAnnotation(Inheritance.class) != null) {
-            mode = MappingMode.PARENT;
-        } else if (domainClass.getAnnotation(DiscriminatorValue.class) != null) {
-            mode = MappingMode.CHILD;
-        } else {
-            mode = MappingMode.SIMPLE;
-        }
-        return mode;
     }
 
 

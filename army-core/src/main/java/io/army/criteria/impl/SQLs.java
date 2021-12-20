@@ -73,7 +73,7 @@ public abstract class SQLs extends SQLUtils {
     /**
      * @see #namedParam(String, ParamMeta)
      */
-    public static Update.BatchUpdateSpec<Void> batchUpdate() {
+    public static Update.BatchUpdateSpec<Void> batchDomainUpdate() {
         return ContextualBatchUpdate.create();
     }
 
@@ -82,7 +82,7 @@ public abstract class SQLs extends SQLUtils {
      * @param <C>      criteria java type used to create dynamic batch update and sub query
      * @see #namedParam(String, ParamMeta)
      */
-    public static <C> Update.BatchUpdateSpec<C> batchUpdate(C criteria) {
+    public static <C> Update.BatchUpdateSpec<C> batchDomainUpdate(C criteria) {
         return ContextualBatchUpdate.create(criteria);
     }
 
@@ -97,14 +97,14 @@ public abstract class SQLs extends SQLUtils {
     /**
      * @see #namedParam(String, ParamMeta)
      */
-    public static Delete.BatchDomainDeleteSpec<Void> batchDelete() {
+    public static Delete.BatchDomainDeleteSpec<Void> batchDomainDelete() {
         return ContextualBatchDelete.create();
     }
 
     /**
      * @see #namedParam(String, ParamMeta)
      */
-    public static <C> Delete.BatchDomainDeleteSpec<C> batchDelete(C criteria) {
+    public static <C> Delete.BatchDomainDeleteSpec<C> batchDomainDelete(C criteria) {
         return ContextualBatchDelete.create(criteria);
     }
 
