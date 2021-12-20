@@ -49,9 +49,9 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
 
     private final CriteriaContext criteriaContext;
 
-    private int databaseIndex = -1;
+    private byte databaseIndex = -1;
 
-    private int tableIndex = -1;
+    private byte tableIndex = -1;
 
     private List<FieldMeta<?, ?>> fieldList = new ArrayList<>();
 
@@ -76,14 +76,21 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
 
     @Override
     public BatchSetSpec<T, C> route(int databaseIndex, int tableIndex) {
-        this.databaseIndex = databaseIndex;
-        this.tableIndex = tableIndex;
+        this.databaseIndex = Assert.databaseRoute(this.tableMeta, databaseIndex);
+        this.tableIndex = Assert.tableRoute(this.tableMeta, tableIndex);
         return this;
     }
 
     @Override
     public BatchSetSpec<T, C> route(int tableIndex) {
-        this.tableIndex = tableIndex;
+        this.tableIndex = Assert.tableRoute(this.tableMeta, tableIndex);
+        return this;
+    }
+
+    @Override
+    public BatchSetSpec<T, C> routeAll() {
+        this.databaseIndex = Byte.MIN_VALUE;
+        this.tableIndex = Byte.MIN_VALUE;
         return this;
     }
 
@@ -111,27 +118,27 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
 
     @Override
     public <F extends Number> BatchWhereSpec<T, C> setPlus(FieldMeta<? super T, F> field) {
-        return this.set(field, field.plus(SQLs.namedParam(field)));
+        return this.set(field, field.plus(SQLs.nonNullNamedParam(field)));
     }
 
     @Override
     public <F extends Number> BatchWhereSpec<T, C> setMinus(FieldMeta<? super T, F> field) {
-        return this.set(field, field.minus(SQLs.namedParam(field)));
+        return this.set(field, field.minus(SQLs.nonNullNamedParam(field)));
     }
 
     @Override
     public <F extends Number> BatchWhereSpec<T, C> setMultiply(FieldMeta<? super T, F> field) {
-        return this.set(field, field.multiply(SQLs.namedParam(field)));
+        return this.set(field, field.multiply(SQLs.nonNullNamedParam(field)));
     }
 
     @Override
     public <F extends Number> BatchWhereSpec<T, C> setDivide(FieldMeta<? super T, F> field) {
-        return this.set(field, field.divide(SQLs.namedParam(field)));
+        return this.set(field, field.divide(SQLs.nonNullNamedParam(field)));
     }
 
     @Override
     public <F extends Number> BatchWhereSpec<T, C> setMod(FieldMeta<? super T, F> field) {
-        return this.set(field, field.mod(SQLs.namedParam(field)));
+        return this.set(field, field.mod(SQLs.nonNullNamedParam(field)));
     }
 
     @Override
@@ -291,12 +298,12 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
     }
 
     @Override
-    public int databaseIndex() {
+    public byte databaseIndex() {
         return this.databaseIndex;
     }
 
     @Override
-    public int tableIndex() {
+    public byte tableIndex() {
         return this.tableIndex;
     }
 

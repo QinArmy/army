@@ -49,7 +49,7 @@ abstract class AbstractExpression<E> implements _Expression<E> {
 
     @Override
     public final IPredicate equal(Object parameter) {
-        return DualPredicate.create(this, DualOperator.EQ, SQLs.param(this, parameter));
+        return DualPredicate.create(this, DualOperator.EQ, SQLs.paramWithExp(this, parameter));
     }
 
     @Nullable
@@ -90,7 +90,7 @@ abstract class AbstractExpression<E> implements _Expression<E> {
 
     @Override
     public final IPredicate lessThan(Object parameter) {
-        return DualPredicate.create(this, DualOperator.LT, SQLs.param(this, parameter));
+        return DualPredicate.create(this, DualOperator.LT, SQLs.paramWithExp(this, parameter));
     }
 
     @Override
@@ -135,7 +135,7 @@ abstract class AbstractExpression<E> implements _Expression<E> {
 
     @Override
     public final IPredicate lessEqual(Object parameter) {
-        return DualPredicate.create(this, DualOperator.LE, SQLs.param(this, parameter));
+        return DualPredicate.create(this, DualOperator.LE, SQLs.paramWithExp(this, parameter));
     }
 
     @Override
@@ -180,7 +180,7 @@ abstract class AbstractExpression<E> implements _Expression<E> {
 
     @Override
     public final IPredicate greatThan(Object parameter) {
-        return DualPredicate.create(this, DualOperator.GT, SQLs.param(this, parameter));
+        return DualPredicate.create(this, DualOperator.GT, SQLs.paramWithExp(this, parameter));
     }
 
     @Override
@@ -225,7 +225,7 @@ abstract class AbstractExpression<E> implements _Expression<E> {
 
     @Override
     public final IPredicate greatEqual(Object parameter) {
-        return DualPredicate.create(this, DualOperator.GE, SQLs.param(this, parameter));
+        return DualPredicate.create(this, DualOperator.GE, SQLs.paramWithExp(this, parameter));
     }
 
     @Override
@@ -271,7 +271,7 @@ abstract class AbstractExpression<E> implements _Expression<E> {
 
     @Override
     public final IPredicate notEqual(Object constant) {
-        return DualPredicate.create(this, DualOperator.NOT_EQ, SQLs.param(this, constant));
+        return DualPredicate.create(this, DualOperator.NOT_EQ, SQLs.paramWithExp(this, constant));
     }
 
     @Override
@@ -317,7 +317,7 @@ abstract class AbstractExpression<E> implements _Expression<E> {
 
     @Override
     public final IPredicate between(Object first, Object second) {
-        return BetweenPredicate.build(this, SQLs.param(this, first), SQLs.param(this, second));
+        return BetweenPredicate.build(this, SQLs.paramWithExp(this, first), SQLs.paramWithExp(this, second));
     }
 
     @Override
@@ -333,7 +333,7 @@ abstract class AbstractExpression<E> implements _Expression<E> {
 
     @Override
     public final IPredicate between(Expression<?> first, Object second) {
-        return BetweenPredicate.build(this, first, SQLs.param(this, second));
+        return BetweenPredicate.build(this, first, SQLs.paramWithExp(this, second));
     }
 
     @Override
@@ -349,7 +349,7 @@ abstract class AbstractExpression<E> implements _Expression<E> {
 
     @Override
     public final IPredicate between(Object first, Expression<?> second) {
-        return BetweenPredicate.build(this, SQLs.param(this, first), second);
+        return BetweenPredicate.build(this, SQLs.paramWithExp(this, first), second);
     }
 
     @Override
@@ -442,7 +442,7 @@ abstract class AbstractExpression<E> implements _Expression<E> {
 
     @Override
     public final IPredicate like(String pattern) {
-        return DualPredicate.create(this, DualOperator.LIKE, SQLs.param(this, pattern));
+        return DualPredicate.create(this, DualOperator.LIKE, SQLs.paramWithExp(this, pattern));
     }
 
     @Override
@@ -457,7 +457,7 @@ abstract class AbstractExpression<E> implements _Expression<E> {
 
     @Override
     public final IPredicate notLike(String pattern) {
-        return DualPredicate.create(this, DualOperator.NOT_LIKE, SQLs.param(this, pattern));
+        return DualPredicate.create(this, DualOperator.NOT_LIKE, SQLs.paramWithExp(this, pattern));
     }
 
     @Override
@@ -477,7 +477,7 @@ abstract class AbstractExpression<E> implements _Expression<E> {
 
     @Override
     public final Expression<E> mod(Object operator) {
-        return DualExpression.create(this, DualOperator.MOD, SQLs.param(this, operator));
+        return DualExpression.create(this, DualOperator.MOD, SQLs.paramWithExp(this, operator));
     }
 
     @Override
@@ -502,7 +502,7 @@ abstract class AbstractExpression<E> implements _Expression<E> {
 
     @Override
     public final Expression<E> multiply(Object multiplicand) {
-        return DualExpression.create(this, DualOperator.MULTIPLY, SQLs.param(this, multiplicand));
+        return DualExpression.create(this, DualOperator.MULTIPLY, SQLs.paramWithExp(this, multiplicand));
     }
 
     @Override
@@ -527,7 +527,7 @@ abstract class AbstractExpression<E> implements _Expression<E> {
 
     @Override
     public final Expression<E> plus(Object augend) {
-        return DualExpression.create(this, DualOperator.PLUS, SQLs.param(this, augend));
+        return DualExpression.create(this, DualOperator.PLUS, SQLs.paramWithExp(this, augend));
     }
 
     @Override
@@ -552,7 +552,7 @@ abstract class AbstractExpression<E> implements _Expression<E> {
 
     @Override
     public final Expression<E> minus(Object subtrahend) {
-        return DualExpression.create(this, DualOperator.MINUS, SQLs.param(this, subtrahend));
+        return DualExpression.create(this, DualOperator.MINUS, SQLs.paramWithExp(this, subtrahend));
     }
 
     @Override
@@ -577,7 +577,7 @@ abstract class AbstractExpression<E> implements _Expression<E> {
 
     @Override
     public final Expression<E> divide(Object divisor) {
-        return DualExpression.create(this, DualOperator.DIVIDE, SQLs.param(this, divisor));
+        return DualExpression.create(this, DualOperator.DIVIDE, SQLs.paramWithExp(this, divisor));
     }
 
     @Override
@@ -607,7 +607,7 @@ abstract class AbstractExpression<E> implements _Expression<E> {
 
     @Override
     public final Expression<E> and(Object parameter) {
-        return DualExpression.create(this, DualOperator.AND, SQLs.param(this, parameter));
+        return DualExpression.create(this, DualOperator.AND, SQLs.paramWithExp(this, parameter));
     }
 
     @Override
@@ -632,7 +632,7 @@ abstract class AbstractExpression<E> implements _Expression<E> {
 
     @Override
     public final Expression<E> or(Object operand) {
-        return DualExpression.create(this, DualOperator.OR, SQLs.param(this, operand));
+        return DualExpression.create(this, DualOperator.OR, SQLs.paramWithExp(this, operand));
     }
 
     @Override
@@ -657,7 +657,7 @@ abstract class AbstractExpression<E> implements _Expression<E> {
 
     @Override
     public final Expression<E> xor(Object parameter) {
-        return DualExpression.create(this, DualOperator.XOR, SQLs.param(this, parameter));
+        return DualExpression.create(this, DualOperator.XOR, SQLs.paramWithExp(this, parameter));
     }
 
     @Override
@@ -682,7 +682,7 @@ abstract class AbstractExpression<E> implements _Expression<E> {
 
     @Override
     public final Expression<E> rightShift(Number bitNumber) {
-        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, SQLs.param(this, bitNumber));
+        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, SQLs.paramWithExp(this, bitNumber));
     }
 
     @Override
@@ -707,7 +707,7 @@ abstract class AbstractExpression<E> implements _Expression<E> {
 
     @Override
     public final Expression<E> leftShift(Number bitNumber) {
-        return DualExpression.create(this, DualOperator.LEFT_SHIFT, SQLs.param(this, bitNumber));
+        return DualExpression.create(this, DualOperator.LEFT_SHIFT, SQLs.paramWithExp(this, bitNumber));
     }
 
     @Override

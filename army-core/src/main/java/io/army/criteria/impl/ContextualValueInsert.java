@@ -143,7 +143,7 @@ final class ContextualValueInsert<T extends IDomain, C> extends AbstractSQLDebug
 
     @Override
     public <F> InsertValuesSpec<T, C> setDefault(final FieldMeta<? super T, F> fieldMeta) {
-        this.set(fieldMeta, SQLs.defaultKeyWord());
+        this.set(fieldMeta, SQLs.defaultWord());
         return this;
     }
 

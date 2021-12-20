@@ -131,6 +131,9 @@ public interface Update extends Statement, SQLDebug {
         BatchSetSpec<T, C> route(int databaseIndex, int tableIndex);
 
         BatchSetSpec<T, C> route(int tableIndex);
+
+        BatchSetSpec<T, C> routeAll();
+
     }
 
 

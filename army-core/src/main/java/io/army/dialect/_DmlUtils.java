@@ -655,8 +655,8 @@ public abstract class _DmlUtils {
 
         List<ParamValue> paramValueList = new ArrayList<>(placeHolder.size());
         for (ParamValue paramValue : placeHolder) {
-            if (paramValue instanceof NamedParamExpression) {
-                Object value = readonlyWrapper.get(((NamedParamExpression<?>) paramValue).name());
+            if (paramValue instanceof NamedParam) {
+                Object value = readonlyWrapper.get(((NamedParam<?>) paramValue).name());
                 paramValueList.add(ParamValue.build(paramValue.paramMeta(), value));
             } else {
                 paramValueList.add(paramValue);

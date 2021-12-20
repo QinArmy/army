@@ -302,6 +302,16 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression
     }
 
     @Override
+    public final boolean databaseRoute() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public final boolean tableRoute() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public final boolean equals(final Object obj) {
         final boolean match;
         if (obj == this) {
@@ -340,7 +350,7 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression
     }
 
     @Override
-    public final void appendSql(_SqlContext context) {
+    public final void appendSql(final _SqlContext context) {
         context.appendField(this);
     }
 

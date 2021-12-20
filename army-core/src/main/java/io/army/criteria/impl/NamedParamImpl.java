@@ -1,15 +1,26 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.NamedParamExpression;
+import io.army.criteria.NamedParam;
 import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.meta.ParamMeta;
 
-final class NamedParamImpl<E> extends NoNOperationExpression<E>
-        implements NamedParamExpression<E> {
+/**
+ * <p>
+ * This class is a implementation of {@link NamedParam}.
+ * </p>
+ *
+ * @param <E> java type of named parameter
+ */
+class NamedParamImpl<E> extends NoNOperationExpression<E>
+        implements NamedParam<E> {
 
-    static <E> NamedParamImpl<E> create(String name, ParamMeta paramMeta) {
+    static <E> NamedParam<E> named(String name, ParamMeta paramMeta) {
         return new NamedParamImpl<>(name, paramMeta);
+    }
+
+    static <E> NonNullNamedParam<E> nonNull(String name, ParamMeta paramMeta) {
+        return new NonNullNamedParamImpl<>(name, paramMeta);
     }
 
     private final String name;
@@ -32,20 +43,40 @@ final class NamedParamImpl<E> extends NoNOperationExpression<E>
     }
 
     @Override
-    public Object value() {
-        throw new UnsupportedOperationException();
+    public final Object value() {
+        throw new UnsupportedOperationException("Couldn't specify %s in non batch update (or batch delete) statement.");
     }
 
     @Override
-    protected void afterSpace(_SqlContext context) {
-        context.sqlBuilder()
-                .append("?");
+    public final void appendSql(final _SqlContext context) {
         context.appendParam(this);
-
     }
 
     @Override
     public final MappingType mappingType() {
-        throw new UnsupportedOperationException();
+        throw unsupportedOperation();
     }
+
+    @Override
+    public final String toString() {
+        return " ?";
+    }
+
+    /**
+     * <p>
+     * This class is a implementation of {@link NonNullNamedParam}.
+     * </p>
+     *
+     * @param <E> java type of named parameter
+     */
+    private static final class NonNullNamedParamImpl<E> extends NamedParamImpl<E> implements NonNullNamedParam<E> {
+
+        private NonNullNamedParamImpl(String name, ParamMeta paramMeta) {
+            super(name, paramMeta);
+        }
+
+
+    }
+
+
 }

@@ -37,15 +37,15 @@ abstract class MysqlDml extends AbstractDml {
 
     /**
      * <p>
-     * MySQL {@link Dialect#independentlyUpdateChild()} always return false
+     * MySQL {@link Dialect#unionUpdateChild()} always return true
      * ,so this method always use multi-table syntax update child table.
      * </p>
      *
-     * @see Dialect#independentlyUpdateChild()
+     * @see Dialect#unionUpdateChild()
      */
     @Override
     protected final Stmt standardChildUpdate(final _SingleUpdateContext context) {
-        assert !context.independentlyUpdateChild();
+        assert !context.unionUpdateChild();
 
         final _SetBlock childSetClause = context.childSetClause();
         assert childSetClause != null;

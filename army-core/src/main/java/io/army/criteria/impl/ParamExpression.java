@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
+import io.army.criteria.GenericField;
 import io.army.criteria.ValueExpression;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -23,6 +24,16 @@ final class ParamExpression<E> extends NoNOperationExpression<E> implements Valu
             throw new CriteriaException(String.format("Value[%s] couldn't create param expression.", value));
         }
         return new ParamExpression<>(paramMeta, value);
+    }
+
+    static <E> ParamExpression<E> create(Expression<?> type, @Nullable E value) {
+        final ParamMeta paramMeta;
+        if (type instanceof GenericField) {
+            paramMeta = (GenericField<?, ?>) type;
+        } else {
+            paramMeta = type.mappingType();
+        }
+        return create(paramMeta, value);
     }
 
     static <E> ParamExpression<E> create(E value) {

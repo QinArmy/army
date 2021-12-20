@@ -21,14 +21,14 @@ abstract class SubQueries<Q extends Query, C> extends AbstractStandardQuery<Q, C
         implements _StandardSubQuery, SubQuery {
 
     static SubQueries<SubQuery, Void> subQuery() {
-        if (CriteriaContextStack.pop().criteria() != null) {
+        if (CriteriaContextStack.peek().criteria() != null) {
             throw new IllegalArgumentException("criteria isn't current context.");
         }
         return new StandardSubQuery<>(null);
     }
 
     static <C> SubQueries<SubQuery, C> subQuery(C criteria) {
-        if (criteria != CriteriaContextStack.pop().criteria()) {
+        if (criteria != CriteriaContextStack.peek().criteria()) {
             throw new IllegalArgumentException("criteria isn't current context.");
         }
         return new StandardSubQuery<>(criteria);
@@ -36,7 +36,7 @@ abstract class SubQueries<Q extends Query, C> extends AbstractStandardQuery<Q, C
 
 
     static <C> SubQueries<RowSubQuery, C> buildRowSubQuery(C criteria) {
-        if (criteria != CriteriaContextStack.pop().criteria()) {
+        if (criteria != CriteriaContextStack.peek().criteria()) {
             throw new IllegalArgumentException("criteria isn't current context.");
         }
         return new StandardRowSubQuery<>(criteria);
@@ -126,13 +126,13 @@ abstract class SubQueries<Q extends Query, C> extends AbstractStandardQuery<Q, C
 
     @Override
     final void onAddTable(TableMeta<?> table, String tableAlias) {
-        CriteriaContextStack.pop()
+        CriteriaContextStack.peek()
                 .onAddTable(table, tableAlias);
     }
 
     @Override
     final void onAddSubQuery(SubQuery subQuery, String subQueryAlias) {
-        CriteriaContextStack.pop()
+        CriteriaContextStack.peek()
                 .onAddSubQuery(subQuery, subQueryAlias);
     }
 

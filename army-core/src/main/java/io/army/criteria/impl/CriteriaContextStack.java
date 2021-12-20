@@ -20,6 +20,15 @@ abstract class CriteriaContextStack {
         HOLDER.set(new ContextStack(rootContext));
     }
 
+    static CriteriaContext peek() {
+        final Stack stack = HOLDER.get();
+        if (stack == null) {
+            throw notContextStack();
+        }
+        return stack.peek();
+
+    }
+
     static void pop(final CriteriaContext subContext) {
         final Stack stack = HOLDER.get();
         if (stack == null) {

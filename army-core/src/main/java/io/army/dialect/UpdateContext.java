@@ -181,8 +181,8 @@ final class UpdateContext extends _BaseSqlContext implements _SingleUpdateContex
     /*################################## blow _SetClause method ##################################*/
 
     @Override
-    public boolean independentlyUpdateChild() {
-        return this.dialect.independentlyUpdateChild();
+    public boolean unionUpdateChild() {
+        return this.dialect.unionUpdateChild();
     }
 
     @Override

@@ -14,8 +14,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+/**
+ * <p>
+ * This class is util class used to create standard sql statement.
+ * </p>
+ */
 @SuppressWarnings({"unused"})
-public abstract class SQLs extends AbstractSQLs {
+public abstract class SQLs extends SQLUtils {
+
+    /**
+     * protected constructor, application developer can extend this util class.
+     */
+    protected SQLs() {
+        throw new UnsupportedOperationException();
+    }
 
 
     public static <T extends IDomain> Insert.InsertOptionSpec<T, Void> domainInsert(TableMeta<T> targetTable) {
@@ -146,16 +158,16 @@ public abstract class SQLs extends AbstractSQLs {
     /*################################## blow sql reference method ##################################*/
 
     public static <T extends IDomain, F> LogicalField<T, F> field(String tableAlias, FieldMeta<T, F> fieldMeta) {
-        return CriteriaContextStack.pop()
+        return CriteriaContextStack.peek()
                 .aliasField(tableAlias, fieldMeta);
     }
 
     public static <E> Expression<E> ref(String subQueryAlias, String derivedFieldName) {
-        return CriteriaContextStack.pop().ref(subQueryAlias, derivedFieldName);
+        return CriteriaContextStack.peek().ref(subQueryAlias, derivedFieldName);
     }
 
     public static <E> Expression<E> ref(String subQueryAlias, String derivedFieldName, Class<E> selectionType) {
-        return CriteriaContextStack.pop()
+        return CriteriaContextStack.peek()
                 .ref(subQueryAlias, derivedFieldName, selectionType);
     }
 
@@ -165,7 +177,7 @@ public abstract class SQLs extends AbstractSQLs {
      * </p>
      */
     public static <E> Expression<E> composeRef(String selectionAlias) {
-        return CriteriaContextStack.pop()
+        return CriteriaContextStack.peek()
                 .composeRef(selectionAlias);
     }
 
@@ -178,7 +190,7 @@ public abstract class SQLs extends AbstractSQLs {
     }
 
     public static List<SelectionGroup> childGroup(ChildTableMeta<?> childMeta, String parentAlias, String childAlias) {
-        List<SelectionGroup> list = new ArrayList<>(2);
+        final List<SelectionGroup> list = new ArrayList<>(2);
         list.add(SQLs.group(childMeta.parentMeta(), parentAlias));
         list.add(SQLs.group(childMeta, childAlias));
         return list;
@@ -200,10 +212,7 @@ public abstract class SQLs extends AbstractSQLs {
     }
 
     public static <C> IPredicate exists(Function<C, SubQuery> function) {
-        return UnaryPredicate.create(
-                UnaryOperator.EXISTS, function.apply(
-                        CriteriaContextStack.pop().criteria()
-                ));
+        return UnaryPredicate.create(UnaryOperator.EXISTS, function.apply(CriteriaContextStack.getCriteria()));
     }
 
     public static IPredicate notExists(SubQuery subQuery) {
@@ -211,10 +220,7 @@ public abstract class SQLs extends AbstractSQLs {
     }
 
     public static <C> IPredicate notExists(Function<C, SubQuery> function) {
-        return UnaryPredicate.create(
-                UnaryOperator.NOT_EXISTS, function.apply(
-                        CriteriaContextStack.pop().criteria()
-                ));
+        return UnaryPredicate.create(UnaryOperator.NOT_EXISTS, function.apply(CriteriaContextStack.getCriteria()));
     }
 
     static <T extends IDomain> ExpressionRow<T> row(List<Expression<?>> columnList) {
@@ -228,13 +234,5 @@ public abstract class SQLs extends AbstractSQLs {
         return null;
     }
 
-    /**
-     * package method.
-     */
-    @SuppressWarnings("unchecked")
-    @Deprecated
-    static <E> Expression<E> defaultKeyWord() {
-        return (DefaultWord<E>) DefaultWord.INSTANCE;
-    }
 
 }

@@ -3,12 +3,11 @@ package io.army.criteria.impl;
 import io.army.criteria.Expression;
 import io.army.criteria.FuncExpression;
 import io.army.criteria.GenericField;
-import io.army.criteria.NamedParamExpression;
+import io.army.criteria.NamedParam;
 import io.army.criteria.impl.inner._Expression;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
-import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 
 import java.time.LocalDate;
@@ -16,22 +15,23 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.function.Function;
 
-abstract class AbstractSQLs {
+/**
+ * <p>
+ * This class is util class used to create standard sql element :
+ * <ul>
+ *     <li>statement parameter</li>
+ *     <li>sql literal</li>
+ *     <li>standard sql function</li>
+ * </ul>
+ * </p>
+ */
+abstract class SQLUtils {
 
-
-    AbstractSQLs() {
+    /**
+     * package constructor,forbid application developer extend this util class.
+     */
+    SQLUtils() {
         throw new UnsupportedOperationException();
-    }
-
-
-    @Deprecated
-    public static <E> Expression<E> asNull(Class<?> nullTypeClass) {
-        return ParamExpression.create(_MappingFactory.getMapping(nullTypeClass), null);
-    }
-
-    @Deprecated
-    public static <E> Expression<E> asNull(MappingType mappingType) {
-        return ParamExpression.create(mappingType, null);
     }
 
 
@@ -39,23 +39,29 @@ abstract class AbstractSQLs {
         return ParamExpression.create(param);
     }
 
-    @Deprecated
-    public static <E> Expression<E> param(E param, ParamMeta paramMeta) {
-        return ParamExpression.create(paramMeta, param);
-    }
-
     public static <E> Expression<E> param(MappingType mappingType, @Nullable E value) {
         return ParamExpression.create(mappingType, value);
     }
 
     public static <E> Expression<E> param(final Expression<?> type, @Nullable E value) {
-        final ParamMeta paramMeta;
-        if (type instanceof GenericField) {
-            paramMeta = (GenericField<?, ?>) type;
+        return ParamExpression.create(type, value);
+    }
+
+
+    /**
+     * package method
+     */
+    @SuppressWarnings("unchecked")
+    static Expression<?> paramWithExp(final Expression<?> type, final Object value) {
+        final Expression<?> resultExpression;
+        if (value instanceof Expression) {
+            resultExpression = (Expression<?>) value;
+        } else if (value instanceof Function) {
+            resultExpression = ((Function<Object, Expression<?>>) value).apply(CriteriaContextStack.getCriteria());
         } else {
-            paramMeta = type.mappingType();
+            resultExpression = ParamExpression.create(type, value);
         }
-        return ParamExpression.create(paramMeta, value);
+        return resultExpression;
     }
 
     public static <E> Expression<Collection<E>> collectionParam(Expression<?> type, Collection<E> value) {
@@ -69,8 +75,8 @@ abstract class AbstractSQLs {
      * @see SQLs#batchDelete()
      * @see SQLs#batchDelete(Object)
      */
-    public static <E> NamedParamExpression<E> namedParam(String name, ParamMeta paramMeta) {
-        return NamedParamImpl.create(name, paramMeta);
+    public static <E> NamedParam<E> namedParam(String name, ParamMeta paramMeta) {
+        return NamedParamImpl.named(name, paramMeta);
     }
 
     /**
@@ -79,44 +85,30 @@ abstract class AbstractSQLs {
      * @see SQLs#batchDelete()
      * @see SQLs#batchDelete(Object)
      */
-    public static <E> NamedParamExpression<E> namedParam(GenericField<?, ?> field) {
-        return NamedParamImpl.create(field.fieldName(), field);
+    public static <E> NamedParam<E> namedParam(GenericField<?, ?> field) {
+        return NamedParamImpl.named(field.fieldName(), field);
     }
 
 
-    @Deprecated
-    public static ParamMeta obtainParamMeta(Expression<?> expression) {
-        ParamMeta paramMeta;
-        if (expression instanceof GenericField) {
-            FieldMeta<?, ?> fieldMeta = ((GenericField<?, ?>) expression).fieldMeta();
-            if (fieldMeta.codec()) {
-                paramMeta = fieldMeta;
-            } else {
-                paramMeta = fieldMeta.mappingType();
-            }
-        } else {
-            paramMeta = expression.mappingType();
-        }
-        return paramMeta;
+    /**
+     * @see SQLs#batchUpdate()
+     * @see SQLs#batchUpdate(Object)
+     * @see SQLs#batchDelete()
+     * @see SQLs#batchDelete(Object)
+     */
+    public static <E> NamedParam<E> nonNullNamedParam(String name, ParamMeta paramMeta) {
+        return NamedParamImpl.nonNull(name, paramMeta);
     }
 
     /**
-     * package method
+     * @see SQLs#batchUpdate()
+     * @see SQLs#batchUpdate(Object)
+     * @see SQLs#batchDelete()
+     * @see SQLs#batchDelete(Object)
      */
-    @SuppressWarnings("unchecked")
-    @Deprecated
-    static Expression<?> paramWithExp(Object value, Expression<?> expression) {
-        final Expression<?> actualExp;
-        if (value instanceof Expression) {
-            actualExp = (Expression<?>) value;
-        } else if (value instanceof Function) {
-            actualExp = ((Function<Object, Expression<?>>) value).apply(CriteriaContextStack.pop().criteria());
-        } else {
-            actualExp = param(expression, value);
-        }
-        return actualExp;
+    public static <E> NamedParam<E> nonNullNamedParam(GenericField<?, ?> field) {
+        return NamedParamImpl.nonNull(field.fieldName(), field);
     }
-
 
     public static <E> Expression<E> literal(E value) {
         return LiteralExpression.create(value);

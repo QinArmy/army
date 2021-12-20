@@ -9,9 +9,12 @@ import io.army.dialect._SqlContext;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Exceptions;
 
+import java.util.Objects;
+
 final class UnaryPredicate extends AbstractPredicate {
 
     static UnaryPredicate create(UnaryOperator operator, SubQuery subQuery) {
+        Objects.requireNonNull(subQuery);
         switch (operator) {
             case NOT_EXISTS:
             case EXISTS:
