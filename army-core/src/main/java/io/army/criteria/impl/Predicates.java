@@ -11,12 +11,12 @@ public abstract class Predicates {
     }
 
     public static PrimaryValueEqualPredicate primaryValueEquals(PrimaryFieldMeta<?, ?> primary, Object value) {
-        return DualPredicate.buildPrimaryValueEqual(primary, SQLs.param(value, primary.mappingType()));
+       throw new UnsupportedOperationException();
     }
 
     public static PrimaryValueEqualPredicate primaryValueEquals(PrimaryFieldMeta<?, ?> primary
             , ValueExpression<?> valueExp) {
-        return DualPredicate.buildPrimaryValueEqual(primary, valueExp);
+        throw new UnsupportedOperationException();
     }
 
 }

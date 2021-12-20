@@ -1,15 +1,15 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.Expression;
+import io.army.criteria.FuncExpression;
+import io.army.criteria.GenericField;
+import io.army.criteria.NamedParamExpression;
 import io.army.criteria.impl.inner._Expression;
-import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
-import io.army.mapping.StringType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
-import io.army.meta.TableMeta;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,47 +24,42 @@ abstract class AbstractSQLs {
     }
 
 
-    public static <E> ParamExpression<E> asNull(Class<?> nullTypeClass) {
-        return ParamExpressionImp.create(_MappingFactory.getMapping(nullTypeClass), null);
-    }
-
-    public static <E> ParamExpression<E> asNull(MappingType mappingType) {
-        return ParamExpressionImp.create(mappingType, null);
-    }
-
-    public static <E> ParamExpression<E> param(E param) {
-        return ParamExpressionImp.create(null, param);
+    @Deprecated
+    public static <E> Expression<E> asNull(Class<?> nullTypeClass) {
+        return ParamExpression.create(_MappingFactory.getMapping(nullTypeClass), null);
     }
 
     @Deprecated
-    public static <E> ParamExpression<E> param(E param, ParamMeta paramMeta) {
-        return ParamExpressionImp.create(paramMeta, param);
+    public static <E> Expression<E> asNull(MappingType mappingType) {
+        return ParamExpression.create(mappingType, null);
     }
 
-    public static Expression<?> param(MappingType mappingType, @Nullable Object value) {
-        final Expression<?> resultExpression;
-        if (value instanceof Expression) {
-            resultExpression = (Expression<?>) value;
-        } else {
-            resultExpression = ParamExpressionImp.create(mappingType, value);
-        }
-        return resultExpression;
+
+    public static <E> Expression<E> param(E param) {
+        return ParamExpression.create(param);
     }
 
-    public static Expression<?> param(final Expression<?> expression, @Nullable Object value) {
-        final Expression<?> resultExpression;
-        if (value instanceof Expression) {
-            resultExpression = (Expression<?>) value;
+    @Deprecated
+    public static <E> Expression<E> param(E param, ParamMeta paramMeta) {
+        return ParamExpression.create(paramMeta, param);
+    }
+
+    public static <E> Expression<E> param(MappingType mappingType, @Nullable E value) {
+        return ParamExpression.create(mappingType, value);
+    }
+
+    public static <E> Expression<E> param(final Expression<?> type, @Nullable E value) {
+        final ParamMeta paramMeta;
+        if (type instanceof GenericField) {
+            paramMeta = (GenericField<?, ?>) type;
         } else {
-            final ParamMeta paramMeta;
-            if (expression instanceof GenericField) {
-                paramMeta = (GenericField<?, ?>) expression;
-            } else {
-                paramMeta = expression.mappingType();
-            }
-            resultExpression = ParamExpressionImp.create(paramMeta, value);
+            paramMeta = type.mappingType();
         }
-        return resultExpression;
+        return ParamExpression.create(paramMeta, value);
+    }
+
+    public static <E> Expression<Collection<E>> collectionParam(Expression<?> type, Collection<E> value) {
+        return CollectionParamExpression.create(type, value);
     }
 
 
@@ -122,43 +117,24 @@ abstract class AbstractSQLs {
         return actualExp;
     }
 
-    /**
-     * @see MappingType#toConstant(ParamMeta, Object)
-     */
-    public static <E> ConstantExpression<E> constant(E value) {
-        return ConstantExpressionImpl.build(null, value);
+
+    public static <E> Expression<E> literal(E value) {
+        return LiteralExpression.create(value);
     }
 
-    /**
-     * @see MappingType#toConstant(ParamMeta, Object)
-     */
-    public static <E> ConstantExpression<E> constant(E value, @Nullable ParamMeta paramMeta) {
-        return ConstantExpressionImpl.build(paramMeta, value);
+    public static <E> Expression<E> literal(ParamMeta paramMeta, E value) {
+        return LiteralExpression.create(paramMeta, value);
     }
 
 
     @SuppressWarnings("unchecked")
-    public static <E> Expression<E> defaultValue() {
-        return (Expression<E>) DefaultKeyWord.INSTANCE;
+    public static <E> Expression<E> defaultWord() {
+        return (Expression<E>) DefaultWord.INSTANCE;
     }
 
-    @Deprecated
-    public static TableMeta<Dual> dual() {
-        return Dual.DualTableMeta.INSTANCE;
-    }
-
-    public static <E> Expression<Collection<E>> collection(ParamMeta paramMeta, Collection<E> collection) {
-        return CollectionExpressionImpl.build(paramMeta, collection);
-    }
-
-    public static <E> Expression<Collection<E>> collectionWithExp(Expression<?> expression, Collection<E> collection) {
-        final ParamMeta paramMeta;
-        if (expression instanceof GenericField) {
-            paramMeta = (GenericField<?, ?>) expression;
-        } else {
-            paramMeta = expression.mappingType();
-        }
-        return CollectionExpressionImpl.build(paramMeta, collection);
+    @SuppressWarnings("unchecked")
+    public static <E> Expression<E> nullWord() {
+        return (Expression<E>) NullWord.INSTANCE;
     }
 
     /*################################## blow number function method ##################################*/
@@ -198,7 +174,7 @@ abstract class AbstractSQLs {
 
     public static <E extends Number> Expression<String> conv(Expression<E> number, int fromBase, int toBase) {
         return new AbstractFunc.ThreeArgumentFunc<>("CONV", _MappingFactory.getMapping(String.class), number
-                , constant(fromBase), constant(toBase));
+                , literal(fromBase), literal(toBase));
     }
 
     public static <E extends Number> Expression<Double> cos(Expression<E> x) {
@@ -238,7 +214,7 @@ abstract class AbstractSQLs {
 
     public static <E extends Number> Expression<String> format(Expression<E> number, int decimal) {
         return AbstractFunc.twoArgumentFunc("FORMAT", _MappingFactory.getMapping(String.class)
-                , number, constant(decimal));
+                , number, literal(decimal));
     }
 
     public static <E extends Number> Expression<String> hex(Expression<E> number) {
@@ -246,11 +222,11 @@ abstract class AbstractSQLs {
     }
 
     public static Expression<String> hex(Number number) {
-        return AbstractFunc.oneArgumentFunc("HEX", _MappingFactory.getMapping(String.class), constant(number));
+        return AbstractFunc.oneArgumentFunc("HEX", _MappingFactory.getMapping(String.class), literal(number));
     }
 
     public static Expression<String> hex(String numberText) {
-        return AbstractFunc.oneArgumentFunc("HEX", _MappingFactory.getMapping(String.class), constant(numberText));
+        return AbstractFunc.oneArgumentFunc("HEX", _MappingFactory.getMapping(String.class), literal(numberText));
     }
 
     public static Expression<String> hexForText(Expression<String> numberText) {
@@ -280,14 +256,14 @@ abstract class AbstractSQLs {
      * @see #ln(Expression)
      */
     public static <E extends Number> Expression<Double> log2(Expression<E> power) {
-        return log(constant(2), power);
+        return log(literal(2), power);
     }
 
     /**
      * @see #ln(Expression)
      */
     public static <E extends Number> Expression<Double> log10(Expression<E> power) {
-        return log(constant(10), power);
+        return log(literal(10), power);
     }
 
     public static <E extends Number> Expression<E> mod(Expression<E> dividend
@@ -313,22 +289,4 @@ abstract class AbstractSQLs {
 
     /*################################## blow static inner class  ##################################*/
 
-    private static final class DefaultValueExpression<E> extends AbstractNoNOperationExpression<E> {
-
-        private static final DefaultValueExpression<?> INSTANCE = new DefaultValueExpression<>();
-
-        private DefaultValueExpression() {
-        }
-
-        @Override
-        protected void afterSpace(_SqlContext context) {
-            context.sqlBuilder()
-                    .append(" DEFAULT");
-        }
-
-        @Override
-        public MappingType mappingType() {
-            return StringType.build(String.class);
-        }
-    }
 }

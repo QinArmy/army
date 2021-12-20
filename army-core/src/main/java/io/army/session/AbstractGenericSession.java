@@ -37,7 +37,7 @@ public abstract class AbstractGenericSession implements GenericSession {
                 targetList.add(fieldMeta);
                 Object value = readonlyWrapper.get(fieldMeta.fieldName());
                 if (value == null) {
-                    valueList.add((_Expression<?>) SQLs.asNull(fieldMeta.mappingType()));
+                    valueList.add((_Expression<?>) SQLs.nullWord());
                 } else {
                     valueList.add((_Expression<?>) SQLs.param(fieldMeta, value));
                 }

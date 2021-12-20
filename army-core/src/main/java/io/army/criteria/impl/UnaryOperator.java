@@ -67,7 +67,6 @@ enum UnaryOperator implements SQLOperator {
         }
     },
     IS_NOT_NULL {
-
         @Override
         public String rendered() {
             return "IS NOT NULL";
@@ -76,6 +75,16 @@ enum UnaryOperator implements SQLOperator {
         @Override
         public Position position() {
             return Position.RIGHT;
+        }
+    }, INVERT {
+        @Override
+        public String rendered() {
+            return "~";
+        }
+
+        @Override
+        public boolean bitOperator() {
+            return true;
         }
     }
 

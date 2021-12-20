@@ -1,14 +1,11 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
-import io.army.criteria.FieldExpression;
 import io.army.criteria.impl.inner._Expression;
+import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
-import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
-
-import java.util.Collection;
+import io.army.util._Exceptions;
 
 /**
  * This class is a implementation of {@link Expression}.
@@ -16,16 +13,17 @@ import java.util.Collection;
  *
  * @param <E> expression result java type
  */
-class UnaryExpression<E> extends AbstractExpression<E> {
+final class UnaryExpression<E> extends AbstractExpression<E> {
 
-    static <E> UnaryExpression<E> build(_Expression<E> expression, UnaryOperator unaryOperator) {
-        UnaryExpression<E> unaryExpression;
-        if (expression instanceof FieldExpression) {
-            unaryExpression = new FieldUnaryExpression<>(expression, unaryOperator);
-        } else {
-            unaryExpression = new UnaryExpression<>(expression, unaryOperator);
+    static <E> UnaryExpression<E> create(_Expression<E> expression, UnaryOperator operator) {
+        switch (operator) {
+            case INVERT:
+            case NEGATED:
+                return new UnaryExpression<>(expression, operator);
+            default:
+                throw _Exceptions.unexpectedEnum(operator);
+
         }
-        return unaryExpression;
     }
 
     final _Expression<E> expression;
@@ -39,82 +37,52 @@ class UnaryExpression<E> extends AbstractExpression<E> {
 
 
     @Override
-    public final MappingType mappingType() {
-        return expression.mappingType();
+    public MappingType mappingType() {
+        return this.expression.mappingType();
     }
 
 
     @Override
-    public void appendSql(_SqlContext context) {
-        this.doAppendSQL(context);
-    }
-
-    final void doAppendSQL(_SqlContext context) {
-        switch (this.operator.position()) {
-            case LEFT:
+    public void appendSql(final _SqlContext context) {
+        switch (this.operator) {
+            case INVERT:
+            case NEGATED: {
                 context.sqlBuilder()
-                        .append(" ")
+                        .append(Constant.SPACE)
                         .append(this.operator.rendered());
                 this.expression.appendSql(context);
-                break;
-            case RIGHT:
-                this.expression.appendSql(context);
-                context.sqlBuilder()
-                        .append(" ")
-                        .append(this.operator.rendered());
-                break;
+            }
+            break;
             default:
-                throw new IllegalStateException(String.format("UnaryOperator[%s]'s position error.", this.operator));
+                throw _Exceptions.unexpectedEnum(this.operator);
+
         }
     }
 
     @Override
-    public final String toString() {
-        StringBuilder builder = new StringBuilder();
-        switch (this.operator.position()) {
-            case LEFT:
-                builder.append(this.operator.rendered())
-                        .append(" ")
+    public String toString() {
+        final StringBuilder builder = new StringBuilder();
+        switch (this.operator) {
+            case INVERT:
+            case NEGATED: {
+                builder
+                        .append(Constant.SPACE)
+                        .append(this.operator.rendered())
                         .append(this.expression);
-                break;
-            case RIGHT:
-                builder.append(this.expression)
-                        .append(" ")
-                        .append(this.operator.rendered());
-                break;
+            }
+            break;
             default:
-                throw new IllegalStateException(String.format("UnaryOperator[%s]'s position error.", operator));
+                throw _Exceptions.unexpectedEnum(this.operator);
+
         }
         return builder.toString();
     }
 
 
     @Override
-    public final boolean containsSubQuery() {
+    public boolean containsSubQuery() {
         return this.expression.containsSubQuery();
     }
 
-    /*################################## blow private static inner class ##################################*/
 
-    private static final class FieldUnaryExpression<E> extends UnaryExpression<E> implements FieldExpression<E> {
-
-        private FieldUnaryExpression(_Expression<E> expression, UnaryOperator operator) {
-            super(expression, operator);
-        }
-
-        @Override
-        public final boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
-            return this.expression.containsField(fieldMetas);
-        }
-
-        @Override
-        public final boolean containsFieldOf(TableMeta<?> tableMeta) {
-            return this.expression.containsFieldOf(tableMeta);
-        }
-
-        @Override
-        public final int containsFieldCount(TableMeta<?> tableMeta) {
-            return this.expression.containsFieldCount(tableMeta);
-        }
-    }
 }

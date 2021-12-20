@@ -38,7 +38,7 @@ public interface MySQL57Update extends Update {
         <F> MySQLSingleUpdateWhereSpec<T, C> set(FieldMeta<? super T, F> target, F value);
 
         /**
-         * @see SQLs#defaultValue()
+         * @see SQLs#defaultWord()
          */
         <F> MySQLSingleUpdateWhereSpec<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp);
 
@@ -166,7 +166,7 @@ public interface MySQL57Update extends Update {
         <F> MySQLMultiUpdateWhereSpec<C> set(FieldMeta<?, F> target, F value);
 
         /**
-         * @see SQLs#defaultValue()
+         * @see SQLs#defaultWord()
          */
         <F> MySQLMultiUpdateWhereSpec<C> set(FieldMeta<?, F> target, Expression<F> valueExp);
 
@@ -212,7 +212,7 @@ public interface MySQL57Update extends Update {
         <F> MySQLBatchSingleUpdateWhereSpec<T, C> set(FieldMeta<? super T, F> target, F value);
 
         /**
-         * @see SQLs#defaultValue()
+         * @see SQLs#defaultWord()
          */
         <F> MySQLBatchSingleUpdateWhereSpec<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp);
 
@@ -336,7 +336,7 @@ public interface MySQL57Update extends Update {
         <F> MySQLBatchMultiUpdateWhereSpec<C> set(FieldMeta<?, F> target, F value);
 
         /**
-         * @see SQLs#defaultValue()
+         * @see SQLs#defaultWord()
          */
         <F> MySQLBatchMultiUpdateWhereSpec<C> set(FieldMeta<?, F> target, Expression<F> valueExp);
 

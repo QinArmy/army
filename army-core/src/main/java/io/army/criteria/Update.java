@@ -43,7 +43,7 @@ public interface Update extends Statement, SQLDebug {
         <F> WhereSpec<T, C> set(FieldMeta<? super T, F> field, Expression<F> value);
 
         /**
-         * @see SQLs#defaultValue()
+         * @see SQLs#defaultWord()
          */
         <F> WhereSpec<T, C> setDefault(FieldMeta<? super T, F> field);
 

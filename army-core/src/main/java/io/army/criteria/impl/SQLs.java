@@ -4,7 +4,10 @@ import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
-import io.army.meta.*;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.FieldMeta;
+import io.army.meta.ParamMeta;
+import io.army.meta.TableMeta;
 import io.army.tx.Isolation;
 
 import java.util.ArrayList;
@@ -42,27 +45,6 @@ public abstract class SQLs extends AbstractSQLs {
     public static <T extends IDomain, C> Insert.InsertOptionSpec<T, C> domainInsert(TableMeta<T> targetTable, C criteria) {
         return ContextualValueInsert.create(targetTable, criteria);
     }
-
-
-    public static <T extends IDomain> Insert.SubQueryInsertFieldSpec<T, Void> subQueryInsert(SingleTableMeta<T> table) {
-        return null;
-    }
-
-
-    public static <T extends IDomain, C> Insert.SubQueryInsertFieldSpec<T, C> subQueryInsert(SingleTableMeta<T> table, C criteria) {
-        return null;
-    }
-
-
-    public static <T extends IDomain> Insert.SubQueryInsertParentFieldSpec<T, Void> subQueryInsert(ChildTableMeta<T> table) {
-        return null;
-    }
-
-
-    public static <T extends IDomain, C> Insert.SubQueryInsertParentFieldSpec<T, C> subQueryInsert(ChildTableMeta<T> table, C criteria) {
-        return null;
-    }
-
 
     public static Update.DomainUpdateSpec<Void> domainUpdate() {
         return ContextualUpdate.create();
@@ -252,7 +234,7 @@ public abstract class SQLs extends AbstractSQLs {
     @SuppressWarnings("unchecked")
     @Deprecated
     static <E> Expression<E> defaultKeyWord() {
-        return (DefaultKeyWord<E>) DefaultKeyWord.INSTANCE;
+        return (DefaultWord<E>) DefaultWord.INSTANCE;
     }
 
 }

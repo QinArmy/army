@@ -15,9 +15,9 @@ import java.util.function.Function;
  */
 final class DualPredicate extends AbstractPredicate {
 
-    static <C, E> DualPredicate create(final Expression<E> left, DualOperator operator
-            , Function<C, Expression<?>> expOrSubQuery) {
-        final Expression<?> functionResult;
+    static <C, E, O> DualPredicate create(final Expression<E> left, DualOperator operator
+            , Function<C, Expression<O>> expOrSubQuery) {
+        final Expression<O> functionResult;
         functionResult = expOrSubQuery.apply(CriteriaContextStack.getCriteria());
         assert functionResult != null;
         return create(left, operator, functionResult);
@@ -25,17 +25,16 @@ final class DualPredicate extends AbstractPredicate {
 
     static DualPredicate create(Expression<?> left, DualOperator operator, Expression<?> right) {
         if (operator == DualOperator.EQ) {
-            if (left instanceof GenericField
-                    && _MetaBridge.VISIBLE.equals(((GenericField<?, ?>) left).fieldName())) {
+            if (left instanceof GenericField && _MetaBridge.VISIBLE.equals((((GenericField<?, ?>) left).fieldName()))) {
                 throw _Exceptions.visibleFieldNoPredicate((GenericField<?, ?>) left);
             }
-            if (right instanceof GenericField
-                    && _MetaBridge.VISIBLE.equals(((GenericField<?, ?>) right).fieldName())) {
+            if (right instanceof GenericField && _MetaBridge.VISIBLE.equals(((GenericField<?, ?>) right).fieldName())) {
                 throw _Exceptions.visibleFieldNoPredicate((GenericField<?, ?>) right);
             }
         }
         return new DualPredicate(left, operator, right);
     }
+
 
 
     /*################################## blow instance member ##################################*/

@@ -1,6 +1,5 @@
 package io.army.dialect;
 
-import io.army.criteria.ConstantExpression;
 import io.army.criteria.FieldPredicate;
 import io.army.criteria.Visible;
 import io.army.meta.FieldMeta;
@@ -45,9 +44,6 @@ public interface _SqlContext {
 
     void appendIdentifier(String identifier);
 
-    /**
-     * @see ConstantExpression
-     */
     void appendConstant(ParamMeta paramMeta, Object value);
 
     Dialect dialect();

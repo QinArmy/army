@@ -106,7 +106,7 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
 
     @Override
     public <F> BatchWhereSpec<T, C> setDefault(FieldMeta<? super T, F> field) {
-        return this.set(field, SQLs.defaultValue());
+        return this.set(field, SQLs.defaultWord());
     }
 
     @Override

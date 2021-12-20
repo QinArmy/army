@@ -1,9 +1,8 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.ConstantExpression;
 import io.army.criteria.Selection;
+import io.army.criteria.ValueExpression;
 import io.army.dialect._SqlContext;
-import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.ParamMeta;
@@ -11,14 +10,22 @@ import io.army.util.ArrayUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 
-final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements ConstantExpression<E> {
+/**
+ * <p>
+ * This class representing sql literal expression.
+ * </p>
+ *
+ * @param <E> The java type of sql literal.
+ */
+final class LiteralExpression<E> extends AbstractExpression<E> implements ValueExpression<E> {
 
-    private static final ConcurrentMap<Object, ConstantExpression<?>> CONSTANT_EXP_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Object, LiteralExpression<?>> CONSTANT_EXP_CACHE = new ConcurrentHashMap<>();
 
     private static final Set<Object> CONSTANT_KEYS = ArrayUtils.asUnmodifiableSet(
             0,
@@ -37,8 +44,9 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
 
 
     @SuppressWarnings("unchecked")
-    static <E> ConstantExpression<E> build(final @Nullable ParamMeta paramMeta, final E constant) {
-
+    static <E> LiteralExpression<E> create(final ParamMeta paramMeta, final E constant) {
+        Objects.requireNonNull(paramMeta);
+        Objects.requireNonNull(constant);
         ParamMeta actualParamMeta;
         if (paramMeta == null) {
             actualParamMeta = _MappingFactory.getMapping(constant.getClass());
@@ -49,13 +57,13 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
             }
             actualParamMeta = paramMeta;
         }
-        final ConstantExpression<E> cacheExp = (ConstantExpression<E>) CONSTANT_EXP_CACHE.get(constant);
+        final LiteralExpression<E> cacheExp = (LiteralExpression<E>) CONSTANT_EXP_CACHE.get(constant);
 
-        ConstantExpression<E> exp;
+        LiteralExpression<E> exp;
         if (cacheExp != null && cacheExp.mappingType() == actualParamMeta.mappingType()) {
             exp = cacheExp;
         } else {
-            exp = new ConstantExpressionImpl<>(actualParamMeta, constant);
+            exp = new LiteralExpression<>(actualParamMeta, constant);
             if (cacheExp == null && CONSTANT_KEYS.contains(constant)) {
                 CONSTANT_EXP_CACHE.put(constant, exp);
             }
@@ -63,43 +71,48 @@ final class ConstantExpressionImpl<E> extends AbstractExpression<E> implements C
         return exp;
     }
 
+    static <E> LiteralExpression<E> create(final E constant) {
+        Objects.requireNonNull(constant);
+        return create(_MappingFactory.getMapping(constant.getClass()), constant);
+    }
+
     private final ParamMeta paramMeta;
 
     private final E constant;
 
-    private ConstantExpressionImpl(ParamMeta paramMeta, E constant) {
+    private LiteralExpression(ParamMeta paramMeta, E constant) {
         this.paramMeta = paramMeta;
         this.constant = constant;
     }
 
 
     @Override
-    public final Selection as(String alias) {
+    public Selection as(String alias) {
         return new ExpressionSelection(this, alias);
     }
 
     @Override
-    public final void appendSql(_SqlContext context) {
-        context.appendConstant(this.paramMeta.mappingType(), this.constant);
+    public void appendSql(_SqlContext context) {
+        context.appendConstant(this.paramMeta, this.constant);
     }
 
     @Override
-    public final MappingType mappingType() {
+    public MappingType mappingType() {
         return this.paramMeta.mappingType();
     }
 
     @Override
-    public final E value() {
+    public E value() {
         return this.constant;
     }
 
     @Override
-    public final boolean containsSubQuery() {
+    public boolean containsSubQuery() {
         return false;
     }
 
     @Override
-    public final String toString() {
+    public String toString() {
         return String.valueOf(this.constant);
     }
 

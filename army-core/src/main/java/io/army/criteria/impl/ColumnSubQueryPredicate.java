@@ -16,10 +16,10 @@ import java.util.function.Function;
 
 class ColumnSubQueryPredicate extends AbstractPredicate {
 
-    static <C, E> ColumnSubQueryPredicate create(
-            Expression<E> operand, DualOperator operator
-            , SubQueryOperator subQueryOperator, Function<C, ColumnSubQuery<?>> function) {
-        final ColumnSubQuery<?> functionResult;
+    static <C, O> ColumnSubQueryPredicate create(
+            Expression<?> operand, DualOperator operator
+            , SubQueryOperator subQueryOperator, Function<C, ColumnSubQuery<O>> function) {
+        final ColumnSubQuery<O> functionResult;
         functionResult = function.apply(CriteriaContextStack.getCriteria());
         assert functionResult != null;
         return ColumnSubQueryPredicate.create(operand, operator, subQueryOperator, functionResult);
@@ -41,6 +41,14 @@ class ColumnSubQueryPredicate extends AbstractPredicate {
             default:
                 throw new IllegalArgumentException(String.format("SubQueryOperator[%s] error.", subQueryOperator));
         }
+    }
+
+    static <C, O> ColumnSubQueryPredicate create(Expression<?> operand, DualOperator operator
+            , Function<C, ColumnSubQuery<O>> function) {
+        final ColumnSubQuery<O> functionResult;
+        functionResult = function.apply(CriteriaContextStack.getCriteria());
+        assert functionResult != null;
+        return create(operand, operator, functionResult);
     }
 
     static ColumnSubQueryPredicate create(Expression<?> operand, DualOperator operator, ColumnSubQuery<?> subQuery) {

@@ -82,18 +82,7 @@ enum DualOperator implements SQLOperator {
         public boolean bitOperator() {
             return true;
         }
-    }, INVERT {
-        @Override
-        public String rendered() {
-            return "~";
-        }
-
-        @Override
-        public boolean bitOperator() {
-            return true;
-        }
     },
-
     /*################################## blow expression dual operator method ##################################*/
 
     EQ {

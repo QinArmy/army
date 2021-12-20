@@ -5,7 +5,7 @@ import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.meta.ParamMeta;
 
-final class NamedParamImpl<E> extends AbstractNoNOperationExpression<E>
+final class NamedParamImpl<E> extends NoNOperationExpression<E>
         implements NamedParamExpression<E> {
 
     static <E> NamedParamImpl<E> create(String name, ParamMeta paramMeta) {
