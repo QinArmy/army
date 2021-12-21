@@ -183,14 +183,11 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
      */
     private Stmt standardValueInsert(final _ValueInsertContext context) {
         final _InsertBlock childBlock = context.childBlock();
-        final Stmt stmt;
-        if (childBlock == null) {
-            _DmlUtils.appendStandardValueInsert(context, context);
-            stmt = context.build();
-        } else {
-            stmt = standardChildValueInsert(context);
+        _DmlUtils.appendStandardValueInsert(false, context);
+        if (childBlock != null) {
+            _DmlUtils.appendStandardValueInsert(true, context);
         }
-        return stmt;
+        return context.build();
     }
 
 

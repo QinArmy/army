@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @param <E> The java type of sql literal.
  */
-final class LiteralExpression<E> extends AbstractExpression<E> implements ValueExpression<E> {
+final class LiteralExpression<E> extends OperationExpression<E> implements ValueExpression<E> {
 
     private static final ConcurrentMap<Object, LiteralExpression<?>> CONSTANT_EXP_CACHE = new ConcurrentHashMap<>();
 

@@ -60,7 +60,7 @@ public abstract class AbstractDialect implements InnerDialect {
 
 
     @Override
-    public String constant(MappingType type, Object value) {
+    public String literal(MappingType type, Object value) {
         return null;
     }
 

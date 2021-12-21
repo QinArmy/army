@@ -36,50 +36,46 @@ abstract class SQLUtils {
 
 
     public static <E> Expression<E> param(E param) {
-        return ParamExpression.create(param);
+        return ParamExpression.strict(param);
     }
 
     public static <E> Expression<E> param(MappingType mappingType, @Nullable E value) {
-        return ParamExpression.create(mappingType, value);
+        return ParamExpression.strict(mappingType, value);
     }
 
     public static <E> Expression<E> param(final Expression<?> type, @Nullable E value) {
-        return ParamExpression.create(type, value);
+        return ParamExpression.strict(type, value);
     }
-
 
     /**
      * package method
      */
     @SuppressWarnings("unchecked")
-    static Expression<?> paramWithExp(final Expression<?> type, final Object value) {
+    static Expression<?> paramWithExp(final Expression<?> type, final @Nullable Object value) {
         final Expression<?> resultExpression;
-        if (value instanceof Expression) {
+        if (value == null) {
+            resultExpression = SQLs.nullWord();
+        } else if (value instanceof Expression) {
+            //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
             resultExpression = (Expression<?>) value;
         } else if (value instanceof Function) {
-            resultExpression = ((Function<Object, Expression<?>>) value).apply(CriteriaContextStack.getCriteria());
-        } else {
-            resultExpression = ParamExpression.create(type, value);
-        }
-        return resultExpression;
-    }
-
-
-    /**
-     * package method
-     */
-    @SuppressWarnings("unchecked")
-    @Nullable
-    static Expression<?> ifParamWithExp(final Expression<?> type, final Object value) {
-        final Expression<?> resultExpression;
-        if (value instanceof Function) {
             //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
             resultExpression = ((Function<Object, Expression<?>>) value).apply(CriteriaContextStack.getCriteria());
         } else {
-            resultExpression = ParamExpression.create(type, value);
+            // use optimizing param expression
+            resultExpression = ParamExpression.optimizing(type, value);
         }
         return resultExpression;
     }
+
+    public static <E> Expression<E> optimizingParam(final MappingType type, final @Nullable E value) {
+        return value == null ? SQLs.nullWord() : ParamExpression.optimizing(type, value);
+    }
+
+    public static <E> Expression<E> optimizingParam(final Expression<?> type, final @Nullable E value) {
+        return value == null ? SQLs.nullWord() : ParamExpression.optimizing(type, value);
+    }
+
 
     public static <E> Expression<Collection<E>> collectionParam(Expression<?> type, Collection<E> value) {
         return CollectionParamExpression.create(type, value);

@@ -13,7 +13,7 @@ import io.army.util._Exceptions;
  *
  * @param <E> expression result java type
  */
-final class UnaryExpression<E> extends AbstractExpression<E> {
+final class UnaryExpression<E> extends OperationExpression<E> {
 
     static <E> UnaryExpression<E> create(_Expression<E> expression, UnaryOperator operator) {
         switch (operator) {

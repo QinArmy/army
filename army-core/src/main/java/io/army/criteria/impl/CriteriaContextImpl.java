@@ -197,7 +197,7 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
     }
 
 
-    private static final class ComposeRefSelection<E> extends AbstractExpression<E> {
+    private static final class ComposeRefSelection<E> extends OperationExpression<E> {
 
         private final Selection selection;
 

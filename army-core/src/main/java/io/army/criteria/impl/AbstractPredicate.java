@@ -7,6 +7,7 @@ import io.army.criteria.impl.inner._Predicate;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.ChildTableMeta;
+import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 import io.army.sharding.DatabaseRoute;
 import io.army.sharding.Route;
@@ -19,10 +20,15 @@ import java.util.function.Function;
 /**
  * This class is base class of all {@link IPredicate} implementation .
  */
-abstract class AbstractPredicate extends AbstractExpression<Boolean> implements _Predicate {
+abstract class AbstractPredicate extends OperationExpression<Boolean> implements _Predicate {
 
     @Override
     public final MappingType mappingType() {
+        return _MappingFactory.getMapping(Boolean.class);
+    }
+
+    @Override
+    public final ParamMeta paramMeta() {
         return _MappingFactory.getMapping(Boolean.class);
     }
 

@@ -1,5 +1,6 @@
 package io.army.criteria;
 
+import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
@@ -10,12 +11,13 @@ import java.util.function.Function;
 
 /**
  * Interface representing the sql expression, eg: column,function.
+ *
  * @param <E> expression result java type
  * @see FieldMeta
  * @since 1.0
  */
 @SuppressWarnings("unused")
-public interface Expression<E> extends SelectionAble, MappingTypeAble {
+public interface Expression<E> extends SelectionAble, MappingTypeAble, TypeInfer {
 
     /**
      * relational operate with {@code =}
@@ -37,7 +39,7 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble {
     /**
      * relational operate with {@code =}
      * <p>
-     * Operand will append parameter list.
+     * Operand will be wrapped with {@link SQLs#optimizingParam(Expression, Object)}.
      * </p>
      *
      * @param parameter right operand of {@code =},operand is weak weakly instance, because sql is weakly typed.
@@ -47,7 +49,7 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble {
     /**
      * relational operate with {@code =}
      * <p>
-     * If operand non-null than operand will append parameter list.
+     * If operand non-null than operand will be wrapped with {@link SQLs#optimizingParam(Expression, Object)}.
      * </p>
      *
      * @param parameter right operand of {@code =},operand is weak weakly instance, because sql is weakly typed.

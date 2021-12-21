@@ -12,7 +12,9 @@ public interface MappingType extends ParamMeta {
 
     Class<?> javaType();
 
-    JDBCType jdbcType();
+    default JDBCType jdbcType() {
+        throw new UnsupportedOperationException();
+    }
 
     SqlDataType sqlDataType(ServerMeta serverMeta) throws NotSupportDialectException;
 

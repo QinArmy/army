@@ -151,7 +151,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
      * @param <E> {@link MySQL57ScalarSubQuery}'s result Java Type.
      * @param <C> custom object for Dynamic SQL.
      */
-    private static final class MySQL57ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E>
+    private static final class MySQL57ScalarSubQueryAdaptor<E, C> extends OperationExpression<E>
             implements MySQL57ScalarSubQuery<E>, MySQLSelectPartSpec<MySQL57ScalarSubQuery<E>, C>
             , MySQLFromSpec<MySQL57ScalarSubQuery<E>, C>, MySQLTableRouteJoinSpec<MySQL57ScalarSubQuery<E>, C>
             , MySQLWhereAndSpec<MySQL57ScalarSubQuery<E>, C>, MySQLHavingSpec<MySQL57ScalarSubQuery<E>, C>

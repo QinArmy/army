@@ -15,7 +15,7 @@ import java.util.function.Function;
  * @param <E> expression result java type
  * @since 1.0
  */
-final class DualExpression<E> extends AbstractExpression<E> {
+final class DualExpression<E> extends OperationExpression<E> {
 
     static <C, E, O> DualExpression<E> create(Expression<E> left, DualOperator operator, Function<C, Expression<O>> function) {
         final Expression<O> functionResult;

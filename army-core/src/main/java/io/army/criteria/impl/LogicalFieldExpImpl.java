@@ -13,7 +13,7 @@ import io.army.util.Assert;
 import java.util.Collection;
 
 
-final class LogicalFieldExpImpl<T extends IDomain, F> extends AbstractExpression<F>
+final class LogicalFieldExpImpl<T extends IDomain, F> extends OperationExpression<F>
         implements LogicalField<T, F> {
 
     private final FieldMeta<T, F> field;

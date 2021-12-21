@@ -42,9 +42,15 @@ public interface _SqlContext {
     }
 
 
-    void appendIdentifier(String identifier);
+    @Deprecated
+    default void appendIdentifier(String identifier) {
+        throw new UnsupportedOperationException();
+    }
 
-    void appendConstant(ParamMeta paramMeta, Object value);
+    @Deprecated
+    default void appendConstant(ParamMeta paramMeta, Object value) {
+        throw new UnsupportedOperationException();
+    }
 
     Dialect dialect();
 
@@ -52,6 +58,9 @@ public interface _SqlContext {
 
     /**
      * <p>
+     * This method is designed for parameter expression.
+     * </p>
+     * <p> steps:
      *     <ol>
      *         <li>append one space</li>
      *         <li>append '?' to {@link #sqlBuilder()}</li>

@@ -9,10 +9,12 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
+import io.army.stmt.ParamValue;
 import io.army.stmt.Stmt;
 import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -74,7 +76,7 @@ final class ValueInsertContext extends _BaseSqlContext implements _ValueInsertCo
         this.commonExpMap = insert.commonExpMap();
         this.domainList = domainList;
 
-        this.childBlock = new _InsertBlockImpl(childTable, _DmlUtils.mergeInsertFields(false, insert));
+        this.childBlock = new _InsertBlockImpl(childTable, _DmlUtils.mergeInsertFields(false, insert), this);
     }
 
     @Override
@@ -85,6 +87,12 @@ final class ValueInsertContext extends _BaseSqlContext implements _ValueInsertCo
     @Override
     public List<? extends ReadWrapper> domainList() {
         return this.domainList;
+    }
+
+    @Override
+    public int discriminatorValue() {
+        final _InsertBlockImpl childBlock = this.childBlock;
+        return childBlock == null ? this.table.discriminatorValue() : childBlock.table.discriminatorValue();
     }
 
     @Override
@@ -101,7 +109,17 @@ final class ValueInsertContext extends _BaseSqlContext implements _ValueInsertCo
 
     @Override
     public Stmt build() {
-        return Stmts.simple(this.sqlBuilder.toString(), this.paramList);
+        final Stmt stmt, parentStmt;
+        parentStmt = Stmts.simple(this.sqlBuilder.toString(), this.paramList);
+        final _InsertBlockImpl childBlock = this.childBlock;
+        if (childBlock == null) {
+            stmt = parentStmt;
+        } else {
+            final Stmt childStmt;
+            childStmt = Stmts.simple(childBlock.sqlBuilder.toString(), childBlock.paramList);
+            stmt = Stmts.group(parentStmt, childStmt);
+        }
+        return stmt;
     }
 
     @Override
@@ -126,9 +144,16 @@ final class ValueInsertContext extends _BaseSqlContext implements _ValueInsertCo
 
         private final List<FieldMeta<?, ?>> fieldList;
 
-        private _InsertBlockImpl(ChildTableMeta<?> table, List<FieldMeta<?, ?>> fieldList) {
+        private final ValueInsertContext parentContext;
+
+        private final StringBuilder sqlBuilder = new StringBuilder();
+
+        private final List<ParamValue> paramList = new ArrayList<>();
+
+        private _InsertBlockImpl(ChildTableMeta<?> table, List<FieldMeta<?, ?>> fieldList, ValueInsertContext parentContext) {
             this.table = table;
             this.fieldList = fieldList;
+            this.parentContext = parentContext;
         }
 
         @Override
@@ -139,6 +164,41 @@ final class ValueInsertContext extends _BaseSqlContext implements _ValueInsertCo
         @Override
         public List<FieldMeta<?, ?>> fieldLis() {
             return this.fieldList;
+        }
+
+        @Override
+        public void appendField(String tableAlias, FieldMeta<?, ?> field) {
+            // value insert don't support insert any field in expression
+            throw _Exceptions.unknownColumn(tableAlias, field);
+        }
+
+        @Override
+        public void appendField(FieldMeta<?, ?> field) {
+            // value insert don't support insert any field in expression
+            throw _Exceptions.unknownColumn(null, field);
+        }
+
+
+        @Override
+        public Dialect dialect() {
+            return this.parentContext.dialect;
+        }
+
+        @Override
+        public StringBuilder sqlBuilder() {
+            return this.sqlBuilder;
+        }
+
+        @Override
+        public void appendParam(ParamValue paramValue) {
+            this.sqlBuilder.append(Constant.SPACE)
+                    .append(Constant.PLACEHOLDER);
+            this.paramList.add(paramValue);
+        }
+
+        @Override
+        public Visible visible() {
+            return this.parentContext.visible;
         }
 
     }

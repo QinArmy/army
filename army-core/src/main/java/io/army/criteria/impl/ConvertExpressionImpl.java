@@ -11,7 +11,7 @@ import io.army.meta.TableMeta;
 
 import java.util.Collection;
 
-class ConvertExpressionImpl<E> extends AbstractExpression<E> implements ConvertExpression<E> {
+class ConvertExpressionImpl<E> extends OperationExpression<E> implements ConvertExpression<E> {
 
     static <O> ConvertExpressionImpl<O> build(_Expression<?> original, MappingType convertType) {
         return original instanceof FieldExpression

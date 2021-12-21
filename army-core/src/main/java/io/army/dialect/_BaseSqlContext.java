@@ -46,7 +46,7 @@ public abstract class _BaseSqlContext implements _StmtContext {
     @Override
     public final void appendConstant(ParamMeta paramMeta, Object value) {
         this.sqlBuilder.append(Constant.SPACE)
-                .append(this.dialect.constant(paramMeta.mappingType(), value));
+                .append(this.dialect.literal(paramMeta.mappingType(), value));
     }
 
     @Override

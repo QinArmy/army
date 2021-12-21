@@ -12,7 +12,7 @@ import java.sql.JDBCType;
 
 public final class LongType extends AbstractMappingType {
 
-    private static final LongType INSTANCE = new LongType();
+    public static final LongType INSTANCE = new LongType();
 
 
     public static LongType build(Class<?> javaType) {

@@ -18,6 +18,8 @@ public interface _ValueInsertContext extends _StmtContext, _InsertBlock {
 
     List<? extends ReadWrapper> domainList();
 
+    int discriminatorValue();
+
     @Nullable
     _InsertBlock childBlock();
 

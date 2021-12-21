@@ -134,7 +134,7 @@ ColumnSubQuery 可以使用 in,any ,some,all 等关键字.
 (3)Army 的 DML 指令应该身军人一样准确,明确,不能有二义性,所以当 调用  SQLS.singleUpdate 和 SQLS.batchSingleUpdate 就已经明确了接下来的
 指令.
 
-32. 为什么 io.army.criteria.impl.AbstractExpression 不设计为 public 类,开放 expression 的定制?
+32. 为什么 io.army.criteria.impl.OperationExpression 不设计为 public 类,开放 expression 的定制?
 (1) Army 之所以能解析复杂 SQL 是因为 通过 io.army.criteria.impl.inner._SelfDescribed.appendSql(SQLContext) 把解析逻辑的下放到 表达式中.
 这种设计的好处是可能解析很复杂的 SQL,而且编程简单,前有两个前提:
     [1]需要为每个 Expression 创建对象.

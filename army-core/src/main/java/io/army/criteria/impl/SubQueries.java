@@ -199,7 +199,7 @@ abstract class SubQueries<Q extends Query, C> extends AbstractStandardQuery<Q, C
      * @param <E> {@link ScalarSubQuery}'s result Java Type.
      * @param <C> custom object for Dynamic SQL.
      */
-    private static final class ScalarSubQueryAdaptor<E, C> extends AbstractExpression<E> implements ScalarSubQuery<E>
+    private static final class ScalarSubQueryAdaptor<E, C> extends OperationExpression<E> implements ScalarSubQuery<E>
             , SelectPartSpec<ScalarSubQuery<E>, C>, FromSpec<ScalarSubQuery<E>, C>
             , TableRouteJoinSpec<ScalarSubQuery<E>, C>, WhereAndSpec<ScalarSubQuery<E>, C>
             , HavingSpec<ScalarSubQuery<E>, C>, ScalarSubQuery.ScalarSelectionSpec<E, C>

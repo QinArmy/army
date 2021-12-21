@@ -11,7 +11,7 @@ import io.army.util.Assert;
 
 import java.sql.JDBCType;
 
-abstract class RefSelectionImpl<E> extends AbstractExpression<E> implements RefSelection<E> {
+abstract class RefSelectionImpl<E> extends OperationExpression<E> implements RefSelection<E> {
 
 
     static <E> RefSelectionImpl<E> buildImmutable(String subQueryAlias, String derivedFieldName

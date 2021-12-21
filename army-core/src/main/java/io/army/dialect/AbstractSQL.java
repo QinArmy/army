@@ -91,7 +91,7 @@ public abstract class AbstractSQL implements SqlDialect {
 
 
     @Override
-    public String constant(MappingType type, Object value) {
+    public String literal(MappingType type, Object value) {
         return null;
     }
 }

@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @since 1.0
  */
-abstract class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression<F>
+abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationExpression<F>
         implements FieldMeta<T, F>, Selection {
 
     private static final String ID = _MetaBridge.ID;
@@ -247,6 +247,11 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends AbstractExpression
     @Override
     public final MappingType mappingType() {
         return this.mappingType;
+    }
+
+    @Override
+    public final ParamMeta inferType() {
+        return this;
     }
 
     @Override

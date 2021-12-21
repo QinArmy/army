@@ -9,6 +9,7 @@ import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Update;
 import io.army.criteria.impl.inner._ValuesInsert;
+import io.army.mapping.*;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.*;
@@ -78,23 +79,29 @@ public abstract class _DmlUtils {
     }
 
 
-  public static void appendStandardValueInsert(final _InsertBlock block, final _ValueInsertContext context) {
-      final Dialect dialect = context.dialect();
-      final StringBuilder builder = context.sqlBuilder();
+    public static void appendStandardValueInsert(final boolean childBlock, final _ValueInsertContext context) {
+        final Dialect dialect = context.dialect();
+        final _InsertBlock blockContext;
+        if (childBlock) {
+            blockContext = context.childBlock();
+            assert blockContext != null;
+        } else {
+            blockContext = context;
+        }
+        final StringBuilder builder = blockContext.sqlBuilder(); // use sql builder of blockContext
+        final TableMeta<?> table = blockContext.table();
 
-      final TableMeta<?> table = block.table();
-
-      // 1. INSERT INTO clause
-      builder.append(AbstractDml.INSERT_INTO)
-              .append(Constant.SPACE);
-      //append table name
-      if (context.tableIndex() == 0) {
+        // 1. INSERT INTO clause
+        builder.append(AbstractDml.INSERT_INTO)
+                .append(Constant.SPACE);
+        //append table name
+        if (context.tableIndex() == 0) {
             builder.append(dialect.safeTableName(table.tableName()));
         } else {
             builder.append(table.tableName())
                     .append(context.tableSuffix());
         }
-        final List<FieldMeta<?, ?>> fieldList = block.fieldLis();
+        final List<FieldMeta<?, ?>> fieldList = blockContext.fieldLis();
         // 1.1 append table fields
         builder.append(AbstractSQL.LEFT_BRACKET);
         int index = 0;
@@ -112,21 +119,7 @@ public abstract class _DmlUtils {
 
         final List<? extends ReadWrapper> domainList = context.domainList();
         //2.1 get domainTable and discriminator
-        final TableMeta<?> domainTable;
-        final FieldMeta<?, ?> discriminator;
-        if (table instanceof ParentTableMeta) {
-            final _InsertBlock childBlock = context.childBlock();
-            if (childBlock == null) {
-                domainTable = table;
-                discriminator = ((ParentTableMeta<?>) domainTable).discriminator();
-            } else {
-                domainTable = childBlock.table();
-                discriminator = ((ChildTableMeta<?>) domainTable).discriminator();
-            }
-        } else {
-            domainTable = null;
-            discriminator = null;
-        }
+        final FieldMeta<?, ?> discriminator = context.table().discriminator();
 
         int batch = 0;
         final Map<FieldMeta<?, ?>, _Expression<?>> expMap = context.commonExpMap();
@@ -144,15 +137,43 @@ public abstract class _DmlUtils {
                     builder.append(AbstractSQL.COMMA);
                 }
                 if (field == discriminator) {
-                    builder.append(dialect.constant(discriminator.mappingType(), domainTable.discriminatorValue()));
+                    assert field != null;
+                    builder.append(Constant.SPACE)
+                            .append(dialect.literal(discriminator.mappingType(), context.discriminatorValue()));
                 } else if ((expression = expMap.get(field)) != null) {
-                    expression.appendSql(context);
+                    expression.appendSql(blockContext); // common append to block context
                 } else {
                     value = domain.get(field.fieldName());
-                    if (value == null && !field.nullable()) {
-                        throw _Exceptions.nonNullField(field);
+
+                    if (value == null) {
+                        if (!field.nullable()) {
+                            throw _Exceptions.nonNullField(field);
+                        }
+                        builder.append(" NULL");
+                        continue;
                     }
-                    context.appendParam(ParamValue.build(field, value));
+                    final MappingType mappingType = field.mappingType();
+                    if (mappingType instanceof IntegerType
+                            || mappingType instanceof BigDecimalType
+                            || mappingType instanceof LongType
+                            || mappingType instanceof LocalDateTimeType
+                            || mappingType instanceof LocalDateType
+                            || mappingType instanceof LocalTimeType
+                            || mappingType instanceof CodeEnumType
+                            || mappingType instanceof NameEnumType
+                            || mappingType instanceof BigIntegerType
+                            || mappingType instanceof BooleanType
+                            || mappingType instanceof TrueFalseType
+                            || mappingType instanceof DoubleType
+                            || mappingType instanceof FloatType
+                            || mappingType instanceof ShortType
+                            || mappingType instanceof ByteType) {
+                        builder.append(Constant.SPACE)
+                                .append(dialect.literal(field, value)); // for safe default mapping type, use literal to reduce '?' and add batch insert count.
+                    } else {
+                        blockContext.appendParam(ParamValue.build(field, value)); // parameter append block context
+                    }
+
                 }
                 index++;
             }

@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.mapping.MappingType;
+import io.army.meta.ParamMeta;
 import io.army.session.GenericRmSessionFactory;
 
 import java.time.ZoneId;
@@ -40,7 +40,7 @@ public interface SqlDialect {
     boolean hasRowKeywords();
 
 
-    String constant(MappingType type, Object value);
+    String literal(ParamMeta paramMeta, Object value);
 
 
 }

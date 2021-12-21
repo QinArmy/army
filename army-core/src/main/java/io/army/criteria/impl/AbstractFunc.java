@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-abstract class AbstractFunc<E> extends AbstractExpression<E> implements FuncExpression<E> {
+abstract class AbstractFunc<E> extends OperationExpression<E> implements FuncExpression<E> {
 
 
     static <E> FuncExpression<E> noArgumentFunc(String name, MappingType returnType) {

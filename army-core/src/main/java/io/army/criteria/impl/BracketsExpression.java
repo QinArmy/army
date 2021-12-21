@@ -9,7 +9,7 @@ import io.army.meta.TableMeta;
 
 import java.util.Collection;
 
-class BracketsExpression<E> extends AbstractExpression<E> {
+class BracketsExpression<E> extends OperationExpression<E> {
 
     static <E> BracketsExpression<E> build(_Expression<E> expression) {
         BracketsExpression<E> bracketsExpression;

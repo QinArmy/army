@@ -44,6 +44,11 @@ final class ExpressionSelection implements Selection, _SelfDescribed, _SortPart 
     }
 
     @Override
+    public boolean nullable() {
+        return this.expression.nullableExp();
+    }
+
+    @Override
     public String toString() {
         return this.expression.toString() + " AS " + this.alias;
     }

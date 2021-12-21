@@ -14,7 +14,7 @@ import java.util.Collection;
  * @see DefaultFieldMeta
  * @see LogicalFieldExpImpl
  */
-final class FieldSelectionImpl<E> extends AbstractExpression<E> implements FieldSelection {
+final class FieldSelectionImpl<E> extends OperationExpression<E> implements FieldSelection {
 
     private final GenericField<?, E> fieldExp;
 

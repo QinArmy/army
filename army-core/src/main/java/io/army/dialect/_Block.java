@@ -10,7 +10,7 @@ import io.army.meta.TableMeta;
  *     </ul>
  * </p>
  */
-public interface _Block extends _SqlContext {
+public interface _Block {
 
     TableMeta<?> table();
 

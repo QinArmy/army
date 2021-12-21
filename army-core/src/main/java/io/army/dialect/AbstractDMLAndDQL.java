@@ -154,7 +154,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
                 .append(dialect.quoteIfNeed(field.columnName()))
                 .append(EQUAL)
                 .append(Constant.SPACE)
-                .append(dialect.constant(field.mappingType(), table.discriminatorValue()));
+                .append(dialect.literal(field.mappingType(), table.discriminatorValue()));
     }
 
     protected final void visiblePredicate(SingleTableMeta<?> table, final String safeTableAlias
@@ -185,7 +185,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
                     .append(Constant.POINT)
                     .append(dialect.quoteIfNeed(field.columnName()))
                     .append(EQUAL)
-                    .append(dialect.constant(field.mappingType(), visibleValue));
+                    .append(dialect.literal(field.mappingType(), visibleValue));
         }
 
     }
