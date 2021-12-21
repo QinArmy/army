@@ -8,7 +8,9 @@ import io.army.criteria.IPredicate;
 import io.army.criteria.SubQuery;
 import io.army.criteria.TableAble;
 import io.army.criteria.impl.inner.*;
+import io.army.dialect.Constant;
 import io.army.dialect.Dialect;
+import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -23,6 +25,21 @@ public abstract class _RouteUtils {
 
     _RouteUtils() {
         throw new UnsupportedOperationException();
+    }
+
+
+    public static void appendTableName(final TableMeta<?> table, final _SqlContext context) {
+        final Dialect dialect = context.dialect();
+        if (context.tableIndex() == 0) {
+            context.sqlBuilder()
+                    .append(Constant.SPACE)
+                    .append(dialect.safeTableName(table.tableName()));
+        } else {
+            context.sqlBuilder()
+                    .append(Constant.SPACE)
+                    .append(table.tableName())
+                    .append(context.tableSuffix());
+        }
     }
 
     /**

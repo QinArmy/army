@@ -13,6 +13,7 @@ import io.army.tx.Isolation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -207,16 +208,16 @@ public abstract class SQLs extends SQLUtils {
 
     /*################################## blow sql key word operate method ##################################*/
 
-    public static IPredicate exists(SubQuery subQuery) {
-        return UnaryPredicate.create(UnaryOperator.EXISTS, subQuery);
+    public static IPredicate exists(Supplier<SubQuery> supplier) {
+        return UnaryPredicate.create(UnaryOperator.EXISTS, supplier.get());
     }
 
     public static <C> IPredicate exists(Function<C, SubQuery> function) {
         return UnaryPredicate.create(UnaryOperator.EXISTS, function.apply(CriteriaContextStack.getCriteria()));
     }
 
-    public static IPredicate notExists(SubQuery subQuery) {
-        return UnaryPredicate.create(UnaryOperator.NOT_EXISTS, subQuery);
+    public static IPredicate notExists(Supplier<SubQuery> supplier) {
+        return UnaryPredicate.create(UnaryOperator.NOT_EXISTS, supplier.get());
     }
 
     public static <C> IPredicate notExists(Function<C, SubQuery> function) {

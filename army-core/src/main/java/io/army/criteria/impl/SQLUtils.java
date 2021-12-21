@@ -24,6 +24,8 @@ import java.util.function.Function;
  *     <li>standard sql function</li>
  * </ul>
  * </p>
+ *
+ * @see SQLs
  */
 abstract class SQLUtils {
 
@@ -69,16 +71,20 @@ abstract class SQLUtils {
     }
 
     public static <E> Expression<E> optimizingParam(final MappingType type, final @Nullable E value) {
-        return value == null ? SQLs.nullWord() : ParamExpression.optimizing(type, value);
+        return ParamExpression.optimizing(type, value);
     }
 
     public static <E> Expression<E> optimizingParam(final Expression<?> type, final @Nullable E value) {
-        return value == null ? SQLs.nullWord() : ParamExpression.optimizing(type, value);
+        return ParamExpression.optimizing(type, value);
     }
 
 
     public static <E> Expression<Collection<E>> collectionParam(Expression<?> type, Collection<E> value) {
-        return CollectionParamExpression.create(type, value);
+        return CollectionParamExpression.strict(type, value);
+    }
+
+    public static <E> Expression<Collection<E>> optimizingCollectionParam(Expression<?> type, Collection<E> value) {
+        return CollectionParamExpression.optimizing(type, value);
     }
 
 

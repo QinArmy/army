@@ -405,7 +405,7 @@ abstract class OperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final IPredicate ifNotIn(@Nullable Collection<?> parameters) {
+    public final <O> IPredicate ifNotIn(@Nullable Collection<O> parameters) {
         return (parameters == null || parameters.size() == 0) ? null : this.notIn(parameters);
     }
 
@@ -430,8 +430,8 @@ abstract class OperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final <C> IPredicate like(Function<C, Expression<String>> expOrSubQuery) {
-        return DualPredicate.create(this, DualOperator.LIKE, expOrSubQuery);
+    public final <C> IPredicate like(Function<C, Expression<String>> function) {
+        return DualPredicate.create(this, DualOperator.LIKE, function);
     }
 
     @Override
@@ -445,8 +445,8 @@ abstract class OperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final <C> IPredicate notLike(Function<C, Expression<String>> functioin) {
-        return DualPredicate.create(this, DualOperator.NOT_LIKE, functioin);
+    public final <C> IPredicate notLike(Function<C, Expression<String>> function) {
+        return DualPredicate.create(this, DualOperator.NOT_LIKE, function);
     }
 
     @Override

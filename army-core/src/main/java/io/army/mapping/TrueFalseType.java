@@ -7,6 +7,7 @@ import io.army.sqltype.MySQLDataType;
 import io.army.sqltype.OracleDataType;
 import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlDataType;
+import io.army.util._Exceptions;
 
 import java.sql.JDBCType;
 
@@ -61,13 +62,14 @@ public final class TrueFalseType extends AbstractMappingType {
 
     @Override
     public Object convertBeforeBind(SqlDataType sqlDataType, final Object nonNull) {
-        final Boolean v;
-        v = BooleanType.INSTANCE.convertBeforeBind(sqlDataType, nonNull);
+        if (!(nonNull instanceof Boolean)) {
+            throw _Exceptions.javaTypeUnsupportedByMapping(this, nonNull);
+        }
         final Object value;
         if (sqlDataType.database() == Database.PostgreSQL) {
-            value = v;
+            value = nonNull;
         } else {
-            value = v ? T : F;
+            value = ((Boolean) nonNull) ? T : F;
         }
         return value;
     }

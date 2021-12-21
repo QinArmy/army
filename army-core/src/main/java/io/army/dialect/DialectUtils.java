@@ -4,13 +4,15 @@ import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
 import io.army.UnKnownTypeException;
 import io.army.criteria.*;
-import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._SortPart;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
+import io.army.mapping.*;
+import io.army.mapping.optional.OffsetDateTimeType;
+import io.army.mapping.optional.OffsetTimeType;
+import io.army.mapping.optional.ZonedDateTimeType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.FactoryMode;
@@ -43,6 +45,27 @@ public abstract class DialectUtils {
 
     public static SqlBuilder createSQLBuilder() {
         return new SQLBuilderImpl();
+    }
+
+    public static boolean isSafeMapping(final MappingType mappingType) {
+        return mappingType instanceof IntegerType
+                || mappingType instanceof BigDecimalType
+                || mappingType instanceof LongType
+                || mappingType instanceof LocalDateTimeType
+                || mappingType instanceof LocalDateType
+                || mappingType instanceof LocalTimeType
+                || mappingType instanceof CodeEnumType
+                || mappingType instanceof NameEnumType
+                || mappingType instanceof BigIntegerType
+                || mappingType instanceof BooleanType
+                || mappingType instanceof TrueFalseType
+                || mappingType instanceof OffsetDateTimeType
+                || mappingType instanceof ZonedDateTimeType
+                || mappingType instanceof OffsetTimeType
+                || mappingType instanceof DoubleType
+                || mappingType instanceof FloatType
+                || mappingType instanceof ShortType
+                || mappingType instanceof ByteType;
     }
 
 
@@ -165,7 +188,7 @@ public abstract class DialectUtils {
     }
 
     public static boolean needAppendVisible(List<? extends TableWrapper> tableWrapperList) {
-        final TableMeta<?> dual = SQLs.dual();
+        final TableMeta<?> dual = null;
         boolean need = false;
         for (TableWrapper tableWrapper : tableWrapperList) {
             TableAble tableAble = tableWrapper.tableAble();
@@ -237,6 +260,14 @@ public abstract class DialectUtils {
             }
         }
         return null;
+    }
+
+    public static String parentAlias(final String tableAlias) {
+        return "_p_of_" + tableAlias;
+    }
+
+    public static String childAlias(final String tableAlias) {
+        return "_c_of_" + tableAlias;
     }
 
 

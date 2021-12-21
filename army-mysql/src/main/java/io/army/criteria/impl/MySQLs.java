@@ -5,7 +5,7 @@ import io.army.criteria.mysql.*;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 
-public abstract class MySqls extends SQLs {
+public abstract class MySQLs extends SQLs {
 
     /*################################## blow update  method ##################################*/
 /*

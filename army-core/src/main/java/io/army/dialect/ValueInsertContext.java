@@ -52,7 +52,7 @@ final class ValueInsertContext extends _BaseSqlContext implements _ValueInsertCo
     final Map<FieldMeta<?, ?>, _Expression<?>> commonExpMap;
     final List<? extends ReadWrapper> domainList;
 
-    private final _InsertBlockImpl childBlock;
+    private final ChildBlock childBlock;
 
     private ValueInsertContext(_ValuesInsert insert, final byte tableIndex
             , List<ObjectWrapper> domainList, Dialect dialect, Visible visible) {
@@ -76,8 +76,9 @@ final class ValueInsertContext extends _BaseSqlContext implements _ValueInsertCo
         this.commonExpMap = insert.commonExpMap();
         this.domainList = domainList;
 
-        this.childBlock = new _InsertBlockImpl(childTable, _DmlUtils.mergeInsertFields(false, insert), this);
+        this.childBlock = new ChildBlock(childTable, _DmlUtils.mergeInsertFields(false, insert), this);
     }
+
 
     @Override
     public List<FieldMeta<?, ?>> fieldLis() {
@@ -91,7 +92,7 @@ final class ValueInsertContext extends _BaseSqlContext implements _ValueInsertCo
 
     @Override
     public int discriminatorValue() {
-        final _InsertBlockImpl childBlock = this.childBlock;
+        final ChildBlock childBlock = this.childBlock;
         return childBlock == null ? this.table.discriminatorValue() : childBlock.table.discriminatorValue();
     }
 
@@ -111,7 +112,7 @@ final class ValueInsertContext extends _BaseSqlContext implements _ValueInsertCo
     public Stmt build() {
         final Stmt stmt, parentStmt;
         parentStmt = Stmts.simple(this.sqlBuilder.toString(), this.paramList);
-        final _InsertBlockImpl childBlock = this.childBlock;
+        final ChildBlock childBlock = this.childBlock;
         if (childBlock == null) {
             stmt = parentStmt;
         } else {
@@ -138,7 +139,7 @@ final class ValueInsertContext extends _BaseSqlContext implements _ValueInsertCo
     }
 
 
-    private static final class _InsertBlockImpl implements _InsertBlock {
+    private static final class ChildBlock implements _InsertBlock {
 
         private final ChildTableMeta<?> table;
 
@@ -150,7 +151,7 @@ final class ValueInsertContext extends _BaseSqlContext implements _ValueInsertCo
 
         private final List<ParamValue> paramList = new ArrayList<>();
 
-        private _InsertBlockImpl(ChildTableMeta<?> table, List<FieldMeta<?, ?>> fieldList, ValueInsertContext parentContext) {
+        private ChildBlock(ChildTableMeta<?> table, List<FieldMeta<?, ?>> fieldList, ValueInsertContext parentContext) {
             this.table = table;
             this.fieldList = fieldList;
             this.parentContext = parentContext;

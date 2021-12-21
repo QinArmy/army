@@ -10,6 +10,7 @@ import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.dialect.Dialect;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.meta.ServerMeta;
@@ -203,6 +204,10 @@ public abstract class _Exceptions extends ExceptionUtils {
     public static CriteriaException selfJoinNoLogicField(GenericField<?, ?> field) {
         return new CriteriaException(String.format("%s self join but don't use %s."
                 , field.tableMeta(), LogicalField.class.getName()));
+    }
+
+    public static CriteriaException javaTypeUnsupportedByMapping(MappingType type, Object nonNull) {
+        return new CriteriaException(String.format("%s is unsupported by %s.", nonNull.getClass(), type.getClass()));
     }
 
 

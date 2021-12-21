@@ -6,7 +6,6 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.Stmt;
-import io.army.stmt.Stmts;
 
 import java.util.List;
 
@@ -23,25 +22,13 @@ abstract class MysqlDml extends AbstractDml {
     }
 
 
-    @Override
-    protected final Stmt standardChildValueInsert(final _ValueInsertContext parentContext) {
-        // 1. create parent insert statement
-        _DmlUtils.appendStandardValueInsert(parentContext, parentContext);
-        // 2. create child insert context
-        final ChildValueInsertContext childContext;
-        childContext = ChildValueInsertContext.child(parentContext);
-        // 3. create child insert statement
-        _DmlUtils.appendStandardValueInsert(childContext.childBlock, childContext);
-        return Stmts.group(parentContext.build(), childContext.build());
-    }
-
     /**
      * <p>
-     * MySQL {@link Dialect#unionUpdateChild()} always return true
+     * MySQL {@link Dialect#multiTableUpdateChild()} always return true
      * ,so this method always use multi-table syntax update child table.
      * </p>
      *
-     * @see Dialect#unionUpdateChild()
+     * @see Dialect#multiTableUpdateChild()
      */
     @Override
     protected final Stmt standardChildUpdate(final _SingleUpdateContext context) {

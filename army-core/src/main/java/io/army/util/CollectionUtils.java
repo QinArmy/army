@@ -1,21 +1,34 @@
 package io.army.util;
 
-import io.army.lang.Nullable;
-
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 public abstract class CollectionUtils extends io.qinarmy.util.CollectionUtils {
 
-
-    public static <T> List<T> asUnmodifiableList(@Nullable List<T> nullList) {
+    public static <T> List<T> asUnmodifiableList(final Collection<T> collection) {
         final List<T> list;
-        if (nullList == null) {
-            list = Collections.emptyList();
-        } else {
-            list = unmodifiableList(nullList);
+        switch (collection.size()) {
+            case 0:
+                list = Collections.emptyList();
+                break;
+            case 1: {
+                List<T> temp = null;
+                for (T v : collection) {
+                    temp = Collections.singletonList(v);
+                    break;
+                }
+                list = temp;
+            }
+            break;
+            default: {
+                list = Collections.unmodifiableList(new ArrayList<>(collection));
+            }
+
         }
         return list;
+
     }
 
 

@@ -5,9 +5,11 @@ import io.army.criteria.Expression;
 import io.army.criteria.GenericField;
 import io.army.criteria.ValueExpression;
 import io.army.dialect.Constant;
+import io.army.dialect.DialectUtils;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
-import io.army.mapping.*;
+import io.army.mapping.MappingType;
+import io.army.mapping._MappingFactory;
 import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
 
@@ -41,7 +43,7 @@ abstract class ParamExpression<E> extends NoNOperationExpression<E> implements V
         return strict(_MappingFactory.getMapping(value.getClass()), value);
     }
 
-    static <E> ParamExpression<E> optimizing(final Expression<?> type, final E value) {
+    static <E> ParamExpression<E> optimizing(final Expression<?> type, final @Nullable E value) {
         final ParamMeta paramMeta;
         if (type instanceof GenericField) {
             paramMeta = (GenericField<?, ?>) type;
@@ -51,7 +53,7 @@ abstract class ParamExpression<E> extends NoNOperationExpression<E> implements V
         return new OptimizingParamExpression<>(paramMeta, value);
     }
 
-    static <E> ParamExpression<E> optimizing(final MappingType type, final E value) {
+    static <E> ParamExpression<E> optimizing(final MappingType type, final @Nullable E value) {
         return new OptimizingParamExpression<>(type, value);
     }
 
@@ -105,9 +107,8 @@ abstract class ParamExpression<E> extends NoNOperationExpression<E> implements V
 
     private static final class OptimizingParamExpression<E> extends ParamExpression<E> {
 
-        private OptimizingParamExpression(ParamMeta paramMeta, E value) {
+        private OptimizingParamExpression(ParamMeta paramMeta, @Nullable E value) {
             super(paramMeta, value);
-            Objects.requireNonNull(value);
         }
 
         @Override
@@ -116,25 +117,11 @@ abstract class ParamExpression<E> extends NoNOperationExpression<E> implements V
                 context.sqlBuilder()
                         .append(" NULL");
             } else {
-                final MappingType mappingType = this.paramMeta.mappingType();
-                if (mappingType instanceof IntegerType
-                        || mappingType instanceof BigDecimalType
-                        || mappingType instanceof LongType
-                        || mappingType instanceof LocalDateTimeType
-                        || mappingType instanceof LocalDateType
-                        || mappingType instanceof LocalTimeType
-                        || mappingType instanceof CodeEnumType
-                        || mappingType instanceof NameEnumType
-                        || mappingType instanceof BigIntegerType
-                        || mappingType instanceof BooleanType
-                        || mappingType instanceof TrueFalseType
-                        || mappingType instanceof DoubleType
-                        || mappingType instanceof FloatType
-                        || mappingType instanceof ShortType
-                        || mappingType instanceof ByteType) {
+                final ParamMeta paramMeta = this.paramMeta;
+                if (DialectUtils.isSafeMapping(paramMeta.mappingType())) {
                     context.sqlBuilder()
                             .append(Constant.SPACE)
-                            .append(context.dialect().literal(this.paramMeta, this.value));
+                            .append(context.dialect().literal(paramMeta, this.value));
                 } else {
                     context.appendParam(this);
                 }

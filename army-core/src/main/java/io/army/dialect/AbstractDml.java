@@ -169,11 +169,6 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
         );
     }
 
-    protected Stmt standardChildValueInsert(final _ValueInsertContext context) {
-        throw new UnsupportedOperationException();
-    }
-
-
     /*################################## blow protected method ##################################*/
 
     /*################################## blow private batchInsert method ##################################*/
@@ -182,8 +177,8 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
      * @see #handleStandardValueInsert(_ValuesInsert, Visible)
      */
     private Stmt standardValueInsert(final _ValueInsertContext context) {
-        final _InsertBlock childBlock = context.childBlock();
         _DmlUtils.appendStandardValueInsert(false, context);
+        final _InsertBlock childBlock = context.childBlock();
         if (childBlock != null) {
             _DmlUtils.appendStandardValueInsert(true, context);
         }
@@ -545,7 +540,6 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
 
         final byte tableIndex;
         tableIndex = singleDmlTableRoute(update);
-
         final Stmt stmt;
         if (tableIndex >= 0) {
             stmt = standardUpdateStmt(update, tableIndex, visible);
@@ -596,9 +590,10 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
         sqlBuilder.append(UPDATE);
         sqlBuilder.append(Constant.SPACE);
         if (context.tableIndex == 0) {
-            sqlBuilder.append(dialect.quoteIfNeed(table.tableName()));
+            sqlBuilder.append(dialect.safeTableName(table.tableName()));
         } else {
-            sqlBuilder.append(dialect.quoteIfNeed(table.tableName() + context.tableSuffix()));
+            sqlBuilder.append(table.tableName())
+                    .append(context.tableSuffix());
         }
         if (dialect.tableAliasAfterAs()) {
             sqlBuilder.append(AS_WORD);

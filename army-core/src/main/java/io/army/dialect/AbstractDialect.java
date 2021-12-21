@@ -4,9 +4,9 @@ package io.army.dialect;
 import io.army.UnKnownTypeException;
 import io.army.criteria.*;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
+import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 import io.army.session.GenericRmSessionFactory;
 import io.army.stmt.PairStmt;
@@ -60,7 +60,7 @@ public abstract class AbstractDialect implements InnerDialect {
 
 
     @Override
-    public String literal(MappingType type, Object value) {
+    public String literal(ParamMeta type, Object value) {
         return null;
     }
 

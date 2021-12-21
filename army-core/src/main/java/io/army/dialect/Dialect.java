@@ -23,6 +23,6 @@ public interface Dialect extends DdlDialect, DmlDialect, DqlDialect, TclDialect 
 
     String defaultFuncName();
 
-    boolean unionUpdateChild();
+    boolean multiTableUpdateChild();
 
 }

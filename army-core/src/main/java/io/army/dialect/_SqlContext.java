@@ -2,15 +2,25 @@ package io.army.dialect;
 
 import io.army.criteria.FieldPredicate;
 import io.army.criteria.Visible;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
 
 public interface _SqlContext {
 
+
+    /**
+     * @return primary tableIndex
+     */
+    byte tableIndex();
+
+    @Nullable
+    String tableSuffix();
+
     /**
      * <p>
-     * This method is used by non {@link io.army.criteria.SetTargetPart}.
+     * This method is designed for the implementation of {@link io.army.criteria.LogicalField}
      * </p>
      * <p>
      *     <ol>
@@ -24,7 +34,7 @@ public interface _SqlContext {
 
     /**
      * <p>
-     * This method is used by non {@link io.army.criteria.SetTargetPart}.
+     * This method is designed for the implementation of {@link FieldMeta}
      * </p>
      * <p> steps:
      *     <ol>

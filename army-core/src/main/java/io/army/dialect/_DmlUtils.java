@@ -10,6 +10,9 @@ import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Update;
 import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.mapping.*;
+import io.army.mapping.optional.OffsetDateTimeType;
+import io.army.mapping.optional.OffsetTimeType;
+import io.army.mapping.optional.ZonedDateTimeType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.*;
@@ -67,10 +70,6 @@ public abstract class _DmlUtils {
     }
 
 
-    public static String parentAlias(String tableAlias) {
-        return "p_of_" + tableAlias;
-    }
-
     @Deprecated
     public static _SetBlock createSetClause(TableMeta<?> table, String tableAlias
             , String safeTableAlias, boolean selfJoin
@@ -79,7 +78,7 @@ public abstract class _DmlUtils {
     }
 
 
-    public static void appendStandardValueInsert(final boolean childBlock, final _ValueInsertContext context) {
+    static void appendStandardValueInsert(final boolean childBlock, final _ValueInsertContext context) {
         final Dialect dialect = context.dialect();
         final _InsertBlock blockContext;
         if (childBlock) {
@@ -164,6 +163,9 @@ public abstract class _DmlUtils {
                             || mappingType instanceof BigIntegerType
                             || mappingType instanceof BooleanType
                             || mappingType instanceof TrueFalseType
+                            || mappingType instanceof OffsetDateTimeType
+                            || mappingType instanceof ZonedDateTimeType
+                            || mappingType instanceof OffsetTimeType
                             || mappingType instanceof DoubleType
                             || mappingType instanceof FloatType
                             || mappingType instanceof ShortType

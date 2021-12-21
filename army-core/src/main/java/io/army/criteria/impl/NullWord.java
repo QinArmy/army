@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
+import io.army.meta.ParamMeta;
 
 /**
  * <p>
@@ -25,6 +26,11 @@ final class NullWord<E> extends NoNOperationExpression<E> {
 
     @Override
     public MappingType mappingType() {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public ParamMeta paramMeta() {
         throw unsupportedOperation();
     }
 

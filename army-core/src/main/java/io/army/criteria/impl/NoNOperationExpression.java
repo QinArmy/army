@@ -390,7 +390,7 @@ abstract class NoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final IPredicate ifNotIn(@Nullable Collection<?> parameters) {
+    public final <O> IPredicate ifNotIn(@Nullable Collection<O> parameters) {
         throw unsupportedOperation();
     }
 
@@ -410,7 +410,7 @@ abstract class NoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final <C> IPredicate like(Function<C, Expression<String>> expOrSubQuery) {
+    public final <C> IPredicate like(Function<C, Expression<String>> function) {
         throw unsupportedOperation();
     }
 
@@ -430,7 +430,7 @@ abstract class NoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final <C> IPredicate notLike(Function<C, Expression<String>> functioin) {
+    public final <C> IPredicate notLike(Function<C, Expression<String>> function) {
         throw unsupportedOperation();
     }
 

@@ -1,7 +1,7 @@
 package io.army.dialect;
 
 
-import io.army.mapping.MappingType;
+import io.army.meta.ParamMeta;
 import io.army.session.FactoryMode;
 import io.army.session.GenericRmSessionFactory;
 
@@ -22,6 +22,8 @@ public abstract class AbstractSQL implements SqlDialect {
     protected static final char[] RIGHT_BRACKET = new char[]{' ', ')'};
 
     protected static final char[] SET_WORD = new char[]{' ', 'S', 'E', 'T'};
+
+    protected static final char[] SELECT_WORD = new char[]{' ', 'S', 'E', 'L', 'E', 'C', 'T'};
 
     protected static final char[] WHERE_WORD = new char[]{' ', 'W', 'H', 'E', 'R', 'E'};
 
@@ -91,7 +93,9 @@ public abstract class AbstractSQL implements SqlDialect {
 
 
     @Override
-    public String literal(MappingType type, Object value) {
+    public String literal(ParamMeta type, Object value) {
         return null;
     }
+
+
 }

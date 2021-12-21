@@ -195,8 +195,22 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble, TypeInfer
 
     IPredicate isNotNull();
 
+    /**
+     * <p>
+     * Parameters will be wrapped with {@link SQLs#optimizingCollectionParam(Expression, Collection)}.
+     * </p>
+     *
+     * @param <O> java type of element of right operand of {@code in},the element is weak weakly instance, because sql is weakly typed.
+     */
     <O> IPredicate in(Collection<O> parameters);
 
+    /**
+     * <p>
+     * If parameters non-null parameters will be wrapped with {@link SQLs#optimizingCollectionParam(Expression, Collection)}.
+     * </p>
+     *
+     * @param <O> java type of element of parameters,the element is weak weakly instance, because sql is weakly typed.
+     */
     @Nullable
     <O> IPredicate ifIn(@Nullable Collection<O> parameters);
 
@@ -204,10 +218,24 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble, TypeInfer
 
     <C, O> IPredicate in(Function<C, ColumnSubQuery<O>> function);
 
+    /**
+     * <p>
+     * Parameters will be wrapped with {@link SQLs#optimizingCollectionParam(Expression, Collection)}.
+     * </p>
+     *
+     * @param <O> java type of element of right operand of {@code in},the element is weak weakly instance, because sql is weakly typed.
+     */
     <O> IPredicate notIn(Collection<O> parameters);
 
+    /**
+     * <p>
+     * If parameters non-null,then parameters will be wrapped with {@link SQLs#optimizingCollectionParam(Expression, Collection)}.
+     * </p>
+     *
+     * @param <O> java type of element of parameters,the element is weak weakly instance, because sql is weakly typed.
+     */
     @Nullable
-    IPredicate ifNotIn(@Nullable Collection<?> parameters);
+    <O> IPredicate ifNotIn(@Nullable Collection<O> parameters);
 
     <O> IPredicate notIn(Expression<Collection<O>> values);
 
@@ -269,7 +297,6 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble, TypeInfer
     /**
      * Bitwise AND
      *
-     * @param <O> the type maybe different from this.
      * @return {@link BigInteger} expression
      */
     Expression<E> and(Expression<?> operand);
@@ -291,7 +318,6 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble, TypeInfer
     /**
      * Bitwise AND
      *
-     * @param <O> the type maybe different from this.
      * @return {@link BigInteger} expression
      */
     Expression<E> and(String tableAlias, FieldMeta<?, ?> field);
@@ -342,7 +368,6 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble, TypeInfer
     /**
      * Bitwise XOR
      *
-     * @param <O> the type maybe different from this.
      * @return {@link BigInteger} expression
      */
     Expression<E> xor(Expression<?> operand);
@@ -392,7 +417,6 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble, TypeInfer
     /**
      * Shifts a  number to the right.
      *
-     * @param <O> the type maybe different from this.
      * @return {@link BigInteger} expression
      */
     <N extends Number> Expression<E> rightShift(Expression<N> bitNumber);
@@ -429,7 +453,6 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble, TypeInfer
     /**
      * Shifts a  number to the left.
      *
-     * @param <O> the type maybe different from this.
      * @return {@link BigInteger} expression
      */
     <N extends Number> Expression<E> leftShift(Expression<N> bitNumber);
@@ -444,7 +467,6 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble, TypeInfer
     /**
      * Shifts a  number to the left.
      *
-     * @param <O> the type maybe different from this.
      * @return {@link BigInteger} expression
      */
     <N extends Number> Expression<E> leftShift(String tableAlias, FieldMeta<?, N> field);
@@ -471,7 +493,7 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble, TypeInfer
 
     IPredicate like(String patternParameter);
 
-    <C> IPredicate like(Function<C, Expression<String>> expOrSubQuery);
+    <C> IPredicate like(Function<C, Expression<String>> function);
 
     IPredicate notLike(String patternParameter);
 
@@ -479,7 +501,7 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble, TypeInfer
 
     IPredicate notLike(Expression<String> pattern);
 
-    <C> IPredicate notLike(Function<C, Expression<String>> functioin);
+    <C> IPredicate notLike(Function<C, Expression<String>> function);
 
 
 }

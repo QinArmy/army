@@ -11,6 +11,7 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
+import io.army.stmt.ParamValue;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmts;
 import io.army.util.CollectionUtils;
@@ -47,7 +48,9 @@ final class UpdateContext extends _BaseSqlContext implements _SingleUpdateContex
 
     final List<_Predicate> predicateList;
 
-    private final _SetBlock childSetClause;
+    private final ChildSetBlock childSetClause;
+
+    private final boolean multiTableUpdateChild;
 
     private UpdateContext(_SingleUpdate update, byte tableIndex, Dialect dialect, Visible visible) {
         super(dialect, tableIndex, visible);
@@ -66,7 +69,7 @@ final class UpdateContext extends _BaseSqlContext implements _SingleUpdateContex
 
         this.tableAlias = update.tableAlias();
         this.safeTableAlias = dialect.quoteIfNeed(this.tableAlias);
-
+        this.multiTableUpdateChild = dialect.multiTableUpdateChild();
         this.childSetClause = null;
     }
 
@@ -111,28 +114,22 @@ final class UpdateContext extends _BaseSqlContext implements _SingleUpdateContex
         this.predicateList = update.predicateList();
         final String tableAlias = update.tableAlias();
 
-        this.tableAlias = _DmlUtils.parentAlias(tableAlias);
+        this.tableAlias = DialectUtils.parentAlias(tableAlias);
         this.safeTableAlias = this.tableAlias;
-
-        if (fields.size() == 0) {
-            this.childSetClause = null;
-        } else {
-            this.childSetClause = _DmlUtils.createSetClause(childTable, tableAlias
-                    , dialect.quoteIfNeed(tableAlias), false
-                    , fieldList, values);
-        }
+        this.multiTableUpdateChild = dialect.multiTableUpdateChild();
+        this.childSetClause = new ChildSetBlock(childTable, tableAlias, fieldList, values, this);
     }
 
     /*################################## blow _SqlContext method ##################################*/
 
     @Override
     public void appendField(final String tableAlias, final FieldMeta<?, ?> field) {
-        final _SetBlock childSetClause = this.childSetClause;
+        final ChildSetBlock childSetClause = this.childSetClause;
         if (childSetClause == null) {
             if (!this.tableAlias.equals(tableAlias)) {
                 throw _Exceptions.unknownColumn(tableAlias, field);
             }
-        } else if (!childSetClause.tableAlias().equals(tableAlias)) {
+        } else if (!childSetClause.tableAlias.equals(tableAlias)) {
             throw _Exceptions.unknownColumn(tableAlias, field);
         }
         this.appendField(field);
@@ -140,22 +137,32 @@ final class UpdateContext extends _BaseSqlContext implements _SingleUpdateContex
 
     @Override
     public void appendField(final FieldMeta<?, ?> field) {
-        final String safeTableAlias;
         final TableMeta<?> belongOf = field.tableMeta();
-        if (belongOf == this.table) {
-            safeTableAlias = this.safeTableAlias;
+        if (belongOf == this.table) {// field is parent table column.
+            this.sqlBuilder
+                    .append(Constant.SPACE)
+                    .append(this.safeTableAlias)
+                    .append(Constant.POINT)
+                    .append(this.dialect.safeColumnName(field.columnName()));
         } else {
-            final _SetBlock childSetClause = this.childSetClause;
+            final ChildSetBlock childSetClause = this.childSetClause;
             if (childSetClause == null || belongOf != childSetClause.table()) {
                 throw _Exceptions.unknownColumn(null, field);
             }
-            safeTableAlias = childSetClause.safeTableAlias();
+            // field is child table column
+            if (this.multiTableUpdateChild) {// parent and child table in multi-table update statement,eg: MySQL multi-table update
+                this.sqlBuilder
+                        .append(Constant.SPACE)
+                        .append(childSetClause.safeTableAlias)
+                        .append(Constant.POINT)
+                        .append(this.dialect.safeColumnName(field.columnName()));
+            } else {
+                //non multi-table update,so convert child table filed as sub query.
+                childColumnFromSubQuery(this, childSetClause, field);
+            }
+
         }
-        this.sqlBuilder
-                .append(Constant.SPACE)
-                .append(safeTableAlias)
-                .append(Constant.POINT)
-                .append(this.dialect.safeColumnName(field.columnName()));
+
     }
 
     /*################################## blow _UpdateContext method ##################################*/
@@ -182,7 +189,7 @@ final class UpdateContext extends _BaseSqlContext implements _SingleUpdateContex
 
     @Override
     public boolean unionUpdateChild() {
-        return this.dialect.unionUpdateChild();
+        return this.multiTableUpdateChild;
     }
 
     @Override
@@ -197,7 +204,7 @@ final class UpdateContext extends _BaseSqlContext implements _SingleUpdateContex
 
     @Override
     public boolean hasSelfJoint() {
-        //single update always false
+        //standard single update always false
         return false;
     }
 
@@ -224,7 +231,135 @@ final class UpdateContext extends _BaseSqlContext implements _SingleUpdateContex
 
     @Override
     public String toString() {
-        return "standard domain update";
+        return "standard domain update context";
+    }
+
+
+    private static final class ChildSetBlock implements _SetBlock {
+
+        private final ChildTableMeta<?> table;
+
+        private final String tableAlias;
+
+        private final String safeTableAlias;
+
+        final List<FieldMeta<?, ?>> fieldList;
+
+        final List<_Expression<?>> valueExpList;
+
+        private final UpdateContext parentContext;
+
+        private ChildSetBlock(ChildTableMeta<?> table, final String tableAlias
+                , List<FieldMeta<?, ?>> fieldList, List<_Expression<?>> valueExpList
+                , UpdateContext parentContext) {
+            this.table = table;
+            this.tableAlias = tableAlias;
+            this.safeTableAlias = parentContext.dialect.quoteIfNeed(tableAlias);
+            this.fieldList = CollectionUtils.unmodifiableList(fieldList);
+            this.valueExpList = CollectionUtils.unmodifiableList(valueExpList);
+            this.parentContext = parentContext;
+        }
+
+        @Override
+        public ChildTableMeta<?> table() {
+            return this.table;
+        }
+
+        @Override
+        public byte tableIndex() {
+            //must same with parent
+            return this.parentContext.tableIndex;
+        }
+
+        @Override
+        public String tableSuffix() {
+            //must same with parent
+            return this.parentContext.tableSuffix;
+        }
+
+        @Override
+        public String tableAlias() {
+            return this.tableAlias;
+        }
+
+        @Override
+        public String safeTableAlias() {
+            return this.safeTableAlias;
+        }
+
+        @Override
+        public boolean hasSelfJoint() {
+            return this.parentContext.hasSelfJoint();
+        }
+
+        @Override
+        public List<FieldMeta<?, ?>> targetParts() {
+            return this.fieldList;
+        }
+
+        @Override
+        public List<_Expression<?>> valueParts() {
+            return this.valueExpList;
+        }
+
+        @Override
+        public void appendField(final String tableAlias, final FieldMeta<?, ?> field) {
+            if (!this.tableAlias.equals(tableAlias)) {
+                throw _Exceptions.unknownColumn(tableAlias, field);
+            }
+            this.appendField(field);
+        }
+
+        @Override
+        public void appendField(final FieldMeta<?, ?> field) {
+            final TableMeta<?> belongOf = field.tableMeta();
+            final StringBuilder sqlBuilder = this.parentContext.sqlBuilder;
+            final Dialect dialect = this.parentContext.dialect;
+
+            if (belongOf == this.table) {// field is child table column.
+                sqlBuilder
+                        .append(Constant.SPACE)
+                        .append(this.safeTableAlias)
+                        .append(Constant.POINT)
+                        .append(dialect.safeColumnName(field.columnName()));
+            } else if (belongOf == this.parentContext.table) {// field is parent table column.
+                final String parentSafeTable = this.parentContext.safeTableAlias;
+                if (this.parentContext.multiTableUpdateChild) {// parent and child table in multi-table update statement,eg: MySQL multi-table update
+                    sqlBuilder
+                            .append(Constant.SPACE)
+                            .append(parentSafeTable)
+                            .append(Constant.POINT)
+                            .append(dialect.safeColumnName(field.columnName()));
+                } else {
+                    //non multi-table update,so convert parent filed as sub query.
+                    parentColumnFromSubQuery(this, field);
+                }
+            } else {
+                throw _Exceptions.unknownColumn(null, field);
+            }
+        }
+
+        @Override
+        public Dialect dialect() {
+            return this.parentContext.dialect;
+        }
+
+        @Override
+        public StringBuilder sqlBuilder() {
+            //for update statement,parent update and child update must in same statement.
+            return this.parentContext.sqlBuilder;
+        }
+
+        @Override
+        public void appendParam(ParamValue paramValue) {
+            //for update statement,parent update and child update must in same statement.
+            this.parentContext.appendParam(paramValue);
+        }
+
+        @Override
+        public Visible visible() {
+            return this.parentContext.visible;
+        }
     }
 
 

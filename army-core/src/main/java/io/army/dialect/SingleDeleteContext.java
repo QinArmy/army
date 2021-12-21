@@ -26,11 +26,11 @@ final class SingleDeleteContext extends _BaseSqlContext implements _SingleDelete
         super(dialect, tableIndex, visible);
         final TableMeta<?> table = delete.table();
         final String tableAlias = delete.tableAlias();
-        this.unionUpdateChild = dialect.unionUpdateChild();
+        this.unionUpdateChild = dialect.multiTableUpdateChild();
 
         if (table instanceof ChildTableMeta) {
             this.table = ((ChildTableMeta<?>) table).parentMeta();
-            this.tableAlias = _DmlUtils.parentAlias(tableAlias);
+            this.tableAlias = DialectUtils.parentAlias(tableAlias);
             this.safeTableAlias = this.tableAlias;
         } else {
             this.table = (SingleTableMeta<?>) table;
