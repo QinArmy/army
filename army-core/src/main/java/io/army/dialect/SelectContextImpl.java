@@ -39,7 +39,7 @@ final class SelectContextImpl extends AbstractQueryStatementContext implements S
                 .sql(this.sqlBuilder.toString())
                 .paramList(this.paramList)
                 .statementType(StatementType.SELECT)
-                .selectionList(DialectUtils.extractSelectionList(this.query.selectPartList()))
+                .selectionList(_DialectUtils.extractSelectionList(this.query.selectPartList()))
                 .build();
     }
 }

@@ -1,8 +1,8 @@
 package io.army.criteria.impl.oracle;
 
-import io.army.criteria.impl.inner._BatchDML;
+import io.army.criteria.impl.inner._BatchDml;
 
-public interface _OracleBatchSingleUpdate extends _OracleSingleUpdate, _BatchDML {
+public interface _OracleBatchSingleUpdate extends _OracleSingleUpdate, _BatchDml {
 
 
 }

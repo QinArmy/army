@@ -30,7 +30,7 @@ abstract class DomainDmlContext implements _DmlContext {
         this.visible = visible;
 
         this.tableIndex = tableIndex;
-        this.tableSuffix = DialectUtils.tableSuffix(tableIndex);
+        this.tableSuffix = _DialectUtils.tableSuffix(tableIndex);
         this.sqlBuilder = new StringBuilder(128);
         this.paramList = new ArrayList<>();
 

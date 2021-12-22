@@ -2,8 +2,11 @@ package io.army.sharding;
 
 import io.army.criteria.NotFoundRouteException;
 import io.army.meta.TableMeta;
+import io.army.session.FactoryMode;
 
 public interface RouteContext {
+
+    FactoryMode factoryMode();
 
     byte databaseIndex();
 

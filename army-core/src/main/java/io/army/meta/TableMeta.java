@@ -1,10 +1,10 @@
 package io.army.meta;
 
 import io.army.criteria.TableAble;
-import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.sharding.Route;
+import io.army.sharding.RouteMode;
 import io.army.struct.CodeEnum;
 
 import java.util.Collection;
@@ -17,13 +17,6 @@ import java.util.List;
  * @see IndexFieldMeta
  */
 public interface TableMeta<T extends IDomain> extends TableAble, Meta {
-
-
-    /**
-     * @throws UnsupportedOperationException throw always
-     */
-    @Override
-    void appendSql(_SqlContext context);
 
 
     Class<T> javaType();
@@ -53,9 +46,13 @@ public interface TableMeta<T extends IDomain> extends TableAble, Meta {
     @Deprecated
     List<FieldMeta<?, ?>> routeFieldList(boolean database);
 
+    @Deprecated
     List<FieldMeta<?, ?>> databaseRouteFields();
 
+    @Deprecated
     List<FieldMeta<?, ?>> tableRouteFields();
+
+    RouteMode routeMode();
 
     byte tableCount();
 

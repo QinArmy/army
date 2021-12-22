@@ -7,9 +7,9 @@ import io.army.criteria.Update;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._SingleUpdate;
+import io.army.dialect._DialectUtils;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
-import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
@@ -116,6 +116,14 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
         this.fieldList.add(field);
         this.valueExpList.add((_Expression<?>) value);
         return this;
+    }
+
+    @Override
+    public <F> WhereSpec<T, C> setNull(FieldMeta<? super T, F> field) {
+        if (!field.nullable()) {
+            throw _Exceptions.immutableField(field);
+        }
+        return this.set(field, SQLs.nullWord());
     }
 
     @Override
@@ -435,10 +443,8 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
         }
 
         @Override
-        public <T extends IDomain> RouteSpec<T, C> update(TableMeta<T> table, String tableAlias) {
-            if (!(table instanceof ChildTableMeta) && table.immutable()) {
-                throw _Exceptions.immutableTable(table);
-            }
+        public <T extends IDomain> RouteSpec<T, C> update(final TableMeta<T> table, final String tableAlias) {
+            _DialectUtils.validateTableAlias(table, tableAlias);
             return new ContextualUpdate<>(table, tableAlias, this.criteria);
         }
 

@@ -57,7 +57,7 @@ final class SubQueryInsertContext extends AbstractTableContextSQLContext impleme
     @Override
     public final void appendField(FieldMeta<?, ?> field) {
         if (field.tableMeta() != this.physicalTable) {
-            throw DialectUtils.createUnKnownFieldException(field);
+            throw _DialectUtils.createUnKnownFieldException(field);
         }
         this.doAppendField(null, field);
     }

@@ -88,7 +88,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
     @Override
     public void appendTable(TableMeta<?> tableMeta, @Nullable String tableAlias) {
         if (!this.tableContext.tableCountMap.containsKey(tableMeta)) {
-            throw DialectUtils.createUnKnownTableException(tableMeta);
+            throw _DialectUtils.createUnKnownTableException(tableMeta);
         }
         doAppendTable(tableMeta, tableAlias);
     }
@@ -125,11 +125,11 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
         } else if (count.equals(1)) {
             tableAlias = this.tableContext.tableAliasMap.get(fieldMeta.tableMeta());
         } else {
-            throw DialectUtils.createNoLogicalTableException(fieldMeta);
+            throw _DialectUtils.createNoLogicalTableException(fieldMeta);
         }
         if (tableAlias == null) {
             // fromContext or parentFromContext error.
-            throw DialectUtils.createArmyCriteriaException();
+            throw _DialectUtils.createArmyCriteriaException();
         }
         return tableAlias;
     }
@@ -192,7 +192,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
     protected abstract String parseTableSuffix(TableMeta<?> tableMeta, @Nullable String tableAlias);
 
     protected String findTableAliasFromParent(FieldMeta<?, ?> fieldMeta) throws CriteriaException {
-        throw DialectUtils.createUnKnownFieldException(fieldMeta);
+        throw _DialectUtils.createUnKnownFieldException(fieldMeta);
     }
 
     /*################################## blow private method ##################################*/

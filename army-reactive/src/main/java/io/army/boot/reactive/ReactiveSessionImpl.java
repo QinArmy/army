@@ -7,7 +7,7 @@ import io.army.criteria.Delete;
 import io.army.criteria.Insert;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner._BatchDML;
+import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._Statement;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
@@ -307,7 +307,7 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
     }
 
     private Mono<Void> assertForValueInsert(Insert insert) {
-        return insert instanceof _BatchDML
+        return insert instanceof _BatchDml
                 ? assertForBatch()
                 : this.assertSessionActive(true);
     }

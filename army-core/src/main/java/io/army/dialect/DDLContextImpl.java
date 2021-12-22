@@ -53,7 +53,7 @@ final class DDLContextImpl implements DDLContext {
     @Override
     public final void appendField(FieldMeta<?, ?> fieldMeta) {
         if (fieldMeta.tableMeta() != this.tableMeta) {
-            throw DialectUtils.createUnKnownFieldException(fieldMeta);
+            throw _DialectUtils.createUnKnownFieldException(fieldMeta);
         }
         this.sqlBuilder.append(" ")
                 .append(this.dialect.quoteIfNeed(fieldMeta.columnName()));
@@ -63,7 +63,7 @@ final class DDLContextImpl implements DDLContext {
     @Override
     public final void appendFieldWithTable(FieldMeta<?, ?> fieldMeta) {
         if (fieldMeta.tableMeta() != this.tableMeta) {
-            throw DialectUtils.createUnKnownFieldException(fieldMeta);
+            throw _DialectUtils.createUnKnownFieldException(fieldMeta);
         }
         appendTable();
         this.sqlBuilder.append(".")

@@ -2,6 +2,8 @@ package io.army.dialect;
 
 public interface Constant {
 
+    String FORBID_ALIAS = "_army_";
+
     String SELECT = "SELECT";
 
     String UPDATE = "UPDATE";

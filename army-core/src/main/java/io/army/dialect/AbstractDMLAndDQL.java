@@ -1,7 +1,6 @@
 package io.army.dialect;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.lang.Nullable;
@@ -9,7 +8,6 @@ import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Exceptions;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -91,31 +89,31 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
     protected final void appendVisiblePredicate(List<? extends TableWrapper> tableWrapperList, _TablesSqlContext context
             , boolean hasPredicate) {
         // append visible predicates
-        final TableMeta<?> dual = SQLs.dual();
-        Map<String, ChildTableMeta<?>> childMap = new HashMap<>();
-        TableWrapper preTableWrapper = null;
-        for (TableWrapper tableWrapper : tableWrapperList) {
-            TableAble tableAble = tableWrapper.tableAble();
-
-            if ((tableAble instanceof TableMeta) && tableAble != dual) {
-
-                TableMeta<?> temp = (TableMeta<?>) tableAble;
-                if (tableAble instanceof ChildTableMeta) {
-                    temp = ((ChildTableMeta<?>) temp).parentMeta();
-                }
-                if (temp.containField(_MetaBridge.VISIBLE)) {
-                    appendVisibleIfNeed(tableWrapper, preTableWrapper, context, childMap, hasPredicate);
-                }
-            }
-            preTableWrapper = tableWrapper;
-        }
-
-        if (!childMap.isEmpty()) {
-            // child table append exists SubQuery
-            for (Map.Entry<String, ChildTableMeta<?>> e : childMap.entrySet()) {
-                visibleSubQueryPredicateForChild(context, e.getValue(), e.getKey(), hasPredicate);
-            }
-        }
+//        final TableMeta<?> dual = null;
+//        Map<String, ChildTableMeta<?>> childMap = new HashMap<>();
+//        TableWrapper preTableWrapper = null;
+//        for (TableWrapper tableWrapper : tableWrapperList) {
+//            TableAble tableAble = tableWrapper.tableAble();
+//
+//            if ((tableAble instanceof TableMeta) && tableAble != dual) {
+//
+//                TableMeta<?> temp = (TableMeta<?>) tableAble;
+//                if (tableAble instanceof ChildTableMeta) {
+//                    temp = ((ChildTableMeta<?>) temp).parentMeta();
+//                }
+//                if (temp.containField(_MetaBridge.VISIBLE)) {
+//                    appendVisibleIfNeed(tableWrapper, preTableWrapper, context, childMap, hasPredicate);
+//                }
+//            }
+//            preTableWrapper = tableWrapper;
+//        }
+//
+//        if (!childMap.isEmpty()) {
+//            // child table append exists SubQuery
+//            for (Map.Entry<String, ChildTableMeta<?>> e : childMap.entrySet()) {
+//                visibleSubQueryPredicateForChild(context, e.getValue(), e.getKey(), hasPredicate);
+//            }
+//        }
     }
 
     @Deprecated
@@ -312,7 +310,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
             visiblePredicate(context, table, tableWrapper.alias(), hasPredicate);
         } else if (table instanceof ParentTableMeta) {
             visiblePredicate(context, table, tableWrapper.alias(), hasPredicate);
-            if (DialectUtils.childJoinParent(tableWrapper.onPredicateList(), table)) {
+            if (_DialectUtils.childJoinParent(tableWrapper.onPredicateList(), table)) {
                 if (preTableWrapper != null) {
                     // remove child that joined by parent with primary key
                     childMap.remove(preTableWrapper.alias());
@@ -321,7 +319,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         } else if (table instanceof ChildTableMeta) {
             if (preTableWrapper == null) {
                 childMap.put(tableWrapper.alias(), (ChildTableMeta<?>) table);
-            } else if (!DialectUtils.parentJoinChild(tableWrapper.onPredicateList(), table)) {
+            } else if (!_DialectUtils.parentJoinChild(tableWrapper.onPredicateList(), table)) {
                 childMap.put(tableWrapper.alias(), (ChildTableMeta<?>) table);
             }
         } else {

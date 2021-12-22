@@ -81,7 +81,7 @@ public abstract class _RouteUtils {
     public static byte tableRouteFromRouteField(final TableMeta<?> table, final List<_Predicate> predicateList
             , final RouteContext context) {
 
-        if (table.databaseRouteFields().size() == 0 && context.databaseIndex() != 0) {
+        if (table.routeMode() == RouteMode.NONE && context.databaseIndex() != 0) {
             throw _Exceptions.routeKeyValueError(table, 0, context.databaseIndex());
         }
         byte tableIndex = -1, index;
@@ -92,32 +92,31 @@ public abstract class _RouteUtils {
                 break;
             }
         }
+        if (tableIndex >= 0 && tableIndex >= table.tableCount()) {
+            String m = String.format("%s parse table route error.", _Predicate.class.getName());
+            throw new IllegalStateException(m);
+        }
         return tableIndex;
     }
 
-    /**
-     * @see #encodeSubQueryRoute(byte)
-     */
-    public static byte decodeRoute(final byte route) {
-        final byte r;
-        if (route == Byte.MIN_VALUE) {// MIN_VALUE representing negative zero.
-            r = 0;
-        } else if (route < 0) { // negative representing route from sub query.
-            r = (byte) -route;
-        } else {
-            r = route;
+    @Nullable
+    public static FieldMeta<?, ?> batchDmlTableRouteField(final TableMeta<?> table, final List<_Predicate> predicateList) {
+        FieldMeta<?, ?> routeField = null;
+        for (_Predicate predicate : predicateList) {
+            routeField = predicate.tableRouteField(table);
+            if (routeField != null) {
+                break;
+            }
         }
-        return r;
+        if (routeField != null && !routeField.tableRoute()) {
+            String m = String.format("%s parse table route error.", _Predicate.class.getName());
+            throw new IllegalStateException(m);
+        }
+        return routeField;
     }
 
-    /**
-     * @param subQueryRoute route from sub query.
-     * @see #decodeRoute(byte)
-     */
-    public static byte encodeSubQueryRoute(final byte subQueryRoute) {
-        return subQueryRoute == 0 ? Byte.MIN_VALUE : ((byte) -subQueryRoute);
-    }
 
+    @Deprecated
     @Nullable
     public static String convertToSuffix(final int tableCountPerDatabase, final int tableIndex) {
         if (tableCountPerDatabase <= 0) {
@@ -159,6 +158,7 @@ public abstract class _RouteUtils {
 
     }
 
+    @Deprecated
     @Nullable
     protected static RouteWrapper findRouteForSelect(_Select select, boolean dataSource) {
         RouteWrapper routeWrapper;
@@ -173,7 +173,7 @@ public abstract class _RouteUtils {
         return findRouteFromSubQueryList(select.tableWrapperList(), dataSource);
     }
 
-
+    @Deprecated
     @Nullable
     protected static RouteWrapper findRouteFromWhereClause(List<? extends TableWrapper> tableWrapperList
             , List<_Predicate> predicateList, final boolean dataSource) {
@@ -196,6 +196,7 @@ public abstract class _RouteUtils {
         return routeWrapper;
     }
 
+    @Deprecated
     @Nullable
     protected static RouteWrapper findRouteFromTableList(List<? extends TableWrapper> tableWrapperList
             , final boolean dataSource) {
@@ -225,6 +226,7 @@ public abstract class _RouteUtils {
     }
 
 
+    @Deprecated
     @Nullable
     protected static RouteWrapper findRouteFromSubQuery(SubQuery subQuery, final boolean dataSource) {
         _SubQuery innerSubQuery = (_SubQuery) subQuery;
@@ -245,6 +247,7 @@ public abstract class _RouteUtils {
         return routeWrapper;
     }
 
+    @Deprecated
     @Nullable
     protected static RouteWrapper findRouteFromSubQueryList(List<? extends TableWrapper> tableWrapperList
             , final boolean dataSource) {
@@ -279,19 +282,6 @@ public abstract class _RouteUtils {
         return routeKey;
     }
 
-    @Nullable
-    protected static Object findRouteKeyFormNamedParams(List<FieldMeta<?, ?>> routeFieldList
-            , ReadWrapper namedParamWrapper) {
-
-        Object routeKey = null;
-        for (FieldMeta<?, ?> routeField : routeFieldList) {
-            routeKey = namedParamWrapper.getType(routeField.fieldName());
-            if (routeKey != null) {
-                break;
-            }
-        }
-        return routeKey;
-    }
 
     protected static String convertToSuffix(RouteWrapper routeWrapper, Dialect dialect) {
         String routeSuffix = null;
@@ -350,7 +340,7 @@ public abstract class _RouteUtils {
                     if (value == null) {
                         continue;
                     }
-                    tableIndex = ((TableRoute) route).table(fieldMeta, value);
+                    tableIndex = ((TableRoute) route).table(value);
                     break;
                 }
             } else {
@@ -372,7 +362,7 @@ public abstract class _RouteUtils {
                 if (value == null) {
                     continue;
                 }
-                if (((ShardingRoute) route).database(fieldMeta, value) != databaseIndex) {
+                if (((ShardingRoute) route).database(value) != databaseIndex) {
                     throw _Exceptions.databaseRouteError(insert, factory);
                 }
                 break;
@@ -383,6 +373,24 @@ public abstract class _RouteUtils {
 
         }
         return Collections.unmodifiableMap(domainMap);
+    }
+
+    public static Map<Byte, List<ReadWrapper>> dmlSharding(final GenericRmSessionFactory factory
+            , final TableMeta<?> table, final FieldMeta<?, ?> routeField, final _BatchDml dml) {
+
+        final boolean checkDatabase = factory.factoryMode() == FactoryMode.SHARDING
+                && table.databaseRouteFields().size() > 0;
+        final String fieldName = routeField.fieldName();
+        Object routeValue;
+        for (ReadWrapper wrapper : dml.wrapperList()) {
+
+            routeValue = wrapper.get(fieldName);
+            if (routeValue == null) {
+
+            }
+
+        }
+        return null;
     }
 
 

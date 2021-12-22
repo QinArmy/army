@@ -114,7 +114,7 @@ final class UpdateContext extends _BaseSqlContext implements _SingleUpdateContex
         this.predicateList = update.predicateList();
         final String tableAlias = update.tableAlias();
 
-        this.tableAlias = DialectUtils.parentAlias(tableAlias);
+        this.tableAlias = _DialectUtils.parentAlias(tableAlias);
         this.safeTableAlias = this.tableAlias;
         this.multiTableUpdateChild = dialect.multiTableUpdateChild();
         this.childSetClause = new ChildSetBlock(childTable, tableAlias, fieldList, values, this);

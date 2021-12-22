@@ -28,11 +28,11 @@ class SubQueryContextImpl extends AbstractQueryStatementContext implements SubQu
         Integer count = parentTableContext.tableCountMap.get(fieldMeta.tableMeta());
         String tableAlias;
         if (count == null) {
-            throw DialectUtils.createUnKnownFieldException(fieldMeta);
+            throw _DialectUtils.createUnKnownFieldException(fieldMeta);
         } else if (count.equals(1)) {
             tableAlias = parentTableContext.tableAliasMap.get(fieldMeta.tableMeta());
         } else {
-            throw DialectUtils.createNoLogicalTableException(fieldMeta);
+            throw _DialectUtils.createNoLogicalTableException(fieldMeta);
         }
         return tableAlias;
     }

@@ -5,6 +5,7 @@ import io.army.criteria.impl.SQLs;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
+import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
@@ -41,6 +42,8 @@ public interface Update extends Statement, SQLDebug {
         <F> WhereSpec<T, C> set(FieldMeta<? super T, F> field, @Nullable F value);
 
         <F> WhereSpec<T, C> set(FieldMeta<? super T, F> field, Expression<F> value);
+
+        <F> WhereSpec<T, C> setNull(FieldMeta<? super T, F> field);
 
         /**
          * @see SQLs#defaultWord()
@@ -141,18 +144,38 @@ public interface Update extends Statement, SQLDebug {
 
         <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> field, Expression<F> valueExp);
 
+        /**
+         * @see SQLs#namedParam(GenericField)
+         */
         <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> field);
+
+        <F> BatchWhereSpec<T, C> setNull(FieldMeta<? super T, F> field);
 
         <F> BatchWhereSpec<T, C> setDefault(FieldMeta<? super T, F> field);
 
+        /**
+         * @see SQLs#nonNullNamedParam(GenericField)
+         */
         <F extends Number> BatchWhereSpec<T, C> setPlus(FieldMeta<? super T, F> field);
 
+        /**
+         * @see SQLs#nonNullNamedParam(GenericField)
+         */
         <F extends Number> BatchWhereSpec<T, C> setMinus(FieldMeta<? super T, F> field);
 
+        /**
+         * @see SQLs#nonNullNamedParam(GenericField)
+         */
         <F extends Number> BatchWhereSpec<T, C> setMultiply(FieldMeta<? super T, F> field);
 
+        /**
+         * @see SQLs#nonNullNamedParam(GenericField)
+         */
         <F extends Number> BatchWhereSpec<T, C> setDivide(FieldMeta<? super T, F> field);
 
+        /**
+         * @see SQLs#nonNullNamedParam(GenericField)
+         */
         <F extends Number> BatchWhereSpec<T, C> setMod(FieldMeta<? super T, F> field);
 
         <F> BatchWhereSpec<T, C> ifSet(Predicate<C> test, FieldMeta<? super T, F> field);
@@ -163,22 +186,56 @@ public interface Update extends Statement, SQLDebug {
 
     interface BatchWhereSpec<T extends IDomain, C> extends BatchSetSpec<T, C> {
 
+        /**
+         * @see SQLs#nonNullNamedParam(GenericField)
+         * @see SQLs#nonNullNamedParam(String, ParamMeta)
+         * @see SQLs#namedParam(GenericField)
+         * @see SQLs#namedParam(String, ParamMeta)
+         */
         BatchParamSpec<C> where(List<IPredicate> predicates);
 
+        /**
+         * @see SQLs#nonNullNamedParam(GenericField)
+         * @see SQLs#nonNullNamedParam(String, ParamMeta)
+         * @see SQLs#namedParam(GenericField)
+         * @see SQLs#namedParam(String, ParamMeta)
+         */
         BatchParamSpec<C> where(Function<C, List<IPredicate>> function);
 
+        /**
+         * @see SQLs#nonNullNamedParam(GenericField)
+         * @see SQLs#nonNullNamedParam(String, ParamMeta)
+         * @see SQLs#namedParam(GenericField)
+         * @see SQLs#namedParam(String, ParamMeta)
+         */
         BatchWhereAndSpec<C> where(IPredicate predicate);
     }
 
     interface BatchWhereAndSpec<C> {
 
+        /**
+         * @see SQLs#nonNullNamedParam(GenericField)
+         * @see SQLs#nonNullNamedParam(String, ParamMeta)
+         * @see SQLs#namedParam(GenericField)
+         * @see SQLs#namedParam(String, ParamMeta)
+         */
         BatchWhereAndSpec<C> and(IPredicate predicate);
 
         /**
+         * @see SQLs#nonNullNamedParam(GenericField)
+         * @see SQLs#nonNullNamedParam(String, ParamMeta)
+         * @see SQLs#namedParam(GenericField)
+         * @see SQLs#namedParam(String, ParamMeta)
          * @see Expression#ifEqual(Object)
          */
         BatchWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
 
+        /**
+         * @see SQLs#nonNullNamedParam(GenericField)
+         * @see SQLs#nonNullNamedParam(String, ParamMeta)
+         * @see SQLs#namedParam(GenericField)
+         * @see SQLs#namedParam(String, ParamMeta)
+         */
         BatchWhereAndSpec<C> ifAnd(Function<C, IPredicate> function);
 
     }

@@ -2,11 +2,14 @@ package io.army.criteria.impl;
 
 import io.army.criteria.GenericField;
 import io.army.criteria.IPredicate;
+import io.army.criteria.NamedParam;
 import io.army.criteria.ValueExpression;
 import io.army.criteria.impl.inner._Predicate;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.ChildTableMeta;
+import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 import io.army.sharding.DatabaseRoute;
@@ -116,6 +119,38 @@ abstract class AbstractPredicate extends OperationExpression<Boolean> implements
             index = route.table(value);
         }
         return index;
+    }
+
+    @Nullable
+    @Override
+    public final FieldMeta<?, ?> tableRouteField(final TableMeta<?> table) {
+        if (!(this instanceof DualPredicate)) {
+            return null;
+        }
+        final DualPredicate predicate = (DualPredicate) this;
+        if (predicate.operator != DualOperator.EQ
+                || !(predicate.left instanceof GenericField)
+                || !(predicate.right instanceof NamedParam)) {
+            return null;
+        }
+        final GenericField<?, ?> field = (GenericField<?, ?>) predicate.left;
+        final TableMeta<?> belongOf = field.tableMeta();
+
+        final FieldMeta<?, ?> tableRouteField;
+        if (!field.tableRoute()) {
+            tableRouteField = null;
+        } else if (belongOf == table) {
+            tableRouteField = field.fieldMeta();
+        } else if (table instanceof ChildTableMeta) {
+            if (belongOf == ((ChildTableMeta<?>) table).parentMeta()) {
+                tableRouteField = field.fieldMeta();
+            } else {
+                tableRouteField = null;
+            }
+        } else {
+            tableRouteField = null;
+        }
+        return tableRouteField;
     }
 
 

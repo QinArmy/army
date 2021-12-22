@@ -17,13 +17,14 @@ import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.FactoryMode;
 import io.army.util.StringUtils;
+import io.army.util._Exceptions;
 
 import java.sql.JDBCType;
 import java.util.*;
 
-public abstract class DialectUtils {
+public abstract class _DialectUtils {
 
-    protected DialectUtils() {
+    protected _DialectUtils() {
         throw new UnsupportedOperationException();
     }
 
@@ -148,7 +149,7 @@ public abstract class DialectUtils {
             } else if (fieldMeta.tableMeta() == childMeta) {
                 childFields.add(fieldMeta);
             } else {
-                throw DialectUtils.createTableFiledNoMatchException(childMeta, fieldMeta);
+                throw _DialectUtils.createTableFiledNoMatchException(childMeta, fieldMeta);
             }
         }
     }
@@ -271,6 +272,19 @@ public abstract class DialectUtils {
     }
 
 
+    public static void validateTableAlias(final TableMeta<?> table, final String tableAlias) {
+        if (table instanceof SimpleTableMeta && table.immutable()) {
+            throw _Exceptions.immutableTable(table);
+        }
+        if (!StringUtils.hasText(tableAlias)) {
+            throw new CriteriaException("Alias of table or sub query must has text.");
+        }
+        if (tableAlias.startsWith(Constant.FORBID_ALIAS)) {
+            String m = String.format("Error,Alias[%s] of table or sub query start with %s."
+                    , tableAlias, Constant.FORBID_ALIAS);
+            throw new CriteriaException(m);
+        }
+    }
 
 
     /*################################## blow private static innner class ##################################*/

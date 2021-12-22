@@ -2,7 +2,7 @@ package io.army.dialect.postgre;
 
 import io.army.criteria.LockMode;
 import io.army.dialect.AbstractDQL;
-import io.army.dialect.DialectUtils;
+import io.army.dialect._DialectUtils;
 import io.army.dialect._TablesSqlContext;
 
 class Postgre11DQL extends AbstractDQL {
@@ -48,7 +48,7 @@ class Postgre11DQL extends AbstractDQL {
                 builder.append(" FOR UPDATE");
                 break;
             default:
-                throw DialectUtils.createUnknownLockModeException(lockMode, database());
+                throw _DialectUtils.createUnknownLockModeException(lockMode, database());
         }
     }
 }

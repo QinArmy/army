@@ -30,7 +30,7 @@ final class SingleDeleteContext extends _BaseSqlContext implements _SingleDelete
 
         if (table instanceof ChildTableMeta) {
             this.table = ((ChildTableMeta<?>) table).parentMeta();
-            this.tableAlias = DialectUtils.parentAlias(tableAlias);
+            this.tableAlias = _DialectUtils.parentAlias(tableAlias);
             this.safeTableAlias = this.tableAlias;
         } else {
             this.table = (SingleTableMeta<?>) table;

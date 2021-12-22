@@ -1,6 +1,5 @@
 package io.army.criteria;
 
-import io.army.criteria.impl.inner._SelfDescribed;
 
 /**
  * <p>
@@ -11,7 +10,7 @@ import io.army.criteria.impl.inner._SelfDescribed;
  *     </ul>
  * </p>
  */
-public interface TableAble extends _SelfDescribed {
+public interface TableAble {
 
 
     /**

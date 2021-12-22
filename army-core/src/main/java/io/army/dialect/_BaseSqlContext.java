@@ -89,7 +89,7 @@ public abstract class _BaseSqlContext implements _StmtContext {
             throw new IllegalArgumentException("parentContext error");
         }
 
-        final String childSafeTableAlias = "_temp_c_of_" + childBlock.tableAlias();
+        final String childSafeTableAlias = Constant.FORBID_ALIAS + "temp_c_of_" + childBlock.tableAlias();
         final Dialect dialect = parentContext.dialect();
         // convert for validate childBlock
         final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childBlock.table();
@@ -144,7 +144,7 @@ public abstract class _BaseSqlContext implements _StmtContext {
 
     protected static void parentColumnFromSubQuery(final _Block childContext, final FieldMeta<?, ?> parentField) {
         final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childContext.table();
-        final String parentSafeTable = "_temp_p_of_" + childContext.tableAlias();
+        final String parentSafeTable = Constant.FORBID_ALIAS + "temp_p_of_" + childContext.tableAlias();
 
         final Dialect dialect = childContext.dialect();
         final ParentTableMeta<?> parentTable = childTable.parentMeta();

@@ -265,7 +265,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
 
             if (aliasMap.putIfAbsent(tableWrapper.alias(), tableWrapper) != null) {
                 // avoid table alias duplication
-                throw DialectUtils.createTableAliasDuplicationException(
+                throw _DialectUtils.createTableAliasDuplicationException(
                         tableWrapper.alias(), tableWrapper.tableAble());
             }
             // actual handle
@@ -276,7 +276,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
     protected final void whereClause(List<? extends TableWrapper> tableWrapperList, List<_Predicate> predicateList
             , _TablesSqlContext context) {
 
-        final boolean needAppendVisible = DialectUtils.needAppendVisible(tableWrapperList);
+        final boolean needAppendVisible = _DialectUtils.needAppendVisible(tableWrapperList);
         final boolean hasPredicate = !predicateList.isEmpty();
         if (hasPredicate || needAppendVisible) {
             context.sqlBuilder()
@@ -284,7 +284,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
         }
 
         if (hasPredicate) {
-            DialectUtils.appendPredicateList(predicateList, context);
+            _DialectUtils.appendPredicateList(predicateList, context);
         }
 
         if (needAppendVisible) {
@@ -296,7 +296,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
         if (!sortPartList.isEmpty()) {
             context.sqlBuilder()
                     .append(" GROUP BY");
-            DialectUtils.appendSortPartList(sortPartList, context);
+            _DialectUtils.appendSortPartList(sortPartList, context);
         }
     }
 
@@ -304,7 +304,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
         if (!havingList.isEmpty()) {
             context.sqlBuilder()
                     .append(" HAVING");
-            DialectUtils.appendPredicateList(havingList, context);
+            _DialectUtils.appendPredicateList(havingList, context);
         }
     }
 
@@ -312,7 +312,7 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
         if (!orderPartList.isEmpty()) {
             context.sqlBuilder()
                     .append(" ORDER BY");
-            DialectUtils.appendSortPartList(orderPartList, context);
+            _DialectUtils.appendSortPartList(orderPartList, context);
         }
     }
 

@@ -45,7 +45,7 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
         if (tableMeta == this.primaryTable || tableMeta == this.relationTable) {
             return this.primaryRouteSuffix();
         }
-        throw DialectUtils.createUnKnownTableException(tableMeta);
+        throw _DialectUtils.createUnKnownTableException(tableMeta);
     }
 
 
@@ -68,7 +68,7 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
             if (this.existsClauseContext || this.relationSubQueryContext) {
                 doAppendTable(tableMeta, tableAlias);
             } else {
-                throw DialectUtils.createUnKnownTableException(tableMeta);
+                throw _DialectUtils.createUnKnownTableException(tableMeta);
             }
         } else {
             super.appendTable(tableMeta, tableAlias);
@@ -90,7 +90,7 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
 
     final void appendDomainField(String tableAlias, FieldMeta<?, ?> fieldMeta) {
         if (!this.primaryAlias.equals(tableAlias)) {
-            throw DialectUtils.createNoLogicalTableException(tableAlias);
+            throw _DialectUtils.createNoLogicalTableException(tableAlias);
         }
         this.appendDomainField(fieldMeta);
     }
@@ -110,7 +110,7 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
                 this.relationSubQueryContext = false;
             }
         } else {
-            throw DialectUtils.createUnKnownFieldException(fieldMeta);
+            throw _DialectUtils.createUnKnownFieldException(fieldMeta);
         }
     }
 

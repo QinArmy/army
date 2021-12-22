@@ -1,8 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.ColumnSubQuery;
-import io.army.criteria.Delete;
-import io.army.criteria.SubQuery;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 
 public abstract class _CriteriaCounselor {
@@ -40,18 +38,18 @@ public abstract class _CriteriaCounselor {
     }
 
 
-    public static void assertStandardUpdate(_Update update) {
-        throw new UnsupportedOperationException();
-//        if (update instanceof _BatchUpdate) {
-//            if (!(update instanceof ContextualBatchUpdate)) {
-//                throw new IllegalArgumentException(String.format("%s isn't instance of %s", update
-//                        , ContextualBatchUpdate.class.getName()));
-//            }
-//        } else if (!AbstractGenericSession.cacheDomainUpdate(update)
-//                && !(update instanceof ContextualUpdate)) {
-//            throw new IllegalArgumentException(String.format("%s isn't instance of %s", update
-//                    , ContextualUpdate.class.getName()));
-//        }
+    public static void assertStandardUpdate(Update update) {
+        if (update instanceof _BatchUpdate) {
+            if (!(update instanceof ContextualBatchUpdate)) {
+                String m = String.format("%s isn't instance of %s"
+                        , update.getClass().getName(), ContextualBatchUpdate.class.getName());
+                throw new CriteriaException(m);
+            }
+        } else if (!(update instanceof ContextualUpdate)) {
+            String m = String.format("%s isn't instance of %s"
+                    , update.getClass().getName(), ContextualUpdate.class.getName());
+            throw new CriteriaException(m);
+        }
 
     }
 

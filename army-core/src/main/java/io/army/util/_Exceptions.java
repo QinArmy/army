@@ -4,6 +4,7 @@ import io.army.ArmyException;
 import io.army.DialectMode;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._Statement;
 import io.army.criteria.impl.inner._Update;
 import io.army.criteria.impl.inner._ValuesInsert;
@@ -208,6 +209,13 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static CriteriaException javaTypeUnsupportedByMapping(MappingType type, Object nonNull) {
         return new CriteriaException(String.format("%s is unsupported by %s.", nonNull.getClass(), type.getClass()));
+    }
+
+    public static CriteriaException valueRouteAndNamedRouteConflict(_BatchDml batchDml
+            , final byte tableIndex, FieldMeta<?, ?> routeField) {
+        String m = String.format("Batch dml[%s] value table route[%s] and named table route field[%s] conflict."
+                , batchDml.getClass().getName(), tableIndex, routeField);
+        return new CriteriaException(m);
     }
 
 

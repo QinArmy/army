@@ -5,7 +5,7 @@ import io.army.criteria.Expression;
 import io.army.criteria.GenericField;
 import io.army.criteria.ValueExpression;
 import io.army.dialect.Constant;
-import io.army.dialect.DialectUtils;
+import io.army.dialect._DialectUtils;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
@@ -118,7 +118,7 @@ abstract class ParamExpression<E> extends NoNOperationExpression<E> implements V
                         .append(" NULL");
             } else {
                 final ParamMeta paramMeta = this.paramMeta;
-                if (DialectUtils.isSafeMapping(paramMeta.mappingType())) {
+                if (_DialectUtils.isSafeMapping(paramMeta.mappingType())) {
                     context.sqlBuilder()
                             .append(Constant.SPACE)
                             .append(context.dialect().literal(paramMeta, this.value));
