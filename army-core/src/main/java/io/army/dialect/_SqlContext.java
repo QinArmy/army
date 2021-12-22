@@ -1,10 +1,7 @@
 package io.army.dialect;
 
-import io.army.criteria.FieldPredicate;
 import io.army.criteria.Visible;
-import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
-import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
 
 public interface _SqlContext {
@@ -13,10 +10,13 @@ public interface _SqlContext {
     /**
      * @return primary tableIndex
      */
-    byte tableIndex();
+    default byte tableIndex() {
+        throw new UnsupportedOperationException();
+    }
 
-    @Nullable
-    String tableSuffix();
+    default String tableSuffix() {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * <p>
@@ -45,22 +45,6 @@ public interface _SqlContext {
      * </p>
      */
     void appendField(FieldMeta<?, ?> field);
-
-    @Deprecated
-    default void appendFieldPredicate(FieldPredicate predicate) {
-        throw new UnsupportedOperationException();
-    }
-
-
-    @Deprecated
-    default void appendIdentifier(String identifier) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Deprecated
-    default void appendConstant(ParamMeta paramMeta, Object value) {
-        throw new UnsupportedOperationException();
-    }
 
     Dialect dialect();
 

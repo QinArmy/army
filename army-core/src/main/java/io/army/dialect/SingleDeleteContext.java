@@ -3,7 +3,10 @@ package io.army.dialect;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._SingleDelete;
-import io.army.meta.*;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.FieldMeta;
+import io.army.meta.SingleTableMeta;
+import io.army.meta.TableMeta;
 import io.army.stmt.ParamValue;
 import io.army.stmt.Stmt;
 import io.army.stmt.Stmts;
@@ -128,16 +131,6 @@ final class SingleDeleteContext extends _BaseSqlContext implements _SingleDelete
 
         @Override
         public void appendField(FieldMeta<?, ?> field) {
-
-        }
-
-        @Override
-        public void appendIdentifier(String identifier) {
-
-        }
-
-        @Override
-        public void appendConstant(ParamMeta paramMeta, Object value) {
 
         }
 

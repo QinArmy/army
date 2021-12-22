@@ -3,8 +3,6 @@ package io.army.sharding;
 import io.army.beans.ObjectWrapper;
 import io.army.beans.ReadWrapper;
 import io.army.boot.DomainValuesGenerator;
-import io.army.criteria.FieldValueEqualPredicate;
-import io.army.criteria.IPredicate;
 import io.army.criteria.SubQuery;
 import io.army.criteria.TableAble;
 import io.army.criteria.impl.inner.*;
@@ -267,19 +265,8 @@ public abstract class _RouteUtils {
     @Nullable
     protected static Object findRouteKeyFromWhereClause(List<FieldMeta<?, ?>> routeFieldList
             , List<_Predicate> predicateList) {
-        Object routeKey = null;
 
-        for (IPredicate predicate : predicateList) {
-            if (!(predicate instanceof FieldValueEqualPredicate)) {
-                continue;
-            }
-            FieldValueEqualPredicate p = (FieldValueEqualPredicate) predicate;
-            if (routeFieldList.contains(p.fieldMeta())) {
-                routeKey = p.value();
-                break;
-            }
-        }
-        return routeKey;
+        return null;
     }
 
 

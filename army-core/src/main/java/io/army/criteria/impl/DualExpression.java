@@ -5,6 +5,7 @@ import io.army.criteria.impl.inner._Expression;
 import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
+import io.army.meta.ParamMeta;
 
 import java.util.function.Function;
 
@@ -17,7 +18,8 @@ import java.util.function.Function;
  */
 final class DualExpression<E> extends OperationExpression<E> {
 
-    static <C, E, O> DualExpression<E> create(Expression<E> left, DualOperator operator, Function<C, Expression<O>> function) {
+    static <C, E, O> DualExpression<E> functionCreate(Expression<E> left, DualOperator operator
+            , Function<C, Expression<O>> function) {
         final Expression<O> functionResult;
         functionResult = function.apply(CriteriaContextStack.getCriteria());
         assert functionResult != null;
@@ -45,6 +47,11 @@ final class DualExpression<E> extends OperationExpression<E> {
     @Override
     public MappingType mappingType() {
         return this.left.mappingType();
+    }
+
+    @Override
+    public ParamMeta paramMeta() {
+        return this.left.paramMeta();
     }
 
     @Override

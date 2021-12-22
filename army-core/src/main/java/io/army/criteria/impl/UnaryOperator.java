@@ -1,23 +1,17 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.SQLOperator;
 
 /**
  * representing Unary SQL Operator
  */
-enum UnaryOperator implements SQLOperator {
+enum UnaryOperator {
 
     EXISTS {
-
         @Override
         public String rendered() {
             return "EXISTS";
         }
 
-        @Override
-        public Position position() {
-            return Position.LEFT;
-        }
     },
     NOT_EXISTS {
 
@@ -26,10 +20,6 @@ enum UnaryOperator implements SQLOperator {
             return "NOT EXISTS";
         }
 
-        @Override
-        public Position position() {
-            return Position.LEFT;
-        }
     },
     NEGATED {
 
@@ -38,10 +28,6 @@ enum UnaryOperator implements SQLOperator {
             return "-";
         }
 
-        @Override
-        public Position position() {
-            return Position.LEFT;
-        }
     },
     POSITIVE {
 
@@ -50,10 +36,6 @@ enum UnaryOperator implements SQLOperator {
             return "";
         }
 
-        @Override
-        public Position position() {
-            return Position.LEFT;
-        }
     },
     IS_NULL {
         @Override
@@ -61,10 +43,6 @@ enum UnaryOperator implements SQLOperator {
             return "IS NULL";
         }
 
-        @Override
-        public Position position() {
-            return Position.RIGHT;
-        }
     },
     IS_NOT_NULL {
         @Override
@@ -72,21 +50,15 @@ enum UnaryOperator implements SQLOperator {
             return "IS NOT NULL";
         }
 
-        @Override
-        public Position position() {
-            return Position.RIGHT;
-        }
     }, INVERT {
         @Override
         public String rendered() {
             return "~";
         }
 
-        @Override
-        public boolean bitOperator() {
-            return true;
-        }
-    }
+    };
+
+    abstract String rendered();
 
 
 }

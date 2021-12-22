@@ -4,7 +4,6 @@ import io.army.ErrorCode;
 import io.army.annotation.UpdateMode;
 import io.army.beans.DomainReadonlyWrapper;
 import io.army.criteria.CriteriaException;
-import io.army.criteria.impl.Predicates;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
@@ -35,7 +34,7 @@ final class DomainSetterInterceptor implements MethodInterceptor, DomainUpdateAd
         final PrimaryFieldMeta<?, Object> idMeta = tableMeta.id();
         final Object idValue = readonlyWrapper.get(idMeta.fieldName());
         Assert.notNull(idValue, "Domain Id is null");
-        predicateList.add(Predicates.primaryValueEquals(idMeta, idValue));
+       // predicateList.add(Predicates.primaryValueEquals(idMeta, idValue));
 
         FieldMeta<?, Object> versionMeta = null;
         if (tableMeta instanceof ChildTableMeta) {

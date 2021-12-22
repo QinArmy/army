@@ -105,13 +105,6 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
     }
 
 
-
-    @Override
-    public final void appendIdentifier(String identifier) {
-        sqlBuilder.append(" ")
-                .append(dialect.quoteIfNeed(identifier));
-    }
-
     @Override
     public final String primaryRouteSuffix() {
         return this.primaryRouteSuffix;

@@ -1,7 +1,7 @@
 package io.army.dialect;
 
-import io.army.criteria.FieldPredicate;
 import io.army.criteria.Visible;
+import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
@@ -9,6 +9,8 @@ import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.sharding._TableRouteUtils;
 import io.army.stmt.SimpleStmt;
+
+import java.util.List;
 
 class StandardUpdateContext extends AbstractStandardDomainContext implements _UpdateContext {
 
@@ -64,6 +66,10 @@ class StandardUpdateContext extends AbstractStandardDomainContext implements _Up
         return null;
     }
 
+    @Override
+    public List<_Predicate> predicates() {
+        return null;
+    }
 
     private static final class DomainUpdateContext extends StandardUpdateContext {
 
@@ -89,10 +95,6 @@ class StandardUpdateContext extends AbstractStandardDomainContext implements _Up
             appendDomainField(field);
         }
 
-        @Override
-        public final void appendFieldPredicate(FieldPredicate predicate) {
-            appendDomainFieldPredicate(predicate);
-        }
 
     }
 

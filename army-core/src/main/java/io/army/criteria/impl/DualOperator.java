@@ -1,11 +1,10 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.SQLOperator;
 
 /**
  * Interface representing sql dual operator.
  */
-enum DualOperator implements SQLOperator {
+enum DualOperator {
 
     PLUS {
         @Override
@@ -38,50 +37,30 @@ enum DualOperator implements SQLOperator {
             return "&";
         }
 
-        @Override
-        public boolean bitOperator() {
-            return true;
-        }
     }, OR {
         @Override
         public String rendered() {
             return "|";
         }
 
-        @Override
-        public boolean bitOperator() {
-            return true;
-        }
     }, XOR {
         @Override
         public String rendered() {
             return "^";
         }
 
-        @Override
-        public boolean bitOperator() {
-            return true;
-        }
     }, LEFT_SHIFT {
         @Override
         public String rendered() {
             return "<<";
         }
 
-        @Override
-        public boolean bitOperator() {
-            return true;
-        }
     }, RIGHT_SHIFT {
         @Override
         public String rendered() {
             return ">>";
         }
 
-        @Override
-        public boolean bitOperator() {
-            return true;
-        }
     },
     /*################################## blow expression dual operator method ##################################*/
 
@@ -92,20 +71,11 @@ enum DualOperator implements SQLOperator {
             return "=";
         }
 
-        @Override
-        public boolean relational() {
-            return true;
-        }
     },
     NOT_EQ {
         @Override
         public String rendered() {
             return "!=";
-        }
-
-        @Override
-        public boolean relational() {
-            return true;
         }
     },
     LT {
@@ -113,21 +83,11 @@ enum DualOperator implements SQLOperator {
         public String rendered() {
             return "<";
         }
-
-        @Override
-        public boolean relational() {
-            return true;
-        }
     },
     LE {
         @Override
         public String rendered() {
             return "<=";
-        }
-
-        @Override
-        public boolean relational() {
-            return true;
         }
 
     },
@@ -137,21 +97,11 @@ enum DualOperator implements SQLOperator {
             return ">=";
         }
 
-        @Override
-        public boolean relational() {
-            return true;
-        }
-
     },
     GT {
         @Override
         public String rendered() {
             return ">";
-        }
-
-        @Override
-        public boolean relational() {
-            return true;
         }
 
     }, IN {
@@ -177,7 +127,10 @@ enum DualOperator implements SQLOperator {
         public String rendered() {
             return "NOT LIKE";
         }
-    }
+    };
+
+
+    abstract String rendered();
 
 
 }

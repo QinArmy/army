@@ -1,10 +1,10 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
-import io.army.criteria.FuncExpression;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
+import io.army.meta.ParamMeta;
 import io.army.util.ArrayUtils;
 import io.army.util.Assert;
 
@@ -12,23 +12,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-abstract class SQLFunctions<E> extends OperationExpression<E> implements FuncExpression<E> {
+abstract class SQLFunctions<E> extends OperationExpression<E> implements Expression<E> {
 
 
-    static <E> FuncExpression<E> noArgumentFunc(String name, MappingType returnType) {
+    static <E> Expression<E> noArgumentFunc(String name, MappingType returnType) {
         return new NoArgumentFunc<>(name, returnType);
     }
 
-    static <E> FuncExpression<E> oneArgumentFunc(String name, MappingType returnType, Expression<?> one) {
+    static <E> Expression<E> oneArgumentFunc(String name, MappingType returnType, Expression<?> one) {
         return new OneArgumentFunc<>(name, returnType, (_Expression<?>) one);
     }
 
-    static <E> FuncExpression<E> twoArgumentFunc(String name, MappingType returnType, Expression<?> one
+    static <E> Expression<E> twoArgumentFunc(String name, MappingType returnType, Expression<?> one
             , Expression<?> two) {
         return new TwoArgumentFunc<>(name, returnType, (_Expression<?>) one, (_Expression<?>) two);
     }
 
-    static <E> FuncExpression<E> twoArgumentFunc(String name, MappingType returnType, List<String> format
+    static <E> Expression<E> twoArgumentFunc(String name, MappingType returnType, List<String> format
             , Expression<?> one, Expression<?> two) {
         return new TwoArgumentFunc<>(name, returnType, format, (_Expression<?>) one, (_Expression<?>) two);
     }
@@ -48,10 +48,6 @@ abstract class SQLFunctions<E> extends OperationExpression<E> implements FuncExp
         return returnType;
     }
 
-    @Override
-    public final String name() {
-        return this.name;
-    }
 
     @Override
     public final void appendSql(_SqlContext context) {
@@ -66,6 +62,11 @@ abstract class SQLFunctions<E> extends OperationExpression<E> implements FuncExp
     @Override
     public final boolean containsSubQuery() {
         return false;
+    }
+
+    @Override
+    public final ParamMeta paramMeta() {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -95,10 +96,6 @@ abstract class SQLFunctions<E> extends OperationExpression<E> implements FuncExp
             return "";
         }
 
-        @Override
-        public List<MappingType> argumentTypeList() {
-            return Collections.emptyList();
-        }
     }
 
     static final class OneArgumentFunc<E> extends SQLFunctions<E> {
@@ -123,10 +120,6 @@ abstract class SQLFunctions<E> extends OperationExpression<E> implements FuncExp
             return one.toString();
         }
 
-        @Override
-        public List<MappingType> argumentTypeList() {
-            return this.argumentTypeList;
-        }
     }
 
     static class TwoArgumentFunc<E> extends SQLFunctions<E> {
@@ -174,10 +167,6 @@ abstract class SQLFunctions<E> extends OperationExpression<E> implements FuncExp
             return format.get(0) + one + format.get(1) + two + format.get(2);
         }
 
-        @Override
-        public List<MappingType> argumentTypeList() {
-            return this.argumentTypeList;
-        }
     }
 
     static final class ThreeArgumentFunc<E> extends SQLFunctions<E> {
@@ -233,10 +222,6 @@ abstract class SQLFunctions<E> extends OperationExpression<E> implements FuncExp
             return format.get(0) + one + format.get(1) + two + format.get(2) + three + format.get(3);
         }
 
-        @Override
-        public List<MappingType> argumentTypeList() {
-            return this.argumentTypeList;
-        }
     }
 
 

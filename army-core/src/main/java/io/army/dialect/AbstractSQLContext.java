@@ -1,10 +1,8 @@
 package io.army.dialect;
 
-import io.army.criteria.FieldPredicate;
 import io.army.criteria.Visible;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
-import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
 
 import java.util.ArrayList;
@@ -44,40 +42,12 @@ abstract class AbstractSQLContext implements _TablesSqlContext {
         doAppendField(tableAlias, field);
     }
 
-    @Override
-    public void appendFieldPredicate(FieldPredicate predicate) {
-       // predicate.appendPredicate(this);
-    }
-
 
     @Override
     public final Visible visible() {
         return this.visible;
     }
 
-
-    @Override
-    public void appendIdentifier(String identifier) {
-        this.sqlBuilder
-                .append(" ")
-                .append(this.dialect.quoteIfNeed(identifier));
-    }
-
-    @Override
-    public final void appendConstant(ParamMeta paramMeta, Object value) {
-//        MappingType mappingType = paramMeta.mappingMeta();
-//        if (mappingType instanceof FieldMeta) {
-//            this.sqlBuilder
-//                    .append(" ")
-//                    .append(mappingType.toConstant((FieldMeta<?, ?>) mappingType, value))
-//            ;
-//        } else {
-//            this.sqlBuilder
-//                    .append(" ")
-//                    .append(mappingType.toConstant(null, value))
-//            ;
-//        }
-    }
 
 
     public final Dialect dialect() {

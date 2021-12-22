@@ -1,12 +1,12 @@
 package io.army.dialect;
 
-import io.army.criteria.FieldPredicate;
 import io.army.criteria.Visible;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.meta.TableMeta;
+import io.army.stmt.SimpleStmt;
 import io.army.util.Assert;
 
 abstract class AbstractStandardDomainContext extends AbstractTableContextSQLContext implements SingleTableDMLContext {
@@ -49,19 +49,6 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
     }
 
 
-    final void appendDomainFieldPredicate(FieldPredicate predicate) {
-//        if (predicate instanceof PrimaryValueEqualPredicate) {
-//            predicate.appendPredicate(this);
-//        } else if (!predicate.containsSubQuery()
-//                && predicate.containsFieldCount(this.relationTable) > 1) {
-//            this.existsClauseContext = true;
-//            doReplaceFieldPairWithExistsClause(predicate);
-//            this.existsClauseContext = false;
-//        } else {
-//            predicate.appendPredicate(this);
-//        }
-    }
-
 
     final void appendDomainTable(TableMeta<?> tableMeta, @Nullable String tableAlias) {
         if (tableMeta == this.relationTable) {
@@ -93,6 +80,11 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
             throw _DialectUtils.createNoLogicalTableException(tableAlias);
         }
         this.appendDomainField(fieldMeta);
+    }
+
+    @Override
+    public SimpleStmt build() {
+        return null;
     }
 
     final void appendDomainField(FieldMeta<?, ?> fieldMeta) {
@@ -146,38 +138,7 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
         ;
     }
 
-    private void doReplaceFieldPairWithExistsClause(FieldPredicate predicate) {
 
-        final Dialect dialect = this.dialect;
-        final String safeRelationAlias = dialect.quoteIfNeed(this.relationAlias);
-
-        final String safeRelationId = dialect.quoteIfNeed(this.relationTable.id().columnName());
-        final StringBuilder builder = this.sqlBuilder
-                .append(" EXISTS ( SELECT ")
-                .append(safeRelationAlias)
-                .append(".")
-                .append(safeRelationId)
-                .append(" FROM");
-        appendTable(this.relationTable, this.relationAlias);
-        if (dialect.tableAliasAfterAs()) {
-            builder.append(" AS");
-        }
-        builder.append(" ")
-                .append(safeRelationAlias)
-                .append(" WHERE ")
-                .append(safeRelationAlias)
-                .append(".")
-                .append(safeRelationId)
-                .append(" = ")
-                .append(dialect.quoteIfNeed(this.primaryAlias))
-                .append(".")
-                .append(dialect.quoteIfNeed(this.primaryTable.id().columnName()))
-                .append(" ADN");
-        // append special predicate
-        //  predicate.appendPredicate(this);
-
-        builder.append(" )");
-    }
 
     private static String obtainRelationTableAlias(String primaryAlias, TableMeta<?> relationTable) {
         String relationTableAlias = primaryAlias;

@@ -314,14 +314,14 @@ abstract class OperationExpression<E> implements _Expression<E> {
 
     @Override
     public final IPredicate between(Expression<?> first, Expression<?> parameter) {
-        return BetweenPredicate.build(this, first, parameter);
+        return BetweenPredicate.between(this, first, parameter);
     }
 
     @Override
     public final IPredicate between(Object firstParameter, Object secondParameter) {
         Objects.requireNonNull(firstParameter);
         Objects.requireNonNull(secondParameter);
-        return BetweenPredicate.build(this, SQLs.paramWithExp(this, firstParameter), SQLs.paramWithExp(this, secondParameter));
+        return BetweenPredicate.between(this, SQLs.paramWithExp(this, firstParameter), SQLs.paramWithExp(this, secondParameter));
     }
 
     @Override
@@ -337,7 +337,7 @@ abstract class OperationExpression<E> implements _Expression<E> {
 
     @Override
     public final IPredicate between(Expression<?> first, Object parameter) {
-        return BetweenPredicate.build(this, first, SQLs.paramWithExp(this, parameter));
+        return BetweenPredicate.between(this, first, SQLs.paramWithExp(this, parameter));
     }
 
     @Override
@@ -347,7 +347,7 @@ abstract class OperationExpression<E> implements _Expression<E> {
 
     @Override
     public final IPredicate between(Object parameter, Expression<?> second) {
-        return BetweenPredicate.build(this, SQLs.paramWithExp(this, parameter), second);
+        return BetweenPredicate.between(this, SQLs.paramWithExp(this, parameter), second);
     }
 
     @Override
@@ -366,7 +366,7 @@ abstract class OperationExpression<E> implements _Expression<E> {
         final BetweenWrapper wrapper;
         wrapper = function.apply(CriteriaContextStack.getCriteria());
         assert wrapper != null;
-        return BetweenPredicate.build(this, wrapper.first(), wrapper.second());
+        return BetweenPredicate.between(this, wrapper.first(), wrapper.second());
     }
 
     @Override
@@ -471,7 +471,7 @@ abstract class OperationExpression<E> implements _Expression<E> {
 
     @Override
     public final <C, O> Expression<E> mod(Function<C, Expression<O>> function) {
-        return DualExpression.create(this, DualOperator.MOD, function);
+        return DualExpression.functionCreate(this, DualOperator.MOD, function);
     }
 
     @Override
@@ -496,7 +496,7 @@ abstract class OperationExpression<E> implements _Expression<E> {
 
     @Override
     public final <C, O> Expression<E> multiply(Function<C, Expression<O>> function) {
-        return DualExpression.create(this, DualOperator.MULTIPLY, function);
+        return DualExpression.functionCreate(this, DualOperator.MULTIPLY, function);
     }
 
     @Override
@@ -521,7 +521,7 @@ abstract class OperationExpression<E> implements _Expression<E> {
 
     @Override
     public final <C, O> Expression<E> plus(Function<C, Expression<O>> function) {
-        return DualExpression.create(this, DualOperator.PLUS, function);
+        return DualExpression.functionCreate(this, DualOperator.PLUS, function);
     }
 
     @Override
@@ -546,7 +546,7 @@ abstract class OperationExpression<E> implements _Expression<E> {
 
     @Override
     public final <C, O> Expression<E> minus(Function<C, Expression<O>> function) {
-        return DualExpression.create(this, DualOperator.MINUS, function);
+        return DualExpression.functionCreate(this, DualOperator.MINUS, function);
     }
 
     @Override
@@ -571,7 +571,7 @@ abstract class OperationExpression<E> implements _Expression<E> {
 
     @Override
     public final <C, O> Expression<E> divide(Function<C, Expression<O>> function) {
-        return DualExpression.create(this, DualOperator.DIVIDE, function);
+        return DualExpression.functionCreate(this, DualOperator.DIVIDE, function);
     }
 
     @Override
@@ -601,7 +601,7 @@ abstract class OperationExpression<E> implements _Expression<E> {
 
     @Override
     public final <C, O> Expression<E> and(Function<C, Expression<O>> function) {
-        return DualExpression.create(this, DualOperator.AND, function);
+        return DualExpression.functionCreate(this, DualOperator.AND, function);
     }
 
     @Override
@@ -626,7 +626,7 @@ abstract class OperationExpression<E> implements _Expression<E> {
 
     @Override
     public final <C, O> Expression<E> or(Function<C, Expression<O>> function) {
-        return DualExpression.create(this, DualOperator.OR, function);
+        return DualExpression.functionCreate(this, DualOperator.OR, function);
     }
 
     @Override
@@ -651,7 +651,7 @@ abstract class OperationExpression<E> implements _Expression<E> {
 
     @Override
     public final <C, O> Expression<E> xor(Function<C, Expression<O>> function) {
-        return DualExpression.create(this, DualOperator.XOR, function);
+        return DualExpression.functionCreate(this, DualOperator.XOR, function);
     }
 
     @Override
@@ -681,7 +681,7 @@ abstract class OperationExpression<E> implements _Expression<E> {
 
     @Override
     public final <C, N extends Number> Expression<E> rightShift(Function<C, Expression<N>> function) {
-        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, function);
+        return DualExpression.functionCreate(this, DualOperator.RIGHT_SHIFT, function);
     }
 
     @Override
@@ -706,17 +706,17 @@ abstract class OperationExpression<E> implements _Expression<E> {
 
     @Override
     public final <C, N extends Number> Expression<E> leftShift(Function<C, Expression<N>> function) {
-        return DualExpression.create(this, DualOperator.LEFT_SHIFT, function);
+        return DualExpression.functionCreate(this, DualOperator.LEFT_SHIFT, function);
     }
 
     @Override
     public final <O> Expression<O> asType(Class<O> convertType) {
-        return ConvertExpressionImpl.build(this, _MappingFactory.getMapping(convertType));
+        return ConvertExpressionImpl.cast(this, _MappingFactory.getMapping(convertType));
     }
 
     @Override
     public final <O> Expression<O> asType(Class<O> convertType, MappingType longMapping) {
-        return ConvertExpressionImpl.build(this, longMapping);
+        return ConvertExpressionImpl.cast(this, longMapping);
     }
 
     @Override
@@ -725,7 +725,7 @@ abstract class OperationExpression<E> implements _Expression<E> {
     }
 
     public final Expression<E> brackets() {
-        return BracketsExpression.build(this);
+        return BracketsExpression.bracket(this);
     }
 
     @Override

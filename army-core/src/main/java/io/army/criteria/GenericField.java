@@ -19,7 +19,7 @@ import io.army.meta.TableMeta;
  * @see FieldMeta
  * @see LogicalField
  */
-public interface GenericField<T extends IDomain, F> extends FieldExpression<F>, FieldSelection, ParamMeta, SetTargetPart {
+public interface GenericField<T extends IDomain, F> extends Expression<F>, FieldSelection, ParamMeta, SetTargetPart {
 
     TableMeta<T> tableMeta();
 

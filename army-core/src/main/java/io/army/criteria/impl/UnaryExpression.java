@@ -5,6 +5,7 @@ import io.army.criteria.impl.inner._Expression;
 import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
+import io.army.meta.ParamMeta;
 import io.army.util._Exceptions;
 
 /**
@@ -41,6 +42,10 @@ final class UnaryExpression<E> extends OperationExpression<E> {
         return this.expression.mappingType();
     }
 
+    @Override
+    public ParamMeta paramMeta() {
+        return this.expression.paramMeta();
+    }
 
     @Override
     public void appendSql(final _SqlContext context) {

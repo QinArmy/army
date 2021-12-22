@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
-import io.army.criteria.FuncExpression;
 import io.army.criteria.GenericField;
 import io.army.criteria.NamedParam;
 import io.army.lang.Nullable;
@@ -159,7 +158,7 @@ abstract class SQLUtils {
      * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/mathematical-functions.html#function_abs">
      * MySQL ABS function</a>
      */
-    public static <E extends Number> FuncExpression<E> abs(Expression<E> x) {
+    public static <E extends Number> Expression<E> abs(Expression<E> x) {
         return SQLFunctions.oneArgumentFunc("ABS", x.mappingType(), x);
     }
 

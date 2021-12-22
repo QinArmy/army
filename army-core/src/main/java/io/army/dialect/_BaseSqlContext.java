@@ -3,7 +3,6 @@ package io.army.dialect;
 import io.army.criteria.Visible;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
-import io.army.meta.ParamMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.sharding._RouteUtils;
@@ -48,12 +47,6 @@ public abstract class _BaseSqlContext implements _StmtContext {
     }
 
     @Override
-    public final void appendConstant(ParamMeta paramMeta, Object value) {
-        this.sqlBuilder.append(Constant.SPACE)
-                .append(this.dialect.literal(paramMeta.mappingType(), value));
-    }
-
-    @Override
     public final Dialect dialect() {
         return this.dialect;
     }
@@ -63,11 +56,6 @@ public abstract class _BaseSqlContext implements _StmtContext {
         return this.sqlBuilder;
     }
 
-    @Override
-    public final void appendIdentifier(String identifier) {
-        this.sqlBuilder.append(Constant.SPACE)
-                .append(this.dialect.quoteIfNeed(identifier));
-    }
 
     @Override
     public final void appendParam(ParamValue paramValue) {

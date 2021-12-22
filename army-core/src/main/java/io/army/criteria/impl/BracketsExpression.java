@@ -1,75 +1,61 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.FieldExpression;
+import io.army.criteria.Expression;
 import io.army.criteria.impl.inner._Expression;
+import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
-import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.ParamMeta;
 
-import java.util.Collection;
+final class BracketsExpression<E> extends OperationExpression<E> {
 
-class BracketsExpression<E> extends OperationExpression<E> {
-
-    static <E> BracketsExpression<E> build(_Expression<E> expression) {
-        BracketsExpression<E> bracketsExpression;
-        if (expression instanceof FieldExpression) {
-            bracketsExpression = new FieldBracketsExpression<>(expression);
+    static <E> BracketsExpression<E> bracket(final Expression<E> expression) {
+        final BracketsExpression<E> result;
+        if (expression instanceof BracketsExpression) {
+            result = (BracketsExpression<E>) expression;
         } else {
-            bracketsExpression = new BracketsExpression<>(expression);
+            result = new BracketsExpression<>(expression);
         }
-        return bracketsExpression;
+        return result;
     }
 
-    final _Expression<E> exp;
+    private final _Expression<E> expression;
 
-    private BracketsExpression(_Expression<E> exp) {
-        this.exp = exp;
+    private BracketsExpression(Expression<E> expression) {
+        this.expression = (_Expression<E>) expression;
     }
 
     @Override
-    public final void appendSql(_SqlContext context) {
-        StringBuilder builder = context.sqlBuilder();
-        builder.append(" ( ");
-        exp.appendSql(context);
-        builder.append(" )");
+    public void appendSql(final _SqlContext context) {
+        final StringBuilder builder = context.sqlBuilder()
+                .append(Constant.SPACE)
+                .append(Constant.LEFT_BRACKET);
+
+        this.expression.appendSql(context);
+
+        builder.append(Constant.SPACE)
+                .append(Constant.RIGHT_BRACKET);
     }
 
     @Override
-    public final MappingType mappingType() {
-        return exp.mappingType();
+    public MappingType mappingType() {
+        return this.expression.mappingType();
     }
 
     @Override
-    public final String toString() {
-        return "(" + exp + ")";
+    public ParamMeta paramMeta() {
+        return this.expression.paramMeta();
     }
 
     @Override
-    public final boolean containsSubQuery() {
-        return this.exp.containsSubQuery();
+    public String toString() {
+        return String.format(" (%s )", this.expression);
+    }
+
+    @Override
+    public boolean containsSubQuery() {
+        return this.expression.containsSubQuery();
     }
 
 
-    private static final class FieldBracketsExpression<E> extends BracketsExpression<E> implements FieldExpression<E> {
-
-        private FieldBracketsExpression(_Expression<E> exp) {
-            super(exp);
-        }
-
-        @Override
-        public boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
-            return exp.containsField(fieldMetas);
-        }
-
-        @Override
-        public boolean containsFieldOf(TableMeta<?> tableMeta) {
-            return exp.containsFieldOf(tableMeta);
-        }
-
-        @Override
-        public int containsFieldCount(TableMeta<?> tableMeta) {
-            return exp.containsFieldCount(tableMeta);
-        }
-    }
 }

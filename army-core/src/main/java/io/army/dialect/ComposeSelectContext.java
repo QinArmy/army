@@ -1,11 +1,9 @@
 package io.army.dialect;
 
-import io.army.criteria.FieldPredicate;
 import io.army.criteria.Visible;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
-import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 import io.army.stmt.ParamValue;
 import io.army.stmt.SimpleStmt;
@@ -34,9 +32,15 @@ final class ComposeSelectContext implements SelectContext {
         this.paramList = new ArrayList<>();
     }
 
+
     @Override
-    public void appendFieldPredicate(FieldPredicate predicate) {
-        // predicate.appendPredicate(this);
+    public byte tableIndex() {
+        return 0;
+    }
+
+    @Override
+    public String tableSuffix() {
+        return null;
     }
 
     @Override
@@ -74,12 +78,6 @@ final class ComposeSelectContext implements SelectContext {
         return null;
     }
 
-    @Override
-    public void appendIdentifier(String identifier) {
-        this.sqlBuilder
-                .append(" ")
-                .append(this.dialect.quoteIfNeed(identifier));
-    }
 
     @Override
     public final TablesContext primaryTableContext() {
@@ -118,11 +116,6 @@ final class ComposeSelectContext implements SelectContext {
 
     @Override
     public void appendField(FieldMeta<?, ?> field) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void appendConstant(ParamMeta paramMeta, Object value) {
         throw new UnsupportedOperationException();
     }
 

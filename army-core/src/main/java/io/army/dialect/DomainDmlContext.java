@@ -1,8 +1,6 @@
 package io.army.dialect;
 
-import io.army.criteria.FieldPredicate;
 import io.army.criteria.Visible;
-import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
 
 import java.util.ArrayList;
@@ -43,20 +41,6 @@ abstract class DomainDmlContext implements _DmlContext {
         return this.visible;
     }
 
-    @Override
-    public void appendFieldPredicate(FieldPredicate predicate) {
-
-    }
-
-    @Override
-    public final void appendIdentifier(String identifier) {
-        this.sqlBuilder.append(this.dialect.quoteIfNeed(identifier));
-    }
-
-    @Override
-    public void appendConstant(ParamMeta paramMeta, Object value) {
-        this.dialect.literal(paramMeta.mappingType(), value);
-    }
 
     @Override
     public final Dialect dialect() {

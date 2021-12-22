@@ -1,8 +1,7 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.SQLOperator;
 
-enum SubQueryOperator implements SQLOperator {
+enum SubQueryOperator {
 
     ANY {
         @Override
@@ -21,7 +20,9 @@ enum SubQueryOperator implements SQLOperator {
         public String rendered() {
             return "ALL";
         }
-    }
+    };
+
+    abstract String rendered();
 
 }
 

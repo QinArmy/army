@@ -4,14 +4,16 @@ import io.army.ErrorCode;
 import io.army.annotation.UpdateMode;
 import io.army.beans.ReadWrapper;
 import io.army.criteria.*;
-import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Update;
 import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
-import io.army.meta.*;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.FieldMeta;
+import io.army.meta.ParentTableMeta;
+import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.*;
 import io.army.struct.CodeEnum;
@@ -20,8 +22,6 @@ import io.army.util.CollectionUtils;
 import io.army.util._Exceptions;
 import io.qinarmy.util.Pair;
 
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.util.*;
 
 public abstract class _DmlUtils {
@@ -314,64 +314,7 @@ public abstract class _DmlUtils {
     }
 
 
-    static List<_Predicate> extractParentPredicatesForUpdate(ChildTableMeta<?> childMeta
-            , Collection<FieldMeta<?, ?>> childUpdatedFieldList
-            , List<_Predicate> predicateList) {
 
-        List<_Predicate> parentPredicates;
-        // 1. extract parent predicate from where predicate list
-        if (childUpdatedFieldList.isEmpty()) {
-            parentPredicates = new ArrayList<>(predicateList.size() + 1);
-            parentPredicates.addAll(predicateList);
-        } else {
-            boolean firstIsPrimary = predicateList.get(0) instanceof PrimaryValueEqualPredicate;
-            final Collection<FieldMeta<?, ?>> childUpdatedFields = childUpdatedFieldList.size() > 5
-                    ? new HashSet<>(childUpdatedFieldList) : childUpdatedFieldList;
-            parentPredicates = new ArrayList<>();
-            doExtractParentPredicatesForUpdate(predicateList, childUpdatedFields, parentPredicates, firstIsPrimary);
-        }
-
-        // 2. append discriminator predicate
-        parentPredicates.add(createDiscriminatorPredicate(childMeta));
-        return Collections.unmodifiableList(parentPredicates);
-    }
-
-    static List<_Predicate> createParentPredicates(ParentTableMeta<?> parentMeta, List<_Predicate> predicateList) {
-        List<_Predicate> parentPredicateList;
-        if (hasDiscriminatorPredicate(predicateList, parentMeta.discriminator())) {
-            parentPredicateList = predicateList;
-        } else {
-            parentPredicateList = new ArrayList<>(predicateList.size() + 1);
-            parentPredicateList.addAll(predicateList);
-            parentPredicateList.add(createDiscriminatorPredicate(parentMeta));
-            parentPredicateList = Collections.unmodifiableList(parentPredicateList);
-        }
-        return parentPredicateList;
-    }
-
-    static List<_Predicate> extractParentPredicateForDelete(ChildTableMeta<?> childMeta
-            , List<_Predicate> predicateList) {
-        // 1. extract parent predicate from where predicate list
-        final _Predicate firstPredicate = predicateList.get(0);
-        // 1-1. check first predicate
-        if (!(firstPredicate instanceof PrimaryValueEqualPredicate)) {
-            throw createNoPrimaryPredicateException(childMeta);
-        }
-        List<_Predicate> parentPredicates = new ArrayList<>();
-        // do extract parent predicate
-        for (_Predicate predicate : predicateList) {
-            if (predicate == firstPredicate) {
-                continue;
-            }
-//            if (!predicate.containsFieldOf(childMeta)) {
-//                parentPredicates.add(predicate);
-//            }
-        }
-
-        // 2. append discriminator predicate
-        parentPredicates.add(createDiscriminatorPredicate(childMeta));
-        return Collections.unmodifiableList(parentPredicates);
-    }
 
     static void assertUpdateSetAndWhereClause(_Update update) {
         final List<FieldMeta<?, ?>> fieldList = update.fieldList();
@@ -391,83 +334,6 @@ public abstract class _DmlUtils {
     }
 
 
-    static void standardSimpleUpdateSetClause(_UpdateContext context, TableMeta<?> tableMeta, String tableAlias
-            , List<FieldMeta<?, ?>> fieldMetaList, List<_Expression<?>> valueExpList) {
-//        if (tableMeta.immutable()) {
-//            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "TableMeta[%s] alias[%s] is immutable."
-//                    , tableMeta, tableAlias);
-//        }
-//        Assert.isTrue(fieldMetaList.size() == valueExpList.size()
-//                , "field list ifAnd value exp list size not match");
-//        final MappingMode mappingMode = tableMeta.mappingMode();
-//
-//        if (mappingMode != MappingMode.PARENT) {
-//            Assert.notEmpty(fieldMetaList, "set clause must not empty");
-//        }
-//
-//        StringBuilder builder = context.sqlBuilder()
-//                .append(" SET");
-//
-//        final int size = fieldMetaList.size();
-//        for (int i = 0; i < size; i++) {
-//            if (i > 0) {
-//                builder.append(",");
-//            }
-//            FieldMeta<?, ?> fieldMeta = fieldMetaList.get(i);
-//            Expression<?> valueExp = valueExpList.get(i);
-//
-//            DMLUtils.assertSingleUpdateSetClauseField(fieldMeta, tableMeta);
-//
-//            // fieldMeta self-describe
-//            context.appendField(tableAlias, fieldMeta);
-//            builder.append(" =");
-//            // expression self-describe
-//            valueExp.appendSql(context);
-//
-//        }
-//        if (mappingMode != MappingMode.CHILD) {
-//            if (!fieldMetaList.isEmpty()) {
-//                builder.append(",");
-//            }
-//            // appendText version And updateTime
-//            DMLUtils.setClauseFieldsManagedByArmy(context, tableMeta, tableAlias);
-//        }
-    }
-
-    static void setClauseFieldsManagedByArmy(_TablesSqlContext context, TableMeta<?> tableMeta
-            , String tableAlias) {
-        //1. version field
-        final FieldMeta<?, ?> versionField = tableMeta.getField(_MetaBridge.VERSION);
-        StringBuilder builder = context.sqlBuilder();
-
-        context.appendField(tableAlias, versionField);
-
-        builder.append(" =");
-        context.appendField(tableAlias, versionField);
-        builder.append(" + 1 ,");
-
-        //2. updateTime fieldπ
-        final FieldMeta<?, ?> updateTimeField = tableMeta.getField(_MetaBridge.UPDATE_TIME);
-        // updateTime field self-describe
-        context.appendField(tableAlias, updateTimeField);
-        builder.append(" =");
-
-        final Dialect dialect = context.dialect();
-        final ZonedDateTime now = ZonedDateTime.now(dialect.zoneId());
-
-        if (updateTimeField.javaType() == LocalDateTime.class) {
-            ((_Expression<?>) SQLs.param(updateTimeField.mappingType(), now.toLocalDateTime()))
-                    .appendSql(context);
-        } else if (updateTimeField.javaType() == ZonedDateTime.class) {
-            if (!dialect.supportZone()) {
-                throw new MetaException("dialec[%s]t not supported zone.", dialect.database());
-            }
-            ((_Expression<?>) SQLs.param(updateTimeField.mappingType(), now))
-                    .appendSql(context);
-        } else {
-            throw new MetaException("createTime or updateTime only support LocalDateTime or ZonedDateTime,please check.");
-        }
-    }
 
 
     static void assertSetClauseField(FieldMeta<?, ?> fieldMeta) {
@@ -482,17 +348,8 @@ public abstract class _DmlUtils {
     }
 
     static boolean hasVersionPredicate(List<_Predicate> predicateList) {
-        boolean hasVersion = false;
-        for (_Predicate predicate : predicateList) {
-            if (predicate instanceof FieldValuePredicate) {
-                GenericField<?, ?> fieldExp = ((FieldValuePredicate) predicate).fieldMeta();
-                if (_MetaBridge.VERSION.equals(fieldExp.fieldName())) {
-                    hasVersion = true;
-                    break;
-                }
-            }
-        }
-        return hasVersion;
+
+        return false;
     }
 
 

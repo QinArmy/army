@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.DualPredicateOperator;
 import io.army.criteria.ExpressionRow;
+import io.army.criteria.GenericField;
 import io.army.criteria.RowSubQuery;
 import io.army.dialect._SqlContext;
 import io.army.meta.FieldMeta;
@@ -13,11 +13,11 @@ final class RowPredicate extends AbstractPredicate {
 
     private final ExpressionRow<?> row;
 
-    private final DualPredicateOperator operator;
+    private final DualOperator operator;
 
     private final RowSubQuery rowSubQuery;
 
-    RowPredicate(ExpressionRow<?> row, DualPredicateOperator operator, RowSubQuery rowSubQuery) {
+    RowPredicate(ExpressionRow<?> row, DualOperator operator, RowSubQuery rowSubQuery) {
         this.row = row;
         this.operator = operator;
         this.rowSubQuery = rowSubQuery;
@@ -25,7 +25,7 @@ final class RowPredicate extends AbstractPredicate {
 
 
     @Override
-    public final void appendSql(_SqlContext context) {
+    public void appendSql(_SqlContext context) {
         row.appendSql(context);
         context.sqlBuilder()
                 .append(" ")
@@ -41,7 +41,7 @@ final class RowPredicate extends AbstractPredicate {
     @Override
     public boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
         boolean contains = false;
-        for (FieldMeta<?, ?> fieldMeta : this.row.columnList()) {
+        for (GenericField<?, ?> fieldMeta : this.row.columnList()) {
             if (fieldMetas.contains(fieldMeta)) {
                 contains = true;
                 break;
@@ -53,7 +53,7 @@ final class RowPredicate extends AbstractPredicate {
     @Override
     public boolean containsFieldOf(TableMeta<?> tableMeta) {
         boolean contains = false;
-        for (FieldMeta<?, ?> fieldMeta : this.row.columnList()) {
+        for (GenericField<?, ?> fieldMeta : this.row.columnList()) {
             if (fieldMeta.tableMeta() == tableMeta) {
                 contains = true;
                 break;
@@ -65,7 +65,7 @@ final class RowPredicate extends AbstractPredicate {
     @Override
     public int containsFieldCount(TableMeta<?> tableMeta) {
         int count = 0;
-        for (FieldMeta<?, ?> fieldMeta : this.row.columnList()) {
+        for (GenericField<?, ?> fieldMeta : this.row.columnList()) {
             if (fieldMeta.tableMeta() == tableMeta) {
                 count++;
             }
@@ -75,6 +75,6 @@ final class RowPredicate extends AbstractPredicate {
 
     @Override
     public String toString() {
-        return row.toString() + " " + operator.rendered() + " " + rowSubQuery;
+        return row + " " + operator.rendered() + " " + rowSubQuery;
     }
 }
