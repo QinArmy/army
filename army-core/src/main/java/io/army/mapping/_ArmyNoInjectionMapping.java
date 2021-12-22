@@ -1,9 +1,9 @@
 package io.army.mapping;
 
-public abstract class ArmyNoInjectionMapping extends AbstractMappingType {
+public abstract class _ArmyNoInjectionMapping extends AbstractMappingType {
 
 
-    protected ArmyNoInjectionMapping() {
+    protected _ArmyNoInjectionMapping() {
         final Class<?> thisClass = this.getClass();
         if (!thisClass.getName().startsWith("io.army.mapping")) {
             String m = String.format("Non army class couldn't extend %s .", thisClass.getName());

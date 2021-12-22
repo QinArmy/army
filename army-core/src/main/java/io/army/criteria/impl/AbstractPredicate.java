@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.GenericField;
 import io.army.criteria.IPredicate;
 import io.army.criteria.NamedParam;
-import io.army.criteria.ValueExpression;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
@@ -66,25 +65,41 @@ abstract class AbstractPredicate extends OperationExpression<Boolean> implements
             return -1;
         }
         final DualPredicate predicate = (DualPredicate) this;
-        if (predicate.operator != DualOperator.EQ
-                || !(predicate.left instanceof GenericField)
-                || !(predicate.right instanceof ValueExpression)) {
-            return -1;
-        }
-        final GenericField<?, ?> field = (GenericField<?, ?>) predicate.left;
-        if (!field.databaseRoute()) {
-            return -1;
-        }
         final byte index;
-        final DatabaseRoute route = (DatabaseRoute) function.apply(field.tableMeta());
-        final Object value = ((ValueExpression<?>) predicate.right).value();
-        if (value == null) {
+        if (predicate.operator != DualOperator.EQ) {
             index = -1;
+        } else if (predicate.left instanceof GenericField
+                && predicate.right instanceof ValueExpression
+                && ((GenericField<?, ?>) predicate.left).databaseRoute()) {
+
+            final GenericField<?, ?> field = (GenericField<?, ?>) predicate.left;
+            final Object value = ((ValueExpression<?>) predicate.right).value();
+            if (value == null) {
+                index = -1;
+            } else {
+                final DatabaseRoute route = (DatabaseRoute) function.apply(field.tableMeta());
+                index = route.database(value);
+            }
+        } else if (predicate.left instanceof ValueExpression
+                && predicate.right instanceof GenericField
+                && ((GenericField<?, ?>) predicate.right).databaseRoute()) {
+
+            final GenericField<?, ?> field = (GenericField<?, ?>) predicate.right;
+            final Object value = ((ValueExpression<?>) predicate.left).value();
+            if (value == null) {
+                index = -1;
+            } else {
+                final DatabaseRoute route = (DatabaseRoute) function.apply(field.tableMeta());
+                index = route.database(value);
+            }
+
         } else {
-            index = route.database(value);
+            index = -1;
         }
+
         return index;
     }
+
 
     @Override
     public final byte tableIndex(final TableMeta<?> table, final RouteContext context) {
@@ -151,6 +166,12 @@ abstract class AbstractPredicate extends OperationExpression<Boolean> implements
             tableRouteField = null;
         }
         return tableRouteField;
+    }
+
+    @Nullable
+    @Override
+    public final FieldMeta<?, ?> databaseRouteField() {
+        return null;
     }
 
 

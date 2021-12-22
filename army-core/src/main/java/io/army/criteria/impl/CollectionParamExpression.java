@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.GenericField;
-import io.army.criteria.ValueExpression;
 import io.army.dialect.Constant;
 import io.army.dialect.Dialect;
 import io.army.dialect._DialectUtils;
@@ -15,8 +14,7 @@ import io.army.util.CollectionUtils;
 
 import java.util.Collection;
 
-final class CollectionParamExpression<E> extends NoNOperationExpression<Collection<E>>
-        implements ValueExpression<Collection<E>> {
+final class CollectionParamExpression<E> extends NoNOperationExpression<Collection<E>> {
 
     static <E> CollectionParamExpression<E> strict(Expression<?> type, Collection<E> values) {
         return create(type, values, false);
@@ -64,11 +62,6 @@ final class CollectionParamExpression<E> extends NoNOperationExpression<Collecti
     }
 
     @Override
-    public Object value() {
-        return this.value;
-    }
-
-    @Override
     public void appendSql(final _SqlContext context) {
         final StringBuilder builder = context.sqlBuilder()
                 .append(Constant.SPACE)
@@ -79,12 +72,12 @@ final class CollectionParamExpression<E> extends NoNOperationExpression<Collecti
         final Dialect dialect = context.dialect();
         int index = 0;
         for (E v : this.value) {
+            if (v == null) {
+                throw new CriteriaException("Collection element must not null.");
+            }
             if (index > 0) {
                 builder.append(Constant.SPACE)
                         .append(Constant.COMMA);
-            }
-            if (v == null) {
-                throw new CriteriaException("Collection element must not null.");
             }
             if (optimizing) {
                 builder.append(Constant.SPACE)

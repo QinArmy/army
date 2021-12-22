@@ -1,8 +1,9 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Selection;
-import io.army.criteria.ValueExpression;
+import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
+import io.army.lang.NonNull;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.ParamMeta;
@@ -78,11 +79,11 @@ final class LiteralExpression<E> extends OperationExpression<E> implements Value
 
     private final ParamMeta paramMeta;
 
-    private final E constant;
+    private final E literal;
 
-    private LiteralExpression(ParamMeta paramMeta, E constant) {
+    private LiteralExpression(ParamMeta paramMeta, E literal) {
         this.paramMeta = paramMeta;
-        this.constant = constant;
+        this.literal = literal;
     }
 
 
@@ -92,8 +93,10 @@ final class LiteralExpression<E> extends OperationExpression<E> implements Value
     }
 
     @Override
-    public void appendSql(_SqlContext context) {
-        context.appendConstant(this.paramMeta, this.constant);
+    public void appendSql(final _SqlContext context) {
+        context.sqlBuilder()
+                .append(Constant.SPACE)
+                .append(context.dialect().literal(this.paramMeta, this.literal));
     }
 
     @Override
@@ -102,9 +105,16 @@ final class LiteralExpression<E> extends OperationExpression<E> implements Value
     }
 
     @Override
-    public E value() {
-        return this.constant;
+    public ParamMeta paramMeta() {
+        return this.paramMeta;
     }
+
+    @NonNull
+    @Override
+    public E value() {
+        return this.literal;
+    }
+
 
     @Override
     public boolean containsSubQuery() {
@@ -113,7 +123,7 @@ final class LiteralExpression<E> extends OperationExpression<E> implements Value
 
     @Override
     public String toString() {
-        return String.valueOf(this.constant);
+        return String.valueOf(this.literal);
     }
 
 

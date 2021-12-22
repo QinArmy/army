@@ -9,8 +9,8 @@ import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Update;
 import io.army.criteria.impl.inner._ValuesInsert;
-import io.army.mapping.ArmyNoInjectionMapping;
 import io.army.mapping.MappingType;
+import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.*;
@@ -150,7 +150,7 @@ public abstract class _DmlUtils {
                         continue;
                     }
                     final MappingType mappingType = field.mappingType();
-                    if (mappingType instanceof ArmyNoInjectionMapping) {
+                    if (mappingType instanceof _ArmyNoInjectionMapping) {
                         builder.append(Constant.SPACE)
                                 .append(dialect.literal(field, value)); // for safe default mapping type, use literal to reduce '?' and add batch insert count.
                     } else {

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-abstract class AbstractFunc<E> extends OperationExpression<E> implements FuncExpression<E> {
+abstract class SQLFunctions<E> extends OperationExpression<E> implements FuncExpression<E> {
 
 
     static <E> FuncExpression<E> noArgumentFunc(String name, MappingType returnType) {
@@ -38,7 +38,7 @@ abstract class AbstractFunc<E> extends OperationExpression<E> implements FuncExp
 
     protected final MappingType returnType;
 
-    private AbstractFunc(String name, MappingType returnType) {
+    private SQLFunctions(String name, MappingType returnType) {
         this.name = name;
         this.returnType = returnType;
     }
@@ -79,7 +79,7 @@ abstract class AbstractFunc<E> extends OperationExpression<E> implements FuncExp
 
     /*################################## blow static class  ##################################*/
 
-    private static final class NoArgumentFunc<E> extends AbstractFunc<E> {
+    private static final class NoArgumentFunc<E> extends SQLFunctions<E> {
 
         NoArgumentFunc(String name, MappingType returnType) {
             super(name, returnType);
@@ -101,7 +101,7 @@ abstract class AbstractFunc<E> extends OperationExpression<E> implements FuncExp
         }
     }
 
-    static final class OneArgumentFunc<E> extends AbstractFunc<E> {
+    static final class OneArgumentFunc<E> extends SQLFunctions<E> {
 
         private final _Expression<?> one;
 
@@ -129,7 +129,7 @@ abstract class AbstractFunc<E> extends OperationExpression<E> implements FuncExp
         }
     }
 
-    static class TwoArgumentFunc<E> extends AbstractFunc<E> {
+    static class TwoArgumentFunc<E> extends SQLFunctions<E> {
 
         private static final List<String> FORMAT_LIST = ArrayUtils.asUnmodifiableList("", ",", "");
 
@@ -180,7 +180,7 @@ abstract class AbstractFunc<E> extends OperationExpression<E> implements FuncExp
         }
     }
 
-    static final class ThreeArgumentFunc<E> extends AbstractFunc<E> {
+    static final class ThreeArgumentFunc<E> extends SQLFunctions<E> {
 
         private static final List<String> FORMAT_LIST = ArrayUtils.asUnmodifiableList("", ",", ",", "");
 

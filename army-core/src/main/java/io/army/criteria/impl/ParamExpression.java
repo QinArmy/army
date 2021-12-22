@@ -3,12 +3,11 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.GenericField;
-import io.army.criteria.ValueExpression;
 import io.army.dialect.Constant;
-import io.army.dialect._DialectUtils;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
+import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.mapping._MappingFactory;
 import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
@@ -17,7 +16,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.function.Function;
 
-abstract class ParamExpression<E> extends NoNOperationExpression<E> implements ValueExpression<E>, ParamValue {
+abstract class ParamExpression<E> extends OperationExpression<E> implements ValueExpression<E>, ParamValue {
 
 
     static <E> ParamExpression<E> strict(ParamMeta paramMeta, @Nullable E value) {
@@ -40,7 +39,7 @@ abstract class ParamExpression<E> extends NoNOperationExpression<E> implements V
 
     static <E> ParamExpression<E> strict(E value) {
         Objects.requireNonNull(value);
-        return strict(_MappingFactory.getMapping(value.getClass()), value);
+        return new StrictParamExpression<>(_MappingFactory.getMapping(value.getClass()), value);
     }
 
     static <E> ParamExpression<E> optimizing(final Expression<?> type, final @Nullable E value) {
@@ -66,23 +65,28 @@ abstract class ParamExpression<E> extends NoNOperationExpression<E> implements V
         this.value = value;
     }
 
-
-    @Override
-    public final ParamMeta paramMeta() {
-        return this.paramMeta;
-    }
-
-    @Override
+    /**
+     * @return a simple java object or {@link java.util.Collection}
+     */
+    @Nullable
     public final E value() {
         return this.value;
     }
 
+    public final ParamMeta paramMeta() {
+        return this.paramMeta;
+    }
 
     @Override
     public final MappingType mappingType() {
         return this.paramMeta.mappingType();
     }
 
+    @Override
+    public final boolean containsSubQuery() {
+        // always false
+        return false;
+    }
 
     @Override
     public final String toString() {
@@ -101,7 +105,6 @@ abstract class ParamExpression<E> extends NoNOperationExpression<E> implements V
             context.appendParam(this);
         }
 
-
     }
 
 
@@ -118,7 +121,7 @@ abstract class ParamExpression<E> extends NoNOperationExpression<E> implements V
                         .append(" NULL");
             } else {
                 final ParamMeta paramMeta = this.paramMeta;
-                if (_DialectUtils.isSafeMapping(paramMeta.mappingType())) {
+                if (paramMeta.mappingType() instanceof _ArmyNoInjectionMapping) {
                     context.sqlBuilder()
                             .append(Constant.SPACE)
                             .append(context.dialect().literal(paramMeta, this.value));
@@ -127,6 +130,7 @@ abstract class ParamExpression<E> extends NoNOperationExpression<E> implements V
                 }
 
             }
+
 
         }
 

@@ -3,6 +3,7 @@ package io.army.session;
 
 import io.army.beans.DomainReadonlyWrapper;
 import io.army.cache.DomainUpdateAdvice;
+import io.army.criteria.CriteriaException;
 import io.army.criteria.Update;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._Expression;
@@ -20,7 +21,7 @@ import java.util.Set;
 public abstract class AbstractGenericSession implements GenericSession {
 
     public static boolean cacheDomainUpdate(_SingleUpdate update) {
-        return update instanceof AbstractGenericSession.CacheDomainUpdate;
+        throw new CriteriaException("");
     }
 
     protected static final class CacheDomainUpdate implements Update, _SingleUpdate {
@@ -33,13 +34,13 @@ public abstract class AbstractGenericSession implements GenericSession {
             List<_Expression<?>> valueList = new ArrayList<>(set.size());
             DomainReadonlyWrapper readonlyWrapper = advice.readonlyWrapper();
 
-            for (FieldMeta<?, ?> fieldMeta : set) {
-                targetList.add(fieldMeta);
-                Object value = readonlyWrapper.get(fieldMeta.fieldName());
+            for (FieldMeta<?, ?> field : set) {
+                targetList.add(field);
+                Object value = readonlyWrapper.get(field.fieldName());
                 if (value == null) {
-                    valueList.add((_Expression<?>) SQLs.nullWord());
+                    valueList.add((_Expression<?>) SQLs.optimizingParam(field, null));
                 } else {
-                    valueList.add((_Expression<?>) SQLs.param(fieldMeta, value));
+                    valueList.add((_Expression<?>) SQLs.param(field, value));
                 }
             }
             return new CacheDomainUpdate(advice, targetList, valueList);
@@ -77,13 +78,13 @@ public abstract class AbstractGenericSession implements GenericSession {
         }
 
         @Override
-        public int databaseIndex() {
+        public byte databaseIndex() {
             // always negative
             return -1;
         }
 
         @Override
-        public int tableIndex() {
+        public byte tableIndex() {
             // always negative
             return -1;
         }
