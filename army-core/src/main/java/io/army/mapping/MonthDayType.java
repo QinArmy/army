@@ -8,7 +8,7 @@ import java.sql.JDBCType;
 import java.time.LocalDate;
 import java.time.MonthDay;
 
-public final class MonthDayType extends AbstractMappingType {
+public final class MonthDayType extends _ArmyNoInjectionMapping {
 
     public static final MonthDayType INSTANCE = new MonthDayType();
 

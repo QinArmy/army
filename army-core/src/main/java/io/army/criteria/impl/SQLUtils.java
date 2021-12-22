@@ -12,6 +12,7 @@ import io.army.meta.ParamMeta;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -36,16 +37,17 @@ abstract class SQLUtils {
     }
 
 
-    public static <E> Expression<E> param(E param) {
-        return ParamExpression.strict(param);
+    public static <E> Expression<E> param(E value) {
+        Objects.requireNonNull(value);
+        return ParamExpressions.optimizing(_MappingFactory.getMapping(value.getClass()), value);
     }
 
     public static <E> Expression<E> param(MappingType mappingType, @Nullable E value) {
-        return ParamExpression.strict(mappingType, value);
+        return ParamExpressions.optimizing(mappingType, value);
     }
 
     public static <E> Expression<E> param(final Expression<?> type, @Nullable E value) {
-        return ParamExpression.strict(type, value);
+        return ParamExpressions.optimizing(type.paramMeta(), value);
     }
 
     /**
@@ -54,9 +56,7 @@ abstract class SQLUtils {
     @SuppressWarnings("unchecked")
     static Expression<?> paramWithExp(final Expression<?> type, final @Nullable Object value) {
         final Expression<?> resultExpression;
-        if (value == null) {
-            resultExpression = SQLs.nullWord();
-        } else if (value instanceof Expression) {
+        if (value instanceof Expression) {
             //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
             resultExpression = (Expression<?>) value;
         } else if (value instanceof Function) {
@@ -64,26 +64,26 @@ abstract class SQLUtils {
             resultExpression = ((Function<Object, Expression<?>>) value).apply(CriteriaContextStack.getCriteria());
         } else {
             // use optimizing param expression
-            resultExpression = ParamExpression.optimizing(type, value);
+            resultExpression = ParamExpressions.optimizing(type.paramMeta(), value);
         }
         return resultExpression;
     }
 
-    public static <E> Expression<E> optimizingParam(final MappingType type, final @Nullable E value) {
-        return ParamExpression.optimizing(type, value);
+    public static <E> Expression<E> strictParam(final MappingType type, final @Nullable E value) {
+        return ParamExpressions.strict(type, value);
     }
 
-    public static <E> Expression<E> optimizingParam(final Expression<?> type, final @Nullable E value) {
-        return ParamExpression.optimizing(type, value);
+    public static <E> Expression<E> strictParam(final Expression<?> type, final @Nullable E value) {
+        return ParamExpressions.strict(type.paramMeta(), value);
     }
 
 
     public static <E> Expression<Collection<E>> collectionParam(Expression<?> type, Collection<E> value) {
-        return CollectionParamExpression.strict(type, value);
+        return CollectionParamExpression.optimizing(type, value);
     }
 
-    public static <E> Expression<Collection<E>> optimizingCollectionParam(Expression<?> type, Collection<E> value) {
-        return CollectionParamExpression.optimizing(type, value);
+    public static <E> Expression<Collection<E>> strictCollectionParam(Expression<?> type, Collection<E> value) {
+        return CollectionParamExpression.strict(type, value);
     }
 
 
@@ -129,11 +129,12 @@ abstract class SQLUtils {
     }
 
     public static <E> Expression<E> literal(E value) {
-        return LiteralExpression.create(value);
+        Objects.requireNonNull(value);
+        return LiteralExpression.literal(_MappingFactory.getMapping(value.getClass()), value);
     }
 
     public static <E> Expression<E> literal(ParamMeta paramMeta, E value) {
-        return LiteralExpression.create(paramMeta, value);
+        return LiteralExpression.literal(paramMeta, value);
     }
 
     /**

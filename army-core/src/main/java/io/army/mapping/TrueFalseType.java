@@ -11,7 +11,7 @@ import io.army.util._Exceptions;
 
 import java.sql.JDBCType;
 
-public final class TrueFalseType extends AbstractMappingType {
+public final class TrueFalseType extends _ArmyNoInjectionMapping {
 
     public static final String T = "T";
 

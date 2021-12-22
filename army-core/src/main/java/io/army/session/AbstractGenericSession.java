@@ -38,7 +38,7 @@ public abstract class AbstractGenericSession implements GenericSession {
                 targetList.add(field);
                 Object value = readonlyWrapper.get(field.fieldName());
                 if (value == null) {
-                    valueList.add((_Expression<?>) SQLs.optimizingParam(field, null));
+                    valueList.add((_Expression<?>) SQLs.param(field, null));
                 } else {
                     valueList.add((_Expression<?>) SQLs.param(field, value));
                 }

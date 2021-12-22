@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.JDBCType;
 
-public final class IntegerType extends AbstractMappingType {
+public final class IntegerType extends _ArmyNoInjectionMapping {
 
 
     public static final IntegerType INSTANCE = new IntegerType();

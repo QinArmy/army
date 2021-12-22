@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.JDBCType;
 
-public final class LongType extends AbstractMappingType {
+public final class LongType extends _ArmyNoInjectionMapping {
 
     public static final LongType INSTANCE = new LongType();
 

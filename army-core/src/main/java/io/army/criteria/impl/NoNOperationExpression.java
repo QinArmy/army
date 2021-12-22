@@ -15,7 +15,7 @@ import java.util.function.Function;
  * <p>
  * This class is base class of below:
  *     <ul>
- *         <li>{@link ParamExpression}</li>
+ *         <li>{@link ParamExpressions}</li>
  *         <li>{@link DefaultWord}</li>
  *         <li>{@link NullWord}</li>
  *         <li>{@link CollectionParamExpression}</li>

@@ -5,7 +5,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.SqlDataType;
 
 
-public final class FloatType extends AbstractMappingType {
+public final class FloatType extends _ArmyNoInjectionMapping {
 
     public static final FloatType INSTANCE = new FloatType();
 

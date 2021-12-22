@@ -196,6 +196,56 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
         return Collections.emptyMap();
     }
 
+
+    /**
+     * <p>
+     * This method get table index for single dml.
+     * </p>
+     *
+     * @return <ul>
+     * <li>{@link Byte#MIN_VALUE} route all</li>
+     * <li>non-negative : table index</li>
+     * <li>-1 not found table index</li>
+     * </ul>
+     * @throws CriteriaException when return negative and not equal {@link Byte#MIN_VALUE}
+     * @see #handleStandardUpdate(_SingleUpdate, Visible)
+     * @see #handleStandardDelete(_SingleDelete, Visible)
+     */
+    protected final byte singleDmlTableRoute(final _SingleDml dml) {
+        final TableMeta<?> table = dml.table();
+        if (table.immutable()) {
+            throw _Exceptions.immutableTable(table);
+        }
+        final List<_Predicate> predicateList = dml.predicateList();
+        final GenericRmSessionFactory factory = this.dialect.sessionFactory();
+        Assert.databaseRoute(dml, dml.databaseIndex(), factory);
+        if (factory.factoryMode() == FactoryMode.NO_SHARDING || table.routeMode() == RouteMode.NONE) {
+            return 0;
+        }
+        byte tableIndex;
+        tableIndex = _RouteUtils.tableRouteFromRouteField(table, predicateList, factory);
+        final byte tableRoute = dml.tableIndex();
+        if (tableIndex < 0) {
+            tableIndex = tableRoute;
+        } else if (tableRoute >= 0) {
+            throw _Exceptions.tableIndexAmbiguity(dml, dml.tableIndex(), tableIndex);
+        }
+
+        if (tableIndex < 0) {
+            if (tableRoute == -1) {
+                if (!(dml instanceof _BatchDml)) {
+                    throw _Exceptions.noTableRoute(dml, factory);
+                }
+            } else if (tableRoute != Byte.MIN_VALUE) {
+                throw _Exceptions.tableIndexParseError(dml, table, tableIndex);
+            }
+        } else if (tableIndex >= table.tableCount()) {
+            throw _Exceptions.tableIndexParseError(dml, table, tableIndex);
+        }
+        return tableIndex;
+    }
+
+
     /*################################## blow protected method ##################################*/
 
     /*################################## blow private batchInsert method ##################################*/
@@ -305,54 +355,6 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
             stmtList.add(standardDeleteStmt(delete, (byte) i, visible));
         }
         return Stmts.group(stmtList);
-    }
-
-    /**
-     * <p>
-     * This method get table index for single dml.
-     * </p>
-     *
-     * @return <ul>
-     * <li>{@link Byte#MIN_VALUE} route all</li>
-     * <li>non-negative : table index</li>
-     * <li>-1 not found table index</li>
-     * </ul>
-     * @throws CriteriaException when return negative and not equal {@link Byte#MIN_VALUE}
-     * @see #handleStandardUpdate(_SingleUpdate, Visible)
-     * @see #handleStandardDelete(_SingleDelete, Visible)
-     */
-    private byte singleDmlTableRoute(final _SingleDml dml) {
-        final TableMeta<?> table = dml.table();
-        if (table.immutable()) {
-            throw _Exceptions.immutableTable(table);
-        }
-        final List<_Predicate> predicateList = dml.predicateList();
-        final GenericRmSessionFactory factory = this.dialect.sessionFactory();
-        Assert.databaseRoute(dml, dml.databaseIndex(), factory);
-        if (factory.factoryMode() == FactoryMode.NO_SHARDING || table.routeMode() == RouteMode.NONE) {
-            return 0;
-        }
-        byte tableIndex;
-        tableIndex = _RouteUtils.tableRouteFromRouteField(table, predicateList, factory);
-        final byte tableRoute = dml.tableIndex();
-        if (tableIndex < 0) {
-            tableIndex = tableRoute;
-        } else if (tableRoute >= 0) {
-            throw _Exceptions.tableIndexAmbiguity(dml, dml.tableIndex(), tableIndex);
-        }
-
-        if (tableIndex < 0) {
-            if (tableRoute == -1) {
-                if (!(dml instanceof _BatchDml)) {
-                    throw _Exceptions.noTableRoute(dml, factory);
-                }
-            } else if (tableRoute != Byte.MIN_VALUE) {
-                throw _Exceptions.tableIndexParseError(dml, table, tableIndex);
-            }
-        } else if (tableIndex >= table.tableCount()) {
-            throw _Exceptions.tableIndexParseError(dml, table, tableIndex);
-        }
-        return tableIndex;
     }
 
 

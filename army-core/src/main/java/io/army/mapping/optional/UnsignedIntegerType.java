@@ -2,7 +2,7 @@ package io.army.mapping.optional;
 
 import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
-import io.army.mapping.AbstractMappingType;
+import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLDataType;
 import io.army.sqltype.SqlDataType;
@@ -10,7 +10,7 @@ import io.army.sqltype.SqlDataType;
 import java.math.BigDecimal;
 import java.sql.JDBCType;
 
-public final class UnsignedIntegerType extends AbstractMappingType {
+public final class UnsignedIntegerType extends _ArmyNoInjectionMapping {
 
     public static final UnsignedIntegerType INSTANCE = new UnsignedIntegerType();
 

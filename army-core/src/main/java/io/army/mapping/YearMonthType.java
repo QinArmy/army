@@ -8,7 +8,7 @@ import java.sql.JDBCType;
 import java.time.LocalDate;
 import java.time.YearMonth;
 
-public final class YearMonthType extends AbstractMappingType {
+public final class YearMonthType extends _ArmyNoInjectionMapping {
 
     public static final YearMonthType INSTANCE = new YearMonthType();
 

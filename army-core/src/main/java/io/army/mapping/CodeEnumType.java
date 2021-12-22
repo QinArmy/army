@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentMap;
  * @see Enum
  * @see io.army.struct.CodeEnum
  */
-public final class CodeEnumType extends AbstractMappingType {
+public final class CodeEnumType extends _ArmyNoInjectionMapping {
 
     private static final ConcurrentMap<Class<?>, CodeEnumType> INSTANCE_MAP = new ConcurrentHashMap<>();
 

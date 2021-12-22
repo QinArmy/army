@@ -9,7 +9,7 @@ import io.army.sqltype.SqlDataType;
 import java.sql.JDBCType;
 import java.time.LocalDate;
 
-public final class LocalDateType extends AbstractMappingType {
+public final class LocalDateType extends _ArmyNoInjectionMapping {
 
 
     public static final LocalDateType INSTANCE = new LocalDateType();

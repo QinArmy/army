@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.JDBCType;
 
-public final class BigIntegerType extends AbstractMappingType {
+public final class BigIntegerType extends _ArmyNoInjectionMapping {
 
     public static final BigIntegerType INSTANCE = new BigIntegerType();
 

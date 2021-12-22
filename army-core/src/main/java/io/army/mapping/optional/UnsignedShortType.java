@@ -2,14 +2,14 @@ package io.army.mapping.optional;
 
 import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
-import io.army.mapping.AbstractMappingType;
+import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLDataType;
 import io.army.sqltype.SqlDataType;
 
 import java.sql.JDBCType;
 
-public final class UnsignedShortType extends AbstractMappingType {
+public final class UnsignedShortType extends _ArmyNoInjectionMapping {
 
     public static final UnsignedShortType INSTANCE = new UnsignedShortType();
 

@@ -39,7 +39,7 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble, TypeInfer
     /**
      * relational operate with {@code =}
      * <p>
-     * Operand will be wrapped with {@link SQLs#optimizingParam(Expression, Object)}.
+     * Operand will be wrapped with {@link SQLs#param(Object)}.
      * </p>
      *
      * @param parameter right operand of {@code =},operand is weak weakly instance, because sql is weakly typed.
@@ -49,7 +49,7 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble, TypeInfer
     /**
      * relational operate with {@code =}
      * <p>
-     * If operand non-null than operand will be wrapped with {@link SQLs#optimizingParam(Expression, Object)}.
+     * If operand non-null than operand will be wrapped with {@link SQLs#param(Expression, Object)}.
      * </p>
      *
      * @param parameter right operand of {@code =},operand is weak weakly instance, because sql is weakly typed.
@@ -197,7 +197,7 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble, TypeInfer
 
     /**
      * <p>
-     * Parameters will be wrapped with {@link SQLs#optimizingCollectionParam(Expression, Collection)}.
+     * Parameters will be wrapped with {@link SQLs#collectionParam(Expression, Collection)}.
      * </p>
      *
      * @param <O> java type of element of right operand of {@code in},the element is weak weakly instance, because sql is weakly typed.
@@ -206,7 +206,7 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble, TypeInfer
 
     /**
      * <p>
-     * If parameters non-null parameters will be wrapped with {@link SQLs#optimizingCollectionParam(Expression, Collection)}.
+     * If parameters non-null parameters will be wrapped with {@link SQLs#collectionParam(Expression, Collection)}.
      * </p>
      *
      * @param <O> java type of element of parameters,the element is weak weakly instance, because sql is weakly typed.
@@ -220,7 +220,7 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble, TypeInfer
 
     /**
      * <p>
-     * Parameters will be wrapped with {@link SQLs#optimizingCollectionParam(Expression, Collection)}.
+     * Parameters will be wrapped with {@link SQLs#collectionParam(Expression, Collection)}.
      * </p>
      *
      * @param <O> java type of element of right operand of {@code in},the element is weak weakly instance, because sql is weakly typed.
@@ -229,7 +229,7 @@ public interface Expression<E> extends SelectionAble, MappingTypeAble, TypeInfer
 
     /**
      * <p>
-     * If parameters non-null,then parameters will be wrapped with {@link SQLs#optimizingCollectionParam(Expression, Collection)}.
+     * If parameters non-null,then parameters will be wrapped with {@link SQLs#collectionParam(Expression, Collection)}.
      * </p>
      *
      * @param <O> java type of element of parameters,the element is weak weakly instance, because sql is weakly typed.

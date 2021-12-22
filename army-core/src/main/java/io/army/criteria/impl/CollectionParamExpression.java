@@ -5,9 +5,9 @@ import io.army.criteria.Expression;
 import io.army.criteria.GenericField;
 import io.army.dialect.Constant;
 import io.army.dialect.Dialect;
-import io.army.dialect._DialectUtils;
 import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
+import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
 import io.army.util.CollectionUtils;
@@ -47,7 +47,7 @@ final class CollectionParamExpression<E> extends NoNOperationExpression<Collecti
     private CollectionParamExpression(final ParamMeta paramMeta, final Collection<E> value, final boolean optimizing) {
         this.paramMeta = paramMeta;
         this.value = CollectionUtils.asUnmodifiableList(value);
-        this.optimizing = optimizing && _DialectUtils.isSafeMapping(paramMeta.mappingType());
+        this.optimizing = optimizing && paramMeta.mappingType() instanceof _ArmyNoInjectionMapping;
     }
 
 

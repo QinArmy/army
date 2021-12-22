@@ -8,7 +8,7 @@ import io.army.sqltype.SqlDataType;
 
 import java.sql.JDBCType;
 
-public final class DoubleType extends AbstractMappingType {
+public final class DoubleType extends _ArmyNoInjectionMapping {
 
 
     public static final DoubleType INSTANCE = new DoubleType();

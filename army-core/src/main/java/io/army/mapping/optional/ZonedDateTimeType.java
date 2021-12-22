@@ -1,7 +1,7 @@
 package io.army.mapping.optional;
 
 import io.army.dialect.NotSupportDialectException;
-import io.army.mapping.AbstractMappingType;
+import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.SqlDataType;
 
@@ -9,7 +9,7 @@ import java.sql.JDBCType;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 
-public final class ZonedDateTimeType extends AbstractMappingType {
+public final class ZonedDateTimeType extends _ArmyNoInjectionMapping {
 
 
     public static final ZonedDateTimeType INSTANCE = new ZonedDateTimeType();

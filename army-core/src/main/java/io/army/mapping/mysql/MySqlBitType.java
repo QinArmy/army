@@ -2,7 +2,7 @@ package io.army.mapping.mysql;
 
 import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
-import io.army.mapping.AbstractMappingType;
+import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLDataType;
 import io.army.sqltype.SqlDataType;
@@ -11,7 +11,7 @@ import java.sql.JDBCType;
 import java.time.OffsetTime;
 import java.util.BitSet;
 
-public final class MySqlBitType extends AbstractMappingType {
+public final class MySqlBitType extends _ArmyNoInjectionMapping {
 
     public static final MySqlBitType INSTANCE = new MySqlBitType();
 

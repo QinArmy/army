@@ -7,7 +7,7 @@ import io.army.lang.Nullable;
  * <p>
  * This interface is base interface of below:
  *     <ul>
- *         <li>{@link ParamExpression}</li>
+ *         <li>{@link ParamExpressions}</li>
  *         <li>{@link LiteralExpression}</li>
  *     </ul>
  * </p>

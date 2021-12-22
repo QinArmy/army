@@ -45,36 +45,34 @@ final class LiteralExpression<E> extends OperationExpression<E> implements Value
 
 
     @SuppressWarnings("unchecked")
-    static <E> LiteralExpression<E> create(final ParamMeta paramMeta, final E constant) {
-        Objects.requireNonNull(paramMeta);
-        Objects.requireNonNull(constant);
+    static <E> LiteralExpression<E> literal(final ParamMeta paramMeta, final E literal) {
         ParamMeta actualParamMeta;
         if (paramMeta == null) {
-            actualParamMeta = _MappingFactory.getMapping(constant.getClass());
+            actualParamMeta = _MappingFactory.getMapping(literal.getClass());
         } else {
-            if (paramMeta.mappingType().javaType() != constant.getClass()) {
+            if (paramMeta.mappingType().javaType() != literal.getClass()) {
                 throw new IllegalArgumentException(String.format("constant's class[%s] and paramMeta[%s] not match."
-                        , constant.getClass().getName(), paramMeta.getClass().getName()));
+                        , literal.getClass().getName(), paramMeta.getClass().getName()));
             }
             actualParamMeta = paramMeta;
         }
-        final LiteralExpression<E> cacheExp = (LiteralExpression<E>) CONSTANT_EXP_CACHE.get(constant);
+        final LiteralExpression<E> cacheExp = (LiteralExpression<E>) CONSTANT_EXP_CACHE.get(literal);
 
         LiteralExpression<E> exp;
         if (cacheExp != null && cacheExp.mappingType() == actualParamMeta.mappingType()) {
             exp = cacheExp;
         } else {
-            exp = new LiteralExpression<>(actualParamMeta, constant);
-            if (cacheExp == null && CONSTANT_KEYS.contains(constant)) {
-                CONSTANT_EXP_CACHE.put(constant, exp);
+            exp = new LiteralExpression<>(actualParamMeta, literal);
+            if (cacheExp == null && CONSTANT_KEYS.contains(literal)) {
+                CONSTANT_EXP_CACHE.put(literal, exp);
             }
         }
         return exp;
     }
 
-    static <E> LiteralExpression<E> create(final E constant) {
+    static <E> LiteralExpression<E> literal(final E constant) {
         Objects.requireNonNull(constant);
-        return create(_MappingFactory.getMapping(constant.getClass()), constant);
+        return literal(_MappingFactory.getMapping(constant.getClass()), constant);
     }
 
     private final ParamMeta paramMeta;

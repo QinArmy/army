@@ -4,7 +4,7 @@ import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.SqlDataType;
 
-public final class ShortType extends AbstractMappingType {
+public final class ShortType extends _ArmyNoInjectionMapping {
 
     public static final ShortType INSTANCE = new ShortType();
 

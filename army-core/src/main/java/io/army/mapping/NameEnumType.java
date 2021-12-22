@@ -11,7 +11,7 @@ import java.sql.JDBCType;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public final class NameEnumType extends AbstractMappingType {
+public final class NameEnumType extends _ArmyNoInjectionMapping {
 
     private static final ConcurrentMap<Class<?>, NameEnumType> INSTANCE_MAP = new ConcurrentHashMap<>();
 

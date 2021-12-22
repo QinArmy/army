@@ -9,7 +9,7 @@ import io.army.sqltype.SqlDataType;
 import java.sql.JDBCType;
 import java.time.Year;
 
-public final class YearType extends AbstractMappingType {
+public final class YearType extends _ArmyNoInjectionMapping {
 
     public static final YearType INSTANCE = new YearType();
 

@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.JDBCType;
 
-public final class BooleanType extends AbstractMappingType {
+public final class BooleanType extends _ArmyNoInjectionMapping {
 
 
     public static final BooleanType INSTANCE = new BooleanType();

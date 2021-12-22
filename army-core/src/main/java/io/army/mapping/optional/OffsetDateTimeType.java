@@ -2,6 +2,7 @@ package io.army.mapping.optional;
 
 import io.army.dialect.NotSupportDialectException;
 import io.army.mapping.AbstractMappingType;
+import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.OracleDataType;
 import io.army.sqltype.PostgreDataType;
@@ -11,7 +12,7 @@ import java.sql.JDBCType;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 
-public final class OffsetDateTimeType extends AbstractMappingType {
+public final class OffsetDateTimeType extends _ArmyNoInjectionMapping {
 
     public static final OffsetDateTimeType INSTANCE = new OffsetDateTimeType();
 

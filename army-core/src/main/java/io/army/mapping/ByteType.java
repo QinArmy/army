@@ -4,7 +4,7 @@ import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.SqlDataType;
 
-public final class ByteType extends AbstractMappingType {
+public final class ByteType extends _ArmyNoInjectionMapping {
 
     public static final ByteType INSTANCE = new ByteType();
 
