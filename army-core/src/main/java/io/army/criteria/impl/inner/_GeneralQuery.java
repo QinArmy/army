@@ -6,6 +6,6 @@ import java.util.List;
 
 public interface _GeneralQuery extends _Statement {
 
-    List<SelectPart> selectPartList();
+    List<? extends SelectPart> selectPartList();
 
 }

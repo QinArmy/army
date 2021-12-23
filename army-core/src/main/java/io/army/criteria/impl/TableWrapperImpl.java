@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.IPredicate;
 import io.army.criteria.SQLModifier;
-import io.army.criteria.TableAble;
+import io.army.criteria.TablePart;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.util.Assert;
 
@@ -12,7 +12,7 @@ import java.util.List;
 
 class TableWrapperImpl implements TableWrapper {
 
-    final TableAble tableAble;
+    final TablePart tableAble;
 
     final String alias;
 
@@ -24,7 +24,7 @@ class TableWrapperImpl implements TableWrapper {
 
     private int tableIndex = -1;
 
-    TableWrapperImpl(TableAble tableAble, String alias, JoinType jointType) {
+    TableWrapperImpl(TablePart tableAble, String alias, JoinType jointType) {
         this.tableAble = tableAble;
         this.alias = alias;
         this.jointType = jointType;
@@ -44,7 +44,7 @@ class TableWrapperImpl implements TableWrapper {
         this.tableIndex = tableIndex;
     }
 
-    public final TableAble tableAble() {
+    public final TablePart tableAble() {
         return tableAble;
     }
 

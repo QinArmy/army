@@ -4,13 +4,13 @@ import io.army.codec.StatementType;
 
 import java.util.List;
 
-public interface BatchSimpleStmt extends GenericSimpleStmt {
+public interface BatchStmt extends GenericSimpleStmt {
 
 
     List<List<ParamValue>> groupList();
 
     static Builder builder() {
-        return new BatchSimpleStmtImpl.Builder();
+        return new BatchStmtImpl.Builder();
     }
 
     interface Builder {
@@ -23,7 +23,7 @@ public interface BatchSimpleStmt extends GenericSimpleStmt {
 
         Builder hasVersion(boolean hasVersion);
 
-        BatchSimpleStmt build();
+        BatchStmt build();
     }
 
 }

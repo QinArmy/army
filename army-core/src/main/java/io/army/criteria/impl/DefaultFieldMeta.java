@@ -204,11 +204,6 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationExpressio
     }
 
     @Override
-    public final Selection as(String alias) {
-        return new FieldSelectionImpl<>(this, alias);
-    }
-
-    @Override
     public final FieldMeta<?, ?> fieldMeta() {
         return this;
     }

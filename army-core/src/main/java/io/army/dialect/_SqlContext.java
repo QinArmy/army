@@ -1,5 +1,6 @@
 package io.army.dialect;
 
+import io.army.criteria.QualifiedField;
 import io.army.criteria.Visible;
 import io.army.meta.FieldMeta;
 import io.army.stmt.ParamValue;
@@ -20,7 +21,7 @@ public interface _SqlContext {
 
     /**
      * <p>
-     * This method is designed for the implementation of {@link io.army.criteria.LogicalField}
+     * This method is designed for the implementation of {@link QualifiedField}
      * </p>
      * <p>
      *     <ol>

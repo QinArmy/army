@@ -109,7 +109,7 @@ public abstract class _DialectUtils {
         return new ArmyRuntimeException(ErrorCode.NONE, "Army criteria error.");
     }
 
-    public static CriteriaException createTableAliasDuplicationException(String tableAlias, TableAble tableAble) {
+    public static CriteriaException createTableAliasDuplicationException(String tableAlias, TablePart tableAble) {
         return new CriteriaException(ErrorCode.CRITERIA_ERROR
                 , "tableAlias[%s] duplication for TableAble[%s].", tableAlias, tableAble);
     }
@@ -192,7 +192,7 @@ public abstract class _DialectUtils {
         final TableMeta<?> dual = null;
         boolean need = false;
         for (TableWrapper tableWrapper : tableWrapperList) {
-            TableAble tableAble = tableWrapper.tableAble();
+            TablePart tableAble = tableWrapper.tableAble();
 
             if ((tableAble instanceof TableMeta) && tableAble != dual) {
 

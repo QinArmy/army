@@ -6,7 +6,7 @@ import io.army.beans.ReadWrapper;
 import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Update;
-import io.army.criteria.impl.inner._BatchUpdate;
+import io.army.criteria.impl.inner._BatchSingleUpdate;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.dialect._DialectUtils;
@@ -32,7 +32,7 @@ import java.util.function.Predicate;
 final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
         implements Update, Update.BatchRouteSpec<T, C>, Update.BatchWhereSpec<T, C>
         , Update.BatchWhereAndSpec<C>, Update.BatchParamSpec<C>, Update.UpdateSpec
-        , _BatchUpdate {
+        , _BatchSingleUpdate {
 
     static BatchUpdateSpec<Void> create() {
         return new BatchUpdateSpecImpl<>(null);

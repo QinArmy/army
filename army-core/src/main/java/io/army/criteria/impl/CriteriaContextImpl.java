@@ -5,8 +5,8 @@ import io.army.criteria.*;
 import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
+import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 import io.army.util.CollectionUtils;
 
@@ -26,7 +26,7 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
 
     private Map<String, TableMeta<?>> tableMetaMap = new HashMap<>();
 
-    private Map<String, LogicalField<?, ?>> aliasTableFieldCache = new HashMap<>();
+    private Map<String, QualifiedField<?, ?>> aliasTableFieldCache = new HashMap<>();
 
     private Map<String, RefSelection<?>> refSelectionCache = new HashMap<>();
 
@@ -50,13 +50,13 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <T extends IDomain, F> LogicalField<T, F> aliasField(
-            String tableAlias, FieldMeta<T, F> fieldMeta) {
-        LogicalField<T, F> aliasField = (LogicalField<T, F>) aliasTableFieldCache.computeIfAbsent(
-                tableAlias + fieldMeta.columnName()
-                , k -> new LogicalFieldExpImpl<>(tableAlias, fieldMeta)
+    public <T extends IDomain, F> QualifiedField<T, F> qualifiedField(
+            String tableAlias, FieldMeta<T, F> field) {
+        QualifiedField<T, F> aliasField = (QualifiedField<T, F>) aliasTableFieldCache.computeIfAbsent(
+                tableAlias + field.columnName()
+                , k -> new QualifiedFieldImpl<>(tableAlias, field)
         );
-        if (aliasField.fieldMeta() != fieldMeta) {
+        if (aliasField.fieldMeta() != field) {
             throw new CriteriaException(ErrorCode.TABLE_ALIAS_DUPLICATION, "table alias[%s] duplication", tableAlias);
         }
         return aliasField;
@@ -64,8 +64,8 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <E> Expression<E> ref(String subQueryAlias, String derivedFieldName) {
-        return (Expression<E>) refSelectionCache.computeIfAbsent(
+    public <E> DerivedField<E> ref(String subQueryAlias, String derivedFieldName) {
+        return (DerivedField<E>) refSelectionCache.computeIfAbsent(
                 subQueryAlias + derivedFieldName
                 , key -> createRefSelection(subQueryAlias, derivedFieldName, null)
         );
@@ -74,8 +74,8 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <E> Expression<E> ref(String subQueryAlias, String derivedFieldName, Class<E> selectionType) {
-        return (Expression<E>) refSelectionCache.computeIfAbsent(
+    public <E> DerivedField<E> ref(String subQueryAlias, String derivedFieldName, Class<E> selectionType) {
+        return (DerivedField<E>) refSelectionCache.computeIfAbsent(
                 subQueryAlias + derivedFieldName
                 , key -> createRefSelection(subQueryAlias, derivedFieldName, selectionType)
         );
@@ -111,7 +111,7 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
 
     @SuppressWarnings("unchecked")
     @Override
-    public final C criteria() {
+    public C criteria() {
         return this.criteria;
     }
 
@@ -159,7 +159,7 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
             refSelectionSet.add(refSelection);
         } else {
             refSelection = RefSelectionImpl.buildImmutable(subQueryAlias, derivedFieldName
-                    , targetSelection.mappingType());
+                    , targetSelection.paramMeta().mappingType());
         }
         // 3. cache refSelection
         this.refSelectionCache.putIfAbsent(subQueryAlias + derivedFieldName, refSelection);
@@ -206,11 +206,6 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
         }
 
         @Override
-        public Selection as(String alias) {
-            return new ExpressionSelection(this, this.selection.alias());
-        }
-
-        @Override
         public void appendSql(_SqlContext context) {
             context.sqlBuilder()
                     .append(" ")
@@ -229,8 +224,8 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
         }
 
         @Override
-        public MappingType mappingType() {
-            return this.selection.mappingType();
+        public ParamMeta paramMeta() {
+            return this.selection.paramMeta();
         }
     }
 

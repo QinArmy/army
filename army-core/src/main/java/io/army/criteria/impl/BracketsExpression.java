@@ -1,18 +1,20 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
+import io.army.criteria.GenericField;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
-import io.army.mapping.MappingType;
 import io.army.meta.ParamMeta;
 
 final class BracketsExpression<E> extends OperationExpression<E> {
 
-    static <E> BracketsExpression<E> bracket(final Expression<E> expression) {
-        final BracketsExpression<E> result;
-        if (expression instanceof BracketsExpression) {
-            result = (BracketsExpression<E>) expression;
+    static <E> Expression<E> bracket(final Expression<E> expression) {
+        final Expression<E> result;
+        if (expression instanceof BracketsExpression
+                || expression instanceof UnaryExpression
+                || expression instanceof GenericField) {
+            result = expression;
         } else {
             result = new BracketsExpression<>(expression);
         }
@@ -37,10 +39,6 @@ final class BracketsExpression<E> extends OperationExpression<E> {
                 .append(Constant.RIGHT_BRACKET);
     }
 
-    @Override
-    public MappingType mappingType() {
-        return this.expression.mappingType();
-    }
 
     @Override
     public ParamMeta paramMeta() {

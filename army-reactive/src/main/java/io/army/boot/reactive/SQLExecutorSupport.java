@@ -88,7 +88,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
      * @return Mono of a unmodifiable list,{@code Mono<Integer> or Mono<Long>}
      */
     protected final <N extends Number> Flux<N> doExecuteBatchUpdate(InnerGenericRmSession session
-            , BatchSimpleStmt sqlWrapper, Function<PreparedStatement, Flux<N>> executeFunction) {
+            , BatchStmt sqlWrapper, Function<PreparedStatement, Flux<N>> executeFunction) {
         //1. create statement
         return session.createPreparedStatement(sqlWrapper.sql())
                 //2. bind param list
@@ -408,7 +408,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     }
 
 
-    private PreparedStatement bindParamGroupList(final PreparedStatement st, BatchSimpleStmt sqlWrapper) {
+    private PreparedStatement bindParamGroupList(final PreparedStatement st, BatchStmt sqlWrapper) {
 //        final StatementType statementType = sqlWrapper.statementType();
 //        for (List<ParamValue> paramList : sqlWrapper.groupList()) {
 //            bindParamList(st, statementType, paramList);

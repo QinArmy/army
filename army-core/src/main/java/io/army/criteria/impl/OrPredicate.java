@@ -13,18 +13,18 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-final class OrtPredicate extends AbstractPredicate {
+final class OrPredicate extends AbstractPredicate {
 
     static _Predicate create(_Predicate left, IPredicate right) {
-        return new OrtPredicate(left, Collections.singletonList((_Predicate) right));
+        return new OrPredicate(left, Collections.singletonList((_Predicate) right));
     }
 
     static _Predicate create(_Predicate left, IPredicate right1, IPredicate right2) {
-        return new OrtPredicate(left, ArrayUtils.asUnmodifiableList((_Predicate) right1, (_Predicate) right2));
+        return new OrPredicate(left, ArrayUtils.asUnmodifiableList((_Predicate) right1, (_Predicate) right2));
     }
 
     static _Predicate create(_Predicate left, IPredicate right1, IPredicate right2, IPredicate right3) {
-        return new OrtPredicate(left, ArrayUtils.asUnmodifiableList((_Predicate) right1, (_Predicate) right2, (_Predicate) right3));
+        return new OrPredicate(left, ArrayUtils.asUnmodifiableList((_Predicate) right1, (_Predicate) right2, (_Predicate) right3));
     }
 
     static _Predicate create(final _Predicate left, final List<IPredicate> rights) {
@@ -35,14 +35,14 @@ final class OrtPredicate extends AbstractPredicate {
                 result = left;
                 break;
             case 1:
-                result = new OrtPredicate(left, Collections.singletonList((_Predicate) rights.get(0)));
+                result = new OrPredicate(left, Collections.singletonList((_Predicate) rights.get(0)));
                 break;
             default: {
                 final List<_Predicate> predicateList = new ArrayList<>(size);
                 for (IPredicate right : rights) {
                     predicateList.add((_Predicate) right);
                 }
-                result = new OrtPredicate(left, predicateList);
+                result = new OrPredicate(left, predicateList);
             }
         }
         return result;
@@ -53,7 +53,7 @@ final class OrtPredicate extends AbstractPredicate {
 
     private final List<_Predicate> rights;
 
-    private OrtPredicate(_Predicate left, List<_Predicate> predicateList) {
+    private OrPredicate(_Predicate left, List<_Predicate> predicateList) {
         this.left = left;
         this.rights = predicateList;
     }

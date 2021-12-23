@@ -6,7 +6,7 @@ import io.army.meta.FieldMeta;
  * see {@code io.army.criteria.impl.FieldSelectionImpl}
  *
  * @see FieldMeta
- * @see LogicalField
+ * @see QualifiedField
  */
 public interface FieldSelection extends Selection {
 

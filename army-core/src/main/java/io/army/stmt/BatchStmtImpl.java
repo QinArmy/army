@@ -6,7 +6,7 @@ import io.army.util.Assert;
 import java.util.Collections;
 import java.util.List;
 
-final class BatchSimpleStmtImpl implements BatchSimpleStmt {
+final class BatchStmtImpl implements BatchStmt {
 
     private final String sql;
 
@@ -17,7 +17,7 @@ final class BatchSimpleStmtImpl implements BatchSimpleStmt {
     private final boolean hasVersion;
 
 
-    BatchSimpleStmtImpl(String sql, List<List<ParamValue>> paramGroupList, StatementType statementType
+    BatchStmtImpl(String sql, List<List<ParamValue>> paramGroupList, StatementType statementType
             , boolean hasVersion) {
         this.sql = sql;
         this.paramGroupList = Collections.unmodifiableList(paramGroupList);
@@ -50,7 +50,7 @@ final class BatchSimpleStmtImpl implements BatchSimpleStmt {
         return this.statementType;
     }
 
-    static final class Builder implements BatchSimpleStmt.Builder {
+    static final class Builder implements BatchStmt.Builder {
 
         private String sql;
 
@@ -61,35 +61,35 @@ final class BatchSimpleStmtImpl implements BatchSimpleStmt {
         private boolean hasVersion;
 
         @Override
-        public BatchSimpleStmt.Builder sql(String sql) {
+        public BatchStmt.Builder sql(String sql) {
             this.sql = sql;
             return this;
         }
 
         @Override
-        public BatchSimpleStmt.Builder paramGroupList(List<List<ParamValue>> paramGroupList) {
+        public BatchStmt.Builder paramGroupList(List<List<ParamValue>> paramGroupList) {
             this.paramGroupList = paramGroupList;
             return this;
         }
 
         @Override
-        public BatchSimpleStmt.Builder statementType(StatementType statementType) {
+        public BatchStmt.Builder statementType(StatementType statementType) {
             this.statementType = statementType;
             return this;
         }
 
         @Override
-        public BatchSimpleStmt.Builder hasVersion(boolean hasVersion) {
+        public BatchStmt.Builder hasVersion(boolean hasVersion) {
             this.hasVersion = hasVersion;
             return this;
         }
 
         @Override
-        public BatchSimpleStmt build() {
+        public BatchStmt build() {
             Assert.hasText(this.sql, "sql required");
             Assert.notNull(this.paramGroupList, "paramGroupList required");
             Assert.notNull(this.statementType, "statementType required");
-            return new BatchSimpleStmtImpl(this.sql, this.paramGroupList, this.statementType, this.hasVersion);
+            return new BatchStmtImpl(this.sql, this.paramGroupList, this.statementType, this.hasVersion);
         }
     }
 }

@@ -5,7 +5,7 @@ import io.army.cache.SessionCache;
 import io.army.cache.SessionCacheException;
 import io.army.cache.UniqueKey;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._MultiDML;
+import io.army.criteria.impl.inner._MultiDml;
 import io.army.criteria.impl.inner._SingleDml;
 import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.domain.IDomain;
@@ -369,8 +369,8 @@ final class TmSessionImpl implements InnerTmSession {
         if (update instanceof _SingleDml) {
             updateRow = obtainRmSession(processSingleDml((_SingleDml) update))
                     .update(update, visible);
-        } else if (update instanceof _MultiDML) {
-            updateRow = obtainRmSession(processMultiDml((_MultiDML) update))
+        } else if (update instanceof _MultiDml) {
+            updateRow = obtainRmSession(processMultiDml((_MultiDml) update))
                     .update(update, visible);
         } else {
             throw new IllegalArgumentException(String.format("Update[%s] isn't supported by update method.", update));
@@ -386,8 +386,8 @@ final class TmSessionImpl implements InnerTmSession {
         if (update instanceof _SingleDml) {
             updateRow = obtainRmSession(processSingleDml((_SingleDml) update))
                     .largeUpdate(update, visible);
-        } else if (update instanceof _MultiDML) {
-            updateRow = obtainRmSession(processMultiDml((_MultiDML) update))
+        } else if (update instanceof _MultiDml) {
+            updateRow = obtainRmSession(processMultiDml((_MultiDml) update))
                     .largeUpdate(update, visible);
         } else {
             throw new IllegalArgumentException(String.format("Update[%s] isn't supported by update largeUpdate."
@@ -404,8 +404,8 @@ final class TmSessionImpl implements InnerTmSession {
         if (update instanceof _SingleDml) {
             list = obtainRmSession(processSingleDml((_SingleDml) update))
                     .returningUpdate(update, resultClass, visible);
-        } else if (update instanceof _MultiDML) {
-            list = obtainRmSession(processMultiDml((_MultiDML) update))
+        } else if (update instanceof _MultiDml) {
+            list = obtainRmSession(processMultiDml((_MultiDml) update))
                     .returningUpdate(update, resultClass, visible);
         } else {
             throw new IllegalArgumentException(String.format("Update[%s] isn't supported by returningUpdate method."
@@ -422,8 +422,8 @@ final class TmSessionImpl implements InnerTmSession {
         if (delete instanceof _SingleDml) {
             deleteRow = obtainRmSession(processSingleDml((_SingleDml) delete))
                     .delete(delete, visible);
-        } else if (delete instanceof _MultiDML) {
-            deleteRow = obtainRmSession(processMultiDml((_MultiDML) delete))
+        } else if (delete instanceof _MultiDml) {
+            deleteRow = obtainRmSession(processMultiDml((_MultiDml) delete))
                     .delete(delete, visible);
         } else {
             throw new IllegalArgumentException(String.format("Delete[%s] isn't supported by delete method.", delete));
@@ -439,8 +439,8 @@ final class TmSessionImpl implements InnerTmSession {
         if (delete instanceof _SingleDml) {
             deleteRow = obtainRmSession(processSingleDml((_SingleDml) delete))
                     .largeDelete(delete, visible);
-        } else if (delete instanceof _MultiDML) {
-            deleteRow = obtainRmSession(processMultiDml((_MultiDML) delete))
+        } else if (delete instanceof _MultiDml) {
+            deleteRow = obtainRmSession(processMultiDml((_MultiDml) delete))
                     .largeDelete(delete, visible);
         } else {
             throw new IllegalArgumentException(String.format("Delete[%s] isn't supported by largeDelete method."
@@ -457,8 +457,8 @@ final class TmSessionImpl implements InnerTmSession {
         if (delete instanceof _SingleDml) {
             list = obtainRmSession(processSingleDml((_SingleDml) delete))
                     .returningDelete(delete, resultClass, visible);
-        } else if (delete instanceof _MultiDML) {
-            list = obtainRmSession(processMultiDml((_MultiDML) delete))
+        } else if (delete instanceof _MultiDml) {
+            list = obtainRmSession(processMultiDml((_MultiDml) delete))
                     .returningDelete(delete, resultClass, visible);
         } else {
             throw new IllegalArgumentException(String.format("Delete[%s] isn't supported by returningDelete method."
@@ -598,7 +598,7 @@ final class TmSessionImpl implements InnerTmSession {
         return 0;
     }
 
-    private int processMultiDml(_MultiDML multiDML) throws NotFoundRouteException {
+    private int processMultiDml(_MultiDml multiDML) throws NotFoundRouteException {
 //        //1. try find route
 //        RouteWrapper routeWrapper = DatabaseRouteUtils.findRouteForMultiDML(multiDML);
 //        if (routeWrapper == null) {

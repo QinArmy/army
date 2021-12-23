@@ -1,11 +1,12 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.GenericField;
 import io.army.criteria.Selection;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.impl.inner._SortPart;
 import io.army.dialect._SqlContext;
-import io.army.mapping.MappingType;
+import io.army.meta.ParamMeta;
 import io.army.util.Assert;
 
 final class ExpressionSelection implements Selection, _SelfDescribed, _SortPart {
@@ -26,12 +27,18 @@ final class ExpressionSelection implements Selection, _SelfDescribed, _SortPart 
     }
 
     @Override
-    public MappingType mappingType() {
-        return this.expression.mappingType();
+    public ParamMeta paramMeta() {
+        ParamMeta paramMeta = this.expression.paramMeta();
+        if (paramMeta instanceof GenericField) {
+            // ExpressionSelection couldn't return io.army.criteria.GenericField ,avoid to statement executor
+            // decode selection .
+            paramMeta = paramMeta.mappingType();
+        }
+        return paramMeta;
     }
 
     @Override
-    public void appendSql(_SqlContext context) {
+    public void appendSql(final _SqlContext context) {
         this.expression.appendSql(context);
         context.sqlBuilder()
                 .append(" AS ")
@@ -40,7 +47,7 @@ final class ExpressionSelection implements Selection, _SelfDescribed, _SortPart 
 
     @Override
     public void appendSortPart(_SqlContext context) {
-        context.appendIdentifier(this.alias);
+        throw new UnsupportedOperationException();
     }
 
     @Override

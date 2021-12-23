@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.NamedParam;
+import io.army.criteria.NonNullNamedParam;
 import io.army.dialect._SqlContext;
-import io.army.mapping.MappingType;
 import io.army.meta.ParamMeta;
 
 /**
@@ -12,7 +12,7 @@ import io.army.meta.ParamMeta;
  *
  * @param <E> java type of named parameter
  */
-class NamedParamImpl<E> extends NoNOperationExpression<E>
+class NamedParamImpl<E> extends OperationExpression<E>
         implements NamedParam<E> {
 
     static <E> NamedParam<E> named(String name, ParamMeta paramMeta) {
@@ -53,13 +53,13 @@ class NamedParamImpl<E> extends NoNOperationExpression<E>
     }
 
     @Override
-    public final MappingType mappingType() {
-        throw unsupportedOperation();
+    public final String toString() {
+        return " ?";
     }
 
     @Override
-    public final String toString() {
-        return " ?";
+    public final boolean containsSubQuery() {
+        return false;
     }
 
     /**

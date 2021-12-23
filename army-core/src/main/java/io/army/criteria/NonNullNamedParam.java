@@ -1,6 +1,5 @@
-package io.army.criteria.impl;
+package io.army.criteria;
 
-import io.army.criteria.NamedParam;
 
 /**
  * <p>

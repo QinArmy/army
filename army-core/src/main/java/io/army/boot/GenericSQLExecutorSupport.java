@@ -16,7 +16,7 @@ import io.army.meta.MetaException;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.session.GenericSession;
 import io.army.session.GenericSessionFactory;
-import io.army.stmt.BatchSimpleStmt;
+import io.army.stmt.BatchStmt;
 import io.army.stmt.GenericSimpleStmt;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
@@ -68,7 +68,7 @@ public abstract class GenericSQLExecutorSupport {
     }
 
     protected final InsertRowsNotMatchException createBatchChildInsertNotMatchException(
-            Number parentRows, Number childRows, BatchSimpleStmt sqlWrapper) {
+            Number parentRows, Number childRows, BatchStmt sqlWrapper) {
         return new InsertRowsNotMatchException("%s,batch child insert[%s] and parent[%s] not match.sql:\n%s"
                 , this.genericSessionFactory, childRows, parentRows, sqlWrapper.sql());
     }

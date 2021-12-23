@@ -2,7 +2,7 @@ package io.army.dialect;
 
 import io.army.ErrorCode;
 import io.army.criteria.CriteriaException;
-import io.army.criteria.TableAble;
+import io.army.criteria.TablePart;
 import io.army.criteria.impl.inner.TableWrapper;
 import io.army.criteria.impl.inner._SingleDml;
 import io.army.meta.ChildTableMeta;
@@ -43,7 +43,7 @@ public final class TablesContext {
         Map<String, Integer> tableIndexMap = new HashMap<>();
 
         for (TableWrapper tableWrapper : tableWrapperList) {
-            TableAble tableAble = tableWrapper.tableAble();
+            TablePart tableAble = tableWrapper.tableAble();
             if (tableAble instanceof TableMeta) {
                 TableMeta<?> tableMeta = (TableMeta<?>) tableAble;
                 Integer count = tableCountMap.computeIfAbsent(tableMeta, key -> 0);
@@ -60,7 +60,7 @@ public final class TablesContext {
 
         final Integer one = 1;
         for (TableWrapper tableWrapper : tableWrapperList) {
-            TableAble tableAble = tableWrapper.tableAble();
+            TablePart tableAble = tableWrapper.tableAble();
             if (tableAble instanceof TableMeta) {
                 TableMeta<?> tableMeta = (TableMeta<?>) tableAble;
                 if (one.equals(tableCountMap.get(tableMeta))) {

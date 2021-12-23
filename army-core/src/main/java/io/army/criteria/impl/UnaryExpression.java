@@ -1,14 +1,17 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
+import io.army.criteria.GenericField;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
-import io.army.mapping.MappingType;
 import io.army.meta.ParamMeta;
 import io.army.util._Exceptions;
 
 /**
+ * <p>
+ * This class representing unary expression,unary expression always out outer bracket.
+ * </p>
  * This class is a implementation of {@link Expression}.
  * The expression consist of a  {@link Expression} and a {@link UnaryOperator}.
  *
@@ -36,12 +39,6 @@ final class UnaryExpression<E> extends OperationExpression<E> {
         this.operator = operator;
     }
 
-
-    @Override
-    public MappingType mappingType() {
-        return this.expression.mappingType();
-    }
-
     @Override
     public ParamMeta paramMeta() {
         return this.expression.paramMeta();
@@ -49,38 +46,82 @@ final class UnaryExpression<E> extends OperationExpression<E> {
 
     @Override
     public void appendSql(final _SqlContext context) {
+        // unary expression always out outer bracket.
+        final StringBuilder builder = context.sqlBuilder()
+                .append(Constant.SPACE)
+                .append(Constant.LEFT_BRACKET);
+
         switch (this.operator) {
             case INVERT:
             case NEGATED: {
-                context.sqlBuilder()
-                        .append(Constant.SPACE)
+                builder.append(Constant.SPACE)
                         .append(this.operator.rendered());
-                this.expression.appendSql(context);
+
+                final _Expression<E> expression = this.expression;
+                final boolean innerBracket = !(expression instanceof ValueExpression
+                        || expression instanceof GenericField
+                        || expression instanceof UnaryExpression
+                        || expression instanceof BracketsExpression);
+
+                if (innerBracket) {
+                    builder.append(Constant.SPACE)
+                            .append(Constant.LEFT_BRACKET);
+                }
+                // append expression
+                expression.appendSql(context);
+
+                if (innerBracket) {
+                    builder.append(Constant.SPACE)
+                            .append(Constant.RIGHT_BRACKET);
+                }
+
             }
             break;
             default:
                 throw _Exceptions.unexpectedEnum(this.operator);
 
         }
+
+        // unary expression always out outer bracket.
+        builder.append(Constant.SPACE)
+                .append(Constant.RIGHT_BRACKET);
     }
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
+        final StringBuilder builder = new StringBuilder()
+                .append(Constant.SPACE)
+                .append(Constant.LEFT_BRACKET);
         switch (this.operator) {
             case INVERT:
             case NEGATED: {
-                builder
-                        .append(Constant.SPACE)
-                        .append(this.operator.rendered())
-                        .append(this.expression);
+                builder.append(Constant.SPACE)
+                        .append(this.operator.rendered());
+
+                final _Expression<E> expression = this.expression;
+                final boolean needBracket = !(expression instanceof ValueExpression
+                        || expression instanceof BracketsExpression);
+
+                if (needBracket) {
+                    builder.append(Constant.SPACE)
+                            .append(Constant.LEFT_BRACKET);
+                }
+                // append expression
+                builder.append(expression);
+
+                if (needBracket) {
+                    builder.append(Constant.SPACE)
+                            .append(Constant.RIGHT_BRACKET);
+                }
             }
             break;
             default:
                 throw _Exceptions.unexpectedEnum(this.operator);
 
         }
-        return builder.toString();
+        return builder.append(Constant.SPACE)
+                .append(Constant.RIGHT_BRACKET)
+                .toString();
     }
 
 

@@ -12,7 +12,7 @@ import java.util.List;
  * <p>
  * This class is base interface of below :
  *     <ul>
- *         <li>{@link _BatchUpdate}</li>
+ *         <li>{@link _BatchSingleUpdate}</li>
  *         <li>{@link _BatchDelete}</li>
  *     </ul>
  * </p>
@@ -22,7 +22,7 @@ public interface _BatchDml extends _Statement {
     /**
      * @return a unmodifiable list
      */
-    List<? extends ReadWrapper> wrapperList();
+    List<ReadWrapper> wrapperList();
 
 
     /**

@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.dialect._SqlContext;
-import io.army.mapping.MappingType;
 import io.army.meta.ParamMeta;
 
 /**
@@ -11,19 +10,13 @@ import io.army.meta.ParamMeta;
  *
  * @param <E> The java type The expression thant reference kwy word {@code DEFAULT}
  */
-public final class DefaultWord<E> extends NoNOperationExpression<E> {
+final class DefaultWord<E> extends NoNOperationExpression<E> {
 
     static DefaultWord<?> INSTANCE = new DefaultWord<>();
-
 
     private DefaultWord() {
     }
 
-
-    @Override
-    public MappingType mappingType() {
-        throw unsupportedOperation();
-    }
 
     @Override
     public ParamMeta paramMeta() {

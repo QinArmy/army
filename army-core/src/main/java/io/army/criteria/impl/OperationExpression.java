@@ -23,9 +23,16 @@ abstract class OperationExpression<E> implements _Expression<E> {
     }
 
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Selection as(String alias) {
-        return new ExpressionSelection(this, alias);
+    public final Selection as(final String alias) {
+        final Selection selection;
+        if (this instanceof GenericField) {
+            selection = new FieldSelectionImpl<>((GenericField<?, E>) this, alias);
+        } else {
+            selection = new ExpressionSelection(this, alias);
+        }
+        return selection;
     }
 
     @Override
@@ -711,12 +718,12 @@ abstract class OperationExpression<E> implements _Expression<E> {
 
     @Override
     public final <O> Expression<O> asType(Class<O> convertType) {
-        return ConvertExpressionImpl.cast(this, _MappingFactory.getMapping(convertType));
+        return CastExpression.cast(this, _MappingFactory.getMapping(convertType));
     }
 
     @Override
     public final <O> Expression<O> asType(Class<O> convertType, MappingType longMapping) {
-        return ConvertExpressionImpl.cast(this, longMapping);
+        return CastExpression.cast(this, longMapping);
     }
 
     @Override

@@ -42,8 +42,8 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
                 rows = doExecuteUpdate(session, childWrapper, this::integerUpdate);
                 //4. assert child insert rows equals 1 .
                 assertValueInsertResult(rows, childWrapper);
-            } else if (stmt instanceof BatchSimpleStmt) {
-                BatchSimpleStmt simpleSQLWrapper = (BatchSimpleStmt) stmt;
+            } else if (stmt instanceof BatchStmt) {
+                BatchStmt simpleSQLWrapper = (BatchStmt) stmt;
                 //1. assert StatementType for integerBatchUpdate function
                 Assert.isTrue(simpleSQLWrapper.statementType().insertStatement(), "sqlWrapper error");
                 // 2. execute batch insert sql
@@ -51,14 +51,14 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
 
             } else if (stmt instanceof PairBatchStmt) {
                 final PairBatchStmt childSQLWrapper = (PairBatchStmt) stmt;
-                final BatchSimpleStmt parentWrapper = childSQLWrapper.parentStmt();
+                final BatchStmt parentWrapper = childSQLWrapper.parentStmt();
                 List<Integer> parentList, childList;
                 //1. assert StatementType for integerBatchUpdate function
                 Assert.isTrue(parentWrapper.statementType().insertStatement(), "sqlWrapper error");
                 //2. execute parent batch insert sql
                 parentList = doExecuteBatch(session, parentWrapper, this::integerBatchUpdate);
 
-                final BatchSimpleStmt childWrapper = childSQLWrapper.childStmt();
+                final BatchStmt childWrapper = childSQLWrapper.childStmt();
                 //3. assert StatementType for integerBatchUpdate function
                 Assert.isTrue(childWrapper.statementType().insertStatement(), "sqlWrapper error");
                 //4. execute child batch insert sql

@@ -200,7 +200,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         /*################################## blow MySQL57ScalarSubQuery<E> method ##################################*/
 
         @Override
-        public final List<SelectPart> selectPartList() {
+        public final List<? extends SelectPart> selectPartList() {
             return this.actualSelect.selectPartList();
         }
 

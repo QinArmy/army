@@ -80,18 +80,18 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     }
 
     private <N extends Number> List<N> internalBatchUpdate(InnerGenericRmSession session, Stmt stmt
-            , BiFunction<PreparedStatement, BatchSimpleStmt, List<N>> executeFunction, String methodName) {
+            , BiFunction<PreparedStatement, BatchStmt, List<N>> executeFunction, String methodName) {
         List<N> resultList;
-        if (stmt instanceof BatchSimpleStmt) {
-            BatchSimpleStmt simpleSQLWrapper = (BatchSimpleStmt) stmt;
+        if (stmt instanceof BatchStmt) {
+            BatchStmt simpleSQLWrapper = (BatchStmt) stmt;
             // 1. execute batch update sql
             resultList = doExecuteBatch(session, simpleSQLWrapper, executeFunction);
         } else if (stmt instanceof PairBatchStmt) {
             final PairBatchStmt childSQLWrapper = (PairBatchStmt) stmt;
-            final BatchSimpleStmt childWrapper = childSQLWrapper.childStmt();
+            final BatchStmt childWrapper = childSQLWrapper.childStmt();
             //1. execute child batch update sql
             resultList = doExecuteBatch(session, childWrapper, executeFunction);
-            final BatchSimpleStmt parentWrapper = childSQLWrapper.parentStmt();
+            final BatchStmt parentWrapper = childSQLWrapper.parentStmt();
             List<N> parentList;
             //2. execute parent batch update sql
             parentList = doExecuteBatch(session, parentWrapper, executeFunction);
@@ -104,7 +104,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
     }
 
     private void assertBatchUpdate(List<? extends Number> parentList, List<? extends Number> childList
-            , BatchSimpleStmt childWrapper) {
+            , BatchStmt childWrapper) {
 
         if (parentList.size() != childList.size()) {
             throw createBatchChildInsertNotMatchException(parentList.size(), childList.size(), childWrapper);

@@ -25,5 +25,9 @@ public abstract class Stmts {
         return null;
     }
 
+    public static BatchStmt batch(SimpleStmt simpleStmt, List<List<ParamValue>> groupList) {
+        return null;
+    }
+
 
 }

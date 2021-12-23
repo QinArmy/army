@@ -158,16 +158,20 @@ public abstract class SQLs extends SQLUtils {
 
     /*################################## blow sql reference method ##################################*/
 
-    public static <T extends IDomain, F> LogicalField<T, F> field(String tableAlias, FieldMeta<T, F> fieldMeta) {
-        return CriteriaContextStack.peek()
-                .aliasField(tableAlias, fieldMeta);
+    /**
+     * <p>
+     * Get a {@link QualifiedField}. You don't need a {@link QualifiedField},if no self-join in statement.
+     * </p>
+     */
+    public static <T extends IDomain, F> QualifiedField<T, F> field(String tableAlias, FieldMeta<T, F> field) {
+        return CriteriaContextStack.peek().qualifiedField(tableAlias, field);
     }
 
-    public static <E> Expression<E> ref(String subQueryAlias, String derivedFieldName) {
+    public static <E> DerivedField<E> ref(String subQueryAlias, String derivedFieldName) {
         return CriteriaContextStack.peek().ref(subQueryAlias, derivedFieldName);
     }
 
-    public static <E> Expression<E> ref(String subQueryAlias, String derivedFieldName, Class<E> selectionType) {
+    public static <E> DerivedField<E> ref(String subQueryAlias, String derivedFieldName, Class<E> selectionType) {
         return CriteriaContextStack.peek()
                 .ref(subQueryAlias, derivedFieldName, selectionType);
     }

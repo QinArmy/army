@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
@@ -53,10 +52,6 @@ final class ParamExpressions<E> extends OperationExpression<E> implements ValueE
         return this.paramMeta;
     }
 
-    @Override
-    public MappingType mappingType() {
-        return this.paramMeta.mappingType();
-    }
 
     @Override
     public void appendSql(final _SqlContext context) {
@@ -71,18 +66,18 @@ final class ParamExpressions<E> extends OperationExpression<E> implements ValueE
     }
 
     @Override
-    public final boolean containsSubQuery() {
+    public boolean containsSubQuery() {
         // always false
         return false;
     }
 
     @Override
-    public final String toString() {
+    public String toString() {
         return " ?";
     }
 
 
-    private static final class NullParamExpression<E> extends NoNOperationExpression<E>
+    static final class NullParamExpression<E> extends NoNOperationExpression<E>
             implements ParamValue, ValueExpression<E> {
 
         private final ParamMeta paramMeta;
@@ -94,11 +89,6 @@ final class ParamExpressions<E> extends OperationExpression<E> implements ValueE
             this.optimizing = optimizing;
         }
 
-
-        @Override
-        public MappingType mappingType() {
-            return this.paramMeta.mappingType();
-        }
 
         @Override
         public ParamMeta paramMeta() {

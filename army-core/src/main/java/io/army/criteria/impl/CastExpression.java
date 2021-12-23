@@ -7,17 +7,17 @@ import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.meta.ParamMeta;
 
-class ConvertExpressionImpl<E> extends OperationExpression<E> {
+class CastExpression<E> extends OperationExpression<E> {
 
-    static <O> ConvertExpressionImpl<O> cast(Expression<?> expression, ParamMeta paramMeta) {
-        return new ConvertExpressionImpl<>(expression, paramMeta);
+    static <O> CastExpression<O> cast(Expression<?> expression, ParamMeta paramMeta) {
+        return new CastExpression<>(expression, paramMeta);
     }
 
     private final _Expression<?> expression;
 
     private final ParamMeta paramMeta;
 
-    private ConvertExpressionImpl(Expression<?> expression, ParamMeta paramMeta) {
+    private CastExpression(Expression<?> expression, ParamMeta paramMeta) {
         this.expression = (_Expression<?>) expression;
         this.paramMeta = paramMeta;
     }

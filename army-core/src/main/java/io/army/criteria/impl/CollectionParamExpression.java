@@ -6,7 +6,6 @@ import io.army.criteria.GenericField;
 import io.army.dialect.Constant;
 import io.army.dialect.Dialect;
 import io.army.dialect._SqlContext;
-import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
@@ -48,12 +47,6 @@ final class CollectionParamExpression<E> extends NoNOperationExpression<Collecti
         this.paramMeta = paramMeta;
         this.value = CollectionUtils.asUnmodifiableList(value);
         this.optimizing = optimizing && paramMeta.mappingType() instanceof _ArmyNoInjectionMapping;
-    }
-
-
-    @Override
-    public MappingType mappingType() {
-        return this.paramMeta.mappingType();
     }
 
     @Override

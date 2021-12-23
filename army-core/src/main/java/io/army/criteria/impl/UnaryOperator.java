@@ -33,7 +33,7 @@ enum UnaryOperator {
 
         @Override
         public String rendered() {
-            return "";
+            return "+";
         }
 
     },

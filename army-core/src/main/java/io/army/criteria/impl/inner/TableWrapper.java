@@ -2,13 +2,13 @@ package io.army.criteria.impl.inner;
 
 import io.army.criteria.IPredicate;
 import io.army.criteria.SQLModifier;
-import io.army.criteria.TableAble;
+import io.army.criteria.TablePart;
 
 import java.util.List;
 
 public interface TableWrapper {
 
-    TableAble tableAble();
+    TablePart tableAble();
 
     String alias();
 

@@ -18,6 +18,7 @@ import java.util.function.Function;
  *         <li>{@link DefaultWord}</li>
  *         <li>{@link NullWord}</li>
  *         <li>{@link CollectionParamExpression}</li>
+ *         <li>{@link ParamExpressions.NullParamExpression}</li>
  *     </ul>
  * </p>
  *

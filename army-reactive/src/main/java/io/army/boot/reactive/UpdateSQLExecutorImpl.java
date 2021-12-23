@@ -127,7 +127,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
      *                        </ul>
      * @param <N>             result typed of update rows ,must be  {@link Integer} or {@link Long}
      * @return {@code Flux<Integer> or Flux<Long>}
-     * @see #doExecuteBatchUpdate(InnerGenericRmSession, BatchSimpleStmt, Function)
+     * @see #doExecuteBatchUpdate(InnerGenericRmSession, BatchStmt, Function)
      */
     private <N extends Number> Flux<N> internalBatchUpdate(InnerGenericRmSession session, Stmt stmt
             , Function<PreparedStatement, Flux<N>> executeFunction) {
@@ -174,7 +174,7 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
 
 
     private <N extends Number> Mono<List<N>> assertParentChildBatchUpdateMatch(List<N> parentRowsList
-            , List<N> childRowsList, BatchSimpleStmt childWrapper) {
+            , List<N> childRowsList, BatchStmt childWrapper) {
         if (parentRowsList.size() != childRowsList.size()) {
             return Mono.error(createParentBatchUpdateNotMatchException(parentRowsList.size()
                     , childRowsList.size(), childWrapper));

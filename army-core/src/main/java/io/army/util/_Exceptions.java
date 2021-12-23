@@ -4,10 +4,7 @@ import io.army.ArmyException;
 import io.army.DialectMode;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._BatchDml;
-import io.army.criteria.impl.inner._Statement;
-import io.army.criteria.impl.inner._Update;
-import io.army.criteria.impl.inner._ValuesInsert;
+import io.army.criteria.impl.inner.*;
 import io.army.dialect.Dialect;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -18,6 +15,9 @@ import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 import io.army.session.GenericRmSessionFactory;
 import io.army.session.TimeoutException;
+import io.army.sharding.DatabaseRoute;
+import io.army.sharding.Route;
+import io.army.sharding.RouteContext;
 import io.army.stmt.Stmt;
 import io.qinarmy.util.ExceptionUtils;
 import io.qinarmy.util.UnexpectedEnumException;
@@ -65,7 +65,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException unknownColumn(LogicalField<?, ?> field) {
+    public static CriteriaException unknownColumn(QualifiedField<?, ?> field) {
         return new CriteriaException(String.format("Unknown %s", field));
     }
 
@@ -92,6 +92,11 @@ public abstract class _Exceptions extends ExceptionUtils {
     public static CriteriaException databaseRouteError(_Statement stmt, GenericRmSessionFactory factory) {
         String m = String.format("%s database route and %s not match.", stmt, factory);
         return new CriteriaException(m);
+    }
+
+    public static ArmyException databaseRouteError(int databaseIndex, RouteContext factory) {
+        String m = String.format("database index[%s] and Factory[%s] not match.", databaseIndex, factory);
+        return new ArmyException(m);
     }
 
     public static CriteriaException noTableRoute(_Statement stmt, GenericRmSessionFactory factory) {
@@ -134,6 +139,11 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static CriteriaException nonNullField(FieldMeta<?, ?> field) {
         return new CriteriaException(String.format("%s is non-null.", field));
+    }
+
+    public static CriteriaException nonNullNamedParam(NonNullNamedParam<?> param) {
+        String m = String.format("%s[%s] must be non-null.", NonNullNamedParam.class.getName(), param.name()));
+        return new CriteriaException(m);
     }
 
     public static CriteriaException nonInsertableField(FieldMeta<?, ?> field) {
@@ -180,9 +190,6 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public CriteriaException fieldImmutable(FieldMeta<?, ?> field) {
-        return new CriteriaException(String.format("%s is immutable.", field));
-    }
 
     public static MetaException dontSupportOnlyDefault(Dialect dialect) {
         return new MetaException(String.format("%s isn't support UpdateMode[%s].", dialect, UpdateMode.ONLY_DEFAULT));
@@ -204,7 +211,7 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static CriteriaException selfJoinNoLogicField(GenericField<?, ?> field) {
         return new CriteriaException(String.format("%s self join but don't use %s."
-                , field.tableMeta(), LogicalField.class.getName()));
+                , field.tableMeta(), QualifiedField.class.getName()));
     }
 
     public static CriteriaException javaTypeUnsupportedByMapping(MappingType type, Object nonNull) {
@@ -216,6 +223,26 @@ public abstract class _Exceptions extends ExceptionUtils {
         String m = String.format("Batch dml[%s] value table route[%s] and named table route field[%s] conflict."
                 , batchDml.getClass().getName(), tableIndex, routeField);
         return new CriteriaException(m);
+    }
+
+    public static CriteriaException routeFieldIsNull(FieldMeta<?, ?> field, int batchIndex) {
+        String m = String.format("Route field[%s] is null,batch index[%s],couldn't parse statement.", field, batchIndex);
+        return new CriteriaException(m);
+    }
+
+    public static ArmyException routeFuncError(Route route, Object value) {
+        String m = String.format("Table route %s parse value[%s] error.", route.getClass().getName(), value);
+        return new ArmyException(m);
+    }
+
+    public static ArmyException notFoundDatabaseRouteFunc(FieldMeta<?, ?> field) {
+        String m = String.format("Not found %s for %s", DatabaseRoute.class.getName(), field);
+        return new ArmyException(m);
+    }
+
+    public static ArmyException predicateImplError(_Predicate predicate) {
+        String m = String.format("The implementation of %s error.", predicate.getClass().getName());
+        return new ArmyException(m);
     }
 
 

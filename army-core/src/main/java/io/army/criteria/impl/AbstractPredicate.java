@@ -5,7 +5,6 @@ import io.army.criteria.IPredicate;
 import io.army.criteria.NamedParam;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
@@ -25,33 +24,28 @@ import java.util.function.Function;
 abstract class AbstractPredicate extends OperationExpression<Boolean> implements _Predicate {
 
     @Override
-    public final MappingType mappingType() {
-        return _MappingFactory.getMapping(Boolean.class);
-    }
-
-    @Override
     public final ParamMeta paramMeta() {
         return _MappingFactory.getMapping(Boolean.class);
     }
 
     @Override
     public final IPredicate or(IPredicate predicate) {
-        return OrtPredicate.create(this, predicate);
+        return OrPredicate.create(this, predicate);
     }
 
     @Override
     public final IPredicate or(IPredicate predicate1, IPredicate predicate2) {
-        return OrtPredicate.create(this, predicate1, predicate2);
+        return OrPredicate.create(this, predicate1, predicate2);
     }
 
     @Override
     public final IPredicate or(IPredicate predicate1, IPredicate predicate2, IPredicate predicate3) {
-        return OrtPredicate.create(this, predicate1, predicate2, predicate3);
+        return OrPredicate.create(this, predicate1, predicate2, predicate3);
     }
 
     @Override
     public final IPredicate or(List<IPredicate> predicates) {
-        return OrtPredicate.create(this, predicates);
+        return OrPredicate.create(this, predicates);
     }
 
     @Override
@@ -138,40 +132,73 @@ abstract class AbstractPredicate extends OperationExpression<Boolean> implements
 
     @Nullable
     @Override
+    public final FieldMeta<?, ?> databaseRouteField(final TableMeta<?> table) {
+        if (!(this instanceof DualPredicate)) {
+            return null;
+        }
+        final DualPredicate predicate = (DualPredicate) this;
+        final FieldMeta<?, ?> routeField;
+        if (predicate.operator != DualOperator.EQ) {
+            routeField = null;
+        } else if (predicate.left instanceof GenericField
+                && predicate.right instanceof NamedParam
+                && ((GenericField<?, ?>) predicate.left).databaseRoute()) {
+            routeField = routeField((GenericField<?, ?>) predicate.left, table);
+        } else if (predicate.left instanceof NamedParam
+                && predicate.right instanceof GenericField
+                && ((GenericField<?, ?>) predicate.right).databaseRoute()) {
+            routeField = routeField((GenericField<?, ?>) predicate.right, table);
+        } else {
+            routeField = null;
+        }
+        return routeField;
+    }
+
+    @Nullable
+    @Override
     public final FieldMeta<?, ?> tableRouteField(final TableMeta<?> table) {
         if (!(this instanceof DualPredicate)) {
             return null;
         }
         final DualPredicate predicate = (DualPredicate) this;
-        if (predicate.operator != DualOperator.EQ
-                || !(predicate.left instanceof GenericField)
-                || !(predicate.right instanceof NamedParam)) {
-            return null;
-        }
-        final GenericField<?, ?> field = (GenericField<?, ?>) predicate.left;
-        final TableMeta<?> belongOf = field.tableMeta();
-
-        final FieldMeta<?, ?> tableRouteField;
-        if (!field.tableRoute()) {
-            tableRouteField = null;
-        } else if (belongOf == table) {
-            tableRouteField = field.fieldMeta();
-        } else if (table instanceof ChildTableMeta) {
-            if (belongOf == ((ChildTableMeta<?>) table).parentMeta()) {
-                tableRouteField = field.fieldMeta();
-            } else {
-                tableRouteField = null;
-            }
+        final FieldMeta<?, ?> routeField;
+        if (predicate.operator != DualOperator.EQ) {
+            routeField = null;
+        } else if (predicate.left instanceof GenericField
+                && predicate.right instanceof NamedParam
+                && ((GenericField<?, ?>) predicate.left).tableRoute()) {
+            routeField = routeField((GenericField<?, ?>) predicate.left, table);
+        } else if (predicate.left instanceof NamedParam
+                && predicate.right instanceof GenericField
+                && ((GenericField<?, ?>) predicate.right).tableRoute()) {
+            routeField = routeField((GenericField<?, ?>) predicate.right, table);
         } else {
-            tableRouteField = null;
+            routeField = null;
         }
-        return tableRouteField;
+        return routeField;
     }
 
+    /*################################## blow private method ##################################*/
+
+    /**
+     * @see #databaseRouteField(TableMeta)
+     * @see #tableRouteField(TableMeta)
+     */
     @Nullable
-    @Override
-    public final FieldMeta<?, ?> databaseRouteField() {
-        return null;
+    private FieldMeta<?, ?> routeField(final GenericField<?, ?> field, final TableMeta<?> table) {
+        final TableMeta<?> belongOf = field.tableMeta();
+        final FieldMeta<?, ?> routeField;
+        if (belongOf == table
+                || (table instanceof ChildTableMeta && belongOf == ((ChildTableMeta<?>) table).parentMeta())) {
+            if (field instanceof FieldMeta) {
+                routeField = (FieldMeta<?, ?>) field;
+            } else {
+                routeField = field.fieldMeta();
+            }
+        } else {
+            routeField = null;
+        }
+        return routeField;
     }
 
 

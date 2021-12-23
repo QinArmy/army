@@ -2,22 +2,22 @@ package io.army.stmt;
 
 final class PairBatchStmtImpl implements PairBatchStmt {
 
-    private final BatchSimpleStmt parent;
+    private final BatchStmt parent;
 
-    private final BatchSimpleStmt child;
+    private final BatchStmt child;
 
-    PairBatchStmtImpl(BatchSimpleStmt parent, BatchSimpleStmt child) {
+    PairBatchStmtImpl(BatchStmt parent, BatchStmt child) {
         this.parent = parent;
         this.child = child;
     }
 
     @Override
-    public final BatchSimpleStmt parentStmt() {
+    public final BatchStmt parentStmt() {
         return this.parent;
     }
 
     @Override
-    public final BatchSimpleStmt childStmt() {
+    public final BatchStmt childStmt() {
         return this.child;
     }
 

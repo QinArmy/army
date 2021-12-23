@@ -5,6 +5,7 @@ import io.army.dialect.NotSupportDialectException;
 import io.army.dialect.SqlDialect;
 import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
+import io.army.meta.ParamMeta;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.SqlDataType;
 import io.army.util.Assert;
@@ -31,11 +32,6 @@ abstract class RefSelectionImpl<E> extends OperationExpression<E> implements Ref
     private RefSelectionImpl(String subQueryAlias, String derivedFieldName) {
         this.subQueryAlias = subQueryAlias;
         this.derivedFieldName = derivedFieldName;
-    }
-
-    @Override
-    public final Selection as(String alias) {
-        return new ExpressionSelection(this, alias);
     }
 
     @Override
@@ -86,7 +82,7 @@ abstract class RefSelectionImpl<E> extends OperationExpression<E> implements Ref
         }
 
         @Override
-        public MappingType mappingType() {
+        public ParamMeta paramMeta() {
             return this.mappingType;
         }
 
@@ -111,7 +107,7 @@ abstract class RefSelectionImpl<E> extends OperationExpression<E> implements Ref
         }
 
         @Override
-        public MappingType mappingType() {
+        public ParamMeta paramMeta() {
             return proxyMappingType.mappingType == null
                     ? proxyMappingType
                     : proxyMappingType.mappingType;
@@ -120,7 +116,7 @@ abstract class RefSelectionImpl<E> extends OperationExpression<E> implements Ref
         @Override
         public void selection(String subQueryAlias, Selection selection) {
             if (this.subQueryAlias.equals(subQueryAlias) && this.derivedFieldName.equals(selection.alias())) {
-                this.proxyMappingType.mappingMeta(selection.mappingType());
+                this.proxyMappingType.mappingMeta(selection.paramMeta().mappingType());
             } else {
                 throw new IllegalArgumentException(String.format(
                         "this.subQueryAlias[%s] this.derivedFieldName[%s] and  subQueryAlias[%s] selection.alias[%s]"

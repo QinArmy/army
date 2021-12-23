@@ -5,7 +5,7 @@ import io.army.dialect.*;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.modelgen._MetaBridge;
-import io.army.stmt.Stmt;
+import io.army.stmt.SimpleStmt;
 
 import java.util.List;
 
@@ -31,7 +31,7 @@ abstract class MysqlDml extends AbstractDml {
      * @see Dialect#multiTableUpdateChild()
      */
     @Override
-    protected final Stmt standardChildUpdate(final _SingleUpdateContext context) {
+    protected final SimpleStmt standardChildUpdate(final _SingleUpdateContext context) {
         assert !context.unionUpdateChild();
 
         final _SetBlock childSetClause = context.childSetClause();

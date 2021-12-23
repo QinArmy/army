@@ -1,7 +1,7 @@
 package io.army.sharding;
 
 import io.army.beans.ReadWrapper;
-import io.army.criteria.impl.inner._MultiDML;
+import io.army.criteria.impl.inner._MultiDml;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Select;
 import io.army.criteria.impl.inner._SingleDml;
@@ -70,7 +70,7 @@ public abstract class _DatabaseRouteUtils extends _RouteUtils {
     }
 
     @Nullable
-    static RouteWrapper findRouteForMultiDML(_MultiDML dml) {
+    static RouteWrapper findRouteForMultiDML(_MultiDml dml) {
 //        RouteWrapper routeWrapper;
 //        routeWrapper = findRouteFromWhereClause(dml.tableWrapperList(), dml.predicateList(), true);
 //        if (routeWrapper == null) {

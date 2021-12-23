@@ -6,6 +6,7 @@ import io.army.meta.FieldMeta;
 
 import java.util.List;
 
+@Deprecated
 public interface _StandardChildSubQueryInsert extends _StandardSubQueryInsert {
 
     @Override

@@ -96,7 +96,7 @@ final class InsertSQLExecutorImpl extends SQLExecutorSupport implements InsertSQ
         return Mono.empty();
     }
 
-    private Mono<Void> doExecuteBatchChildValueInsert(InnerGenericRmSession session, BatchSimpleStmt childWrapper
+    private Mono<Void> doExecuteBatchChildValueInsert(InnerGenericRmSession session, BatchStmt childWrapper
             , Long parentRows) {
 //        // 1. execute child  batch insert sql
 //        return doExecuteBatchUpdate(session, childWrapper, PreparedStatement::executeBatch)
@@ -111,7 +111,7 @@ final class InsertSQLExecutorImpl extends SQLExecutorSupport implements InsertSQ
     }
 
     private Mono<Void> assertParentChildBatchMatch(Long parentRows, Long childRows
-            , BatchSimpleStmt childWrapper) {
+            , BatchStmt childWrapper) {
         Mono<Void> mono;
         if (childRows.equals(parentRows)) {
             mono = Mono.empty();

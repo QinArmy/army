@@ -2,7 +2,7 @@ package io.army.boot.reactive;
 
 import io.army.DomainUpdateException;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._MultiDML;
+import io.army.criteria.impl.inner._MultiDml;
 import io.army.criteria.impl.inner._Select;
 import io.army.criteria.impl.inner._SingleDml;
 import io.army.criteria.impl.inner._Statement;
@@ -319,9 +319,9 @@ abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F ext
         Mono<Void> mono;
         if (sqlStatement instanceof _SingleDml) {
             mono = doInvokeInsertBeforeAdvice(((_SingleDml) sqlStatement).table());
-        } else if (sqlStatement instanceof _MultiDML) {
+        } else if (sqlStatement instanceof _MultiDml) {
             // 1. iterate tableWrapperList
-            mono = Flux.fromIterable(((_MultiDML) sqlStatement).tableWrapperList())
+            mono = Flux.fromIterable(((_MultiDml) sqlStatement).tableWrapperList())
                     // 2. filter TableMeta
                     .filter(tableWrapper -> tableWrapper.tableAble() instanceof TableMeta)
                     // map tableWrapper to table meta
@@ -344,9 +344,9 @@ abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F ext
         Mono<Void> mono;
         if (sqlStatement instanceof _SingleDml) {
             mono = doInvokeInsertBeforeAdvice(((_SingleDml) sqlStatement).table());
-        } else if (sqlStatement instanceof _MultiDML) {
+        } else if (sqlStatement instanceof _MultiDml) {
             // 1. iterate tableWrapperList
-            mono = Flux.fromIterable(((_MultiDML) sqlStatement).tableWrapperList())
+            mono = Flux.fromIterable(((_MultiDml) sqlStatement).tableWrapperList())
                     // 2. filter TableMeta
                     .filter(tableWrapper -> tableWrapper.tableAble() instanceof TableMeta)
                     // map tableWrapper to table meta

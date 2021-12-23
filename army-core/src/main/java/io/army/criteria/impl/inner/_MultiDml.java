@@ -1,10 +1,8 @@
 package io.army.criteria.impl.inner;
 
-import io.army.criteria.IPredicate;
-
 import java.util.List;
 
-public interface _MultiDML extends _Statement {
+public interface _MultiDml extends _Statement {
 
     /**
      * @return a unmodifiable list
@@ -14,5 +12,5 @@ public interface _MultiDML extends _Statement {
     /**
      * @return a unmodifiable list
      */
-    List<IPredicate> predicateList();
+    List<_Predicate> predicateList();
 }

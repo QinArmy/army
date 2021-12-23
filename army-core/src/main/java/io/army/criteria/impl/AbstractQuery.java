@@ -333,7 +333,7 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
         return tableWrapper;
     }
 
-    TableWrapperImpl createTableWrapper(TableAble tableAble, String alias, JoinType joinType) {
+    TableWrapperImpl createTableWrapper(TablePart tableAble, String alias, JoinType joinType) {
         return new TableWrapperImpl(tableAble, alias, joinType);
     }
 
@@ -414,7 +414,7 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
 
         // 2. find table alias to create SelectionGroup .
         for (TableWrapper tableWrapper : tableWrapperList) {
-            TableAble tableAble = tableWrapper.tableAble();
+            TablePart tableAble = tableWrapper.tableAble();
 
             if (tableAble instanceof SubQuery) {
                 SubQuerySelectionGroup group = subQuerySelectGroupMap.remove(tableWrapper.alias());

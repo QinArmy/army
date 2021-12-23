@@ -4,7 +4,7 @@ import io.army.beans.ObjectWrapper;
 import io.army.beans.ReadWrapper;
 import io.army.boot.DomainValuesGenerator;
 import io.army.criteria.SubQuery;
-import io.army.criteria.TableAble;
+import io.army.criteria.TablePart;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.Constant;
 import io.army.dialect.Dialect;
@@ -78,21 +78,43 @@ public abstract class _RouteUtils {
      */
     public static byte tableRouteFromRouteField(final TableMeta<?> table, final List<_Predicate> predicateList
             , final RouteContext context) {
-
-        if (table.routeMode() == RouteMode.NONE && context.databaseIndex() != 0) {
-            throw _Exceptions.routeKeyValueError(table, 0, context.databaseIndex());
+        final boolean checkDatabaseIndex;
+        switch (table.routeMode()) {
+            case TABLE:
+                checkDatabaseIndex = context.factoryMode() == FactoryMode.SHARDING;
+                break;
+            case DATABASE:
+            case SHARDING:
+                checkDatabaseIndex = true;
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(table.routeMode());
         }
-        byte tableIndex = -1, index;
+        byte tableIndex = -1, databaseIndex = -1;
         for (_Predicate predicate : predicateList) {
-            index = predicate.tableIndex(table, context);
-            if (index >= 0) {
-                tableIndex = index;
+            if (tableIndex < 0) {
+                tableIndex = predicate.tableIndex(table, context);
+                if (tableIndex >= 0 && tableIndex >= table.tableCount()) {
+                    throw _Exceptions.predicateImplError(predicate);
+                }
+            } else if (!checkDatabaseIndex || databaseIndex >= 0) {
                 break;
             }
-        }
-        if (tableIndex >= 0 && tableIndex >= table.tableCount()) {
-            String m = String.format("%s parse table route error.", _Predicate.class.getName());
-            throw new IllegalStateException(m);
+
+            if (!checkDatabaseIndex || databaseIndex >= 0) {
+                continue;
+            }
+            databaseIndex = predicate.databaseIndex(table, context);
+            if (databaseIndex < 0) {
+                continue;
+            }
+            if (databaseIndex != context.databaseIndex()) {
+                throw _Exceptions.databaseRouteError(databaseIndex, context);
+            }
+            if (tableIndex >= 0) {
+                break;
+            }
+
         }
         return tableIndex;
     }
@@ -178,7 +200,7 @@ public abstract class _RouteUtils {
         RouteWrapper routeWrapper = null;
 
         for (TableWrapper tableWrapper : tableWrapperList) {
-            TableAble tableAble = tableWrapper.tableAble();
+            TablePart tableAble = tableWrapper.tableAble();
 
             if (!(tableAble instanceof TableMeta)) {
                 continue;
@@ -200,7 +222,7 @@ public abstract class _RouteUtils {
             , final boolean dataSource) {
         int routeIndex = -1;
         for (TableWrapper tableWrapper : tableWrapperList) {
-            TableAble tableAble = tableWrapper.tableAble();
+            TablePart tableAble = tableWrapper.tableAble();
             if (!(tableAble instanceof TableMeta)) {
                 continue;
             }
@@ -251,7 +273,7 @@ public abstract class _RouteUtils {
             , final boolean dataSource) {
         RouteWrapper routeWrapper = null;
         for (TableWrapper tableWrapper : tableWrapperList) {
-            TableAble tableAble = tableWrapper.tableAble();
+            TablePart tableAble = tableWrapper.tableAble();
 
             if (!(tableAble instanceof SubQuery)) {
                 continue;

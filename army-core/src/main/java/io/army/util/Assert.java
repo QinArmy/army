@@ -2,6 +2,8 @@ package io.army.util;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Statement;
+import io.army.criteria.impl.inner._BatchDml;
+import io.army.criteria.impl.inner._SingleDml;
 import io.army.criteria.impl.inner._Statement;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -90,6 +92,13 @@ public abstract class Assert extends org.springframework.util.Assert {
     public static void databaseRoute(_Statement stmt, final int routeDatabase, GenericRmSessionFactory factory) {
         if (routeDatabase >= 0 && routeDatabase != factory.databaseIndex()) {
             throw _Exceptions.databaseRouteError(stmt, factory);
+        }
+    }
+
+
+    public static void notBatchStmt(_SingleDml dml) {
+        if (dml instanceof _BatchDml) {
+            throw new IllegalArgumentException("update type error.");
         }
     }
 

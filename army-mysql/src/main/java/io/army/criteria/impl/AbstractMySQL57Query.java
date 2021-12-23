@@ -472,7 +472,7 @@ abstract class AbstractMySQL57Query<Q extends MySQL57Query, C> extends AbstractQ
 
 
     @Override
-    final TableWrapperImpl createTableWrapper(TableAble tableAble, String alias, JoinType joinType) {
+    final TableWrapperImpl createTableWrapper(TablePart tableAble, String alias, JoinType joinType) {
         return tableAble instanceof TableMeta
                 ? new MySQLTableWrapperImpl(tableAble, alias, joinType)
                 : super.createTableWrapper(tableAble, alias, joinType);
@@ -487,7 +487,7 @@ abstract class AbstractMySQL57Query<Q extends MySQL57Query, C> extends AbstractQ
      * @see #onAddTable(TableMeta, String)
      * @see #onNotAddTable()
      * @see #enableIndexHint
-     * @see #createTableWrapper(TableAble, String, JoinType)
+     * @see #createTableWrapper(TablePart, String, JoinType)
      */
     private void doAddIndexHint(Function<C, List<MySQL57IndexHint>> function) {
         if (this.enableIndexHint) {
@@ -527,7 +527,7 @@ abstract class AbstractMySQL57Query<Q extends MySQL57Query, C> extends AbstractQ
 
         private List<MySQL57IndexHint> indexHintList = Collections.emptyList();
 
-        private MySQLTableWrapperImpl(TableAble tableAble, String alias, JoinType jointType) {
+        private MySQLTableWrapperImpl(TablePart tableAble, String alias, JoinType jointType) {
             super(tableAble, alias, jointType);
         }
 

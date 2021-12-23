@@ -8,7 +8,7 @@ import io.army.stmt.ParamValue;
  * </p>
  *
  * @param <E> java type of named parameter
- * @see io.army.criteria.impl.NonNullNamedParam
+ * @see NonNullNamedParam
  */
 public interface NamedParam<E> extends Expression<E>, ParamValue {
 

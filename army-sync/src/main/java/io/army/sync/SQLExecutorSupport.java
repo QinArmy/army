@@ -62,7 +62,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     /**
      * @return a unmodifiable list
      */
-    final List<Integer> integerBatchUpdate(PreparedStatement st, BatchSimpleStmt sqlWrapper) {
+    final List<Integer> integerBatchUpdate(PreparedStatement st, BatchStmt sqlWrapper) {
         try {
             int[] batchResult;
             batchResult = st.executeBatch();
@@ -84,7 +84,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
         }
     }
 
-    final List<Long> longBatchUpdate(PreparedStatement st, BatchSimpleStmt sqlWrapper) {
+    final List<Long> longBatchUpdate(PreparedStatement st, BatchStmt sqlWrapper) {
         try {
             long[] batchResult;
             batchResult = st.executeLargeBatch();
@@ -142,14 +142,14 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     /**
      * @param executeFunction execute update method ,must be below:
      *                        <ul>
-     *                          <li>{@link #integerBatchUpdate(PreparedStatement, BatchSimpleStmt)}</li>
-     *                          <li>{@link #longBatchUpdate(PreparedStatement, BatchSimpleStmt)}</li>
+     *                          <li>{@link #integerBatchUpdate(PreparedStatement, BatchStmt)}</li>
+     *                          <li>{@link #longBatchUpdate(PreparedStatement, BatchStmt)}</li>
      *                        </ul>
      * @param <N>             result typed of update rows ,must be  {@link Integer} or {@link Long}
      * @return a unmodifiable list,{@code List<Integer> or List<Long>}
      */
-    final <N extends Number> List<N> doExecuteBatch(InnerGenericRmSession session, BatchSimpleStmt sqlWrapper
-            , BiFunction<PreparedStatement, BatchSimpleStmt, List<N>> executeFunction) {
+    final <N extends Number> List<N> doExecuteBatch(InnerGenericRmSession session, BatchStmt sqlWrapper
+            , BiFunction<PreparedStatement, BatchStmt, List<N>> executeFunction) {
         // 1. create statement
         try (PreparedStatement st = session.createStatement(sqlWrapper.sql(), false)) {
             StatementType statementType = sqlWrapper.statementType();

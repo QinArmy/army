@@ -39,7 +39,7 @@ public abstract class _CriteriaCounselor {
 
 
     public static void assertStandardUpdate(Update update) {
-        if (update instanceof _BatchUpdate) {
+        if (update instanceof _BatchSingleUpdate) {
             if (!(update instanceof ContextualBatchUpdate)) {
                 String m = String.format("%s isn't instance of %s"
                         , update.getClass().getName(), ContextualBatchUpdate.class.getName());

@@ -1,6 +1,6 @@
 package io.army.meta;
 
-import io.army.criteria.TableAble;
+import io.army.criteria.TablePart;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.sharding.Route;
@@ -16,7 +16,7 @@ import java.util.List;
  * @see IndexMeta
  * @see IndexFieldMeta
  */
-public interface TableMeta<T extends IDomain> extends TableAble, Meta {
+public interface TableMeta<T extends IDomain> extends TablePart, Meta {
 
 
     Class<T> javaType();

@@ -6,17 +6,19 @@ import io.army.boot.DomainValuesGenerator;
 import io.army.criteria.*;
 import io.army.criteria.impl._CriteriaCounselor;
 import io.army.criteria.impl.inner.*;
+import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.FactoryMode;
 import io.army.session.GenericRmSessionFactory;
+import io.army.sharding.DatabaseRoute;
 import io.army.sharding.RouteMode;
+import io.army.sharding.TableRoute;
 import io.army.sharding._RouteUtils;
-import io.army.stmt.ParamValue;
-import io.army.stmt.Stmt;
-import io.army.stmt.Stmts;
+import io.army.stmt.*;
 import io.army.util.ArrayUtils;
 import io.army.util.Assert;
+import io.army.util.CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.time.LocalDateTime;
@@ -84,18 +86,27 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
     @Override
     public final Stmt update(final Update update, final Visible visible) {
         update.prepared();
-        final _Update updateStmt = (_Update) update;
-        _DmlUtils.assertUpdateSetAndWhereClause(updateStmt);
+        _DmlUtils.assertUpdateSetAndWhereClause((_Update) update);
         final Stmt stmt;
-        if (updateStmt instanceof _DialectStatement) {
+        if (update instanceof _DialectStatement) {
             // assert implementation class is legal
-            assertDialectUpdate(updateStmt);
-            stmt = dialectUpdate(updateStmt, visible);
+            assertDialectUpdate(update);
+            if (update instanceof _BatchMultiUpdate) {
+                stmt = this.handleDialectBatchMultiUpdate((_BatchMultiUpdate) update, visible);
+            } else if (update instanceof _MultiUpdate) {
+                stmt = this.handleDialectMultiUpdate((_MultiUpdate) update, visible);
+            } else if (update instanceof _BatchSingleUpdate) {
+                stmt = this.handleDialectBatchSingleUpdate((_BatchSingleUpdate) update, visible);
+            } else if (update instanceof _SingleUpdate) {
+                stmt = this.handleDialectSingleUpdate((_SingleUpdate) update, visible);
+            } else {
+                throw _Exceptions.unknownStatement(update, this.dialect.sessionFactory());
+            }
         } else if (update instanceof _SingleUpdate) {
             // assert implementation is standard implementation.
             _CriteriaCounselor.assertStandardUpdate(update);
-            if (updateStmt instanceof _BatchUpdate) {
-                stmt = handleStandardBatchUpdate((_BatchUpdate) update, visible);
+            if (update instanceof _BatchSingleUpdate) {
+                stmt = handleStandardBatchUpdate((_BatchSingleUpdate) update, visible);
             } else {
                 stmt = handleStandardUpdate((_SingleUpdate) update, visible);
             }
@@ -145,13 +156,19 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
     /*################################## blow update template method ##################################*/
 
 
-    protected void assertDialectUpdate(_Update update) {
+    protected void assertDialectUpdate(Update update) {
         throw new UnsupportedOperationException(String.format("dialect[%s] not support special domain update."
                 , database())
         );
     }
 
-    protected Stmt dialectUpdate(_Update update, Visible visible) {
+    protected SimpleStmt dialectSingleUpdate(_SingleUpdate update, byte tableIndex, Visible visible) {
+        throw new UnsupportedOperationException(String.format("dialect [%s] not support special update."
+                , database())
+        );
+    }
+
+    protected SimpleStmt dialectMultiUpdate(_MultiUpdate update, byte tableIndex, Visible visible) {
         throw new UnsupportedOperationException(String.format("dialect [%s] not support special update."
                 , database())
         );
@@ -172,83 +189,124 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
     }
 
 
-    protected final Map<Byte, List<ReadWrapper>> batchSingleDmlRoute(final _BatchSingleDml dml) {
-        //1. firstly find table index from param expression or literal expression.
-        final byte tableIndex;
-        tableIndex = singleDmlTableRoute(dml);
-
-        final TableMeta<?> table = dml.table();
-        final RouteMode routeMode = table.routeMode();
-        final boolean checkDatabaseRoute = this.sharding
-                && (routeMode == RouteMode.DATABASE || routeMode == RouteMode.SHARDING);
-
-        FieldMeta<?, ?> tableRouteField = null, databaseRouteField = null;
-        for (_Predicate predicate : dml.predicateList()) {
-            tableRouteField = predicate.tableRouteField(table);
-            if (tableRouteField != null) {
-                break;
-            }
-        }
-        if (tableRouteField != null && !tableRouteField.tableRoute()) {
-            String m = String.format("%s parse table route error.", _Predicate.class.getName());
-            throw new IllegalStateException(m);
-        }
-        return Collections.emptyMap();
-    }
-
-
-    /**
-     * <p>
-     * This method get table index for single dml.
-     * </p>
-     *
-     * @return <ul>
-     * <li>{@link Byte#MIN_VALUE} route all</li>
-     * <li>non-negative : table index</li>
-     * <li>-1 not found table index</li>
-     * </ul>
-     * @throws CriteriaException when return negative and not equal {@link Byte#MIN_VALUE}
-     * @see #handleStandardUpdate(_SingleUpdate, Visible)
-     * @see #handleStandardDelete(_SingleDelete, Visible)
-     */
-    protected final byte singleDmlTableRoute(final _SingleDml dml) {
-        final TableMeta<?> table = dml.table();
-        if (table.immutable()) {
-            throw _Exceptions.immutableTable(table);
-        }
-        final List<_Predicate> predicateList = dml.predicateList();
-        final GenericRmSessionFactory factory = this.dialect.sessionFactory();
-        Assert.databaseRoute(dml, dml.databaseIndex(), factory);
-        if (factory.factoryMode() == FactoryMode.NO_SHARDING || table.routeMode() == RouteMode.NONE) {
-            return 0;
-        }
-        byte tableIndex;
-        tableIndex = _RouteUtils.tableRouteFromRouteField(table, predicateList, factory);
-        final byte tableRoute = dml.tableIndex();
-        if (tableIndex < 0) {
-            tableIndex = tableRoute;
-        } else if (tableRoute >= 0) {
-            throw _Exceptions.tableIndexAmbiguity(dml, dml.tableIndex(), tableIndex);
-        }
-
-        if (tableIndex < 0) {
-            if (tableRoute == -1) {
-                if (!(dml instanceof _BatchDml)) {
-                    throw _Exceptions.noTableRoute(dml, factory);
-                }
-            } else if (tableRoute != Byte.MIN_VALUE) {
-                throw _Exceptions.tableIndexParseError(dml, table, tableIndex);
-            }
-        } else if (tableIndex >= table.tableCount()) {
-            throw _Exceptions.tableIndexParseError(dml, table, tableIndex);
-        }
-        return tableIndex;
-    }
-
 
     /*################################## blow protected method ##################################*/
 
     /*################################## blow private batchInsert method ##################################*/
+
+    /**
+     * @return {@link BatchStmt} or {@link GroupStmt} consist of {@link BatchStmt}
+     * @see #update(Update, Visible)
+     */
+    private Stmt handleDialectBatchMultiUpdate(final _BatchMultiUpdate update, final Visible visible) {
+        final Stmt stmt;
+        if (this.sharding) {
+            final Map<Byte, List<ReadWrapper>> wrapperMap;
+            // sharding wrapperList
+            wrapperMap = batchMultiDmlRoute(update);
+            final List<Stmt> stmtList = new ArrayList<>();
+            for (Map.Entry<Byte, List<ReadWrapper>> e : wrapperMap.entrySet()) {
+                final SimpleStmt temp;
+                temp = this.dialectMultiUpdate(update, e.getKey(), visible);
+                stmtList.add(_DmlUtils.createBatchStmt(temp, e.getValue()));
+            }
+            stmt = Stmts.group(stmtList);
+        } else {
+            final SimpleStmt temp;
+            temp = this.dialectMultiUpdate(update, (byte) 0, visible);
+            stmt = _DmlUtils.createBatchStmt(temp, update.wrapperList());
+        }
+        return stmt;
+    }
+
+    /**
+     * @see #update(Update, Visible)
+     */
+    private Stmt handleDialectMultiUpdate(final _MultiUpdate update, final Visible visible) {
+        if (update instanceof _BatchDml) {
+            throw new IllegalArgumentException("update type error.");
+        }
+        final byte tableIndex;
+        tableIndex = this.multiDmlTaleRoute(update);
+
+        final Stmt stmt;
+        if (tableIndex >= 0) {
+            stmt = this.dialectMultiUpdate(update, tableIndex, visible);
+        } else if (tableIndex == Byte.MIN_VALUE) {
+            final TableMeta<?> table = primaryTable(update.tableWrapperList());
+            final int tableCount = table.tableCount();
+            final List<Stmt> stmtList = new ArrayList<>(tableCount);
+            for (int i = 0; i < tableCount; i++) {
+                stmtList.add(this.dialectMultiUpdate(update, (byte) i, visible));
+            }
+            stmt = Stmts.group(stmtList);
+        } else {
+            throw _Exceptions.databaseRouteError(update, this.dialect.sessionFactory());
+        }
+        return stmt;
+    }
+
+
+    /**
+     * @return {@link BatchStmt} or {@link GroupStmt} consist of {@link BatchStmt}
+     * @see #update(Update, Visible)
+     */
+    private Stmt handleDialectBatchSingleUpdate(final _BatchSingleUpdate update, final Visible visible) {
+        final TableMeta<?> table = update.table();
+        final RouteMode routeMode = table.routeMode();
+        final Stmt stmt;
+        if (this.sharding && (routeMode == RouteMode.TABLE || routeMode == RouteMode.SHARDING)) {
+            final Map<Byte, List<ReadWrapper>> wrapperMap;
+            // sharding wrapperList
+            wrapperMap = batchSingleDmlRoute(update);
+
+            final List<Stmt> stmtList = new ArrayList<>();
+            for (Map.Entry<Byte, List<ReadWrapper>> e : wrapperMap.entrySet()) {
+                final SimpleStmt temp;
+                temp = this.dialectSingleUpdate(update, e.getKey(), visible);
+                stmtList.add(_DmlUtils.createBatchStmt(temp, e.getValue()));
+            }
+            stmt = Stmts.group(stmtList);
+        } else {
+            if (routeMode == RouteMode.DATABASE) {
+                //TODO check database index
+                throw new UnsupportedOperationException();
+            }
+            final SimpleStmt temp;
+            temp = this.dialectSingleUpdate(update, (byte) 0, visible);
+            stmt = _DmlUtils.createBatchStmt(temp, update.wrapperList());
+        }
+        return stmt;
+    }
+
+    /**
+     * @return {@link SimpleStmt} or {@link GroupStmt} consist of {@link SimpleStmt}
+     * @see #update(Update, Visible)
+     */
+    private Stmt handleDialectSingleUpdate(final _SingleUpdate update, final Visible visible) {
+        if (update instanceof _BatchDml) {
+            throw new IllegalArgumentException("update type error.");
+        }
+        final byte tableIndex;
+        tableIndex = this.singleDmlTableRoute(update);
+
+        final Stmt stmt;
+        if (tableIndex >= 0) {
+            stmt = this.dialectSingleUpdate(update, tableIndex, visible);
+        } else if (tableIndex == Byte.MIN_VALUE) {
+            final TableMeta<?> table = update.table();
+            final int tableCount = table.tableCount();
+            final List<Stmt> stmtList = new ArrayList<>(tableCount);
+            for (int i = 0; i < tableCount; i++) {
+                stmtList.add(this.dialectSingleUpdate(update, (byte) i, visible));
+            }
+            stmt = Stmts.group(stmtList);
+        } else {
+            throw _Exceptions.databaseRouteError(update, this.dialect.sessionFactory());
+        }
+        return stmt;
+    }
+
 
     /**
      * @see #handleStandardValueInsert(_ValuesInsert, Visible)
@@ -364,7 +422,7 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
     /**
      * @see #handleStandardUpdate(_SingleUpdate, Visible)
      */
-    protected Stmt standardChildUpdate(_SingleUpdateContext context) {
+    protected SimpleStmt standardChildUpdate(_SingleUpdateContext context) {
         throw new UnsupportedOperationException();
     }
 
@@ -426,11 +484,11 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
             if (FORBID_SET_FIELD.contains(field.fieldName())) {
                 throw _Exceptions.armyManageField(field.fieldMeta());
             }
-            if (hasSelfJoin && !(field instanceof LogicalField)) {
+            if (hasSelfJoin && !(field instanceof QualifiedField)) {
                 throw _Exceptions.selfJoinNoLogicField(field);
             }
-            if (field instanceof LogicalField && !tableAlias.equals(((LogicalField<?, ?>) field).tableAlias())) {
-                throw _Exceptions.unknownColumn((LogicalField<?, ?>) field);
+            if (field instanceof QualifiedField && !tableAlias.equals(((QualifiedField<?, ?>) field).tableAlias())) {
+                throw _Exceptions.unknownColumn((QualifiedField<?, ?>) field);
             }
             if (supportTableAlias) {
                 sqlBuilder.append(Constant.SPACE)
@@ -491,8 +549,8 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
                     throw _Exceptions.unexpectedEnum(field.updateMode());
             }
             if (field.tableMeta() != table) {
-                if (field instanceof LogicalField) {
-                    throw _Exceptions.unknownColumn((LogicalField<?, ?>) field);
+                if (field instanceof QualifiedField) {
+                    throw _Exceptions.unknownColumn((QualifiedField<?, ?>) field);
                 } else {
                     throw _Exceptions.unknownColumn(tableAlias, field.fieldMeta());
                 }
@@ -500,11 +558,11 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
             if (FORBID_SET_FIELD.contains(field.fieldName())) {
                 throw _Exceptions.armyManageField(field.fieldMeta());
             }
-            if (hasSelfJoin && !(field instanceof LogicalField)) {
+            if (hasSelfJoin && !(field instanceof QualifiedField)) {
                 throw _Exceptions.selfJoinNoLogicField(field);
             }
-            if (field instanceof LogicalField && !tableAlias.equals(((LogicalField<?, ?>) field).tableAlias())) {
-                throw _Exceptions.unknownColumn((LogicalField<?, ?>) field);
+            if (field instanceof QualifiedField && !tableAlias.equals(((QualifiedField<?, ?>) field).tableAlias())) {
+                throw _Exceptions.unknownColumn((QualifiedField<?, ?>) field);
             }
             sqlBuilder.append(Constant.SPACE);
             if (supportTableAlias) {
@@ -577,17 +635,17 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
             throw new IllegalArgumentException("update type error.");
         }
         final byte tableIndex;
-        tableIndex = singleDmlTableRoute(update);
+        tableIndex = this.singleDmlTableRoute(update);
 
         final Stmt stmt;
         if (tableIndex >= 0) {
-            stmt = standardUpdateStmt(update, tableIndex, visible);
+            stmt = this.standardUpdateStmt(update, tableIndex, visible);
         } else if (tableIndex == Byte.MIN_VALUE) {
             final TableMeta<?> table = update.table();
             final int tableCount = table.tableCount();
             final List<Stmt> stmtList = new ArrayList<>(tableCount);
             for (int i = 0; i < tableCount; i++) {
-                stmtList.add(standardUpdateStmt(update, (byte) i, visible));
+                stmtList.add(this.standardUpdateStmt(update, (byte) i, visible));
             }
             stmt = Stmts.group(stmtList);
         } else {
@@ -603,8 +661,8 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
      *
      * @see #handleStandardUpdate(_SingleUpdate, Visible)
      */
-    private Stmt standardUpdateStmt(final _SingleUpdate update, final byte tableIndex, final Visible visible) {
-        final Stmt stmt;
+    private SimpleStmt standardUpdateStmt(final _SingleUpdate update, final byte tableIndex, final Visible visible) {
+        final SimpleStmt stmt;
         if (update.table() instanceof ChildTableMeta) {
             final UpdateContext context;
             context = UpdateContext.child(update, tableIndex, this.dialect, visible);
@@ -628,7 +686,7 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
      * @see #handleStandardUpdate(_SingleUpdate, Visible)
      * @see #standardChildUpdate(_SingleUpdateContext)
      */
-    private Stmt standardSingleTableUpdate(final UpdateContext context) {
+    private SimpleStmt standardSingleTableUpdate(final UpdateContext context) {
         final _SetBlock childSetClause = context.childSetClause();
         if (childSetClause != null && childSetClause.targetParts().size() > 0) {
             throw new IllegalArgumentException("context error");
@@ -685,48 +743,224 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
     /**
      * @see #update(Update, Visible)
      */
-    private Stmt handleStandardBatchUpdate(final _BatchUpdate update, final Visible visible) {
-
-        //1. firstly find table index from param expression or literal expression.
-        final byte tableIndex;
-        tableIndex = singleDmlTableRoute(update);
+    private Stmt handleStandardBatchUpdate(final _BatchSingleUpdate update, final Visible visible) {
         final TableMeta<?> table = update.table();
+        final RouteMode routeMode = table.routeMode();
+        final Stmt stmt;
+        if (this.sharding && (routeMode == RouteMode.TABLE || routeMode == RouteMode.SHARDING)) {
+            final Map<Byte, List<ReadWrapper>> wrapperMap;
+            // sharding wrapperList
+            wrapperMap = batchSingleDmlRoute(update);
 
-        //2. secondly find table route field from name param expression.
-        final FieldMeta<?, ?> routeField;
-        routeField = _RouteUtils.batchDmlTableRouteField(table, update.predicateList());
-
-        if (tableIndex != -1 && routeField != null) {
-            // found tow table route.
-            throw _Exceptions.valueRouteAndNamedRouteConflict(update, tableIndex, routeField);
+            final List<Stmt> stmtList = new ArrayList<>();
+            for (Map.Entry<Byte, List<ReadWrapper>> e : wrapperMap.entrySet()) {
+                final SimpleStmt temp;
+                temp = standardUpdateStmt(update, e.getKey(), visible);
+                stmtList.add(_DmlUtils.createBatchStmt(temp, e.getValue()));
+            }
+            stmt = Stmts.group(stmtList);
+        } else {
+            if (routeMode == RouteMode.DATABASE) {
+                //TODO check database index
+                throw new UnsupportedOperationException();
+            }
+            final SimpleStmt temp;
+            temp = standardUpdateStmt(update, (byte) 0, visible);
+            stmt = _DmlUtils.createBatchStmt(temp, update.wrapperList());
         }
-        if (tableIndex == -1 && routeField == null) {
-            // not found any table route.
-            throw _Exceptions.noTableRoute(update, this.dialect.sessionFactory());
+        return stmt;
+    }
+
+
+    /**
+     * @see #handleDialectBatchMultiUpdate(_BatchMultiUpdate, Visible)
+     */
+    private Map<Byte, List<ReadWrapper>> batchMultiDmlRoute(final _BatchMultiDml dml) {
+        return Collections.emptyMap();
+    }
+
+    /**
+     * @see #handleDialectMultiUpdate(_MultiUpdate, Visible)
+     * @see #handleDialectBatchMultiUpdate(_BatchMultiUpdate, Visible)
+     */
+    private byte multiDmlTaleRoute(final _MultiDml dml) {
+        return 0;
+    }
+
+
+    /**
+     * <p>
+     * This method get table index for single dml.
+     * </p>
+     *
+     * @return <ul>
+     * <li>{@link Byte#MIN_VALUE} route all</li>
+     * <li>non-negative : table index</li>
+     * <li>-1 not found table index</li>
+     * </ul>
+     * @throws CriteriaException when return negative and not equal {@link Byte#MIN_VALUE}
+     * @see #handleStandardUpdate(_SingleUpdate, Visible)
+     * @see #handleStandardDelete(_SingleDelete, Visible)
+     */
+    private byte singleDmlTableRoute(final _SingleDml dml) {
+        final TableMeta<?> table = dml.table();
+        if (table.immutable()) {
+            throw _Exceptions.immutableTable(table);
+        }
+        final List<_Predicate> predicateList = dml.predicateList();
+        final GenericRmSessionFactory factory = this.dialect.sessionFactory();
+        // check database index match this factory
+        Assert.databaseRoute(dml, dml.databaseIndex(), factory);
+        if (factory.factoryMode() == FactoryMode.NO_SHARDING || table.routeMode() == RouteMode.NONE) {
+            return 0;
+        }
+        byte tableIndex;
+        tableIndex = _RouteUtils.tableRouteFromRouteField(table, predicateList, factory);
+        final byte tableRoute = dml.tableIndex();
+        if (tableIndex < 0) {
+            tableIndex = tableRoute;
+        } else if (tableRoute >= 0) {
+            throw _Exceptions.tableIndexAmbiguity(dml, dml.tableIndex(), tableIndex);
         }
 
-        if (tableIndex == -1) {
+        if (tableIndex < 0) {
+            if (tableRoute == -1) {
+                if (!(dml instanceof _BatchDml)) {
+                    throw _Exceptions.noTableRoute(dml, factory);
+                }
+            } else if (tableRoute != Byte.MIN_VALUE) {
+                throw _Exceptions.tableIndexParseError(dml, table, tableIndex);
+            }
+        } else if (tableIndex >= table.tableCount()) {
+            throw _Exceptions.tableIndexParseError(dml, table, tableIndex);
+        }
+        return tableIndex;
+    }
 
+
+    /**
+     * @see #handleStandardBatchUpdate(_BatchSingleUpdate, Visible)
+     */
+    private Map<Byte, List<ReadWrapper>> batchSingleDmlRoute(final _BatchSingleDml dml) {
+        //1. firstly find table index from param expression or literal expression. and check database index
+        final byte tableIndex;
+        tableIndex = singleDmlTableRoute(dml);
+
+        final TableMeta<?> table = dml.table();
+        final RouteMode routeMode = table.routeMode();
+        final boolean checkDatabaseRoute = this.sharding
+                && (routeMode == RouteMode.DATABASE || routeMode == RouteMode.SHARDING);
+
+        //2. find  route field.
+        FieldMeta<?, ?> tableRouteField = null, databaseRouteField = null;
+        for (_Predicate predicate : dml.predicateList()) {
+            if (tableRouteField == null) {
+                tableRouteField = predicate.tableRouteField(table);
+            } else if (!checkDatabaseRoute || databaseRouteField != null) {
+                break;
+            }
+            if (!checkDatabaseRoute || databaseRouteField != null) {
+                continue;
+            }
+            databaseRouteField = predicate.databaseRouteField(table);
+            if (databaseRouteField == null) {
+                continue;
+            }
+            if (tableRouteField != null) {
+                break;
+            }
+        }
+
+        if (tableIndex == -1 && tableRouteField == null) {
+            throw _Exceptions.noTableRoute(dml, this.dialect.sessionFactory());
+        }
+        if (tableIndex != -1 && tableRouteField != null) {
+            throw _Exceptions.valueRouteAndNamedRouteConflict(dml, tableIndex, tableRouteField);
+        }
+
+        final Map<Byte, List<ReadWrapper>> wrapperMap;
+        final List<ReadWrapper> wrapperList = dml.wrapperList();
+        if (tableRouteField != null) {
+            wrapperMap = shardingBatchDml(table, tableRouteField, databaseRouteField, wrapperList);
         } else if (tableIndex >= 0) {
-
+            wrapperMap = Collections.singletonMap(tableIndex, wrapperList);
         } else if (tableIndex == Byte.MIN_VALUE) {
-
+            final int tableCount = table.tableCount();
+            final Map<Byte, List<ReadWrapper>> tempMap = new HashMap<>((int) (tableCount / 0.75F));
+            for (int i = 0; i < tableCount; i++) {
+                tempMap.put((byte) i, wrapperList);
+            }
+            wrapperMap = Collections.unmodifiableMap(tempMap);
         } else {
             // here bug
-            throw new IllegalStateException(String.format("table route[%s] error.", tableIndex));
+            throw new IllegalStateException("table index error");
         }
+
+        return wrapperMap;
+    }
+
+    /**
+     * @return unmodifiable map
+     * @see #batchSingleDmlRoute(_BatchSingleDml)
+     */
+    private Map<Byte, List<ReadWrapper>> shardingBatchDml(final TableMeta<?> table, final FieldMeta<?, ?> tableRouteField
+            , final @Nullable FieldMeta<?, ?> databaseRouteField, final List<ReadWrapper> wrapperList) {
+
+        final String paramName = tableRouteField.fieldName();
+        final String databaseParamName = databaseRouteField == null ? null : databaseRouteField.fieldName();
+        final GenericRmSessionFactory factory = this.dialect.sessionFactory();
+        final TableRoute route = (TableRoute) factory.route(table);
+
+        if (databaseParamName != null && !(route instanceof DatabaseRoute)) {
+            throw _Exceptions.notFoundDatabaseRouteFunc(databaseRouteField);
+        }
+
+        final Map<Byte, List<ReadWrapper>> tempMap = new HashMap<>();
+        int batchIndex = 0;
+        final int tableCount = table.tableCount();
+        final int databaseIndex = factory.databaseIndex();
+
+        for (ReadWrapper wrapper : wrapperList) {
+
+            if (databaseParamName != null) {
+                final Object databaseRouteValue = wrapper.get(databaseParamName);
+                if (databaseRouteValue == null) {
+                    throw _Exceptions.routeFieldIsNull(databaseRouteField, batchIndex);
+                }
+                final byte databaseRouteIndex;
+                databaseRouteIndex = ((DatabaseRoute) route).database(databaseRouteValue);
+                if (databaseRouteIndex != databaseIndex) {
+                    throw _Exceptions.databaseRouteError(databaseRouteIndex, factory);
+                }
+            }
+
+            final Object value = wrapper.get(paramName);
+            if (value == null) {
+                throw _Exceptions.routeFieldIsNull(tableRouteField, batchIndex);
+            }
+            final byte tableRouteIndex;
+            tableRouteIndex = route.table(value);
+            if (tableRouteIndex < 0 || tableRouteIndex >= tableCount) {
+                throw _Exceptions.routeFuncError(route, value);
+            }
+            tempMap.computeIfAbsent(tableRouteIndex, k -> new ArrayList<>())
+                    .add(wrapper);
+            batchIndex++;
+        }
+        final Map<Byte, List<ReadWrapper>> map = new HashMap<>((int) (tempMap.size() / 0.75F));
+        for (Map.Entry<Byte, List<ReadWrapper>> e : tempMap.entrySet()) {
+            map.put(e.getKey(), CollectionUtils.unmodifiableList(e.getValue()));
+        }
+        return CollectionUtils.unmodifiableMap(map);
+    }
+
+
+    /**
+     * @see #handleDialectMultiUpdate(_MultiUpdate, Visible)
+     */
+    private TableMeta<?> primaryTable(List<? extends TableWrapper> blockList) {
         return null;
     }
-
-
-    private Stmt standardBatchUpdate(final _BatchUpdate update, final Visible visible) {
-        // create batch update wrapper
-        return _DmlUtils.createBatchSQLWrapper(
-                update.wrapperList()
-                , handleStandardUpdate(update, visible)
-        );
-    }
-
 
 
 

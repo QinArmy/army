@@ -3,7 +3,7 @@ package io.army.stmt;
 /**
  * @see SimpleStmt
  * @see PairStmt
- * @see BatchSimpleStmt
+ * @see BatchStmt
  * @see PairBatchStmt
  */
 public interface Stmt {

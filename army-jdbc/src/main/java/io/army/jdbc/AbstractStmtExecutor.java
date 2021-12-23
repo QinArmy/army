@@ -56,10 +56,10 @@ abstract class AbstractStmtExecutor implements StmtExecutor {
                 insertRows = this.executeInsert((SimpleStmt) stmt, timeout);
             } else if (stmt instanceof PairStmt) {
                 insertRows = this.executePariInsert((PairStmt) stmt, timeout);
-            } else if (stmt instanceof BatchSimpleStmt) {
+            } else if (stmt instanceof BatchStmt) {
                 final int[] rows;
                 int rowSum = 0;
-                rows = this.executeBatchInsert((BatchSimpleStmt) stmt, timeout);
+                rows = this.executeBatchInsert((BatchStmt) stmt, timeout);
                 for (int row : rows) {
                     rowSum += row;
                 }
@@ -214,7 +214,7 @@ abstract class AbstractStmtExecutor implements StmtExecutor {
 
     private int executePairBatchInsert(final PairBatchStmt stmt, final int timeout) throws SQLException {
 
-        final BatchSimpleStmt parentStmt = stmt.parentStmt(), childStmt = stmt.childStmt();
+        final BatchStmt parentStmt = stmt.parentStmt(), childStmt = stmt.childStmt();
         if (parentStmt instanceof InsertStmt && !(childStmt instanceof ChildInsertStmt)) {
             throw pairInsertStmtError();
         }
@@ -239,7 +239,7 @@ abstract class AbstractStmtExecutor implements StmtExecutor {
     }
 
 
-    private int[] executeBatchInsert(final BatchSimpleStmt stmt, final int timeout) throws SQLException {
+    private int[] executeBatchInsert(final BatchStmt stmt, final int timeout) throws SQLException {
         final boolean generateKeys, returnId;
         final int resultSetType;
         if (stmt instanceof InsertStmt) {

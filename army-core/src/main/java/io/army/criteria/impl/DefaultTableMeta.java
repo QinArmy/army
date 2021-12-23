@@ -4,13 +4,13 @@ import io.army.ArmyException;
 import io.army.annotation.DiscriminatorValue;
 import io.army.annotation.Inheritance;
 import io.army.annotation.Table;
-import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.sharding.Route;
+import io.army.sharding.RouteMode;
 import io.army.struct.CodeEnum;
 
 import java.util.Collection;
@@ -372,6 +372,16 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         return this.fieldToFieldMeta.containsKey(fieldName);
     }
 
+    @Override
+    public final RouteMode routeMode() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public final byte tableCount() {
+        throw new UnsupportedOperationException();
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public final FieldMeta<T, Object> getField(final String fieldName) throws MetaException {
@@ -450,12 +460,6 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     @Override
     public final Class<? extends Route> routeClass() {
         return this.routeClass;
-    }
-
-    @Override
-    public final void appendSql(_SqlContext context) {
-        throw new UnsupportedOperationException(
-                "please use io.army.dialect.TableContextSQLContext.appendTable(TableMeta<?>,@Nullable  String)");
     }
 
     @Override

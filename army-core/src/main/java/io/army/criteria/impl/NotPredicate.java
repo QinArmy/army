@@ -28,14 +28,24 @@ final class NotPredicate extends AbstractPredicate {
     }
 
     @Override
-    public void appendSql(_SqlContext context) {
+    public void appendSql(final _SqlContext context) {
         final StringBuilder builder = context.sqlBuilder()
-                .append(" ( NOT");
+                .append(" NOT");
 
-        this.predicate.appendSql(context);
+        final _Predicate predicate = this.predicate;
+        final boolean noBracket = !(predicate instanceof OrPredicate);
 
-        builder.append(Constant.SPACE)
-                .append(Constant.RIGHT_BRACKET);
+        if (noBracket) {
+            builder.append(Constant.SPACE)
+                    .append(Constant.LEFT_BRACKET);
+        }
+        predicate.appendSql(context);
+
+        if (noBracket) {
+            builder.append(Constant.SPACE)
+                    .append(Constant.RIGHT_BRACKET);
+        }
+
     }
 
     @Override

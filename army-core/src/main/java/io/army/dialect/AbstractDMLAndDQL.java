@@ -49,7 +49,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         //2. append ONLY keyword ,eg: postgre,oracle.(optional)
         this.tableOnlyModifier(context);
         //3. append table able
-        TableAble tableAble = tableWrapper.tableAble();
+        TablePart tableAble = tableWrapper.tableAble();
         if (tableAble instanceof TableMeta) {
             context.appendTable((TableMeta<?>) tableAble, tableWrapper.alias());
         } else {

@@ -2,11 +2,11 @@ package io.army.stmt;
 
 public interface PairBatchStmt extends Stmt {
 
-    BatchSimpleStmt parentStmt();
+    BatchStmt parentStmt();
 
-    BatchSimpleStmt childStmt();
+    BatchStmt childStmt();
 
-    static PairBatchStmt build(BatchSimpleStmt parentWrapper, BatchSimpleStmt childWrapper) {
+    static PairBatchStmt build(BatchStmt parentWrapper, BatchStmt childWrapper) {
         return new PairBatchStmtImpl(parentWrapper, childWrapper);
     }
 

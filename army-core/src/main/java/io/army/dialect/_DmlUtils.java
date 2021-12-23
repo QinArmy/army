@@ -167,6 +167,33 @@ public abstract class _DmlUtils {
     }
 
 
+    static BatchStmt createBatchStmt(final SimpleStmt simpleStmt, final List<ReadWrapper> wrapperList) {
+        final List<ParamValue> paramGroup = simpleStmt.paramGroup();
+        final int paramSize = paramGroup.size();
+        final List<List<ParamValue>> groupList = new ArrayList<>(wrapperList.size());
+
+        for (ReadWrapper wrapper : wrapperList) {
+            final List<ParamValue> group = new ArrayList<>(paramSize);
+
+            for (ParamValue param : paramGroup) {
+                if (!(param instanceof NamedParam)) {
+                    group.add(param);
+                    continue;
+                }
+                final Object value = wrapper.get(((NamedParam<?>) param).name());
+                if (value == null && param instanceof NonNullNamedParam) {
+                    throw _Exceptions.nonNullNamedParam((NonNullNamedParam<?>) param);
+                }
+                group.add(ParamValue.build(param.paramMeta(), value));
+            }
+
+            groupList.add(group);
+
+        }
+        return Stmts.batch(simpleStmt, groupList);
+    }
+
+
     static List<FieldMeta<?, ?>> mergeInsertFields(final boolean parent, final _ValuesInsert insert) {
         final TableMeta<?> table, relativeTable;
         final List<FieldMeta<?, ?>> fieldList = insert.fieldList();
@@ -314,8 +341,6 @@ public abstract class _DmlUtils {
     }
 
 
-
-
     static void assertUpdateSetAndWhereClause(_Update update) {
         final List<FieldMeta<?, ?>> fieldList = update.fieldList();
         if (CollectionUtils.isEmpty(fieldList)) {
@@ -332,8 +357,6 @@ public abstract class _DmlUtils {
             throw new CriteriaException("update must have where clause.");
         }
     }
-
-
 
 
     static void assertSetClauseField(FieldMeta<?, ?> fieldMeta) {

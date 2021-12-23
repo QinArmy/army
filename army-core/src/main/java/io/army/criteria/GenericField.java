@@ -11,13 +11,13 @@ import io.army.meta.TableMeta;
  * This interface is base interface of below interface:
  * <ul>
  *     <li>{@link FieldMeta}</li>
- *      <li>{@link LogicalField}</li>
+ *      <li>{@link QualifiedField}</li>
  * </ul>
  *
  * @param <T> Domain Java Type
  * @param <F> Domain property Java Type
  * @see FieldMeta
- * @see LogicalField
+ * @see QualifiedField
  */
 public interface GenericField<T extends IDomain, F> extends Expression<F>, FieldSelection, ParamMeta, SetTargetPart {
 
