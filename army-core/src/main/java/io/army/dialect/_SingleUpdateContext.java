@@ -13,7 +13,7 @@ public interface _SingleUpdateContext extends _UpdateContext, _SetBlock {
     SingleTableMeta<?> table();
 
     @Nullable
-    _SetBlock childSetClause();
+    _SetBlock childBlock();
 
 
 }

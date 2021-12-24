@@ -167,7 +167,7 @@ public abstract class _DmlUtils {
     }
 
 
-    static BatchStmt createBatchStmt(final SimpleStmt simpleStmt, final List<ReadWrapper> wrapperList) {
+    static Stmt createBatchStmt(final SimpleStmt simpleStmt, final List<ReadWrapper> wrapperList) {
         final List<ParamValue> paramGroup = simpleStmt.paramGroup();
         final int paramSize = paramGroup.size();
         final List<List<ParamValue>> groupList = new ArrayList<>(wrapperList.size());
@@ -403,7 +403,7 @@ public abstract class _DmlUtils {
 
     static void createValueInsertForSimple(TableMeta<?> physicalTable, TableMeta<?> logicalTable
             , Collection<FieldMeta<?, ?>> fieldMetas, ReadWrapper domainWrapper
-            , ValueInsertContext context) {
+            , StandardValueInsertContext context) {
 //
 //        final GenericSessionFactory sessionFactory = context.dialect.sessionFactory();
 //        final SQLBuilder fieldBuilder = context.fieldsBuilder().append("INSERT INTO");

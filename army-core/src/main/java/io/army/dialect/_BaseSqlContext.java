@@ -15,36 +15,19 @@ public abstract class _BaseSqlContext implements _StmtContext {
 
     protected final Dialect dialect;
 
-    protected final byte tableIndex;
-
-    protected final String tableSuffix;
-
     protected final Visible visible;
 
     protected final StringBuilder sqlBuilder;
 
     protected final List<ParamValue> paramList;
 
-    protected _BaseSqlContext(Dialect dialect, byte tableIndex, Visible visible) {
+    protected _BaseSqlContext(Dialect dialect, Visible visible) {
         this.dialect = dialect;
-        this.tableIndex = tableIndex;
         this.visible = visible;
-        this.tableSuffix = _RouteUtils.tableSuffix(tableIndex);
-
         this.sqlBuilder = new StringBuilder(128);
         this.paramList = new ArrayList<>();
     }
 
-
-    @Override
-    public final byte tableIndex() {
-        return this.tableIndex;
-    }
-
-    @Override
-    public final String tableSuffix() {
-        return this.tableSuffix;
-    }
 
     @Override
     public final Dialect dialect() {

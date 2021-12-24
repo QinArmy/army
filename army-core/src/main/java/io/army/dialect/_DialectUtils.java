@@ -264,7 +264,7 @@ public abstract class _DialectUtils {
     }
 
     public static String parentAlias(final String tableAlias) {
-        return "_p_of_" + tableAlias;
+        return Constant.FORBID_ALIAS + "p_of_" + tableAlias;
     }
 
     public static String childAlias(final String tableAlias) {

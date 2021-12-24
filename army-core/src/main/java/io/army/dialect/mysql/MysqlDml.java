@@ -34,7 +34,7 @@ abstract class MysqlDml extends AbstractDml {
     protected final SimpleStmt standardChildUpdate(final _SingleUpdateContext context) {
         assert !context.unionUpdateChild();
 
-        final _SetBlock childSetClause = context.childSetClause();
+        final _SetBlock childSetClause = context.childBlock();
         assert childSetClause != null;
 
         final Dialect dialect = context.dialect();

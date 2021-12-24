@@ -7,18 +7,6 @@ import io.army.stmt.ParamValue;
 
 public interface _SqlContext {
 
-
-    /**
-     * @return primary tableIndex
-     */
-    default byte tableIndex() {
-        throw new UnsupportedOperationException();
-    }
-
-    default String tableSuffix() {
-        throw new UnsupportedOperationException();
-    }
-
     /**
      * <p>
      * This method is designed for the implementation of {@link QualifiedField}

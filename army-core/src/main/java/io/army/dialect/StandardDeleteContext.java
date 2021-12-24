@@ -1,79 +1,161 @@
 package io.army.dialect;
 
 import io.army.criteria.Visible;
+import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
-import io.army.meta.ParentTableMeta;
+import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
-import io.army.sharding._TableRouteUtils;
-import io.army.stmt.SimpleStmt;
+import io.army.stmt.ParamValue;
+import io.army.stmt.Stmt;
+import io.army.stmt.Stmts;
 
-class StandardDeleteContext extends AbstractStandardDomainContext implements DeleteContext_ {
+import java.util.List;
 
-    static StandardDeleteContext build(_SingleDelete delete, Dialect dialect, Visible visible) {
-        TableMeta<?> tableMeta = delete.table();
-        String primarySuffix = _TableRouteUtils.singleDmlPrimaryRouteSuffix(delete, dialect);
+final class StandardDeleteContext extends _BaseSqlContext implements _SingleDeleteContext {
 
-        TablesContext tableContext = TablesContext.singleTable(delete, false, primarySuffix);
-        return new StandardDeleteContext(dialect, visible
-                , tableContext
-                , tableMeta
-                , tableMeta);
+    static StandardDeleteContext create(_SingleDelete delete, Dialect dialect, Visible visible) {
+        return new StandardDeleteContext(delete, dialect, visible);
     }
 
-    static StandardDeleteContext buildParent(_SingleDelete delete, Dialect dialect, final Visible visible) {
-        ParentTableMeta<?> parentMeta = ((ChildTableMeta<?>) delete.table()).parentMeta();
 
-        String primarySuffix = _TableRouteUtils.singleDmlPrimaryRouteSuffix(delete, dialect);
+    final boolean unionUpdateChild;
 
-        TablesContext tableContext = TablesContext.singleTable(delete, true, primarySuffix);
-        return new StandardDeleteContext(dialect, visible
-                , tableContext
-                , parentMeta
-                , parentMeta);
+    final SingleTableMeta<?> table;
+
+    final String tableAlias;
+
+    final String safeTableAlias;
+
+    final List<_Predicate> predicateList;
+
+    final _Block childBlock;
+
+    private StandardDeleteContext(_SingleDelete delete, Dialect dialect, Visible visible) {
+        super(dialect, visible);
+        final TableMeta<?> table = delete.table();
+        final String tableAlias = delete.tableAlias();
+        this.unionUpdateChild = dialect.multiTableUpdateChild();
+        if (table instanceof ChildTableMeta) {
+            this.table = ((ChildTableMeta<?>) table).parentMeta();
+            this.tableAlias = _DialectUtils.parentAlias(tableAlias);
+            this.safeTableAlias = this.tableAlias;
+            this.childBlock = new ChildBlock((ChildTableMeta<?>) table, tableAlias, this);
+        } else {
+            this.table = (SingleTableMeta<?>) table;
+            this.tableAlias = tableAlias;
+            this.safeTableAlias = dialect.quoteIfNeed(tableAlias);
+            this.childBlock = null;
+        }
+        this.predicateList = delete.predicateList();
+
     }
 
-    static StandardDeleteContext buildChild(_SingleDelete delete, Dialect dialect, final Visible visible) {
-        ChildTableMeta<?> childMeta = (ChildTableMeta<?>) delete.table();
-        String primarySuffix = _TableRouteUtils.singleDmlPrimaryRouteSuffix(delete, dialect);
 
-        TablesContext tableContext = TablesContext.singleTable(delete, false, primarySuffix);
-        return new DomainDeleteContext(dialect, visible
-                , tableContext
-                , childMeta
-                , childMeta.parentMeta()
-        );
+    @Override
+    public SingleTableMeta<?> table() {
+        return this.table;
     }
 
     @Override
-    public SimpleStmt build() {
-        return null;
+    public String tableAlias() {
+        return this.tableAlias;
     }
 
-    private StandardDeleteContext(Dialect dialect, Visible visible, TablesContext tableContext
-            , TableMeta<?> primaryTable, TableMeta<?> relationTable) {
-        super(dialect, visible, tableContext, primaryTable, relationTable);
+    @Override
+    public String safeTableAlias() {
+        return this.safeTableAlias;
     }
 
-    /*################################## blow private static inner class ##################################*/
+    @Override
+    public List<_Predicate> predicates() {
+        return this.predicateList;
+    }
 
-    private static final class DomainDeleteContext extends StandardDeleteContext {
 
-        private DomainDeleteContext(Dialect dialect, Visible visible, TablesContext tableContext
-                , TableMeta<?> primaryTable, TableMeta<?> relationTable) {
-            super(dialect, visible, tableContext, primaryTable, relationTable);
+    @Override
+    public _Block childBlock() {
+        return this.childBlock;
+    }
+
+    @Override
+    public void appendField(String tableAlias, FieldMeta<?, ?> field) {
+
+    }
+
+    @Override
+    public void appendField(FieldMeta<?, ?> field) {
+
+    }
+
+    @Override
+    public Stmt build() {
+        return Stmts.simple(this.sqlBuilder.toString(), this.paramList);
+    }
+
+    private static final class ChildBlock implements _Block {
+
+        private final ChildTableMeta<?> table;
+
+        private final String tableAlias;
+
+        private final String safeTableAlias;
+
+        private final StandardDeleteContext parentContext;
+
+        private ChildBlock(ChildTableMeta<?> table, String tableAlias, StandardDeleteContext parentContext) {
+            this.table = table;
+            this.tableAlias = tableAlias;
+            this.safeTableAlias = parentContext.dialect.quoteIfNeed(tableAlias);
+            this.parentContext = parentContext;
+        }
+
+        @Override
+        public ChildTableMeta<?> table() {
+            return this.table;
+        }
+
+        @Override
+        public String tableAlias() {
+            return this.tableAlias;
+        }
+
+        @Override
+        public String safeTableAlias() {
+            return this.safeTableAlias;
         }
 
         @Override
         public void appendField(String tableAlias, FieldMeta<?, ?> field) {
-            appendDomainField(tableAlias, field);
+
         }
 
         @Override
         public void appendField(FieldMeta<?, ?> field) {
-            appendDomainField(field);
+
         }
+
+        @Override
+        public Dialect dialect() {
+            return this.parentContext.dialect;
+        }
+
+        @Override
+        public StringBuilder sqlBuilder() {
+            return this.parentContext.sqlBuilder;
+        }
+
+        @Override
+        public void appendParam(ParamValue paramValue) {
+            this.parentContext.appendParam(paramValue);
+        }
+
+        @Override
+        public Visible visible() {
+            return this.parentContext.visible;
+        }
+
 
     }
 

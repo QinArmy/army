@@ -177,8 +177,8 @@ public abstract class AbstractDialect implements InnerDialect {
     /*################################## blow DML method ##################################*/
 
     @Override
-    public final Stmt valueInsert(Insert insert, Visible visible) {
-        return this.dml.valueInsert(insert, visible);
+    public final Stmt insert(Insert insert, Visible visible) {
+        return this.dml.insert(insert, visible);
     }
 
     @Override

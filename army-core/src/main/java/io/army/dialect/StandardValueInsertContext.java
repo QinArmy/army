@@ -1,6 +1,5 @@
 package io.army.dialect;
 
-import io.army.beans.ObjectWrapper;
 import io.army.beans.ReadWrapper;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
@@ -23,18 +22,11 @@ import java.util.Map;
  * This class representing standard value insert context.
  * </p>
  */
-final class ValueInsertContext extends _BaseSqlContext implements _ValueInsertContext {
+final class StandardValueInsertContext extends _BaseSqlContext implements _ValueInsertContext {
 
-    static ValueInsertContext single(_ValuesInsert insert, final byte tableIndex
-            , List<ObjectWrapper> domainList, Dialect dialect, Visible visible) {
+    static StandardValueInsertContext create(_ValuesInsert insert, Dialect dialect, Visible visible) {
         checkCommonExpMap(insert);
-        return new ValueInsertContext(insert, tableIndex, domainList, dialect, visible);
-    }
-
-    static ValueInsertContext child(_ValuesInsert insert, final byte tableIndex
-            , List<ObjectWrapper> domainList, Dialect dialect, Visible visible) {
-        checkCommonExpMap(insert);
-        return new ValueInsertContext(tableIndex, insert, domainList, dialect, visible);
+        return new StandardValueInsertContext(insert, dialect, visible);
     }
 
 
@@ -50,33 +42,29 @@ final class ValueInsertContext extends _BaseSqlContext implements _ValueInsertCo
     final List<FieldMeta<?, ?>> fieldList;
 
     final Map<FieldMeta<?, ?>, _Expression<?>> commonExpMap;
+
     final List<? extends ReadWrapper> domainList;
 
     private final ChildBlock childBlock;
 
-    private ValueInsertContext(_ValuesInsert insert, final byte tableIndex
-            , List<ObjectWrapper> domainList, Dialect dialect, Visible visible) {
-        super(dialect, tableIndex, visible);
+    private StandardValueInsertContext(_ValuesInsert insert, Dialect dialect, Visible visible) {
+        super(dialect, visible);
 
-        this.table = (SingleTableMeta<?>) insert.table();
-        this.fieldList = _DmlUtils.mergeInsertFields(false, insert);
         this.commonExpMap = insert.commonExpMap();
-        this.domainList = domainList;
+        this.domainList = insert.domainList();
 
-        this.childBlock = null;
-    }
+        final TableMeta<?> table = insert.table();
+        if (table instanceof ChildTableMeta) {
+            final ChildTableMeta<?> childTable = ((ChildTableMeta<?>) table);
+            this.table = childTable.parentMeta();
+            this.fieldList = _DmlUtils.mergeInsertFields(true, insert);
+            this.childBlock = new ChildBlock(childTable, _DmlUtils.mergeInsertFields(false, insert), this);
+        } else {
+            this.table = (SingleTableMeta<?>) table;
+            this.fieldList = _DmlUtils.mergeInsertFields(false, insert);
+            this.childBlock = null;
+        }
 
-    private ValueInsertContext(final byte tableIndex, _ValuesInsert insert
-            , List<ObjectWrapper> domainList, Dialect dialect, Visible visible) {
-        super(dialect, tableIndex, visible);
-
-        final ChildTableMeta<?> childTable = (ChildTableMeta<?>) insert.table();
-        this.table = childTable.parentMeta();
-        this.fieldList = _DmlUtils.mergeInsertFields(true, insert);
-        this.commonExpMap = insert.commonExpMap();
-        this.domainList = domainList;
-
-        this.childBlock = new ChildBlock(childTable, _DmlUtils.mergeInsertFields(false, insert), this);
     }
 
 
@@ -145,13 +133,13 @@ final class ValueInsertContext extends _BaseSqlContext implements _ValueInsertCo
 
         private final List<FieldMeta<?, ?>> fieldList;
 
-        private final ValueInsertContext parentContext;
+        private final StandardValueInsertContext parentContext;
 
         private final StringBuilder sqlBuilder = new StringBuilder();
 
         private final List<ParamValue> paramList = new ArrayList<>();
 
-        private ChildBlock(ChildTableMeta<?> table, List<FieldMeta<?, ?>> fieldList, ValueInsertContext parentContext) {
+        private ChildBlock(ChildTableMeta<?> table, List<FieldMeta<?, ?>> fieldList, StandardValueInsertContext parentContext) {
             this.table = table;
             this.fieldList = fieldList;
             this.parentContext = parentContext;

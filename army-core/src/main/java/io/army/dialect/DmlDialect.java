@@ -8,24 +8,11 @@ import io.army.stmt.Stmt;
 
 public interface DmlDialect extends SqlDialect {
 
-
-    Stmt valueInsert(Insert insert, Visible visible);
-
-    @Deprecated
-    Stmt returningInsert(Insert insert, Visible visible);
-
-    @Deprecated
-    Stmt subQueryInsert(Insert insert, Visible visible);
+    Stmt insert(Insert insert, Visible visible);
 
     Stmt update(Update update, Visible visible);
 
-    @Deprecated
-    Stmt returningUpdate(Update update, Visible visible);
-
     Stmt delete(Delete delete, Visible visible);
-
-    @Deprecated
-    Stmt returningDelete(Delete delete, Visible visible);
 
 
 }
