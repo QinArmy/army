@@ -9,16 +9,10 @@ import io.army.stmt.SimpleStmt;
 
 import java.util.List;
 
-abstract class MysqlDml extends AbstractDml {
+abstract class MysqlDml extends _AbstractDialect {
 
     MysqlDml(Dialect dialect) {
         super(dialect);
-    }
-
-    @Override
-    public final boolean supportOnlyDefault() {
-        // MySQL has DEFAULT(col_name) function.
-        return true;
     }
 
 
@@ -32,7 +26,7 @@ abstract class MysqlDml extends AbstractDml {
      */
     @Override
     protected final SimpleStmt standardChildUpdate(final _SingleUpdateContext context) {
-        assert !context.unionUpdateChild();
+        assert !context.multiTableUpdateChild();
 
         final _SetBlock childSetClause = context.childBlock();
         assert childSetClause != null;
@@ -46,37 +40,30 @@ abstract class MysqlDml extends AbstractDml {
         final StringBuilder sqlBuilder = context.sqlBuilder();
 
         // 1. UPDATE clause
-        sqlBuilder.append(UPDATE);
-        sqlBuilder.append(Constant.SPACE);
-        final byte tableIndex = context.tableIndex();
-        final String tableSuffix = context.tableSuffix();
-        // append child table name
-        if (tableIndex == 0) {
-            sqlBuilder.append(dialect.quoteIfNeed(childTable.tableName()));
-        } else {
-            sqlBuilder.append(childTable.tableName())
-                    .append(tableSuffix);
-        }
-        sqlBuilder.append(AS_WORD)
+        sqlBuilder.append(Constant.UPDATE)
+                .append(Constant.SPACE)
+                // append child table name
+                .append(dialect.quoteIfNeed(childTable.tableName()));
+
+        sqlBuilder.append(Constant.SPACE)
+                .append(Constant.AS)
                 .append(Constant.SPACE)
                 .append(safeChildTableAlias);
 
         //2. join clause
-        sqlBuilder.append(JOIN_WORD)
-                .append(Constant.SPACE);
-        // append parent table name
-        if (tableIndex == 0) {
-            sqlBuilder.append(dialect.quoteIfNeed(parentTable.tableName()));
-        } else {
-            sqlBuilder.append(parentTable.tableName())
-                    .append(tableSuffix);
-        }
-        sqlBuilder.append(AS_WORD)
+        sqlBuilder.append(Constant.SPACE)
+                .append(Constant.JOIN)
+                .append(Constant.SPACE)
+                // append parent table name
+                .append(dialect.quoteIfNeed(parentTable.tableName()))
+                .append(Constant.SPACE)
+                .append(Constant.AS)
                 .append(Constant.SPACE)
                 .append(safeParentTableAlias);
 
         //2.1 on clause
-        sqlBuilder.append(ON_WORD)
+        sqlBuilder.append(Constant.SPACE)
+                .append(Constant.ON)
                 .append(Constant.SPACE)
                 .append(safeChildTableAlias)
                 .append(Constant.POINT)

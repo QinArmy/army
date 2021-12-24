@@ -19,7 +19,9 @@ public interface _UpdateContext extends _DmlContext {
      * @return true : SET clause support table alias
      */
     @Deprecated
-    boolean setClauseTableAlias();
+    default boolean setClauseTableAlias() {
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     SimpleStmt build();

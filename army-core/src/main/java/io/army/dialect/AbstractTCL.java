@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-public abstract class AbstractTCL extends AbstractSql implements TclDialect {
+public abstract class AbstractTCL extends AbstractSql {
 
     protected AbstractTCL(Dialect dialect) {
         super(dialect);

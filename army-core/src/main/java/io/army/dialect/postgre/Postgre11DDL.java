@@ -3,7 +3,6 @@ package io.army.dialect.postgre;
 import io.army.dialect.AbstractDDL;
 import io.army.dialect.DDLContext;
 import io.army.dialect.DDLUtils;
-import io.army.dialect.DdlDialect;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexFieldMeta;
 import io.army.meta.IndexMeta;

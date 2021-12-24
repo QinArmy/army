@@ -22,9 +22,6 @@ public abstract class AbstractDmlAndDql extends AbstractSql {
 
     static final byte FOLLOW_PRIMARY_ROUTE = Byte.MIN_VALUE + 1;
 
-    protected AbstractDmlAndDql(Dialect dialect) {
-        super(dialect);
-    }
 
     protected String subQueryParentAlias(String parentTableName) {
         Random random = new Random();

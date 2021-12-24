@@ -1,15 +1,16 @@
 package io.army.dialect;
 
 import io.army.beans.ObjectWrapper;
-import io.army.beans.ReadWrapper;
 import io.army.boot.DomainValuesGenerator;
 import io.army.criteria.*;
 import io.army.criteria.impl._CriteriaCounselor;
 import io.army.criteria.impl.inner.*;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.sharding.RouteMode;
-import io.army.stmt.*;
+import io.army.session.GenericRmSessionFactory;
+import io.army.stmt.ParamValue;
+import io.army.stmt.SimpleStmt;
+import io.army.stmt.Stmt;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 
@@ -25,7 +26,7 @@ import java.util.*;
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
  */
-public abstract class AbstractDml extends AbstractDmlAndDql implements DmlDialect {
+public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dialect {
 
     protected static final char[] UPDATE = new char[]{'U', 'P', 'D', 'A', 'T', 'E'};
 
@@ -35,11 +36,17 @@ public abstract class AbstractDml extends AbstractDmlAndDql implements DmlDialec
             _MetaBridge.UPDATE_TIME, _MetaBridge.VERSION);
 
 
-    protected AbstractDml(Dialect dialect) {
-        super(dialect);
+    protected final GenericRmSessionFactory factory;
+
+    protected final Set<String> keyWordSet;
+
+    protected _AbstractDialect(GenericRmSessionFactory factory) {
+        this.factory = factory;
+        this.keyWordSet = createKeyWordSet();
     }
 
     /*################################## blow DML batchInsert method ##################################*/
+
 
     /**
      * {@inheritDoc}
@@ -47,7 +54,15 @@ public abstract class AbstractDml extends AbstractDmlAndDql implements DmlDialec
     @Override
     public final Stmt insert(final Insert insert, final Visible visible) {
         insert.prepared();
-        return handleStandardValueInsert((_ValuesInsert) insert, visible);
+        final Stmt stmt;
+        if (insert instanceof _DialectStatement) {
+            assertDialectInsert(insert);
+            stmt = handleDialectInsert(insert, visible);
+        } else {
+            _CriteriaCounselor.assertStandardInsert(insert);
+            stmt = handleStandardValueInsert((_ValuesInsert) insert, visible);
+        }
+        return stmt;
     }
 
 
@@ -61,16 +76,12 @@ public abstract class AbstractDml extends AbstractDmlAndDql implements DmlDialec
         if (update instanceof _DialectStatement) {
             // assert implementation class is legal
             assertDialectUpdate(update);
-            if (update instanceof _BatchMultiUpdate) {
-                stmt = this.handleDialectBatchMultiUpdate((_BatchMultiUpdate) update, visible);
-            } else if (update instanceof _MultiUpdate) {
-                stmt = this.handleDialectMultiUpdate((_MultiUpdate) update, visible);
-            } else if (update instanceof _BatchSingleUpdate) {
-                stmt = this.handleDialectBatchSingleUpdate((_BatchSingleUpdate) update, visible);
-            } else if (update instanceof _SingleUpdate) {
-                stmt = this.handleDialectSingleUpdate((_SingleUpdate) update, visible);
+            final SimpleStmt singleStmt;
+            singleStmt = handleDialectUpdate(update, visible);
+            if (update instanceof _BatchDml) {
+                stmt = _DmlUtils.createBatchStmt(singleStmt, ((_BatchDml) update).wrapperList());
             } else {
-                throw _Exceptions.unknownStatement(update, this.dialect.sessionFactory());
+                stmt = singleStmt;
             }
         } else if (update instanceof _SingleUpdate) {
             // assert implementation is standard implementation.
@@ -94,8 +105,14 @@ public abstract class AbstractDml extends AbstractDmlAndDql implements DmlDialec
         delete.prepared();
         final Stmt stmt;
         if (delete instanceof _DialectStatement) {
-            assertDialectDelete((_Delete) delete);
-            stmt = dialectDelete((_Delete) delete, visible);
+            assertDialectDelete(delete);
+            final SimpleStmt singleStmt;
+            singleStmt = handleDialectDelete(delete, visible);
+            if (delete instanceof _BatchDml) {
+                stmt = _DmlUtils.createBatchStmt(singleStmt, ((_BatchDml) delete).wrapperList());
+            } else {
+                stmt = singleStmt;
+            }
         } else if (delete instanceof _SingleDelete) {
             _CriteriaCounselor.assertStandardDelete(delete);
             final SimpleStmt simpleStmt;
@@ -112,55 +129,67 @@ public abstract class AbstractDml extends AbstractDmlAndDql implements DmlDialec
     }
 
     @Override
-    public Stmt returningDelete(Delete delete, Visible visible) {
-        throw new UnsupportedOperationException();
+    public final SimpleStmt select(Select select, Visible visible) {
+        return null;
     }
+
+    @Override
+    public final void select(Select select, _SqlContext original) {
+
+    }
+
+    @Override
+    public final void subQuery(SubQuery subQuery, _SqlContext original) {
+
+    }
+
+    @Override
+    public final boolean isKeyWord(final String identifier) {
+        return this.keyWordSet.contains(identifier);
+    }
+
+
+    @Override
+    public final GenericRmSessionFactory sessionFactory() {
+        return this.factory;
+    }
+
+    @Override
+    public final String quoteIfNeed(final String identifier) {
+        return this.keyWordSet.contains(identifier) ? this.quoteIdentifier(identifier) : identifier;
+    }
+
+
 
     /*################################## blow protected template method ##################################*/
 
     /*################################## blow multiInsert template method ##################################*/
 
+    protected abstract Set<String> createKeyWordSet();
 
+    protected abstract String quoteIdentifier(String identifier);
 
 
     /*################################## blow update template method ##################################*/
 
+    protected void assertDialectInsert(Insert insert) {
+        String m = String.format("%s don't support this dialect insert[%s]", this.dialect, insert.getClass().getName());
+        throw new CriteriaException(m);
+    }
 
     protected void assertDialectUpdate(Update update) {
-        throw new UnsupportedOperationException(String.format("dialect[%s] not support special domain update."
-                , database())
-        );
+        String m = String.format("%s don't support this dialect update[%s]", this.dialect, update.getClass().getName());
+        throw new CriteriaException(m);
     }
 
-    protected SimpleStmt dialectSingleUpdate(_SingleUpdate update, byte tableIndex, Visible visible) {
-        throw new UnsupportedOperationException(String.format("dialect [%s] not support special update."
-                , database())
-        );
-    }
-
-    protected SimpleStmt dialectMultiUpdate(_MultiUpdate update, byte tableIndex, Visible visible) {
-        throw new UnsupportedOperationException(String.format("dialect [%s] not support special update."
-                , database())
-        );
-    }
-
-    protected boolean dialectMultiUpdateFromSubQuery() {
-        throw new UnsupportedOperationException();
-    }
 
     /*################################## blow delete template method ##################################*/
 
-    protected void assertDialectDelete(_Delete delete) {
-        throw new UnsupportedOperationException(String.format("dialect[%s] not support special delete."
-                , database())
-        );
+    protected void assertDialectDelete(Delete delete) {
+        String m = String.format("%s don't support this dialect delete[%s]", this.dialect, delete.getClass().getName());
+        throw new CriteriaException(m);
     }
 
-    protected Stmt dialectDelete(_Delete delete, Visible visible) {
-        throw new UnsupportedOperationException(String.format("dialect[%s] not support special delete."
-                , database())
-        );
-    }
 
 
 
@@ -168,165 +197,35 @@ public abstract class AbstractDml extends AbstractDmlAndDql implements DmlDialec
 
     /*################################## blow private batchInsert method ##################################*/
 
-    /**
-     * @return {@link BatchStmt} or {@link GroupStmt} consist of {@link BatchStmt}
-     * @see #update(Update, Visible)
-     */
-    private Stmt handleDialectBatchMultiUpdate(final _BatchMultiUpdate update, final Visible visible) {
-        final Stmt stmt;
-        if (this.sharding) {
-            final Map<Byte, List<ReadWrapper>> wrapperMap;
-            // sharding wrapperList
-            wrapperMap = batchMultiDmlPrimaryRoute(update);
-            final List<Stmt> stmtList = new ArrayList<>();
-            for (Map.Entry<Byte, List<ReadWrapper>> e : wrapperMap.entrySet()) {
-                final SimpleStmt temp;
-                temp = this.dialectMultiUpdate(update, e.getKey(), visible);
-                stmtList.add(_DmlUtils.createBatchStmt(temp, e.getValue()));
-            }
-            stmt = Stmts.group(stmtList);
-        } else {
-            final SimpleStmt temp;
-            temp = this.dialectMultiUpdate(update, (byte) 0, visible);
-            stmt = _DmlUtils.createBatchStmt(temp, update.wrapperList());
-        }
-        return stmt;
-    }
-
-    /**
-     * @see #update(Update, Visible)
-     */
-    private Stmt handleDialectMultiUpdate(final _MultiUpdate update, final Visible visible) {
-        if (update instanceof _BatchDml) {
-            throw new IllegalArgumentException("update type error.");
-        }
-        final byte tableIndex;
-        tableIndex = this.multiDmlPrimaryTaleRoute(update);
-
-        final Stmt stmt;
-        if (tableIndex >= 0) {
-            stmt = this.dialectMultiUpdate(update, tableIndex, visible);
-        } else if (tableIndex == Byte.MIN_VALUE) {
-            final TableMeta<?> table = primaryTable(update.tableBlockList());
-            final int tableCount = table.tableCount();
-            final List<Stmt> stmtList = new ArrayList<>(tableCount);
-            for (int i = 0; i < tableCount; i++) {
-                stmtList.add(this.dialectMultiUpdate(update, (byte) i, visible));
-            }
-            stmt = Stmts.group(stmtList);
-        } else {
-            throw _Exceptions.databaseRouteError(update, this.dialect.sessionFactory());
-        }
-        return stmt;
-    }
 
 
-    /**
-     * @return {@link BatchStmt} or {@link GroupStmt} consist of {@link BatchStmt}
-     * @see #update(Update, Visible)
-     */
-    private Stmt handleDialectBatchSingleUpdate(final _BatchSingleUpdate update, final Visible visible) {
-        final TableMeta<?> table = update.table();
-        final RouteMode routeMode = table.routeMode();
-        final Stmt stmt;
-        if (this.sharding && (routeMode == RouteMode.TABLE || routeMode == RouteMode.SHARDING)) {
-            final Map<Byte, List<ReadWrapper>> wrapperMap;
-            // sharding wrapperList
-            wrapperMap = batchSingleDmlRoute(update);
-
-            final List<Stmt> stmtList = new ArrayList<>();
-            for (Map.Entry<Byte, List<ReadWrapper>> e : wrapperMap.entrySet()) {
-                final SimpleStmt temp;
-                temp = this.dialectSingleUpdate(update, e.getKey(), visible);
-                stmtList.add(_DmlUtils.createBatchStmt(temp, e.getValue()));
-            }
-            stmt = Stmts.group(stmtList);
-        } else {
-            if (routeMode == RouteMode.DATABASE) {
-                //TODO check database index
-                throw new UnsupportedOperationException();
-            }
-            final SimpleStmt temp;
-            temp = this.dialectSingleUpdate(update, (byte) 0, visible);
-            stmt = _DmlUtils.createBatchStmt(temp, update.wrapperList());
-        }
-        return stmt;
-    }
-
-    /**
-     * @return {@link SimpleStmt} or {@link GroupStmt} consist of {@link SimpleStmt}
-     * @see #update(Update, Visible)
-     */
-    private Stmt handleDialectSingleUpdate(final _SingleUpdate update, final Visible visible) {
-        if (update instanceof _BatchDml) {
-            throw new IllegalArgumentException("update type error.");
-        }
-        final byte tableIndex;
-        tableIndex = this.singleDmlTableRoute(update);
-
-        final Stmt stmt;
-        if (tableIndex >= 0) {
-            stmt = this.dialectSingleUpdate(update, tableIndex, visible);
-        } else if (tableIndex == Byte.MIN_VALUE) {
-            final TableMeta<?> table = update.table();
-            final int tableCount = table.tableCount();
-            final List<Stmt> stmtList = new ArrayList<>(tableCount);
-            for (int i = 0; i < tableCount; i++) {
-                stmtList.add(this.dialectSingleUpdate(update, (byte) i, visible));
-            }
-            stmt = Stmts.group(stmtList);
-        } else {
-            throw _Exceptions.databaseRouteError(update, this.dialect.sessionFactory());
-        }
-        return stmt;
-    }
 
 
-    /**
-     * @see #insert(Insert, Visible)
-     */
-    private Stmt handleStandardValueInsert(final _ValuesInsert insert, final Visible visible) {
-        final DomainValuesGenerator generator = this.dialect.sessionFactory().domainValuesGenerator();
-        final boolean migration = insert.migrationData();
-        final List<ObjectWrapper> domainList = insert.domainList();
-        for (ObjectWrapper domain : domainList) {
-            generator.createValues(domain, migration);
-        }
-        final _ValueInsertContext context;
-        context = StandardValueInsertContext.create(insert, this.dialect, visible);
-        _DmlUtils.appendStandardValueInsert(false, context); // append parent insert to parent context.
-        final _InsertBlock childBlock = context.childBlock();
-        if (childBlock != null) {
-            _DmlUtils.appendStandardValueInsert(true, context); // append child insert to child context.
-        }
-        return context.build();
-    }
-
-    /**
-     * @see #delete(Delete, Visible)
-     */
-    private SimpleStmt handleStandardDelete(final _SingleDelete delete, final Visible visible) {
-        final _SingleDeleteContext context;
-        context = StandardDeleteContext.create(delete, this.dialect, visible);
-        final _Block childBlock = context.childBlock();
-        final Stmt stmt;
-        if (childBlock == null) {
-        } else {
-            final StandardUpdateContext context;
-            context = StandardUpdateContext.single(update, tableIndex, this.dialect, visible);
-            stmt = standardSingleTableUpdate(context);
-        }
-        return stmt;
-    }
 
 
     /*################################## blow update private method ##################################*/
+
+    protected Stmt handleDialectInsert(Insert insert, Visible visible) {
+        throw new UnsupportedOperationException();
+    }
+
+    protected SimpleStmt handleDialectUpdate(Update update, Visible visible) {
+        throw new UnsupportedOperationException();
+    }
+
+    protected SimpleStmt handleDialectDelete(Delete update, Visible visible) {
+        throw new UnsupportedOperationException();
+    }
 
 
     /**
      * @see #handleStandardUpdate(_SingleUpdate, Visible)
      */
     protected SimpleStmt standardChildUpdate(_SingleUpdateContext context) {
+        throw new UnsupportedOperationException();
+    }
+
+    protected SimpleStmt standardChildDelete(_SingleDeleteContext context) {
         throw new UnsupportedOperationException();
     }
 
@@ -532,6 +431,27 @@ public abstract class AbstractDml extends AbstractDmlAndDql implements DmlDialec
 
 
     /**
+     * @see #insert(Insert, Visible)
+     */
+    private Stmt handleStandardValueInsert(final _ValuesInsert insert, final Visible visible) {
+        final DomainValuesGenerator generator = this.dialect.sessionFactory().domainValuesGenerator();
+        final boolean migration = insert.migrationData();
+        final List<ObjectWrapper> domainList = insert.domainList();
+        for (ObjectWrapper domain : domainList) {
+            generator.createValues(domain, migration);
+        }
+        final StandardValueInsertContext context;
+        context = StandardValueInsertContext.create(insert, this.dialect, visible);
+        _DmlUtils.appendStandardValueInsert(false, context); // append parent insert to parent context.
+        final _InsertBlock childBlock = context.childBlock();
+        if (childBlock != null) {
+            _DmlUtils.appendStandardValueInsert(true, context); // append child insert to child context.
+        }
+        return context.build();
+    }
+
+
+    /**
      * @see #update(Update, Visible)
      */
     private SimpleStmt handleStandardUpdate(final _SingleUpdate update, final Visible visible) {
@@ -547,26 +467,44 @@ public abstract class AbstractDml extends AbstractDmlAndDql implements DmlDialec
         return stmt;
     }
 
+    /**
+     * @see #delete(Delete, Visible)
+     */
+    private SimpleStmt handleStandardDelete(final _SingleDelete delete, final Visible visible) {
+        final StandardDeleteContext context;
+        context = StandardDeleteContext.create(delete, this.dialect, visible);
+        final _Block childBlock = context.childBlock();
+        final SimpleStmt stmt;
+        if (childBlock == null) {
+            stmt = standardSingleTableDelete(context);
+        } else {
+            stmt = standardChildDelete(context);
+        }
+        return stmt;
+    }
+
 
     /**
      * @see #handleStandardUpdate(_SingleUpdate, Visible)
      * @see #standardChildUpdate(_SingleUpdateContext)
      */
     private SimpleStmt standardSingleTableUpdate(final StandardUpdateContext context) {
-        final _SetBlock childSetClause = context.childBlock();
-        if (childSetClause != null && childSetClause.targetParts().size() > 0) {
+        final _SetBlock childContext = context.childBlock();
+        if (childContext != null && childContext.targetParts().size() > 0) {
             throw new IllegalArgumentException("context error");
         }
-        final Dialect dialect = this.dialect;
+        final Dialect dialect = context.dialect;
 
-        final SingleTableMeta<?> table = context.table();
+        final SingleTableMeta<?> table = context.table;
         final StringBuilder sqlBuilder = context.sqlBuilder;
         // 1. UPDATE clause
-        sqlBuilder.append(UPDATE);
-        sqlBuilder.append(Constant.SPACE);
-        sqlBuilder.append(dialect.safeTableName(table.tableName()));
+        sqlBuilder.append(Constant.UPDATE)
+                .append(Constant.SPACE)
+                .append(dialect.safeTableName(table.tableName()));
+
         if (dialect.tableAliasAfterAs()) {
-            sqlBuilder.append(AS_WORD);
+            sqlBuilder.append(Constant.SPACE)
+                    .append(Constant.AS);
         }
         sqlBuilder.append(Constant.SPACE)
                 .append(context.safeTableAlias);
@@ -578,16 +516,12 @@ public abstract class AbstractDml extends AbstractDmlAndDql implements DmlDialec
         this.dmlWhereClause(context);
 
         //3.1 append discriminator predicate
-        if (childSetClause == null) {
+        if (childContext == null) {
             if (table instanceof ParentTableMeta) {
                 this.discriminator(table, context.safeTableAlias, context);
             }
         } else {
-            final TableMeta<?> childTable = childSetClause.table();
-            if (!(childTable instanceof ChildTableMeta)) {
-                throw new IllegalArgumentException("context error");
-            }
-            this.discriminator(childTable, childSetClause.safeTableAlias(), context);
+            this.discriminator(childContext.table(), context.safeTableAlias, context);
         }
 
         //3.2 append visible
@@ -597,6 +531,39 @@ public abstract class AbstractDml extends AbstractDmlAndDql implements DmlDialec
         //3.3 append condition update fields
         if (conditionFields.size() > 0) {
             this.conditionUpdate(context.safeTableAlias, conditionFields, context);
+        }
+        return context.build();
+    }
+
+    /**
+     * @see #handleStandardDelete(_SingleDelete, Visible)
+     */
+    private SimpleStmt standardSingleTableDelete(final StandardDeleteContext context) {
+        if (context.childBlock != null) {
+            throw new IllegalArgumentException();
+        }
+        final Dialect dialect = context.dialect;
+        final SingleTableMeta<?> table = context.table;
+        final StringBuilder sqlBuilder = context.sqlBuilder;
+
+        // 1. DELETE clause
+        sqlBuilder.append(Constant.DELETE_FROM)
+                .append(Constant.SPACE)
+                .append(dialect.safeTableName(table.tableName()));
+
+        if (dialect.tableAliasAfterAs()) {
+            sqlBuilder.append(Constant.SPACE)
+                    .append(Constant.AS);
+        }
+        sqlBuilder.append(Constant.SPACE)
+                .append(context.safeTableAlias);
+
+        //2. where clause
+        this.dmlWhereClause(context);
+
+        //2.1 append discriminator predicate
+        if (table instanceof ParentTableMeta) {
+            this.discriminator(table, context.safeTableAlias, context);
         }
         return context.build();
     }

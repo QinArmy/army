@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._StandardComposeQuery;
-import io.army.dialect.DqlDialect;
 import io.army.dialect._SqlContext;
 import io.army.util._Assert;
 

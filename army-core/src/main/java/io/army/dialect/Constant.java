@@ -8,6 +8,8 @@ public interface Constant {
 
     String UPDATE = "UPDATE";
 
+    String DELETE_FROM = "DELETE FROM";
+
     String FROM = "FROM";
 
     String JOIN = "JOIN";

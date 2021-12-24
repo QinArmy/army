@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.ErrorCode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._SelectionGroup;
-import io.army.dialect.SqlDialect;
 import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;

@@ -1,25 +1,18 @@
 package io.army.dialect.postgre;
 
-import io.army.criteria.Delete;
-import io.army.criteria.Update;
-import io.army.criteria.Visible;
-import io.army.dialect.AbstractDml;
-import io.army.stmt.Stmt;
+import io.army.dialect._AbstractDialect;
 
-class Postgre11DmlDialect extends AbstractDml {
+class Postgre11DmlDialect extends _AbstractDialect {
 
     Postgre11DmlDialect(Postgre11Dialect dialect) {
         super(dialect);
     }
 
-
     @Override
-    public Stmt returningUpdate(Update update, Visible visible) {
-        return null;
+    public boolean supportOnlyDefault() {
+        return false;
     }
 
-    @Override
-    public Stmt returningDelete(Delete delete, Visible visible) {
-        return null;
-    }
+
+
 }

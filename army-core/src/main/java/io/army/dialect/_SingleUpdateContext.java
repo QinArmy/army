@@ -7,7 +7,7 @@ import io.army.meta.SingleTableMeta;
 public interface _SingleUpdateContext extends _UpdateContext, _SetBlock {
 
 
-    boolean unionUpdateChild();
+    boolean multiTableUpdateChild();
 
     @Override
     SingleTableMeta<?> table();

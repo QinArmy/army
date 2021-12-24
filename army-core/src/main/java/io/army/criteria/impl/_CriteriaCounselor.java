@@ -65,7 +65,7 @@ public abstract class _CriteriaCounselor {
         }
     }
 
-    public static void standardInsert(_Insert insert) {
+    public static void assertStandardInsert(Insert insert) {
         if (!(insert instanceof ContextualValueInsert)) {
             throw new IllegalArgumentException(String.format("%s isn't instance of %s", insert
                     , ContextualValueInsert.class.getName()));

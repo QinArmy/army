@@ -89,7 +89,7 @@ public abstract class _DmlUtils {
         final TableMeta<?> table = blockContext.table();
 
         // 1. INSERT INTO clause
-        builder.append(AbstractDml.INSERT_INTO)
+        builder.append(_AbstractDialect.INSERT_INTO)
                 .append(Constant.SPACE);
         //append table name
         if (context.tableIndex() == 0) {
