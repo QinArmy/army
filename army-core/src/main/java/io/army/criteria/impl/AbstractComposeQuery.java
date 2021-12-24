@@ -5,7 +5,7 @@ import io.army.criteria.impl.inner._ComposeQuery;
 import io.army.criteria.impl.inner._GeneralQuery;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.impl.inner._SortPart;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -127,7 +127,7 @@ abstract class AbstractComposeQuery<Q extends Query, C> implements PartQuery, _S
 
     @Override
     public final void prepared() {
-        Assert.prepared(this.prepared);
+        _Assert.prepared(this.prepared);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package io.army.generator.snowflake;
 
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 public final class Worker {
 
@@ -11,8 +11,8 @@ public final class Worker {
     private final long workerId;
 
     public Worker(long dataCenterId, long workerId) {
-        Assert.isTrue(dataCenterId >= 0 && dataCenterId <= 1024, "dataCenterId must belong [0,1024].");
-        Assert.isTrue(workerId >= 0 && workerId <= 1024, "workerId must belong [0,1024].");
+        _Assert.isTrue(dataCenterId >= 0 && dataCenterId <= 1024, "dataCenterId must belong [0,1024].");
+        _Assert.isTrue(workerId >= 0 && workerId <= 1024, "workerId must belong [0,1024].");
 
         this.dataCenterId = dataCenterId;
         this.workerId = workerId;

@@ -1,7 +1,7 @@
 package io.army.dialect;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.TableWrapper;
+import io.army.criteria.impl.inner.TableBlock;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.lang.Nullable;
 import io.army.meta.*;
@@ -18,9 +18,11 @@ import java.util.Random;
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
  */
-public abstract class AbstractDMLAndDQL extends AbstractSQL {
+public abstract class AbstractDmlAndDql extends AbstractSql {
 
-    protected AbstractDMLAndDQL(Dialect dialect) {
+    static final byte FOLLOW_PRIMARY_ROUTE = Byte.MIN_VALUE + 1;
+
+    protected AbstractDmlAndDql(Dialect dialect) {
         super(dialect);
     }
 
@@ -38,10 +40,10 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
 
     }
 
-    protected void doTableWrapper(TableWrapper tableWrapper, _TablesSqlContext context) {
+    protected void doTableWrapper(TableBlock tableBlock, _TablesSqlContext context) {
         final StringBuilder builder = context.sqlBuilder();
         // 1. form/join type
-        SQLModifier joinType = tableWrapper.jointType();
+        SQLModifier joinType = tableBlock.jointType();
         if (!"".equals(joinType.render())) {
             builder.append(" ")
                     .append(joinType.render());
@@ -49,18 +51,18 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         //2. append ONLY keyword ,eg: postgre,oracle.(optional)
         this.tableOnlyModifier(context);
         //3. append table able
-        TablePart tableAble = tableWrapper.tableAble();
+        TablePart tableAble = tableBlock.table();
         if (tableAble instanceof TableMeta) {
-            context.appendTable((TableMeta<?>) tableAble, tableWrapper.alias());
+            context.appendTable((TableMeta<?>) tableAble, tableBlock.alias());
         } else {
             tableAble.appendSql(context);
             if (this.tableAliasAfterAs()) {
                 builder.append(" AS");
             }
-            context.appendIdentifier(tableWrapper.alias());
+            context.appendIdentifier(tableBlock.alias());
         }
 
-        List<IPredicate> predicateList = tableWrapper.onPredicateList();
+        List<IPredicate> predicateList = tableBlock.onPredicateList();
         if (predicateList.isEmpty()) {
             //TODO zoro ,think and validate this design.
             return;
@@ -86,7 +88,7 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
         }
     }
 
-    protected final void appendVisiblePredicate(List<? extends TableWrapper> tableWrapperList, _TablesSqlContext context
+    protected final void appendVisiblePredicate(List<? extends TableBlock> tableWrapperList, _TablesSqlContext context
             , boolean hasPredicate) {
         // append visible predicates
 //        final TableMeta<?> dual = null;
@@ -302,25 +304,25 @@ public abstract class AbstractDMLAndDQL extends AbstractSQL {
 //                .append(visibleField.mappingMeta().toConstant(null, visible));
     }
 
-    private void appendVisibleIfNeed(TableWrapper tableWrapper, @Nullable TableWrapper preTableWrapper
+    private void appendVisibleIfNeed(TableBlock tableBlock, @Nullable TableBlock preTableBlock
             , _TablesSqlContext context, Map<String, ChildTableMeta<?>> childMap, boolean hasPredicate) {
 
-        final TableMeta<?> table = (TableMeta<?>) tableWrapper.tableAble();
+        final TableMeta<?> table = (TableMeta<?>) tableBlock.table();
         if (table instanceof SimpleTableMeta) {
-            visiblePredicate(context, table, tableWrapper.alias(), hasPredicate);
+            visiblePredicate(context, table, tableBlock.alias(), hasPredicate);
         } else if (table instanceof ParentTableMeta) {
-            visiblePredicate(context, table, tableWrapper.alias(), hasPredicate);
-            if (_DialectUtils.childJoinParent(tableWrapper.onPredicateList(), table)) {
-                if (preTableWrapper != null) {
+            visiblePredicate(context, table, tableBlock.alias(), hasPredicate);
+            if (_DialectUtils.childJoinParent(tableBlock.onPredicateList(), table)) {
+                if (preTableBlock != null) {
                     // remove child that joined by parent with primary key
-                    childMap.remove(preTableWrapper.alias());
+                    childMap.remove(preTableBlock.alias());
                 }
             }
         } else if (table instanceof ChildTableMeta) {
-            if (preTableWrapper == null) {
-                childMap.put(tableWrapper.alias(), (ChildTableMeta<?>) table);
-            } else if (!_DialectUtils.parentJoinChild(tableWrapper.onPredicateList(), table)) {
-                childMap.put(tableWrapper.alias(), (ChildTableMeta<?>) table);
+            if (preTableBlock == null) {
+                childMap.put(tableBlock.alias(), (ChildTableMeta<?>) table);
+            } else if (!_DialectUtils.parentJoinChild(tableBlock.onPredicateList(), table)) {
+                childMap.put(tableBlock.alias(), (ChildTableMeta<?>) table);
             }
         } else {
             throw _Exceptions.unknownTableType(table);

@@ -3,7 +3,7 @@ package io.army.dialect;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -84,7 +84,7 @@ final class DDLContextImpl implements DDLContext {
 
     @Override
     public final List<String> build() {
-        Assert.state(!this.prepared, "");
+        _Assert.state(!this.prepared, "");
         this.prepared = true;
         return Collections.unmodifiableList(this.sqlList);
     }

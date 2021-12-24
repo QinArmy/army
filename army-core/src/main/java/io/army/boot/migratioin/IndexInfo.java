@@ -1,6 +1,6 @@
 package io.army.boot.migratioin;
 
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +43,7 @@ final class IndexInfo {
 
 
     public Map<String,IndexColumnInfo> columnMap() {
-        Assert.state(this.columnMap != null, "columnMap state error.");
+        _Assert.state(this.columnMap != null, "columnMap state error.");
         return this.columnMap;
     }
 

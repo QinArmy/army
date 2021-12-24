@@ -7,7 +7,7 @@ import io.army.dialect.SqlDialect;
 import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -116,8 +116,8 @@ abstract class SelectionGroups implements _SelectionGroup {
 
         @Override
         public void finish(SubQuery subQuery, String subQueryAlias) {
-            Assert.state(this.selectionList == null, "selectPartList only singleUpdate once.");
-            Assert.isTrue(this.subQueryAlias.equals(subQueryAlias)
+            _Assert.state(this.selectionList == null, "selectPartList only singleUpdate once.");
+            _Assert.isTrue(this.subQueryAlias.equals(subQueryAlias)
                     , () -> String.format("SelectionGroup subQueryAlias[%s] and subQueryAlias[%s] not match"
                             , this.subQueryAlias, subQueryAlias));
 
@@ -138,7 +138,7 @@ abstract class SelectionGroups implements _SelectionGroup {
 
         @Override
         public List<Selection> selectionList() {
-            Assert.state(this.selectionList != null, "selectPartList is null,SubQuerySelectGroup state error.");
+            _Assert.state(this.selectionList != null, "selectPartList is null,SubQuerySelectGroup state error.");
             return this.selectionList;
         }
 
@@ -161,7 +161,7 @@ abstract class SelectionGroups implements _SelectionGroup {
 
         @Override
         public void finish(SubQuery subQuery, String subQueryAlias) {
-            Assert.state(this.selectionList == null, "SubQuerySelectGroup only singleUpdate once.");
+            _Assert.state(this.selectionList == null, "SubQuerySelectGroup only singleUpdate once.");
             List<Selection> selectionList = new ArrayList<>(this.derivedFieldNameList.size());
             for (String derivedField : this.derivedFieldNameList) {
                 selectionList.add(subQuery.selection(derivedField));
@@ -177,7 +177,7 @@ abstract class SelectionGroups implements _SelectionGroup {
 
         @Override
         public List<Selection> selectionList() {
-            Assert.state(this.selectionList != null, () -> String.format("selectionList is null,%s not finished"
+            _Assert.state(this.selectionList != null, () -> String.format("selectionList is null,%s not finished"
                     , SubQueryListSelectionGroup.class.getSimpleName()));
             return this.selectionList;
         }

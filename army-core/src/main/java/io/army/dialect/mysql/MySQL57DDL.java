@@ -8,7 +8,7 @@ import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
 import io.army.sqltype.MySQLDataType;
 import io.army.sqltype.SqlDataType;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 import java.util.Collections;
 
@@ -17,7 +17,7 @@ class MySQL57DDL extends AbstractDDL {
 
     MySQL57DDL(MySQL57Dialect mysql) {
         super(mysql);
-        Assert.notNull(mysql, "mysql required");
+        _Assert.notNull(mysql, "mysql required");
     }
 
     /*################################## blow SQL interface method ##################################*/

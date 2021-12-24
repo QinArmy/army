@@ -1,6 +1,6 @@
 package io.army.generator.snowflake;
 
-import io.army.util.Assert;
+import io.army.util._Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +53,7 @@ public abstract class AbstractSnowflakeClient implements SnowflakeClient {
 
     @Override
     public boolean registerGenerator(SnowflakeGenerator generator) throws SnowflakeWorkerException {
-        Assert.notNull(generator, "generator required");
+        _Assert.notNull(generator, "generator required");
         final Worker worker = workerHolder.get();
 
         boolean match ;
@@ -74,7 +74,7 @@ public abstract class AbstractSnowflakeClient implements SnowflakeClient {
     @Override
     public Worker currentWorker() {
         Worker worker = workerHolder.get();
-        Assert.state(worker != null, "Worker not init.");
+        _Assert.state(worker != null, "Worker not init.");
         return worker;
     }
 

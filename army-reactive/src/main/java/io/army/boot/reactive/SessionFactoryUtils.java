@@ -13,9 +13,9 @@ import io.army.reactive.advice.ReactiveDomainDeleteAdvice;
 import io.army.reactive.advice.ReactiveDomainInsertAdvice;
 import io.army.reactive.advice.ReactiveDomainUpdateAdvice;
 import io.army.session.GenericRmSessionFactory;
-import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 import io.army.util.ReflectionUtils;
+import io.army.util._Assert;
 import io.jdbd.session.DatabaseSession;
 import io.jdbd.session.DatabaseSessionFactory;
 import reactor.core.publisher.Flux;
@@ -160,7 +160,7 @@ abstract class SessionFactoryUtils {
 
         private ReactiveDomainInsertAdviceComposite(TableMeta<?> tableMeta
                 , List<ReactiveDomainInsertAdvice> adviceList) {
-            Assert.notEmpty(adviceList, "adviceList must not empty.");
+            _Assert.notEmpty(adviceList, "adviceList must not empty.");
             this.tableMetaSet = Collections.singleton(tableMeta);
             this.adviceList = Collections.unmodifiableList(adviceList);
         }
@@ -229,7 +229,7 @@ abstract class SessionFactoryUtils {
 
         private ReactiveDomainUpdateAdviceComposite(TableMeta<?> tableMeta
                 , List<ReactiveDomainUpdateAdvice> adviceList) {
-            Assert.notEmpty(adviceList, "adviceList must not empty.");
+            _Assert.notEmpty(adviceList, "adviceList must not empty.");
             this.tableMetaSet = Collections.singleton(tableMeta);
             this.adviceList = Collections.unmodifiableList(adviceList);
         }
@@ -298,7 +298,7 @@ abstract class SessionFactoryUtils {
 
         private ReactiveDomainDeleteAdviceComposite(TableMeta<?> tableMeta
                 , List<ReactiveDomainDeleteAdvice> adviceList) {
-            Assert.notEmpty(adviceList, "adviceList must not empty.");
+            _Assert.notEmpty(adviceList, "adviceList must not empty.");
             this.tableMetaSet = Collections.singleton(tableMeta);
             this.adviceList = Collections.unmodifiableList(adviceList);
         }

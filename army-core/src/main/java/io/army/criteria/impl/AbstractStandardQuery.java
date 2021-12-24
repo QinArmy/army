@@ -4,7 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._StandardQuery;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -237,7 +237,7 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
 
     @Override
     public final HavingSpec<Q, C> groupBy(List<SortPart> sortPartList) {
-        Assert.notEmpty(sortPartList, "sortPartList must not empty.");
+        _Assert.notEmpty(sortPartList, "sortPartList must not empty.");
         addGroupByList(sortPartList);
         return this;
     }
@@ -245,7 +245,7 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
     @Override
     public final HavingSpec<Q, C> groupBy(Function<C, List<SortPart>> function) {
         List<SortPart> sortPartList = function.apply(this.criteria);
-        Assert.notEmpty(sortPartList, "sortPartList must not empty.");
+        _Assert.notEmpty(sortPartList, "sortPartList must not empty.");
         addGroupByList(sortPartList);
         return this;
     }
@@ -266,7 +266,7 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
 
     @Override
     public final OrderBySpec<Q, C> having(List<IPredicate> predicateList) {
-        Assert.notEmpty(predicateList, "predicateList not empty.");
+        _Assert.notEmpty(predicateList, "predicateList not empty.");
         addHavingList(predicateList);
         return this;
     }
@@ -274,7 +274,7 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
     @Override
     public final OrderBySpec<Q, C> having(Function<C, List<IPredicate>> function) {
         List<IPredicate> predicateList = function.apply(this.criteria);
-        Assert.notEmpty(predicateList, "predicateList not empty.");
+        _Assert.notEmpty(predicateList, "predicateList not empty.");
         addHavingList(predicateList);
         return this;
     }
@@ -301,7 +301,7 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
 
     @Override
     public final LimitSpec<Q, C> orderBy(List<SortPart> sortPartList) {
-        Assert.notEmpty(sortPartList, "sortPartList must not empty.");
+        _Assert.notEmpty(sortPartList, "sortPartList must not empty.");
         addOrderByList(sortPartList);
         return this;
     }
@@ -309,7 +309,7 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
     @Override
     public final LimitClause<Q, C> orderBy(Function<C, List<SortPart>> function) {
         List<SortPart> sortPartList = function.apply(this.criteria);
-        Assert.notEmpty(sortPartList, "sortPartList must not empty.");
+        _Assert.notEmpty(sortPartList, "sortPartList must not empty.");
         addOrderByList(sortPartList);
         return this;
     }

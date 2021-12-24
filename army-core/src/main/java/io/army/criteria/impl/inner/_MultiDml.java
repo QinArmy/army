@@ -7,7 +7,7 @@ public interface _MultiDml extends _Statement {
     /**
      * @return a unmodifiable list
      */
-    List<? extends TableWrapper> tableWrapperList();
+    List<? extends TableBlock> tableBlockList();
 
     /**
      * @return a unmodifiable list

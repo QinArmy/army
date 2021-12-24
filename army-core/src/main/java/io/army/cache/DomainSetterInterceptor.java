@@ -7,7 +7,7 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.util.Assert;
+import io.army.util._Assert;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
@@ -17,7 +17,7 @@ import java.util.*;
 final class DomainSetterInterceptor implements MethodInterceptor, DomainUpdateAdvice {
 
     static DomainSetterInterceptor build(DomainReadonlyWrapper readonlyWrapper, DomainSetterPointcut pointcut) {
-        Assert.isTrue(readonlyWrapper.tableMeta() == pointcut.tableMeta()
+        _Assert.isTrue(readonlyWrapper.tableMeta() == pointcut.tableMeta()
                 , () -> String.format("readonlyWrapper[%s] and pointcut[%s] not match."
                         , readonlyWrapper.tableMeta(), pointcut.tableMeta()));
 
@@ -33,7 +33,7 @@ final class DomainSetterInterceptor implements MethodInterceptor, DomainUpdateAd
         // 1. id predicate
         final PrimaryFieldMeta<?, Object> idMeta = tableMeta.id();
         final Object idValue = readonlyWrapper.get(idMeta.fieldName());
-        Assert.notNull(idValue, "Domain Id is null");
+        _Assert.notNull(idValue, "Domain Id is null");
        // predicateList.add(Predicates.primaryValueEquals(idMeta, idValue));
 
         FieldMeta<?, Object> versionMeta = null;
@@ -50,7 +50,7 @@ final class DomainSetterInterceptor implements MethodInterceptor, DomainUpdateAd
         if (versionMeta != null) {
             // 2. version predicate
             Object versionValue = readonlyWrapper.get(versionMeta.fieldName());
-            Assert.notNull(versionValue, "Domain version is null");
+            _Assert.notNull(versionValue, "Domain version is null");
             predicateList.add((_Predicate) versionMeta.equal(versionValue));
         }
         return predicateList;

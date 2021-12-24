@@ -12,7 +12,7 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 import java.time.ZoneOffset;
 import java.util.List;
@@ -50,7 +50,7 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory {
 
 
     protected AbstractSessionFactory(final FactoryBuilderSupport support) throws SessionFactoryException {
-        final String name = Assert.assertHasText(support.name, "factory name required");
+        final String name = _Assert.assertHasText(support.name, "factory name required");
         final ArmyEnvironment env = Objects.requireNonNull(support.environment);
 
         if (FACTORY_MAP.putIfAbsent(name, Boolean.TRUE) != null) {

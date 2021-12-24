@@ -1,7 +1,7 @@
 package io.army.stmt;
 
 import io.army.codec.StatementType;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 import java.util.Collections;
 import java.util.List;
@@ -86,9 +86,9 @@ final class BatchStmtImpl implements BatchStmt {
 
         @Override
         public BatchStmt build() {
-            Assert.hasText(this.sql, "sql required");
-            Assert.notNull(this.paramGroupList, "paramGroupList required");
-            Assert.notNull(this.statementType, "statementType required");
+            _Assert.hasText(this.sql, "sql required");
+            _Assert.notNull(this.paramGroupList, "paramGroupList required");
+            _Assert.notNull(this.statementType, "statementType required");
             return new BatchStmtImpl(this.sql, this.paramGroupList, this.statementType, this.hasVersion);
         }
     }

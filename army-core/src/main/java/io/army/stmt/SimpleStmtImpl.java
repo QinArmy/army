@@ -3,7 +3,7 @@ package io.army.stmt;
 
 import io.army.codec.StatementType;
 import io.army.criteria.Selection;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 import java.util.Collections;
 import java.util.List;
@@ -108,8 +108,8 @@ final class SimpleStmtImpl implements SimpleStmt {
 
         @Override
         public SimpleStmt build() {
-            Assert.hasText(this.sql, "sql required");
-            Assert.notNull(this.statementType, "statementType required");
+            _Assert.hasText(this.sql, "sql required");
+            _Assert.notNull(this.statementType, "statementType required");
 
             List<ParamValue> paramList = this.paramList;
             if (paramList == null) {

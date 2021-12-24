@@ -17,9 +17,9 @@ import io.army.session.FactoryMode;
 import io.army.session.GenericRmSessionFactory;
 import io.army.session.GenericSessionFactory;
 import io.army.session.GenericTmSessionFactory;
-import io.army.util.Assert;
 import io.army.util.ReflectionUtils;
 import io.army.util.StringUtils;
+import io.army.util._Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -131,7 +131,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
 
     public static long getDefaultStartTime() {
         long statTime = DEFAULT_START_TIME.get();
-        Assert.state(statTime >= 0, "start time not init");
+        _Assert.state(statTime >= 0, "start time not init");
         return statTime;
     }
 
@@ -172,7 +172,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
      */
     static void updateDefaultSnowflake() {
         SnowflakeClient client = SNOWFLAKE_CLIENT.get();
-        Assert.state(client != null, "SnowflakeClient not init.");
+        _Assert.state(client != null, "SnowflakeClient not init.");
 
         doUpdateDefaultSnowflake(client.currentWorker(), true);
     }
@@ -323,7 +323,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
         } else {
             newSnowflake = (Snowflake) ReflectionUtils.invokeMethod(
                     method, null, startTime, worker);
-            Assert.state(newSnowflake != null, () -> String.format("method[%s] return null", method));
+            _Assert.state(newSnowflake != null, () -> String.format("method[%s] return null", method));
         }
 
         if (DEFAULT_SNOWFLAKE_HOLDER.compareAndSet(oldSnowflake, newSnowflake)) {
@@ -374,13 +374,13 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
 
     private String nextAsStringWithDepend(FieldMeta<?, ?> fieldMeta, ReadWrapper entityWrapper) {
         GeneratorMeta generatorMeta = fieldMeta.generator();
-        Assert.notNull(generatorMeta, "paramMeta must have generator");
+        _Assert.notNull(generatorMeta, "paramMeta must have generator");
 
         String dependOnProp = generatorMeta.dependFieldName();
         if (!StringUtils.hasText(dependOnProp)) {
             return snowflake.nextAsString();
         }
-        Assert.isTrue(entityWrapper.isReadable(dependOnProp)
+        _Assert.isTrue(entityWrapper.isReadable(dependOnProp)
                 , () -> String.format("paramMeta[%s.%s] depend not readable"
                         , fieldMeta.javaType().getName(), fieldMeta.fieldName()));
 
@@ -431,7 +431,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
         SnowflakeClient client = getSnowflakeClient(sessionFactory);
         for (int i = 0; !client.registerGenerator(this); i++) {
             updateSnowflake();
-            Assert.state(i <= 10, "SnowflakeGenerator register count exception");
+            _Assert.state(i <= 10, "SnowflakeGenerator register count exception");
         }
     }
 
@@ -440,7 +440,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
      */
     void updateSnowflake() {
         SnowflakeClient client = SNOWFLAKE_CLIENT.get();
-        Assert.state(client != null, "SnowflakeClient not init");
+        _Assert.state(client != null, "SnowflakeClient not init");
 
         final Snowflake oldSnowflake = snowflakeHolder.get();
         final Worker worker = client.currentWorker();
@@ -451,11 +451,11 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
 
         final Method method = SNOWFLAKE_BUILDER.get();
 
-        Assert.state(method != null, "SnowflakeGenerator not init");
+        _Assert.state(method != null, "SnowflakeGenerator not init");
         Snowflake newSnowflake = (Snowflake) ReflectionUtils.invokeMethod(method, null
                 , oldSnowflake.getStartTime(), worker);
 
-        Assert.state(newSnowflake != null, () -> String.format("method[%s] return null", method));
+        _Assert.state(newSnowflake != null, () -> String.format("method[%s] return null", method));
         snowflakeHolder.compareAndSet(oldSnowflake, newSnowflake);
         this.snowflake = snowflakeHolder.get();
     }

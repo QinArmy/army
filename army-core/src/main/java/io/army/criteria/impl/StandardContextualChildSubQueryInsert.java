@@ -5,7 +5,7 @@ import io.army.criteria.SubQuery;
 import io.army.domain.IDomain;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 import java.util.Collections;
 import java.util.List;
@@ -40,8 +40,8 @@ final class StandardContextualChildSubQueryInsert<T extends IDomain, C> extends 
     private boolean prepared;
 
     private StandardContextualChildSubQueryInsert(ChildTableMeta<T> tableMeta, C criteria) {
-        Assert.notNull(tableMeta, "tableMeta required");
-        Assert.notNull(criteria, "criteria required");
+        _Assert.notNull(tableMeta, "tableMeta required");
+        _Assert.notNull(criteria, "criteria required");
 
         this.tableMeta = tableMeta;
         this.criteria = criteria;
@@ -117,10 +117,10 @@ final class StandardContextualChildSubQueryInsert<T extends IDomain, C> extends 
         }
         CriteriaContextStack.clearContextStack(this.criteriaContext);
 
-        Assert.notEmpty(this.parentFieldList, "parent fields required");
-        Assert.notNull(this.parentSubQuery, "parent sub query required");
-        Assert.notEmpty(this.childFieldList, "child fields required");
-        Assert.notNull(this.childSubQuery, "child sub query required");
+        _Assert.notEmpty(this.parentFieldList, "parent fields required");
+        _Assert.notNull(this.parentSubQuery, "parent sub query required");
+        _Assert.notEmpty(this.childFieldList, "child fields required");
+        _Assert.notNull(this.childSubQuery, "child sub query required");
 
         this.parentFieldList = Collections.unmodifiableList(this.parentFieldList);
         this.childFieldList = Collections.unmodifiableList(this.childFieldList);
@@ -132,7 +132,7 @@ final class StandardContextualChildSubQueryInsert<T extends IDomain, C> extends 
 
     @Override
     public void prepared() {
-        Assert.prepared(this.prepared);
+        _Assert.prepared(this.prepared);
     }
 
     /*################################## blow InnerStandardChildSubQueryInsert method ##################################*/

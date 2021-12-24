@@ -2,15 +2,15 @@ package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.TableWrapper;
+import io.army.criteria.impl.inner.TableBlock;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Query;
 import io.army.criteria.impl.inner._SortPart;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.util.Assert;
 import io.army.util.CollectionUtils;
+import io.army.util._Assert;
 
 import java.util.*;
 import java.util.function.Function;
@@ -24,7 +24,7 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
 
     private List<SelectPart> selectPartList = new ArrayList<>();
 
-    private List<TableWrapperImpl> tableWrapperList = new ArrayList<>();
+    private List<TableBlockImpl> tableWrapperList = new ArrayList<>();
 
     private List<_Predicate> predicateList = new ArrayList<>();
 
@@ -45,7 +45,7 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
     private boolean prepared;
 
     AbstractQuery(C criteria) {
-        Assert.notNull(criteria, "criteria required");
+        _Assert.notNull(criteria, "criteria required");
         this.criteria = criteria;
     }
 
@@ -66,8 +66,8 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
         }
         processSelectPartList(this.selectPartList, this.tableWrapperList);
 
-        Assert.state(!this.selectPartList.isEmpty(), "no select list clause.");
-        Assert.state(!this.tableWrapperList.isEmpty(), "no from clause.");
+        _Assert.state(!this.selectPartList.isEmpty(), "no select list clause.");
+        _Assert.state(!this.tableWrapperList.isEmpty(), "no from clause.");
 
         this.modifierList = asUnmodifiableList(this.modifierList);
         this.selectPartList = Collections.unmodifiableList(this.selectPartList);
@@ -86,12 +86,12 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
 
     @Override
     public final void prepared() {
-        Assert.prepared(this.prepared);
+        _Assert.prepared(this.prepared);
     }
 
     @Override
     public final void clear() {
-        Assert.nonPrepared(this.prepared);
+        _Assert.nonPrepared(this.prepared);
         this.modifierList = null;
         this.selectPartList = null;
         this.tableWrapperList = null;
@@ -119,7 +119,7 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
     }
 
     @Override
-    public final List<? extends TableWrapper> tableWrapperList() {
+    public final List<? extends TableBlock> tableWrapperList() {
         return this.tableWrapperList;
     }
 
@@ -154,11 +154,11 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
     }
 
     final <S extends SelectPart> void doSelectClause(@Nullable Distinct distinct, List<S> selectPartList) {
-        Assert.state(this.selectPartList.isEmpty(), "select clause ended.");
+        _Assert.state(this.selectPartList.isEmpty(), "select clause ended.");
         if (distinct != null) {
             this.modifierList = Collections.singletonList(distinct);
         }
-        Assert.notEmpty(selectPartList, "select clause must have SelectPart.");
+        _Assert.notEmpty(selectPartList, "select clause must have SelectPart.");
         if (this instanceof ColumnSubQuery && selectPartList.size() != 1) {
             throw new IllegalArgumentException("ColumnSubQuery only one selection.");
         }
@@ -166,10 +166,10 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
     }
 
     final <M extends SQLModifier, S extends SelectPart> void doSelectClause(List<M> modifierList, List<S> selectPartList) {
-        Assert.state(this.selectPartList.isEmpty(), "select clause ended.");
+        _Assert.state(this.selectPartList.isEmpty(), "select clause ended.");
 
         this.modifierList = new ArrayList<>(modifierList);
-        Assert.notEmpty(selectPartList, "select clause must have SelectPart.");
+        _Assert.notEmpty(selectPartList, "select clause must have SelectPart.");
         if (this instanceof ColumnSubQuery && selectPartList.size() != 1) {
             throw new IllegalArgumentException("ColumnSubQuery only one selection.");
         }
@@ -177,7 +177,7 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
     }
 
     final <S extends SelectPart> void doSelectClause(@Nullable Distinct distinct, S... selectParts) {
-        Assert.state(this.selectPartList.isEmpty(), "select clause ended.");
+        _Assert.state(this.selectPartList.isEmpty(), "select clause ended.");
         if (distinct != null) {
             this.modifierList = Collections.singletonList(distinct);
         }
@@ -188,7 +188,7 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
     }
 
     final <M extends SQLModifier, S extends SelectPart> void doSelectClause(List<M> modifierList, S selectPart) {
-        Assert.state(this.selectPartList.isEmpty(), "select clause ended.");
+        _Assert.state(this.selectPartList.isEmpty(), "select clause ended.");
         this.modifierList = new ArrayList<>(modifierList);
         if (this instanceof ColumnSubQuery && !(selectPart instanceof Selection)) {
             throw new IllegalArgumentException("ColumnSubQuery only one selection.");
@@ -199,10 +199,10 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
 
     final void doOnClause(List<IPredicate> predicateList) {
         if (this.ableOnClause) {
-            Assert.notEmpty(predicateList, "predicateList required");
-            Assert.state(!this.tableWrapperList.isEmpty(), "no form/join clause.");
+            _Assert.notEmpty(predicateList, "predicateList required");
+            _Assert.state(!this.tableWrapperList.isEmpty(), "no form/join clause.");
 
-            TableWrapperImpl tableWrapper = this.tableWrapperList.get(this.tableWrapperList.size() - 1);
+            TableBlockImpl tableWrapper = this.tableWrapperList.get(this.tableWrapperList.size() - 1);
             tableWrapper.addOnPredicateList(predicateList);
             this.ableOnClause = false;
         }
@@ -240,13 +240,13 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
 
     final void doRouteClause(int databaseIndex, int tableIndex) {
         if (this.ableRouteClause) {
-            TableWrapperImpl tableWrapper = this.tableWrapperList.get(this.tableWrapperList.size() - 1);
+            TableBlockImpl tableWrapper = this.tableWrapperList.get(this.tableWrapperList.size() - 1);
             tableWrapper.route(databaseIndex, tableIndex);
             this.ableRouteClause = false;
         }
     }
 
-    void doCheckTableAble(TableWrapper wrapper) {
+    void doCheckTableAble(TableBlock wrapper) {
         throw new IllegalArgumentException(String.format("tableAble[%s] isn't TableMeta or SubQuery."
                 , wrapper.alias()));
     }
@@ -324,17 +324,17 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
         this.rowCount = rowCount;
     }
 
-    final TableWrapperImpl lastTableWrapper() {
-        Assert.state(!this.tableWrapperList.isEmpty(), "tableWrapperList is empty.");
+    final TableBlockImpl lastTableWrapper() {
+        _Assert.state(!this.tableWrapperList.isEmpty(), "tableWrapperList is empty.");
 
-        TableWrapperImpl tableWrapper = this.tableWrapperList.get(this.tableWrapperList.size() - 1);
-        Assert.state(tableWrapper.getClass() != TableWrapperImpl.class
+        TableBlockImpl tableWrapper = this.tableWrapperList.get(this.tableWrapperList.size() - 1);
+        _Assert.state(tableWrapper.getClass() != TableBlockImpl.class
                 , "tableWrapper isn't sub class of TableWrapperImpl");
         return tableWrapper;
     }
 
-    TableWrapperImpl createTableWrapper(TablePart tableAble, String alias, JoinType joinType) {
-        return new TableWrapperImpl(tableAble, alias, joinType);
+    TableBlockImpl createTableWrapper(TablePart tableAble, String alias, JoinType joinType) {
+        return new TableBlockImpl(tableAble, alias, joinType);
     }
 
     void onNotAddDerivedTable() {
@@ -361,12 +361,12 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
     /**
      *
      */
-    private void addTableAble(TableWrapperImpl wrapper) {
+    private void addTableAble(TableBlockImpl wrapper) {
 
         if (wrapper.jointType == JoinType.NONE) {
-            Assert.state(this.tableWrapperList.isEmpty(), "from clause ended.");
+            _Assert.state(this.tableWrapperList.isEmpty(), "from clause ended.");
         } else {
-            Assert.state(!this.tableWrapperList.isEmpty(), "no from clause.");
+            _Assert.state(!this.tableWrapperList.isEmpty(), "no from clause.");
         }
 
         this.tableWrapperList.add(wrapper);
@@ -389,7 +389,7 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
      *     <li> process {@link SubQuerySelectionGroup} in {@code selectPartList}</li>
      * </ol>
      */
-    static void processSelectPartList(List<SelectPart> selectPartList, List<TableWrapperImpl> tableWrapperList) {
+    static void processSelectPartList(List<SelectPart> selectPartList, List<TableBlockImpl> tableWrapperList) {
 
         Map<String, SubQuerySelectionGroup> subQuerySelectGroupMap = new LinkedHashMap<>();
 
@@ -413,17 +413,17 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
         }
 
         // 2. find table alias to create SelectionGroup .
-        for (TableWrapper tableWrapper : tableWrapperList) {
-            TablePart tableAble = tableWrapper.tableAble();
+        for (TableBlock tableBlock : tableWrapperList) {
+            TablePart tableAble = tableBlock.table();
 
             if (tableAble instanceof SubQuery) {
-                SubQuerySelectionGroup group = subQuerySelectGroupMap.remove(tableWrapper.alias());
+                SubQuerySelectionGroup group = subQuerySelectGroupMap.remove(tableBlock.alias());
                 if (group != null) {
                     // finish SubQuerySelectGroup
-                    group.finish((SubQuery) tableAble, tableWrapper.alias());
+                    group.finish((SubQuery) tableAble, tableBlock.alias());
                 }
             } else if (tableAble instanceof TableMeta) {
-                tableSelectGroupMap.remove(tableWrapper.alias());
+                tableSelectGroupMap.remove(tableBlock.alias());
             }
         }
 

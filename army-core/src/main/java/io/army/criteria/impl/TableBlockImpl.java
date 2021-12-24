@@ -3,14 +3,14 @@ package io.army.criteria.impl;
 import io.army.criteria.IPredicate;
 import io.army.criteria.SQLModifier;
 import io.army.criteria.TablePart;
-import io.army.criteria.impl.inner.TableWrapper;
-import io.army.util.Assert;
+import io.army.criteria.impl.inner.TableBlock;
+import io.army.util._Assert;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-class TableWrapperImpl implements TableWrapper {
+class TableBlockImpl implements TableBlock {
 
     final TablePart tableAble;
 
@@ -24,14 +24,14 @@ class TableWrapperImpl implements TableWrapper {
 
     private int tableIndex = -1;
 
-    TableWrapperImpl(TablePart tableAble, String alias, JoinType jointType) {
+    TableBlockImpl(TablePart tableAble, String alias, JoinType jointType) {
         this.tableAble = tableAble;
         this.alias = alias;
         this.jointType = jointType;
     }
 
     final void addOnPredicateList(List<IPredicate> predicateList) {
-        Assert.state(this.onPredicateList.isEmpty(), "on clause ended.");
+        _Assert.state(this.onPredicateList.isEmpty(), "on clause ended.");
         this.onPredicateList = Collections.unmodifiableList(new ArrayList<>(predicateList));
     }
 
@@ -44,7 +44,7 @@ class TableWrapperImpl implements TableWrapper {
         this.tableIndex = tableIndex;
     }
 
-    public final TablePart tableAble() {
+    public final TablePart table() {
         return tableAble;
     }
 
@@ -61,12 +61,12 @@ class TableWrapperImpl implements TableWrapper {
     }
 
     @Override
-    public final int databaseIndex() {
+    public final int databaseRoute() {
         return this.dataSourceIndex;
     }
 
     @Override
-    public final int tableIndex() {
+    public final int tableRoute() {
         return this.tableIndex;
     }
 }

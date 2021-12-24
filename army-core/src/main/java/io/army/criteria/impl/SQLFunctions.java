@@ -6,7 +6,7 @@ import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.meta.ParamMeta;
 import io.army.util.ArrayUtils;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -137,7 +137,7 @@ abstract class SQLFunctions<E> extends OperationExpression<E> implements Express
         private TwoArgumentFunc(String name, MappingType returnType, List<String> format, _Expression<?> one
                 , _Expression<?> two) {
             super(name, returnType);
-            Assert.isTrue(format.size() >= 3, "");
+            _Assert.isTrue(format.size() >= 3, "");
             this.format = format;
             this.one = one;
             this.two = two;
@@ -186,7 +186,7 @@ abstract class SQLFunctions<E> extends OperationExpression<E> implements Express
         ThreeArgumentFunc(String name, MappingType returnType, List<String> format, Expression<?> one
                 , Expression<?> two, Expression<?> three) {
             super(name, returnType);
-            Assert.isTrue(format.size() >= 4, "showSQL error");
+            _Assert.isTrue(format.size() >= 4, "showSQL error");
             this.format = format;
             this.one = (_Expression<?>) one;
             this.two = (_Expression<?>) two;

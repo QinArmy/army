@@ -4,7 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._StandardComposeQuery;
 import io.army.dialect.DqlDialect;
 import io.army.dialect._SqlContext;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 import java.util.Arrays;
 import java.util.List;
@@ -84,7 +84,7 @@ abstract class ComposeQueries<Q extends Query, C> extends AbstractComposeQuery<Q
     @Override
     public final LimitClause<Q, C> orderBy(Function<C, List<SortPart>> function) {
         List<SortPart> list = function.apply(this.criteria);
-        Assert.notEmpty(list, "sortPartList must not empty.");
+        _Assert.notEmpty(list, "sortPartList must not empty.");
         doOrderBy(list);
         return this;
     }

@@ -14,7 +14,7 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.util.Assert;
+import io.army.util._Assert;
 import io.army.util._Exceptions;
 
 import java.util.*;
@@ -76,14 +76,14 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
 
     @Override
     public BatchSetSpec<T, C> route(int databaseIndex, int tableIndex) {
-        this.databaseIndex = Assert.databaseRoute(this.table, databaseIndex);
-        this.tableIndex = Assert.tableRoute(this.table, tableIndex);
+        this.databaseIndex = _Assert.databaseRoute(this.table, databaseIndex);
+        this.tableIndex = _Assert.tableRoute(this.table, tableIndex);
         return this;
     }
 
     @Override
     public BatchSetSpec<T, C> route(int tableIndex) {
-        this.tableIndex = Assert.tableRoute(this.table, tableIndex);
+        this.tableIndex = _Assert.tableRoute(this.table, tableIndex);
         return this;
     }
 
@@ -250,14 +250,14 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
 
     @Override
     public void prepared() {
-        Assert.prepared(this.prepared);
+        _Assert.prepared(this.prepared);
     }
 
     /*################################## blow UpdateSpec method ##################################*/
 
     @Override
     public Update asUpdate() {
-        Assert.nonPrepared(this.prepared);
+        _Assert.nonPrepared(this.prepared);
         CriteriaContextStack.clearContextStack(this.criteriaContext);
 
         final List<FieldMeta<?, ?>> fieldList = this.fieldList;
@@ -291,7 +291,7 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
 
     @Override
     public List<ReadWrapper> wrapperList() {
-        Assert.prepared(this.prepared);
+        _Assert.prepared(this.prepared);
         return this.paramList;
     }
 
@@ -327,7 +327,7 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
 
     @Override
     public List<_Predicate> predicateList() {
-        Assert.prepared(this.prepared);
+        _Assert.prepared(this.prepared);
         return this.predicateList;
     }
 

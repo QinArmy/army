@@ -3,6 +3,7 @@ package io.army.sharding;
 import io.army.beans.ObjectWrapper;
 import io.army.beans.ReadWrapper;
 import io.army.boot.DomainValuesGenerator;
+import io.army.criteria.RouteFieldCollectionPredicate;
 import io.army.criteria.SubQuery;
 import io.army.criteria.TablePart;
 import io.army.criteria.impl.inner.*;
@@ -73,6 +74,20 @@ public abstract class _RouteUtils {
     }
 
 
+    public static Map<Byte, _Predicate> splitPredicates(List<_Predicate> predicateList, RouteContext context) {
+        final List<_Predicate> tempList = new ArrayList<>();
+        for (_Predicate predicate : predicateList) {
+            if (!(predicate instanceof RouteFieldCollectionPredicate)) {
+                tempList.add(predicate);
+                continue;
+            }
+            ((RouteFieldCollectionPredicate) predicate).tableSplit(context::route);
+
+        }
+        return Collections.emptyMap();
+    }
+
+
     /**
      * @return negative : not found table route.
      */
@@ -117,6 +132,18 @@ public abstract class _RouteUtils {
 
         }
         return tableIndex;
+    }
+
+    public static byte databaseRouteFromRouteField(final TableMeta<?> table, final List<_Predicate> predicateList
+            , final RouteContext context) {
+        byte databaseIndex = -1;
+        for (_Predicate predicate : predicateList) {
+            databaseIndex = predicate.databaseIndex(table, context);
+            if (databaseIndex >= 0) {
+                break;
+            }
+        }
+        return databaseIndex;
     }
 
     @Nullable
@@ -195,12 +222,12 @@ public abstract class _RouteUtils {
 
     @Deprecated
     @Nullable
-    protected static RouteWrapper findRouteFromWhereClause(List<? extends TableWrapper> tableWrapperList
+    protected static RouteWrapper findRouteFromWhereClause(List<? extends TableBlock> tableWrapperList
             , List<_Predicate> predicateList, final boolean dataSource) {
         RouteWrapper routeWrapper = null;
 
-        for (TableWrapper tableWrapper : tableWrapperList) {
-            TablePart tableAble = tableWrapper.tableAble();
+        for (TableBlock tableBlock : tableWrapperList) {
+            TablePart tableAble = tableBlock.table();
 
             if (!(tableAble instanceof TableMeta)) {
                 continue;
@@ -218,18 +245,18 @@ public abstract class _RouteUtils {
 
     @Deprecated
     @Nullable
-    protected static RouteWrapper findRouteFromTableList(List<? extends TableWrapper> tableWrapperList
+    protected static RouteWrapper findRouteFromTableList(List<? extends TableBlock> tableWrapperList
             , final boolean dataSource) {
         int routeIndex = -1;
-        for (TableWrapper tableWrapper : tableWrapperList) {
-            TablePart tableAble = tableWrapper.tableAble();
+        for (TableBlock tableBlock : tableWrapperList) {
+            TablePart tableAble = tableBlock.table();
             if (!(tableAble instanceof TableMeta)) {
                 continue;
             }
             if (dataSource) {
-                routeIndex = tableWrapper.databaseIndex();
+                routeIndex = tableBlock.databaseRoute();
             } else {
-                routeIndex = tableWrapper.tableIndex();
+                routeIndex = tableBlock.tableRoute();
             }
             if (routeIndex >= 0) {
                 break;
@@ -250,7 +277,7 @@ public abstract class _RouteUtils {
     @Nullable
     protected static RouteWrapper findRouteFromSubQuery(SubQuery subQuery, final boolean dataSource) {
         _SubQuery innerSubQuery = (_SubQuery) subQuery;
-        List<? extends TableWrapper> tableWrappers = innerSubQuery.tableWrapperList();
+        List<? extends TableBlock> tableWrappers = innerSubQuery.tableWrapperList();
 
         RouteWrapper routeWrapper;
         // 1. try find from sub query's where clause
@@ -269,11 +296,11 @@ public abstract class _RouteUtils {
 
     @Deprecated
     @Nullable
-    protected static RouteWrapper findRouteFromSubQueryList(List<? extends TableWrapper> tableWrapperList
+    protected static RouteWrapper findRouteFromSubQueryList(List<? extends TableBlock> tableWrapperList
             , final boolean dataSource) {
         RouteWrapper routeWrapper = null;
-        for (TableWrapper tableWrapper : tableWrapperList) {
-            TablePart tableAble = tableWrapper.tableAble();
+        for (TableBlock tableBlock : tableWrapperList) {
+            TablePart tableAble = tableBlock.table();
 
             if (!(tableAble instanceof SubQuery)) {
                 continue;

@@ -9,8 +9,8 @@ import io.army.modelgen._MetaBridge;
 import io.army.schema.SchemaInfoException;
 import io.army.session.GenericRmSessionFactory;
 import io.army.sharding._RouteUtils;
-import io.army.util.Assert;
 import io.army.util.StringUtils;
+import io.army.util._Assert;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -176,7 +176,7 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
 
     @Nullable
     private MigrationMemberImpl doMigrateTable(TableMeta<?> tableMeta, @Nullable String tableSuffix, TableInfo tableInfo) {
-        Assert.state(tableMeta.tableName().equals(tableInfo.name()),
+        _Assert.state(tableMeta.tableName().equals(tableInfo.name()),
                 () -> String.format("TableMeta[%s] then TableInfo[%s] not match",
                         tableMeta.tableName(), tableInfo.name()));
 

@@ -4,7 +4,7 @@ import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
 import io.army.UnKnownTypeException;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.TableWrapper;
+import io.army.criteria.impl.inner.TableBlock;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._SortPart;
 import io.army.domain.IDomain;
@@ -188,11 +188,11 @@ public abstract class _DialectUtils {
         return temp.containField(_MetaBridge.VISIBLE);
     }
 
-    public static boolean needAppendVisible(List<? extends TableWrapper> tableWrapperList) {
+    public static boolean needAppendVisible(List<? extends TableBlock> tableWrapperList) {
         final TableMeta<?> dual = null;
         boolean need = false;
-        for (TableWrapper tableWrapper : tableWrapperList) {
-            TablePart tableAble = tableWrapper.tableAble();
+        for (TableBlock tableBlock : tableWrapperList) {
+            TablePart tableAble = tableBlock.table();
 
             if ((tableAble instanceof TableMeta) && tableAble != dual) {
 

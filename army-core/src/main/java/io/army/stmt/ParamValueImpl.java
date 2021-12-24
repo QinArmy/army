@@ -4,7 +4,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 final class ParamValueImpl implements ParamValue {
 
@@ -13,7 +13,7 @@ final class ParamValueImpl implements ParamValue {
     private final Object value;
 
     ParamValueImpl(ParamMeta paramMeta, @Nullable Object value) {
-        Assert.notNull(paramMeta, "paramMeta required");
+        _Assert.notNull(paramMeta, "paramMeta required");
 
         this.paramMeta = paramMeta;
         this.value = value;

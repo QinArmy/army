@@ -321,11 +321,11 @@ abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F ext
             mono = doInvokeInsertBeforeAdvice(((_SingleDml) sqlStatement).table());
         } else if (sqlStatement instanceof _MultiDml) {
             // 1. iterate tableWrapperList
-            mono = Flux.fromIterable(((_MultiDml) sqlStatement).tableWrapperList())
+            mono = Flux.fromIterable(((_MultiDml) sqlStatement).tableBlockList())
                     // 2. filter TableMeta
-                    .filter(tableWrapper -> tableWrapper.tableAble() instanceof TableMeta)
+                    .filter(tableWrapper -> tableWrapper.table() instanceof TableMeta)
                     // map tableWrapper to table meta
-                    .map(tableWrapper -> (TableMeta<?>) tableWrapper.tableAble())
+                    .map(tableWrapper -> (TableMeta<?>) tableWrapper.table())
                     // 3. invoke before domain insert
                     .flatMap(function)
                     .then();
@@ -346,11 +346,11 @@ abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F ext
             mono = doInvokeInsertBeforeAdvice(((_SingleDml) sqlStatement).table());
         } else if (sqlStatement instanceof _MultiDml) {
             // 1. iterate tableWrapperList
-            mono = Flux.fromIterable(((_MultiDml) sqlStatement).tableWrapperList())
+            mono = Flux.fromIterable(((_MultiDml) sqlStatement).tableBlockList())
                     // 2. filter TableMeta
-                    .filter(tableWrapper -> tableWrapper.tableAble() instanceof TableMeta)
+                    .filter(tableWrapper -> tableWrapper.table() instanceof TableMeta)
                     // map tableWrapper to table meta
-                    .map(tableWrapper -> (TableMeta<?>) tableWrapper.tableAble())
+                    .map(tableWrapper -> (TableMeta<?>) tableWrapper.table())
                     // 3. invoke before domain insert
                     .flatMap(tableMeta -> function.apply(tableMeta, ex))
                     .then();

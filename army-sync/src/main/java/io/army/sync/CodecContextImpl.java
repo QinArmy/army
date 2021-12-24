@@ -3,7 +3,7 @@ package io.army.sync;
 import io.army.codec.StatementType;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -46,7 +46,7 @@ final class CodecContextImpl implements InnerCodecContext {
 
     @Override
     public StatementType statementType() {
-        Assert.state(statementType != null, "statementType is null");
+        _Assert.state(statementType != null, "statementType is null");
         return statementType;
     }
 

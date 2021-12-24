@@ -2,18 +2,23 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.GenericField;
+import io.army.criteria.IPredicate;
+import io.army.criteria.RouteFieldCollectionPredicate;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
+import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
+import io.army.sharding.Route;
 import io.army.util._Exceptions;
 
+import java.util.Map;
 import java.util.function.Function;
 
 /**
  *
  */
-final class DualPredicate extends AbstractPredicate {
+class DualPredicate extends AbstractPredicate {
 
     static <C, E, O> DualPredicate create(final Expression<E> left, DualOperator operator
             , Function<C, Expression<O>> expOrSubQuery) {
@@ -23,16 +28,37 @@ final class DualPredicate extends AbstractPredicate {
         return create(left, operator, functionResult);
     }
 
-    static DualPredicate create(Expression<?> left, DualOperator operator, Expression<?> right) {
-        if (operator == DualOperator.EQ) {
-            if (left instanceof GenericField && _MetaBridge.VISIBLE.equals((((GenericField<?, ?>) left).fieldName()))) {
-                throw _Exceptions.visibleFieldNoPredicate((GenericField<?, ?>) left);
-            }
-            if (right instanceof GenericField && _MetaBridge.VISIBLE.equals(((GenericField<?, ?>) right).fieldName())) {
-                throw _Exceptions.visibleFieldNoPredicate((GenericField<?, ?>) right);
-            }
+    static DualPredicate create(final Expression<?> left, final DualOperator operator, final Expression<?> right) {
+        if (left instanceof GenericField
+                && _MetaBridge.VISIBLE.equals((((GenericField<?, ?>) left).fieldName()))) {
+            throw _Exceptions.visibleFieldNoPredicate((GenericField<?, ?>) left);
+        } else if (right instanceof GenericField
+                && _MetaBridge.VISIBLE.equals((((GenericField<?, ?>) right).fieldName()))) {
+            throw _Exceptions.visibleFieldNoPredicate((GenericField<?, ?>) right);
         }
-        return new DualPredicate(left, operator, right);
+
+        final DualPredicate predicate;
+        switch (operator) {
+            case IN:
+            case NOT_IN: {
+                if (!(left instanceof GenericField
+                        && right instanceof CollectionParamExpression)) {
+                    predicate = new DualPredicate(left, operator, right);
+                } else {
+                    final GenericField<?, ?> field = (GenericField<?, ?>) left;
+                    if (field.tableRoute() || field.databaseRoute()) {
+                        predicate = new RouteFieldCollectionPredicateImpl(left, operator, right);
+                    } else {
+                        predicate = new DualPredicate(left, operator, right);
+                    }
+                }
+            }
+            break;
+            default:
+                predicate = new DualPredicate(left, operator, right);
+
+        }
+        return predicate;
     }
 
 
@@ -51,7 +77,7 @@ final class DualPredicate extends AbstractPredicate {
     }
 
     @Override
-    public void appendSql(_SqlContext context) {
+    public final void appendSql(_SqlContext context) {
         this.left.appendSql(context);
         context.sqlBuilder()
                 .append(Constant.SPACE)
@@ -61,14 +87,33 @@ final class DualPredicate extends AbstractPredicate {
 
 
     @Override
-    public boolean containsSubQuery() {
+    public final boolean containsSubQuery() {
         return this.left.containsSubQuery() || this.right.containsSubQuery();
     }
 
 
     @Override
-    public String toString() {
+    public final String toString() {
         return String.format("%s %s%s", this.left, this.operator, this.right);
+    }
+
+
+    private static final class RouteFieldCollectionPredicateImpl extends DualPredicate
+            implements RouteFieldCollectionPredicate {
+
+        private RouteFieldCollectionPredicateImpl(Expression<?> left, DualOperator operator, Expression<?> right) {
+            super(left, operator, right);
+        }
+
+        @Override
+        public Map<Byte, IPredicate> tableSplit(Function<TableMeta<?>, Route> function) {
+            return null;
+        }
+
+        @Override
+        public Map<Byte, IPredicate> databaseSplit(Function<TableMeta<?>, Route> function) {
+            return null;
+        }
     }
 
 

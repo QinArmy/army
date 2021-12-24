@@ -17,8 +17,8 @@ import io.army.sharding.TableRoute;
 import io.army.sharding._RouteUtils;
 import io.army.stmt.*;
 import io.army.util.ArrayUtils;
-import io.army.util.Assert;
 import io.army.util.CollectionUtils;
+import io.army.util._Assert;
 import io.army.util._Exceptions;
 
 import java.time.LocalDateTime;
@@ -33,7 +33,7 @@ import java.util.*;
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
  */
-public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialect {
+public abstract class AbstractDml extends AbstractDmlAndDql implements DmlDialect {
 
     protected static final char[] UPDATE = new char[]{'U', 'P', 'D', 'A', 'T', 'E'};
 
@@ -174,6 +174,10 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
         );
     }
 
+    protected boolean dialectMultiUpdateFromSubQuery() {
+        throw new UnsupportedOperationException();
+    }
+
     /*################################## blow delete template method ##################################*/
 
     protected void assertDialectDelete(_Delete delete) {
@@ -203,7 +207,7 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
         if (this.sharding) {
             final Map<Byte, List<ReadWrapper>> wrapperMap;
             // sharding wrapperList
-            wrapperMap = batchMultiDmlRoute(update);
+            wrapperMap = batchMultiDmlPrimaryRoute(update);
             final List<Stmt> stmtList = new ArrayList<>();
             for (Map.Entry<Byte, List<ReadWrapper>> e : wrapperMap.entrySet()) {
                 final SimpleStmt temp;
@@ -227,13 +231,13 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
             throw new IllegalArgumentException("update type error.");
         }
         final byte tableIndex;
-        tableIndex = this.multiDmlTaleRoute(update);
+        tableIndex = this.multiDmlPrimaryTaleRoute(update);
 
         final Stmt stmt;
         if (tableIndex >= 0) {
             stmt = this.dialectMultiUpdate(update, tableIndex, visible);
         } else if (tableIndex == Byte.MIN_VALUE) {
-            final TableMeta<?> table = primaryTable(update.tableWrapperList());
+            final TableMeta<?> table = primaryTable(update.tableBlockList());
             final int tableCount = table.tableCount();
             final List<Stmt> stmtList = new ArrayList<>(tableCount);
             for (int i = 0; i < tableCount; i++) {
@@ -775,7 +779,7 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
     /**
      * @see #handleDialectBatchMultiUpdate(_BatchMultiUpdate, Visible)
      */
-    private Map<Byte, List<ReadWrapper>> batchMultiDmlRoute(final _BatchMultiDml dml) {
+    private Map<Byte, List<ReadWrapper>> batchMultiDmlPrimaryRoute(final _BatchMultiDml dml) {
         return Collections.emptyMap();
     }
 
@@ -783,8 +787,52 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
      * @see #handleDialectMultiUpdate(_MultiUpdate, Visible)
      * @see #handleDialectBatchMultiUpdate(_BatchMultiUpdate, Visible)
      */
-    private byte multiDmlTaleRoute(final _MultiDml dml) {
-        return 0;
+    private byte multiDmlPrimaryTaleRoute(final _MultiDml dml) {
+        final List<? extends TableBlock> blockList = dml.tableBlockList();
+        final List<_Predicate> predicateList = dml.predicateList();
+        final GenericRmSessionFactory factory = this.dialect.sessionFactory();
+        final boolean checkDatabaseIndex = factory.factoryMode() == FactoryMode.SHARDING;
+        final byte databaseIndex = factory.databaseIndex();
+
+
+        byte tableIndex = -1, tableRoute = -1, databaseRoute;
+        for (TableBlock block : blockList) { // iterate all ,no break.
+            final TablePart tablePart = block.table();
+            if (!(tablePart instanceof TableMeta)) {
+                throw _Exceptions.multiDmlOnlySupportTable(dml, tablePart);
+            }
+            databaseRoute = block.databaseRoute();
+            if (databaseRoute >= 0 && databaseRoute != databaseIndex) {
+                throw _Exceptions.databaseRouteError(databaseIndex, factory);
+            }
+
+            if (tableRoute == -1 || tableRoute == FOLLOW_PRIMARY_ROUTE) {
+                tableRoute = block.tableRoute();
+            }
+
+            final TableMeta<?> table = (TableMeta<?>) tablePart;
+            if (tableIndex < 0) {
+                // here contain database index checking.
+                tableIndex = _RouteUtils.tableRouteFromRouteField(table, predicateList, factory);
+            } else if (checkDatabaseIndex) {
+                final byte databaseRouteIndex;
+                databaseRouteIndex = _RouteUtils.databaseRouteFromRouteField(table, predicateList, factory);
+                if (databaseRouteIndex >= 0 && databaseRouteIndex != databaseIndex) {
+                    throw _Exceptions.databaseRouteError(databaseIndex, factory);
+                }
+            }
+            if (tableIndex >= 0 && !(tableRoute == -1 || tableRoute == FOLLOW_PRIMARY_ROUTE)) {
+                throw _Exceptions.tableIndexAmbiguity(dml, tableRoute, tableIndex);
+            }
+        }
+
+        if (tableIndex < 0 && tableRoute != -1) {
+            tableIndex = tableRoute;
+        }
+        if (tableRoute < 0 && tableRoute != Byte.MIN_VALUE) {
+
+        }
+        return tableIndex;
     }
 
 
@@ -810,7 +858,7 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
         final List<_Predicate> predicateList = dml.predicateList();
         final GenericRmSessionFactory factory = this.dialect.sessionFactory();
         // check database index match this factory
-        Assert.databaseRoute(dml, dml.databaseIndex(), factory);
+        _Assert.databaseRoute(dml, dml.databaseIndex(), factory);
         if (factory.factoryMode() == FactoryMode.NO_SHARDING || table.routeMode() == RouteMode.NONE) {
             return 0;
         }
@@ -958,7 +1006,7 @@ public abstract class AbstractDml extends AbstractDMLAndDQL implements DmlDialec
     /**
      * @see #handleDialectMultiUpdate(_MultiUpdate, Visible)
      */
-    private TableMeta<?> primaryTable(List<? extends TableWrapper> blockList) {
+    private TableMeta<?> primaryTable(List<? extends TableBlock> blockList) {
         return null;
     }
 

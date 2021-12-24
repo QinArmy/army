@@ -11,7 +11,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -160,7 +160,7 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationExpressio
         Objects.requireNonNull(table);
         Objects.requireNonNull(field);
 
-        Assert.isAssignable(field.getDeclaringClass(), table.javaType());
+        _Assert.isAssignable(field.getDeclaringClass(), table.javaType());
         assertNotParentFiled(table, field);
 
         this.table = table;

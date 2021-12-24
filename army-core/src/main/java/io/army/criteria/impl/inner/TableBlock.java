@@ -6,9 +6,9 @@ import io.army.criteria.TablePart;
 
 import java.util.List;
 
-public interface TableWrapper {
+public interface TableBlock {
 
-    TablePart tableAble();
+    TablePart table();
 
     String alias();
 
@@ -16,7 +16,8 @@ public interface TableWrapper {
 
     List<IPredicate> onPredicateList();
 
-    int databaseIndex();
+    byte databaseRoute();
 
-    int tableIndex();
+    byte tableRoute();
+
 }

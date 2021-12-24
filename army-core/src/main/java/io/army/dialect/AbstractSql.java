@@ -7,7 +7,7 @@ import io.army.session.GenericRmSessionFactory;
 
 import java.time.ZoneId;
 
-public abstract class AbstractSQL implements SqlDialect {
+public abstract class AbstractSql implements SqlDialect {
 
     protected static final char[] COMMA = new char[]{' ', ','};
 
@@ -41,7 +41,7 @@ public abstract class AbstractSQL implements SqlDialect {
 
     protected final boolean sharding;
 
-    protected AbstractSQL(Dialect dialect) {
+    protected AbstractSql(Dialect dialect) {
         this.dialect = dialect;
         this.sharding = this.dialect.sessionFactory().factoryMode() != FactoryMode.NO_SHARDING;
     }

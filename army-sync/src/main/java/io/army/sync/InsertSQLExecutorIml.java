@@ -2,7 +2,7 @@ package io.army.sync;
 
 import io.army.dialect.InsertException;
 import io.army.stmt.*;
-import io.army.util.Assert;
+import io.army.util._Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +45,7 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
             } else if (stmt instanceof BatchStmt) {
                 BatchStmt simpleSQLWrapper = (BatchStmt) stmt;
                 //1. assert StatementType for integerBatchUpdate function
-                Assert.isTrue(simpleSQLWrapper.statementType().insertStatement(), "sqlWrapper error");
+                _Assert.isTrue(simpleSQLWrapper.statementType().insertStatement(), "sqlWrapper error");
                 // 2. execute batch insert sql
                 doExecuteBatch(session, simpleSQLWrapper, this::integerBatchUpdate);
 
@@ -54,13 +54,13 @@ final class InsertSQLExecutorIml extends SQLExecutorSupport implements InsertSQL
                 final BatchStmt parentWrapper = childSQLWrapper.parentStmt();
                 List<Integer> parentList, childList;
                 //1. assert StatementType for integerBatchUpdate function
-                Assert.isTrue(parentWrapper.statementType().insertStatement(), "sqlWrapper error");
+                _Assert.isTrue(parentWrapper.statementType().insertStatement(), "sqlWrapper error");
                 //2. execute parent batch insert sql
                 parentList = doExecuteBatch(session, parentWrapper, this::integerBatchUpdate);
 
                 final BatchStmt childWrapper = childSQLWrapper.childStmt();
                 //3. assert StatementType for integerBatchUpdate function
-                Assert.isTrue(childWrapper.statementType().insertStatement(), "sqlWrapper error");
+                _Assert.isTrue(childWrapper.statementType().insertStatement(), "sqlWrapper error");
                 //4. execute child batch insert sql
                 childList = doExecuteBatch(session, childWrapper, this::integerBatchUpdate);
                 if (childList.size() != parentList.size()) {

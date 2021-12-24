@@ -99,7 +99,7 @@ public abstract class CriteriaUtils {
     protected static <T extends IDomain> List<IPredicate> createPredicateList(TableMeta<T> tableMeta
             , List<String> propNameList, List<Object> valueList) {
 
-        Assert.isTrue(propNameList.size() == valueList.size(), "propNameList size and valueList size not match.");
+        _Assert.isTrue(propNameList.size() == valueList.size(), "propNameList size and valueList size not match.");
 
         ParentTableMeta<?> parentMeta = null;
 

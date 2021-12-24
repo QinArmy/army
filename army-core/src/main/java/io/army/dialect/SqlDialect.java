@@ -7,7 +7,6 @@ import java.time.ZoneId;
 
 public interface SqlDialect {
 
-    String quoteIfNeed(String identifier);
 
     default String safeTableName(String tableName) {
         throw new UnsupportedOperationException();

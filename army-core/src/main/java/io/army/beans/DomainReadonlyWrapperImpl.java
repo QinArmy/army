@@ -2,7 +2,7 @@ package io.army.beans;
 
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 final class DomainReadonlyWrapperImpl extends ReadonlyWrapperImpl implements DomainReadonlyWrapper {
 
@@ -11,7 +11,7 @@ final class DomainReadonlyWrapperImpl extends ReadonlyWrapperImpl implements Dom
     DomainReadonlyWrapperImpl(org.springframework.beans.BeanWrapper beanWrapper, TableMeta<?> tableMeta) {
         super(beanWrapper);
         this.tableMeta = tableMeta;
-        Assert.isTrue(beanWrapper.getWrappedClass() == tableMeta.javaType()
+        _Assert.isTrue(beanWrapper.getWrappedClass() == tableMeta.javaType()
                 , () -> String.format("class[%s] and TableMeta[%s] not match."
                         , beanWrapper.getWrappedClass().getName(), tableMeta));
 
@@ -19,7 +19,7 @@ final class DomainReadonlyWrapperImpl extends ReadonlyWrapperImpl implements Dom
 
     DomainReadonlyWrapperImpl(IDomain domain, TableMeta<?> tableMeta) {
         super(domain);
-        Assert.isTrue(domain.getClass() == tableMeta.javaType()
+        _Assert.isTrue(domain.getClass() == tableMeta.javaType()
                 , () -> String.format("domain[%s] and TableMeta[%s] not match.", domain.getClass().getName(), tableMeta));
         this.tableMeta = tableMeta;
     }

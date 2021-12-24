@@ -7,7 +7,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.meta.TableMeta;
 import io.army.stmt.SimpleStmt;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 abstract class AbstractStandardDomainContext extends AbstractTableContextSQLContext implements SingleTableDMLContext {
 
@@ -29,7 +29,7 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
         this.primaryTable = primaryTable;
         this.relationTable = relationTable;
         this.primaryAlias = tableContext.tableAliasMap.get(this.primaryTable);
-        Assert.hasText(this.primaryAlias, "tableContext error.");
+        _Assert.hasText(this.primaryAlias, "tableContext error.");
 
         this.relationAlias = obtainRelationTableAlias(this.primaryAlias, this.relationTable);
 
@@ -108,7 +108,7 @@ abstract class AbstractStandardDomainContext extends AbstractTableContextSQLCont
 
 
     private void doReplaceRelationFieldAsScalarSubQuery(FieldMeta<?, ?> relationField) {
-        Assert.isTrue(relationField.tableMeta() == this.relationTable, "");
+        _Assert.isTrue(relationField.tableMeta() == this.relationTable, "");
 
         final TableMeta<?> relationTable = this.relationTable;
         // replace parent field as sub query.

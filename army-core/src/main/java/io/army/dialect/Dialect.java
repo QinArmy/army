@@ -8,6 +8,12 @@ import io.army.stmt.Stmt;
  */
 public interface Dialect extends DdlDialect, DmlDialect, DqlDialect, TclDialect {
 
+    @Deprecated
+    String quoteIfNeed(String identifier);
+
+    StringBuilder quoteIfNeed(String identifier, StringBuilder sqlBuilder);
+
+
     String showSQL(Stmt stmt);
 
     boolean supportSavePoint();

@@ -2,7 +2,7 @@ package io.army.beans;
 
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 final class DomainWrapperImpl extends BeanWrapperImpl implements DomainWrapper {
 
@@ -17,7 +17,7 @@ final class DomainWrapperImpl extends BeanWrapperImpl implements DomainWrapper {
 
     DomainWrapperImpl(Object target, TableMeta<?> tableMeta) {
         super(target);
-        Assert.isTrue(target.getClass() == tableMeta.javaType(), "target and tableMeta not match.");
+        _Assert.isTrue(target.getClass() == tableMeta.javaType(), "target and tableMeta not match.");
         this.tableMeta = tableMeta;
     }
 

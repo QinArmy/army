@@ -1,8 +1,8 @@
 package io.army.beans;
 
 import io.army.ErrorCode;
-import io.army.util.Assert;
 import io.army.util.BeanUtils;
+import io.army.util._Assert;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +19,7 @@ class MapReadonlyWrapper implements ReadWrapper {
 
     @SuppressWarnings("unchecked")
     MapReadonlyWrapper(Class<?> mapClass) {
-        Assert.isAssignable(Map.class, mapClass);
+        _Assert.isAssignable(Map.class, mapClass);
 
         if (mapClass.isInterface()) {
             if (SortedMap.class.isAssignableFrom(mapClass)) {

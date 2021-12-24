@@ -16,7 +16,7 @@ import java.util.Map;
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
  */
-public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialect {
+public abstract class AbstractDQL extends AbstractDmlAndDql implements DqlDialect {
 
     public AbstractDQL(Dialect dialect) {
         super(dialect);
@@ -257,23 +257,23 @@ public abstract class AbstractDQL extends AbstractDMLAndDQL implements DqlDialec
         }
     }
 
-    protected final void fromClause(List<? extends TableWrapper> tableWrapperList, _TablesSqlContext context) {
+    protected final void fromClause(List<? extends TableBlock> tableWrapperList, _TablesSqlContext context) {
         context.sqlBuilder()
                 .append(" FROM");
-        Map<String, TableWrapper> aliasMap = new HashMap<>();
-        for (TableWrapper tableWrapper : tableWrapperList) {
+        Map<String, TableBlock> aliasMap = new HashMap<>();
+        for (TableBlock tableBlock : tableWrapperList) {
 
-            if (aliasMap.putIfAbsent(tableWrapper.alias(), tableWrapper) != null) {
+            if (aliasMap.putIfAbsent(tableBlock.alias(), tableBlock) != null) {
                 // avoid table alias duplication
                 throw _DialectUtils.createTableAliasDuplicationException(
-                        tableWrapper.alias(), tableWrapper.tableAble());
+                        tableBlock.alias(), tableBlock.table());
             }
             // actual handle
-            doTableWrapper(tableWrapper, context);
+            doTableWrapper(tableBlock, context);
         }
     }
 
-    protected final void whereClause(List<? extends TableWrapper> tableWrapperList, List<_Predicate> predicateList
+    protected final void whereClause(List<? extends TableBlock> tableWrapperList, List<_Predicate> predicateList
             , _TablesSqlContext context) {
 
         final boolean needAppendVisible = _DialectUtils.needAppendVisible(tableWrapperList);

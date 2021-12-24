@@ -6,7 +6,7 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Select;
 import io.army.sharding._TableRouteUtils;
 import io.army.stmt.SimpleStmt;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 final class SelectContextImpl extends AbstractQueryStatementContext implements SelectContext {
 
@@ -34,7 +34,7 @@ final class SelectContextImpl extends AbstractQueryStatementContext implements S
 
     @Override
     public final SimpleStmt build() {
-        Assert.state(!this.childContext, "SelectContextImpl not outer context");
+        _Assert.state(!this.childContext, "SelectContextImpl not outer context");
         return SimpleStmt.builder()
                 .sql(this.sqlBuilder.toString())
                 .paramList(this.paramList)

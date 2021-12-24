@@ -8,7 +8,7 @@ import io.army.util.StringUtils;
 import java.util.Collection;
 import java.util.List;
 
-public abstract class AbstractDDL extends AbstractSQL implements DdlDialect {
+public abstract class AbstractDDL extends AbstractSql implements DdlDialect {
 
     public AbstractDDL(Dialect dialect) {
         super(dialect);

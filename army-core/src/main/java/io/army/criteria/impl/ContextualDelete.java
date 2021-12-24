@@ -7,7 +7,7 @@ import io.army.criteria.impl.inner._SingleDelete;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +61,7 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
 
     @Override
     public DeleteRoute<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, final String tableAlias) {
-        Assert.identifierHasText(tableAlias);
+        _Assert.identifierHasText(tableAlias);
         this.table = tableMeta;
         this.tableAlias = tableAlias;
         return this;
@@ -69,14 +69,14 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
 
     @Override
     public WhereSpec<C> route(int databaseIndex, int tableIndex) {
-        this.databaseIndex = Assert.databaseRoute(this.table, databaseIndex);
-        this.tableIndex = Assert.tableRoute(this.table, tableIndex);
+        this.databaseIndex = _Assert.databaseRoute(this.table, databaseIndex);
+        this.tableIndex = _Assert.tableRoute(this.table, tableIndex);
         return this;
     }
 
     @Override
     public WhereSpec<C> route(int tableIndex) {
-        this.tableIndex = Assert.tableRoute(this.table, tableIndex);
+        this.tableIndex = _Assert.tableRoute(this.table, tableIndex);
         return this;
     }
 
@@ -139,19 +139,19 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
 
     @Override
     public void prepared() {
-        Assert.prepared(this.prepared);
+        _Assert.prepared(this.prepared);
     }
 
     /*################################## blow DeleteSpec method ##################################*/
 
     @Override
     public Delete asDelete() {
-        Assert.nonPrepared(this.prepared);
+        _Assert.nonPrepared(this.prepared);
 
         CriteriaContextStack.clearContextStack(this.criteriaContext);
 
-        Assert.hasTable(this.table);
-        Assert.identifierHasText(this.tableAlias);
+        _Assert.hasTable(this.table);
+        _Assert.identifierHasText(this.tableAlias);
         this.predicateList = CriteriaUtils.predicateList(this.predicateList);
 
         this.prepared = true;
@@ -174,7 +174,7 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
 
     @Override
     public TableMeta<?> table() {
-        Assert.prepared(this.prepared);
+        _Assert.prepared(this.prepared);
         return this.table;
     }
 
@@ -185,19 +185,19 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
 
     @Override
     public byte databaseIndex() {
-        Assert.prepared(this.prepared);
+        _Assert.prepared(this.prepared);
         return this.databaseIndex;
     }
 
     @Override
     public byte tableIndex() {
-        Assert.prepared(this.prepared);
+        _Assert.prepared(this.prepared);
         return this.tableIndex;
     }
 
     @Override
     public List<_Predicate> predicateList() {
-        Assert.prepared(this.prepared);
+        _Assert.prepared(this.prepared);
         return this.predicateList;
     }
 

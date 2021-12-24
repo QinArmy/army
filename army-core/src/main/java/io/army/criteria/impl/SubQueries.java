@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.TableWrapper;
+import io.army.criteria.impl.inner.TableBlock;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._SortPart;
 import io.army.criteria.impl.inner._StandardSubQuery;
@@ -10,7 +10,7 @@ import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 import java.util.List;
 import java.util.Map;
@@ -213,7 +213,7 @@ abstract class SubQueries<Q extends Query, C> extends AbstractStandardQuery<Q, C
         private final ScalarOnClauseImpl<E, C> onClauseImpl;
 
         private ScalarSubQueryAdaptor(Class<E> javaType, MappingType mappingType, C criteria) {
-            Assert.isAssignable(javaType, mappingType.javaType(), "javaType and paramMeta not match.");
+            _Assert.isAssignable(javaType, mappingType.javaType(), "javaType and paramMeta not match.");
             this.mappingType = mappingType;
             this.actualSelect = new StandardColumnSubQuery<>(criteria, javaType);
             this.onClauseImpl = new ScalarOnClauseImpl<>(this);
@@ -655,7 +655,7 @@ abstract class SubQueries<Q extends Query, C> extends AbstractStandardQuery<Q, C
         }
 
         @Override
-        public List<? extends TableWrapper> tableWrapperList() {
+        public List<? extends TableBlock> tableWrapperList() {
             return this.actualSelect.tableWrapperList();
         }
 

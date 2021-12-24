@@ -1,7 +1,7 @@
 package io.army.env;
 
-import io.army.util.Assert;
 import io.army.util.StringUtils;
+import io.army.util._Assert;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -43,7 +43,7 @@ public abstract class AbstractArmyEnvironment implements ArmyConfigurableArmyEnv
         if (!StringUtils.hasText(key)) {
             return false;
         }
-        Assert.state(key.endsWith(".off.duration"), "key must end with '.off.duration'");
+        _Assert.state(key.endsWith(".off.duration"), "key must end with '.off.duration'");
         return isMatchDuration(key);
     }
 
@@ -52,7 +52,7 @@ public abstract class AbstractArmyEnvironment implements ArmyConfigurableArmyEnv
         if (!StringUtils.hasText(key)) {
             return false;
         }
-        Assert.state(key.endsWith(".on.duration"), "key must end with '.on.duration'");
+        _Assert.state(key.endsWith(".on.duration"), "key must end with '.on.duration'");
         return isMatchDuration(key);
     }
 

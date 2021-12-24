@@ -11,7 +11,7 @@ import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -119,7 +119,7 @@ public abstract class AbstractGenericSession implements GenericSession {
 
         @Override
         public void prepared() {
-            Assert.prepared(this.prepared);
+            _Assert.prepared(this.prepared);
         }
     }
 

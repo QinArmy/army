@@ -100,19 +100,19 @@ public abstract class _DmlUtils {
         }
         final List<FieldMeta<?, ?>> fieldList = blockContext.fieldLis();
         // 1.1 append table fields
-        builder.append(AbstractSQL.LEFT_BRACKET);
+        builder.append(AbstractSql.LEFT_BRACKET);
         int index = 0;
         for (FieldMeta<?, ?> field : fieldList) {
             if (index > 0) {
-                builder.append(AbstractSQL.COMMA);
+                builder.append(AbstractSql.COMMA);
             }
             builder.append(dialect.safeColumnName(field.columnName()));
             index++;
         }
-        builder.append(AbstractSQL.RIGHT_BRACKET);
+        builder.append(AbstractSql.RIGHT_BRACKET);
 
         // 2. values clause
-        builder.append(AbstractSQL.VALUES_WORD);
+        builder.append(AbstractSql.VALUES_WORD);
 
         final List<? extends ReadWrapper> domainList = context.domainList();
         //2.1 get domainTable and discriminator
@@ -125,13 +125,13 @@ public abstract class _DmlUtils {
         //2.2 append values
         for (ReadWrapper domain : domainList) {
             if (batch > 0) {
-                builder.append(AbstractSQL.COMMA);
+                builder.append(AbstractSql.COMMA);
             }
-            builder.append(AbstractSQL.LEFT_BRACKET);
+            builder.append(AbstractSql.LEFT_BRACKET);
             index = 0;
             for (FieldMeta<?, ?> field : fieldList) {
                 if (index > 0) {
-                    builder.append(AbstractSQL.COMMA);
+                    builder.append(AbstractSql.COMMA);
                 }
                 if (field == discriminator) {
                     assert field != null;
@@ -160,7 +160,7 @@ public abstract class _DmlUtils {
                 }
                 index++;
             }
-            builder.append(AbstractSQL.RIGHT_BRACKET);
+            builder.append(AbstractSql.RIGHT_BRACKET);
             batch++;
         }
 

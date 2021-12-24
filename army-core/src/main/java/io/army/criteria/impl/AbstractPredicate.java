@@ -11,12 +11,10 @@ import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 import io.army.sharding.DatabaseRoute;
-import io.army.sharding.Route;
 import io.army.sharding.RouteContext;
 import io.army.sharding.TableRoute;
 
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * This class is base class of all {@link IPredicate} implementation .
@@ -54,7 +52,7 @@ abstract class AbstractPredicate extends OperationExpression<Boolean> implements
     }
 
     @Override
-    public final byte databaseIndex(Function<TableMeta<?>, Route> function) {
+    public final byte databaseIndex(TableMeta<?> table, RouteContext context) {
         if (!(this instanceof DualPredicate)) {
             return -1;
         }
@@ -71,8 +69,8 @@ abstract class AbstractPredicate extends OperationExpression<Boolean> implements
             if (value == null) {
                 index = -1;
             } else {
-                final DatabaseRoute route = (DatabaseRoute) function.apply(field.tableMeta());
-                index = route.database(value);
+//                final DatabaseRoute route = (DatabaseRoute) function.apply(field.tableMeta());
+//                index = route.database(value);
             }
         } else if (predicate.left instanceof ValueExpression
                 && predicate.right instanceof GenericField

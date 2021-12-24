@@ -9,7 +9,7 @@ import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 import java.util.Collection;
 
@@ -23,9 +23,9 @@ final class QualifiedFieldImpl<T extends IDomain, F> extends OperationExpression
     private final FieldMeta<T, F> field;
 
     QualifiedFieldImpl(final String tableAlias, final FieldMeta<T, F> field) {
-        Assert.notNull(field, "fieldMeta required");
-        Assert.hasText(tableAlias, "tableAlias required");
-        Assert.isTrue(!tableAlias.contains("."), "tableAlias must no '.'");
+        _Assert.notNull(field, "fieldMeta required");
+        _Assert.hasText(tableAlias, "tableAlias required");
+        _Assert.isTrue(!tableAlias.contains("."), "tableAlias must no '.'");
 
         this.field = field;
         this.tableAlias = tableAlias;

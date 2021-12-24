@@ -6,8 +6,8 @@ import io.army.domain.IDomain;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.util.Assert;
 import io.army.util.CollectionUtils;
+import io.army.util._Assert;
 
 import java.util.Collections;
 import java.util.List;
@@ -134,8 +134,8 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
 
         CriteriaContextStack.clearContextStack(this.criteriaContext);
 
-        Assert.state(!CollectionUtils.isEmpty(this.fieldList), "fieldList is empty,error.");
-        Assert.state(this.subQuery != null, "values(SubQuery) or values(Function<C, SubQuery> ) must be invoked.");
+        _Assert.state(!CollectionUtils.isEmpty(this.fieldList), "fieldList is empty,error.");
+        _Assert.state(this.subQuery != null, "values(SubQuery) or values(Function<C, SubQuery> ) must be invoked.");
 
         this.fieldList = Collections.unmodifiableList(this.fieldList);
         this.prepared = true;
@@ -146,6 +146,6 @@ final class StandardContextualSubQueryInsert<T extends IDomain, C> extends Abstr
 
     @Override
     public void prepared() {
-        Assert.prepared(this.prepared);
+        _Assert.prepared(this.prepared);
     }
 }

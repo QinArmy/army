@@ -12,8 +12,8 @@ import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.util.Assert;
 import io.army.util.CollectionUtils;
+import io.army.util._Assert;
 import io.army.util._Exceptions;
 
 import java.util.*;
@@ -222,7 +222,7 @@ final class ContextualValueInsert<T extends IDomain, C> extends AbstractSQLDebug
 
     @Override
     public Insert asInsert() {
-        Assert.nonPrepared(this.prepared);
+        _Assert.nonPrepared(this.prepared);
 
         CriteriaContextStack.clearContextStack(this.criteriaContext);
 
@@ -256,7 +256,7 @@ final class ContextualValueInsert<T extends IDomain, C> extends AbstractSQLDebug
 
     @Override
     public void prepared() {
-        Assert.prepared(this.prepared);
+        _Assert.prepared(this.prepared);
     }
 
 

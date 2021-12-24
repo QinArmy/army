@@ -3,8 +3,8 @@ package io.army.cache;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.session.GenericSession;
-import io.army.util.Assert;
 import io.army.util.CollectionUtils;
+import io.army.util._Assert;
 import io.qinarmy.util.Pair;
 
 import java.util.*;
@@ -119,10 +119,10 @@ final class SessionCacheImpl implements SessionCache {
 
     @Override
     public void clear(GenericSession session) {
-        Assert.isTrue(session == this.session, "session error.");
+        _Assert.isTrue(session == this.session, "session error.");
 
         for (DomainUpdateAdvice advice : updateAdvices()) {
-            Assert.state(!advice.hasUpdate(), "exits no execute update.");
+            _Assert.state(!advice.hasUpdate(), "exits no execute update.");
         }
 
         this.tableCacheById.clear();

@@ -142,7 +142,7 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
     public static CriteriaException nonNullNamedParam(NonNullNamedParam<?> param) {
-        String m = String.format("%s[%s] must be non-null.", NonNullNamedParam.class.getName(), param.name()));
+        String m = String.format("%s[%s] must be non-null.", NonNullNamedParam.class.getName(), param.name());
         return new CriteriaException(m);
     }
 
@@ -176,7 +176,7 @@ public abstract class _Exceptions extends ExceptionUtils {
     public static CriteriaException tableIndexAmbiguity(_Statement stmt, final int tableRoute
             , final int predicateTableIndex) {
         return new CriteriaException(String.format("%s table route[%s] and where clause table route[%s] ambiguity."
-                , stmt, tableRoute, predicateTableIndex));
+                , stmt.getClass().getName(), tableRoute, predicateTableIndex));
     }
 
     public static ArmyException tableIndexParseError(_Statement stmt, TableMeta<?> table, int tableIndex) {
@@ -243,6 +243,17 @@ public abstract class _Exceptions extends ExceptionUtils {
     public static ArmyException predicateImplError(_Predicate predicate) {
         String m = String.format("The implementation of %s error.", predicate.getClass().getName());
         return new ArmyException(m);
+    }
+
+    public static CriteriaException multiDmlOnlySupportTable(_MultiDml dml, TablePart tablePart) {
+        String m = String.format("Multi table dml only support %s.but present %s"
+                , dml.getClass().getName(), tablePart.getClass().getName());
+        return new CriteriaException(m);
+    }
+
+    public static CriteriaException databaseRouteAllFollow(_MultiDml dml) {
+        String m = String.format("%s all follow primary route.", dml.getClass().getName());
+        return new CriteriaException(m);
     }
 
 

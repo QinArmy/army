@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.TableWrapper;
+import io.army.criteria.impl.inner.TableBlock;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._SortPart;
 import io.army.criteria.impl.inner.mysql._MySQL57SubQuery;
@@ -11,7 +11,7 @@ import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 import java.util.List;
 import java.util.Map;
@@ -167,7 +167,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         private final MySQLTableRouteOnSpecImpl<E, C> tableRouteSpec;
 
         private MySQL57ScalarSubQueryAdaptor(Class<E> javaType, MappingType mappingType, C criteria) {
-            Assert.isAssignable(javaType, mappingType.javaType(), "javaType and paramMeta not match.");
+            _Assert.isAssignable(javaType, mappingType.javaType(), "javaType and paramMeta not match.");
             this.mappingType = mappingType;
             this.actualSelect = new MySQL57ColumnSubQueryImpl<>(criteria, javaType);
             this.tableRouteSpec = new MySQLTableRouteOnSpecImpl<>(this);
@@ -670,7 +670,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public final List<? extends TableWrapper> tableWrapperList() {
+        public final List<? extends TableBlock> tableWrapperList() {
             return this.actualSelect.tableWrapperList();
         }
 

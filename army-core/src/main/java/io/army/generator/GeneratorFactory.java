@@ -4,9 +4,9 @@ import io.army.ErrorCode;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 import io.army.session.GenericSessionFactory;
-import io.army.util.Assert;
 import io.army.util.ClassUtils;
 import io.army.util.ReflectionUtils;
+import io.army.util._Assert;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -15,7 +15,7 @@ public abstract class GeneratorFactory {
 
     public static FieldGenerator getGenerator(FieldMeta<?, ?> fieldMeta, GenericSessionFactory sessionFactory) {
         GeneratorMeta generatorMeta = fieldMeta.generator();
-        Assert.notNull(generatorMeta, "generatorMeta required");
+        _Assert.notNull(generatorMeta, "generatorMeta required");
 
         Method method = getBuilder(generatorMeta);
 

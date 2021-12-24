@@ -7,7 +7,7 @@ import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.impl.inner._SortPart;
 import io.army.dialect._SqlContext;
 import io.army.meta.ParamMeta;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 final class ExpressionSelection implements Selection, _SelfDescribed, _SortPart {
 
@@ -16,7 +16,7 @@ final class ExpressionSelection implements Selection, _SelfDescribed, _SortPart 
     private final String alias;
 
     ExpressionSelection(_Expression<?> expression, String alias) {
-        Assert.hasText(alias, "alias required for Selection");
+        _Assert.hasText(alias, "alias required for Selection");
         this.expression = expression;
         this.alias = alias;
     }

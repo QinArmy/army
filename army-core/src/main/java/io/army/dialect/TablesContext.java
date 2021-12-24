@@ -3,7 +3,7 @@ package io.army.dialect;
 import io.army.ErrorCode;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.TablePart;
-import io.army.criteria.impl.inner.TableWrapper;
+import io.army.criteria.impl.inner.TableBlock;
 import io.army.criteria.impl.inner._SingleDml;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
@@ -37,35 +37,35 @@ public final class TablesContext {
         );
     }
 
-    public static TablesContext multiTable(List<? extends TableWrapper> tableWrapperList, String primaryRouteSuffix) {
+    public static TablesContext multiTable(List<? extends TableBlock> tableWrapperList, String primaryRouteSuffix) {
         Map<TableMeta<?>, Integer> tableCountMap = new HashMap<>();
         Map<String, TableMeta<?>> aliasTableMap = new HashMap<>();
         Map<String, Integer> tableIndexMap = new HashMap<>();
 
-        for (TableWrapper tableWrapper : tableWrapperList) {
-            TablePart tableAble = tableWrapper.tableAble();
+        for (TableBlock tableBlock : tableWrapperList) {
+            TablePart tableAble = tableBlock.table();
             if (tableAble instanceof TableMeta) {
                 TableMeta<?> tableMeta = (TableMeta<?>) tableAble;
                 Integer count = tableCountMap.computeIfAbsent(tableMeta, key -> 0);
                 tableCountMap.replace(tableMeta, count, count + 1);
-                if (aliasTableMap.putIfAbsent(tableWrapper.alias(), tableMeta) != null) {
+                if (aliasTableMap.putIfAbsent(tableBlock.alias(), tableMeta) != null) {
                     throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "TableMeta[%s] alias[%s] duplication."
-                            , tableMeta, tableWrapper.alias());
+                            , tableMeta, tableBlock.alias());
                 }
-                tableIndexMap.put(tableWrapper.alias(), tableWrapper.tableIndex());
+                tableIndexMap.put(tableBlock.alias(), tableBlock.tableRoute());
             }
         }
 
         Map<TableMeta<?>, String> tableAliasMap = new HashMap<>();
 
         final Integer one = 1;
-        for (TableWrapper tableWrapper : tableWrapperList) {
-            TablePart tableAble = tableWrapper.tableAble();
+        for (TableBlock tableBlock : tableWrapperList) {
+            TablePart tableAble = tableBlock.table();
             if (tableAble instanceof TableMeta) {
                 TableMeta<?> tableMeta = (TableMeta<?>) tableAble;
                 if (one.equals(tableCountMap.get(tableMeta))) {
 
-                    tableAliasMap.putIfAbsent(tableMeta, tableWrapper.alias());
+                    tableAliasMap.putIfAbsent(tableMeta, tableBlock.alias());
                 }
             }
 

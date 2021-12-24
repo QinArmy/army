@@ -12,8 +12,8 @@ import io.army.session.GenericRmSessionFactory;
 import io.army.stmt.PairStmt;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
-import io.army.util.Assert;
 import io.army.util.StringUtils;
+import io.army.util._Assert;
 
 import java.time.ZoneId;
 import java.util.Collection;
@@ -46,7 +46,7 @@ public abstract class AbstractDialect implements InnerDialect {
 
 
     protected AbstractDialect(GenericRmSessionFactory sessionFactory) {
-        Assert.notNull(sessionFactory, "sessionFactory required");
+        _Assert.notNull(sessionFactory, "sessionFactory required");
         this.keywords = Collections.unmodifiableSet(createKeywordsSet());
         this.sessionFactory = sessionFactory;
 
@@ -72,6 +72,7 @@ public abstract class AbstractDialect implements InnerDialect {
         }
         return newIdentifier;
     }
+
 
     @Override
     public final boolean isKeyWord(String text) {

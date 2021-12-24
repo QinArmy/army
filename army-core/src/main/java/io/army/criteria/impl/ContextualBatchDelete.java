@@ -9,7 +9,7 @@ import io.army.criteria.impl.inner._StandardBatchDelete;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -148,11 +148,11 @@ final class ContextualBatchDelete<C> implements Delete,
 
     @Override
     public Delete asDelete() {
-        Assert.nonPrepared(this.prepared);
+        _Assert.nonPrepared(this.prepared);
         CriteriaContextStack.clearContextStack(this.criteriaContext);
 
-        Assert.hasTable(this.table);
-        Assert.identifierHasText(this.tableAlias);
+        _Assert.hasTable(this.table);
+        _Assert.identifierHasText(this.tableAlias);
 
         this.predicateList = CriteriaUtils.predicateList(this.predicateList);
         this.paramList = CriteriaUtils.namedParamList(this.paramList);
@@ -164,20 +164,20 @@ final class ContextualBatchDelete<C> implements Delete,
 
     @Override
     public void prepared() {
-        Assert.prepared(this.prepared);
+        _Assert.prepared(this.prepared);
     }
 
     /*################################## blow InnerStandardBatchDelete method ##################################*/
 
     @Override
     public List<ReadWrapper> wrapperList() {
-        Assert.prepared(this.prepared);
+        _Assert.prepared(this.prepared);
         return this.paramList;
     }
 
     @Override
     public TableMeta<?> table() {
-        Assert.prepared(this.prepared);
+        _Assert.prepared(this.prepared);
         return this.table;
     }
 

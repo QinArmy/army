@@ -5,8 +5,8 @@ import io.army.beans.ObjectAccessorFactory;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.session.GenericSessionFactory;
-import io.army.util.Assert;
 import io.army.util.ClassUtils;
+import io.army.util._Assert;
 import io.qinarmy.util.Pair;
 import org.springframework.aop.framework.ProxyCreatorSupport;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
@@ -40,7 +40,7 @@ final class DomainProxyFactoryImpl implements DomainProxyFactory {
     @Override
     public Pair<IDomain, DomainUpdateAdvice> createDomainProxy(final IDomain domain) {
         final TableMeta<?> tableMeta = this.sessionFactory.tableMeta(domain.getClass());
-        Assert.notNull(tableMeta, () -> String.format("not found TableMeta for domain[%s]", domain.getClass().getName()));
+        _Assert.notNull(tableMeta, () -> String.format("not found TableMeta for domain[%s]", domain.getClass().getName()));
         DomainReadonlyWrapper domainWrapper = ObjectAccessorFactory.forDomainReadonlyPropertyAccess(
                 domain, tableMeta);
 

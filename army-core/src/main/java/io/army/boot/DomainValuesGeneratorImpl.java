@@ -12,9 +12,9 @@ import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.GenericSessionFactory;
 import io.army.struct.CodeEnum;
-import io.army.util.Assert;
 import io.army.util.CollectionUtils;
 import io.army.util.StringUtils;
+import io.army.util._Assert;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -25,7 +25,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
     private final GenericSessionFactory sessionFactory;
 
     DomainValuesGeneratorImpl(GenericSessionFactory sessionFactory) {
-        Assert.notNull(sessionFactory, "sessionFactory required");
+        _Assert.notNull(sessionFactory, "sessionFactory required");
         this.sessionFactory = sessionFactory;
     }
 
@@ -33,7 +33,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
     public final DomainWrapper createValues(TableMeta<?> tableMeta, IDomain domain, boolean migrationData)
             throws FieldValuesCreateException {
 
-        Assert.isTrue(tableMeta.javaType() == domain.getClass(), "tableMeta then entity not match");
+        _Assert.isTrue(tableMeta.javaType() == domain.getClass(), "tableMeta then entity not match");
 
         final DomainWrapper domainWrapper = ObjectAccessorFactory.forDomainPropertyAccess(
                 domain, this.sessionFactory.tableMeta(domain.getClass()));
@@ -82,7 +82,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
     private void assertFirstDependency(FieldMeta<?, ?> fieldMeta, ObjectWrapper domainWrapper) {
         GeneratorMeta generatorMeta = fieldMeta.generator();
 
-        Assert.state(generatorMeta != null
+        _Assert.state(generatorMeta != null
                 , () -> String.format("GeneratorMeta of FieldMeta[%s] error.", fieldMeta));
         String dependencyName = generatorMeta.dependFieldName();
         if (StringUtils.hasText(dependencyName) && (!domainWrapper.isReadable(dependencyName)
@@ -100,7 +100,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
         // invoke generator
         Object value = generator.next(fieldMeta, entityWrapper);
 
-        Assert.state(fieldMeta.javaType().isInstance(value)
+        _Assert.state(fieldMeta.javaType().isInstance(value)
                 , () -> String.format("TableMeta[%s].FieldMeta[%s] FieldGenerator[%s] return error value."
                         , fieldMeta.tableMeta()
                         , fieldMeta

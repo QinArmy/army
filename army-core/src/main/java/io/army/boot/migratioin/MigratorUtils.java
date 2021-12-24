@@ -3,8 +3,8 @@ package io.army.boot.migratioin;
 import io.army.dialect.Dialect;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
-import io.army.util.Assert;
 import io.army.util.CollectionUtils;
+import io.army.util._Assert;
 
 import java.util.*;
 
@@ -32,7 +32,7 @@ abstract class MigratorUtils {
 
             final String tableName = obtainActualTableName(migration);
 
-            Assert.isTrue(!map.containsKey(tableName), "migrationList error");
+            _Assert.isTrue(!map.containsKey(tableName), "migrationList error");
 
             List<String> sqlList = new ArrayList<>();
 

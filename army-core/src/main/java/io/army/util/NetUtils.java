@@ -13,7 +13,7 @@ public abstract class NetUtils {
 
     public static InetAddress getPrivate() {
         InetAddress target = doGetIp(null, null);
-        Assert.state(target != null, "network state error");
+        _Assert.state(target != null, "network state error");
         return target;
     }
 

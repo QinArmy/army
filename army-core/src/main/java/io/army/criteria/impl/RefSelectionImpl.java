@@ -8,7 +8,7 @@ import io.army.mapping.MappingType;
 import io.army.meta.ParamMeta;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.SqlDataType;
-import io.army.util.Assert;
+import io.army.util._Assert;
 
 import java.sql.JDBCType;
 
@@ -136,19 +136,19 @@ abstract class RefSelectionImpl<E> extends OperationExpression<E> implements Ref
         }
 
         private void mappingMeta(MappingType mappingType) {
-            Assert.state(this.mappingType == null, "mappingMeta not null.");
+            _Assert.state(this.mappingType == null, "mappingMeta not null.");
             this.mappingType = mappingType;
         }
 
         @Override
         public Class<?> javaType() {
-            Assert.state(this.mappingType != null, "no mappingMeta.");
+            _Assert.state(this.mappingType != null, "no mappingMeta.");
             return this.mappingType.javaType();
         }
 
         @Override
         public JDBCType jdbcType() {
-            Assert.state(this.mappingType != null, "no mappingMeta.");
+            _Assert.state(this.mappingType != null, "no mappingMeta.");
             return this.mappingType.jdbcType();
         }
 
