@@ -7,6 +7,7 @@ import io.army.meta.TableMeta;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public interface Delete extends Statement, SQLDebug {
 
@@ -18,16 +19,7 @@ public interface Delete extends Statement, SQLDebug {
 
     interface DomainDeleteSpec<C> {
 
-        DeleteRoute<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, String tableAlias);
-    }
-
-    interface DeleteRoute<C> extends WhereSpec<C> {
-
-        WhereSpec<C> route(int databaseIndex, int tableIndex);
-
-        WhereSpec<C> route(int tableIndex);
-
-        WhereSpec<C> routeAll();
+        WhereSpec<C> deleteFrom(TableMeta<? extends IDomain> table, String tableAlias);
     }
 
 
@@ -37,6 +29,8 @@ public interface Delete extends Statement, SQLDebug {
 
         DeleteSpec where(Function<C, List<IPredicate>> function);
 
+        DeleteSpec where(Supplier<List<IPredicate>> supplier);
+
         WhereAndSpec<C> where(IPredicate predicate);
     }
 
@@ -45,12 +39,18 @@ public interface Delete extends Statement, SQLDebug {
 
         WhereAndSpec<C> and(IPredicate predicate);
 
+        WhereAndSpec<C> and(Function<C, IPredicate> function);
+
+        WhereAndSpec<C> and(Supplier<IPredicate> supplier);
+
         /**
          * @see Expression#ifEqual(Object)
          */
         WhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
 
         WhereAndSpec<C> ifAnd(Function<C, IPredicate> function);
+
+        WhereAndSpec<C> ifAnd(Supplier<IPredicate> supplier);
 
     }
 
@@ -68,6 +68,8 @@ public interface Delete extends Statement, SQLDebug {
 
         BatchParamSpec<C> where(Function<C, List<IPredicate>> function);
 
+        BatchParamSpec<C> where(Supplier<List<IPredicate>> supplier);
+
         BatchWhereAndSpec<C> where(IPredicate predicate);
     }
 
@@ -75,12 +77,18 @@ public interface Delete extends Statement, SQLDebug {
 
         BatchWhereAndSpec<C> and(IPredicate predicate);
 
+        BatchWhereAndSpec<C> and(Function<C, IPredicate> function);
+
+        BatchWhereAndSpec<C> and(Supplier<IPredicate> supplier);
+
         /**
          * @see Expression#ifEqual(Object)
          */
         BatchWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
 
         BatchWhereAndSpec<C> ifAnd(Function<C, IPredicate> function);
+
+        BatchWhereAndSpec<C> ifAnd(Supplier<IPredicate> supplier);
 
     }
 
@@ -90,9 +98,13 @@ public interface Delete extends Statement, SQLDebug {
 
         DeleteSpec paramMaps(Function<C, List<Map<String, Object>>> function);
 
+        DeleteSpec paramMaps(Supplier<List<Map<String, Object>>> supplier);
+
         DeleteSpec paramBeans(List<Object> beanList);
 
         DeleteSpec paramBeans(Function<C, List<Object>> function);
+
+        DeleteSpec paramBeans(Supplier<List<Object>> supplier);
 
     }
 

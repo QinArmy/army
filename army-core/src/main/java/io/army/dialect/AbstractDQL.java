@@ -3,6 +3,7 @@ package io.army.dialect;
 import io.army.UnKnownTypeException;
 import io.army.criteria.*;
 import io.army.criteria.impl._CriteriaCounselor;
+import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.*;
 import io.army.stmt.SimpleStmt;
 
@@ -257,11 +258,11 @@ public abstract class AbstractDQL extends AbstractDmlAndDql implements SqlDialec
         }
     }
 
-    protected final void fromClause(List<? extends TableBlock> tableWrapperList, _TablesSqlContext context) {
+    protected final void fromClause(List<? extends _TableBlock> tableWrapperList, _TablesSqlContext context) {
         context.sqlBuilder()
                 .append(" FROM");
-        Map<String, TableBlock> aliasMap = new HashMap<>();
-        for (TableBlock tableBlock : tableWrapperList) {
+        Map<String, _TableBlock> aliasMap = new HashMap<>();
+        for (_TableBlock tableBlock : tableWrapperList) {
 
             if (aliasMap.putIfAbsent(tableBlock.alias(), tableBlock) != null) {
                 // avoid table alias duplication
@@ -273,7 +274,7 @@ public abstract class AbstractDQL extends AbstractDmlAndDql implements SqlDialec
         }
     }
 
-    protected final void whereClause(List<? extends TableBlock> tableWrapperList, List<_Predicate> predicateList
+    protected final void whereClause(List<? extends _TableBlock> tableWrapperList, List<_Predicate> predicateList
             , _TablesSqlContext context) {
 
         final boolean needAppendVisible = _DialectUtils.needAppendVisible(tableWrapperList);

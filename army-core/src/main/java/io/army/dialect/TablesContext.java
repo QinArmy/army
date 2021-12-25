@@ -3,8 +3,8 @@ package io.army.dialect;
 import io.army.ErrorCode;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.TablePart;
-import io.army.criteria.impl.inner.TableBlock;
 import io.army.criteria.impl.inner._SingleDml;
+import io.army.criteria.impl.inner._TableBlock;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 
@@ -37,12 +37,12 @@ public final class TablesContext {
         );
     }
 
-    public static TablesContext multiTable(List<? extends TableBlock> tableWrapperList, String primaryRouteSuffix) {
+    public static TablesContext multiTable(List<? extends _TableBlock> tableWrapperList, String primaryRouteSuffix) {
         Map<TableMeta<?>, Integer> tableCountMap = new HashMap<>();
         Map<String, TableMeta<?>> aliasTableMap = new HashMap<>();
         Map<String, Integer> tableIndexMap = new HashMap<>();
 
-        for (TableBlock tableBlock : tableWrapperList) {
+        for (_TableBlock tableBlock : tableWrapperList) {
             TablePart tableAble = tableBlock.table();
             if (tableAble instanceof TableMeta) {
                 TableMeta<?> tableMeta = (TableMeta<?>) tableAble;
@@ -59,7 +59,7 @@ public final class TablesContext {
         Map<TableMeta<?>, String> tableAliasMap = new HashMap<>();
 
         final Integer one = 1;
-        for (TableBlock tableBlock : tableWrapperList) {
+        for (_TableBlock tableBlock : tableWrapperList) {
             TablePart tableAble = tableBlock.table();
             if (tableAble instanceof TableMeta) {
                 TableMeta<?> tableMeta = (TableMeta<?>) tableAble;

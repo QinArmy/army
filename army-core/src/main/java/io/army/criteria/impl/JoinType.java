@@ -4,9 +4,9 @@ import io.army.criteria.SQLModifier;
 
 enum JoinType implements SQLModifier {
     NONE(""),
-    LEFT("LEFT JOIN"),
+    LEFT_JOIN("LEFT JOIN"),
     JOIN("JOIN"),
-    RIGHT("RIGHT JOIN"),
+    RIGHT_JOIN("RIGHT JOIN"),
     FULL("FULL JOIN"),
 
     /**

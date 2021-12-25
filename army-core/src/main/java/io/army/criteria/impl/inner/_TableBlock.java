@@ -1,12 +1,11 @@
 package io.army.criteria.impl.inner;
 
-import io.army.criteria.IPredicate;
 import io.army.criteria.SQLModifier;
 import io.army.criteria.TablePart;
 
 import java.util.List;
 
-public interface TableBlock {
+public interface _TableBlock {
 
     TablePart table();
 
@@ -14,10 +13,6 @@ public interface TableBlock {
 
     SQLModifier jointType();
 
-    List<IPredicate> onPredicateList();
-
-    byte databaseRoute();
-
-    byte tableRoute();
+    List<_Predicate> predicates();
 
 }

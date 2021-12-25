@@ -8,6 +8,7 @@ import io.army.meta.TableMeta;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public interface Insert extends Statement, SQLDebug {
 
@@ -37,29 +38,38 @@ public interface Insert extends Statement, SQLDebug {
 
         InsertValuesSpec<T, C> insertInto(Function<C, Collection<FieldMeta<? super T, ?>>> function);
 
+        InsertValuesSpec<T, C> insertInto(Supplier<Collection<FieldMeta<? super T, ?>>> supplier);
+
         InsertValuesSpec<T, C> insertInto(TableMeta<T> table);
     }
 
     interface InsertValuesSpec<T extends IDomain, C> extends InsertSqlSpec {
 
-        <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, F> fieldMeta, @Nullable F value);
+        InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, @Nullable Object value);
 
-        <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, F> fieldMeta, Expression<F> value);
+        InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, Expression<?> value);
 
-        <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, F> fieldMeta, Function<C, Expression<F>> function);
+        <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, Function<C, Expression<F>> function);
 
-        <F> InsertValuesSpec<T, C> setDefault(FieldMeta<? super T, F> fieldMeta);
+        <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, Supplier<Expression<F>> supplier);
+
+        InsertValuesSpec<T, C> setDefault(FieldMeta<? super T, ?> field);
+
+        InsertValuesSpec<T, C> setNull(FieldMeta<? super T, ?> field);
 
         InsertSpec value(T domain);
 
         InsertSpec value(Function<C, T> function);
 
+        InsertSpec value(Supplier<T> supplier);
+
         InsertSpec values(List<T> domainList);
 
         InsertSpec values(Function<C, List<T>> function);
 
-    }
+        InsertSpec values(Supplier<List<T>> supplier);
 
+    }
 
 
 }

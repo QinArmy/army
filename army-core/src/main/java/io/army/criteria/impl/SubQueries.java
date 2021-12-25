@@ -2,10 +2,10 @@ package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.TableBlock;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._SortPart;
 import io.army.criteria.impl.inner._StandardSubQuery;
+import io.army.criteria.impl.inner._TableBlock;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
@@ -316,8 +316,8 @@ abstract class SubQueries<Q extends Query, C> extends AbstractStandardQuery<Q, C
         }
 
         @Override
-        public TableRouteJoinSpec<ScalarSubQuery<E>, C> from(TableMeta<?> tableMeta, String tableAlias) {
-            this.actualSelect.from(tableMeta, tableAlias);
+        public TableRouteJoinSpec<ScalarSubQuery<E>, C> from(TableMeta<?> table, String tableAlias) {
+            this.actualSelect.from(table, tableAlias);
             return this;
         }
 
@@ -328,7 +328,7 @@ abstract class SubQueries<Q extends Query, C> extends AbstractStandardQuery<Q, C
         }
 
         @Override
-        public TableRouteOnSpec<ScalarSubQuery<E>, C> leftJoin(TableMeta<?> tableMeta, String tableAlias) {
+        public TableOnSpec<ScalarSubQuery<E>, C> leftJoin(TableMeta<?> tableMeta, String tableAlias) {
             this.actualSelect.leftJoin(tableMeta, tableAlias);
             return this.onClauseImpl;
         }
@@ -340,7 +340,7 @@ abstract class SubQueries<Q extends Query, C> extends AbstractStandardQuery<Q, C
         }
 
         @Override
-        public TableRouteOnSpec<ScalarSubQuery<E>, C> ifLeftJoin(Predicate<C> predicate, TableMeta<?> tableMeta
+        public TableOnSpec<ScalarSubQuery<E>, C> ifLeftJoin(Predicate<C> predicate, TableMeta<?> tableMeta
                 , String tableAlias) {
             this.actualSelect.ifLeftJoin(predicate, tableMeta, tableAlias);
             return this.onClauseImpl;
@@ -655,7 +655,7 @@ abstract class SubQueries<Q extends Query, C> extends AbstractStandardQuery<Q, C
         }
 
         @Override
-        public List<? extends TableBlock> tableWrapperList() {
+        public List<? extends _TableBlock> tableWrapperList() {
             return this.actualSelect.tableWrapperList();
         }
 

@@ -110,11 +110,11 @@ public abstract class SQLs extends SQLUtils {
     }
 
     public static Query.SelectPartSpec<Select, EmptyObject> tableSelect() {
-        return StandardContextualMultiSelect.build(EmptyObject.getInstance());
+        return StandardSelect.create(EmptyObject.getInstance());
     }
 
     public static <C> Query.SelectPartSpec<Select, C> tableSelect(C criteria) {
-        return StandardContextualMultiSelect.build(criteria);
+        return StandardSelect.create(criteria);
     }
 
     public static Query.SelectPartSpec<SubQuery, Void> subQuery() {

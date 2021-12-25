@@ -18,6 +18,7 @@ import io.army.util._Exceptions;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -100,7 +101,13 @@ final class ContextualValueInsert<T extends IDomain, C> extends AbstractSQLDebug
 
     @Override
     public InsertValuesSpec<T, C> insertInto(Function<C, Collection<FieldMeta<? super T, ?>>> function) {
-        this.insertInto(Objects.requireNonNull(function.apply(this.criteria)));
+        this.insertInto(function.apply(this.criteria));
+        return this;
+    }
+
+    @Override
+    public InsertValuesSpec<T, C> insertInto(Supplier<Collection<FieldMeta<? super T, ?>>> supplier) {
+        this.insertInto(supplier.get());
         return this;
     }
 
@@ -117,13 +124,13 @@ final class ContextualValueInsert<T extends IDomain, C> extends AbstractSQLDebug
     /*################################## blow InsertValuesSpec method ##################################*/
 
     @Override
-    public <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, F> fieldMeta, @Nullable F value) {
-        this.set(fieldMeta, SQLs.param(fieldMeta, value));
-        return this;
+    public InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, @Nullable Object value) {
+        return this.set(field, SQLs.paramWithExp(field, value));
     }
 
+
     @Override
-    public <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, F> field, Expression<F> value) {
+    public InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, Expression<?> value) {
         _DmlUtils.checkInsertExpField(this.table, field, (_Expression<?>) value);
 
         Map<FieldMeta<?, ?>, _Expression<?>> commonExpMap = this.commonExpMap;
@@ -136,15 +143,23 @@ final class ContextualValueInsert<T extends IDomain, C> extends AbstractSQLDebug
     }
 
     @Override
-    public <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, F> fieldMeta, Function<C, Expression<F>> function) {
-        this.set(fieldMeta, Objects.requireNonNull(function.apply(this.criteria)));
-        return this;
+    public <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, Function<C, Expression<F>> function) {
+        return this.set(field, function.apply(this.criteria));
     }
 
     @Override
-    public <F> InsertValuesSpec<T, C> setDefault(final FieldMeta<? super T, F> fieldMeta) {
-        this.set(fieldMeta, SQLs.defaultWord());
-        return this;
+    public <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, Supplier<Expression<F>> supplier) {
+        return this.set(field, supplier.get());
+    }
+
+    @Override
+    public InsertValuesSpec<T, C> setDefault(final FieldMeta<? super T, ?> field) {
+        return this.set(field, SQLs.defaultWord());
+    }
+
+    @Override
+    public InsertValuesSpec<T, C> setNull(FieldMeta<? super T, ?> field) {
+        return this.set(field, SQLs.nullWord());
     }
 
     @Override
@@ -152,6 +167,11 @@ final class ContextualValueInsert<T extends IDomain, C> extends AbstractSQLDebug
         this.domainList = Collections.singletonList(
                 ObjectAccessorFactory.forBeanPropertyAccess(domain));
         return this;
+    }
+
+    @Override
+    public InsertSpec value(Supplier<T> supplier) {
+        return this.value(supplier.get());
     }
 
     @Override
@@ -166,14 +186,17 @@ final class ContextualValueInsert<T extends IDomain, C> extends AbstractSQLDebug
 
     @Override
     public InsertSpec value(Function<C, T> function) {
-        this.value(function.apply(this.criteria));
-        return this;
+        return this.value(function.apply(this.criteria));
     }
 
     @Override
     public InsertSpec values(Function<C, List<T>> function) {
-        this.values(function.apply(this.criteria));
-        return this;
+        return this.values(function.apply(this.criteria));
+    }
+
+    @Override
+    public InsertSpec values(Supplier<List<T>> supplier) {
+        return this.values(supplier.get());
     }
 
     /*################################## blow InnerStandardInsert method ##################################*/

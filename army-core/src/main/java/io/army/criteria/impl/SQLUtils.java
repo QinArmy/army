@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -61,6 +62,9 @@ abstract class SQLUtils {
         } else if (value instanceof Function) {
             //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
             resultExpression = ((Function<Object, Expression<?>>) value).apply(CriteriaContextStack.getCriteria());
+        } else if (value instanceof Supplier) {
+            //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
+            resultExpression = (Expression<?>) ((Supplier<?>) value).get();
         } else {
             // use optimizing param expression
             resultExpression = ParamExpressions.optimizing(type.paramMeta(), value);

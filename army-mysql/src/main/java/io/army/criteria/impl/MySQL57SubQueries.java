@@ -2,9 +2,9 @@ package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.TableBlock;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._SortPart;
+import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._MySQL57SubQuery;
 import io.army.criteria.mysql.*;
 import io.army.dialect._SqlContext;
@@ -670,7 +670,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public final List<? extends TableBlock> tableWrapperList() {
+        public final List<? extends _TableBlock> tableWrapperList() {
             return this.actualSelect.tableWrapperList();
         }
 

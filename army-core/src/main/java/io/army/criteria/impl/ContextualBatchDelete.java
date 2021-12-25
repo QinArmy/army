@@ -4,8 +4,8 @@ import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ReadWrapper;
 import io.army.criteria.Delete;
 import io.army.criteria.IPredicate;
+import io.army.criteria.impl.inner._BatchDelete;
 import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner._StandardBatchDelete;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -24,25 +25,25 @@ import java.util.function.Function;
  *
  * @param <C> criteria java type used to create dynamic delete and sub query
  */
-final class ContextualBatchDelete<C> implements Delete,
-        Delete.BatchDomainDeleteSpec<C>, Delete.BatchWhereSpec<C>
-        , Delete.BatchWhereAndSpec<C>, Delete.BatchParamSpec<C>, Delete.DeleteSpec, _StandardBatchDelete {
+final class ContextualBatchDelete<C> implements Delete, Delete.BatchWhereSpec<C>
+        , Delete.BatchWhereAndSpec<C>, Delete.BatchParamSpec<C>, Delete.DeleteSpec, _BatchDelete {
 
-    static ContextualBatchDelete<Void> create() {
-        return new ContextualBatchDelete<>(null);
+    static Delete.BatchDomainDeleteSpec<Void> create() {
+        return new BatchDomainDeleteSpecImpl<>(null);
     }
 
-    static <C> ContextualBatchDelete<C> create(C criteria) {
-        return new ContextualBatchDelete<>(Objects.requireNonNull(criteria));
+    static <C> Delete.BatchDomainDeleteSpec<C> create(C criteria) {
+        Objects.requireNonNull(criteria);
+        return new BatchDomainDeleteSpecImpl<>(criteria);
     }
+
+    private final TableMeta<?> table;
+
+    private final String tableAlias;
 
     private final C criteria;
 
     private final CriteriaContext criteriaContext;
-
-    private TableMeta<?> table;
-
-    private String tableAlias;
 
     private List<_Predicate> predicateList = new ArrayList<>();
 
@@ -50,20 +51,15 @@ final class ContextualBatchDelete<C> implements Delete,
 
     private boolean prepared;
 
-    private ContextualBatchDelete(@Nullable C criteria) {
+    private ContextualBatchDelete(TableMeta<?> table, String tableAlias, @Nullable C criteria) {
+        this.table = table;
+        this.tableAlias = tableAlias;
         this.criteria = criteria;
         this.criteriaContext = new CriteriaContextImpl<>(this.criteria);
         CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 
     /*################################## blow BatchSingleDeleteSpec method ##################################*/
-
-    @Override
-    public BatchWhereSpec<C> deleteFrom(TableMeta<? extends IDomain> table, String tableAlias) {
-        this.table = table;
-        this.tableAlias = tableAlias;
-        return this;
-    }
 
 
     /*################################## blow BatchWhereSpec method ##################################*/
@@ -83,6 +79,11 @@ final class ContextualBatchDelete<C> implements Delete,
     }
 
     @Override
+    public BatchParamSpec<C> where(Supplier<List<IPredicate>> supplier) {
+        return this.where(supplier.get());
+    }
+
+    @Override
     public BatchWhereAndSpec<C> where(IPredicate predicate) {
         this.predicateList.add((_Predicate) predicate);
         return this;
@@ -97,6 +98,16 @@ final class ContextualBatchDelete<C> implements Delete,
     }
 
     @Override
+    public BatchWhereAndSpec<C> and(Function<C, IPredicate> function) {
+        return this.and(Objects.requireNonNull(function.apply(this.criteria)));
+    }
+
+    @Override
+    public BatchWhereAndSpec<C> and(Supplier<IPredicate> supplier) {
+        return this.and(Objects.requireNonNull(supplier.get()));
+    }
+
+    @Override
     public BatchWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate) {
         if (predicate != null) {
             this.predicateList.add((_Predicate) predicate);
@@ -108,6 +119,16 @@ final class ContextualBatchDelete<C> implements Delete,
     public BatchWhereAndSpec<C> ifAnd(Function<C, IPredicate> function) {
         final IPredicate predicate;
         predicate = function.apply(this.criteria);
+        if (predicate != null) {
+            this.predicateList.add((_Predicate) predicate);
+        }
+        return this;
+    }
+
+    @Override
+    public BatchWhereAndSpec<C> ifAnd(Supplier<IPredicate> supplier) {
+        final IPredicate predicate;
+        predicate = supplier.get();
         if (predicate != null) {
             this.predicateList.add((_Predicate) predicate);
         }
@@ -131,6 +152,11 @@ final class ContextualBatchDelete<C> implements Delete,
     }
 
     @Override
+    public DeleteSpec paramMaps(Supplier<List<Map<String, Object>>> supplier) {
+        return this.paramMaps(supplier.get());
+    }
+
+    @Override
     public DeleteSpec paramBeans(List<Object> beanList) {
         final List<ReadWrapper> paramList = this.paramList;
         for (Object bean : beanList) {
@@ -142,6 +168,11 @@ final class ContextualBatchDelete<C> implements Delete,
     @Override
     public DeleteSpec paramBeans(Function<C, List<Object>> function) {
         return this.paramBeans(function.apply(this.criteria));
+    }
+
+    @Override
+    public DeleteSpec paramBeans(Supplier<List<Object>> supplier) {
+        return this.paramBeans(supplier.get());
     }
 
     /*################################## blow DeleteSpec method ##################################*/
@@ -193,12 +224,26 @@ final class ContextualBatchDelete<C> implements Delete,
 
     @Override
     public void clear() {
-        this.table = null;
-        this.tableAlias = null;
         this.predicateList = null;
         this.paramList = null;
 
         this.prepared = false;
+    }
+
+
+    private static final class BatchDomainDeleteSpecImpl<C> implements BatchDomainDeleteSpec<C> {
+
+        private final C criteria;
+
+        private BatchDomainDeleteSpecImpl(@Nullable C criteria) {
+            this.criteria = criteria;
+        }
+
+        @Override
+        public BatchWhereSpec<C> deleteFrom(TableMeta<? extends IDomain> table, String tableAlias) {
+            return new ContextualBatchDelete<>(table, tableAlias, this.criteria);
+        }
+
     }
 
 

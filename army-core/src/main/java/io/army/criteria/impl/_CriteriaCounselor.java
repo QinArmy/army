@@ -27,9 +27,9 @@ public abstract class _CriteriaCounselor {
     }
 
     public static void assertStandardSelect(_StandardSelect select) {
-        if (!(select instanceof StandardContextualMultiSelect)) {
+        if (!(select instanceof StandardSelect)) {
             throw new IllegalArgumentException(String.format("%s isn't instance of %s", select
-                    , StandardContextualMultiSelect.class.getName()));
+                    , StandardSelect.class.getName()));
         }
     }
 

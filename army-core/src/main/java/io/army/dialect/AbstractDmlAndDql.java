@@ -1,8 +1,8 @@
 package io.army.dialect;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.TableBlock;
 import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
@@ -37,7 +37,7 @@ public abstract class AbstractDmlAndDql extends AbstractSql {
 
     }
 
-    protected void doTableWrapper(TableBlock tableBlock, _TablesSqlContext context) {
+    protected void doTableWrapper(_TableBlock tableBlock, _TablesSqlContext context) {
         final StringBuilder builder = context.sqlBuilder();
         // 1. form/join type
         SQLModifier joinType = tableBlock.jointType();
@@ -85,7 +85,7 @@ public abstract class AbstractDmlAndDql extends AbstractSql {
         }
     }
 
-    protected final void appendVisiblePredicate(List<? extends TableBlock> tableWrapperList, _TablesSqlContext context
+    protected final void appendVisiblePredicate(List<? extends _TableBlock> tableWrapperList, _TablesSqlContext context
             , boolean hasPredicate) {
         // append visible predicates
 //        final TableMeta<?> dual = null;
@@ -301,7 +301,7 @@ public abstract class AbstractDmlAndDql extends AbstractSql {
 //                .append(visibleField.mappingMeta().toConstant(null, visible));
     }
 
-    private void appendVisibleIfNeed(TableBlock tableBlock, @Nullable TableBlock preTableBlock
+    private void appendVisibleIfNeed(_TableBlock tableBlock, @Nullable _TableBlock preTableBlock
             , _TablesSqlContext context, Map<String, ChildTableMeta<?>> childMap, boolean hasPredicate) {
 
         final TableMeta<?> table = (TableMeta<?>) tableBlock.table();

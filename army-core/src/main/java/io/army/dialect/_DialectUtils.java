@@ -4,15 +4,11 @@ import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
 import io.army.UnKnownTypeException;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.TableBlock;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._SortPart;
-import io.army.domain.IDomain;
+import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
-import io.army.mapping.*;
-import io.army.mapping.optional.OffsetDateTimeType;
-import io.army.mapping.optional.OffsetTimeType;
-import io.army.mapping.optional.ZonedDateTimeType;
+import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.FactoryMode;
@@ -44,37 +40,6 @@ public abstract class _DialectUtils {
             JDBCType.TIMESTAMP_WITH_TIMEZONE
     );
 
-    public static SqlBuilder createSQLBuilder() {
-        return new SQLBuilderImpl();
-    }
-
-    public static boolean isSafeMapping(final MappingType mappingType) {
-        return mappingType instanceof IntegerType
-                || mappingType instanceof BigDecimalType
-                || mappingType instanceof LongType
-                || mappingType instanceof LocalDateTimeType
-                || mappingType instanceof LocalDateType
-                || mappingType instanceof LocalTimeType
-                || mappingType instanceof CodeEnumType
-                || mappingType instanceof NameEnumType
-                || mappingType instanceof BigIntegerType
-                || mappingType instanceof BooleanType
-                || mappingType instanceof TrueFalseType
-                || mappingType instanceof OffsetDateTimeType
-                || mappingType instanceof ZonedDateTimeType
-                || mappingType instanceof OffsetTimeType
-                || mappingType instanceof DoubleType
-                || mappingType instanceof FloatType
-                || mappingType instanceof ShortType
-                || mappingType instanceof ByteType;
-    }
-
-
-    @SuppressWarnings("unchecked")
-    public static <T extends IDomain> Collection<FieldMeta<?, ?>> tableFields(TableMeta<T> tableMeta) {
-        final Collection<?> collection = tableMeta.fieldCollection();
-        return (Collection<FieldMeta<?, ?>>) collection;
-    }
 
     public static String tableSuffix(final byte tableIndex) {
         final String suffix;
@@ -188,10 +153,10 @@ public abstract class _DialectUtils {
         return temp.containField(_MetaBridge.VISIBLE);
     }
 
-    public static boolean needAppendVisible(List<? extends TableBlock> tableWrapperList) {
+    public static boolean needAppendVisible(List<? extends _TableBlock> tableWrapperList) {
         final TableMeta<?> dual = null;
         boolean need = false;
-        for (TableBlock tableBlock : tableWrapperList) {
+        for (_TableBlock tableBlock : tableWrapperList) {
             TablePart tableAble = tableBlock.table();
 
             if ((tableAble instanceof TableMeta) && tableAble != dual) {
@@ -272,7 +237,7 @@ public abstract class _DialectUtils {
     }
 
 
-    public static void validateTableAlias(final TableMeta<?> table, final String tableAlias) {
+    public static void validateUpdateTableAlias(final TableMeta<?> table, final String tableAlias) {
         if (table instanceof SimpleTableMeta && table.immutable()) {
             throw _Exceptions.immutableTable(table);
         }
@@ -286,98 +251,19 @@ public abstract class _DialectUtils {
         }
     }
 
+    public static void validateTableAlias(final String tableAlias) {
+        if (!StringUtils.hasText(tableAlias)) {
+            throw new CriteriaException("Alias of table or sub query must has text.");
+        }
+        if (tableAlias.startsWith(Constant.FORBID_ALIAS)) {
+            String m = String.format("Error,Alias[%s] of table or sub query start with %s."
+                    , tableAlias, Constant.FORBID_ALIAS);
+            throw new CriteriaException(m);
+        }
+    }
+
 
     /*################################## blow private static innner class ##################################*/
 
-    private static final class SQLBuilderImpl implements SqlBuilder {
-
-        private final StringBuilder builder = new StringBuilder(128);
-
-        private SQLBuilderImpl() {
-        }
-
-        @Override
-        public SqlBuilder append(boolean b) {
-            this.builder.append(b);
-            return this;
-        }
-
-        @Override
-        public SqlBuilder append(char ch) {
-            this.builder.append(ch);
-            return this;
-        }
-
-        @Override
-        public SqlBuilder append(char[] charArray) {
-            this.builder.append(charArray);
-            return this;
-        }
-
-        @Override
-        public SqlBuilder append(char[] charArray, int offset, int len) {
-            this.builder.append(charArray, offset, len);
-            return this;
-        }
-
-        @Override
-        public SqlBuilder append(CharSequence s) {
-            this.builder.append(s);
-            return this;
-        }
-
-        @Override
-        public SqlBuilder append(CharSequence s, int start, int end) {
-            this.builder.append(s, start, end);
-            return this;
-        }
-
-        @Override
-        public SqlBuilder append(double d) {
-            this.builder.append(d);
-            return this;
-        }
-
-        @Override
-        public SqlBuilder append(float f) {
-            this.builder.append(f);
-            return this;
-        }
-
-        @Override
-        public SqlBuilder append(int i) {
-            this.builder.append(i);
-            return this;
-        }
-
-        @Override
-        public SqlBuilder append(long lng) {
-            this.builder.append(lng);
-            return this;
-        }
-
-        @Override
-        public SqlBuilder append(Object obj) {
-            this.builder.append(obj);
-            return this;
-        }
-
-        @Override
-        public SqlBuilder append(String str) {
-            this.builder.append(str);
-            return this;
-        }
-
-        @Override
-        public SqlBuilder appendCodePoint(int codePoint) {
-            this.builder.append(codePoint);
-            return this;
-        }
-
-        @Override
-        public String toString() {
-            return this.builder.toString();
-        }
-    }
 
 }

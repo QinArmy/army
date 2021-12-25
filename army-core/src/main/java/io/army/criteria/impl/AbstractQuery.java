@@ -2,10 +2,10 @@ package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.TableBlock;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Query;
 import io.army.criteria.impl.inner._SortPart;
+import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -14,35 +14,11 @@ import io.army.util._Assert;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implements Query, _Query {
 
     protected final C criteria;
 
-    private List<SQLModifier> modifierList;
-
-    private List<SelectPart> selectPartList = new ArrayList<>();
-
-    private List<TableBlockImpl> tableWrapperList = new ArrayList<>();
-
-    private List<_Predicate> predicateList = new ArrayList<>();
-
-    private List<_SortPart> groupByList;
-
-    private List<_Predicate> havingList;
-
-    private List<_SortPart> orderByList;
-
-    private int offset = -1;
-
-    private int rowCount = -1;
-
-    private boolean ableRouteClause;
-
-    private boolean ableOnClause;
-
-    private boolean prepared;
 
     AbstractQuery(C criteria) {
         _Assert.notNull(criteria, "criteria required");
@@ -60,18 +36,18 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
 
 
     @SuppressWarnings("unchecked")
-    public final Q asQuery() {
+    public Q asQuery() {
         if (this.prepared) {
             return (Q) this;
         }
-        processSelectPartList(this.selectPartList, this.tableWrapperList);
+        processSelectPartList(this.selectPartList, this.tableBlockList);
 
         _Assert.state(!this.selectPartList.isEmpty(), "no select list clause.");
-        _Assert.state(!this.tableWrapperList.isEmpty(), "no from clause.");
+        _Assert.state(!this.tableBlockList.isEmpty(), "no from clause.");
 
         this.modifierList = asUnmodifiableList(this.modifierList);
         this.selectPartList = Collections.unmodifiableList(this.selectPartList);
-        this.tableWrapperList = Collections.unmodifiableList(this.tableWrapperList);
+        this.tableBlockList = Collections.unmodifiableList(this.tableBlockList);
         this.predicateList = Collections.unmodifiableList(this.predicateList);
 
         this.groupByList = asUnmodifiableList(this.groupByList);
@@ -85,16 +61,16 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
     }
 
     @Override
-    public final void prepared() {
+    public void prepared() {
         _Assert.prepared(this.prepared);
     }
 
     @Override
-    public final void clear() {
+    public void clear() {
         _Assert.nonPrepared(this.prepared);
         this.modifierList = null;
         this.selectPartList = null;
-        this.tableWrapperList = null;
+        this.tableBlockList = null;
         this.predicateList = null;
 
         this.groupByList = null;
@@ -119,8 +95,8 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
     }
 
     @Override
-    public final List<? extends TableBlock> tableWrapperList() {
-        return this.tableWrapperList;
+    public final List<? extends _TableBlock> tableWrapperList() {
+        return this.tableBlockList;
     }
 
     @Override
@@ -197,58 +173,9 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
     }
 
 
-    final void doOnClause(List<IPredicate> predicateList) {
-        if (this.ableOnClause) {
-            _Assert.notEmpty(predicateList, "predicateList required");
-            _Assert.state(!this.tableWrapperList.isEmpty(), "no form/join clause.");
-
-            TableBlockImpl tableWrapper = this.tableWrapperList.get(this.tableWrapperList.size() - 1);
-            tableWrapper.addOnPredicateList(predicateList);
-            this.ableOnClause = false;
-        }
-    }
-
-    final void addTable(TableMeta<?> tableMeta, String tableAlias, JoinType joinType) {
-        addTableAble(createTableWrapper(tableMeta, tableAlias, joinType));
-    }
-
-    final void addSubQuery(SubQuery subQuery, String subQueryAlias, JoinType joinType) {
-        addTableAble(createTableWrapper(subQuery, subQueryAlias, joinType));
-    }
-
-
-    final void ifAddTable(Predicate<C> predicate, TableMeta<?> tableMeta, String tableAlias, JoinType joinType) {
-        if (predicate.test(this.criteria)) {
-            addTableAble(createTableWrapper(tableMeta, tableAlias, joinType));
-        } else {
-            this.ableOnClause = false;
-            this.ableRouteClause = false;
-            onNotAddTable();
-        }
-    }
-
-    final void ifAddSubQuery(Function<C, SubQuery> function, String subQueryAlias, JoinType joinType) {
-        SubQuery subQuery = function.apply(this.criteria);
-        if (subQuery == null) {
-            this.ableOnClause = false;
-            onNotAddDerivedTable();
-        } else {
-            addTableAble(createTableWrapper(subQuery, subQueryAlias, joinType));
-        }
-    }
-
-
-    final void doRouteClause(int databaseIndex, int tableIndex) {
-        if (this.ableRouteClause) {
-            TableBlockImpl tableWrapper = this.tableWrapperList.get(this.tableWrapperList.size() - 1);
-            tableWrapper.route(databaseIndex, tableIndex);
-            this.ableRouteClause = false;
-        }
-    }
-
-    void doCheckTableAble(TableBlock wrapper) {
+    void doCheckTableAble(TableBlock block) {
         throw new IllegalArgumentException(String.format("tableAble[%s] isn't TableMeta or SubQuery."
-                , wrapper.alias()));
+                , block.alias()));
     }
 
     final void addPredicate(IPredicate predicate) {
@@ -256,45 +183,48 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
     }
 
     final void addPredicateList(List<IPredicate> predicateList) {
-        CriteriaUtils.addPredicates(predicateList, this.predicateList);
+        final List<_Predicate> predicates = new ArrayList<>(predicateList.size());
+        for (IPredicate predicate : predicateList) {
+            predicates.add((_Predicate) predicate);
+        }
+        this.predicateList = predicates;
     }
 
     final void addGroupBy(SortPart sortPart) {
-        if (this.groupByList == null) {
-            this.groupByList = new ArrayList<>(1);
-        }
-        this.groupByList.add((_SortPart) sortPart);
+        this.groupByList = Collections.singletonList(sortPart);
     }
 
-    final void addGroupByList(List<SortPart> sortPartList) {
-        if (!CollectionUtils.isEmpty(sortPartList)) {
-            List<_SortPart> groupByList = this.groupByList;
-            if (groupByList == null) {
-                groupByList = new ArrayList<>(sortPartList.size());
-                this.groupByList = groupByList;
-            }
-            CriteriaUtils.addSortParts(sortPartList, groupByList);
+    final void addGroupByList(final List<SortPart> sortPartList) {
+        if (sortPartList.size() == 0) {
+            throw new CriteriaException("group by clause sortPartList is empty.");
         }
+        this.groupByList = new ArrayList<>(sortPartList);
     }
 
-    final void addHaving(IPredicate predicate) {
-        if (!CollectionUtils.isEmpty(this.groupByList)) {
-            if (this.havingList == null) {
-                this.havingList = new ArrayList<>(1);
-            }
-            this.havingList.add((_Predicate) predicate);
+    final void addHaving(final IPredicate predicate) {
+        final List<SortPart> groupByList = this.groupByList;
+        if (groupByList != null && groupByList.size() > 0) {
+            this.havingList = Collections.singletonList((_Predicate) predicate);
         }
 
     }
 
-    final void addHavingList(List<IPredicate> predicateList) {
-        if (!CollectionUtils.isEmpty(this.groupByList) && !predicateList.isEmpty()) {
-            List<_Predicate> havingList = this.havingList;
-            if (havingList == null) {
-                havingList = new ArrayList<>(predicateList.size());
-                this.havingList = havingList;
+    final void addHavingList(final Function<C, List<IPredicate>> function) {
+        final List<SortPart> groupByList = this.groupByList;
+        if (groupByList != null && groupByList.size() > 0) {
+            final List<IPredicate> predicateList;
+            addHavingList(function.apply(this.criteria));
+        }
+    }
+
+    final void addHavingList(final List<IPredicate> predicateList) {
+        final List<SortPart> groupByList = this.groupByList;
+        if (groupByList != null && groupByList.size() > 0) {
+            final List<_Predicate> list = new ArrayList<>(predicateList.size());
+            for (IPredicate predicate : predicateList) {
+                list.add((_Predicate) predicate);
             }
-            CriteriaUtils.addPredicates(predicateList, havingList);
+            this.havingList = list;
         }
     }
 
@@ -324,13 +254,18 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
         this.rowCount = rowCount;
     }
 
-    final TableBlockImpl lastTableWrapper() {
-        _Assert.state(!this.tableWrapperList.isEmpty(), "tableWrapperList is empty.");
+    final TableBlock lastTableBlock() {
+        return this.tableBlockList.get(this.tableBlockList.size() - 1);
+    }
 
-        TableBlockImpl tableWrapper = this.tableWrapperList.get(this.tableWrapperList.size() - 1);
-        _Assert.state(tableWrapper.getClass() != TableBlockImpl.class
-                , "tableWrapper isn't sub class of TableWrapperImpl");
-        return tableWrapper;
+    final TableBlock beforeBlock(final TableBlock block) {
+        final int size = this.tableBlockList.size();
+        final TableBlock last;
+        last = this.tableBlockList.get(size - 1);
+        if (block != last) {
+            throw new IllegalArgumentException("block error");
+        }
+        return this.tableBlockList.get(size - 2);
     }
 
     TableBlockImpl createTableWrapper(TablePart tableAble, String alias, JoinType joinType) {
@@ -343,6 +278,10 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
 
     void onNotAddTable() {
 
+    }
+
+    static CriteriaException selectListClauseEmpty() {
+        return new CriteriaException("selection list clause is empty.");
     }
 
     /*################################## blow package template method ##################################*/
@@ -358,29 +297,7 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
     abstract boolean hasLockClause();
 
 
-    /**
-     *
-     */
-    private void addTableAble(TableBlockImpl wrapper) {
 
-        if (wrapper.jointType == JoinType.NONE) {
-            _Assert.state(this.tableWrapperList.isEmpty(), "from clause ended.");
-        } else {
-            _Assert.state(!this.tableWrapperList.isEmpty(), "no from clause.");
-        }
-
-        this.tableWrapperList.add(wrapper);
-        this.ableOnClause = true;
-        if (wrapper.tableAble instanceof TableMeta) {
-            onAddTable((TableMeta<?>) wrapper.tableAble, wrapper.alias);
-            this.ableRouteClause = true;
-        } else if (wrapper.tableAble instanceof SubQuery) {
-            onAddSubQuery((SubQuery) wrapper.tableAble, wrapper.alias);
-        } else {
-            doCheckTableAble(wrapper);
-        }
-
-    }
 
 
     /**
@@ -413,7 +330,7 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
         }
 
         // 2. find table alias to create SelectionGroup .
-        for (TableBlock tableBlock : tableWrapperList) {
+        for (_TableBlock tableBlock : tableWrapperList) {
             TablePart tableAble = tableBlock.table();
 
             if (tableAble instanceof SubQuery) {
@@ -437,6 +354,58 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR
                     , "SelectionGroup of Tables[%s] no found from criteria context,please check from clause."
                     , tableSelectGroupMap.keySet());
+        }
+
+    }
+
+    static CriteriaException onClauseIsEmpty() {
+        return new CriteriaException("on clause is empty");
+    }
+
+    static abstract class TableBlock implements _TableBlock {
+
+        final TablePart tablePart;
+
+        final String alias;
+
+        final JoinType joinType;
+
+        List<_Predicate> predicates;
+
+        TableBlock(TablePart tablePart, String alias, JoinType joinType) {
+            this.tablePart = tablePart;
+            this.alias = alias;
+            this.joinType = joinType;
+        }
+
+        @Override
+        public final TablePart table() {
+            return this.tablePart;
+        }
+
+        @Override
+        public final String alias() {
+            return this.alias;
+        }
+
+        @Override
+        public final SQLModifier jointType() {
+            return this.joinType;
+        }
+
+
+    }
+
+
+    static final class FromTableBlock extends TableBlock {
+
+        FromTableBlock(TablePart tablePart, String alias) {
+            super(tablePart, alias, JoinType.NONE);
+        }
+
+        @Override
+        public List<_Predicate> predicates() {
+            return Collections.emptyList();
         }
 
     }

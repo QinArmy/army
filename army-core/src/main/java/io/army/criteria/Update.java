@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public interface Update extends Statement, SQLDebug {
 
@@ -24,31 +25,26 @@ public interface Update extends Statement, SQLDebug {
 
     interface DomainUpdateSpec<C> {
 
-        <T extends IDomain> RouteSpec<T, C> update(TableMeta<T> table, String tableAlias);
-    }
-
-    interface RouteSpec<T extends IDomain, C> extends SetSpec<T, C> {
-
-        SetSpec<T, C> route(int databaseIndex, int tableIndex);
-
-        SetSpec<T, C> route(int tableIndex);
-
-        SetSpec<T, C> routeAll();
+        <T extends IDomain> SetSpec<T, C> update(TableMeta<T> table, String tableAlias);
     }
 
 
     interface SetSpec<T extends IDomain, C> {
 
-        <F> WhereSpec<T, C> set(FieldMeta<? super T, F> field, @Nullable F value);
+        WhereSpec<T, C> set(FieldMeta<? super T, ?> field, @Nullable Object value);
 
-        <F> WhereSpec<T, C> set(FieldMeta<? super T, F> field, Expression<F> value);
+        WhereSpec<T, C> set(FieldMeta<? super T, ?> field, Expression<?> value);
 
-        <F> WhereSpec<T, C> setNull(FieldMeta<? super T, F> field);
+        <F> WhereSpec<T, C> set(FieldMeta<? super T, F> field, Function<C, Expression<F>> function);
+
+        <F> WhereSpec<T, C> set(FieldMeta<? super T, F> field, Supplier<Expression<F>> supplier);
+
+        WhereSpec<T, C> setNull(FieldMeta<? super T, ?> field);
 
         /**
          * @see SQLs#defaultWord()
          */
-        <F> WhereSpec<T, C> setDefault(FieldMeta<? super T, F> field);
+        WhereSpec<T, C> setDefault(FieldMeta<? super T, ?> field);
 
         <F extends Number> WhereSpec<T, C> setPlus(FieldMeta<? super T, F> field, F value);
 
@@ -72,9 +68,9 @@ public interface Update extends Statement, SQLDebug {
 
         <F> WhereSpec<T, C> ifSet(FieldMeta<? super T, F> field, @Nullable F value);
 
-        <F> WhereSpec<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, @Nullable F value);
-
         <F> WhereSpec<T, C> ifSet(FieldMeta<? super T, F> field, Function<C, Expression<F>> function);
+
+        <F> WhereSpec<T, C> ifSet(FieldMeta<? super T, F> field, Supplier<Expression<F>> supplier);
 
         <F extends Number> WhereSpec<T, C> ifSetPlus(FieldMeta<? super T, F> field, @Nullable F value);
 
@@ -86,15 +82,6 @@ public interface Update extends Statement, SQLDebug {
 
         <F extends Number> WhereSpec<T, C> ifSetMod(FieldMeta<? super T, F> field, @Nullable F value);
 
-        <F extends Number> WhereSpec<T, C> ifSetPlus(Predicate<C> test, FieldMeta<? super T, F> field, F value);
-
-        <F extends Number> WhereSpec<T, C> ifSetMinus(Predicate<C> test, FieldMeta<? super T, F> field, F value);
-
-        <F extends Number> WhereSpec<T, C> ifSetMultiply(Predicate<C> test, FieldMeta<? super T, F> field, F value);
-
-        <F extends Number> WhereSpec<T, C> ifSetDivide(Predicate<C> test, FieldMeta<? super T, F> field, F value);
-
-        <F extends Number> WhereSpec<T, C> ifSetMod(Predicate<C> test, FieldMeta<? super T, F> field, F value);
 
     }
 
@@ -105,13 +92,20 @@ public interface Update extends Statement, SQLDebug {
 
         UpdateSpec where(Function<C, List<IPredicate>> function);
 
+        UpdateSpec where(Supplier<List<IPredicate>> supplier);
+
         WhereAndSpec<T, C> where(IPredicate predicate);
+
     }
 
 
     interface WhereAndSpec<T extends IDomain, C> extends UpdateSpec {
 
         WhereAndSpec<T, C> and(IPredicate predicate);
+
+        WhereAndSpec<T, C> and(Function<C, IPredicate> function);
+
+        WhereAndSpec<T, C> and(Supplier<IPredicate> supplier);
 
         /**
          * @see Expression#ifEqual(Object)
@@ -120,23 +114,15 @@ public interface Update extends Statement, SQLDebug {
 
         WhereAndSpec<T, C> ifAnd(Function<C, IPredicate> function);
 
+        WhereAndSpec<T, C> ifAnd(Supplier<IPredicate> supplier);
+
     }
 
     /*################################## blow batch update interface ##################################*/
 
     interface BatchUpdateSpec<C> {
 
-        <T extends IDomain> BatchRouteSpec<T, C> update(TableMeta<T> table, String tableAlias);
-    }
-
-    interface BatchRouteSpec<T extends IDomain, C> extends BatchSetSpec<T, C> {
-
-        BatchSetSpec<T, C> route(int databaseIndex, int tableIndex);
-
-        BatchSetSpec<T, C> route(int tableIndex);
-
-        BatchSetSpec<T, C> routeAll();
-
+        <T extends IDomain> BatchSetSpec<T, C> update(TableMeta<T> table, String tableAlias);
     }
 
 
@@ -201,6 +187,14 @@ public interface Update extends Statement, SQLDebug {
          * @see SQLs#namedParam(String, ParamMeta)
          */
         BatchParamSpec<C> where(Function<C, List<IPredicate>> function);
+
+        /**
+         * @see SQLs#nonNullNamedParam(GenericField)
+         * @see SQLs#nonNullNamedParam(String, ParamMeta)
+         * @see SQLs#namedParam(GenericField)
+         * @see SQLs#namedParam(String, ParamMeta)
+         */
+        BatchParamSpec<C> where(Supplier<List<IPredicate>> supplier);
 
         /**
          * @see SQLs#nonNullNamedParam(GenericField)

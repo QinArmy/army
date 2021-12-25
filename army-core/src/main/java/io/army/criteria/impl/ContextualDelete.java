@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -22,35 +23,32 @@ import java.util.function.Function;
  * @param <C> criteria java type used to crate dynamic delete and sub query
  */
 final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
-        , Delete.DomainDeleteSpec<C>, Delete.DeleteRoute<C>, Delete.WhereAndSpec<C>
-        , _SingleDelete {
+        , Delete.WhereSpec<C>, Delete.WhereAndSpec<C>, _SingleDelete {
 
     static DomainDeleteSpec<Void> create() {
-        return new ContextualDelete<>(null);
+        return new DomainDeleteSpecImpl<>(null);
     }
 
-    static <C> DomainDeleteSpec<C> create(C criteria) {
-        return new ContextualDelete<>(Objects.requireNonNull(criteria));
+    static <C> DomainDeleteSpec<C> create(final C criteria) {
+        Objects.requireNonNull(criteria);
+        return new DomainDeleteSpecImpl<>(criteria);
     }
 
+    private final TableMeta<?> table;
+
+    private final String tableAlias;
 
     private final C criteria;
 
     private final CriteriaContext criteriaContext;
 
-    private TableMeta<?> table;
-
-    private String tableAlias;
-
-    private byte databaseIndex = -1;
-
-    private byte tableIndex = -1;
-
     private List<_Predicate> predicateList = new ArrayList<>();
 
     private boolean prepared;
 
-    private ContextualDelete(@Nullable C criteria) {
+    private ContextualDelete(TableMeta<?> table, String tableAlias, @Nullable C criteria) {
+        this.table = table;
+        this.tableAlias = tableAlias;
         this.criteria = criteria;
         this.criteriaContext = new CriteriaContextImpl<>(this.criteria);
         CriteriaContextStack.setContextStack(criteriaContext);
@@ -59,33 +57,6 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
     /*################################## blow SingleDeleteSpec method ##################################*/
 
 
-    @Override
-    public DeleteRoute<C> deleteFrom(TableMeta<? extends IDomain> tableMeta, final String tableAlias) {
-        _Assert.identifierHasText(tableAlias);
-        this.table = tableMeta;
-        this.tableAlias = tableAlias;
-        return this;
-    }
-
-    @Override
-    public WhereSpec<C> route(int databaseIndex, int tableIndex) {
-        this.databaseIndex = _Assert.databaseRoute(this.table, databaseIndex);
-        this.tableIndex = _Assert.tableRoute(this.table, tableIndex);
-        return this;
-    }
-
-    @Override
-    public WhereSpec<C> route(int tableIndex) {
-        this.tableIndex = _Assert.tableRoute(this.table, tableIndex);
-        return this;
-    }
-
-    @Override
-    public WhereSpec<C> routeAll() {
-        this.databaseIndex = Byte.MIN_VALUE;
-        this.tableIndex = Byte.MIN_VALUE;
-        return this;
-    }
 
     /*################################## blow SingleWhereSpec method ##################################*/
 
@@ -104,6 +75,11 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
     }
 
     @Override
+    public DeleteSpec where(Supplier<List<IPredicate>> supplier) {
+        return this.where(supplier.get());
+    }
+
+    @Override
     public WhereAndSpec<C> where(IPredicate predicate) {
         this.predicateList.add((_Predicate) predicate);
         return this;
@@ -118,6 +94,16 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
     }
 
     @Override
+    public WhereAndSpec<C> and(Function<C, IPredicate> function) {
+        return this.and(Objects.requireNonNull(function.apply(this.criteria)));
+    }
+
+    @Override
+    public WhereAndSpec<C> and(Supplier<IPredicate> supplier) {
+        return this.and(Objects.requireNonNull(supplier.get()));
+    }
+
+    @Override
     public WhereAndSpec<C> ifAnd(@Nullable IPredicate predicate) {
         if (predicate != null) {
             this.predicateList.add((_Predicate) predicate);
@@ -129,6 +115,16 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
     public WhereAndSpec<C> ifAnd(Function<C, IPredicate> function) {
         final IPredicate predicate;
         predicate = function.apply(this.criteria);
+        if (predicate != null) {
+            this.predicateList.add((_Predicate) predicate);
+        }
+        return this;
+    }
+
+    @Override
+    public WhereAndSpec<C> ifAnd(Supplier<IPredicate> supplier) {
+        final IPredicate predicate;
+        predicate = supplier.get();
         if (predicate != null) {
             this.predicateList.add((_Predicate) predicate);
         }
@@ -160,13 +156,7 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
 
     @Override
     public void clear() {
-        this.table = null;
-        this.tableAlias = null;
         this.predicateList = null;
-
-        this.databaseIndex = -1;
-        this.tableIndex = -1;
-
         this.prepared = false;
     }
 
@@ -184,27 +174,29 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
     }
 
     @Override
-    public byte databaseIndex() {
-        _Assert.prepared(this.prepared);
-        return this.databaseIndex;
-    }
-
-    @Override
-    public byte tableIndex() {
-        _Assert.prepared(this.prepared);
-        return this.tableIndex;
-    }
-
-    @Override
     public List<_Predicate> predicateList() {
         _Assert.prepared(this.prepared);
         return this.predicateList;
     }
 
 
-
-
     /*################################## blow static inner class ##################################*/
+
+
+    private static final class DomainDeleteSpecImpl<C> implements DomainDeleteSpec<C> {
+
+        private final C criteria;
+
+        private DomainDeleteSpecImpl(@Nullable C criteria) {
+            this.criteria = criteria;
+        }
+
+        @Override
+        public WhereSpec<C> deleteFrom(TableMeta<? extends IDomain> table, String tableAlias) {
+            return new ContextualDelete<>(table, tableAlias, this.criteria);
+        }
+
+    }
 
 
 }

@@ -10,10 +10,6 @@ public interface _SingleDml extends _Statement {
 
     TableMeta<?> table();
 
-    byte databaseIndex();
-
-    byte tableIndex();
-
     /**
      * @return a unmodifiable list
      */

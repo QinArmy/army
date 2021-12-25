@@ -17,7 +17,7 @@ import java.util.function.Function;
  * @since 1.0
  */
 @SuppressWarnings("unused")
-public interface Expression<E> extends SelectionAble, TypeInfer {
+public interface Expression<E> extends SelectionAble, TypeInfer, SortPart {
 
     /**
      * relational operate with {@code =}

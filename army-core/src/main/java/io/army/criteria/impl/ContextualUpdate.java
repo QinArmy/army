@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -32,7 +32,7 @@ import java.util.function.Predicate;
  * @param <C> criteria java type used to dynamic update and sub query
  */
 final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug implements
-        Update, Update.UpdateSpec, Update.WhereSpec<T, C>, Update.RouteSpec<T, C>
+        Update, Update.UpdateSpec, Update.WhereSpec<T, C>, Update.SetSpec<T, C>
         , Update.WhereAndSpec<T, C>, _SingleUpdate {
 
     static DomainUpdateSpec<Void> create() {
@@ -50,10 +50,6 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
     private final C criteria;
 
     private final CriteriaContext criteriaContext;
-
-    private byte databaseIndex = -1;
-
-    private byte tableIndex = -1;
 
     private List<FieldMeta<?, ?>> fieldList = new ArrayList<>();
 
@@ -75,34 +71,16 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
 
     /*################################## blow RouteSpec method ##################################*/
 
-    @Override
-    public SetSpec<T, C> route(int databaseIndex, int tableIndex) {
-        this.databaseIndex = _Assert.databaseRoute(this.table, databaseIndex);
-        this.tableIndex = _Assert.tableRoute(this.table, tableIndex);
-        return this;
-    }
-
-    @Override
-    public SetSpec<T, C> route(int tableIndex) {
-        this.tableIndex = _Assert.tableRoute(this.table, tableIndex);
-        return this;
-    }
-
-    @Override
-    public SetSpec<T, C> routeAll() {
-        this.databaseIndex = this.tableIndex = Byte.MIN_VALUE;
-        return this;
-    }
 
     /*################################## blow SetSpec method ##################################*/
 
     @Override
-    public <F> WhereSpec<T, C> set(FieldMeta<? super T, F> field, @Nullable F value) {
-        return this.set(field, SQLs.param(field, value));
+    public WhereSpec<T, C> set(FieldMeta<? super T, ?> field, @Nullable Object value) {
+        return this.set(field, SQLs.paramWithExp(field, value));
     }
 
     @Override
-    public <F> WhereSpec<T, C> set(final FieldMeta<? super T, F> field, final Expression<F> value) {
+    public WhereSpec<T, C> set(final FieldMeta<? super T, ?> field, final Expression<?> value) {
         if (field.updateMode() == UpdateMode.IMMUTABLE) {
             throw _Exceptions.immutableField(field);
         }
@@ -119,15 +97,22 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
     }
 
     @Override
-    public <F> WhereSpec<T, C> setNull(FieldMeta<? super T, F> field) {
-        if (!field.nullable()) {
-            throw _Exceptions.immutableField(field);
-        }
+    public <F> WhereSpec<T, C> set(FieldMeta<? super T, F> field, Function<C, Expression<F>> function) {
+        return this.set(field, function.apply(this.criteria));
+    }
+
+    @Override
+    public <F> WhereSpec<T, C> set(FieldMeta<? super T, F> field, Supplier<Expression<F>> supplier) {
+        return this.set(field, supplier.get());
+    }
+
+    @Override
+    public WhereSpec<T, C> setNull(FieldMeta<? super T, ?> field) {
         return this.set(field, SQLs.nullWord());
     }
 
     @Override
-    public <F> WhereSpec<T, C> setDefault(FieldMeta<? super T, F> field) {
+    public WhereSpec<T, C> setDefault(FieldMeta<? super T, ?> field) {
         return this.set(field, SQLs.defaultWord());
     }
 
@@ -140,6 +125,7 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
     public <F extends Number> WhereSpec<T, C> setPlus(FieldMeta<? super T, F> field, Expression<F> value) {
         return this.set(field, field.plus(value));
     }
+
 
     @Override
     public <F extends Number> WhereSpec<T, C> setMinus(FieldMeta<? super T, F> field, F value) {
@@ -184,24 +170,25 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
     @Override
     public <F> WhereSpec<T, C> ifSet(FieldMeta<? super T, F> field, @Nullable F value) {
         if (value != null) {
-            this.set(field, SQLs.param(field, value));
+            this.set(field, SQLs.paramWithExp(field, value));
         }
         return this;
     }
 
     @Override
-    public <F> WhereSpec<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, @Nullable F value) {
-        if (predicate.test(this.criteria)) {
-            this.set(target, SQLs.param(target, value));
-        }
-        return this;
-    }
-
-    @Override
-    public <F> WhereSpec<T, C> ifSet(FieldMeta<? super T, F> field
-            , Function<C, Expression<F>> function) {
+    public <F> WhereSpec<T, C> ifSet(FieldMeta<? super T, F> field, Function<C, Expression<F>> function) {
         final Expression<F> expression;
         expression = function.apply(this.criteria);
+        if (expression != null) {
+            this.set(field, expression);
+        }
+        return this;
+    }
+
+    @Override
+    public <F> WhereSpec<T, C> ifSet(FieldMeta<? super T, F> field, Supplier<Expression<F>> supplier) {
+        final Expression<F> expression;
+        expression = supplier.get();
         if (expression != null) {
             this.set(field, expression);
         }
@@ -248,45 +235,7 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
         return this;
     }
 
-    @Override
-    public <F extends Number> WhereSpec<T, C> ifSetPlus(Predicate<C> test, FieldMeta<? super T, F> field, F value) {
-        if (test.test(this.criteria)) {
-            this.set(field, field.plus(value));
-        }
-        return this;
-    }
 
-    @Override
-    public <F extends Number> WhereSpec<T, C> ifSetMinus(Predicate<C> test, FieldMeta<? super T, F> field, F value) {
-        if (test.test(this.criteria)) {
-            this.set(field, field.minus(value));
-        }
-        return this;
-    }
-
-    @Override
-    public <F extends Number> WhereSpec<T, C> ifSetMultiply(Predicate<C> test, FieldMeta<? super T, F> field, F value) {
-        if (test.test(this.criteria)) {
-            this.set(field, field.multiply(value));
-        }
-        return this;
-    }
-
-    @Override
-    public <F extends Number> WhereSpec<T, C> ifSetDivide(Predicate<C> test, FieldMeta<? super T, F> field, F value) {
-        if (test.test(this.criteria)) {
-            this.set(field, field.divide(value));
-        }
-        return this;
-    }
-
-    @Override
-    public <F extends Number> WhereSpec<T, C> ifSetMod(Predicate<C> test, FieldMeta<? super T, F> field, F value) {
-        if (test.test(this.criteria)) {
-            this.set(field, field.mod(value));
-        }
-        return this;
-    }
 
     /*################################## blow DomainWhereSpec method ##################################*/
 
@@ -306,6 +255,11 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
     }
 
     @Override
+    public UpdateSpec where(Supplier<List<IPredicate>> supplier) {
+        return this.where(supplier.get());
+    }
+
+    @Override
     public WhereAndSpec<T, C> where(IPredicate predicate) {
         this.predicateList.add((_Predicate) predicate);
         return this;
@@ -316,6 +270,26 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
     @Override
     public WhereAndSpec<T, C> and(IPredicate predicate) {
         this.predicateList.add((_Predicate) predicate);
+        return this;
+    }
+
+    @Override
+    public WhereAndSpec<T, C> and(Function<C, IPredicate> function) {
+        final IPredicate predicate;
+        predicate = function.apply(this.criteria);
+        if (predicate != null) {
+            this.predicateList.add((_Predicate) predicate);
+        }
+        return this;
+    }
+
+    @Override
+    public WhereAndSpec<T, C> and(Supplier<IPredicate> supplier) {
+        final IPredicate predicate;
+        predicate = supplier.get();
+        if (predicate != null) {
+            this.predicateList.add((_Predicate) predicate);
+        }
         return this;
     }
 
@@ -331,6 +305,16 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
     public WhereAndSpec<T, C> ifAnd(Function<C, IPredicate> function) {
         final IPredicate predicate;
         predicate = function.apply(this.criteria);
+        if (predicate != null) {
+            this.predicateList.add((_Predicate) predicate);
+        }
+        return this;
+    }
+
+    @Override
+    public WhereAndSpec<T, C> ifAnd(Supplier<IPredicate> supplier) {
+        final IPredicate predicate;
+        predicate = supplier.get();
         if (predicate != null) {
             this.predicateList.add((_Predicate) predicate);
         }
@@ -397,16 +381,6 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
     }
 
     @Override
-    public byte databaseIndex() {
-        return this.databaseIndex;
-    }
-
-    @Override
-    public byte tableIndex() {
-        return this.tableIndex;
-    }
-
-    @Override
     public List<_Predicate> predicateList() {
         _Assert.prepared(this.prepared);
         return this.predicateList;
@@ -429,8 +403,6 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
         this.fieldList = null;
         this.valueExpList = null;
         this.predicateList = null;
-        this.databaseIndex = -1;
-        this.tableIndex = -1;
     }
 
 
@@ -443,8 +415,8 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
         }
 
         @Override
-        public <T extends IDomain> RouteSpec<T, C> update(final TableMeta<T> table, final String tableAlias) {
-            _DialectUtils.validateTableAlias(table, tableAlias);
+        public <T extends IDomain> SetSpec<T, C> update(final TableMeta<T> table, final String tableAlias) {
+            _DialectUtils.validateUpdateTableAlias(table, tableAlias);
             return new ContextualUpdate<>(table, tableAlias, this.criteria);
         }
 

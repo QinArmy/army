@@ -5,16 +5,16 @@ import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner._StandardSelect;
 import io.army.meta.TableMeta;
 
-final class StandardContextualMultiSelect<C> extends AbstractStandardQuery<Select, C>
+final class StandardSelect<C> extends AbstractStandardQuery<Select, C>
         implements _StandardSelect, Select {
 
-    static <C> StandardContextualMultiSelect<C> build(C criteria) {
-        return new StandardContextualMultiSelect<>(criteria);
+    static <C> StandardSelect<C> create(C criteria) {
+        return new StandardSelect<>(criteria);
     }
 
     private final CriteriaContext criteriaContext;
 
-    private StandardContextualMultiSelect(C criteria) {
+    private StandardSelect(C criteria) {
         super(criteria);
         this.criteriaContext = new CriteriaContextImpl<>(criteria);
         CriteriaContextStack.setContextStack(this.criteriaContext);

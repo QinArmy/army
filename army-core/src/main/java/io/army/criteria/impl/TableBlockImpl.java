@@ -3,14 +3,14 @@ package io.army.criteria.impl;
 import io.army.criteria.IPredicate;
 import io.army.criteria.SQLModifier;
 import io.army.criteria.TablePart;
-import io.army.criteria.impl.inner.TableBlock;
+import io.army.criteria.impl.inner._TableBlock;
 import io.army.util._Assert;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-class TableBlockImpl implements TableBlock {
+class TableBlockImpl implements _TableBlock {
 
     final TablePart tableAble;
 

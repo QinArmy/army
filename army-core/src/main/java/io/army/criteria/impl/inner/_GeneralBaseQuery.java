@@ -14,5 +14,5 @@ public interface _GeneralBaseQuery extends _GeneralQuery {
     /**
      * @return a unmodifiable list
      */
-    List<? extends TableBlock> tableWrapperList();
+    List<? extends _TableBlock> tableWrapperList();
 }

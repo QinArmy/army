@@ -20,6 +20,7 @@ import io.army.util._Exceptions;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -30,7 +31,7 @@ import java.util.function.Predicate;
  * @param <C> criteria java type used to dynamic update and sub query
  */
 final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
-        implements Update, Update.BatchRouteSpec<T, C>, Update.BatchWhereSpec<T, C>
+        implements Update, Update.BatchSetSpec<T, C>, Update.BatchWhereSpec<T, C>
         , Update.BatchWhereAndSpec<C>, Update.BatchParamSpec<C>, Update.UpdateSpec
         , _BatchSingleUpdate {
 
@@ -72,27 +73,6 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
         CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 
-    /*################################## blow BatchRouteSpec method ##################################*/
-
-    @Override
-    public BatchSetSpec<T, C> route(int databaseIndex, int tableIndex) {
-        this.databaseIndex = _Assert.databaseRoute(this.table, databaseIndex);
-        this.tableIndex = _Assert.tableRoute(this.table, tableIndex);
-        return this;
-    }
-
-    @Override
-    public BatchSetSpec<T, C> route(int tableIndex) {
-        this.tableIndex = _Assert.tableRoute(this.table, tableIndex);
-        return this;
-    }
-
-    @Override
-    public BatchSetSpec<T, C> routeAll() {
-        this.databaseIndex = Byte.MIN_VALUE;
-        this.tableIndex = Byte.MIN_VALUE;
-        return this;
-    }
 
     /*################################## blow BatchSetSpec method ##################################*/
 
@@ -185,6 +165,11 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
     }
 
     @Override
+    public BatchParamSpec<C> where(Supplier<List<IPredicate>> supplier) {
+        return this.where(supplier.get());
+    }
+
+    @Override
     public BatchWhereAndSpec<C> where(IPredicate predicate) {
         this.predicateList.add((_Predicate) predicate);
         return this;
@@ -197,6 +182,7 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
         this.predicateList.add((_Predicate) predicate);
         return this;
     }
+
 
     @Override
     public BatchWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate) {
@@ -306,16 +292,6 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
     }
 
     @Override
-    public byte databaseIndex() {
-        return this.databaseIndex;
-    }
-
-    @Override
-    public byte tableIndex() {
-        return this.tableIndex;
-    }
-
-    @Override
     public List<FieldMeta<?, ?>> fieldList() {
         return this.fieldList;
     }
@@ -354,8 +330,8 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
         }
 
         @Override
-        public <T extends IDomain> BatchRouteSpec<T, C> update(final TableMeta<T> table, final String tableAlias) {
-            _DialectUtils.validateTableAlias(table, tableAlias);
+        public <T extends IDomain> BatchSetSpec<T, C> update(final TableMeta<T> table, final String tableAlias) {
+            _DialectUtils.validateUpdateTableAlias(table, tableAlias);
             return new ContextualBatchUpdate<>(table, tableAlias, this.criteria);
         }
 
