@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class SubQueries<Q extends Query, C> extends AbstractStandardQuery<Q, C>
+abstract class SubQueries<Q extends Query, C> extends StandardQuery<Q, C>
         implements _StandardSubQuery, SubQuery {
 
     static SubQueries<SubQuery, Void> subQuery() {

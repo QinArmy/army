@@ -1,20 +1,40 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._ComposeQuery;
+import io.army.criteria.impl.inner._SortPart;
 import io.army.criteria.impl.inner._StandardComposeQuery;
+import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 import io.army.util._Assert;
+import io.army.util._Exceptions;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 abstract class ComposeQueries<Q extends Query, C> extends AbstractComposeQuery<Q, C> implements
         Query.UnionSpec<Q, C>, _StandardComposeQuery {
 
     static <Q extends Query, C> UnionSpec<Q, C> brackets(C criteria, Q enclosedQuery) {
         return new BracketsQuery<>(criteria, enclosedQuery);
+    }
+
+    @SuppressWarnings("unchecked")
+    static <Q extends Query, C> UnionSpec<Q, C> compose(C criteria, Q leftQuery, SQLModifier modifier
+            , Supplier<Q> supplier) {
+        Q left = leftQuery, right;
+        if (left.requiredBrackets()) {
+            left = (Q) new BracketsQuery<>(criteria, left);
+        }
+        right = function.apply(criteria);
+        if (right.requiredBrackets()) {
+            right = (Q) new BracketsQuery<>(criteria, right);
+        }
+        return new ComposeQueryImpl<>(criteria, left, modifier, right);
     }
 
     @SuppressWarnings("unchecked")
@@ -30,6 +50,34 @@ abstract class ComposeQueries<Q extends Query, C> extends AbstractComposeQuery<Q
         }
         return new ComposeQueryImpl<>(criteria, left, modifier, right);
     }
+
+    static <C> UnionSpec<Select, C> unionSelect(C criteria, Select left, UnionType unionType
+            , Supplier<Select> supplier) {
+        left.prepared();
+        final Select right;
+        right = supplier.get();
+        assert right != null;
+        return null;
+    }
+
+    static <C> UnionSpec<Select, C> unionSelect(C criteria, Select left, UnionType unionType
+            , Function<C, Select> function) {
+        return null;
+    }
+
+    static void composeRightSelect(C criteria, Select left, UnionType unionType
+            , Select select) {
+
+    }
+
+    static <C> UnionSpec<Select, C> bracketsSelect(C criteria, Select select) {
+        return null;
+    }
+
+    static Select bracketsSelect(Select select) {
+        return new BracketsSelect(select);
+    }
+
 
     private ComposeQueries(C criteria, Q firstSelect) {
         super(criteria, firstSelect);
@@ -131,84 +179,78 @@ abstract class ComposeQueries<Q extends Query, C> extends AbstractComposeQuery<Q
 
     /*################################## blow static inner class ##################################*/
 
-    private static final class BracketsQuery<Q extends Query, C> extends ComposeQueries<Q, C> {
 
-        private final Q enclosedQuery;
+    private static class BracketsQuery<Q extends Query> implements _ComposeQuery {
 
-        BracketsQuery(C criteria, Q enclosedQuery) {
-            super(criteria, enclosedQuery);
-            this.enclosedQuery = enclosedQuery;
+        private final Q query;
+
+        private BracketsQuery(Q query) {
+            query.prepared();
+            this.query = query;
         }
 
-        @Override
-        public boolean requiredBrackets() {
+        public final boolean requiredBrackets() {
             return false;
         }
 
-        @Override
-        public void appendSql(_SqlContext context) {
-            StringBuilder builder = context.sqlBuilder()
-                    .append(" (");
-            if (this.enclosedQuery instanceof Select) {
-                context.dialect().select((Select) this.enclosedQuery, context);
-            } else if (this.enclosedQuery instanceof SubQuery) {
-                context.dialect().subQuery((SubQuery) this.enclosedQuery, context);
-            } else {
-                throw new IllegalStateException(String.format("%s isn't Select or SubQuery.", this.enclosedQuery));
-            }
-            builder.append(" )");
+        public final void prepared() {
+            this.query.prepared();
         }
+
+
+        @Override
+        public final List<_SortPart> orderByList() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public final long offset() {
+            return -1L;
+        }
+
+        @Override
+        public final long rowCount() {
+            return -1L;
+        }
+
+        @Override
+        public final List<? extends SelectPart> selectPartList() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public final void appendSql(final _SqlContext context) {
+            final StringBuilder builder = context.sqlBuilder()
+                    .append(Constant.SPACE)
+                    .append(Constant.LEFT_BRACKET);
+            final Q query = this.query;
+            if (query instanceof Select) {
+                context.dialect().select((Select) query, context);
+            } else if (query instanceof SubQuery) {
+                context.dialect().subQuery((SubQuery) query, context);
+            } else {
+                throw _Exceptions.unknownStatement(query, context.dialect().sessionFactory());
+            }
+            builder.append(Constant.SPACE)
+                    .append(Constant.RIGHT_BRACKET);
+        }
+
+        @Override
+        public final void clear() {
+            //no-op
+        }
+
 
     }
 
-    private static final class ComposeQueryImpl<Q extends Query, C> extends ComposeQueries<Q, C> {
+    private static final class BracketsSelect extends BracketsQuery<Select> implements Select {
 
-        private final Q leftQuery;
-
-        private final SQLModifier modifier;
-
-        private final Q rightQuery;
-
-        ComposeQueryImpl(C criteria, Q leftQuery, SQLModifier modifier, Q rightQuery) {
-            super(criteria, leftQuery);
-            this.leftQuery = leftQuery;
-            this.modifier = modifier;
-            this.rightQuery = rightQuery;
+        private BracketsSelect(Select query) {
+            super(query);
         }
 
-        @Override
-        public boolean requiredBrackets() {
-            return true;
-        }
-
-        @Override
-        public void appendSql(_SqlContext context) {
-            DqlDialect dql = context.dialect();
-
-            if (this.leftQuery instanceof Select) {
-                dql.select((Select) this.leftQuery, context);
-
-                context.sqlBuilder()
-                        .append(" ")
-                        .append(this.modifier.render())
-                        .append(" ");
-
-                dql.select((Select) this.rightQuery, context);
-            } else if (this.leftQuery instanceof SubQuery) {
-                dql.subQuery((SubQuery) this.leftQuery, context);
-
-                context.sqlBuilder()
-                        .append(" ")
-                        .append(this.modifier.render())
-                        .append(" ");
-
-                dql.subQuery((SubQuery) this.rightQuery, context);
-            } else {
-                throw new IllegalStateException(String.format("%s isn't Select or SubQuery.", this.leftQuery));
-            }
-
-        }
 
     }
+
 
 }

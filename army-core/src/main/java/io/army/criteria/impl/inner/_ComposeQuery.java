@@ -4,15 +4,13 @@ import java.util.List;
 
 public interface _ComposeQuery extends _SelfDescribed, _GeneralQuery {
 
-    boolean requiredBrackets();
-
     /**
      * @return a unmodifiable list
      */
     List<_SortPart> orderByList();
 
-    int offset();
+    long offset();
 
-    int rowCount();
+    long rowCount();
 
 }

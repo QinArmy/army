@@ -278,7 +278,6 @@ public interface Query extends Statement {
         @Override
         LockSpec<Q, C> ifLimit(Function<C, LimitOption> function);
 
-
     }
 
     interface LockSpec<Q extends Query, C> extends QuerySpec<Q>, UnionClause<Q, C> {
@@ -319,9 +318,9 @@ public interface Query extends Statement {
 
         UnionSpec<Q, C> unionDistinct(Function<C, Q> function);
 
-        UnionSpec<Q, C> unionAll(Supplier<Q> function);
+        UnionSpec<Q, C> unionAll(Supplier<Q> supplier);
 
-        UnionSpec<Q, C> unionDistinct(Supplier<Q> function);
+        UnionSpec<Q, C> unionDistinct(Supplier<Q> supplier);
 
     }
 

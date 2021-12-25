@@ -20,7 +20,7 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
     protected final C criteria;
 
 
-    AbstractQuery(C criteria) {
+    AbstractQuery(@Nullable C criteria) {
         _Assert.notNull(criteria, "criteria required");
         this.criteria = criteria;
     }
@@ -120,12 +120,12 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
     }
 
     @Override
-    public final int offset() {
+    public final long offset() {
         return this.offset;
     }
 
     @Override
-    public final int rowCount() {
+    public final long rowCount() {
         return this.rowCount;
     }
 
@@ -172,11 +172,6 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
         this.selectPartList.add(selectPart);
     }
 
-
-    void doCheckTableAble(TableBlock block) {
-        throw new IllegalArgumentException(String.format("tableAble[%s] isn't TableMeta or SubQuery."
-                , block.alias()));
-    }
 
     final void addPredicate(IPredicate predicate) {
         this.predicateList.add((_Predicate) predicate);
@@ -286,11 +281,6 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
 
     /*################################## blow package template method ##################################*/
 
-    abstract void onAddTable(TableMeta<?> table, String tableAlias);
-
-    abstract void onAddSubQuery(SubQuery subQuery, String subQueryAlias);
-
-    abstract void internalAsSelect();
 
     abstract void internalClear();
 
@@ -360,54 +350,6 @@ abstract class AbstractQuery<Q extends Query, C> extends AbstractSQLDebug implem
 
     static CriteriaException onClauseIsEmpty() {
         return new CriteriaException("on clause is empty");
-    }
-
-    static abstract class TableBlock implements _TableBlock {
-
-        final TablePart tablePart;
-
-        final String alias;
-
-        final JoinType joinType;
-
-        List<_Predicate> predicates;
-
-        TableBlock(TablePart tablePart, String alias, JoinType joinType) {
-            this.tablePart = tablePart;
-            this.alias = alias;
-            this.joinType = joinType;
-        }
-
-        @Override
-        public final TablePart table() {
-            return this.tablePart;
-        }
-
-        @Override
-        public final String alias() {
-            return this.alias;
-        }
-
-        @Override
-        public final SQLModifier jointType() {
-            return this.joinType;
-        }
-
-
-    }
-
-
-    static final class FromTableBlock extends TableBlock {
-
-        FromTableBlock(TablePart tablePart, String alias) {
-            super(tablePart, alias, JoinType.NONE);
-        }
-
-        @Override
-        public List<_Predicate> predicates() {
-            return Collections.emptyList();
-        }
-
     }
 
 

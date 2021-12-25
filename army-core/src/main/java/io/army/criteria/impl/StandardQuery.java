@@ -2,11 +2,13 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner._StandardQuery;
+import io.army.criteria.impl.inner._Query;
+import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util.CollectionUtils;
+import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,9 +18,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q, C> implements
+abstract class StandardQuery<Q extends Query, C> extends StandardPartQuery<Q, C> implements
         Query.SelectPartSpec<Q, C>, Query.FromSpec<Q, C>, Query.TableJoinSpec<Q, C>
-        , Query.WhereAndSpec<Q, C>, Query.HavingSpec<Q, C>, _StandardQuery {
+        , Query.WhereAndSpec<Q, C>, Query.HavingSpec<Q, C>, _Query {
 
 
     private List<SQLModifier> modifierList;
@@ -48,7 +50,7 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
 
     private HavingSpec<Q, C> noActionHavingSpec;
 
-    AbstractStandardQuery(C criteria) {
+    StandardQuery(@Nullable C criteria) {
         super(criteria);
     }
 
@@ -102,7 +104,7 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
     @Override
     public final <S extends SelectPart> FromSpec<Q, C> select(Distinct distinct, List<S> selectPartList) {
         if (selectPartList.size() == 0) {
-            throw selectListClauseEmpty();
+            throw _Exceptions.selectListIsEmpty();
         }
         this.modifierList = Collections.singletonList(distinct);
         this.selectPartList = new ArrayList<>(selectPartList);
@@ -112,7 +114,7 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
     @Override
     public final <S extends SelectPart> FromSpec<Q, C> select(List<S> selectPartList) {
         if (selectPartList.size() == 0) {
-            throw selectListClauseEmpty();
+            throw _Exceptions.selectListIsEmpty();
         }
         this.selectPartList = new ArrayList<>(selectPartList);
         return this;
@@ -122,7 +124,7 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
 
     @Override
     public final TableJoinSpec<Q, C> from(TableMeta<?> table, String tableAlias) {
-        addTableBlock(new FromTableBlock(table, tableAlias));
+        addTableBlock(new TableBlock.FromTableBlock(table, tableAlias));
         return this;
     }
 
@@ -131,7 +133,7 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
         final SubQuery subQuery;
         subQuery = function.apply(this.criteria);
         assert subQuery != null;
-        addTableBlock(new FromTableBlock(subQuery, subQueryAlia));
+        addTableBlock(new TableBlock.FromTableBlock(subQuery, subQueryAlia));
         return this;
     }
 
@@ -140,7 +142,7 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
         final SubQuery subQuery;
         subQuery = supplier.get();
         assert subQuery != null;
-        addTableBlock(new FromTableBlock(subQuery, subQueryAlia));
+        addTableBlock(new TableBlock.FromTableBlock(subQuery, subQueryAlia));
         return this;
     }
 
@@ -421,107 +423,6 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
         return this;
     }
 
-    public final LimitSpec<Q, C> orderBy(SortPart sortPart) {
-        this.orderByList = Collections.singletonList(sortPart);
-        return this;
-    }
-
-    public final LimitSpec<Q, C> orderBy(SortPart sortPart1, SortPart sortPart2) {
-        this.orderByList = Arrays.asList(sortPart1, sortPart2);
-        return this;
-    }
-
-    public final LimitSpec<Q, C> orderBy(final List<SortPart> sortPartList) {
-        if (sortPartList.size() == 0) {
-            throw new CriteriaException("order by clause is empty.");
-        }
-        this.orderByList = new ArrayList<>(sortPartList);
-        return this;
-    }
-
-    public final LimitSpec<Q, C> orderBy(Function<C, List<SortPart>> function) {
-        return this.orderBy(function.apply(this.criteria));
-    }
-
-    public final LimitSpec<Q, C> orderBy(Supplier<List<SortPart>> supplier) {
-        return this.orderBy(supplier.get());
-    }
-
-    public final LimitSpec<Q, C> ifOrderBy(@Nullable SortPart sortPart) {
-        if (sortPart != null) {
-            this.orderByList = Collections.singletonList(sortPart);
-        }
-        return this;
-    }
-
-
-    public final LimitSpec<Q, C> ifOrderBy(Supplier<List<SortPart>> supplier) {
-        final List<SortPart> list;
-        list = supplier.get();
-        if (!CollectionUtils.isEmpty(list)) {
-            this.orderBy(list);
-        }
-        return this;
-    }
-
-    public final LimitSpec<Q, C> ifOrderBy(Function<C, List<SortPart>> function) {
-        final List<SortPart> list;
-        list = function.apply(this.criteria);
-        if (!CollectionUtils.isEmpty(list)) {
-            this.orderBy(list);
-        }
-        return this;
-    }
-
-    public final LockSpec<Q, C> limit(long rowCount) {
-        this.offset = -1;
-        this.rowCount = rowCount;
-        return this;
-    }
-
-    public final LockSpec<Q, C> limit(long offset, long rowCount) {
-        this.offset = offset;
-        this.rowCount = rowCount;
-        return this;
-    }
-
-
-    public final LockSpec<Q, C> limit(Function<C, LimitOption> function) {
-        final LimitOption option;
-        option = function.apply(this.criteria);
-        this.offset = option.offset();
-        this.rowCount = option.rowCount();
-        return this;
-    }
-
-    public final LockSpec<Q, C> limit(Supplier<LimitOption> supplier) {
-        final LimitOption option;
-        option = supplier.get();
-        this.offset = option.offset();
-        this.rowCount = option.rowCount();
-        return this;
-    }
-
-    public final LockSpec<Q, C> ifLimit(Supplier<LimitOption> supplier) {
-        final LimitOption option;
-        option = supplier.get();
-        if (option != null) {
-            this.offset = option.offset();
-            this.rowCount = option.rowCount();
-        }
-        return this;
-    }
-
-    public final LockSpec<Q, C> ifLimit(Function<C, LimitOption> function) {
-        final LimitOption option;
-        option = function.apply(this.criteria);
-        if (option != null) {
-            this.offset = option.offset();
-            this.rowCount = option.rowCount();
-        }
-        return this;
-    }
-
     public final LockSpec<Q, C> lock(LockMode lockMode) {
         this.lockMode = lockMode;
         return this;
@@ -550,73 +451,45 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
         return this;
     }
 
-    @Override
-    public final UnionSpec<Q, C> bracketsQuery() {
-        return ComposeQueries.brackets(this.criteria, asQuery());
-    }
-
-    @Override
-    public final UnionSpec<Q, C> union(Function<C, Q> function) {
-        return ComposeQueries.compose(this.criteria, asQuery(), UnionType.UNION, function);
-    }
-
-    @Override
-    public final UnionSpec<Q, C> unionAll(Function<C, Q> function) {
-        return ComposeQueries.compose(this.criteria, asQuery(), UnionType.UNION_ALL, function);
-    }
-
-    @Override
-    public final UnionSpec<Q, C> unionDistinct(Function<C, Q> function) {
-        return ComposeQueries.compose(this.criteria, asQuery(), UnionType.UNION_DISTINCT, function);
-    }
-
-    @Override
-    public final UnionSpec<Q, C> union(final Supplier<Q> supplier) {
-        Q thisQuery, otherQuery;
-        thisQuery = this.asQuery();
-        if (thisQuery.requiredBrackets()) {
-            thisQuery = ComposeQueries.brackets(this.criteria, thisQuery);
-        }
-        otherQuery = supplier.get();
-        assert otherQuery != null;
-        if (otherQuery.requiredBrackets()) {
-
-        }
-        return this;
-    }
-
-    @Override
-    public final SelectPartSpec<Q, C> union() {
-        return null;
-    }
-
-    @Override
-    public final SelectPartSpec<Q, C> unionAll() {
-        return null;
-    }
-
-    @Override
-    public final SelectPartSpec<Q, C> unionDistinct() {
-        return null;
-    }
-
-    @Override
-    public final UnionSpec<Q, C> unionAll(Supplier<Q> function) {
-        return null;
-    }
-
-    @Override
-    public final UnionSpec<Q, C> unionDistinct(Supplier<Q> function) {
-        return null;
-    }
 
     /*################################## blow package method ##################################*/
 
+
+
+    /*################################## blow _Query method ##################################*/
+
     @Override
-    public final Q asQuery() {
-        return (Q) this;
+    public final List<SQLModifier> modifierList() {
+        return this.modifierList;
     }
 
+    @Override
+    public final List<? extends SelectPart> selectPartList() {
+        prepared();
+        return this.selectPartList;
+    }
+
+    @Override
+    public final List<? extends _TableBlock> tableBlockList() {
+        prepared();
+        return this.tableBlockList;
+    }
+
+    @Override
+    public final List<_Predicate> predicateList() {
+        prepared();
+        return this.predicateList;
+    }
+
+    @Override
+    public final List<SortPart> groupPartList() {
+        return this.groupByList;
+    }
+
+    @Override
+    public final List<_Predicate> havingList() {
+        return this.havingList;
+    }
 
     @Nullable
     @Override
@@ -625,13 +498,28 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
     }
 
     @Override
-    final boolean hasLockClause() {
-        return this.lockMode != null;
+    protected final void internalClear() {
+
     }
 
     @Override
-    void internalClear() {
-        this.lockMode = null;
+    protected final Q internalAsQuery() {
+
+        return this.onAsQuery();
+    }
+
+    abstract Q onAsQuery();
+
+
+    abstract void onAddTable(TableMeta<?> table, String tableAlias);
+
+    abstract void onAddSubQuery(SubQuery subQuery, String subQueryAlias);
+
+    abstract void internalAsSelect();
+
+    void doCheckTableAble(TableBlock block) {
+        throw new IllegalArgumentException(String.format("tableAble[%s] isn't TableMeta or SubQuery."
+                , block.alias()));
     }
 
 
@@ -694,7 +582,7 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
     }
 
 
-    private StandardOnBlock<Q, C> addTableBlock(final StandardOnBlock<Q, C> block) {
+    private <T extends TableBlock> T addTableBlock(final T block) {
         this.tableBlockList.add(block);
         if (block.tablePart instanceof TableMeta) {
             onAddTable((TableMeta<?>) block.tablePart, block.alias);
@@ -712,11 +600,11 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
     static final class StandardOnBlock<Q extends Query, C> extends TableBlock implements TableOnSpec<Q, C> {
 
 
-        private final AbstractStandardQuery<Q, C> query;
+        private final StandardQuery<Q, C> query;
 
 
         private StandardOnBlock(TablePart tablePart, String alias, JoinType joinType
-                , AbstractStandardQuery<Q, C> query) {
+                , StandardQuery<Q, C> query) {
             super(tablePart, alias, joinType);
             this.query = query;
         }
@@ -729,7 +617,7 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
             }
             switch (predicates.size()) {
                 case 0:
-                    throw onClauseIsEmpty();
+                    throw _Exceptions.onClauseIsEmpty();
                 case 1:
                     this.predicates = Collections.singletonList(predicates.get(0));
                     break;
@@ -771,12 +659,18 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
         @Override
         public TableJoinSpec<Q, C> onPrimary() {
             if (!(this.tablePart instanceof TableMeta)) {
-                throw new IllegalStateException("You couldn't cast select api instance");
+                throw _Exceptions.castCriteriaApi();
+            }
+            final List<TableBlock> tableBlockList = this.query.tableBlockList;
+            final int size = tableBlockList.size();
+            final TableBlock thisBlock = tableBlockList.get(size - 1);
+            if (this != thisBlock) {
+                throw _Exceptions.castCriteriaApi();
             }
             final TableBlock lastBlock;
-            lastBlock = this.query.beforeBlock(this);
+            lastBlock = tableBlockList.get(size - 2);
             if (!(lastBlock.tablePart instanceof TableMeta)) {
-                throw new IllegalStateException("You couldn't cast select api instance");
+                throw _Exceptions.castCriteriaApi();
             }
             final _Predicate predicate;
             predicate = (_Predicate) (((TableMeta<?>) lastBlock.tablePart).id()
@@ -792,9 +686,9 @@ abstract class AbstractStandardQuery<Q extends Query, C> extends AbstractQuery<Q
 
     private static final class NoActionTableBlock<Q extends Query, C> implements TableOnSpec<Q, C> {
 
-        private final AbstractStandardQuery<Q, C> query;
+        private final StandardQuery<Q, C> query;
 
-        private NoActionTableBlock(AbstractStandardQuery<Q, C> query) {
+        private NoActionTableBlock(StandardQuery<Q, C> query) {
             this.query = query;
         }
 

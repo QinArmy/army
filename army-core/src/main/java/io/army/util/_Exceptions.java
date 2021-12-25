@@ -79,7 +79,7 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
     public static CriteriaException unknownStatement(Statement stmt, GenericRmSessionFactory factory) {
-        String m = String.format("Unknown %s in %s", stmt, factory);
+        String m = String.format("Unknown %s in %s", stmt.getClass().getName(), factory);
         return new CriteriaException(m);
     }
 
@@ -254,6 +254,18 @@ public abstract class _Exceptions extends ExceptionUtils {
     public static CriteriaException databaseRouteAllFollow(_MultiDml dml) {
         String m = String.format("%s all follow primary route.", dml.getClass().getName());
         return new CriteriaException(m);
+    }
+
+    public static CriteriaException selectListIsEmpty() {
+        return new CriteriaException("select list must not empty");
+    }
+
+    public static CriteriaException onClauseIsEmpty() {
+        return new CriteriaException("on clause must not empty");
+    }
+
+    public static CriteriaException castCriteriaApi() {
+        return new CriteriaException("You couldn't cast criteria api instance");
     }
 
 

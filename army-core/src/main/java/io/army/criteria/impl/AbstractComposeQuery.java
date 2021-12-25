@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class AbstractComposeQuery<Q extends Query, C> implements PartQuery, _SelfDescribed, Query
+abstract class AbstractComposeQuery<Q extends Query, C> implements _PartQuery, _SelfDescribed, Query
         , Query.QuerySpec<Q>, _ComposeQuery {
 
 

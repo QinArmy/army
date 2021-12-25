@@ -1,9 +1,17 @@
 package io.army.criteria.impl.inner;
 
+import io.army.criteria.*;
+import io.army.lang.Nullable;
+
 import java.util.List;
 
-public interface _Query extends _GeneralBaseQuery {
+public interface _Query extends _PartQuery {
 
+    List<SQLModifier> modifierList();
+
+    List<? extends SelectPart> selectPartList();
+
+    List<? extends _TableBlock> tableBlockList();
 
     /**
      * @return a unmodifiable list
@@ -13,20 +21,15 @@ public interface _Query extends _GeneralBaseQuery {
     /**
      * @return a unmodifiable list
      */
-    List<_SortPart> groupPartList();
+    List<SortPart> groupPartList();
 
     /**
      * @return a unmodifiable list
      */
     List<_Predicate> havingList();
 
-    /**
-     * @return a unmodifiable list
-     */
-    List<_SortPart> orderPartList();
+    @Nullable
+    LockMode lockMode();
 
-    int offset();
-
-    int rowCount();
 
 }

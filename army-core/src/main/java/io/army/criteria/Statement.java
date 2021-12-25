@@ -6,7 +6,6 @@ package io.army.criteria;
  * @see Update
  * @see Delete
  * @see SubQuery
- * @see PartQuery
  */
 public interface Statement {
 
@@ -15,6 +14,7 @@ public interface Statement {
      */
     void prepared();
 
+    @Deprecated
     interface SQLAble {
 
     }

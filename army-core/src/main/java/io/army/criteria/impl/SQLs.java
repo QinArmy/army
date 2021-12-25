@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.ChildTableMeta;
@@ -12,6 +13,7 @@ import io.army.tx.Isolation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -113,8 +115,17 @@ public abstract class SQLs extends SQLUtils {
         return StandardSelect.create(EmptyObject.getInstance());
     }
 
-    public static <C> Query.SelectPartSpec<Select, C> tableSelect(C criteria) {
+
+    /**
+     * package method
+     */
+    static <C> Query.SelectPartSpec<Select, C> nullableTableSelect(@Nullable C criteria) {
         return StandardSelect.create(criteria);
+    }
+
+    public static <C> Query.SelectPartSpec<Select, C> tableSelect(C nonNullCriteria) {
+        Objects.requireNonNull(nonNullCriteria);
+        return StandardSelect.create(nonNullCriteria);
     }
 
     public static Query.SelectPartSpec<SubQuery, Void> subQuery() {
