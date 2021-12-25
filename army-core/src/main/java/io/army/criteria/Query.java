@@ -92,7 +92,7 @@ public interface Query extends Statement {
 
         TableJoinSpec<Q, C> on(Supplier<List<IPredicate>> supplier);
 
-        TableJoinSpec<Q, C> onPrimary();
+        TableJoinSpec<Q, C> onId();
 
     }
 

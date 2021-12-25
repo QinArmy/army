@@ -268,5 +268,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException("You couldn't cast criteria api instance");
     }
 
+    public static CriteriaException unknownSelectPart(SelectPart selectPart) {
+        String m = String.format("unknown %s type[%s]", SelectPart.class.getName(), selectPart.getClass().getName());
+        return new CriteriaException(m);
+    }
+
 
 }

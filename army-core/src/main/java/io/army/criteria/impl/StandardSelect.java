@@ -20,6 +20,10 @@ abstract class StandardSelect<C> extends StandardQuery<Select, C>
         return new SimpleSelect<>(criteria);
     }
 
+    static <C> StandardSelect<C> unionAndSelect(Select left, UnionType unionType, @Nullable C criteria) {
+        return null;
+    }
+
     private final CriteriaContext criteriaContext;
 
     private StandardSelect(@Nullable C criteria) {
@@ -39,13 +43,15 @@ abstract class StandardSelect<C> extends StandardQuery<Select, C>
 
     @Override
     final Select onAsQuery() {
+        // must clear context
         CriteriaContextStack.clearContextStack(this.criteriaContext);
         return this;
     }
 
     @Override
-    final UnionSpec<Select, C> create(Select left, UnionType unionType, Select right) {
-        return ComposeQueries.com(this.criteria, left, unionType, right);
+    final UnionSpec<Select, C> createUnionQuery(Select left, UnionType unionType, Select right) {
+        right.prepared();
+        return StandardUnionQuery.unionSelect(left, unionType, right, this.criteria);
     }
 
     @Override
@@ -59,20 +65,9 @@ abstract class StandardSelect<C> extends StandardQuery<Select, C>
     }
 
     @Override
-    final void internalAsSelect() {
-        CriteriaContextStack.clearContextStack(this.criteriaContext);
+    final SelectPartSpec<Select, C> asQueryAndSelect(UnionType unionType) {
+        return StandardSelect.unionAndSelect(this.asQuery(), unionType, this.criteria);
     }
-
-    private SelectPartSpec<Select, C> unionAndSelect(final UnionType unionType) {
-        final Select thisSelect;
-        thisSelect = this.asQuery();
-
-        final StandardSelect<C> newSelect;
-        newSelect = new SimpleSelect<>(this.criteria);
-        ComposeQueries.composeRightSelect(this.criteria, thisSelect, unionType, newSelect);
-        return newSelect;
-    }
-
 
     private static final class SimpleSelect<C> extends StandardSelect<C> {
 

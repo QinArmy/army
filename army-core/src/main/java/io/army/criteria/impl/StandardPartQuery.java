@@ -79,7 +79,7 @@ abstract class StandardPartQuery<Q extends Query, C> implements Query.UnionSpec<
     }
 
     @Override
-    public SelectPartSpec<Q, C> unionAll() {
+    public final SelectPartSpec<Q, C> unionAll() {
         return this.asQueryAndSelect(UnionType.UNION_ALL);
     }
 
@@ -250,7 +250,7 @@ abstract class StandardPartQuery<Q extends Query, C> implements Query.UnionSpec<
 
     abstract void internalClear();
 
-    abstract Query.UnionSpec<Q, C> create(Q left, UnionType unionType, Q right);
+    abstract Query.UnionSpec<Q, C> createUnionQuery(Q left, UnionType unionType, Q right);
 
     abstract Q internalAsQuery();
 
@@ -264,7 +264,7 @@ abstract class StandardPartQuery<Q extends Query, C> implements Query.UnionSpec<
         right = function.apply(this.criteria);
         assert right != null;
         right.prepared();
-        return create(left, unionType, right);
+        return createUnionQuery(left, unionType, right);
     }
 
     private Query.UnionSpec<Q, C> innerCreate(UnionType unionType, Supplier<Q> supplier) {
@@ -274,7 +274,7 @@ abstract class StandardPartQuery<Q extends Query, C> implements Query.UnionSpec<
         right = supplier.get();
         assert right != null;
         right.prepared();
-        return create(left, unionType, right);
+        return createUnionQuery(left, unionType, right);
     }
 
 

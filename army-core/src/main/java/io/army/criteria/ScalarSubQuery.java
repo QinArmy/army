@@ -3,7 +3,7 @@ package io.army.criteria;
 /**
  * @param <E> {@link ScalarSubQuery}'s query result Java Type.
  */
-public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, Expression<E> {
+public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, TypeInfer {
 
     Selection selection();
 

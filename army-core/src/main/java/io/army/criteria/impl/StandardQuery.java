@@ -35,20 +35,10 @@ abstract class StandardQuery<Q extends Query, C> extends StandardPartQuery<Q, C>
 
     private List<_Predicate> havingList;
 
-    private List<SortPart> orderByList;
-
-    private long offset = -1;
-
-    private long rowCount = -1;
-
-
     private LockMode lockMode;
-
-    private boolean prepared;
 
     private TableOnSpec<Q, C> noActionBlock;
 
-    private HavingSpec<Q, C> noActionHavingSpec;
 
     StandardQuery(@Nullable C criteria) {
         super(criteria);
@@ -515,8 +505,6 @@ abstract class StandardQuery<Q extends Query, C> extends StandardPartQuery<Q, C>
 
     abstract void onAddSubQuery(SubQuery subQuery, String subQueryAlias);
 
-    abstract void internalAsSelect();
-
     void doCheckTableAble(TableBlock block) {
         throw new IllegalArgumentException(String.format("tableAble[%s] isn't TableMeta or SubQuery."
                 , block.alias()));
@@ -657,7 +645,7 @@ abstract class StandardQuery<Q extends Query, C> extends StandardPartQuery<Q, C>
         }
 
         @Override
-        public TableJoinSpec<Q, C> onPrimary() {
+        public TableJoinSpec<Q, C> onId() {
             if (!(this.tablePart instanceof TableMeta)) {
                 throw _Exceptions.castCriteriaApi();
             }
@@ -718,7 +706,7 @@ abstract class StandardQuery<Q extends Query, C> extends StandardPartQuery<Q, C>
         }
 
         @Override
-        public TableJoinSpec<Q, C> onPrimary() {
+        public TableJoinSpec<Q, C> onId() {
             return this.query;
         }
 

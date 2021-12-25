@@ -13,11 +13,6 @@ package io.army.criteria;
 public interface TablePart {
 
 
-    /**
-     * @return text of tale.
-     */
-    @Override
-    String toString();
 
 
 }

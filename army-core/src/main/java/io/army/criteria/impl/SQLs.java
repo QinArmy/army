@@ -119,7 +119,7 @@ public abstract class SQLs extends SQLUtils {
     /**
      * package method
      */
-    static <C> Query.SelectPartSpec<Select, C> nullableTableSelect(@Nullable C criteria) {
+    static <C> StandardSelect<C> nullableTableSelect(@Nullable C criteria) {
         return StandardSelect.create(criteria);
     }
 
@@ -129,41 +129,41 @@ public abstract class SQLs extends SQLUtils {
     }
 
     public static Query.SelectPartSpec<SubQuery, Void> subQuery() {
-        return SubQueries.subQuery();
+        return StandardSubQueries.subQuery();
     }
 
     public static <C> Query.SelectPartSpec<SubQuery, C> subQuery(C criteria) {
-        return SubQueries.subQuery(criteria);
+        return StandardSubQueries.subQuery(criteria);
     }
 
     public static <C> Query.SelectPartSpec<RowSubQuery, C> rowSubQuery(C criteria) {
-        return SubQueries.buildRowSubQuery(criteria);
+        return StandardSubQueries.rowSubQuery(criteria);
     }
 
     public static <E, C> ColumnSubQuery.ColumnSelectionSpec<E, C> columnSubQuery(Class<E> columnType, C criteria) {
-        return SubQueries.buildColumnSubQuery(columnType, criteria);
+        return StandardSubQueries.columnSubQuery(columnType, criteria);
     }
 
     public static <E> ColumnSubQuery.ColumnSelectionSpec<E, EmptyObject> columnSubQuery(Class<E> columnType) {
-        return SubQueries.buildColumnSubQuery(columnType, EmptyObject.getInstance());
+        return StandardSubQueries.columnSubQuery(columnType, EmptyObject.getInstance());
     }
 
     public static <E, C> ScalarSubQuery.ScalarSelectionSpec<E, C> scalarSubQuery(
             Class<E> javaType, MappingType mappingType, C criteria) {
-        return SubQueries.buildScalarSubQuery(javaType, mappingType, criteria);
+        return StandardSubQueries.buildScalarSubQuery(javaType, mappingType, criteria);
     }
 
     public static <E> ScalarSubQuery.ScalarSelectionSpec<E, EmptyObject> scalarSubQuery(
             Class<E> javaType, MappingType mappingType) {
-        return SubQueries.buildScalarSubQuery(javaType, mappingType, EmptyObject.getInstance());
+        return StandardSubQueries.buildScalarSubQuery(javaType, mappingType, EmptyObject.getInstance());
     }
 
     public static <E, C> ScalarSubQuery.ScalarSelectionSpec<E, C> scalarSubQuery(Class<E> javaType, C criteria) {
-        return SubQueries.buildScalarSubQuery(javaType, _MappingFactory.getMapping(javaType), criteria);
+        return StandardSubQueries.buildScalarSubQuery(javaType, _MappingFactory.getMapping(javaType), criteria);
     }
 
     public static <E> ScalarSubQuery.ScalarSelectionSpec<E, EmptyObject> scalarSubQuery(Class<E> javaType) {
-        return SubQueries.buildScalarSubQuery(javaType, _MappingFactory.getMapping(javaType)
+        return StandardSubQueries.buildScalarSubQuery(javaType, _MappingFactory.getMapping(javaType)
                 , EmptyObject.getInstance());
     }
 

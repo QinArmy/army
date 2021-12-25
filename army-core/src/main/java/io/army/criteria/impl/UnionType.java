@@ -7,7 +7,7 @@ enum UnionType implements SQLModifier {
     UNION_ALL("UNION ALL"),
     UNION_DISTINCT("UNION DISTINCT");
 
-    private final String keyWords;
+     final String keyWords;
 
     UnionType(String keyWords) {
         this.keyWords = keyWords;

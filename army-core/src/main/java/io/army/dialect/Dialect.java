@@ -34,6 +34,8 @@ public interface Dialect {
 
     void subQuery(SubQuery subQuery, _SqlContext original);
 
+    void unionSubQuery(SubQuery subQuery, _SqlContext original);
+
     List<String> createTable(TableMeta<?> tableMeta, @Nullable String tableSuffix);
 
     List<String> addColumn(TableMeta<?> tableMeta, @Nullable String tableSuffix
