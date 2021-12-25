@@ -2,9 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.domain.IDomain;
-import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
-import io.army.mapping._MappingFactory;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
@@ -116,56 +113,47 @@ public abstract class SQLs extends SQLUtils {
     }
 
 
-    /**
-     * package method
-     */
-    static <C> StandardSelect<C> nullableTableSelect(@Nullable C criteria) {
-        return StandardSelect.create(criteria);
-    }
-
     public static <C> Query.SelectPartSpec<Select, C> tableSelect(C nonNullCriteria) {
         Objects.requireNonNull(nonNullCriteria);
         return StandardSelect.create(nonNullCriteria);
     }
 
     public static Query.SelectPartSpec<SubQuery, Void> subQuery() {
-        return StandardSubQueries.subQuery();
+        return StandardSubQueries.subQuery(null);
     }
 
-    public static <C> Query.SelectPartSpec<SubQuery, C> subQuery(C criteria) {
-        return StandardSubQueries.subQuery(criteria);
+    public static <C> Query.SelectPartSpec<SubQuery, C> subQuery(C nonNullCriteria) {
+        Objects.requireNonNull(nonNullCriteria);
+        return StandardSubQueries.subQuery(nonNullCriteria);
     }
 
-    public static <C> Query.SelectPartSpec<RowSubQuery, C> rowSubQuery(C criteria) {
-        return StandardSubQueries.rowSubQuery(criteria);
+    public static Query.SelectPartSpec<RowSubQuery, Void> rowSubQuery() {
+        return StandardSubQueries.rowSubQuery(null);
     }
 
-    public static <E, C> ColumnSubQuery.ColumnSelectionSpec<E, C> columnSubQuery(Class<E> columnType, C criteria) {
-        return StandardSubQueries.columnSubQuery(columnType, criteria);
+    public static <C> Query.SelectPartSpec<RowSubQuery, C> rowSubQuery(C nonNullCriteria) {
+        Objects.requireNonNull(nonNullCriteria);
+        return StandardSubQueries.rowSubQuery(nonNullCriteria);
     }
 
-    public static <E> ColumnSubQuery.ColumnSelectionSpec<E, EmptyObject> columnSubQuery(Class<E> columnType) {
-        return StandardSubQueries.columnSubQuery(columnType, EmptyObject.getInstance());
+    public static <E, C> ColumnSubQuery.ColumnSelectionSpec<E, ColumnSubQuery<E>, Void> columnSubQuery() {
+        return StandardSubQueries.columnSubQuery(null);
     }
 
-    public static <E, C> ScalarSubQuery.ScalarSelectionSpec<E, C> scalarSubQuery(
-            Class<E> javaType, MappingType mappingType, C criteria) {
-        return StandardSubQueries.buildScalarSubQuery(javaType, mappingType, criteria);
+    public static <E, C> ColumnSubQuery.ColumnSelectionSpec<E, ColumnSubQuery<E>, C> columnSubQuery(C nonNullCriteria) {
+        Objects.requireNonNull(nonNullCriteria);
+        return StandardSubQueries.columnSubQuery(nonNullCriteria);
     }
 
-    public static <E> ScalarSubQuery.ScalarSelectionSpec<E, EmptyObject> scalarSubQuery(
-            Class<E> javaType, MappingType mappingType) {
-        return StandardSubQueries.buildScalarSubQuery(javaType, mappingType, EmptyObject.getInstance());
+    public static <E> ColumnSubQuery.ColumnSelectionSpec<E, ScalarExpression<E>, Void> scalarSubQuery() {
+        return StandardSubQueries.scalarSubQuery(null);
     }
 
-    public static <E, C> ScalarSubQuery.ScalarSelectionSpec<E, C> scalarSubQuery(Class<E> javaType, C criteria) {
-        return StandardSubQueries.buildScalarSubQuery(javaType, _MappingFactory.getMapping(javaType), criteria);
+    public static <E, C> ColumnSubQuery.ColumnSelectionSpec<E, ScalarExpression<E>, C> scalarSubQuery(C nonNullCriteria) {
+        Objects.requireNonNull(nonNullCriteria);
+        return StandardSubQueries.scalarSubQuery(nonNullCriteria);
     }
 
-    public static <E> ScalarSubQuery.ScalarSelectionSpec<E, EmptyObject> scalarSubQuery(Class<E> javaType) {
-        return StandardSubQueries.buildScalarSubQuery(javaType, _MappingFactory.getMapping(javaType)
-                , EmptyObject.getInstance());
-    }
 
     /*################################## blow sql reference method ##################################*/
 

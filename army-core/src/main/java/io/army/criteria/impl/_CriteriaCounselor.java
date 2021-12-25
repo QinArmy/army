@@ -34,7 +34,7 @@ public abstract class _CriteriaCounselor {
     }
 
     public static void assertStandardSubQuery(_StandardSubQuery subQuery) {
-        StandardSubQueries.assertStandardSubQuery(subQuery);
+        //
     }
 
 

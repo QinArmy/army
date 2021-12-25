@@ -68,6 +68,9 @@ abstract class StandardQuery<Q extends Query, C> extends StandardPartQuery<Q, C>
 
     @Override
     public final FromSpec<Q, C> select(Distinct distinct, SelectPart selectPart) {
+        if (this instanceof ColumnSubQuery && !(selectPart instanceof Selection)) {
+            throw _Exceptions.castCriteriaApi();
+        }
         this.modifierList = Collections.singletonList(distinct);
         this.selectPartList = Collections.singletonList(selectPart);
         return this;
@@ -75,24 +78,36 @@ abstract class StandardQuery<Q extends Query, C> extends StandardPartQuery<Q, C>
 
     @Override
     public final FromSpec<Q, C> select(SelectPart selectPart) {
+        if (this instanceof ColumnSubQuery && !(selectPart instanceof Selection)) {
+            throw _Exceptions.castCriteriaApi();
+        }
         this.selectPartList = Collections.singletonList(selectPart);
         return this;
     }
 
     @Override
     public final FromSpec<Q, C> select(SelectPart selectPart1, SelectPart selectPart2) {
+        if (this instanceof ColumnSubQuery) {
+            throw _Exceptions.castCriteriaApi();
+        }
         this.selectPartList = Arrays.asList(selectPart1, selectPart2);
         return this;
     }
 
     @Override
     public final FromSpec<Q, C> select(SelectPart selectPart1, SelectPart selectPart2, SelectPart selectPart3) {
+        if (this instanceof ColumnSubQuery) {
+            throw _Exceptions.castCriteriaApi();
+        }
         this.selectPartList = Arrays.asList(selectPart1, selectPart2, selectPart3);
         return this;
     }
 
     @Override
     public final <S extends SelectPart> FromSpec<Q, C> select(Distinct distinct, List<S> selectPartList) {
+        if (this instanceof ColumnSubQuery) {
+            throw _Exceptions.castCriteriaApi();
+        }
         if (selectPartList.size() == 0) {
             throw _Exceptions.selectListIsEmpty();
         }
@@ -103,6 +118,9 @@ abstract class StandardQuery<Q extends Query, C> extends StandardPartQuery<Q, C>
 
     @Override
     public final <S extends SelectPart> FromSpec<Q, C> select(List<S> selectPartList) {
+        if (this instanceof ColumnSubQuery) {
+            throw _Exceptions.castCriteriaApi();
+        }
         if (selectPartList.size() == 0) {
             throw _Exceptions.selectListIsEmpty();
         }
