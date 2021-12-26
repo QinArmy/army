@@ -145,11 +145,11 @@ public abstract class SQLs extends SQLUtils {
         return StandardSubQueries.columnSubQuery(nonNullCriteria);
     }
 
-    public static <E> ColumnSubQuery.ColumnSelectionSpec<E, ScalarExpression<E>, Void> scalarSubQuery() {
+    public static <E> ColumnSubQuery.ColumnSelectionSpec<E, ScalarQueryExpression<E>, Void> scalarSubQuery() {
         return StandardSubQueries.scalarSubQuery(null);
     }
 
-    public static <E, C> ColumnSubQuery.ColumnSelectionSpec<E, ScalarExpression<E>, C> scalarSubQuery(C nonNullCriteria) {
+    public static <E, C> ColumnSubQuery.ColumnSelectionSpec<E, ScalarQueryExpression<E>, C> scalarSubQuery(C nonNullCriteria) {
         Objects.requireNonNull(nonNullCriteria);
         return StandardSubQueries.scalarSubQuery(nonNullCriteria);
     }

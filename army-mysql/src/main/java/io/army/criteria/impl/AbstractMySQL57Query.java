@@ -14,10 +14,10 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 abstract class AbstractMySQL57Query<Q extends MySQL57Query, C> implements MySQL57Query
-        , MySQL57Query.MySQLSelectPartSpec<Q, C>, MySQL57Query.MySQLFromSpec<Q, C>
-        , MySQL57Query.MySQLTableRouteJoinSpec<Q, C>, MySQL57Query.MySQLWhereSpec<Q, C>
-        , MySQL57Query.MySQLWhereAndSpec<Q, C>, MySQL57Query.MySQLGroupBySpec<Q, C>
-        , MySQL57Query.MySQLWithRollUpSpec<Q, C>, MySQL57Query.MySQLHavingSpec<Q, C>
+        , MySQL57Query.SelectPart57Spec<Q, C>, MySQL57Query.From57Spec<Q, C>
+        , MySQL57Query.MySQLTableRouteJoinSpec<Q, C>, MySQL57Query.Where57Spec<Q, C>
+        , MySQL57Query.WhereAnd57Spec<Q, C>, MySQL57Query.GroupBy57Spec<Q, C>
+        , MySQL57Query.WithRollUp57Spec<Q, C>, MySQL57Query.Having57Spec<Q, C>
         , _MySQL57Query {
 
     MySQLTableRouteOnSpec<Q, C> tableRouteOnSpec;
@@ -39,17 +39,17 @@ abstract class AbstractMySQL57Query<Q extends MySQL57Query, C> implements MySQL5
     }
 
     @Override
-    public UnionSpec<Q, C> bracketsQuery() {
+    public Union57Spec<Q, C> bracketsQuery() {
         return null;
     }
 
     @Override
-    public UnionSpec<Q, C> union(Function<C, Q> function) {
+    public Union57Spec<Q, C> union(Function<C, Q> function) {
         return null;
     }
 
     @Override
-    public UnionSpec<Q, C> union(Supplier<Q> supplier) {
+    public Union57Spec<Q, C> union(Supplier<Q> supplier) {
         return null;
     }
 
@@ -69,22 +69,22 @@ abstract class AbstractMySQL57Query<Q extends MySQL57Query, C> implements MySQL5
     }
 
     @Override
-    public UnionSpec<Q, C> unionAll(Function<C, Q> function) {
+    public Union57Spec<Q, C> unionAll(Function<C, Q> function) {
         return null;
     }
 
     @Override
-    public UnionSpec<Q, C> unionDistinct(Function<C, Q> function) {
+    public Union57Spec<Q, C> unionDistinct(Function<C, Q> function) {
         return null;
     }
 
     @Override
-    public UnionSpec<Q, C> unionAll(Supplier<Q> function) {
+    public Union57Spec<Q, C> unionAll(Supplier<Q> function) {
         return null;
     }
 
     @Override
-    public UnionSpec<Q, C> unionDistinct(Supplier<Q> function) {
+    public Union57Spec<Q, C> unionDistinct(Supplier<Q> function) {
         return null;
     }
 
@@ -154,57 +154,57 @@ abstract class AbstractMySQL57Query<Q extends MySQL57Query, C> implements MySQL5
     }
 
     @Override
-    public <S extends SelectPart> MySQLFromSpec<Q, C> select(Distinct distinct, Function<C, List<S>> function) {
+    public <S extends SelectPart> From57Spec<Q, C> select(Distinct distinct, Function<C, List<S>> function) {
         return null;
     }
 
     @Override
-    public <S extends SelectPart> MySQLFromSpec<Q, C> select(Function<C, List<S>> function) {
+    public <S extends SelectPart> From57Spec<Q, C> select(Function<C, List<S>> function) {
         return null;
     }
 
     @Override
-    public MySQLFromSpec<Q, C> select(Distinct distinct, SelectPart selectPart) {
+    public From57Spec<Q, C> select(Distinct distinct, SelectPart selectPart) {
         return null;
     }
 
     @Override
-    public MySQLFromSpec<Q, C> select(SelectPart selectPart) {
+    public From57Spec<Q, C> select(SelectPart selectPart) {
         return null;
     }
 
     @Override
-    public <S extends SelectPart> MySQLFromSpec<Q, C> select(Distinct distinct, List<S> selectPartList) {
+    public <S extends SelectPart> From57Spec<Q, C> select(Distinct distinct, List<S> selectPartList) {
         return null;
     }
 
     @Override
-    public <S extends SelectPart> MySQLFromSpec<Q, C> select(List<S> selectPartList) {
+    public <S extends SelectPart> From57Spec<Q, C> select(List<S> selectPartList) {
         return null;
     }
 
     @Override
-    public MySQLTableRouteJoinSpec<Q, C> from(TableMeta<?> tableMeta, String tableAlias) {
+    public MySQLTableRouteJoinSpec<Q, C> from(TableMeta<?> table, String tableAlias) {
         return null;
     }
 
     @Override
-    public MySQLJoinSpec<Q, C> from(Function<C, SubQuery> function, String subQueryAlia) {
+    public Join57Spec<Q, C> from(Function<C, SubQuery> function, String subQueryAlia) {
         return null;
     }
 
     @Override
-    public MySQLJoinSpec<Q, C> ifIndexHintList(Function<C, List<MySQL57IndexHint>> function) {
+    public Join57Spec<Q, C> ifIndexHintList(Function<C, List<MySQL57IndexHint>> function) {
         return null;
     }
 
     @Override
-    public MySQLJoinSpec<Q, C> route(int databaseIndex, int tableIndex) {
+    public Join57Spec<Q, C> route(int databaseIndex, int tableIndex) {
         return null;
     }
 
     @Override
-    public MySQLJoinSpec<Q, C> route(int tableIndex) {
+    public Join57Spec<Q, C> route(int tableIndex) {
         return null;
     }
 
@@ -214,7 +214,7 @@ abstract class AbstractMySQL57Query<Q extends MySQL57Query, C> implements MySQL5
     }
 
     @Override
-    public MySQLOnSpec<Q, C> straightJoin(Function<C, SubQuery> function, String subQueryAlia) {
+    public On57Spec<Q, C> straightJoin(Function<C, SubQuery> function, String subQueryAlia) {
         return null;
     }
 
@@ -224,42 +224,42 @@ abstract class AbstractMySQL57Query<Q extends MySQL57Query, C> implements MySQL5
     }
 
     @Override
-    public MySQLOnSpec<Q, C> ifStraightJoin(Function<C, SubQuery> function, String subQueryAlia) {
+    public On57Spec<Q, C> ifStraightJoin(Function<C, SubQuery> function, String subQueryAlia) {
         return null;
     }
 
     @Override
-    public MySQLGroupBySpec<Q, C> ifWhere(Function<C, List<IPredicate>> function) {
+    public GroupBy57Spec<Q, C> where(Function<C, List<IPredicate>> function) {
         return null;
     }
 
     @Override
-    public MySQLHavingSpec<Q, C> withRollUp() {
+    public Having57Spec<Q, C> withRollUp() {
         return null;
     }
 
     @Override
-    public MySQLHavingSpec<Q, C> withRollUp(Predicate<C> predicate) {
+    public Having57Spec<Q, C> withRollUp(Predicate<C> predicate) {
         return null;
     }
 
     @Override
-    public MySQLLockSpec<Q, C> limit(int rowCount) {
+    public Lock57Spec<Q, C> limit(int rowCount) {
         return null;
     }
 
     @Override
-    public MySQLLockSpec<Q, C> limit(int offset, int rowCount) {
+    public Lock57Spec<Q, C> limit(int offset, int rowCount) {
         return null;
     }
 
     @Override
-    public MySQLLockSpec<Q, C> ifLimit(Predicate<C> predicate, int rowCount) {
+    public Lock57Spec<Q, C> ifLimit(Predicate<C> predicate, int rowCount) {
         return null;
     }
 
     @Override
-    public MySQLLockSpec<Q, C> ifLimit(Predicate<C> predicate, int offset, int rowCount) {
+    public Lock57Spec<Q, C> ifLimit(Predicate<C> predicate, int offset, int rowCount) {
         return null;
     }
 
@@ -269,7 +269,7 @@ abstract class AbstractMySQL57Query<Q extends MySQL57Query, C> implements MySQL5
     }
 
     @Override
-    public MySQLLockSpec<Q, C> ifForUpdate(Predicate<C> predicate) {
+    public Lock57Spec<Q, C> ifForUpdate(Predicate<C> predicate) {
         return null;
     }
 
@@ -279,7 +279,7 @@ abstract class AbstractMySQL57Query<Q extends MySQL57Query, C> implements MySQL5
     }
 
     @Override
-    public MySQLLockSpec<Q, C> ifLockInShareMode(Predicate<C> predicate) {
+    public Lock57Spec<Q, C> ifLockInShareMode(Predicate<C> predicate) {
         return null;
     }
 }

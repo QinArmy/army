@@ -167,7 +167,7 @@ public interface Query extends Statement {
 
         GroupBySpec<Q, C> where(Supplier<List<IPredicate>> supplier);
 
-        WhereAndSpec<Q, C> where(IPredicate predicate);
+        WhereAndSpec<Q, C> where(@Nullable IPredicate predicate);
     }
 
     interface WhereAndSpec<Q extends Query, C> extends GroupBySpec<Q, C> {
@@ -359,5 +359,6 @@ public interface Query extends Statement {
         QuerySpec<Q> ifLimit(Supplier<LimitOption> supplier);
 
     }
+
 
 }

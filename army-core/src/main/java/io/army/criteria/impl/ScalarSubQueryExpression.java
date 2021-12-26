@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.ScalarExpression;
+import io.army.criteria.ScalarQueryExpression;
 import io.army.criteria.ScalarSubQuery;
 import io.army.criteria.SelectPart;
 import io.army.criteria.Selection;
@@ -12,7 +12,7 @@ import io.army.meta.TableMeta;
 import java.util.Collection;
 import java.util.List;
 
-final class ScalarSubQueryExpression<E> extends OperationExpression<E> implements ScalarExpression<E> {
+final class ScalarSubQueryExpression<E> extends OperationExpression<E> implements ScalarQueryExpression<E> {
 
     static <E> ScalarSubQueryExpression<E> create(ScalarSubQuery<E> subQuery) {
         return new ScalarSubQueryExpression<>(subQuery);

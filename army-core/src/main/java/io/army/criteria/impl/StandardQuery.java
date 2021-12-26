@@ -161,11 +161,11 @@ abstract class StandardQuery<Q extends Query, C> extends StandardPartQuery<Q, C>
     }
 
     public final OnSpec<Q, C> leftJoin(Function<C, SubQuery> function, String subQueryAlia) {
-        return subQueryJoin(function, subQueryAlia, JoinType.LEFT_JOIN)
+        return subQueryJoin(function, subQueryAlia, JoinType.LEFT_JOIN);
     }
 
     public final OnSpec<Q, C> leftJoin(Supplier<SubQuery> supplier, String subQueryAlia) {
-        return subQueryJoin(supplier, subQueryAlia, JoinType.LEFT_JOIN)
+        return subQueryJoin(supplier, subQueryAlia, JoinType.LEFT_JOIN);
     }
 
     public final TableOnSpec<Q, C> ifLeftJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
@@ -214,7 +214,7 @@ abstract class StandardQuery<Q extends Query, C> extends StandardPartQuery<Q, C>
 
     @Override
     public final OnSpec<Q, C> rightJoin(Supplier<SubQuery> supplier, String subQueryAlia) {
-        return subQueryJoin(supplier, subQueryAlia, JoinType.RIGHT_JOIN)
+        return subQueryJoin(supplier, subQueryAlia, JoinType.RIGHT_JOIN);
     }
 
     public final TableOnSpec<Q, C> ifRightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
@@ -249,10 +249,10 @@ abstract class StandardQuery<Q extends Query, C> extends StandardPartQuery<Q, C>
     }
 
 
-    public final WhereAndSpec<Q, C> where(IPredicate predicate) {
-        final List<_Predicate> list = new ArrayList<>();
-        list.add((_Predicate) predicate);
-        this.predicateList = list;
+    public final WhereAndSpec<Q, C> where(@Nullable IPredicate predicate) {
+        if (predicate != null) {
+            this.predicateList.add((_Predicate) predicate);
+        }
         return this;
     }
 

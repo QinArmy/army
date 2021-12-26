@@ -61,14 +61,14 @@ abstract class StandardUnionQuery<Q extends Query, C> extends StandardPartQuery<
     }
 
 
-    static <C, E> UnionSpec<ScalarExpression<E>, C> bracketScalarSubQuery(ScalarExpression<E> subQuery
+    static <C, E> UnionSpec<ScalarQueryExpression<E>, C> bracketScalarSubQuery(ScalarQueryExpression<E> subQuery
             , @Nullable C criteria) {
         subQuery.prepared();
         return new BracketScalarSubQuery<>(subQuery, criteria);
     }
 
-    static <C, E> UnionScalarSubQuery<E, C> unionScalarSubQuery(ScalarExpression<E> left, UnionType unionType
-            , ScalarExpression<E> right, @Nullable C criteria) {
+    static <C, E> UnionScalarSubQuery<E, C> unionScalarSubQuery(ScalarQueryExpression<E> left, UnionType unionType
+            , ScalarQueryExpression<E> right, @Nullable C criteria) {
         left.prepared();
         right.prepared();
         return new UnionScalarSubQuery<>(left, unionType, right, criteria);
@@ -519,12 +519,12 @@ abstract class StandardUnionQuery<Q extends Query, C> extends StandardPartQuery<
      *     </ul>
      * </p>
      */
-    private static abstract class AbstractUnionScalarSubQuery<E, C> extends StandardUnionQuery<ScalarExpression<E>, C>
+    private static abstract class AbstractUnionScalarSubQuery<E, C> extends StandardUnionQuery<ScalarQueryExpression<E>, C>
             implements ScalarSubQuery<E> {
 
-        final ScalarExpression<E> left;
+        final ScalarQueryExpression<E> left;
 
-        AbstractUnionScalarSubQuery(ScalarExpression<E> left, @Nullable C criteria) {
+        AbstractUnionScalarSubQuery(ScalarQueryExpression<E> left, @Nullable C criteria) {
             super(criteria);
             this.left = left;
         }
@@ -550,22 +550,22 @@ abstract class StandardUnionQuery<Q extends Query, C> extends StandardPartQuery<
         }
 
         @Override
-        public final UnionSpec<ScalarExpression<E>, C> bracketsQuery() {
+        public final UnionSpec<ScalarQueryExpression<E>, C> bracketsQuery() {
             return StandardUnionQuery.bracketScalarSubQuery(this.asQuery(), this.criteria);
         }
 
         @Override
-        final UnionSpec<ScalarExpression<E>, C> createUnionQuery(ScalarExpression<E> left, UnionType unionType, ScalarExpression<E> right) {
+        final UnionSpec<ScalarQueryExpression<E>, C> createUnionQuery(ScalarQueryExpression<E> left, UnionType unionType, ScalarQueryExpression<E> right) {
             return StandardUnionQuery.unionScalarSubQuery(left, unionType, right, this.criteria);
         }
 
         @Override
-        final SelectPartSpec<ScalarExpression<E>, C> asQueryAndSelect(UnionType unionType) {
+        final SelectPartSpec<ScalarQueryExpression<E>, C> asQueryAndSelect(UnionType unionType) {
             return StandardSubQueries.unionAndScalarSubQuery(this.asQuery(), unionType, this.criteria);
         }
 
         @Override
-        final ScalarExpression<E> internalAsQuery() {
+        final ScalarQueryExpression<E> internalAsQuery() {
             // must return expression
             return ScalarSubQueryExpression.create(this.asQuery());
         }
@@ -573,11 +573,11 @@ abstract class StandardUnionQuery<Q extends Query, C> extends StandardPartQuery<
     }
 
     /**
-     * @see #bracketScalarSubQuery(ScalarExpression, Object)
+     * @see #bracketScalarSubQuery(ScalarQueryExpression, Object)
      */
     private static final class BracketScalarSubQuery<E, C> extends AbstractUnionScalarSubQuery<E, C> {
 
-        private BracketScalarSubQuery(ScalarExpression<E> left, @Nullable C criteria) {
+        private BracketScalarSubQuery(ScalarQueryExpression<E> left, @Nullable C criteria) {
             super(left, criteria);
         }
 
@@ -597,16 +597,16 @@ abstract class StandardUnionQuery<Q extends Query, C> extends StandardPartQuery<
     }
 
     /**
-     * @see #unionScalarSubQuery(ScalarExpression, UnionType, ScalarExpression, Object)
+     * @see #unionScalarSubQuery(ScalarQueryExpression, UnionType, ScalarQueryExpression, Object)
      */
     static final class UnionScalarSubQuery<E, C> extends AbstractUnionScalarSubQuery<E, C> {
 
         private final UnionType unionType;
 
-        private final ScalarExpression<E> right;
+        private final ScalarQueryExpression<E> right;
 
-        public UnionScalarSubQuery(ScalarExpression<E> left, UnionType unionType
-                , ScalarExpression<E> right, @Nullable C criteria) {
+        public UnionScalarSubQuery(ScalarQueryExpression<E> left, UnionType unionType
+                , ScalarQueryExpression<E> right, @Nullable C criteria) {
             super(left, criteria);
             this.unionType = unionType;
             this.right = right;

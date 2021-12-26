@@ -46,27 +46,27 @@ public abstract class MySQLs extends SQLs {
     /*################################## blow select method ##################################*/
 
 
-    public static <C> MySQL57Query.MySQLSelectPartSpec<MySQL57Select, C> mySQL57Select(C criteria) {
+    public static <C> MySQL57Query.SelectPart57Spec<MySQL57Select, C> mySQL57Select(C criteria) {
         return MySQL57ContextualSelect.build(criteria);
     }
 
-    public static MySQL57Query.MySQLSelectPartSpec<MySQL57Select, EmptyObject> mySQL57Select() {
+    public static MySQL57Query.SelectPart57Spec<MySQL57Select, EmptyObject> mySQL57Select() {
         return MySQL57ContextualSelect.build(EmptyObject.getInstance());
     }
 
-    public static <C> MySQL57Query.MySQLSelectPartSpec<MySQL57SubQuery, C> mySQL57SubQuery(C criteria) {
+    public static <C> MySQL57Query.SelectPart57Spec<MySQL57SubQuery, C> mySQL57SubQuery(C criteria) {
         return MySQL57SubQueries.build(criteria);
     }
 
-    public static MySQL57Query.MySQLSelectPartSpec<MySQL57SubQuery, EmptyObject> mySQL57SubQuery() {
+    public static MySQL57Query.SelectPart57Spec<MySQL57SubQuery, EmptyObject> mySQL57SubQuery() {
         return MySQL57SubQueries.build(EmptyObject.getInstance());
     }
 
-    public static <C> MySQL57Query.MySQLSelectPartSpec<MySQL57RowSubQuery, C> mySQL57RowSubQuery(C criteria) {
+    public static <C> MySQL57Query.SelectPart57Spec<MySQL57RowSubQuery, C> mySQL57RowSubQuery(C criteria) {
         return MySQL57SubQueries.buildRowSubQuery(criteria);
     }
 
-    public static MySQL57Query.MySQLSelectPartSpec<MySQL57RowSubQuery, EmptyObject> mySQL57RowSubQuery() {
+    public static MySQL57Query.SelectPart57Spec<MySQL57RowSubQuery, EmptyObject> mySQL57RowSubQuery() {
         return MySQL57SubQueries.buildRowSubQuery(EmptyObject.getInstance());
     }
 

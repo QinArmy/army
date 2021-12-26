@@ -1,10 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._ComposeQuery;
-import io.army.criteria.impl.inner._GeneralQuery;
-import io.army.criteria.impl.inner._SelfDescribed;
-import io.army.criteria.impl.inner._SortPart;
+import io.army.criteria.impl.inner.*;
 import io.army.util._Assert;
 
 import java.util.ArrayList;

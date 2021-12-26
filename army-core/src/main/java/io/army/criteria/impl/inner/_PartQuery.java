@@ -1,6 +1,6 @@
-package io.army.criteria;
+package io.army.criteria.impl.inner;
 
-import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.SortPart;
 
 import java.util.List;
 

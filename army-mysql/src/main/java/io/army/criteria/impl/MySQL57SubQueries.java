@@ -130,13 +130,13 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public final MySQLFromSpec<MySQL57ColumnSubQuery<E>, C> select(Distinct distinct, Selection selection) {
+        public final From57Spec<MySQL57ColumnSubQuery<E>, C> select(Distinct distinct, Selection selection) {
             doSelectClause(distinct, selection);
             return this;
         }
 
         @Override
-        public final MySQLFromSpec<MySQL57ColumnSubQuery<E>, C> select(Selection selection) {
+        public final From57Spec<MySQL57ColumnSubQuery<E>, C> select(Selection selection) {
             doSelectClause((Distinct) null, selection);
             return this;
         }
@@ -152,11 +152,11 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
      * @param <C> custom object for Dynamic SQL.
      */
     private static final class MySQL57ScalarSubQueryAdaptor<E, C> extends OperationExpression<E>
-            implements MySQL57ScalarSubQuery<E>, MySQLSelectPartSpec<MySQL57ScalarSubQuery<E>, C>
-            , MySQLFromSpec<MySQL57ScalarSubQuery<E>, C>, MySQLTableRouteJoinSpec<MySQL57ScalarSubQuery<E>, C>
-            , MySQLWhereAndSpec<MySQL57ScalarSubQuery<E>, C>, MySQLHavingSpec<MySQL57ScalarSubQuery<E>, C>
+            implements MySQL57ScalarSubQuery<E>, SelectPart57Spec<MySQL57ScalarSubQuery<E>, C>
+            , From57Spec<MySQL57ScalarSubQuery<E>, C>, MySQLTableRouteJoinSpec<MySQL57ScalarSubQuery<E>, C>
+            , WhereAnd57Spec<MySQL57ScalarSubQuery<E>, C>, Having57Spec<MySQL57ScalarSubQuery<E>, C>
             , MySQL57ScalarSubQuery.MySQLScalarSelectionSpec<E, C>
-            , MySQL57Query.MySQLWithRollUpSpec<MySQL57ScalarSubQuery<E>, C>
+            , WithRollUp57Spec<MySQL57ScalarSubQuery<E>, C>
             , _MySQL57SubQuery {
 
 
@@ -216,75 +216,75 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public final <S extends SelectPart> MySQLFromSpec<MySQL57ScalarSubQuery<E>, C> select(Distinct distinct
+        public final <S extends SelectPart> From57Spec<MySQL57ScalarSubQuery<E>, C> select(Distinct distinct
                 , Function<C, List<S>> function) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public final <S extends SelectPart> MySQLFromSpec<MySQL57ScalarSubQuery<E>, C> select(Function<C, List<S>> function) {
+        public final <S extends SelectPart> From57Spec<MySQL57ScalarSubQuery<E>, C> select(Function<C, List<S>> function) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public final MySQLFromSpec<MySQL57ScalarSubQuery<E>, C> select(Distinct distinct, SelectPart selectPart) {
+        public final From57Spec<MySQL57ScalarSubQuery<E>, C> select(Distinct distinct, SelectPart selectPart) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public final MySQLFromSpec<MySQL57ScalarSubQuery<E>, C> select(SelectPart selectPart) {
+        public final From57Spec<MySQL57ScalarSubQuery<E>, C> select(SelectPart selectPart) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public final <S extends SelectPart> MySQLFromSpec<MySQL57ScalarSubQuery<E>, C> select(Distinct distinct
+        public final <S extends SelectPart> From57Spec<MySQL57ScalarSubQuery<E>, C> select(Distinct distinct
                 , List<S> selectPartList) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public final <S extends SelectPart> MySQLFromSpec<MySQL57ScalarSubQuery<E>, C> select(List<S> selectPartList) {
+        public final <S extends SelectPart> From57Spec<MySQL57ScalarSubQuery<E>, C> select(List<S> selectPartList) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public final MySQLFromSpec<MySQL57ScalarSubQuery<E>, C> select(Distinct distinct, Selection selection) {
+        public final From57Spec<MySQL57ScalarSubQuery<E>, C> select(Distinct distinct, Selection selection) {
             this.actualSelect.doSelectClause(distinct, selection);
             return this;
         }
 
         @Override
-        public final MySQLFromSpec<MySQL57ScalarSubQuery<E>, C> select(Selection selection) {
+        public final From57Spec<MySQL57ScalarSubQuery<E>, C> select(Selection selection) {
             this.actualSelect.doSelectClause((Distinct) null, selection);
             return this;
         }
 
         @Override
-        public final MySQLTableRouteJoinSpec<MySQL57ScalarSubQuery<E>, C> from(TableMeta<?> tableMeta, String tableAlias) {
-            this.actualSelect.from(tableMeta, tableAlias);
+        public final MySQLTableRouteJoinSpec<MySQL57ScalarSubQuery<E>, C> from(TableMeta<?> table, String tableAlias) {
+            this.actualSelect.from(table, tableAlias);
             return this;
         }
 
         @Override
-        public final MySQLJoinSpec<MySQL57ScalarSubQuery<E>, C> from(Function<C, SubQuery> function, String subQueryAlia) {
+        public final Join57Spec<MySQL57ScalarSubQuery<E>, C> from(Function<C, SubQuery> function, String subQueryAlia) {
             this.actualSelect.from(function, subQueryAlia);
             return this;
         }
 
         @Override
-        public final MySQLJoinSpec<MySQL57ScalarSubQuery<E>, C> route(int databaseIndex, int tableIndex) {
+        public final Join57Spec<MySQL57ScalarSubQuery<E>, C> route(int databaseIndex, int tableIndex) {
             this.actualSelect.route(databaseIndex, tableIndex);
             return this;
         }
 
         @Override
-        public final MySQLJoinSpec<MySQL57ScalarSubQuery<E>, C> route(int tableIndex) {
+        public final Join57Spec<MySQL57ScalarSubQuery<E>, C> route(int tableIndex) {
             this.actualSelect.route(-1, tableIndex);
             return this;
         }
 
         @Override
-        public final MySQLJoinSpec<MySQL57ScalarSubQuery<E>, C> ifIndexHintList(
+        public final Join57Spec<MySQL57ScalarSubQuery<E>, C> ifIndexHintList(
                 Function<C, List<MySQL57IndexHint>> function) {
             this.actualSelect.ifIndexHintList(function);
             return this;
@@ -298,7 +298,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public final MySQLOnSpec<MySQL57ScalarSubQuery<E>, C> leftJoin(Function<C, SubQuery> function
+        public final On57Spec<MySQL57ScalarSubQuery<E>, C> leftJoin(Function<C, SubQuery> function
                 , String subQueryAlia) {
             this.actualSelect.leftJoin(function, subQueryAlia);
             return this.tableRouteSpec;
@@ -313,7 +313,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public final MySQLOnSpec<MySQL57ScalarSubQuery<E>, C> ifLeftJoin(Function<C, SubQuery> function
+        public final On57Spec<MySQL57ScalarSubQuery<E>, C> ifLeftJoin(Function<C, SubQuery> function
                 , String subQueryAlia) {
             this.actualSelect.ifLeftJoin(function, subQueryAlia);
             return this.tableRouteSpec;
@@ -327,7 +327,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public final MySQLOnSpec<MySQL57ScalarSubQuery<E>, C> join(Function<C, SubQuery> function
+        public final On57Spec<MySQL57ScalarSubQuery<E>, C> join(Function<C, SubQuery> function
                 , String subQueryAlia) {
             this.actualSelect.join(function, subQueryAlia);
             return this.tableRouteSpec;
@@ -342,7 +342,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public final MySQLOnSpec<MySQL57ScalarSubQuery<E>, C> ifJoin(Function<C, SubQuery> function
+        public final On57Spec<MySQL57ScalarSubQuery<E>, C> ifJoin(Function<C, SubQuery> function
                 , String subQueryAlia) {
             this.actualSelect.ifJoin(function, subQueryAlia);
             return this.tableRouteSpec;
@@ -356,7 +356,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public final MySQLOnSpec<MySQL57ScalarSubQuery<E>, C> rightJoin(Function<C, SubQuery> function
+        public final On57Spec<MySQL57ScalarSubQuery<E>, C> rightJoin(Function<C, SubQuery> function
                 , String subQueryAlia) {
             this.actualSelect.rightJoin(function, subQueryAlia);
             return this.tableRouteSpec;
@@ -371,7 +371,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public final MySQLOnSpec<MySQL57ScalarSubQuery<E>, C> ifRightJoin(Function<C, SubQuery> function
+        public final On57Spec<MySQL57ScalarSubQuery<E>, C> ifRightJoin(Function<C, SubQuery> function
                 , String subQueryAlia) {
             this.actualSelect.ifRightJoin(function, subQueryAlia);
             return this.tableRouteSpec;
@@ -385,7 +385,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public final MySQLOnSpec<MySQL57ScalarSubQuery<E>, C> straightJoin(Function<C, SubQuery> function
+        public final On57Spec<MySQL57ScalarSubQuery<E>, C> straightJoin(Function<C, SubQuery> function
                 , String subQueryAlia) {
             this.actualSelect.straightJoin(function, subQueryAlia);
             return this.tableRouteSpec;
@@ -399,170 +399,170 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public final MySQLOnSpec<MySQL57ScalarSubQuery<E>, C> ifStraightJoin(Function<C, SubQuery> function
+        public final On57Spec<MySQL57ScalarSubQuery<E>, C> ifStraightJoin(Function<C, SubQuery> function
                 , String subQueryAlia) {
             this.actualSelect.ifStraightJoin(function, subQueryAlia);
             return this.tableRouteSpec;
         }
 
         @Override
-        public final MySQLGroupBySpec<MySQL57ScalarSubQuery<E>, C> where(List<IPredicate> predicateList) {
+        public final GroupBy57Spec<MySQL57ScalarSubQuery<E>, C> where(List<IPredicate> predicateList) {
             this.actualSelect.where(predicateList);
             return this;
         }
 
         @Override
-        public final MySQLGroupBySpec<MySQL57ScalarSubQuery<E>, C> ifWhere(Function<C, List<IPredicate>> function) {
-            this.actualSelect.ifWhere(function);
+        public final GroupBy57Spec<MySQL57ScalarSubQuery<E>, C> ifWhere(Function<C, List<IPredicate>> function) {
+            this.actualSelect.where(function);
             return this;
         }
 
         @Override
-        public final MySQLWhereAndSpec<MySQL57ScalarSubQuery<E>, C> where(IPredicate predicate) {
+        public final WhereAnd57Spec<MySQL57ScalarSubQuery<E>, C> where(IPredicate predicate) {
             this.actualSelect.where(predicate);
             return this;
         }
 
         @Override
-        public final MySQLWhereAndSpec<MySQL57ScalarSubQuery<E>, C> and(IPredicate predicate) {
+        public final WhereAnd57Spec<MySQL57ScalarSubQuery<E>, C> and(IPredicate predicate) {
             this.actualSelect.and(predicate);
             return this;
         }
 
         @Override
-        public final MySQLWhereAndSpec<MySQL57ScalarSubQuery<E>, C> ifAnd(@Nullable IPredicate predicate) {
+        public final WhereAnd57Spec<MySQL57ScalarSubQuery<E>, C> ifAnd(@Nullable IPredicate predicate) {
             this.actualSelect.ifAnd(predicate);
             return this;
         }
 
         @Override
-        public final MySQLWhereAndSpec<MySQL57ScalarSubQuery<E>, C> ifAnd(Function<C, IPredicate> function) {
+        public final WhereAnd57Spec<MySQL57ScalarSubQuery<E>, C> ifAnd(Function<C, IPredicate> function) {
             this.actualSelect.ifAnd(function);
             return this;
         }
 
         @Override
-        public final MySQLWithRollUpSpec<MySQL57ScalarSubQuery<E>, C> groupBy(SortPart sortPart) {
+        public final WithRollUp57Spec<MySQL57ScalarSubQuery<E>, C> groupBy(SortPart sortPart) {
             this.actualSelect.groupBy(sortPart);
             return this;
         }
 
         @Override
-        public final MySQLWithRollUpSpec<MySQL57ScalarSubQuery<E>, C> groupBy(SortPart sortPart1, SortPart sortPart2) {
+        public final WithRollUp57Spec<MySQL57ScalarSubQuery<E>, C> groupBy(SortPart sortPart1, SortPart sortPart2) {
             this.actualSelect.groupBy(sortPart1, sortPart2);
             return this;
         }
 
         @Override
-        public final MySQLWithRollUpSpec<MySQL57ScalarSubQuery<E>, C> groupBy(List<SortPart> sortPartList) {
+        public final WithRollUp57Spec<MySQL57ScalarSubQuery<E>, C> groupBy(List<SortPart> sortPartList) {
             this.actualSelect.groupBy(sortPartList);
             return this;
         }
 
         @Override
-        public final MySQLWithRollUpSpec<MySQL57ScalarSubQuery<E>, C> groupBy(Function<C, List<SortPart>> function) {
+        public final WithRollUp57Spec<MySQL57ScalarSubQuery<E>, C> groupBy(Function<C, List<SortPart>> function) {
             this.actualSelect.groupBy(function);
             return this;
         }
 
         @Override
-        public final MySQLWithRollUpSpec<MySQL57ScalarSubQuery<E>, C> ifGroupBy(Function<C, List<SortPart>> function) {
+        public final WithRollUp57Spec<MySQL57ScalarSubQuery<E>, C> ifGroupBy(Function<C, List<SortPart>> function) {
             this.actualSelect.ifGroupBy(function);
             return this;
         }
 
         @Override
-        public final MySQLHavingSpec<MySQL57ScalarSubQuery<E>, C> withRollUp() {
+        public final Having57Spec<MySQL57ScalarSubQuery<E>, C> withRollUp() {
             this.actualSelect.withRollUp();
             return this;
         }
 
         @Override
-        public final MySQLHavingSpec<MySQL57ScalarSubQuery<E>, C> withRollUp(Predicate<C> predicate) {
+        public final Having57Spec<MySQL57ScalarSubQuery<E>, C> withRollUp(Predicate<C> predicate) {
             this.actualSelect.withRollUp(predicate);
             return this;
         }
 
         @Override
-        public final MySQLOrderBySpec<MySQL57ScalarSubQuery<E>, C> having(IPredicate predicate) {
+        public final OrderBy57Spec<MySQL57ScalarSubQuery<E>, C> having(IPredicate predicate) {
             this.actualSelect.having(predicate);
             return this;
         }
 
         @Override
-        public final MySQLOrderBySpec<MySQL57ScalarSubQuery<E>, C> having(List<IPredicate> predicateList) {
+        public final OrderBy57Spec<MySQL57ScalarSubQuery<E>, C> having(List<IPredicate> predicateList) {
             this.actualSelect.having(predicateList);
             return this;
         }
 
         @Override
-        public final MySQLOrderBySpec<MySQL57ScalarSubQuery<E>, C> having(Function<C, List<IPredicate>> function) {
+        public final OrderBy57Spec<MySQL57ScalarSubQuery<E>, C> having(Function<C, List<IPredicate>> function) {
             this.actualSelect.having(function);
             return this;
         }
 
         @Override
-        public final MySQLOrderBySpec<MySQL57ScalarSubQuery<E>, C> ifHaving(Function<C, List<IPredicate>> function) {
+        public final OrderBy57Spec<MySQL57ScalarSubQuery<E>, C> ifHaving(Function<C, List<IPredicate>> function) {
             this.actualSelect.ifHaving(function);
             return this;
         }
 
         @Override
-        public final MySQLLimitSpec<MySQL57ScalarSubQuery<E>, C> orderBy(SortPart sortPart) {
+        public final Limit57Spec<MySQL57ScalarSubQuery<E>, C> orderBy(SortPart sortPart) {
             this.actualSelect.orderBy(sortPart);
             return this;
         }
 
         @Override
-        public final MySQLLimitSpec<MySQL57ScalarSubQuery<E>, C> orderBy(SortPart sortPart1, SortPart sortPart2) {
+        public final Limit57Spec<MySQL57ScalarSubQuery<E>, C> orderBy(SortPart sortPart1, SortPart sortPart2) {
             this.actualSelect.orderBy(sortPart1, sortPart2);
             return this;
         }
 
         @Override
-        public final MySQLLimitSpec<MySQL57ScalarSubQuery<E>, C> orderBy(List<SortPart> sortPartList) {
+        public final Limit57Spec<MySQL57ScalarSubQuery<E>, C> orderBy(List<SortPart> sortPartList) {
             this.actualSelect.orderBy(sortPartList);
             return this;
         }
 
         @Override
-        public final MySQLLimitSpec<MySQL57ScalarSubQuery<E>, C> orderBy(Function<C, List<SortPart>> function) {
+        public final Limit57Spec<MySQL57ScalarSubQuery<E>, C> orderBy(Function<C, List<SortPart>> function) {
             this.actualSelect.orderBy(function);
             return this;
         }
 
         @Override
-        public final MySQLLimitSpec<MySQL57ScalarSubQuery<E>, C> ifOrderBy(Function<C, List<SortPart>> function) {
+        public final Limit57Spec<MySQL57ScalarSubQuery<E>, C> ifOrderBy(Function<C, List<SortPart>> function) {
             this.actualSelect.ifOrderBy(function);
             return this;
         }
 
         @Override
-        public final MySQLLockSpec<MySQL57ScalarSubQuery<E>, C> limit(int rowCount) {
+        public final Lock57Spec<MySQL57ScalarSubQuery<E>, C> limit(int rowCount) {
             this.actualSelect.limit(rowCount);
             return this;
         }
 
         @Override
-        public final MySQLLockSpec<MySQL57ScalarSubQuery<E>, C> limit(int offset, int rowCount) {
+        public final Lock57Spec<MySQL57ScalarSubQuery<E>, C> limit(int offset, int rowCount) {
             this.actualSelect.limit(offset, rowCount);
             return this;
         }
 
         @Override
-        public final MySQLLockSpec<MySQL57ScalarSubQuery<E>, C> ifLimit(Function<C, LimitOption> function) {
+        public final Lock57Spec<MySQL57ScalarSubQuery<E>, C> ifLimit(Function<C, LimitOption> function) {
             this.actualSelect.ifLimit(function);
             return this;
         }
 
         @Override
-        public final MySQLLockSpec<MySQL57ScalarSubQuery<E>, C> ifLimit(Predicate<C> predicate, int rowCount) {
+        public final Lock57Spec<MySQL57ScalarSubQuery<E>, C> ifLimit(Predicate<C> predicate, int rowCount) {
             this.actualSelect.ifLimit(predicate, rowCount);
             return this;
         }
 
         @Override
-        public final MySQLLockSpec<MySQL57ScalarSubQuery<E>, C> ifLimit(Predicate<C> predicate, int offset, int rowCount) {
+        public final Lock57Spec<MySQL57ScalarSubQuery<E>, C> ifLimit(Predicate<C> predicate, int offset, int rowCount) {
             this.actualSelect.ifLimit(predicate, offset, rowCount);
             return this;
         }
@@ -575,7 +575,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public final MySQLLockSpec<MySQL57ScalarSubQuery<E>, C> ifForUpdate(Predicate<C> predicate) {
+        public final Lock57Spec<MySQL57ScalarSubQuery<E>, C> ifForUpdate(Predicate<C> predicate) {
             this.actualSelect.ifForUpdate(predicate);
             return this;
         }
@@ -587,7 +587,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public final MySQLLockSpec<MySQL57ScalarSubQuery<E>, C> ifLockInShareMode(Predicate<C> predicate) {
+        public final Lock57Spec<MySQL57ScalarSubQuery<E>, C> ifLockInShareMode(Predicate<C> predicate) {
             this.actualSelect.ifLockInShareMode(predicate);
             return this;
         }
@@ -702,19 +702,19 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public MySQLJoinSpec<MySQL57ScalarSubQuery<E>, C> on(List<IPredicate> predicateList) {
+        public Join57Spec<MySQL57ScalarSubQuery<E>, C> on(List<IPredicate> predicateList) {
             this.mysql57Query.actualSelect.tableRouteOnSpec.on(predicateList);
             return this.mysql57Query;
         }
 
         @Override
-        public MySQLJoinSpec<MySQL57ScalarSubQuery<E>, C> on(IPredicate predicate) {
+        public Join57Spec<MySQL57ScalarSubQuery<E>, C> on(IPredicate predicate) {
             this.mysql57Query.actualSelect.tableRouteOnSpec.on(predicate);
             return this.mysql57Query;
         }
 
         @Override
-        public MySQLJoinSpec<MySQL57ScalarSubQuery<E>, C> on(Function<C, List<IPredicate>> function) {
+        public Join57Spec<MySQL57ScalarSubQuery<E>, C> on(Function<C, List<IPredicate>> function) {
             this.mysql57Query.actualSelect.tableRouteOnSpec.on(function);
             return this.mysql57Query;
         }
@@ -732,7 +732,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
         }
 
         @Override
-        public MySQLOnSpec<MySQL57ScalarSubQuery<E>, C> ifIndexHintList(Function<C, List<MySQL57IndexHint>> function) {
+        public On57Spec<MySQL57ScalarSubQuery<E>, C> ifIndexHintList(Function<C, List<MySQL57IndexHint>> function) {
             this.mysql57Query.actualSelect.tableRouteOnSpec.ifIndexHintList(function);
             return this;
         }

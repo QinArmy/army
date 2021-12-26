@@ -12,4 +12,5 @@ public enum Distinct implements SQLModifier {
         return name();
     }
 
+
 }

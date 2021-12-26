@@ -1,6 +1,10 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.CriteriaException;
+import io.army.criteria.LimitOption;
+import io.army.criteria.Query;
+import io.army.criteria.SortPart;
+import io.army.criteria.impl.inner._PartQuery;
 import io.army.lang.Nullable;
 import io.army.util.CollectionUtils;
 import io.army.util._Assert;

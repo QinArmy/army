@@ -1,7 +1,6 @@
 package io.army.dialect;
 
 import io.army.ErrorCode;
-import io.army.annotation.UpdateMode;
 import io.army.beans.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
@@ -20,7 +19,6 @@ import io.army.struct.CodeEnum;
 import io.army.util.ArrayUtils;
 import io.army.util.CollectionUtils;
 import io.army.util._Exceptions;
-import io.qinarmy.util.Pair;
 
 import java.util.*;
 
@@ -259,86 +257,6 @@ public abstract class _DmlUtils {
         return Collections.unmodifiableList(selectionList);
     }
 
-    static void assertSubQueryInsert(List<FieldMeta<?, ?>> fieldMetaList, SubQuery subQuery) {
-        List<Selection> selectionList = selectionList(subQuery);
-        if (fieldMetaList.size() != selectionList.size()) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                    , "SubQuery Insert,target field list size[%s] and sub query selection list size[%s] not match."
-                    , fieldMetaList.size(), selectionList.size());
-        }
-        final int size = fieldMetaList.size();
-        for (int i = 0; i < size; i++) {
-            if (fieldMetaList.get(i).mappingType() != selectionList.get(i).mappingType()) {
-                throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                        , "SubQuery Insert,index[%s] field MappingMeta[%s] and sub query MappingMeta[%s] not match."
-                        , i, fieldMetaList.get(i).mappingType(), selectionList.get(i).mappingType());
-            }
-        }
-    }
-
-
-    static void assertSingleUpdateSetClauseField(FieldMeta<?, ?> fieldMeta, TableMeta<?> tableMeta) {
-        if (fieldMeta.tableMeta() != tableMeta) {
-            throw new IllegalArgumentException(String.format(
-                    "FieldMeta[%s] don't belong to TableMeta[%s]", fieldMeta, tableMeta));
-        }
-
-        assertSetClauseField(fieldMeta);
-    }
-
-
-    static Pair<List<FieldMeta<?, ?>>, List<FieldMeta<?, ?>>> divideField(_ValuesInsert insert) {
-        final TableMeta<?> tableMeta = insert.table();
-        final ParentTableMeta<?> parentMeta;
-
-        if (tableMeta instanceof ChildTableMeta) {
-            parentMeta = ((ChildTableMeta<?>) tableMeta).parentMeta();
-        } else {
-            parentMeta = null;
-        }
-        final List<FieldMeta<?, ?>> fieldMetas = insert.fieldList();
-        if (fieldMetas.isEmpty()) {
-            final List<FieldMeta<?, ?>> fieldList, parentFieldList;
-            fieldList = Collections.unmodifiableList(new ArrayList<>(tableMeta.fieldCollection()));
-
-            if (parentMeta == null) {
-                parentFieldList = Collections.emptyList();
-            } else {
-                parentFieldList = Collections.unmodifiableList(new ArrayList<>(parentMeta.fieldCollection()));
-            }
-            return new Pair<>(fieldList, parentFieldList);
-        }
-
-        TableMeta<?> belongOfTable;
-        final Set<FieldMeta<?, ?>> fieldSet = new HashSet<>(), parentFieldSet;
-        if (parentMeta == null) {
-            parentFieldSet = Collections.emptySet();
-        } else {
-            parentFieldSet = new HashSet<>();
-        }
-        for (FieldMeta<?, ?> fieldMeta : fieldMetas) {
-            belongOfTable = fieldMeta.tableMeta();
-            if (belongOfTable == tableMeta) {
-                fieldSet.add(fieldMeta);
-            } else if (belongOfTable == parentMeta) {
-                parentFieldSet.add(fieldMeta);
-            }
-        }
-        fieldSet.addAll(tableMeta.generatorChain());
-        fieldSet.add(tableMeta.id());
-        appendInsertFields(tableMeta, fieldSet);
-        if (parentMeta != null) {
-            appendInsertFields(parentMeta, parentFieldSet);
-        }
-        final List<FieldMeta<?, ?>> fieldList, parentFieldList;
-        fieldList = Collections.unmodifiableList(new ArrayList<>(fieldSet));
-        if (parentMeta == null) {
-            parentFieldList = Collections.emptyList();
-        } else {
-            parentFieldList = Collections.unmodifiableList(new ArrayList<>(parentFieldSet));
-        }
-        return new Pair<>(fieldList, parentFieldList);
-    }
 
 
     static void assertUpdateSetAndWhereClause(_Update update) {
@@ -358,17 +276,6 @@ public abstract class _DmlUtils {
         }
     }
 
-
-    static void assertSetClauseField(FieldMeta<?, ?> fieldMeta) {
-        if (fieldMeta.updateMode() == UpdateMode.IMMUTABLE) {
-            throw new NonUpdateAbleException("FieldMeta[%s] is non-updatable."
-                    , fieldMeta);
-        }
-        if (_MetaBridge.VERSION.equals(fieldMeta.fieldName())
-                || _MetaBridge.UPDATE_TIME.equals(fieldMeta.fieldName())) {
-            throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "version or updateTime is managed by army.");
-        }
-    }
 
     static boolean hasVersionPredicate(List<_Predicate> predicateList) {
 

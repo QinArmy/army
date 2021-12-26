@@ -9,9 +9,9 @@ public interface MySQL57ScalarSubQuery<E> extends ScalarSubQuery<E>, MySQL57Colu
 
     interface MySQLScalarSelectionSpec<E, C> {
 
-        MySQLFromSpec<MySQL57ScalarSubQuery<E>, C> select(Distinct distinct, Selection selection);
+        From57Spec<MySQL57ScalarSubQuery<E>, C> select(Distinct distinct, Selection selection);
 
-        MySQLFromSpec<MySQL57ScalarSubQuery<E>, C> select(Selection selection);
+        From57Spec<MySQL57ScalarSubQuery<E>, C> select(Selection selection);
 
     }
 

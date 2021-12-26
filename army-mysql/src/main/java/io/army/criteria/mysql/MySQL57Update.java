@@ -1,6 +1,9 @@
 package io.army.criteria.mysql;
 
-import io.army.criteria.*;
+import io.army.criteria.Expression;
+import io.army.criteria.IPredicate;
+import io.army.criteria.SortPart;
+import io.army.criteria.SubQuery;
 import io.army.criteria.impl.SQLs;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
@@ -11,100 +14,190 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/update.html">MySQL 5.7  UPDATE Statement</a>
  * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/join.html">MySQL 5.7 JOIN Clause</a>
  * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/index-hints.html">MySQL 5.7  Index Hints</a>
  */
-public interface MySQL57Update extends Update {
+public interface MySQL57Update extends MySQLUpdate {
 
     /*################################## blow single-update clause interface ##################################*/
 
-    interface MySQLSingleUpdateSpec<T extends IDomain, C> {
+    interface Update57Spec extends UpdateSpec {
 
-        MySQLSingleUpdateTableRouteSpec<T, C> update(TableMeta<T> tableMeta, String tableAlias);
+        MySQL57Update asUpdate();
     }
 
-    interface MySQLSingleUpdateTableRouteSpec<T extends IDomain, C> extends MySQLSingleUpdateSetSpec<T, C> {
+    interface SingleUpdate57Spec<T extends IDomain, C> {
 
-        MySQLSingleUpdateSetSpec<T, C> route(int databaseIndex, int tableIndex);
-
-        MySQLSingleUpdateSetSpec<T, C> route(int tableIndex);
-    }
-
-    interface MySQLSingleUpdateSetSpec<T extends IDomain, C> {
-
-        <F> MySQLSingleUpdateWhereSpec<T, C> set(FieldMeta<? super T, F> target, F value);
-
-        /**
-         * @see SQLs#defaultWord()
-         */
-        <F> MySQLSingleUpdateWhereSpec<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp);
-
-        <F> MySQLSingleUpdateWhereSpec<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value);
-
-        <F> MySQLSingleUpdateWhereSpec<T, C> ifSet(FieldMeta<? super T, F> target, Function<C, Expression<F>> function);
+        SingleSet57Spec<T, C> update(TableMeta<T> tableMeta, String tableAlias);
     }
 
 
-    interface MySQLSingleUpdateWhereSpec<T extends IDomain, C> extends MySQLSingleUpdateSetSpec<T, C> {
+    interface SingleSet57Spec<T extends IDomain, C> {
 
-        MySQLSingleUpdateWhereAndSpec<C> where(IPredicate predicate);
 
-        MySQLSingleUpdateOrderBySpec<C> where(List<IPredicate> predicateList);
+        SingleWhere57Spec<T, C> set(FieldMeta<? super T, ?> field, @Nullable Object value);
 
-        MySQLSingleUpdateOrderBySpec<C> where(Function<C, List<IPredicate>> function);
+        SingleWhere57Spec<T, C> set(FieldMeta<? super T, ?> field, Expression<?> value);
+
+        <F> SingleWhere57Spec<T, C> set(FieldMeta<? super T, F> field, Function<C, Expression<F>> function);
+
+        <F> SingleWhere57Spec<T, C> set(FieldMeta<? super T, F> field, Supplier<Expression<F>> supplier);
+
+        SingleWhere57Spec<T, C> setNull(FieldMeta<? super T, ?> field);
+
+        SingleWhere57Spec<T, C> setDefault(FieldMeta<? super T, ?> field);
+
+        <F extends Number> SingleWhere57Spec<T, C> setPlus(FieldMeta<? super T, F> field, F value);
+
+        <F extends Number> SingleWhere57Spec<T, C> setPlus(FieldMeta<? super T, F> field, Expression<F> value);
+
+        <F extends Number> SingleWhere57Spec<T, C> setMinus(FieldMeta<? super T, F> field, F value);
+
+        <F extends Number> SingleWhere57Spec<T, C> setMinus(FieldMeta<? super T, F> field, Expression<F> value);
+
+        <F extends Number> SingleWhere57Spec<T, C> setMultiply(FieldMeta<? super T, F> field, F value);
+
+        <F extends Number> SingleWhere57Spec<T, C> setMultiply(FieldMeta<? super T, F> field, Expression<F> value);
+
+        <F extends Number> SingleWhere57Spec<T, C> setDivide(FieldMeta<? super T, F> field, F value);
+
+        <F extends Number> SingleWhere57Spec<T, C> setDivide(FieldMeta<? super T, F> field, Expression<F> value);
+
+        <F extends Number> SingleWhere57Spec<T, C> setMod(FieldMeta<? super T, F> field, F value);
+
+        <F extends Number> SingleWhere57Spec<T, C> setMod(FieldMeta<? super T, F> field, Expression<F> value);
+
+        <F> SingleWhere57Spec<T, C> ifSet(FieldMeta<? super T, F> field, @Nullable F value);
+
+        <F> SingleWhere57Spec<T, C> ifSet(FieldMeta<? super T, F> field, Function<C, Expression<F>> function);
+
+        <F> SingleWhere57Spec<T, C> ifSet(FieldMeta<? super T, F> field, Supplier<Expression<F>> supplier);
+
+        <F extends Number> SingleWhere57Spec<T, C> ifSetPlus(FieldMeta<? super T, F> field, @Nullable F value);
+
+        <F extends Number> SingleWhere57Spec<T, C> ifSetMinus(FieldMeta<? super T, F> field, @Nullable F value);
+
+        <F extends Number> SingleWhere57Spec<T, C> ifSetMultiply(FieldMeta<? super T, F> field, @Nullable F value);
+
+        <F extends Number> SingleWhere57Spec<T, C> ifSetDivide(FieldMeta<? super T, F> field, @Nullable F value);
+
+        <F extends Number> SingleWhere57Spec<T, C> ifSetMod(FieldMeta<? super T, F> field, @Nullable F value);
 
     }
 
 
-    interface MySQLSingleUpdateWhereAndSpec<C> extends MySQLSingleUpdateOrderBySpec<C> {
+    interface SingleWhere57Spec<T extends IDomain, C> extends SingleSet57Spec<T, C> {
 
-        MySQLSingleUpdateWhereAndSpec<C> and(IPredicate predicate);
+        SingleWhereAnd57Spec<C> where(IPredicate predicate);
+
+        SingleOrderBy57Spec<C> where(List<IPredicate> predicateList);
+
+        SingleOrderBy57Spec<C> where(Function<C, List<IPredicate>> function);
+
+        SingleOrderBy57Spec<C> where(Supplier<List<IPredicate>> supplier);
+
+    }
+
+
+    interface SingleWhereAnd57Spec<C> extends SingleOrderBy57Spec<C> {
+
+        SingleWhereAnd57Spec<C> and(IPredicate predicate);
+
+        SingleWhereAnd57Spec<C> and(Function<C, IPredicate> function);
+
+        SingleWhereAnd57Spec<C> and(Supplier<IPredicate> supplier);
 
         /**
          * @see Expression#ifEqual(Object)
          */
-        MySQLSingleUpdateWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
+        SingleWhereAnd57Spec<C> ifAnd(@Nullable IPredicate predicate);
 
-        MySQLSingleUpdateWhereAndSpec<C> ifAnd(Function<C, IPredicate> function);
+        SingleWhereAnd57Spec<C> ifAnd(Function<C, IPredicate> function);
+
+        SingleWhereAnd57Spec<C> ifAnd(Supplier<IPredicate> supplier);
 
     }
 
-    interface MySQLSingleUpdateOrderBySpec<C> extends MySQLSingleUpdateLimitSpec<C> {
+    interface SingleOrderBy57Spec<C> extends SingleLimit57Spec<C> {
 
-        MySQLSingleUpdateLimitSpec<C> orderBy(SortPart... sortParts);
+        SingleLimit57Spec<C> orderBy(SortPart sortPart);
 
-        MySQLSingleUpdateLimitSpec<C> orderBy(List<SortPart> sortPartList);
+        SingleLimit57Spec<C> orderBy(SortPart sortPart1, SortPart sortPart2);
 
-        MySQLSingleUpdateLimitSpec<C> ifOrderBy(Function<C, List<SortPart>> function);
+        SingleLimit57Spec<C> orderBy(List<SortPart> sortPartList);
+
+        SingleLimit57Spec<C> orderBy(Function<C, List<SortPart>> function);
+
+        SingleLimit57Spec<C> orderBy(Supplier<List<SortPart>> supplier);
+
+        SingleLimit57Spec<C> ifOrderBy(@Nullable SortPart sortPart);
+
+        SingleLimit57Spec<C> ifOrderBy(Supplier<List<SortPart>> supplier);
+
+        SingleLimit57Spec<C> ifOrderBy(Function<C, List<SortPart>> function);
     }
 
-    interface MySQLSingleUpdateLimitSpec<C> extends UpdateSpec {
+    interface SingleLimit57Spec<C> extends Update57Spec {
 
-        UpdateSpec limit(int rowCount);
+        Update57Spec limit(long rowCount);
 
-        UpdateSpec ifLimit(Function<C, Integer> function);
+        Update57Spec limit(Function<C, Long> function);
+
+        Update57Spec limit(Supplier<Long> supplier);
+
+        Update57Spec ifLimit(Function<C, Long> function);
+
+        Update57Spec ifLimit(Supplier<Long> supplier);
+
+    }
+
+    interface IndexHint57Spec<Q extends MySQLQuery, C> {
+
+        IndexHintFor57Spec<Q, C> useIndex();
+
+        IndexHintFor57Spec<Q, C> useKey();
+
+        IndexHintFor57Spec<Q, C> ignoreIndex();
+
+        IndexHintFor57Spec<Q, C> ignoreKey();
+
+        IndexHintFor57Spec<Q, C> forceIndex();
+
+        IndexHintFor57Spec<Q, C> forceKey();
+
+        IndexHint57Spec<Q, C> useIndex(List<String> indexNameList);
+
+        IndexHint57Spec<Q, C> useKey(List<String> indexNameList);
+
+        IndexHint57Spec<Q, C> ignoreIndex(List<String> indexNameList);
+
+        IndexHint57Spec<Q, C> ignoreKey(List<String> indexNameList);
+
+        IndexHint57Spec<Q, C> forceIndex(List<String> indexNameList);
+
+        IndexHint57Spec<Q, C> forceKey(List<String> indexNameList);
+
+    }
+
+    interface IndexHintFor57Spec<T extends IDomain, C> {
+
+        IndexHint57Spec<T, C> froOrderBy(List<String> indexNameList);
+
     }
 
     /*################################## blow multi-update clause interface ##################################*/
 
 
-    interface MySQLMultiUpdateSpec<C> {
+    interface MultiUpdate57Spec<C> {
 
-        MySQLMultiUpdateTableRoutJoinSpec<C> update(TableMeta<?> tableMeta, String tableAlias);
-
-
-    }
-
-    interface MySQLMultiUpdateTableRoutJoinSpec<C> extends MySQLMultiUpdateIndexHintJoinSpec<C> {
-
-        MySQLMultiUpdateIndexHintJoinSpec<C> route(int databaseIndex, int tableIndex);
-
-        MySQLMultiUpdateIndexHintJoinSpec<C> route(int tableIndex);
+        MySQLMultiUpdateIndexHintJoinSpec<C> update(TableMeta<?> tableMeta, String tableAlias);
 
     }
+
 
     interface MySQLMultiUpdateIndexHintJoinSpec<C> extends MySQLMultiUpdateJoinSpec<C> {
 
@@ -163,20 +256,20 @@ public interface MySQL57Update extends Update {
 
     interface MySQLMultiUpdateSetSpec<C> {
 
-        <F> MySQLMultiUpdateWhereSpec<C> set(FieldMeta<?, F> target, F value);
+        <F> MySQLMultiUpdateSingleWhere57Spec<C> set(FieldMeta<?, F> target, F value);
 
         /**
          * @see SQLs#defaultWord()
          */
-        <F> MySQLMultiUpdateWhereSpec<C> set(FieldMeta<?, F> target, Expression<F> valueExp);
+        <F> MySQLMultiUpdateSingleWhere57Spec<C> set(FieldMeta<?, F> target, Expression<F> valueExp);
 
-        <F> MySQLMultiUpdateWhereSpec<C> ifSet(Predicate<C> predicate, FieldMeta<?, F> target, F value);
+        <F> MySQLMultiUpdateSingleWhere57Spec<C> ifSet(Predicate<C> predicate, FieldMeta<?, F> target, F value);
 
-        <F> MySQLMultiUpdateWhereSpec<C> ifSet(FieldMeta<?, F> target, Function<C, Expression<F>> function);
+        <F> MySQLMultiUpdateSingleWhere57Spec<C> ifSet(FieldMeta<?, F> target, Function<C, Expression<F>> function);
     }
 
 
-    interface MySQLMultiUpdateWhereSpec<C> extends MySQLMultiUpdateSetSpec<C> {
+    interface MySQLMultiUpdateSingleWhere57Spec<C> extends MySQLMultiUpdateSetSpec<C> {
 
         MySQLMultiUpdateWhereAndSpec<C> where(IPredicate predicate);
 
@@ -209,20 +302,20 @@ public interface MySQL57Update extends Update {
 
     interface MySQLBatchSingleUpdateSetSpec<T extends IDomain, C> {
 
-        <F> MySQLBatchSingleUpdateWhereSpec<T, C> set(FieldMeta<? super T, F> target, F value);
+        <F> MySQLBatchSingleUpdateSingleWhere57Spec<T, C> set(FieldMeta<? super T, F> target, F value);
 
         /**
          * @see SQLs#defaultWord()
          */
-        <F> MySQLBatchSingleUpdateWhereSpec<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp);
+        <F> MySQLBatchSingleUpdateSingleWhere57Spec<T, C> set(FieldMeta<? super T, F> target, Expression<F> valueExp);
 
-        <F> MySQLBatchSingleUpdateWhereSpec<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value);
+        <F> MySQLBatchSingleUpdateSingleWhere57Spec<T, C> ifSet(Predicate<C> predicate, FieldMeta<? super T, F> target, F value);
 
-        <F> MySQLBatchSingleUpdateWhereSpec<T, C> ifSet(FieldMeta<? super T, F> target, Function<C, Expression<F>> function);
+        <F> MySQLBatchSingleUpdateSingleWhere57Spec<T, C> ifSet(FieldMeta<? super T, F> target, Function<C, Expression<F>> function);
     }
 
 
-    interface MySQLBatchSingleUpdateWhereSpec<T extends IDomain, C> extends MySQLBatchSingleUpdateSetSpec<T, C> {
+    interface MySQLBatchSingleUpdateSingleWhere57Spec<T extends IDomain, C> extends MySQLBatchSingleUpdateSetSpec<T, C> {
 
         MySQLBatchSingleUpdateWhereAndSpec<C> where(IPredicate predicate);
 
@@ -333,20 +426,20 @@ public interface MySQL57Update extends Update {
 
     interface MySQLBatchMultiUpdateSetSpec<C> {
 
-        <F> MySQLBatchMultiUpdateWhereSpec<C> set(FieldMeta<?, F> target, F value);
+        <F> MySQLBatchMultiUpdateSingleWhere57Spec<C> set(FieldMeta<?, F> target, F value);
 
         /**
          * @see SQLs#defaultWord()
          */
-        <F> MySQLBatchMultiUpdateWhereSpec<C> set(FieldMeta<?, F> target, Expression<F> valueExp);
+        <F> MySQLBatchMultiUpdateSingleWhere57Spec<C> set(FieldMeta<?, F> target, Expression<F> valueExp);
 
-        <F> MySQLBatchMultiUpdateWhereSpec<C> ifSet(Predicate<C> predicate, FieldMeta<?, F> target, F value);
+        <F> MySQLBatchMultiUpdateSingleWhere57Spec<C> ifSet(Predicate<C> predicate, FieldMeta<?, F> target, F value);
 
-        <F> MySQLBatchMultiUpdateWhereSpec<C> ifSet(FieldMeta<?, F> target, Function<C, Expression<F>> function);
+        <F> MySQLBatchMultiUpdateSingleWhere57Spec<C> ifSet(FieldMeta<?, F> target, Function<C, Expression<F>> function);
     }
 
 
-    interface MySQLBatchMultiUpdateWhereSpec<C> extends MySQLBatchMultiUpdateSetSpec<C> {
+    interface MySQLBatchMultiUpdateSingleWhere57Spec<C> extends MySQLBatchMultiUpdateSetSpec<C> {
 
         MySQLBatchMultiUpdateWhereAndSpec<C> where(IPredicate predicate);
 

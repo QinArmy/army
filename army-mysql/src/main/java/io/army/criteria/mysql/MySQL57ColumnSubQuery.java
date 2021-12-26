@@ -8,9 +8,9 @@ public interface MySQL57ColumnSubQuery<E> extends ColumnSubQuery<E>, MySQL57SubQ
 
     interface MySQLColumnSelectionSpec<E, C> {
 
-        MySQLFromSpec<MySQL57ColumnSubQuery<E>, C> select(Distinct distinct, Selection selection);
+        From57Spec<MySQL57ColumnSubQuery<E>, C> select(Distinct distinct, Selection selection);
 
-        MySQLFromSpec<MySQL57ColumnSubQuery<E>, C> select(Selection selection);
+        From57Spec<MySQL57ColumnSubQuery<E>, C> select(Selection selection);
 
     }
 
