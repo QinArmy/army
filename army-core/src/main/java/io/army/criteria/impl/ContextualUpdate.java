@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.annotation.UpdateMode;
+import io.army.criteria.Dml;
 import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Update;
@@ -32,8 +33,8 @@ import java.util.function.Supplier;
  * @param <C> criteria java type used to dynamic update and sub query
  */
 final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug implements
-        Update, Update.UpdateSpec, Update.WhereSpec<T, C>, Update.SetSpec<T, C>
-        , Update.WhereAndSpec<C>, _SingleUpdate {
+        Update, Dml.DmlSpec<Update>, Update.WhereSpec<T, C>, Update.SetSpec<T, C, Update.WhereSpec<T, C>>
+        , Dml.WhereAndSpec<C, Update>, _SingleUpdate {
 
     static DomainUpdateSpec<Void> create() {
         return new DomainUpdateSpecImpl<>(null);
@@ -255,7 +256,7 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
 
 
     @Override
-    public UpdateSpec where(List<IPredicate> predicates) {
+    public DmlSpec<Update> where(List<IPredicate> predicates) {
         final List<_Predicate> list = this.predicateList;
         for (IPredicate predicate : predicates) {
             list.add((_Predicate) predicate);
@@ -264,17 +265,17 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
     }
 
     @Override
-    public UpdateSpec where(Function<C, List<IPredicate>> function) {
+    public DmlSpec<Update> where(Function<C, List<IPredicate>> function) {
         return this.where(function.apply(this.criteria));
     }
 
     @Override
-    public UpdateSpec where(Supplier<List<IPredicate>> supplier) {
+    public DmlSpec<Update> where(Supplier<List<IPredicate>> supplier) {
         return this.where(supplier.get());
     }
 
     @Override
-    public WhereAndSpec<C> where(IPredicate predicate) {
+    public WhereAndSpec<C, Update> where(IPredicate predicate) {
         this.predicateList.add((_Predicate) predicate);
         return this;
     }
@@ -282,13 +283,13 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
     /*################################## blow WhereAndSpec method ##################################*/
 
     @Override
-    public WhereAndSpec<C> and(IPredicate predicate) {
+    public WhereAndSpec<C, Update> and(IPredicate predicate) {
         this.predicateList.add((_Predicate) predicate);
         return this;
     }
 
     @Override
-    public WhereAndSpec<C> and(Function<C, IPredicate> function) {
+    public WhereAndSpec<C, Update> and(Function<C, IPredicate> function) {
         final IPredicate predicate;
         predicate = function.apply(this.criteria);
         if (predicate != null) {
@@ -298,7 +299,7 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
     }
 
     @Override
-    public WhereAndSpec<C> and(Supplier<IPredicate> supplier) {
+    public WhereAndSpec<C, Update> and(Supplier<IPredicate> supplier) {
         final IPredicate predicate;
         predicate = supplier.get();
         if (predicate != null) {
@@ -308,7 +309,7 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
     }
 
     @Override
-    public WhereAndSpec<C> ifAnd(@Nullable IPredicate predicate) {
+    public WhereAndSpec<C, Update> ifAnd(@Nullable IPredicate predicate) {
         if (predicate != null) {
             this.predicateList.add((_Predicate) predicate);
         }
@@ -316,7 +317,7 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
     }
 
     @Override
-    public WhereAndSpec<C> ifAnd(Function<C, IPredicate> function) {
+    public WhereAndSpec<C, Update> ifAnd(Function<C, IPredicate> function) {
         final IPredicate predicate;
         predicate = function.apply(this.criteria);
         if (predicate != null) {
@@ -326,7 +327,7 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
     }
 
     @Override
-    public WhereAndSpec<C> ifAnd(Supplier<IPredicate> supplier) {
+    public WhereAndSpec<C, Update> ifAnd(Supplier<IPredicate> supplier) {
         final IPredicate predicate;
         predicate = supplier.get();
         if (predicate != null) {
@@ -345,7 +346,7 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
     /*################################## blow UpdateSpec method ##################################*/
 
     @Override
-    public Update asUpdate() {
+    public Update asDml() {
         _Assert.nonPrepared(this.prepared);
 
         CriteriaContextStack.clearContextStack(this.criteriaContext);
@@ -429,7 +430,7 @@ final class ContextualUpdate<T extends IDomain, C> extends AbstractSQLDebug impl
         }
 
         @Override
-        public <T extends IDomain> SetSpec<T, C> update(final TableMeta<T> table, final String tableAlias) {
+        public <T extends IDomain> SetSpec<T, C, WhereSpec<T, C>> update(final TableMeta<T> table, final String tableAlias) {
             _DialectUtils.validateUpdateTableAlias(table, tableAlias);
             return new ContextualUpdate<>(table, tableAlias, this.criteria);
         }

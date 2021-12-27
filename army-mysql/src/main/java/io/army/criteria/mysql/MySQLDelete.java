@@ -16,7 +16,7 @@ import java.util.function.Supplier;
  * This interface representing MySQL delete statement,the instance of this interface can only be parsed by MySQL dialect instance.
  * </p>
  */
-public interface MySQLDelete extends Delete, DialectStatement {
+public interface MySQLDelete extends Delete, MySQLDml {
 
 
     interface SingleDeleteSpec<C> {
@@ -26,62 +26,16 @@ public interface MySQLDelete extends Delete, DialectStatement {
     }
 
 
-    interface SinglePartitionSpec<C> extends MySQLDelete.SingleIndexHintCommandSpec<C> {
+    interface SinglePartitionSpec<C> extends SingleWhereSpec<C>,
+            MySQLDml.SingleIndexHintCommandClause<C, MySQLDelete.SingleWhereSpec<C>> {
 
-        SingleIndexHintCommandSpec<C> partition(String partitionName);
+        SingleWhereSpec<C> partition(String partitionName);
 
-        SingleIndexHintCommandSpec<C> partition(String partitionName1, String partitionNam2);
+        SingleWhereSpec<C> partition(String partitionName1, String partitionNam2);
 
-        SingleIndexHintCommandSpec<C> partition(List<String> partitionNameList);
+        SingleWhereSpec<C> partition(List<String> partitionNameList);
 
-        SingleIndexHintCommandSpec<C> ifPartition(Function<C, List<String>> function);
-
-    }
-
-
-    interface SingleIndexHintCommandSpec<C> extends MySQLDelete.SingleWhereSpec<C> {
-
-        SingleIndexWordClause<C> use();
-
-        SingleIndexWordClause<C> ignore();
-
-        SingleIndexWordClause<C> force();
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        SingleIndexWordClause<C> ifUse(Predicate<C> predicate);
-
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        SingleIndexWordClause<C> ifIgnore(Predicate<C> predicate);
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        SingleIndexWordClause<C> ifForce(Predicate<C> predicate);
-
-    }
-
-
-    interface SingleIndexWordClause<C> {
-
-        SingleOrderByClause<C> index();
-
-        SingleOrderByClause<C> key();
-
-        SingleWhereSpec<C> index(List<String> indexNameList);
-
-        SingleWhereSpec<C> key(List<String> indexNameList);
-
-    }
-
-
-    interface SingleOrderByClause<C> {
-
-        SingleWhereSpec<C> forOrderBy(List<String> indexNameList);
+        SingleWhereSpec<C> ifPartition(Function<C, List<String>> function);
 
     }
 
@@ -226,7 +180,7 @@ public interface MySQLDelete extends Delete, DialectStatement {
     }
 
 
-    interface BatchSingleWhereSpec<C> extends Delete.BatchWhereSpec<C> {
+    interface BatchSingleWhereSpec<C> extends BatchDeleteWhereSpec<C> {
 
         BatchSingleWhereAndSpec<C> where(IPredicate predicate);
 
@@ -307,15 +261,25 @@ public interface MySQLDelete extends Delete, DialectStatement {
      *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
      *            </ul>
      */
-    interface MultiUpdateSpec<C> {
+    interface MultiDeleteSpec<C> {
 
-        MultiPartitionJoinSpec<C> update(TableMeta<?> table);
+        MultiFromSpec<C> delete(List<TableMeta<?>> tableList);
 
-        MultiIndexHintCommandJoinSpec<C> update(TableMeta<?> table, String tableAlias);
+        MultiFromSpec<C> delete(Function<C, List<TableMeta<?>>> function);
 
-        JoinSpec<C> update(Function<C, SubQuery> function, String subQueryAlias);
+        MultiPartitionJoinSpec<C> deleteFrom(List<TableMeta<?>> tableList);
 
-        JoinSpec<C> updateGroup(Function<C, SubQuery> function, String groupAlias);
+        MultiPartitionJoinSpec<C> deleteFrom(Function<C, List<TableMeta<?>>> function);
+
+
+    }
+
+    interface MultiFromSpec<C> {
+
+        MultiPartitionJoinSpec<C> from(TableMeta<?> table);
+
+        MultiIndexHintCommandJoinSpec<C> from(TableMeta<?> table, String tableAlias);
+
 
     }
 
@@ -403,85 +367,6 @@ public interface MySQLDelete extends Delete, DialectStatement {
     interface MultiIndexHintCommandOnSpec<C> extends MySQLDelete.OnSpec<C>
             , MySQLDelete.MultiIndexHintCommandClause<C, MySQLDelete.OnSpec<C>> {
 
-    }
-
-    /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link MySQLs#multiUpdate57(Object)}</li>
-     *               <li>{@link MySQLs#multiUpdate80(Object)}</li>
-     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
-     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
-     *            </ul>
-     * @param <S> below types:
-     *            <ul>
-     *               <li>{@link MySQLDelete.JoinSpec}</li>
-     *               <li>{@link MySQLDelete.OnSpec}</li>
-     *               <li>{@link MySQLDelete.BatchJoinSpec}</li>
-     *               <li>{@link MySQLDelete.BatchOnSpec}</li>
-     *            </ul>
-     */
-    interface MultiIndexHintCommandClause<C, S> {
-
-        MultiIndexWordClause<S> use();
-
-        MultiIndexWordClause<S> ignore();
-
-        MultiIndexWordClause<S> force();
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        MultiIndexWordClause<S> ifUse(Predicate<C> predicate);
-
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        MultiIndexWordClause<S> ifIgnore(Predicate<C> predicate);
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        MultiIndexWordClause<S> ifForce(Predicate<C> predicate);
-
-    }
-
-    /**
-     * @param <S> below types:
-     *            <ul>
-     *               <li>{@link MySQLDelete.JoinSpec}</li>
-     *               <li>{@link MySQLDelete.OnSpec}</li>
-     *               <li>{@link MySQLDelete.BatchJoinSpec}</li>
-     *               <li>{@link MySQLDelete.BatchOnSpec}</li>
-     *            </ul>
-     */
-    interface MultiIndexWordClause<S> {
-
-        IndexPurposeClause<S> index();
-
-        IndexPurposeClause<S> key();
-
-        S index(List<String> indexNameList);
-
-        S key(List<String> indexNameList);
-
-    }
-
-    /**
-     * @param <S> below types:
-     *            <ul>
-     *               <li>{@link MySQLDelete.JoinSpec}</li>
-     *               <li>{@link MySQLDelete.OnSpec}</li>
-     *               <li>{@link MySQLDelete.BatchJoinSpec}</li>
-     *               <li>{@link MySQLDelete.BatchOnSpec}</li>
-     *            </ul>
-     */
-    interface IndexPurposeClause<S> {
-
-        S forOrderBy(List<String> indexNameList);
-
-        S forJoin(List<String> indexNameList);
     }
 
 

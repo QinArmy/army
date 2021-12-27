@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ReadWrapper;
 import io.army.criteria.Delete;
+import io.army.criteria.Dml;
 import io.army.criteria.IPredicate;
 import io.army.criteria.impl.inner._BatchDelete;
 import io.army.criteria.impl.inner._Predicate;
@@ -25,8 +26,8 @@ import java.util.function.Supplier;
  *
  * @param <C> criteria java type used to create dynamic delete and sub query
  */
-final class ContextualBatchDelete<C> implements Delete, Delete.BatchWhereSpec<C>
-        , Delete.BatchWhereAndSpec<C>, Delete.BatchParamSpec<C>, Delete.DeleteSpec, _BatchDelete {
+final class ContextualBatchDelete<C> implements Delete, Dml.BatchDeleteWhereSpec<C>
+        , Dml.BatchWhereAndSpec<C, Delete>, Dml.BatchParamSpec<C, Delete>, Dml.DmlSpec<Delete>, _BatchDelete {
 
     static Delete.BatchDomainDeleteSpec<Void> create() {
         return new BatchDomainDeleteSpecImpl<>(null);
@@ -65,7 +66,7 @@ final class ContextualBatchDelete<C> implements Delete, Delete.BatchWhereSpec<C>
     /*################################## blow BatchWhereSpec method ##################################*/
 
     @Override
-    public BatchParamSpec<C> where(List<IPredicate> predicateList) {
+    public BatchParamSpec<C, Delete> where(List<IPredicate> predicateList) {
         final List<_Predicate> list = this.predicateList;
         for (IPredicate predicate : predicateList) {
             list.add((_Predicate) predicate);
@@ -74,17 +75,17 @@ final class ContextualBatchDelete<C> implements Delete, Delete.BatchWhereSpec<C>
     }
 
     @Override
-    public BatchParamSpec<C> where(Function<C, List<IPredicate>> function) {
+    public BatchParamSpec<C, Delete> where(Function<C, List<IPredicate>> function) {
         return this.where(function.apply(this.criteria));
     }
 
     @Override
-    public BatchParamSpec<C> where(Supplier<List<IPredicate>> supplier) {
+    public BatchParamSpec<C, Delete> where(Supplier<List<IPredicate>> supplier) {
         return this.where(supplier.get());
     }
 
     @Override
-    public BatchWhereAndSpec<C> where(IPredicate predicate) {
+    public BatchWhereAndSpec<C, Delete> where(IPredicate predicate) {
         this.predicateList.add((_Predicate) predicate);
         return this;
     }
@@ -92,23 +93,23 @@ final class ContextualBatchDelete<C> implements Delete, Delete.BatchWhereSpec<C>
     /*################################## blow BatchWhereAndSpec method ##################################*/
 
     @Override
-    public BatchWhereAndSpec<C> and(IPredicate predicate) {
+    public BatchWhereAndSpec<C, Delete> and(IPredicate predicate) {
         this.predicateList.add((_Predicate) predicate);
         return this;
     }
 
     @Override
-    public BatchWhereAndSpec<C> and(Function<C, IPredicate> function) {
+    public BatchWhereAndSpec<C, Delete> and(Function<C, IPredicate> function) {
         return this.and(Objects.requireNonNull(function.apply(this.criteria)));
     }
 
     @Override
-    public BatchWhereAndSpec<C> and(Supplier<IPredicate> supplier) {
+    public BatchWhereAndSpec<C, Delete> and(Supplier<IPredicate> supplier) {
         return this.and(Objects.requireNonNull(supplier.get()));
     }
 
     @Override
-    public BatchWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate) {
+    public BatchWhereAndSpec<C, Delete> ifAnd(@Nullable IPredicate predicate) {
         if (predicate != null) {
             this.predicateList.add((_Predicate) predicate);
         }
@@ -116,7 +117,7 @@ final class ContextualBatchDelete<C> implements Delete, Delete.BatchWhereSpec<C>
     }
 
     @Override
-    public BatchWhereAndSpec<C> ifAnd(Function<C, IPredicate> function) {
+    public BatchWhereAndSpec<C, Delete> ifAnd(Function<C, IPredicate> function) {
         final IPredicate predicate;
         predicate = function.apply(this.criteria);
         if (predicate != null) {
@@ -126,7 +127,7 @@ final class ContextualBatchDelete<C> implements Delete, Delete.BatchWhereSpec<C>
     }
 
     @Override
-    public BatchWhereAndSpec<C> ifAnd(Supplier<IPredicate> supplier) {
+    public BatchWhereAndSpec<C, Delete> ifAnd(Supplier<IPredicate> supplier) {
         final IPredicate predicate;
         predicate = supplier.get();
         if (predicate != null) {
@@ -138,7 +139,7 @@ final class ContextualBatchDelete<C> implements Delete, Delete.BatchWhereSpec<C>
     /*################################## blow BatchNamedParamSpec method ##################################*/
 
     @Override
-    public DeleteSpec paramMaps(List<Map<String, Object>> mapList) {
+    public DmlSpec<Delete> paramMaps(List<Map<String, Object>> mapList) {
         final List<ReadWrapper> paramList = this.paramList;
         for (Map<String, Object> map : mapList) {
             paramList.add(ObjectAccessorFactory.forReadonlyAccess(map));
@@ -147,17 +148,17 @@ final class ContextualBatchDelete<C> implements Delete, Delete.BatchWhereSpec<C>
     }
 
     @Override
-    public DeleteSpec paramMaps(Function<C, List<Map<String, Object>>> function) {
+    public DmlSpec<Delete> paramMaps(Function<C, List<Map<String, Object>>> function) {
         return this.paramMaps(function.apply(this.criteria));
     }
 
     @Override
-    public DeleteSpec paramMaps(Supplier<List<Map<String, Object>>> supplier) {
+    public DmlSpec<Delete> paramMaps(Supplier<List<Map<String, Object>>> supplier) {
         return this.paramMaps(supplier.get());
     }
 
     @Override
-    public DeleteSpec paramBeans(List<Object> beanList) {
+    public DmlSpec<Delete> paramBeans(List<Object> beanList) {
         final List<ReadWrapper> paramList = this.paramList;
         for (Object bean : beanList) {
             paramList.add(ObjectAccessorFactory.forReadonlyAccess(bean));
@@ -166,19 +167,19 @@ final class ContextualBatchDelete<C> implements Delete, Delete.BatchWhereSpec<C>
     }
 
     @Override
-    public DeleteSpec paramBeans(Function<C, List<Object>> function) {
+    public DmlSpec<Delete> paramBeans(Function<C, List<Object>> function) {
         return this.paramBeans(function.apply(this.criteria));
     }
 
     @Override
-    public DeleteSpec paramBeans(Supplier<List<Object>> supplier) {
+    public DmlSpec<Delete> paramBeans(Supplier<List<Object>> supplier) {
         return this.paramBeans(supplier.get());
     }
 
     /*################################## blow DeleteSpec method ##################################*/
 
     @Override
-    public Delete asDelete() {
+    public Delete asDml() {
         _Assert.nonPrepared(this.prepared);
         CriteriaContextStack.clearContextStack(this.criteriaContext);
 
@@ -240,7 +241,7 @@ final class ContextualBatchDelete<C> implements Delete, Delete.BatchWhereSpec<C>
         }
 
         @Override
-        public BatchWhereSpec<C> deleteFrom(TableMeta<? extends IDomain> table, String tableAlias) {
+        public BatchDeleteWhereSpec<C> deleteFrom(TableMeta<? extends IDomain> table, String tableAlias) {
             return new ContextualBatchDelete<>(table, tableAlias, this.criteria);
         }
 

@@ -21,216 +21,48 @@ import java.util.function.Supplier;
  * This interface representing MySQL update statement,the instance of this interface can only be parsed by MySQL dialect instance.
  * </p>
  */
-public interface MySQLUpdate extends Update, DialectStatement {
+public interface MySQLUpdate extends Update, MySQLDml {
 
     interface SingleUpdateSpec<C> {
 
-        <T extends IDomain> SingleIndexHintCommandSpec<T, C> update(SingleTableMeta<T> table, String tableAlias);
-
         <T extends IDomain> SinglePartitionSpec<T, C> update(SingleTableMeta<T> table);
-
-        <P extends IDomain, T extends P> SingleIndexHintCommandSpec<P, C> update(ChildDomain<P, T> table, String tableAlias);
 
         <P extends IDomain, T extends P> SinglePartitionSpec<P, C> update(ChildDomain<P, T> table);
     }
 
 
-    interface SinglePartitionSpec<T extends IDomain, C> extends SingleAsSpec<T, C> {
+    interface SinglePartitionSpec<T extends IDomain, C> extends MySQLUpdate.SingleIndexHintCommandSpec<T, C> {
 
-        SingleAsSpec<T, C> partition(String partitionName);
+        SingleIndexHintCommandSpec<T, C> partition(String partitionName);
 
-        SingleAsSpec<T, C> partition(String partitionName1, String partitionNam2);
+        SingleIndexHintCommandSpec<T, C> partition(String partitionName1, String partitionNam2);
 
-        SingleAsSpec<T, C> partition(List<String> partitionNameList);
+        SingleIndexHintCommandSpec<T, C> partition(List<String> partitionNameList);
 
-        SingleAsSpec<T, C> ifPartition(Function<C, List<String>> function);
-
-    }
-
-
-    interface SingleAsSpec<T extends IDomain, C> {
-
-        SingleIndexHintCommandSpec<T, C> as(String tableAlias);
-    }
-
-    interface SingleIndexHintCommandSpec<T extends IDomain, C> extends SingleSetSpec<T, C>
-            , SingleIndexHintCommandClause<T, C> {
+        SingleIndexHintCommandSpec<T, C> ifPartition(Function<C, List<String>> function);
 
     }
 
 
-    interface SingleIndexHintCommandClause<T extends IDomain, C> {
-
-        SingleIndexWordClause<T, C> use();
-
-        SingleIndexWordClause<T, C> ignore();
-
-        SingleIndexWordClause<T, C> force();
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        SingleIndexWordClause<T, C> ifUse(Predicate<C> predicate);
-
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        SingleIndexWordClause<T, C> ifIgnore(Predicate<C> predicate);
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        SingleIndexWordClause<T, C> ifForce(Predicate<C> predicate);
+    interface SingleIndexHintCommandSpec<T extends IDomain, C>
+            extends Update.SetSpec<T, C, MySQLUpdate.SingleWhereSpec<T, C>>
+            , MySQLDml.SingleIndexHintCommandClause<C, Update.SetSpec<T, C, MySQLUpdate.SingleWhereSpec<T, C>>> {
 
     }
 
 
-    interface SingleIndexWordClause<T extends IDomain, C> {
+    interface SingleWhereSpec<T extends IDomain, C> extends Update.SetSpec<T, C, MySQLUpdate.SingleWhereSpec<T, C>> {
 
-        SingleOrderByClause<T, C> index();
+        SingleWhereAndSpec<C, Update> where(IPredicate predicate);
 
-        SingleOrderByClause<T, C> key();
+        SingleOrderBySpec<C, Update> where(List<IPredicate> predicateList);
 
-        SingleSetSpec<T, C> index(List<String> indexNameList);
+        SingleOrderBySpec<C, Update> where(Function<C, List<IPredicate>> function);
 
-        SingleSetSpec<T, C> key(List<String> indexNameList);
-
-    }
-
-
-    interface SingleOrderByClause<T extends IDomain, C> {
-
-        SingleSetSpec<T, C> forOrderBy(List<String> indexNameList);
+        SingleOrderBySpec<C, Update> where(Supplier<List<IPredicate>> supplier);
 
     }
 
-
-    interface SingleSetSpec<T extends IDomain, C> {
-
-        SingleWhereSpec<T, C> ifSet(List<FieldMeta<T, ?>> fieldList, List<Expression<?>> valueList);
-
-        SingleWhereSpec<T, C> set(FieldMeta<T, ?> field, @Nullable Object value);
-
-        SingleWhereSpec<T, C> set(FieldMeta<T, ?> field, Expression<?> value);
-
-        SingleWhereSpec<T, C> set(FieldMeta<T, ?> field, Function<C, Expression<?>> function);
-
-        SingleWhereSpec<T, C> set(FieldMeta<T, ?> field, Supplier<Expression<?>> supplier);
-
-        SingleWhereSpec<T, C> setNull(FieldMeta<T, ?> field);
-
-        SingleWhereSpec<T, C> setDefault(FieldMeta<T, ?> field);
-
-        <F extends Number> SingleWhereSpec<T, C> setPlus(FieldMeta<T, ?> field, F value);
-
-        <F extends Number> SingleWhereSpec<T, C> setPlus(FieldMeta<T, ?> field, Expression<?> value);
-
-        <F extends Number> SingleWhereSpec<T, C> setMinus(FieldMeta<T, ?> field, F value);
-
-        <F extends Number> SingleWhereSpec<T, C> setMinus(FieldMeta<T, ?> field, Expression<?> value);
-
-        <F extends Number> SingleWhereSpec<T, C> setMultiply(FieldMeta<T, ?> field, F value);
-
-        <F extends Number> SingleWhereSpec<T, C> setMultiply(FieldMeta<T, ?> field, Expression<?> value);
-
-        <F extends Number> SingleWhereSpec<T, C> setDivide(FieldMeta<T, ?> field, F value);
-
-        <F extends Number> SingleWhereSpec<T, C> setDivide(FieldMeta<T, ?> field, Expression<?> value);
-
-        <F extends Number> SingleWhereSpec<T, C> setMod(FieldMeta<T, ?> field, F value);
-
-        <F extends Number> SingleWhereSpec<T, C> setMod(FieldMeta<T, ?> field, Expression<?> value);
-
-        SingleWhereSpec<T, C> ifSet(FieldMeta<T, ?> field, @Nullable Object value);
-
-        SingleWhereSpec<T, C> ifSet(FieldMeta<T, ?> field, Function<C, Expression<?>> function);
-
-        SingleWhereSpec<T, C> ifSet(FieldMeta<T, ?> field, Supplier<Expression<?>> supplier);
-
-        <F extends Number> SingleWhereSpec<T, C> ifSetPlus(FieldMeta<T, ?> field, @Nullable F value);
-
-        <F extends Number> SingleWhereSpec<T, C> ifSetMinus(FieldMeta<T, ?> field, @Nullable F value);
-
-        <F extends Number> SingleWhereSpec<T, C> ifSetMultiply(FieldMeta<T, ?> field, @Nullable F value);
-
-        <F extends Number> SingleWhereSpec<T, C> ifSetDivide(FieldMeta<T, ?> field, @Nullable F value);
-
-        <F extends Number> SingleWhereSpec<T, C> ifSetMod(FieldMeta<T, ?> field, @Nullable F value);
-
-    }
-
-
-    interface SingleWhereSpec<T extends IDomain, C> extends MySQLUpdate.SingleSetSpec<T, C> {
-
-        SingleWhereAndSpec<C> where(IPredicate predicate);
-
-        OrderBySpec<C> where(List<IPredicate> predicateList);
-
-        OrderBySpec<C> where(Function<C, List<IPredicate>> function);
-
-        OrderBySpec<C> where(Supplier<List<IPredicate>> supplier);
-
-    }
-
-    interface SingleWhereAndSpec<C> extends OrderBySpec<C>, Update.WhereAndSpec<C> {
-
-        @Override
-        SingleWhereAndSpec<C> and(IPredicate predicate);
-
-        @Override
-        SingleWhereAndSpec<C> and(Function<C, IPredicate> function);
-
-        @Override
-        SingleWhereAndSpec<C> and(Supplier<IPredicate> supplier);
-
-        /**
-         * @see Expression#ifEqual(Object)
-         */
-        @Override
-        SingleWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
-
-        @Override
-        SingleWhereAndSpec<C> ifAnd(Function<C, IPredicate> function);
-
-        @Override
-        SingleWhereAndSpec<C> ifAnd(Supplier<IPredicate> supplier);
-
-    }
-
-
-    interface OrderBySpec<C> extends MySQLUpdate.SingleLimitSpec<C> {
-
-        SingleLimitSpec<C> orderBy(SortPart sortPart);
-
-        SingleLimitSpec<C> orderBy(SortPart sortPart1, SortPart sortPart2);
-
-        SingleLimitSpec<C> orderBy(List<SortPart> sortPartList);
-
-        SingleLimitSpec<C> orderBy(Function<C, List<SortPart>> function);
-
-        SingleLimitSpec<C> orderBy(Supplier<List<SortPart>> supplier);
-
-        SingleLimitSpec<C> ifOrderBy(@Nullable SortPart sortPart);
-
-        SingleLimitSpec<C> ifOrderBy(Supplier<List<SortPart>> supplier);
-
-        SingleLimitSpec<C> ifOrderBy(Function<C, List<SortPart>> function);
-    }
-
-    interface SingleLimitSpec<C> extends Update.UpdateSpec {
-
-        UpdateSpec limit(long rowCount);
-
-        UpdateSpec limit(Function<C, Long> function);
-
-        UpdateSpec limit(Supplier<Long> supplier);
-
-        UpdateSpec ifLimit(Function<C, Long> function);
-
-        UpdateSpec ifLimit(Supplier<Long> supplier);
-
-    }
 
 
     /*################################## blow batch single update api interface ##################################*/

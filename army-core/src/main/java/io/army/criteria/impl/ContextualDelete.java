@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Delete;
+import io.army.criteria.Dml;
 import io.army.criteria.IPredicate;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._SingleDelete;
@@ -23,7 +24,7 @@ import java.util.function.Supplier;
  * @param <C> criteria java type used to crate dynamic delete and sub query
  */
 final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
-        , Delete.WhereSpec<C>, Delete.WhereAndSpec<C>, _SingleDelete {
+        , Dml.DeleteWhereSpec<C>, Dml.WhereAndSpec<C, Delete>, Dml.DmlSpec<Delete>, _SingleDelete {
 
     static DomainDeleteSpec<Void> create() {
         return new DomainDeleteSpecImpl<>(null);
@@ -61,7 +62,7 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
     /*################################## blow SingleWhereSpec method ##################################*/
 
     @Override
-    public DeleteSpec where(List<IPredicate> predicateList) {
+    public DmlSpec<Delete> where(List<IPredicate> predicateList) {
         final List<_Predicate> list = this.predicateList;
         for (IPredicate predicate : predicateList) {
             list.add((_Predicate) predicate);
@@ -70,17 +71,17 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
     }
 
     @Override
-    public DeleteSpec where(Function<C, List<IPredicate>> function) {
+    public DmlSpec<Delete> where(Function<C, List<IPredicate>> function) {
         return this.where(function.apply(this.criteria));
     }
 
     @Override
-    public DeleteSpec where(Supplier<List<IPredicate>> supplier) {
+    public DmlSpec<Delete> where(Supplier<List<IPredicate>> supplier) {
         return this.where(supplier.get());
     }
 
     @Override
-    public WhereAndSpec<C> where(IPredicate predicate) {
+    public WhereAndSpec<C, Delete> where(IPredicate predicate) {
         this.predicateList.add((_Predicate) predicate);
         return this;
     }
@@ -88,23 +89,23 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
     /*################################## blow private method ##################################*/
 
     @Override
-    public WhereAndSpec<C> and(IPredicate predicate) {
+    public WhereAndSpec<C, Delete> and(IPredicate predicate) {
         this.predicateList.add((_Predicate) predicate);
         return this;
     }
 
     @Override
-    public WhereAndSpec<C> and(Function<C, IPredicate> function) {
+    public WhereAndSpec<C, Delete> and(Function<C, IPredicate> function) {
         return this.and(Objects.requireNonNull(function.apply(this.criteria)));
     }
 
     @Override
-    public WhereAndSpec<C> and(Supplier<IPredicate> supplier) {
+    public WhereAndSpec<C, Delete> and(Supplier<IPredicate> supplier) {
         return this.and(Objects.requireNonNull(supplier.get()));
     }
 
     @Override
-    public WhereAndSpec<C> ifAnd(@Nullable IPredicate predicate) {
+    public WhereAndSpec<C, Delete> ifAnd(@Nullable IPredicate predicate) {
         if (predicate != null) {
             this.predicateList.add((_Predicate) predicate);
         }
@@ -112,7 +113,7 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
     }
 
     @Override
-    public WhereAndSpec<C> ifAnd(Function<C, IPredicate> function) {
+    public WhereAndSpec<C, Delete> ifAnd(Function<C, IPredicate> function) {
         final IPredicate predicate;
         predicate = function.apply(this.criteria);
         if (predicate != null) {
@@ -122,7 +123,7 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
     }
 
     @Override
-    public WhereAndSpec<C> ifAnd(Supplier<IPredicate> supplier) {
+    public WhereAndSpec<C, Delete> ifAnd(Supplier<IPredicate> supplier) {
         final IPredicate predicate;
         predicate = supplier.get();
         if (predicate != null) {
@@ -141,7 +142,7 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
     /*################################## blow DeleteSpec method ##################################*/
 
     @Override
-    public Delete asDelete() {
+    public Delete asDml() {
         _Assert.nonPrepared(this.prepared);
 
         CriteriaContextStack.clearContextStack(this.criteriaContext);
@@ -192,7 +193,7 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
         }
 
         @Override
-        public WhereSpec<C> deleteFrom(TableMeta<? extends IDomain> table, String tableAlias) {
+        public DeleteWhereSpec<C> deleteFrom(TableMeta<? extends IDomain> table, String tableAlias) {
             return new ContextualDelete<>(table, tableAlias, this.criteria);
         }
 
