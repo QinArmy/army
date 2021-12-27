@@ -66,6 +66,8 @@ public interface Update extends Statement, SQLDebug {
 
         <F extends Number> WhereSpec<T, C> setMod(FieldMeta<? super T, F> field, Expression<F> value);
 
+        WhereSpec<T, C> ifSet(List<FieldMeta<? super T, ?>> fieldList, List<Expression<?>> valueList);
+
         <F> WhereSpec<T, C> ifSet(FieldMeta<? super T, F> field, @Nullable F value);
 
         <F> WhereSpec<T, C> ifSet(FieldMeta<? super T, F> field, Function<C, Expression<F>> function);
@@ -94,27 +96,27 @@ public interface Update extends Statement, SQLDebug {
 
         UpdateSpec where(Supplier<List<IPredicate>> supplier);
 
-        WhereAndSpec<T, C> where(IPredicate predicate);
+        WhereAndSpec<C> where(IPredicate predicate);
 
     }
 
 
-    interface WhereAndSpec<T extends IDomain, C> extends UpdateSpec {
+    interface WhereAndSpec<C> extends UpdateSpec {
 
-        WhereAndSpec<T, C> and(IPredicate predicate);
+        WhereAndSpec<C> and(IPredicate predicate);
 
-        WhereAndSpec<T, C> and(Function<C, IPredicate> function);
+        WhereAndSpec<C> and(Function<C, IPredicate> function);
 
-        WhereAndSpec<T, C> and(Supplier<IPredicate> supplier);
+        WhereAndSpec<C> and(Supplier<IPredicate> supplier);
 
         /**
          * @see Expression#ifEqual(Object)
          */
-        WhereAndSpec<T, C> ifAnd(@Nullable IPredicate predicate);
+        WhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
 
-        WhereAndSpec<T, C> ifAnd(Function<C, IPredicate> function);
+        WhereAndSpec<C> ifAnd(Function<C, IPredicate> function);
 
-        WhereAndSpec<T, C> ifAnd(Supplier<IPredicate> supplier);
+        WhereAndSpec<C> ifAnd(Supplier<IPredicate> supplier);
 
     }
 
@@ -127,6 +129,8 @@ public interface Update extends Statement, SQLDebug {
 
 
     interface BatchSetSpec<T extends IDomain, C> {
+
+        BatchWhereSpec<T, C> set(List<FieldMeta<? super T, ?>> fieldList);
 
         <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> field, Expression<F> valueExp);
 
@@ -163,6 +167,8 @@ public interface Update extends Statement, SQLDebug {
          * @see SQLs#nonNullNamedParam(GenericField)
          */
         <F extends Number> BatchWhereSpec<T, C> setMod(FieldMeta<? super T, F> field);
+
+        BatchWhereSpec<T, C> ifSet(Function<C, List<FieldMeta<? super T, ?>>> function);
 
         <F> BatchWhereSpec<T, C> ifSet(Predicate<C> test, FieldMeta<? super T, F> field);
 

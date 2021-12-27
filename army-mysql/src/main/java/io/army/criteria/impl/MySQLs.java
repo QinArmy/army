@@ -5,6 +5,8 @@ import io.army.criteria.mysql.*;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 
+import java.util.Objects;
+
 public abstract class MySQLs extends SQLs {
 
     /*################################## blow update  method ##################################*/
@@ -44,6 +46,70 @@ public abstract class MySQLs extends SQLs {
     }*/
 
     /*################################## blow select method ##################################*/
+
+    /**
+     * <p>
+     * MySQL 5.7 single-table update api,this api can only update below fields:
+     *     <ul>
+     *         <li>The fields of {@link io.army.meta.SingleTableMeta}</li>
+     *         <li>The fields of the parent of {@link io.army.meta.ChildTableMeta}</li>
+     *     </ul>
+     * </p>
+     *
+     * @return MySQL 5.7 single-table update api
+     */
+    public static MySQLUpdate.SingleUpdateSpec<Void> singleUpdate57() {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * <p>
+     * MySQL 5.7 single-table update api,this api can only update below fields:
+     *     <ul>
+     *         <li>The fields of {@link io.army.meta.SingleTableMeta}</li>
+     *         <li>The fields of the parent of {@link io.army.meta.ChildTableMeta}</li>
+     *     </ul>
+     * </p>
+     *
+     * @param criteria criteria instance(map or bean) used to create dynamic update statement
+     * @return MySQL 5.7 single-table update api
+     */
+    public static <C> MySQLUpdate.SingleUpdateSpec<C> singleUpdate57(C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * <p>
+     * MySQL 5.7 batch single-table update api,this api can only update below fields:
+     *     <ul>
+     *         <li>The fields of {@link io.army.meta.SingleTableMeta}</li>
+     *         <li>The fields of the parent of {@link io.army.meta.ChildTableMeta}</li>
+     *     </ul>
+     * </p>
+     *
+     * @return MySQL 5.7 batch single-table update api instance
+     */
+    public static MySQLUpdate.BatchSingleUpdateSpec<Void> batchSingleUpdate57() {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * <p>
+     * MySQL 5.7 batch single-table update api,this api can only update below fields:
+     *     <ul>
+     *         <li>The fields of {@link io.army.meta.SingleTableMeta}</li>
+     *         <li>The fields of the parent of {@link io.army.meta.ChildTableMeta}</li>
+     *     </ul>
+     * </p>
+     *
+     * @param criteria criteria instance(map or bean) used to create dynamic update statement
+     * @return MySQL 5.7 batch single-table update api instance
+     */
+    public static <C> MySQLUpdate.BatchSingleUpdateSpec<C> batchSingleUpdate57(C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
+    }
 
 
     public static <C> MySQL57Query.SelectPart57Spec<MySQL57Select, C> mySQL57Select(C criteria) {

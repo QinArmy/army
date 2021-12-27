@@ -80,8 +80,6 @@ public interface MySQL57Query extends MySQLQuery {
 
         TableAs57Spec<Q, C> partition(String partitionName1, String partitionNam2);
 
-        TableAs57Spec<Q, C> partition(String partitionName1, String partitionNam2, String partitionNam3);
-
         TableAs57Spec<Q, C> partition(List<String> partitionNameList);
 
         TableAs57Spec<Q, C> partition(Function<C, List<String>> function);

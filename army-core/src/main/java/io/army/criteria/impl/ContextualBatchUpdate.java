@@ -14,6 +14,7 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.util.CollectionUtils;
 import io.army.util._Assert;
 import io.army.util._Exceptions;
 
@@ -77,6 +78,17 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
     /*################################## blow BatchSetSpec method ##################################*/
 
     @Override
+    public BatchWhereSpec<T, C> set(List<FieldMeta<? super T, ?>> fieldList) {
+        if (fieldList.size() == 0) {
+            throw _Exceptions.updateFieldListEmpty();
+        }
+        for (FieldMeta<? super T, ?> field : fieldList) {
+            this.set(field, SQLs.namedParam(field));
+        }
+        return this;
+    }
+
+    @Override
     public <F> BatchWhereSpec<T, C> set(FieldMeta<? super T, F> field, Expression<F> valueExp) {
         if (field.updateMode() == UpdateMode.IMMUTABLE) {
             throw _Exceptions.immutableField(field);
@@ -127,6 +139,16 @@ final class ContextualBatchUpdate<T extends IDomain, C> extends AbstractSQLDebug
     @Override
     public <F extends Number> BatchWhereSpec<T, C> setMod(FieldMeta<? super T, F> field) {
         return this.set(field, field.mod(SQLs.nonNullNamedParam(field)));
+    }
+
+    @Override
+    public BatchWhereSpec<T, C> ifSet(Function<C, List<FieldMeta<? super T, ?>>> function) {
+        final List<FieldMeta<? super T, ?>> fieldList;
+        fieldList = function.apply(this.criteria);
+        if (!CollectionUtils.isEmpty(fieldList)) {
+            this.set(fieldList);
+        }
+        return this;
     }
 
     @Override

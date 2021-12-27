@@ -273,5 +273,15 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException updateFieldListEmpty() {
+        return new CriteriaException("Update statement field must not empty.");
+    }
+
+    public static CriteriaException fieldAndValueSizeNotMatch(int fieldSize, int valueSize) {
+        String m = String.format("Update statement set clause fieldList size[%s] and valueList size[%s] not match."
+                , fieldSize, valueSize);
+        return new CriteriaException(m);
+    }
+
 
 }
