@@ -111,10 +111,35 @@ public abstract class MySQLs extends SQLs {
         throw new UnsupportedOperationException();
     }
 
+    public static MySQLUpdate.MultiUpdateSpec<Void> multiUpdate57() {
+        throw new UnsupportedOperationException();
+    }
+
+    public static <C> MySQLUpdate.MultiUpdateSpec<C> multiUpdate57(C criteria) {
+        throw new UnsupportedOperationException();
+    }
+
+    public static MySQLUpdate.BatchMultiUpdateSpec<Void> batchMultiUpdate57() {
+        throw new UnsupportedOperationException();
+    }
+
+    public static <C> MySQLUpdate.BatchMultiUpdateSpec<C> batchMultiUpdate57(C criteria) {
+        throw new UnsupportedOperationException();
+    }
+
+    public static <C> void multiUpdate80(C criteria) {
+        throw new UnsupportedOperationException();
+    }
+
+    public static <C> void batchMultiUpdate80(C criteria) {
+        throw new UnsupportedOperationException();
+    }
+
 
     public static <C> MySQL57Query.SelectPart57Spec<MySQL57Select, C> mySQL57Select(C criteria) {
         return MySQL57ContextualSelect.build(criteria);
     }
+
 
     public static MySQL57Query.SelectPart57Spec<MySQL57Select, EmptyObject> mySQL57Select() {
         return MySQL57ContextualSelect.build(EmptyObject.getInstance());

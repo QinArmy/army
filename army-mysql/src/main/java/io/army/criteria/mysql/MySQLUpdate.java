@@ -1,12 +1,14 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.ChildDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
+import io.army.meta.TableMeta;
 
 import java.util.List;
 import java.util.function.Function;
@@ -35,13 +37,13 @@ public interface MySQLUpdate extends Update, DialectStatement {
 
     interface SinglePartitionSpec<T extends IDomain, C> extends SingleAsSpec<T, C> {
 
-        SingleIndexHintCommandSpec<T, C> partition(String partitionName);
+        SingleAsSpec<T, C> partition(String partitionName);
 
-        SingleIndexHintCommandSpec<T, C> partition(String partitionName1, String partitionNam2);
+        SingleAsSpec<T, C> partition(String partitionName1, String partitionNam2);
 
-        SingleIndexHintCommandSpec<T, C> partition(List<String> partitionNameList);
+        SingleAsSpec<T, C> partition(List<String> partitionNameList);
 
-        SingleIndexHintCommandSpec<T, C> ifPartition(Function<C, List<String>> function);
+        SingleAsSpec<T, C> ifPartition(Function<C, List<String>> function);
 
     }
 
@@ -445,83 +447,256 @@ public interface MySQLUpdate extends Update, DialectStatement {
 
     /*################################## blow multi-table update api interface ##################################*/
 
-
+    /**
+     * @param <C> java type of criteria,see below:
+     *            <ul>
+     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
+     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
+     *            </ul>
+     */
     interface MultiUpdateSpec<C> {
 
-        <T extends IDomain> MultiIndexHintCommandSpec<C> update(SingleTableMeta<T> table, String tableAlias);
+        MultiPartitionJoinSpec<C> update(TableMeta<?> table);
 
-        <T extends IDomain> SinglePartitionSpec<T, C> update(SingleTableMeta<T> table);
+        MultiIndexHintCommandJoinSpec<C> update(TableMeta<?> table, String tableAlias);
 
-        <P extends IDomain, T extends P> MultiIndexHintCommandSpec<P, C> update(ChildDomain<P, T> table, String tableAlias);
+        JoinSpec<C> update(Function<C, SubQuery> function, String subQueryAlias);
 
-        <P extends IDomain, T extends P> SinglePartitionSpec<P, C> update(ChildDomain<P, T> table);
-    }
-
-    interface MultiPartitionSpec<C> extends SingleAsSpec<C> {
-
-        MultiIndexHintCommandSpec<C> partition(String partitionName);
-
-        MultiIndexHintCommandSpec<C> partition(String partitionName1, String partitionNam2);
-
-        MultiIndexHintCommandSpec<C> partition(List<String> partitionNameList);
-
-        MultiIndexHintCommandSpec<C> ifPartition(Function<C, List<String>> function);
+        JoinSpec<C> updateGroup(Function<C, SubQuery> function, String groupAlias);
 
     }
 
+    /**
+     * @param <C> java type of criteria,see below:
+     *            <ul>
+     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
+     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
+     *            </ul>
+     */
+    interface MultiPartitionJoinSpec<C> extends MySQLUpdate.MultiAsJoinSpec<C> {
 
-    interface MultiIndexHintCommandSpec<C> extends MySQLUpdate.JoinSpec<C>, MySQLUpdate.MultiIndexHintCommandClause<C> {
+        MultiAsJoinSpec<C> partition(String partitionName);
+
+        MultiAsJoinSpec<C> partition(String partitionName1, String partitionNam2);
+
+        MultiAsJoinSpec<C> partition(List<String> partitionNameList);
+
+        MultiAsJoinSpec<C> ifPartition(Function<C, List<String>> function);
 
     }
 
+    /**
+     * @param <C> java type of criteria,see below:
+     *            <ul>
+     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
+     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
+     *            </ul>
+     */
+    interface MultiAsJoinSpec<C> {
 
-    interface MultiIndexHintCommandClause<C> {
+        MultiIndexHintCommandJoinSpec<C> as(String tableAlias);
+    }
 
-        MultiIndexWordClause<C> use();
+    /**
+     * @param <C> java type of criteria,see below:
+     *            <ul>
+     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
+     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
+     *            </ul>
+     */
+    interface MultiIndexHintCommandJoinSpec<C> extends MySQLUpdate.JoinSpec<C>
+            , MySQLUpdate.MultiIndexHintCommandClause<C, MySQLUpdate.JoinSpec<C>> {
 
-        MultiIndexWordClause<C> ignore();
+    }
 
-        MultiIndexWordClause<C> force();
+    /**
+     * @param <C> java type of criteria,see below:
+     *            <ul>
+     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
+     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
+     *            </ul>
+     */
+    interface MultiPartitionOnSpec<C> extends MultiAsOnSpec<C> {
+
+        MultiAsOnSpec<C> partition(String partitionName);
+
+        MultiAsOnSpec<C> partition(String partitionName1, String partitionNam2);
+
+        MultiAsOnSpec<C> partition(List<String> partitionNameList);
+
+        MultiAsOnSpec<C> ifPartition(Function<C, List<String>> function);
+
+    }
+
+    /**
+     * @param <C> java type of criteria,see below:
+     *            <ul>
+     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
+     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
+     *            </ul>
+     */
+    interface MultiAsOnSpec<C> {
+
+        MultiIndexHintCommandOnSpec<C> as(String tableAlias);
+    }
+
+    /**
+     * @param <C> java type of criteria,see below:
+     *            <ul>
+     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
+     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
+     *            </ul>
+     */
+    interface MultiIndexHintCommandOnSpec<C> extends MySQLUpdate.OnSpec<C>
+            , MySQLUpdate.MultiIndexHintCommandClause<C, MySQLUpdate.OnSpec<C>> {
+
+    }
+
+    /**
+     * @param <C> java type of criteria,see below:
+     *            <ul>
+     *               <li>{@link MySQLs#multiUpdate57(Object)}</li>
+     *               <li>{@link MySQLs#multiUpdate80(Object)}</li>
+     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
+     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
+     *            </ul>
+     * @param <S> below types:
+     *            <ul>
+     *               <li>{@link MySQLUpdate.JoinSpec}</li>
+     *               <li>{@link MySQLUpdate.OnSpec}</li>
+     *               <li>{@link MySQLUpdate.BatchJoinSpec}</li>
+     *               <li>{@link MySQLUpdate.BatchOnSpec}</li>
+     *            </ul>
+     */
+    interface MultiIndexHintCommandClause<C, S> {
+
+        MultiIndexWordClause<S> use();
+
+        MultiIndexWordClause<S> ignore();
+
+        MultiIndexWordClause<S> force();
 
         /**
          * @return clause , clause no action if predicate return false.
          */
-        MultiIndexWordClause<C> ifUse(Predicate<C> predicate);
+        MultiIndexWordClause<S> ifUse(Predicate<C> predicate);
 
 
         /**
          * @return clause , clause no action if predicate return false.
          */
-        MultiIndexWordClause<C> ifIgnore(Predicate<C> predicate);
+        MultiIndexWordClause<S> ifIgnore(Predicate<C> predicate);
 
         /**
          * @return clause , clause no action if predicate return false.
          */
-        MultiIndexWordClause<C> ifForce(Predicate<C> predicate);
+        MultiIndexWordClause<S> ifForce(Predicate<C> predicate);
 
     }
 
-    interface MultiIndexWordClause<C> {
+    /**
+     * @param <S> below types:
+     *            <ul>
+     *               <li>{@link MySQLUpdate.JoinSpec}</li>
+     *               <li>{@link MySQLUpdate.OnSpec}</li>
+     *               <li>{@link MySQLUpdate.BatchJoinSpec}</li>
+     *               <li>{@link MySQLUpdate.BatchOnSpec}</li>
+     *            </ul>
+     */
+    interface MultiIndexWordClause<S> {
 
-        IndexPurposeClause<C> index();
+        IndexPurposeClause<S> index();
 
-        IndexPurposeClause<C> key();
+        IndexPurposeClause<S> key();
 
-        OnSpec<C> index(List<String> indexNameList);
+        S index(List<String> indexNameList);
 
-        OnSpec<C> key(List<String> indexNameList);
+        S key(List<String> indexNameList);
 
     }
 
-    interface IndexPurposeClause<C> {
+    /**
+     * @param <S> below types:
+     *            <ul>
+     *               <li>{@link MySQLUpdate.JoinSpec}</li>
+     *               <li>{@link MySQLUpdate.OnSpec}</li>
+     *               <li>{@link MySQLUpdate.BatchJoinSpec}</li>
+     *               <li>{@link MySQLUpdate.BatchOnSpec}</li>
+     *            </ul>
+     */
+    interface IndexPurposeClause<S> {
 
-        OnSpec<C> forOrderBy(List<String> indexNameList);
+        S forOrderBy(List<String> indexNameList);
 
-        OnSpec<C> forJoin(List<String> indexNameList);
+        S forJoin(List<String> indexNameList);
     }
 
 
     interface JoinSpec<C> extends MultiSetSpec<C> {
+
+        MultiPartitionOnSpec<C> leftJoin(TableMeta<?> table);
+
+        MultiIndexHintCommandOnSpec<C> leftJoin(TableMeta<?> table, String tableAlias);
+
+        OnSpec<C> leftJoin(Function<C, SubQuery> function, String subQueryAlia);
+
+        OnSpec<C> leftJoinGroup(Function<C, TablePartGroup> function);
+
+        MultiPartitionOnSpec<C> ifLeftJoin(Predicate<C> predicate, TableMeta<?> table);
+
+        MultiIndexHintCommandOnSpec<C> ifLeftJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
+
+        OnSpec<C> ifLeftJoin(Function<C, SubQuery> function, String subQueryAlia);
+
+        OnSpec<C> ifLeftJoinGroup(Function<C, TablePartGroup> function);
+
+        MultiPartitionOnSpec<C> join(TableMeta<?> table);
+
+        MultiIndexHintCommandOnSpec<C> join(TableMeta<?> table, String tableAlias);
+
+        OnSpec<C> join(Function<C, SubQuery> function, String subQueryAlia);
+
+        OnSpec<C> joinGroup(Function<C, TablePartGroup> function);
+
+        MultiPartitionOnSpec<C> ifJoin(Predicate<C> predicate, TableMeta<?> table);
+
+        MultiIndexHintCommandOnSpec<C> ifJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
+
+        OnSpec<C> ifJoin(Function<C, SubQuery> function, String subQueryAlia);
+
+        OnSpec<C> ifJoinGroup(Function<C, TablePartGroup> function);
+
+        MultiPartitionOnSpec<C> rightJoin(TableMeta<?> table);
+
+        MultiIndexHintCommandOnSpec<C> rightJoin(TableMeta<?> table, String tableAlias);
+
+        OnSpec<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia);
+
+        OnSpec<C> rightJoinGroup(Function<C, TablePartGroup> function);
+
+        MultiPartitionOnSpec<C> ifRightJoin(Predicate<C> predicate, TableMeta<?> table);
+
+        MultiIndexHintCommandOnSpec<C> ifRightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
+
+        OnSpec<C> ifRightJoin(Function<C, SubQuery> function, String subQueryAlia);
+
+        OnSpec<C> ifRightJoinGroup(Function<C, TablePartGroup> function);
+
+        MultiPartitionOnSpec<C> straightJoin(TableMeta<?> table);
+
+        MultiIndexHintCommandOnSpec<C> straightJoin(TableMeta<?> table, String tableAlias);
+
+        OnSpec<C> straightJoin(Function<C, SubQuery> function, String subQueryAlia);
+
+        OnSpec<C> straightJoinGroup(Function<C, TablePartGroup> function);
+
+        MultiPartitionOnSpec<C> ifStraightJoin(Predicate<C> predicate, TableMeta<?> table);
+
+        MultiIndexHintCommandOnSpec<C> ifStraightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
+
+        OnSpec<C> ifStraightJoin(Function<C, SubQuery> function, String subQueryAlia);
+
+        OnSpec<C> ifStraightJoinGroup(Function<C, TablePartGroup> function);
 
     }
 
@@ -544,7 +719,7 @@ public interface MySQLUpdate extends Update, DialectStatement {
 
     interface MultiSetSpec<C> {
 
-        MultiWhereSpec<C> ifSet(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList);
+        MultiWhereSpec<C> set(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList);
 
         MultiWhereSpec<C> set(FieldMeta<?, ?> field, @Nullable Object value);
 
@@ -578,6 +753,8 @@ public interface MySQLUpdate extends Update, DialectStatement {
 
         <F extends Number> MultiWhereSpec<C> setMod(FieldMeta<?, F> field, Expression<F> value);
 
+        MultiWhereSpec<C> ifSet(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList);
+
         MultiWhereSpec<C> ifSet(FieldMeta<?, ?> field, @Nullable Object value);
 
         MultiWhereSpec<C> ifSet(FieldMeta<?, ?> field, Function<C, Expression<?>> function);
@@ -605,6 +782,300 @@ public interface MySQLUpdate extends Update, DialectStatement {
         UpdateSpec where(Supplier<List<IPredicate>> supplier);
 
         WhereAndSpec<C> where(IPredicate predicate);
+
+    }
+
+    /*################################## blow batch multi-table update api interface ##################################*/
+
+
+    /**
+     * @param <C> java type of criteria,see below:
+     *            <ul>
+     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
+     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
+     *            </ul>
+     */
+    interface BatchMultiUpdateSpec<C> {
+
+        BatchMultiPartitionJoinSpec<C> update(TableMeta<?> table);
+
+        BatchMultiIndexHintCommandJoinSpec<C> update(TableMeta<?> table, String tableAlias);
+
+        BatchJoinSpec<C> update(Function<C, SubQuery> function, String subQueryAlias);
+
+        BatchJoinSpec<C> updateGroup(Function<C, SubQuery> function, String groupAlias);
+
+    }
+
+    /**
+     * @param <C> java type of criteria,see below:
+     *            <ul>
+     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
+     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
+     *            </ul>
+     */
+    interface BatchMultiPartitionJoinSpec<C> extends MySQLUpdate.BatchMultiAsJoinSpec<C> {
+
+        BatchMultiAsJoinSpec<C> partition(String partitionName);
+
+        BatchMultiAsJoinSpec<C> partition(String partitionName1, String partitionNam2);
+
+        BatchMultiAsJoinSpec<C> partition(List<String> partitionNameList);
+
+        BatchMultiAsJoinSpec<C> ifPartition(Function<C, List<String>> function);
+
+    }
+
+    /**
+     * @param <C> java type of criteria,see below:
+     *            <ul>
+     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
+     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
+     *            </ul>
+     */
+    interface BatchMultiAsJoinSpec<C> {
+
+        BatchMultiIndexHintCommandJoinSpec<C> as(String tableAlias);
+    }
+
+    /**
+     * @param <C> java type of criteria,see below:
+     *            <ul>
+     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
+     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
+     *            </ul>
+     */
+    interface BatchMultiIndexHintCommandJoinSpec<C> extends MySQLUpdate.BatchJoinSpec<C>
+            , MySQLUpdate.MultiIndexHintCommandClause<C, MySQLUpdate.BatchJoinSpec<C>> {
+
+    }
+
+    /**
+     * @param <C> java type of criteria,see below:
+     *            <ul>
+     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
+     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
+     *            </ul>
+     */
+    interface BatchMultiPartitionOnSpec<C> extends MySQLUpdate.BatchMultiAsOnSpec<C> {
+
+        BatchMultiAsOnSpec<C> partition(String partitionName);
+
+        BatchMultiAsOnSpec<C> partition(String partitionName1, String partitionNam2);
+
+        BatchMultiAsOnSpec<C> partition(List<String> partitionNameList);
+
+        BatchMultiAsOnSpec<C> ifPartition(Function<C, List<String>> function);
+
+    }
+
+    /**
+     * @param <C> java type of criteria,see below:
+     *            <ul>
+     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
+     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
+     *            </ul>
+     */
+    interface BatchMultiAsOnSpec<C> {
+
+        BatchMultiIndexHintCommandOnSpec<C> as(String tableAlias);
+    }
+
+    /**
+     * @param <C> java type of criteria,see below:
+     *            <ul>
+     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
+     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
+     *            </ul>
+     */
+    interface BatchMultiIndexHintCommandOnSpec<C> extends MySQLUpdate.BatchOnSpec<C>
+            , MySQLUpdate.MultiIndexHintCommandClause<C, MySQLUpdate.BatchOnSpec<C>> {
+
+    }
+
+
+    /**
+     * @param <C> java type of criteria,see below:
+     *            <ul>
+     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
+     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
+     *            </ul>
+     */
+    interface BatchJoinSpec<C> extends MySQLUpdate.BatchMultiSetSpec<C> {
+
+        BatchMultiPartitionOnSpec<C> leftJoin(TableMeta<?> table);
+
+        BatchMultiIndexHintCommandOnSpec<C> leftJoin(TableMeta<?> table, String tableAlias);
+
+        BatchOnSpec<C> leftJoin(Function<C, SubQuery> function, String subQueryAlia);
+
+        BatchOnSpec<C> leftJoinGroup(Function<C, TablePartGroup> function);
+
+        BatchMultiPartitionOnSpec<C> ifLeftJoin(Predicate<C> predicate, TableMeta<?> table);
+
+        BatchMultiIndexHintCommandOnSpec<C> ifLeftJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
+
+        BatchOnSpec<C> ifLeftJoin(Function<C, SubQuery> function, String subQueryAlia);
+
+        BatchOnSpec<C> ifLeftJoinGroup(Function<C, TablePartGroup> function);
+
+        BatchMultiPartitionOnSpec<C> join(TableMeta<?> table);
+
+        BatchMultiIndexHintCommandOnSpec<C> join(TableMeta<?> table, String tableAlias);
+
+        BatchOnSpec<C> join(Function<C, SubQuery> function, String subQueryAlia);
+
+        BatchOnSpec<C> joinGroup(Function<C, TablePartGroup> function);
+
+        BatchMultiPartitionOnSpec<C> ifJoin(Predicate<C> predicate, TableMeta<?> table);
+
+        BatchMultiIndexHintCommandOnSpec<C> ifJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
+
+        BatchOnSpec<C> ifJoin(Function<C, SubQuery> function, String subQueryAlia);
+
+        BatchOnSpec<C> ifJoinGroup(Function<C, TablePartGroup> function);
+
+        BatchMultiPartitionOnSpec<C> rightJoin(TableMeta<?> table);
+
+        BatchMultiIndexHintCommandOnSpec<C> rightJoin(TableMeta<?> table, String tableAlias);
+
+        BatchOnSpec<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia);
+
+        BatchOnSpec<C> rightJoinGroup(Function<C, TablePartGroup> function);
+
+        BatchMultiPartitionOnSpec<C> ifRightJoin(Predicate<C> predicate, TableMeta<?> table);
+
+        BatchMultiIndexHintCommandOnSpec<C> ifRightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
+
+        BatchOnSpec<C> ifRightJoin(Function<C, SubQuery> function, String subQueryAlia);
+
+        BatchOnSpec<C> ifRightJoinGroup(Function<C, TablePartGroup> function);
+
+        BatchMultiPartitionOnSpec<C> straightJoin(TableMeta<?> table);
+
+        BatchMultiIndexHintCommandOnSpec<C> straightJoin(TableMeta<?> table, String tableAlias);
+
+        BatchOnSpec<C> straightJoin(Function<C, SubQuery> function, String subQueryAlia);
+
+        BatchOnSpec<C> straightJoinGroup(Function<C, TablePartGroup> function);
+
+        BatchMultiPartitionOnSpec<C> ifStraightJoin(Predicate<C> predicate, TableMeta<?> table);
+
+        BatchMultiIndexHintCommandOnSpec<C> ifStraightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
+
+        BatchOnSpec<C> ifStraightJoin(Function<C, SubQuery> function, String subQueryAlia);
+
+        BatchOnSpec<C> ifStraightJoinGroup(Function<C, TablePartGroup> function);
+
+    }
+
+    /**
+     * @param <C> java type of criteria,see below:
+     *            <ul>
+     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
+     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
+     *            </ul>
+     */
+    interface BatchOnSpec<C> {
+
+        BatchJoinSpec<C> on(List<IPredicate> predicateList);
+
+        BatchJoinSpec<C> on(IPredicate predicate);
+
+        BatchJoinSpec<C> on(IPredicate predicate1, IPredicate predicate2);
+
+        BatchJoinSpec<C> on(Function<C, List<IPredicate>> function);
+
+        BatchJoinSpec<C> on(Supplier<List<IPredicate>> supplier);
+
+        BatchJoinSpec<C> onId();
+
+    }
+
+
+    /**
+     * @param <C> java type of criteria,see below:
+     *            <ul>
+     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
+     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
+     *            </ul>
+     */
+    interface BatchMultiSetSpec<C> {
+
+        BatchMultiWhereSpec<C> set(List<FieldMeta<?, ?>> fieldList);
+
+        BatchMultiWhereSpec<C> set(FieldMeta<?, ?> field);
+
+        BatchMultiWhereSpec<C> set(FieldMeta<?, ?> field, Expression<?> value);
+
+        BatchMultiWhereSpec<C> set(FieldMeta<?, ?> field, Function<C, Expression<?>> function);
+
+        BatchMultiWhereSpec<C> set(FieldMeta<?, ?> field, Supplier<Expression<?>> supplier);
+
+        BatchMultiWhereSpec<C> setNull(FieldMeta<?, ?> field);
+
+        BatchMultiWhereSpec<C> setDefault(FieldMeta<?, ?> field);
+
+        <F extends Number> BatchMultiWhereSpec<C> setPlus(FieldMeta<?, F> field);
+
+        <F extends Number> BatchMultiWhereSpec<C> setPlus(FieldMeta<?, F> field, Expression<F> value);
+
+        <F extends Number> BatchMultiWhereSpec<C> setMinus(FieldMeta<?, F> field);
+
+        <F extends Number> BatchMultiWhereSpec<C> setMinus(FieldMeta<?, F> field, Expression<F> value);
+
+        <F extends Number> BatchMultiWhereSpec<C> setMultiply(FieldMeta<?, F> field);
+
+        <F extends Number> BatchMultiWhereSpec<C> setMultiply(FieldMeta<?, F> field, Expression<F> value);
+
+        <F extends Number> BatchMultiWhereSpec<C> setDivide(FieldMeta<?, F> field);
+
+        <F extends Number> BatchMultiWhereSpec<C> setDivide(FieldMeta<?, F> field, Expression<F> value);
+
+        <F extends Number> BatchMultiWhereSpec<C> setMod(FieldMeta<?, F> field);
+
+        <F extends Number> BatchMultiWhereSpec<C> setMod(FieldMeta<?, F> field, Expression<F> value);
+
+        BatchMultiWhereSpec<C> ifSetDefault(Predicate<C> predicate, FieldMeta<?, ?> field);
+
+        BatchMultiWhereSpec<C> ifSet(Function<C, List<FieldMeta<?, ?>>> function);
+
+        BatchMultiWhereSpec<C> ifSet(Supplier<List<FieldMeta<?, ?>>> supplier);
+
+        BatchMultiWhereSpec<C> ifSet(Predicate<C> predicate, FieldMeta<?, ?> field);
+
+        <F> BatchMultiWhereSpec<C> ifSet(FieldMeta<?, ?> field, Function<C, Expression<F>> function);
+
+        <F> BatchMultiWhereSpec<C> ifSet(FieldMeta<?, ?> field, Supplier<Expression<F>> supplier);
+
+        <F extends Number> BatchMultiWhereSpec<C> ifSetPlus(Predicate<C> predicate, FieldMeta<?, F> field);
+
+        <F extends Number> BatchMultiWhereSpec<C> ifSetMinus(Predicate<C> predicate, FieldMeta<?, F> field);
+
+        <F extends Number> BatchMultiWhereSpec<C> ifSetMultiply(Predicate<C> predicate, FieldMeta<?, F> field);
+
+        <F extends Number> BatchMultiWhereSpec<C> ifSetDivide(Predicate<C> predicate, FieldMeta<?, F> field);
+
+        <F extends Number> BatchMultiWhereSpec<C> ifSetMod(Predicate<C> predicate, FieldMeta<?, F> field);
+
+    }
+
+    /**
+     * @param <C> java type of criteria,see below:
+     *            <ul>
+     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
+     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
+     *            </ul>
+     */
+    interface BatchMultiWhereSpec<C> extends MySQLUpdate.BatchMultiSetSpec<C> {
+
+        BatchParamSpec<C> where(List<IPredicate> predicates);
+
+        BatchParamSpec<C> where(Function<C, List<IPredicate>> function);
+
+        BatchParamSpec<C> where(Supplier<List<IPredicate>> supplier);
+
+        BatchWhereAndSpec<C> where(IPredicate predicate);
 
     }
 
