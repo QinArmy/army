@@ -34,9 +34,7 @@ public interface Update extends Dml, SQLDebug {
 
         S setNull(FieldMeta<? super T, ?> field);
 
-        /**
-         * @see SQLs#defaultWord()
-         */
+
         S setDefault(FieldMeta<? super T, ?> field);
 
         <F extends Number> S setPlus(FieldMeta<? super T, F> field, F value);
@@ -99,7 +97,7 @@ public interface Update extends Dml, SQLDebug {
 
     interface BatchUpdateSpec<C> {
 
-        <T extends IDomain> BatchSetSpec<T, C, Update.BatchUpdateWhereSpec<T, C>> update(TableMeta<T> table, String tableAlias);
+        <T extends IDomain> BatchSetSpec<T, C, BatchWhereSpec<T, C>> update(TableMeta<T> table, String tableAlias);
     }
 
 
@@ -151,7 +149,7 @@ public interface Update extends Dml, SQLDebug {
 
     }
 
-    interface BatchUpdateWhereSpec<T extends IDomain, C> extends Update.BatchSetSpec<T, C, Update.BatchUpdateWhereSpec<T, C>> {
+    interface BatchWhereSpec<T extends IDomain, C> extends Update.BatchSetSpec<T, C, BatchWhereSpec<T, C>> {
 
         /**
          * @see SQLs#nonNullNamedParam(GenericField)

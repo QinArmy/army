@@ -2,7 +2,6 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.MySQLs;
-import io.army.criteria.impl.SQLs;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.ChildDomain;
@@ -70,17 +69,13 @@ public interface MySQLUpdate extends Update, MySQLDml {
 
     interface BatchSingleUpdateSpec<C> {
 
-        <T extends IDomain> BatchSingleIndexHintCommandSpec<T, C> update(SingleTableMeta<T> table, String tableAlias);
-
         <T extends IDomain> BatchSinglePartitionSpec<T, C> update(SingleTableMeta<T> table);
-
-        <P extends IDomain, T extends P> BatchSingleIndexHintCommandSpec<P, C> update(ChildDomain<P, T> table, String tableAlias);
 
         <P extends IDomain, T extends P> BatchSinglePartitionSpec<P, C> update(ChildDomain<P, T> table);
     }
 
 
-    interface BatchSinglePartitionSpec<T extends IDomain, C> extends BatchSingleAsSpec<T, C> {
+    interface BatchSinglePartitionSpec<T extends IDomain, C> extends MySQLUpdate.BatchSingleIndexHintCommandSpec<T, C> {
 
         BatchSingleIndexHintCommandSpec<T, C> partition(String partitionName);
 
@@ -93,189 +88,25 @@ public interface MySQLUpdate extends Update, MySQLDml {
     }
 
 
-    interface BatchSingleAsSpec<T extends IDomain, C> {
-
-        BatchSingleIndexHintCommandSpec<T, C> as(String tableAlias);
-    }
-
-    interface BatchSingleIndexHintCommandSpec<T extends IDomain, C> extends BatchSingleSetSpec<T, C>
-            , BatchSingleIndexHintCommandClause<T, C> {
+    interface BatchSingleIndexHintCommandSpec<T extends IDomain, C>
+            extends Update.BatchSetSpec<T, C, MySQLUpdate.BatchSingleWhereSpec<T, C>>
+            , MySQLDml.SingleIndexHintCommandClause<C, Update.SetSpec<T, C, MySQLUpdate.SingleWhereSpec<T, C>>> {
 
     }
 
 
-    interface BatchSingleIndexHintCommandClause<T extends IDomain, C> {
+    interface BatchSingleWhereSpec<T extends IDomain, C> extends Update.BatchSetSpec<T, C, MySQLUpdate.BatchSingleWhereSpec<T, C>> {
 
-        BatchSingleIndexWordClause<T, C> use();
+        BatchSingleWhereAndSpec<C, Update> where(IPredicate predicate);
 
-        BatchSingleIndexWordClause<T, C> ignore();
+        BatchOrderBySpec<C, Update> where(List<IPredicate> predicateList);
 
-        BatchSingleIndexWordClause<T, C> force();
+        BatchOrderBySpec<C, Update> where(Function<C, List<IPredicate>> function);
 
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        BatchSingleIndexWordClause<T, C> ifUse(Predicate<C> predicate);
-
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        BatchSingleIndexWordClause<T, C> ifIgnore(Predicate<C> predicate);
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        BatchSingleIndexWordClause<T, C> ifForce(Predicate<C> predicate);
+        BatchOrderBySpec<C, Update> where(Supplier<List<IPredicate>> supplier);
 
     }
 
-
-    interface BatchSingleIndexWordClause<T extends IDomain, C> {
-
-        BatchSingleOrderByClause<T, C> index();
-
-        BatchSingleOrderByClause<T, C> key();
-
-        BatchSingleSetSpec<T, C> index(List<String> indexNameList);
-
-        BatchSingleSetSpec<T, C> key(List<String> indexNameList);
-
-    }
-
-
-    interface BatchSingleOrderByClause<T extends IDomain, C> {
-
-        BatchSingleSetSpec<T, C> forOrderBy(List<String> indexNameList);
-    }
-
-
-    interface BatchSingleSetSpec<T extends IDomain, C> {
-
-        /**
-         * @see SQLs#namedParam(GenericField)
-         */
-        BatchSingleWhereSpec<T, C> set(List<FieldMeta<T, ?>> fieldList);
-
-        BatchSingleWhereSpec<T, C> set(FieldMeta<T, ?> field, Expression<?> valueExp);
-
-        /**
-         * @see SQLs#namedParam(GenericField)
-         */
-        BatchSingleWhereSpec<T, C> set(FieldMeta<T, ?> field);
-
-        BatchSingleWhereSpec<T, C> setNull(FieldMeta<T, ?> field);
-
-        BatchSingleWhereSpec<T, C> setDefault(FieldMeta<T, ?> field);
-
-        /**
-         * @see SQLs#nonNullNamedParam(GenericField)
-         */
-        <F extends Number> BatchSingleWhereSpec<T, C> setPlus(FieldMeta<T, F> field);
-
-        /**
-         * @see SQLs#nonNullNamedParam(GenericField)
-         */
-        <F extends Number> BatchSingleWhereSpec<T, C> setMinus(FieldMeta<T, F> field);
-
-        /**
-         * @see SQLs#nonNullNamedParam(GenericField)
-         */
-        <F extends Number> BatchSingleWhereSpec<T, C> setMultiply(FieldMeta<T, F> field);
-
-        /**
-         * @see SQLs#nonNullNamedParam(GenericField)
-         */
-        <F extends Number> BatchSingleWhereSpec<T, C> setDivide(FieldMeta<T, F> field);
-
-        /**
-         * @see SQLs#nonNullNamedParam(GenericField)
-         */
-        <F extends Number> BatchSingleWhereSpec<T, C> setMod(FieldMeta<T, F> field);
-
-        /**
-         * @see SQLs#nonNullNamedParam(GenericField)
-         */
-        BatchSingleWhereSpec<T, C> ifSet(Function<C, List<FieldMeta<T, ?>>> function);
-
-        BatchSingleWhereSpec<T, C> ifSet(Predicate<C> test, FieldMeta<T, ?> field);
-
-        BatchSingleWhereSpec<T, C> ifSet(FieldMeta<T, ?> filed, Function<C, Expression<?>> function);
-
-    }
-
-
-    interface BatchSingleWhereSpec<T extends IDomain, C> extends Update.BatchSetSpec<T, C> {
-
-        BatchSingleWhereAndSpec<C> where(IPredicate predicate);
-
-        BatchOrderBySpec<C> where(List<IPredicate> predicateList);
-
-        BatchOrderBySpec<C> where(Function<C, List<IPredicate>> function);
-
-        BatchOrderBySpec<C> where(Supplier<List<IPredicate>> supplier);
-
-    }
-
-    interface BatchSingleWhereAndSpec<C> extends MySQLUpdate.BatchOrderBySpec<C>, Update.WhereAndSpec<C> {
-
-        @Override
-        BatchSingleWhereAndSpec<C> and(IPredicate predicate);
-
-        @Override
-        BatchSingleWhereAndSpec<C> and(Function<C, IPredicate> function);
-
-        @Override
-        BatchSingleWhereAndSpec<C> and(Supplier<IPredicate> supplier);
-
-        /**
-         * @see Expression#ifEqual(Object)
-         */
-        @Override
-        BatchSingleWhereAndSpec<C> ifAnd(@Nullable IPredicate predicate);
-
-        @Override
-        BatchSingleWhereAndSpec<C> ifAnd(Function<C, IPredicate> function);
-
-        @Override
-        BatchSingleWhereAndSpec<C> ifAnd(Supplier<IPredicate> supplier);
-
-    }
-
-    interface BatchOrderBySpec<C> extends MySQLUpdate.BatchSingleLimitSpec<C> {
-
-        BatchSingleLimitSpec<C> orderBy(SortPart sortPart);
-
-        BatchSingleLimitSpec<C> orderBy(SortPart sortPart1, SortPart sortPart2);
-
-        BatchSingleLimitSpec<C> orderBy(List<SortPart> sortPartList);
-
-        BatchSingleLimitSpec<C> orderBy(Function<C, List<SortPart>> function);
-
-        BatchSingleLimitSpec<C> orderBy(Supplier<List<SortPart>> supplier);
-
-        BatchSingleLimitSpec<C> ifOrderBy(@Nullable SortPart sortPart);
-
-        BatchSingleLimitSpec<C> ifOrderBy(Supplier<List<SortPart>> supplier);
-
-        BatchSingleLimitSpec<C> ifOrderBy(Function<C, List<SortPart>> function);
-
-    }
-
-
-    interface BatchSingleLimitSpec<C> extends Update.BatchParamSpec<C> {
-
-        BatchParamSpec<C> limit(long rowCount);
-
-        BatchParamSpec<C> limit(Function<C, Long> function);
-
-        BatchParamSpec<C> limit(Supplier<Long> supplier);
-
-        BatchParamSpec<C> ifLimit(Function<C, Long> function);
-
-        BatchParamSpec<C> ifLimit(Supplier<Long> supplier);
-
-    }
 
     /*################################## blow multi-table update api interface ##################################*/
 

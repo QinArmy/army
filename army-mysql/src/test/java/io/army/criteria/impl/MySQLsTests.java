@@ -33,7 +33,7 @@ public class MySQLsTests {
                 .on(Collections.emptyList())
                 .set(Collections.emptyList(), Collections.emptyList())
                 .where(Collections.emptyList())
-                .asDml();
+                ;
 
     }
 

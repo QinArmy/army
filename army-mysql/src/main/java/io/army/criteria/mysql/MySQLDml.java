@@ -116,6 +116,68 @@ public interface MySQLDml extends DialectStatement, Dml {
     }
 
 
+    interface BatchSingleWhereAndSpec<C, D extends Dml>
+            extends MySQLDml.BatchOrderBySpec<C, D>, Dml.BatchWhereAndSpec<C, D> {
+
+        @Override
+        BatchSingleWhereAndSpec<C, D> and(IPredicate predicate);
+
+        @Override
+        BatchSingleWhereAndSpec<C, D> and(Function<C, IPredicate> function);
+
+        @Override
+        BatchSingleWhereAndSpec<C, D> and(Supplier<IPredicate> supplier);
+
+        /**
+         * @see Expression#ifEqual(Object)
+         */
+        @Override
+        BatchSingleWhereAndSpec<C, D> ifAnd(@Nullable IPredicate predicate);
+
+        @Override
+        BatchSingleWhereAndSpec<C, D> ifAnd(Function<C, IPredicate> function);
+
+        @Override
+        BatchSingleWhereAndSpec<C, D> ifAnd(Supplier<IPredicate> supplier);
+
+    }
+
+    interface BatchOrderBySpec<C, D extends Dml> extends MySQLDml.BatchSingleLimitSpec<C, D> {
+
+        BatchSingleLimitSpec<C, D> orderBy(SortPart sortPart);
+
+        BatchSingleLimitSpec<C, D> orderBy(SortPart sortPart1, SortPart sortPart2);
+
+        BatchSingleLimitSpec<C, D> orderBy(List<SortPart> sortPartList);
+
+        BatchSingleLimitSpec<C, D> orderBy(Function<C, List<SortPart>> function);
+
+        BatchSingleLimitSpec<C, D> orderBy(Supplier<List<SortPart>> supplier);
+
+        BatchSingleLimitSpec<C, D> ifOrderBy(@Nullable SortPart sortPart);
+
+        BatchSingleLimitSpec<C, D> ifOrderBy(Supplier<List<SortPart>> supplier);
+
+        BatchSingleLimitSpec<C, D> ifOrderBy(Function<C, List<SortPart>> function);
+
+    }
+
+
+    interface BatchSingleLimitSpec<C, D extends Dml> extends Dml.BatchParamSpec<C, D> {
+
+        BatchParamSpec<C, D> limit(long rowCount);
+
+        BatchParamSpec<C, D> limit(Function<C, Long> function);
+
+        BatchParamSpec<C, D> limit(Supplier<Long> supplier);
+
+        BatchParamSpec<C, D> ifLimit(Function<C, Long> function);
+
+        BatchParamSpec<C, D> ifLimit(Supplier<Long> supplier);
+
+    }
+
+
     /**
      * @param <C> java type of criteria,see below:
      *            <ul>
