@@ -1,6 +1,7 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.MySQLs;
 import io.army.lang.Nullable;
 
 import java.util.List;
@@ -40,9 +41,9 @@ public interface MySQLDml extends DialectStatement, Dml {
 
     interface SingleIndexWordClause<S> {
 
-        SingleOrderByClause<S> index();
+        SinglePurposeClause<S> index();
 
-        SingleOrderByClause<S> key();
+        SinglePurposeClause<S> key();
 
         S index(List<String> indexNameList);
 
@@ -51,10 +52,88 @@ public interface MySQLDml extends DialectStatement, Dml {
     }
 
 
-    interface SingleOrderByClause<S> {
+    interface SinglePurposeClause<S> {
 
         S forOrderBy(List<String> indexNameList);
 
+    }
+
+
+    /**
+     * @param <C> java type of criteria,see below:
+     *            <ul>
+     *               <li>{@link MySQLs#multiUpdate57(Object)}</li>
+     *               <li>{@link MySQLs#multiUpdate80(Object)}</li>
+     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
+     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
+     *            </ul>
+     * @param <S> below types:
+     *            <ul>
+     *               <li>{@link MySQLUpdate.MultiJoinSpec}</li>
+     *               <li>{@link MySQLUpdate.MultiOnSpec}</li>
+     *               <li>{@link MySQLUpdate.BatchMultiJoinSpec}</li>
+     *               <li>{@link MySQLUpdate.BatchMultiOnSpec}</li>
+     *            </ul>
+     */
+    interface MultiIndexHintCommandClause<C, S> {
+
+        MultiIndexWordClause<S> use();
+
+        MultiIndexWordClause<S> ignore();
+
+        MultiIndexWordClause<S> force();
+
+        /**
+         * @return clause , clause no action if predicate return false.
+         */
+        MultiIndexWordClause<S> ifUse(Predicate<C> predicate);
+
+
+        /**
+         * @return clause , clause no action if predicate return false.
+         */
+        MultiIndexWordClause<S> ifIgnore(Predicate<C> predicate);
+
+        /**
+         * @return clause , clause no action if predicate return false.
+         */
+        MultiIndexWordClause<S> ifForce(Predicate<C> predicate);
+
+    }
+
+    /**
+     * @param <S> below types:
+     *            <ul>
+     *               <li>{@link MySQLUpdate.MultiJoinSpec}</li>
+     *               <li>{@link MySQLUpdate.MultiOnSpec}</li>
+     *               <li>{@link MySQLUpdate.BatchMultiJoinSpec}</li>
+     *               <li>{@link MySQLUpdate.BatchMultiOnSpec}</li>
+     *            </ul>
+     */
+    interface MultiIndexWordClause<S> {
+
+        MultiIndexPurposeClause<S> index();
+
+        MultiIndexPurposeClause<S> key();
+
+        S index(List<String> indexNameList);
+
+        S key(List<String> indexNameList);
+
+    }
+
+    /**
+     * @param <S> below types:
+     *            <ul>
+     *               <li>{@link MySQLUpdate.MultiJoinSpec}</li>
+     *               <li>{@link MySQLUpdate.MultiOnSpec}</li>
+     *               <li>{@link MySQLUpdate.BatchMultiJoinSpec}</li>
+     *               <li>{@link MySQLUpdate.BatchMultiOnSpec}</li>
+     *            </ul>
+     */
+    interface MultiIndexPurposeClause<S> {
+
+        S forJoin(List<String> indexNameList);
     }
 
     interface SingleWhereAndSpec<C, D extends Dml> extends MySQLDml.SingleOrderBySpec<C, D>, Dml.WhereAndSpec<C, D> {
@@ -178,84 +257,6 @@ public interface MySQLDml extends DialectStatement, Dml {
     }
 
 
-    /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link MySQLs#multiUpdate57(Object)}</li>
-     *               <li>{@link MySQLs#multiUpdate80(Object)}</li>
-     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
-     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
-     *            </ul>
-     * @param <S> below types:
-     *            <ul>
-     *               <li>{@link MySQLDelete.JoinSpec}</li>
-     *               <li>{@link MySQLDelete.OnSpec}</li>
-     *               <li>{@link MySQLDelete.BatchJoinSpec}</li>
-     *               <li>{@link MySQLDelete.BatchOnSpec}</li>
-     *            </ul>
-     */
-    interface MultiIndexHintCommandClause<C, S> {
-
-        MultiIndexWordClause<S> use();
-
-        MultiIndexWordClause<S> ignore();
-
-        MultiIndexWordClause<S> force();
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        MultiIndexWordClause<S> ifUse(Predicate<C> predicate);
-
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        MultiIndexWordClause<S> ifIgnore(Predicate<C> predicate);
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        MultiIndexWordClause<S> ifForce(Predicate<C> predicate);
-
-    }
-
-    /**
-     * @param <S> below types:
-     *            <ul>
-     *               <li>{@link MySQLDelete.JoinSpec}</li>
-     *               <li>{@link MySQLDelete.OnSpec}</li>
-     *               <li>{@link MySQLDelete.BatchJoinSpec}</li>
-     *               <li>{@link MySQLDelete.BatchOnSpec}</li>
-     *            </ul>
-     */
-    interface MultiIndexWordClause<S> {
-
-        IndexPurposeClause<S> index();
-
-        IndexPurposeClause<S> key();
-
-        S index(List<String> indexNameList);
-
-        S key(List<String> indexNameList);
-
-    }
-
-    /**
-     * @param <S> below types:
-     *            <ul>
-     *               <li>{@link MySQLDelete.JoinSpec}</li>
-     *               <li>{@link MySQLDelete.OnSpec}</li>
-     *               <li>{@link MySQLDelete.BatchJoinSpec}</li>
-     *               <li>{@link MySQLDelete.BatchOnSpec}</li>
-     *            </ul>
-     */
-    interface IndexPurposeClause<S> {
-
-        S forOrderBy(List<String> indexNameList);
-
-        S forJoin(List<String> indexNameList);
-    }
 
 
 }
