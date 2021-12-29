@@ -17,16 +17,15 @@ import java.util.Objects;
  * @param <T> domain java type
  * @param <C> criteria java type used to dynamic update and sub query
  */
-final class StandardBatchUpdate<T extends IDomain, C> extends BatchSingleUpdate<
+final class StandardBatchUpdate<T extends IDomain, C> extends BatchUpdate<
         T,//
         C, //C
         Update.StandardBatchParamSpec<C>, //WR
         Update.StandardBatchWhereAndSpec<C>, //WA
-        Update.StandardBatchWhereAndSpec<C>, // AR
         Update.StandardBatchWhereSpec<T, C>,   //SR
         Update.UpdateSpec                   // BR
-        > implements _BatchSingleUpdate, Update.StandardBatchParamSpec<C>, Update.StandardBatchWhereAndSpec<C>
-        , Update.StandardBatchWhereSpec<T, C> {
+        > implements Update.StandardBatchParamSpec<C>, Update.StandardBatchWhereAndSpec<C>
+        , Update.StandardBatchWhereSpec<T, C>, _BatchSingleUpdate {
 
     static StandardBatchUpdateSpec<Void> create() {
         return new BatchUpdateSpecImpl<>(null);

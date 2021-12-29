@@ -4,7 +4,7 @@ import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner._SingleUpdate;
+import io.army.criteria.impl.inner._Update;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -21,8 +21,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-abstract class SingleUpdate<T extends IDomain, C, WR, WA, AR, SR> extends QueryDmlStatement<C, WR, WA, AR>
-        implements Update, Update.UpdateSpec, Update.SingleSetClause<T, C, SR>, _SingleUpdate {
+abstract class SimpleUpdate<T extends IDomain, C, WR, WA, SR> extends QueryDmlStatement<C, WR, WA>
+        implements Update, Update.UpdateSpec, Update.SetClause<T, C, SR>, _Update {
 
     final CriteriaContext criteriaContext;
 
@@ -30,7 +30,7 @@ abstract class SingleUpdate<T extends IDomain, C, WR, WA, AR, SR> extends QueryD
 
     List<SetValuePart> valueExpList = new ArrayList<>();
 
-    SingleUpdate(@Nullable C criteria) {
+    SimpleUpdate(@Nullable C criteria) {
         super(criteria);
         this.criteriaContext = new CriteriaContextImpl<>(criteria);
         if (this instanceof WithElement) {
@@ -42,7 +42,7 @@ abstract class SingleUpdate<T extends IDomain, C, WR, WA, AR, SR> extends QueryD
     }
 
     @Override
-    public final SR set(List<FieldMeta<? super T, ?>> fieldList, List<Expression<?>> valueList) {
+    public final SR set(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList) {
         final int fieldSize = fieldList.size();
         if (fieldSize != valueList.size()) {
             throw _Exceptions.fieldAndValueSizeNotMatch(fieldSize, valueList.size());
@@ -57,7 +57,7 @@ abstract class SingleUpdate<T extends IDomain, C, WR, WA, AR, SR> extends QueryD
     }
 
     @Override
-    public final SR set(FieldMeta<? super T, ?> field, @Nullable Object value) {
+    public final SR set(FieldMeta<?, ?> field, @Nullable Object value) {
         if (value != null) {
             this.set(field, SQLs.paramWithExp(field, value));
         }
@@ -65,7 +65,7 @@ abstract class SingleUpdate<T extends IDomain, C, WR, WA, AR, SR> extends QueryD
     }
 
     @Override
-    public final SR set(FieldMeta<? super T, ?> field, Expression<?> value) {
+    public final SR set(FieldMeta<?, ?> field, Expression<?> value) {
         if (field.updateMode() == UpdateMode.IMMUTABLE) {
             throw _Exceptions.immutableField(field);
         }
@@ -82,87 +82,87 @@ abstract class SingleUpdate<T extends IDomain, C, WR, WA, AR, SR> extends QueryD
     }
 
     @Override
-    public final <F> SR set(FieldMeta<? super T, F> field, Function<C, Expression<F>> function) {
+    public final <F> SR set(FieldMeta<?, F> field, Function<C, Expression<F>> function) {
         return this.set(field, function.apply(this.criteria));
     }
 
     @Override
-    public final <F> SR set(FieldMeta<? super T, F> field, Supplier<Expression<F>> supplier) {
+    public final <F> SR set(FieldMeta<?, F> field, Supplier<Expression<F>> supplier) {
         return this.set(field, supplier.get());
     }
 
     @Override
-    public final SR setNull(FieldMeta<? super T, ?> field) {
+    public final SR setNull(FieldMeta<?, ?> field) {
         return this.set(field, SQLs.nullWord());
     }
 
     @Override
-    public final SR setDefault(FieldMeta<? super T, ?> field) {
+    public final SR setDefault(FieldMeta<?, ?> field) {
         return this.set(field, SQLs.defaultWord());
     }
 
     @Override
-    public final <F extends Number> SR setPlus(FieldMeta<? super T, F> field, F value) {
+    public final <F extends Number> SR setPlus(FieldMeta<?, F> field, F value) {
         Objects.requireNonNull(value);
         return this.set(field, field.plus(value));
     }
 
     @Override
-    public final <F extends Number> SR setPlus(FieldMeta<? super T, F> field, Expression<F> value) {
+    public final <F extends Number> SR setPlus(FieldMeta<?, F> field, Expression<F> value) {
         Objects.requireNonNull(value);
         return this.set(field, field.plus(value));
     }
 
     @Override
-    public final <F extends Number> SR setMinus(FieldMeta<? super T, F> field, F value) {
+    public final <F extends Number> SR setMinus(FieldMeta<?, F> field, F value) {
         Objects.requireNonNull(value);
         return this.set(field, field.minus(value));
     }
 
     @Override
-    public final <F extends Number> SR setMinus(FieldMeta<? super T, F> field, Expression<F> value) {
+    public final <F extends Number> SR setMinus(FieldMeta<?, F> field, Expression<F> value) {
         Objects.requireNonNull(value);
         return this.set(field, field.minus(value));
     }
 
     @Override
-    public final <F extends Number> SR setMultiply(FieldMeta<? super T, F> field, F value) {
+    public final <F extends Number> SR setMultiply(FieldMeta<?, F> field, F value) {
         Objects.requireNonNull(value);
         return this.set(field, field.multiply(value));
     }
 
     @Override
-    public final <F extends Number> SR setMultiply(FieldMeta<? super T, F> field, Expression<F> value) {
+    public final <F extends Number> SR setMultiply(FieldMeta<?, F> field, Expression<F> value) {
         Objects.requireNonNull(value);
         return this.set(field, field.multiply(value));
     }
 
     @Override
-    public final <F extends Number> SR setDivide(FieldMeta<? super T, F> field, F value) {
+    public final <F extends Number> SR setDivide(FieldMeta<?, F> field, F value) {
         Objects.requireNonNull(value);
         return this.set(field, field.divide(value));
     }
 
     @Override
-    public final <F extends Number> SR setDivide(FieldMeta<? super T, F> field, Expression<F> value) {
+    public final <F extends Number> SR setDivide(FieldMeta<?, F> field, Expression<F> value) {
         Objects.requireNonNull(value);
         return this.set(field, field.divide(value));
     }
 
     @Override
-    public final <F extends Number> SR setMod(FieldMeta<? super T, F> field, F value) {
+    public final <F extends Number> SR setMod(FieldMeta<?, F> field, F value) {
         Objects.requireNonNull(value);
         return this.set(field, field.mod(value));
     }
 
     @Override
-    public final <F extends Number> SR setMod(FieldMeta<? super T, F> field, Expression<F> value) {
+    public final <F extends Number> SR setMod(FieldMeta<?, F> field, Expression<F> value) {
         Objects.requireNonNull(value);
         return this.set(field, field.mod(value));
     }
 
     @Override
-    public final SR ifSet(List<FieldMeta<? super T, ?>> fieldList, List<Expression<?>> valueList) {
+    public final SR ifSet(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList) {
         if (fieldList.size() > 0) {
             this.set(fieldList, valueList);
         }
@@ -170,7 +170,7 @@ abstract class SingleUpdate<T extends IDomain, C, WR, WA, AR, SR> extends QueryD
     }
 
     @Override
-    public final SR ifSetNull(Predicate<C> predicate, FieldMeta<? super T, ?> field) {
+    public final SR ifSetNull(Predicate<C> predicate, FieldMeta<?, ?> field) {
         if (predicate.test(this.criteria)) {
             this.set(field, SQLs.nullWord());
         }
@@ -178,7 +178,7 @@ abstract class SingleUpdate<T extends IDomain, C, WR, WA, AR, SR> extends QueryD
     }
 
     @Override
-    public final SR ifSetDefault(Predicate<C> predicate, FieldMeta<? super T, ?> field) {
+    public final SR ifSetDefault(Predicate<C> predicate, FieldMeta<?, ?> field) {
         if (predicate.test(this.criteria)) {
             this.set(field, SQLs.defaultWord());
         }
@@ -186,7 +186,7 @@ abstract class SingleUpdate<T extends IDomain, C, WR, WA, AR, SR> extends QueryD
     }
 
     @Override
-    public final <F> SR ifSet(FieldMeta<? super T, F> field, @Nullable F value) {
+    public final <F> SR ifSet(FieldMeta<?, F> field, @Nullable F value) {
         if (value != null) {
             this.set(field, SQLs.paramWithExp(field, value));
         }
@@ -194,7 +194,7 @@ abstract class SingleUpdate<T extends IDomain, C, WR, WA, AR, SR> extends QueryD
     }
 
     @Override
-    public final <F> SR ifSet(FieldMeta<? super T, F> field, Function<C, Expression<F>> function) {
+    public final <F> SR ifSet(FieldMeta<?, F> field, Function<C, Expression<F>> function) {
         final Expression<F> value;
         value = function.apply(this.criteria);
         if (value != null) {
@@ -204,7 +204,7 @@ abstract class SingleUpdate<T extends IDomain, C, WR, WA, AR, SR> extends QueryD
     }
 
     @Override
-    public final <F> SR ifSet(FieldMeta<? super T, F> field, Supplier<Expression<F>> supplier) {
+    public final <F> SR ifSet(FieldMeta<?, F> field, Supplier<Expression<F>> supplier) {
         final Expression<F> value;
         value = supplier.get();
         if (value != null) {
@@ -214,7 +214,7 @@ abstract class SingleUpdate<T extends IDomain, C, WR, WA, AR, SR> extends QueryD
     }
 
     @Override
-    public final <F extends Number> SR ifSetPlus(FieldMeta<? super T, F> field, @Nullable F value) {
+    public final <F extends Number> SR ifSetPlus(FieldMeta<?, F> field, @Nullable F value) {
         if (value != null) {
             this.set(field, field.plus(value));
         }
@@ -222,7 +222,7 @@ abstract class SingleUpdate<T extends IDomain, C, WR, WA, AR, SR> extends QueryD
     }
 
     @Override
-    public final <F extends Number> SR ifSetMinus(FieldMeta<? super T, F> field, @Nullable F value) {
+    public final <F extends Number> SR ifSetMinus(FieldMeta<?, F> field, @Nullable F value) {
         if (value != null) {
             this.set(field, field.minus(value));
         }
@@ -230,7 +230,7 @@ abstract class SingleUpdate<T extends IDomain, C, WR, WA, AR, SR> extends QueryD
     }
 
     @Override
-    public final <F extends Number> SR ifSetMultiply(FieldMeta<? super T, F> field, @Nullable F value) {
+    public final <F extends Number> SR ifSetMultiply(FieldMeta<?, F> field, @Nullable F value) {
         if (value != null) {
             this.set(field, field.multiply(value));
         }
@@ -238,7 +238,7 @@ abstract class SingleUpdate<T extends IDomain, C, WR, WA, AR, SR> extends QueryD
     }
 
     @Override
-    public final <F extends Number> SR ifSetDivide(FieldMeta<? super T, F> field, @Nullable F value) {
+    public final <F extends Number> SR ifSetDivide(FieldMeta<?, F> field, @Nullable F value) {
         if (value != null) {
             this.set(field, field.divide(value));
         }
@@ -246,7 +246,7 @@ abstract class SingleUpdate<T extends IDomain, C, WR, WA, AR, SR> extends QueryD
     }
 
     @Override
-    public final <F extends Number> SR ifSetMod(FieldMeta<? super T, F> field, @Nullable F value) {
+    public final <F extends Number> SR ifSetMod(FieldMeta<?, F> field, @Nullable F value) {
         if (value != null) {
             this.set(field, field.mod(value));
         }

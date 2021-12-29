@@ -3,55 +3,53 @@ package io.army.criteria;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 
-import java.util.List;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
 public interface Delete extends Dml, SQLDebug {
 
 
-    @Deprecated
     interface DeleteSpec {
 
         Delete asDelete();
     }
 
-    interface DomainDeleteSpec<C> {
+    interface StandardDeleteSpec<C> {
 
-        WhereSpec<C> deleteFrom(TableMeta<? extends IDomain> table, String tableAlias);
+        StandardWhereSpec<C> deleteFrom(TableMeta<? extends IDomain> table, String tableAlias);
     }
+
+
+    interface StandardWhereSpec<C> extends Statement.WhereClause<C, Delete.DeleteSpec, Delete.StandardWhereAndSpec<C>> {
+
+    }
+
+    interface StandardWhereAndSpec<C> extends Statement.WhereAndClause<C, Delete.StandardWhereAndSpec<C>>
+            , Delete.DeleteSpec {
+
+    }
+
 
 
 
 
     /*################################## blow batch delete ##################################*/
 
-    interface BatchDomainDeleteSpec<C> {
+    interface StandardBatchDeleteSpec<C> {
 
-        BatchWhereSpec<C> deleteFrom(TableMeta<? extends IDomain> table, String tableAlias);
+        StandardBatchWhereSpec<C> deleteFrom(TableMeta<? extends IDomain> table, String tableAlias);
+    }
+
+    interface StandardBatchParamSpec<C> extends Statement.BatchParamClause<C, Delete.DeleteSpec> {
+
     }
 
 
-    interface WhereSpec<C> {
+    interface StandardBatchWhereSpec<C>
+            extends Statement.WhereClause<C, Delete.StandardBatchParamSpec<C>, Delete.StandardBatchWhereAndSpec<C>> {
 
-        DmlSpec<Delete> where(List<IPredicate> predicateList);
-
-        DmlSpec<Delete> where(Function<C, List<IPredicate>> function);
-
-        DmlSpec<Delete> where(Supplier<List<IPredicate>> supplier);
-
-        WhereAndSpec<C, Delete> where(IPredicate predicate);
     }
 
-    interface BatchWhereSpec<C> {
+    interface StandardBatchWhereAndSpec<C> extends Statement.WhereAndClause<C, Delete.StandardBatchWhereAndSpec<C>>
+            , StandardBatchParamSpec<C> {
 
-        BatchParamSpec<C, Delete> where(List<IPredicate> predicateList);
-
-        BatchParamSpec<C, Delete> where(Function<C, List<IPredicate>> function);
-
-        BatchParamSpec<C, Delete> where(Supplier<List<IPredicate>> supplier);
-
-        BatchWhereAndSpec<C, Delete> where(IPredicate predicate);
     }
 
 

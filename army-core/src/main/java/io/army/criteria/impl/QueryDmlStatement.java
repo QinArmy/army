@@ -12,8 +12,9 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-abstract class QueryDmlStatement<C, WR, WA, AR> implements Statement, Statement.WhereClause<C, WR, WA>
-        , Statement.WhereAndClause<C, AR> {
+@SuppressWarnings("unchecked")
+abstract class QueryDmlStatement<C, WR, WA> implements Statement, Statement.WhereClause<C, WR, WA>
+        , Statement.WhereAndClause<C, WA> {
 
 
     final C criteria;
@@ -54,36 +55,36 @@ abstract class QueryDmlStatement<C, WR, WA, AR> implements Statement, Statement.
     }
 
     @Override
-    public final AR and(IPredicate predicate) {
+    public final WA and(IPredicate predicate) {
         this.predicateList.add((_Predicate) predicate);
-        return (AR) this;
+        return (WA) this;
     }
 
     @Override
-    public final AR and(Supplier<IPredicate> supplier) {
+    public final WA and(Supplier<IPredicate> supplier) {
         return this.and(supplier.get());
     }
 
     @Override
-    public final AR and(Function<C, IPredicate> function) {
+    public final WA and(Function<C, IPredicate> function) {
         return this.and(function.apply(this.criteria));
     }
 
     @Override
-    public final AR ifAnd(@Nullable IPredicate predicate) {
+    public final WA ifAnd(@Nullable IPredicate predicate) {
         if (predicate != null) {
             this.predicateList.add((_Predicate) predicate);
         }
-        return (AR) this;
+        return (WA) this;
     }
 
     @Override
-    public final AR ifAnd(Supplier<IPredicate> supplier) {
+    public final WA ifAnd(Supplier<IPredicate> supplier) {
         return this.ifAnd(supplier.get());
     }
 
     @Override
-    public final AR ifAnd(Function<C, IPredicate> function) {
+    public final WA ifAnd(Function<C, IPredicate> function) {
         return this.ifAnd(function.apply(this.criteria));
     }
 

@@ -55,13 +55,13 @@ public abstract class _CriteriaCounselor {
 
     public static void assertStandardDelete(Delete delete) {
         if (delete instanceof _StandardBatchDelete) {
-            if (!(delete instanceof ContextualBatchDelete)) {
+            if (!(delete instanceof StandardBatchDelete)) {
                 throw new IllegalArgumentException(String.format("%s isn't instance of %s", delete
-                        , ContextualBatchDelete.class.getName()));
+                        , StandardBatchDelete.class.getName()));
             }
-        } else if (!(delete instanceof ContextualDelete)) {
+        } else if (!(delete instanceof StandardDelete)) {
             throw new IllegalArgumentException(String.format("%s isn't instance of %s", delete
-                    , ContextualDelete.class.getName()));
+                    , StandardDelete.class.getName()));
         }
     }
 

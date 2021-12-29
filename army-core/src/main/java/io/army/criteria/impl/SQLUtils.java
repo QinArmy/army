@@ -93,8 +93,8 @@ abstract class SQLUtils {
     /**
      * @see SQLs#standardBatchUpdate()
      * @see SQLs#standardBatchUpdate(Object)
-     * @see SQLs#batchDomainDelete()
-     * @see SQLs#batchDomainDelete(Object)
+     * @see SQLs#standardBatchDelete()
+     * @see SQLs#standardBatchDelete(Object)
      */
     public static <E> NamedParam<E> namedParam(String name, ParamMeta paramMeta) {
         return NamedParamImpl.named(name, paramMeta);
@@ -103,8 +103,8 @@ abstract class SQLUtils {
     /**
      * @see SQLs#standardBatchUpdate()
      * @see SQLs#standardBatchUpdate(Object)
-     * @see SQLs#batchDomainDelete()
-     * @see SQLs#batchDomainDelete(Object)
+     * @see SQLs#standardBatchDelete()
+     * @see SQLs#standardBatchDelete(Object)
      */
     public static <E> NamedParam<E> namedParam(GenericField<?, ?> field) {
         return NamedParamImpl.named(field.fieldName(), field);
@@ -114,8 +114,8 @@ abstract class SQLUtils {
     /**
      * @see SQLs#standardBatchUpdate()
      * @see SQLs#standardBatchUpdate(Object)
-     * @see SQLs#batchDomainDelete()
-     * @see SQLs#batchDomainDelete(Object)
+     * @see SQLs#standardBatchDelete()
+     * @see SQLs#standardBatchDelete(Object)
      */
     public static <E> NamedParam<E> nonNullNamedParam(String name, ParamMeta paramMeta) {
         return NamedParamImpl.nonNull(name, paramMeta);
@@ -124,8 +124,8 @@ abstract class SQLUtils {
     /**
      * @see SQLs#standardBatchUpdate()
      * @see SQLs#standardBatchUpdate(Object)
-     * @see SQLs#batchDomainDelete()
-     * @see SQLs#batchDomainDelete(Object)
+     * @see SQLs#standardBatchDelete()
+     * @see SQLs#standardBatchDelete(Object)
      */
     public static <E> NamedParam<E> nonNullNamedParam(GenericField<?, ?> field) {
         return NamedParamImpl.nonNull(field.fieldName(), field);

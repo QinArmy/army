@@ -45,13 +45,13 @@ public interface MySQLUpdate extends Update, MySQLDml {
 
 
     interface SingleIndexHintCommandSpec<T extends IDomain, C>
-            extends SingleSetClause<T, C, SingleWhereSpec<T, C>>
-            , MySQLDml.SingleIndexHintCommandClause<C, SingleSetClause<T, C, SingleWhereSpec<T, C>>> {
+            extends SetClause<T, C, SingleWhereSpec<T, C>>
+            , MySQLDml.SingleIndexHintCommandClause<C, SetClause<T, C, SingleWhereSpec<T, C>>> {
 
     }
 
 
-    interface SingleWhereSpec<T extends IDomain, C> extends SingleSetClause<T, C, SingleWhereSpec<T, C>> {
+    interface SingleWhereSpec<T extends IDomain, C> extends SetClause<T, C, SingleWhereSpec<T, C>> {
 
         SingleWhereAndSpec<C, Update> where(IPredicate predicate);
 
@@ -90,14 +90,14 @@ public interface MySQLUpdate extends Update, MySQLDml {
 
 
     interface BatchSingleIndexHintCommandSpec<T extends IDomain, C>
-            extends BatchSingleSetClause<T, C, BatchSingleWhereSpec<T, C>>
-            , MySQLDml.SingleIndexHintCommandClause<C, SingleSetClause<T, C, BatchSingleWhereSpec<T, C>>> {
+            extends BatchSetClause<T, C, BatchSingleWhereSpec<T, C>>
+            , MySQLDml.SingleIndexHintCommandClause<C, SetClause<T, C, BatchSingleWhereSpec<T, C>>> {
 
     }
 
 
     interface BatchSingleWhereSpec<T extends IDomain, C>
-            extends BatchSingleSetClause<T, C, BatchSingleWhereSpec<T, C>> {
+            extends BatchSetClause<T, C, BatchSingleWhereSpec<T, C>> {
 
         BatchSingleWhereAndSpec<C, Update> where(IPredicate predicate);
 

@@ -117,8 +117,8 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
             _CriteriaCounselor.assertStandardDelete(delete);
             final SimpleStmt simpleStmt;
             simpleStmt = this.handleStandardDelete((_SingleDelete) delete, visible);
-            if (delete instanceof _BatchDelete) {
-                stmt = _DmlUtils.createBatchStmt(simpleStmt, ((_BatchDelete) delete).wrapperList());
+            if (delete instanceof _BatchSingleDelete) {
+                stmt = _DmlUtils.createBatchStmt(simpleStmt, ((_BatchSingleDelete) delete).wrapperList());
             } else {
                 stmt = simpleStmt;
             }

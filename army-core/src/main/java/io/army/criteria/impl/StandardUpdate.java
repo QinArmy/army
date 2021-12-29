@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Update;
+import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.dialect._DialectUtils;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
@@ -16,14 +17,14 @@ import java.util.Objects;
  * @param <T> domain java type
  * @param <C> criteria java type used to dynamic update and sub query
  */
-final class StandardUpdate<T extends IDomain, C> extends SingleUpdate<
+final class StandardUpdate<T extends IDomain, C> extends SimpleUpdate<
         T, // T
         C,// C
         Update.UpdateSpec, // WR
         Update.StandardWhereAndSpec<C>, // WA
-        Update.StandardWhereAndSpec<C>, // AR
         Update.StandardWhereSpec<T, C>   // SR
-        > implements Update.StandardWhereSpec<T, C>, Update.StandardWhereAndSpec<C>, Update.StandardSetSpec<T, C> {
+        > implements Update.StandardWhereSpec<T, C>, Update.StandardWhereAndSpec<C>, Update.StandardSetSpec<T, C>
+        , _SingleUpdate {
 
     static StandardUpdateSpec<Void> create() {
         return new DomainUpdateSpecImpl<>(null);

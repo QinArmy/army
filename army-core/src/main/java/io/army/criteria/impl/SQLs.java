@@ -86,26 +86,26 @@ public abstract class SQLs extends SQLUtils {
         return StandardBatchUpdate.create(criteria);
     }
 
-    public static Delete.DomainDeleteSpec<Void> domainDelete() {
-        return ContextualDelete.create();
+    public static Delete.StandardDeleteSpec<Void> standardDelete() {
+        return StandardDelete.create();
     }
 
-    public static <C> Delete.DomainDeleteSpec<C> domainDelete(C criteria) {
-        return ContextualDelete.create(criteria);
-    }
-
-    /**
-     * @see #namedParam(String, ParamMeta)
-     */
-    public static Delete.BatchDomainDeleteSpec<Void> batchDomainDelete() {
-        return ContextualBatchDelete.create();
+    public static <C> Delete.StandardDeleteSpec<C> standardDelete(C criteria) {
+        return StandardDelete.create(criteria);
     }
 
     /**
      * @see #namedParam(String, ParamMeta)
      */
-    public static <C> Delete.BatchDomainDeleteSpec<C> batchDomainDelete(C criteria) {
-        return ContextualBatchDelete.create(criteria);
+    public static Delete.StandardBatchDeleteSpec<Void> standardBatchDelete() {
+        return StandardBatchDelete.create();
+    }
+
+    /**
+     * @see #namedParam(String, ParamMeta)
+     */
+    public static <C> Delete.StandardBatchDeleteSpec<C> standardBatchDelete(C criteria) {
+        return StandardBatchDelete.create(criteria);
     }
 
     public static Query.SelectPartSpec<Select, EmptyObject> tableSelect() {

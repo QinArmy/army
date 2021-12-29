@@ -13,7 +13,7 @@ import java.util.List;
  * This class is base interface of below :
  *     <ul>
  *         <li>{@link _BatchSingleUpdate}</li>
- *         <li>{@link _BatchDelete}</li>
+ *         <li>{@link _BatchSingleDelete}</li>
  *     </ul>
  * </p>
  */
