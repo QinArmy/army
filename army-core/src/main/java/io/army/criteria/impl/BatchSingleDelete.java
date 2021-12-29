@@ -19,7 +19,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-abstract class BatchSingleDelete<C, WR, WA, BR> extends QueryDmlStatement<C, WR, WA>
+abstract class BatchSingleDelete<C, WR, WA, BR> extends DmlWhereClause<C, WR, WA>
         implements Delete, Delete.DeleteSpec, Statement.BatchParamClause<C, BR>, _BatchSingleDelete {
 
     final CriteriaContext criteriaContext;

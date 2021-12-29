@@ -23,30 +23,30 @@ abstract class StandardSubQueries<Q extends SubQuery, C> extends StandardQuery<Q
     }
 
 
-    static <E, C> ColumnSubQuery.ColumnSelectionSpec<E, ColumnSubQuery<E>, C> columnSubQuery(@Nullable C criteria) {
+    static <E, C> ColumnSubQuery.ColumnSelectClauseSpec<E, ColumnSubQuery<E>, C> columnSubQuery(@Nullable C criteria) {
         return new StandardColumnSubQuery<>(criteria);
     }
 
-    static <E, C> ColumnSubQuery.ColumnSelectionSpec<E, ScalarQueryExpression<E>, C> scalarSubQuery(@Nullable C criteria) {
+    static <E, C> ColumnSubQuery.ColumnSelectClauseSpec<E, ScalarQueryExpression<E>, C> scalarSubQuery(@Nullable C criteria) {
         return new StandardScalarSubQuery<>(criteria);
     }
 
 
-    static <C> SelectPartSpec<SubQuery, C> unionAndSubQuery(SubQuery left, UnionType unionType, @Nullable C criteria) {
+    static <C> StandardSelectClauseSpec<SubQuery, C> unionAndSubQuery(SubQuery left, UnionType unionType, @Nullable C criteria) {
         return new UnionAndSubQuery<>(left, unionType, criteria);
     }
 
-    static <C> SelectPartSpec<RowSubQuery, C> unionAndRowSubQuery(RowSubQuery left, UnionType unionType
+    static <C> StandardSelectClauseSpec<RowSubQuery, C> unionAndRowSubQuery(RowSubQuery left, UnionType unionType
             , @Nullable C criteria) {
         return new UnionRowSubQuery<C>(left, unionType, criteria);
     }
 
-    static <E, C> SelectPartSpec<ColumnSubQuery<E>, C> unionAndColumnSubQuery(ColumnSubQuery<E> left, UnionType unionType
+    static <E, C> StandardSelectClauseSpec<ColumnSubQuery<E>, C> unionAndColumnSubQuery(ColumnSubQuery<E> left, UnionType unionType
             , @Nullable C criteria) {
         return new UnionColumnSubQuery<>(left, unionType, criteria);
     }
 
-    static <E, C> SelectPartSpec<ScalarQueryExpression<E>, C> unionAndScalarSubQuery(ScalarQueryExpression<E> left
+    static <E, C> StandardSelectClauseSpec<ScalarQueryExpression<E>, C> unionAndScalarSubQuery(ScalarQueryExpression<E> left
             , UnionType unionType, @Nullable C criteria) {
         return new UnionScalarSubQuery<>(left, unionType, criteria);
     }
@@ -116,17 +116,17 @@ abstract class StandardSubQueries<Q extends SubQuery, C> extends StandardQuery<Q
 
 
         @Override
-        public final UnionSpec<SubQuery, C> bracketsQuery() {
+        public final StandardUnionSpec<SubQuery, C> bracketsQuery() {
             return StandardUnionQuery.bracketSubQuery(this.asQuery(), this.criteria);
         }
 
         @Override
-        final UnionSpec<SubQuery, C> createUnionQuery(SubQuery left, UnionType unionType, SubQuery right) {
+        final StandardUnionSpec<SubQuery, C> createUnionQuery(SubQuery left, UnionType unionType, SubQuery right) {
             return StandardUnionQuery.unionSubQuery(left, unionType, right, this.criteria);
         }
 
         @Override
-        final SelectPartSpec<SubQuery, C> asQueryAndSelect(UnionType unionType) {
+        final StandardSelectClauseSpec<SubQuery, C> asQueryAndSelect(UnionType unionType) {
             return StandardSubQueries.unionAndSubQuery(this.asQuery(), unionType, this.criteria);
         }
 
@@ -173,17 +173,17 @@ abstract class StandardSubQueries<Q extends SubQuery, C> extends StandardQuery<Q
         }
 
         @Override
-        public final UnionSpec<RowSubQuery, C> bracketsQuery() {
+        public final StandardUnionSpec<RowSubQuery, C> bracketsQuery() {
             return StandardUnionQuery.bracketRowSubQuery(this.asQuery(), this.criteria);
         }
 
         @Override
-        final UnionSpec<RowSubQuery, C> createUnionQuery(RowSubQuery left, UnionType unionType, RowSubQuery right) {
+        final StandardUnionSpec<RowSubQuery, C> createUnionQuery(RowSubQuery left, UnionType unionType, RowSubQuery right) {
             return StandardUnionQuery.unionRowSubQuery(left, unionType, right, this.criteria);
         }
 
         @Override
-        final SelectPartSpec<RowSubQuery, C> asQueryAndSelect(UnionType unionType) {
+        final StandardSelectClauseSpec<RowSubQuery, C> asQueryAndSelect(UnionType unionType) {
             return StandardSubQueries.unionAndRowSubQuery(this.asQuery(), unionType, this.criteria);
         }
 
@@ -223,41 +223,41 @@ abstract class StandardSubQueries<Q extends SubQuery, C> extends StandardQuery<Q
      * @see #columnSubQuery(Object)
      */
     private static class StandardColumnSubQuery<E, C> extends StandardSubQueries<ColumnSubQuery<E>, C>
-            implements ColumnSubQuery<E>, ColumnSubQuery.ColumnSelectionSpec<E, ColumnSubQuery<E>, C> {
+            implements ColumnSubQuery<E>, ColumnSubQuery.ColumnSelectClauseSpec<E, ColumnSubQuery<E>, C> {
 
         StandardColumnSubQuery(@Nullable C criteria) {
             super(criteria);
         }
 
         @Override
-        public final FromSpec<ColumnSubQuery<E>, C> selectOne(Distinct distinct, Selection selection) {
+        public final StandardFromSpec<ColumnSubQuery<E>, C> selectOne(Distinct distinct, Selection selection) {
             Objects.requireNonNull(selection);
             return this.select(distinct, selection);
         }
 
         @Override
-        public final FromSpec<ColumnSubQuery<E>, C> selectOne(Selection selection) {
+        public final StandardFromSpec<ColumnSubQuery<E>, C> selectOne(Selection selection) {
             Objects.requireNonNull(selection);
             return this.select(selection);
         }
 
         @Override
-        public final FromSpec<ColumnSubQuery<E>, C> selectOne(Distinct distinct, Function<C, Selection> function) {
+        public final StandardFromSpec<ColumnSubQuery<E>, C> selectOne(Distinct distinct, Function<C, Selection> function) {
             return this.selectOne(distinct, function.apply(this.criteria));
         }
 
         @Override
-        public final UnionSpec<ColumnSubQuery<E>, C> bracketsQuery() {
+        public final StandardUnionSpec<ColumnSubQuery<E>, C> bracketsQuery() {
             return StandardUnionQuery.bracketColumnSubQuery(this.asQuery(), this.criteria);
         }
 
         @Override
-        final UnionSpec<ColumnSubQuery<E>, C> createUnionQuery(ColumnSubQuery<E> left, UnionType unionType, ColumnSubQuery<E> right) {
+        final StandardUnionSpec<ColumnSubQuery<E>, C> createUnionQuery(ColumnSubQuery<E> left, UnionType unionType, ColumnSubQuery<E> right) {
             return StandardUnionQuery.unionColumnSubQuery(left, unionType, right, this.criteria);
         }
 
         @Override
-        final SelectPartSpec<ColumnSubQuery<E>, C> asQueryAndSelect(UnionType unionType) {
+        final StandardSelectClauseSpec<ColumnSubQuery<E>, C> asQueryAndSelect(UnionType unionType) {
             return StandardSubQueries.unionAndColumnSubQuery(this.asQuery(), unionType, this.criteria);
         }
 
@@ -297,31 +297,31 @@ abstract class StandardSubQueries<Q extends SubQuery, C> extends StandardQuery<Q
      * @see #scalarSubQuery(Object)
      */
     private static class StandardScalarSubQuery<E, C> extends StandardSubQueries<ScalarQueryExpression<E>, C>
-            implements ScalarSubQuery<E>, ColumnSubQuery.ColumnSelectionSpec<E, ScalarQueryExpression<E>, C> {
+            implements ScalarSubQuery<E>, ColumnSubQuery.ColumnSelectClauseSpec<E, ScalarQueryExpression<E>, C> {
 
         private StandardScalarSubQuery(@Nullable C criteria) {
             super(criteria);
         }
 
         @Override
-        public final FromSpec<ScalarQueryExpression<E>, C> selectOne(Distinct distinct, Selection selection) {
+        public final StandardFromSpec<ScalarQueryExpression<E>, C> selectOne(Distinct distinct, Selection selection) {
             Objects.requireNonNull(selection);
             return this.select(distinct, selection);
         }
 
         @Override
-        public final FromSpec<ScalarQueryExpression<E>, C> selectOne(Selection selection) {
+        public final StandardFromSpec<ScalarQueryExpression<E>, C> selectOne(Selection selection) {
             Objects.requireNonNull(selection);
             return this.select(selection);
         }
 
         @Override
-        public final FromSpec<ScalarQueryExpression<E>, C> selectOne(Distinct distinct, Function<C, Selection> function) {
+        public final StandardFromSpec<ScalarQueryExpression<E>, C> selectOne(Distinct distinct, Function<C, Selection> function) {
             return this.selectOne(distinct, function.apply(this.criteria));
         }
 
         @Override
-        public final UnionSpec<ScalarQueryExpression<E>, C> bracketsQuery() {
+        public final StandardUnionSpec<ScalarQueryExpression<E>, C> bracketsQuery() {
             return StandardUnionQuery.bracketScalarSubQuery(this.asQuery(), this.criteria);
         }
 
@@ -338,13 +338,13 @@ abstract class StandardSubQueries<Q extends SubQuery, C> extends StandardQuery<Q
         }
 
         @Override
-        final UnionSpec<ScalarQueryExpression<E>, C> createUnionQuery(ScalarQueryExpression<E> left, UnionType unionType
+        final StandardUnionSpec<ScalarQueryExpression<E>, C> createUnionQuery(ScalarQueryExpression<E> left, UnionType unionType
                 , ScalarQueryExpression<E> right) {
             return StandardUnionQuery.unionScalarSubQuery(left, unionType, right, this.criteria);
         }
 
         @Override
-        final SelectPartSpec<ScalarQueryExpression<E>, C> asQueryAndSelect(UnionType unionType) {
+        final StandardSelectClauseSpec<ScalarQueryExpression<E>, C> asQueryAndSelect(UnionType unionType) {
             return StandardSubQueries.unionAndScalarSubQuery(this.asQuery(), unionType, this.criteria);
         }
 

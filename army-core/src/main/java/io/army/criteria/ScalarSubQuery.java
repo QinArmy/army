@@ -8,11 +8,8 @@ public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, TypeI
     Selection selection();
 
 
-    interface ScalarSelectionSpec<E, C> {
-
-        FromSpec<ScalarSubQuery<E>, C> select(Distinct distinct, Selection selection);
-
-        FromSpec<ScalarSubQuery<E>, C> select(Selection selection);
+    interface StandardScalarSubQuerySpec<C, E>
+            extends ColumnSubQuery.ColumnSelectClauseSpec<C, E, ScalarQueryExpression<E>> {
 
     }
 

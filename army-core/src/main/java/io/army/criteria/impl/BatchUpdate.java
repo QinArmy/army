@@ -24,7 +24,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-abstract class BatchUpdate<T extends IDomain, C, WR, WA, SR, BR> extends QueryDmlStatement<C, WR, WA>
+abstract class BatchUpdate<T extends IDomain, C, WR, WA, SR, BR> extends DmlWhereClause<C, WR, WA>
         implements Update, Update.UpdateSpec, Update.BatchSetClause<T, C, SR>,
         Statement.BatchParamClause<C, BR>, _Update, _BatchDml {
 

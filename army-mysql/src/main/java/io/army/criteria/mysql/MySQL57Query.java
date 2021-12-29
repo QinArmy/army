@@ -304,7 +304,7 @@ public interface MySQL57Query extends MySQLQuery {
     }
 
 
-    interface Limit57Spec<Q extends MySQLQuery, C> extends Query.LimitClause<Q, C>, Into57Clause<Q, C> {
+    interface Limit57Spec<Q extends MySQLQuery, C> extends StandardLimitClause<Q, C>, Into57Clause<Q, C> {
 
         @Override
         Into57Clause<Q, C> limit(long rowCount);

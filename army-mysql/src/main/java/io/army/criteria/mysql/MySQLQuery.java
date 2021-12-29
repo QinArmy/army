@@ -9,7 +9,7 @@ import java.util.function.Predicate;
 public interface MySQLQuery extends Query, DialectStatement {
 
 
-    interface MySQLSelectPartSpec<C, F> extends Query.SelectPartSpec<C, F> {
+    interface MySQLSelectPartSpec<C, F> extends StandardSelectClauseSpec<C, F> {
 
         <S extends SelectPart> F select(List<Hint> hints, List<SQLModifier> modifiers, Function<C, List<S>> function);
 

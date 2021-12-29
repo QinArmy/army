@@ -19,7 +19,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 abstract class StandardQuery<Q extends Query, C> extends StandardPartQuery<Q, C> implements
-        Query.SelectPartSpec<C, Query.FromSpec<Q, C>>, Query.FromSpec<Q, C>, Query.TableJoinSpec<Q, C>
+        Query.StandardSelectClauseSpec<C, Query.StandardFromSpec<Q, C>>, Query.StandardFromSpec<Q, C>, Query.TableJoinSpec<Q, C>
         , Query.WhereAndSpec<Q, C>, Query.HavingSpec<Q, C>, _Query {
 
 
@@ -47,27 +47,27 @@ abstract class StandardQuery<Q extends Query, C> extends StandardPartQuery<Q, C>
     /*################################## blow SelectPartSpec method ##################################*/
 
     @Override
-    public final <S extends SelectPart> Query.FromSpec<Q, C> select(List<SQLModifier> modifiers, Function<C, List<S>> function) {
+    public final <S extends SelectPart> StandardFromSpec<Q, C> select(List<SQLModifier> modifiers, Function<C, List<S>> function) {
         return this.select(modifiers, function.apply(this.criteria));
     }
 
     @Override
-    public final <S extends SelectPart> Query.FromSpec<Q, C> select(List<SQLModifier> modifiers, Supplier<List<S>> supplier) {
+    public final <S extends SelectPart> StandardFromSpec<Q, C> select(List<SQLModifier> modifiers, Supplier<List<S>> supplier) {
         return this.select(modifiers, supplier.get());
     }
 
     @Override
-    public final <S extends SelectPart> Query.FromSpec<Q, C> select(Function<C, List<S>> function) {
+    public final <S extends SelectPart> StandardFromSpec<Q, C> select(Function<C, List<S>> function) {
         return this.select(function.apply(this.criteria));
     }
 
     @Override
-    public final <S extends SelectPart> Query.FromSpec<Q, C> select(Supplier<List<S>> supplier) {
+    public final <S extends SelectPart> StandardFromSpec<Q, C> select(Supplier<List<S>> supplier) {
         return this.select(supplier.get());
     }
 
     @Override
-    public final Query.FromSpec<Q, C> select(SelectPart selectPart) {
+    public final StandardFromSpec<Q, C> select(SelectPart selectPart) {
         if (this instanceof ColumnSubQuery && !(selectPart instanceof Selection)) {
             throw _Exceptions.castCriteriaApi();
         }
@@ -76,7 +76,7 @@ abstract class StandardQuery<Q extends Query, C> extends StandardPartQuery<Q, C>
     }
 
     @Override
-    public final Query.FromSpec<Q, C> select(SelectPart selectPart1, SelectPart selectPart2) {
+    public final StandardFromSpec<Q, C> select(SelectPart selectPart1, SelectPart selectPart2) {
         if (this instanceof ColumnSubQuery) {
             throw _Exceptions.castCriteriaApi();
         }
@@ -85,7 +85,7 @@ abstract class StandardQuery<Q extends Query, C> extends StandardPartQuery<Q, C>
     }
 
     @Override
-    public final Query.FromSpec<Q, C> select(SelectPart selectPart1, SelectPart selectPart2, SelectPart selectPart3) {
+    public final StandardFromSpec<Q, C> select(SelectPart selectPart1, SelectPart selectPart2, SelectPart selectPart3) {
         if (this instanceof ColumnSubQuery) {
             throw _Exceptions.castCriteriaApi();
         }
@@ -94,7 +94,7 @@ abstract class StandardQuery<Q extends Query, C> extends StandardPartQuery<Q, C>
     }
 
     @Override
-    public final <S extends SelectPart> Query.FromSpec<Q, C> select(List<SQLModifier> modifiers, List<S> selectPartList) {
+    public final <S extends SelectPart> StandardFromSpec<Q, C> select(List<SQLModifier> modifiers, List<S> selectPartList) {
         if (this instanceof ColumnSubQuery) {
             throw _Exceptions.castCriteriaApi();
         }
@@ -107,7 +107,7 @@ abstract class StandardQuery<Q extends Query, C> extends StandardPartQuery<Q, C>
     }
 
     @Override
-    public final <S extends SelectPart> Query.FromSpec<Q, C> select(List<S> selectPartList) {
+    public final <S extends SelectPart> StandardFromSpec<Q, C> select(List<S> selectPartList) {
         if (this instanceof ColumnSubQuery) {
             throw _Exceptions.castCriteriaApi();
         }

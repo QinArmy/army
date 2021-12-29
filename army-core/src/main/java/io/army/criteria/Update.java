@@ -23,16 +23,16 @@ public interface Update extends Statement {
 
     interface StandardUpdateSpec<C> {
 
-        <T extends IDomain> StandardSetSpec<T, C> update(TableMeta<T> table, String tableAlias);
+        StandardSetSpec<C> update(TableMeta<?> table, String tableAlias);
 
     }
 
-    interface StandardSetSpec<T extends IDomain, C> extends SetClause<T, C, StandardWhereSpec<T, C>> {
+    interface StandardSetSpec<C> extends SetClause<C, StandardWhereSpec<C>> {
 
     }
 
 
-    interface StandardWhereSpec<T extends IDomain, C> extends StandardSetSpec<T, C>
+    interface StandardWhereSpec<C> extends StandardSetSpec<C>
             , Statement.WhereClause<C, Update.UpdateSpec, StandardWhereAndSpec<C>> {
 
 
@@ -43,7 +43,7 @@ public interface Update extends Statement {
     }
 
 
-    interface SetClause<T extends IDomain, C, SR> {
+    interface SetClause<C, SR> {
 
         SR set(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList);
 

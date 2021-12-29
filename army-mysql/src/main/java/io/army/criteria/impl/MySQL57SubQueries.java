@@ -593,22 +593,22 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends MySQL57Pa
         }
 
         @Override
-        public final UnionSpec<MySQL57ScalarSubQuery<E>, C> bracketsQuery() {
+        public final StandardUnionSpec<MySQL57ScalarSubQuery<E>, C> bracketsQuery() {
             return ComposeQueries.brackets(this.actualSelect.criteria, asQuery());
         }
 
         @Override
-        public final UnionSpec<MySQL57ScalarSubQuery<E>, C> union(Function<C, MySQL57ScalarSubQuery<E>> function) {
+        public final StandardUnionSpec<MySQL57ScalarSubQuery<E>, C> union(Function<C, MySQL57ScalarSubQuery<E>> function) {
             return ComposeQueries.compose(this.actualSelect.criteria, asQuery(), UnionType.UNION, function);
         }
 
         @Override
-        public final UnionSpec<MySQL57ScalarSubQuery<E>, C> unionAll(Function<C, MySQL57ScalarSubQuery<E>> function) {
+        public final StandardUnionSpec<MySQL57ScalarSubQuery<E>, C> unionAll(Function<C, MySQL57ScalarSubQuery<E>> function) {
             return ComposeQueries.compose(this.actualSelect.criteria, asQuery(), UnionType.UNION_ALL, function);
         }
 
         @Override
-        public final UnionSpec<MySQL57ScalarSubQuery<E>, C> unionDistinct(Function<C, MySQL57ScalarSubQuery<E>> function) {
+        public final StandardUnionSpec<MySQL57ScalarSubQuery<E>, C> unionDistinct(Function<C, MySQL57ScalarSubQuery<E>> function) {
             return ComposeQueries.compose(this.actualSelect.criteria, asQuery(), UnionType.UNION_DISTINCT, function);
         }
 

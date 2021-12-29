@@ -10,7 +10,7 @@ import io.army.util._Assert;
 import java.util.Collections;
 import java.util.List;
 
-abstract class StandardPartQuery<Q extends Query, C> implements Query.UnionSpec<Q, C>, Query.OrderBySpec<Q, C>
+abstract class StandardPartQuery<Q extends Query, C> implements Query.StandardUnionSpec<Q, C>, Query.OrderBySpec<Q, C>
         , _PartQuery, Query {
 
     final C criteria;

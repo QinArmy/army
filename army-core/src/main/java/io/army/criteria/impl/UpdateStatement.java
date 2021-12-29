@@ -5,7 +5,6 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Update;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.modelgen._MetaBridge;
@@ -21,8 +20,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-abstract class SimpleUpdate<T extends IDomain, C, WR, WA, SR> extends QueryDmlStatement<C, WR, WA>
-        implements Update, Update.UpdateSpec, Update.SetClause<T, C, SR>, _Update {
+abstract class UpdateStatement<C, WR, WA, SR> extends DmlWhereClause<C, WR, WA>
+        implements Update, Update.UpdateSpec, Update.SetClause<C, SR>, _Update {
 
     final CriteriaContext criteriaContext;
 
@@ -30,7 +29,7 @@ abstract class SimpleUpdate<T extends IDomain, C, WR, WA, SR> extends QueryDmlSt
 
     List<SetValuePart> valueExpList = new ArrayList<>();
 
-    SimpleUpdate(@Nullable C criteria) {
+    UpdateStatement(@Nullable C criteria) {
         super(criteria);
         this.criteriaContext = new CriteriaContextImpl<>(criteria);
         if (this instanceof WithElement) {

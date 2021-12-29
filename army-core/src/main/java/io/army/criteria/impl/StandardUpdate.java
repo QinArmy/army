@@ -17,13 +17,12 @@ import java.util.Objects;
  * @param <T> domain java type
  * @param <C> criteria java type used to dynamic update and sub query
  */
-final class StandardUpdate<T extends IDomain, C> extends SimpleUpdate<
-        T, // T
+final class StandardUpdate<T extends IDomain, C> extends UpdateStatement<
         C,// C
         Update.UpdateSpec, // WR
         Update.StandardWhereAndSpec<C>, // WA
-        Update.StandardWhereSpec<T, C>   // SR
-        > implements Update.StandardWhereSpec<T, C>, Update.StandardWhereAndSpec<C>, Update.StandardSetSpec<T, C>
+        Update.StandardWhereSpec<C>   // SR
+        > implements Update.StandardWhereSpec<C>, Update.StandardWhereAndSpec<C>, Update.StandardSetSpec<C>
         , _SingleUpdate {
 
     static StandardUpdateSpec<Void> create() {
@@ -72,7 +71,7 @@ final class StandardUpdate<T extends IDomain, C> extends SimpleUpdate<
         }
 
         @Override
-        public <T extends IDomain> StandardSetSpec<T, C> update(final TableMeta<T> table, final String tableAlias) {
+        public StandardSetSpec<C> update(final TableMeta<?> table, final String tableAlias) {
             _DialectUtils.validateUpdateTableAlias(table, tableAlias);
             return new StandardUpdate<>(table, tableAlias, this.criteria);
         }

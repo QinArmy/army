@@ -108,50 +108,50 @@ public abstract class SQLs extends SQLUtils {
         return StandardBatchDelete.create(criteria);
     }
 
-    public static Query.SelectPartSpec<Select, EmptyObject> tableSelect() {
-        return StandardSelect.create(EmptyObject.getInstance());
+    public static Select.StandardSelect<Void> standardSelect() {
+        throw new UnsupportedOperationException();
     }
 
 
-    public static <C> Query.SelectPartSpec<Select, C> tableSelect(C nonNullCriteria) {
-        Objects.requireNonNull(nonNullCriteria);
-        return StandardSelect.create(nonNullCriteria);
+    public static <C> Select.StandardSelect<C> standardSelect(C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
     }
 
-    public static Query.SelectPartSpec<SubQuery, Void> subQuery() {
-        return StandardSubQueries.subQuery(null);
+    public static SubQuery.StandardSubQuerySpec<Void> standardSubQuery() {
+        throw new UnsupportedOperationException();
     }
 
-    public static <C> Query.SelectPartSpec<SubQuery, C> subQuery(C nonNullCriteria) {
-        Objects.requireNonNull(nonNullCriteria);
-        return StandardSubQueries.subQuery(nonNullCriteria);
+    public static <C> SubQuery.StandardSubQuerySpec<C> standardSubQuery(C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
     }
 
-    public static Query.SelectPartSpec<RowSubQuery, Void> rowSubQuery() {
-        return StandardSubQueries.rowSubQuery(null);
+    public static RowSubQuery.StandardRowSubQuerySpec<Void> standardRowSubQuery() {
+        throw new UnsupportedOperationException();
     }
 
-    public static <C> Query.SelectPartSpec<RowSubQuery, C> rowSubQuery(C nonNullCriteria) {
-        Objects.requireNonNull(nonNullCriteria);
-        return StandardSubQueries.rowSubQuery(nonNullCriteria);
+    public static <C> RowSubQuery.StandardRowSubQuerySpec<C> standardRowSubQuery(C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
     }
 
-    public static <E, C> ColumnSubQuery.ColumnSelectionSpec<E, ColumnSubQuery<E>, Void> columnSubQuery() {
-        return StandardSubQueries.columnSubQuery(null);
+    public static <E> ColumnSubQuery.StandardColumnSubQuerySpec<Void, E> standardColumnSubQuery() {
+        throw new UnsupportedOperationException();
     }
 
-    public static <E, C> ColumnSubQuery.ColumnSelectionSpec<E, ColumnSubQuery<E>, C> columnSubQuery(C nonNullCriteria) {
-        Objects.requireNonNull(nonNullCriteria);
-        return StandardSubQueries.columnSubQuery(nonNullCriteria);
+    public static <C, E> ColumnSubQuery.StandardColumnSubQuerySpec<C, E> standardColumnSubQuery(C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
     }
 
-    public static <E> ColumnSubQuery.ColumnSelectionSpec<E, ScalarQueryExpression<E>, Void> scalarSubQuery() {
-        return StandardSubQueries.scalarSubQuery(null);
+    public static <E> ScalarSubQuery.StandardScalarSubQuerySpec<Void, E> standardScalarSubQuery() {
+        throw new UnsupportedOperationException();
     }
 
-    public static <E, C> ColumnSubQuery.ColumnSelectionSpec<E, ScalarQueryExpression<E>, C> scalarSubQuery(C nonNullCriteria) {
-        Objects.requireNonNull(nonNullCriteria);
-        return StandardSubQueries.scalarSubQuery(nonNullCriteria);
+    public static <C, E> ScalarSubQuery.StandardScalarSubQuerySpec<C, E> standardScalarSubQuery(C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
     }
 
 
@@ -177,7 +177,7 @@ public abstract class SQLs extends SQLUtils {
 
     /**
      * <p>
-     * eg: {@link Query.UnionSpec#orderBy(SortPart)}
+     * eg: {@link Query.StandardUnionSpec#orderBy(SortPart)}
      * </p>
      */
     public static <E> Expression<E> composeRef(String selectionAlias) {

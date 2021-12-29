@@ -14,7 +14,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-abstract class MySQL57PartQuery<Q extends MySQLQuery, C> implements Query.UnionSpec<Q, C>, Query.OrderBySpec<Q, C>
+abstract class MySQL57PartQuery<Q extends MySQLQuery, C> implements Query.StandardUnionSpec<Q, C>, Query.OrderBySpec<Q, C>
         , _PartQuery, MySQLQuery {
 
     final C criteria;
@@ -48,17 +48,17 @@ abstract class MySQL57PartQuery<Q extends MySQLQuery, C> implements Query.UnionS
     }
 
     @Override
-    public SelectPartSpec<Q, C> union() {
+    public StandardSelectClauseSpec<Q, C> union() {
         return null;
     }
 
     @Override
-    public SelectPartSpec<Q, C> unionAll() {
+    public StandardSelectClauseSpec<Q, C> unionAll() {
         return null;
     }
 
     @Override
-    public SelectPartSpec<Q, C> unionDistinct() {
+    public StandardSelectClauseSpec<Q, C> unionDistinct() {
         return null;
     }
 

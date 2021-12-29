@@ -1,180 +1,124 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Expression;
-import io.army.criteria.Update;
+import io.army.criteria.Statement;
+import io.army.criteria.SubQuery;
+import io.army.criteria.impl.inner._MultiUpdate;
 import io.army.lang.Nullable;
-import io.army.meta.FieldMeta;
-import io.army.util._Exceptions;
+import io.army.meta.TableMeta;
 
-import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-abstract class MultiUpdate<C, JT, JS, WR, WA, SR> extends MultiQueryDmlStatement<C, JT, JS, WR, WA>
-        implements Update.MultiSetSpec<C, SR> {
-
+abstract class MultiUpdate<C, JT, JS, WR, WA, SR> extends UpdateStatement<C, WR, WA, SR>
+        implements Statement.JoinClause<C, JT, JS>, _MultiUpdate {
 
     MultiUpdate(@Nullable C criteria) {
         super(criteria);
     }
 
-
     @Override
-    public final SR set(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList) {
-        final int fieldSize = fieldList.size();
-        if (fieldSize == 0) {
-            throw _Exceptions.updateFieldListEmpty();
-        }
-        if (fieldSize != valueList.size()) {
-            throw _Exceptions.fieldAndValueSizeNotMatch(fieldSize, valueList.size());
-        }
-        for (int i = 0; i < fieldSize; i++) {
-            this.set(fieldList.get(i), valueList.get(i));
-        }
-        return (SR) this;
+    public final JT leftJoin(TableMeta<?> table, String tableAlias) {
+        return this.createTableBlock(table, tableAlias, JoinType.LEFT_JOIN);
     }
 
     @Override
-    public final SR set(FieldMeta<?, ?> field, @Nullable Object value) {
-        final Expression<?> expression;
-        if (value == null) {
-            expression = SQLs.nullWord();
-        } else {
-            expression = SQLs.paramWithExp(field, value);
-        }
-        return this.set(field, expression);
+    public final JS leftJoin(Function<C, SubQuery> function, String subQueryAlia) {
+        return this.createTableBlock(function, subQueryAlia, JoinType.LEFT_JOIN);
     }
 
     @Override
-    public final SR set(FieldMeta<?, ?> field, Expression<?> value) {
-        return (SR) this;
+    public final JS leftJoin(Supplier<SubQuery> supplier, String subQueryAlia) {
+        return this.createTableBlock(supplier, subQueryAlia, JoinType.LEFT_JOIN);
     }
 
     @Override
-    public final SR set(FieldMeta<?, ?> field, Function<C, Expression<?>> function) {
-        return null;
+    public final JT ifLeftJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
+        return this.ifCreateTableBlock(predicate, table, tableAlias, JoinType.LEFT_JOIN);
     }
 
     @Override
-    public final SR set(FieldMeta<?, ?> field, Supplier<Expression<?>> supplier) {
-        return null;
+    public final JS ifLeftJoin(Function<C, SubQuery> function, String subQueryAlia) {
+        return this.ifCreateSubQueryBlock(function, subQueryAlia, JoinType.LEFT_JOIN);
     }
 
     @Override
-    public final SR setNull(FieldMeta<?, ?> field) {
-        return null;
+    public final JS ifLeftJoin(Supplier<SubQuery> supplier, String subQueryAlia) {
+        return this.ifCreateSubQueryBlock(supplier, subQueryAlia, JoinType.LEFT_JOIN);
     }
 
     @Override
-    public final SR setDefault(FieldMeta<?, ?> field) {
-        return null;
+    public final JT join(TableMeta<?> table, String tableAlias) {
+        return this.createTableBlock(table, tableAlias, JoinType.JOIN);
     }
 
     @Override
-    public final SR ifSetNull(Predicate<C> predicate, FieldMeta<?, ?> field) {
-        return null;
+    public final JS join(Function<C, SubQuery> function, String subQueryAlia) {
+        return this.createTableBlock(function, subQueryAlia, JoinType.JOIN);
     }
 
     @Override
-    public final SR ifSetDefault(Predicate<C> predicate, FieldMeta<?, ?> field) {
-        return null;
+    public final JS join(Supplier<SubQuery> supplier, String subQueryAlia) {
+        return this.createTableBlock(supplier, subQueryAlia, JoinType.JOIN);
     }
 
     @Override
-    public final <F extends Number> SR setPlus(FieldMeta<?, F> field, F value) {
-        return null;
+    public final JT ifJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
+        return this.ifCreateTableBlock(predicate, table, tableAlias, JoinType.JOIN);
     }
 
     @Override
-    public final <F extends Number> SR setPlus(FieldMeta<?, F> field, Expression<?> value) {
-        return null;
+    public final JS ifJoin(Function<C, SubQuery> function, String subQueryAlia) {
+        return this.ifCreateSubQueryBlock(function, subQueryAlia, JoinType.JOIN);
     }
 
     @Override
-    public final <F extends Number> SR setMinus(FieldMeta<?, F> field, F value) {
-        return null;
+    public final JS ifJoin(Supplier<SubQuery> supplier, String subQueryAlia) {
+        return this.ifCreateSubQueryBlock(supplier, subQueryAlia, JoinType.JOIN);
     }
 
     @Override
-    public final <F extends Number> SR setMinus(FieldMeta<?, F> field, Expression<?> value) {
-        return null;
+    public final JT rightJoin(TableMeta<?> table, String tableAlias) {
+        return this.createTableBlock(table, tableAlias, JoinType.RIGHT_JOIN);
     }
 
     @Override
-    public final <F extends Number> SR setMultiply(FieldMeta<?, F> field, F value) {
-        return null;
+    public final JS rightJoin(Function<C, SubQuery> function, String subQueryAlia) {
+        return this.createTableBlock(function, subQueryAlia, JoinType.RIGHT_JOIN);
     }
 
     @Override
-    public final <F extends Number> SR setMultiply(FieldMeta<?, F> field, Expression<?> value) {
-        return null;
+    public final JS rightJoin(Supplier<SubQuery> supplier, String subQueryAlia) {
+        return this.createTableBlock(supplier, subQueryAlia, JoinType.RIGHT_JOIN);
     }
 
     @Override
-    public final <F extends Number> SR setDivide(FieldMeta<?, F> field, F value) {
-        return null;
+    public final JT ifRightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
+        return this.ifCreateTableBlock(predicate, table, tableAlias, JoinType.RIGHT_JOIN);
     }
 
     @Override
-    public final <F extends Number> SR setDivide(FieldMeta<?, F> field, Expression<F> value) {
-        return null;
+    public final JS ifRightJoin(Function<C, SubQuery> function, String subQueryAlia) {
+        return this.ifCreateSubQueryBlock(function, subQueryAlia, JoinType.RIGHT_JOIN);
     }
 
     @Override
-    public final <F extends Number> SR setMod(FieldMeta<?, F> field, F value) {
-        return null;
+    public final JS ifRightJoin(Supplier<SubQuery> supplier, String subQueryAlia) {
+        return this.ifCreateSubQueryBlock(supplier, subQueryAlia, JoinType.RIGHT_JOIN);
     }
 
-    @Override
-    public final <F extends Number> SR setMod(FieldMeta<?, F> field, Expression<F> value) {
-        return null;
-    }
 
-    @Override
-    public final SR ifSet(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList) {
-        return null;
-    }
+    abstract JT createTableBlock(TableMeta<?> table, String tableAlias, JoinType joinType);
 
-    @Override
-    public final SR ifSet(FieldMeta<?, ?> field, @Nullable Object value) {
-        return null;
-    }
+    abstract JT ifCreateTableBlock(Predicate<C> predicate, TableMeta<?> table, String tableAlias, JoinType joinType);
 
-    @Override
-    public final SR ifSet(FieldMeta<?, ?> field, Function<C, Expression<?>> function) {
-        return null;
-    }
+    abstract JS createTableBlock(Supplier<SubQuery> supplier, String tableAlias, JoinType joinType);
 
-    @Override
-    public final SR ifSet(FieldMeta<?, ?> field, Supplier<Expression<?>> supplier) {
-        return null;
-    }
+    abstract JS createTableBlock(Function<C, SubQuery> function, String tableAlias, JoinType joinType);
 
-    @Override
-    public final <F extends Number> SR ifSetPlus(FieldMeta<?, ?> field, @Nullable F value) {
-        return null;
-    }
+    abstract JS ifCreateSubQueryBlock(Supplier<SubQuery> supplier, String tableAlias, JoinType joinType);
 
-    @Override
-    public final <F extends Number> SR ifSetMinus(FieldMeta<?, ?> field, @Nullable F value) {
-        return null;
-    }
-
-    @Override
-    public final <F extends Number> SR ifSetMultiply(FieldMeta<?, ?> field, @Nullable F value) {
-        return null;
-    }
-
-    @Override
-    public final <F extends Number> SR ifSetDivide(FieldMeta<?, ?> field, @Nullable F value) {
-        return null;
-    }
-
-    @Override
-    public final <F extends Number> SR ifSetMod(FieldMeta<?, ?> field, @Nullable F value) {
-        return null;
-    }
+    abstract JS ifCreateSubQueryBlock(Function<C, SubQuery> function, String tableAlias, JoinType joinType);
 
 
 }

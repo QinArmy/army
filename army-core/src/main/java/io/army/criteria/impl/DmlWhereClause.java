@@ -13,7 +13,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-abstract class QueryDmlStatement<C, WR, WA> implements Statement, Statement.WhereClause<C, WR, WA>
+abstract class DmlWhereClause<C, WR, WA> implements Statement, Statement.WhereClause<C, WR, WA>
         , Statement.WhereAndClause<C, WA> {
 
 
@@ -23,7 +23,7 @@ abstract class QueryDmlStatement<C, WR, WA> implements Statement, Statement.Wher
 
     boolean prepared;
 
-    QueryDmlStatement(@Nullable C criteria) {
+    DmlWhereClause(@Nullable C criteria) {
         this.criteria = criteria;
     }
 

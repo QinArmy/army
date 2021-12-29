@@ -4,13 +4,19 @@ import java.util.function.Function;
 
 public interface ColumnSubQuery<E> extends SubQuery {
 
-    interface ColumnSelectionSpec<E, Q extends ColumnSubQuery<E>, C> {
 
-        FromSpec<Q, C> selectOne(Distinct distinct, Selection selection);
+    interface StandardColumnSubQuerySpec<C, E>
+            extends ColumnSubQuery<ColumnSelectClauseSpec<C, E, ColumnSubQuery<E>>> {
 
-        FromSpec<Q, C> selectOne(Selection selection);
+    }
 
-        FromSpec<Q, C> selectOne(Distinct distinct, Function<C, Selection> function);
+    interface ColumnSelectClauseSpec<C, E, Q extends ColumnSubQuery<E>> {
+
+        StandardFromSpec<C, Q> selectOne(Distinct distinct, Selection selection);
+
+        StandardFromSpec<C, Q> selectOne(Selection selection);
+
+        StandardFromSpec<C, Q> selectOne(Distinct distinct, Function<C, Selection> function);
 
 
     }

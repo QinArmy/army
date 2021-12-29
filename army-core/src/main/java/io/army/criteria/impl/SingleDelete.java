@@ -11,7 +11,7 @@ import io.army.util._Exceptions;
 
 import java.util.List;
 
-abstract class SingleDelete<C, WR, WA> extends QueryDmlStatement<C, WR, WA>
+abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, WR, WA>
         implements Delete, Delete.DeleteSpec, _SingleDelete {
 
     final CriteriaContext criteriaContext;
