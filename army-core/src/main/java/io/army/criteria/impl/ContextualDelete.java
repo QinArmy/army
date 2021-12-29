@@ -24,7 +24,7 @@ import java.util.function.Supplier;
  * @param <C> criteria java type used to crate dynamic delete and sub query
  */
 final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
-        , Dml.DeleteWhereSpec<C>, Dml.WhereAndSpec<C, Delete>, Dml.DmlSpec<Delete>, _SingleDelete {
+        , Delete.WhereSpec<C>, Dml.WhereAndSpec<C, Delete>, Dml.DmlSpec<Delete>, _SingleDelete {
 
     static DomainDeleteSpec<Void> create() {
         return new DomainDeleteSpecImpl<>(null);
@@ -193,7 +193,7 @@ final class ContextualDelete<C> extends AbstractSQLDebug implements Delete
         }
 
         @Override
-        public DeleteWhereSpec<C> deleteFrom(TableMeta<? extends IDomain> table, String tableAlias) {
+        public WhereSpec<C> deleteFrom(TableMeta<? extends IDomain> table, String tableAlias) {
             return new ContextualDelete<>(table, tableAlias, this.criteria);
         }
 

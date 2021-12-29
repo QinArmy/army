@@ -91,8 +91,8 @@ abstract class SQLUtils {
 
 
     /**
-     * @see SQLs#batchDomainUpdate()
-     * @see SQLs#batchDomainUpdate(Object)
+     * @see SQLs#standardBatchUpdate()
+     * @see SQLs#standardBatchUpdate(Object)
      * @see SQLs#batchDomainDelete()
      * @see SQLs#batchDomainDelete(Object)
      */
@@ -101,8 +101,8 @@ abstract class SQLUtils {
     }
 
     /**
-     * @see SQLs#batchDomainUpdate()
-     * @see SQLs#batchDomainUpdate(Object)
+     * @see SQLs#standardBatchUpdate()
+     * @see SQLs#standardBatchUpdate(Object)
      * @see SQLs#batchDomainDelete()
      * @see SQLs#batchDomainDelete(Object)
      */
@@ -112,8 +112,8 @@ abstract class SQLUtils {
 
 
     /**
-     * @see SQLs#batchDomainUpdate()
-     * @see SQLs#batchDomainUpdate(Object)
+     * @see SQLs#standardBatchUpdate()
+     * @see SQLs#standardBatchUpdate(Object)
      * @see SQLs#batchDomainDelete()
      * @see SQLs#batchDomainDelete(Object)
      */
@@ -122,8 +122,8 @@ abstract class SQLUtils {
     }
 
     /**
-     * @see SQLs#batchDomainUpdate()
-     * @see SQLs#batchDomainUpdate(Object)
+     * @see SQLs#standardBatchUpdate()
+     * @see SQLs#standardBatchUpdate(Object)
      * @see SQLs#batchDomainDelete()
      * @see SQLs#batchDomainDelete(Object)
      */

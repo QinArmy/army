@@ -16,7 +16,9 @@ import java.util.function.Supplier;
  */
 public interface Query extends Statement {
 
-    boolean requiredBrackets();
+    default boolean requiredBrackets() {
+        throw new UnsupportedOperationException();
+    }
 
 
     interface QuerySpec<Q extends Query> {
@@ -28,27 +30,25 @@ public interface Query extends Statement {
     /*################################## blow select clause  interfaces ##################################*/
 
 
-    interface SelectPartSpec<Q extends Query, C> {
+    interface SelectPartSpec<C, F> {
 
-        <S extends SelectPart> FromSpec<Q, C> select(Distinct distinct, Function<C, List<S>> function);
+        <S extends SelectPart> F select(List<SQLModifier> modifiers, Function<C, List<S>> function);
 
-        <S extends SelectPart> FromSpec<Q, C> select(Distinct distinct, Supplier<List<S>> supplier);
+        <S extends SelectPart> F select(List<SQLModifier> modifiers, Supplier<List<S>> supplier);
 
-        <S extends SelectPart> FromSpec<Q, C> select(Function<C, List<S>> function);
+        <S extends SelectPart> F select(Function<C, List<S>> function);
 
-        <S extends SelectPart> FromSpec<Q, C> select(Supplier<List<S>> supplier);
+        <S extends SelectPart> F select(Supplier<List<S>> supplier);
 
-        FromSpec<Q, C> select(Distinct distinct, SelectPart selectPart);
+        F select(SelectPart selectPart);
 
-        FromSpec<Q, C> select(SelectPart selectPart);
+        F select(SelectPart selectPart1, SelectPart selectPart2);
 
-        FromSpec<Q, C> select(SelectPart selectPart1, SelectPart selectPart2);
+        F select(SelectPart selectPart1, SelectPart selectPart2, SelectPart selectPart3);
 
-        FromSpec<Q, C> select(SelectPart selectPart1, SelectPart selectPart2, SelectPart selectPart3);
+        <S extends SelectPart> F select(List<SQLModifier> modifiers, List<S> selectPartList);
 
-        <S extends SelectPart> FromSpec<Q, C> select(Distinct distinct, List<S> selectPartList);
-
-        <S extends SelectPart> FromSpec<Q, C> select(List<S> selectPartList);
+        <S extends SelectPart> F select(List<S> selectPartList);
     }
 
 

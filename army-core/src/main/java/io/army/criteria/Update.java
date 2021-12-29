@@ -5,7 +5,6 @@ import io.army.criteria.impl.SQLs;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
-import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
@@ -16,228 +15,233 @@ import java.util.function.Supplier;
 public interface Update extends Dml, SQLDebug {
 
 
-    interface DomainUpdateSpec<C> {
+    interface UpdateSpec {
 
-        <T extends IDomain> SetSpec<T, C, WhereSpec<T, C>> update(TableMeta<T> table, String tableAlias);
+        Update asUpdate();
     }
 
 
-    interface SetSpec<T extends IDomain, C, S> {
+    interface StandardUpdateSpec<C> {
 
-        S set(FieldMeta<? super T, ?> field, @Nullable Object value);
+        <T extends IDomain> StandardSetSpec<T, C> update(TableMeta<T> table, String tableAlias);
 
-        S set(FieldMeta<? super T, ?> field, Expression<?> value);
+    }
 
-        <F> S set(FieldMeta<? super T, F> field, Function<C, Expression<F>> function);
-
-        <F> S set(FieldMeta<? super T, F> field, Supplier<Expression<F>> supplier);
-
-        S setNull(FieldMeta<? super T, ?> field);
-
-
-        S setDefault(FieldMeta<? super T, ?> field);
-
-        <F extends Number> S setPlus(FieldMeta<? super T, F> field, F value);
-
-        <F extends Number> S setPlus(FieldMeta<? super T, F> field, Expression<F> value);
-
-        <F extends Number> S setMinus(FieldMeta<? super T, F> field, F value);
-
-        <F extends Number> S setMinus(FieldMeta<? super T, F> field, Expression<F> value);
-
-        <F extends Number> S setMultiply(FieldMeta<? super T, F> field, F value);
-
-        <F extends Number> S setMultiply(FieldMeta<? super T, F> field, Expression<F> value);
-
-        <F extends Number> S setDivide(FieldMeta<? super T, F> field, F value);
-
-        <F extends Number> S setDivide(FieldMeta<? super T, F> field, Expression<F> value);
-
-        <F extends Number> S setMod(FieldMeta<? super T, F> field, F value);
-
-        <F extends Number> S setMod(FieldMeta<? super T, F> field, Expression<F> value);
-
-        S ifSet(List<FieldMeta<? super T, ?>> fieldList, List<Expression<?>> valueList);
-
-        <F> S ifSet(FieldMeta<? super T, F> field, @Nullable F value);
-
-        <F> S ifSet(FieldMeta<? super T, F> field, Function<C, Expression<F>> function);
-
-        <F> S ifSet(FieldMeta<? super T, F> field, Supplier<Expression<F>> supplier);
-
-        <F extends Number> S ifSetPlus(FieldMeta<? super T, F> field, @Nullable F value);
-
-        <F extends Number> S ifSetMinus(FieldMeta<? super T, F> field, @Nullable F value);
-
-        <F extends Number> S ifSetMultiply(FieldMeta<? super T, F> field, @Nullable F value);
-
-        <F extends Number> S ifSetDivide(FieldMeta<? super T, F> field, @Nullable F value);
-
-        <F extends Number> S ifSetMod(FieldMeta<? super T, F> field, @Nullable F value);
-
+    interface StandardSetSpec<T extends IDomain, C> extends Update.SingleSetClause<T, C, StandardWhereSpec<T, C>> {
 
     }
 
 
-    interface WhereSpec<T extends IDomain, C> extends SetSpec<T, C, WhereSpec<T, C>> {
+    interface StandardWhereSpec<T extends IDomain, C> extends StandardSetSpec<T, C>
+            , Statement.WhereClause<C, Update.UpdateSpec, StandardWhereAndSpec<C>> {
 
-        DmlSpec<Update> where(List<IPredicate> predicates);
-
-        DmlSpec<Update> where(Function<C, List<IPredicate>> function);
-
-        DmlSpec<Update> where(Supplier<List<IPredicate>> supplier);
-
-        WhereAndSpec<C, Update> where(IPredicate predicate);
 
     }
+
+    interface StandardWhereAndSpec<C> extends Statement.WhereAndClause<C, StandardWhereAndSpec<C>>, Update.UpdateSpec {
+
+    }
+
+
+    interface SingleSetClause<T extends IDomain, C, SR> {
+
+        SR set(List<FieldMeta<? super T, ?>> fieldList, List<Expression<?>> valueList);
+
+        SR set(FieldMeta<? super T, ?> field, @Nullable Object value);
+
+        SR set(FieldMeta<? super T, ?> field, Expression<?> value);
+
+        <F> SR set(FieldMeta<? super T, F> field, Function<C, Expression<F>> function);
+
+        <F> SR set(FieldMeta<? super T, F> field, Supplier<Expression<F>> supplier);
+
+        SR setNull(FieldMeta<? super T, ?> field);
+
+        SR setDefault(FieldMeta<? super T, ?> field);
+
+        <F extends Number> SR setPlus(FieldMeta<? super T, F> field, F value);
+
+        <F extends Number> SR setPlus(FieldMeta<? super T, F> field, Expression<F> value);
+
+        <F extends Number> SR setMinus(FieldMeta<? super T, F> field, F value);
+
+        <F extends Number> SR setMinus(FieldMeta<? super T, F> field, Expression<F> value);
+
+        <F extends Number> SR setMultiply(FieldMeta<? super T, F> field, F value);
+
+        <F extends Number> SR setMultiply(FieldMeta<? super T, F> field, Expression<F> value);
+
+        <F extends Number> SR setDivide(FieldMeta<? super T, F> field, F value);
+
+        <F extends Number> SR setDivide(FieldMeta<? super T, F> field, Expression<F> value);
+
+        <F extends Number> SR setMod(FieldMeta<? super T, F> field, F value);
+
+        <F extends Number> SR setMod(FieldMeta<? super T, F> field, Expression<F> value);
+
+        SR ifSet(List<FieldMeta<? super T, ?>> fieldList, List<Expression<?>> valueList);
+
+        SR ifSetNull(Predicate<C> predicate, FieldMeta<? super T, ?> field);
+
+        SR ifSetDefault(Predicate<C> predicate, FieldMeta<? super T, ?> field);
+
+        <F> SR ifSet(FieldMeta<? super T, F> field, @Nullable F value);
+
+        <F> SR ifSet(FieldMeta<? super T, F> field, Function<C, Expression<F>> function);
+
+        <F> SR ifSet(FieldMeta<? super T, F> field, Supplier<Expression<F>> supplier);
+
+        <F extends Number> SR ifSetPlus(FieldMeta<? super T, F> field, @Nullable F value);
+
+        <F extends Number> SR ifSetMinus(FieldMeta<? super T, F> field, @Nullable F value);
+
+        <F extends Number> SR ifSetMultiply(FieldMeta<? super T, F> field, @Nullable F value);
+
+        <F extends Number> SR ifSetDivide(FieldMeta<? super T, F> field, @Nullable F value);
+
+        <F extends Number> SR ifSetMod(FieldMeta<? super T, F> field, @Nullable F value);
+
+
+    }
+
+
 
 
 
     /*################################## blow batch update interface ##################################*/
 
-    interface BatchUpdateSpec<C> {
+    interface StandardBatchUpdateSpec<C> {
 
-        <T extends IDomain> BatchSetSpec<T, C, BatchWhereSpec<T, C>> update(TableMeta<T> table, String tableAlias);
+        <T extends IDomain> StandardBatchSetSpec<T, C> update(TableMeta<T> table, String tableAlias);
     }
 
-
-    interface BatchSetSpec<T extends IDomain, C, S> {
-
-        S set(List<FieldMeta<? super T, ?>> fieldList);
-
-        <F> S set(FieldMeta<? super T, F> field, Expression<F> valueExp);
-
-        /**
-         * @see SQLs#namedParam(GenericField)
-         */
-        <F> S set(FieldMeta<? super T, F> field);
-
-        <F> S setNull(FieldMeta<? super T, F> field);
-
-        <F> S setDefault(FieldMeta<? super T, F> field);
-
-        /**
-         * @see SQLs#nonNullNamedParam(GenericField)
-         */
-        <F extends Number> S setPlus(FieldMeta<? super T, F> field);
-
-        /**
-         * @see SQLs#nonNullNamedParam(GenericField)
-         */
-        <F extends Number> S setMinus(FieldMeta<? super T, F> field);
-
-        /**
-         * @see SQLs#nonNullNamedParam(GenericField)
-         */
-        <F extends Number> S setMultiply(FieldMeta<? super T, F> field);
-
-        /**
-         * @see SQLs#nonNullNamedParam(GenericField)
-         */
-        <F extends Number> S setDivide(FieldMeta<? super T, F> field);
-
-        /**
-         * @see SQLs#nonNullNamedParam(GenericField)
-         */
-        <F extends Number> S setMod(FieldMeta<? super T, F> field);
-
-        S ifSet(Function<C, List<FieldMeta<? super T, ?>>> function);
-
-        <F> S ifSet(Predicate<C> test, FieldMeta<? super T, F> field);
-
-        <F> S ifSet(FieldMeta<? super T, F> filed, Function<C, Expression<F>> function);
+    interface StandardBatchParamSpec<C> extends Statement.BatchParamClause<C, Update.UpdateSpec> {
 
     }
 
-    interface BatchWhereSpec<T extends IDomain, C> extends Update.BatchSetSpec<T, C, BatchWhereSpec<T, C>> {
-
-        /**
-         * @see SQLs#nonNullNamedParam(GenericField)
-         * @see SQLs#nonNullNamedParam(String, ParamMeta)
-         * @see SQLs#namedParam(GenericField)
-         * @see SQLs#namedParam(String, ParamMeta)
-         */
-        BatchParamSpec<C, Update> where(List<IPredicate> predicates);
-
-        /**
-         * @see SQLs#nonNullNamedParam(GenericField)
-         * @see SQLs#nonNullNamedParam(String, ParamMeta)
-         * @see SQLs#namedParam(GenericField)
-         * @see SQLs#namedParam(String, ParamMeta)
-         */
-        BatchParamSpec<C, Update> where(Function<C, List<IPredicate>> function);
-
-        /**
-         * @see SQLs#nonNullNamedParam(GenericField)
-         * @see SQLs#nonNullNamedParam(String, ParamMeta)
-         * @see SQLs#namedParam(GenericField)
-         * @see SQLs#namedParam(String, ParamMeta)
-         */
-        BatchParamSpec<C, Update> where(Supplier<List<IPredicate>> supplier);
-
-        /**
-         * @see SQLs#nonNullNamedParam(GenericField)
-         * @see SQLs#nonNullNamedParam(String, ParamMeta)
-         * @see SQLs#namedParam(GenericField)
-         * @see SQLs#namedParam(String, ParamMeta)
-         */
-        BatchWhereAndSpec<C, Update> where(IPredicate predicate);
+    interface StandardBatchWhereAndSpec<C> extends Update.StandardBatchParamSpec<C>
+            , Statement.WhereAndClause<C, Update.StandardBatchWhereAndSpec<C>> {
 
     }
 
-    interface MultiSetSpec<C, S> {
+    interface StandardBatchSetSpec<T extends IDomain, C>
+            extends Update.BatchSingleSetClause<T, C, Update.StandardBatchWhereSpec<T, C>> {
 
-        S set(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList);
 
-        S set(FieldMeta<?, ?> field, @Nullable Object value);
+    }
 
-        S set(FieldMeta<?, ?> field, Expression<?> value);
+    interface StandardBatchWhereSpec<T extends IDomain, C> extends StandardBatchSetSpec<T, C>
+            , Statement.WhereClause<C, Update.StandardBatchParamSpec<C>, Update.StandardBatchWhereAndSpec<C>> {
 
-        S set(FieldMeta<?, ?> field, Function<C, Expression<?>> function);
+    }
 
-        S set(FieldMeta<?, ?> field, Supplier<Expression<?>> supplier);
 
-        S setNull(FieldMeta<?, ?> field);
+    interface BatchSingleSetClause<T extends IDomain, C, SR> {
 
-        S setDefault(FieldMeta<?, ?> field);
+        SR set(List<FieldMeta<? super T, ?>> fieldList);
 
-        <F extends Number> S setPlus(FieldMeta<?, F> field, F value);
+        <F> SR set(FieldMeta<? super T, F> field, Expression<F> value);
 
-        <F extends Number> S setPlus(FieldMeta<?, F> field, Expression<?> value);
+        /**
+         * @see SQLs#namedParam(GenericField)
+         */
+        <F> SR set(FieldMeta<? super T, F> field);
 
-        <F extends Number> S setMinus(FieldMeta<?, F> field, F value);
+        <F> SR setNull(FieldMeta<? super T, F> field);
 
-        <F extends Number> S setMinus(FieldMeta<?, F> field, Expression<?> value);
+        <F> SR setDefault(FieldMeta<? super T, F> field);
 
-        <F extends Number> S setMultiply(FieldMeta<?, F> field, F value);
+        /**
+         * @see SQLs#nonNullNamedParam(GenericField)
+         */
+        <F extends Number> SR setPlus(FieldMeta<? super T, F> field);
 
-        <F extends Number> S setMultiply(FieldMeta<?, F> field, Expression<?> value);
+        /**
+         * @see SQLs#nonNullNamedParam(GenericField)
+         */
+        <F extends Number> SR setMinus(FieldMeta<? super T, F> field);
 
-        <F extends Number> S setDivide(FieldMeta<?, F> field, F value);
+        /**
+         * @see SQLs#nonNullNamedParam(GenericField)
+         */
+        <F extends Number> SR setMultiply(FieldMeta<? super T, F> field);
 
-        <F extends Number> S setDivide(FieldMeta<?, F> field, Expression<F> value);
+        /**
+         * @see SQLs#nonNullNamedParam(GenericField)
+         */
+        <F extends Number> SR setDivide(FieldMeta<? super T, F> field);
 
-        <F extends Number> S setMod(FieldMeta<?, F> field, F value);
+        /**
+         * @see SQLs#nonNullNamedParam(GenericField)
+         */
+        <F extends Number> SR setMod(FieldMeta<? super T, F> field);
 
-        <F extends Number> S setMod(FieldMeta<?, F> field, Expression<F> value);
+        SR ifSet(Function<C, List<FieldMeta<? super T, ?>>> function);
 
-        S ifSet(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList);
+        <F> SR ifSet(Predicate<C> test, FieldMeta<? super T, F> field);
 
-        S ifSet(FieldMeta<?, ?> field, @Nullable Object value);
+        <F> SR ifSet(FieldMeta<? super T, F> filed, Function<C, Expression<F>> function);
 
-        S ifSet(FieldMeta<?, ?> field, Function<C, Expression<?>> function);
+    }
 
-        S ifSet(FieldMeta<?, ?> field, Supplier<Expression<?>> supplier);
 
-        <F extends Number> S ifSetPlus(FieldMeta<?, ?> field, @Nullable F value);
+    interface MultiSetSpec<C, W> {
 
-        <F extends Number> S ifSetMinus(FieldMeta<?, ?> field, @Nullable F value);
+        W set(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList);
 
-        <F extends Number> S ifSetMultiply(FieldMeta<?, ?> field, @Nullable F value);
+        W set(FieldMeta<?, ?> field, @Nullable Object value);
 
-        <F extends Number> S ifSetDivide(FieldMeta<?, ?> field, @Nullable F value);
+        W set(FieldMeta<?, ?> field, Expression<?> value);
 
-        <F extends Number> S ifSetMod(FieldMeta<?, ?> field, @Nullable F value);
+        W set(FieldMeta<?, ?> field, Function<C, Expression<?>> function);
+
+        W set(FieldMeta<?, ?> field, Supplier<Expression<?>> supplier);
+
+        W setNull(FieldMeta<?, ?> field);
+
+        W setDefault(FieldMeta<?, ?> field);
+
+        W ifSetNull(Predicate<C> predicate, FieldMeta<?, ?> field);
+
+        W ifSetDefault(Predicate<C> predicate, FieldMeta<?, ?> field);
+
+        <F extends Number> W setPlus(FieldMeta<?, F> field, F value);
+
+        <F extends Number> W setPlus(FieldMeta<?, F> field, Expression<?> value);
+
+        <F extends Number> W setMinus(FieldMeta<?, F> field, F value);
+
+        <F extends Number> W setMinus(FieldMeta<?, F> field, Expression<?> value);
+
+        <F extends Number> W setMultiply(FieldMeta<?, F> field, F value);
+
+        <F extends Number> W setMultiply(FieldMeta<?, F> field, Expression<?> value);
+
+        <F extends Number> W setDivide(FieldMeta<?, F> field, F value);
+
+        <F extends Number> W setDivide(FieldMeta<?, F> field, Expression<F> value);
+
+        <F extends Number> W setMod(FieldMeta<?, F> field, F value);
+
+        <F extends Number> W setMod(FieldMeta<?, F> field, Expression<F> value);
+
+        W ifSet(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList);
+
+        W ifSet(FieldMeta<?, ?> field, @Nullable Object value);
+
+        W ifSet(FieldMeta<?, ?> field, Function<C, Expression<?>> function);
+
+        W ifSet(FieldMeta<?, ?> field, Supplier<Expression<?>> supplier);
+
+        <F extends Number> W ifSetPlus(FieldMeta<?, ?> field, @Nullable F value);
+
+        <F extends Number> W ifSetMinus(FieldMeta<?, ?> field, @Nullable F value);
+
+        <F extends Number> W ifSetMultiply(FieldMeta<?, ?> field, @Nullable F value);
+
+        <F extends Number> W ifSetDivide(FieldMeta<?, ?> field, @Nullable F value);
+
+        <F extends Number> W ifSetMod(FieldMeta<?, ?> field, @Nullable F value);
 
     }
 
@@ -260,7 +264,7 @@ public interface Update extends Dml, SQLDebug {
      * @param <C> criteria used to create dynamic update statement
      * @param <W> multi-table update statement where spec type,for example {@link BatchMultiWhereSpec}
      */
-    interface BatchMultiSetSpec<C, W> {
+    interface BatchMultiSetClause<C, W> {
 
         W set(List<FieldMeta<?, ?>> fieldList);
 
@@ -298,6 +302,8 @@ public interface Update extends Dml, SQLDebug {
 
         W ifSetDefault(Predicate<C> predicate, FieldMeta<?, ?> field);
 
+        W ifSetNull(Predicate<C> predicate, FieldMeta<?, ?> field);
+
         W ifSet(Function<C, List<FieldMeta<?, ?>>> function);
 
         W ifSet(Supplier<List<FieldMeta<?, ?>>> supplier);
@@ -321,7 +327,7 @@ public interface Update extends Dml, SQLDebug {
     }
 
 
-    interface BatchMultiWhereSpec<C> extends Update.BatchMultiSetSpec<C, Update.BatchMultiWhereSpec<C>> {
+    interface BatchMultiWhereSpec<C> extends BatchMultiSetClause<C, BatchMultiWhereSpec<C>> {
 
         BatchParamSpec<C, Update> where(List<IPredicate> predicates);
 

@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+@Deprecated
 public interface Dml extends Statement {
 
     interface DmlSpec<D extends Dml> {
@@ -16,17 +17,6 @@ public interface Dml extends Statement {
         D asDml();
     }
 
-
-    interface DeleteWhereSpec<C> {
-
-        DmlSpec<Delete> where(List<IPredicate> predicateList);
-
-        DmlSpec<Delete> where(Function<C, List<IPredicate>> function);
-
-        DmlSpec<Delete> where(Supplier<List<IPredicate>> supplier);
-
-        WhereAndSpec<C, Delete> where(IPredicate predicate);
-    }
 
     interface WhereAndSpec<C, D extends Dml> extends DmlSpec<D> {
 
@@ -45,18 +35,6 @@ public interface Dml extends Statement {
 
         WhereAndSpec<C, D> ifAnd(Supplier<IPredicate> supplier);
 
-    }
-
-
-    interface BatchDeleteWhereSpec<C> {
-
-        BatchParamSpec<C, Delete> where(List<IPredicate> predicateList);
-
-        BatchParamSpec<C, Delete> where(Function<C, List<IPredicate>> function);
-
-        BatchParamSpec<C, Delete> where(Supplier<List<IPredicate>> supplier);
-
-        BatchWhereAndSpec<C, Delete> where(IPredicate predicate);
     }
 
 

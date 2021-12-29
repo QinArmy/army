@@ -58,23 +58,23 @@ public abstract class SQLs extends SQLUtils {
         return ContextualValueInsert.create(targetTable, criteria);
     }
 
-    public static Update.DomainUpdateSpec<Void> domainUpdate() {
-        return ContextualUpdate.create();
+    public static Update.StandardUpdateSpec<Void> standardUpdate() {
+        return StandardUpdate.create();
     }
 
     /**
      * @param criteria a object instance, map or bean
      * @param <C>      criteria java type used to create dynamic update and sub query
      */
-    public static <C> Update.DomainUpdateSpec<C> domainUpdate(C criteria) {
-        return ContextualUpdate.create(criteria);
+    public static <C> Update.StandardUpdateSpec<C> standardUpdate(C criteria) {
+        return StandardUpdate.create(criteria);
     }
 
     /**
      * @see #namedParam(String, ParamMeta)
      */
-    public static Update.BatchUpdateSpec<Void> batchDomainUpdate() {
-        return ContextualBatchUpdate.create();
+    public static Update.StandardBatchUpdateSpec<Void> standardBatchUpdate() {
+        return StandardBatchUpdate.create();
     }
 
     /**
@@ -82,8 +82,8 @@ public abstract class SQLs extends SQLUtils {
      * @param <C>      criteria java type used to create dynamic batch update and sub query
      * @see #namedParam(String, ParamMeta)
      */
-    public static <C> Update.BatchUpdateSpec<C> batchDomainUpdate(C criteria) {
-        return ContextualBatchUpdate.create(criteria);
+    public static <C> Update.StandardBatchUpdateSpec<C> standardBatchUpdate(C criteria) {
+        return StandardBatchUpdate.create(criteria);
     }
 
     public static Delete.DomainDeleteSpec<Void> domainDelete() {

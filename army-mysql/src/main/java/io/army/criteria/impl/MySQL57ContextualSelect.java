@@ -5,7 +5,7 @@ import io.army.criteria.impl.inner.mysql._MySQL57Select;
 import io.army.criteria.mysql.MySQL57Select;
 import io.army.meta.TableMeta;
 
-final class MySQL57ContextualSelect<C> extends AbstractMySQL57Query<MySQL57Select, C> implements MySQL57Select
+final class MySQL57ContextualSelect<C> extends MySQL57PartQuery<MySQL57Select, C> implements MySQL57Select
         , _MySQL57Select {
 
     static <C> MySQL57ContextualSelect<C> build(C criteria) {

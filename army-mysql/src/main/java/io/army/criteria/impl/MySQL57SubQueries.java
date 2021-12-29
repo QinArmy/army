@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractMySQL57Query<Q, C>
+abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends MySQL57PartQuery<Q, C>
         implements _MySQL57SubQuery, MySQL57SubQuery {
 
 
@@ -152,7 +152,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
      * @param <C> custom object for Dynamic SQL.
      */
     private static final class MySQL57ScalarSubQueryAdaptor<E, C> extends OperationExpression<E>
-            implements MySQL57ScalarSubQuery<E>, SelectPart57Spec<MySQL57ScalarSubQuery<E>, C>
+            implements MySQL57ScalarSubQuery<E>, MySQLSelectPartSpec<MySQL57ScalarSubQuery<E>, C>
             , From57Spec<MySQL57ScalarSubQuery<E>, C>, MySQLTableRouteJoinSpec<MySQL57ScalarSubQuery<E>, C>
             , WhereAnd57Spec<MySQL57ScalarSubQuery<E>, C>, Having57Spec<MySQL57ScalarSubQuery<E>, C>
             , MySQL57ScalarSubQuery.MySQLScalarSelectionSpec<E, C>
@@ -687,7 +687,7 @@ abstract class MySQL57SubQueries<Q extends MySQL57SubQuery, C> extends AbstractM
      * Design this inner class for {@link #route(int)} and {@link #route(int, int)} don't crash with
      * ScalarSubQueryAdaptor class
      */
-    private static final class MySQLTableRouteOnSpecImpl<E, C> implements MySQL57Query
+    private static final class MySQLTableRouteOnSpecImpl<E, C> implements MyQuery
             , MySQLTableRouteOnSpec<MySQL57ScalarSubQuery<E>, C> {
 
         private final MySQL57ScalarSubQueryAdaptor<E, C> mysql57Query;

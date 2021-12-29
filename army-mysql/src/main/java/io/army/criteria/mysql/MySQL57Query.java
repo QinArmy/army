@@ -22,27 +22,6 @@ public interface MySQL57Query extends MySQLQuery {
     /*################################## blow select clause  interfaces ##################################*/
 
 
-    interface SelectPart57Spec<Q extends MySQLQuery, C> {
-
-        <S extends SelectPart> Into57Spec<Q, C> select(List<SQLModifier> modifiers, List<S> selectParts);
-
-        <S extends SelectPart> Into57Spec<Q, C> select(List<S> selectParts);
-
-        <S extends SelectPart> Into57Spec<Q, C> select(List<SQLModifier> modifiers, Function<C, List<S>> function);
-
-        <S extends SelectPart> Into57Spec<Q, C> select(List<SQLModifier> modifiers, Supplier<List<S>> supplier);
-
-        <S extends SelectPart> Into57Spec<Q, C> select(Function<C, List<S>> function);
-
-        <S extends SelectPart> Into57Spec<Q, C> select(Supplier<List<S>> supplier);
-
-        Into57Spec<Q, C> select(SelectPart selectPart);
-
-        Into57Spec<Q, C> select(SelectPart selectPart1, SelectPart selectPart2);
-
-        Into57Spec<Q, C> select(SelectPart selectPart1, SelectPart selectPart2, SelectPart selectPart3);
-
-    }
 
     interface Into57Spec<Q extends MySQLQuery, C> extends From57Spec<Q, C> {
 
@@ -60,9 +39,9 @@ public interface MySQL57Query extends MySQLQuery {
     interface From57Spec<Q extends MySQLQuery, C> extends Union57Clause<Q, C>, Into57Clause<Q, C> {
 
 
-        IndexHint57Spec<Q, C> from(TableMeta<?> table, String tableAlias);
+        IndexHintJoin57Spec<Q, C> from(TableMeta<?> table, String tableAlias);
 
-        Partition57Spec<Q, C> from(TableMeta<?> table);
+        PartitionJoin57Spec<Q, C> from(TableMeta<?> table);
 
         Join57Spec<Q, C> from(Function<C, SubQuery> function, String subQueryAlia);
 
@@ -74,60 +53,52 @@ public interface MySQL57Query extends MySQLQuery {
 
     }
 
-    interface Partition57Spec<Q extends MySQLQuery, C> {
+    interface PartitionJoin57Spec<Q extends MySQLQuery, C> extends TableAsJoin57Spec<Q, C> {
 
-        TableAs57Spec<Q, C> partition(String partitionName);
+        TableAsJoin57Spec<Q, C> partition(String partitionName);
 
-        TableAs57Spec<Q, C> partition(String partitionName1, String partitionNam2);
+        TableAsJoin57Spec<Q, C> partition(String partitionName1, String partitionNam2);
 
-        TableAs57Spec<Q, C> partition(List<String> partitionNameList);
+        TableAsJoin57Spec<Q, C> partition(List<String> partitionNameList);
 
-        TableAs57Spec<Q, C> partition(Function<C, List<String>> function);
+        TableAsJoin57Spec<Q, C> partition(Function<C, List<String>> function);
 
-        TableAs57Spec<Q, C> partition(Supplier<List<String>> function);
+        TableAsJoin57Spec<Q, C> partition(Supplier<List<String>> function);
     }
 
-    interface TableAs57Spec<Q extends MySQLQuery, C> {
+    interface TableAsJoin57Spec<Q extends MySQLQuery, C> {
 
-        IndexHint57Spec<Q, C> as(String tableAlias);
-    }
-
-
-    interface IndexHint57Spec<Q extends MySQLQuery, C> extends On57Spec<Q, C> {
-
-        IndexHintFor57Spec<Q, C> useIndex();
-
-        IndexHintFor57Spec<Q, C> useKey();
-
-        IndexHintFor57Spec<Q, C> ignoreIndex();
-
-        IndexHintFor57Spec<Q, C> ignoreKey();
-
-        IndexHintFor57Spec<Q, C> forceIndex();
-
-        IndexHintFor57Spec<Q, C> forceKey();
-
-        IndexHint57Spec<Q, C> useIndex(List<String> indexNameList);
-
-        IndexHint57Spec<Q, C> useKey(List<String> indexNameList);
-
-        IndexHint57Spec<Q, C> ignoreIndex(List<String> indexNameList);
-
-        IndexHint57Spec<Q, C> ignoreKey(List<String> indexNameList);
-
-        IndexHint57Spec<Q, C> forceIndex(List<String> indexNameList);
-
-        IndexHint57Spec<Q, C> forceKey(List<String> indexNameList);
+        IndexHintJoin57Spec<Q, C> as(String tableAlias);
 
     }
 
-    interface IndexHintFor57Spec<Q extends MySQLQuery, C> {
+    interface IndexHintJoin57Spec<Q extends MySQLQuery, C> extends Join57Spec<Q, C>
+            , MySQLQuery.IndexHintClause<C, Join57Spec<Q, C>> {
 
-        IndexHint57Spec<Q, C> froJoin(List<String> indexNameList);
+    }
 
-        IndexHint57Spec<Q, C> froOrderBy(List<String> indexNameList);
 
-        IndexHint57Spec<Q, C> froGroupBy(List<String> indexNameList);
+    interface PartitionOn57Spec<Q extends MySQLQuery, C> extends TableAsOn57Spec<Q, C> {
+
+        TableAsOn57Spec<Q, C> partition(String partitionName);
+
+        TableAsOn57Spec<Q, C> partition(String partitionName1, String partitionNam2);
+
+        TableAsOn57Spec<Q, C> partition(List<String> partitionNameList);
+
+        TableAsOn57Spec<Q, C> partition(Function<C, List<String>> function);
+
+        TableAsOn57Spec<Q, C> partition(Supplier<List<String>> function);
+    }
+
+    interface TableAsOn57Spec<Q extends MySQLQuery, C> {
+
+        IndexHintOn57Spec<Q, C> as(String tableAlias);
+
+    }
+
+    interface IndexHintOn57Spec<Q extends MySQLQuery, C> extends On57Spec<Q, C>
+            , MySQLQuery.IndexHintClause<C, On57Spec<Q, C>> {
 
     }
 
@@ -151,7 +122,9 @@ public interface MySQL57Query extends MySQLQuery {
 
     interface Join57Spec<Q extends MySQLQuery, C> extends Where57Spec<Q, C> {
 
-        IndexHint57Spec<Q, C> leftJoin(TableMeta<?> table, String tableAlias);
+        IndexHintOn57Spec<Q, C> leftJoin(TableMeta<?> table, String tableAlias);
+
+        PartitionOn57Spec<Q, C> leftJoin(TableMeta<?> table);
 
         On57Spec<Q, C> leftJoin(Function<C, SubQuery> function, String subQueryAlia);
 
@@ -159,7 +132,9 @@ public interface MySQL57Query extends MySQLQuery {
 
         On57Spec<Q, C> leftJoinGroup(Function<C, TablePartGroup> function, String subQueryAlia);
 
-        IndexHint57Spec<Q, C> ifLeftJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
+        IndexHintOn57Spec<Q, C> ifLeftJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
+
+        PartitionOn57Spec<Q, C> ifLeftJoin(Predicate<C> predicate, TableMeta<?> table);
 
         On57Spec<Q, C> ifLeftJoin(Function<C, SubQuery> function, String subQueryAlia);
 
@@ -167,13 +142,17 @@ public interface MySQL57Query extends MySQLQuery {
 
         On57Spec<Q, C> ifLeftJoinGroup(Function<C, TablePartGroup> function, String subQueryAlia);
 
-        IndexHint57Spec<Q, C> join(TableMeta<?> table, String tableAlias);
+        IndexHintOn57Spec<Q, C> join(TableMeta<?> table, String tableAlias);
+
+        PartitionOn57Spec<Q, C> join(TableMeta<?> table);
 
         On57Spec<Q, C> join(Function<C, SubQuery> function, String subQueryAlia);
 
         On57Spec<Q, C> join(Supplier<SubQuery> supplier, String subQueryAlia);
 
-        IndexHint57Spec<Q, C> ifJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
+        IndexHintOn57Spec<Q, C> ifJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
+
+        PartitionOn57Spec<Q, C> ifJoin(Predicate<C> predicate, TableMeta<?> table);
 
         On57Spec<Q, C> joinGroup(Function<C, TablePartGroup> function, String subQueryAlia);
 
@@ -183,7 +162,9 @@ public interface MySQL57Query extends MySQLQuery {
 
         On57Spec<Q, C> ifJoinGroup(Function<C, TablePartGroup> function, String subQueryAlia);
 
-        IndexHint57Spec<Q, C> rightJoin(TableMeta<?> table, String tableAlias);
+        IndexHintOn57Spec<Q, C> rightJoin(TableMeta<?> table, String tableAlias);
+
+        PartitionOn57Spec<Q, C> rightJoin(TableMeta<?> table);
 
         On57Spec<Q, C> rightJoin(Function<C, SubQuery> function, String subQueryAlia);
 
@@ -191,7 +172,9 @@ public interface MySQL57Query extends MySQLQuery {
 
         On57Spec<Q, C> rightJoinGroup(Function<C, TablePartGroup> function, String subQueryAlia);
 
-        IndexHint57Spec<Q, C> ifRightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
+        IndexHintOn57Spec<Q, C> ifRightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
+
+        PartitionOn57Spec<Q, C> ifRightJoin(Predicate<C> predicate, TableMeta<?> table);
 
         On57Spec<Q, C> ifRightJoin(Function<C, SubQuery> function, String subQueryAlia);
 
@@ -199,7 +182,9 @@ public interface MySQL57Query extends MySQLQuery {
 
         On57Spec<Q, C> ifRightJoinGroup(Function<C, TablePartGroup> function, String subQueryAlia);
 
-        IndexHint57Spec<Q, C> straightJoin(TableMeta<?> table, String tableAlias);
+        IndexHintOn57Spec<Q, C> straightJoin(TableMeta<?> table, String tableAlias);
+
+        PartitionOn57Spec<Q, C> straightJoin(TableMeta<?> table);
 
         On57Spec<Q, C> straightJoin(Function<C, SubQuery> function, String subQueryAlia);
 
@@ -207,7 +192,9 @@ public interface MySQL57Query extends MySQLQuery {
 
         On57Spec<Q, C> straightJoinGroup(Function<C, TablePartGroup> function, String subQueryAlia);
 
-        IndexHint57Spec<Q, C> ifStraightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
+        IndexHintOn57Spec<Q, C> ifStraightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
+
+        PartitionOn57Spec<Q, C> ifStraightJoin(Predicate<C> predicate, TableMeta<?> table);
 
         On57Spec<Q, C> ifStraightJoin(Function<C, SubQuery> function, String subQueryAlia);
 
@@ -290,7 +277,7 @@ public interface MySQL57Query extends MySQLQuery {
     }
 
 
-    interface OrderBy57Spec<Q extends MySQLQuery, C> extends OrderBy57Clause<Q, C>, Limit57Spec<Q, C> {
+    interface OrderBy57Spec<Q extends MySQLQuery, C> extends Query.OrderByClause<Q, C>, Limit57Spec<Q, C> {
 
         @Override
         Limit57Spec<Q, C> orderBy(SortPart sortPart);
@@ -317,7 +304,7 @@ public interface MySQL57Query extends MySQLQuery {
     }
 
 
-    interface Limit57Spec<Q extends MySQLQuery, C> extends Limit57Clause<Q, C>, Lock57Spec<Q, C>, Into57Clause<Q, C> {
+    interface Limit57Spec<Q extends MySQLQuery, C> extends Query.LimitClause<Q, C>, Into57Clause<Q, C> {
 
         @Override
         Into57Clause<Q, C> limit(long rowCount);
@@ -340,7 +327,7 @@ public interface MySQL57Query extends MySQLQuery {
     }
 
 
-    interface Union57Spec<Q extends MySQLQuery, C> extends Union57Clause<Q, C>, OrderBy57Clause<Q, C> {
+    interface Union57Spec<Q extends MySQLQuery, C> extends Union57Clause<Q, C>, Query.OrderByClause<Q, C> {
 
     }
 
@@ -353,11 +340,11 @@ public interface MySQL57Query extends MySQLQuery {
 
         Union57Spec<Q, C> union(Supplier<Q> supplier);
 
-        SelectPart57Spec<Q, C> union();
+        MySQLSelectPartSpec<Q, C> union();
 
-        SelectPart57Spec<Q, C> unionAll();
+        MySQLSelectPartSpec<Q, C> unionAll();
 
-        SelectPart57Spec<Q, C> unionDistinct();
+        MySQLSelectPartSpec<Q, C> unionDistinct();
 
         Union57Spec<Q, C> unionAll(Function<C, Q> function);
 
@@ -369,41 +356,6 @@ public interface MySQL57Query extends MySQLQuery {
 
     }
 
-    interface OrderBy57Clause<Q extends MySQLQuery, C> extends Limit57Clause<Q, C> {
-
-        Limit57Clause<Q, C> orderBy(SortPart sortPart);
-
-        Limit57Clause<Q, C> orderBy(SortPart sortPart1, SortPart sortPart2);
-
-        Limit57Clause<Q, C> orderBy(List<SortPart> sortPartList);
-
-        Limit57Clause<Q, C> orderBy(Function<C, List<SortPart>> function);
-
-        Limit57Clause<Q, C> orderBy(Supplier<List<SortPart>> supplier);
-
-        Limit57Clause<Q, C> ifOrderBy(@Nullable SortPart sortPart);
-
-        Limit57Clause<Q, C> ifOrderBy(Supplier<List<SortPart>> supplier);
-
-        Limit57Clause<Q, C> ifOrderBy(Function<C, List<SortPart>> function);
-    }
-
-
-    interface Limit57Clause<Q extends MySQLQuery, C> extends QuerySpec<Q> {
-
-        QuerySpec<Q> limit(long rowCount);
-
-        QuerySpec<Q> limit(long offset, long rowCount);
-
-        QuerySpec<Q> limit(Function<C, LimitOption> function);
-
-        QuerySpec<Q> limit(Supplier<LimitOption> supplier);
-
-        QuerySpec<Q> ifLimit(Function<C, LimitOption> function);
-
-        QuerySpec<Q> ifLimit(Supplier<LimitOption> supplier);
-
-    }
 
     interface Into57Clause<Q extends MySQLQuery, C> extends Lock57Spec<Q, C> {
 
@@ -415,7 +367,7 @@ public interface MySQL57Query extends MySQLQuery {
 
     }
 
-    interface Lock57Spec<Q extends MySQLQuery, C> extends Union57Spec<Q, C> {
+    interface Lock57Spec<Q extends MySQLQuery, C> extends Union57Clause<Q, C> {
 
         QuerySpec<Q> forUpdate();
 

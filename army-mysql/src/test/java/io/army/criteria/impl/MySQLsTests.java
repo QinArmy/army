@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.IPredicate;
 import io.army.domain.IDomain;
 import io.army.meta.ChildDomain;
 import io.army.meta.FieldMeta;
@@ -40,12 +41,14 @@ public class MySQLsTests {
 
     public <T extends IDomain> void standardUpdate(TableMeta<T> table) {
         FieldMeta<T, ?> field = null;
-        SQLs.domainUpdate()
+        SQLs.standardUpdate()
                 .update(table, "t")
                 .set(field, 0)
                 .set(field, 3)
-                .where(Collections.emptyList())
-                .asDml();
+                //.where(Collections.emptyList())
+                .where((IPredicate) null)
+                .and((IPredicate) null)
+                .asUpdate();
     }
 
 

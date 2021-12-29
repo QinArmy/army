@@ -109,7 +109,7 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
     public static CriteriaException noUpdateField(Update update) {
-        return new CriteriaException(String.format("%s no any update field", update));
+        return new CriteriaException(String.format("%s no any update field", update.getClass().getName()));
     }
 
     public static IllegalStateException updateFieldExpNotMatch() {
@@ -281,6 +281,14 @@ public abstract class _Exceptions extends ExceptionUtils {
         String m = String.format("Update statement set clause fieldList size[%s] and valueList size[%s] not match."
                 , fieldSize, valueSize);
         return new CriteriaException(m);
+    }
+
+    public static CriteriaException dmlNoWhereClause() {
+        return new CriteriaException("Update/Delete statement no where clause,reject create.");
+    }
+
+    public static CriteriaException batchParamEmpty() {
+        return new CriteriaException("Batch Update/Delete statement param list is empty.");
     }
 
 

@@ -26,7 +26,7 @@ import java.util.function.Supplier;
  *
  * @param <C> criteria java type used to create dynamic delete and sub query
  */
-final class ContextualBatchDelete<C> implements Delete, Dml.BatchDeleteWhereSpec<C>
+final class ContextualBatchDelete<C> implements Delete, Delete.BatchWhereSpec<C>
         , Dml.BatchWhereAndSpec<C, Delete>, Dml.BatchParamSpec<C, Delete>, Dml.DmlSpec<Delete>, _BatchDelete {
 
     static Delete.BatchDomainDeleteSpec<Void> create() {
@@ -241,7 +241,7 @@ final class ContextualBatchDelete<C> implements Delete, Dml.BatchDeleteWhereSpec
         }
 
         @Override
-        public BatchDeleteWhereSpec<C> deleteFrom(TableMeta<? extends IDomain> table, String tableAlias) {
+        public BatchWhereSpec<C> deleteFrom(TableMeta<? extends IDomain> table, String tableAlias) {
             return new ContextualBatchDelete<>(table, tableAlias, this.criteria);
         }
 

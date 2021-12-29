@@ -2,10 +2,11 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._PartQuery;
 import io.army.criteria.impl.inner._TableBlock;
-import io.army.criteria.impl.inner.mysql._MySQL57Query;
 import io.army.criteria.mysql.MySQL57IndexHint;
-import io.army.criteria.mysql.MySQL57Query;
+import io.army.criteria.mysql.MySQLQuery;
+import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 
 import java.util.List;
@@ -13,30 +14,23 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-abstract class AbstractMySQL57Query<Q extends MySQL57Query, C> implements MySQL57Query
-        , MySQL57Query.SelectPart57Spec<Q, C>, MySQL57Query.From57Spec<Q, C>
-        , MySQL57Query.MySQLTableRouteJoinSpec<Q, C>, MySQL57Query.Where57Spec<Q, C>
-        , MySQL57Query.WhereAnd57Spec<Q, C>, MySQL57Query.GroupBy57Spec<Q, C>
-        , MySQL57Query.WithRollUp57Spec<Q, C>, MySQL57Query.Having57Spec<Q, C>
-        , _MySQL57Query {
+abstract class MySQL57PartQuery<Q extends MySQLQuery, C> implements Query.UnionSpec<Q, C>, Query.OrderBySpec<Q, C>
+        , _PartQuery, MySQLQuery {
 
-    MySQLTableRouteOnSpec<Q, C> tableRouteOnSpec;
+    final C criteria;
 
+    private List<SortPart> orderByList;
 
-    private boolean enableIndexHint;
+    private long offset = -1L;
 
-    private boolean withRollUp;
+    private long rowCount = -1L;
 
-    AbstractMySQL57Query(C criteria) {
-        super(criteria);
+    private boolean prepared;
 
+    MySQL57PartQuery(@Nullable C criteria) {
+        this.criteria = criteria;
     }
 
-
-    @Override
-    public SessionMode sessionMode() {
-        return super.sessionMode();
-    }
 
     @Override
     public Union57Spec<Q, C> bracketsQuery() {

@@ -40,14 +40,14 @@ public abstract class _CriteriaCounselor {
 
     public static void assertStandardUpdate(Update update) {
         if (update instanceof _BatchSingleUpdate) {
-            if (!(update instanceof ContextualBatchUpdate)) {
+            if (!(update instanceof StandardBatchUpdate)) {
                 String m = String.format("%s isn't instance of %s"
-                        , update.getClass().getName(), ContextualBatchUpdate.class.getName());
+                        , update.getClass().getName(), StandardBatchUpdate.class.getName());
                 throw new CriteriaException(m);
             }
-        } else if (!(update instanceof ContextualUpdate)) {
+        } else if (!(update instanceof StandardUpdate)) {
             String m = String.format("%s isn't instance of %s"
-                    , update.getClass().getName(), ContextualUpdate.class.getName());
+                    , update.getClass().getName(), StandardUpdate.class.getName());
             throw new CriteriaException(m);
         }
 

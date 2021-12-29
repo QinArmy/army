@@ -45,13 +45,13 @@ public interface MySQLUpdate extends Update, MySQLDml {
 
 
     interface SingleIndexHintCommandSpec<T extends IDomain, C>
-            extends Update.SetSpec<T, C, MySQLUpdate.SingleWhereSpec<T, C>>
-            , MySQLDml.SingleIndexHintCommandClause<C, Update.SetSpec<T, C, MySQLUpdate.SingleWhereSpec<T, C>>> {
+            extends SingleSetClause<T, C, SingleWhereSpec<T, C>>
+            , MySQLDml.SingleIndexHintCommandClause<C, SingleSetClause<T, C, SingleWhereSpec<T, C>>> {
 
     }
 
 
-    interface SingleWhereSpec<T extends IDomain, C> extends Update.SetSpec<T, C, MySQLUpdate.SingleWhereSpec<T, C>> {
+    interface SingleWhereSpec<T extends IDomain, C> extends SingleSetClause<T, C, SingleWhereSpec<T, C>> {
 
         SingleWhereAndSpec<C, Update> where(IPredicate predicate);
 
@@ -90,14 +90,14 @@ public interface MySQLUpdate extends Update, MySQLDml {
 
 
     interface BatchSingleIndexHintCommandSpec<T extends IDomain, C>
-            extends Update.BatchSetSpec<T, C, MySQLUpdate.BatchSingleWhereSpec<T, C>>
-            , MySQLDml.SingleIndexHintCommandClause<C, Update.SetSpec<T, C, MySQLUpdate.BatchSingleWhereSpec<T, C>>> {
+            extends BatchSingleSetClause<T, C, BatchSingleWhereSpec<T, C>>
+            , MySQLDml.SingleIndexHintCommandClause<C, SingleSetClause<T, C, BatchSingleWhereSpec<T, C>>> {
 
     }
 
 
     interface BatchSingleWhereSpec<T extends IDomain, C>
-            extends Update.BatchSetSpec<T, C, MySQLUpdate.BatchSingleWhereSpec<T, C>> {
+            extends BatchSingleSetClause<T, C, BatchSingleWhereSpec<T, C>> {
 
         BatchSingleWhereAndSpec<C, Update> where(IPredicate predicate);
 
@@ -421,7 +421,7 @@ public interface MySQLUpdate extends Update, MySQLDml {
      *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
      *            </ul>
      */
-    interface BatchMultiJoinSpec<C> extends Update.BatchMultiSetSpec<C, Update.BatchMultiWhereSpec<C>> {
+    interface BatchMultiJoinSpec<C> extends BatchMultiSetClause<C, BatchMultiWhereSpec<C>> {
 
         BatchMultiPartitionOnSpec<C> leftJoin(TableMeta<?> table);
 
