@@ -42,7 +42,7 @@ public interface Query extends Statement {
 
     /**
      * <p>
-     * This interface representing select clause of standard query (SELECT ro Sub Query).
+     * This interface representing select clause of standard query (SELECT or Sub Query).
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
@@ -57,7 +57,7 @@ public interface Query extends Statement {
 
     /**
      * <p>
-     * This interface representing from clause of standard query (SELECT ro Sub Query).
+     * This interface representing from clause of standard query (SELECT or Sub Query).
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
@@ -68,14 +68,15 @@ public interface Query extends Statement {
      * @see SQLs#standardScalarSubQuery(Object)
      */
     interface StandardFromSpec<C, Q extends Query>
-            extends Statement.FromClause<C, Query.StandardJoinSpec<C, Q>, Query.StandardJoinSpec<C, Q>> {
+            extends Statement.FromClause<C, Query.StandardJoinSpec<C, Q>, Query.StandardJoinSpec<C, Q>>
+            , StandardUnionClause<C, Q> {
 
 
     }
 
     /**
      * <p>
-     * This interface representing on clause of standard query (SELECT ro Sub Query).
+     * This interface representing on clause of standard query (SELECT or Sub Query).
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
@@ -93,7 +94,7 @@ public interface Query extends Statement {
 
     /**
      * <p>
-     * This interface representing join clause of standard query (SELECT ro Sub Query).
+     * This interface representing join clause of standard query (SELECT or Sub Query).
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
@@ -112,7 +113,7 @@ public interface Query extends Statement {
 
     /**
      * <p>
-     * This interface representing where clause of standard query (SELECT ro Sub Query).
+     * This interface representing where clause of standard query (SELECT or Sub Query).
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
@@ -130,7 +131,7 @@ public interface Query extends Statement {
 
     /**
      * <p>
-     * This interface representing where and clause of standard query (SELECT ro Sub Query).
+     * This interface representing where and clause of standard query (SELECT or Sub Query).
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
@@ -149,7 +150,7 @@ public interface Query extends Statement {
 
     /**
      * <p>
-     * This interface representing group by clause of standard query (SELECT ro Sub Query).
+     * This interface representing group by clause of standard query (SELECT or Sub Query).
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
@@ -166,7 +167,7 @@ public interface Query extends Statement {
 
     /**
      * <p>
-     * This interface representing having clause of standard query (SELECT ro Sub Query).
+     * This interface representing having clause of standard query (SELECT or Sub Query).
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
@@ -184,7 +185,7 @@ public interface Query extends Statement {
 
     /**
      * <p>
-     * This interface representing order by clause of standard query (SELECT ro Sub Query).
+     * This interface representing order by clause of standard query (SELECT or Sub Query).
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
@@ -201,7 +202,7 @@ public interface Query extends Statement {
 
     /**
      * <p>
-     * This interface representing limit clause of standard query (SELECT ro Sub Query).
+     * This interface representing limit clause of standard query (SELECT or Sub Query).
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
@@ -211,7 +212,7 @@ public interface Query extends Statement {
      * @see SQLs#standardColumnSubQuery(Object)
      * @see SQLs#standardScalarSubQuery(Object)
      */
-    interface StandardLimitSpec<C, Q extends Query> extends Query.StandardLimitClause<C, Q>
+    interface StandardLimitSpec<C, Q extends Query> extends Query.LimitClause<C, Query.StandardLockSpec<C, Q>>
             , Query.StandardLockSpec<C, Q> {
 
     }
@@ -219,29 +220,7 @@ public interface Query extends Statement {
 
     /**
      * <p>
-     * This interface representing union (after union) clause of standard query (SELECT ro Sub Query).
-     * </p>
-     *
-     * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#standardSelect(Object)
-     * @see SQLs#standardSubQuery(Object)
-     * @see SQLs#standardRowSubQuery(Object)
-     * @see SQLs#standardColumnSubQuery(Object)
-     * @see SQLs#standardScalarSubQuery(Object)
-     */
-    interface StandardUnionSpec<C, Q extends Query> extends Query.StandardUnionClause<C, Q>
-            , Query.StandardOrderByClause<C, Q> {
-
-    }
-
-    interface StandardUnionClause<C, Q extends Query> extends QuerySpec<Q>
-            , UnionClause<C, Query.StandardUnionSpec<C, Q>, StandardSelectClauseSpec<C, Q>, Q> {
-
-    }
-
-    /**
-     * <p>
-     * This interface representing order by clause(after union) of standard query (SELECT ro Sub Query).
+     * This interface representing order by clause(after union) of standard query (SELECT or Sub Query).
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
@@ -258,7 +237,7 @@ public interface Query extends Statement {
 
     /**
      * <p>
-     * This interface representing limit clause(after union) of standard query (SELECT ro Sub Query).
+     * This interface representing limit clause(after union) of standard query (SELECT or Sub Query).
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
@@ -268,14 +247,19 @@ public interface Query extends Statement {
      * @see SQLs#standardColumnSubQuery(Object)
      * @see SQLs#standardScalarSubQuery(Object)
      */
-    interface StandardLimitClause<C, Q extends Query> extends Query.LimitClause<C, QuerySpec<Q>>, QuerySpec<Q> {
+    interface StandardLimitClause<C, Q extends Query> extends Query.LimitClause<C, Query.StandardUnionClause<C, Q>>
+            , Query.StandardUnionClause<C, Q> {
 
+    }
+
+    interface StandardUnionClause<C, Q extends Query> extends QuerySpec<Q>
+            , Query.UnionClause<C, Query.StandardOrderByClause<C, Q>, Query.StandardSelectClauseSpec<C, Q>, Q> {
 
     }
 
     /**
      * <p>
-     * This interface representing lock clause of standard query (SELECT ro Sub Query).
+     * This interface representing lock clause of standard query (SELECT or Sub Query).
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
@@ -285,7 +269,7 @@ public interface Query extends Statement {
      * @see SQLs#standardColumnSubQuery(Object)
      * @see SQLs#standardScalarSubQuery(Object)
      */
-    interface StandardLockSpec<C, Q extends Query> extends Query.StandardUnionClause<C, Q>, QuerySpec<Q> {
+    interface StandardLockSpec<C, Q extends Query> extends StandardUnionClause<C, Q> {
 
         StandardUnionClause<C, Q> lock(LockMode lockMode);
 
@@ -300,33 +284,35 @@ public interface Query extends Statement {
 
     }
 
-    interface SelectClause<C, FC> {
+    interface SelectClause<C, SR> {
 
-        <S extends SelectPart> FC select(Function<C, Hint> hints, List<SQLModifier> modifiers, Function<C, List<S>> function);
+        <S extends SelectPart> SR select(Function<C, List<Hint>> hints, List<SQLModifier> modifiers, Function<C, List<S>> function);
 
-        <S extends SelectPart> FC select(List<Hint> hints, List<SQLModifier> modifiers, Function<C, List<S>> function);
+        <S extends SelectPart> SR select(List<Hint> hints, List<SQLModifier> modifiers, Function<C, List<S>> function);
 
-        <S extends SelectPart> FC select(List<SQLModifier> modifiers, Function<C, List<S>> function);
+        <S extends SelectPart> SR select(List<Hint> hints, List<SQLModifier> modifiers, List<S> selectPartList);
 
-        <S extends SelectPart> FC select(List<SQLModifier> modifiers, Supplier<List<S>> supplier);
+        <S extends SelectPart> SR select(List<SQLModifier> modifiers, Function<C, List<S>> function);
 
-        <S extends SelectPart> FC select(Function<C, List<S>> function);
+        <S extends SelectPart> SR select(List<SQLModifier> modifiers, Supplier<List<S>> supplier);
 
-        <S extends SelectPart> FC select(Supplier<List<S>> supplier);
+        <S extends SelectPart> SR select(Function<C, List<S>> function);
 
-        FC select(Distinct distinct, SelectPart selectPart);
+        <S extends SelectPart> SR select(Supplier<List<S>> supplier);
 
-        FC select(SelectPart selectPart);
+        SR select(SQLModifier modifier, SelectPart selectPart);
 
-        FC select(SelectPart selectPart1, SelectPart selectPart2);
+        SR select(SelectPart selectPart);
 
-        FC select(SelectPart selectPart1, SelectPart selectPart2, SelectPart selectPart3);
+        SR select(SelectPart selectPart1, SelectPart selectPart2);
 
-        <S extends SelectPart> FC select(List<SQLModifier> modifiers, List<S> selectPartList);
+        SR select(SelectPart selectPart1, SelectPart selectPart2, SelectPart selectPart3);
 
-        <S extends SelectPart> FC select(List<S> selectPartList);
+        <S extends SelectPart> SR select(List<SQLModifier> modifiers, List<S> selectPartList);
 
-        <S extends SelectPart> FC select(Distinct distinct, List<S> selectPartList);
+        <S extends SelectPart> SR select(List<S> selectPartList);
+
+        <S extends SelectPart> SR select(SQLModifier modifier, List<S> selectPartList);
 
     }
 
@@ -393,11 +379,11 @@ public interface Query extends Statement {
 
         UR union(Supplier<Q> supplier);
 
-        UR union();
+        SP union();
 
-        UR unionAll();
+        SP unionAll();
 
-        UR unionDistinct();
+        SP unionDistinct();
 
         UR unionAll(Function<C, Q> function);
 

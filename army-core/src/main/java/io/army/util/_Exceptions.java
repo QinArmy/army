@@ -260,6 +260,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException("select list must not empty");
     }
 
+    public static CriteriaException columnSubQuerySelectionError() {
+        String m = String.format("%s selection size must equals one.", ColumnSubQuery.class.getName());
+        return new CriteriaException(m);
+    }
+
     public static CriteriaException onClauseIsEmpty() {
         return new CriteriaException("on clause must not empty");
     }

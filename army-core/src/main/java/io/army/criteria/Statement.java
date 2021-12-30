@@ -44,15 +44,13 @@ public interface Statement {
     }
 
 
-
-
     interface FromClause<C, FT, FS> {
 
         FT from(TableMeta<?> table, String tableAlias);
 
-        FS from(Function<C, SubQuery> function, String subQueryAlia);
+        <T extends TablePart> FS from(Function<C, T> function, String alias);
 
-        FS from(Supplier<SubQuery> supplier, String subQueryAlia);
+        <T extends TablePart> FS from(Supplier<T> supplier, String alias);
     }
 
     interface OnClause<C, OR> {
@@ -77,39 +75,63 @@ public interface Statement {
 
         JT leftJoin(TableMeta<?> table, String tableAlias);
 
-        JS leftJoin(Function<C, SubQuery> function, String subQueryAlia);
+        <T extends TablePart> JS leftJoin(Function<C, T> function, String alias);
 
-        JS leftJoin(Supplier<SubQuery> supplier, String subQueryAlia);
+        <T extends TablePart> JS leftJoin(Supplier<T> supplier, String alias);
 
         JT ifLeftJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
 
-        JS ifLeftJoin(Function<C, SubQuery> function, String subQueryAlia);
+        <T extends TablePart> JS ifLeftJoin(Function<C, T> function, String alias);
 
-        JS ifLeftJoin(Supplier<SubQuery> supplier, String subQueryAlia);
+        <T extends TablePart> JS ifLeftJoin(Supplier<T> supplier, String alias);
 
         JT join(TableMeta<?> table, String tableAlias);
 
-        JS join(Function<C, SubQuery> function, String subQueryAlia);
+        <T extends TablePart> JS join(Function<C, T> function, String alias);
 
-        JS join(Supplier<SubQuery> supplier, String subQueryAlia);
+        <T extends TablePart> JS join(Supplier<T> supplier, String alias);
 
         JT ifJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
 
-        JS ifJoin(Function<C, SubQuery> function, String subQueryAlia);
+        <T extends TablePart> JS ifJoin(Function<C, T> function, String alias);
 
-        JS ifJoin(Supplier<SubQuery> supplier, String subQueryAlia);
+        <T extends TablePart> JS ifJoin(Supplier<T> supplier, String alias);
 
         JT rightJoin(TableMeta<?> table, String tableAlias);
 
-        JS rightJoin(Function<C, SubQuery> function, String subQueryAlia);
+        <T extends TablePart> JS rightJoin(Function<C, T> function, String alias);
 
-        JS rightJoin(Supplier<SubQuery> supplier, String subQueryAlia);
+        <T extends TablePart> JS rightJoin(Supplier<T> supplier, String alias);
 
         JT ifRightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
 
-        JS ifRightJoin(Function<C, SubQuery> function, String subQueryAlia);
+        <T extends TablePart> JS ifRightJoin(Function<C, T> function, String alias);
 
-        JS ifRightJoin(Supplier<SubQuery> supplier, String subQueryAlia);
+        <T extends TablePart> JS ifRightJoin(Supplier<T> supplier, String alias);
+
+        JT crossJoin(TableMeta<?> table, String tableAlias);
+
+        <T extends TablePart> JS crossJoin(Function<C, T> function, String alias);
+
+        <T extends TablePart> JS crossJoin(Supplier<T> supplier, String alias);
+
+        JT ifCrossJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
+
+        <T extends TablePart> JS ifCrossJoin(Function<C, T> function, String alias);
+
+        <T extends TablePart> JS ifCrossJoin(Supplier<T> supplier, String alias);
+
+        JT fullJoin(TableMeta<?> table, String tableAlias);
+
+        <T extends TablePart> JS fullJoin(Function<C, T> function, String alias);
+
+        <T extends TablePart> JS fullJoin(Supplier<T> supplier, String alias);
+
+        JT ifFullJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
+
+        <T extends TablePart> JS ifFullJoin(Function<C, T> function, String alias);
+
+        <T extends TablePart> JS ifFullJoin(Supplier<T> supplier, String alias);
 
     }
 
@@ -122,36 +144,28 @@ public interface Statement {
 
         WR where(Supplier<List<IPredicate>> supplier);
 
-        WA where(IPredicate predicate);
+        WA where(@Nullable IPredicate predicate);
     }
 
 
-    interface WhereAndClause<C, AR> {
+    interface WhereAndClause<C, WA> {
 
-        AR and(IPredicate predicate);
+        WA and(IPredicate predicate);
 
-        AR and(Supplier<IPredicate> supplier);
+        WA and(Supplier<IPredicate> supplier);
 
-        AR and(Function<C, IPredicate> function);
+        WA and(Function<C, IPredicate> function);
 
         /**
          * @see Expression#ifEqual(Object)
          */
-        AR ifAnd(@Nullable IPredicate predicate);
+        WA ifAnd(@Nullable IPredicate predicate);
 
-        AR ifAnd(Supplier<IPredicate> supplier);
+        WA ifAnd(Supplier<IPredicate> supplier);
 
-        AR ifAnd(Function<C, IPredicate> function);
+        WA ifAnd(Function<C, IPredicate> function);
 
     }
-
-
-
-
-
-
-
-
 
 
 }

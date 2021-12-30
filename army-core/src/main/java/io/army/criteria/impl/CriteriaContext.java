@@ -1,9 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.DerivedField;
-import io.army.criteria.Expression;
-import io.army.criteria.QualifiedField;
-import io.army.criteria.SubQuery;
+import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -20,6 +17,10 @@ interface CriteriaContext {
     void onAddSubQuery(SubQuery subQuery, String subQueryAlias);
 
     void onAddTable(TableMeta<?> tableMeta, String tableAlias);
+
+    default void onAddTablePart(TablePart tablePart, String alias) {
+        throw new UnsupportedOperationException();
+    }
 
     <E> Expression<E> composeRef(String selectionAlias);
 

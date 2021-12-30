@@ -116,12 +116,12 @@ abstract class StandardSubQueries<Q extends SubQuery, C> extends StandardQuery<Q
 
 
         @Override
-        public final StandardUnionSpec<SubQuery, C> bracketsQuery() {
+        public final StandardUnionResultSpec<SubQuery, C> bracketsQuery() {
             return StandardUnionQuery.bracketSubQuery(this.asQuery(), this.criteria);
         }
 
         @Override
-        final StandardUnionSpec<SubQuery, C> createUnionQuery(SubQuery left, UnionType unionType, SubQuery right) {
+        final StandardUnionResultSpec<SubQuery, C> createUnionQuery(SubQuery left, UnionType unionType, SubQuery right) {
             return StandardUnionQuery.unionSubQuery(left, unionType, right, this.criteria);
         }
 
@@ -173,12 +173,12 @@ abstract class StandardSubQueries<Q extends SubQuery, C> extends StandardQuery<Q
         }
 
         @Override
-        public final StandardUnionSpec<RowSubQuery, C> bracketsQuery() {
+        public final StandardUnionResultSpec<RowSubQuery, C> bracketsQuery() {
             return StandardUnionQuery.bracketRowSubQuery(this.asQuery(), this.criteria);
         }
 
         @Override
-        final StandardUnionSpec<RowSubQuery, C> createUnionQuery(RowSubQuery left, UnionType unionType, RowSubQuery right) {
+        final StandardUnionResultSpec<RowSubQuery, C> createUnionQuery(RowSubQuery left, UnionType unionType, RowSubQuery right) {
             return StandardUnionQuery.unionRowSubQuery(left, unionType, right, this.criteria);
         }
 
@@ -247,12 +247,12 @@ abstract class StandardSubQueries<Q extends SubQuery, C> extends StandardQuery<Q
         }
 
         @Override
-        public final StandardUnionSpec<ColumnSubQuery<E>, C> bracketsQuery() {
+        public final StandardUnionResultSpec<ColumnSubQuery<E>, C> bracketsQuery() {
             return StandardUnionQuery.bracketColumnSubQuery(this.asQuery(), this.criteria);
         }
 
         @Override
-        final StandardUnionSpec<ColumnSubQuery<E>, C> createUnionQuery(ColumnSubQuery<E> left, UnionType unionType, ColumnSubQuery<E> right) {
+        final StandardUnionResultSpec<ColumnSubQuery<E>, C> createUnionQuery(ColumnSubQuery<E> left, UnionType unionType, ColumnSubQuery<E> right) {
             return StandardUnionQuery.unionColumnSubQuery(left, unionType, right, this.criteria);
         }
 
@@ -321,7 +321,7 @@ abstract class StandardSubQueries<Q extends SubQuery, C> extends StandardQuery<Q
         }
 
         @Override
-        public final StandardUnionSpec<ScalarQueryExpression<E>, C> bracketsQuery() {
+        public final StandardUnionResultSpec<ScalarQueryExpression<E>, C> bracketsQuery() {
             return StandardUnionQuery.bracketScalarSubQuery(this.asQuery(), this.criteria);
         }
 
@@ -338,7 +338,7 @@ abstract class StandardSubQueries<Q extends SubQuery, C> extends StandardQuery<Q
         }
 
         @Override
-        final StandardUnionSpec<ScalarQueryExpression<E>, C> createUnionQuery(ScalarQueryExpression<E> left, UnionType unionType
+        final StandardUnionResultSpec<ScalarQueryExpression<E>, C> createUnionQuery(ScalarQueryExpression<E> left, UnionType unionType
                 , ScalarQueryExpression<E> right) {
             return StandardUnionQuery.unionScalarSubQuery(left, unionType, right, this.criteria);
         }

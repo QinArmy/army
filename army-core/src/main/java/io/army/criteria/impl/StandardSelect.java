@@ -33,7 +33,7 @@ abstract class StandardSelect<C> extends StandardQuery<Select, C>
     }
 
     @Override
-    public final StandardUnionSpec<Select, C> bracketsQuery() {
+    public final StandardUnionResultSpec<Select, C> bracketsQuery() {
         return ComposeQueries.bracketsSelect(this.criteria, this.asQuery());
     }
 
@@ -49,7 +49,7 @@ abstract class StandardSelect<C> extends StandardQuery<Select, C>
     }
 
     @Override
-    final StandardUnionSpec<Select, C> createUnionQuery(Select left, UnionType unionType, Select right) {
+    final StandardUnionResultSpec<Select, C> createUnionQuery(Select left, UnionType unionType, Select right) {
         right.prepared();
         return StandardUnionQuery.unionSelect(left, unionType, right, this.criteria);
     }

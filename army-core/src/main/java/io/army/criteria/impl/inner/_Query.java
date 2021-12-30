@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface _Query extends _PartQuery {
 
+    List<Hint> hintList();
+
     List<SQLModifier> modifierList();
 
     List<? extends SelectPart> selectPartList();

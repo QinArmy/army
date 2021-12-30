@@ -2,10 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.domain.IDomain;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.FieldMeta;
-import io.army.meta.ParamMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 import io.army.tx.Isolation;
 
 import java.util.ArrayList;
@@ -177,7 +174,7 @@ public abstract class SQLs extends SQLUtils {
 
     /**
      * <p>
-     * eg: {@link Query.StandardUnionSpec#orderBy(SortPart)}
+     * eg: {@link Query.StandardUnionResultSpec#orderBy(SortPart)}
      * </p>
      */
     public static <E> Expression<E> composeRef(String selectionAlias) {
@@ -185,7 +182,7 @@ public abstract class SQLs extends SQLUtils {
                 .composeRef(selectionAlias);
     }
 
-    public static <T extends IDomain> SelectionGroup group(TableMeta<T> tableMeta, String alias) {
+    public static <T extends IDomain> SelectionGroup group(SingleTableMeta<T> tableMeta, String alias) {
         return SelectionGroups.buildTableGroup(alias, new ArrayList<>(tableMeta.fieldCollection()));
     }
 

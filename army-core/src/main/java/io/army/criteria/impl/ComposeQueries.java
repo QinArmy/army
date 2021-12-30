@@ -17,14 +17,14 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 abstract class ComposeQueries<Q extends Query, C> extends AbstractComposeQuery<Q, C> implements
-        Query.StandardUnionSpec<Q, C>, _StandardComposeQuery {
+        Query.StandardUnionResultSpec<Q, C>, _StandardComposeQuery {
 
-    static <Q extends Query, C> StandardUnionSpec<Q, C> brackets(C criteria, Q enclosedQuery) {
+    static <Q extends Query, C> StandardUnionResultSpec<Q, C> brackets(C criteria, Q enclosedQuery) {
         return new BracketsQuery<>(criteria, enclosedQuery);
     }
 
     @SuppressWarnings("unchecked")
-    static <Q extends Query, C> StandardUnionSpec<Q, C> compose(C criteria, Q leftQuery, SQLModifier modifier
+    static <Q extends Query, C> StandardUnionResultSpec<Q, C> compose(C criteria, Q leftQuery, SQLModifier modifier
             , Supplier<Q> supplier) {
         Q left = leftQuery, right;
         if (left.requiredBrackets()) {
@@ -38,7 +38,7 @@ abstract class ComposeQueries<Q extends Query, C> extends AbstractComposeQuery<Q
     }
 
     @SuppressWarnings("unchecked")
-    static <Q extends Query, C> StandardUnionSpec<Q, C> compose(C criteria, Q leftQuery, SQLModifier modifier
+    static <Q extends Query, C> StandardUnionResultSpec<Q, C> compose(C criteria, Q leftQuery, SQLModifier modifier
             , Function<C, Q> function) {
         Q left = leftQuery, right;
         if (left.requiredBrackets()) {
@@ -51,7 +51,7 @@ abstract class ComposeQueries<Q extends Query, C> extends AbstractComposeQuery<Q
         return new ComposeQueryImpl<>(criteria, left, modifier, right);
     }
 
-    static <C> StandardUnionSpec<Select, C> unionSelect(C criteria, Select left, UnionType unionType
+    static <C> StandardUnionResultSpec<Select, C> unionSelect(C criteria, Select left, UnionType unionType
             , Supplier<Select> supplier) {
         left.prepared();
         final Select right;
@@ -60,7 +60,7 @@ abstract class ComposeQueries<Q extends Query, C> extends AbstractComposeQuery<Q
         return null;
     }
 
-    static <C> StandardUnionSpec<Select, C> unionSelect(C criteria, Select left, UnionType unionType
+    static <C> StandardUnionResultSpec<Select, C> unionSelect(C criteria, Select left, UnionType unionType
             , Function<C, Select> function) {
         return null;
     }
@@ -70,7 +70,7 @@ abstract class ComposeQueries<Q extends Query, C> extends AbstractComposeQuery<Q
 
     }
 
-    static <C> StandardUnionSpec<Select, C> bracketsSelect(C criteria, Select select) {
+    static <C> StandardUnionResultSpec<Select, C> bracketsSelect(C criteria, Select select) {
         return null;
     }
 
@@ -86,25 +86,25 @@ abstract class ComposeQueries<Q extends Query, C> extends AbstractComposeQuery<Q
 
     @SuppressWarnings("unchecked")
     @Override
-    public final StandardUnionSpec<Q, C> bracketsQuery() {
+    public final StandardUnionResultSpec<Q, C> bracketsQuery() {
         return new BracketsQuery<>(criteria, (Q) this);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public final StandardUnionSpec<Q, C> union(Function<C, Q> function) {
+    public final StandardUnionResultSpec<Q, C> union(Function<C, Q> function) {
         return compose(this.criteria, (Q) this, UnionType.UNION, function);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public final StandardUnionSpec<Q, C> unionAll(Function<C, Q> function) {
+    public final StandardUnionResultSpec<Q, C> unionAll(Function<C, Q> function) {
         return compose(this.criteria, (Q) this, UnionType.UNION_ALL, function);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public final StandardUnionSpec<Q, C> unionDistinct(Function<C, Q> function) {
+    public final StandardUnionResultSpec<Q, C> unionDistinct(Function<C, Q> function) {
         return compose(this.criteria, (Q) this, UnionType.UNION_DISTINCT, function);
     }
 

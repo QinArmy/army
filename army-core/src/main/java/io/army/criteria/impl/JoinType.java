@@ -7,7 +7,8 @@ enum JoinType implements SQLModifier {
     LEFT_JOIN("LEFT JOIN"),
     JOIN("JOIN"),
     RIGHT_JOIN("RIGHT JOIN"),
-    FULL("FULL JOIN"),
+    FULL_JOIN("FULL JOIN"),
+    CROSS_JOIN("CROSS JOIN"),
 
     /**
      * MySQL
