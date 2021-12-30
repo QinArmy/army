@@ -6,6 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
+import java.util.Collections;
+
 public class SQLsTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(SQLsTests.class);
@@ -15,12 +17,23 @@ public class SQLsTests {
         final Select select;
         select = SQLs.standardSelect()
                 .select(SQLs.group(table, "t"))
-                .union()
-                .select(SQLs.group(table, "t"))
                 .from(table, "t")
+                .where(Collections.emptyList())
+                .groupBy(Collections.emptyList())
+                .having(Collections.emptyList())
+                .orderBy(Collections.emptyList())
+                .limit(1)
+                .lock(LockMode.PESSIMISTIC_READ)
+                .union(this::createSelect)
+                .limit(1)
                 .asQuery();
 
         System.out.println(select);
+    }
+
+
+    private Select createSelect() {
+        return null;
     }
 
 

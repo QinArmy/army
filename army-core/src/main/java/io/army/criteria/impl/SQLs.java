@@ -105,12 +105,12 @@ public abstract class SQLs extends SQLUtils {
         return StandardBatchDelete.create(criteria);
     }
 
-    public static Select.StandardSelect<Void> standardSelect() {
+    public static StandardQuery.SelectSpec<Void> standardSelect() {
         throw new UnsupportedOperationException();
     }
 
 
-    public static <C> Select.StandardSelect<C> standardSelect(C criteria) {
+    public static <C> StandardQuery.SelectSpec<C> standardSelect(C criteria) {
         Objects.requireNonNull(criteria);
         throw new UnsupportedOperationException();
     }

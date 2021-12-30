@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Select;
+import io.army.criteria.StandardQuery;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner._StandardSelect;
 import io.army.lang.Nullable;
@@ -8,19 +9,19 @@ import io.army.meta.TableMeta;
 
 import java.util.Objects;
 
-abstract class StandardSelect<C> extends StandardQuery<Select, C>
+abstract class StandardSelect<C> extends StandardQueryImpl<Select, C>
         implements _StandardSelect, Select {
 
-    static StandardSelect<Void> create() {
+    static io.army.criteria.StandardSelect.StandardSelect<Void> create() {
         return new SimpleSelect<>(null);
     }
 
-    static <C> StandardSelect<C> create(final @Nullable C criteria) {
+    static <C> io.army.criteria.StandardSelect.StandardSelect<C> create(final @Nullable C criteria) {
         Objects.requireNonNull(criteria);
         return new SimpleSelect<>(criteria);
     }
 
-    static <C> StandardSelect<C> unionAndSelect(Select left, UnionType unionType, @Nullable C criteria) {
+    static <C> io.army.criteria.StandardSelect.StandardSelect<C> unionAndSelect(Select left, UnionType unionType, @Nullable C criteria) {
         return null;
     }
 
@@ -65,11 +66,11 @@ abstract class StandardSelect<C> extends StandardQuery<Select, C>
     }
 
     @Override
-    final StandardSelectClauseSpec<Select, C> asQueryAndSelect(UnionType unionType) {
-        return StandardSelect.unionAndSelect(this.asQuery(), unionType, this.criteria);
+    final StandardQuery.StandardSelectClauseSpec<Select, C> asQueryAndSelect(UnionType unionType) {
+        return io.army.criteria.StandardSelect.StandardSelect.unionAndSelect(this.asQuery(), unionType, this.criteria);
     }
 
-    private static final class SimpleSelect<C> extends StandardSelect<C> {
+    private static final class SimpleSelect<C> extends io.army.criteria.StandardSelect.StandardSelect<C> {
 
         private SimpleSelect(@Nullable C criteria) {
             super(criteria);

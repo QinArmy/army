@@ -111,25 +111,25 @@ abstract class ComposeQueries<Q extends Query, C> extends AbstractComposeQuery<Q
     /*################################## blow OrderByClause method ##################################*/
 
     @Override
-    public final StandardLimitClause<Q, C> orderBy(SortPart sortPart) {
+    public final StandardQuery.StandardLimitClause<Q, C> orderBy(SortPart sortPart) {
         doOrderBy(sortPart);
         return this;
     }
 
     @Override
-    public final StandardLimitClause<Q, C> orderBy(SortPart sortPart1, SortPart sortPart2) {
+    public final StandardQuery.StandardLimitClause<Q, C> orderBy(SortPart sortPart1, SortPart sortPart2) {
         doOrderBy(Arrays.asList(sortPart1, sortPart2));
         return this;
     }
 
     @Override
-    public final StandardLimitClause<Q, C> orderBy(List<SortPart> sortPartList) {
+    public final StandardQuery.StandardLimitClause<Q, C> orderBy(List<SortPart> sortPartList) {
         doOrderBy(sortPartList);
         return this;
     }
 
     @Override
-    public final StandardLimitClause<Q, C> orderBy(Function<C, List<SortPart>> function) {
+    public final StandardQuery.StandardLimitClause<Q, C> orderBy(Function<C, List<SortPart>> function) {
         List<SortPart> list = function.apply(this.criteria);
         _Assert.notEmpty(list, "sortPartList must not empty.");
         doOrderBy(list);
@@ -137,7 +137,7 @@ abstract class ComposeQueries<Q extends Query, C> extends AbstractComposeQuery<Q
     }
 
     @Override
-    public final StandardLimitClause<Q, C> ifOrderBy(Function<C, List<SortPart>> function) {
+    public final StandardQuery.StandardLimitClause<Q, C> ifOrderBy(Function<C, List<SortPart>> function) {
         doOrderBy(function);
         return this;
     }

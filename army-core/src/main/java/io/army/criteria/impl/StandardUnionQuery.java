@@ -129,8 +129,8 @@ abstract class StandardUnionQuery<Q extends Query, C> extends StandardPartQuery<
 
 
         @Override
-        final StandardSelectClauseSpec<Select, C> asQueryAndSelect(final UnionType unionType) {
-            return StandardSelect.unionAndSelect(this.asQuery(), unionType, this.criteria);
+        final StandardQuery.StandardSelectClauseSpec<Select, C> asQueryAndSelect(final UnionType unionType) {
+            return io.army.criteria.StandardSelect.StandardSelect.unionAndSelect(this.asQuery(), unionType, this.criteria);
         }
 
         @Override
@@ -234,7 +234,7 @@ abstract class StandardUnionQuery<Q extends Query, C> extends StandardPartQuery<
         }
 
         @Override
-        final StandardSelectClauseSpec<SubQuery, C> asQueryAndSelect(UnionType unionType) {
+        final StandardQuery.StandardSelectClauseSpec<SubQuery, C> asQueryAndSelect(UnionType unionType) {
             return StandardSubQueries.unionAndSubQuery(this.asQuery(), unionType, this.criteria);
         }
 
@@ -339,7 +339,7 @@ abstract class StandardUnionQuery<Q extends Query, C> extends StandardPartQuery<
 
 
         @Override
-        final StandardSelectClauseSpec<RowSubQuery, C> asQueryAndSelect(UnionType unionType) {
+        final StandardQuery.StandardSelectClauseSpec<RowSubQuery, C> asQueryAndSelect(UnionType unionType) {
             return StandardSubQueries.unionAndRowSubQuery(this.asQuery(), unionType, this.criteria);
         }
 
@@ -444,7 +444,7 @@ abstract class StandardUnionQuery<Q extends Query, C> extends StandardPartQuery<
         }
 
         @Override
-        final StandardSelectClauseSpec<ColumnSubQuery<E>, C> asQueryAndSelect(UnionType unionType) {
+        final StandardQuery.StandardSelectClauseSpec<ColumnSubQuery<E>, C> asQueryAndSelect(UnionType unionType) {
             return StandardSubQueries.unionAndColumnSubQuery(this.asQuery(), unionType, this.criteria);
         }
 
@@ -560,7 +560,7 @@ abstract class StandardUnionQuery<Q extends Query, C> extends StandardPartQuery<
         }
 
         @Override
-        final StandardSelectClauseSpec<ScalarQueryExpression<E>, C> asQueryAndSelect(UnionType unionType) {
+        final StandardQuery.StandardSelectClauseSpec<ScalarQueryExpression<E>, C> asQueryAndSelect(UnionType unionType) {
             return StandardSubQueries.unionAndScalarSubQuery(this.asQuery(), unionType, this.criteria);
         }
 

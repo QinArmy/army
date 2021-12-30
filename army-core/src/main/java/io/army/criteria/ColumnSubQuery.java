@@ -12,11 +12,11 @@ public interface ColumnSubQuery<E> extends SubQuery {
 
     interface ColumnSelectClauseSpec<C, E, Q extends ColumnSubQuery<E>> {
 
-        StandardFromSpec<C, Q> selectOne(Distinct distinct, Selection selection);
+        StandardQuery.StandardFromSpec<C, Q> selectOne(Distinct distinct, Selection selection);
 
-        StandardFromSpec<C, Q> selectOne(Selection selection);
+        StandardQuery.StandardFromSpec<C, Q> selectOne(Selection selection);
 
-        StandardFromSpec<C, Q> selectOne(Distinct distinct, Function<C, Selection> function);
+        StandardQuery.StandardFromSpec<C, Q> selectOne(Distinct distinct, Function<C, Selection> function);
 
 
     }

@@ -48,17 +48,17 @@ abstract class MySQL57PartQuery<Q extends MySQLQuery, C> implements Query.Standa
     }
 
     @Override
-    public StandardSelectClauseSpec<Q, C> union() {
+    public StandardQuery.StandardSelectClauseSpec<Q, C> union() {
         return null;
     }
 
     @Override
-    public StandardSelectClauseSpec<Q, C> unionAll() {
+    public StandardQuery.StandardSelectClauseSpec<Q, C> unionAll() {
         return null;
     }
 
     @Override
-    public StandardSelectClauseSpec<Q, C> unionDistinct() {
+    public StandardQuery.StandardSelectClauseSpec<Q, C> unionDistinct() {
         return null;
     }
 
