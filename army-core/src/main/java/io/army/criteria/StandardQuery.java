@@ -3,7 +3,6 @@ package io.army.criteria;
 import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
 
-import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -76,7 +75,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * @see SQLs#standardScalarSubQuery(Object)
      */
     interface StandardJoinSpec<C, Q extends Query>
-            extends JoinClause<C, StandardQuery.StandardOnSpec<C, Q>, StandardQuery.StandardOnSpec<C, Q>>
+            extends JoinClause<C, StandardOnSpec<C, Q>, StandardOnSpec<C, Q>>
             , StandardWhereSpec<C, Q> {
 
 
@@ -113,8 +112,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * @see SQLs#standardScalarSubQuery(Object)
      */
     interface StandardWhereAndSpec<C, Q extends Query>
-            extends WhereAndClause<C, StandardQuery.StandardWhereAndSpec<C, Q>>
-            , StandardGroupBySpec<C, Q> {
+            extends WhereAndClause<C, StandardWhereAndSpec<C, Q>>, StandardGroupBySpec<C, Q> {
 
 
     }
@@ -165,31 +163,9 @@ public interface StandardQuery extends Query, StandardStatement {
      * @see SQLs#standardColumnSubQuery(Object)
      * @see SQLs#standardScalarSubQuery(Object)
      */
-    interface StandardOrderBySpec<C, Q extends Query> extends StandardOrderByClause<C, Q>, StandardLimitSpec<C, Q> {
+    interface StandardOrderBySpec<C, Q extends Query> extends StandardLimitSpec<C, Q>
+            , Query.OrderByClause<C, StandardLimitSpec<C, Q>> {
 
-        @Override
-        StandardLimitSpec<C, Q> orderBy(SortPart sortPart);
-
-        @Override
-        StandardLimitSpec<C, Q> orderBy(SortPart sortPart1, SortPart sortPart2);
-
-        @Override
-        StandardLimitSpec<C, Q> orderBy(List<SortPart> sortPartList);
-
-        @Override
-        StandardLimitSpec<C, Q> orderBy(Function<C, List<SortPart>> function);
-
-        @Override
-        StandardLimitSpec<C, Q> orderBy(Supplier<List<SortPart>> supplier);
-
-        @Override
-        StandardLimitSpec<C, Q> ifOrderBy(@Nullable SortPart sortPart);
-
-        @Override
-        StandardLimitSpec<C, Q> ifOrderBy(Supplier<List<SortPart>> supplier);
-
-        @Override
-        StandardLimitSpec<C, Q> ifOrderBy(Function<C, List<SortPart>> function);
     }
 
     /**
@@ -205,24 +181,12 @@ public interface StandardQuery extends Query, StandardStatement {
      * @see SQLs#standardScalarSubQuery(Object)
      */
     interface StandardLimitSpec<C, Q extends Query> extends StandardLockSpec<C, Q>
-            , StandardQuery.StandardLimitClause<C, Q> {
-        @Override
-        StandardLockSpec<C, Q> limit(long rowCount);
+            , Query.LimitClause<C, StandardLockSpec<C, Q>> {
 
-        @Override
-        StandardLockSpec<C, Q> limit(long offset, long rowCount);
+    }
 
-        @Override
-        StandardLockSpec<C, Q> limit(Function<C, LimitOption> function);
+    interface StandardUnionSpec<C, Q extends Query> extends StandardOrderByClause<C, Q> {
 
-        @Override
-        StandardLockSpec<C, Q> limit(Supplier<LimitOption> supplier);
-
-        @Override
-        StandardLockSpec<C, Q> ifLimit(Function<C, LimitOption> function);
-
-        @Override
-        StandardLockSpec<C, Q> ifLimit(Supplier<LimitOption> supplier);
     }
 
     /**
@@ -260,7 +224,7 @@ public interface StandardQuery extends Query, StandardStatement {
     }
 
     interface StandardUnionClause<C, Q extends Query> extends QuerySpec<Q>
-            , Query.UnionClause<C, StandardOrderByClause<C, Q>, StandardSelectClauseSpec<C, Q>, Q> {
+            , Query.UnionClause<C, StandardUnionSpec<C, Q>, StandardSelectClauseSpec<C, Q>, Q> {
 
     }
 

@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-abstract class PartQuery<C, Q extends Query, UR, SP, OR, LR> implements _PartQuery, Query
+abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements _PartQuery, Query
         , Query.OrderByClause<C, OR>, Query.LimitClause<C, LR>
         , Query.UnionClause<C, UR, SP, Q>, Query.QuerySpec<Q> {
 
@@ -36,51 +36,63 @@ abstract class PartQuery<C, Q extends Query, UR, SP, OR, LR> implements _PartQue
     }
 
 
+    @Override
     public final UR union(Function<C, Q> function) {
         return innerCreate(UnionType.UNION, function);
     }
 
+    @Override
     public final UR union(Supplier<Q> supplier) {
         return innerCreate(UnionType.UNION, supplier);
     }
 
+    @Override
     public final SP union() {
         return this.asQueryAndSelect(UnionType.UNION);
     }
 
+    @Override
     public final UR unionAll(Function<C, Q> function) {
         return innerCreate(UnionType.UNION_ALL, function);
     }
 
+    @Override
     public final UR unionAll(Supplier<Q> supplier) {
         return innerCreate(UnionType.UNION_ALL, supplier);
     }
 
+    @Override
     public final SP unionAll() {
         return this.asQueryAndSelect(UnionType.UNION_ALL);
     }
 
+    @Override
     public final UR unionDistinct(Function<C, Q> function) {
         return innerCreate(UnionType.UNION_DISTINCT, function);
     }
 
+    @Override
     public final UR unionDistinct(Supplier<Q> supplier) {
         return innerCreate(UnionType.UNION_DISTINCT, supplier);
     }
 
+    @Override
     public final SP unionDistinct() {
         return this.asQueryAndSelect(UnionType.UNION_DISTINCT);
     }
 
+    @Override
     public final OR orderBy(SortPart sortPart) {
         this.orderByList = Collections.singletonList(sortPart);
         return (OR) this;
     }
 
+    @Override
     public final OR orderBy(SortPart sortPart1, SortPart sortPart2) {
         return this.orderBy(Arrays.asList(sortPart1, sortPart2));
     }
 
+    @Override
     public final OR orderBy(List<SortPart> sortPartList) {
         if (sortPartList.size() == 0) {
             throw new CriteriaException("sortPartList must not empty.");
@@ -89,14 +101,17 @@ abstract class PartQuery<C, Q extends Query, UR, SP, OR, LR> implements _PartQue
         return (OR) this;
     }
 
+    @Override
     public final OR orderBy(Function<C, List<SortPart>> function) {
         return this.orderBy(function.apply(this.criteria));
     }
 
+    @Override
     public final OR orderBy(Supplier<List<SortPart>> supplier) {
         return this.orderBy(supplier.get());
     }
 
+    @Override
     public final OR ifOrderBy(@Nullable SortPart sortPart) {
         if (sortPart != null) {
             this.orderByList = Collections.singletonList(sortPart);
@@ -104,6 +119,7 @@ abstract class PartQuery<C, Q extends Query, UR, SP, OR, LR> implements _PartQue
         return (OR) this;
     }
 
+    @Override
     public final OR ifOrderBy(Supplier<List<SortPart>> supplier) {
         final List<SortPart> supplierResult;
         supplierResult = supplier.get();
@@ -113,6 +129,7 @@ abstract class PartQuery<C, Q extends Query, UR, SP, OR, LR> implements _PartQue
         return (OR) this;
     }
 
+    @Override
     public final OR ifOrderBy(Function<C, List<SortPart>> function) {
         final List<SortPart> supplierResult;
         supplierResult = function.apply(this.criteria);
@@ -122,18 +139,21 @@ abstract class PartQuery<C, Q extends Query, UR, SP, OR, LR> implements _PartQue
         return (OR) this;
     }
 
+    @Override
     public final LR limit(long rowCount) {
         this.offset = 0L;
         this.rowCount = rowCount;
         return (LR) this;
     }
 
+    @Override
     public final LR limit(long offset, long rowCount) {
         this.offset = offset;
         this.rowCount = rowCount;
         return (LR) this;
     }
 
+    @Override
     public final LR limit(Function<C, LimitOption> function) {
         final LimitOption option;
         option = function.apply(this.criteria);
@@ -143,6 +163,7 @@ abstract class PartQuery<C, Q extends Query, UR, SP, OR, LR> implements _PartQue
         return (LR) this;
     }
 
+    @Override
     public final LR limit(Supplier<LimitOption> supplier) {
         final LimitOption option;
         option = supplier.get();
@@ -152,6 +173,7 @@ abstract class PartQuery<C, Q extends Query, UR, SP, OR, LR> implements _PartQue
         return (LR) this;
     }
 
+    @Override
     public final LR ifLimit(Function<C, LimitOption> function) {
         final LimitOption option;
         option = function.apply(this.criteria);
@@ -162,6 +184,7 @@ abstract class PartQuery<C, Q extends Query, UR, SP, OR, LR> implements _PartQue
         return (LR) this;
     }
 
+    @Override
     public final LR ifLimit(Supplier<LimitOption> supplier) {
         final LimitOption option;
         option = supplier.get();
@@ -184,20 +207,7 @@ abstract class PartQuery<C, Q extends Query, UR, SP, OR, LR> implements _PartQue
 
     @Override
     public final Q asQuery() {
-        _Assert.nonPrepared(this.prepared);
-
-
-        final List<SortPart> sortPartList = this.orderByList;
-        if (sortPartList == null) {
-            this.orderByList = Collections.emptyList();
-        } else {
-            this.orderByList = CollectionUtils.asUnmodifiableList(sortPartList);
-        }
-
-        final Q query;
-        query = internalAsQuery();
-        this.prepared = true;
-        return query;
+        return this.innerAsQuery(true);
     }
 
     @Override
@@ -225,7 +235,12 @@ abstract class PartQuery<C, Q extends Query, UR, SP, OR, LR> implements _PartQue
         this.internalClear();
     }
 
-    abstract Q internalAsQuery();
+    final Q asQueryForBracket() {
+        return innerAsQuery(false);
+    }
+
+
+    abstract Q internalAsQuery(boolean outer);
 
     abstract void internalClear();
 
@@ -253,8 +268,20 @@ abstract class PartQuery<C, Q extends Query, UR, SP, OR, LR> implements _PartQue
         return createUnionQuery(left, unionType, right);
     }
 
+    private Q innerAsQuery(final boolean outer) {
+        _Assert.nonPrepared(this.prepared);
 
-
+        final List<SortPart> sortPartList = this.orderByList;
+        if (sortPartList == null) {
+            this.orderByList = Collections.emptyList();
+        } else {
+            this.orderByList = CollectionUtils.asUnmodifiableList(sortPartList);
+        }
+        final Q query;
+        query = internalAsQuery(outer);
+        this.prepared = true;
+        return query;
+    }
 
 
 }

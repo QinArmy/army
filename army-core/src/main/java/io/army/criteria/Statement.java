@@ -68,6 +68,8 @@ public interface Statement {
         OR onId();
 
         OR onParent();
+
+        OR onChild();
     }
 
 

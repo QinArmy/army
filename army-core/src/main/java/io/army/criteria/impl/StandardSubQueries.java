@@ -9,7 +9,7 @@ import io.army.util._Exceptions;
 import java.util.Objects;
 import java.util.function.Function;
 
-abstract class StandardSubQueries<Q extends SubQuery, C> extends StandardQueryImpl<Q, C>
+abstract class StandardSubQueries<Q extends SubQuery, C> extends StandardSingleQuery<Q, C>
         implements SubQuery {
 
 

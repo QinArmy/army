@@ -16,8 +16,6 @@ abstract class TableBlock implements _TableBlock {
 
     final JoinType joinType;
 
-    List<_Predicate> predicates;
-
     TableBlock(TablePart tablePart, String alias, JoinType joinType) {
         this.tablePart = tablePart;
         this.alias = alias;

@@ -5,6 +5,7 @@ import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Query;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.util.ArrayUtils;
 import io.army.util.CollectionUtils;
 import io.army.util._Exceptions;
 
@@ -14,9 +15,9 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 
-abstract class SingleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, WA, GR, HR, UR, SP, OR, LR>
-        extends PartQuery<C, Q, UR, SP, OR, LR> implements Query.SelectClause<C, SR>, Statement.FromClause<C, FT, FS>
-        , Statement.JoinClause<C, JT, JS>, Statement.WhereClause<C, WR, WA>, Statement.WhereAndClause<C, WA>
+abstract class SingleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, HR, OR, LR, UR, SP>
+        extends PartQuery<C, Q, UR, OR, LR, SP> implements Query.SelectClause<C, SR>, Statement.FromClause<C, FT, FS>
+        , Statement.JoinClause<C, JT, JS>, Statement.WhereClause<C, WR, AR>, Statement.WhereAndClause<C, AR>
         , Query.GroupClause<C, GR>, Query.HavingClause<C, HR>, _Query {
 
     final CriteriaContext criteriaContext;
@@ -341,63 +342,63 @@ abstract class SingleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, WA, GR, H
     }
 
     @Override
-    public final WA where(@Nullable IPredicate predicate) {
+    public final AR where(@Nullable IPredicate predicate) {
         if (predicate != null) {
             this.predicateList.add((_Predicate) predicate);
         }
-        return (WA) this;
+        return (AR) this;
     }
 
     @Override
-    public final WA and(IPredicate predicate) {
+    public final AR and(IPredicate predicate) {
         this.predicateList.add((_Predicate) predicate);
-        return (WA) this;
+        return (AR) this;
     }
 
     @Override
-    public final WA and(Supplier<IPredicate> supplier) {
+    public final AR and(Supplier<IPredicate> supplier) {
         final IPredicate predicate;
         predicate = supplier.get();
         assert predicate != null;
         this.predicateList.add((_Predicate) predicate);
-        return (WA) this;
+        return (AR) this;
     }
 
     @Override
-    public final WA and(Function<C, IPredicate> function) {
+    public final AR and(Function<C, IPredicate> function) {
         final IPredicate predicate;
         predicate = function.apply(this.criteria);
         assert predicate != null;
         this.predicateList.add((_Predicate) predicate);
-        return (WA) this;
+        return (AR) this;
     }
 
     @Override
-    public final WA ifAnd(@Nullable IPredicate predicate) {
+    public final AR ifAnd(@Nullable IPredicate predicate) {
         if (predicate != null) {
             this.predicateList.add((_Predicate) predicate);
         }
-        return (WA) this;
+        return (AR) this;
     }
 
     @Override
-    public final WA ifAnd(Supplier<IPredicate> supplier) {
+    public final AR ifAnd(Supplier<IPredicate> supplier) {
         final IPredicate predicate;
         predicate = supplier.get();
         if (predicate != null) {
             this.predicateList.add((_Predicate) predicate);
         }
-        return (WA) this;
+        return (AR) this;
     }
 
     @Override
-    public final WA ifAnd(Function<C, IPredicate> function) {
+    public final AR ifAnd(Function<C, IPredicate> function) {
         final IPredicate predicate;
         predicate = function.apply(this.criteria);
         if (predicate != null) {
             this.predicateList.add((_Predicate) predicate);
         }
-        return (WA) this;
+        return (AR) this;
     }
 
     @Override
@@ -576,7 +577,7 @@ abstract class SingleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, WA, GR, H
 
 
     @Override
-    protected final Q internalAsQuery() {
+    protected final Q internalAsQuery(final boolean outer) {
         if (this instanceof SubQuery || this instanceof WithElement) {
             CriteriaContextStack.pop(this.criteriaContext);
         } else {
@@ -640,7 +641,7 @@ abstract class SingleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, WA, GR, H
         this.onClear();
     }
 
-    abstract Q onAsQuery();
+    abstract Q onAsQuery(boolean outer);
 
     abstract void onClear();
 
@@ -724,6 +725,165 @@ abstract class SingleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, WA, GR, H
         this.criteriaContext.onAddTablePart(tablePart, alias);
         return block;
     }
+
+
+    static final class SimpleFormBlock extends TableBlock {
+
+        SimpleFormBlock(TablePart tablePart, String alias) {
+            super(tablePart, alias, JoinType.NONE);
+        }
+
+        @Override
+        public List<_Predicate> predicates() {
+            return Collections.emptyList();
+        }
+    }
+
+
+    static class NoActionOnBlock<C, OR> implements Statement.OnClause<C, OR> {
+
+        final OR query;
+
+        NoActionOnBlock(OR query) {
+            this.query = query;
+        }
+
+        @Override
+        public final OR on(List<IPredicate> predicateList) {
+            return this.query;
+        }
+
+        @Override
+        public final OR on(IPredicate predicate) {
+            return this.query;
+        }
+
+        @Override
+        public final OR on(IPredicate predicate1, IPredicate predicate2) {
+            return this.query;
+        }
+
+        @Override
+        public final OR on(Function<C, List<IPredicate>> function) {
+            return this.query;
+        }
+
+        @Override
+        public final OR on(Supplier<List<IPredicate>> supplier) {
+            return this.query;
+        }
+
+        @Override
+        public final OR onId() {
+            return this.query;
+        }
+
+        @Override
+        public final OR onParent() {
+            return this.query;
+        }
+
+        @Override
+        public final OR onChild() {
+            return this.query;
+        }
+    }
+
+
+    static abstract class OnBlock<C, OR> extends TableBlock implements Statement.OnClause<C, OR> {
+
+        final OR query;
+
+        private List<_Predicate> predicates;
+
+        OnBlock(TablePart tablePart, String alias, JoinType joinType
+                , OR query) {
+            super(tablePart, alias, joinType);
+            this.query = query;
+        }
+
+        @Override
+        public final OR on(final List<IPredicate> predicateList) {
+            switch (predicateList.size()) {
+                case 0:
+                    throw _Exceptions.onClauseIsEmpty();
+                case 1:
+                    this.predicates = Collections.singletonList((_Predicate) predicateList.get(0));
+                    break;
+                default: {
+                    final List<_Predicate> predicates = new ArrayList<>(predicateList.size());
+                    for (IPredicate predicate : predicateList) {
+                        predicates.add((_Predicate) predicate);
+                    }
+                    this.predicates = Collections.unmodifiableList(predicates);
+                }
+
+            }
+            return this.query;
+        }
+
+        @Override
+        public final OR on(IPredicate predicate) {
+            this.predicates = Collections.singletonList((_Predicate) predicate);
+            return this.query;
+        }
+
+        @Override
+        public final OR on(IPredicate predicate1, IPredicate predicate2) {
+            this.predicates = ArrayUtils.asUnmodifiableList((_Predicate) predicate1, (_Predicate) predicate2);
+            return this.query;
+        }
+
+        @Override
+        public final OR on(Function<C, List<IPredicate>> function) {
+            return this.on(function.apply(getCriteria()));
+        }
+
+        @Override
+        public final OR on(Supplier<List<IPredicate>> supplier) {
+            return this.on(supplier.get());
+        }
+
+        @Override
+        public final List<_Predicate> predicates() {
+            final List<_Predicate> list = this.predicates;
+            assert list != null;
+            return list;
+        }
+
+        @Override
+        public final OR onId() {
+            if (!(this.tablePart instanceof TableMeta)) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            final TableBlock previousBlock = getPreviousBock();
+            if (!(previousBlock.tablePart instanceof TableMeta)) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            final _Predicate predicate;
+            predicate = (_Predicate) (((TableMeta<?>) previousBlock.tablePart).id()
+                    .equal(((TableMeta<?>) this.tablePart).id()));
+
+            this.predicates = Collections.singletonList(predicate);
+            return this.query;
+        }
+
+        @Override
+        public final OR onParent() {
+            return this.query;
+        }
+
+        @Override
+        public final OR onChild() {
+            return this.query;
+        }
+
+        abstract C getCriteria();
+
+        abstract TableBlock getPreviousBock();
+
+
+    }// StandardOnBlock
 
 
 }

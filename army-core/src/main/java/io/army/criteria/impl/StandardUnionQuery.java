@@ -13,25 +13,32 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-abstract class StandardUnionQuery<Q extends Query, C> extends StandardPartQuery<Q, C> implements _UnionQuery {
+abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
+        C,
+        Q,
+        StandardQuery.StandardUnionSpec<C, Q>, //UR
+        StandardQuery.StandardLimitClause<C, Q>,//OR
+        StandardQuery.StandardUnionClause<C, Q>,//LR
+        StandardQuery.StandardSelectClauseSpec<C, Q>>// SP
+        implements StandardQuery.StandardUnionSpec<C, Q>, _UnionQuery, StandardQuery {
 
-    static <C> StandardUnionResultSpec<Select, C> bracketSelect(Select select, @Nullable C criteria) {
+    static <C> StandardUnionSpec<C, Select> bracketSelect(Select select, @Nullable C criteria) {
         select.prepared();
         return new BracketSelect<>(select, criteria);
     }
 
-    static <C> StandardUnionResultSpec<Select, C> unionSelect(Select left, UnionType unionType, Select right, @Nullable C criteria) {
+    static <C> StandardUnionSpec<C, Select> unionSelect(Select left, UnionType unionType, Select right, @Nullable C criteria) {
         left.prepared();
         return new UnionSelect<>(left, unionType, right, criteria);
     }
 
 
-    static <C> StandardUnionResultSpec<SubQuery, C> bracketSubQuery(SubQuery subQuery, @Nullable C criteria) {
+    static <C> StandardUnionSpec<C, SubQuery> bracketSubQuery(SubQuery subQuery, @Nullable C criteria) {
         subQuery.prepared();
         return new BracketSubQuery<>(subQuery, criteria);
     }
 
-    static <C> UnionSubQuery<C> unionSubQuery(SubQuery left, UnionType unionType
+    static <C> StandardUnionSpec<C, SubQuery> unionSubQuery(SubQuery left, UnionType unionType
             , SubQuery right, @Nullable C criteria) {
         left.prepared();
         return new UnionSubQuery<>(left, unionType, right, criteria);
