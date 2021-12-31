@@ -15,7 +15,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 
-abstract class SingleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, HR, OR, LR, UR, SP>
+abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, HR, OR, LR, UR, SP>
         extends PartQuery<C, Q, UR, OR, LR, SP> implements Query.SelectClause<C, SR>, Statement.FromClause<C, FT, FS>
         , Statement.JoinClause<C, JT, JS>, Statement.WhereClause<C, WR, AR>, Statement.WhereAndClause<C, AR>
         , Query.GroupClause<C, GR>, Query.HavingClause<C, HR>, _Query {
@@ -39,7 +39,7 @@ abstract class SingleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     private JS noActionTablePartBlock;
 
 
-    SingleQuery(@Nullable C criteria) {
+    SimpleQuery(@Nullable C criteria) {
         super(criteria);
         this.criteriaContext = new CriteriaContextImpl<>(criteria);
         if (this instanceof SubQuery || this instanceof WithElement) {
@@ -577,7 +577,7 @@ abstract class SingleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
 
     @Override
-    protected final Q internalAsQuery(final boolean outer) {
+    protected final Q internalAsQuery(final boolean justAsQuery) {
         if (this instanceof SubQuery || this instanceof WithElement) {
             CriteriaContextStack.pop(this.criteriaContext);
         } else {
@@ -604,7 +604,8 @@ abstract class SingleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
         if (CollectionUtils.isEmpty(selectPartList)) {
             throw _Exceptions.selectListIsEmpty();
         }
-        if (this instanceof ColumnSubQuery && selectPartList.size() > 1) {
+        if (this instanceof ColumnSubQuery
+                && (selectPartList.size() != 1 || !(selectPartList.get(0) instanceof Selection))) {
             throw _Exceptions.columnSubQuerySelectionError();
         }
         this.selectPartList = Collections.unmodifiableList(selectPartList);
@@ -623,7 +624,7 @@ abstract class SingleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
         }
         this.noActionTableBlock = null;
         this.noActionTablePartBlock = null;
-        return this.onAsQuery();
+        return this.onAsQuery(justAsQuery);
     }
 
 

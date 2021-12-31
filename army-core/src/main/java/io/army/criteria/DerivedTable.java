@@ -6,6 +6,8 @@ public interface DerivedTable extends TablePart {
 
     List<? extends SelectPart> selectPartList();
 
-    Selection selection(String derivedFieldName);
+    default Selection selection(String derivedFieldName) {
+        throw new UnsupportedOperationException();
+    }
 
 }

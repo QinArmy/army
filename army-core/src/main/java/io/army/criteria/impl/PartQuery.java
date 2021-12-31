@@ -48,7 +48,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements _PartQue
 
     @Override
     public final SP union() {
-        return this.asQueryAndSelect(UnionType.UNION);
+        return this.asQueryAndQuery(UnionType.UNION);
     }
 
     @Override
@@ -63,7 +63,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements _PartQue
 
     @Override
     public final SP unionAll() {
-        return this.asQueryAndSelect(UnionType.UNION_ALL);
+        return this.asQueryAndQuery(UnionType.UNION_ALL);
     }
 
     @Override
@@ -78,7 +78,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements _PartQue
 
     @Override
     public final SP unionDistinct() {
-        return this.asQueryAndSelect(UnionType.UNION_DISTINCT);
+        return this.asQueryAndQuery(UnionType.UNION_DISTINCT);
     }
 
     @Override
@@ -235,18 +235,18 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements _PartQue
         this.internalClear();
     }
 
-    final Q asQueryForBracket() {
+    final Q asQueryAndQuery() {
         return innerAsQuery(false);
     }
 
 
-    abstract Q internalAsQuery(boolean outer);
+    abstract Q internalAsQuery(boolean justAsQuery);
 
     abstract void internalClear();
 
     abstract UR createUnionQuery(Q left, UnionType unionType, Q right);
 
-    abstract SP asQueryAndSelect(UnionType unionType);
+    abstract SP asQueryAndQuery(UnionType unionType);
 
     private UR innerCreate(UnionType unionType, Function<C, Q> function) {
         final Q left, right;
@@ -268,7 +268,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements _PartQue
         return createUnionQuery(left, unionType, right);
     }
 
-    private Q innerAsQuery(final boolean outer) {
+    private Q innerAsQuery(final boolean justAsQuery) {
         _Assert.nonPrepared(this.prepared);
 
         final List<SortPart> sortPartList = this.orderByList;
@@ -278,7 +278,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements _PartQue
             this.orderByList = CollectionUtils.asUnmodifiableList(sortPartList);
         }
         final Q query;
-        query = internalAsQuery(outer);
+        query = internalAsQuery(justAsQuery);
         this.prepared = true;
         return query;
     }

@@ -5,11 +5,13 @@ package io.army.criteria;
  */
 public interface ScalarSubQuery<E> extends ColumnSubQuery<E>, RowSubQuery, TypeInfer {
 
-    Selection selection();
+    default Selection selection() {
+        throw new UnsupportedOperationException();
+    }
 
 
     interface StandardScalarSubQuerySpec<C, E>
-            extends ColumnSubQuery.ColumnSelectClauseSpec<C, E, ScalarQueryExpression<E>> {
+            extends StandardQuery.StandardSelectClauseSpec<C, ScalarQueryExpression<E>> {
 
     }
 

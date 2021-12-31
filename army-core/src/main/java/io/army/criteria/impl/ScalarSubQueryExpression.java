@@ -19,7 +19,7 @@ final class ScalarSubQueryExpression<E> extends OperationExpression<E> implement
     }
 
 
-    private final ScalarSubQuery<E> subQuery;
+     final ScalarSubQuery<E> subQuery;
 
     private ScalarSubQueryExpression(ScalarSubQuery<E> subQuery) {
         this.subQuery = subQuery;
