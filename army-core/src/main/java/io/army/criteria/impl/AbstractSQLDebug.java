@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.SQLDebug;
-import io.army.criteria.Statement;
 import io.army.criteria.Visible;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
@@ -13,7 +12,7 @@ import io.army.stmt.SimpleStmt;
 import java.util.Collections;
 import java.util.List;
 
-abstract class AbstractSQLDebug implements Statement.SQLAble, SQLDebug {
+abstract class AbstractSQLDebug implements SQLDebug {
 
     @Override
     public final String debugSQL() {

@@ -23,12 +23,12 @@ final class StandardDelete<C> extends SingleDelete<
         implements Delete.StandardWhereAndSpec<C>, Delete.StandardWhereSpec<C> {
 
     static StandardDeleteSpec<Void> create() {
-        return new DomainDeleteSpecImpl<>(null);
+        return new StandardDeleteSpecImpl<>(null);
     }
 
     static <C> StandardDeleteSpec<C> create(final C criteria) {
         Objects.requireNonNull(criteria);
-        return new DomainDeleteSpecImpl<>(criteria);
+        return new StandardDeleteSpecImpl<>(criteria);
     }
 
     private final TableMeta<?> table;
@@ -62,11 +62,11 @@ final class StandardDelete<C> extends SingleDelete<
     /*################################## blow static inner class ##################################*/
 
 
-    private static final class DomainDeleteSpecImpl<C> implements StandardDeleteSpec<C> {
+    private static final class StandardDeleteSpecImpl<C> implements StandardDeleteSpec<C> {
 
         private final C criteria;
 
-        private DomainDeleteSpecImpl(@Nullable C criteria) {
+        private StandardDeleteSpecImpl(@Nullable C criteria) {
             this.criteria = criteria;
         }
 

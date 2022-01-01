@@ -125,7 +125,7 @@ public interface Update extends Statement {
     }
 
     interface StandardBatchSetSpec<T extends IDomain, C>
-            extends BatchSetClause<T, C, StandardBatchWhereSpec<T, C>> {
+            extends Update.BatchSetClause<C, StandardBatchWhereSpec<T, C>> {
 
 
     }
@@ -136,7 +136,7 @@ public interface Update extends Statement {
     }
 
 
-    interface BatchSetClause<T extends IDomain, C, SR> {
+    interface BatchSetClause<C, SR> {
 
         SR set(List<FieldMeta<?, ?>> fieldList);
 

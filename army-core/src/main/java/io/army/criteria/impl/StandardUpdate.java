@@ -7,8 +7,6 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 
-import java.util.Objects;
-
 /**
  * <p>
  * This class representing standard single domain update statement.
@@ -25,13 +23,9 @@ final class StandardUpdate<T extends IDomain, C> extends UpdateStatement<
         > implements Update.StandardWhereSpec<C>, Update.StandardWhereAndSpec<C>, Update.StandardSetSpec<C>
         , _SingleUpdate {
 
-    static StandardUpdateSpec<Void> create() {
-        return new DomainUpdateSpecImpl<>(null);
-    }
 
-    static <C> StandardUpdateSpec<C> create(C criteria) {
-        Objects.requireNonNull(criteria);
-        return new DomainUpdateSpecImpl<>(criteria);
+    static <C> StandardUpdateSpec<C> create(@Nullable C criteria) {
+        return new StandardUpdateSpecImpl<>(criteria);
     }
 
     private final TableMeta<T> table;
@@ -62,11 +56,11 @@ final class StandardUpdate<T extends IDomain, C> extends UpdateStatement<
     }
 
 
-    private static final class DomainUpdateSpecImpl<C> implements StandardUpdateSpec<C> {
+    private static final class StandardUpdateSpecImpl<C> implements StandardUpdateSpec<C> {
 
         private final C criteria;
 
-        private DomainUpdateSpecImpl(@Nullable C criteria) {
+        private StandardUpdateSpecImpl(@Nullable C criteria) {
             this.criteria = criteria;
         }
 

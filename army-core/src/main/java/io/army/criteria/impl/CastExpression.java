@@ -4,7 +4,6 @@ import io.army.criteria.Expression;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
-import io.army.mapping.MappingType;
 import io.army.meta.ParamMeta;
 
 class CastExpression<E> extends OperationExpression<E> {
@@ -31,10 +30,6 @@ class CastExpression<E> extends OperationExpression<E> {
                 .append(Constant.RIGHT_BRACKET);
     }
 
-    @Override
-    public final MappingType mappingType() {
-        return this.paramMeta.mappingType();
-    }
 
     @Override
     public ParamMeta paramMeta() {

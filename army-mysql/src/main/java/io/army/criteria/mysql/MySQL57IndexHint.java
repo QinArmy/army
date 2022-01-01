@@ -8,6 +8,7 @@ import java.util.List;
 /**
  * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/index-hints.html">MySQL 5.7  Index Hints</a>
  */
+@Deprecated
 public interface MySQL57IndexHint {
 
     /**

@@ -15,8 +15,8 @@ import java.util.function.Function;
  * <p>
  * This class is base class of below:
  *     <ul>
- *         <li>{@link DefaultWord}</li>
- *         <li>{@link NullWord}</li>
+ *         <li>{@link SQLs.DefaultWord}</li>
+ *         <li>{@link SQLs.NullWord}</li>
  *         <li>{@link CollectionParamExpression}</li>
  *         <li>{@link ParamExpressions.NullParamExpression}</li>
  *     </ul>
@@ -43,7 +43,7 @@ abstract class NoNOperationExpression<E> implements _Expression<E> {
         if (this instanceof ValueExpression) {
             nullable = ((ValueExpression<?>) this).value() == null;
         } else {
-            nullable = this instanceof NullWord;
+            nullable = this instanceof SQLs.NullWord;
         }
         return nullable;
     }

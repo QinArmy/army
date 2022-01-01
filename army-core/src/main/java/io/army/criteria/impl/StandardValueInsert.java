@@ -28,17 +28,13 @@ import java.util.function.Supplier;
  * @param <T> domain java type.
  * @param <C> criteria java type used to dynamic statement.
  */
-final class ContextualValueInsert<T extends IDomain, C> extends AbstractSQLDebug implements Insert
+final class StandardValueInsert<T extends IDomain, C> extends AbstractSQLDebug implements Insert
         , Insert.InsertSpec, Insert.InsertIntoSpec<T, C>, Insert.InsertValuesSpec<T, C>, Insert.InsertOptionSpec<T, C>
         , _ValuesInsert {
 
-    static <T extends IDomain> ContextualValueInsert<T, Void> create(TableMeta<T> table) {
-        return new ContextualValueInsert<>(table, null);
-    }
 
-    static <T extends IDomain, C> ContextualValueInsert<T, C> create(TableMeta<T> table, C criteria) {
-        Objects.requireNonNull(criteria);
-        return new ContextualValueInsert<>(table, criteria);
+    static <T extends IDomain, C> StandardValueInsert<T, C> create(TableMeta<T> table, @Nullable C criteria) {
+        return new StandardValueInsert<>(table, criteria);
     }
 
     private final TableMeta<T> table;
@@ -57,7 +53,7 @@ final class ContextualValueInsert<T extends IDomain, C> extends AbstractSQLDebug
 
     private boolean prepared;
 
-    private ContextualValueInsert(final TableMeta<T> table, @Nullable C criteria) {
+    private StandardValueInsert(final TableMeta<T> table, @Nullable C criteria) {
         this.table = table;
         this.criteria = criteria;
         this.criteriaContext = new CriteriaContextImpl<>(criteria);

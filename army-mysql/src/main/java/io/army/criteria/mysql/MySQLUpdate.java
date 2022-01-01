@@ -1,18 +1,11 @@
 package io.army.criteria.mysql;
 
-import io.army.criteria.IPredicate;
-import io.army.criteria.SubQuery;
-import io.army.criteria.TablePartGroup;
-import io.army.criteria.Update;
-import io.army.criteria.impl.MySQLs;
+import io.army.criteria.*;
 import io.army.domain.IDomain;
-import io.army.meta.ChildDomain;
-import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 
@@ -23,497 +16,629 @@ import java.util.function.Supplier;
  */
 public interface MySQLUpdate extends Update, MySQLDml {
 
-    interface SingleUpdateSpec<C> {
 
-        <T extends IDomain> SinglePartitionSpec<T, C> update(SingleTableMeta<T> table);
+    interface LimitClause<C, LR> {
 
-        <P extends IDomain, T extends P> SinglePartitionSpec<P, C> update(ChildDomain<P, T> table);
-    }
+        LR limit(long rowCount);
 
+        LR limit(Supplier<Long> supplier);
 
-    interface SinglePartitionSpec<T extends IDomain, C> extends MySQLUpdate.SingleIndexHintCommandSpec<T, C> {
+        LR limit(Function<C, Long> function);
 
-        SingleIndexHintCommandSpec<T, C> partition(String partitionName);
+        LR ifLimit(Supplier<Long> supplier);
 
-        SingleIndexHintCommandSpec<T, C> partition(String partitionName1, String partitionNam2);
-
-        SingleIndexHintCommandSpec<T, C> partition(List<String> partitionNameList);
-
-        SingleIndexHintCommandSpec<T, C> ifPartition(Function<C, List<String>> function);
+        LR ifLimit(Function<C, Long> function);
 
     }
 
 
-    interface SingleIndexHintCommandSpec<T extends IDomain, C>
-            extends SetClause<T, C, SingleWhereSpec<T, C>>
-            , MySQLDml.SingleIndexHintCommandClause<C, SetClause<T, C, SingleWhereSpec<T, C>>> {
+    interface UpdateClause<C, UP, UR> {
+
+        UP update(Function<C, List<Hint>> hints, List<SQLModifier> sqlModifiers
+                , TableMeta<? extends IDomain> table);
+
+        UR update(Function<C, List<Hint>> hints, List<SQLModifier> sqlModifiers
+                , TableMeta<? extends IDomain> table, String tableAlias);
+
+        UP update(SQLModifier sqlModifier, TableMeta<? extends IDomain> table);
+
+        UR update(SQLModifier sqlModifier, TableMeta<? extends IDomain> table, String tableAlias);
+
+        UP update(TableMeta<? extends IDomain> table);
+
+        UR update(TableMeta<? extends IDomain> table, String tableAlias);
 
     }
 
 
-    interface SingleWhereSpec<T extends IDomain, C> extends SetClause<T, C, SingleWhereSpec<T, C>> {
-
-        SingleWhereAndSpec<C, Update> where(IPredicate predicate);
-
-        SingleOrderBySpec<C, Update> where(List<IPredicate> predicateList);
-
-        SingleOrderBySpec<C, Update> where(Function<C, List<IPredicate>> function);
-
-        SingleOrderBySpec<C, Update> where(Supplier<List<IPredicate>> supplier);
+    /**
+     * <p>
+     * This representing MySQL single-table update syntax update clause.
+     * </p>
+     */
+    interface SingleUpdateSpec<C>
+            extends MySQLUpdate.UpdateClause<C, MySQLUpdate.SinglePartitionSpec<C>, MySQLUpdate.SingleIndexHintSpec<C>> {
 
     }
 
 
-
-    /*################################## blow batch single update api interface ##################################*/
-
-
-    interface BatchSingleUpdateSpec<C> {
-
-        <T extends IDomain> BatchSinglePartitionSpec<T, C> update(SingleTableMeta<T> table);
-
-        <P extends IDomain, T extends P> BatchSinglePartitionSpec<P, C> update(ChildDomain<P, T> table);
-    }
-
-
-    interface BatchSinglePartitionSpec<T extends IDomain, C> extends MySQLUpdate.BatchSingleIndexHintCommandSpec<T, C> {
-
-        BatchSingleIndexHintCommandSpec<T, C> partition(String partitionName);
-
-        BatchSingleIndexHintCommandSpec<T, C> partition(String partitionName1, String partitionNam2);
-
-        BatchSingleIndexHintCommandSpec<T, C> partition(List<String> partitionNameList);
-
-        BatchSingleIndexHintCommandSpec<T, C> ifPartition(Function<C, List<String>> function);
+    /**
+     * <p>
+     * This representing MySQL single-table update syntax partition clause.
+     * </p>
+     */
+    interface SinglePartitionSpec<C> extends MySQLQuery.PartitionClause<C, MySQLUpdate.SingleAsSpec<C>> {
 
     }
 
+    /**
+     * <p>
+     * This interface representing MySQL single-table syntax as clause.
+     * Table alias is required,because possibly exists sub query about child table.
+     * </p>
+     */
+    interface SingleAsSpec<C> {
 
-    interface BatchSingleIndexHintCommandSpec<T extends IDomain, C>
-            extends BatchSetClause<T, C, BatchSingleWhereSpec<T, C>>
-            , MySQLDml.SingleIndexHintCommandClause<C, SetClause<T, C, BatchSingleWhereSpec<T, C>>> {
+        SingleIndexHintSpec<C> as(String tableAlias);
+    }
+
+    /**
+     * <p>
+     * This representing MySQL single-table update syntax index hint clause.
+     * </p>
+     */
+    interface SingleIndexHintSpec<C> extends MySQLQuery.IndexHintClause<C, MySQLUpdate.SingleIndexHintWordSpec<C>>
+            , MySQLUpdate.SingleSetSpec<C> {
+
+    }
+
+    /**
+     * <p>
+     * This representing MySQL single-table update syntax index clause.
+     * </p>
+     */
+    interface SingleIndexHintWordSpec<C>
+            extends MySQLQuery.IndexHintWordClause<IndexHintOrderBySpec<C>, MySQLUpdate.SingleSetSpec<C>> {
+
+    }
+
+    /**
+     * <p>
+     * This representing MySQL single-table update syntax index hint order by clause.
+     * </p>
+     */
+    interface IndexHintOrderBySpec<C> extends MySQLQuery.IndexHintOrderByClause<MySQLUpdate.SingleSetSpec<C>> {
 
     }
 
 
-    interface BatchSingleWhereSpec<T extends IDomain, C>
-            extends BatchSetClause<T, C, BatchSingleWhereSpec<T, C>> {
-
-        BatchSingleWhereAndSpec<C, Update> where(IPredicate predicate);
-
-        BatchOrderBySpec<C, Update> where(List<IPredicate> predicateList);
-
-        BatchOrderBySpec<C, Update> where(Function<C, List<IPredicate>> function);
-
-        BatchOrderBySpec<C, Update> where(Supplier<List<IPredicate>> supplier);
+    /**
+     * <p>
+     * This representing MySQL single-table update syntax set clause.
+     * </p>
+     */
+    interface SingleSetSpec<C> extends Update.SetClause<C, MySQLUpdate.SingleWhereSpec<C>> {
 
     }
+
+
+    /**
+     * <p>
+     * This representing MySQL single-table update syntax where clause.
+     * </p>
+     */
+    interface SingleWhereSpec<C> extends MySQLUpdate.SingleSetSpec<C>
+            , Statement.WhereClause<C, MySQLUpdate.OrderBySpec<C>, MySQLUpdate.SingleWhereAndSpec<C>> {
+
+    }
+
+    /**
+     * <p>
+     * This representing MySQL single-table update syntax and clause.
+     * </p>
+     */
+    interface SingleWhereAndSpec<C> extends Statement.WhereAndClause<C, MySQLUpdate.SingleWhereAndSpec<C>>
+            , MySQLUpdate.OrderBySpec<C> {
+
+    }
+
+    /**
+     * <p>
+     * This representing MySQL single-table update syntax order by clause.
+     * </p>
+     */
+    interface OrderBySpec<C> extends Query.OrderByClause<C, MySQLUpdate.OrderBySpec<C>>
+            , MySQLUpdate.LimitSpec<C> {
+
+    }
+
+    /**
+     * <p>
+     * This representing MySQL single-table update syntax limit clause.
+     * </p>
+     */
+    interface LimitSpec<C> extends LimitClause<C, Update.UpdateSpec>, Update.UpdateSpec {
+
+    }
+
+    /*################################## blow batch single-table update spec ##################################*/
+
+
+    /**
+     * <p>
+     * This representing MySQL batch single-table update syntax update clause.
+     * </p>
+     */
+    interface BatchSingleUpdateSpec<C>
+            extends MySQLUpdate.UpdateClause<C, MySQLUpdate.BatchSinglePartitionSpec<C>, MySQLUpdate.BatchSingleIndexHintSpec<C>> {
+
+    }
+
+
+    /**
+     * <p>
+     * This representing MySQL batch single-table update syntax partition clause.
+     * </p>
+     */
+    interface BatchSinglePartitionSpec<C> extends MySQLQuery.PartitionClause<C, MySQLUpdate.BatchSingleAsSpec<C>> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing MySQL batch single-table syntax as clause.
+     * Table alias is required,because possibly exists sub query about child table.
+     * </p>
+     */
+    interface BatchSingleAsSpec<C> {
+
+        BatchSingleIndexHintSpec<C> as(String tableAlias);
+    }
+
+    /**
+     * <p>
+     * This representing MySQL batch single-table update syntax index hint clause.
+     * </p>
+     */
+    interface BatchSingleIndexHintSpec<C>
+            extends MySQLQuery.IndexHintClause<C, MySQLUpdate.BatchSingleIndexHintWordSpec<C>>
+            , MySQLUpdate.BatchSingleSetSpec<C> {
+
+    }
+
+    /**
+     * <p>
+     * This representing MySQL batch single-table update syntax index clause.
+     * </p>
+     */
+    interface BatchSingleIndexHintWordSpec<C>
+            extends MySQLQuery.IndexHintWordClause<MySQLUpdate.BatchIndexHintOrderBySpec<C>
+            , MySQLUpdate.BatchSingleSetSpec<C>> {
+
+    }
+
+    /**
+     * <p>
+     * This representing MySQL batch single-table update syntax index hint for order by clause.
+     * </p>
+     */
+    interface BatchIndexHintOrderBySpec<C>
+            extends MySQLQuery.IndexHintOrderByClause<MySQLUpdate.BatchSingleSetSpec<C>> {
+
+    }
+
+    /**
+     * <p>
+     * This representing MySQL batch single-table update syntax set clause.
+     * </p>
+     */
+    interface BatchSingleSetSpec<C> extends Update.BatchSetClause<C, MySQLUpdate.BatchSingleWhereSpec<C>> {
+
+    }
+
+    /**
+     * <p>
+     * This representing MySQL batch single-table update syntax where clause.
+     * </p>
+     */
+    interface BatchSingleWhereSpec<C> extends MySQLUpdate.BatchSingleSetSpec<C>
+            , Statement.WhereClause<C, MySQLUpdate.BatchOrderBySpec<C>, MySQLUpdate.BatchSingleWhereAndSpec<C>> {
+
+    }
+
+    /**
+     * <p>
+     * This representing MySQL batch single-table update syntax and clause.
+     * </p>
+     */
+    interface BatchSingleWhereAndSpec<C> extends Statement.WhereAndClause<C, MySQLUpdate.BatchSingleWhereAndSpec<C>>
+            , MySQLUpdate.BatchOrderBySpec<C> {
+
+    }
+
+    /**
+     * <p>
+     * This representing MySQL batch single-table update syntax order by clause.
+     * </p>
+     */
+    interface BatchOrderBySpec<C> extends Query.OrderByClause<C, MySQLUpdate.BatchLimitSpec<C>>
+            , MySQLUpdate.BatchLimitSpec<C> {
+
+    }
+
+    /**
+     * <p>
+     * This representing MySQL batch single-table update syntax limit clause.
+     * </p>
+     */
+    interface BatchLimitSpec<C> extends MySQLUpdate.LimitClause<C, MySQLUpdate.BatchSingleParamSpec<C>>
+            , MySQLUpdate.BatchSingleParamSpec<C> {
+
+    }
+
+    /**
+     * <p>
+     * This representing MySQL batch single-table update syntax batch parameter clause.
+     * </p>
+     */
+    interface BatchSingleParamSpec<C> extends Statement.BatchParamClause<C, Update.UpdateSpec> {
+
+    }
+
+
 
 
     /*################################## blow multi-table update api interface ##################################*/
 
     /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
-     *            </ul>
+     * <p>
+     * This interface representing MySQL multi-table update syntax update clause.
+     * </p>
      */
-    interface MultiUpdateSpec<C> {
+    interface MultiUpdateSpec<C>
+            extends UpdateClause<C, MySQLUpdate.MultiPartitionJoinSpec<C>, MySQLUpdate.MultiIndexHintJoinSpec<C>> {
 
-        MultiPartitionJoinSpec<C> update(TableMeta<?> table);
-
-        MultiIndexHintCommandJoinSpec<C> update(TableMeta<?> table, String tableAlias);
-
-        MultiJoinSpec<C> update(Function<C, SubQuery> function, String subQueryAlias);
-
-        MultiJoinSpec<C> updateGroup(Function<C, TablePartGroup> function, String groupAlias);
 
     }
 
+
     /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
-     *            </ul>
+     * <p>
+     * This interface representing MySQL multi-table update syntax partition clause(after from clause and before join clause).
+     * </p>
      */
-    interface MultiPartitionJoinSpec<C> extends MySQLUpdate.MultiAsJoinSpec<C> {
-
-        MultiAsJoinSpec<C> partition(String partitionName);
-
-        MultiAsJoinSpec<C> partition(String partitionName1, String partitionNam2);
-
-        MultiAsJoinSpec<C> partition(List<String> partitionNameList);
-
-        MultiAsJoinSpec<C> ifPartition(Function<C, List<String>> function);
+    interface MultiPartitionJoinSpec<C> extends MySQLQuery.PartitionClause<C, MySQLUpdate.MultiAsJoinSpec<C>> {
 
     }
 
+
     /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
-     *            </ul>
+     * <p>
+     * This interface representing MySQL multi-table update syntax as clause(after from clause and before join clause).
+     * </p>
      */
     interface MultiAsJoinSpec<C> {
 
-        MultiIndexHintCommandJoinSpec<C> as(String tableAlias);
+        MultiIndexHintJoinSpec<C> as(String tableAlias);
     }
 
     /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
-     *            </ul>
+     * <p>
+     * This interface representing MySQL multi-table update syntax index hint clause(after from clause and before join clause).
+     * </p>
      */
-    interface MultiIndexHintCommandJoinSpec<C> extends MySQLUpdate.MultiJoinSpec<C>
-            , MySQLDml.MultiIndexHintCommandClause<C, MySQLUpdate.MultiJoinSpec<C>> {
+    interface MultiIndexHintJoinSpec<C> extends MySQLQuery.IndexHintClause<C, MultiIndexHintWordJoinSpec<C>>
+            , MySQLUpdate.MultiJoinSpec<C> {
 
     }
 
     /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
-     *            </ul>
+     * <p>
+     * This interface representing MySQL multi-table update syntax index hint index clause(after from clause and before join clause).
+     * </p>
      */
-    interface MultiPartitionOnSpec<C> extends MySQLUpdate.MultiAsOnSpec<C> {
-
-        MultiAsOnSpec<C> partition(String partitionName);
-
-        MultiAsOnSpec<C> partition(String partitionName1, String partitionNam2);
-
-        MultiAsOnSpec<C> partition(List<String> partitionNameList);
-
-        MultiAsOnSpec<C> ifPartition(Function<C, List<String>> function);
+    interface MultiIndexHintWordJoinSpec<C>
+            extends MySQLQuery.IndexHintWordClause<MySQLUpdate.MultiIndexHintForJoinJoinSpec<C>, MySQLUpdate.MultiJoinSpec<C>> {
 
     }
 
     /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
-     *            </ul>
+     * <p>
+     * This interface representing MySQL multi-table update syntax index hint for join clause(after from clause and before join clause).
+     * </p>
+     */
+    interface MultiIndexHintForJoinJoinSpec<C>
+            extends MySQLQuery.IndexHintPurposeClause<MySQLUpdate.MultiJoinSpec<C>> {
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing MySQL multi-table update syntax partition clause(after join clause).
+     * </p>
+     */
+    interface MultiPartitionOnSpec<C> extends MySQLQuery.PartitionClause<C, MySQLUpdate.MultiAsOnSpec<C>> {
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing MySQL multi-table update syntax as clause(after join clause).
+     * </p>
      */
     interface MultiAsOnSpec<C> {
 
-        MultiIndexHintCommandOnSpec<C> as(String tableAlias);
+        MultiIndexHintOnSpec<C> as(String tableAlias);
     }
 
     /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
-     *            </ul>
+     * <p>
+     * This interface representing MySQL multi-table update syntax index hint clause(after join clause).
+     * </p>
      */
-    interface MultiIndexHintCommandOnSpec<C> extends MySQLUpdate.MultiOnSpec<C>
-            , MySQLDml.MultiIndexHintCommandClause<C, MySQLUpdate.MultiOnSpec<C>> {
+    interface MultiIndexHintOnSpec<C> extends MySQLQuery.IndexHintClause<C, MySQLUpdate.MultiIndexHintWordOnSpec<C>>
+            , MySQLUpdate.MultiOnSpec<C> {
 
     }
-
-
-    interface MultiJoinSpec<C> extends Update.MultiSetSpec<C, Update.MultiWhereSpec<C>> {
-
-        MultiPartitionOnSpec<C> leftJoin(TableMeta<?> table);
-
-        MultiIndexHintCommandOnSpec<C> leftJoin(TableMeta<?> table, String tableAlias);
-
-        MultiOnSpec<C> leftJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        MultiOnSpec<C> leftJoinGroup(Function<C, TablePartGroup> function);
-
-        MultiPartitionOnSpec<C> ifLeftJoin(Predicate<C> predicate, TableMeta<?> table);
-
-        MultiIndexHintCommandOnSpec<C> ifLeftJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        MultiOnSpec<C> ifLeftJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        MultiOnSpec<C> ifLeftJoinGroup(Function<C, TablePartGroup> function);
-
-        MultiPartitionOnSpec<C> join(TableMeta<?> table);
-
-        MultiIndexHintCommandOnSpec<C> join(TableMeta<?> table, String tableAlias);
-
-        MultiOnSpec<C> join(Function<C, SubQuery> function, String subQueryAlia);
-
-        MultiOnSpec<C> joinGroup(Function<C, TablePartGroup> function);
-
-        MultiPartitionOnSpec<C> ifJoin(Predicate<C> predicate, TableMeta<?> table);
-
-        MultiIndexHintCommandOnSpec<C> ifJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        MultiOnSpec<C> ifJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        MultiOnSpec<C> ifJoinGroup(Function<C, TablePartGroup> function);
-
-        MultiPartitionOnSpec<C> rightJoin(TableMeta<?> table);
-
-        MultiIndexHintCommandOnSpec<C> rightJoin(TableMeta<?> table, String tableAlias);
-
-        MultiOnSpec<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        MultiOnSpec<C> rightJoinGroup(Function<C, TablePartGroup> function);
-
-        MultiPartitionOnSpec<C> ifRightJoin(Predicate<C> predicate, TableMeta<?> table);
-
-        MultiIndexHintCommandOnSpec<C> ifRightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        MultiOnSpec<C> ifRightJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        MultiOnSpec<C> ifRightJoinGroup(Function<C, TablePartGroup> function);
-
-        MultiPartitionOnSpec<C> straightJoin(TableMeta<?> table);
-
-        MultiIndexHintCommandOnSpec<C> straightJoin(TableMeta<?> table, String tableAlias);
-
-        MultiOnSpec<C> straightJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        MultiOnSpec<C> straightJoinGroup(Function<C, TablePartGroup> function);
-
-        MultiPartitionOnSpec<C> ifStraightJoin(Predicate<C> predicate, TableMeta<?> table);
-
-        MultiIndexHintCommandOnSpec<C> ifStraightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        MultiOnSpec<C> ifStraightJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        MultiOnSpec<C> ifStraightJoinGroup(Function<C, TablePartGroup> function);
-
-    }
-
-    interface MultiOnSpec<C> {
-
-        MultiJoinSpec<C> on(List<IPredicate> predicateList);
-
-        MultiJoinSpec<C> on(IPredicate predicate);
-
-        MultiJoinSpec<C> on(IPredicate predicate1, IPredicate predicate2);
-
-        MultiJoinSpec<C> on(Function<C, List<IPredicate>> function);
-
-        MultiJoinSpec<C> on(Supplier<List<IPredicate>> supplier);
-
-        MultiJoinSpec<C> onId();
-
-    }
-
-
-
-
-    /*################################## blow batch multi-table update api interface ##################################*/
-
 
     /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
-     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
-     *            </ul>
+     * <p>
+     * This interface representing MySQL multi-table update syntax index hint index clause(after join clause).
+     * </p>
      */
-    interface BatchMultiUpdateSpec<C> {
-
-        BatchMultiPartitionJoinSpec<C> update(TableMeta<?> table);
-
-        BatchMultiIndexHintCommandJoinSpec<C> update(TableMeta<?> table, String tableAlias);
-
-        BatchMultiJoinSpec<C> update(Function<C, SubQuery> function, String subQueryAlias);
-
-        BatchMultiJoinSpec<C> updateGroup(Function<C, TablePartGroup> function, String groupAlias);
+    interface MultiIndexHintWordOnSpec<C>
+            extends MySQLQuery.IndexHintWordClause<MySQLUpdate.MultiIndexHintForJoinOnSpec<C>, MySQLUpdate.MultiOnSpec<C>> {
 
     }
 
     /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
-     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
-     *            </ul>
+     * <p>
+     * This interface representing MySQL multi-table update syntax index hint for join clause(after join clause).
+     * </p>
      */
-    interface BatchMultiPartitionJoinSpec<C> extends MySQLUpdate.BatchMultiAsJoinSpec<C> {
-
-        BatchMultiAsJoinSpec<C> partition(String partitionName);
-
-        BatchMultiAsJoinSpec<C> partition(String partitionName1, String partitionNam2);
-
-        BatchMultiAsJoinSpec<C> partition(List<String> partitionNameList);
-
-        BatchMultiAsJoinSpec<C> ifPartition(Function<C, List<String>> function);
+    interface MultiIndexHintForJoinOnSpec<C>
+            extends MySQLQuery.IndexHintForJoinClause<MySQLUpdate.MultiOnSpec<C>> {
 
     }
 
     /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
-     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
-     *            </ul>
+     * <p>
+     * This interface representing MySQL multi-table update syntax join clause.
+     * This interface extends below interfaces:
+     * <ul>
+     *     <li>{@link  MySQLQuery.MySQLJoinClause}</li>
+     *     <li>{@link MySQLUpdate.MultiSetSpec}</li>
+     * </ul>
+     * </p>
+     */
+    interface MultiJoinSpec<C> extends MySQLQuery.MySQLJoinClause<C, MySQLUpdate.MultiIndexHintOnSpec<C>, MySQLUpdate.MultiOnSpec<C>, MySQLUpdate.MultiPartitionOnSpec<C>>
+            , MySQLUpdate.MultiSetSpec<C> {
+
+
+    }
+
+    /**
+     * <p>
+     * This interface representing MySQL multi-table update syntax on clause.
+     * </p>
+     */
+    interface MultiOnSpec<C> extends Statement.OnClause<C, MySQLUpdate.MultiJoinSpec<C>> {
+
+
+    }
+
+    /**
+     * <p>
+     * This interface representing MySQL multi-table update syntax set clause.
+     * </p>
+     */
+    interface MultiSetSpec<C> extends Update.SetClause<C, MySQLUpdate.MultiWhereSpec<C>> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing MySQL multi-table update syntax where clause.
+     * </p>
+     */
+    interface MultiWhereSpec<C> extends Statement.WhereClause<C, Update.UpdateSpec, MySQLUpdate.MultiWhereAndSpec<C>>
+            , MySQLUpdate.MultiSetSpec<C> {
+
+
+    }
+
+    /**
+     * <p>
+     * This interface representing MySQL multi-table update syntax and clause.
+     * </p>
+     */
+    interface MultiWhereAndSpec<C> extends Statement.WhereAndClause<C, MySQLUpdate.MultiWhereAndSpec<C>>
+            , Update.UpdateSpec {
+
+
+    }
+
+    /*################################## blow batch multi-table update spec ##################################*/
+
+    /**
+     * <p>
+     * This interface representing MySQL batch multi-table update syntax update clause
+     * </p>
+     */
+    interface BatchMultiUpdateSpec<C> extends MySQLUpdate.UpdateClause<C, MySQLUpdate.BatchMultiPartitionJoinSpec<C>, MySQLUpdate.BatchMultiIndexHintJoinSpec<C>> {
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing MySQL batch multi-table update syntax partition clause(after update clause and before join clause).
+     * </p>
+     */
+    interface BatchMultiPartitionJoinSpec<C> extends MySQLQuery.PartitionClause<C, MySQLUpdate.BatchMultiAsJoinSpec<C>> {
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing MySQL batch multi-table update syntax as clause(after update clause and before join clause).
+     * </p>
      */
     interface BatchMultiAsJoinSpec<C> {
 
-        BatchMultiIndexHintCommandJoinSpec<C> as(String tableAlias);
+        BatchMultiIndexHintJoinSpec<C> as(String tableAlias);
     }
 
     /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
-     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
-     *            </ul>
+     * <p>
+     * This interface representing MySQL batch multi-table update syntax index hint clause(after update clause and before join clause).
+     * </p>
      */
-    interface BatchMultiIndexHintCommandJoinSpec<C> extends MySQLUpdate.BatchMultiJoinSpec<C>
-            , MySQLDml.MultiIndexHintCommandClause<C, MySQLUpdate.BatchMultiJoinSpec<C>> {
+    interface BatchMultiIndexHintJoinSpec<C> extends MySQLQuery.IndexHintClause<C, MySQLUpdate.BatchMultiIndexHintWordJoinSpec<C>>
+            , MySQLUpdate.BatchMultiJoinSpec<C> {
 
     }
 
     /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
-     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
-     *            </ul>
+     * <p>
+     * This interface representing MySQL batch multi-table update syntax index hint index clause(after update clause and before join clause).
+     * </p>
      */
-    interface BatchMultiPartitionOnSpec<C> extends MySQLUpdate.BatchMultiAsOnSpec<C> {
-
-        BatchMultiAsOnSpec<C> partition(String partitionName);
-
-        BatchMultiAsOnSpec<C> partition(String partitionName1, String partitionNam2);
-
-        BatchMultiAsOnSpec<C> partition(List<String> partitionNameList);
-
-        BatchMultiAsOnSpec<C> ifPartition(Function<C, List<String>> function);
+    interface BatchMultiIndexHintWordJoinSpec<C>
+            extends MySQLQuery.IndexHintWordClause<MySQLUpdate.BatchMultiIndexHintForJoinJoinSpec<C>, MySQLUpdate.BatchMultiJoinSpec<C>> {
 
     }
 
     /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
-     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
-     *            </ul>
+     * <p>
+     * This interface representing MySQL batch multi-table update syntax index hint for join clause(after update clause and before join clause).
+     * </p>
+     */
+    interface BatchMultiIndexHintForJoinJoinSpec<C>
+            extends MySQLQuery.IndexHintForJoinClause<MySQLUpdate.BatchMultiJoinSpec<C>> {
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing MySQL batch multi-table update syntax partition clause(after join clause).
+     * </p>
+     */
+    interface BatchMultiPartitionOnSpec<C> extends MySQLQuery.PartitionClause<C, MySQLUpdate.BatchMultiAsOnSpec<C>> {
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing MySQL batch multi-table update syntax as clause(after join clause).
+     * </p>
      */
     interface BatchMultiAsOnSpec<C> {
 
-        BatchMultiIndexHintCommandOnSpec<C> as(String tableAlias);
+        BatchMultiIndexHintOnSpec<C> as(String tableAlias);
     }
 
     /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
-     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
-     *            </ul>
+     * <p>
+     * This interface representing MySQL batch multi-table update syntax index hint clause(after join clause).
+     * </p>
      */
-    interface BatchMultiIndexHintCommandOnSpec<C> extends MySQLUpdate.BatchMultiOnSpec<C>
-            , MySQLDml.MultiIndexHintCommandClause<C, MySQLUpdate.BatchMultiOnSpec<C>> {
-
-    }
-
-
-    /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
-     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
-     *            </ul>
-     */
-    interface BatchMultiJoinSpec<C> extends BatchMultiSetClause<C, BatchMultiWhereSpec<C>> {
-
-        BatchMultiPartitionOnSpec<C> leftJoin(TableMeta<?> table);
-
-        BatchMultiIndexHintCommandOnSpec<C> leftJoin(TableMeta<?> table, String tableAlias);
-
-        BatchMultiOnSpec<C> leftJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        BatchMultiOnSpec<C> leftJoinGroup(Function<C, TablePartGroup> function);
-
-        BatchMultiPartitionOnSpec<C> ifLeftJoin(Predicate<C> predicate, TableMeta<?> table);
-
-        BatchMultiIndexHintCommandOnSpec<C> ifLeftJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        BatchMultiOnSpec<C> ifLeftJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        BatchMultiOnSpec<C> ifLeftJoinGroup(Function<C, TablePartGroup> function);
-
-        BatchMultiPartitionOnSpec<C> join(TableMeta<?> table);
-
-        BatchMultiIndexHintCommandOnSpec<C> join(TableMeta<?> table, String tableAlias);
-
-        BatchMultiOnSpec<C> join(Function<C, SubQuery> function, String subQueryAlia);
-
-        BatchMultiOnSpec<C> joinGroup(Function<C, TablePartGroup> function);
-
-        BatchMultiPartitionOnSpec<C> ifJoin(Predicate<C> predicate, TableMeta<?> table);
-
-        BatchMultiIndexHintCommandOnSpec<C> ifJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        BatchMultiOnSpec<C> ifJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        BatchMultiOnSpec<C> ifJoinGroup(Function<C, TablePartGroup> function);
-
-        BatchMultiPartitionOnSpec<C> rightJoin(TableMeta<?> table);
-
-        BatchMultiIndexHintCommandOnSpec<C> rightJoin(TableMeta<?> table, String tableAlias);
-
-        BatchMultiOnSpec<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        BatchMultiOnSpec<C> rightJoinGroup(Function<C, TablePartGroup> function);
-
-        BatchMultiPartitionOnSpec<C> ifRightJoin(Predicate<C> predicate, TableMeta<?> table);
-
-        BatchMultiIndexHintCommandOnSpec<C> ifRightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        BatchMultiOnSpec<C> ifRightJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        BatchMultiOnSpec<C> ifRightJoinGroup(Function<C, TablePartGroup> function);
-
-        BatchMultiPartitionOnSpec<C> straightJoin(TableMeta<?> table);
-
-        BatchMultiIndexHintCommandOnSpec<C> straightJoin(TableMeta<?> table, String tableAlias);
-
-        BatchMultiOnSpec<C> straightJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        BatchMultiOnSpec<C> straightJoinGroup(Function<C, TablePartGroup> function);
-
-        BatchMultiPartitionOnSpec<C> ifStraightJoin(Predicate<C> predicate, TableMeta<?> table);
-
-        BatchMultiIndexHintCommandOnSpec<C> ifStraightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        BatchMultiOnSpec<C> ifStraightJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        BatchMultiOnSpec<C> ifStraightJoinGroup(Function<C, TablePartGroup> function);
+    interface BatchMultiIndexHintOnSpec<C> extends MySQLQuery.IndexHintClause<C, MySQLUpdate.BatchMultiIndexHintWordOnSpec<C>>
+            , MySQLUpdate.BatchMultiOnSpec<C> {
 
     }
 
     /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link MySQLs#batchMultiUpdate57(Object)}</li>
-     *               <li>{@link MySQLs#batchMultiUpdate80(Object)}</li>
-     *            </ul>
+     * <p>
+     * This interface representing MySQL batch multi-table update syntax index hint index clause(after join clause).
+     * </p>
      */
-    interface BatchMultiOnSpec<C> {
-
-        BatchMultiJoinSpec<C> on(List<IPredicate> predicateList);
-
-        BatchMultiJoinSpec<C> on(IPredicate predicate);
-
-        BatchMultiJoinSpec<C> on(IPredicate predicate1, IPredicate predicate2);
-
-        BatchMultiJoinSpec<C> on(Function<C, List<IPredicate>> function);
-
-        BatchMultiJoinSpec<C> on(Supplier<List<IPredicate>> supplier);
-
-        BatchMultiJoinSpec<C> onId();
+    interface BatchMultiIndexHintWordOnSpec<C>
+            extends MySQLQuery.IndexHintWordClause<MySQLUpdate.BatchMultiIndexHintForJoinOnSpec<C>, MySQLUpdate.BatchMultiOnSpec<C>> {
 
     }
 
+    /**
+     * <p>
+     * This interface representing MySQL batch multi-table update syntax index hint for join clause(after join clause).
+     * </p>
+     */
+    interface BatchMultiIndexHintForJoinOnSpec<C>
+            extends MySQLQuery.IndexHintForJoinClause<MySQLUpdate.BatchMultiOnSpec<C>> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing MySQL batch multi-table update syntax join clause.
+     * This interface extends below interfaces:
+     * <ul>
+     *     <li>{@link  MySQLQuery.MySQLJoinClause}</li>
+     *     <li>{@link MySQLUpdate.BatchMultiSetSpec}</li>
+     * </ul>
+     * </p>
+     */
+    interface BatchMultiJoinSpec<C> extends MySQLQuery.MySQLJoinClause<C, MySQLUpdate.BatchMultiIndexHintOnSpec<C>, MySQLUpdate.BatchMultiOnSpec<C>, MySQLUpdate.BatchMultiPartitionOnSpec<C>>
+            , MySQLUpdate.BatchMultiSetSpec<C> {
 
 
+    }
+
+    /**
+     * <p>
+     * This interface representing MySQL batch multi-table update syntax on clause.
+     * </p>
+     */
+    interface BatchMultiOnSpec<C> extends Statement.OnClause<C, MySQLUpdate.BatchMultiJoinSpec<C>> {
+
+
+    }
+
+    /**
+     * <p>
+     * This interface representing MySQL batch multi-table update syntax set clause.
+     * </p>
+     */
+    interface BatchMultiSetSpec<C> extends Update.BatchSetClause<C, MySQLUpdate.BatchMultiWhereSpec<C>> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing MySQL batch multi-table update syntax where clause.
+     * </p>
+     */
+    interface BatchMultiWhereSpec<C> extends Statement.WhereClause<C, MySQLUpdate.BatchMultiParamSpec<C>, MySQLUpdate.BatchMultiWhereAndSpec<C>>
+            , MySQLUpdate.BatchMultiSetSpec<C> {
+
+
+    }
+
+    /**
+     * <p>
+     * This interface representing MySQL batch multi-table update syntax and clause.
+     * </p>
+     */
+    interface BatchMultiWhereAndSpec<C> extends Statement.WhereAndClause<C, MySQLUpdate.BatchMultiWhereAndSpec<C>>
+            , MySQLUpdate.BatchMultiParamSpec<C> {
+
+
+    }
+
+    /**
+     * <p>
+     * This interface representing MySQL batch multi-table update syntax batch parameter clause.
+     * </p>
+     */
+    interface BatchMultiParamSpec<C> extends Statement.BatchParamClause<C, Update.UpdateSpec> {
+
+
+    }
 
 
 }

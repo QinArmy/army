@@ -1,15 +1,16 @@
 package io.army.criteria;
 
 
-public interface ColumnSubQuery<E> extends SubQuery {
+/**
+ * @see ScalarSubQuery
+ */
+public interface ColumnSubQuery extends SubQuery {
 
 
-    interface StandardColumnSubQuerySpec<C, E>
-            extends StandardQuery.StandardSelectClauseSpec<C, ColumnSubQuery<E>> {
+    interface StandardColumnSubQuerySpec<C>
+            extends StandardQuery.StandardSelectClauseSpec<C, ColumnSubQuery> {
 
     }
-
-
 
 
 }

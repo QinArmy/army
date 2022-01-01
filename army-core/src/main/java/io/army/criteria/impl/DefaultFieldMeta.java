@@ -244,10 +244,6 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationExpressio
         return this.mappingType;
     }
 
-    @Override
-    public final ParamMeta inferType() {
-        return this;
-    }
 
     @Override
     public final boolean insertable() {
@@ -289,6 +285,11 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationExpressio
         return this.columnName;
     }
 
+
+    @Override
+    public final ParamMeta paramMeta() {
+        return this;
+    }
 
     @Override
     public final String fieldName() {

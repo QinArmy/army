@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 
 abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements _PartQuery, Query
         , Query.OrderByClause<C, OR>, Query.LimitClause<C, LR>
-        , Query.UnionClause<C, UR, SP, Q>, Query.QuerySpec<Q> {
+        , Query.UnionClause<C, UR, SP, Q>, Query.QuerySpec<Q>, CriteriaSpec<C> {
 
     final C criteria;
 
@@ -35,6 +35,10 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements _PartQue
         this.criteria = criteria;
     }
 
+    @Override
+    public final C getCriteria() {
+        return this.criteria;
+    }
 
     @Override
     public final UR union(Function<C, Q> function) {

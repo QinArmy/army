@@ -7,10 +7,7 @@ import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._SortPart;
 import io.army.lang.Nullable;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 abstract class CriteriaUtils {
 
@@ -62,7 +59,7 @@ abstract class CriteriaUtils {
         final List<_Predicate> list;
         switch (predicateList.size()) {
             case 0:
-                throw new IllegalStateException("no where clause.");
+                throw new IllegalStateException("no predicate clause.");
             case 1:
                 list = Collections.singletonList(predicateList.get(0));
                 break;
@@ -97,6 +94,13 @@ abstract class CriteriaUtils {
         for (SortPart sortPart : sortParts) {
             sortPartList.add((_SortPart) sortPart);
         }
+    }
+
+    static List<_Predicate> onPredicates(IPredicate predicate1, IPredicate predicate2) {
+        final List<_Predicate> list = new ArrayList<>(2);
+        list.add((_Predicate) predicate1);
+        list.add((_Predicate) predicate2);
+        return Collections.unmodifiableList(list);
     }
 
 

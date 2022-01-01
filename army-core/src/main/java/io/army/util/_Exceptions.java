@@ -204,6 +204,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("Unknown %s type[%s].", SetTargetPart.class.getName(), target));
     }
 
+    public static CriteriaException unknownQueryType(Query query) {
+        return new CriteriaException(String.format("unknown %s type.", query.getClass().getName()));
+    }
+
     public static CriteriaException setTargetAndValuePartNotMatch(SetTargetPart target, SetValuePart value) {
         return new CriteriaException(String.format("%s[%s] and %s[%s] not match.", SetTargetPart.class.getName(), target
                 , SetValuePart.class.getName(), value));

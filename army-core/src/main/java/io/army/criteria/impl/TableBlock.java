@@ -12,13 +12,10 @@ abstract class TableBlock implements _TableBlock {
 
     final TablePart tablePart;
 
-    final String alias;
-
     final JoinType joinType;
 
-    TableBlock(TablePart tablePart, String alias, JoinType joinType) {
+    TableBlock(TablePart tablePart, JoinType joinType) {
         this.tablePart = tablePart;
-        this.alias = alias;
         this.joinType = joinType;
     }
 
@@ -28,28 +25,28 @@ abstract class TableBlock implements _TableBlock {
     }
 
     @Override
-    public final String alias() {
-        return this.alias;
-    }
-
-    @Override
     public final SQLModifier jointType() {
         return this.joinType;
     }
 
 
-    static final class FromTableBlock extends TableBlock {
+    static TableBlock simple(TablePart tablePart, String alias) {
+        return new SimpleTableBlock(tablePart, alias);
+    }
 
-        FromTableBlock(TablePart tablePart, String alias) {
-            super(tablePart, alias, JoinType.NONE);
+
+    static class SimpleTableBlock extends TableBlock {
+
+        SimpleTableBlock(TablePart tablePart, String alias) {
+            super(tablePart, JoinType.NONE);
         }
 
         @Override
-        public List<_Predicate> predicates() {
+        public final List<_Predicate> predicates() {
             return Collections.emptyList();
         }
 
-    }
+    } // SimpleFromTableBlock
 
 
 }

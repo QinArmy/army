@@ -27,8 +27,8 @@ public abstract class SQLs extends SQLUtils {
     }
 
 
-    public static <T extends IDomain> Insert.InsertOptionSpec<T, Void> domainInsert(TableMeta<T> targetTable) {
-        return ContextualValueInsert.create(targetTable);
+    public static <T extends IDomain> Insert.InsertOptionSpec<T, Void> standardValueInsert(TableMeta<T> targetTable) {
+        return StandardValueInsert.create(targetTable, null);
     }
 
     /**
@@ -51,12 +51,13 @@ public abstract class SQLs extends SQLUtils {
      * @param targetTable will insert to table meta
      * @return a standard insert api object.
      */
-    public static <T extends IDomain, C> Insert.InsertOptionSpec<T, C> domainInsert(TableMeta<T> targetTable, C criteria) {
-        return ContextualValueInsert.create(targetTable, criteria);
+    public static <T extends IDomain, C> Insert.InsertOptionSpec<T, C> standardValueInsert(TableMeta<T> targetTable, C criteria) {
+        Objects.requireNonNull(criteria);
+        return StandardValueInsert.create(targetTable, criteria);
     }
 
     public static Update.StandardUpdateSpec<Void> standardUpdate() {
-        return StandardUpdate.create();
+        return StandardUpdate.create(null);
     }
 
     /**
@@ -64,6 +65,7 @@ public abstract class SQLs extends SQLUtils {
      * @param <C>      criteria java type used to create dynamic update and sub query
      */
     public static <C> Update.StandardUpdateSpec<C> standardUpdate(C criteria) {
+        Objects.requireNonNull(criteria);
         return StandardUpdate.create(criteria);
     }
 
@@ -133,11 +135,11 @@ public abstract class SQLs extends SQLUtils {
         throw new UnsupportedOperationException();
     }
 
-    public static <E> ColumnSubQuery.StandardColumnSubQuerySpec<Void, E> standardColumnSubQuery() {
+    public static <E> ColumnSubQuery.StandardColumnSubQuerySpec<Void> standardColumnSubQuery() {
         throw new UnsupportedOperationException();
     }
 
-    public static <C, E> ColumnSubQuery.StandardColumnSubQuerySpec<C, E> standardColumnSubQuery(C criteria) {
+    public static <C, E> ColumnSubQuery.StandardColumnSubQuerySpec<C> standardColumnSubQuery(C criteria) {
         Objects.requireNonNull(criteria);
         throw new UnsupportedOperationException();
     }
@@ -172,11 +174,6 @@ public abstract class SQLs extends SQLUtils {
                 .ref(subQueryAlias, derivedFieldName, selectionType);
     }
 
-    /**
-     * <p>
-     * eg: {@link Query.StandardUnionResultSpec#orderBy(SortPart)}
-     * </p>
-     */
     public static <E> Expression<E> composeRef(String selectionAlias) {
         return CriteriaContextStack.peek()
                 .composeRef(selectionAlias);
@@ -193,7 +190,7 @@ public abstract class SQLs extends SQLUtils {
     public static List<SelectionGroup> childGroup(ChildTableMeta<?> childMeta, String parentAlias, String childAlias) {
         final List<SelectionGroup> list = new ArrayList<>(2);
         list.add(SQLs.group(childMeta.parentMeta(), parentAlias));
-        list.add(SQLs.group(childMeta, childAlias));
+        // list.add(SQLs.group(childMeta, childAlias));
         return list;
     }
 

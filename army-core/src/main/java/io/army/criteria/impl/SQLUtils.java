@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.Expression;
 import io.army.criteria.GenericField;
 import io.army.criteria.NamedParam;
+import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
@@ -141,19 +142,19 @@ abstract class SQLUtils {
     }
 
     /**
-     * package method
+     * Only used to update set clause.
      */
     @SuppressWarnings("unchecked")
-    static <E> Expression<E> defaultWord() {
-        return (Expression<E>) DefaultWord.INSTANCE;
+    public static <E> Expression<E> defaultWord() {
+        return (Expression<E>) SQLs.DefaultWord.INSTANCE;
     }
 
     /**
-     * package method
+     * Only used to update set clause.
      */
     @SuppressWarnings("unchecked")
-    static <E> Expression<E> nullWord() {
-        return (Expression<E>) NullWord.INSTANCE;
+    public static <E> Expression<E> nullWord() {
+        return (Expression<E>) SQLs.NullWord.INSTANCE;
     }
 
     /*################################## blow number function method ##################################*/
@@ -163,7 +164,7 @@ abstract class SQLUtils {
      * MySQL ABS function</a>
      */
     public static <E extends Number> Expression<E> abs(Expression<E> x) {
-        return SQLFunctions.oneArgumentFunc("ABS", x.mappingType(), x);
+        return SQLFunctions.oneArgumentFunc("ABS", x.paramMeta().mappingType(), x);
     }
 
     public static <E extends Number> Expression<Double> acos(Expression<E> x) {
@@ -287,7 +288,7 @@ abstract class SQLUtils {
 
     public static <E extends Number> Expression<E> mod(Expression<E> dividend
             , Expression<E> divisor) {
-        return SQLFunctions.twoArgumentFunc("MOD", dividend.mappingType(), dividend, divisor);
+        return SQLFunctions.twoArgumentFunc("MOD", dividend.paramMeta().mappingType(), dividend, divisor);
     }
 
 
@@ -307,5 +308,73 @@ abstract class SQLUtils {
     }
 
     /*################################## blow static inner class  ##################################*/
+
+
+    /**
+     * <p>
+     * This class representing sql {@code DEFAULT} key word.
+     * </p>
+     *
+     * @param <E> The java type The expression thant reference kwy word {@code DEFAULT}
+     */
+    private static final class DefaultWord<E> extends NoNOperationExpression<E> {
+
+        private static DefaultWord<?> INSTANCE = new DefaultWord<>();
+
+        private DefaultWord() {
+        }
+
+
+        @Override
+        public ParamMeta paramMeta() {
+            throw unsupportedOperation();
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            context.sqlBuilder().append(" DEFAULT");
+        }
+
+        @Override
+        public String toString() {
+            return " DEFAULT";
+        }
+
+    }// DefaultWord
+
+
+    /**
+     * <p>
+     * This class representing sql {@code NULL} key word.
+     * </p>
+     *
+     * @param <E> The java type The expression thant reference kwy word {@code NULL}
+     */
+    private static final class NullWord<E> extends NoNOperationExpression<E> {
+
+        private static final NullWord<?> INSTANCE = new NullWord<>();
+
+
+        private NullWord() {
+        }
+
+        @Override
+        public void appendSql(_SqlContext context) {
+            context.sqlBuilder().append(" NULL");
+        }
+
+        @Override
+        public ParamMeta paramMeta() {
+            throw unsupportedOperation();
+        }
+
+        @Override
+        public String toString() {
+            return " NULL";
+        }
+
+
+    }// NullWord
+
 
 }
