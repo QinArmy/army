@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.SQLModifier;
 import io.army.criteria.TablePart;
-import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.meta.TableMeta;
 import io.army.util.CollectionUtils;
@@ -14,36 +13,35 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
-abstract class MySQLIndexHintClaus<C, OR, IR, WP, WR> extends OnClauses<C, OR>
-        implements MySQLQuery.IndexHintClause<C, IR>, MySQLQuery.IndexHintWordClause<WP, WR>
-        , MySQLQuery.IndexHintPurposeClause<WR>, _MySQLTableBlock {
+abstract class MySQLIndexHintOnClause<C, OR, IR, WP, WR> implements MySQLQuery.IndexHintClause<C, IR>, MySQLQuery.IndexHintWordClause<WP, WR>
+        , MySQLQuery.IndexHintPurposeClause<WR> {
 
     private List<SQLModifier> indexHints;
 
     private List<String> indexNames;
 
-    MySQLIndexHintClaus(TablePart tablePart, JoinType joinType, OR query) {
-        super(tablePart, joinType, query);
+    MySQLIndexHintOnClause(TablePart tablePart, JoinType joinType, OR query) {
+
     }
 
 
     @Override
-    public final IR use() {
+    public final IR useIndex() {
         return createIndexHint(IndexHint.USE);
     }
 
     @Override
-    public final IR ignore() {
+    public final IR ignoreIndex() {
         return createIndexHint(IndexHint.IGNORE);
     }
 
     @Override
-    public final IR force() {
+    public final IR forceIndex() {
         return createIndexHint(IndexHint.FORCE);
     }
 
     @Override
-    public final IR ifUse(Predicate<C> predicate) {
+    public final IR ifUseIndex(Predicate<C> predicate) {
         if (predicate.test(this.getCriteria())) {
             createIndexHint(IndexHint.USE);
         }
@@ -51,7 +49,7 @@ abstract class MySQLIndexHintClaus<C, OR, IR, WP, WR> extends OnClauses<C, OR>
     }
 
     @Override
-    public final IR ifIgnore(Predicate<C> predicate) {
+    public final IR ifIgnoreIndex(Predicate<C> predicate) {
         if (predicate.test(this.getCriteria())) {
             createIndexHint(IndexHint.IGNORE);
         }
@@ -59,7 +57,7 @@ abstract class MySQLIndexHintClaus<C, OR, IR, WP, WR> extends OnClauses<C, OR>
     }
 
     @Override
-    public final IR ifForce(Predicate<C> predicate) {
+    public final IR ifForceIndex(Predicate<C> predicate) {
         if (predicate.test(this.getCriteria())) {
             createIndexHint(IndexHint.FORCE);
         }
@@ -246,7 +244,7 @@ abstract class MySQLIndexHintClaus<C, OR, IR, WP, WR> extends OnClauses<C, OR>
     }
 
 
-    static abstract class NoPartitionBlock<C, OR, IR, WP, WR> extends MySQLIndexHintClaus<C, OR, IR, WP, WR> {
+    static abstract class NoPartitionBlock<C, OR, IR, WP, WR> extends MySQLIndexHintOnClause<C, OR, IR, WP, WR> {
 
         final String alias;
 

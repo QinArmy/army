@@ -69,42 +69,32 @@ public interface MySQLQuery extends Query, DialectStatement {
     }
 
 
-    interface IndexHintClause<C, IR> {
+    interface IndexHintClause<C, IR, IC> {
 
-        IR use();
+        IR useIndex();
 
-        IR ignore();
+        IR ignoreIndex();
 
-        IR force();
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        IR ifUse(Predicate<C> predicate);
-
+        IR forceIndex();
 
         /**
          * @return clause , clause no action if predicate return false.
          */
-        IR ifIgnore(Predicate<C> predicate);
+        IC ifUseIndex(Function<C, List<String>> function);
+
 
         /**
          * @return clause , clause no action if predicate return false.
          */
-        IR ifForce(Predicate<C> predicate);
+        IC ifIgnoreIndex(Function<C, List<String>> function);
+
+        /**
+         * @return clause , clause no action if predicate return false.
+         */
+        IC ifForceIndex(Function<C, List<String>> function);
 
     }
 
-    interface IndexHintWordClause<WP, WR> {
-
-        WP index();
-
-        WP key();
-
-        WR index(List<String> indexNameList);
-
-        WR key(List<String> indexNameList);
-    }
 
     interface IndexHintOrderByClause<PR> {
 

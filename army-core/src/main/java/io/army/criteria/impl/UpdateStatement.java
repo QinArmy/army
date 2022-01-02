@@ -21,13 +21,13 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
 abstract class UpdateStatement<C, WR, WA, SR> extends DmlWhereClause<C, WR, WA>
-        implements Update, Update.UpdateSpec, Update.SetClause<C, SR>, _Update {
+        implements Update, Update.UpdateSpec, Update.SimpleSetClause<C, SR>, Update.BatchSetClause<C, SR>, _Update {
 
     final CriteriaContext criteriaContext;
 
-    List<SetTargetPart> fieldList = new ArrayList<>();
+    private List<SetTargetPart> fieldList = new ArrayList<>();
 
-    List<SetValuePart> valueExpList = new ArrayList<>();
+    private List<SetValuePart> valueExpList = new ArrayList<>();
 
     UpdateStatement(@Nullable C criteria) {
         super(criteria);
@@ -252,6 +252,66 @@ abstract class UpdateStatement<C, WR, WA, SR> extends DmlWhereClause<C, WR, WA>
         return (SR) this;
     }
 
+    /*################################## blow batch set clause  method ##################################*/
+
+    @Override
+    public final SR set(List<FieldMeta<?, ?>> fieldList) {
+        if (fieldList.size() == 0) {
+            throw _Exceptions.selectListIsEmpty();
+        }
+        for (FieldMeta<?, ?> field : fieldList) {
+            this.set(field, SQLs.namedParam(field));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final <F> SR set(FieldMeta<?, F> field) {
+        return this.set(field, SQLs.namedParam(field));
+    }
+
+    @Override
+    public final <F extends Number> SR setPlus(FieldMeta<?, F> field) {
+        return this.set(field, field.plus(SQLs.nonNullNamedParam(field)));
+    }
+
+    @Override
+    public final <F extends Number> SR setMinus(FieldMeta<?, F> field) {
+        return this.set(field, field.minus(SQLs.nonNullNamedParam(field)));
+    }
+
+    @Override
+    public final <F extends Number> SR setMultiply(FieldMeta<?, F> field) {
+        return this.set(field, field.multiply(SQLs.nonNullNamedParam(field)));
+    }
+
+    @Override
+    public final <F extends Number> SR setDivide(FieldMeta<?, F> field) {
+        return this.set(field, field.divide(SQLs.nonNullNamedParam(field)));
+    }
+
+    @Override
+    public final <F extends Number> SR setMod(FieldMeta<?, F> field) {
+        return this.set(field, field.mod(SQLs.nonNullNamedParam(field)));
+    }
+
+    @Override
+    public final SR ifSet(Function<C, List<FieldMeta<?, ?>>> function) {
+        final List<FieldMeta<?, ?>> fieldList;
+        fieldList = function.apply(this.criteria);
+        if (!CollectionUtils.isEmpty(fieldList)) {
+            this.set(fieldList);
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final <F> SR ifSet(Predicate<C> test, FieldMeta<?, F> field) {
+        if (test.test(this.criteria)) {
+            this.set(field, SQLs.namedParam(field));
+        }
+        return (SR) this;
+    }
 
     @Override
     public final Update asUpdate() {

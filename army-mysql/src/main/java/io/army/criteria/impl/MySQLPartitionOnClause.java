@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-abstract class MySQLPartitionOnClause<C, PR, AR, OR, IR, WP, WR> extends MySQLIndexHintClaus<C, OR, IR, WP, WR>
+abstract class MySQLPartitionOnClause<C, PR, AR, OR, IR, WP, WR> extends MySQLIndexHintOnClause<C, OR, IR, WP, WR>
         implements MySQLQuery.PartitionClause<C, PR>, Statement.AsClause<AR> {
 
     private String alias;

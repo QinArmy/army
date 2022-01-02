@@ -4,7 +4,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._PartQuery;
 import io.army.criteria.impl.inner._TableBlock;
-import io.army.criteria.mysql.MySQL57IndexHint;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;

@@ -1,17 +1,14 @@
 package io.army.criteria.impl;
 
-import io.army.annotation.UpdateMode;
 import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._BatchDml;
-import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Update;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
-import io.army.modelgen._MetaBridge;
 import io.army.util.CollectionUtils;
 import io.army.util._Assert;
 import io.army.util._Exceptions;
@@ -25,7 +22,7 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
 abstract class BatchUpdate<T extends IDomain, C, WR, WA, SR, BR> extends DmlWhereClause<C, WR, WA>
-        implements Update, Update.UpdateSpec, Update.BatchSetClause<T, C, SR>,
+        implements Update, Update.UpdateSpec, Update.BatchSetClause<C, SR>,
         Statement.BatchParamClause<C, BR>, _Update, _BatchDml {
 
     final CriteriaContext criteriaContext;
@@ -59,20 +56,43 @@ abstract class BatchUpdate<T extends IDomain, C, WR, WA, SR, BR> extends DmlWher
     }
 
     @Override
-    public final <F> SR set(FieldMeta<?, F> field, Expression<F> value) {
-        if (field.updateMode() == UpdateMode.IMMUTABLE) {
-            throw _Exceptions.immutableField(field);
-        }
-        final String fieldName = field.fieldName();
-        if (fieldName.equals(_MetaBridge.UPDATE_TIME) || fieldName.equals(_MetaBridge.VERSION)) {
-            throw _Exceptions.armyManageField(field);
-        }
-        if (!field.nullable() && ((_Expression<?>) value).nullableExp()) {
-            throw _Exceptions.nonNullField(field);
-        }
-        this.targetPartList.add(field);
-        this.valuePartList.add((_Expression<?>) value);
-        return (SR) this;
+    public SR set(FieldMeta<?, ?> field, Expression<?> value) {
+        return null;
+    }
+
+    @Override
+    public <F> SR set(FieldMeta<?, F> field, Function<C, Expression<F>> function) {
+        return null;
+    }
+
+    @Override
+    public <F> SR set(FieldMeta<?, F> field, Supplier<Expression<F>> supplier) {
+        return null;
+    }
+
+    @Override
+    public SR setNull(FieldMeta<?, ?> field) {
+        return null;
+    }
+
+    @Override
+    public SR setDefault(FieldMeta<?, ?> field) {
+        return null;
+    }
+
+    @Override
+    public SR ifSetNull(Predicate<C> predicate, FieldMeta<?, ?> field) {
+        return null;
+    }
+
+    @Override
+    public SR ifSetDefault(Predicate<C> predicate, FieldMeta<?, ?> field) {
+        return null;
+    }
+
+    @Override
+    public <F> SR ifSet(FieldMeta<?, F> field, Supplier<Expression<F>> supplier) {
+        return null;
     }
 
     @Override
@@ -80,15 +100,6 @@ abstract class BatchUpdate<T extends IDomain, C, WR, WA, SR, BR> extends DmlWher
         return this.set(field, SQLs.namedParam(field));
     }
 
-    @Override
-    public final <F> SR setNull(FieldMeta<?, F> field) {
-        return this.set(field, SQLs.nullWord());
-    }
-
-    @Override
-    public final <F> SR setDefault(FieldMeta<?, F> field) {
-        return this.set(field, SQLs.defaultWord());
-    }
 
     @Override
     public final <F extends Number> SR setPlus(FieldMeta<?, F> field) {

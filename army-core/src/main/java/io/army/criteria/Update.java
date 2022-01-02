@@ -27,7 +27,7 @@ public interface Update extends Statement {
 
     }
 
-    interface StandardSetSpec<C> extends SetClause<C, StandardWhereSpec<C>> {
+    interface StandardSetSpec<C> extends SimpleSetClause<C, StandardWhereSpec<C>> {
 
     }
 
@@ -45,10 +45,6 @@ public interface Update extends Statement {
 
     interface SetClause<C, SR> {
 
-        SR set(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList);
-
-        SR set(FieldMeta<?, ?> field, @Nullable Object value);
-
         SR set(FieldMeta<?, ?> field, Expression<?> value);
 
         <F> SR set(FieldMeta<?, F> field, Function<C, Expression<F>> function);
@@ -58,6 +54,22 @@ public interface Update extends Statement {
         SR setNull(FieldMeta<?, ?> field);
 
         SR setDefault(FieldMeta<?, ?> field);
+
+        SR ifSetNull(Predicate<C> predicate, FieldMeta<?, ?> field);
+
+        SR ifSetDefault(Predicate<C> predicate, FieldMeta<?, ?> field);
+
+        <F> SR ifSet(FieldMeta<?, F> field, Function<C, Expression<F>> function);
+
+        <F> SR ifSet(FieldMeta<?, F> field, Supplier<Expression<F>> supplier);
+
+    }
+
+    interface SimpleSetClause<C, SR> extends SetClause<C, SR> {
+
+        SR set(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList);
+
+        SR set(FieldMeta<?, ?> field, @Nullable Object value);
 
         <F extends Number> SR setPlus(FieldMeta<?, F> field, F value);
 
@@ -81,15 +93,7 @@ public interface Update extends Statement {
 
         SR ifSet(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList);
 
-        SR ifSetNull(Predicate<C> predicate, FieldMeta<?, ?> field);
-
-        SR ifSetDefault(Predicate<C> predicate, FieldMeta<?, ?> field);
-
         <F> SR ifSet(FieldMeta<?, F> field, @Nullable F value);
-
-        <F> SR ifSet(FieldMeta<?, F> field, Function<C, Expression<F>> function);
-
-        <F> SR ifSet(FieldMeta<?, F> field, Supplier<Expression<F>> supplier);
 
         <F extends Number> SR ifSetPlus(FieldMeta<?, F> field, @Nullable F value);
 
@@ -136,20 +140,14 @@ public interface Update extends Statement {
     }
 
 
-    interface BatchSetClause<C, SR> {
+    interface BatchSetClause<C, SR> extends SetClause<C, SR> {
 
         SR set(List<FieldMeta<?, ?>> fieldList);
-
-        <F> SR set(FieldMeta<?, F> field, Expression<F> value);
 
         /**
          * @see SQLs#namedParam(GenericField)
          */
         <F> SR set(FieldMeta<?, F> field);
-
-        <F> SR setNull(FieldMeta<?, F> field);
-
-        <F> SR setDefault(FieldMeta<?, F> field);
 
         /**
          * @see SQLs#nonNullNamedParam(GenericField)
@@ -180,8 +178,6 @@ public interface Update extends Statement {
 
         <F> SR ifSet(Predicate<C> test, FieldMeta<?, F> field);
 
-        <F> SR ifSet(FieldMeta<?, F> filed, Function<C, Expression<F>> function);
-
     }
 
 
@@ -189,7 +185,6 @@ public interface Update extends Statement {
 
 
     /*################################## blow batch multi-table update api  ##################################*/
-
 
 
 }

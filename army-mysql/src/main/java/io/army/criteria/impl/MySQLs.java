@@ -58,8 +58,8 @@ public abstract class MySQLs extends SQLs {
      *
      * @return MySQL 5.7 single-table update api
      */
-    public static MySQLUpdate.UpdateClause<Void> singleUpdate57() {
-        throw new UnsupportedOperationException();
+    public static MySQLUpdate.SingleUpdateSpec<Void> singleUpdate57() {
+        return MySQLSingleUpdate.single57(null);
     }
 
     /**
@@ -74,9 +74,9 @@ public abstract class MySQLs extends SQLs {
      * @param criteria criteria instance(map or bean) used to create dynamic update statement
      * @return MySQL 5.7 single-table update api
      */
-    public static <C> MySQLUpdate.UpdateClause<C> singleUpdate57(C criteria) {
+    public static <C> MySQLUpdate.SingleUpdateSpec<C> singleUpdate57(C criteria) {
         Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
+        return MySQLSingleUpdate.single57(criteria);
     }
 
     /**

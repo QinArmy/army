@@ -34,20 +34,63 @@ public interface MySQLUpdate extends Update, MySQLDml {
 
     interface UpdateClause<C, UP, UR> {
 
-        UP update(Function<C, List<Hint>> hints, List<SQLModifier> sqlModifiers
+        UP update(Supplier<List<Hint>> hints, List<SQLModifier> sqlModifiers
                 , TableMeta<? extends IDomain> table);
 
-        UR update(Function<C, List<Hint>> hints, List<SQLModifier> sqlModifiers
+        UR update(Supplier<List<Hint>> hints, List<SQLModifier> sqlModifiers
                 , TableMeta<? extends IDomain> table, String tableAlias);
-
-        UP update(SQLModifier sqlModifier, TableMeta<? extends IDomain> table);
-
-        UR update(SQLModifier sqlModifier, TableMeta<? extends IDomain> table, String tableAlias);
 
         UP update(TableMeta<? extends IDomain> table);
 
         UR update(TableMeta<? extends IDomain> table, String tableAlias);
 
+    }
+
+    interface SingleIndexHintClause<C, IR> {
+
+        IR useIndex(List<String> indexNames);
+
+        IR ignoreIndex(List<String> indexNames);
+
+        IR forceIndex(List<String> indexNames);
+
+        IR useIndexForOrderBy(List<String> indexNames);
+
+        IR ignoreIndexForOrderBy(List<String> indexNames);
+
+        IR forceIndexForOrderBy(List<String> indexNames);
+
+        /**
+         * @return clause , clause no action if predicate return false.
+         */
+        IR ifUseIndex(Function<C, List<String>> function);
+
+
+        /**
+         * @return clause , clause no action if predicate return false.
+         */
+        IR ifIgnoreIndex(Function<C, List<String>> function);
+
+        /**
+         * @return clause , clause no action if predicate return false.
+         */
+        IR ifForceIndex(Function<C, List<String>> function);
+
+        /**
+         * @return clause , clause no action if predicate return false.
+         */
+        IR ifUseIndexForOrderBy(Function<C, List<String>> function);
+
+
+        /**
+         * @return clause , clause no action if predicate return false.
+         */
+        IR ifIgnoreIndexForOrderBy(Function<C, List<String>> function);
+
+        /**
+         * @return clause , clause no action if predicate return false.
+         */
+        IR ifForceIndexForOrderBy(Function<C, List<String>> function);
     }
 
 
@@ -87,27 +130,8 @@ public interface MySQLUpdate extends Update, MySQLDml {
      * This representing MySQL single-table update syntax index hint clause.
      * </p>
      */
-    interface SingleIndexHintSpec<C> extends MySQLQuery.IndexHintClause<C, MySQLUpdate.SingleIndexHintWordSpec<C>>
+    interface SingleIndexHintSpec<C> extends MySQLUpdate.SingleIndexHintClause<C, MySQLUpdate.SingleIndexHintSpec<C>>
             , MySQLUpdate.SingleSetSpec<C> {
-
-    }
-
-    /**
-     * <p>
-     * This representing MySQL single-table update syntax index clause.
-     * </p>
-     */
-    interface SingleIndexHintWordSpec<C>
-            extends MySQLQuery.IndexHintWordClause<IndexHintOrderBySpec<C>, MySQLUpdate.SingleSetSpec<C>> {
-
-    }
-
-    /**
-     * <p>
-     * This representing MySQL single-table update syntax index hint order by clause.
-     * </p>
-     */
-    interface IndexHintOrderBySpec<C> extends MySQLQuery.IndexHintOrderByClause<MySQLUpdate.SingleSetSpec<C>> {
 
     }
 
@@ -117,7 +141,7 @@ public interface MySQLUpdate extends Update, MySQLDml {
      * This representing MySQL single-table update syntax set clause.
      * </p>
      */
-    interface SingleSetSpec<C> extends Update.SetClause<C, MySQLUpdate.SingleWhereSpec<C>> {
+    interface SingleSetSpec<C> extends SimpleSetClause<C, SingleWhereSpec<C>> {
 
     }
 
@@ -147,7 +171,7 @@ public interface MySQLUpdate extends Update, MySQLDml {
      * This representing MySQL single-table update syntax order by clause.
      * </p>
      */
-    interface OrderBySpec<C> extends Query.OrderByClause<C, MySQLUpdate.OrderBySpec<C>>
+    interface OrderBySpec<C> extends Query.OrderByClause<C, MySQLUpdate.LimitSpec<C>>
             , MySQLUpdate.LimitSpec<C> {
 
     }
@@ -201,31 +225,11 @@ public interface MySQLUpdate extends Update, MySQLDml {
      * </p>
      */
     interface BatchSingleIndexHintSpec<C>
-            extends MySQLQuery.IndexHintClause<C, MySQLUpdate.BatchSingleIndexHintWordSpec<C>>
+            extends MySQLUpdate.SingleIndexHintClause<C, MySQLUpdate.BatchSingleIndexHintSpec<C>>
             , MySQLUpdate.BatchSingleSetSpec<C> {
 
     }
 
-    /**
-     * <p>
-     * This representing MySQL batch single-table update syntax index clause.
-     * </p>
-     */
-    interface BatchSingleIndexHintWordSpec<C>
-            extends MySQLQuery.IndexHintWordClause<MySQLUpdate.BatchIndexHintOrderBySpec<C>
-            , MySQLUpdate.BatchSingleSetSpec<C>> {
-
-    }
-
-    /**
-     * <p>
-     * This representing MySQL batch single-table update syntax index hint for order by clause.
-     * </p>
-     */
-    interface BatchIndexHintOrderBySpec<C>
-            extends MySQLQuery.IndexHintOrderByClause<MySQLUpdate.BatchSingleSetSpec<C>> {
-
-    }
 
     /**
      * <p>
@@ -434,7 +438,7 @@ public interface MySQLUpdate extends Update, MySQLDml {
      * This interface representing MySQL multi-table update syntax set clause.
      * </p>
      */
-    interface MultiSetSpec<C> extends Update.SetClause<C, MySQLUpdate.MultiWhereSpec<C>> {
+    interface MultiSetSpec<C> extends SimpleSetClause<C, MultiWhereSpec<C>> {
 
     }
 
