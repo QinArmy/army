@@ -21,6 +21,17 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+
+/**
+ * <p>
+ * This class is base class of below:
+ *     <ul>
+ *         <li>{@link MySQLMultiUpdate.SimpleMultiUpdate} ,MySQL multi update api implementation</li>
+ *         <li>{@link MySQLMultiUpdate.BatchMultiUpdate} ,MySQL batch multi update api implementation</li>
+ *     </ul>
+ * </p>
+ */
+@SuppressWarnings("unchecked")
 abstract class MySQLMultiUpdate<C, JT, JS, WR, WA, SR, IR, IT> extends MultiUpdate<C, JT, JS, WR, WA, SR>
         implements MySQLUpdate.MultiIndexHintClause<C, IR>, MySQLUpdate, _MySQLMultiUpdate
         , MySQLQuery.MySQLJoinClause<C, JT, JS, IT> {
@@ -38,8 +49,6 @@ abstract class MySQLMultiUpdate<C, JT, JS, WR, WA, SR, IR, IT> extends MultiUpda
     private final FirstBlock firstBlock;
 
     List<_TableBlock> tableBlockList = new ArrayList<>();
-
-    private List<MySQLIndexHint> indexHintList;
 
     private IT noActionPartitionBlock;
 
@@ -235,7 +244,35 @@ abstract class MySQLMultiUpdate<C, JT, JS, WR, WA, SR, IR, IT> extends MultiUpda
 
     abstract IT addPartitionBlock(JoinType joinType, TableMeta<?> table);
 
+    @Override
+    final void onAsUpdate() {
+        final List<MySQLIndexHint> indexHintList = this.firstBlock.indexHintList;
+        if (CollectionUtils.isEmpty(indexHintList)) {
+            this.firstBlock.indexHintList = Collections.emptyList();
+        } else {
+            this.firstBlock.indexHintList = Collections.unmodifiableList(indexHintList);
+        }
+        this.tableBlockList = CollectionUtils.unmodifiableList(this.tableBlockList);
 
+        if (this instanceof BatchMultiUpdate) {
+            final List<ReadWrapper> wrapperList = ((BatchMultiUpdate<C>) this).wrapperList;
+            if (CollectionUtils.isEmpty(wrapperList)) {
+                throw _Exceptions.batchParamEmpty();
+            }
+            ((BatchMultiUpdate<C>) this).wrapperList = Collections.unmodifiableList(wrapperList);
+        }
+
+
+    }
+
+    @Override
+    final void onClear() {
+        this.firstBlock.indexHintList = null;
+        this.tableBlockList = null;
+        if (this instanceof BatchMultiUpdate) {
+            ((BatchMultiUpdate<C>) this).wrapperList = null;
+        }
+    }
 
     /*################################## blow private method ##################################*/
 
@@ -258,18 +295,17 @@ abstract class MySQLMultiUpdate<C, JT, JS, WR, WA, SR, IR, IT> extends MultiUpda
     private IR addIndexHint(final MySQLIndexHint.Command command, final boolean forJoin, final List<String> indexNames) {
         final List<_TableBlock> tableBlockList = this.tableBlockList;
         if (tableBlockList == null
-                || tableBlockList.size() != 1
-                || !(tableBlockList.get(0) instanceof PlaceholderTableBlock)) {
+                || tableBlockList.size() != 1) {
             throw _Exceptions.castCriteriaApi();
         }
         if (CollectionUtils.isEmpty(indexNames)) {
             throw new CriteriaException("index hint clause index name list must not emtpy.");
         }
 
-        List<MySQLIndexHint> indexHintList = this.indexHintList;
+        List<MySQLIndexHint> indexHintList = this.firstBlock.indexHintList;
         if (indexHintList == null) {
             indexHintList = new ArrayList<>();
-            this.indexHintList = indexHintList;
+            this.firstBlock.indexHintList = indexHintList;
         }
         final MySQLIndexHint.Purpose purpose;
         if (forJoin) {
@@ -298,23 +334,74 @@ abstract class MySQLMultiUpdate<C, JT, JS, WR, WA, SR, IR, IT> extends MultiUpda
         @Override
         public MultiPartitionJoinSpec<C> update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
                 , TableMeta<? extends IDomain> table) {
-            return null;
+            final List<Hint> hintList;
+            hintList = hints.get();
+            assert hintList != null;
+            return new SimplePartitionJoinSpec<>(hintList, modifiers, table, this.criteria);
         }
 
         @Override
         public MultiIndexHintJoinSpec<C> update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
                 , TableMeta<? extends IDomain> table, String tableAlias) {
-            return null;
+            final List<Hint> hintList;
+            hintList = hints.get();
+            assert hintList != null;
+            final FirstBlock block = new FirstBlock(hintList, modifiers, table, tableAlias);
+            return new SimpleMultiUpdate<>(block, this.criteria);
         }
 
         @Override
         public MultiPartitionJoinSpec<C> update(TableMeta<? extends IDomain> table) {
-            return null;
+            return new SimplePartitionJoinSpec<>(table, this.criteria);
         }
 
         @Override
         public MultiIndexHintJoinSpec<C> update(TableMeta<? extends IDomain> table, String tableAlias) {
-            return null;
+            return new SimpleMultiUpdate<>(new FirstBlock(table, tableAlias), this.criteria);
+        }
+
+        @Override
+        public <T extends TablePart> MultiJoinSpec<C> update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+                , Supplier<T> supplier, String alias) {
+            final List<Hint> hintList;
+            hintList = hints.get();
+            assert hintList != null;
+
+            final TablePart tp;
+            tp = supplier.get();
+            assert tp != null;
+
+            final FirstBlock block = new FirstBlock(hintList, modifiers, tp, alias);
+            return new SimpleMultiUpdate<>(block, this.criteria);
+        }
+
+        @Override
+        public <T extends TablePart> MultiJoinSpec<C> update(Supplier<T> tablePart, String alias) {
+            final TablePart tp = tablePart.get();
+            assert tp != null;
+            return new SimpleMultiUpdate<>(new FirstBlock(tp, alias), this.criteria);
+        }
+
+        @Override
+        public <T extends TablePart> MultiJoinSpec<C> update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+                , Function<C, T> tablePart, String alias) {
+            final List<Hint> hintList;
+            hintList = hints.get();
+            assert hintList != null;
+
+            final TablePart tp;
+            tp = tablePart.apply(this.criteria);
+            assert tp != null;
+            final FirstBlock block = new FirstBlock(hintList, modifiers, tp, alias);
+            return new SimpleMultiUpdate<>(block, this.criteria);
+        }
+
+        @Override
+        public <T extends TablePart> MultiJoinSpec<C> update(Function<C, T> tablePart, String alias) {
+            final TablePart tp;
+            tp = tablePart.apply(this.criteria);
+            assert tp != null;
+            return new SimpleMultiUpdate<>(new FirstBlock(tp, alias), this.criteria);
         }
 
     }//MultiUpdateSpecImpl
@@ -333,49 +420,125 @@ abstract class MySQLMultiUpdate<C, JT, JS, WR, WA, SR, IR, IT> extends MultiUpda
         @Override
         public BatchMultiPartitionJoinSpec<C> update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
                 , TableMeta<? extends IDomain> table) {
-            return null;
+            final List<Hint> hintList;
+            hintList = hints.get();
+            assert hintList != null;
+            return new BatchPartitionJoinSpec<>(hintList, modifiers, table, this.criteria);
         }
 
         @Override
         public BatchMultiIndexHintJoinSpec<C> update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
                 , TableMeta<? extends IDomain> table, String tableAlias) {
-            return null;
+            final List<Hint> hintList;
+            hintList = hints.get();
+            assert hintList != null;
+            final FirstBlock block = new FirstBlock(hintList, modifiers, table, tableAlias);
+            return new BatchMultiUpdate<>(block, this.criteria);
         }
 
         @Override
         public BatchMultiPartitionJoinSpec<C> update(TableMeta<? extends IDomain> table) {
-            return null;
+            return new BatchPartitionJoinSpec<>(table, this.criteria);
         }
 
         @Override
         public BatchMultiIndexHintJoinSpec<C> update(TableMeta<? extends IDomain> table, String tableAlias) {
-            return null;
+            return new BatchMultiUpdate<>(new FirstBlock(table, tableAlias), this.criteria);
+        }
+
+        @Override
+        public <T extends TablePart> BatchMultiJoinSpec<C> update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+                , Supplier<T> supplier, String alias) {
+            final List<Hint> hintList;
+            hintList = hints.get();
+            assert hintList != null;
+
+            final TablePart tp;
+            tp = supplier.get();
+            assert tp != null;
+
+            final FirstBlock block = new FirstBlock(hintList, modifiers, tp, alias);
+            return new BatchMultiUpdate<>(block, this.criteria);
+        }
+
+        @Override
+        public <T extends TablePart> BatchMultiJoinSpec<C> update(Supplier<T> tablePart, String alias) {
+            final TablePart tp = tablePart.get();
+            assert tp != null;
+            return new BatchMultiUpdate<>(new FirstBlock(tp, alias), this.criteria);
+        }
+
+        @Override
+        public <T extends TablePart> BatchMultiJoinSpec<C> update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+                , Function<C, T> tablePart, String alias) {
+            final List<Hint> hintList;
+            hintList = hints.get();
+            assert hintList != null;
+
+            final TablePart tp;
+            tp = tablePart.apply(this.criteria);
+            assert tp != null;
+            final FirstBlock block = new FirstBlock(hintList, modifiers, tp, alias);
+            return new BatchMultiUpdate<>(block, this.criteria);
+        }
+
+        @Override
+        public <T extends TablePart> BatchMultiJoinSpec<C> update(Function<C, T> tablePart, String alias) {
+            final TablePart tp = tablePart.apply(this.criteria);
+            assert tp != null;
+            return new BatchMultiUpdate<>(new FirstBlock(tp, alias), this.criteria);
         }
 
     }//BatchMultiUpdateSpecImpl
 
-    private static final class FirstBlock extends TableBlock {
+    private static final class FirstBlock extends TableBlock implements _MySQLTableBlock {
 
         private final List<Hint> hintList;
 
         private final List<SQLModifier> modifierList;
 
-        private final String tableAlias;
+        private final String alias;
 
         private final List<String> partitionList;
 
-        private FirstBlock(List<Hint> hintList, List<SQLModifier> modifierList, TableMeta<?> table
-                , String tableAlias, List<String> partitionList) {
-            super(table, JoinType.NONE);
+        private List<MySQLIndexHint> indexHintList;
+
+
+        private FirstBlock(TablePart tablePart, String alias) {
+            super(tablePart, JoinType.NONE);
+            this.alias = alias;
+            this.hintList = Collections.emptyList();
+            this.modifierList = Collections.emptyList();
+            this.partitionList = Collections.emptyList();
+        }
+
+        private FirstBlock(List<Hint> hintList, List<SQLModifier> modifierList, TablePart tablePart
+                , String alias) {
+            super(tablePart, JoinType.NONE);
+            this.hintList = CollectionUtils.asUnmodifiableList(hintList);
+            this.modifierList = CollectionUtils.asUnmodifiableList(modifierList);
+            this.alias = alias;
+            this.partitionList = Collections.emptyList();
+        }
+
+
+        private FirstBlock(List<Hint> hintList, List<SQLModifier> modifierList, TablePart tablePart
+                , String alias, List<String> partitionList) {
+            super(tablePart, JoinType.NONE);
             this.hintList = hintList;
             this.modifierList = modifierList;
-            this.tableAlias = tableAlias;
-            this.partitionList = partitionList;
+            this.alias = alias;
+
+            if (partitionList == Collections.EMPTY_LIST) {
+                this.partitionList = partitionList;
+            } else {
+                this.partitionList = CollectionUtils.asUnmodifiableList(partitionList);
+            }
         }
 
         @Override
         public String alias() {
-            return this.tableAlias;
+            return this.alias;
         }
 
         @Override
@@ -383,8 +546,20 @@ abstract class MySQLMultiUpdate<C, JT, JS, WR, WA, SR, IR, IT> extends MultiUpda
             return Collections.emptyList();
         }
 
+        @Override
+        public List<String> partitionList() {
+            return this.partitionList;
+        }
 
-    }
+        @Override
+        public List<? extends _IndexHint> indexHintList() {
+            List<MySQLIndexHint> indexHintList = this.indexHintList;
+            assert indexHintList != null;
+            return indexHintList;
+        }
+
+
+    }//
 
 
     /**
@@ -442,17 +617,6 @@ abstract class MySQLMultiUpdate<C, JT, JS, WR, WA, SR, IR, IT> extends MultiUpda
         @Override
         MultiPartitionOnSpec<C> createNoActionPartitionBlock() {
             return new SimpleNoActionPartitionOnSpec<>(this);
-        }
-
-        @Override
-        void onAsUpdate() {
-            final List<_TableBlock> tableBlockList = this.tableBlockList;
-            this.tableBlockList = CollectionUtils.unmodifiableList(tableBlockList);
-        }
-
-        @Override
-        void onClear() {
-            this.tableBlockList = null;
         }
 
 
@@ -549,26 +713,167 @@ abstract class MySQLMultiUpdate<C, JT, JS, WR, WA, SR, IR, IT> extends MultiUpda
             return new BatchNoActionPartitionOnSpec<>(this);
         }
 
-        @Override
-        void onAsUpdate() {
-            final List<_TableBlock> tableBlockList = this.tableBlockList;
-            this.tableBlockList = CollectionUtils.unmodifiableList(tableBlockList);
-
-            final List<ReadWrapper> wrapperList = this.wrapperList;
-            if (CollectionUtils.isEmpty(wrapperList)) {
-                throw _Exceptions.batchParamEmpty();
-            }
-            this.wrapperList = CollectionUtils.unmodifiableList(wrapperList);
-        }
-
-        @Override
-        void onClear() {
-            this.wrapperList = null;
-            this.tableBlockList = null;
-        }
-
 
     }// BatchMultiUpdate
+
+
+    /**
+     * <p>
+     * This class is base class of below:
+     *     <ul>
+     *         <li>{@link SimplePartitionJoinSpec}</li>
+     *         <li>{@link BatchPartitionJoinSpec}</li>
+     *     </ul>
+     * </p>
+     */
+    private static abstract class PartitionJoinClause<C, PR, AR> implements MySQLQuery.PartitionClause<C, PR>
+            , Statement.AsClause<AR> {
+
+        private final List<Hint> hintList;
+
+        private final List<SQLModifier> modifies;
+
+        private final TableMeta<?> table;
+
+        final C criteria;
+
+        private List<String> partitionList;
+
+        private PartitionJoinClause(List<Hint> hintList, List<SQLModifier> modifies, TableMeta<?> table
+                , @Nullable C criteria) {
+            if (hintList == Collections.EMPTY_LIST) {
+                this.hintList = hintList;
+            } else {
+                this.hintList = CollectionUtils.asUnmodifiableList(hintList);
+            }
+            if (modifies == Collections.EMPTY_LIST) {
+                this.modifies = modifies;
+            } else {
+                this.modifies = CollectionUtils.asUnmodifiableList(modifies);
+            }
+            this.table = table;
+            this.criteria = criteria;
+        }
+
+        private PartitionJoinClause(TableMeta<?> table, @Nullable C criteria) {
+            this.table = table;
+            this.criteria = criteria;
+            this.hintList = Collections.emptyList();
+            this.modifies = Collections.emptyList();
+        }
+
+        @Override
+        public final PR partition(String partitionName) {
+            this.partitionList = Collections.singletonList(partitionName);
+            return (PR) this;
+        }
+
+        @Override
+        public final PR partition(String partitionName1, String partitionNam2) {
+            this.partitionList = Arrays.asList(partitionName1, partitionNam2);
+            return (PR) this;
+        }
+
+        @Override
+        public final PR partition(List<String> partitionNameList) {
+            this.partitionList = new ArrayList<>(partitionNameList);
+            return (PR) this;
+        }
+
+        @Override
+        public final PR partition(Supplier<List<String>> supplier) {
+            return this.partition(supplier.get());
+        }
+
+        @Override
+        public final PR partition(Function<C, List<String>> function) {
+            return this.partition(function.apply(this.criteria));
+        }
+
+        @Override
+        public final PR ifPartition(Supplier<List<String>> supplier) {
+            final List<String> list;
+            list = supplier.get();
+            if (CollectionUtils.isEmpty(list)) {
+                this.partition(list);
+            }
+            return (PR) this;
+        }
+
+        @Override
+        public final PR ifPartition(Function<C, List<String>> function) {
+            final List<String> list;
+            list = function.apply(this.criteria);
+            if (CollectionUtils.isEmpty(list)) {
+                this.partition(list);
+            }
+            return (PR) this;
+        }
+
+        @Override
+        public final AR as(String alias) {
+            Objects.requireNonNull(alias);
+            List<String> partitionList = this.partitionList;
+            if (CollectionUtils.isEmpty(partitionList)) {
+                partitionList = Collections.emptyList();
+            }
+            return doAs(new FirstBlock(this.hintList, this.modifies, this.table, alias, partitionList));
+        }
+
+        abstract AR doAs(FirstBlock block);
+
+    }// PartitionJoinClause
+
+
+    /**
+     * @see MultiUpdateSpecImpl#update(TableMeta)
+     * @see MultiUpdateSpecImpl#update(Supplier, List, TableMeta)
+     */
+    private static final class SimplePartitionJoinSpec<C>
+            extends PartitionJoinClause<C, MultiAsJoinSpec<C>, MultiIndexHintJoinSpec<C>>
+            implements MultiAsJoinSpec<C>, MultiPartitionJoinSpec<C> {
+
+        private SimplePartitionJoinSpec(List<Hint> hintList, List<SQLModifier> modifies
+                , TableMeta<?> table, @Nullable C criteria) {
+            super(hintList, modifies, table, criteria);
+        }
+
+
+        private SimplePartitionJoinSpec(TableMeta<?> table, @Nullable C criteria) {
+            super(table, criteria);
+        }
+
+        @Override
+        MultiIndexHintJoinSpec<C> doAs(FirstBlock block) {
+            return new SimpleMultiUpdate<>(block, this.criteria);
+        }
+
+    }// SimplePartitionJoinSpec
+
+    /**
+     * @see BatchMultiUpdateSpecImpl#update(TableMeta)
+     * @see BatchMultiUpdateSpecImpl#update(Supplier, List, TableMeta)
+     */
+    private static final class BatchPartitionJoinSpec<C>
+            extends PartitionJoinClause<C, BatchMultiAsJoinSpec<C>, BatchMultiIndexHintJoinSpec<C>>
+            implements BatchMultiAsJoinSpec<C>, BatchMultiPartitionJoinSpec<C> {
+
+        private BatchPartitionJoinSpec(List<Hint> hintList, List<SQLModifier> modifies
+                , TableMeta<?> table, @Nullable C criteria) {
+            super(hintList, modifies, table, criteria);
+        }
+
+        private BatchPartitionJoinSpec(TableMeta<?> table, @Nullable C criteria) {
+            super(table, criteria);
+        }
+
+        @Override
+        BatchMultiIndexHintJoinSpec<C> doAs(FirstBlock block) {
+            return new BatchMultiUpdate<>(block, this.criteria);
+        }
+
+
+    }// BatchPartitionJoinSpec
 
 
     private static abstract class IndexHintClause<C, IR, OR> extends OnClauseTableBlock<C, OR> implements
@@ -973,7 +1278,7 @@ abstract class MySQLMultiUpdate<C, JT, JS, WR, WA, SR, IR, IT> extends MultiUpda
 
         @Override
         public final IR ifIgnoreIndexForJoin(Function<C, List<String>> function) {
-            return null;
+            return (IR) this;
         }
 
         @Override
@@ -1243,36 +1548,6 @@ abstract class MySQLMultiUpdate<C, JT, JS, WR, WA, SR, IR, IT> extends MultiUpda
         }
 
     }//BatchTableBlock
-
-
-    private static final class PlaceholderTableBlock implements _TableBlock {
-
-        private static final PlaceholderTableBlock INSTANCE = new PlaceholderTableBlock();
-
-        private PlaceholderTableBlock() {
-        }
-
-        @Override
-        public String alias() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public List<_Predicate> predicates() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public TablePart table() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public SQLModifier jointType() {
-            throw new UnsupportedOperationException();
-        }
-
-    }// PlaceholderTableBlock
 
 
 }

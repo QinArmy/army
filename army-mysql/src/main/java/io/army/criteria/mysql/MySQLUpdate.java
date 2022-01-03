@@ -32,20 +32,6 @@ public interface MySQLUpdate extends Update, MySQLDml {
     }
 
 
-    interface UpdateClause<C, UP, UR> {
-
-        UP update(Supplier<List<Hint>> hints, List<SQLModifier> sqlModifiers
-                , TableMeta<? extends IDomain> table);
-
-        UR update(Supplier<List<Hint>> hints, List<SQLModifier> sqlModifiers
-                , TableMeta<? extends IDomain> table, String tableAlias);
-
-        UP update(TableMeta<? extends IDomain> table);
-
-        UR update(TableMeta<? extends IDomain> table, String tableAlias);
-
-    }
-
     interface SingleIndexHintClause<C, IR> {
 
         IR useIndex(List<String> indexNames);
@@ -99,8 +85,17 @@ public interface MySQLUpdate extends Update, MySQLDml {
      * This representing MySQL single-table update syntax update clause.
      * </p>
      */
-    interface SingleUpdateSpec<C>
-            extends MySQLUpdate.UpdateClause<C, MySQLUpdate.SinglePartitionSpec<C>, MySQLUpdate.SingleIndexHintSpec<C>> {
+    interface SingleUpdateSpec<C> {
+
+        SinglePartitionSpec<C> update(Supplier<List<Hint>> hints, List<SQLModifier> sqlModifiers
+                , TableMeta<? extends IDomain> table);
+
+        SingleIndexHintSpec<C> update(Supplier<List<Hint>> hints, List<SQLModifier> sqlModifiers
+                , TableMeta<? extends IDomain> table, String tableAlias);
+
+        SinglePartitionSpec<C> update(TableMeta<? extends IDomain> table);
+
+        SingleIndexHintSpec<C> update(TableMeta<? extends IDomain> table, String tableAlias);
 
     }
 
@@ -193,9 +188,17 @@ public interface MySQLUpdate extends Update, MySQLDml {
      * This representing MySQL batch single-table update syntax update clause.
      * </p>
      */
-    interface BatchSingleUpdateSpec<C>
-            extends MySQLUpdate.UpdateClause<C, MySQLUpdate.BatchSinglePartitionSpec<C>, MySQLUpdate.BatchSingleIndexHintSpec<C>> {
+    interface BatchSingleUpdateSpec<C> {
 
+        BatchSinglePartitionSpec<C> update(Supplier<List<Hint>> hints, List<SQLModifier> sqlModifiers
+                , TableMeta<? extends IDomain> table);
+
+        BatchSingleIndexHintSpec<C> update(Supplier<List<Hint>> hints, List<SQLModifier> sqlModifiers
+                , TableMeta<? extends IDomain> table, String tableAlias);
+
+        BatchSinglePartitionSpec<C> update(TableMeta<? extends IDomain> table);
+
+        BatchSingleIndexHintSpec<C> update(TableMeta<? extends IDomain> table, String tableAlias);
     }
 
 
@@ -341,14 +344,39 @@ public interface MySQLUpdate extends Update, MySQLDml {
 
     }
 
+    interface MultiUpdateClause<C, UP, UI, UJ> {
+        UP update(Supplier<List<Hint>> hints, List<SQLModifier> sqlModifiers
+                , TableMeta<? extends IDomain> table);
+
+        UI update(Supplier<List<Hint>> hints, List<SQLModifier> sqlModifiers
+                , TableMeta<? extends IDomain> table, String tableAlias);
+
+        UP update(TableMeta<? extends IDomain> table);
+
+        UI update(TableMeta<? extends IDomain> table, String tableAlias);
+
+        <T extends TablePart> UJ update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+                , Supplier<T> supplier, String alias);
+
+        <T extends TablePart> UJ update(Supplier<T> tablePart, String alias);
+
+        <T extends TablePart> UJ update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+                , Function<C, T> tablePart, String alias);
+
+        <T extends TablePart> UJ update(Function<C, T> tablePart, String alias);
+    }
+
+
     /**
      * <p>
      * This interface representing MySQL multi-table update syntax update clause.
      * </p>
      */
-    interface MultiUpdateSpec<C>
-            extends MySQLUpdate.UpdateClause<C, MySQLUpdate.MultiPartitionJoinSpec<C>
-            , MySQLUpdate.MultiIndexHintJoinSpec<C>> {
+    interface MultiUpdateSpec<C> extends MySQLUpdate.MultiUpdateClause<
+            C,
+            MySQLUpdate.MultiPartitionJoinSpec<C>,
+            MySQLUpdate.MultiIndexHintJoinSpec<C>,
+            MySQLUpdate.MultiJoinSpec<C>> {
 
 
     }
@@ -478,7 +506,11 @@ public interface MySQLUpdate extends Update, MySQLDml {
      * This interface representing MySQL batch multi-table update syntax update clause
      * </p>
      */
-    interface BatchMultiUpdateSpec<C> extends MySQLUpdate.UpdateClause<C, MySQLUpdate.BatchMultiPartitionJoinSpec<C>, MySQLUpdate.BatchMultiIndexHintJoinSpec<C>> {
+    interface BatchMultiUpdateSpec<C> extends MySQLUpdate.MultiUpdateClause<
+            C,
+            MySQLUpdate.BatchMultiPartitionJoinSpec<C>,
+            MySQLUpdate.BatchMultiIndexHintJoinSpec<C>,
+            MySQLUpdate.BatchMultiJoinSpec<C>> {
 
     }
 
