@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.ErrorCode;
+import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
@@ -101,6 +102,22 @@ abstract class CriteriaUtils {
         list.add((_Predicate) predicate1);
         list.add((_Predicate) predicate2);
         return Collections.unmodifiableList(list);
+    }
+
+    static List<ReadWrapper> paramMaps(List<Map<String, Object>> mapList) {
+        final List<ReadWrapper> wrapperList = new ArrayList<>(mapList.size());
+        for (Map<String, Object> map : mapList) {
+            wrapperList.add(ObjectAccessorFactory.forReadonlyAccess(map));
+        }
+        return wrapperList;
+    }
+
+    static List<ReadWrapper> paramBeans(List<Object> beanList) {
+        final List<ReadWrapper> wrapperList = new ArrayList<>(beanList.size());
+        for (Object bean : beanList) {
+            wrapperList.add(ObjectAccessorFactory.forReadonlyAccess(bean));
+        }
+        return wrapperList;
     }
 
 

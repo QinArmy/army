@@ -14,14 +14,14 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-abstract class MySQLPartitionOnClause<C, PR, AR, OR, IR, WP, WR> extends MySQLIndexHintOnClause<C, OR, IR, WP, WR>
+abstract class MySQLPartitionClause<C, PR, AR, OR, IR, WP, WR> extends MySQLIndexHintOnClause<C, OR, IR, WP, WR>
         implements MySQLQuery.PartitionClause<C, PR>, Statement.AsClause<AR> {
 
     private String alias;
 
     private List<String> partitionList;
 
-    MySQLPartitionOnClause(TablePart tablePart, JoinType joinType, OR query) {
+    MySQLPartitionClause(TablePart tablePart, JoinType joinType, OR query) {
         super(tablePart, joinType, query);
     }
 

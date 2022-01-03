@@ -284,7 +284,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
 
     private static final class StandardNoActionOnSpec<C, Q extends Query>
-            extends OnClauses.NoActionOnBlock<C, StandardJoinSpec<C, Q>> implements StandardOnSpec<C, Q> {
+            extends OnClauseTableBlock.NoActionOnBlock<C, StandardJoinSpec<C, Q>> implements StandardOnSpec<C, Q> {
 
         private StandardNoActionOnSpec(StandardSimpleQuery<C, Q> query) {
             super(query);
@@ -292,7 +292,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
     }
 
-    private static final class StandardOnBlock<C, Q extends Query> extends OnClauses.AliasOnClauses<C, StandardJoinSpec<C, Q>>
+    private static final class StandardOnBlock<C, Q extends Query> extends OnClauseTableBlock.AliasOnClauses<C, StandardJoinSpec<C, Q>>
             implements StandardOnSpec<C, Q> {
 
         StandardOnBlock(TablePart tablePart, String alias, JoinType joinType, StandardSimpleQuery<C, Q> query) {

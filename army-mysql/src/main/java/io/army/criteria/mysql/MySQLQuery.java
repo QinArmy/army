@@ -21,6 +21,14 @@ public interface MySQLQuery extends Query, DialectStatement {
      */
     interface MySQLJoinClause<C, JT, JR, IT> extends Statement.JoinClause<C, JT, JR> {
 
+        JT straightJoin(TableMeta<?> table, String tableAlias);
+
+        JT ifStraightJoin(Predicate<C> predicate, TableMeta<?> table, String alias);
+
+        <T extends TablePart> JR straightJoin(Function<C, T> function, String alias);
+
+        <T extends TablePart> JR ifStraightJoin(Function<C, T> function, String alias);
+
         IT leftJoin(TableMeta<?> table);
 
         IT leftJoin(Predicate<C> predicate, TableMeta<?> table);
@@ -35,17 +43,12 @@ public interface MySQLQuery extends Query, DialectStatement {
 
         IT straightJoin(TableMeta<?> table);
 
-        JT straightJoin(TableMeta<?> table, String tableAlias);
-
-        <T extends TablePart> JR straightJoin(Function<C, T> function, String tableAlias);
-
         IT ifStraightJoin(Predicate<C> predicate, TableMeta<?> table);
 
-        <T extends TablePart> JR ifStraightJoin(Function<C, T> function, String tableAlias);
-
-        IT ifStraightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
         IT fullJoin(TableMeta<?> table);
+
+        IT ifFullJoin(Predicate<C> predicate, TableMeta<?> table);
+
 
     }
 

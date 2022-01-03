@@ -76,41 +76,61 @@ public interface Statement {
 
         <T extends TablePart> JS leftJoin(Function<C, T> function, String alias);
 
+        <T extends TablePart> JS leftJoin(Supplier<T> supplier, String alias);
+
         JT ifLeftJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
 
         <T extends TablePart> JS ifLeftJoin(Function<C, T> function, String alias);
+
+        <T extends TablePart> JS ifLeftJoin(Supplier<T> supplier, String alias);
 
         JT join(TableMeta<?> table, String tableAlias);
 
         <T extends TablePart> JS join(Function<C, T> function, String alias);
 
+        <T extends TablePart> JS join(Supplier<T> supplier, String alias);
+
         JT ifJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
 
         <T extends TablePart> JS ifJoin(Function<C, T> function, String alias);
+
+        <T extends TablePart> JS ifJoin(Supplier<T> supplier, String alias);
 
         JT rightJoin(TableMeta<?> table, String tableAlias);
 
         <T extends TablePart> JS rightJoin(Function<C, T> function, String alias);
 
+        <T extends TablePart> JS rightJoin(Supplier<T> supplier, String alias);
+
         JT ifRightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
 
         <T extends TablePart> JS ifRightJoin(Function<C, T> function, String alias);
+
+        <T extends TablePart> JS ifRightJoin(Supplier<T> supplier, String alias);
 
         JT crossJoin(TableMeta<?> table, String tableAlias);
 
         <T extends TablePart> JS crossJoin(Function<C, T> function, String alias);
 
+        <T extends TablePart> JS crossJoin(Supplier<T> supplier, String alias);
+
         JT ifCrossJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
 
         <T extends TablePart> JS ifCrossJoin(Function<C, T> function, String alias);
+
+        <T extends TablePart> JS ifCrossJoin(Supplier<T> supplier, String alias);
 
         JT fullJoin(TableMeta<?> table, String tableAlias);
 
         <T extends TablePart> JS fullJoin(Function<C, T> function, String alias);
 
+        <T extends TablePart> JS fullJoin(Supplier<T> supplier, String alias);
+
         JT ifFullJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
 
         <T extends TablePart> JS ifFullJoin(Function<C, T> function, String alias);
+
+        <T extends TablePart> JS ifFullJoin(Supplier<T> supplier, String alias);
 
     }
 
