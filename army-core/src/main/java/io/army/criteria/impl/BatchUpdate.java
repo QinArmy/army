@@ -20,6 +20,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+@Deprecated
 @SuppressWarnings("unchecked")
 abstract class BatchUpdate<T extends IDomain, C, WR, WA, SR, BR> extends DmlWhereClause<C, WR, WA>
         implements Update, Update.UpdateSpec, Update.BatchSetClause<C, SR>,

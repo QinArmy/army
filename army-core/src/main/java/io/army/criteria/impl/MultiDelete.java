@@ -2,10 +2,12 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Delete;
+import io.army.criteria.TablePart;
 import io.army.criteria.impl.inner._MultiDelete;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
+import io.army.meta.TableMeta;
 import io.army.util.CollectionUtils;
 import io.army.util._Assert;
 import io.army.util._Exceptions;
@@ -29,11 +31,12 @@ abstract class MultiDelete<C, JT, JS, WR, WA> extends AbstractDml<C, JT, JS, WR,
 
     private boolean prepared;
 
-    List<_TableBlock> tableBlockList = new ArrayList<>();
+    private List<_TableBlock> tableBlockList = new ArrayList<>();
 
 
-    MultiDelete(@Nullable C criteria) {
+    MultiDelete(_TableBlock firstBlock, @Nullable C criteria) {
         super(criteria);
+        this.tableBlockList.add(firstBlock);
     }
 
     @Override
@@ -84,6 +87,29 @@ abstract class MultiDelete<C, JT, JS, WR, WA> extends AbstractDml<C, JT, JS, WR,
         return this.tableBlockList;
     }
 
+    @Override
+    final JT addTableBlock(JoinType joinType, TableMeta<?> table, String tableAlias) {
+        final JT block;
+        block = createTableBlock(joinType, table, tableAlias);
+        this.tableBlockList.add((_TableBlock) block);
+        return block;
+    }
+
+    @Override
+    final JS addTablePartBlock(JoinType joinType, TablePart tablePart, String alias) {
+        final JS block;
+        block = createTablePartBlock(joinType, tablePart, alias);
+        this.tableBlockList.add((_TableBlock) block);
+        return block;
+    }
+
+    final void addOtherBlock(_TableBlock block) {
+        this.tableBlockList.add(block);
+    }
+
+    abstract JT createTableBlock(JoinType joinType, TableMeta<?> table, String tableAlias);
+
+    abstract JS createTablePartBlock(JoinType joinType, TablePart tablePart, String alias);
 
     abstract void onAsDelete();
 

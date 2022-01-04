@@ -8,6 +8,8 @@ import java.util.List;
 
 public interface _MySQLSingleUpdate extends _MySQLUpdate, _SingleUpdate {
 
+    List<String> partitionList();
+
 
     List<? extends _IndexHint> indexHintList();
 

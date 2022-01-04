@@ -5,7 +5,6 @@ import io.army.beans.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLSingleUpdate;
-import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
@@ -31,7 +30,8 @@ abstract class MySQLSingleUpdate<C, WR, WA, SR, OR, LR, IR> extends SingleUpdate
         return new BatchSingleUpdateSpecImpl<>(criteria);
     }
 
-    private final TableBlock tableBlock;
+
+    private final CommandBlock commandBlock;
 
     private List<SortPart> orderByList;
 
@@ -39,9 +39,9 @@ abstract class MySQLSingleUpdate<C, WR, WA, SR, OR, LR, IR> extends SingleUpdate
 
     private long rowCount;
 
-    private MySQLSingleUpdate(TableBlock tableBlock, @Nullable C criteria) {
+    private MySQLSingleUpdate(CommandBlock commandBlock, @Nullable C criteria) {
         super(criteria);
-        this.tableBlock = tableBlock;
+        this.commandBlock = commandBlock;
     }
 
     @Override
@@ -230,14 +230,18 @@ abstract class MySQLSingleUpdate<C, WR, WA, SR, OR, LR, IR> extends SingleUpdate
 
     @Override
     public final TableMeta<?> table() {
-        return this.tableBlock.table;
+        return this.commandBlock.table;
     }
 
     @Override
     public final String tableAlias() {
-        return this.tableBlock.alias();
+        return this.commandBlock.alias;
     }
 
+    @Override
+    public final List<String> partitionList() {
+        return this.commandBlock.partitionList;
+    }
 
     @Override
     public final List<? extends _IndexHint> indexHintList() {
@@ -246,12 +250,12 @@ abstract class MySQLSingleUpdate<C, WR, WA, SR, OR, LR, IR> extends SingleUpdate
 
     @Override
     public final List<Hint> hintList() {
-        return this.tableBlock.hintList();
+        return this.commandBlock.hintList;
     }
 
     @Override
     public final List<SQLModifier> modifierList() {
-        return this.tableBlock.modifierList();
+        return this.commandBlock.modifierList;
     }
 
     @Override
@@ -296,8 +300,8 @@ abstract class MySQLSingleUpdate<C, WR, WA, SR, OR, LR, IR> extends SingleUpdate
             , MySQLUpdate.SingleWhereSpec<C>, MySQLUpdate.SingleWhereAndSpec<C>
             , MySQLUpdate.SingleIndexHintSpec<C> {
 
-        private SimpleUpdate(TableBlock tableBlock, @Nullable C criteria) {
-            super(tableBlock, criteria);
+        private SimpleUpdate(CommandBlock commandBlock, @Nullable C criteria) {
+            super(commandBlock, criteria);
         }
 
     } // SimpleUpdate
@@ -315,8 +319,8 @@ abstract class MySQLSingleUpdate<C, WR, WA, SR, OR, LR, IR> extends SingleUpdate
 
         private List<ReadWrapper> wrapperList;
 
-        private BatchUpdate(TableBlock tableBlock, @Nullable C criteria) {
-            super(tableBlock, criteria);
+        private BatchUpdate(CommandBlock commandBlock, @Nullable C criteria) {
+            super(commandBlock, criteria);
         }
 
         @Override
@@ -385,7 +389,7 @@ abstract class MySQLSingleUpdate<C, WR, WA, SR, OR, LR, IR> extends SingleUpdate
             final List<Hint> hintList;
             hintList = hints.get();
             assert hintList != null;
-            return new SimplePartitionSpecImpl<>(new PartitionBlock(hintList, modifierList, table), this.criteria);
+            return new SimplePartitionSpecImpl<>(hintList, modifierList, table, this.criteria);
         }
 
         @Override
@@ -394,17 +398,19 @@ abstract class MySQLSingleUpdate<C, WR, WA, SR, OR, LR, IR> extends SingleUpdate
             final List<Hint> hintList;
             hintList = hints.get();
             assert hintList != null;
-            return new SimpleUpdate<>(new FullTableBlock(hintList, modifierList, table, tableAlias), this.criteria);
+            final CommandBlock commandBlock;
+            commandBlock = new CommandBlock(hintList, modifierList, Collections.emptyList(), table, tableAlias);
+            return new SimpleUpdate<>(commandBlock, this.criteria);
         }
 
         @Override
         public SinglePartitionSpec<C> update(TableMeta<? extends IDomain> table) {
-            return new SimplePartitionSpecImpl<>(new NoAliasBlock(table), this.criteria);
+            return new SimplePartitionSpecImpl<>(table, this.criteria);
         }
 
         @Override
         public SingleIndexHintSpec<C> update(TableMeta<? extends IDomain> table, String tableAlias) {
-            return new SimpleUpdate<>(new AliasBlock(table, tableAlias), this.criteria);
+            return new SimpleUpdate<>(new CommandBlock(table, tableAlias), this.criteria);
         }
 
 
@@ -424,7 +430,7 @@ abstract class MySQLSingleUpdate<C, WR, WA, SR, OR, LR, IR> extends SingleUpdate
             final List<Hint> hintList;
             hintList = hints.get();
             assert hintList != null;
-            return new BatchPartitionSpecImpl<>(new PartitionBlock(hintList, modifierList, table), this.criteria);
+            return new BatchPartitionSpecImpl<>(hintList, modifierList, table, this.criteria);
         }
 
         @Override
@@ -433,263 +439,140 @@ abstract class MySQLSingleUpdate<C, WR, WA, SR, OR, LR, IR> extends SingleUpdate
             final List<Hint> hintList;
             hintList = hints.get();
             assert hintList != null;
-            return new BatchUpdate<>(new FullTableBlock(hintList, modifierList, table, tableAlias), this.criteria);
+            final CommandBlock commandBlock;
+            commandBlock = new CommandBlock(hintList, modifierList, Collections.emptyList(), table, tableAlias);
+            return new BatchUpdate<>(commandBlock, this.criteria);
         }
 
         @Override
         public BatchSinglePartitionSpec<C> update(TableMeta<? extends IDomain> table) {
-            return new BatchPartitionSpecImpl<>(new NoAliasBlock(table), this.criteria);
+            return new BatchPartitionSpecImpl<>(table, this.criteria);
         }
 
         @Override
         public BatchSingleIndexHintSpec<C> update(TableMeta<? extends IDomain> table, String tableAlias) {
-            return new BatchUpdate<>(new AliasBlock(table, tableAlias), this.criteria);
+            return new BatchUpdate<>(new CommandBlock(table, tableAlias), this.criteria);
         }
 
     }// BatchSingleUpdateSpecImpl
 
 
-    private static abstract class PartitionClauseImpl<C, PR> implements MySQLQuery.PartitionClause<C, PR> {
-
-        final C criteria;
-
-        List<String> partitionList;
-
-        PartitionClauseImpl(@Nullable C criteria) {
-            this.criteria = criteria;
-        }
-
-        @Override
-        public final PR partition(String partitionName) {
-            this.partitionList = Collections.singletonList(partitionName);
-            return (PR) this;
-        }
-
-        @Override
-        public final PR partition(String partitionName1, String partitionNam2) {
-            this.partitionList = Arrays.asList(partitionName1, partitionNam2);
-            return (PR) this;
-        }
-
-        @Override
-        public final PR partition(List<String> partitionNameList) {
-            if (partitionNameList.size() == 0) {
-                throw new CriteriaException("partition list must not empty.");
-            }
-            this.partitionList = new ArrayList<>(partitionNameList);
-            return (PR) this;
-        }
-
-        @Override
-        public final PR partition(Supplier<List<String>> supplier) {
-            return this.partition(supplier.get());
-        }
-
-        @Override
-        public final PR partition(Function<C, List<String>> function) {
-            return this.partition(function.apply(this.criteria));
-        }
-
-        @Override
-        public final PR ifPartition(Supplier<List<String>> supplier) {
-            final List<String> list;
-            list = supplier.get();
-            if (!CollectionUtils.isEmpty(list)) {
-                this.partition(list);
-            }
-            return (PR) this;
-        }
-
-        @Override
-        public final PR ifPartition(Function<C, List<String>> function) {
-            final List<String> list;
-            list = function.apply(this.criteria);
-            if (!CollectionUtils.isEmpty(list)) {
-                this.partition(list);
-            }
-            return (PR) this;
-        }
-
-
-    }// PartitionClauseImpl
-
-
-    private static final class SimplePartitionSpecImpl<C> extends PartitionClauseImpl<C, MySQLUpdate.SingleAsSpec<C>>
+    private static final class SimplePartitionSpecImpl<C> extends MySQLPartitionClause<C, MySQLUpdate.SingleAsSpec<C>>
             implements MySQLUpdate.SinglePartitionSpec<C>, MySQLUpdate.SingleAsSpec<C> {
-
-        private final NoAliasBlock block;
-
-        private SimplePartitionSpecImpl(NoAliasBlock block, @Nullable C criteria) {
-            super(criteria);
-            this.block = block;
-        }
-
-        @Override
-        public SingleIndexHintSpec<C> as(final String tableAlias) {
-            final NoAliasBlock block = this.block;
-            final TableBlock tableBlock;
-            if (block instanceof PartitionBlock) {
-                tableBlock = new FullTableBlock((PartitionBlock) block, tableAlias);
-            } else {
-                tableBlock = new AliasBlock(block.table, tableAlias);
-            }
-            return new SimpleUpdate<>(tableBlock, this.criteria);
-        }
-
-    }//SimplePartitionSpecImpl
-
-    private static final class BatchPartitionSpecImpl<C>
-            extends PartitionClauseImpl<C, MySQLUpdate.BatchSingleAsSpec<C>>
-            implements MySQLUpdate.BatchSinglePartitionSpec<C>, MySQLUpdate.BatchSingleAsSpec<C> {
-
-        private final NoAliasBlock block;
-
-        private BatchPartitionSpecImpl(NoAliasBlock block, @Nullable C criteria) {
-            super(criteria);
-            this.block = block;
-        }
-
-        @Override
-        public BatchSingleIndexHintSpec<C> as(String tableAlias) {
-            final NoAliasBlock block = this.block;
-            final TableBlock tableBlock;
-            if (block instanceof PartitionBlock) {
-                tableBlock = new FullTableBlock((PartitionBlock) block, tableAlias);
-            } else {
-                tableBlock = new AliasBlock(block.table, tableAlias);
-            }
-            return new BatchUpdate<>(tableBlock, this.criteria);
-        }
-    }// BatchPartitionSpecImpl
-
-    private static abstract class TableBlock {
-
-        final TableMeta<?> table;
-
-        TableBlock(TableMeta<?> table) {
-            this.table = table;
-        }
-
-        abstract String alias();
-
-        abstract List<Hint> hintList();
-
-        abstract List<SQLModifier> modifierList();
-
-
-    }
-
-    private static final class AliasBlock extends TableBlock {
-
-        private final String alias;
-
-        private AliasBlock(TableMeta<?> table, String alias) {
-            super(table);
-            this.alias = alias;
-        }
-
-        @Override
-        String alias() {
-            return this.alias;
-        }
-
-        @Override
-        List<Hint> hintList() {
-            return Collections.emptyList();
-        }
-
-        @Override
-        List<SQLModifier> modifierList() {
-            return Collections.emptyList();
-        }
-
-    }
-
-    private static class NoAliasBlock extends TableBlock {
-
-        NoAliasBlock(TableMeta<?> table) {
-            super(table);
-        }
-
-        @Override
-        String alias() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        List<Hint> hintList() {
-            return Collections.emptyList();
-        }
-
-        @Override
-        List<SQLModifier> modifierList() {
-            return Collections.emptyList();
-        }
-    }
-
-    private static final class PartitionBlock extends NoAliasBlock {
-
-        final List<Hint> hintList;
-
-        final List<SQLModifier> modifierList;
-
-        PartitionBlock(List<Hint> hintList, List<SQLModifier> modifierList, TableMeta<?> table) {
-            super(table);
-            this.hintList = hintList;
-            this.modifierList = modifierList;
-        }
-
-        @Override
-        List<Hint> hintList() {
-            return this.hintList;
-        }
-
-        @Override
-        List<SQLModifier> modifierList() {
-            return this.modifierList;
-        }
-
-    }
-
-
-    private static class FullTableBlock extends TableBlock {
 
         private final List<Hint> hintList;
 
         private final List<SQLModifier> modifierList;
 
+        private final TableMeta<?> table;
+
+        private SimplePartitionSpecImpl(List<Hint> hintList, List<SQLModifier> modifierList
+                , TableMeta<?> table, @Nullable C criteria) {
+            super(criteria);
+            this.hintList = hintList;
+            this.modifierList = modifierList;
+            this.table = table;
+        }
+
+        private SimplePartitionSpecImpl(TableMeta<?> table, @Nullable C criteria) {
+            super(criteria);
+            this.hintList = Collections.emptyList();
+            this.modifierList = Collections.emptyList();
+            this.table = table;
+        }
+
+
+        @Override
+        public SingleIndexHintSpec<C> as(final String tableAlias) {
+            List<String> partitionList = this.partitionList;
+            if (partitionList == null) {
+                partitionList = Collections.emptyList();
+            }
+            final CommandBlock commandBlock;
+            commandBlock = new CommandBlock(this.hintList, this.modifierList, partitionList, this.table, tableAlias);
+            return new SimpleUpdate<>(commandBlock, this.criteria);
+        }
+
+    }//SimplePartitionSpecImpl
+
+    private static final class BatchPartitionSpecImpl<C>
+            extends MySQLPartitionClause<C, MySQLUpdate.BatchSingleAsSpec<C>>
+            implements MySQLUpdate.BatchSinglePartitionSpec<C>, MySQLUpdate.BatchSingleAsSpec<C> {
+
+        private final List<Hint> hintList;
+
+        private final List<SQLModifier> modifierList;
+
+        private final TableMeta<?> table;
+
+        private BatchPartitionSpecImpl(List<Hint> hintList, List<SQLModifier> modifierList
+                , TableMeta<?> table, @Nullable C criteria) {
+            super(criteria);
+            this.hintList = hintList;
+            this.modifierList = modifierList;
+            this.table = table;
+        }
+
+        private BatchPartitionSpecImpl(TableMeta<?> table, @Nullable C criteria) {
+            super(criteria);
+            this.hintList = Collections.emptyList();
+            this.modifierList = Collections.emptyList();
+            this.table = table;
+        }
+
+        @Override
+        public BatchSingleIndexHintSpec<C> as(String tableAlias) {
+            List<String> partitionList = this.partitionList;
+            if (partitionList == null) {
+                partitionList = Collections.emptyList();
+            }
+            final CommandBlock commandBlock;
+            commandBlock = new CommandBlock(this.hintList, this.modifierList, partitionList, this.table, tableAlias);
+            return new BatchUpdate<>(commandBlock, this.criteria);
+        }
+
+    }// BatchPartitionSpecImpl
+
+
+    private static final class CommandBlock {
+
+        private final List<Hint> hintList;
+
+        private final List<SQLModifier> modifierList;
+
+        private final List<String> partitionList;
+
+        private final TableMeta<?> table;
+
         private final String alias;
 
-        private FullTableBlock(List<Hint> hintList, List<SQLModifier> modifierList, TableMeta<?> table, String alias) {
-            super(table);
+        private CommandBlock(List<Hint> hintList, List<SQLModifier> modifierList
+                , List<String> partitionList, TableMeta<?> table, String alias) {
+            if (hintList == Collections.EMPTY_LIST) {
+                this.hintList = hintList;
+            } else {
+                this.hintList = CollectionUtils.asUnmodifiableList(hintList);
+            }
+            if (modifierList == Collections.EMPTY_LIST) {
+                this.modifierList = modifierList;
+            } else {
+                this.modifierList = CollectionUtils.asUnmodifiableList(modifierList);
+            }
+            this.partitionList = partitionList;
+            this.table = table;
             this.alias = alias;
-            this.hintList = CollectionUtils.asUnmodifiableList(hintList);
-            this.modifierList = CollectionUtils.asUnmodifiableList(modifierList);
         }
 
-        private FullTableBlock(PartitionBlock block, String alias) {
-            super(block.table);
+        private CommandBlock(TableMeta<?> table, String alias) {
+            this.hintList = Collections.emptyList();
+            this.modifierList = Collections.emptyList();
+            this.partitionList = Collections.emptyList();
+            this.table = table;
             this.alias = alias;
-            this.hintList = block.hintList;
-            this.modifierList = block.modifierList;
         }
 
-        @Override
-        String alias() {
-            return this.alias;
-        }
 
-        @Override
-        List<Hint> hintList() {
-            return this.hintList;
-        }
-
-        @Override
-        List<SQLModifier> modifierList() {
-            return this.modifierList;
-        }
-
-    }
+    }// CommandBlock
 
 
 }

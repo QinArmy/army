@@ -38,6 +38,8 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
 
     private List<SetValuePart> valueExpList = new ArrayList<>();
 
+    private boolean prepared;
+
     AbstractUpdate(@Nullable C criteria) {
         super(criteria);
         this.criteriaContext = new CriteriaContextImpl<>(criteria);
@@ -323,6 +325,11 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
     }
 
     @Override
+    public final void prepared() {
+        _Assert.prepared(this.prepared);
+    }
+
+    @Override
     public final Update asUpdate() {
         _Assert.nonPrepared(this.prepared);
 
@@ -349,6 +356,7 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
         }
         this.predicateList = CollectionUtils.asUnmodifiableList(predicates);
 
+        this.onAsUpdate();
         this.prepared = true;
         return this;
     }
@@ -363,7 +371,6 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
         this.predicateList = null;
 
         this.onClear();
-        this.onAsUpdate();
     }
 
 
@@ -380,6 +387,10 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
 
 
     void onAsUpdate() {
+
+    }
+
+    void onClear() {
 
     }
 

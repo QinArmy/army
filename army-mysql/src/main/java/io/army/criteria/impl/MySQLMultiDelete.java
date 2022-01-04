@@ -39,9 +39,8 @@ abstract class MySQLMultiDelete<C, JT, IT, WR, WA> extends MultiDelete<C, JT, JT
     private IT noActionPartitionBlock;
 
     MySQLMultiDelete(CommandBlock commandBlock, FirstBlock block, @Nullable C criteria) {
-        super(criteria);
+        super(block, criteria);
         this.commandBlock = commandBlock;
-        this.tableBlockList.add(block);
     }
 
 
@@ -308,27 +307,23 @@ abstract class MySQLMultiDelete<C, JT, IT, WR, WA> extends MultiDelete<C, JT, JT
 
         private SimpleDelete(CommandBlock commandBlock, FirstBlock block, @Nullable C criteria) {
             super(commandBlock, block, criteria);
-            this.tableBlockList.add(block);
         }
 
         @Override
-        MultiOnSpec<C> addTableBlock(JoinType joinType, TableMeta<?> table, String tableAlias) {
-            final SimpleMultiOnBlock<C> block = new SimpleMultiOnBlock<>(joinType, table, tableAlias, this);
-            this.tableBlockList.add(block);
-            return block;
+        MultiOnSpec<C> createTableBlock(JoinType joinType, TableMeta<?> table, String tableAlias) {
+            return new SimpleMultiOnBlock<>(joinType, table, tableAlias, this);
         }
 
         @Override
-        MultiOnSpec<C> addTablePartBlock(JoinType joinType, TablePart tablePart, String alias) {
-            final SimpleMultiOnBlock<C> block = new SimpleMultiOnBlock<>(joinType, tablePart, alias, this);
-            this.tableBlockList.add(block);
-            return block;
+        MultiOnSpec<C> createTablePartBlock(JoinType joinType, TablePart tablePart, String alias) {
+            return new SimpleMultiOnBlock<>(joinType, tablePart, alias, this);
         }
+
 
         @Override
         MultiPartitionOnSpec<C> addTablePartitionBlock(JoinType joinType, TableMeta<?> table) {
             SimpleMultiPartitionBlock<C> block = new SimpleMultiPartitionBlock<>(joinType, table, this);
-            this.tableBlockList.add(block);
+            this.addOtherBlock(block);
             return block;
         }
 
@@ -363,7 +358,6 @@ abstract class MySQLMultiDelete<C, JT, IT, WR, WA> extends MultiDelete<C, JT, JT
 
         private BatchDelete(CommandBlock commandBlock, FirstBlock block, @Nullable C criteria) {
             super(commandBlock, block, criteria);
-            this.tableBlockList.add(block);
         }
 
         @Override
@@ -399,26 +393,21 @@ abstract class MySQLMultiDelete<C, JT, IT, WR, WA> extends MultiDelete<C, JT, JT
         }
 
         @Override
-        BatchMultiOnSpec<C> addTableBlock(JoinType joinType, TableMeta<?> table, String tableAlias) {
-            final BatchMultiOnBlock<C> block = new BatchMultiOnBlock<>(joinType, table, tableAlias, this);
-            this.tableBlockList.add(block);
-            return block;
+        BatchMultiOnSpec<C> createTableBlock(JoinType joinType, TableMeta<?> table, String tableAlias) {
+            return new BatchMultiOnBlock<>(joinType, table, tableAlias, this);
         }
 
         @Override
-        BatchMultiOnSpec<C> addTablePartBlock(JoinType joinType, TablePart tablePart, String alias) {
-            final BatchMultiOnBlock<C> block = new BatchMultiOnBlock<>(joinType, tablePart, alias, this);
-            this.tableBlockList.add(block);
-            return block;
+        BatchMultiOnSpec<C> createTablePartBlock(JoinType joinType, TablePart tablePart, String alias) {
+            return new BatchMultiOnBlock<>(joinType, tablePart, alias, this);
         }
 
         @Override
         BatchMultiPartitionOnSpec<C> addTablePartitionBlock(JoinType joinType, TableMeta<?> table) {
             final BatchPartitionBlock<C> block = new BatchPartitionBlock<>(joinType, table, this);
-            this.tableBlockList.add(block);
+            this.addOtherBlock(block);
             return block;
         }
-
 
         @Override
         BatchMultiOnSpec<C> createNoActionTableBlock() {
