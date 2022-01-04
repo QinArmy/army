@@ -29,9 +29,13 @@ public interface MySQLQuery extends Query, DialectStatement {
 
         <T extends TablePart> JR ifStraightJoin(Function<C, T> function, String alias);
 
-        IT leftJoin(TableMeta<?> table);
+        <T extends TablePart> JR straightJoin(Supplier<T> supplier, String alias);
 
-        IT leftJoin(Predicate<C> predicate, TableMeta<?> table);
+        <T extends TablePart> JR ifStraightJoin(Supplier<T> supplier, String alias);
+
+        IT ifLeftJoin(TableMeta<?> table);
+
+        IT ifLeftJoin(Predicate<C> predicate, TableMeta<?> table);
 
         IT join(TableMeta<?> table);
 

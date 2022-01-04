@@ -15,7 +15,7 @@ import io.army.meta.TableMeta;
  * @param <T> domain java type
  * @param <C> criteria java type used to dynamic update and sub query
  */
-final class StandardUpdate<T extends IDomain, C> extends UpdateStatement<
+final class StandardUpdate<T extends IDomain, C> extends AbstractUpdate<
         C,// C
         Update.UpdateSpec, // WR
         Update.StandardWhereAndSpec<C>, // WA

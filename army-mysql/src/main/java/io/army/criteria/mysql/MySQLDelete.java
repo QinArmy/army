@@ -1,15 +1,12 @@
 package io.army.criteria.mysql;
 
-import io.army.criteria.Delete;
-import io.army.criteria.IPredicate;
-import io.army.criteria.SubQuery;
-import io.army.criteria.TablePartGroup;
+import io.army.criteria.*;
+import io.army.domain.IDomain;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -17,44 +14,45 @@ import java.util.function.Supplier;
  * This interface representing MySQL delete statement,the instance of this interface can only be parsed by MySQL dialect instance.
  * </p>
  */
-public interface MySQLDelete extends Delete, MySQLDml {
+public interface MySQLDelete extends Delete {
 
+    interface SingleDeleteClause<DR> {
 
-    interface SingleDeleteSpec<C> {
+        SingleDeleteFromClause<DR> delete(Supplier<List<Hint>> hints, List<SQLModifier> modifiers);
 
-        SinglePartitionSpec<C> deleteFrom(SingleTableMeta<?> table);
-
-    }
-
-
-    interface SinglePartitionSpec<C> extends MySQLDelete.SingleIndexHintCommandSpec<C> {
-
-        SingleIndexHintCommandSpec<C> partition(String partitionName);
-
-        SingleIndexHintCommandSpec<C> partition(String partitionName1, String partitionNam2);
-
-        SingleIndexHintCommandSpec<C> partition(List<String> partitionNameList);
-
-        SingleIndexHintCommandSpec<C> ifPartition(Function<C, List<String>> function);
+        DR deleteFrom(SingleTableMeta<? extends IDomain> table);
 
     }
 
-    interface SingleIndexHintCommandSpec<C>
-            extends MySQLDelete.SingleWhereSpec<C>
-            , MySQLDml.SingleIndexHintCommandClause<C, MySQLDelete.SingleWhereSpec<C>> {
+    interface SingleDeleteFromClause<DR> {
+
+        DR from(SingleTableMeta<? extends IDomain> table);
 
     }
 
+    interface SingleDeleteSpec<C> extends MySQLDelete.SingleDeleteClause<MySQLDelete.SinglePartitionSpec<C>> {
 
-    interface SingleWhereSpec<C> extends WhereSpec<C> {
 
-        SingleWhereAndSpec<C, Delete> where(IPredicate predicate);
+    }
 
-        SingleOrderBySpec<C, Delete> where(List<IPredicate> predicateList);
+    interface SinglePartitionSpec<C> extends MySQLQuery.PartitionClause<C, MySQLDelete.SingleWhereSpec<C>>
+            , MySQLDelete.SingleWhereSpec<C> {
 
-        SingleOrderBySpec<C, Delete> where(Function<C, List<IPredicate>> function);
+    }
 
-        SingleOrderBySpec<C, Delete> where(Supplier<List<IPredicate>> supplier);
+    interface SingleWhereSpec<C> extends Statement.WhereClause<C, MySQLDelete.OrderBySpec<C>, MySQLDelete.SingleWhereAndSpec<C>> {
+
+    }
+
+    interface SingleWhereAndSpec<C> extends Statement.WhereAndClause<C, MySQLDelete.SingleWhereAndSpec<C>>, MySQLDelete.OrderBySpec<C> {
+
+    }
+
+    interface OrderBySpec<C> extends Query.OrderByClause<C, MySQLDelete.LimitSpec<C>>, MySQLDelete.LimitSpec<C> {
+
+    }
+
+    interface LimitSpec<C> extends MySQLUpdate.LimitClause<C, Delete.DeleteSpec>, Delete.DeleteSpec {
 
     }
 
@@ -62,462 +60,167 @@ public interface MySQLDelete extends Delete, MySQLDml {
     /*################################## blow batch single delete api interface ##################################*/
 
 
-    interface BatchSingleDeleteSpec<C> {
-
-        BatchSinglePartitionSpec<C> deleteFrom(SingleTableMeta<?> table);
-
-    }
-
-
-
-    interface BatchSinglePartitionSpec<C> extends MySQLDelete.BatchSingleIndexHintCommandSpec<C> {
-
-        BatchSingleIndexHintCommandSpec<C> partition(String partitionName);
-
-        BatchSingleIndexHintCommandSpec<C> partition(String partitionName1, String partitionNam2);
-
-        BatchSingleIndexHintCommandSpec<C> partition(List<String> partitionNameList);
-
-        BatchSingleIndexHintCommandSpec<C> ifPartition(Function<C, List<String>> function);
-
-    }
-
-    interface BatchSingleIndexHintCommandSpec<C>
-            extends MySQLDelete.BatchSingleWhereSpec<C>
-            , MySQLDml.SingleIndexHintCommandClause<C, MySQLDelete.BatchSingleWhereSpec<C>> {
-
-    }
-
-
-    interface BatchSingleWhereSpec<C> extends Delete.BatchWhereSpec<C> {
-
-        BatchSingleWhereAndSpec<C, Delete> where(IPredicate predicate);
-
-        BatchOrderBySpec<C, Delete> where(List<IPredicate> predicateList);
-
-        BatchOrderBySpec<C, Delete> where(Function<C, List<IPredicate>> function);
-
-        BatchOrderBySpec<C, Delete> where(Supplier<List<IPredicate>> supplier);
-
-    }
-
-    /*################################## blow multi-table update api interface ##################################*/
-
-    /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
-     *            </ul>
-     */
-    interface MultiDeleteSpec<C> {
-
-        MultiFromSpec<C> delete(List<TableMeta<?>> tableList);
-
-        MultiFromSpec<C> delete(Function<C, List<TableMeta<?>>> function);
-
-        MultiUsingSpec<C> deleteFrom(List<TableMeta<?>> tableList);
-
-        MultiUsingSpec<C> deleteFrom(Function<C, List<TableMeta<?>>> function);
+    interface BatchSingleDeleteSpec<C> extends MySQLDelete.SingleDeleteClause<C, MySQLDelete.BatchSinglePartitionSpec<C>> {
 
 
     }
 
-
-    interface MultiFromSpec<C> {
-
-        MultiPartitionJoinSpec<C> from(TableMeta<?> table);
-
-        MultiIndexHintCommandJoinSpec<C> from(TableMeta<?> table, String tableAlias);
-
-    }
-
-    interface MultiUsingSpec<C> {
-
-        MultiPartitionJoinSpec<C> using(TableMeta<?> table);
-
-        MultiIndexHintCommandJoinSpec<C> using(TableMeta<?> table, String tableAlias);
-
-    }
-
-    /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
-     *            </ul>
-     */
-    interface MultiPartitionJoinSpec<C> extends MySQLDelete.MultiAsJoinSpec<C> {
-
-        MultiAsJoinSpec<C> partition(String partitionName);
-
-        MultiAsJoinSpec<C> partition(String partitionName1, String partitionNam2);
-
-        MultiAsJoinSpec<C> partition(List<String> partitionNameList);
-
-        MultiAsJoinSpec<C> ifPartition(Function<C, List<String>> function);
-
-    }
-
-    /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
-     *            </ul>
-     */
-    interface MultiAsJoinSpec<C> {
-
-        MultiIndexHintCommandJoinSpec<C> as(String tableAlias);
-    }
-
-    /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
-     *            </ul>
-     */
-    interface MultiIndexHintCommandJoinSpec<C> extends MySQLDelete.MultiJoinSpec<C>
-            , MySQLDml.MultiIndexHintCommandClause<C, MySQLDelete.MultiJoinSpec<C>> {
-
-    }
-
-    /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
-     *            </ul>
-     */
-    interface MultiPartitionOnSpec<C> extends MySQLDelete.MultiAsOnSpec<C> {
-
-        MultiAsOnSpec<C> partition(String partitionName);
-
-        MultiAsOnSpec<C> partition(String partitionName1, String partitionNam2);
-
-        MultiAsOnSpec<C> partition(List<String> partitionNameList);
-
-        MultiAsOnSpec<C> ifPartition(Function<C, List<String>> function);
-
-    }
-
-    /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
-     *            </ul>
-     */
-    interface MultiAsOnSpec<C> {
-
-        MultiIndexHintCommandOnSpec<C> as(String tableAlias);
-    }
-
-    /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
-     *            </ul>
-     */
-    interface MultiIndexHintCommandOnSpec<C> extends MySQLDelete.MultiOnSpec<C>
-            , MySQLDelete.MultiIndexHintCommandClause<C, MySQLDelete.MultiOnSpec<C>> {
+    interface BatchSinglePartitionSpec<C> extends MySQLQuery.PartitionClause<C, MySQLDelete.BatchSingleWhereSpec<C>>
+            , MySQLDelete.BatchSingleWhereSpec<C> {
 
     }
 
 
-    interface MultiJoinSpec<C> extends Delete.WhereSpec<C> {
-
-        MultiPartitionOnSpec<C> leftJoin(TableMeta<?> table);
-
-        MultiIndexHintCommandOnSpec<C> leftJoin(TableMeta<?> table, String tableAlias);
-
-        MultiOnSpec<C> leftJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        MultiOnSpec<C> leftJoinGroup(Function<C, TablePartGroup> function);
-
-        MultiPartitionOnSpec<C> ifLeftJoin(Predicate<C> predicate, TableMeta<?> table);
-
-        MultiIndexHintCommandOnSpec<C> ifLeftJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        MultiOnSpec<C> ifLeftJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        MultiOnSpec<C> ifLeftJoinGroup(Function<C, TablePartGroup> function);
-
-        MultiPartitionOnSpec<C> join(TableMeta<?> table);
-
-        MultiIndexHintCommandOnSpec<C> join(TableMeta<?> table, String tableAlias);
-
-        MultiOnSpec<C> join(Function<C, SubQuery> function, String subQueryAlia);
-
-        MultiOnSpec<C> joinGroup(Function<C, TablePartGroup> function);
-
-        MultiPartitionOnSpec<C> ifJoin(Predicate<C> predicate, TableMeta<?> table);
-
-        MultiIndexHintCommandOnSpec<C> ifJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        MultiOnSpec<C> ifJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        MultiOnSpec<C> ifJoinGroup(Function<C, TablePartGroup> function);
-
-        MultiPartitionOnSpec<C> rightJoin(TableMeta<?> table);
-
-        MultiIndexHintCommandOnSpec<C> rightJoin(TableMeta<?> table, String tableAlias);
-
-        MultiOnSpec<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        MultiOnSpec<C> rightJoinGroup(Function<C, TablePartGroup> function);
-
-        MultiPartitionOnSpec<C> ifRightJoin(Predicate<C> predicate, TableMeta<?> table);
-
-        MultiIndexHintCommandOnSpec<C> ifRightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        MultiOnSpec<C> ifRightJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        MultiOnSpec<C> ifRightJoinGroup(Function<C, TablePartGroup> function);
-
-        MultiPartitionOnSpec<C> straightJoin(TableMeta<?> table);
-
-        MultiIndexHintCommandOnSpec<C> straightJoin(TableMeta<?> table, String tableAlias);
-
-        MultiOnSpec<C> straightJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        MultiOnSpec<C> straightJoinGroup(Function<C, TablePartGroup> function);
-
-        MultiPartitionOnSpec<C> ifStraightJoin(Predicate<C> predicate, TableMeta<?> table);
-
-        MultiIndexHintCommandOnSpec<C> ifStraightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        MultiOnSpec<C> ifStraightJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        MultiOnSpec<C> ifStraightJoinGroup(Function<C, TablePartGroup> function);
+    interface BatchSingleWhereSpec<C> extends Statement.WhereClause<C, MySQLDelete.BatchOrderBySpec<C>
+            , MySQLDelete.BatchSingleWhereAndSpec<C>> {
 
     }
 
-    interface MultiOnSpec<C> {
+    interface BatchSingleWhereAndSpec<C> extends Statement.WhereAndClause<C, MySQLDelete.BatchSingleWhereAndSpec<C>>
+            , MySQLDelete.BatchOrderBySpec<C> {
 
-        MultiJoinSpec<C> on(List<IPredicate> predicateList);
+    }
 
-        MultiJoinSpec<C> on(IPredicate predicate);
+    interface BatchOrderBySpec<C> extends Query.OrderByClause<C, MySQLDelete.BatchLimitSpec<C>>
+            , MySQLDelete.BatchLimitSpec<C> {
 
-        MultiJoinSpec<C> on(IPredicate predicate1, IPredicate predicate2);
+    }
 
-        MultiJoinSpec<C> on(Function<C, List<IPredicate>> function);
-
-        MultiJoinSpec<C> on(Supplier<List<IPredicate>> supplier);
-
-        MultiJoinSpec<C> onId();
+    interface BatchLimitSpec<C> extends MySQLUpdate.LimitClause<C, Statement.BatchParamClause<C, Delete.DeleteSpec>>
+            , Statement.BatchParamClause<C, Delete.DeleteSpec> {
 
     }
 
 
+    /*################################## blow multi-table delete api interface ##################################*/
 
-    /*################################## blow batch multi-table delete api interface ##################################*/
+    interface MultiDeleteClause<C, DR, DP> {
 
+        MultiDeleteFromClause<C, DR, DP> delete(Supplier<List<Hint>> hints, List<SQLModifier> modifiers, List<TableMeta<?>> tableList);
 
-    interface BatchMultiDeleteSpec<C> {
+        MultiDeleteFromClause<C, DR, DP> delete(List<TableMeta<?>> tableList);
 
-        BatchMultiFromSpec<C> delete(List<TableMeta<?>> tableList);
+        MultiDeleteUsingClause<C, DR, DP> deleteFrom(Supplier<List<Hint>> hints, List<SQLModifier> modifiers, List<TableMeta<?>> tableList);
 
-        BatchMultiFromSpec<C> delete(Function<C, List<TableMeta<?>>> function);
+        MultiDeleteUsingClause<C, DR, DP> deleteFrom(List<TableMeta<?>> tableList);
+    }
 
-        BatchMultiUsingSpec<C> deleteFrom(List<TableMeta<?>> tableList);
+    interface MultiDeleteFromClause<C, DR, DP> {
 
-        BatchMultiUsingSpec<C> deleteFrom(Function<C, List<TableMeta<?>>> function);
+        DR from(TableMeta<?> table, String alias);
+
+        DP from(TableMeta<?> table);
+
+        <T extends TablePart> DR from(Supplier<T> tablePart, String alias);
+
+        <T extends TablePart> DR from(Function<C, T> tablePart, String alias);
+
+    }
+
+    interface MultiDeleteUsingClause<C, DR, DP> {
+
+        DR using(TableMeta<?> table, String alias);
+
+        DP using(TableMeta<?> table);
+
+        <T extends TablePart> DR using(Supplier<T> tablePart, String alias);
+
+        <T extends TablePart> DR using(Function<C, T> tablePart, String alias);
 
     }
 
 
-    interface BatchMultiFromSpec<C> {
-
-        BatchMultiPartitionJoinSpec<C> from(TableMeta<?> table);
-
-        BatchMultiIndexHintCommandJoinSpec<C> from(TableMeta<?> table, String tableAlias);
-
-    }
-
-    interface BatchMultiUsingSpec<C> {
-
-        BatchMultiPartitionJoinSpec<C> using(TableMeta<?> table);
-
-        BatchMultiIndexHintCommandJoinSpec<C> using(TableMeta<?> table, String tableAlias);
-
-    }
-
-    /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
-     *            </ul>
-     */
-    interface BatchMultiPartitionJoinSpec<C> extends MySQLDelete.BatchMultiAsJoinSpec<C> {
-
-        BatchMultiAsJoinSpec<C> partition(String partitionName);
-
-        BatchMultiAsJoinSpec<C> partition(String partitionName1, String partitionNam2);
-
-        BatchMultiAsJoinSpec<C> partition(List<String> partitionNameList);
-
-        BatchMultiAsJoinSpec<C> ifPartition(Function<C, List<String>> function);
-
-    }
-
-    /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
-     *            </ul>
-     */
-    interface BatchMultiAsJoinSpec<C> {
-
-        BatchMultiIndexHintCommandJoinSpec<C> as(String tableAlias);
-    }
-
-    /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
-     *            </ul>
-     */
-    interface BatchMultiIndexHintCommandJoinSpec<C> extends MySQLDelete.BatchMultiJoinSpec<C>
-            , MySQLDml.MultiIndexHintCommandClause<C, MySQLDelete.BatchMultiJoinSpec<C>> {
-
-    }
-
-    /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
-     *            </ul>
-     */
-    interface BatchMultiPartitionOnSpec<C> extends MySQLDelete.BatchMultiAsOnSpec<C> {
-
-        BatchMultiAsOnSpec<C> partition(String partitionName);
-
-        BatchMultiAsOnSpec<C> partition(String partitionName1, String partitionNam2);
-
-        BatchMultiAsOnSpec<C> partition(List<String> partitionNameList);
-
-        BatchMultiAsOnSpec<C> ifPartition(Function<C, List<String>> function);
-
-    }
-
-    /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
-     *            </ul>
-     */
-    interface BatchMultiAsOnSpec<C> {
-
-        BatchMultiIndexHintCommandOnSpec<C> as(String tableAlias);
-    }
-
-    /**
-     * @param <C> java type of criteria,see below:
-     *            <ul>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate57(Object)}</li>
-     *               <li>{@link io.army.criteria.impl.MySQLs#multiUpdate80(Object)}</li>
-     *            </ul>
-     */
-    interface BatchMultiIndexHintCommandOnSpec<C> extends MySQLDelete.BatchMultiOnSpec<C>
-            , MySQLDml.MultiIndexHintCommandClause<C, MySQLDelete.BatchMultiOnSpec<C>> {
+    interface MultiDeleteSpec<C> extends MySQLDelete.MultiDeleteClause<C, MySQLDelete.MultiJoinSpec<C>, MySQLDelete.MultiPartitionJoinSpec<C>> {
 
     }
 
 
-    interface BatchMultiJoinSpec<C> extends Delete.BatchWhereSpec<C> {
-
-        BatchMultiPartitionOnSpec<C> leftJoin(TableMeta<?> table);
-
-        BatchMultiIndexHintCommandOnSpec<C> leftJoin(TableMeta<?> table, String tableAlias);
-
-        BatchMultiOnSpec<C> leftJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        BatchMultiOnSpec<C> leftJoinGroup(Function<C, TablePartGroup> function);
-
-        BatchMultiPartitionOnSpec<C> ifLeftJoin(Predicate<C> predicate, TableMeta<?> table);
-
-        BatchMultiIndexHintCommandOnSpec<C> ifLeftJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        BatchMultiOnSpec<C> ifLeftJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        BatchMultiOnSpec<C> ifLeftJoinGroup(Function<C, TablePartGroup> function);
-
-        BatchMultiPartitionOnSpec<C> join(TableMeta<?> table);
-
-        BatchMultiIndexHintCommandOnSpec<C> join(TableMeta<?> table, String tableAlias);
-
-        BatchMultiOnSpec<C> join(Function<C, SubQuery> function, String subQueryAlia);
-
-        BatchMultiOnSpec<C> joinGroup(Function<C, TablePartGroup> function);
-
-        BatchMultiPartitionOnSpec<C> ifJoin(Predicate<C> predicate, TableMeta<?> table);
-
-        BatchMultiIndexHintCommandOnSpec<C> ifJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        BatchMultiOnSpec<C> ifJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        BatchMultiOnSpec<C> ifJoinGroup(Function<C, TablePartGroup> function);
-
-        BatchMultiPartitionOnSpec<C> rightJoin(TableMeta<?> table);
-
-        BatchMultiIndexHintCommandOnSpec<C> rightJoin(TableMeta<?> table, String tableAlias);
-
-        BatchMultiOnSpec<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        BatchMultiOnSpec<C> rightJoinGroup(Function<C, TablePartGroup> function);
-
-        BatchMultiPartitionOnSpec<C> ifRightJoin(Predicate<C> predicate, TableMeta<?> table);
-
-        BatchMultiIndexHintCommandOnSpec<C> ifRightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        BatchMultiOnSpec<C> ifRightJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        BatchMultiOnSpec<C> ifRightJoinGroup(Function<C, TablePartGroup> function);
-
-        BatchMultiPartitionOnSpec<C> straightJoin(TableMeta<?> table);
-
-        BatchMultiIndexHintCommandOnSpec<C> straightJoin(TableMeta<?> table, String tableAlias);
-
-        BatchMultiOnSpec<C> straightJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        BatchMultiOnSpec<C> straightJoinGroup(Function<C, TablePartGroup> function);
-
-        BatchMultiPartitionOnSpec<C> ifStraightJoin(Predicate<C> predicate, TableMeta<?> table);
-
-        BatchMultiIndexHintCommandOnSpec<C> ifStraightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        BatchMultiOnSpec<C> ifStraightJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        BatchMultiOnSpec<C> ifStraightJoinGroup(Function<C, TablePartGroup> function);
+    interface MultiPartitionJoinSpec<C> extends MySQLQuery.PartitionClause<C, MySQLDelete.MultiAsJoinSpec<C>> {
 
     }
 
-    interface BatchMultiOnSpec<C> {
+    interface MultiAsJoinSpec<C> extends Statement.AsClause<MySQLDelete.MultiJoinSpec<C>> {
 
-        BatchMultiJoinSpec<C> on(List<IPredicate> predicateList);
-
-        BatchMultiJoinSpec<C> on(IPredicate predicate);
-
-        BatchMultiJoinSpec<C> on(IPredicate predicate1, IPredicate predicate2);
-
-        BatchMultiJoinSpec<C> on(Function<C, List<IPredicate>> function);
-
-        BatchMultiJoinSpec<C> on(Supplier<List<IPredicate>> supplier);
-
-        BatchMultiJoinSpec<C> onId();
 
     }
 
 
+    interface MultiJoinSpec<C> extends MySQLQuery.MySQLJoinClause<C, MySQLDelete.MultiOnSpec<C>, MySQLDelete.MultiOnSpec<C>, MySQLDelete.MultiPartitionOnSpec<C>>
+            , MySQLDelete.MultiWhereSpec<C> {
 
+    }
+
+    interface MultiPartitionOnSpec<C> extends MySQLQuery.PartitionClause<C, MySQLDelete.MultiAsOnSpec<C>> {
+
+    }
+
+    interface MultiAsOnSpec<C> extends Statement.AsClause<MySQLDelete.MultiOnSpec<C>> {
+
+
+    }
+
+    interface MultiOnSpec<C> extends Statement.OnClause<C, MySQLDelete.MultiJoinSpec<C>> {
+
+    }
+
+    interface MultiWhereSpec<C> extends Statement.WhereClause<C, Delete.DeleteSpec, MySQLDelete.MultiWhereAndSpec<C>> {
+
+
+    }
+
+    interface MultiWhereAndSpec<C> extends Statement.WhereAndClause<C, MySQLDelete.MultiWhereAndSpec<C>>
+            , Delete.DeleteSpec {
+
+
+    }
+
+    /*################################## blow batch multi-table delete interface ##################################*/
+
+
+    interface BatchMultiDeleteSpec<C> extends MySQLDelete.MultiDeleteClause<C, MySQLDelete.BatchMultiJoinSpec<C>, MySQLDelete.BatchMultiPartitionJoinSpec<C>> {
+
+    }
+
+
+    interface BatchMultiPartitionJoinSpec<C> extends MySQLQuery.PartitionClause<C, MySQLDelete.BatchMultiAsJoinSpec<C>> {
+
+    }
+
+    interface BatchMultiAsJoinSpec<C> extends Statement.AsClause<MySQLDelete.BatchMultiJoinSpec<C>> {
+
+
+    }
+
+
+    interface BatchMultiJoinSpec<C> extends MySQLQuery.MySQLJoinClause<C, MySQLDelete.BatchMultiOnSpec<C>, MySQLDelete.BatchMultiOnSpec<C>, MySQLDelete.BatchMultiPartitionOnSpec<C>>
+            , MySQLDelete.BatchMultiWhereSpec<C> {
+
+    }
+
+    interface BatchMultiPartitionOnSpec<C> extends MySQLQuery.PartitionClause<C, MySQLDelete.BatchMultiAsOnSpec<C>> {
+
+    }
+
+    interface BatchMultiAsOnSpec<C> extends Statement.AsClause<MySQLDelete.BatchMultiOnSpec<C>> {
+
+
+    }
+
+    interface BatchMultiOnSpec<C> extends Statement.OnClause<C, MySQLDelete.BatchMultiJoinSpec<C>> {
+
+    }
+
+    interface BatchMultiWhereSpec<C> extends Statement.WhereClause<C, Statement.BatchParamClause<C, Delete.DeleteSpec>
+            , MySQLDelete.BatchMultiWhereAndSpec<C>> {
+
+
+    }
+
+    interface BatchMultiWhereAndSpec<C> extends Statement.WhereAndClause<C, BatchMultiWhereAndSpec<C>>
+            , Statement.BatchParamClause<C, Delete.DeleteSpec> {
+
+
+    }
 
 
 }

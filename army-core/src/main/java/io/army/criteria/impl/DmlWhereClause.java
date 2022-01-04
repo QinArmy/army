@@ -3,8 +3,8 @@ package io.army.criteria.impl;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Statement;
 import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.impl.inner._Statement;
 import io.army.lang.Nullable;
-import io.army.util._Assert;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,14 +14,12 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
 abstract class DmlWhereClause<C, WR, WA> implements Statement, Statement.WhereClause<C, WR, WA>
-        , Statement.WhereAndClause<C, WA> {
+        , Statement.WhereAndClause<C, WA>, _Statement {
 
 
     final C criteria;
 
     List<_Predicate> predicateList = new ArrayList<>();
-
-    boolean prepared;
 
     DmlWhereClause(@Nullable C criteria) {
         this.criteria = criteria;
@@ -89,21 +87,12 @@ abstract class DmlWhereClause<C, WR, WA> implements Statement, Statement.WhereCl
     }
 
 
-    @Override
-    public final void prepared() {
-        _Assert.prepared(this.prepared);
-    }
-
-
     public final List<_Predicate> predicateList() {
-        _Assert.prepared(this.prepared);
+        prepared();
         return this.predicateList;
     }
 
 
-    void onClear() {
-
-    }
 
 
 }

@@ -19,8 +19,17 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+/**
+ * <p>
+ * This class is base class of below:
+ *     <ul>
+ *         <li>{@link SingleUpdate}</li>
+ *         <li>{@link MultiUpdate}</li>
+ *     </ul>
+ * </p>
+ */
 @SuppressWarnings("unchecked")
-abstract class UpdateStatement<C, WR, WA, SR> extends DmlWhereClause<C, WR, WA>
+abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, JS, WR, WA>
         implements Update, Update.UpdateSpec, Update.SimpleSetClause<C, SR>, Update.BatchSetClause<C, SR>, _Update {
 
     final CriteriaContext criteriaContext;
@@ -29,7 +38,7 @@ abstract class UpdateStatement<C, WR, WA, SR> extends DmlWhereClause<C, WR, WA>
 
     private List<SetValuePart> valueExpList = new ArrayList<>();
 
-    UpdateStatement(@Nullable C criteria) {
+    AbstractUpdate(@Nullable C criteria) {
         super(criteria);
         this.criteriaContext = new CriteriaContextImpl<>(criteria);
         if (this instanceof WithElement) {

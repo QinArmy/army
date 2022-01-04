@@ -17,8 +17,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-
-abstract class MySQLSingleUpdate<C, WR, WA, SR, OR, LR, IR> extends UpdateStatement<C, WR, WA, SR>
+@SuppressWarnings("unchecked")
+abstract class MySQLSingleUpdate<C, WR, WA, SR, OR, LR, IR> extends SingleUpdate<C, WR, WA, SR>
         implements Query.OrderByClause<C, OR>, MySQLUpdate.LimitClause<C, LR>, MySQLUpdate, _MySQLSingleUpdate
         , MySQLUpdate.SingleIndexHintClause<C, IR> {
 

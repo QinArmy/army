@@ -9,6 +9,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+@Deprecated
 public interface MySQLDml extends DialectStatement, Dml {
 
 
@@ -255,8 +256,6 @@ public interface MySQLDml extends DialectStatement, Dml {
         BatchParamSpec<C, D> ifLimit(Supplier<Long> supplier);
 
     }
-
-
 
 
 }

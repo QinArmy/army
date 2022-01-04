@@ -171,12 +171,12 @@ abstract class MySQLMultiUpdate<C, JT, JS, WR, WA, SR, IR, IT> extends MultiUpda
     }
 
     @Override
-    public final IT leftJoin(TableMeta<?> table) {
+    public final IT ifLeftJoin(TableMeta<?> table) {
         return this.addPartitionBlock(JoinType.LEFT_JOIN, table);
     }
 
     @Override
-    public final IT leftJoin(Predicate<C> predicate, TableMeta<?> table) {
+    public final IT ifLeftJoin(Predicate<C> predicate, TableMeta<?> table) {
         return this.ifAddPartitionBlock(predicate, JoinType.LEFT_JOIN, table);
     }
 

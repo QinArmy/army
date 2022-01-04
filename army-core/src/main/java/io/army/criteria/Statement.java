@@ -143,7 +143,7 @@ public interface Statement {
 
         WR where(Supplier<List<IPredicate>> supplier);
 
-        WA where(@Nullable IPredicate predicate);
+        WA where(IPredicate predicate);
     }
 
 

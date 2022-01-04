@@ -14,9 +14,16 @@ abstract class TableBlock implements _TableBlock {
 
     final JoinType joinType;
 
+    @Deprecated
     TableBlock(TablePart tablePart, JoinType joinType) {
         this.tablePart = tablePart;
         this.joinType = joinType;
+    }
+
+    TableBlock(JoinType joinType, TablePart tablePart) {
+        this.joinType = joinType;
+        this.tablePart = tablePart;
+
     }
 
     @Override

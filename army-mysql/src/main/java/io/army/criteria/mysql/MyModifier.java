@@ -4,9 +4,7 @@ import io.army.criteria.SQLModifier;
 
 public enum MyModifier implements SQLModifier {
 
-    ALL,
-    DISTINCT,
-    DISTINCTROW,
+
     HIGH_PRIORITY,
 
     STRAIGHT_JOIN,

@@ -1,10 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
-import io.army.criteria.Statement;
-import io.army.criteria.TablePart;
 import io.army.criteria.mysql.MySQLQuery;
-import io.army.dialect._DialectUtils;
+import io.army.lang.Nullable;
 import io.army.util.ArrayUtils;
 import io.army.util.CollectionUtils;
 
@@ -14,15 +12,15 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-abstract class MySQLPartitionClause<C, PR, AR, OR, IR, WP, WR> extends MySQLIndexHintOnClause<C, OR, IR, WP, WR>
-        implements MySQLQuery.PartitionClause<C, PR>, Statement.AsClause<AR> {
+@SuppressWarnings("unchecked")
+abstract class MySQLPartitionClause<C, PR> implements MySQLQuery.PartitionClause<C, PR> {
 
-    private String alias;
+    final C criteria;
 
-    private List<String> partitionList;
+    List<String> partitionList;
 
-    MySQLPartitionClause(TablePart tablePart, JoinType joinType, OR query) {
-        super(tablePart, joinType, query);
+    MySQLPartitionClause(@Nullable C criteria) {
+        this.criteria = criteria;
     }
 
     @Override
@@ -40,11 +38,9 @@ abstract class MySQLPartitionClause<C, PR, AR, OR, IR, WP, WR> extends MySQLInde
     @Override
     public final PR partition(final List<String> partitionNameList) {
         if (partitionNameList.size() == 0) {
-            throw new CriteriaException("partition must not empty.");
+            throw new CriteriaException("partitionNameList must not empty.");
         }
-        final List<String> list = new ArrayList<>(2);
-        list.addAll(partitionNameList);
-        this.partitionList = Collections.unmodifiableList(list);
+        this.partitionList = Collections.unmodifiableList(new ArrayList<>(partitionNameList));
         return (PR) this;
     }
 
@@ -55,7 +51,7 @@ abstract class MySQLPartitionClause<C, PR, AR, OR, IR, WP, WR> extends MySQLInde
 
     @Override
     public final PR partition(Function<C, List<String>> function) {
-        return this.partition(function.apply(this.getCriteria()));
+        return this.partition(function.apply(this.criteria));
     }
 
     @Override
@@ -71,35 +67,14 @@ abstract class MySQLPartitionClause<C, PR, AR, OR, IR, WP, WR> extends MySQLInde
     @Override
     public final PR ifPartition(Function<C, List<String>> function) {
         final List<String> list;
-        list = function.apply(this.getCriteria());
+        list = function.apply(this.criteria);
         if (!CollectionUtils.isEmpty(list)) {
             this.partition(list);
         }
         return (PR) this;
     }
 
-    @Override
-    public final AR as(String alias) {
-        _DialectUtils.validateTableAlias(alias);
-        this.alias = alias;
-        return (AR) this;
-    }
 
-    @Override
-    public final String alias() {
-        final String alias = this.alias;
-        assert alias != null;
-        return alias;
-    }
-
-    @Override
-    public final List<String> partitionList() {
-        List<String> partitionList = this.partitionList;
-        if (partitionList == null) {
-            partitionList = Collections.emptyList();
-        }
-        return partitionList;
-    }
 
 
 }
