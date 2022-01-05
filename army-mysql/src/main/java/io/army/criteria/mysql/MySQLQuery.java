@@ -1,9 +1,6 @@
 package io.army.criteria.mysql;
 
-import io.army.criteria.DialectStatement;
-import io.army.criteria.Query;
-import io.army.criteria.Statement;
-import io.army.criteria.TablePart;
+import io.army.criteria.*;
 import io.army.meta.TableMeta;
 
 import java.util.List;
@@ -12,6 +9,24 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public interface MySQLQuery extends Query, DialectStatement {
+
+    interface WithClause<C, WE> {
+
+        WE with(String cteName, Supplier<SubQuery> supplier);
+
+        WE with(String cteName, Function<C, SubQuery> supplier);
+
+        WE with(Supplier<List<MySQLCte>> supplier);
+
+        WE with(Function<C, List<MySQLCte>> function);
+
+    }
+
+    interface MySQLFromClause<C, FT, FS, FP> extends Statement.FromClause<C, FT, FS> {
+
+        FP from(TableMeta<?> table);
+
+    }
 
     /**
      * @param <C>  criteria type use to create dynamic statement.
@@ -84,6 +99,18 @@ public interface MySQLQuery extends Query, DialectStatement {
 
         IR forceIndex();
 
+        IR useIndex(Predicate<C> predicate);
+
+        IR ignoreIndex(Predicate<C> predicate);
+
+        IR forceIndex(Predicate<C> predicate);
+
+        IC useIndex(Function<C, List<String>> function);
+
+        IC ignoreIndex(Function<C, List<String>> function);
+
+        IC forceIndex(Function<C, List<String>> function);
+
         /**
          * @return clause , clause no action if predicate return false.
          */
@@ -102,21 +129,105 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
+    interface IndexPurposeClause<C, IC> {
 
-    interface IndexHintOrderByClause<PR> {
+        IC forJoin(List<String> indexList);
 
-        PR forOrderBy(List<String> indexNameList);
+        IC forOrderBy(List<String> indexList);
+
+        IC forGroupBy(List<String> indexList);
+
+        IC forJoin(Function<C, List<String>> function);
+
+        IC forOrderBy(Function<C, List<String>> function);
+
+        IC forGroupBy(Function<C, List<String>> function);
+
     }
 
-    interface IndexHintForJoinClause<PR> {
+    interface WithRollupClause<C, WU> {
 
-        PR forJoin(List<String> indexNameList);
+        WU withRollup();
+
+        WU withRollup(Predicate<C> predicate);
+
     }
 
+    interface IntoOptionClause<C, IO> {
 
-    interface IndexHintPurposeClause<PR> extends IndexHintOrderByClause<PR>, IndexHintForJoinClause<PR> {
+        IO into(String varName);
 
-        PR forGroupBy(List<String> indexNameList);
+        IO into(String varName1, String varName2);
+
+        IO into(List<String> varNames);
+
+        IO into(Supplier<List<String>> supplier);
+
+        IO into(Function<C, List<String>> function);
+    }
+
+    interface LockClause<C, LO> {
+
+        LO forUpdate();
+
+        LO lockInShareMode();
+
+        LO ifForUpdate(Predicate<C> predicate);
+
+        LO ifLockInShareMode(Predicate<C> predicate);
+
+    }
+
+    interface WindowClause<C, WC> {
+
+        WC window(NamedWindow namedWindow);
+
+        WC window(NamedWindow namedWindow1, NamedWindow namedWindow2);
+
+        WC window(Supplier<List<NamedWindow>> supplier);
+
+        WC window(Function<C, List<NamedWindow>> function);
+
+        WC ifWindow(Supplier<List<NamedWindow>> supplier);
+
+        WC ifWindow(Function<C, List<NamedWindow>> function);
+
+    }
+
+    interface Lock80Clause<C, LU, LS> {
+
+        LU forUpdate();
+
+        LU ifForUpdate(Predicate<C> predicate);
+
+        LS lockInShareMode();
+
+        LS ifLockInShareMode(Predicate<C> predicate);
+
+    }
+
+    interface Lock80LockOfOptionClause<C, LO> {
+
+        LO of(TableMeta<?> table);
+
+        LO of(TableMeta<?> table1, TableMeta<?> table2);
+
+        LO of(List<TableMeta<?>> tableList);
+
+        LO ifOf(Function<C, List<TableMeta<?>>> function);
+
+        LO ifOf(Supplier<List<TableMeta<?>>> supplier);
+    }
+
+    interface Lock80LockOptionClause<C, LS> {
+
+        LS nowait();
+
+        LS skipLocked(Predicate<C> predicate);
+
+        LS ifNowait();
+
+        LS ifSkipLocked(Predicate<C> predicate);
 
     }
 

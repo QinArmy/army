@@ -225,7 +225,8 @@ abstract class MySQLMultiDelete<C, JT, IT, WR, WA> extends MultiDelete<C, JT, JT
         }
 
         @Override
-        public final MultiDeleteUsingClause<C, DR, DP> deleteFrom(Supplier<List<Hint>> hints, List<SQLModifier> modifiers, List<TableMeta<?>> tableList) {
+        public final MultiDeleteUsingClause<C, DR, DP> deleteFrom(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+                , List<TableMeta<?>> tableList) {
             final List<Hint> hintList;
             hintList = hints.get();
             assert hintList != null;
