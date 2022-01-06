@@ -95,7 +95,7 @@ abstract class MySQLMultiDelete<C, JT, IT, WR, WA> extends MultiDelete<C, JT, JT
     }
 
     @Override
-    public final IT ifLeftJoin(TableMeta<?> table) {
+    public final IT leftJoin(TableMeta<?> table) {
         return this.addTablePartitionBlock(JoinType.LEFT_JOIN, table);
     }
 

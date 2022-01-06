@@ -31,24 +31,24 @@ public interface MySQLQuery extends Query, DialectStatement {
     /**
      * @param <C>  criteria type use to create dynamic statement.
      * @param <JT> index hint clause,see {@link MySQLQuery.IndexHintClause}
-     * @param <JR> on clause,see {@link Query.OnClause}
+     * @param <JS> on clause,see {@link Query.OnClause}
      * @param <IT> partition clause, see {@link MySQLQuery.PartitionClause}
      */
-    interface MySQLJoinClause<C, JT, JR, IT> extends Statement.JoinClause<C, JT, JR> {
+    interface MySQLJoinClause<C, JT, JS, IT> extends Statement.JoinClause<C, JT, JS> {
 
         JT straightJoin(TableMeta<?> table, String tableAlias);
 
         JT ifStraightJoin(Predicate<C> predicate, TableMeta<?> table, String alias);
 
-        <T extends TablePart> JR straightJoin(Function<C, T> function, String alias);
+        <T extends TablePart> JS straightJoin(Function<C, T> function, String alias);
 
-        <T extends TablePart> JR ifStraightJoin(Function<C, T> function, String alias);
+        <T extends TablePart> JS straightJoin(Supplier<T> supplier, String alias);
 
-        <T extends TablePart> JR straightJoin(Supplier<T> supplier, String alias);
+        <T extends TablePart> JS ifStraightJoin(Function<C, T> function, String alias);
 
-        <T extends TablePart> JR ifStraightJoin(Supplier<T> supplier, String alias);
+        <T extends TablePart> JS ifStraightJoin(Supplier<T> supplier, String alias);
 
-        IT ifLeftJoin(TableMeta<?> table);
+        IT leftJoin(TableMeta<?> table);
 
         IT ifLeftJoin(Predicate<C> predicate, TableMeta<?> table);
 

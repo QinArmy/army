@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 /**
  * @see StandardUnionQuery
  */
-abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
+abstract class StandardSimpleQuery<C, Q extends Query> extends NoFromSimpleQuery<
         C,
         Q,
         StandardQuery.StandardFromSpec<C, Q>, // SR
@@ -111,7 +111,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     private LockMode lockMode;
 
     StandardSimpleQuery(@Nullable C criteria) {
-        super(criteria);
+        super(null, criteria);
     }
 
     @Override
@@ -210,12 +210,12 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @Override
-    final StandardOnSpec<C, Q> addTableBlock(TableMeta<?> table, String tableAlias, JoinType joinType) {
-        return this.addTablePartBlock(table, tableAlias, joinType);
+    final StandardOnSpec<C, Q> addTableBlock(JoinType joinType, TableMeta<?> table, String tableAlias) {
+        return this.addTablePartBlock(joinType, table, tableAlias);
     }
 
     @Override
-    final StandardOnSpec<C, Q> addTablePartBlock(TablePart tablePart, String tableAlias, JoinType joinType) {
+    final StandardOnSpec<C, Q> addTablePartBlock(JoinType joinType, TablePart tablePart, String tableAlias) {
         final List<TableBlock> tableBlockList = this.tableBlockList;
         if (tableBlockList == null) {
             throw _Exceptions.castCriteriaApi();

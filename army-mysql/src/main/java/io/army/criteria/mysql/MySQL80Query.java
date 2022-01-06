@@ -13,7 +13,6 @@ public interface MySQL80Query extends MySQLQuery {
 
     }
 
-
     interface Select80Spec<C, Q extends Query> extends Query.SelectClause<C, IntoBeforeFrom80Spec<C, Q>>
             , IntoBeforeFrom80Spec<C, Q> {
 

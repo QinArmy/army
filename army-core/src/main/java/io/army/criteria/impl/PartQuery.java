@@ -16,11 +16,14 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements _PartQuery, Query
+@SuppressWarnings("unchecked")
+abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements CriteriaContextSpec, _PartQuery, Query
         , Query.OrderByClause<C, OR>, Query.LimitClause<C, LR>
         , Query.UnionClause<C, UR, SP, Q>, Query.QuerySpec<Q>, CriteriaSpec<C> {
 
     final C criteria;
+
+    final CriteriaContext criteriaContext;
 
     private List<SortPart> orderByList;
 
@@ -31,13 +34,19 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements _PartQue
     private boolean prepared;
 
 
-    PartQuery(@Nullable C criteria) {
-        this.criteria = criteria;
+    PartQuery(CriteriaContext criteriaContext) {
+        this.criteria = criteriaContext.criteria();
+        this.criteriaContext = criteriaContext;
     }
 
     @Override
     public final C getCriteria() {
         return this.criteria;
+    }
+
+    @Override
+    public final CriteriaContext getCriteriaContext() {
+        return this.criteriaContext;
     }
 
     @Override
@@ -237,6 +246,10 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements _PartQue
         this.offset = -1;
         this.rowCount = -1;
         this.internalClear();
+    }
+
+    final boolean hasOrderBy() {
+        return !CollectionUtils.isEmpty(this.orderByList);
     }
 
     final Q asQueryAndQuery() {

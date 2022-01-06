@@ -15,12 +15,7 @@ public interface MySQL57Query extends MySQLQuery {
 
     /*################################## blow select clause  interfaces ##################################*/
 
-    interface Select57Spec<C, Q extends Query> extends Query.SelectClause<C, IntoFromSpec<C, Q>> {
-
-    }
-
-    interface IntoFromSpec<C, Q extends Query>
-            extends MySQLQuery.IntoOptionClause<C, From57Spec<C, Q>>, From57Spec<C, Q> {
+    interface Select57Spec<C, Q extends Query> extends Query.SelectClause<C, From57Spec<C, Q>> {
 
     }
 
@@ -110,37 +105,28 @@ public interface MySQL57Query extends MySQLQuery {
     }
 
 
-    interface Limit57Spec<C, Q extends Query> extends Query.LimitClause<C, IntoLockSpec<C, Q>>
-            , IntoLockSpec<C, Q> {
+    interface Limit57Spec<C, Q extends Query> extends Query.LimitClause<C, Lock57Spec<C, Q>>
+            , Lock57Spec<C, Q> {
 
     }
-
-
-    interface IntoLockSpec<C, Q extends Query>
-            extends MySQLQuery.IntoOptionClause<C, Lock57Spec<C, Q>>, Lock57Spec<C, Q> {
-
-    }
-
 
     interface Lock57Spec<C, Q extends Query>
-            extends MySQLQuery.LockClause<C, Query.QuerySpec<Q>>, Query.QuerySpec<Q> {
+            extends MySQLQuery.LockClause<C, Union57Spec<C, Q>>, Union57Spec<C, Q> {
 
     }
 
-
-    interface OrderBy57Clause<C, Q extends Query> extends Query.OrderByClause<C, Limit57Clause<C, Q>>
-            , Limit57Clause<C, Q> {
+    interface UnionOrderBy57Spec<C, Q extends Query> extends Query.OrderByClause<C, UnionLimit57Spec<C, Q>>
+            , UnionLimit57Spec<C, Q> {
 
     }
 
-    interface Limit57Clause<C, Q extends Query> extends Query.LimitClause<C, Union57Spec<C, Q>>
-            , Union57Spec<C, Q> {
+    interface UnionLimit57Spec<C, Q extends Query> extends Query.LimitClause<C, Union57Spec<C, Q>>, Union57Spec<C, Q> {
 
     }
 
 
     interface Union57Spec<C, Q extends Query>
-            extends Query.UnionClause<C, OrderBy57Clause<C, Q>, Select57Spec<C, Q>, Q>
+            extends Query.UnionClause<C, UnionOrderBy57Spec<C, Q>, Select57Spec<C, Q>, Q>
             , Query.QuerySpec<Q> {
 
     }

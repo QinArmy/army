@@ -5,8 +5,11 @@ import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.impl.inner._Query;
 import io.army.criteria.impl.inner._SortPart;
+import io.army.criteria.impl.inner._UnionQuery;
 import io.army.lang.Nullable;
+import io.army.util._Exceptions;
 
 import java.util.*;
 
@@ -118,6 +121,27 @@ abstract class CriteriaUtils {
             wrapperList.add(ObjectAccessorFactory.forReadonlyAccess(bean));
         }
         return wrapperList;
+    }
+
+    static CriteriaContext getCriteriaContext(final Query query) {
+        final CriteriaContext criteriaContext;
+        if (query instanceof NoFromSimpleQuery) {
+            criteriaContext = new CriteriaContextImpl<>(((_Query) query).selectPartList());
+        } else if (query instanceof _UnionQuery) {
+            criteriaContext = ((CriteriaContextSpec) query).getCriteriaContext();
+            if (!(criteriaContext instanceof UnionQueryContext)) {
+                throw CriteriaUtils.unknownCriteriaContext(criteriaContext);
+            }
+        } else {
+            throw _Exceptions.unknownQueryType(query);
+        }
+        return criteriaContext;
+    }
+
+
+    static CriteriaException unknownCriteriaContext(CriteriaContext context) {
+        String m = String.format("Unknown %s[%s] type.", CriteriaContext.class.getName(), context.getClass().getName());
+        return new CriteriaException(m);
     }
 
 

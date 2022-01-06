@@ -7,4 +7,5 @@ public interface _StandardQuery extends _Query {
 
     @Nullable
     LockMode lockMode();
+
 }

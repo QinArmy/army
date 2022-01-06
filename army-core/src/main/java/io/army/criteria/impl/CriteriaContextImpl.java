@@ -14,6 +14,11 @@ import java.util.*;
 
 final class CriteriaContextImpl<C> implements CriteriaContext {
 
+
+    static <C> CriteriaContextImpl<C> from(Query query) {
+        return new CriteriaContextImpl<>(((CriteriaContextSpec) query).getCriteriaContext().criteria());
+    }
+
     private final C criteria;
 
     /*################################## blow cache prop ##################################*/
