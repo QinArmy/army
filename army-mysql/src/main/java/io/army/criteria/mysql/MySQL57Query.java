@@ -35,12 +35,12 @@ public interface MySQL57Query extends MySQLQuery {
     }
 
     interface IndexHintJoin57Spec<C, Q extends Query>
-            extends MySQLQuery.IndexHintClause<C, IndexPurposeJoin57Clause<C, Q>, Join57Spec<C, Q>>
+            extends MySQLQuery.IndexHintClause<C, IndexPurposeJoin57Spec<C, Q>, IndexHintJoin57Spec<C, Q>>
             , Join57Spec<C, Q> {
 
     }
 
-    interface IndexPurposeJoin57Clause<C, Q extends Query> extends IndexPurposeClause<C, Join57Spec<C, Q>> {
+    interface IndexPurposeJoin57Spec<C, Q extends Query> extends IndexPurposeClause<C, IndexHintJoin57Spec<C, Q>> {
 
     }
 
@@ -53,11 +53,11 @@ public interface MySQL57Query extends MySQLQuery {
     }
 
     interface IndexHintOn57Spec<C, Q extends Query>
-            extends MySQLQuery.IndexHintClause<C, IndexPurposeOn57Spec<C, Q>, On57Spec<C, Q>> {
+            extends MySQLQuery.IndexHintClause<C, IndexPurposeOn57Spec<C, Q>, IndexHintOn57Spec<C, Q>>, On57Spec<C, Q> {
 
     }
 
-    interface IndexPurposeOn57Spec<C, Q extends Query> extends IndexPurposeClause<C, On57Spec<C, Q>> {
+    interface IndexPurposeOn57Spec<C, Q extends Query> extends IndexPurposeClause<C, IndexHintOn57Spec<C, Q>> {
 
     }
 

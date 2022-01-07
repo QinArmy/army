@@ -13,12 +13,7 @@ public interface MySQL80Query extends MySQLQuery {
 
     }
 
-    interface Select80Spec<C, Q extends Query> extends Query.SelectClause<C, IntoBeforeFrom80Spec<C, Q>>
-            , IntoBeforeFrom80Spec<C, Q> {
-
-    }
-
-    interface IntoBeforeFrom80Spec<C, Q extends Query> extends MySQLQuery.IntoOptionClause<C, From80Spec<C, Q>>
+    interface Select80Spec<C, Q extends Query> extends Query.SelectClause<C, From80Spec<C, Q>>
             , From80Spec<C, Q> {
 
     }
@@ -117,20 +112,14 @@ public interface MySQL80Query extends MySQLQuery {
     }
 
 
-    interface Limit80Spec<C, Q extends Query> extends Query.LimitClause<C, IntoBeforeLock80Spec<C, Q>>
-            , IntoBeforeLock80Spec<C, Q> {
-
-    }
-
-
-    interface IntoBeforeLock80Spec<C, Q extends Query> extends MySQLQuery.IntoOptionClause<C, Lock80Spec<C, Q>>
+    interface Limit80Spec<C, Q extends Query> extends Query.LimitClause<C, Lock80Spec<C, Q>>
             , Lock80Spec<C, Q> {
 
     }
 
 
     interface Lock80Spec<C, Q extends Query>
-            extends MySQLQuery.Lock80Clause<C, Lock80LockOfOptionSpec<C, Q>, IntoAfterLock80Spec<C, Q>> {
+            extends MySQLQuery.Lock80Clause<C, Lock80LockOfOptionSpec<C, Q>, Lock80LockOfOptionSpec<C, Q>> {
 
     }
 
@@ -142,14 +131,8 @@ public interface MySQL80Query extends MySQLQuery {
 
 
     interface Lock80LockOptionSpec<C, Q extends Query>
-            extends MySQLQuery.Lock80LockOptionClause<C, IntoAfterLock80Spec<C, Q>>, IntoAfterLock80Spec<C, Q> {
+            extends MySQLQuery.Lock80LockOptionClause<C, Union80Spec<C, Q>>, Union80Spec<C, Q> {
 
-
-    }
-
-
-    interface IntoAfterLock80Spec<C, Q extends Query> extends MySQLQuery.IntoOptionClause<C, QuerySpec<Q>>
-            , QuerySpec<Q> {
 
     }
 

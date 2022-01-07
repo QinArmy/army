@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 /**
  * @see StandardUnionQuery
  */
-abstract class StandardSimpleQuery<C, Q extends Query> extends NoFromSimpleQuery<
+abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         C,
         Q,
         StandardQuery.StandardFromSpec<C, Q>, // SR
@@ -211,11 +211,11 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends NoFromSimpleQuery
 
     @Override
     final StandardOnSpec<C, Q> addTableBlock(JoinType joinType, TableMeta<?> table, String tableAlias) {
-        return this.addTablePartBlock(joinType, table, tableAlias);
+        return this.addOnBlock(joinType, table, tableAlias);
     }
 
     @Override
-    final StandardOnSpec<C, Q> addTablePartBlock(JoinType joinType, TablePart tablePart, String tableAlias) {
+    final StandardOnSpec<C, Q> addOnBlock(JoinType joinType, TablePart tablePart, String tableAlias) {
         final List<TableBlock> tableBlockList = this.tableBlockList;
         if (tableBlockList == null) {
             throw _Exceptions.castCriteriaApi();
@@ -228,11 +228,11 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends NoFromSimpleQuery
 
     @Override
     final StandardOnSpec<C, Q> createNoActionTableBlock() {
-        return this.createNoActionTablePartBlock();
+        return this.createNoActionOnBlock();
     }
 
     @Override
-    final StandardOnSpec<C, Q> createNoActionTablePartBlock() {
+    final StandardOnSpec<C, Q> createNoActionOnBlock() {
         return new StandardNoActionOnSpec<>(this);
     }
 

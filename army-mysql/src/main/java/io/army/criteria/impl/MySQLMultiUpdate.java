@@ -1330,8 +1330,8 @@ abstract class MySQLMultiUpdate<C, JT, JS, WR, WA, SR, IR, IT> extends MultiUpda
     /**
      * @see SimpleMultiUpdate#createNoActionPartitionBlock()
      */
-    private static final class SimpleNoActionPartitionBlock<C> extends NoActionMySQLPartitionClause<
-            C, MySQLUpdate.MultiAsOnSpec<C>>
+    private static final class SimpleNoActionPartitionBlock<C> extends MySQLNoActionPartitionClause<
+            C, MultiAsOnSpec<C>>
             implements MySQLUpdate.MultiPartitionOnSpec<C>, MySQLUpdate.MultiAsOnSpec<C> {
 
 
@@ -1367,8 +1367,8 @@ abstract class MySQLMultiUpdate<C, JT, JS, WR, WA, SR, IR, IT> extends MultiUpda
     /**
      * @see BatchMultiUpdate#createNoActionPartitionBlock()
      */
-    private static final class BatchNoActionPartitionBlock<C> extends NoActionMySQLPartitionClause<
-            C, MySQLUpdate.BatchMultiAsOnSpec<C>>
+    private static final class BatchNoActionPartitionBlock<C> extends MySQLNoActionPartitionClause<
+            C, BatchMultiAsOnSpec<C>>
             implements MySQLUpdate.BatchMultiPartitionOnSpec<C>, MySQLUpdate.BatchMultiAsOnSpec<C> {
 
         private final BatchMultiIndexHintOnSpec<C> indexHintOnSpec;

@@ -7,7 +7,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-abstract class NoActionMySQLPartitionClause<C, PR> implements MySQLQuery.PartitionClause<C, PR> {
+abstract class MySQLNoActionPartitionClause<C, PR> implements MySQLQuery.PartitionClause<C, PR> {
 
 
     @Override

@@ -791,7 +791,7 @@ abstract class MySQLMultiDelete<C, JT, IT, WR, WA> extends MultiDelete<C, JT, JT
      * @see SimpleDelete#createNoActionPartitionBlock()
      */
     private static final class NoActionPartitionBlock<C>
-            extends NoActionMySQLPartitionClause<C, MySQLDelete.MultiAsOnSpec<C>>
+            extends MySQLNoActionPartitionClause<C, MultiAsOnSpec<C>>
             implements MySQLDelete.MultiAsOnSpec<C>, MySQLDelete.MultiPartitionOnSpec<C> {
 
         private final MultiOnSpec<C> onSpec;
@@ -946,7 +946,7 @@ abstract class MySQLMultiDelete<C, JT, IT, WR, WA> extends MultiDelete<C, JT, JT
      * @see BatchDelete#createNoActionPartitionBlock()
      */
     private static final class BatchNoActionPartitionBlock<C>
-            extends NoActionMySQLPartitionClause<C, MySQLDelete.BatchMultiAsOnSpec<C>>
+            extends MySQLNoActionPartitionClause<C, BatchMultiAsOnSpec<C>>
             implements MySQLDelete.BatchMultiAsOnSpec<C>, MySQLDelete.BatchMultiPartitionOnSpec<C> {
 
         private final BatchMultiOnSpec<C> onSpec;

@@ -14,12 +14,11 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 
-abstract class NoFromSimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, HR, OR, LR, UR, SP>
+abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, HR, OR, LR, UR, SP>
         extends PartQuery<C, Q, UR, OR, LR, SP> implements Query.SelectClause<C, SR>, Statement.JoinClause<C, JT, JS>
         , Statement.WhereClause<C, WR, AR>, Statement.WhereAndClause<C, AR>
         , Query.GroupClause<C, GR>, Query.HavingClause<C, HR>, _Query, Statement.FromClause<C, FT, FS> {
 
-    final CriteriaContext criteriaContext;
 
     private List<Hint> hintList;
 
@@ -38,14 +37,8 @@ abstract class NoFromSimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR,
     private JS noActionTablePartBlock;
 
 
-    NoFromSimpleQuery(CriteriaContext criteriaContext) {
+    SimpleQuery(CriteriaContext criteriaContext) {
         super(criteriaContext);
-        this.criteriaContext = criteriaContext;
-        if (this instanceof SubQuery || this instanceof WithElement) {
-            CriteriaContextStack.push(this.criteriaContext);
-        } else {
-            CriteriaContextStack.setContextStack(this.criteriaContext);
-        }
     }
 
 
@@ -69,7 +62,7 @@ abstract class NoFromSimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR,
             this.modifierList = new ArrayList<>(modifiers);
         }
         this.selectPartList = new ArrayList<>(selectPartList);
-        return getFromClause();
+        return (SR) this;
     }
 
     @Override
@@ -653,7 +646,6 @@ abstract class NoFromSimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR,
         return !CollectionUtils.isEmpty(this.groupByList);
     }
 
-    abstract SR getFromClause();
 
 
     abstract Q onAsQuery(boolean outer);
@@ -663,11 +655,11 @@ abstract class NoFromSimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR,
 
     abstract JT addTableBlock(JoinType joinType, TableMeta<?> table, String tableAlias);
 
-    abstract JS addTablePartBlock(JoinType joinType, TablePart tablePart, String tableAlias);
+    abstract JS addOnBlock(JoinType joinType, TablePart tablePart, String tableAlias);
 
     abstract JT createNoActionTableBlock();
 
-    abstract JS createNoActionTablePartBlock();
+    abstract JS createNoActionOnBlock();
 
     private JT getNoActionTableBlock() {
         JT noActionTableBlock = this.noActionTableBlock;
@@ -681,7 +673,7 @@ abstract class NoFromSimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR,
     private JS getNoActionTablePartBlock() {
         JS noActionTablePartBlock = this.noActionTablePartBlock;
         if (noActionTablePartBlock == null) {
-            noActionTablePartBlock = createNoActionTablePartBlock();
+            noActionTablePartBlock = createNoActionOnBlock();
             this.noActionTablePartBlock = noActionTablePartBlock;
         }
         return noActionTablePartBlock;
@@ -732,7 +724,7 @@ abstract class NoFromSimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR,
     final JS doJoinTablePart(JoinType joinType, TablePart tablePart, String alias) {
         Objects.requireNonNull(tablePart);
         final JS block;
-        block = this.addTablePartBlock(joinType, tablePart, alias);
+        block = this.addOnBlock(joinType, tablePart, alias);
         this.criteriaContext.onAddTablePart(tablePart, alias);
         return block;
     }

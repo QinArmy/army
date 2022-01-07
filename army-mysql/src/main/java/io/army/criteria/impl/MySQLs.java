@@ -1,11 +1,67 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.*;
+import io.army.criteria.mysql.MySQL57Query;
 import io.army.criteria.mysql.MySQLDelete;
 import io.army.criteria.mysql.MySQLUpdate;
 
 import java.util.Objects;
 
 public abstract class MySQLs extends SQLs {
+
+    public static MySQL57Query.Select57Spec<Void, Select> select57() {
+        return MySQL57SimpleQuery.simpleSelect(null);
+    }
+
+    public static <C> MySQL57Query.Select57Spec<C, Select> select57(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQL57SimpleQuery.simpleSelect(criteria);
+    }
+
+    public static MySQL57Query.Select57Spec<Void, SubQuery> subQuery57() {
+        return MySQL57SimpleQuery.subQuery(null);
+    }
+
+    public static <C> MySQL57Query.Select57Spec<C, SubQuery> subQuery57(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQL57SimpleQuery.subQuery(criteria);
+    }
+
+    public static MySQL57Query.Select57Spec<Void, RowSubQuery> rowSubQuery57() {
+        return MySQL57SimpleQuery.rowSubQuery(null);
+    }
+
+    public static <C> MySQL57Query.Select57Spec<C, RowSubQuery> rowSubQuery57(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQL57SimpleQuery.rowSubQuery(criteria);
+    }
+
+    public static MySQL57Query.Select57Spec<Void, ColumnSubQuery> columnSubQuery57() {
+        return MySQL57SimpleQuery.columnSubQuery(null);
+    }
+
+    public static <C> MySQL57Query.Select57Spec<C, ColumnSubQuery> columnSubQuery57(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQL57SimpleQuery.columnSubQuery(criteria);
+    }
+
+    public static <E> MySQL57Query.Select57Spec<Void, ScalarQueryExpression<E>> scalarSubQuery57() {
+        return MySQL57SimpleQuery.scalarSubQuery(null);
+    }
+
+    public static <E> MySQL57Query.Select57Spec<Void, ScalarQueryExpression<E>> scalarSubQuery57(Class<E> type) {
+        return MySQL57SimpleQuery.scalarSubQuery(null);
+    }
+
+    public static <C, E> MySQL57Query.Select57Spec<C, ScalarQueryExpression<E>> scalarSubQuery57(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQL57SimpleQuery.scalarSubQuery(criteria);
+    }
+
+    public static <C, E> MySQL57Query.Select57Spec<C, ScalarQueryExpression<E>> scalarSubQuery57(Class<E> type, C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQL57SimpleQuery.scalarSubQuery(criteria);
+    }
 
 
     /**

@@ -22,7 +22,7 @@ final class MySQLIndexHint implements _IndexHint {
         }
         this.command = command;
         this.purpose = purpose;
-        this.indexNameList = CollectionUtils.unmodifiableList(indexNameList);
+        this.indexNameList = CollectionUtils.asUnmodifiableList(indexNameList);
     }
 
 

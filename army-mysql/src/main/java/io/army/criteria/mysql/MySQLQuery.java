@@ -99,17 +99,17 @@ public interface MySQLQuery extends Query, DialectStatement {
 
         IR forceIndex();
 
-        IR useIndex(Predicate<C> predicate);
+        IR ifUseIndex(Predicate<C> predicate);
 
-        IR ignoreIndex(Predicate<C> predicate);
+        IR ifIgnoreIndex(Predicate<C> predicate);
 
-        IR forceIndex(Predicate<C> predicate);
+        IR ifForceIndex(Predicate<C> predicate);
 
-        IC useIndex(Function<C, List<String>> function);
+        IC useIndex(List<String> indexList);
 
-        IC ignoreIndex(Function<C, List<String>> function);
+        IC ignoreIndex(List<String> indexList);
 
-        IC forceIndex(Function<C, List<String>> function);
+        IC forceIndex(List<String> indexList);
 
         /**
          * @return clause , clause no action if predicate return false.
@@ -149,22 +149,10 @@ public interface MySQLQuery extends Query, DialectStatement {
 
         WU withRollup();
 
-        WU withRollup(Predicate<C> predicate);
+        WU ifWithRollup(Predicate<C> predicate);
 
     }
 
-    interface IntoOptionClause<C, IO> {
-
-        IO into(String varName);
-
-        IO into(String varName1, String varName2);
-
-        IO into(List<String> varNames);
-
-        IO into(Supplier<List<String>> supplier);
-
-        IO into(Function<C, List<String>> function);
-    }
 
     interface LockClause<C, LO> {
 

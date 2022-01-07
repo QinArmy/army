@@ -19,6 +19,11 @@ abstract class CriteriaUtils {
         throw new UnsupportedOperationException();
     }
 
+
+    static <C> CriteriaContext primaryContext(@Nullable C criteria) {
+        return new CriteriaContextImpl<>(criteria);
+    }
+
     /**
      * invoke after {@code asSelect()}
      *
@@ -125,7 +130,7 @@ abstract class CriteriaUtils {
 
     static CriteriaContext getCriteriaContext(final Query query) {
         final CriteriaContext criteriaContext;
-        if (query instanceof NoFromSimpleQuery) {
+        if (query instanceof SimpleQuery) {
             criteriaContext = new CriteriaContextImpl<>(((_Query) query).selectPartList());
         } else if (query instanceof _UnionQuery) {
             criteriaContext = ((CriteriaContextSpec) query).getCriteriaContext();
@@ -136,6 +141,12 @@ abstract class CriteriaUtils {
             throw _Exceptions.unknownQueryType(query);
         }
         return criteriaContext;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Nullable
+    static <C> C getCriteria(final Query query) {
+        return ((CriteriaSpec<C>) query).getCriteria();
     }
 
 
