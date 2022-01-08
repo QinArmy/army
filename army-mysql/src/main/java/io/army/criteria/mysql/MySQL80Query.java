@@ -4,6 +4,8 @@ package io.army.criteria.mysql;
 import io.army.criteria.Query;
 import io.army.criteria.Statement;
 
+import java.util.function.Predicate;
+
 public interface MySQL80Query extends MySQLQuery {
 
 
@@ -47,7 +49,8 @@ public interface MySQL80Query extends MySQLQuery {
 
 
     interface Join80Spec<C, Q extends Query>
-            extends MySQLQuery.MySQLJoinClause<C, IndexHintOn80Spec<C, Q>, On80Spec<C, Q>, PartitionOn80Spec<C, Q>> {
+            extends MySQLQuery.MySQLJoinClause<C, IndexHintOn80Spec<C, Q>, On80Spec<C, Q>, PartitionOn80Spec<C, Q>>
+            , Where80Spec<C, Q> {
 
     }
 
@@ -76,8 +79,9 @@ public interface MySQL80Query extends MySQLQuery {
 
     }
 
-    interface Where80Spec<C, Q extends Query> extends Statement.WhereClause<C, GroupBy80Spec<C, Q>
-            , WhereAnd80Spec<C, Q>> {
+    interface Where80Spec<C, Q extends Query>
+            extends Statement.WhereClause<C, GroupBy80Spec<C, Q>, WhereAnd80Spec<C, Q>>
+            , GroupBy80Spec<C, Q> {
 
     }
 
@@ -88,10 +92,18 @@ public interface MySQL80Query extends MySQLQuery {
     }
 
 
-    interface GroupBy80Spec<C, Q extends Query>
-            extends Query.GroupClause<C, MySQLQuery.WithRollupClause<C, Having80Spec<C, Q>>>
+    interface GroupBy80Spec<C, Q extends Query> extends Query.GroupClause<C, GroupByWithRollup80Spec<C, Q>>
             , Window80Spec<C, Q> {
 
+    }
+
+    interface GroupByWithRollup80Spec<C, Q extends Query> extends WithRollup80Clause<C, Q>, Having80Spec<C, Q> {
+
+        @Override
+        Having80Spec<C, Q> withRollup();
+
+        @Override
+        Having80Spec<C, Q> ifWithRollup(Predicate<C> predicate);
     }
 
 
@@ -106,20 +118,27 @@ public interface MySQL80Query extends MySQLQuery {
     }
 
     interface OrderBy80Spec<C, Q extends Query>
-            extends Query.OrderByClause<C, MySQLQuery.WithRollupClause<C, Limit80Spec<C, Q>>>
-            , Limit80Spec<C, Q> {
+            extends Query.OrderByClause<C, OrderByWithRollup80Spec<C, Q>>, Limit80Spec<C, Q> {
+
+    }
+
+    interface WithRollup80Clause<C, Q extends Query> extends MySQLQuery.WithRollupClause<C, Limit80Spec<C, Q>> {
 
     }
 
 
-    interface Limit80Spec<C, Q extends Query> extends Query.LimitClause<C, Lock80Spec<C, Q>>
-            , Lock80Spec<C, Q> {
+    interface OrderByWithRollup80Spec<C, Q extends Query> extends WithRollup80Clause<C, Q>, Limit80Spec<C, Q> {
+
+    }
+
+
+    interface Limit80Spec<C, Q extends Query> extends Query.LimitClause<C, Lock80Spec<C, Q>>, Lock80Spec<C, Q> {
 
     }
 
 
     interface Lock80Spec<C, Q extends Query>
-            extends MySQLQuery.Lock80Clause<C, Lock80LockOfOptionSpec<C, Q>, Lock80LockOfOptionSpec<C, Q>> {
+            extends MySQLQuery.Lock80Clause<C, Lock80LockOfOptionSpec<C, Q>, Union80Spec<C, Q>> {
 
     }
 
@@ -147,7 +166,7 @@ public interface MySQL80Query extends MySQLQuery {
 
 
     interface Union80Spec<C, Q extends Query>
-            extends Query.UnionClause<C, UnionOrderBy80Spec<C, Q>, With80Spec<C, Q>, Q> {
+            extends Query.UnionClause<C, UnionOrderBy80Spec<C, Q>, With80Spec<C, Q>, Q>, Query.QuerySpec<Q> {
 
 
     }

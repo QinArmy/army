@@ -72,6 +72,8 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             select57Spec = new UnionAndScalarSubQuery<>((ScalarQueryExpression<?>) left, unionType, criteria);
         } else if (left instanceof ColumnSubQuery) {
             select57Spec = new UnionAndColumnSubQuery<>((ColumnSubQuery) left, unionType, criteria);
+        } else if (left instanceof RowSubQuery) {
+            select57Spec = new UnionAndRowSubQuery<>((RowSubQuery) left, unionType, criteria);
         } else if (left instanceof SubQuery) {
             select57Spec = new UnionAndSubQuery<>((SubQuery) left, unionType, criteria);
         } else {

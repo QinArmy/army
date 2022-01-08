@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Query;
+import io.army.criteria.SQLModifier;
 import io.army.criteria.TablePart;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._MySQLQuery;
@@ -416,6 +417,45 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
         }
         tableBlockList.add(block);
         return (FT) this;
+    }
+
+
+    enum MySQLLock implements SQLModifier {
+
+        FOR_UPDATE("FOR UPDATE"),
+        LOCK_IN_SHARE_MODE("LOCK IN SHARE MODE"),
+        SHARE("SHARE");
+
+        final String words;
+
+        MySQLLock(String words) {
+            this.words = words;
+        }
+
+        @Override
+        public final String render() {
+            return this.words;
+        }
+
+
+    }
+
+    enum MySQLLockOption implements SQLModifier {
+
+        NOWAIT("NOWAIT"),
+        SKIP_LOCKED("SKIP LOCKED");
+
+        final String words;
+
+        MySQLLockOption(String words) {
+            this.words = words;
+        }
+
+        @Override
+        public final String render() {
+            return null;
+        }
+
     }
 
 

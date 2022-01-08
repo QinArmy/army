@@ -97,7 +97,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     @Override
     public final OR orderBy(SortPart sortPart) {
         this.orderByList = Collections.singletonList(sortPart);
-        return (OR) this;
+        return this.afterOrderBy();
     }
 
     @Override
@@ -111,7 +111,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
             throw new CriteriaException("sortPartList must not empty.");
         }
         this.orderByList = new ArrayList<>(sortPartList);
-        return (OR) this;
+        return this.afterOrderBy();
     }
 
     @Override
@@ -129,7 +129,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
         if (sortPart != null) {
             this.orderByList = Collections.singletonList(sortPart);
         }
-        return (OR) this;
+        return this.afterOrderBy();
     }
 
     @Override
@@ -139,7 +139,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
         if (!CollectionUtils.isEmpty(supplierResult)) {
             this.orderBy(supplierResult);
         }
-        return (OR) this;
+        return this.afterOrderBy();
     }
 
     @Override
@@ -149,7 +149,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
         if (!CollectionUtils.isEmpty(supplierResult)) {
             this.orderBy(supplierResult);
         }
-        return (OR) this;
+        return this.afterOrderBy();
     }
 
     @Override
@@ -254,6 +254,10 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
 
     final Q asQueryAndQuery() {
         return innerAsQuery(false);
+    }
+
+    OR afterOrderBy() {
+        return (OR) this;
     }
 
 

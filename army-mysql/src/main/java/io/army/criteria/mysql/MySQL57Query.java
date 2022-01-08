@@ -40,7 +40,8 @@ public interface MySQL57Query extends MySQLQuery {
 
     }
 
-    interface IndexPurposeJoin57Spec<C, Q extends Query> extends IndexPurposeClause<C, IndexHintJoin57Spec<C, Q>> {
+    interface IndexPurposeJoin57Spec<C, Q extends Query>
+            extends MySQLQuery.IndexPurposeClause<C, IndexHintJoin57Spec<C, Q>> {
 
     }
 
@@ -57,7 +58,7 @@ public interface MySQL57Query extends MySQLQuery {
 
     }
 
-    interface IndexPurposeOn57Spec<C, Q extends Query> extends IndexPurposeClause<C, IndexHintOn57Spec<C, Q>> {
+    interface IndexPurposeOn57Spec<C, Q extends Query> extends MySQLQuery.IndexPurposeClause<C, IndexHintOn57Spec<C, Q>> {
 
     }
 

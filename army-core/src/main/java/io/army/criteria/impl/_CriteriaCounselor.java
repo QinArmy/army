@@ -72,5 +72,9 @@ public abstract class _CriteriaCounselor {
         }
     }
 
+    public static void assertCet(Cte cte) {
+
+    }
+
 
 }

@@ -14,11 +14,19 @@ public interface MySQLQuery extends Query, DialectStatement {
 
         WE with(String cteName, Supplier<SubQuery> supplier);
 
-        WE with(String cteName, Function<C, SubQuery> supplier);
+        WE with(String cteName, Function<C, SubQuery> function);
 
-        WE with(Supplier<List<MySQLCte>> supplier);
+        WE with(Supplier<List<Cte>> supplier);
 
-        WE with(Function<C, List<MySQLCte>> function);
+        WE with(Function<C, List<Cte>> function);
+
+        WE withRecursive(String cteName, Supplier<SubQuery> supplier);
+
+        WE withRecursive(String cteName, Function<C, SubQuery> function);
+
+        WE withRecursive(Supplier<List<Cte>> supplier);
+
+        WE withRecursive(Function<C, List<Cte>> function);
 
     }
 
@@ -168,6 +176,10 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     interface WindowClause<C, WC> {
 
+        WC window(String name, Expression<?> partition);
+
+        WC window(String name, Expression<?> partition, SortPart order);
+
         WC window(NamedWindow namedWindow);
 
         WC window(NamedWindow namedWindow1, NamedWindow namedWindow2);
@@ -186,7 +198,11 @@ public interface MySQLQuery extends Query, DialectStatement {
 
         LU forUpdate();
 
+        LU forShare();
+
         LU ifForUpdate(Predicate<C> predicate);
+
+        LU ifForShare(Predicate<C> predicate);
 
         LS lockInShareMode();
 
@@ -211,9 +227,9 @@ public interface MySQLQuery extends Query, DialectStatement {
 
         LS nowait();
 
-        LS skipLocked(Predicate<C> predicate);
+        LS skipLocked();
 
-        LS ifNowait();
+        LS ifNowait(Predicate<C> predicate);
 
         LS ifSkipLocked(Predicate<C> predicate);
 
