@@ -128,7 +128,7 @@ abstract class CriteriaUtils {
         return wrapperList;
     }
 
-    static CriteriaContext getCriteriaContext(final Query query) {
+    static CriteriaContext getUnionContext(final Query query) {
         final CriteriaContext criteriaContext;
         if (query instanceof SimpleQuery) {
             criteriaContext = new CriteriaContextImpl<>(((_Query) query).selectPartList());

@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.mysql.MySQL57Query;
+import io.army.criteria.mysql.MySQL80Query;
 import io.army.criteria.mysql.MySQLDelete;
 import io.army.criteria.mysql.MySQLUpdate;
 
@@ -221,6 +222,60 @@ public abstract class MySQLs extends SQLs {
     public static <C> MySQLDelete.BatchMultiDeleteSpec<C> batchMultiDelete57(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQLMultiDelete.batch57(criteria);
+    }
+
+    public static MySQL80Query.With80Spec<Void, Select> select80() {
+        return MySQL80SimpleQuery.simpleSelect(null);
+    }
+
+    public static <C> MySQL80Query.With80Spec<C, Select> select80(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQL80SimpleQuery.simpleSelect(criteria);
+    }
+
+    public static MySQL80Query.With80Spec<Void, SubQuery> subQuery80() {
+        return MySQL80SimpleQuery.subQuery(null);
+    }
+
+    public static <C> MySQL80Query.With80Spec<C, SubQuery> subQuery80(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQL80SimpleQuery.subQuery(criteria);
+    }
+
+    public static MySQL80Query.With80Spec<Void, RowSubQuery> rowSubQuery80() {
+        return MySQL80SimpleQuery.rowSubQuery(null);
+    }
+
+    public static <C> MySQL80Query.With80Spec<C, RowSubQuery> rowSubQuery80(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQL80SimpleQuery.rowSubQuery(criteria);
+    }
+
+    public static MySQL80Query.With80Spec<Void, ColumnSubQuery> columnSubQuery80() {
+        return MySQL80SimpleQuery.columnSubQuery(null);
+    }
+
+    public static <C> MySQL80Query.With80Spec<C, ColumnSubQuery> columnSubQuery80(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQL80SimpleQuery.columnSubQuery(criteria);
+    }
+
+    public static <E> MySQL80Query.With80Spec<Void, ScalarQueryExpression<E>> scalarSubQuery80() {
+        return MySQL80SimpleQuery.scalarSubQuery(null);
+    }
+
+    public static <E> MySQL80Query.With80Spec<Void, ScalarQueryExpression<E>> scalarSubQuery80(Class<E> type) {
+        return MySQL80SimpleQuery.scalarSubQuery(null);
+    }
+
+    public static <C, E> MySQL80Query.With80Spec<C, ScalarQueryExpression<E>> scalarSubQuery80(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQL80SimpleQuery.scalarSubQuery(criteria);
+    }
+
+    public static <C, E> MySQL80Query.With80Spec<C, ScalarQueryExpression<E>> scalarSubQuery80(Class<E> type, C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQL80SimpleQuery.scalarSubQuery(criteria);
     }
 
 

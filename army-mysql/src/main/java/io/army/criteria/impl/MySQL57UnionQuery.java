@@ -28,10 +28,10 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
             spec = new BracketSelect<>((Select) query);
         } else if (query instanceof ScalarSubQuery) {
             spec = new BracketScalarSubQuery<>((ScalarQueryExpression<?>) query);
-        } else if (query instanceof RowSubQuery) {
-            spec = new BracketRowSubQuery<>((RowSubQuery) query);
         } else if (query instanceof ColumnSubQuery) {
             spec = new BracketColumnSubQuery<>((ColumnSubQuery) query);
+        } else if (query instanceof RowSubQuery) {
+            spec = new BracketRowSubQuery<>((RowSubQuery) query);
         } else if (query instanceof SubQuery) {
             spec = new BracketSubQuery<>((SubQuery) query);
         } else {
@@ -64,7 +64,7 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
     final Q left;
 
     MySQL57UnionQuery(Q left) {
-        super(CriteriaUtils.getCriteriaContext(left));
+        super(CriteriaUtils.getUnionContext(left));
         this.left = left;
     }
 
