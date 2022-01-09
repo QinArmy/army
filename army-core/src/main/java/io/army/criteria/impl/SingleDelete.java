@@ -4,7 +4,6 @@ import io.army.criteria.Delete;
 import io.army.criteria.WithElement;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._SingleDelete;
-import io.army.lang.Nullable;
 import io.army.util.CollectionUtils;
 import io.army.util._Assert;
 import io.army.util._Exceptions;
@@ -18,14 +17,9 @@ abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, WR, WA>
 
     private boolean prepared;
 
-    SingleDelete(@Nullable C criteria) {
-        super(criteria);
-        this.criteriaContext = new CriteriaContextImpl<>(criteria);
-        if (this instanceof WithElement) {
-            CriteriaContextStack.push(this.criteriaContext);
-        } else {
-            CriteriaContextStack.setContextStack(this.criteriaContext);
-        }
+    SingleDelete(CriteriaContext criteriaContext) {
+        super(criteriaContext.criteria());
+        this.criteriaContext = criteriaContext;
     }
 
     @Override

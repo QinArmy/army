@@ -224,6 +224,8 @@ public abstract class MySQLs extends SQLs {
         return MySQLMultiDelete.batch57(criteria);
     }
 
+    /*################################## blow MySQL 8.0 api method ##################################*/
+
     public static MySQL80Query.With80Spec<Void, Select> select80() {
         return MySQL80SimpleQuery.simpleSelect(null);
     }
@@ -276,6 +278,24 @@ public abstract class MySQLs extends SQLs {
     public static <C, E> MySQL80Query.With80Spec<C, ScalarQueryExpression<E>> scalarSubQuery80(Class<E> type, C criteria) {
         Objects.requireNonNull(criteria);
         return MySQL80SimpleQuery.scalarSubQuery(criteria);
+    }
+
+    public static MySQLDelete.SingleDelete80Spec<Void> singleDelete80() {
+        return MySQLSingleDelete.simple80(null);
+    }
+
+    public static <C> MySQLDelete.SingleDelete80Spec<C> singleDelete80(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQLSingleDelete.simple80(criteria);
+    }
+
+    public static MySQLDelete.BatchSingleDelete80Spec<Void> batchSingleDelete80() {
+        return MySQLSingleDelete.batch80(null);
+    }
+
+    public static <C> MySQLDelete.BatchSingleDelete80Spec<C> batchSingleDelete80(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQLSingleDelete.batch80(criteria);
     }
 
 

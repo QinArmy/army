@@ -117,7 +117,7 @@ abstract class CriteriaUtils {
         for (Map<String, Object> map : mapList) {
             wrapperList.add(ObjectAccessorFactory.forReadonlyAccess(map));
         }
-        return wrapperList;
+        return Collections.unmodifiableList(wrapperList);
     }
 
     static List<ReadWrapper> paramBeans(List<Object> beanList) {
@@ -125,7 +125,7 @@ abstract class CriteriaUtils {
         for (Object bean : beanList) {
             wrapperList.add(ObjectAccessorFactory.forReadonlyAccess(bean));
         }
-        return wrapperList;
+        return Collections.unmodifiableList(wrapperList);
     }
 
     static CriteriaContext getUnionContext(final Query query) {

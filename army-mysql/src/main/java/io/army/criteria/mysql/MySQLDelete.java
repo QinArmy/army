@@ -30,6 +30,12 @@ public interface MySQLDelete extends Delete {
 
     }
 
+    interface SingleDelete80Spec<C> extends MySQLQuery.WithClause<C, MySQLDelete.SingleDeleteSpec<C>>
+            , MySQLDelete.SingleDeleteSpec<C> {
+
+
+    }
+
     interface SingleDeleteSpec<C> extends MySQLDelete.SingleDeleteClause<MySQLDelete.SinglePartitionSpec<C>> {
 
 
@@ -58,6 +64,11 @@ public interface MySQLDelete extends Delete {
 
 
     /*################################## blow batch single delete api interface ##################################*/
+
+    interface BatchSingleDelete80Spec<C> extends MySQLQuery.WithClause<C, MySQLDelete.BatchSingleDeleteSpec<C>>
+            , MySQLDelete.BatchSingleDeleteSpec<C> {
+
+    }
 
 
     interface BatchSingleDeleteSpec<C> extends MySQLDelete.SingleDeleteClause<MySQLDelete.BatchSinglePartitionSpec<C>> {

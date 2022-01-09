@@ -14,7 +14,7 @@ import java.util.function.Supplier;
  * This interface representing MySQL update statement,the instance of this interface can only be parsed by MySQL dialect instance.
  * </p>
  */
-public interface MySQLUpdate extends Update, MySQLDml {
+public interface MySQLUpdate extends Update {
 
 
     interface LimitClause<C, LR> {
