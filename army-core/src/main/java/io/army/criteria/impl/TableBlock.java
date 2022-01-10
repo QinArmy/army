@@ -7,6 +7,7 @@ import io.army.criteria.impl.inner._TableBlock;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 abstract class TableBlock implements _TableBlock {
 
@@ -37,7 +38,8 @@ abstract class TableBlock implements _TableBlock {
     }
 
 
-    static TableBlock simple(TablePart tablePart, String alias) {
+    static TableBlock fromBlock(TablePart tablePart, String alias) {
+        Objects.requireNonNull(tablePart);
         return new SimpleTableBlock(tablePart, alias);
     }
 

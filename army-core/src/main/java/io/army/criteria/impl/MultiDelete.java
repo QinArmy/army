@@ -6,7 +6,6 @@ import io.army.criteria.TablePart;
 import io.army.criteria.impl.inner._MultiDelete;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
-import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.CollectionUtils;
 import io.army.util._Assert;
@@ -22,8 +21,10 @@ import java.util.List;
  * This class is base class of multi-table delete implementation.
  * </p>
  */
-abstract class MultiDelete<C, JT, JS, WR, WA> extends AbstractDml<C, JT, JS, WR, WA>
+abstract class MultiDelete<C, DR, JT, JS, WR, WA> extends AbstractDml<C, JT, JS, WR, WA>
         implements Delete, Delete.DeleteSpec, _MultiDelete {
+
+    final CriteriaContext criteriaContext;
 
     private JT noActionTableBlock;
 
@@ -34,9 +35,9 @@ abstract class MultiDelete<C, JT, JS, WR, WA> extends AbstractDml<C, JT, JS, WR,
     private List<_TableBlock> tableBlockList = new ArrayList<>();
 
 
-    MultiDelete(_TableBlock firstBlock, @Nullable C criteria) {
-        super(criteria);
-        this.tableBlockList.add(firstBlock);
+    MultiDelete(CriteriaContext criteriaContext) {
+        super(criteriaContext.criteria());
+        this.criteriaContext = criteriaContext;
     }
 
     @Override
@@ -96,9 +97,9 @@ abstract class MultiDelete<C, JT, JS, WR, WA> extends AbstractDml<C, JT, JS, WR,
     }
 
     @Override
-    final JS addTablePartBlock(JoinType joinType, TablePart tablePart, String alias) {
+    final JS addOnBlock(JoinType joinType, TablePart tablePart, String alias) {
         final JS block;
-        block = createTablePartBlock(joinType, tablePart, alias);
+        block = createOnBlock(joinType, tablePart, alias);
         this.tableBlockList.add((_TableBlock) block);
         return block;
     }
@@ -109,11 +110,20 @@ abstract class MultiDelete<C, JT, JS, WR, WA> extends AbstractDml<C, JT, JS, WR,
 
     abstract JT createTableBlock(JoinType joinType, TableMeta<?> table, String tableAlias);
 
-    abstract JS createTablePartBlock(JoinType joinType, TablePart tablePart, String alias);
+    abstract JS createOnBlock(JoinType joinType, TablePart tablePart, String alias);
 
     abstract void onAsDelete();
 
     abstract void onClear();
+
+    final DR addFirstBlock(TableBlock block) {
+        final List<_TableBlock> tableBlockList = this.tableBlockList;
+        if (tableBlockList.size() > 0) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        tableBlockList.add(block);
+        return (DR) this;
+    }
 
     @Override
     final JT getNoActionTableBlock() {
@@ -126,10 +136,10 @@ abstract class MultiDelete<C, JT, JS, WR, WA> extends AbstractDml<C, JT, JS, WR,
     }
 
     @Override
-    final JS getNoActionTablePartBlock() {
+    final JS getNoActionOnBlock() {
         JS block = this.noActionTablePartBlock;
         if (block == null) {
-            block = createNoActionTablePartBlock();
+            block = createNoActionOnBlock();
             this.noActionTablePartBlock = block;
         }
         return block;

@@ -325,7 +325,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
         if (!CollectionUtils.isEmpty(tableBlockList)) {
             throw _Exceptions.castCriteriaApi();
         }
-        tableBlockList.add(TableBlock.simple(tablePart, alias));
+        tableBlockList.add(TableBlock.fromBlock(tablePart, alias));
         this.criteriaContext.onAddTablePart(tablePart, alias);
         return (FS) this;
     }

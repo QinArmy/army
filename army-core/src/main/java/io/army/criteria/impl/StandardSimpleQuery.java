@@ -200,7 +200,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     @Override
     final StandardJoinSpec<C, Q> addTablePartFromBlock(TablePart tablePart, String alias) {
         final List<TableBlock> tableBlockList = new ArrayList<>();
-        tableBlockList.add(TableBlock.simple(tablePart, alias));
+        tableBlockList.add(TableBlock.fromBlock(tablePart, alias));
 
         if (this.tableBlockList != null) {
             throw _Exceptions.castCriteriaApi();

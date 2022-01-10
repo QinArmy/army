@@ -2,8 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.beans.ReadWrapper;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.mysql._MySQLDelete80;
 import io.army.criteria.impl.inner.mysql._MySQLSingleDelete;
+import io.army.criteria.impl.inner.mysql._MySQLWithClause;
 import io.army.criteria.mysql.MySQLDelete;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
@@ -62,7 +62,7 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
     private MySQLSingleDelete(CommandBlock commandBlock, CriteriaContext criteriaContext) {
         super(criteriaContext);
         this.commandBlock = commandBlock;
-        if (!(this instanceof _MySQLDelete80)) {
+        if (!(this instanceof _MySQLWithClause)) {
             CriteriaContextStack.setContextStack(this.criteriaContext);
         }
     }
@@ -638,7 +638,7 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
     }//BatchDelete80SpecImpl
 
 
-    private static final class SimpleDelete80<C> extends SimpleDelete<C> implements _MySQLDelete80 {
+    private static final class SimpleDelete80<C> extends SimpleDelete<C> implements _MySQLWithClause {
 
         private final boolean recursive;
 
@@ -664,7 +664,7 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
     }//SimpleDelete80
 
 
-    private static final class BatchDelete80<C> extends BatchDelete<C> implements _MySQLDelete80 {
+    private static final class BatchDelete80<C> extends BatchDelete<C> implements _MySQLWithClause {
 
         private final boolean recursive;
 

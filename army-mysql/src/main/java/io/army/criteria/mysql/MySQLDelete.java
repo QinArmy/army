@@ -122,9 +122,9 @@ public interface MySQLDelete extends Delete {
 
         DP from(TableMeta<?> table);
 
-        <T extends TablePart> DR from(Supplier<T> tablePart, String alias);
+        <T extends TablePart> DR from(Supplier<T> supplier, String alias);
 
-        <T extends TablePart> DR from(Function<C, T> tablePart, String alias);
+        <T extends TablePart> DR from(Function<C, T> function, String alias);
 
     }
 
@@ -134,9 +134,15 @@ public interface MySQLDelete extends Delete {
 
         DP using(TableMeta<?> table);
 
-        <T extends TablePart> DR using(Supplier<T> tablePart, String alias);
+        <T extends TablePart> DR using(Supplier<T> supplier, String alias);
 
-        <T extends TablePart> DR using(Function<C, T> tablePart, String alias);
+        <T extends TablePart> DR using(Function<C, T> function, String alias);
+
+    }
+
+
+    interface WithMultiDeleteSpec<C> extends MySQLQuery.WithClause<C, MySQLDelete.MultiDeleteSpec<C>>
+            , MySQLDelete.MultiDeleteSpec<C> {
 
     }
 
@@ -187,6 +193,10 @@ public interface MySQLDelete extends Delete {
 
     /*################################## blow batch multi-table delete interface ##################################*/
 
+    interface BatchWithMultiDeleteSpec<C> extends MySQLQuery.WithClause<C, MySQLDelete.BatchMultiDeleteSpec<C>>
+            , MySQLDelete.BatchMultiDeleteSpec<C> {
+
+    }
 
     interface BatchMultiDeleteSpec<C> extends MySQLDelete.MultiDeleteClause<C, MySQLDelete.BatchMultiJoinSpec<C>, MySQLDelete.BatchMultiPartitionJoinSpec<C>> {
 

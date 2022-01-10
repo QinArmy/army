@@ -19,7 +19,7 @@ abstract class SingleUpdate<C, WR, WA, SR> extends AbstractUpdate<C, Void, Void,
     }
 
     @Override
-    final Void addTablePartBlock(JoinType joinType, TablePart tablePart, String alias) {
+    final Void addOnBlock(JoinType joinType, TablePart tablePart, String alias) {
         throw _Exceptions.castCriteriaApi();
     }
 
@@ -29,7 +29,7 @@ abstract class SingleUpdate<C, WR, WA, SR> extends AbstractUpdate<C, Void, Void,
     }
 
     @Override
-    final Void createNoActionTablePartBlock() {
+    final Void createNoActionOnBlock() {
         throw _Exceptions.castCriteriaApi();
     }
 
@@ -40,7 +40,7 @@ abstract class SingleUpdate<C, WR, WA, SR> extends AbstractUpdate<C, Void, Void,
     }
 
     @Override
-    final Void getNoActionTablePartBlock() {
+    final Void getNoActionOnBlock() {
         throw _Exceptions.castCriteriaApi();
     }
 

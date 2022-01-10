@@ -13,14 +13,13 @@ import java.util.function.Supplier;
  * <p>
  * This is base class of below:
  *     <ul>
- *         <li>{@link SingleUpdate}</li>
  *         <li>{@link MultiUpdate}</li>
- *         <li>{@link SingleDelete}</li>
  *         <li>{@link MultiDelete}</li>
  *     </ul>
  * </p>
  */
-abstract class AbstractDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA> implements Statement.JoinClause<C, JT, JS> {
+abstract class AbstractDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA>
+        implements Statement.JoinClause<C, JT, JS> {
 
 
     AbstractDml(@Nullable C criteria) {
@@ -34,27 +33,27 @@ abstract class AbstractDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA> 
 
     @Override
     public final <T extends TablePart> JS leftJoin(Function<C, T> function, String alias) {
-        return this.innerAddTablePartBlock(JoinType.LEFT_JOIN, function, alias);
+        return this.addOnBlock(JoinType.LEFT_JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
     public final <T extends TablePart> JS leftJoin(Supplier<T> supplier, String alias) {
-        return this.innerAddTablePartBlock(JoinType.LEFT_JOIN, supplier, alias);
+        return this.addOnBlock(JoinType.LEFT_JOIN, supplier.get(), alias);
     }
 
     @Override
     public final JT ifLeftJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
-        return this.ifAddTableBlock(predicate, JoinType.LEFT_JOIN, table, tableAlias);
+        return ifAddTableBlock(predicate, JoinType.LEFT_JOIN, table, tableAlias);
     }
 
     @Override
     public final <T extends TablePart> JS ifLeftJoin(Function<C, T> function, String alias) {
-        return this.ifAddTablePartBlock(JoinType.LEFT_JOIN, function, alias);
+        return this.ifAddOnBlock(JoinType.LEFT_JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
     public final <T extends TablePart> JS ifLeftJoin(Supplier<T> supplier, String alias) {
-        return this.ifAddTablePartBlock(JoinType.LEFT_JOIN, supplier, alias);
+        return this.ifAddOnBlock(JoinType.LEFT_JOIN, supplier.get(), alias);
     }
 
     @Override
@@ -64,12 +63,12 @@ abstract class AbstractDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA> 
 
     @Override
     public final <T extends TablePart> JS join(Function<C, T> function, String alias) {
-        return this.innerAddTablePartBlock(JoinType.JOIN, function, alias);
+        return this.addOnBlock(JoinType.JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
     public final <T extends TablePart> JS join(Supplier<T> supplier, String alias) {
-        return this.innerAddTablePartBlock(JoinType.JOIN, supplier, alias);
+        return this.addOnBlock(JoinType.JOIN, supplier.get(), alias);
     }
 
     @Override
@@ -79,12 +78,12 @@ abstract class AbstractDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA> 
 
     @Override
     public final <T extends TablePart> JS ifJoin(Function<C, T> function, String alias) {
-        return this.ifAddTablePartBlock(JoinType.JOIN, function, alias);
+        return this.ifAddOnBlock(JoinType.JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
     public final <T extends TablePart> JS ifJoin(Supplier<T> supplier, String alias) {
-        return this.ifAddTablePartBlock(JoinType.JOIN, supplier, alias);
+        return this.ifAddOnBlock(JoinType.JOIN, supplier.get(), alias);
     }
 
     @Override
@@ -94,12 +93,12 @@ abstract class AbstractDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA> 
 
     @Override
     public final <T extends TablePart> JS rightJoin(Function<C, T> function, String alias) {
-        return this.innerAddTablePartBlock(JoinType.RIGHT_JOIN, function, alias);
+        return this.addOnBlock(JoinType.RIGHT_JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
     public final <T extends TablePart> JS rightJoin(Supplier<T> supplier, String alias) {
-        return this.innerAddTablePartBlock(JoinType.RIGHT_JOIN, supplier, alias);
+        return this.addOnBlock(JoinType.RIGHT_JOIN, supplier.get(), alias);
     }
 
     @Override
@@ -109,12 +108,12 @@ abstract class AbstractDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA> 
 
     @Override
     public final <T extends TablePart> JS ifRightJoin(Function<C, T> function, String alias) {
-        return this.ifAddTablePartBlock(JoinType.RIGHT_JOIN, function, alias);
+        return this.ifAddOnBlock(JoinType.RIGHT_JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
     public final <T extends TablePart> JS ifRightJoin(Supplier<T> supplier, String alias) {
-        return this.ifAddTablePartBlock(JoinType.RIGHT_JOIN, supplier, alias);
+        return this.ifAddOnBlock(JoinType.RIGHT_JOIN, supplier.get(), alias);
     }
 
     @Override
@@ -124,12 +123,12 @@ abstract class AbstractDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA> 
 
     @Override
     public final <T extends TablePart> JS crossJoin(Function<C, T> function, String alias) {
-        return this.innerAddTablePartBlock(JoinType.CROSS_JOIN, function, alias);
+        return this.addOnBlock(JoinType.CROSS_JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
     public final <T extends TablePart> JS crossJoin(Supplier<T> supplier, String alias) {
-        return this.innerAddTablePartBlock(JoinType.CROSS_JOIN, supplier, alias);
+        return this.addOnBlock(JoinType.CROSS_JOIN, supplier.get(), alias);
     }
 
     @Override
@@ -139,12 +138,12 @@ abstract class AbstractDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA> 
 
     @Override
     public final <T extends TablePart> JS ifCrossJoin(Function<C, T> function, String alias) {
-        return this.ifAddTablePartBlock(JoinType.CROSS_JOIN, function, alias);
+        return this.ifAddOnBlock(JoinType.CROSS_JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
     public final <T extends TablePart> JS ifCrossJoin(Supplier<T> supplier, String alias) {
-        return this.ifAddTablePartBlock(JoinType.CROSS_JOIN, supplier, alias);
+        return this.ifAddOnBlock(JoinType.CROSS_JOIN, supplier.get(), alias);
     }
 
     @Override
@@ -154,12 +153,12 @@ abstract class AbstractDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA> 
 
     @Override
     public final <T extends TablePart> JS fullJoin(Function<C, T> function, String alias) {
-        return this.innerAddTablePartBlock(JoinType.FULL_JOIN, function, alias);
+        return this.addOnBlock(JoinType.FULL_JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
     public final <T extends TablePart> JS fullJoin(Supplier<T> supplier, String alias) {
-        return this.innerAddTablePartBlock(JoinType.FULL_JOIN, supplier, alias);
+        return this.addOnBlock(JoinType.FULL_JOIN, supplier.get(), alias);
     }
 
     @Override
@@ -169,68 +168,39 @@ abstract class AbstractDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA> 
 
     @Override
     public final <T extends TablePart> JS ifFullJoin(Function<C, T> function, String alias) {
-        return this.ifAddTablePartBlock(JoinType.FULL_JOIN, function, alias);
+        return this.ifAddOnBlock(JoinType.FULL_JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
     public final <T extends TablePart> JS ifFullJoin(Supplier<T> supplier, String alias) {
-        return this.ifAddTablePartBlock(JoinType.FULL_JOIN, supplier, alias);
+        return this.ifAddOnBlock(JoinType.FULL_JOIN, supplier.get(), alias);
     }
 
     abstract JT addTableBlock(JoinType joinType, TableMeta<?> table, String tableAlias);
 
-    abstract JS addTablePartBlock(JoinType joinType, TablePart tablePart, String alias);
+    abstract JS addOnBlock(JoinType joinType, TablePart tablePart, String alias);
 
     abstract JT createNoActionTableBlock();
 
-    abstract JS createNoActionTablePartBlock();
+    abstract JS createNoActionOnBlock();
 
     abstract JT getNoActionTableBlock();
 
-    abstract JS getNoActionTablePartBlock();
+    abstract JS getNoActionOnBlock();
 
 
     /*################################## blow private method ##################################*/
 
 
-    final <T extends TablePart> JS innerAddTablePartBlock(JoinType joinType, Supplier<T> supplier, String alias) {
-        final TablePart tablePart;
-        tablePart = supplier.get();
-        assert tablePart != null;
-        return addTablePartBlock(joinType, tablePart, alias);
-    }
-
-    final <T extends TablePart> JS innerAddTablePartBlock(JoinType joinType, Function<C, T> function, String alias) {
-        final TablePart tablePart;
-        tablePart = function.apply(this.criteria);
-        assert tablePart != null;
-        return addTablePartBlock(joinType, tablePart, alias);
-    }
-
-    final <T extends TablePart> JS ifAddTablePartBlock(JoinType joinType, Supplier<T> supplier, String alias) {
-        final TablePart tablePart;
-        tablePart = supplier.get();
+    final <T extends TablePart> JS ifAddOnBlock(JoinType joinType, @Nullable TablePart tablePart, String alias) {
         final JS block;
         if (tablePart == null) {
-            block = getNoActionTablePartBlock();
+            block = getNoActionOnBlock();
         } else {
-            block = addTablePartBlock(joinType, tablePart, alias);
+            block = addOnBlock(joinType, tablePart, alias);
         }
         return block;
     }
-
-    final <T extends TablePart> JS ifAddTablePartBlock(JoinType joinType, Function<C, T> function, String alias) {
-        final TablePart tablePart;
-        tablePart = function.apply(this.criteria);
-        final JS block;
-        if (tablePart == null) {
-            block = getNoActionTablePartBlock();
-        } else {
-            block = addTablePartBlock(joinType, tablePart, alias);
-        }
-        return block;
-    }
-
 
     final JT ifAddTableBlock(Predicate<C> predicate, JoinType joinType, TableMeta<?> table, String tableAlias) {
         final JT block;

@@ -4,7 +4,7 @@ import io.army.criteria.Cte;
 
 import java.util.List;
 
-public interface _MySQLDelete80 extends _MySQLDelete {
+public interface _MySQLWithClause {
 
     boolean isRecursive();
 

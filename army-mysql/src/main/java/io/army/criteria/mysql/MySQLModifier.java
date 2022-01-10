@@ -2,7 +2,7 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.SQLModifier;
 
-public enum MyModifier implements SQLModifier {
+public enum MySQLModifier implements SQLModifier {
 
 
     HIGH_PRIORITY,

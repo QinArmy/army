@@ -157,7 +157,7 @@ abstract class MySQLMultiUpdate<C, JT, JS, WR, WA, SR, IR, IT> extends MultiUpda
 
     @Override
     public final <T extends TablePart> JS ifStraightJoin(Supplier<T> supplier, String alias) {
-        return this.ifAddTablePartBlock(JoinType.STRAIGHT_JOIN, supplier, alias);
+        return this.ifAddOnBlock(JoinType.STRAIGHT_JOIN, supplier, alias);
     }
 
     @Override
@@ -172,7 +172,7 @@ abstract class MySQLMultiUpdate<C, JT, JS, WR, WA, SR, IR, IT> extends MultiUpda
 
     @Override
     public final <T extends TablePart> JS ifStraightJoin(Function<C, T> function, String alias) {
-        return this.ifAddTablePartBlock(JoinType.STRAIGHT_JOIN, function, alias);
+        return this.ifAddOnBlock(JoinType.STRAIGHT_JOIN, function, alias);
     }
 
     @Override
@@ -604,7 +604,7 @@ abstract class MySQLMultiUpdate<C, JT, JS, WR, WA, SR, IR, IT> extends MultiUpda
         }
 
         @Override
-        MultiOnSpec<C> createNoActionTablePartBlock() {
+        MultiOnSpec<C> createNoActionOnBlock() {
             return new SimpleNoActionOnBlock<>(this);
         }
 
@@ -694,7 +694,7 @@ abstract class MySQLMultiUpdate<C, JT, JS, WR, WA, SR, IR, IT> extends MultiUpda
         }
 
         @Override
-        BatchMultiOnSpec<C> createNoActionTablePartBlock() {
+        BatchMultiOnSpec<C> createNoActionOnBlock() {
             return new BatchNoActionOnSpec<>(this);
         }
 
@@ -1006,7 +1006,7 @@ abstract class MySQLMultiUpdate<C, JT, JS, WR, WA, SR, IR, IT> extends MultiUpda
 
 
     /**
-     * @see SimpleMultiUpdate#addTablePartBlock(JoinType, TablePart, String)
+     * @see SimpleMultiUpdate#addOnBlock(JoinType, TablePart, String)
      */
     private static final class SimpleOnBlock<C> extends OnClauseTableBlock<C, MySQLUpdate.MultiJoinSpec<C>>
             implements MySQLUpdate.MultiOnSpec<C> {
@@ -1039,7 +1039,7 @@ abstract class MySQLMultiUpdate<C, JT, JS, WR, WA, SR, IR, IT> extends MultiUpda
     } // SimpleOnBlock
 
     /**
-     * @see BatchMultiUpdate#addTablePartBlock(JoinType, TablePart, String)
+     * @see BatchMultiUpdate#addOnBlock(JoinType, TablePart, String)
      */
     private static final class BatchOnBlock<C> extends OnClauseTableBlock<C, MySQLUpdate.BatchMultiJoinSpec<C>>
             implements BatchMultiOnSpec<C> {
@@ -1230,7 +1230,7 @@ abstract class MySQLMultiUpdate<C, JT, JS, WR, WA, SR, IR, IT> extends MultiUpda
 
 
     /**
-     * @see SimpleMultiUpdate#createNoActionTablePartBlock()
+     * @see SimpleMultiUpdate#createNoActionOnBlock()
      */
     private static class SimpleNoActionOnBlock<C> extends NoActionOnClause<C, MySQLUpdate.MultiJoinSpec<C>>
             implements MySQLUpdate.MultiOnSpec<C> {
@@ -1243,7 +1243,7 @@ abstract class MySQLMultiUpdate<C, JT, JS, WR, WA, SR, IR, IT> extends MultiUpda
 
 
     /**
-     * @see BatchMultiUpdate#createNoActionTablePartBlock()
+     * @see BatchMultiUpdate#createNoActionOnBlock()
      */
     private static final class BatchNoActionOnSpec<C> extends NoActionOnClause<C,
             MySQLUpdate.BatchMultiJoinSpec<C>> implements MySQLUpdate.BatchMultiOnSpec<C> {

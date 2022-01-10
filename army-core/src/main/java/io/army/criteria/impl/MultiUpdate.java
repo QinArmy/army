@@ -81,7 +81,7 @@ abstract class MultiUpdate<C, JT, JS, WR, WA, SR> extends AbstractUpdate<C, JT, 
     }
 
     @Override
-    final JS addTablePartBlock(JoinType joinType, TablePart tablePart, String alias) {
+    final JS addOnBlock(JoinType joinType, TablePart tablePart, String alias) {
         final JS block;
         block = createTablePartBlock(joinType, tablePart, alias);
         this.tableBlockList.add((_TableBlock) block);
@@ -100,10 +100,10 @@ abstract class MultiUpdate<C, JT, JS, WR, WA, SR> extends AbstractUpdate<C, JT, 
     }
 
     @Override
-    final JS getNoActionTablePartBlock() {
+    final JS getNoActionOnBlock() {
         JS block = this.noActionTablePartBlock;
         if (block == null) {
-            block = createNoActionTablePartBlock();
+            block = createNoActionOnBlock();
             this.noActionTablePartBlock = block;
         }
         return block;
