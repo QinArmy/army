@@ -32,51 +32,24 @@ public interface MySQLUpdate extends Update {
     }
 
 
-    interface SingleIndexHintClause<C, IR> {
+    interface SingleUpdateClause<UR, UP> {
 
-        IR useIndex(List<String> indexNames);
+        UP update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+                , TableMeta<? extends IDomain> table);
 
-        IR ignoreIndex(List<String> indexNames);
+        UR update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+                , TableMeta<? extends IDomain> table, String tableAlias);
 
-        IR forceIndex(List<String> indexNames);
+        UP update(TableMeta<? extends IDomain> table);
 
-        IR useIndexForOrderBy(List<String> indexNames);
+        UR update(TableMeta<? extends IDomain> table, String tableAlias);
 
-        IR ignoreIndexForOrderBy(List<String> indexNames);
-
-        IR forceIndexForOrderBy(List<String> indexNames);
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        IR ifUseIndex(Function<C, List<String>> function);
+    }
 
 
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        IR ifIgnoreIndex(Function<C, List<String>> function);
+    interface SingleWithAndUpdateSpec<C> extends MySQLQuery.WithClause<C, MySQLUpdate.SingleUpdateSpec<C>>
+            , MySQLUpdate.SingleUpdateSpec<C> {
 
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        IR ifForceIndex(Function<C, List<String>> function);
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        IR ifUseIndexForOrderBy(Function<C, List<String>> function);
-
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        IR ifIgnoreIndexForOrderBy(Function<C, List<String>> function);
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        IR ifForceIndexForOrderBy(Function<C, List<String>> function);
     }
 
 
@@ -85,17 +58,8 @@ public interface MySQLUpdate extends Update {
      * This representing MySQL single-table update syntax update clause.
      * </p>
      */
-    interface SingleUpdateSpec<C> {
+    interface SingleUpdateSpec<C> extends MySQLUpdate.SingleUpdateClause<MySQLUpdate.SingleIndexHintSpec<C>, MySQLUpdate.SinglePartitionSpec<C>> {
 
-        SinglePartitionSpec<C> update(Supplier<List<Hint>> hints, List<SQLModifier> sqlModifiers
-                , TableMeta<? extends IDomain> table);
-
-        SingleIndexHintSpec<C> update(Supplier<List<Hint>> hints, List<SQLModifier> sqlModifiers
-                , TableMeta<? extends IDomain> table, String tableAlias);
-
-        SinglePartitionSpec<C> update(TableMeta<? extends IDomain> table);
-
-        SingleIndexHintSpec<C> update(TableMeta<? extends IDomain> table, String tableAlias);
 
     }
 
@@ -105,28 +69,24 @@ public interface MySQLUpdate extends Update {
      * This representing MySQL single-table update syntax partition clause.
      * </p>
      */
-    interface SinglePartitionSpec<C> extends MySQLQuery.PartitionClause<C, MySQLUpdate.SingleAsSpec<C>> {
+    interface SinglePartitionSpec<C>
+            extends MySQLQuery.PartitionClause<C, Statement.AsClause<MySQLUpdate.SingleIndexHintSpec<C>>> {
 
     }
 
-    /**
-     * <p>
-     * This interface representing MySQL single-table syntax as clause.
-     * Table alias is required,because possibly exists sub query about child table.
-     * </p>
-     */
-    interface SingleAsSpec<C> {
-
-        SingleIndexHintSpec<C> as(String tableAlias);
-    }
 
     /**
      * <p>
      * This representing MySQL single-table update syntax index hint clause.
      * </p>
      */
-    interface SingleIndexHintSpec<C> extends MySQLUpdate.SingleIndexHintClause<C, MySQLUpdate.SingleIndexHintSpec<C>>
+    interface SingleIndexHintSpec<C>
+            extends MySQLQuery.IndexHintClause<C, MySQLUpdate.IndexOrderBySpec<C>, MySQLUpdate.SingleIndexHintSpec<C>>
             , MySQLUpdate.SingleSetSpec<C> {
+
+    }
+
+    interface IndexOrderBySpec<C> extends MySQLQuery.IndexOrderByClause<C, MySQLUpdate.SingleIndexHintSpec<C>> {
 
     }
 
@@ -182,23 +142,19 @@ public interface MySQLUpdate extends Update {
 
     /*################################## blow batch single-table update spec ##################################*/
 
+    interface BatchSingleWithAndUpdateSpec<C> extends MySQLQuery.WithClause<C, MySQLUpdate.BatchSingleUpdateSpec<C>>
+            , MySQLUpdate.BatchSingleUpdateSpec<C> {
+
+    }
 
     /**
      * <p>
      * This representing MySQL batch single-table update syntax update clause.
      * </p>
      */
-    interface BatchSingleUpdateSpec<C> {
+    interface BatchSingleUpdateSpec<C>
+            extends MySQLUpdate.SingleUpdateClause<MySQLUpdate.BatchSingleIndexHintSpec<C>, MySQLUpdate.BatchSinglePartitionSpec<C>> {
 
-        BatchSinglePartitionSpec<C> update(Supplier<List<Hint>> hints, List<SQLModifier> sqlModifiers
-                , TableMeta<? extends IDomain> table);
-
-        BatchSingleIndexHintSpec<C> update(Supplier<List<Hint>> hints, List<SQLModifier> sqlModifiers
-                , TableMeta<? extends IDomain> table, String tableAlias);
-
-        BatchSinglePartitionSpec<C> update(TableMeta<? extends IDomain> table);
-
-        BatchSingleIndexHintSpec<C> update(TableMeta<? extends IDomain> table, String tableAlias);
     }
 
 
@@ -207,19 +163,9 @@ public interface MySQLUpdate extends Update {
      * This representing MySQL batch single-table update syntax partition clause.
      * </p>
      */
-    interface BatchSinglePartitionSpec<C> extends MySQLQuery.PartitionClause<C, MySQLUpdate.BatchSingleAsSpec<C>> {
+    interface BatchSinglePartitionSpec<C>
+            extends MySQLQuery.PartitionClause<C, Statement.AsClause<MySQLUpdate.BatchSingleIndexHintSpec<C>>> {
 
-    }
-
-    /**
-     * <p>
-     * This interface representing MySQL batch single-table syntax as clause.
-     * Table alias is required,because possibly exists sub query about child table.
-     * </p>
-     */
-    interface BatchSingleAsSpec<C> {
-
-        BatchSingleIndexHintSpec<C> as(String tableAlias);
     }
 
     /**
@@ -228,8 +174,12 @@ public interface MySQLUpdate extends Update {
      * </p>
      */
     interface BatchSingleIndexHintSpec<C>
-            extends MySQLUpdate.SingleIndexHintClause<C, MySQLUpdate.BatchSingleIndexHintSpec<C>>
+            extends MySQLQuery.IndexHintClause<C, MySQLUpdate.BatchIndexOrderBySpec<C>, MySQLUpdate.BatchSingleIndexHintSpec<C>>
             , MySQLUpdate.BatchSingleSetSpec<C> {
+
+    }
+
+    interface BatchIndexOrderBySpec<C> extends MySQLQuery.IndexOrderByClause<C, MySQLUpdate.BatchSingleIndexHintSpec<C>> {
 
     }
 
@@ -278,17 +228,8 @@ public interface MySQLUpdate extends Update {
      * This representing MySQL batch single-table update syntax limit clause.
      * </p>
      */
-    interface BatchLimitSpec<C> extends MySQLUpdate.LimitClause<C, MySQLUpdate.BatchSingleParamSpec<C>>
-            , MySQLUpdate.BatchSingleParamSpec<C> {
-
-    }
-
-    /**
-     * <p>
-     * This representing MySQL batch single-table update syntax batch parameter clause.
-     * </p>
-     */
-    interface BatchSingleParamSpec<C> extends Statement.BatchParamClause<C, Update.UpdateSpec> {
+    interface BatchLimitSpec<C> extends MySQLUpdate.LimitClause<C, Statement.BatchParamClause<C, UpdateSpec>>
+            , Statement.BatchParamClause<C, UpdateSpec> {
 
     }
 

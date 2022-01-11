@@ -1,11 +1,19 @@
 package io.army.criteria.impl;
 
+import io.army.beans.ReadWrapper;
+import io.army.criteria.Statement;
 import io.army.criteria.Update;
+import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._SingleUpdate;
-import io.army.dialect._DialectUtils;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.util.CollectionUtils;
+import io.army.util._Exceptions;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -15,62 +23,138 @@ import io.army.meta.TableMeta;
  * @param <T> domain java type
  * @param <C> criteria java type used to dynamic update and sub query
  */
-final class StandardUpdate<T extends IDomain, C> extends AbstractUpdate<
-        C,// C
-        Update.UpdateSpec, // WR
-        Update.StandardWhereAndSpec<C>, // WA
-        Update.StandardWhereSpec<C>   // SR
-        > implements Update.StandardWhereSpec<C>, Update.StandardWhereAndSpec<C>, Update.StandardSetSpec<C>
-        , _SingleUpdate {
+abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA, SR>
+        implements Update.StandardUpdateClause<UR>, _SingleUpdate, Update.UpdateSpec {
 
-
-    static <C> StandardUpdateSpec<C> create(@Nullable C criteria) {
-        return new StandardUpdateSpecImpl<>(criteria);
+    static <C> StandardUpdateSpec<C> simple(@Nullable C criteria) {
+        return new SimpleUpdate<>(criteria);
     }
 
-    private final TableMeta<T> table;
+    static <C> StandardBatchUpdateSpec<C> batch(@Nullable C criteria) {
+        return new BatchUpdate<>(criteria);
+    }
 
-    private final String tableAlias;
+    private TableMeta<?> table;
+
+    private String tableAlias;
 
 
-    private StandardUpdate(TableMeta<T> table, String tableAlias, @Nullable C criteria) {
+    private StandardUpdate(@Nullable C criteria) {
         super(criteria);
-        this.table = table;
-        this.tableAlias = tableAlias;
     }
-
-    /*################################## blow RouteSpec method ##################################*/
-
-
-    /*################################## blow SetSpec method ##################################*/
-
 
     @Override
-    public TableMeta<?> table() {
+    public final UR update(TableMeta<?> table, String tableAlias) {
+        if (this.table != null) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        this.table = table;
+        this.tableAlias = tableAlias;
+        return (UR) this;
+    }
+
+    @Override
+    final void onAsUpdate() {
+        if (this.table == null || this.tableAlias == null) {
+            throw _Exceptions.castCriteriaApi();
+        }
+
+        if (this instanceof BatchUpdate && CollectionUtils.isEmpty(((BatchUpdate<C>) this).wrapperList)) {
+            throw _Exceptions.castCriteriaApi();
+        }
+
+    }
+
+    @Override
+    final void onClear() {
+        this.tableAlias = null;
+        if (this instanceof BatchUpdate) {
+            ((BatchUpdate<C>) this).wrapperList = null;
+        }
+
+    }
+
+    @Override
+    public final TableMeta<?> table() {
         return this.table;
     }
 
     @Override
-    public String tableAlias() {
+    public final String tableAlias() {
         return this.tableAlias;
     }
 
 
-    private static final class StandardUpdateSpecImpl<C> implements StandardUpdateSpec<C> {
+    private static final class SimpleUpdate<C> extends StandardUpdate<
+            C,
+            Update.StandardSetSpec<C>,
+            Update.UpdateSpec,
+            Update.StandardWhereAndSpec<C>,
+            Update.StandardWhereSpec<C>> implements Update.StandardUpdateSpec<C>, Update.StandardWhereAndSpec<C>
+            , Update.StandardWhereSpec<C> {
 
-        private final C criteria;
+        private SimpleUpdate(@Nullable C criteria) {
+            super(criteria);
+        }
 
-        private StandardUpdateSpecImpl(@Nullable C criteria) {
-            this.criteria = criteria;
+
+    }//SimpleUpdate
+
+
+    private static final class BatchUpdate<C> extends StandardUpdate<
+            C,
+            Update.StandardBatchSetSpec<C>,
+            Statement.BatchParamClause<C, Update.UpdateSpec>,
+            Update.StandardBatchWhereAndSpec<C>,
+            Update.StandardBatchWhereSpec<C>> implements Update.StandardBatchUpdateSpec<C>
+            , Update.StandardBatchWhereSpec<C>, Update.StandardBatchWhereAndSpec<C>
+            , Statement.BatchParamClause<C, Update.UpdateSpec>, _BatchDml {
+
+        private List<ReadWrapper> wrapperList;
+
+        private BatchUpdate(@Nullable C criteria) {
+            super(criteria);
         }
 
         @Override
-        public StandardSetSpec<C> update(final TableMeta<?> table, final String tableAlias) {
-            _DialectUtils.validateUpdateTableAlias(table, tableAlias);
-            return new StandardUpdate<>(table, tableAlias, this.criteria);
+        public UpdateSpec paramMaps(List<Map<String, Object>> mapList) {
+            this.wrapperList = CriteriaUtils.paramMaps(mapList);
+            return this;
         }
 
-    }
+        @Override
+        public UpdateSpec paramMaps(Supplier<List<Map<String, Object>>> supplier) {
+            return this.paramMaps(supplier.get());
+        }
+
+        @Override
+        public UpdateSpec paramMaps(Function<C, List<Map<String, Object>>> function) {
+            return this.paramMaps(function.apply(this.criteria));
+        }
+
+        @Override
+        public UpdateSpec paramBeans(List<Object> beanList) {
+            this.wrapperList = CriteriaUtils.paramBeans(beanList);
+            return this;
+        }
+
+        @Override
+        public UpdateSpec paramBeans(Supplier<List<Object>> supplier) {
+            return this.paramBeans(supplier.get());
+        }
+
+        @Override
+        public UpdateSpec paramBeans(Function<C, List<Object>> function) {
+            return this.paramBeans(function.apply(this.criteria));
+        }
+
+        @Override
+        public List<ReadWrapper> wrapperList() {
+            return this.wrapperList;
+        }
+
+
+    }//BatchUpdate
 
 
 }

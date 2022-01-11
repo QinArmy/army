@@ -10,27 +10,14 @@ public abstract class _CriteriaCounselor {
     }
 
     public static void assertStandardComposeSelect(_StandardComposeQuery select) {
-        if (!(select instanceof ComposeQueries)) {
-            throw new IllegalArgumentException(String.format("%s isn't instance of %s", select
-                    , ComposeQueries.class.getName()));
-        }
+
     }
 
     public static void assertStandardComposeSubQuery(_StandardComposeQuery composeQuery) {
 
-        if (!(composeQuery instanceof ComposeQueries)) {
-            throw new IllegalArgumentException(String.format("%s isn't instance of %s or %s.", composeQuery
-                    , SubQuery.class.getName()
-                    , ColumnSubQuery.class.getName()
-            ));
-        }
     }
 
     public static void assertStandardSelect(_StandardSelect select) {
-        if (!(select instanceof StandardSelect)) {
-            throw new IllegalArgumentException(String.format("%s isn't instance of %s", select
-                    , StandardSelect.class.getName()));
-        }
     }
 
     public static void assertStandardSubQuery(_StandardSubQuery subQuery) {

@@ -3,17 +3,18 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.mysql.MySQL80Query;
 import io.army.criteria.mysql.MySQLDelete;
+import io.army.criteria.mysql.MySQLUpdate;
 
 import java.util.Objects;
 
 public abstract class MySQLs80 extends MySQLs {
 
 
-    public static MySQL80Query.With80Spec<Void, Select> select() {
+    public static MySQL80Query.With80Spec<Void, Select> tableSelect() {
         return MySQL80SimpleQuery.simpleSelect(null);
     }
 
-    public static <C> MySQL80Query.With80Spec<C, Select> select(C criteria) {
+    public static <C> MySQL80Query.With80Spec<C, Select> tableSelect(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQL80SimpleQuery.simpleSelect(criteria);
     }
@@ -62,6 +63,25 @@ public abstract class MySQLs80 extends MySQLs {
         Objects.requireNonNull(criteria);
         return MySQL80SimpleQuery.scalarSubQuery(criteria);
     }
+
+    public static MySQLUpdate.SingleWithAndUpdateSpec<Void> singleUpdate() {
+        return MySQLSingleUpdate.simple80(null);
+    }
+
+    public static <C> MySQLUpdate.SingleWithAndUpdateSpec<C> singleUpdate(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQLSingleUpdate.simple80(criteria);
+    }
+
+    public static MySQLUpdate.BatchSingleWithAndUpdateSpec<Void> batchSingleUpdate() {
+        return MySQLSingleUpdate.batch80(null);
+    }
+
+    public static <C> MySQLUpdate.BatchSingleWithAndUpdateSpec<C> batchSingleUpdate(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQLSingleUpdate.batch80(criteria);
+    }
+
 
     public static MySQLDelete.SingleDelete80Spec<Void> singleDelete() {
         return MySQLSingleDelete.simple80(null);

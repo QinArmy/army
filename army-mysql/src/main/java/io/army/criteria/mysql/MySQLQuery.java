@@ -137,17 +137,25 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
-    interface IndexPurposeClause<C, IC> {
-
-        IC forJoin(List<String> indexList);
+    interface IndexOrderByClause<C, IC> {
 
         IC forOrderBy(List<String> indexList);
 
-        IC forGroupBy(List<String> indexList);
+        IC forOrderBy(Function<C, List<String>> function);
+    }
+
+    interface IndexJoinClause<C, IC> {
+
+        IC forJoin(List<String> indexList);
 
         IC forJoin(Function<C, List<String>> function);
+    }
 
-        IC forOrderBy(Function<C, List<String>> function);
+
+    interface IndexPurposeClause<C, IC> extends MySQLQuery.IndexOrderByClause<C, IC>
+            , MySQLQuery.IndexJoinClause<C, IC> {
+
+        IC forGroupBy(List<String> indexList);
 
         IC forGroupBy(Function<C, List<String>> function);
 

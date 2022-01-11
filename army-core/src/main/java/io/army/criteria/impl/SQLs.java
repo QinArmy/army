@@ -57,7 +57,7 @@ public abstract class SQLs extends SQLUtils {
     }
 
     public static Update.StandardUpdateSpec<Void> standardUpdate() {
-        return StandardUpdate.create(null);
+        return StandardUpdate.simple(null);
     }
 
     /**
@@ -66,14 +66,14 @@ public abstract class SQLs extends SQLUtils {
      */
     public static <C> Update.StandardUpdateSpec<C> standardUpdate(C criteria) {
         Objects.requireNonNull(criteria);
-        return StandardUpdate.create(criteria);
+        return StandardUpdate.simple(criteria);
     }
 
     /**
      * @see #namedParam(String, ParamMeta)
      */
     public static Update.StandardBatchUpdateSpec<Void> standardBatchUpdate() {
-        return StandardBatchUpdate.create();
+        return StandardUpdate.batch(null);
     }
 
     /**
@@ -82,29 +82,32 @@ public abstract class SQLs extends SQLUtils {
      * @see #namedParam(String, ParamMeta)
      */
     public static <C> Update.StandardBatchUpdateSpec<C> standardBatchUpdate(C criteria) {
-        return StandardBatchUpdate.create(criteria);
+        Objects.requireNonNull(criteria);
+        return StandardUpdate.batch(criteria);
     }
 
     public static Delete.StandardDeleteSpec<Void> standardDelete() {
-        return StandardDelete.create();
+        return StandardDelete.simple(null);
     }
 
     public static <C> Delete.StandardDeleteSpec<C> standardDelete(C criteria) {
-        return StandardDelete.create(criteria);
+        Objects.requireNonNull(criteria);
+        return StandardDelete.simple(criteria);
     }
 
     /**
      * @see #namedParam(String, ParamMeta)
      */
     public static Delete.StandardBatchDeleteSpec<Void> standardBatchDelete() {
-        return StandardBatchDelete.create();
+        return StandardDelete.batch(null);
     }
 
     /**
      * @see #namedParam(String, ParamMeta)
      */
     public static <C> Delete.StandardBatchDeleteSpec<C> standardBatchDelete(C criteria) {
-        return StandardBatchDelete.create(criteria);
+        Objects.requireNonNull(criteria);
+        return StandardDelete.batch(criteria);
     }
 
     public static StandardQuery.SelectSpec<Void> standardSelect() {

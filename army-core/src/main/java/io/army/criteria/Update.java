@@ -2,7 +2,6 @@ package io.army.criteria;
 
 
 import io.army.criteria.impl.SQLs;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -20,10 +19,14 @@ public interface Update extends Statement {
         Update asUpdate();
     }
 
+    interface StandardUpdateClause<UR> {
 
-    interface StandardUpdateSpec<C> {
+        UR update(TableMeta<?> table, String tableAlias);
+    }
 
-        StandardSetSpec<C> update(TableMeta<?> table, String tableAlias);
+
+    interface StandardUpdateSpec<C> extends Update.StandardUpdateClause<Update.StandardSetSpec<C>> {
+
 
     }
 
@@ -109,33 +112,26 @@ public interface Update extends Statement {
     }
 
 
-
-
-
     /*################################## blow batch update interface ##################################*/
 
-    interface StandardBatchUpdateSpec<C> {
-
-        <T extends IDomain> StandardBatchSetSpec<T, C> update(TableMeta<T> table, String tableAlias);
-    }
-
-    interface StandardBatchParamSpec<C> extends Statement.BatchParamClause<C, Update.UpdateSpec> {
+    interface StandardBatchUpdateSpec<C> extends Update.StandardUpdateClause<Update.StandardBatchSetSpec<C>> {
 
     }
 
-    interface StandardBatchWhereAndSpec<C> extends Update.StandardBatchParamSpec<C>
-            , Statement.WhereAndClause<C, Update.StandardBatchWhereAndSpec<C>> {
+
+    interface StandardBatchWhereAndSpec<C> extends Statement.WhereAndClause<C, Update.StandardBatchWhereAndSpec<C>>
+            , Statement.BatchParamClause<C, Update.UpdateSpec> {
 
     }
 
-    interface StandardBatchSetSpec<T extends IDomain, C>
-            extends Update.BatchSetClause<C, StandardBatchWhereSpec<T, C>> {
+    interface StandardBatchSetSpec<C> extends Update.BatchSetClause<C, StandardBatchWhereSpec<C>> {
 
 
     }
 
-    interface StandardBatchWhereSpec<T extends IDomain, C> extends StandardBatchSetSpec<T, C>
-            , Statement.WhereClause<C, Update.StandardBatchParamSpec<C>, Update.StandardBatchWhereAndSpec<C>> {
+    interface StandardBatchWhereSpec<C> extends StandardBatchSetSpec<C>
+            , Statement.WhereClause<C, Statement.BatchParamClause<C, Update.UpdateSpec>, Update.StandardBatchWhereAndSpec<C>>
+            , Statement.BatchParamClause<C, Update.UpdateSpec> {
 
     }
 

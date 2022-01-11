@@ -348,13 +348,13 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
             throw new IllegalStateException("target and value size not match.");
         }
         this.fieldList = CollectionUtils.unmodifiableList(targetParts);
-        this.valueExpList = CollectionUtils.asUnmodifiableList(valueParts);
+        this.valueExpList = CollectionUtils.unmodifiableList(valueParts);
 
         final List<_Predicate> predicates = this.predicateList;
         if (CollectionUtils.isEmpty(predicates)) {
             throw _Exceptions.dmlNoWhereClause();
         }
-        this.predicateList = CollectionUtils.asUnmodifiableList(predicates);
+        this.predicateList = CollectionUtils.unmodifiableList(predicates);
 
         this.onAsUpdate();
         this.prepared = true;

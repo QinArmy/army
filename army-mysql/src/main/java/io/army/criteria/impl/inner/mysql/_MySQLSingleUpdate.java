@@ -17,7 +17,7 @@ public interface _MySQLSingleUpdate extends _MySQLUpdate, _SingleUpdate {
     /**
      * @return a unmodifiable list
      */
-    List<SortPart> sortExpList();
+    List<SortPart> orderByList();
 
     long rowCount();
 

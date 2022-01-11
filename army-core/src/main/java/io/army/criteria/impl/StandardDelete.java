@@ -1,13 +1,18 @@
 package io.army.criteria.impl;
 
+import io.army.beans.ReadWrapper;
 import io.army.criteria.Delete;
-import io.army.dialect._DialectUtils;
+import io.army.criteria.Statement;
+import io.army.criteria.impl.inner._BatchDml;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.util._Assert;
+import io.army.util._Exceptions;
 
-import java.util.Objects;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -16,44 +21,62 @@ import java.util.Objects;
  *
  * @param <C> criteria java type used to crate dynamic delete and sub query
  */
-final class StandardDelete<C> extends SingleDelete<
-        C,// C
-        Delete.DeleteSpec,  // WR
-        Delete.StandardWhereAndSpec<C>> // WA
-        implements Delete.StandardWhereAndSpec<C>, Delete.StandardWhereSpec<C> {
+abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
+        implements Delete.StandardDeleteClause<DR> {
 
-    static StandardDeleteSpec<Void> create() {
-        return new StandardDeleteSpecImpl<>(null);
+    static <C> StandardDeleteSpec<C> simple(@Nullable C criteria) {
+        return new SimpleDelete<>(criteria);
     }
 
-    static <C> StandardDeleteSpec<C> create(final C criteria) {
-        Objects.requireNonNull(criteria);
-        return new StandardDeleteSpecImpl<>(criteria);
+    static <C> StandardBatchDeleteSpec<C> batch(@Nullable C criteria) {
+        return new BatchDelete<>(criteria);
     }
 
-    private final TableMeta<?> table;
 
-    private final String tableAlias;
+    private TableMeta<?> table;
 
-    private boolean prepared;
+    private String tableAlias;
 
-    private StandardDelete(TableMeta<?> table, String tableAlias, @Nullable C criteria) {
-        super(criteria);
-        this.table = table;
-        this.tableAlias = tableAlias;
+    private StandardDelete(@Nullable C criteria) {
+        super(CriteriaUtils.primaryContext(criteria));
     }
-
-    /*################################## blow SingleDeleteSpec method ##################################*/
-
 
     @Override
-    public TableMeta<?> table() {
-        _Assert.prepared(this.prepared);
+    public final DR deleteFrom(TableMeta<? extends IDomain> table, String tableAlias) {
+        if (this.table != null) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        this.table = table;
+        this.tableAlias = tableAlias;
+        return (DR) this;
+    }
+
+    @Override
+    void onAsDelete() {
+        if (this.table == null || this.tableAlias == null) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        if (this instanceof BatchDelete && ((BatchDelete<C>) this).wrapperList == null) {
+            throw _Exceptions.castCriteriaApi();
+        }
+    }
+
+    @Override
+    void onClear() {
+        this.tableAlias = null;
+        if (this instanceof BatchDelete) {
+            ((BatchDelete<C>) this).wrapperList = null;
+        }
+    }
+
+    @Override
+    public final TableMeta<?> table() {
+        prepared();
         return this.table;
     }
 
     @Override
-    public String tableAlias() {
+    public final String tableAlias() {
         return this.tableAlias;
     }
 
@@ -61,23 +84,74 @@ final class StandardDelete<C> extends SingleDelete<
 
     /*################################## blow static inner class ##################################*/
 
+    private static final class SimpleDelete<C> extends StandardDelete<
+            C,
+            Delete.StandardWhereSpec<C>,
+            Delete.DeleteSpec,
+            Delete.StandardWhereAndSpec<C>>
+            implements Delete.StandardWhereSpec<C>, Delete.StandardWhereAndSpec<C>
+            , Delete.StandardDeleteSpec<C> {
 
-    private static final class StandardDeleteSpecImpl<C> implements StandardDeleteSpec<C> {
+        private SimpleDelete(@Nullable C criteria) {
+            super(criteria);
+        }
 
-        private final C criteria;
 
-        private StandardDeleteSpecImpl(@Nullable C criteria) {
-            this.criteria = criteria;
+    }//SimpleDelete
+
+    private static final class BatchDelete<C> extends StandardDelete<
+            C,
+            Delete.StandardBatchWhereSpec<C>,
+            Statement.BatchParamClause<C, Delete.DeleteSpec>,
+            Delete.StandardBatchWhereAndSpec<C>>
+            implements Delete.StandardBatchWhereAndSpec<C>, Delete.StandardBatchWhereSpec<C>
+            , Statement.BatchParamClause<C, Delete.DeleteSpec>, Delete.StandardBatchDeleteSpec<C>, _BatchDml {
+
+        private List<ReadWrapper> wrapperList;
+
+        private BatchDelete(@Nullable C criteria) {
+            super(criteria);
+        }
+
+
+        @Override
+        public DeleteSpec paramMaps(List<Map<String, Object>> mapList) {
+            this.wrapperList = CriteriaUtils.paramMaps(mapList);
+            return this;
         }
 
         @Override
-        public Delete.StandardWhereSpec<C> deleteFrom(TableMeta<? extends IDomain> table, String tableAlias) {
-            _DialectUtils.validateTableAlias(tableAlias);
-            return new StandardDelete<>(table, tableAlias, this.criteria);
+        public DeleteSpec paramMaps(Supplier<List<Map<String, Object>>> supplier) {
+            return this.paramMaps(supplier.get());
         }
 
+        @Override
+        public DeleteSpec paramMaps(Function<C, List<Map<String, Object>>> function) {
+            return this.paramMaps(function.apply(this.criteria));
+        }
 
-    }
+        @Override
+        public DeleteSpec paramBeans(List<Object> beanList) {
+            this.wrapperList = CriteriaUtils.paramBeans(beanList);
+            return this;
+        }
+
+        @Override
+        public DeleteSpec paramBeans(Supplier<List<Object>> supplier) {
+            return this.paramBeans(supplier.get());
+        }
+
+        @Override
+        public DeleteSpec paramBeans(Function<C, List<Object>> function) {
+            return this.paramBeans(function.apply(this.criteria));
+        }
+
+        @Override
+        public List<ReadWrapper> wrapperList() {
+            return this.wrapperList;
+        }
+
+    }// BatchDelete
 
 
 }

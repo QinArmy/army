@@ -11,9 +11,14 @@ public interface Delete extends Dml, SQLDebug {
         Delete asDelete();
     }
 
-    interface StandardDeleteSpec<C> {
+    interface StandardDeleteClause<DR> {
 
-        StandardWhereSpec<C> deleteFrom(TableMeta<? extends IDomain> table, String tableAlias);
+        DR deleteFrom(TableMeta<? extends IDomain> table, String tableAlias);
+    }
+
+
+    interface StandardDeleteSpec<C> extends Delete.StandardDeleteClause<Delete.StandardWhereSpec<C>> {
+
     }
 
 
@@ -29,26 +34,20 @@ public interface Delete extends Dml, SQLDebug {
 
 
 
-
     /*################################## blow batch delete ##################################*/
 
-    interface StandardBatchDeleteSpec<C> {
-
-        StandardBatchWhereSpec<C> deleteFrom(TableMeta<? extends IDomain> table, String tableAlias);
-    }
-
-    interface StandardBatchParamSpec<C> extends Statement.BatchParamClause<C, Delete.DeleteSpec> {
+    interface StandardBatchDeleteSpec<C> extends Delete.StandardDeleteClause<Delete.StandardBatchWhereSpec<C>> {
 
     }
 
 
     interface StandardBatchWhereSpec<C>
-            extends Statement.WhereClause<C, Delete.StandardBatchParamSpec<C>, Delete.StandardBatchWhereAndSpec<C>> {
+            extends Statement.WhereClause<C, Statement.BatchParamClause<C, Delete.DeleteSpec>, Delete.StandardBatchWhereAndSpec<C>> {
 
     }
 
     interface StandardBatchWhereAndSpec<C> extends Statement.WhereAndClause<C, Delete.StandardBatchWhereAndSpec<C>>
-            , StandardBatchParamSpec<C> {
+            , Statement.BatchParamClause<C, Delete.DeleteSpec> {
 
     }
 
