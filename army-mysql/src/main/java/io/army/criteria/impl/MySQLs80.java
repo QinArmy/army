@@ -9,6 +9,8 @@ import java.util.Objects;
 
 public abstract class MySQLs80 extends MySQLs {
 
+    protected MySQLs80() {
+    }
 
     public static MySQL80Query.With80Spec<Void, Select> tableSelect() {
         return MySQL80SimpleQuery.simpleSelect(null);
@@ -119,5 +121,24 @@ public abstract class MySQLs80 extends MySQLs {
         Objects.requireNonNull(criteria);
         return MySQLMultiDelete.batch80(criteria);
     }
+
+    static MySQLUpdate.WithAndMultiUpdateSpec<Void> multiUpdate() {
+        return MySQLMultiUpdate.simple80(null);
+    }
+
+    static <C> MySQLUpdate.WithAndMultiUpdateSpec<C> multiUpdate(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQLMultiUpdate.simple80(criteria);
+    }
+
+    static MySQLUpdate.BatchWithAndMultiUpdateSpec<Void> batchMultiUpdate() {
+        return MySQLMultiUpdate.batch80(null);
+    }
+
+    static <C> MySQLUpdate.BatchWithAndMultiUpdateSpec<C> batchMultiUpdate(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQLMultiUpdate.batch80(criteria);
+    }
+
 
 }

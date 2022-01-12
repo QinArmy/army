@@ -4,9 +4,9 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.TablePart;
 import io.army.criteria.impl.inner._MultiUpdate;
 import io.army.criteria.impl.inner._TableBlock;
-import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.CollectionUtils;
+import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,15 +20,15 @@ import java.util.List;
 abstract class MultiUpdate<C, JT, JS, WR, WA, SR> extends AbstractUpdate<C, JT, JS, WR, WA, SR>
         implements _MultiUpdate {
 
+
     private JT noActionTableBlock;
 
-    private JS noActionTablePartBlock;
+    private JS noActionOnBlock;
 
     private List<_TableBlock> tableBlockList = new ArrayList<>();
 
-    MultiUpdate(_TableBlock firstBlock, @Nullable C criteria) {
-        super(criteria);
-        this.tableBlockList.add(firstBlock);
+    MultiUpdate(CriteriaContext criteriaContext) {
+        super(criteriaContext);
     }
 
 
@@ -38,12 +38,28 @@ abstract class MultiUpdate<C, JT, JS, WR, WA, SR> extends AbstractUpdate<C, JT, 
         return this.tableBlockList;
     }
 
+    final void addFirstBlock(TableBlock block) {
+        final List<_TableBlock> tableBlockList = this.tableBlockList;
+        if (tableBlockList == null || tableBlockList.size() > 0) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        tableBlockList.add(block);
+        this.criteriaContext.onAddTablePart(block.tablePart, block.alias());
+    }
+
+    final _TableBlock getFirstBlock() {
+        final List<_TableBlock> tableBlockList = this.tableBlockList;
+        if (tableBlockList.size() != 1) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        return tableBlockList.get(0);
+    }
 
     @Override
     final void onAsUpdate() {
         final List<_TableBlock> tableBlockList = this.tableBlockList;
         if (CollectionUtils.isEmpty(tableBlockList)) {
-            throw new CriteriaException("multi-table tableList must not empty.");
+            throw new CriteriaException("multi-table table block list must not empty.");
         }
         this.tableBlockList = Collections.unmodifiableList(tableBlockList);
         this.doOnAsUpdate();
@@ -61,7 +77,7 @@ abstract class MultiUpdate<C, JT, JS, WR, WA, SR> extends AbstractUpdate<C, JT, 
 
     abstract JT createTableBlock(JoinType joinType, TableMeta<?> table, String tableAlias);
 
-    abstract JS createTablePartBlock(JoinType joinType, TablePart tablePart, String alias);
+    abstract JS createOnBlock(JoinType joinType, TablePart tablePart, String alias);
 
 
     final void addOtherBlock(_TableBlock block) {
@@ -83,8 +99,11 @@ abstract class MultiUpdate<C, JT, JS, WR, WA, SR> extends AbstractUpdate<C, JT, 
     @Override
     final JS addOnBlock(JoinType joinType, TablePart tablePart, String alias) {
         final JS block;
-        block = createTablePartBlock(joinType, tablePart, alias);
+        block = createOnBlock(joinType, tablePart, alias);
         this.tableBlockList.add((_TableBlock) block);
+        if (!(tablePart instanceof TableMeta)) {
+            this.criteriaContext.onAddTablePart(tablePart, alias);
+        }
         return block;
     }
 
@@ -101,10 +120,10 @@ abstract class MultiUpdate<C, JT, JS, WR, WA, SR> extends AbstractUpdate<C, JT, 
 
     @Override
     final JS getNoActionOnBlock() {
-        JS block = this.noActionTablePartBlock;
+        JS block = this.noActionOnBlock;
         if (block == null) {
             block = createNoActionOnBlock();
-            this.noActionTablePartBlock = block;
+            this.noActionOnBlock = block;
         }
         return block;
     }

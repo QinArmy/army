@@ -14,8 +14,10 @@ interface CriteriaContext {
 
     <E> DerivedField<E> ref(String subQueryAlias, String derivedFieldName, Class<E> selectionType);
 
+    @Deprecated
     void onAddSubQuery(SubQuery subQuery, String subQueryAlias);
 
+    @Deprecated
     void onAddTable(TableMeta<?> tableMeta, String tableAlias);
 
     default void onAddTablePart(TablePart tablePart, String alias) {

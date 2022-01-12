@@ -40,14 +40,9 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
 
     private boolean prepared;
 
-    AbstractUpdate(@Nullable C criteria) {
-        super(criteria);
-        this.criteriaContext = new CriteriaContextImpl<>(criteria);
-        if (this instanceof WithElement) {
-            CriteriaContextStack.push(this.criteriaContext);
-        } else {
-            CriteriaContextStack.setContextStack(this.criteriaContext);
-        }
+    AbstractUpdate(CriteriaContext criteriaContext) {
+        super(criteriaContext.criteria());
+        this.criteriaContext = criteriaContext;
 
     }
 

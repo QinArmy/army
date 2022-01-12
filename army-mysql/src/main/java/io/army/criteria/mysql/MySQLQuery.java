@@ -40,9 +40,9 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <C>  criteria type use to create dynamic statement.
      * @param <JT> index hint clause,see {@link MySQLQuery.IndexHintClause}
      * @param <JS> on clause,see {@link Query.OnClause}
-     * @param <IT> partition clause, see {@link MySQLQuery.PartitionClause}
+     * @param <JP> partition clause, see {@link MySQLQuery.PartitionClause}
      */
-    interface MySQLJoinClause<C, JT, JS, IT> extends Statement.JoinClause<C, JT, JS> {
+    interface MySQLJoinClause<C, JT, JS, JP> extends Statement.JoinClause<C, JT, JS> {
 
         JT straightJoin(TableMeta<?> table, String tableAlias);
 
@@ -56,25 +56,25 @@ public interface MySQLQuery extends Query, DialectStatement {
 
         <T extends TablePart> JS ifStraightJoin(Supplier<T> supplier, String alias);
 
-        IT leftJoin(TableMeta<?> table);
+        JP leftJoin(TableMeta<?> table);
 
-        IT ifLeftJoin(Predicate<C> predicate, TableMeta<?> table);
+        JP ifLeftJoin(Predicate<C> predicate, TableMeta<?> table);
 
-        IT join(TableMeta<?> table);
+        JP join(TableMeta<?> table);
 
-        IT ifJoin(Predicate<C> predicate, TableMeta<?> table);
+        JP ifJoin(Predicate<C> predicate, TableMeta<?> table);
 
-        IT rightJoin(TableMeta<?> table);
+        JP rightJoin(TableMeta<?> table);
 
-        IT ifRightJoin(Predicate<C> predicate, TableMeta<?> table);
+        JP ifRightJoin(Predicate<C> predicate, TableMeta<?> table);
 
-        IT straightJoin(TableMeta<?> table);
+        JP straightJoin(TableMeta<?> table);
 
-        IT ifStraightJoin(Predicate<C> predicate, TableMeta<?> table);
+        JP ifStraightJoin(Predicate<C> predicate, TableMeta<?> table);
 
-        IT fullJoin(TableMeta<?> table);
+        JP fullJoin(TableMeta<?> table);
 
-        IT ifFullJoin(Predicate<C> predicate, TableMeta<?> table);
+        JP ifFullJoin(Predicate<C> predicate, TableMeta<?> table);
 
 
     }
