@@ -893,13 +893,10 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
     private static final class SimpleOnBlock<C> extends OnClauseTableBlock<C, MySQLUpdate.MultiJoinSpec<C>>
             implements MySQLUpdate.MultiOnSpec<C> {
 
-        private final String alias;
-
         private final SimpleUpdate<C> update;
 
         private SimpleOnBlock(JoinType joinType, TablePart tablePart, String alias, SimpleUpdate<C> update) {
-            super(joinType, tablePart);
-            this.alias = alias;
+            super(joinType, tablePart, alias);
             this.update = update;
         }
 
@@ -911,11 +908,6 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
         @Override
         MultiJoinSpec<C> endOnClause() {
             return this.update;
-        }
-
-        @Override
-        public String alias() {
-            return this.alias;
         }
 
     } // SimpleOnBlock
@@ -1036,13 +1028,10 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
     private static final class BatchOnBlock<C> extends OnClauseTableBlock<C, MySQLUpdate.BatchMultiJoinSpec<C>>
             implements BatchMultiOnSpec<C> {
 
-        private final String alias;
-
         private final BatchUpdate<C> update;
 
         private BatchOnBlock(JoinType joinType, TablePart tablePart, String alias, BatchUpdate<C> update) {
-            super(joinType, tablePart);
-            this.alias = alias;
+            super(joinType, tablePart, alias);
             this.update = update;
         }
 
@@ -1054,11 +1043,6 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
         @Override
         BatchMultiJoinSpec<C> endOnClause() {
             return this.update;
-        }
-
-        @Override
-        public String alias() {
-            return this.alias;
         }
 
 

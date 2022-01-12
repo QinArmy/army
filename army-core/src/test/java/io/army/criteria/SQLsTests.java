@@ -15,7 +15,7 @@ public class SQLsTests {
     @Test
     public void standardSelect(SingleTableMeta<?> table) {
         final Select select;
-        select = SQLs.standardSelect()
+        select = SQLs.standardQuery()
                 .select(SQLs.group(table, "t"))
                 .from(table, "t")
                 .where(Collections.emptyList())

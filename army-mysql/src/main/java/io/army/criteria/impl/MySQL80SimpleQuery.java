@@ -632,13 +632,11 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     private static class OnBlock<C, Q extends Query> extends OnClauseTableBlock<C, MySQL80Query.Join80Spec<C, Q>>
             implements MySQL80Query.On80Spec<C, Q> {
 
-        private final String alias;
 
         private final MySQL80SimpleQuery<C, Q> query;
 
         private OnBlock(JoinType joinType, TablePart tablePart, String alias, MySQL80SimpleQuery<C, Q> query) {
-            super(joinType, tablePart);
-            this.alias = alias;
+            super(joinType, tablePart, alias);
             this.query = query;
         }
 
@@ -650,11 +648,6 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         @Override
         Join80Spec<C, Q> endOnClause() {
             return this.query;
-        }
-
-        @Override
-        public String alias() {
-            return this.alias;
         }
 
     }//OnBlock

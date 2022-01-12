@@ -8,21 +8,17 @@ import java.util.function.Supplier;
 
 public interface StandardQuery extends Query, StandardStatement {
 
-    interface SelectSpec<C> extends StandardSelectClauseSpec<C, Select> {
-
-    }
-
     /**
      * <p>
      * This interface representing select clause of standard query (SELECT or Sub Query).
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#standardSelect(Object)
+     * @see SQLs#standardQuery(Object)
      * @see SQLs#standardSubQuery(Object)
      * @see SQLs#standardRowSubQuery(Object)
      */
-    interface StandardSelectClauseSpec<C, Q extends Query> extends SelectClause<C, StandardFromSpec<C, Q>> {
+    interface StandardSelectSpec<C, Q extends Query> extends SelectClause<C, StandardFromSpec<C, Q>> {
 
     }
 
@@ -32,7 +28,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#standardSelect(Object)
+     * @see SQLs#standardQuery(Object)
      * @see SQLs#standardSubQuery(Object)
      * @see SQLs#standardRowSubQuery(Object)
      * @see SQLs#standardColumnSubQuery(Object)
@@ -51,7 +47,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#standardSelect(Object)
+     * @see SQLs#standardQuery(Object)
      * @see SQLs#standardSubQuery(Object)
      * @see SQLs#standardRowSubQuery(Object)
      * @see SQLs#standardColumnSubQuery(Object)
@@ -68,7 +64,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#standardSelect(Object)
+     * @see SQLs#standardQuery(Object)
      * @see SQLs#standardSubQuery(Object)
      * @see SQLs#standardRowSubQuery(Object)
      * @see SQLs#standardColumnSubQuery(Object)
@@ -87,7 +83,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#standardSelect(Object)
+     * @see SQLs#standardQuery(Object)
      * @see SQLs#standardSubQuery(Object)
      * @see SQLs#standardRowSubQuery(Object)
      * @see SQLs#standardColumnSubQuery(Object)
@@ -105,7 +101,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#standardSelect(Object)
+     * @see SQLs#standardQuery(Object)
      * @see SQLs#standardSubQuery(Object)
      * @see SQLs#standardRowSubQuery(Object)
      * @see SQLs#standardColumnSubQuery(Object)
@@ -123,7 +119,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#standardSelect(Object)
+     * @see SQLs#standardQuery(Object)
      * @see SQLs#standardSubQuery(Object)
      * @see SQLs#standardRowSubQuery(Object)
      * @see SQLs#standardColumnSubQuery(Object)
@@ -140,7 +136,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#standardSelect(Object)
+     * @see SQLs#standardQuery(Object)
      * @see SQLs#standardSubQuery(Object)
      * @see SQLs#standardRowSubQuery(Object)
      * @see SQLs#standardColumnSubQuery(Object)
@@ -157,7 +153,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#standardSelect(Object)
+     * @see SQLs#standardQuery(Object)
      * @see SQLs#standardSubQuery(Object)
      * @see SQLs#standardRowSubQuery(Object)
      * @see SQLs#standardColumnSubQuery(Object)
@@ -174,7 +170,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#standardSelect(Object)
+     * @see SQLs#standardQuery(Object)
      * @see SQLs#standardSubQuery(Object)
      * @see SQLs#standardRowSubQuery(Object)
      * @see SQLs#standardColumnSubQuery(Object)
@@ -195,7 +191,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#standardSelect(Object)
+     * @see SQLs#standardQuery(Object)
      * @see SQLs#standardSubQuery(Object)
      * @see SQLs#standardRowSubQuery(Object)
      * @see SQLs#standardColumnSubQuery(Object)
@@ -212,7 +208,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#standardSelect(Object)
+     * @see SQLs#standardQuery(Object)
      * @see SQLs#standardSubQuery(Object)
      * @see SQLs#standardRowSubQuery(Object)
      * @see SQLs#standardColumnSubQuery(Object)
@@ -224,7 +220,7 @@ public interface StandardQuery extends Query, StandardStatement {
     }
 
     interface StandardUnionClause<C, Q extends Query> extends QuerySpec<Q>
-            , Query.UnionClause<C, StandardUnionSpec<C, Q>, StandardSelectClauseSpec<C, Q>, Q> {
+            , Query.UnionClause<C, StandardUnionSpec<C, Q>, StandardSelectSpec<C, Q>, Q> {
 
     }
 
@@ -234,7 +230,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * </p>
      *
      * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#standardSelect(Object)
+     * @see SQLs#standardQuery(Object)
      * @see SQLs#standardSubQuery(Object)
      * @see SQLs#standardRowSubQuery(Object)
      * @see SQLs#standardColumnSubQuery(Object)

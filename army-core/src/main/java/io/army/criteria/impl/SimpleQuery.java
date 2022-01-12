@@ -137,7 +137,6 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     public final FT from(TableMeta<?> table, String tableAlias) {
         final FT block;
         block = this.addTableFromBlock(table, tableAlias);
-        this.criteriaContext.onAddTablePart(table, tableAlias);
         return block;
     }
 
@@ -148,7 +147,9 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
         Objects.requireNonNull(tablePart);
         final FS block;
         block = this.addTablePartFromBlock(tablePart, alias);
-        this.criteriaContext.onAddTablePart(tablePart, alias);
+        if (!(tablePart instanceof TableMeta)) {
+            this.criteriaContext.onAddTablePart(tablePart, alias);
+        }
         return block;
     }
 
@@ -159,7 +160,9 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
         Objects.requireNonNull(tablePart);
         final FS block;
         block = this.addTablePartFromBlock(tablePart, alias);
-        this.criteriaContext.onAddTablePart(tablePart, alias);
+        if (!(tablePart instanceof TableMeta)) {
+            this.criteriaContext.onAddTablePart(tablePart, alias);
+        }
         return block;
     }
 
@@ -645,7 +648,6 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     final boolean hasGroupBy() {
         return !CollectionUtils.isEmpty(this.groupByList);
     }
-
 
 
     abstract Q onAsQuery(boolean outer);

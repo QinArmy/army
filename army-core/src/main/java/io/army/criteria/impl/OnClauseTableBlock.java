@@ -15,11 +15,13 @@ import java.util.function.Supplier;
 
 abstract class OnClauseTableBlock<C, OR> extends TableBlock implements Statement.OnClause<C, OR> {
 
+    final String alias;
 
     private List<_Predicate> onPredicates;
 
-    OnClauseTableBlock(JoinType joinType, TablePart tablePart) {
-        super(tablePart, joinType);
+    OnClauseTableBlock(JoinType joinType, TablePart tablePart, String alias) {
+        super(joinType, tablePart);
+        this.alias = alias;
     }
 
     @Override
@@ -72,6 +74,11 @@ abstract class OnClauseTableBlock<C, OR> extends TableBlock implements Statement
         final List<_Predicate> predicateList = this.onPredicates;
         assert predicateList != null;
         return predicateList;
+    }
+
+    @Override
+    public final String alias() {
+        return this.alias;
     }
 
     @Nullable

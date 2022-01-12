@@ -110,50 +110,59 @@ public abstract class SQLs extends SQLUtils {
         return StandardDelete.batch(criteria);
     }
 
-    public static StandardQuery.SelectSpec<Void> standardSelect() {
-        throw new UnsupportedOperationException();
+    public static StandardQuery.StandardSelectSpec<Void, Select> standardQuery() {
+        return StandardSimpleQuery.query(null);
     }
 
 
-    public static <C> StandardQuery.SelectSpec<C> standardSelect(C criteria) {
+    public static <C> StandardQuery.StandardSelectSpec<C, Select> standardQuery(C criteria) {
         Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
+        return StandardSimpleQuery.query(criteria);
     }
 
-    public static SubQuery.StandardSubQuerySpec<Void> standardSubQuery() {
-        throw new UnsupportedOperationException();
+    public static StandardQuery.StandardSelectSpec<Void, SubQuery> standardSubQuery() {
+        return StandardSimpleQuery.subQuery(null);
     }
 
-    public static <C> SubQuery.StandardSubQuerySpec<C> standardSubQuery(C criteria) {
+    public static <C> StandardQuery.StandardSelectSpec<C, SubQuery> standardSubQuery(C criteria) {
         Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
+        return StandardSimpleQuery.subQuery(criteria);
     }
 
-    public static RowSubQuery.StandardRowSubQuerySpec<Void> standardRowSubQuery() {
-        throw new UnsupportedOperationException();
+    public static StandardQuery.StandardSelectSpec<Void, RowSubQuery> standardRowSubQuery() {
+        return StandardSimpleQuery.rowSubQuery(null);
     }
 
-    public static <C> RowSubQuery.StandardRowSubQuerySpec<C> standardRowSubQuery(C criteria) {
+    public static <C> StandardQuery.StandardSelectSpec<C, RowSubQuery> standardRowSubQuery(C criteria) {
         Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
+        return StandardSimpleQuery.rowSubQuery(criteria);
     }
 
-    public static <E> ColumnSubQuery.StandardColumnSubQuerySpec<Void> standardColumnSubQuery() {
-        throw new UnsupportedOperationException();
+    public static StandardQuery.StandardSelectSpec<Void, ColumnSubQuery> standardColumnSubQuery() {
+        return StandardSimpleQuery.columnSubQuery(null);
     }
 
-    public static <C, E> ColumnSubQuery.StandardColumnSubQuerySpec<C> standardColumnSubQuery(C criteria) {
+    public static <C, E> StandardQuery.StandardSelectSpec<C, ColumnSubQuery> standardColumnSubQuery(C criteria) {
         Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
+        return StandardSimpleQuery.columnSubQuery(criteria);
     }
 
-    public static <E> ScalarSubQuery.StandardScalarSubQuerySpec<Void, E> standardScalarSubQuery() {
-        throw new UnsupportedOperationException();
+    public static <E> StandardQuery.StandardSelectSpec<Void, ScalarQueryExpression<E>> standardScalarSubQuery() {
+        return StandardSimpleQuery.scalarSubQuery(null);
     }
 
-    public static <C, E> ScalarSubQuery.StandardScalarSubQuerySpec<C, E> standardScalarSubQuery(C criteria) {
+    public static <E> StandardQuery.StandardSelectSpec<Void, ScalarQueryExpression<E>> standardScalarSubQuery(Class<E> type) {
+        return StandardSimpleQuery.scalarSubQuery(null);
+    }
+
+    public static <C, E> StandardQuery.StandardSelectSpec<C, ScalarQueryExpression<E>> standardScalarSubQuery(C criteria) {
         Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
+        return StandardSimpleQuery.scalarSubQuery(criteria);
+    }
+
+    public static <C, E> StandardQuery.StandardSelectSpec<C, ScalarQueryExpression<E>> standardScalarSubQuery(Class<E> type, C criteria) {
+        Objects.requireNonNull(criteria);
+        return StandardSimpleQuery.scalarSubQuery(criteria);
     }
 
 
@@ -182,18 +191,23 @@ public abstract class SQLs extends SQLUtils {
                 .composeRef(selectionAlias);
     }
 
-    public static <T extends IDomain> SelectionGroup group(SingleTableMeta<T> tableMeta, String alias) {
-        return SelectionGroups.buildTableGroup(alias, new ArrayList<>(tableMeta.fieldCollection()));
+    public static <T extends IDomain> SelectionGroup group(TableMeta<T> table, String alias) {
+        return SelectionGroups.singleGroup(table, alias);
     }
 
-    public static <T extends IDomain> SelectionGroup group(String tableAlias, List<FieldMeta<T, ?>> fieldMetaList) {
-        return SelectionGroups.buildTableGroup(tableAlias, fieldMetaList);
+    public static <T extends IDomain> SelectionGroup group(String tableAlias, List<FieldMeta<T, ?>> fieldList) {
+        return SelectionGroups.singleGroup(tableAlias, fieldList);
     }
 
-    public static List<SelectionGroup> childGroup(ChildTableMeta<?> childMeta, String parentAlias, String childAlias) {
+
+    public static <T extends IDomain> SelectionGroup parentGroup(ParentTableMeta<T> parent, String alias) {
+        return SelectionGroups.parentGroup(parent, alias);
+    }
+
+    public static <T extends IDomain> List<SelectionGroup> childGroup(ChildTableMeta<T> childMeta, String parentAlias, String childAlias) {
         final List<SelectionGroup> list = new ArrayList<>(2);
-        list.add(SQLs.group(childMeta.parentMeta(), parentAlias));
-        // list.add(SQLs.group(childMeta, childAlias));
+        list.add(SelectionGroups.parentGroup(childMeta.parentMeta(), parentAlias));
+        list.add(SelectionGroups.singleGroup(childMeta, childAlias));
         return list;
     }
 

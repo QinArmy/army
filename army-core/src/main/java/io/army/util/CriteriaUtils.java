@@ -6,11 +6,11 @@ import io.army.criteria.impl.SQLs;
 import io.army.domain.IDomain;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.ParentTableMeta;
+import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public abstract class CriteriaUtils {
@@ -29,7 +29,7 @@ public abstract class CriteriaUtils {
             final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) tableMeta;
             final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
 
-            select = SQLs.standardSelect()
+            select = SQLs.standardQuery()
                     .select(tableMeta.id())
                     .from(childMeta, "c") // small table first
                     .join(parentMeta, "p").on(childMeta.id().equal(parentMeta.id()))
@@ -37,7 +37,7 @@ public abstract class CriteriaUtils {
                     .limit(2)
                     .asQuery();
         } else {
-            select = SQLs.standardSelect()
+            select = SQLs.standardQuery()
                     .select(tableMeta.id())
                     .from(tableMeta, "t")
                     .where(createPredicateList(tableMeta, propNameList, valueList))
@@ -53,15 +53,15 @@ public abstract class CriteriaUtils {
             final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) tableMeta;
             final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
 
-            select = SQLs.standardSelect()
+            select = SQLs.standardQuery()
                     .select(SQLs.childGroup(childMeta, "p", "c"))
                     .from(childMeta, "c") // small table first
                     .join(parentMeta, "p").on(childMeta.id().equal(parentMeta.id()))
                     .where(childMeta.id().equal(id))
                     .asQuery();
         } else {
-            select = SQLs.standardSelect()
-                    .select(SQLs.group(tableMeta, "t"))
+            select = SQLs.standardQuery()
+                    .select(SQLs.group((SingleTableMeta<? extends IDomain>) tableMeta, "t"))
                     .from(tableMeta, "t")
                     .where(tableMeta.id().equal(id))
                     .asQuery();
@@ -76,8 +76,8 @@ public abstract class CriteriaUtils {
             final ChildTableMeta<T> childMeta = (ChildTableMeta<T>) tableMeta;
             final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
 
-            select = SQLs.standardSelect()
-                    .select(Arrays.asList(SQLs.group(parentMeta, "p"), SQLs.group(childMeta, "c")))
+            select = SQLs.standardQuery()
+                    .select(SQLs.childGroup(childMeta, "p", "c"))
                     .from(childMeta, "c")
                     .join(parentMeta, "p").on(parentMeta.id().equal(childMeta.id()))
                     .where(createPredicateList(tableMeta, propNameList, valueList))
@@ -85,8 +85,8 @@ public abstract class CriteriaUtils {
                     .asQuery();
 
         } else {
-            select = SQLs.standardSelect()
-                    .select(SQLs.group(tableMeta, "d"))
+            select = SQLs.standardQuery()
+                    .select(SQLs.group((SingleTableMeta<? extends IDomain>) tableMeta, "d"))
                     .from(tableMeta, "d")
                     .where(createPredicateList(tableMeta, propNameList, valueList))
                     .limit(2)

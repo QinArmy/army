@@ -34,7 +34,9 @@ public interface Dialect {
 
     void subQuery(SubQuery subQuery, _SqlContext original);
 
-    void unionSubQuery(SubQuery subQuery, _SqlContext original);
+    default void unionSubQuery(SubQuery subQuery, _SqlContext original) {
+        throw new UnsupportedOperationException();
+    }
 
     List<String> createTable(TableMeta<?> tableMeta, @Nullable String tableSuffix);
 

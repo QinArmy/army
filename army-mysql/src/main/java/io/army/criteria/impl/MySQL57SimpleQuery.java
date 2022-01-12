@@ -407,13 +407,11 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     private static class OnBlock<C, Q extends Query> extends OnClauseTableBlock<C, MySQL57Query.Join57Spec<C, Q>>
             implements MySQL57Query.On57Spec<C, Q> {
 
-        private final String alias;
 
         private final MySQL57SimpleQuery<C, Q> query;
 
         private OnBlock(JoinType joinType, TablePart tablePart, String alias, MySQL57SimpleQuery<C, Q> query) {
-            super(joinType, tablePart);
-            this.alias = alias;
+            super(joinType, tablePart, alias);
             this.query = query;
         }
 
@@ -425,11 +423,6 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         @Override
         final Join57Spec<C, Q> endOnClause() {
             return this.query;
-        }
-
-        @Override
-        public final String alias() {
-            return this.alias;
         }
 
     }// OnBlock

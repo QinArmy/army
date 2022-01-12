@@ -68,5 +68,7 @@ public interface Constant {
 
     char EQUAL = '=';
 
+    char NEW_LINE = '\n';
+
 
 }

@@ -8,7 +8,7 @@ public interface ColumnSubQuery extends SubQuery {
 
 
     interface StandardColumnSubQuerySpec<C>
-            extends StandardQuery.StandardSelectClauseSpec<C, ColumnSubQuery> {
+            extends StandardQuery.StandardSelectSpec<C, ColumnSubQuery> {
 
     }
 

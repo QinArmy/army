@@ -12,11 +12,11 @@ public abstract class MySQLs80 extends MySQLs {
     protected MySQLs80() {
     }
 
-    public static MySQL80Query.With80Spec<Void, Select> tableSelect() {
+    public static MySQL80Query.With80Spec<Void, Select> query() {
         return MySQL80SimpleQuery.simpleSelect(null);
     }
 
-    public static <C> MySQL80Query.With80Spec<C, Select> tableSelect(C criteria) {
+    public static <C> MySQL80Query.With80Spec<C, Select> query(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQL80SimpleQuery.simpleSelect(criteria);
     }
@@ -85,6 +85,25 @@ public abstract class MySQLs80 extends MySQLs {
     }
 
 
+    static MySQLUpdate.WithAndMultiUpdateSpec<Void> multiUpdate() {
+        return MySQLMultiUpdate.simple80(null);
+    }
+
+    static <C> MySQLUpdate.WithAndMultiUpdateSpec<C> multiUpdate(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQLMultiUpdate.simple80(criteria);
+    }
+
+    static MySQLUpdate.BatchWithAndMultiUpdateSpec<Void> batchMultiUpdate() {
+        return MySQLMultiUpdate.batch80(null);
+    }
+
+    static <C> MySQLUpdate.BatchWithAndMultiUpdateSpec<C> batchMultiUpdate(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQLMultiUpdate.batch80(criteria);
+    }
+
+
     public static MySQLDelete.SingleDelete80Spec<Void> singleDelete() {
         return MySQLSingleDelete.simple80(null);
     }
@@ -120,24 +139,6 @@ public abstract class MySQLs80 extends MySQLs {
     public static <C> MySQLDelete.BatchWithMultiDeleteSpec<C> batchMultiDelete(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQLMultiDelete.batch80(criteria);
-    }
-
-    static MySQLUpdate.WithAndMultiUpdateSpec<Void> multiUpdate() {
-        return MySQLMultiUpdate.simple80(null);
-    }
-
-    static <C> MySQLUpdate.WithAndMultiUpdateSpec<C> multiUpdate(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLMultiUpdate.simple80(criteria);
-    }
-
-    static MySQLUpdate.BatchWithAndMultiUpdateSpec<Void> batchMultiUpdate() {
-        return MySQLMultiUpdate.batch80(null);
-    }
-
-    static <C> MySQLUpdate.BatchWithAndMultiUpdateSpec<C> batchMultiUpdate(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLMultiUpdate.batch80(criteria);
     }
 
 

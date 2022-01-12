@@ -745,13 +745,10 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
     private static final class SimpleOnBlock<C> extends OnClauseTableBlock<C, MySQLDelete.MultiJoinSpec<C>>
             implements MySQLDelete.MultiOnSpec<C> {
 
-        final String alias;
-
         private final SimpleDelete<C> delete;
 
         private SimpleOnBlock(JoinType joinType, TablePart tablePart, String alias, SimpleDelete<C> delete) {
-            super(joinType, tablePart);
-            this.alias = alias;
+            super(joinType, tablePart, alias);
             this.delete = delete;
         }
 
@@ -763,11 +760,6 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
         @Override
         MultiJoinSpec<C> endOnClause() {
             return this.delete;
-        }
-
-        @Override
-        public String alias() {
-            return this.alias;
         }
 
 
@@ -890,13 +882,11 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
     private static final class BatchOnBlock<C> extends OnClauseTableBlock<C, MySQLDelete.BatchMultiJoinSpec<C>>
             implements MySQLDelete.BatchMultiOnSpec<C> {
 
-        private final String alias;
 
         private final BatchDelete<C> delete;
 
         private BatchOnBlock(JoinType joinType, TablePart tablePart, String alias, BatchDelete<C> delete) {
-            super(joinType, tablePart);
-            this.alias = alias;
+            super(joinType, tablePart, alias);
             this.delete = delete;
         }
 
@@ -908,11 +898,6 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
         @Override
         BatchMultiJoinSpec<C> endOnClause() {
             return this.delete;
-        }
-
-        @Override
-        public String alias() {
-            return this.alias;
         }
 
 

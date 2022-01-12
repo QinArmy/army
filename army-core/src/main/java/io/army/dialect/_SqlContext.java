@@ -7,6 +7,7 @@ import io.army.stmt.ParamValue;
 
 public interface _SqlContext {
 
+
     /**
      * <p>
      * This method is designed for the implementation of {@link QualifiedField}
