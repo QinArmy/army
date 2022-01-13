@@ -54,6 +54,10 @@ public interface Constant {
 
     String IS_NULL = "IS NULL";
 
+    String RETURNING = "RETURNING";
+
+    String ONLY = "ONLY";
+
     char LEFT_BRACKET = '(';
 
     char RIGHT_BRACKET = ')';

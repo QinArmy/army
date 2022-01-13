@@ -1,7 +1,10 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.*;
+import io.army.criteria.impl.inner._BatchSingleUpdate;
+import io.army.criteria.impl.inner._StandardBatchDelete;
+import io.army.criteria.impl.inner._StandardComposeQuery;
+import io.army.criteria.impl.inner._StandardSubQuery;
 
 public abstract class _CriteriaCounselor {
 
@@ -17,7 +20,7 @@ public abstract class _CriteriaCounselor {
 
     }
 
-    public static void assertStandardSelect(_StandardSelect select) {
+    public static void assertStandardSelect(Select select) {
     }
 
     public static void assertStandardSubQuery(_StandardSubQuery subQuery) {
@@ -54,8 +57,8 @@ public abstract class _CriteriaCounselor {
 
     public static void assertStandardInsert(Insert insert) {
         if (!(insert instanceof StandardValueInsert)) {
-            throw new IllegalArgumentException(String.format("%s isn't instance of %s", insert
-                    , StandardValueInsert.class.getName()));
+            String m = String.format("%s isn't instance of %s", insert, StandardValueInsert.class.getName());
+            throw new CriteriaException(m);
         }
     }
 

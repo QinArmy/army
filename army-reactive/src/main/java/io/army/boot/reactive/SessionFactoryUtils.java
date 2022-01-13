@@ -12,7 +12,7 @@ import io.army.reactive.GenericReactiveSessionFactory;
 import io.army.reactive.advice.ReactiveDomainDeleteAdvice;
 import io.army.reactive.advice.ReactiveDomainInsertAdvice;
 import io.army.reactive.advice.ReactiveDomainUpdateAdvice;
-import io.army.session.GenericRmSessionFactory;
+import io.army.session.DialectSessionFactory;
 import io.army.util.CollectionUtils;
 import io.army.util.ReflectionUtils;
 import io.army.util._Assert;
@@ -50,7 +50,7 @@ abstract class SessionFactoryUtils {
         return Mono.empty();
     }
 
-    static Dialect createDialect(GenericRmSessionFactory rmSessionFactory, Database queriedDatabase) {
+    static Dialect createDialect(DialectSessionFactory rmSessionFactory, Database queriedDatabase) {
 //        Database configDatabase = readDatabase(rmSessionFactory);
 //        return createDialect(configDatabase, queriedDatabase, rmSessionFactory);
         return null;

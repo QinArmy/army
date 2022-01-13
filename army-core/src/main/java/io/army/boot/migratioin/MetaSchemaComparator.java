@@ -2,7 +2,7 @@ package io.army.boot.migratioin;
 
 import io.army.meta.MetaException;
 import io.army.schema.SchemaInfoException;
-import io.army.session.GenericRmSessionFactory;
+import io.army.session.DialectSessionFactory;
 
 import java.util.List;
 
@@ -16,7 +16,7 @@ interface MetaSchemaComparator {
     List<List<Migration>> compare(SchemaInfo schemaInfo)
             throws SchemaInfoException, MetaException;
 
-    static MetaSchemaComparator build(GenericRmSessionFactory sessionFactory) {
+    static MetaSchemaComparator build(DialectSessionFactory sessionFactory) {
 //        MetaSchemaComparator comparator;
 //        switch (sessionFactory.actualDatabase()) {
 //            case MySQL:

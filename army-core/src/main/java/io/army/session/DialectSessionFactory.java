@@ -19,7 +19,7 @@ import io.army.sharding.RouteContext;
  *     </ul>
  * </p>
  */
-public interface GenericRmSessionFactory extends GenericSessionFactory, RouteContext {
+public interface DialectSessionFactory extends GenericSessionFactory, RouteContext {
 
 
     byte databaseIndex();

@@ -1,8 +1,6 @@
 package io.army.dialect;
 
 
-import io.army.session.FactoryMode;
-
 public abstract class AbstractSql {
 
     protected static final char[] COMMA = new char[]{' ', ','};
@@ -33,15 +31,13 @@ public abstract class AbstractSql {
     protected static final char[] JOIN_WORD = new char[]{' ', 'J', 'O', 'I', 'N'};
 
 
-    protected final Dialect dialect;
+    protected final DialectEnvironment environment;
 
-    protected final boolean sharding;
 
-    protected AbstractSql(Dialect dialect) {
-        this.dialect = dialect;
-        this.sharding = this.dialect.sessionFactory().factoryMode() != FactoryMode.NO_SHARDING;
+    protected AbstractSql(DialectEnvironment environment) {
+        this.environment = environment;
+
     }
-
 
 
 }

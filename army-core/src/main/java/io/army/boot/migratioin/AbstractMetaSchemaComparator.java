@@ -7,7 +7,7 @@ import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.schema.SchemaInfoException;
-import io.army.session.GenericRmSessionFactory;
+import io.army.session.DialectSessionFactory;
 import io.army.sharding._RouteUtils;
 import io.army.util.StringUtils;
 import io.army.util._Assert;
@@ -72,11 +72,11 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
 
     private StringBuilder dataTypeErrorBuilder = new StringBuilder();
 
-    final GenericRmSessionFactory sessionFactory;
+    final DialectSessionFactory sessionFactory;
 
     final boolean compareDefaultOnMigrating;
 
-    AbstractMetaSchemaComparator(GenericRmSessionFactory sessionFactory) {
+    AbstractMetaSchemaComparator(DialectSessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
         this.compareDefaultOnMigrating = false;
     }

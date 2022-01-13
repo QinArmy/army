@@ -1,10 +1,10 @@
 package io.army.criteria.impl.inner.mysql;
 
-import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.impl.inner._DialectTableBlock;
 
 import java.util.List;
 
-public interface _MySQLTableBlock extends _TableBlock {
+public interface _MySQLTableBlock extends _DialectTableBlock {
 
     /**
      * @return a unmodifiable list

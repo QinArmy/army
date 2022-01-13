@@ -1,13 +1,10 @@
 package io.army.dialect;
 
-import io.army.beans.ObjectWrapper;
-import io.army.boot.DomainValuesGenerator;
 import io.army.criteria.*;
 import io.army.criteria.impl._CriteriaCounselor;
 import io.army.criteria.impl.inner.*;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.session.GenericRmSessionFactory;
 import io.army.stmt.ParamValue;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
@@ -36,12 +33,10 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
             _MetaBridge.UPDATE_TIME, _MetaBridge.VERSION);
 
 
-    protected final GenericRmSessionFactory factory;
-
     protected final Set<String> keyWordSet;
 
-    protected _AbstractDialect(GenericRmSessionFactory factory) {
-        this.factory = factory;
+    protected _AbstractDialect(DialectEnvironment environment) {
+        super(environment);
         this.keyWordSet = createKeyWordSet();
     }
 
@@ -88,13 +83,13 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
             _CriteriaCounselor.assertStandardUpdate(update);
             final SimpleStmt singleStmt;
             singleStmt = handleStandardUpdate((_SingleUpdate) update, visible);
-            if (update instanceof _BatchSingleUpdate) {
-                stmt = _DmlUtils.createBatchStmt(singleStmt, ((_BatchSingleUpdate) update).wrapperList());
+            if (update instanceof _BatchDml) {
+                stmt = _DmlUtils.createBatchStmt(singleStmt, ((_BatchDml) update).wrapperList());
             } else {
                 stmt = singleStmt;
             }
         } else {
-            throw _Exceptions.unknownStatement(update, this.dialect.sessionFactory());
+            throw _Exceptions.unknownStatement(update, this);
         }
         return stmt;
     }
@@ -123,14 +118,23 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
                 stmt = simpleStmt;
             }
         } else {
-            throw _Exceptions.unknownStatement(delete, this.dialect.sessionFactory());
+            throw _Exceptions.unknownStatement(delete, this);
         }
         return stmt;
     }
 
     @Override
-    public final SimpleStmt select(Select select, Visible visible) {
-        return null;
+    public final SimpleStmt select(final Select select, final Visible visible) {
+        select.prepared();
+        final SimpleStmt stmt;
+        if (select instanceof StandardQuery) {
+            _CriteriaCounselor.assertStandardSelect(select);
+            stmt = this.handleStandardSelect(select, visible);
+        } else {
+            this.assertDialectSelect(select);
+            stmt = this.handleDialectSelect(select, visible);
+        }
+        return stmt;
     }
 
     @Override
@@ -150,11 +154,6 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
 
 
     @Override
-    public final GenericRmSessionFactory sessionFactory() {
-        return this.factory;
-    }
-
-    @Override
     public final String quoteIfNeed(final String identifier) {
         return this.keyWordSet.contains(identifier) ? this.quoteIdentifier(identifier) : identifier;
     }
@@ -170,15 +169,17 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
     protected abstract String quoteIdentifier(String identifier);
 
 
+
+
     /*################################## blow update template method ##################################*/
 
     protected void assertDialectInsert(Insert insert) {
-        String m = String.format("%s don't support this dialect insert[%s]", this.dialect, insert.getClass().getName());
+        String m = String.format("%s don't support this dialect insert[%s]", this, insert.getClass().getName());
         throw new CriteriaException(m);
     }
 
     protected void assertDialectUpdate(Update update) {
-        String m = String.format("%s don't support this dialect update[%s]", this.dialect, update.getClass().getName());
+        String m = String.format("%s don't support this dialect update[%s]", this, update.getClass().getName());
         throw new CriteriaException(m);
     }
 
@@ -186,7 +187,12 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
     /*################################## blow delete template method ##################################*/
 
     protected void assertDialectDelete(Delete delete) {
-        String m = String.format("%s don't support this dialect delete[%s]", this.dialect, delete.getClass().getName());
+        String m = String.format("%s don't support this dialect delete[%s]", this, delete.getClass().getName());
+        throw new CriteriaException(m);
+    }
+
+    protected void assertDialectSelect(Select select) {
+        String m = String.format("%s don't support this dialect select[%s]", this, select.getClass().getName());
         throw new CriteriaException(m);
     }
 
@@ -217,6 +223,10 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
         throw new UnsupportedOperationException();
     }
 
+    protected SimpleStmt handleDialectSelect(Select select, Visible visible) {
+        throw new UnsupportedOperationException();
+    }
+
 
     /**
      * @see #handleStandardUpdate(_SingleUpdate, Visible)
@@ -227,6 +237,140 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
 
     protected SimpleStmt standardChildDelete(_SingleDeleteContext context) {
         throw new UnsupportedOperationException();
+    }
+
+
+    protected void handleDialectTableBlock(_TableBlock block, _SqlContext context) {
+
+    }
+
+    protected void handleDialectTablePart(TablePart tablePart, _SqlContext context) {
+
+    }
+
+    protected final void fromClause(final List<? extends _TableBlock> tableBlockList, final _SqlContext context) {
+        final int size = tableBlockList.size();
+        if (size == 0) {
+            throw _Exceptions.noFromClause();
+        }
+
+        final StringBuilder builder = context.sqlBuilder()
+                .append(Constant.SPACE)
+                .append(Constant.FROM);
+        final Dialect dialect = context.dialect();
+
+        final boolean supportTableOnly = this.supportTableOnly();
+        for (int i = 0, index; i < size; i++) {
+            final _TableBlock block = tableBlockList.get(i);
+            if (i > 0) {
+                builder.append(Constant.SPACE)
+                        .append(block.jointType().render());
+            }
+            final TablePart tablePart = block.table();
+            if (tablePart instanceof TableMeta) {
+                if (supportTableOnly) {
+                    builder.append(Constant.SPACE)
+                            .append(Constant.ONLY);
+                }
+                builder.append(Constant.SPACE)
+                        .append(dialect.quoteIfNeed(((TableMeta<?>) tablePart).tableName()));
+            } else if (tablePart instanceof SubQuery) {
+                this.subQuery((SubQuery) tablePart, context);
+            } else {
+                this.handleDialectTablePart(tablePart, context);
+            }
+            if (block instanceof _DialectTableBlock) {
+                this.handleDialectTableBlock(block, context);
+            }
+            if (i == 0) {
+                continue;
+            }
+            index = 0;// reset to 0
+            for (_Predicate predicate : block.predicates()) {
+                if (index > 0) {
+                    builder.append(Constant.SPACE)
+                            .append(Constant.AND);
+                }
+                predicate.appendSql(context);
+                index++;
+            }
+
+        }// for
+
+
+    }
+
+    protected final void queryWhereClause(final List<_Predicate> predicateList, final _SqlContext context) {
+        final int size = predicateList.size();
+        if (size == 0) {
+            return;
+        }
+        final StringBuilder builder = context.sqlBuilder()
+                .append(Constant.SPACE)
+                .append(Constant.WHERE);
+        for (int i = 0; i < size; i++) {
+            if (i > 0) {
+                builder.append(Constant.SPACE)
+                        .append(Constant.AND);
+            }
+            predicateList.get(i).appendSql(context);
+        }
+    }
+
+
+    protected final void groupByClause(final List<SortPart> groupByList, final _SqlContext context) {
+        final int size = groupByList.size();
+        if (size == 0) {
+            throw new IllegalArgumentException("groupByList is empty");
+        }
+        final StringBuilder builder = context.sqlBuilder()
+                .append(Constant.SPACE)
+                .append(Constant.GROUP_BY);
+        for (int i = 0; i < size; i++) {
+            if (i > 0) {
+                builder.append(Constant.SPACE)
+                        .append(Constant.COMMA);
+            }
+            ((_SelfDescribed) groupByList.get(i)).appendSql(context);
+        }
+
+    }
+
+    protected final void havingClause(final List<_Predicate> havingList, final _SqlContext context) {
+        final int size = havingList.size();
+        if (size == 0) {
+            return;
+        }
+        final StringBuilder builder = context.sqlBuilder()
+                .append(Constant.SPACE)
+                .append(Constant.HAVING);
+        for (int i = 0; i < size; i++) {
+            if (i > 0) {
+                builder.append(Constant.SPACE)
+                        .append(Constant.AND);
+            }
+            havingList.get(i).appendSql(context);
+        }
+
+    }
+
+    protected final void orderByClause(final List<SortPart> orderByList, final _SqlContext context) {
+        final int size = orderByList.size();
+        if (size == 0) {
+            return;
+        }
+        final StringBuilder builder = context.sqlBuilder()
+                .append(Constant.SPACE)
+                .append(Constant.ORDER_BY);
+
+        for (int i = 0; i < size; i++) {
+            if (i > 0) {
+                builder.append(Constant.SPACE)
+                        .append(Constant.COMMA);
+            }
+            ((_SelfDescribed) orderByList.get(i)).appendSql(context);
+        }
+
     }
 
 
@@ -400,10 +544,10 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
         if (javaType == LocalDateTime.class) {
             context.appendParam(ParamValue.build(updateTime, LocalDateTime.now()));
         } else if (javaType == OffsetDateTime.class) {
-            final ZoneOffset zoneOffset = dialect.sessionFactory().zoneOffset();
+            final ZoneOffset zoneOffset = this.environment.zoneOffset();
             context.appendParam(ParamValue.build(updateTime, OffsetDateTime.now(zoneOffset)));
         } else if (javaType == ZonedDateTime.class) {
-            final ZoneOffset zoneOffset = dialect.sessionFactory().zoneOffset();
+            final ZoneOffset zoneOffset = this.environment.zoneOffset();
             context.appendParam(ParamValue.build(updateTime, ZonedDateTime.now(zoneOffset)));
         } else {
             String m = String.format("%s don't support java type[%s]", updateTime, javaType);
@@ -430,19 +574,53 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
     }
 
 
+    private void standardSelectClause(List<SQLModifier> modifierList, _SqlContext context) {
+        final StringBuilder builder = context.sqlBuilder()
+                .append(Constant.SELECT);
+        switch (modifierList.size()) {
+            case 0:
+                //no-op
+                break;
+            case 1: {
+                final SQLModifier modifier = modifierList.get(0);
+                if (!(modifier instanceof Distinct)) {
+                    String m = String.format("Standard query api support only %s", Distinct.class.getName());
+                    throw new CriteriaException(m);
+                }
+                builder.append(Constant.SPACE)
+                        .append(modifier.render());
+            }
+            break;
+            default:
+                String m = String.format("Standard query api support only %s", Distinct.class.getName());
+                throw new CriteriaException(m);
+        }
+
+    }
+
+    private void selectListClause(final List<SelectPart> selectPartList, final _SqlContext context) {
+        final StringBuilder builder = context.sqlBuilder();
+        final int size = selectPartList.size();
+        for (int i = 0; i < size; i++) {
+            if (i > 0) {
+                builder.append(Constant.SPACE)
+                        .append(Constant.COMMA);
+            }
+            ((_SelfDescribed) selectPartList.get(i)).appendSql(context);
+        }
+
+    }
+
+
     /**
      * @see #insert(Insert, Visible)
      */
     private Stmt handleStandardValueInsert(final _ValuesInsert insert, final Visible visible) {
-        final DomainValuesGenerator generator = this.dialect.sessionFactory().domainValuesGenerator();
-        final boolean migration = insert.migrationData();
-        final List<ObjectWrapper> domainList = insert.domainList();
-        for (ObjectWrapper domain : domainList) {
-            generator.createValues(domain, migration);
-        }
         final StandardValueInsertContext context;
-        context = StandardValueInsertContext.create(insert, this.dialect, visible);
+        context = StandardValueInsertContext.create(insert, this, visible);
         _DmlUtils.appendStandardValueInsert(false, context); // append parent insert to parent context.
+        context.onParentEnd(); // parent end event
+
         final _InsertBlock childBlock = context.childBlock();
         if (childBlock != null) {
             _DmlUtils.appendStandardValueInsert(true, context); // append child insert to child context.
@@ -451,12 +629,22 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
     }
 
 
+    private SimpleStmt handleStandardSelect(final Select select, final Visible visible) {
+        if (select instanceof _UnionQuery) {
+
+        } else {
+
+        }
+        return null;
+    }
+
+
     /**
      * @see #update(Update, Visible)
      */
     private SimpleStmt handleStandardUpdate(final _SingleUpdate update, final Visible visible) {
         final StandardUpdateContext context;
-        context = StandardUpdateContext.create(update, this.dialect, visible);
+        context = StandardUpdateContext.create(update, this, visible);
         final _SetBlock childBlock = context.childBlock();
         final SimpleStmt stmt;
         if (childBlock == null || childBlock.targetParts().size() == 0) {
@@ -472,7 +660,7 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
      */
     private SimpleStmt handleStandardDelete(final _SingleDelete delete, final Visible visible) {
         final StandardDeleteContext context;
-        context = StandardDeleteContext.create(delete, this.dialect, visible);
+        context = StandardDeleteContext.create(delete, this, visible);
         final _Block childBlock = context.childBlock();
         final SimpleStmt stmt;
         if (childBlock == null) {
@@ -566,6 +754,48 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
             this.discriminator(table, context.safeTableAlias, context);
         }
         return context.build();
+    }
+
+    protected void standardLockClause(LockMode lockMode, _SqlContext context) {
+
+    }
+
+    private void standardQuery(_StandardQuery query, _SqlContext context) {
+        this.standardSelectClause(query.modifierList(), context);
+        this.selectListClause(query.selectPartList(), context);
+        this.fromClause(query.tableBlockList(), context);
+        this.queryWhereClause(query.predicateList(), context);
+
+        final List<SortPart> groupByList = query.groupPartList();
+        if (groupByList.size() > 0) {
+            this.groupByClause(groupByList, context);
+            this.havingClause(query.havingList(), context);
+        }
+        this.orderByClause(query.orderByList(), context);
+
+        final StringBuilder builder = context.sqlBuilder();
+        final long offset, rowCount;
+        offset = query.offset();
+        rowCount = query.rowCount();
+        if (offset >= 0 && rowCount > 0) {
+            builder.append(Constant.SPACE)
+                    .append(Constant.LIMIT)
+                    .append(Constant.SPACE)
+                    .append(offset)
+                    .append(Constant.SPACE)
+                    .append(rowCount);
+        } else if (rowCount > 0) {
+            builder.append(Constant.SPACE)
+                    .append(Constant.LIMIT)
+                    .append(Constant.SPACE)
+                    .append(rowCount);
+        }
+
+        final LockMode lock = query.lockMode();
+        if (lock != null) {
+            this.standardLockClause(lock, context);
+        }
+
     }
 
 

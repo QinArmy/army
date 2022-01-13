@@ -3,12 +3,12 @@ package io.army.boot.migratioin;
 import io.army.dialect.DDLSQLExecuteException;
 import io.army.meta.MetaException;
 import io.army.schema.SchemaInfoException;
-import io.army.session.GenericRmSessionFactory;
+import io.army.session.DialectSessionFactory;
 import reactor.core.publisher.Mono;
 
 final class ReactiveMigratorImpl implements ReactiveMigrator {
     @Override
-    public Mono<Void> migrate(Object databaseSession, GenericRmSessionFactory sessionFactory) throws SchemaExtractException, SchemaInfoException, MetaException, DDLSQLExecuteException {
+    public Mono<Void> migrate(Object databaseSession, DialectSessionFactory sessionFactory) throws SchemaExtractException, SchemaInfoException, MetaException, DDLSQLExecuteException {
         return null;
     }
 

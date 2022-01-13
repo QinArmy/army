@@ -4,12 +4,12 @@ import io.army.dialect.Database;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.schema.SchemaInfoException;
-import io.army.session.GenericRmSessionFactory;
+import io.army.session.DialectSessionFactory;
 import io.army.sqltype.MySQLDataType;
 
 class MySQL80MetaSchemaComparator extends MySQL57MetaSchemaComparator {
 
-    MySQL80MetaSchemaComparator(GenericRmSessionFactory sessionFactory) {
+    MySQL80MetaSchemaComparator(DialectSessionFactory sessionFactory) {
         super(sessionFactory);
     }
 

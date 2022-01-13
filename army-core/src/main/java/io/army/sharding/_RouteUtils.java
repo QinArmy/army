@@ -13,8 +13,8 @@ import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.session.DialectSessionFactory;
 import io.army.session.FactoryMode;
-import io.army.session.GenericRmSessionFactory;
 import io.army.util._Exceptions;
 
 import java.util.*;
@@ -342,7 +342,7 @@ public abstract class _RouteUtils {
     /**
      * @return a unmodified map
      */
-    public static Map<Byte, List<ObjectWrapper>> insertSharding(GenericRmSessionFactory factory, _ValuesInsert insert) {
+    public static Map<Byte, List<ObjectWrapper>> insertSharding(DialectSessionFactory factory, _ValuesInsert insert) {
 
         final FactoryMode mode = factory.factoryMode();
         final TableMeta<?> tableMeta = insert.table();
@@ -411,7 +411,7 @@ public abstract class _RouteUtils {
         return Collections.unmodifiableMap(domainMap);
     }
 
-    public static Map<Byte, List<ReadWrapper>> dmlSharding(final GenericRmSessionFactory factory
+    public static Map<Byte, List<ReadWrapper>> dmlSharding(final DialectSessionFactory factory
             , final TableMeta<?> table, final FieldMeta<?, ?> routeField, final _BatchDml dml) {
 
         final boolean checkDatabase = factory.factoryMode() == FactoryMode.SHARDING

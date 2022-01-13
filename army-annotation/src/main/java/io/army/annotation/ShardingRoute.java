@@ -8,6 +8,7 @@ import java.lang.annotation.Target;
 @Target({java.lang.annotation.ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
+@Deprecated
 public @interface ShardingRoute {
 
     /**

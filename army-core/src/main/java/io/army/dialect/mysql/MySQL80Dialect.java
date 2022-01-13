@@ -1,14 +1,14 @@
 package io.army.dialect.mysql;
 
 import io.army.dialect.Database;
-import io.army.session.GenericRmSessionFactory;
+import io.army.session.DialectSessionFactory;
 
 import java.util.Set;
 
 class MySQL80Dialect extends MySQL57Dialect {
 
 
-    MySQL80Dialect(GenericRmSessionFactory sessionFactory) {
+    MySQL80Dialect(DialectSessionFactory sessionFactory) {
         super(sessionFactory);
     }
 
@@ -28,19 +28,6 @@ class MySQL80Dialect extends MySQL57Dialect {
         return MySQLDialectUtils.create80KeywordsSet();
     }
 
-    @Override
-    protected DdlDialect createDDL() {
-        return new MySQL80DDL(this);
-    }
-
-    @Override
-    protected DmlDialect createDML() {
-        return new MySQL80DmlDialect(this);
-    }
 
 
-    @Override
-    protected TclDialect createTCL() {
-        return new MySQL80TCL(this);
-    }
 }

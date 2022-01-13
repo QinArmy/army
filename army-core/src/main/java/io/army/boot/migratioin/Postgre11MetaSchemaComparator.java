@@ -4,7 +4,7 @@ import io.army.dialect.Database;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.schema.SchemaInfoException;
-import io.army.session.GenericRmSessionFactory;
+import io.army.session.DialectSessionFactory;
 import io.army.sqltype.PostgreDataType;
 
 import java.util.List;
@@ -23,7 +23,7 @@ class Postgre11MetaSchemaComparator extends AbstractMetaSchemaComparator {
 
     static final Map<PostgreDataType, List<String>> SYNONYMS_MAP = PostgreUtils.createSynonymsMap();
 
-    Postgre11MetaSchemaComparator(GenericRmSessionFactory sessionFactory) {
+    Postgre11MetaSchemaComparator(DialectSessionFactory sessionFactory) {
         super(sessionFactory);
     }
 

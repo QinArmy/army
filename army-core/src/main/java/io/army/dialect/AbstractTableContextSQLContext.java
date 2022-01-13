@@ -9,8 +9,8 @@ import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.session.DialectSessionFactory;
 import io.army.session.FactoryMode;
-import io.army.session.GenericRmSessionFactory;
 import io.army.util.StringUtils;
 
 /**
@@ -34,7 +34,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
 
     protected AbstractTableContextSQLContext(Dialect dialect, Visible visible, TablesContext tableContext) {
         super(dialect, visible);
-        GenericRmSessionFactory sessionFactory = dialect.sessionFactory();
+        DialectSessionFactory sessionFactory = dialect.sessionFactory();
 
         this.factoryMode = dialect.sessionFactory().factoryMode();
         this.tableContext = tableContext;
@@ -48,7 +48,7 @@ public abstract class AbstractTableContextSQLContext extends AbstractSQLContext 
 
     protected AbstractTableContextSQLContext(_TablesSqlContext parentContext, TablesContext tableContext) {
         super(parentContext);
-        GenericRmSessionFactory sessionFactory = dialect.sessionFactory();
+        DialectSessionFactory sessionFactory = dialect.sessionFactory();
 
         this.factoryMode = dialect.sessionFactory().factoryMode();
         this.tableContext = tableContext;

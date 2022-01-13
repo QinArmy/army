@@ -1,5 +1,7 @@
 package io.army.stmt;
 
+import io.army.criteria.Selection;
+
 import java.util.List;
 
 public abstract class Stmts {
@@ -18,6 +20,10 @@ public abstract class Stmts {
     }
 
     public static SimpleStmt simple(String sql, List<ParamValue> paramList) {
+        return null;
+    }
+
+    public static SimpleStmt simple(String sql, List<ParamValue> paramList, Selection selection) {
         return null;
     }
 

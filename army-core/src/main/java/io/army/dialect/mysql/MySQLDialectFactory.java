@@ -3,12 +3,12 @@ package io.army.dialect.mysql;
 import io.army.ArmyKeys;
 import io.army.DialectMode;
 import io.army.dialect.Dialect;
-import io.army.session.GenericRmSessionFactory;
+import io.army.session.DialectSessionFactory;
 import io.army.util._Exceptions;
 
 public abstract class MySQLDialectFactory {
 
-    public static Dialect createDialect(GenericRmSessionFactory sessionFactory) {
+    public static Dialect createDialect(DialectSessionFactory sessionFactory) {
         final DialectMode dialectMode;
         dialectMode = sessionFactory.environment().getOrDefault(ArmyKeys.dialectMode, DialectMode.class);
         final Dialect dialect;

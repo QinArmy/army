@@ -7,7 +7,7 @@ import io.army.criteria.impl.inner._SingleDml;
 import io.army.criteria.impl.inner._Statement;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.session.GenericRmSessionFactory;
+import io.army.session.DialectSessionFactory;
 import io.army.sharding.DatabaseRoute;
 import io.army.sharding.TableRoute;
 
@@ -89,7 +89,7 @@ public abstract class _Assert extends org.springframework.util.Assert {
         return (byte) (tableIndex < 0 ? -1 : tableIndex);
     }
 
-    public static void databaseRoute(_Statement stmt, final int routeDatabase, GenericRmSessionFactory factory) {
+    public static void databaseRoute(_Statement stmt, final int routeDatabase, DialectSessionFactory factory) {
         if (routeDatabase >= 0 && routeDatabase != factory.databaseIndex()) {
             throw _Exceptions.databaseRouteError(stmt, factory);
         }

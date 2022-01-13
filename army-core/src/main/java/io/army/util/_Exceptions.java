@@ -13,7 +13,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
-import io.army.session.GenericRmSessionFactory;
+import io.army.session.DialectSessionFactory;
 import io.army.session.TimeoutException;
 import io.army.sharding.DatabaseRoute;
 import io.army.sharding.Route;
@@ -78,8 +78,8 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException unknownStatement(Statement stmt, GenericRmSessionFactory factory) {
-        String m = String.format("Unknown %s in %s", stmt.getClass().getName(), factory);
+    public static CriteriaException unknownStatement(Statement stmt, Dialect dialect) {
+        String m = String.format("Unknown %s in %s", stmt.getClass().getName(), dialect);
         return new CriteriaException(m);
     }
 
@@ -89,7 +89,7 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
 
-    public static CriteriaException databaseRouteError(_Statement stmt, GenericRmSessionFactory factory) {
+    public static CriteriaException databaseRouteError(_Statement stmt, DialectSessionFactory factory) {
         String m = String.format("%s database route and %s not match.", stmt, factory);
         return new CriteriaException(m);
     }
@@ -99,7 +99,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new ArmyException(m);
     }
 
-    public static CriteriaException noTableRoute(_Statement stmt, GenericRmSessionFactory factory) {
+    public static CriteriaException noTableRoute(_Statement stmt, DialectSessionFactory factory) {
         String m = String.format("Not found table route in %s.Factory %s", stmt, factory);
         return new CriteriaException(m);
     }
@@ -298,6 +298,20 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static CriteriaException batchParamEmpty() {
         return new CriteriaException("Batch Update/Delete statement param list is empty.");
+    }
+
+    public static CriteriaException noFromClause() {
+        return new CriteriaException("Not found from clause.");
+    }
+
+    public static CriteriaException firstTableHasJoinClause() {
+        String m = String.format("From clause first %s must no join clause.", TablePart.class.getName());
+        return new CriteriaException(m);
+    }
+
+    public static CriteriaException firstTableHasOnClause() {
+        String m = String.format("From clause first %s must no on clause.", TablePart.class.getName());
+        return new CriteriaException(m);
     }
 
 

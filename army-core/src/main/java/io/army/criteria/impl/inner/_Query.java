@@ -13,7 +13,7 @@ public interface _Query extends _PartQuery {
 
     List<SQLModifier> modifierList();
 
-    List<? extends SelectPart> selectPartList();
+    List<SelectPart> selectPartList();
 
     List<? extends _TableBlock> tableBlockList();
 

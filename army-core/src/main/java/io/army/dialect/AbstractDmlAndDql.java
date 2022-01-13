@@ -22,6 +22,9 @@ public abstract class AbstractDmlAndDql extends AbstractSql {
 
     static final byte FOLLOW_PRIMARY_ROUTE = Byte.MIN_VALUE + 1;
 
+    public AbstractDmlAndDql(DialectEnvironment environment) {
+        super(environment);
+    }
 
     protected String subQueryParentAlias(String parentTableName) {
         Random random = new Random();
@@ -32,10 +35,6 @@ public abstract class AbstractDmlAndDql extends AbstractSql {
         return false;
     }
 
-    @Deprecated
-    protected void tableOnlyModifier(_SqlContext context) {
-
-    }
 
     protected void doTableWrapper(_TableBlock tableBlock, _TablesSqlContext context) {
         final StringBuilder builder = context.sqlBuilder();

@@ -1,7 +1,7 @@
 package io.army.dialect;
 
 import io.army.dialect.mysql.MySQLDialectFactory;
-import io.army.session.GenericRmSessionFactory;
+import io.army.session.DialectSessionFactory;
 import io.army.util._Exceptions;
 
 public abstract class DialectFactory {
@@ -10,7 +10,7 @@ public abstract class DialectFactory {
         throw new UnsupportedOperationException();
     }
 
-    public static Dialect createDialect(GenericRmSessionFactory factory) {
+    public static Dialect createDialect(DialectSessionFactory factory) {
         final Database database = factory.serverMeta().database();
         final Dialect dialect;
         switch (database) {

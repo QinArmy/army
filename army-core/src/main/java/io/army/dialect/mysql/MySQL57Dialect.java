@@ -1,38 +1,23 @@
 package io.army.dialect.mysql;
 
 
-import io.army.criteria.Delete;
-import io.army.criteria.Update;
-import io.army.criteria.Visible;
-import io.army.dialect.*;
-import io.army.session.GenericRmSessionFactory;
-import io.army.stmt.Stmt;
-
-import java.util.Set;
+import io.army.dialect.Database;
+import io.army.dialect.Dialect;
+import io.army.session.DialectSessionFactory;
 
 /**
  * this class is a  {@link Dialect} implementation then abstract base class of all MySQL 5.7 Dialect
  */
-class MySQL57Dialect extends AbstractDialect {
+class MySQL57Dialect extends MySQLDialect {
 
 
-    MySQL57Dialect(GenericRmSessionFactory sessionFactory) {
+    MySQL57Dialect(DialectSessionFactory sessionFactory) {
         super(sessionFactory);
 
     }
 
     /*################################## blow interfaces method ##################################*/
 
-
-    @Override
-    public Stmt returningUpdate(Update update, Visible visible) {
-        return null;
-    }
-
-    @Override
-    public Stmt returningDelete(Delete delete, Visible visible) {
-        return null;
-    }
 
     @Override
     public Database database() {
@@ -67,33 +52,4 @@ class MySQL57Dialect extends AbstractDialect {
 
     /*####################################### below AbstractDialect template  method #################################*/
 
-    @Override
-    protected final String doQuote(String identifier) {
-        return "`" + identifier + "`";
-    }
-
-    @Override
-    protected Set<String> createKeywordsSet() {
-        return MySQLDialectUtils.create57KeywordsSet();
-    }
-
-    @Override
-    protected DdlDialect createDDL() {
-        return new MySQL57DDL(this);
-    }
-
-    @Override
-    protected DmlDialect createDML() {
-        return new MySQL57Dml(this);
-    }
-
-    @Override
-    protected DqlDialect createDQL() {
-        return new MySQL57DQL(this);
-    }
-
-    @Override
-    protected TclDialect createTCL() {
-        return new MySQL57TCL(this);
-    }
 }

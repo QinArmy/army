@@ -3,7 +3,6 @@ package io.army.dialect;
 import io.army.criteria.SetTargetPart;
 import io.army.criteria.SetValuePart;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
@@ -34,9 +33,9 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
         return context;
     }
 
-    final List<FieldMeta<?, ?>> fieldList;
+    final List<? extends SetTargetPart> fieldList;
 
-    final List<_Expression<?>> valueExpList;
+    final List<? extends SetValuePart> valueExpList;
 
     private final ChildSetBlock childSetClause;
 
@@ -44,8 +43,12 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
         super(update, dialect, visible);
 
         final SingleTableMeta<?> table = (SingleTableMeta<?>) update.table();
-        final List<FieldMeta<?, ?>> fieldList = update.fieldList();
-        for (FieldMeta<?, ?> field : fieldList) {
+        final List<? extends SetTargetPart> fieldList = update.fieldList();
+        for (SetTargetPart part : fieldList) {
+            if (!(part instanceof FieldMeta)) {
+                continue;
+            }
+            FieldMeta<?, ?> field = (FieldMeta<?, ?>) part;
             if (field.tableMeta() != table) {
                 throw _Exceptions.unknownColumn(update.tableAlias(), field);
             }
@@ -61,17 +64,22 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
 
         final ChildTableMeta<?> childTable = (ChildTableMeta<?>) update.table();
         final SingleTableMeta<?> parentTable = childTable.parentMeta();
-        final List<FieldMeta<?, ?>> fieldList = update.fieldList();
-        final List<_Expression<?>> valueExpList = update.valueExpList();
+        final List<? extends SetTargetPart> fieldList = update.fieldList();
+        final List<? extends SetValuePart> valueExpList = update.valueExpList();
         final int fieldCount = fieldList.size();
 
-        final List<FieldMeta<?, ?>> parenFields = new ArrayList<>(), fields = new ArrayList<>();
-        final List<_Expression<?>> parentValues = new ArrayList<>(), values = new ArrayList<>();
+        final List<SetTargetPart> parenFields = new ArrayList<>(), fields = new ArrayList<>();
+        final List<SetValuePart> parentValues = new ArrayList<>(), values = new ArrayList<>();
 
         FieldMeta<?, ?> field;
         TableMeta<?> belongOf;
+        SetTargetPart part;
         for (int i = 0; i < fieldCount; i++) {
-            field = fieldList.get(i);
+            part = fieldList.get(i);
+            if (!(part instanceof FieldMeta)) {
+                continue;
+            }
+            field = (FieldMeta<?, ?>) part;
             belongOf = field.tableMeta();
             if (belongOf == parentTable) {
                 parenFields.add(field);
@@ -93,7 +101,7 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
             this.fieldList = CollectionUtils.unmodifiableList(parenFields);
             this.valueExpList = CollectionUtils.unmodifiableList(parentValues);
         }
-        this.childSetClause = new ChildSetBlock(childTable, update.tableAlias(), fieldList, values, this);
+        this.childSetClause = new ChildSetBlock(childTable, update.tableAlias(), fields, values, this);
     }
 
     /*################################## blow _SqlContext method ##################################*/
@@ -139,14 +147,14 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
 
     private static final class ChildSetBlock extends ChildBlock implements _SetBlock {
 
-        final List<FieldMeta<?, ?>> fieldList;
+        final List<SetTargetPart> fieldList;
 
-        final List<_Expression<?>> valueExpList;
+        final List<SetValuePart> valueExpList;
 
         private final StandardUpdateContext parentContext;
 
         private ChildSetBlock(ChildTableMeta<?> table, final String tableAlias
-                , List<FieldMeta<?, ?>> fieldList, List<_Expression<?>> valueExpList
+                , List<SetTargetPart> fieldList, List<SetValuePart> valueExpList
                 , StandardUpdateContext parentContext) {
             super(table, tableAlias, parentContext);
             this.fieldList = CollectionUtils.unmodifiableList(fieldList);
@@ -160,12 +168,12 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
         }
 
         @Override
-        public List<FieldMeta<?, ?>> targetParts() {
+        public List<SetTargetPart> targetParts() {
             return this.fieldList;
         }
 
         @Override
-        public List<_Expression<?>> valueParts() {
+        public List<SetValuePart> valueParts() {
             return this.valueExpList;
         }
 

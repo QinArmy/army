@@ -8,7 +8,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Statement;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
-import io.army.session.GenericRmSessionFactory;
+import io.army.session.DialectSessionFactory;
 import io.army.stmt.Stmt;
 import io.army.sync.executor.StmtExecutor;
 import io.army.tx.GenericTransaction;
@@ -27,7 +27,7 @@ abstract class AbstractRmSession extends AbstractGenericSyncSession
     final Dialect dialect;
     final Function<ArmyException, RuntimeException> exceptionFunction;
 
-    AbstractRmSession(GenericRmSessionFactory sessionFactory, StmtExecutor stmtExecutor) {
+    AbstractRmSession(DialectSessionFactory sessionFactory, StmtExecutor stmtExecutor) {
         this.stmtExecutor = stmtExecutor;
         this.dialect = sessionFactory.dialect();
         this.exceptionFunction = sessionFactory.exceptionFunction();

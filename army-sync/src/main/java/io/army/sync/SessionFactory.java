@@ -1,8 +1,8 @@
 package io.army.sync;
 
 import io.army.SessionException;
+import io.army.session.DialectSessionFactory;
 import io.army.session.FactoryMode;
-import io.army.session.GenericRmSessionFactory;
 
 /**
  * This interface representing single database(or single schema).
@@ -12,13 +12,12 @@ import io.army.session.GenericRmSessionFactory;
  *     <li>{@link FactoryMode#TABLE_SHARDING}</li>
  * </ul>
  */
-public interface SessionFactory extends GenericSyncApiSessionFactory, GenericRmSessionFactory {
+public interface SessionFactory extends GenericSyncApiSessionFactory, DialectSessionFactory {
 
     @Override
     ProxySession proxySession();
 
     SessionBuilder builder();
-
 
 
     interface SessionBuilder {

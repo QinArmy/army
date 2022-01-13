@@ -16,7 +16,7 @@ public abstract class AbstractDDL extends AbstractSql {
 
     /*################################## blow interfaces method ##################################*/
 
-    @Override
+   // //@Override
     public final List<String> createTable(TableMeta<?> tableMeta, @Nullable String tableSuffix) {
         DDLContext context = new DDLContextImpl(this.dialect, tableMeta, tableSuffix);
         // 1. create clause
@@ -51,7 +51,7 @@ public abstract class AbstractDDL extends AbstractSql {
         return context.build();
     }
 
-    @Override
+    //@Override
     public final List<String> addColumn(TableMeta<?> tableMeta, @Nullable String tableSuffix
             , Collection<FieldMeta<?, ?>> addFieldMetas) {
 
@@ -73,7 +73,7 @@ public abstract class AbstractDDL extends AbstractSql {
         return context.build();
     }
 
-    @Override
+    //@Override
     public final List<String> changeColumn(TableMeta<?> tableMeta, @Nullable String tableSuffix
             , Collection<FieldMeta<?, ?>> changeFieldMetas) {
         DDLContext context = new DDLContextImpl(this.dialect, tableMeta, tableSuffix);
@@ -81,7 +81,7 @@ public abstract class AbstractDDL extends AbstractSql {
         return context.build();
     }
 
-    @Override
+    //@Override
     public final List<String> addIndex(TableMeta<?> tableMeta, @Nullable String tableSuffix
             , Collection<IndexMeta<?>> addIndexMetas) {
         DDLContext context = new DDLContextImpl(this.dialect, tableMeta, tableSuffix);
@@ -96,7 +96,7 @@ public abstract class AbstractDDL extends AbstractSql {
         return context.build();
     }
 
-    @Override
+    //@Override
     public final List<String> dropIndex(TableMeta<?> tableMeta, @Nullable String tableSuffix
             , Collection<String> indexNames) {
         DDLContext context = new DDLContextImpl(this.dialect, tableMeta, tableSuffix);
@@ -107,7 +107,7 @@ public abstract class AbstractDDL extends AbstractSql {
         return context.build();
     }
 
-    @Override
+    //@Override
     public final List<String> modifyTableComment(TableMeta<?> tableMeta, @Nullable String tableSuffix) {
         DDLContext context = new DDLContextImpl(this.dialect, tableMeta, tableSuffix);
         internalModifyTableComment(context);
@@ -115,7 +115,7 @@ public abstract class AbstractDDL extends AbstractSql {
         return context.build();
     }
 
-    @Override
+    //@Override
     public final List<String> modifyColumnComment(FieldMeta<?, ?> fieldMeta, @Nullable String tableSuffix) {
         DDLContext context = new DDLContextImpl(this.dialect, fieldMeta.tableMeta(), tableSuffix);
         internalModifyColumnComment(fieldMeta, context);
@@ -123,7 +123,7 @@ public abstract class AbstractDDL extends AbstractSql {
         return context.build();
     }
 
-    @Override
+    //@Override
     public void clearForDDL() {
 
     }

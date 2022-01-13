@@ -1,10 +1,10 @@
 package io.army.reactive;
 
 import io.army.SessionException;
-import io.army.session.GenericRmSessionFactory;
+import io.army.session.DialectSessionFactory;
 import reactor.core.publisher.Mono;
 
-public interface ReactiveSessionFactory extends GenericReactiveApiSessionFactory, GenericRmSessionFactory {
+public interface ReactiveSessionFactory extends GenericReactiveApiSessionFactory, DialectSessionFactory {
 
     @Override
     ProxyReactiveSession proxySession();

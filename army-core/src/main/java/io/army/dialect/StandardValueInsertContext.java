@@ -4,10 +4,7 @@ import io.army.beans.ReadWrapper;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ValuesInsert;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.FieldMeta;
-import io.army.meta.SingleTableMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 import io.army.stmt.ParamValue;
 import io.army.stmt.Stmt;
 import io.army.stmt.Stmts;
@@ -45,7 +42,10 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
 
     final List<? extends ReadWrapper> domainList;
 
+    private final PrimaryFieldMeta<?, ?> returnId;
+
     private final ChildBlock childBlock;
+
 
     private StandardValueInsertContext(_ValuesInsert insert, Dialect dialect, Visible visible) {
         super(dialect, visible);
@@ -63,6 +63,11 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
             this.table = (SingleTableMeta<?>) table;
             this.fieldList = _DmlUtils.mergeInsertFields(false, insert);
             this.childBlock = null;
+        }
+        if (dialect.supportInsertReturning()) {
+            this.returnId = this.table.id();
+        } else {
+            this.returnId = null;
         }
 
     }
@@ -99,7 +104,13 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
     @Override
     public Stmt build() {
         final Stmt stmt, parentStmt;
-        parentStmt = Stmts.simple(this.sqlBuilder.toString(), this.paramList);
+        final PrimaryFieldMeta<?, ?> returnId = this.returnId;
+        if (returnId == null) {
+            parentStmt = Stmts.simple(this.sqlBuilder.toString(), this.paramList);
+        } else {
+            parentStmt = Stmts.simple(this.sqlBuilder.toString(), this.paramList, returnId);
+        }
+
         final ChildBlock childBlock = this.childBlock;
         if (childBlock == null) {
             stmt = parentStmt;
@@ -119,6 +130,21 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
     @Override
     public Map<FieldMeta<?, ?>, _Expression<?>> commonExpMap() {
         return this.commonExpMap;
+    }
+
+    void onParentEnd() {
+        final PrimaryFieldMeta<?, ?> returnId = this.returnId;
+        if (returnId != null) {
+            this.sqlBuilder
+                    .append(Constant.SPACE)
+                    .append(Constant.RETURNING)
+                    .append(Constant.SPACE)
+                    .append(returnId.columnName())
+                    .append(Constant.SPACE)
+                    .append(Constant.AS)
+                    .append(Constant.SPACE)
+                    .append(this.dialect.quoteIfNeed(returnId.fieldName()));
+        }
     }
 
     @Override

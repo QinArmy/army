@@ -2,7 +2,7 @@ package io.army.dialect.postgre;
 
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
-import io.army.session.GenericRmSessionFactory;
+import io.army.session.DialectSessionFactory;
 import io.army.util._Assert;
 
 public abstract class PostgreDialectFactory {
@@ -11,7 +11,7 @@ public abstract class PostgreDialectFactory {
         throw new UnsupportedOperationException();
     }
 
-    public static Dialect createPostgreDialect(Database database, GenericRmSessionFactory sessionFactory) {
+    public static Dialect createPostgreDialect(Database database, DialectSessionFactory sessionFactory) {
         _Assert.notNull(database, "dialect required");
 
         Dialect dialect;

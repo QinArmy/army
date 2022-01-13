@@ -3,7 +3,7 @@ package io.army.boot.migratioin;
 import io.army.dialect.DDLSQLExecuteException;
 import io.army.meta.MetaException;
 import io.army.schema.SchemaInfoException;
-import io.army.session.GenericRmSessionFactory;
+import io.army.session.DialectSessionFactory;
 
 import java.sql.Connection;
 
@@ -13,7 +13,7 @@ final class SyncMetaMigratorImpl implements SyncMetaMigrator {
     }
 
     @Override
-    public final void migrate(Connection conn, GenericRmSessionFactory sessionFactory)
+    public final void migrate(Connection conn, DialectSessionFactory sessionFactory)
             throws SchemaExtractException, SchemaInfoException, MetaException, DDLSQLExecuteException {
 //        //1.extract schema meta from database
 //        SchemaInfo schemaInfo;

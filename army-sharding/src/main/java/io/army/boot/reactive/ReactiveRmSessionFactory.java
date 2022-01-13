@@ -1,7 +1,7 @@
 package io.army.boot.reactive;
 
-import io.army.session.GenericRmSessionFactory;
+import io.army.session.DialectSessionFactory;
 
-interface ReactiveRmSessionFactory extends GenericRmSessionFactory {
+interface ReactiveRmSessionFactory extends DialectSessionFactory {
 
 }

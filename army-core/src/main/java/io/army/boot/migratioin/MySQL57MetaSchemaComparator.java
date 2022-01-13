@@ -5,7 +5,7 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.schema.SchemaInfoException;
-import io.army.session.GenericRmSessionFactory;
+import io.army.session.DialectSessionFactory;
 import io.army.sqltype.MySQLDataType;
 import io.army.util.ArrayUtils;
 import org.slf4j.Logger;
@@ -140,7 +140,7 @@ class MySQL57MetaSchemaComparator extends AbstractMetaSchemaComparator {
     }
 
 
-    MySQL57MetaSchemaComparator(GenericRmSessionFactory sessionFactory) {
+    MySQL57MetaSchemaComparator(DialectSessionFactory sessionFactory) {
         super(sessionFactory);
     }
 

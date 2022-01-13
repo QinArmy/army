@@ -3,8 +3,8 @@ package io.army.dialect.postgre;
 import io.army.criteria.Delete;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
-import io.army.dialect.*;
-import io.army.session.GenericRmSessionFactory;
+import io.army.dialect.Database;
+import io.army.session.DialectSessionFactory;
 import io.army.stmt.Stmt;
 
 import java.util.Set;
@@ -12,7 +12,7 @@ import java.util.Set;
 class Postgre11Dialect extends AbstractDialect {
 
 
-    Postgre11Dialect(GenericRmSessionFactory sessionFactory) {
+    Postgre11Dialect(DialectSessionFactory sessionFactory) {
         super(sessionFactory);
     }
 
