@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._PartQuery;
 import io.army.criteria.impl.inner._UnionQuery;
 import io.army.dialect.Constant;
 import io.army.dialect.Dialect;
@@ -66,6 +67,11 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
     private StandardUnionQuery(Q left) {
         super(CriteriaUtils.getUnionContext(left));
         this.left = left;
+    }
+
+    @Override
+    public final List<SelectPart> selectPartList() {
+        return ((_PartQuery) this.left).selectPartList();
     }
 
     @Override
@@ -139,10 +145,6 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
                     .append(Constant.RIGHT_BRACKET);
         }
 
-        @Override
-        public final List<? extends SelectPart> selectPartList() {
-            return this.left.selectPartList();
-        }
 
     }
 
@@ -244,11 +246,6 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
                     .append(this.unionType.keyWords);
 
             dialect.subQuery(this.right, context);
-        }
-
-        @Override
-        public final List<? extends SelectPart> selectPartList() {
-            return this.left.selectPartList();
         }
 
 

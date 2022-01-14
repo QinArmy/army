@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._PartQuery;
 import io.army.criteria.impl.inner._UnionQuery;
 import io.army.criteria.mysql.MySQL57Query;
 import io.army.dialect.Constant;
@@ -69,6 +70,11 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
     }
 
     @Override
+    public final List<SelectPart> selectPartList() {
+        return ((_PartQuery) this.left).selectPartList();
+    }
+
+    @Override
     public final MySQL57Query.UnionOrderBy57Spec<C, Q> bracketsQuery() {
         return bracketQuery(this.asQuery());
     }
@@ -129,11 +135,6 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
 
         private BracketSubQuery(Q left) {
             super(left);
-        }
-
-        @Override
-        public final List<? extends SelectPart> selectPartList() {
-            return this.left.selectPartList();
         }
 
         @Override
@@ -223,11 +224,6 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
             super(left);
             this.unionType = unionType;
             this.right = right;
-        }
-
-        @Override
-        public final List<? extends SelectPart> selectPartList() {
-            return this.right.selectPartList();
         }
 
         @Override

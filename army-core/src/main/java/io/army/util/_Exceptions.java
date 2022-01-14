@@ -55,6 +55,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException tableAliasDuplication(String tableAlias) {
+        String m = String.format("Table alias[%s] duplication", tableAlias);
+        return new CriteriaException(m);
+    }
+
     public static CriteriaException unknownColumn(@Nullable String tableAlias, FieldMeta<?, ?> fieldMeta) {
         final String m;
         if (tableAlias == null) {

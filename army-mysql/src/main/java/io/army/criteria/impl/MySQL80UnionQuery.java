@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._PartQuery;
 import io.army.criteria.impl.inner._UnionQuery;
 import io.army.criteria.mysql.MySQL80Query;
 import io.army.dialect.Constant;
@@ -67,6 +68,11 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends PartQuery<
     }
 
     @Override
+    public final List<SelectPart> selectPartList() {
+        return ((_PartQuery) this.left).selectPartList();
+    }
+
+    @Override
     public final UnionOrderBy80Spec<C, Q> bracketsQuery() {
         return MySQL80UnionQuery.bracketQuery(this.left);
     }
@@ -123,11 +129,6 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends PartQuery<
 
         private BracketSubQuery(Q left) {
             super(left);
-        }
-
-        @Override
-        public final List<? extends SelectPart> selectPartList() {
-            return this.left.selectPartList();
         }
 
         @Override
@@ -214,11 +215,6 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends PartQuery<
             super(left);
             this.unionType = unionType;
             this.right = right;
-        }
-
-        @Override
-        public final List<? extends SelectPart> selectPartList() {
-            return this.left.selectPartList();
         }
 
         @Override

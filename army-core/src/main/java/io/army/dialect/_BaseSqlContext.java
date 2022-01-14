@@ -23,6 +23,13 @@ public abstract class _BaseSqlContext implements _StmtContext {
         this.paramList = new ArrayList<>();
     }
 
+    protected _BaseSqlContext(_BaseSqlContext outerContext) {
+        this.dialect = outerContext.dialect;
+        this.visible = outerContext.visible;
+        this.sqlBuilder = outerContext.sqlBuilder;
+        this.paramList = outerContext.paramList;
+    }
+
 
     @Override
     public final Dialect dialect() {
@@ -46,8 +53,6 @@ public abstract class _BaseSqlContext implements _StmtContext {
     public final Visible visible() {
         return this.visible;
     }
-
-
 
 
 }

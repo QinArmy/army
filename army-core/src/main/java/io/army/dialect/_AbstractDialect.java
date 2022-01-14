@@ -138,7 +138,7 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
     }
 
     @Override
-    public final void select(Select select, _SqlContext original) {
+    public final void select(final Select select, final _SqlContext original) {
 
     }
 
@@ -245,6 +245,10 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
     }
 
     protected void handleDialectTablePart(TablePart tablePart, _SqlContext context) {
+
+    }
+
+    protected void standardLockClause(LockMode lockMode, _SqlContext context) {
 
     }
 
@@ -630,8 +634,9 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
 
 
     private SimpleStmt handleStandardSelect(final Select select, final Visible visible) {
+        _SqlContext context;
         if (select instanceof _UnionQuery) {
-
+            context = UnionSelectContext.create(this, select, visible);
         } else {
 
         }
@@ -756,9 +761,7 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
         return context.build();
     }
 
-    protected void standardLockClause(LockMode lockMode, _SqlContext context) {
 
-    }
 
     private void standardQuery(_StandardQuery query, _SqlContext context) {
         this.standardSelectClause(query.modifierList(), context);
