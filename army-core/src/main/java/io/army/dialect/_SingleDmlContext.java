@@ -6,7 +6,6 @@ import io.army.criteria.impl.inner._SingleDml;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.sharding._RouteUtils;
 import io.army.stmt.ParamValue;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmts;
@@ -247,9 +246,9 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
                 .append(dialect.safeColumnName(childField.columnName()))
 
                 .append(Constant.SPACE)
-                .append(Constant.FROM);
-
-        _RouteUtils.appendTableName(childTable, parentContext);
+                .append(Constant.FROM)
+                .append(Constant.SPACE)
+                .append(dialect.safeTableName(childTable.tableName()));
 
         if (dialect.tableAliasAfterAs()) {
             sqlBuilder.append(Constant.SPACE)
@@ -303,10 +302,10 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
                 .append(dialect.safeColumnName(parentField.columnName()))
 
                 .append(Constant.SPACE)
-                .append(Constant.FROM);
+                .append(Constant.FROM)
+                .append(Constant.SPACE)
+                .append(dialect.safeTableName(parentTable.tableName()));
 
-        // append parent table name
-        _RouteUtils.appendTableName(parentTable, childContext);
 
         if (dialect.tableAliasAfterAs()) {
             sqlBuilder.append(Constant.SPACE)

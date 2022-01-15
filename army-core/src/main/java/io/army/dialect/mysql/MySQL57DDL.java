@@ -10,8 +10,6 @@ import io.army.sqltype.MySQLDataType;
 import io.army.sqltype.SqlDataType;
 import io.army.util._Assert;
 
-import java.util.Collections;
-
 class MySQL57DDL extends AbstractDDL {
 
 
@@ -25,7 +23,7 @@ class MySQL57DDL extends AbstractDDL {
     /*################################## blow DDL method ##################################*/
 
 
-    @Override
+    //@Override
     protected final void internalModifyTableComment(DDLContext context) {
         StringBuilder builder = context.sqlBuilder()
                 .append("ALTER TABLE");
@@ -36,12 +34,12 @@ class MySQL57DDL extends AbstractDDL {
         ;
     }
 
-    @Override
+    //@Override
     protected final void internalModifyColumnComment(FieldMeta<?, ?> fieldMeta, DDLContext context) {
-        doChangeColumn(Collections.singleton(fieldMeta), context);
+        //doChangeColumn(Collections.singleton(fieldMeta), context);
     }
 
-    @Override
+    //@Override
     protected void doDefaultExpression(FieldMeta<?, ?> fieldMeta, StringBuilder builder) {
 //        SqlDataType sqlDataType = fieldMeta.mappingMeta().sqlDataType(database());
 //        String defaultExp = fieldMeta.defaultValue();
@@ -54,14 +52,14 @@ class MySQL57DDL extends AbstractDDL {
 //        builder.append(defaultExp);
     }
 
-    @Override
+    //@Override
     protected boolean supportSQLDateType(SqlDataType dataType) {
         return dataType instanceof MySQLDataType;
     }
 
     /*################################## blow AbstractTableDDL template method ##################################*/
 
-    @Override
+    //@Override
     protected void tableOptionsClause(DDLContext context) {
         TableMeta<?> tableMeta = context.tableMeta();
         context.sqlBuilder()
@@ -73,27 +71,27 @@ class MySQL57DDL extends AbstractDDL {
         ;
     }
 
-    @Override
+    //@Override
     protected final boolean useIndependentIndexDefinition() {
         return false;
     }
 
-    @Override
+    //@Override
     protected final boolean useIndependentComment() {
         return false;
     }
 
-    @Override
+    //@Override
     protected final void independentIndexDefinitionClause(IndexMeta<?> indexMeta, DDLContext context) {
         throw new UnsupportedOperationException();
     }
 
-    @Override
+    //@Override
     protected final void independentTableComment(DDLContext context) {
         throw new UnsupportedOperationException();
     }
 
-    @Override
+    //@Override
     protected final void independentColumnComment(FieldMeta<?, ?> fieldMeta, DDLContext context) {
         throw new UnsupportedOperationException();
     }

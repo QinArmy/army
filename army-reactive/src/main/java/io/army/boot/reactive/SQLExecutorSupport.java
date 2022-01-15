@@ -1,18 +1,14 @@
 package io.army.boot.reactive;
 
-import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ObjectWrapper;
 import io.army.boot.GenericSQLExecutorSupport;
 import io.army.codec.StatementType;
 import io.army.criteria.Selection;
 import io.army.dialect.Database;
 import io.army.dialect.MappingContext;
-import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.stmt.*;
-import io.jdbd.result.ResultRow;
-import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
@@ -45,7 +41,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     SQLExecutorSupport(InnerGenericRmSessionFactory sessionFactory) {
         super(sessionFactory);
         this.sessionFactory = sessionFactory;
-        this.mappingContext = sessionFactory.dialect().mappingContext();
+        this.mappingContext = null;
     }
 
 
@@ -242,158 +238,6 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
                 ;
     }
 
-    private ObjectWrapper mapFirstSQLResult(InnerGenericRmSession session, ResultRow resultRow
-            , SimpleStmt sqlWrapper, Class<?> resultClass, boolean onlyIdReturning) {
-
-        ObjectWrapper beanWrapper = onlyIdReturning
-                ? ObjectAccessorFactory.forIdAccess(resultClass)
-                : createObjectWrapper(resultClass, session);
-
-        final List<Selection> selectionList = sqlWrapper.selectionList();
-        for (Selection selection : selectionList) {
-            Object columnResult = extractColumnResult(resultRow, selection, sqlWrapper.statementType()
-                    , selection.mappingType().javaType());
-            if (columnResult == null) {
-                continue;
-            }
-            // set columnResult to object
-            beanWrapper.set(selection.alias(), columnResult);
-        }
-        if (beanWrapper.get(selectionList.get(0).alias()) == null) {
-            // first selection must be Primary Field
-            throw createDomainFirstReturningNoIdException();
-        }
-        return beanWrapper;
-    }
-
-    /**
-     * @param <R> row's  java type
-     */
-    private <R> R mapSecondSQLResult(ResultRow resultRow
-            , Map<Object, ObjectWrapper> objectWrapperMap, SimpleStmt sqlWrapper, Class<R> resultClass) {
-
-        final List<Selection> selectionList = sqlWrapper.selectionList();
-        // first Selection must be PrimaryField Selection
-        final Selection primaryFieldSelection = selectionList.get(0);
-        final StatementType statementType = sqlWrapper.statementType();
-
-        final Object primaryFieldValue = extractColumnResult(resultRow, primaryFieldSelection, statementType
-                , primaryFieldSelection.mappingType().javaType());
-
-        if (primaryFieldValue == null) {
-            throw createDomainSecondReturningNoIdException();
-        }
-        final ObjectWrapper objectWrapper = objectWrapperMap.get(primaryFieldValue);
-        if (objectWrapper == null) {
-            throw new IllegalStateException(String.format(
-                    "wrapperMap error,not found value for key[%s]", primaryFieldValue));
-        }
-        if (selectionList.size() < 2) {
-            return resultClass.cast(objectWrapper.getWrappedInstance());
-        }
-        final int size = selectionList.size();
-        for (int i = 1; i < size; i++) {
-            Selection selection = selectionList.get(i);
-            Object columnResult = extractColumnResult(resultRow, selection, statementType
-                    , selection.mappingType().javaType());
-            if (columnResult == null) {
-                continue;
-            }
-            objectWrapper.set(selection.alias(), columnResult);
-        }
-        return resultClass.cast(objectWrapper.getWrappedInstance());
-    }
-
-
-    private <R> R extractRowResult(InnerGenericRmSession session, ResultRow resultRow
-            , SimpleStmt sqlWrapper, Class<R> resultClass) {
-
-        final ObjectWrapper beanWrapper = createObjectWrapper(resultClass, session);
-
-        final StatementType statementType = sqlWrapper.statementType();
-        for (Selection selection : sqlWrapper.selectionList()) {
-            // 1. obtain column result
-            Object columnResult = extractColumnResult(resultRow, selection, statementType
-                    , selection.mappingType().javaType());
-            if (columnResult == null) {
-                continue;
-            }
-            // 2. set bean property value.
-            beanWrapper.set(selection.alias(), columnResult);
-        }
-        return getWrapperInstance(beanWrapper);
-    }
-
-    private <R> Mono<R> flatMapColumnResult(ResultRow resultRow, Selection selection, StatementType statementType
-            , Class<R> columnClass) {
-        return Mono.justOrEmpty(
-                extractColumnResult(resultRow, selection, statementType, columnClass)
-        );
-    }
-
-    /**
-     * @param <R> column's {@link Selection} java type
-     */
-    @Nullable
-    private <R> R extractColumnResult(ResultRow resultRow, Selection selection, StatementType statementType
-            , Class<R> columnResultClass) {
-
-        // 1. obtain column result
-//        Object columnResult = resultRow.getObject(selection.alias());
-//        if (columnResult == null) {
-//            return null;
-//        }
-//        MappingType mappingType = selection.mappingMeta();
-//        // 2. decode columnResult with mappingMeta
-//        columnResult = mappingType.decodeForReactive(columnResult, this.mappingContext);
-//        if (!mappingType.javaType().isInstance(columnResult)) {
-//            throw new MetaException("%s decodeForReactive return value isn't %s's instance."
-//                    , mappingType.getClass().getName()
-//                    , mappingType.javaType().getName());
-//        }
-//
-//        if (selection instanceof FieldSelection) {
-//            FieldMeta<?, ?> fieldMeta = ((FieldSelection) selection).fieldMeta();
-//            if (fieldMeta.codec()) {
-//                // 3. decode cipher field
-//                columnResult = doDecodeResult(statementType, fieldMeta, columnResult);
-//            }
-//        }
-        return columnResultClass.cast(null);
-    }
-
-    private <R> Publisher<R> assertOptimisticLockWhenEmpty(SimpleStmt sqlWrapper) {
-        Mono<R> mono;
-        if (sqlWrapper.hasVersion()) {
-            // throw optimistic lock exception
-            mono = Mono.defer(() -> Mono.error(createOptimisticLockException(sqlWrapper.sql())));
-        } else {
-            mono = Mono.empty();
-        }
-        return mono;
-    }
-
-    private <R> Mono<List<R>> assertFirstSQLAndSecondSQLResultMatch(List<R> listOfSecond
-            , Map<?, ?> wrapperMap, SimpleStmt simpleWrapper) {
-        Mono<List<R>> mono;
-        if (listOfSecond.size() == wrapperMap.size()) {
-            mono = Mono.just(listOfSecond);
-        } else {
-            mono = Mono.error(createChildReturningNotMatchException(wrapperMap.size(), listOfSecond.size()
-                    , simpleWrapper));
-        }
-        return mono;
-    }
-
-
-    private Object keyExtractor(ObjectWrapper beanWrapper, Selection primaryFieldSelection) {
-        Object idValue = beanWrapper.get(primaryFieldSelection.alias());
-        if (idValue == null) {
-            throw new IllegalStateException(String.format(
-                    "%s not found property[%s] value.", beanWrapper, primaryFieldSelection.alias()));
-        }
-        return idValue;
-    }
 
 
     private <N extends Number> Mono<N> assertOptimisticLock(N updatedRows, GenericSimpleStmt sqlWrapper) {

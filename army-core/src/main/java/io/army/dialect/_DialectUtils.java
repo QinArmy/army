@@ -2,21 +2,18 @@ package io.army.dialect;
 
 import io.army.ArmyRuntimeException;
 import io.army.ErrorCode;
-import io.army.UnKnownTypeException;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner._SortPart;
-import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.session.FactoryMode;
 import io.army.util.StringUtils;
 import io.army.util._Exceptions;
 
 import java.sql.JDBCType;
-import java.util.*;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.List;
 
 public abstract class _DialectUtils {
 
@@ -119,104 +116,16 @@ public abstract class _DialectUtils {
         }
     }
 
-    public static void appendPredicateList(List<_Predicate> predicateList, _TablesSqlContext context) {
 
-        StringBuilder builder = context.sqlBuilder();
-        int count = 0;
-        for (_Predicate predicate : predicateList) {
-            if (count > 0) {
-                builder.append(" AND");
-            }
-            predicate.appendSql(context);
-            count++;
-        }
-    }
-
-    public static void appendSortPartList(List<_SortPart> sortPartList, _TablesSqlContext context) {
-        StringBuilder builder = context.sqlBuilder();
-
-        int count = 0;
-        for (_SortPart sortPart : sortPartList) {
-            if (count > 0) {
-                builder.append(",");
-            }
-            sortPart.appendSortPart(context);
-            count++;
-        }
-    }
-
-    public static boolean needAppendVisible(TableMeta<?> tableMeta) {
-        TableMeta<?> temp = tableMeta;
-        if (temp instanceof ChildTableMeta) {
-            temp = ((ChildTableMeta<?>) temp).parentMeta();
-        }
-        return temp.containField(_MetaBridge.VISIBLE);
-    }
-
-    public static boolean needAppendVisible(List<? extends _TableBlock> tableWrapperList) {
-        final TableMeta<?> dual = null;
-        boolean need = false;
-        for (_TableBlock tableBlock : tableWrapperList) {
-            TablePart tableAble = tableBlock.table();
-
-            if ((tableAble instanceof TableMeta) && tableAble != dual) {
-
-                TableMeta<?> temp = (TableMeta<?>) tableAble;
-                if (tableAble instanceof ChildTableMeta) {
-                    temp = ((ChildTableMeta<?>) temp).parentMeta();
-                }
-                if (temp.containField(_MetaBridge.VISIBLE)) {
-                    need = true;
-                    break;
-                }
-            }
-        }
-        return need;
-    }
-
-
-    public static CriteriaException createNoLogicalTableException(FieldMeta<?, ?> fieldMeta) {
-        throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                , "not found logical table for [%s], please use SQLS.field(String,FieldMeta) method.", fieldMeta);
-    }
-
-    public static CriteriaException createNoLogicalTableException(String tableAlias) {
-        throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                , "not found logical table[%s], please check criteria.", tableAlias);
-    }
 
     public static CriteriaException createUnKnownFieldException(FieldMeta<?, ?> fieldMeta) {
         throw new CriteriaException(ErrorCode.CRITERIA_ERROR
                 , "unknown logical table for FieldMeta[%s] in current context,please check criteria code.", fieldMeta);
     }
 
-    public static CriteriaException createUnKnownTableException(TableMeta<?> tableMeta) {
-        throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                , "unknown TableMeta[%s] in current context,please check criteria code.", tableMeta);
-    }
 
     /*################################## blow package method ##################################*/
 
-
-    static List<Selection> extractSelectionList(List<SelectPart> selectPartList) {
-        List<Selection> selectionList = new ArrayList<>();
-        for (SelectPart selectPart : selectPartList) {
-            if (selectPart instanceof Selection) {
-                selectionList.add((Selection) selectPart);
-            } else if (selectPart instanceof SelectionGroup) {
-                selectionList.addAll(((SelectionGroup) selectPart).selectionList());
-            } else {
-                throw new UnKnownTypeException(selectPart);
-            }
-        }
-        return Collections.unmodifiableList(selectionList);
-    }
-
-    static void assertShardingMode(Dialect dialect, @Nullable Set<Integer> domainIndexSet) {
-        if (domainIndexSet != null && dialect.sessionFactory().factoryMode() == FactoryMode.NO_SHARDING) {
-            throw new IllegalArgumentException("domainIndexSet must be null in NO_SHARDING mode.");
-        }
-    }
 
     @Nullable
     private static ParentChildJoinPredicate findParentChildJoinPredicate(List<IPredicate> onPredicateList) {

@@ -35,13 +35,13 @@ abstract class RefSelectionImpl<E> extends OperationExpression<E> implements Ref
 
     @Override
     public final void appendSql(_SqlContext context) {
-        SqlDialect sql = context.dialect();
-
-        context.sqlBuilder()
-                .append(" ")
-                .append(sql.quoteIfNeed(this.subQueryAlias))
-                .append(".")
-                .append(sql.quoteIfNeed(this.derivedFieldName()));
+//        SqlDialect sql = context.dialect();
+//
+//        context.sqlBuilder()
+//                .append(" ")
+//                .append(sql.quoteIfNeed(this.subQueryAlias))
+//                .append(".")
+//                .append(sql.quoteIfNeed(this.derivedFieldName()));
     }
 
     @Override

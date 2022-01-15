@@ -185,8 +185,9 @@ public abstract class GenericSQLExecutorSupport {
 
 
     protected static boolean singleType(List<Selection> selectionList, Class<?> resultClass) {
-        return selectionList.size() == 1
-                && resultClass.isAssignableFrom(selectionList.get(0).mappingType().javaType());
+//        return selectionList.size() == 1
+//                && resultClass.isAssignableFrom(selectionList.get(0).mappingType().javaType());
+        throw new UnsupportedOperationException();
 
     }
 

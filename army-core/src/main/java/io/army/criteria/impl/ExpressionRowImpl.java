@@ -27,22 +27,22 @@ final class ExpressionRowImpl<T extends IDomain> implements ExpressionRow<T> {
 
     @Override
     public void appendSql(_SqlContext context) {
-        StringBuilder builder = context.sqlBuilder()
-                .append(" ");
-        SqlDialect sql = context.dialect();
-        if (sql.hasRowKeywords()) {
-            builder.append("ROW");
-        }
-        builder.append("( ");
-        int index = 0;
-        for (FieldMeta<T, ?> fieldMeta : this.columnList) {
-            if (index > 0) {
-                builder.append(",");
-            }
-            builder.append(sql.quoteIfNeed(fieldMeta.fieldName()));
-            index++;
-        }
-        builder.append(" )");
+//        StringBuilder builder = context.sqlBuilder()
+//                .append(" ");
+//        SqlDialect sql = context.dialect();
+//        if (sql.hasRowKeywords()) {
+//            builder.append("ROW");
+//        }
+//        builder.append("( ");
+//        int index = 0;
+//        for (FieldMeta<T, ?> fieldMeta : this.columnList) {
+//            if (index > 0) {
+//                builder.append(",");
+//            }
+//            builder.append(sql.quoteIfNeed(fieldMeta.fieldName()));
+//            index++;
+//        }
+//        builder.append(" )");
     }
 
 

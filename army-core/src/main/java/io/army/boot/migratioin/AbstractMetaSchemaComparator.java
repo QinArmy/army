@@ -1,6 +1,5 @@
 package io.army.boot.migratioin;
 
-import io.army.ErrorCode;
 import io.army.dialect.DDLUtils;
 import io.army.dialect.Database;
 import io.army.lang.Nullable;
@@ -8,7 +7,6 @@ import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.schema.SchemaInfoException;
 import io.army.session.DialectSessionFactory;
-import io.army.sharding._RouteUtils;
 import io.army.util.StringUtils;
 import io.army.util._Assert;
 
@@ -85,51 +83,51 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
     public final List<List<Migration>> compare(SchemaInfo schemaInfo)
             throws SchemaInfoException, MetaException {
 
-        final Map<String, TableInfo> tableInfoMap = schemaInfo.tableMap();
-
-        final int tableCount = this.sessionFactory.tableCountPerDatabase();
-        List<List<MigrationMember>> shardingList = new ArrayList<>(tableCount);
-        final Collection<TableMeta<?>> tableMetas = this.sessionFactory.tableMetaMap().values();
-        for (int i = 0; i < tableCount; i++) {
-            //1. obtain table suffix
-            final String tableSuffix = _RouteUtils.convertToSuffix(tableCount, i);
-            List<MigrationMember> migrationList = new ArrayList<>();
-
-            for (TableMeta<?> tableMeta : tableMetas) {
-                //2. obtain actual table name
-                String actualTableName = tableMeta.tableName();
-                if (tableSuffix != null) {
-                    actualTableName += tableSuffix;
-                }
-                //3. create MigrationMemberImpl
-                TableInfo tableInfo = tableInfoMap.get(StringUtils.toLowerCase(actualTableName));
-                if (tableInfo == null) {
-                    // will create table
-                    migrationList.add(new MigrationMemberImpl(tableMeta, tableSuffix, true));
-
-                } else {
-                    MigrationMemberImpl migration = doMigrateTable(tableMeta, tableSuffix, tableInfo);
-                    if (migration != null) {
-                        // will alter tableMeta
-                        migrationList.add(migration);
-                    }
-                    if (!DDLUtils.escapeQuote(tableMeta.comment()).equals(tableInfo.comment())) {
-                        if (migration == null) {
-                            migration = new MigrationMemberImpl(tableMeta, tableSuffix, false);
-                        }
-                        migration.modifyTableComment(true);
-                    }
-
-                }
-            }
-            //4. add migrationList to shardingList
-            if (!migrationList.isEmpty()) {
-                shardingList.add(Collections.unmodifiableList(migrationList));
-            }
-        }
-        if (this.dataTypeErrorBuilder.length() > 0) {
-            throw new SchemaInfoException(ErrorCode.SCHEMA_ERROR, this.dataTypeErrorBuilder.toString());
-        }
+//        final Map<String, TableInfo> tableInfoMap = schemaInfo.tableMap();
+//
+//        final int tableCount = this.sessionFactory.tableCountPerDatabase();
+//        List<List<MigrationMember>> shardingList = new ArrayList<>(tableCount);
+//        final Collection<TableMeta<?>> tableMetas = this.sessionFactory.tableMetaMap().values();
+//        for (int i = 0; i < tableCount; i++) {
+//            //1. obtain table suffix
+//            final String tableSuffix = _RouteUtils.convertToSuffix(tableCount, i);
+//            List<MigrationMember> migrationList = new ArrayList<>();
+//
+//            for (TableMeta<?> tableMeta : tableMetas) {
+//                //2. obtain actual table name
+//                String actualTableName = tableMeta.tableName();
+//                if (tableSuffix != null) {
+//                    actualTableName += tableSuffix;
+//                }
+//                //3. create MigrationMemberImpl
+//                TableInfo tableInfo = tableInfoMap.get(StringUtils.toLowerCase(actualTableName));
+//                if (tableInfo == null) {
+//                    // will create table
+//                    migrationList.add(new MigrationMemberImpl(tableMeta, tableSuffix, true));
+//
+//                } else {
+//                    MigrationMemberImpl migration = doMigrateTable(tableMeta, tableSuffix, tableInfo);
+//                    if (migration != null) {
+//                        // will alter tableMeta
+//                        migrationList.add(migration);
+//                    }
+//                    if (!DDLUtils.escapeQuote(tableMeta.comment()).equals(tableInfo.comment())) {
+//                        if (migration == null) {
+//                            migration = new MigrationMemberImpl(tableMeta, tableSuffix, false);
+//                        }
+//                        migration.modifyTableComment(true);
+//                    }
+//
+//                }
+//            }
+//            //4. add migrationList to shardingList
+//            if (!migrationList.isEmpty()) {
+//                shardingList.add(Collections.unmodifiableList(migrationList));
+//            }
+//        }
+//        if (this.dataTypeErrorBuilder.length() > 0) {
+//            throw new SchemaInfoException(ErrorCode.SCHEMA_ERROR, this.dataTypeErrorBuilder.toString());
+//        }
         return Collections.emptyList();
     }
 

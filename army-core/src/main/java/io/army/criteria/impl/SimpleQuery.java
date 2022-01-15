@@ -557,7 +557,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final List<? extends SelectPart> selectPartList() {
+    public final List<SelectPart> selectPartList() {
         prepared();
         return this.selectPartList;
     }

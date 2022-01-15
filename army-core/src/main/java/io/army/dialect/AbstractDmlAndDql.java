@@ -1,15 +1,12 @@
 package io.army.dialect;
 
-import io.army.criteria.*;
+import io.army.criteria.GenericField;
 import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner._TableBlock;
-import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Exceptions;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 
@@ -35,58 +32,58 @@ public abstract class AbstractDmlAndDql extends AbstractSql {
         return false;
     }
 
-
-    protected void doTableWrapper(_TableBlock tableBlock, _TablesSqlContext context) {
-        final StringBuilder builder = context.sqlBuilder();
-        // 1. form/join type
-        SQLModifier joinType = tableBlock.jointType();
-        if (!"".equals(joinType.render())) {
-            builder.append(" ")
-                    .append(joinType.render());
-        }
-        //2. append ONLY keyword ,eg: postgre,oracle.(optional)
-        this.tableOnlyModifier(context);
-        //3. append table able
-        TablePart tableAble = tableBlock.table();
-        if (tableAble instanceof TableMeta) {
-            context.appendTable((TableMeta<?>) tableAble, tableBlock.alias());
-        } else {
-            tableAble.appendSql(context);
-            if (this.tableAliasAfterAs()) {
-                builder.append(" AS");
-            }
-            context.appendIdentifier(tableBlock.alias());
-        }
-
-        List<IPredicate> predicateList = tableBlock.onPredicateList();
-        if (predicateList.isEmpty()) {
-            //TODO zoro ,think and validate this design.
-            return;
-        }
-        //5.  on clause
-        builder.append(" ON");
-        //DialectUtils.appendPredicateList(tableWrapper.onPredicateList(), context);
-
-    }
+//
+//    protected void doTableWrapper(_TableBlock tableBlock, _TablesSqlContext context) {
+////        final StringBuilder builder = context.sqlBuilder();
+////        // 1. form/join type
+////        SQLModifier joinType = tableBlock.jointType();
+////        if (!"".equals(joinType.render())) {
+////            builder.append(" ")
+////                    .append(joinType.render());
+////        }
+////        //2. append ONLY keyword ,eg: postgre,oracle.(optional)
+////        this.tableOnlyModifier(context);
+////        //3. append table able
+////        TablePart tableAble = tableBlock.table();
+////        if (tableAble instanceof TableMeta) {
+////            context.appendTable((TableMeta<?>) tableAble, tableBlock.alias());
+////        } else {
+////            tableAble.appendSql(context);
+////            if (this.tableAliasAfterAs()) {
+////                builder.append(" AS");
+////            }
+////            context.appendIdentifier(tableBlock.alias());
+////        }
+////
+////        List<IPredicate> predicateList = tableBlock.onPredicateList();
+////        if (predicateList.isEmpty()) {
+////            //TODO zoro ,think and validate this design.
+////            return;
+////        }
+////        //5.  on clause
+////        builder.append(" ON");
+////        //DialectUtils.appendPredicateList(tableWrapper.onPredicateList(), context);
+//
+//    }
 
 
     /*################################## blow final protected method ##################################*/
 
 
-    protected final void appendVisiblePredicate(TableMeta<?> table, String tableAlias
-            , _TablesSqlContext context, boolean hasPredicate) {
-        if (table instanceof SingleTableMeta) {
-            visiblePredicate(context, table, tableAlias, hasPredicate);
-        } else if (table instanceof ChildTableMeta) {
-            visibleSubQueryPredicateForChild(context, (ChildTableMeta<?>) table, tableAlias, hasPredicate);
-        } else {
-            throw new IllegalArgumentException(String.format("unknown %s.", table));
-        }
-    }
-
-    protected final void appendVisiblePredicate(List<? extends _TableBlock> tableWrapperList, _TablesSqlContext context
-            , boolean hasPredicate) {
-        // append visible predicates
+//    protected final void appendVisiblePredicate(TableMeta<?> table, String tableAlias
+//            , _TablesSqlContext context, boolean hasPredicate) {
+//        if (table instanceof SingleTableMeta) {
+//            visiblePredicate(context, table, tableAlias, hasPredicate);
+//        } else if (table instanceof ChildTableMeta) {
+//            visibleSubQueryPredicateForChild(context, (ChildTableMeta<?>) table, tableAlias, hasPredicate);
+//        } else {
+//            throw new IllegalArgumentException(String.format("unknown %s.", table));
+//        }
+//    }
+//
+//    protected final void appendVisiblePredicate(List<? extends _TableBlock> tableWrapperList, _TablesSqlContext context
+//            , boolean hasPredicate) {
+    // append visible predicates
 //        final TableMeta<?> dual = null;
 //        Map<String, ChildTableMeta<?>> childMap = new HashMap<>();
 //        TableWrapper preTableWrapper = null;
@@ -112,24 +109,24 @@ public abstract class AbstractDmlAndDql extends AbstractSql {
 //                visibleSubQueryPredicateForChild(context, e.getValue(), e.getKey(), hasPredicate);
 //            }
 //        }
-    }
+    // }
 
-    @Deprecated
-    protected final void visiblePredicate(_TablesSqlContext context
-            , TableMeta<?> tableMeta, String tableAlias, boolean hasPredicate) {
-        switch (context.visible()) {
-            case ONLY_VISIBLE:
-                doVisibleConstantPredicate(context, Boolean.TRUE, tableMeta, tableAlias, hasPredicate);
-                break;
-            case ONLY_NON_VISIBLE:
-                doVisibleConstantPredicate(context, Boolean.FALSE, tableMeta, tableAlias, hasPredicate);
-                break;
-            case BOTH:
-                break;
-            default:
-                throw new IllegalArgumentException(String.format("unknown Visible[%s]", context.visible()));
-        }
-    }
+//    @Deprecated
+//    protected final void visiblePredicate(_TablesSqlContext context
+//            , TableMeta<?> tableMeta, String tableAlias, boolean hasPredicate) {
+//        switch (context.visible()) {
+//            case ONLY_VISIBLE:
+//                doVisibleConstantPredicate(context, Boolean.TRUE, tableMeta, tableAlias, hasPredicate);
+//                break;
+//            case ONLY_NON_VISIBLE:
+//                doVisibleConstantPredicate(context, Boolean.FALSE, tableMeta, tableAlias, hasPredicate);
+//                break;
+//            case BOTH:
+//                break;
+//            default:
+//                throw new IllegalArgumentException(String.format("unknown Visible[%s]", context.visible()));
+//        }
+//    }
 
 
     protected final void discriminator(TableMeta<?> table, String safeTableAlias, _StmtContext context) {
@@ -247,92 +244,95 @@ public abstract class AbstractDmlAndDql extends AbstractSql {
     }
 
 
-    protected final void visibleSubQueryPredicateForChild(_TablesSqlContext context
-            , ChildTableMeta<?> childMeta, String childAlias, boolean hasPredicate) {
-        if (context.visible() == Visible.BOTH) {
-            return;
-        }
-
-        ParentTableMeta<?> parentMeta = childMeta.parentMeta();
-
-        final String parentAlias = obtainParentAlias(context, childAlias);
-        // append exists SubQuery
-        StringBuilder builder = context.sqlBuilder();
-        if (hasPredicate) {
-            builder.append(" AND");
-        }
-        builder.append(" EXISTS ( SELECT");
-        context.appendField(parentAlias, parentMeta.id());
-        // from clause
-        builder.append(Constant.FROM);
-        // append parent table name and route suffix.
-        context.appendParentOf(childMeta, childAlias);
-        if (tableAliasAfterAs()) {
-            builder.append(" AS");
-        }
-        context.appendIdentifier(parentAlias);
-        // where clause
-        builder.append(Constant.WHERE);
-        context.appendField(parentAlias, parentMeta.id());
-        builder.append(" =");
-
-        context.appendField(childAlias, childMeta.id());
-
-        // visible predicate
-        visiblePredicate(context, childMeta.parentMeta(), parentAlias, true);
-        builder.append(')');
-    }
-
-
-    private void doVisibleConstantPredicate(_TablesSqlContext context, Boolean visible
-            , TableMeta<?> tableMeta, String tableAlias, boolean hasPredicate) {
-
-        final FieldMeta<?, ?> visibleField = tableMeta.getField(_MetaBridge.VISIBLE);
-
-        StringBuilder builder = context.sqlBuilder();
-
-        if (hasPredicate) {
-            builder.append(" AND");
-        }
-        context.appendField(tableAlias, visibleField);
-
-//        builder.append(" = ")
-//                .append(visibleField.mappingMeta().toConstant(null, visible));
-    }
-
-    private void appendVisibleIfNeed(_TableBlock tableBlock, @Nullable _TableBlock preTableBlock
-            , _TablesSqlContext context, Map<String, ChildTableMeta<?>> childMap, boolean hasPredicate) {
-
-        final TableMeta<?> table = (TableMeta<?>) tableBlock.table();
-        if (table instanceof SimpleTableMeta) {
-            visiblePredicate(context, table, tableBlock.alias(), hasPredicate);
-        } else if (table instanceof ParentTableMeta) {
-            visiblePredicate(context, table, tableBlock.alias(), hasPredicate);
-            if (_DialectUtils.childJoinParent(tableBlock.onPredicateList(), table)) {
-                if (preTableBlock != null) {
-                    // remove child that joined by parent with primary key
-                    childMap.remove(preTableBlock.alias());
-                }
-            }
-        } else if (table instanceof ChildTableMeta) {
-            if (preTableBlock == null) {
-                childMap.put(tableBlock.alias(), (ChildTableMeta<?>) table);
-            } else if (!_DialectUtils.parentJoinChild(tableBlock.onPredicateList(), table)) {
-                childMap.put(tableBlock.alias(), (ChildTableMeta<?>) table);
-            }
-        } else {
-            throw _Exceptions.unknownTableType(table);
-        }
-    }
+//    protected final void visibleSubQueryPredicateForChild(_TablesSqlContext context
+//            , ChildTableMeta<?> childMeta, String childAlias, boolean hasPredicate) {
+//        if (context.visible() == Visible.BOTH) {
+//            return;
+//        }
+//
+//        ParentTableMeta<?> parentMeta = childMeta.parentMeta();
+//
+//        final String parentAlias = obtainParentAlias(context, childAlias);
+//        // append exists SubQuery
+//        StringBuilder builder = context.sqlBuilder();
+//        if (hasPredicate) {
+//            builder.append(" AND");
+//        }
+//        builder.append(" EXISTS ( SELECT");
+//        context.appendField(parentAlias, parentMeta.id());
+//        // from clause
+//        builder.append(Constant.FROM);
+//        // append parent table name and route suffix.
+//        context.appendParentOf(childMeta, childAlias);
+//        if (tableAliasAfterAs()) {
+//            builder.append(" AS");
+//        }
+//        context.appendIdentifier(parentAlias);
+//        // where clause
+//        builder.append(Constant.WHERE);
+//        context.appendField(parentAlias, parentMeta.id());
+//        builder.append(" =");
+//
+//        context.appendField(childAlias, childMeta.id());
+//
+//        // visible predicate
+//        visiblePredicate(context, childMeta.parentMeta(), parentAlias, true);
+//        builder.append(')');
+    //  }
 
 
-    private static String obtainParentAlias(_TablesSqlContext context, String childAlias) {
-        String parentAlias;
-        if (context instanceof SingleTableDMLContext) {
-            parentAlias = ((SingleTableDMLContext) context).relationAlias();
-        } else {
-            parentAlias = TablesContext.PARENT_ALIAS_PREFIX + childAlias;
-        }
-        return parentAlias;
-    }
+//    private void doVisibleConstantPredicate(_TablesSqlContext context, Boolean visible
+//            , TableMeta<?> tableMeta, String tableAlias, boolean hasPredicate) {
+//
+//        final FieldMeta<?, ?> visibleField = tableMeta.getField(_MetaBridge.VISIBLE);
+//
+//        StringBuilder builder = context.sqlBuilder();
+//
+//        if (hasPredicate) {
+//            builder.append(" AND");
+//        }
+//        context.appendField(tableAlias, visibleField);
+//
+////        builder.append(" = ")
+////                .append(visibleField.mappingMeta().toConstant(null, visible));
+//    }
+//
+//    private void appendVisibleIfNeed(_TableBlock tableBlock, @Nullable _TableBlock preTableBlock
+//            , _TablesSqlContext context, Map<String, ChildTableMeta<?>> childMap, boolean hasPredicate) {
+//
+////        final TableMeta<?> table = (TableMeta<?>) tableBlock.table();
+////        if (table instanceof SimpleTableMeta) {
+////            visiblePredicate(context, table, tableBlock.alias(), hasPredicate);
+////        } else if (table instanceof ParentTableMeta) {
+////            visiblePredicate(context, table, tableBlock.alias(), hasPredicate);
+////            if (_DialectUtils.childJoinParent(tableBlock.onPredicateList(), table)) {
+////                if (preTableBlock != null) {
+////                    // remove child that joined by parent with primary key
+////                    childMap.remove(preTableBlock.alias());
+////                }
+////            }
+////        } else if (table instanceof ChildTableMeta) {
+////            if (preTableBlock == null) {
+////                childMap.put(tableBlock.alias(), (ChildTableMeta<?>) table);
+////            } else if (!_DialectUtils.parentJoinChild(tableBlock.onPredicateList(), table)) {
+////                childMap.put(tableBlock.alias(), (ChildTableMeta<?>) table);
+////            }
+////        } else {
+////            throw _Exceptions.unknownTableType(table);
+////        }
+//    }
+
+//
+//    private static String obtainParentAlias(_TablesSqlContext context, String childAlias) {
+////        String parentAlias;
+////        if (context instanceof SingleTableDMLContext) {
+////            parentAlias = ((SingleTableDMLContext) context).relationAlias();
+////        } else {
+////            parentAlias = TablesContext.PARENT_ALIAS_PREFIX + childAlias;
+////        }
+////        return parentAlias;
+//        return null;
+//    }
+//
+
 }

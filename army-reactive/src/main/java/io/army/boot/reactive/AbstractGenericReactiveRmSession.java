@@ -84,21 +84,22 @@ abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F ext
     @Override
     public final <R> Flux<R> returningInsert(Insert insert, Class<R> resultClass, final Visible visible) {
         // 1. assert session active
-        return this.assertSessionActive(true)
-                //2.invoke insert before advice
-                .then(Mono.defer(() -> this.invokeInsertBeforeAdvice(insert)))
-                //3. parse returning insert sql
-                .then(Mono.defer(() -> assertChildDomain(this.dialect.returningInsert(insert, visible))))
-                //4. execute returning insert
-                .flatMapMany(sqlWrapper -> this.insertSQLExecutor.returningInsert(this, sqlWrapper, resultClass))
-                // if upstream error, execute insert throws advice
-                .onErrorResume(ex -> this.invokeInsertThrowsAdvice(insert, ex))
-                //5. execute insert after advice (concat empty)
-                .concatWith(Mono.defer(() -> this.invokeInsertAfterAdvice(insert)))
-                //6. clear insert
-                .doOnTerminate(((_Statement) insert)::clear)
-                // if error convert exception for application developer
-                .onErrorMap(this::composedExceptionFunction);
+//        return this.assertSessionActive(true)
+//                //2.invoke insert before advice
+//                .then(Mono.defer(() -> this.invokeInsertBeforeAdvice(insert)))
+//                //3. parse returning insert sql
+//                .then(Mono.defer(() -> assertChildDomain(this.dialect.returningInsert(insert, visible))))
+//                //4. execute returning insert
+//                .flatMapMany(sqlWrapper -> this.insertSQLExecutor.returningInsert(this, sqlWrapper, resultClass))
+//                // if upstream error, execute insert throws advice
+//                .onErrorResume(ex -> this.invokeInsertThrowsAdvice(insert, ex))
+//                //5. execute insert after advice (concat empty)
+//                .concatWith(Mono.defer(() -> this.invokeInsertAfterAdvice(insert)))
+//                //6. clear insert
+//                .doOnTerminate(((_Statement) insert)::clear)
+//                // if error convert exception for application developer
+//                .onErrorMap(this::composedExceptionFunction);
+        return Flux.empty();
 
     }
 
@@ -126,21 +127,22 @@ abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F ext
     @Override
     public final <R> Flux<R> returningUpdate(Update update, Class<R> resultClass, Visible visible) {
         // 1. assert session active
-        return this.assertSessionActive(true)
-                //2.invoke update before advice
-                .then(Mono.defer(() -> this.invokeUpdateBeforeAdvice(update)))
-                //3. parse returning update sql
-                .then(Mono.defer(() -> assertChildDomain(this.dialect.returningUpdate(update, visible))))
-                //4. execute returning update
-                .flatMapMany(sqlWrapper -> this.updateSQLExecutor.returningUpdate(this, sqlWrapper, resultClass))
-                // if upstream error, execute update throws advice
-                .onErrorResume(ex -> this.invokeUpdateThrowsAdvice(update, ex))
-                //5. execute update after advice (concat empty)
-                .concatWith(Mono.defer(() -> this.invokeUpdateAfterAdvice(update)))
-                //6. clear update
-                .doOnTerminate(((_Statement) update)::clear)
-                // if error convert exception for application developer
-                .onErrorMap(this::composedExceptionFunction);
+//        return this.assertSessionActive(true)
+//                //2.invoke update before advice
+//                .then(Mono.defer(() -> this.invokeUpdateBeforeAdvice(update)))
+//                //3. parse returning update sql
+//                .then(Mono.defer(() -> assertChildDomain(this.dialect.returningUpdate(update, visible))))
+//                //4. execute returning update
+//                .flatMapMany(sqlWrapper -> this.updateSQLExecutor.returningUpdate(this, sqlWrapper, resultClass))
+//                // if upstream error, execute update throws advice
+//                .onErrorResume(ex -> this.invokeUpdateThrowsAdvice(update, ex))
+//                //5. execute update after advice (concat empty)
+//                .concatWith(Mono.defer(() -> this.invokeUpdateAfterAdvice(update)))
+//                //6. clear update
+//                .doOnTerminate(((_Statement) update)::clear)
+//                // if error convert exception for application developer
+//                .onErrorMap(this::composedExceptionFunction);
+        return Flux.empty();
     }
 
     @Override
@@ -156,21 +158,22 @@ abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F ext
     @Override
     public final <R> Flux<R> returningDelete(Delete delete, Class<R> resultClass, Visible visible) {
         // 1. assert session active
-        return this.assertSessionActive(true)
-                //2.invoke delete before advice
-                .then(Mono.defer(() -> this.invokeDeleteBeforeAdvice(delete)))
-                //3. parse returning delete sql
-                .then(Mono.defer(() -> assertChildDomain(this.dialect.returningDelete(delete, visible))))
-                //4. execute returning delete
-                .flatMapMany(sqlWrapper -> this.updateSQLExecutor.returningUpdate(this, sqlWrapper, resultClass))
-                // if upstream error, execute delete throws advice
-                .onErrorResume(ex -> this.invokeDeleteThrowsAdvice(delete, ex))
-                //5. execute delete after advice (concat empty)
-                .concatWith(Mono.defer(() -> this.invokeDeleteAfterAdvice(delete)))
-                //6. clear delete
-                .doOnTerminate(((_Statement) delete)::clear)
-                // if error convert exception for application developer
-                .onErrorMap(this::composedExceptionFunction);
+//        return this.assertSessionActive(true)
+//                //2.invoke delete before advice
+//                .then(Mono.defer(() -> this.invokeDeleteBeforeAdvice(delete)))
+//                //3. parse returning delete sql
+//                .then(Mono.defer(() -> assertChildDomain(this.dialect.returningDelete(delete, visible))))
+//                //4. execute returning delete
+//                .flatMapMany(sqlWrapper -> this.updateSQLExecutor.returningUpdate(this, sqlWrapper, resultClass))
+//                // if upstream error, execute delete throws advice
+//                .onErrorResume(ex -> this.invokeDeleteThrowsAdvice(delete, ex))
+//                //5. execute delete after advice (concat empty)
+//                .concatWith(Mono.defer(() -> this.invokeDeleteAfterAdvice(delete)))
+//                //6. clear delete
+//                .doOnTerminate(((_Statement) delete)::clear)
+//                // if error convert exception for application developer
+//                .onErrorMap(this::composedExceptionFunction);
+        return Flux.empty();
     }
 
     /*################################## blow package method ##################################*/
@@ -244,22 +247,23 @@ abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F ext
      */
     private <N extends Number> Mono<N> internalSubQuery(Insert insert, Visible visible, Class<N> resultClass) {
         // 1. assert session active
-        return this.assertSessionActive(true)
-                //2.invoke insert before advice
-                .then(Mono.defer(() -> this.invokeInsertBeforeAdvice(insert)))
-                //3. parse sub query insert sql
-                .then(Mono.defer(() -> assertChildDomain(this.dialect.subQueryInsert(insert, visible))))
-                //4. execute sub query insert sql
-                .flatMap(sqlWrapper -> this.insertSQLExecutor.subQueryInsert(this, sqlWrapper, resultClass))
-                // if upstream error, execute insert throws advice
-                .onErrorResume(ex -> this.invokeInsertThrowsAdvice(insert, ex))
-                //5. execute insert after advice (concat empty)
-                .concatWith(Mono.defer(() -> this.invokeInsertAfterAdvice(insert)))
-                .elementAt(0)
-                //6. clear insert
-                .doOnTerminate(((_Statement) insert)::clear)
-                // if error convert exception for application developer
-                .onErrorMap(this::composedExceptionFunction);
+//        return this.assertSessionActive(true)
+//                //2.invoke insert before advice
+//                .then(Mono.defer(() -> this.invokeInsertBeforeAdvice(insert)))
+//                //3. parse sub query insert sql
+//                .then(Mono.defer(() -> assertChildDomain(this.dialect.subQueryInsert(insert, visible))))
+//                //4. execute sub query insert sql
+//                .flatMap(sqlWrapper -> this.insertSQLExecutor.subQueryInsert(this, sqlWrapper, resultClass))
+//                // if upstream error, execute insert throws advice
+//                .onErrorResume(ex -> this.invokeInsertThrowsAdvice(insert, ex))
+//                //5. execute insert after advice (concat empty)
+//                .concatWith(Mono.defer(() -> this.invokeInsertAfterAdvice(insert)))
+//                .elementAt(0)
+//                //6. clear insert
+//                .doOnTerminate(((_Statement) insert)::clear)
+//                // if error convert exception for application developer
+//                .onErrorMap(this::composedExceptionFunction);
+        return Mono.empty();
     }
 
     /**

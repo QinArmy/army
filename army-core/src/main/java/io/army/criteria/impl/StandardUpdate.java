@@ -40,7 +40,7 @@ abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA,
 
 
     private StandardUpdate(@Nullable C criteria) {
-        super(criteria);
+        super(CriteriaUtils.primaryContext(criteria));
     }
 
     @Override

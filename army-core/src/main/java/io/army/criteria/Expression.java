@@ -54,8 +54,6 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      *
      * @param parameter right operand of {@code =},operand is weak weakly instance, because sql is weakly typed.
      * @return If operand null return null,or return predicate instance.
-     * @see Query.WhereAndSpec#ifAnd(IPredicate)
-     * @see Update.WhereAndSpec#ifAnd(IPredicate)
      * @see Delete.WhereAndSpec#ifAnd(IPredicate)
      */
     @Nullable
@@ -69,12 +67,12 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
     /**
      * relational operate with {@code = ANY}
      */
-    <C, O> IPredicate equalAny(Function<C, ColumnSubQuery<O>> subQuery);
+    <C> IPredicate equalAny(Function<C, ColumnSubQuery> subQuery);
 
     /**
      * relational operate with {@code = SOME}
      */
-    <C, O> IPredicate equalSome(Function<C, ColumnSubQuery<O>> subQuery);
+    <C> IPredicate equalSome(Function<C, ColumnSubQuery> subQuery);
 
 
     IPredicate lessThan(Expression<?> expression);
@@ -90,11 +88,11 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
 
     <C, O> IPredicate lessThan(Function<C, Expression<O>> function);
 
-    <C, O> IPredicate lessThanAny(Function<C, ColumnSubQuery<O>> function);
+    <C, O> IPredicate lessThanAny(Function<C, ColumnSubQuery> function);
 
-    <C, O> IPredicate lessThanSome(Function<C, ColumnSubQuery<O>> function);
+    <C, O> IPredicate lessThanSome(Function<C, ColumnSubQuery> function);
 
-    <C, O> IPredicate lessThanAll(Function<C, ColumnSubQuery<O>> function);
+    <C, O> IPredicate lessThanAll(Function<C, ColumnSubQuery> function);
 
     IPredicate lessEqual(Expression<?> operand);
 
@@ -109,11 +107,11 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
 
     <C, O> IPredicate lessEqual(Function<C, Expression<O>> function);
 
-    <C, O> IPredicate lessEqualAny(Function<C, ColumnSubQuery<O>> function);
+    <C, O> IPredicate lessEqualAny(Function<C, ColumnSubQuery> function);
 
-    <C, O> IPredicate lessEqualSome(Function<C, ColumnSubQuery<O>> function);
+    <C, O> IPredicate lessEqualSome(Function<C, ColumnSubQuery> function);
 
-    <C, O> IPredicate lessEqualAll(Function<C, ColumnSubQuery<O>> function);
+    <C, O> IPredicate lessEqualAll(Function<C, ColumnSubQuery> function);
 
     IPredicate greatThan(Expression<?> operand);
 
@@ -128,11 +126,11 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
 
     <C, O> IPredicate greatThan(Function<C, Expression<O>> function);
 
-    <C, O> IPredicate greatThanAny(Function<C, ColumnSubQuery<O>> function);
+    <C, O> IPredicate greatThanAny(Function<C, ColumnSubQuery> function);
 
-    <C, O> IPredicate greatThanSome(Function<C, ColumnSubQuery<O>> function);
+    <C, O> IPredicate greatThanSome(Function<C, ColumnSubQuery> function);
 
-    <C, O> IPredicate greatThanAll(Function<C, ColumnSubQuery<O>> function);
+    <C, O> IPredicate greatThanAll(Function<C, ColumnSubQuery> function);
 
     IPredicate greatEqual(Expression<?> operand);
 
@@ -147,11 +145,11 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
 
     <C, O> IPredicate greatEqual(Function<C, Expression<O>> function);
 
-    <C, O> IPredicate greatEqualAny(Function<C, ColumnSubQuery<O>> function);
+    <C> IPredicate greatEqualAny(Function<C, ColumnSubQuery> function);
 
-    <C, O> IPredicate greatEqualSome(Function<C, ColumnSubQuery<O>> function);
+    <C> IPredicate greatEqualSome(Function<C, ColumnSubQuery> function);
 
-    <C, O> IPredicate greatEqualAll(Function<C, ColumnSubQuery<O>> function);
+    <C> IPredicate greatEqualAll(Function<C, ColumnSubQuery> function);
 
     IPredicate notEqual(Expression<?> expression);
 
@@ -166,11 +164,11 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
 
     <C, O> IPredicate notEqual(Function<C, Expression<O>> function);
 
-    <C, O> IPredicate notEqualAny(Function<C, ColumnSubQuery<O>> function);
+    <C, O> IPredicate notEqualAny(Function<C, ColumnSubQuery> function);
 
-    <C, O> IPredicate notEqualSome(Function<C, ColumnSubQuery<O>> function);
+    <C, O> IPredicate notEqualSome(Function<C, ColumnSubQuery> function);
 
-    <C, O> IPredicate notEqualAll(Function<C, ColumnSubQuery<O>> function);
+    <C, O> IPredicate notEqualAll(Function<C, ColumnSubQuery> function);
 
     IPredicate between(Expression<?> first, Expression<?> parameter);
 
@@ -216,7 +214,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
 
     <O> IPredicate in(Expression<Collection<O>> parameters);
 
-    <C, O> IPredicate in(Function<C, ColumnSubQuery<O>> function);
+    <C, O> IPredicate in(Function<C, ColumnSubQuery> function);
 
     /**
      * <p>
@@ -239,7 +237,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
 
     <O> IPredicate notIn(Expression<Collection<O>> values);
 
-    <C, O> IPredicate notIn(Function<C, ColumnSubQuery<O>> function);
+    <C, O> IPredicate notIn(Function<C, ColumnSubQuery> function);
 
     Expression<E> mod(Expression<?> operator);
 

@@ -18,7 +18,7 @@ final class UnaryPredicate extends AbstractPredicate {
         switch (operator) {
             case NOT_EXISTS:
             case EXISTS:
-                return new UnaryPredicate(operator, subQuery);
+                return new UnaryPredicate(operator, (_SelfDescribed) subQuery);
             default:
                 throw new IllegalArgumentException(
                         String.format("operator[%s] not in [EXISTS,NOT_EXISTS]", operator));

@@ -90,12 +90,7 @@ public abstract class _DmlUtils {
         builder.append(_AbstractDialect.INSERT_INTO)
                 .append(Constant.SPACE);
         //append table name
-        if (context.tableIndex() == 0) {
-            builder.append(dialect.safeTableName(table.tableName()));
-        } else {
-            builder.append(table.tableName())
-                    .append(context.tableSuffix());
-        }
+        builder.append(dialect.safeTableName(table.tableName()));
         final List<FieldMeta<?, ?>> fieldList = blockContext.fieldLis();
         // 1.1 append table fields
         builder.append(AbstractSql.LEFT_BRACKET);
@@ -260,7 +255,7 @@ public abstract class _DmlUtils {
 
 
     static void assertUpdateSetAndWhereClause(_Update update) {
-        final List<FieldMeta<?, ?>> fieldList = update.fieldList();
+        final List<? extends SetTargetPart> fieldList = update.fieldList();
         if (CollectionUtils.isEmpty(fieldList)) {
             throw new CriteriaException("update must have set clause.");
         }

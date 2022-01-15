@@ -1,15 +1,13 @@
 package io.army.dialect.mysql;
 
 import io.army.dialect.Database;
-import io.army.session.DialectSessionFactory;
-
-import java.util.Set;
+import io.army.dialect.DialectEnvironment;
 
 class MySQL80Dialect extends MySQL57Dialect {
 
 
-    MySQL80Dialect(DialectSessionFactory sessionFactory) {
-        super(sessionFactory);
+    MySQL80Dialect(DialectEnvironment environment) {
+        super(environment);
     }
 
 
@@ -23,10 +21,6 @@ class MySQL80Dialect extends MySQL57Dialect {
 
     /*################################## blow AbstractDialect method ##################################*/
 
-    @Override
-    protected Set<String> createKeywordsSet() {
-        return MySQLDialectUtils.create80KeywordsSet();
-    }
 
 
 

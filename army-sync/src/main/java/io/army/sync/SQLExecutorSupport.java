@@ -1,6 +1,5 @@
 package io.army.sync;
 
-import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ObjectWrapper;
 import io.army.boot.GenericSQLExecutorSupport;
 import io.army.codec.StatementType;
@@ -39,7 +38,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     SQLExecutorSupport(InnerGenericRmSessionFactory sessionFactory) {
         super(sessionFactory);
         this.sessionFactory = sessionFactory;
-        this.mappingContext = sessionFactory.dialect().mappingContext();
+        this.mappingContext = null;
     }
 
 
@@ -290,27 +289,27 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
         final Selection primaryFieldSelection = obtainPrimaryFieldForReturning(selectionList);
 
         Map<Object, ObjectWrapper> map = new HashMap<>();
-        while (resultSet.next()) {
-            ObjectWrapper objectWrapper = onlyIdReturning
-                    ? ObjectAccessorFactory.forIdAccess(resultClass)
-                    : createObjectWrapper(resultClass, session);
-
-            for (Selection selection : selectionList) {
-                Object columnResult = extractColumnResult(resultSet, selection, sqlWrapper.statementType()
-                        , selection.mappingType().javaType());
-                if (columnResult == null) {
-                    continue;
-                }
-                // set columnResult to object
-                objectWrapper.set(selection.alias(), columnResult);
-            }
-            Object idValue = objectWrapper.get(primaryFieldSelection.alias());
-            if (idValue == null) {
-                // first selection must be Primary Field
-                throw createDomainFirstReturningNoIdException();
-            }
-            map.put(idValue, objectWrapper);
-        }
+//        while (resultSet.next()) {
+//            ObjectWrapper objectWrapper = onlyIdReturning
+//                    ? ObjectAccessorFactory.forIdAccess(resultClass)
+//                    : createObjectWrapper(resultClass, session);
+//
+//            for (Selection selection : selectionList) {
+//                Object columnResult = extractColumnResult(resultSet, selection, sqlWrapper.statementType()
+//                        , selection.mappingType().javaType());
+//                if (columnResult == null) {
+//                    continue;
+//                }
+//                // set columnResult to object
+//                objectWrapper.set(selection.alias(), columnResult);
+//            }
+//            Object idValue = objectWrapper.get(primaryFieldSelection.alias());
+//            if (idValue == null) {
+//                // first selection must be Primary Field
+//                throw createDomainFirstReturningNoIdException();
+//            }
+//            map.put(idValue, objectWrapper);
+//        }
         return Collections.unmodifiableMap(map);
     }
 
@@ -323,44 +322,28 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
         final StatementType statementType = sqlWrapper.statementType();
 
         List<T> resultList = new ArrayList<>(objectWrapperMap.size());
-        final int size = selectionList.size();
-        while (resultSet.next()) {
-            ObjectWrapper objectWrapper = obtainFirstSQLObjectWrapper(resultSet, primaryFieldSelection
-                    , statementType, objectWrapperMap);
-
-            for (int i = 1; i < size; i++) {
-                Selection selection = selectionList.get(i);
-                Object columnResult = extractColumnResult(resultSet, selection, statementType
-                        , selection.mappingType().javaType());
-                if (columnResult == null) {
-                    continue;
-                }
-                objectWrapper.set(selection.alias(), columnResult);
-            }
-            resultList.add(resultClass.cast(objectWrapper.getWrappedInstance()));
-        }
-        if (objectWrapperMap.size() != resultList.size()) {
-            throw createChildReturningNotMatchException(objectWrapperMap.size(), resultList.size(), sqlWrapper);
-        }
+//        final int size = selectionList.size();
+//        while (resultSet.next()) {
+//            ObjectWrapper objectWrapper = obtainFirstSQLObjectWrapper(resultSet, primaryFieldSelection
+//                    , statementType, objectWrapperMap);
+//
+//            for (int i = 1; i < size; i++) {
+//                Selection selection = selectionList.get(i);
+//                Object columnResult = extractColumnResult(resultSet, selection, statementType
+//                        , selection.mappingType().javaType());
+//                if (columnResult == null) {
+//                    continue;
+//                }
+//                objectWrapper.set(selection.alias(), columnResult);
+//            }
+//            resultList.add(resultClass.cast(objectWrapper.getWrappedInstance()));
+//        }
+//        if (objectWrapperMap.size() != resultList.size()) {
+//            throw createChildReturningNotMatchException(objectWrapperMap.size(), resultList.size(), sqlWrapper);
+//        }
         return resultList;
     }
 
-    private ObjectWrapper obtainFirstSQLObjectWrapper(ResultSet resultSet, Selection primaryFieldSelection
-            , StatementType statementType, Map<Object, ObjectWrapper> objectWrapperMap) throws SQLException {
-
-        final Object primaryFieldValue = extractColumnResult(resultSet, primaryFieldSelection, statementType
-                , primaryFieldSelection.mappingType().javaType());
-
-        if (primaryFieldValue == null) {
-            throw createDomainSecondReturningNoIdException();
-        }
-        ObjectWrapper objectWrapper = objectWrapperMap.get(primaryFieldValue);
-        if (objectWrapper == null) {
-            throw new IllegalStateException(String.format(
-                    "wrapperMap error,not found value for key[%s]", primaryFieldValue));
-        }
-        return objectWrapper;
-    }
 
 
     private <T> List<T> extractSingleResultList(ResultSet resultSet, SimpleStmt sqlWrapper
@@ -396,17 +379,17 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
 
         final ObjectWrapper beanWrapper = createObjectWrapper(resultClass, session);
 
-        final StatementType statementType = sqlWrapper.statementType();
-        for (Selection selection : sqlWrapper.selectionList()) {
-            // 1. obtain column result
-            Object columnResult = extractColumnResult(resultSet, selection, statementType
-                    , selection.mappingType().javaType());
-            if (columnResult == null) {
-                continue;
-            }
-            // 2. set bean property value.
-            beanWrapper.set(selection.alias(), columnResult);
-        }
+//        final StatementType statementType = sqlWrapper.statementType();
+//        for (Selection selection : sqlWrapper.selectionList()) {
+//            // 1. obtain column result
+//            Object columnResult = extractColumnResult(resultSet, selection, statementType
+//                    , selection.mappingType().javaType());
+//            if (columnResult == null) {
+//                continue;
+//            }
+//            // 2. set bean property value.
+//            beanWrapper.set(selection.alias(), columnResult);
+//        }
         return getWrapperInstance(beanWrapper);
     }
 

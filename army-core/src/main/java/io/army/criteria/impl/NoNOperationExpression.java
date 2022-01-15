@@ -43,7 +43,7 @@ abstract class NoNOperationExpression<E> implements _Expression<E> {
         if (this instanceof ValueExpression) {
             nullable = ((ValueExpression<?>) this).value() == null;
         } else {
-            nullable = this instanceof SQLs.NullWord;
+            nullable = this instanceof SQLUtils.NullWord;
         }
         return nullable;
     }
@@ -80,12 +80,12 @@ abstract class NoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final <C, O> IPredicate equalAny(Function<C, ColumnSubQuery<O>> subQuery) {
+    public final <C> IPredicate equalAny(Function<C, ColumnSubQuery> subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C, O> IPredicate equalSome(Function<C, ColumnSubQuery<O>> subQuery) {
+    public final <C> IPredicate equalSome(Function<C, ColumnSubQuery> subQuery) {
         throw unsupportedOperation();
     }
 
@@ -120,17 +120,17 @@ abstract class NoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final <C, O> IPredicate lessThanAny(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate lessThanAny(Function<C, ColumnSubQuery> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C, O> IPredicate lessThanSome(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate lessThanSome(Function<C, ColumnSubQuery> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C, O> IPredicate lessThanAll(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate lessThanAll(Function<C, ColumnSubQuery> function) {
         throw unsupportedOperation();
     }
 
@@ -165,17 +165,17 @@ abstract class NoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final <C, O> IPredicate lessEqualAny(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate lessEqualAny(Function<C, ColumnSubQuery> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C, O> IPredicate lessEqualSome(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate lessEqualSome(Function<C, ColumnSubQuery> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C, O> IPredicate lessEqualAll(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate lessEqualAll(Function<C, ColumnSubQuery> function) {
         throw unsupportedOperation();
     }
 
@@ -210,17 +210,17 @@ abstract class NoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final <C, O> IPredicate greatThanAny(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate greatThanAny(Function<C, ColumnSubQuery> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C, O> IPredicate greatThanSome(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate greatThanSome(Function<C, ColumnSubQuery> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C, O> IPredicate greatThanAll(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate greatThanAll(Function<C, ColumnSubQuery> function) {
         throw unsupportedOperation();
     }
 
@@ -255,17 +255,17 @@ abstract class NoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final <C, O> IPredicate greatEqualAny(Function<C, ColumnSubQuery<O>> function) {
+    public final <C> IPredicate greatEqualAny(Function<C, ColumnSubQuery> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C, O> IPredicate greatEqualSome(Function<C, ColumnSubQuery<O>> function) {
+    public final <C> IPredicate greatEqualSome(Function<C, ColumnSubQuery> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C, O> IPredicate greatEqualAll(Function<C, ColumnSubQuery<O>> function) {
+    public final <C> IPredicate greatEqualAll(Function<C, ColumnSubQuery> function) {
         throw unsupportedOperation();
     }
 
@@ -300,17 +300,17 @@ abstract class NoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final <C, O> IPredicate notEqualAny(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate notEqualAny(Function<C, ColumnSubQuery> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C, O> IPredicate notEqualSome(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate notEqualSome(Function<C, ColumnSubQuery> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C, O> IPredicate notEqualAll(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate notEqualAll(Function<C, ColumnSubQuery> function) {
         throw unsupportedOperation();
     }
 
@@ -380,7 +380,7 @@ abstract class NoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final <C, O> IPredicate in(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate in(Function<C, ColumnSubQuery> function) {
         throw unsupportedOperation();
     }
 
@@ -400,7 +400,7 @@ abstract class NoNOperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final <C, O> IPredicate notIn(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate notIn(Function<C, ColumnSubQuery> function) {
         throw unsupportedOperation();
     }
 

@@ -82,12 +82,12 @@ abstract class OperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final <C, O> IPredicate equalAny(Function<C, ColumnSubQuery<O>> subQuery) {
+    public final <C> IPredicate equalAny(Function<C, ColumnSubQuery> subQuery) {
         return ColumnSubQueryPredicate.create(this, DualOperator.EQ, SubQueryOperator.ANY, subQuery);
     }
 
     @Override
-    public final <C, O> IPredicate equalSome(Function<C, ColumnSubQuery<O>> subQuery) {
+    public final <C> IPredicate equalSome(Function<C, ColumnSubQuery> subQuery) {
         return ColumnSubQueryPredicate.create(this, DualOperator.EQ, SubQueryOperator.SOME, subQuery);
     }
 
@@ -123,17 +123,17 @@ abstract class OperationExpression<E> implements _Expression<E> {
 
 
     @Override
-    public final <C, O> IPredicate lessThanAny(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate lessThanAny(Function<C, ColumnSubQuery> function) {
         return ColumnSubQueryPredicate.create(this, DualOperator.LT, SubQueryOperator.ANY, function);
     }
 
     @Override
-    public final <C, O> IPredicate lessThanSome(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate lessThanSome(Function<C, ColumnSubQuery> function) {
         return ColumnSubQueryPredicate.create(this, DualOperator.LT, SubQueryOperator.SOME, function);
     }
 
     @Override
-    public final <C, O> IPredicate lessThanAll(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate lessThanAll(Function<C, ColumnSubQuery> function) {
         return ColumnSubQueryPredicate.create(this, DualOperator.LT, SubQueryOperator.ALL, function);
     }
 
@@ -168,17 +168,17 @@ abstract class OperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final <C, O> IPredicate lessEqualAny(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate lessEqualAny(Function<C, ColumnSubQuery> function) {
         return ColumnSubQueryPredicate.create(this, DualOperator.LE, SubQueryOperator.ANY, function);
     }
 
     @Override
-    public final <C, O> IPredicate lessEqualSome(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate lessEqualSome(Function<C, ColumnSubQuery> function) {
         return ColumnSubQueryPredicate.create(this, DualOperator.LE, SubQueryOperator.SOME, function);
     }
 
     @Override
-    public final <C, O> IPredicate lessEqualAll(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate lessEqualAll(Function<C, ColumnSubQuery> function) {
         return ColumnSubQueryPredicate.create(this, DualOperator.LE, SubQueryOperator.ALL, function);
     }
 
@@ -213,17 +213,17 @@ abstract class OperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final <C, O> IPredicate greatThanAny(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate greatThanAny(Function<C, ColumnSubQuery> function) {
         return ColumnSubQueryPredicate.create(this, DualOperator.GT, SubQueryOperator.ANY, function);
     }
 
     @Override
-    public final <C, O> IPredicate greatThanSome(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate greatThanSome(Function<C, ColumnSubQuery> function) {
         return ColumnSubQueryPredicate.create(this, DualOperator.GT, SubQueryOperator.SOME, function);
     }
 
     @Override
-    public final <C, O> IPredicate greatThanAll(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate greatThanAll(Function<C, ColumnSubQuery> function) {
         return ColumnSubQueryPredicate.create(this, DualOperator.GT, SubQueryOperator.ALL, function);
     }
 
@@ -259,17 +259,17 @@ abstract class OperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final <C, O> IPredicate greatEqualAny(Function<C, ColumnSubQuery<O>> function) {
+    public final <C> IPredicate greatEqualAny(Function<C, ColumnSubQuery> function) {
         return ColumnSubQueryPredicate.create(this, DualOperator.GE, SubQueryOperator.ANY, function);
     }
 
     @Override
-    public final <C, O> IPredicate greatEqualSome(Function<C, ColumnSubQuery<O>> function) {
+    public final <C> IPredicate greatEqualSome(Function<C, ColumnSubQuery> function) {
         return ColumnSubQueryPredicate.create(this, DualOperator.GE, SubQueryOperator.SOME, function);
     }
 
     @Override
-    public final <C, O> IPredicate greatEqualAll(Function<C, ColumnSubQuery<O>> function) {
+    public final <C> IPredicate greatEqualAll(Function<C, ColumnSubQuery> function) {
         return ColumnSubQueryPredicate.create(this, DualOperator.GE, SubQueryOperator.ALL, function);
     }
 
@@ -304,17 +304,17 @@ abstract class OperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final <C, O> IPredicate notEqualAny(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate notEqualAny(Function<C, ColumnSubQuery> function) {
         return ColumnSubQueryPredicate.create(this, DualOperator.NOT_EQ, SubQueryOperator.ANY, function);
     }
 
     @Override
-    public final <C, O> IPredicate notEqualSome(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate notEqualSome(Function<C, ColumnSubQuery> function) {
         return ColumnSubQueryPredicate.create(this, DualOperator.NOT_EQ, SubQueryOperator.SOME, function);
     }
 
     @Override
-    public final <C, O> IPredicate notEqualAll(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate notEqualAll(Function<C, ColumnSubQuery> function) {
         return ColumnSubQueryPredicate.create(this, DualOperator.NOT_EQ, SubQueryOperator.ALL, function);
     }
 
@@ -402,7 +402,7 @@ abstract class OperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final <C, O> IPredicate in(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate in(Function<C, ColumnSubQuery> function) {
         return ColumnSubQueryPredicate.create(this, DualOperator.IN, function);
     }
 
@@ -422,7 +422,7 @@ abstract class OperationExpression<E> implements _Expression<E> {
     }
 
     @Override
-    public final <C, O> IPredicate notIn(Function<C, ColumnSubQuery<O>> function) {
+    public final <C, O> IPredicate notIn(Function<C, ColumnSubQuery> function) {
         return ColumnSubQueryPredicate.create(this, DualOperator.NOT_IN, function);
     }
 

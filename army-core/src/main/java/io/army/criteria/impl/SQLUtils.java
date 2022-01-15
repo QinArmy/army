@@ -193,8 +193,9 @@ abstract class SQLUtils {
     }
 
     public static <E extends Number> Expression<String> conv(Expression<E> number, int fromBase, int toBase) {
-        return new SQLFunctions.ThreeArgumentFunc<>("CONV", _MappingFactory.getMapping(String.class), number
-                , literal(fromBase), literal(toBase));
+//        return new SQLFunctions.ThreeArgumentFunc<>("CONV", _MappingFactory.getMapping(String.class), number
+//                , literal(fromBase), literal(toBase));
+        return null;
     }
 
     public static <E extends Number> Expression<Double> cos(Expression<E> x) {
@@ -317,7 +318,7 @@ abstract class SQLUtils {
      *
      * @param <E> The java type The expression thant reference kwy word {@code DEFAULT}
      */
-    private static final class DefaultWord<E> extends NoNOperationExpression<E> {
+    static final class DefaultWord<E> extends NoNOperationExpression<E> {
 
         private static DefaultWord<?> INSTANCE = new DefaultWord<>();
 
@@ -350,7 +351,7 @@ abstract class SQLUtils {
      *
      * @param <E> The java type The expression thant reference kwy word {@code NULL}
      */
-    private static final class NullWord<E> extends NoNOperationExpression<E> {
+    static final class NullWord<E> extends NoNOperationExpression<E> {
 
         private static final NullWord<?> INSTANCE = new NullWord<>();
 

@@ -77,17 +77,6 @@ public abstract class AbstractGenericSession implements GenericSession {
             return this.tableMeta;
         }
 
-        @Override
-        public byte databaseIndex() {
-            // always negative
-            return -1;
-        }
-
-        @Override
-        public byte tableIndex() {
-            // always negative
-            return -1;
-        }
 
         @Override
         public String tableAlias() {

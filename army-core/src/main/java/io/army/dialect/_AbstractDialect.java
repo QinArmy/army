@@ -634,13 +634,15 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
 
 
     private SimpleStmt handleStandardSelect(final Select select, final Visible visible) {
-        _SqlContext context;
+        final _SelectContext context;
         if (select instanceof _UnionQuery) {
-            context = UnionSelectContext.create(this, select, visible);
+            context = UnionSelectContext.create(select, null, this, visible);
+            ((_UnionQuery) select).appendSql(context);
         } else {
-
+            context = SimpleSelectContext.create(select, this, visible);
+            this.standardQuery((_StandardQuery) select, context);
         }
-        return null;
+        return context.build();
     }
 
 
@@ -762,7 +764,6 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
     }
 
 
-
     private void standardQuery(_StandardQuery query, _SqlContext context) {
         this.standardSelectClause(query.modifierList(), context);
         this.selectListClause(query.selectPartList(), context);
@@ -780,14 +781,14 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
         final long offset, rowCount;
         offset = query.offset();
         rowCount = query.rowCount();
-        if (offset >= 0 && rowCount > 0) {
+        if (offset >= 0 && rowCount >= 0) {
             builder.append(Constant.SPACE)
                     .append(Constant.LIMIT)
                     .append(Constant.SPACE)
                     .append(offset)
                     .append(Constant.SPACE)
                     .append(rowCount);
-        } else if (rowCount > 0) {
+        } else if (rowCount >= 0) {
             builder.append(Constant.SPACE)
                     .append(Constant.LIMIT)
                     .append(Constant.SPACE)
