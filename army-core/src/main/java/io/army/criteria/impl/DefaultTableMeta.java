@@ -9,8 +9,6 @@ import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.sharding.Route;
-import io.army.sharding.RouteMode;
 import io.army.struct.CodeEnum;
 
 import java.util.Collection;
@@ -247,13 +245,6 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     private final PrimaryFieldMeta<T, Object> primaryField;
 
-    private final boolean sharding;
-
-    private final List<FieldMeta<?, ?>> databaseRouteFieldList;
-
-    private final List<FieldMeta<?, ?>> tableRouteFieldList;
-
-    private final Class<? extends Route> routeClass;
 
     private final List<FieldMeta<T, ?>> generatorChain;
 
@@ -282,13 +273,6 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             this.indexMetaList = pair.indexMetaList;
 
             this.generatorChain = TableMetaUtils.createGeneratorChain(this.fieldToFieldMeta);
-
-            final TableMetaUtils.RouteMeta routeMeta;
-            routeMeta = TableMetaUtils.routeMeta(this, this.fieldToFieldMeta);
-            this.databaseRouteFieldList = routeMeta.databaseRouteFieldList;
-            this.tableRouteFieldList = routeMeta.tableRouteFieldList;
-            this.sharding = !this.tableRouteFieldList.isEmpty();
-            this.routeClass = routeMeta.routeClass;
 
             this.primaryField = (PrimaryFieldMeta<T, Object>) this.fieldToFieldMeta.get(_MetaBridge.ID);
             if (this.primaryField == null) {
@@ -372,15 +356,6 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         return this.fieldToFieldMeta.containsKey(fieldName);
     }
 
-    @Override
-    public final RouteMode routeMode() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public final byte tableCount() {
-        throw new UnsupportedOperationException();
-    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -436,31 +411,6 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         return this.generatorChain;
     }
 
-    @Override
-    public final boolean sharding() {
-        return this.sharding;
-    }
-
-    @Override
-    public final List<FieldMeta<?, ?>> routeFieldList(boolean database) {
-        return database ? this.databaseRouteFieldList : this.tableRouteFieldList;
-    }
-
-    @Override
-    public final List<FieldMeta<?, ?>> databaseRouteFields() {
-        return this.databaseRouteFieldList;
-    }
-
-    @Override
-    public final List<FieldMeta<?, ?>> tableRouteFields() {
-        return this.tableRouteFieldList;
-    }
-
-    @Nullable
-    @Override
-    public final Class<? extends Route> routeClass() {
-        return this.routeClass;
-    }
 
     @Override
     public final boolean equals(final Object obj) {

@@ -3,8 +3,6 @@ package io.army.meta;
 import io.army.criteria.TablePart;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
-import io.army.sharding.Route;
-import io.army.sharding.RouteMode;
 import io.army.struct.CodeEnum;
 
 import java.util.Collection;
@@ -35,29 +33,6 @@ public interface TableMeta<T extends IDomain> extends TablePart, Meta {
     <E extends Enum<E> & CodeEnum> FieldMeta<? super T, E> discriminator();
 
     int discriminatorValue();
-
-
-    boolean sharding();
-
-    /**
-     * @param database true : database route field list,false : table route field list.
-     * @return a unmodifiable list
-     */
-    @Deprecated
-    List<FieldMeta<?, ?>> routeFieldList(boolean database);
-
-    @Deprecated
-    List<FieldMeta<?, ?>> databaseRouteFields();
-
-    @Deprecated
-    List<FieldMeta<?, ?>> tableRouteFields();
-
-    RouteMode routeMode();
-
-    byte tableCount();
-
-    @Nullable
-    Class<? extends Route> routeClass();
 
 
     /**

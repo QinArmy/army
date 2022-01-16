@@ -6,7 +6,7 @@ import io.army.SessionException;
 import io.army.SessionUsageException;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Statement;
-import io.army.dialect.Dialect;
+import io.army.dialect._Dialect;
 import io.army.lang.Nullable;
 import io.army.session.DialectSessionFactory;
 import io.army.stmt.Stmt;
@@ -24,7 +24,7 @@ abstract class AbstractRmSession extends AbstractGenericSyncSession
 
     final StmtExecutor stmtExecutor;
 
-    final Dialect dialect;
+    final _Dialect dialect;
     final Function<ArmyException, RuntimeException> exceptionFunction;
 
     AbstractRmSession(DialectSessionFactory sessionFactory, StmtExecutor stmtExecutor) {

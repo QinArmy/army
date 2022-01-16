@@ -7,13 +7,13 @@ import io.army.meta.TableMeta;
 
 final class StandardDeleteContext extends _SingleDmlContext implements _SingleDeleteContext {
 
-    static StandardDeleteContext create(_SingleDelete delete, Dialect dialect, Visible visible) {
+    static StandardDeleteContext create(_SingleDelete delete, _Dialect dialect, Visible visible) {
         return new StandardDeleteContext(delete, dialect, visible);
     }
 
     final ChildBlock childBlock;
 
-    private StandardDeleteContext(_SingleDelete delete, Dialect dialect, Visible visible) {
+    private StandardDeleteContext(_SingleDelete delete, _Dialect dialect, Visible visible) {
         super(delete, dialect, visible);
         final TableMeta<?> table = delete.table();
         final String tableAlias = delete.tableAlias();

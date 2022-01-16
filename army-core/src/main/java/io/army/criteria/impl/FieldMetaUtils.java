@@ -168,9 +168,8 @@ abstract class FieldMetaUtils extends TableMetaUtils {
     }
 
     static boolean isDiscriminator(final FieldMeta<?, ?> fieldMeta) {
-        final Inheritance inheritance = fieldMeta.javaType().getAnnotation(Inheritance.class);
-        return inheritance != null
-                && fieldMeta.columnName().equalsIgnoreCase(inheritance.value());
+        final Inheritance inheritance = fieldMeta.tableMeta().javaType().getAnnotation(Inheritance.class);
+        return inheritance != null && fieldMeta.fieldName().equals(inheritance.value());
     }
 
 
@@ -195,7 +194,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
 
 
     static String columnComment(final Column column, FieldMeta<?, ?> fieldMeta, final boolean isDiscriminator) {
-        String comment = column.comment().trim();
+        String comment = column.comment();
         if (_MetaBridge.RESERVED_PROPS.contains(fieldMeta.fieldName()) || isDiscriminator) {
             if (!StringUtils.hasText(comment)) {
                 comment = commentManagedByArmy(fieldMeta);

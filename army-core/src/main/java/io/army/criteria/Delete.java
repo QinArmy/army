@@ -3,7 +3,7 @@ package io.army.criteria;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 
-public interface Delete extends Dml, SQLDebug {
+public interface Delete extends Dml, StatementMock {
 
 
     interface DeleteSpec {

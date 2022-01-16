@@ -1,11 +1,11 @@
 package io.army.sync;
 
-import io.army.dialect.Dialect;
+import io.army.dialect._Dialect;
 import io.army.session.DialectSessionFactory;
 
 interface InnerGenericRmSessionFactory extends DialectSessionFactory, GenericSyncSessionFactory {
 
-    Dialect dialect();
+    _Dialect dialect();
 
     InsertSQLExecutor insertSQLExecutor();
 

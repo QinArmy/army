@@ -5,7 +5,7 @@ import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.OracleDataType;
 import io.army.sqltype.PostgreDataType;
-import io.army.sqltype.SqlDataType;
+import io.army.sqltype.SqlType;
 
 import java.sql.JDBCType;
 import java.time.OffsetTime;
@@ -37,8 +37,8 @@ public final class OffsetTimeType extends _ArmyNoInjectionMapping {
 
 
     @Override
-    public SqlDataType sqlDataType(ServerMeta serverMeta) throws NotSupportDialectException {
-        final SqlDataType sqlDataType;
+    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
+        final SqlType sqlDataType;
         switch (serverMeta.database()) {
             case PostgreSQL:
                 sqlDataType = PostgreDataType.TIMETZ;
@@ -54,7 +54,7 @@ public final class OffsetTimeType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Object convertBeforeBind(SqlDataType sqlDataType, Object nonNull) {
+    public Object convertBeforeBind(SqlType sqlDataType, Object nonNull) {
         final OffsetTime value;
         if (nonNull instanceof OffsetTime) {
             value = (OffsetTime) nonNull;
@@ -65,7 +65,7 @@ public final class OffsetTimeType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Object convertAfterGet(SqlDataType sqlDataType, Object nonNull) {
+    public Object convertAfterGet(SqlType sqlDataType, Object nonNull) {
         if (!(nonNull instanceof OffsetTime)) {
             throw notSupportConvertAfterGet(nonNull);
         }

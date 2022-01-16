@@ -1,7 +1,7 @@
 package io.army.dialect.mysql;
 
 import io.army.dialect.DDLUtils;
-import io.army.sqltype.MySQLDataType;
+import io.army.sqltype.MySqlType;
 import io.army.util.StringUtils;
 
 import java.util.EnumSet;
@@ -9,27 +9,27 @@ import java.util.Set;
 
 abstract class MySQL57DDLUtils extends DDLUtils {
 
-    private static final Set<MySQLDataType> NEED_QUOTE_TYPE_SET = EnumSet.of(
-            MySQLDataType.CHAR,
-           // MySQLDataType.NCHAR,
-            MySQLDataType.VARCHAR,
+    private static final Set<MySqlType> NEED_QUOTE_TYPE_SET = EnumSet.of(
+            MySqlType.CHAR,
+            // MySQLDataType.NCHAR,
+            MySqlType.VARCHAR,
             // MySQLDataType.NVARCHAR,
 
-            MySQLDataType.BINARY,
-            MySQLDataType.VARBINARY,
-            MySQLDataType.TINYBLOB,
-            MySQLDataType.BLOB,
+            MySqlType.BINARY,
+            MySqlType.VARBINARY,
+            MySqlType.TINYBLOB,
+            MySqlType.BLOB,
 
-            MySQLDataType.MEDIUMBLOB,
-            MySQLDataType.TINYTEXT,
-            MySQLDataType.TEXT,
-            MySQLDataType.MEDIUMTEXT,
+            MySqlType.MEDIUMBLOB,
+            MySqlType.TINYTEXT,
+            MySqlType.TEXT,
+            MySqlType.MEDIUMTEXT,
 
-            MySQLDataType.ENUM
+            MySqlType.ENUM
 
     );
 
-    static boolean needQuoteForDefault(MySQLDataType dataType) {
+    static boolean needQuoteForDefault(MySqlType dataType) {
         return NEED_QUOTE_TYPE_SET.contains(dataType);
     }
 

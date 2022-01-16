@@ -57,20 +57,20 @@ abstract class MetaUtils {
 
 
     static void assertColumn(TypeElement entityElement, VariableElement mappedProp, Column column
-            , String columnName, final boolean defaultNullable, @Nullable String discriminatorColumn) {
+            , String columnName, @Nullable String discriminatorField) {
         final String propName = mappedProp.getSimpleName().toString();
         final boolean reservedProp = _MetaBridge.RESERVED_PROPS.contains(propName);
         // check nullable
         // check comment
-        if (!Strings.hasText(column.comment())) {
+        final String fieldName = mappedProp.getSimpleName().toString();
+        if (!reservedProp && !fieldName.equals(discriminatorField) && !Strings.hasText(column.comment())) {
             String m;
-            m = String.format("Domain[%s] column[%s] no comment,non-reserved(or discriminator) property must has comment.",
+            m = String.format("Domain[%s] column[%s] no comment,non-reserved(or discriminator) property must have comment.",
                     entityElement.getQualifiedName(),
-                    columnName);
+                    fieldName);
             throw new AnnotationMetaException(m);
         }
-        final boolean nullable = column.alwaysNullable() || (defaultNullable && column.nullable());
-        if (!nullable && !isSpecifyTypeWithoutDefaultValue(mappedProp) && !Strings.hasText(column.defaultValue())) {
+        if (!column.nullable() && !isSpecifyTypeWithoutDefaultValue(mappedProp) && !Strings.hasText(column.defaultValue())) {
             String m = String.format("Domain[%s] column[%s] no defaultValue.",
                     entityElement.getQualifiedName(),
                     columnName);

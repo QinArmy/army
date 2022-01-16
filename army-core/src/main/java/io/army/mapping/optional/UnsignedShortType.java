@@ -4,8 +4,8 @@ import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLDataType;
-import io.army.sqltype.SqlDataType;
+import io.army.sqltype.MySqlType;
+import io.army.sqltype.SqlType;
 
 import java.sql.JDBCType;
 
@@ -35,10 +35,10 @@ public final class UnsignedShortType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlDataType sqlDataType(final ServerMeta serverMeta) throws NotSupportDialectException {
-        final SqlDataType sqlDataType;
+    public SqlType sqlType(final ServerMeta serverMeta) throws NotSupportDialectException {
+        final SqlType sqlDataType;
         if (serverMeta.database() == Database.MySQL) {
-            sqlDataType = MySQLDataType.SMALLINT_UNSIGNED;
+            sqlDataType = MySqlType.SMALLINT_UNSIGNED;
         } else {
             throw noMappingError(serverMeta);
         }
@@ -46,7 +46,7 @@ public final class UnsignedShortType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Object convertBeforeBind(SqlDataType sqlDataType, final Object nonNull) {
+    public Object convertBeforeBind(SqlType sqlDataType, final Object nonNull) {
         final int value;
         if (nonNull instanceof Integer
                 || nonNull instanceof Short
@@ -70,7 +70,7 @@ public final class UnsignedShortType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Object convertAfterGet(SqlDataType sqlDataType, Object nonNull) {
+    public Object convertAfterGet(SqlType sqlDataType, Object nonNull) {
         if (!(nonNull instanceof Integer)) {
             throw notSupportConvertAfterGet(nonNull);
         }

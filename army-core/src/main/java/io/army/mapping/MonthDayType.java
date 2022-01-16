@@ -2,7 +2,7 @@ package io.army.mapping;
 
 import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.SqlDataType;
+import io.army.sqltype.SqlType;
 
 import java.sql.JDBCType;
 import java.time.LocalDate;
@@ -35,12 +35,12 @@ public final class MonthDayType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlDataType sqlDataType(ServerMeta serverMeta) throws NotSupportDialectException {
-        return LocalDateType.INSTANCE.sqlDataType(serverMeta);
+    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
+        return LocalDateType.INSTANCE.sqlType(serverMeta);
     }
 
     @Override
-    public Object convertBeforeBind(SqlDataType sqlDataType, Object nonNull) {
+    public Object convertBeforeBind(SqlType sqlDataType, Object nonNull) {
         if (!(nonNull instanceof MonthDay)) {
             throw notSupportConvertBeforeBind(nonNull);
         }
@@ -48,7 +48,7 @@ public final class MonthDayType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Object convertAfterGet(SqlDataType sqlDataType, Object nonNull) {
+    public Object convertAfterGet(SqlType sqlDataType, Object nonNull) {
         if (!(nonNull instanceof LocalDate)) {
             throw notSupportConvertAfterGet(nonNull);
         }

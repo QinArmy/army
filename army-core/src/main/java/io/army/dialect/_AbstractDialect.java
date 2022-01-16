@@ -1,5 +1,6 @@
 package io.army.dialect;
 
+import io.army.beans.ObjectWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl._CriteriaCounselor;
 import io.army.criteria.impl.inner.*;
@@ -23,7 +24,7 @@ import java.util.*;
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
  */
-public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dialect {
+public abstract class _AbstractDialect extends AbstractDmlAndDql implements _Dialect {
 
     protected static final char[] UPDATE = new char[]{'U', 'P', 'D', 'A', 'T', 'E'};
 
@@ -159,10 +160,16 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
     }
 
 
+    @Override
+    public final Database database() {
+        return this.environment.serverMeta().database();
+    }
+
 
     /*################################## blow protected template method ##################################*/
 
     /*################################## blow multiInsert template method ##################################*/
+
 
     protected abstract Set<String> createKeyWordSet();
 
@@ -261,7 +268,7 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
         final StringBuilder builder = context.sqlBuilder()
                 .append(Constant.SPACE)
                 .append(Constant.FROM);
-        final Dialect dialect = context.dialect();
+        final _Dialect dialect = context.dialect();
 
         final boolean supportTableOnly = this.supportTableOnly();
         for (int i = 0, index; i < size; i++) {
@@ -385,7 +392,7 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
         final String tableAlias = clause.tableAlias(), safeTableAlias = clause.safeTableAlias();
         final int targetCount = targetPartList.size();
 
-        final Dialect dialect = context.dialect();
+        final _Dialect dialect = context.dialect();
         final boolean supportOnlyDefault = dialect.supportOnlyDefault();
         final StringBuilder sqlBuilder = context.sqlBuilder();
 
@@ -467,7 +474,7 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
     private void appendRowTarget(final _SetBlock clause, final Row<?> row
             , List<GenericField<?, ?>> conditionFields, final _UpdateContext context) {
         final StringBuilder sqlBuilder = context.sqlBuilder();
-        final Dialect dialect = context.dialect();
+        final _Dialect dialect = context.dialect();
         final boolean supportOnlyDefault = dialect.supportOnlyDefault();
 
         final TableMeta<?> table = clause.table();
@@ -534,7 +541,7 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
             , final _UpdateContext context) {
 
         final StringBuilder sqlBuilder = context.sqlBuilder();
-        final Dialect dialect = context.dialect();
+        final _Dialect dialect = context.dialect();
         final FieldMeta<?, ?> updateTime = table.getField(_MetaBridge.UPDATE_TIME);
 
         sqlBuilder.append(COMMA)
@@ -622,6 +629,14 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
     private Stmt handleStandardValueInsert(final _ValuesInsert insert, final Visible visible) {
         final StandardValueInsertContext context;
         context = StandardValueInsertContext.create(insert, this, visible);
+
+        final FieldValuesGenerator generator = this.environment.fieldValuesGenerator();
+        final TableMeta<?> table = context.table;
+        final boolean migration = insert.migrationData();
+        for (ObjectWrapper wrapper : insert.domainList()) {
+            generator.generate(table, wrapper, migration);
+        }
+
         _DmlUtils.appendStandardValueInsert(false, context); // append parent insert to parent context.
         context.onParentEnd(); // parent end event
 
@@ -688,7 +703,7 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
         if (childContext != null && childContext.targetParts().size() > 0) {
             throw new IllegalArgumentException("context error");
         }
-        final Dialect dialect = context.dialect;
+        final _Dialect dialect = context.dialect;
 
         final SingleTableMeta<?> table = context.table;
         final StringBuilder sqlBuilder = context.sqlBuilder;
@@ -737,7 +752,7 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements Dial
         if (context.childBlock != null) {
             throw new IllegalArgumentException();
         }
-        final Dialect dialect = context.dialect;
+        final _Dialect dialect = context.dialect;
         final SingleTableMeta<?> table = context.table;
         final StringBuilder sqlBuilder = context.sqlBuilder;
 

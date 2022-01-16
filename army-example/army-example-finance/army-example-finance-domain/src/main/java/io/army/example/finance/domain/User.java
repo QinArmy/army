@@ -10,7 +10,7 @@ import io.army.example.struct.UserType;
 import java.time.LocalDateTime;
 
 @Table(name = "u_user", comment = "user")
-@Inheritance("user_type")
+@Inheritance("userType")
 public class User extends Domain {
 
     @Column

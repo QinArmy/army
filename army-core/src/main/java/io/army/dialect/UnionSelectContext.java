@@ -15,7 +15,7 @@ import java.util.List;
 final class UnionSelectContext extends _BaseSqlContext implements _UnionQueryContext, _SelectContext {
 
     static UnionSelectContext create(Select select, @Nullable _SelectContext outerContext
-            , Dialect dialect, Visible visible) {
+            , _Dialect dialect, Visible visible) {
         return new UnionSelectContext(select, outerContext, dialect, visible);
     }
 
@@ -24,7 +24,7 @@ final class UnionSelectContext extends _BaseSqlContext implements _UnionQueryCon
 
     private final _SelectContext outerContext;
 
-    private UnionSelectContext(Select select, @Nullable _SelectContext outerContext, Dialect dialect, Visible visible) {
+    private UnionSelectContext(Select select, @Nullable _SelectContext outerContext, _Dialect dialect, Visible visible) {
         super(dialect, visible);
         this.outerContext = outerContext;
         this.selectionList = _DqlUtils.flatSelectParts(((_PartQuery) select).selectPartList());

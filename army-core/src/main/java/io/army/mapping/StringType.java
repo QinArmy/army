@@ -2,10 +2,10 @@ package io.army.mapping;
 
 import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLDataType;
+import io.army.sqltype.MySqlType;
 import io.army.sqltype.OracleDataType;
 import io.army.sqltype.PostgreDataType;
-import io.army.sqltype.SqlDataType;
+import io.army.sqltype.SqlType;
 
 import java.sql.JDBCType;
 
@@ -35,11 +35,11 @@ public final class StringType extends AbstractMappingType {
     }
 
     @Override
-    public SqlDataType sqlDataType(ServerMeta serverMeta) throws NotSupportDialectException {
-        final SqlDataType sqlDataType;
+    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
+        final SqlType sqlDataType;
         switch (serverMeta.database()) {
             case MySQL:
-                sqlDataType = MySQLDataType.VARCHAR;
+                sqlDataType = MySqlType.VARCHAR;
                 break;
             case PostgreSQL:
                 sqlDataType = PostgreDataType.VARCHAR;
@@ -55,7 +55,7 @@ public final class StringType extends AbstractMappingType {
     }
 
     @Override
-    public Object convertBeforeBind(SqlDataType sqlDataType, Object nonNull) {
+    public Object convertBeforeBind(SqlType sqlDataType, Object nonNull) {
         final String value;
         if (nonNull instanceof String) {
             value = (String) nonNull;
@@ -66,7 +66,7 @@ public final class StringType extends AbstractMappingType {
     }
 
     @Override
-    public Object convertAfterGet(SqlDataType sqlDataType, Object nonNull) {
+    public Object convertAfterGet(SqlType sqlDataType, Object nonNull) {
         if (!(nonNull instanceof String)) {
             throw notSupportConvertAfterGet(nonNull);
         }

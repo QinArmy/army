@@ -121,8 +121,7 @@ final class AttributeMetaParser {
         final TypeElement domainElement = MetaUtils.domainElement(mappedClassElementList);
         assert domainElement != null;
         final Table table = domainElement.getAnnotation(Table.class);
-        final boolean defaultNullable = table.defaultNullable();
-        final String discriminatorColumn = discriminatorColumnName(domainElement);
+        final String discriminatorField = discriminatorFieldName(domainElement);
 
         boolean foundDiscriminatorColumn = false;
         for (TypeElement mappedElement : mappedClassElementList) {
@@ -148,9 +147,9 @@ final class AttributeMetaParser {
                     throw Exceptions.columnDuplication(mappedElement, columnName);
                 }
                 // assert io.army.annotation.Column
-                MetaUtils.assertColumn(domainElement, mappedProp, column, columnName, defaultNullable, discriminatorColumn);
+                MetaUtils.assertColumn(domainElement, mappedProp, column, columnName, discriminatorField);
                 // assert io.army.annotation.DiscriminatorValue , io.army.annotation.Inheritance
-                if (columnName.equals(discriminatorColumn)) {
+                if (propName.equals(discriminatorField)) {
                     if (MetaUtils.getEnumElement(mappedProp) == null) {
                         throw Exceptions.discriminatorNotCodeEnum(domainElement, propName);
                     }
@@ -160,8 +159,8 @@ final class AttributeMetaParser {
                 mappedPropMap.put(propName, mappedProp);
             }
         }
-        if (discriminatorColumn != null && !foundDiscriminatorColumn) {
-            throw Exceptions.noDiscriminatorColumn(domainElement, discriminatorColumn);
+        if (discriminatorField != null && !foundDiscriminatorColumn) {
+            throw Exceptions.noDiscriminatorColumn(domainElement, discriminatorField);
         }
         MetaUtils.assertIndexColumnNameSet(domainElement, columnNameSet, indexColumnNameSet);
         MetaUtils.assertRequiredProps(domainElement, entityPropNameSet, table.immutable());
@@ -175,15 +174,15 @@ final class AttributeMetaParser {
      * @return lower case column name
      */
     @Nullable
-    private static String discriminatorColumnName(TypeElement entityElement) {
+    private static String discriminatorFieldName(TypeElement entityElement) {
         final Inheritance inheritance = entityElement.getAnnotation(Inheritance.class);
-        final String columnName;
+        final String fieldName;
         if (inheritance == null) {
-            columnName = null;
+            fieldName = null;
         } else {
-            columnName = Strings.toLowerCase(inheritance.value());
+            fieldName = inheritance.value();
         }
-        return columnName;
+        return fieldName;
     }
 
 

@@ -2,9 +2,9 @@ package io.army.mapping;
 
 import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLDataType;
+import io.army.sqltype.MySqlType;
 import io.army.sqltype.PostgreDataType;
-import io.army.sqltype.SqlDataType;
+import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -38,11 +38,11 @@ public final class IntegerType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlDataType sqlDataType(ServerMeta serverMeta) throws NotSupportDialectException {
-        final SqlDataType sqlDataType;
+    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
+        final SqlType sqlDataType;
         switch (serverMeta.database()) {
             case MySQL:
-                sqlDataType = MySQLDataType.INT;
+                sqlDataType = MySqlType.INT;
                 break;
             case PostgreSQL:
                 sqlDataType = PostgreDataType.INTEGER;
@@ -55,7 +55,7 @@ public final class IntegerType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Object convertBeforeBind(SqlDataType sqlDataType, final Object nonNull) {
+    public Object convertBeforeBind(SqlType sqlDataType, final Object nonNull) {
         final int value;
         if (nonNull instanceof Integer) {
             value = (Integer) nonNull;
@@ -95,7 +95,7 @@ public final class IntegerType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Object convertAfterGet(SqlDataType sqlDataType, Object nonNull) {
+    public Object convertAfterGet(SqlType sqlDataType, Object nonNull) {
         if (!(nonNull instanceof Integer)) {
             throw notSupportConvertAfterGet(nonNull);
         }

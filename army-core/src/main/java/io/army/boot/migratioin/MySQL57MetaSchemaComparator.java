@@ -6,7 +6,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.schema.SchemaInfoException;
 import io.army.session.DialectSessionFactory;
-import io.army.sqltype.MySQLDataType;
+import io.army.sqltype.MySqlType;
 import io.army.util.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,54 +16,54 @@ import java.util.*;
 class MySQL57MetaSchemaComparator extends AbstractMetaSchemaComparator {
 
 
-    static final Map<MySQLDataType, List<String>> SYNONYMS_MAP = createSynonymsMap();
+    static final Map<MySqlType, List<String>> SYNONYMS_MAP = createSynonymsMap();
 
-    static final Set<MySQLDataType> STRING_TYPE_SET = createStringTypeSet();
+    static final Set<MySqlType> STRING_TYPE_SET = createStringTypeSet();
 
-    static final Set<MySQLDataType> NUMERIC_TYPE_SET = createNumericTypeSet();
+    static final Set<MySqlType> NUMERIC_TYPE_SET = createNumericTypeSet();
 
-    static final Set<MySQLDataType> SPATIAL_TYPE_SET = createSpatialTypeSet();
+    static final Set<MySqlType> SPATIAL_TYPE_SET = createSpatialTypeSet();
 
-    static final Set<MySQLDataType> TIME_TYPE_SET = createTimeTypeSet();
+    static final Set<MySqlType> TIME_TYPE_SET = createTimeTypeSet();
 
-    static final Set<MySQLDataType> MYSQL57_NO_DEFAULT_TYPE_SET = create57NoDefaultType();
+    static final Set<MySqlType> MYSQL57_NO_DEFAULT_TYPE_SET = create57NoDefaultType();
 
     protected final Logger LOG = LoggerFactory.getLogger(getClass());
 
     /**
      * @return a unmodifiable map
      */
-    private static Map<MySQLDataType, List<String>> createSynonymsMap() {
+    private static Map<MySqlType, List<String>> createSynonymsMap() {
 
-        EnumMap<MySQLDataType, List<String>> map = new EnumMap<>(MySQLDataType.class);
+        EnumMap<MySqlType, List<String>> map = new EnumMap<>(MySqlType.class);
 
-        map.put(MySQLDataType.BOOLEAN, ArrayUtils.asUnmodifiableList("TINYINT", "BOOL"));
-        map.put(MySQLDataType.DOUBLE, Collections.singletonList("DOUBLE PRECISION"));
-        map.put(MySQLDataType.INT, Collections.singletonList("INTEGER"));
+        map.put(MySqlType.BOOLEAN, ArrayUtils.asUnmodifiableList("TINYINT", "BOOL"));
+        map.put(MySqlType.DOUBLE, Collections.singletonList("DOUBLE PRECISION"));
+        map.put(MySqlType.INT, Collections.singletonList("INTEGER"));
         return Collections.unmodifiableMap(map);
     }
 
     /**
      * @return a unmodifiable set
      */
-    private static Set<MySQLDataType> createStringTypeSet() {
-        EnumSet<MySQLDataType> set = EnumSet.of(
-                MySQLDataType.CHAR,
+    private static Set<MySqlType> createStringTypeSet() {
+        EnumSet<MySqlType> set = EnumSet.of(
+                MySqlType.CHAR,
                 //MySQLDataType.NCHAR,
-                MySQLDataType.VARCHAR,
+                MySqlType.VARCHAR,
                 // MySQLDataType.NVARCHAR,
 
-                MySQLDataType.BINARY,
-                MySQLDataType.VARBINARY,
-                MySQLDataType.TINYBLOB,
-                MySQLDataType.BLOB,
+                MySqlType.BINARY,
+                MySqlType.VARBINARY,
+                MySqlType.TINYBLOB,
+                MySqlType.BLOB,
 
-                MySQLDataType.MEDIUMBLOB,
-                MySQLDataType.TINYTEXT,
-                MySQLDataType.TEXT,
-                MySQLDataType.MEDIUMTEXT,
+                MySqlType.MEDIUMBLOB,
+                MySqlType.TINYTEXT,
+                MySqlType.TEXT,
+                MySqlType.MEDIUMTEXT,
 
-                MySQLDataType.ENUM
+                MySqlType.ENUM
         );
         return Collections.unmodifiableSet(set);
     }
@@ -71,20 +71,20 @@ class MySQL57MetaSchemaComparator extends AbstractMetaSchemaComparator {
     /**
      * @return a unmodifiable set
      */
-    private static Set<MySQLDataType> createNumericTypeSet() {
-        EnumSet<MySQLDataType> set = EnumSet.of(
-                MySQLDataType.BIT,
-                MySQLDataType.TINYINT,
-                MySQLDataType.BOOLEAN,
-                MySQLDataType.SMALLINT,
+    private static Set<MySqlType> createNumericTypeSet() {
+        EnumSet<MySqlType> set = EnumSet.of(
+                MySqlType.BIT,
+                MySqlType.TINYINT,
+                MySqlType.BOOLEAN,
+                MySqlType.SMALLINT,
 
-                MySQLDataType.MEDIUMINT,
-                MySQLDataType.INT,
-                MySQLDataType.BIGINT,
-                MySQLDataType.DECIMAL,
+                MySqlType.MEDIUMINT,
+                MySqlType.INT,
+                MySqlType.BIGINT,
+                MySqlType.DECIMAL,
 
-                MySQLDataType.FLOAT,
-                MySQLDataType.DOUBLE
+                MySqlType.FLOAT,
+                MySqlType.DOUBLE
         );
         return Collections.unmodifiableSet(set);
     }
@@ -92,12 +92,12 @@ class MySQL57MetaSchemaComparator extends AbstractMetaSchemaComparator {
     /**
      * @return a unmodifiable set
      */
-    private static Set<MySQLDataType> createTimeTypeSet() {
-        EnumSet<MySQLDataType> set = EnumSet.of(
-                MySQLDataType.DATE,
-                MySQLDataType.TIME,
-                MySQLDataType.DATETIME,
-                MySQLDataType.YEAR
+    private static Set<MySqlType> createTimeTypeSet() {
+        EnumSet<MySqlType> set = EnumSet.of(
+                MySqlType.DATE,
+                MySqlType.TIME,
+                MySqlType.DATETIME,
+                MySqlType.YEAR
         );
         return Collections.unmodifiableSet(set);
     }
@@ -105,17 +105,17 @@ class MySQL57MetaSchemaComparator extends AbstractMetaSchemaComparator {
     /**
      * @return a unmodifiable set
      */
-    private static Set<MySQLDataType> createSpatialTypeSet() {
-        EnumSet<MySQLDataType> set = EnumSet.of(
+    private static Set<MySqlType> createSpatialTypeSet() {
+        EnumSet<MySqlType> set = EnumSet.of(
                 // MySQLDataType.GEOMETRY,
-                MySQLDataType.POINT,
-                MySQLDataType.LINESTRING,
-                MySQLDataType.POLYGON,
+                MySqlType.POINT,
+                MySqlType.LINESTRING,
+                MySqlType.POLYGON,
 
-                MySQLDataType.MULTIPOINT,
-                MySQLDataType.MULTILINESTRING,
-                MySQLDataType.MULTIPOLYGON,
-                MySQLDataType.GEOMETRYCOLLECTION
+                MySqlType.MULTIPOINT,
+                MySqlType.MULTILINESTRING,
+                MySqlType.MULTIPOLYGON,
+                MySqlType.GEOMETRYCOLLECTION
         );
         return Collections.unmodifiableSet(set);
     }
@@ -123,18 +123,18 @@ class MySQL57MetaSchemaComparator extends AbstractMetaSchemaComparator {
     /**
      * @return a unmodifiable set
      */
-    private static Set<MySQLDataType> create57NoDefaultType() {
-        EnumSet<MySQLDataType> set = EnumSet.of(
-                MySQLDataType.TINYBLOB,
-                MySQLDataType.BLOB,
-                MySQLDataType.MEDIUMBLOB,
-                MySQLDataType.TINYTEXT,
+    private static Set<MySqlType> create57NoDefaultType() {
+        EnumSet<MySqlType> set = EnumSet.of(
+                MySqlType.TINYBLOB,
+                MySqlType.BLOB,
+                MySqlType.MEDIUMBLOB,
+                MySqlType.TINYTEXT,
 
-                MySQLDataType.TEXT,
-                MySQLDataType.MEDIUMTEXT
+                MySqlType.TEXT,
+                MySqlType.MEDIUMTEXT
         );
         set.addAll(SPATIAL_TYPE_SET);
-        set.add(MySQLDataType.JSON);
+        set.add(MySqlType.JSON);
 
         return Collections.unmodifiableSet(set);
     }
@@ -213,7 +213,7 @@ class MySQL57MetaSchemaComparator extends AbstractMetaSchemaComparator {
 
 
     @Nullable
-    String tryExtractDateOrTimeLiteralValue(MySQLDataType dataType, String defaultValue) {
+    String tryExtractDateOrTimeLiteralValue(MySqlType dataType, String defaultValue) {
         boolean match = false;
         switch (dataType) {
             case DATE:

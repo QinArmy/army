@@ -4,8 +4,8 @@ import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLDataType;
-import io.army.sqltype.SqlDataType;
+import io.army.sqltype.MySqlType;
+import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
 import java.sql.JDBCType;
@@ -35,10 +35,10 @@ public final class UnsignedIntegerType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlDataType sqlDataType(ServerMeta serverMeta) throws NotSupportDialectException {
-        final SqlDataType sqlDataType;
+    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
+        final SqlType sqlDataType;
         if (serverMeta.database() == Database.MySQL) {
-            sqlDataType = MySQLDataType.INT_UNSIGNED;
+            sqlDataType = MySqlType.INT_UNSIGNED;
         } else {
             throw noMappingError(serverMeta);
         }
@@ -46,7 +46,7 @@ public final class UnsignedIntegerType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Long convertBeforeBind(SqlDataType sqlDataType, Object nonNull) {
+    public Long convertBeforeBind(SqlType sqlDataType, Object nonNull) {
         final long value;
         if (nonNull instanceof Long
                 || nonNull instanceof Integer
@@ -71,7 +71,7 @@ public final class UnsignedIntegerType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Long convertAfterGet(SqlDataType sqlDataType, Object nonNull) {
+    public Long convertAfterGet(SqlType sqlDataType, Object nonNull) {
         if (!(nonNull instanceof Long)) {
             throw notSupportConvertAfterGet(nonNull);
         }

@@ -2,7 +2,7 @@ package io.army.mapping;
 
 import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.SqlDataType;
+import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -35,12 +35,12 @@ public final class BigIntegerType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlDataType sqlDataType(ServerMeta serverMeta) throws NotSupportDialectException {
-        return BigDecimalType.INSTANCE.sqlDataType(serverMeta);
+    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
+        return BigDecimalType.INSTANCE.sqlType(serverMeta);
     }
 
     @Override
-    public BigDecimal convertBeforeBind(SqlDataType sqlDataType, final Object nonNull) {
+    public BigDecimal convertBeforeBind(SqlType sqlDataType, final Object nonNull) {
         final BigDecimal value;
         value = BigDecimalType.INSTANCE.convertBeforeBind(sqlDataType, nonNull).stripTrailingZeros();
         if (value.scale() != 0) {
@@ -50,7 +50,7 @@ public final class BigIntegerType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public BigInteger convertAfterGet(final SqlDataType sqlDataType, final Object nonNull) {
+    public BigInteger convertAfterGet(final SqlType sqlDataType, final Object nonNull) {
         final BigDecimal v = ((BigDecimal) nonNull).stripTrailingZeros();
         if (v.scale() != 0) {
             throw notSupportConvertAfterGet(nonNull);

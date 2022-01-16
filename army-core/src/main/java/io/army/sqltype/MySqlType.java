@@ -2,7 +2,7 @@ package io.army.sqltype;
 
 import io.army.dialect.Database;
 
-public enum MySQLDataType implements SqlDataType {
+public enum MySqlType implements SqlType {
 
     BOOLEAN,
 

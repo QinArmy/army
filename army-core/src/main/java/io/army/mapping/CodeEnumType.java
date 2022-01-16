@@ -2,12 +2,11 @@ package io.army.mapping;
 
 import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLDataType;
+import io.army.sqltype.MySqlType;
 import io.army.sqltype.PostgreDataType;
-import io.army.sqltype.SqlDataType;
+import io.army.sqltype.SqlType;
 import io.army.struct.CodeEnum;
 
-import java.sql.JDBCType;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -20,7 +19,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
     private static final ConcurrentMap<Class<?>, CodeEnumType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
 
-    public static CodeEnumType build(Class<?> javaType) {
+    public static CodeEnumType create(Class<?> javaType) {
         if (javaType.isEnum() && CodeEnum.class.isAssignableFrom(javaType)) {
             return INSTANCE_MAP.computeIfAbsent(javaType, CodeEnumType::new);
         } else {
@@ -41,18 +40,13 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
         return this.enumClass;
     }
 
-    @Override
-    public JDBCType jdbcType() {
-        return JDBCType.INTEGER;
-    }
-
 
     @Override
-    public SqlDataType sqlDataType(ServerMeta serverMeta) throws NotSupportDialectException {
-        final SqlDataType sqlDataType;
+    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
+        final SqlType sqlDataType;
         switch (serverMeta.database()) {
             case MySQL:
-                sqlDataType = MySQLDataType.INT;
+                sqlDataType = MySqlType.INT;
                 break;
             case PostgreSQL:
                 sqlDataType = PostgreDataType.INTEGER;
@@ -64,12 +58,12 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Object convertBeforeBind(SqlDataType sqlDataType, Object nonNull) {
+    public Object convertBeforeBind(SqlType sqlDataType, Object nonNull) {
         return ((CodeEnum) nonNull).code();
     }
 
     @Override
-    public Object convertAfterGet(SqlDataType sqlDataType, Object nonNull) {
+    public Object convertAfterGet(SqlType sqlDataType, Object nonNull) {
         if (!(nonNull instanceof Integer)) {
             throw notSupportConvertAfterGet(nonNull);
         }
@@ -85,7 +79,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
     /*################################## blow private method ##################################*/
 
     @SuppressWarnings("unchecked")
-    private static <T extends Enum<T> & CodeEnum> void checkCodeEnum(Class<?> enumClass) {
+    public static <T extends Enum<T> & CodeEnum> void checkCodeEnum(Class<?> enumClass) {
         CodeEnum.getCodeMap((Class<T>) enumClass);
     }
 

@@ -11,7 +11,7 @@ import java.util.List;
 
 final class DDLContextImpl implements DDLContext {
 
-    protected final Dialect dialect;
+    protected final _Dialect dialect;
 
     protected StringBuilder sqlBuilder = new StringBuilder(128);
 
@@ -23,7 +23,7 @@ final class DDLContextImpl implements DDLContext {
 
     private boolean prepared;
 
-    DDLContextImpl(Dialect dialect, TableMeta<?> tableMeta, @Nullable String tableSuffix) {
+    DDLContextImpl(_Dialect dialect, TableMeta<?> tableMeta, @Nullable String tableSuffix) {
         this.dialect = dialect;
         this.tableMeta = tableMeta;
         this.tableSuffix = tableSuffix;

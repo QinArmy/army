@@ -21,7 +21,7 @@ import java.util.Map;
  */
 final class StandardValueInsertContext extends _BaseSqlContext implements _ValueInsertContext {
 
-    static StandardValueInsertContext create(_ValuesInsert insert, Dialect dialect, Visible visible) {
+    static StandardValueInsertContext create(_ValuesInsert insert, _Dialect dialect, Visible visible) {
         checkCommonExpMap(insert);
         return new StandardValueInsertContext(insert, dialect, visible);
     }
@@ -47,7 +47,7 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
     private final ChildBlock childBlock;
 
 
-    private StandardValueInsertContext(_ValuesInsert insert, Dialect dialect, Visible visible) {
+    private StandardValueInsertContext(_ValuesInsert insert, _Dialect dialect, Visible visible) {
         super(dialect, visible);
 
         this.commonExpMap = insert.commonExpMap();
@@ -195,7 +195,7 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
 
 
         @Override
-        public Dialect dialect() {
+        public _Dialect dialect() {
             return this.parentContext.dialect;
         }
 

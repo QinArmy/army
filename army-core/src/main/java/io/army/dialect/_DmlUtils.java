@@ -7,12 +7,10 @@ import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Update;
 import io.army.criteria.impl.inner._ValuesInsert;
+import io.army.generator.PreFieldGenerator;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.FieldMeta;
-import io.army.meta.ParentTableMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.*;
 import io.army.struct.CodeEnum;
@@ -75,23 +73,27 @@ public abstract class _DmlUtils {
 
 
     static void appendStandardValueInsert(final boolean childBlock, final _ValueInsertContext context) {
-        final Dialect dialect = context.dialect();
-        final _InsertBlock blockContext;
+        final _Dialect dialect = context.dialect();
+        final _InsertBlock block;
+        final _SqlContext blockContext;
         if (childBlock) {
-            blockContext = context.childBlock();
-            assert blockContext != null;
+            block = context.childBlock();
+            assert block != null;
+            blockContext = block.getContext();
         } else {
+            block = context;
             blockContext = context;
         }
+
         final StringBuilder builder = blockContext.sqlBuilder(); // use sql builder of blockContext
-        final TableMeta<?> table = blockContext.table();
+        final TableMeta<?> table = block.table();
 
         // 1. INSERT INTO clause
         builder.append(_AbstractDialect.INSERT_INTO)
                 .append(Constant.SPACE);
         //append table name
         builder.append(dialect.safeTableName(table.tableName()));
-        final List<FieldMeta<?, ?>> fieldList = blockContext.fieldLis();
+        final List<FieldMeta<?, ?>> fieldList = block.fieldLis();
         // 1.1 append table fields
         builder.append(AbstractSql.LEFT_BRACKET);
         int index = 0;
@@ -113,7 +115,9 @@ public abstract class _DmlUtils {
 
         int batch = 0;
         final Map<FieldMeta<?, ?>, _Expression<?>> expMap = context.commonExpMap();
+        final boolean mockEnvironment = dialect instanceof _MockDialects;
         _Expression<?> expression;
+        GeneratorMeta generatorMeta;
         Object value;
         //2.2 append values
         for (ReadWrapper domain : domainList) {
@@ -129,19 +133,10 @@ public abstract class _DmlUtils {
                 if (field == discriminator) {
                     assert field != null;
                     builder.append(Constant.SPACE)
-                            .append(dialect.literal(discriminator.mappingType(), context.discriminatorValue()));
+                            .append(context.discriminatorValue());
                 } else if ((expression = expMap.get(field)) != null) {
                     expression.appendSql(blockContext); // common append to block context
-                } else {
-                    value = domain.get(field.fieldName());
-
-                    if (value == null) {
-                        if (!field.nullable()) {
-                            throw _Exceptions.nonNullField(field);
-                        }
-                        builder.append(" NULL");
-                        continue;
-                    }
+                } else if ((value = domain.get(field.fieldName())) != null) {
                     final MappingType mappingType = field.mappingType();
                     if (mappingType instanceof _ArmyNoInjectionMapping) {
                         builder.append(Constant.SPACE)
@@ -149,7 +144,16 @@ public abstract class _DmlUtils {
                     } else {
                         blockContext.appendParam(ParamValue.build(field, value)); // parameter append block context
                     }
-
+                } else if (field.nullable()) {
+                    builder.append(" NULL");
+                } else if ((generatorMeta = field.generator()) == null) {
+                    throw _Exceptions.nonNullField(field);
+                } else if (PreFieldGenerator.class.isAssignableFrom(generatorMeta.type())) {
+                    if (mockEnvironment) {
+                        builder.append(" NULL");
+                    } else {
+                        throw _Exceptions.nonNullField(field);
+                    }
                 }
                 index++;
             }
@@ -251,7 +255,6 @@ public abstract class _DmlUtils {
         }
         return Collections.unmodifiableList(selectionList);
     }
-
 
 
     static void assertUpdateSetAndWhereClause(_Update update) {

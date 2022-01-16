@@ -138,7 +138,7 @@ public abstract class AbstractDmlAndDql extends AbstractSql {
         } else {
             throw new IllegalArgumentException("table error");
         }
-        final Dialect dialect = context.dialect();
+        final _Dialect dialect = context.dialect();
         context.sqlBuilder()
                 .append(AND)
                 .append(Constant.SPACE)
@@ -169,7 +169,7 @@ public abstract class AbstractDmlAndDql extends AbstractSql {
                 throw _Exceptions.unexpectedEnum(context.visible());
         }
         if (visibleValue != null) {
-            final Dialect dialect = context.dialect();
+            final _Dialect dialect = context.dialect();
             final StringBuilder sqlBuilder = context.sqlBuilder();
 
             sqlBuilder.append(AND)
@@ -188,7 +188,7 @@ public abstract class AbstractDmlAndDql extends AbstractSql {
             , _StmtContext context) {
 
         final StringBuilder sqlBuilder = context.sqlBuilder();
-        final Dialect dialect = context.dialect();
+        final _Dialect dialect = context.dialect();
         final boolean supportOnlyDefault = dialect.supportOnlyDefault();
         for (GenericField<?, ?> field : conditionFields) {
             final char[] safeColumnAlias = dialect.quoteIfNeed(field.columnName()).toCharArray();

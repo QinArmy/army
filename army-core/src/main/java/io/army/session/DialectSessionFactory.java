@@ -1,7 +1,7 @@
 package io.army.session;
 
 import io.army.boot.DomainValuesGenerator;
-import io.army.dialect.Dialect;
+import io.army.dialect._Dialect;
 import io.army.meta.ServerMeta;
 import io.army.sharding.RouteContext;
 
@@ -28,7 +28,7 @@ public interface DialectSessionFactory extends GenericSessionFactory, RouteConte
 
     ServerMeta serverMeta();
 
-    Dialect dialect();
+    _Dialect dialect();
 
     DomainValuesGenerator domainValuesGenerator();
 

@@ -5,6 +5,10 @@ import io.army.dialect.DialectEnvironment;
 
 class MySQL80Dialect extends MySQL57Dialect {
 
+    static MySQL80Dialect create(DialectEnvironment environment) {
+        return new MySQL80Dialect(environment);
+    }
+
 
     MySQL80Dialect(DialectEnvironment environment) {
         super(environment);
@@ -20,8 +24,6 @@ class MySQL80Dialect extends MySQL57Dialect {
     }
 
     /*################################## blow AbstractDialect method ##################################*/
-
-
 
 
 }

@@ -4,7 +4,6 @@ import io.army.DialectMode;
 import io.army.dialect.Database;
 import io.army.dialect.DialectEnvironment;
 import io.army.dialect._AbstractDialect;
-import io.army.meta.ParamMeta;
 import io.army.stmt.Stmt;
 
 import java.util.Set;
@@ -53,11 +52,6 @@ class Postgre11DmlDialect extends _AbstractDialect {
     @Override
     public boolean hasRowKeywords() {
         return false;
-    }
-
-    @Override
-    public String literal(ParamMeta paramMeta, Object value) {
-        return null;
     }
 
     @Override

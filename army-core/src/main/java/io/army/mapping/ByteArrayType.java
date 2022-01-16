@@ -31,11 +31,11 @@ public final class ByteArrayType extends AbstractMappingType {
     }
 
     @Override
-    public SqlDataType sqlDataType(ServerMeta serverMeta) throws NotSupportDialectException {
-        final SqlDataType sqlDataType;
+    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
+        final SqlType sqlDataType;
         switch (serverMeta.database()) {
             case MySQL:
-                sqlDataType = MySQLDataType.VARBINARY;
+                sqlDataType = MySqlType.VARBINARY;
                 break;
             case PostgreSQL:
                 sqlDataType = PostgreDataType.BYTEA;
@@ -54,7 +54,7 @@ public final class ByteArrayType extends AbstractMappingType {
     }
 
     @Override
-    public Object convertBeforeBind(SqlDataType sqlDataType, final Object nonNull) {
+    public Object convertBeforeBind(SqlType sqlDataType, final Object nonNull) {
         final byte[] value;
         if (nonNull instanceof byte[]) {
             value = (byte[]) nonNull;
@@ -65,7 +65,7 @@ public final class ByteArrayType extends AbstractMappingType {
     }
 
     @Override
-    public Object convertAfterGet(SqlDataType sqlDataType, final Object nonNull) {
+    public Object convertAfterGet(SqlType sqlDataType, final Object nonNull) {
         final byte[] value;
         switch (sqlDataType.database()) {
             case MySQL:

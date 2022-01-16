@@ -18,7 +18,7 @@ import java.util.Map;
 final class SimpleSelectContext extends _BaseSqlContext implements _SimpleQueryContext, _SelectContext {
 
 
-    static SimpleSelectContext create(Select select, Dialect dialect, Visible visible) {
+    static SimpleSelectContext create(Select select, _Dialect dialect, Visible visible) {
         final TableContext tableContext;
         tableContext = TableContext.createMapPair(select, dialect);
         return new SimpleSelectContext(select, tableContext, dialect, visible);
@@ -38,7 +38,7 @@ final class SimpleSelectContext extends _BaseSqlContext implements _SimpleQueryC
 
     private final _SelectContext outerContext;
 
-    private SimpleSelectContext(Select select, TableContext tableContext, Dialect dialect, Visible visible) {
+    private SimpleSelectContext(Select select, TableContext tableContext, _Dialect dialect, Visible visible) {
         super(dialect, visible);
         this.outerContext = null;
         this.aliasToTable = tableContext.aliasToTable;
@@ -60,7 +60,7 @@ final class SimpleSelectContext extends _BaseSqlContext implements _SimpleQueryC
         if (!(tablePart instanceof TableMeta) || field.tableMeta() != tablePart) {
             throw _Exceptions.unknownColumn(tableAlias, field);
         }
-        final Dialect dialect = this.dialect;
+        final _Dialect dialect = this.dialect;
         this.sqlBuilder
                 .append(Constant.SPACE)
                 .append(dialect.quoteIfNeed(tableAlias))

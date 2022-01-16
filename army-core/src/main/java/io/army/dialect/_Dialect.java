@@ -10,7 +10,7 @@ import io.army.stmt.Stmt;
 /**
  * A common interface to all dialect of dialect.
  */
-public interface Dialect {
+public interface _Dialect {
 
 
     Stmt insert(Insert insert, Visible visible);
@@ -79,7 +79,7 @@ public interface Dialect {
     boolean hasRowKeywords();
 
 
-    String literal(ParamMeta paramMeta, Object value);
+    String literal(ParamMeta paramMeta, Object nonNull);
 
 
     String quoteIfNeed(String identifier);

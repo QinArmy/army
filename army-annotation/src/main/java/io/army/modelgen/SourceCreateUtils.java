@@ -335,8 +335,8 @@ abstract class SourceCreateUtils {
                 .append("import io.army.meta.ChildTableMeta;\n")
                 .append("import io.army.meta.UniqueFieldMeta;\n")
 
-                .append("import io.army.meta.PrimaryFieldMeta;\n")
-                .append("import io.army.util.Assert;\n\n")
+                .append("import io.army.meta.PrimaryFieldMeta;\n\n")
+        // .append("import io.army.util.Assert;\n\n")
         ;
     }
 

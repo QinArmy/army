@@ -8,7 +8,7 @@ import io.army.boot.migratioin.ReactiveMigrator;
 import io.army.cache.SessionCacheFactory;
 import io.army.criteria.NotFoundRouteException;
 import io.army.dialect.Database;
-import io.army.dialect.Dialect;
+import io.army.dialect._Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
@@ -45,7 +45,7 @@ class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements Inner
 
     private final DatabaseSessionFactory databaseSessionFactory;
 
-    private final Dialect dialect;
+    private final _Dialect dialect;
 
     private final int tableCountPerDatabase;
 
@@ -222,7 +222,7 @@ class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements Inner
     /*################################## blow InnerGenericRmSessionFactory method ##################################*/
 
     @Override
-    public Dialect dialect() {
+    public _Dialect dialect() {
         return this.dialect;
     }
 

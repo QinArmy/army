@@ -1,7 +1,7 @@
 package io.army.sync;
 
 import io.army.codec.StatementType;
-import io.army.dialect.Dialect;
+import io.army.dialect._Dialect;
 import io.army.lang.Nullable;
 import io.army.tx.TransactionTimeOutException;
 
@@ -20,7 +20,7 @@ interface InnerGenericRmSession extends GenericSyncRmSession, InnerTxSession {
 
     void codecContextStatementType(@Nullable StatementType statementType);
 
-    Dialect dialect();
+    _Dialect dialect();
 
     int timeToLiveInSeconds() throws TransactionTimeOutException;
 

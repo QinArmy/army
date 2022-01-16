@@ -62,6 +62,7 @@ public @interface Table {
     boolean immutable() default false;
 
 
+    @Deprecated
     boolean defaultNullable() default true;
 
     /**

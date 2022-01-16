@@ -19,7 +19,7 @@ public abstract class SQLDataTypeUtils {
         throw new UnsupportedOperationException();
     }
 
-    public static int obtainTimePrecision(SqlDataType dataType, FieldMeta<?, ?> fieldMeta) {
+    public static int obtainTimePrecision(SqlType dataType, FieldMeta<?, ?> fieldMeta) {
         int precision = fieldMeta.precision();
         if (precision < 0) {
             precision = 0;
@@ -29,7 +29,7 @@ public abstract class SQLDataTypeUtils {
         return precision;
     }
 
-    public static void appendDataTypeWithMaxPrecision(SqlDataType dataType, FieldMeta<?, ?> fieldMeta
+    public static void appendDataTypeWithMaxPrecision(SqlType dataType, FieldMeta<?, ?> fieldMeta
             , int maxPrecision, int defaultPrecision, StringBuilder builder) {
         int precision = fieldMeta.precision();
         if (precision < 0) {
@@ -41,7 +41,7 @@ public abstract class SQLDataTypeUtils {
     }
 
 
-    public static void appendDataTypeWithPrecision(SqlDataType dataType, int precision, StringBuilder builder) {
+    public static void appendDataTypeWithPrecision(SqlType dataType, int precision, StringBuilder builder) {
         builder.append(dataType.typeName());
         if (precision > 0) {
             builder.append("(")
@@ -50,7 +50,7 @@ public abstract class SQLDataTypeUtils {
         }
     }
 
-    public static void decimalDataTypeClause(SqlDataType dataType, int maxPrecision, int maxScale
+    public static void decimalDataTypeClause(SqlType dataType, int maxPrecision, int maxScale
             , FieldMeta<?, ?> fieldMeta, StringBuilder builder) {
 
         int precision = fieldMeta.precision(), scale = fieldMeta.scale();
@@ -92,35 +92,35 @@ public abstract class SQLDataTypeUtils {
         return text;
     }
 
-    public static MetaException createNotSupportDefaultClause(SqlDataType dataType, FieldMeta<?, ?> fieldMeta
+    public static MetaException createNotSupportDefaultClause(SqlType dataType, FieldMeta<?, ?> fieldMeta
             , Database database) {
         return new MetaException("%s,%s not support default clause for %s.", fieldMeta, dataType, database);
     }
 
 
-    public static MetaException createPrecisionException(SqlDataType dataType, int includeMin, int includeMax
+    public static MetaException createPrecisionException(SqlType dataType, int includeMin, int includeMax
             , FieldMeta<?, ?> fieldMeta) {
         throw new MetaException(ErrorCode.META_ERROR, "%s,%s precision must in[%s,%s]."
                 , fieldMeta, dataType.name(), includeMin, includeMax);
     }
 
-    public static MetaException createNotJavaTypeException(SqlDataType dataType, FieldMeta<?, ?> fieldMeta) {
+    public static MetaException createNotJavaTypeException(SqlType dataType, FieldMeta<?, ?> fieldMeta) {
         return new MetaException("%s,%s not support java type[%s]"
                 , fieldMeta, dataType, fieldMeta.javaType().getName());
     }
 
-    public static MetaException createScaleException(SqlDataType dataType, int includeMin, int includeMax
+    public static MetaException createScaleException(SqlType dataType, int includeMin, int includeMax
             , FieldMeta<?, ?> fieldMeta) {
         throw new MetaException(ErrorCode.META_ERROR, "%s,%s scale must in[%s,%s]."
                 , fieldMeta, dataType.name(), includeMin, includeMax);
     }
 
-    public static MetaException createNotSupportZeroValueException(SqlDataType dataType, FieldMeta<?, ?> fieldMeta
+    public static MetaException createNotSupportZeroValueException(SqlType dataType, FieldMeta<?, ?> fieldMeta
             , Database database) {
         return new MetaException("%s,%s not support \"zero value\" for %s.", fieldMeta, dataType, database);
     }
 
-    public static MetaException createNotSupportNowExpressionException(SqlDataType dataType, FieldMeta<?, ?> fieldMeta
+    public static MetaException createNotSupportNowExpressionException(SqlType dataType, FieldMeta<?, ?> fieldMeta
             , Database database) {
         return new MetaException("%s,%s not support IDomain.NOW for %s.", fieldMeta, dataType, database);
     }
@@ -161,11 +161,11 @@ public abstract class SQLDataTypeUtils {
         } else if (javaClass == MonthDay.class) {
             builder.append("(DATE_FORMAT(CURRENT_DATE,'%m-%d'))");
         } else {
-            throw createNotJavaTypeException(MySQLDataType.DATE, fieldMeta);
+            throw createNotJavaTypeException(MySqlType.DATE, fieldMeta);
         }
     }
 
-    static <E extends Enum<E> & SqlDataType> Map<String, E> createTypeNameMap(Class<E> dataTypeEnumClass) {
+    static <E extends Enum<E> & SqlType> Map<String, E> createTypeNameMap(Class<E> dataTypeEnumClass) {
         E[] array = dataTypeEnumClass.getEnumConstants();
         Map<String, E> map = new HashMap<>((int) (array.length % 0.75F));
         for (E dataType : array) {

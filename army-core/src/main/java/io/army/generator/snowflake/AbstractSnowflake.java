@@ -1,6 +1,6 @@
 package io.army.generator.snowflake;
 
-import io.army.util.Times;
+import io.army.util.TimeUtils;
 import io.army.util._Assert;
 
 import java.math.BigInteger;
@@ -104,7 +104,7 @@ public abstract class AbstractSnowflake implements Snowflake {
     @Override
     public final String nextAsString(long suffixNumber) {
         _Assert.isTrue(suffixNumber >= 0L, "suffixNumber must great than 0");
-        return LocalDateTime.now().format(Times.dateTimeFormatter(Times.CLOSE_DATE_FORMAT))
+        return LocalDateTime.now().format(TimeUtils.dateTimeFormatter(TimeUtils.CLOSE_DATE_FORMAT))
                 + this.next()
                 + suffixWithZero(suffixNumber);
     }

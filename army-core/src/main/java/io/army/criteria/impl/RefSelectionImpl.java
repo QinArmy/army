@@ -6,7 +6,7 @@ import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.meta.ParamMeta;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.SqlDataType;
+import io.army.sqltype.SqlType;
 import io.army.util._Assert;
 
 import java.sql.JDBCType;
@@ -153,17 +153,17 @@ abstract class RefSelectionImpl<E> extends OperationExpression<E> implements Ref
 
 
         @Override
-        public SqlDataType sqlDataType(ServerMeta serverMeta) throws NotSupportDialectException {
+        public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
             return null;
         }
 
         @Override
-        public Object convertBeforeBind(SqlDataType sqlDataType, Object nonNull) {
+        public Object convertBeforeBind(SqlType sqlDataType, Object nonNull) {
             return null;
         }
 
         @Override
-        public Object convertAfterGet(SqlDataType sqlDataType, Object nonNull) {
+        public Object convertAfterGet(SqlType sqlDataType, Object nonNull) {
             return null;
         }
 

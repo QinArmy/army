@@ -23,7 +23,7 @@ import java.util.List;
  */
 final class StandardUpdateContext extends _SingleDmlContext implements _SingleUpdateContext {
 
-    static StandardUpdateContext create(_SingleUpdate update, Dialect dialect, final Visible visible) {
+    static StandardUpdateContext create(_SingleUpdate update, _Dialect dialect, final Visible visible) {
         final StandardUpdateContext context;
         if (update.table() instanceof ChildTableMeta) {
             context = new StandardUpdateContext(dialect, update, visible);
@@ -39,7 +39,7 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
 
     private final ChildSetBlock childSetClause;
 
-    private StandardUpdateContext(_SingleUpdate update, Dialect dialect, Visible visible) {
+    private StandardUpdateContext(_SingleUpdate update, _Dialect dialect, Visible visible) {
         super(update, dialect, visible);
 
         final SingleTableMeta<?> table = (SingleTableMeta<?>) update.table();
@@ -59,7 +59,7 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
         this.childSetClause = null;
     }
 
-    private StandardUpdateContext(Dialect dialect, _SingleUpdate update, Visible visible) {
+    private StandardUpdateContext(_Dialect dialect, _SingleUpdate update, Visible visible) {
         super(update, dialect, visible);
 
         final ChildTableMeta<?> childTable = (ChildTableMeta<?>) update.table();

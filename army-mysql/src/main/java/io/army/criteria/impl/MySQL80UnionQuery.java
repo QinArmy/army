@@ -5,7 +5,7 @@ import io.army.criteria.impl.inner._PartQuery;
 import io.army.criteria.impl.inner._UnionQuery;
 import io.army.criteria.mysql.MySQL80Query;
 import io.army.dialect.Constant;
-import io.army.dialect.Dialect;
+import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
 import io.army.meta.ParamMeta;
 import io.army.util._Exceptions;
@@ -192,7 +192,7 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends PartQuery<
 
         @Override
         public void appendSql(final _SqlContext context) {
-            final Dialect dialect = context.dialect();
+            final _Dialect dialect = context.dialect();
             dialect.select(this.left, context);
 
             context.sqlBuilder()
@@ -219,7 +219,7 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends PartQuery<
 
         @Override
         public final void appendSql(final _SqlContext context) {
-            final Dialect dialect = context.dialect();
+            final _Dialect dialect = context.dialect();
             dialect.subQuery(this.left, context);
 
             context.sqlBuilder()

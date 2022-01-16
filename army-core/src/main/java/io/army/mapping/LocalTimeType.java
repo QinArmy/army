@@ -2,9 +2,9 @@ package io.army.mapping;
 
 import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLDataType;
+import io.army.sqltype.MySqlType;
 import io.army.sqltype.PostgreDataType;
-import io.army.sqltype.SqlDataType;
+import io.army.sqltype.SqlType;
 
 import java.sql.JDBCType;
 import java.time.LocalTime;
@@ -36,11 +36,11 @@ public final class LocalTimeType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlDataType sqlDataType(ServerMeta serverMeta) throws NotSupportDialectException {
-        final SqlDataType sqlDataType;
+    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
+        final SqlType sqlDataType;
         switch (serverMeta.database()) {
             case MySQL:
-                sqlDataType = MySQLDataType.TIME;
+                sqlDataType = MySqlType.TIME;
                 break;
             case PostgreSQL:
                 sqlDataType = PostgreDataType.TIME;
@@ -53,7 +53,7 @@ public final class LocalTimeType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Object convertBeforeBind(SqlDataType sqlDataType, final Object nonNull) {
+    public Object convertBeforeBind(SqlType sqlDataType, final Object nonNull) {
         final LocalTime value;
         if (nonNull instanceof LocalTime) {
             value = (LocalTime) nonNull;
@@ -64,7 +64,7 @@ public final class LocalTimeType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Object convertAfterGet(SqlDataType sqlDataType, final Object nonNull) {
+    public Object convertAfterGet(SqlType sqlDataType, final Object nonNull) {
         if (!(nonNull instanceof LocalTime)) {
             throw notSupportConvertAfterGet(nonNull);
         }

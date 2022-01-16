@@ -3,10 +3,10 @@ package io.army.mapping;
 import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLDataType;
+import io.army.sqltype.MySqlType;
 import io.army.sqltype.OracleDataType;
 import io.army.sqltype.PostgreDataType;
-import io.army.sqltype.SqlDataType;
+import io.army.sqltype.SqlType;
 import io.army.util._Exceptions;
 
 import java.sql.JDBCType;
@@ -41,11 +41,11 @@ public final class TrueFalseType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlDataType sqlDataType(ServerMeta serverMeta) throws NotSupportDialectException {
-        final SqlDataType sqlDataType;
+    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
+        final SqlType sqlDataType;
         switch (serverMeta.database()) {
             case MySQL:
-                sqlDataType = MySQLDataType.CHAR;
+                sqlDataType = MySqlType.CHAR;
                 break;
             case PostgreSQL:
                 sqlDataType = PostgreDataType.BOOLEAN;
@@ -61,7 +61,7 @@ public final class TrueFalseType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Object convertBeforeBind(SqlDataType sqlDataType, final Object nonNull) {
+    public Object convertBeforeBind(SqlType sqlDataType, final Object nonNull) {
         if (!(nonNull instanceof Boolean)) {
             throw _Exceptions.javaTypeUnsupportedByMapping(this, nonNull);
         }
@@ -75,7 +75,7 @@ public final class TrueFalseType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Boolean convertAfterGet(SqlDataType sqlDataType, final Object nonNull) {
+    public Boolean convertAfterGet(SqlType sqlDataType, final Object nonNull) {
         final Boolean value;
         if (sqlDataType.database() == Database.PostgreSQL) {
             if (!(nonNull instanceof Boolean)) {

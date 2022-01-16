@@ -5,7 +5,11 @@ import io.army.meta.TableMeta;
 
 import java.util.List;
 
-public interface _InsertBlock extends _SqlContext {
+public interface _InsertBlock {
+
+    default _SqlContext getContext() {
+        throw new UnsupportedOperationException();
+    }
 
     TableMeta<?> table();
 

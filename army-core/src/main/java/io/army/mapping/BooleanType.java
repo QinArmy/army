@@ -2,13 +2,12 @@ package io.army.mapping;
 
 import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLDataType;
+import io.army.sqltype.MySqlType;
 import io.army.sqltype.PostgreDataType;
-import io.army.sqltype.SqlDataType;
+import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.JDBCType;
 
 public final class BooleanType extends _ArmyNoInjectionMapping {
 
@@ -36,16 +35,11 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public JDBCType jdbcType() {
-        return JDBCType.BOOLEAN;
-    }
-
-    @Override
-    public SqlDataType sqlDataType(final ServerMeta serverMeta) throws NotSupportDialectException {
-        final SqlDataType sqlType;
+    public SqlType sqlType(final ServerMeta serverMeta) throws NotSupportDialectException {
+        final SqlType sqlType;
         switch (serverMeta.database()) {
             case MySQL:
-                sqlType = MySQLDataType.BOOLEAN;
+                sqlType = MySqlType.BOOLEAN;
                 break;
             case PostgreSQL:
                 sqlType = PostgreDataType.BOOLEAN;
@@ -58,7 +52,7 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
 
 
     @Override
-    public Boolean convertBeforeBind(SqlDataType sqlDataType, final Object nonNull) {
+    public Boolean convertBeforeBind(SqlType sqlDataType, final Object nonNull) {
         final Boolean value;
         if (nonNull instanceof Boolean) {
             value = (Boolean) nonNull;
@@ -85,7 +79,7 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Object convertAfterGet(SqlDataType sqlDataType, final Object nonNull) {
+    public Object convertAfterGet(SqlType sqlDataType, final Object nonNull) {
         if (!(nonNull instanceof Boolean)) {
             throw notSupportConvertAfterGet(nonNull);
         }

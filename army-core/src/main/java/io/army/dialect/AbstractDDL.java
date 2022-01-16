@@ -2,7 +2,7 @@ package io.army.dialect;
 
 public abstract class AbstractDDL extends AbstractSql {
 
-    public AbstractDDL(Dialect dialect) {
+    public AbstractDDL(_Dialect dialect) {
         super(null);
     }
 

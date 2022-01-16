@@ -26,7 +26,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
     protected final boolean multiTableUpdateChild;
 
 
-    protected _SingleDmlContext(_SingleDml dml, Dialect dialect, Visible visible) {
+    protected _SingleDmlContext(_SingleDml dml, _Dialect dialect, Visible visible) {
         super(dialect, visible);
         final TableMeta<?> table = dml.table();
         final String tableAlias = dml.tableAlias();
@@ -161,7 +161,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
         public final void appendField(final FieldMeta<?, ?> field) {
             final TableMeta<?> belongOf = field.tableMeta();
             final StringBuilder sqlBuilder = this.parentContext.sqlBuilder;
-            final Dialect dialect = this.parentContext.dialect;
+            final _Dialect dialect = this.parentContext.dialect;
 
             if (belongOf == this.table) {// field is child table column.
                 sqlBuilder
@@ -187,7 +187,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
 
 
         @Override
-        public final Dialect dialect() {
+        public final _Dialect dialect() {
             return this.parentContext.dialect;
         }
 
@@ -227,7 +227,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
         }
 
         final String childSafeTableAlias = Constant.FORBID_ALIAS + "temp_c_of_" + childBlock.tableAlias();
-        final Dialect dialect = parentContext.dialect();
+        final _Dialect dialect = parentContext.dialect();
         // convert for validate childBlock
         final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childBlock.table();
 
@@ -283,7 +283,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
         final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childContext.table();
         final String parentSafeTable = Constant.FORBID_ALIAS + "temp_p_of_" + childContext.tableAlias();
 
-        final Dialect dialect = childContext.dialect();
+        final _Dialect dialect = childContext.dialect();
         final ParentTableMeta<?> parentTable = childTable.parentMeta();
         final StringBuilder sqlBuilder = childContext.sqlBuilder();
 

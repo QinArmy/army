@@ -3,7 +3,7 @@ package io.army.boot.reactive;
 import io.army.SessionFactoryException;
 import io.army.advice.GenericDomainAdvice;
 import io.army.dialect.Database;
-import io.army.dialect.Dialect;
+import io.army.dialect._Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.reactive.GenericProxyReactiveSession;
@@ -50,7 +50,7 @@ abstract class SessionFactoryUtils {
         return Mono.empty();
     }
 
-    static Dialect createDialect(DialectSessionFactory rmSessionFactory, Database queriedDatabase) {
+    static _Dialect createDialect(DialectSessionFactory rmSessionFactory, Database queriedDatabase) {
 //        Database configDatabase = readDatabase(rmSessionFactory);
 //        return createDialect(configDatabase, queriedDatabase, rmSessionFactory);
         return null;

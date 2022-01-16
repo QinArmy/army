@@ -60,7 +60,7 @@ abstract class DefaultMappingFactory {
     static MappingType obtainDefaultMapping(Class<?> javaType) {
         MappingType mappingType;
         if (javaType.isEnum()) {
-            mappingType = CodeEnumType.build(javaType);
+            mappingType = CodeEnumType.create(javaType);
         } else {
             mappingType = OVERRIDE_DEFAULT_MAP.get(javaType);
             if (mappingType == null) {

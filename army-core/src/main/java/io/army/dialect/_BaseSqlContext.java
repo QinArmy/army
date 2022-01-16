@@ -8,7 +8,7 @@ import java.util.List;
 
 public abstract class _BaseSqlContext implements _StmtContext {
 
-    protected final Dialect dialect;
+    protected final _Dialect dialect;
 
     protected final Visible visible;
 
@@ -16,7 +16,7 @@ public abstract class _BaseSqlContext implements _StmtContext {
 
     protected final List<ParamValue> paramList;
 
-    protected _BaseSqlContext(Dialect dialect, Visible visible) {
+    protected _BaseSqlContext(_Dialect dialect, Visible visible) {
         this.dialect = dialect;
         this.visible = visible;
         this.sqlBuilder = new StringBuilder(128);
@@ -32,7 +32,7 @@ public abstract class _BaseSqlContext implements _StmtContext {
 
 
     @Override
-    public final Dialect dialect() {
+    public final _Dialect dialect() {
         return this.dialect;
     }
 

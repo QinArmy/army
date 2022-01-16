@@ -5,7 +5,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.schema.SchemaInfoException;
 import io.army.session.DialectSessionFactory;
-import io.army.sqltype.MySQLDataType;
+import io.army.sqltype.MySqlType;
 
 class MySQL80MetaSchemaComparator extends MySQL57MetaSchemaComparator {
 
@@ -38,7 +38,7 @@ class MySQL80MetaSchemaComparator extends MySQL57MetaSchemaComparator {
     }
 
 
-    private boolean needModifyTimeTypeDefault(String defaultExp, MySQLDataType mysqlType
+    private boolean needModifyTimeTypeDefault(String defaultExp, MySqlType mysqlType
             , FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo) {
         final String defaultValue = defaultExp.substring(1, defaultExp.length() - 2);
 

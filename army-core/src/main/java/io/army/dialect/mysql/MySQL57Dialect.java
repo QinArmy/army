@@ -11,9 +11,13 @@ import io.army.stmt.SimpleStmt;
 import java.util.List;
 
 /**
- * this class is a  {@link Dialect} implementation then abstract base class of all MySQL 5.7 Dialect
+ * this class is a  {@link _Dialect} implementation then abstract base class of all MySQL 5.7 Dialect
  */
 class MySQL57Dialect extends MySQLDialect {
+
+    static MySQL57Dialect create(DialectEnvironment environment) {
+        return new MySQL57Dialect(environment);
+    }
 
 
     MySQL57Dialect(DialectEnvironment environment) {
@@ -24,10 +28,6 @@ class MySQL57Dialect extends MySQLDialect {
     /*################################## blow interfaces method ##################################*/
 
 
-    @Override
-    public Database database() {
-        return Database.MySQL;
-    }
 
     @Override
     public final boolean supportSavePoint() {
@@ -65,11 +65,11 @@ class MySQL57Dialect extends MySQLDialect {
 
     /**
      * <p>
-     * MySQL {@link Dialect#multiTableUpdateChild()} always return true
+     * MySQL {@link _Dialect#multiTableUpdateChild()} always return true
      * ,so this method always use multi-table syntax update child table.
      * </p>
      *
-     * @see Dialect#multiTableUpdateChild()
+     * @see _Dialect#multiTableUpdateChild()
      */
     @Override
     protected final SimpleStmt standardChildUpdate(final _SingleUpdateContext context) {
@@ -78,7 +78,7 @@ class MySQL57Dialect extends MySQLDialect {
         final _SetBlock childSetClause = context.childBlock();
         assert childSetClause != null;
 
-        final Dialect dialect = context.dialect();
+        final _Dialect dialect = context.dialect();
         final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childSetClause.table();
         final ParentTableMeta<?> parentTable = (ParentTableMeta<?>) context.table();
         final String safeParentTableAlias = context.safeTableAlias();

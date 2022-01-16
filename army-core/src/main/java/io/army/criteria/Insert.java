@@ -10,16 +10,13 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public interface Insert extends Statement, SQLDebug {
+public interface Insert extends Statement {
 
 
     /*################################## blow interfaces  ##################################*/
 
-    interface InsertSqlSpec {
 
-    }
-
-    interface InsertSpec extends InsertSqlSpec {
+    interface InsertSpec {
 
         Insert asInsert();
 
@@ -32,7 +29,7 @@ public interface Insert extends Statement, SQLDebug {
         InsertIntoSpec<T, C> migration();
     }
 
-    interface InsertIntoSpec<T extends IDomain, C> extends InsertSqlSpec {
+    interface InsertIntoSpec<T extends IDomain, C> {
 
         InsertValuesSpec<T, C> insertInto(Collection<FieldMeta<? super T, ?>> fields);
 
@@ -43,7 +40,7 @@ public interface Insert extends Statement, SQLDebug {
         InsertValuesSpec<T, C> insertInto(TableMeta<T> table);
     }
 
-    interface InsertValuesSpec<T extends IDomain, C> extends InsertSqlSpec {
+    interface InsertValuesSpec<T extends IDomain, C> {
 
         InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, @Nullable Object value);
 

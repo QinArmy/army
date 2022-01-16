@@ -35,11 +35,11 @@ public final class BigDecimalType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlDataType sqlDataType(final ServerMeta serverMeta) throws NotSupportDialectException {
-        final SqlDataType sqlDataType;
+    public SqlType sqlType(final ServerMeta serverMeta) throws NotSupportDialectException {
+        final SqlType sqlDataType;
         switch (serverMeta.database()) {
             case MySQL:
-                sqlDataType = MySQLDataType.DECIMAL;
+                sqlDataType = MySqlType.DECIMAL;
                 break;
             case PostgreSQL:
                 sqlDataType = PostgreDataType.DECIMAL;
@@ -58,7 +58,7 @@ public final class BigDecimalType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public BigDecimal convertBeforeBind(SqlDataType sqlDataType, final Object nonNull) {
+    public BigDecimal convertBeforeBind(SqlType sqlDataType, final Object nonNull) {
         final BigDecimal value;
         if (nonNull instanceof BigDecimal) {
             value = (BigDecimal) nonNull;
@@ -80,7 +80,7 @@ public final class BigDecimalType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Object convertAfterGet(SqlDataType sqlDataType, final Object nonNull) {
+    public Object convertAfterGet(SqlType sqlDataType, final Object nonNull) {
         if (!(nonNull instanceof BigDecimal)) {
             throw notSupportConvertAfterGet(nonNull);
         }

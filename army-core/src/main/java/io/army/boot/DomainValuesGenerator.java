@@ -8,8 +8,10 @@ import io.army.session.GenericSessionFactory;
 
 public interface DomainValuesGenerator {
 
-    DomainWrapper createValues(TableMeta<?> tableMeta, IDomain domain, boolean migrationData)
-            throws FieldValuesCreateException;
+    default DomainWrapper createValues(TableMeta<?> tableMeta, IDomain domain, boolean migrationData)
+            throws FieldValuesCreateException {
+        throw new UnsupportedOperationException();
+    }
 
     void createValues(ObjectWrapper domainWrapper, boolean migrationData);
 

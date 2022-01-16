@@ -5,7 +5,7 @@ import io.army.*;
 import io.army.boot.DomainValuesGenerator;
 import io.army.criteria.NotFoundRouteException;
 import io.army.dialect.Database;
-import io.army.dialect.Dialect;
+import io.army.dialect._Dialect;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.ServerMeta;
@@ -43,7 +43,7 @@ final class RmSessionFactoryImpl extends AbstractSessionFactory
 
     private final XADataSource dataSource;
 
-    private final Dialect dialect;
+    private final _Dialect dialect;
 
     private final DomainValuesGenerator domainValuesGenerator;
 
@@ -93,7 +93,7 @@ final class RmSessionFactoryImpl extends AbstractSessionFactory
     }
 
     @Override
-    public final Dialect dialect() {
+    public final _Dialect dialect() {
         return this.dialect;
     }
 

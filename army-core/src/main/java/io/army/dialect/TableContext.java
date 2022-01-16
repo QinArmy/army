@@ -24,7 +24,7 @@ final class TableContext {
     }
 
 
-    static TableContext createMapPair(Query query, Dialect dialect) {
+    static TableContext createMapPair(Query query, _Dialect dialect) {
         final List<? extends _TableBlock> blockList = ((_Query) query).tableBlockList();
         final Map<String, TablePart> aliasToTable = new HashMap<>((int) (blockList.size() / 0.75F));
         final Map<TableMeta<?>, String> tableToSafeAlias = new HashMap<>((int) (blockList.size() / 0.75F));

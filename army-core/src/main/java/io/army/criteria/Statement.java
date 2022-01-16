@@ -1,7 +1,9 @@
 package io.army.criteria;
 
+import io.army.DialectMode;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.stmt.Stmt;
 
 import java.util.List;
 import java.util.Map;
@@ -22,6 +24,19 @@ public interface Statement {
      * assert statement prepared
      */
     void prepared();
+
+
+    default void mock(DialectMode mode) {
+
+    }
+
+    default String mockAsString(DialectMode mode) {
+        throw new UnsupportedOperationException();
+    }
+
+    default Stmt mockAsStmt(DialectMode mode) {
+        throw new UnsupportedOperationException();
+    }
 
 
     interface AsClause<AR> {

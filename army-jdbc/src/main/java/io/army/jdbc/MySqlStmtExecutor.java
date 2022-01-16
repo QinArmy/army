@@ -1,8 +1,8 @@
 package io.army.jdbc;
 
 
-import io.army.sqltype.MySQLDataType;
-import io.army.sqltype.SqlDataType;
+import io.army.sqltype.MySqlType;
+import io.army.sqltype.SqlType;
 import io.army.sync.utils.SyncExceptions;
 
 import java.io.IOException;
@@ -30,9 +30,9 @@ final class MySqlStmtExecutor extends AbstractStmtExecutor {
 
 
     @Override
-    void bind(final PreparedStatement stmt, final int index, final SqlDataType sqlDataType, final Object nonNull)
+    void bind(final PreparedStatement stmt, final int index, final SqlType sqlDataType, final Object nonNull)
             throws SQLException {
-        switch ((MySQLDataType) sqlDataType) {
+        switch ((MySqlType) sqlDataType) {
             case BOOLEAN:
                 stmt.setBoolean(index, (Boolean) nonNull);
                 break;
@@ -156,7 +156,7 @@ final class MySqlStmtExecutor extends AbstractStmtExecutor {
                 }
             }
             default:
-                throw SyncExceptions.unexpectedEnum((MySQLDataType) sqlDataType);
+                throw SyncExceptions.unexpectedEnum((MySqlType) sqlDataType);
 
         }
 

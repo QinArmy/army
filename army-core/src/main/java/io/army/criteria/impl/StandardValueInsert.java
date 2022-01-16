@@ -1,17 +1,23 @@
 package io.army.criteria.impl;
 
+import io.army.DialectMode;
 import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ObjectWrapper;
 import io.army.criteria.Expression;
 import io.army.criteria.Insert;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.dialect._DmlUtils;
+import io.army.dialect._MockDialects;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.stmt.PairStmt;
+import io.army.stmt.SimpleStmt;
+import io.army.stmt.Stmt;
 import io.army.util.CollectionUtils;
 import io.army.util._Assert;
 import io.army.util._Exceptions;
@@ -28,7 +34,7 @@ import java.util.function.Supplier;
  * @param <T> domain java type.
  * @param <C> criteria java type used to dynamic statement.
  */
-final class StandardValueInsert<T extends IDomain, C> extends AbstractSQLDebug implements Insert
+final class StandardValueInsert<T extends IDomain, C> implements Insert
         , Insert.InsertSpec, Insert.InsertIntoSpec<T, C>, Insert.InsertValuesSpec<T, C>, Insert.InsertOptionSpec<T, C>
         , _ValuesInsert {
 
@@ -269,7 +275,45 @@ final class StandardValueInsert<T extends IDomain, C> extends AbstractSQLDebug i
         return this;
     }
 
+    @Override
+    public String toString() {
+        final String s;
+        if (this.prepared) {
+            s = this.mockAsString(DialectMode.MySQL57);
+        } else {
+            s = super.toString();
+        }
+        return s;
+    }
 
+    @Override
+    public void mock(DialectMode mode) {
+        System.out.println(mockAsString(mode));
+    }
+
+    @Override
+    public String mockAsString(DialectMode mode) {
+        final Stmt stmt;
+        stmt = mockAsStmt(mode);
+        final StringBuilder builder = new StringBuilder();
+        if (stmt instanceof SimpleStmt) {
+            builder.append("insert sql:\n")
+                    .append(((SimpleStmt) stmt).sql());
+        } else if (stmt instanceof PairStmt) {
+            builder.append("parent insert sql:\n")
+                    .append(((PairStmt) stmt).parentStmt().sql())
+                    .append("child insert sql:\n")
+                    .append(((PairStmt) stmt).childStmt().sql());
+        } else {
+            throw new IllegalStateException("Unknown stmt type.");
+        }
+        return builder.toString();
+    }
+
+    @Override
+    public Stmt mockAsStmt(DialectMode mode) {
+        return _MockDialects.from(mode).insert(this, Visible.ONLY_VISIBLE);
+    }
 
     /*################################## blow SQLStatement method ##################################*/
 

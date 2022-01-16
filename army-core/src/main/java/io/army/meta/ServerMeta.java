@@ -16,7 +16,10 @@ public interface ServerMeta {
 
     boolean meetsMinimum(int major, int minor);
 
-    boolean supportSavePoint();
+    @Deprecated
+    default boolean supportSavePoint() {
+        throw new UnsupportedOperationException();
+    }
 
 
 }

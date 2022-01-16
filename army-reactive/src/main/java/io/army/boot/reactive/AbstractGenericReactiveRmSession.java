@@ -6,7 +6,7 @@ import io.army.criteria.impl.inner._MultiDml;
 import io.army.criteria.impl.inner._Select;
 import io.army.criteria.impl.inner._SingleDml;
 import io.army.criteria.impl.inner._Statement;
-import io.army.dialect.Dialect;
+import io.army.dialect._Dialect;
 import io.army.meta.TableMeta;
 import io.army.reactive.GenericReactiveApiSessionFactory;
 import io.army.reactive.advice.ReactiveDomainDeleteAdvice;
@@ -31,7 +31,7 @@ abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F ext
 
     final S databaseSession;
 
-    final Dialect dialect;
+    final _Dialect dialect;
 
     final SelectSQLExecutor selectSQLExecutor;
 

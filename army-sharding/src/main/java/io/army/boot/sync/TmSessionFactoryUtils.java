@@ -5,7 +5,7 @@ import io.army.CreateSessionException;
 import io.army.ErrorCode;
 import io.army.SessionException;
 import io.army.dialect.Database;
-import io.army.dialect.Dialect;
+import io.army.dialect._Dialect;
 import io.army.lang.Nullable;
 
 import javax.sql.XAConnection;
@@ -78,7 +78,7 @@ abstract class TmSessionFactoryUtils {
     }
 
 
-    static Dialect createDialectForSync(XADataSource dataSource, @Nullable Database database
+    static _Dialect createDialectForSync(XADataSource dataSource, @Nullable Database database
             , RmSessionFactoryImpl sessionFactory) {
 //        try {
 //            XAConnection xaConn = dataSource.getXAConnection();

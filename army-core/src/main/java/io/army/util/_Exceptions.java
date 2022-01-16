@@ -5,7 +5,7 @@ import io.army.DialectMode;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
-import io.army.dialect.Dialect;
+import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
@@ -18,6 +18,7 @@ import io.army.session.TimeoutException;
 import io.army.sharding.DatabaseRoute;
 import io.army.sharding.Route;
 import io.army.sharding.RouteContext;
+import io.army.sqltype.SqlType;
 import io.army.stmt.Stmt;
 import io.qinarmy.util.ExceptionUtils;
 import io.qinarmy.util.UnexpectedEnumException;
@@ -83,7 +84,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException unknownStatement(Statement stmt, Dialect dialect) {
+    public static CriteriaException unknownStatement(Statement stmt, _Dialect dialect) {
         String m = String.format("Unknown %s in %s", stmt.getClass().getName(), dialect);
         return new CriteriaException(m);
     }
@@ -184,10 +185,6 @@ public abstract class _Exceptions extends ExceptionUtils {
                 , stmt.getClass().getName(), tableRoute, predicateTableIndex));
     }
 
-    public static ArmyException tableIndexParseError(_Statement stmt, TableMeta<?> table, int tableIndex) {
-        return new ArmyException(String.format("%s %s parsed table index[%s] and table count[%s] not match."
-                , stmt, table, tableIndex, table.tableCount()));
-    }
 
     public CriteriaException setClauseSizeError(_Update update) {
         String m = String.format("%s set clause target size[%s] and value size[%s] not match."
@@ -196,7 +193,7 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
 
-    public static MetaException dontSupportOnlyDefault(Dialect dialect) {
+    public static MetaException dontSupportOnlyDefault(_Dialect dialect) {
         return new MetaException(String.format("%s isn't support UpdateMode[%s].", dialect, UpdateMode.ONLY_DEFAULT));
     }
 
@@ -316,6 +313,22 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static CriteriaException firstTableHasOnClause() {
         String m = String.format("From clause first %s must no on clause.", TablePart.class.getName());
+        return new CriteriaException(m);
+    }
+
+    public static ArmyException notServerVersion(ServerMeta meta) {
+        String m = String.format("Currently,army don't support server[%s] yet.", meta);
+        return new ArmyException(m);
+    }
+
+    public static CriteriaException errorLiteralType(final SqlType sqlType, final Object nonNull) {
+        String m = String.format("%s[%s] literal don't support java type[%s]"
+                , sqlType.getClass().getName(), sqlType, nonNull.getClass().getName());
+        return new CriteriaException(m);
+    }
+
+    public static CriteriaException literalOutRange(final SqlType sqlType, final Object nonNull) {
+        String m = String.format("Value[%s] literal out of %s[%s].", nonNull, sqlType.getClass().getName(), sqlType);
         return new CriteriaException(m);
     }
 

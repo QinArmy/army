@@ -4,7 +4,7 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.GenericField;
 import io.army.dialect.Constant;
-import io.army.dialect.Dialect;
+import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ParamMeta;
@@ -62,7 +62,7 @@ final class CollectionParamExpression<E> extends NoNOperationExpression<Collecti
 
         final ParamMeta paramMeta = this.paramMeta;
         final boolean optimizing = this.optimizing;
-        final Dialect dialect = context.dialect();
+        final _Dialect dialect = context.dialect();
         int index = 0;
         for (E v : this.value) {
             if (v == null) {

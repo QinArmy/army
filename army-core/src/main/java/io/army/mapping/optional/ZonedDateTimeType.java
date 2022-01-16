@@ -3,7 +3,7 @@ package io.army.mapping.optional;
 import io.army.dialect.NotSupportDialectException;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.SqlDataType;
+import io.army.sqltype.SqlType;
 
 import java.sql.JDBCType;
 import java.time.OffsetDateTime;
@@ -36,17 +36,17 @@ public final class ZonedDateTimeType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlDataType sqlDataType(ServerMeta serverMeta) throws NotSupportDialectException {
-        return OffsetDateTimeType.INSTANCE.sqlDataType(serverMeta);
+    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
+        return OffsetDateTimeType.INSTANCE.sqlType(serverMeta);
     }
 
     @Override
-    public Object convertBeforeBind(SqlDataType sqlDataType, Object nonNull) {
+    public Object convertBeforeBind(SqlType sqlDataType, Object nonNull) {
         return OffsetDateTimeType.INSTANCE.convertBeforeBind(sqlDataType, nonNull);
     }
 
     @Override
-    public ZonedDateTime convertAfterGet(SqlDataType sqlDataType, final Object nonNull) {
+    public ZonedDateTime convertAfterGet(SqlType sqlDataType, final Object nonNull) {
         if (!(nonNull instanceof OffsetDateTime)) {
             throw notSupportConvertAfterGet(nonNull);
         }

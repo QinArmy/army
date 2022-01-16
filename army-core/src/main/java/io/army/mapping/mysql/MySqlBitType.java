@@ -4,8 +4,8 @@ import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLDataType;
-import io.army.sqltype.SqlDataType;
+import io.army.sqltype.MySqlType;
+import io.army.sqltype.SqlType;
 
 import java.sql.JDBCType;
 import java.time.OffsetTime;
@@ -37,15 +37,15 @@ public final class MySqlBitType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlDataType sqlDataType(ServerMeta serverMeta) throws NotSupportDialectException {
+    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
         if (serverMeta.database() != Database.MySQL) {
             throw noMappingError(serverMeta);
         }
-        return MySQLDataType.BIT;
+        return MySqlType.BIT;
     }
 
     @Override
-    public Object convertBeforeBind(SqlDataType sqlDataType, final Object nonNull) {
+    public Object convertBeforeBind(SqlType sqlDataType, final Object nonNull) {
         final long value;
         if (nonNull instanceof Long) {
             value = (Long) nonNull;
@@ -74,7 +74,7 @@ public final class MySqlBitType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Object convertAfterGet(SqlDataType sqlDataType, Object nonNull) {
+    public Object convertAfterGet(SqlType sqlDataType, Object nonNull) {
         if (!(nonNull instanceof Long)) {
             throw notSupportConvertAfterGet(nonNull);
         }
