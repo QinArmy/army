@@ -6,7 +6,6 @@ import io.army.criteria.impl._CriteriaCounselor;
 import io.army.criteria.impl.inner.*;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.stmt.ParamValue;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
 import io.army.util.ArrayUtils;
@@ -14,7 +13,6 @@ import io.army.util._Exceptions;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
 
@@ -448,12 +446,12 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements _Dia
             if (field instanceof QualifiedField && !tableAlias.equals(((QualifiedField<?, ?>) field).tableAlias())) {
                 throw _Exceptions.unknownColumn((QualifiedField<?, ?>) field);
             }
+            sqlBuilder.append(Constant.SPACE);
             if (supportTableAlias) {
-                sqlBuilder.append(Constant.SPACE)
-                        .append(safeTableAlias)
+                sqlBuilder.append(safeTableAlias)
                         .append(Constant.POINT);
             }
-            sqlBuilder.append(dialect.quoteIfNeed(field.columnName()))
+            sqlBuilder.append(dialect.safeColumnName(field.columnName()))
                     .append(EQUAL);
 
             if (!field.nullable() && ((_Expression<?>) valuePart).nullableExp()) {
@@ -548,18 +546,17 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements _Dia
                 .append(Constant.SPACE)
                 .append(safeTableAlias)
                 .append(Constant.POINT)
-                .append(dialect.quoteIfNeed(updateTime.columnName()))
+                .append(dialect.safeColumnName(updateTime.columnName()))
                 .append(EQUAL);
 
         final Class<?> javaType = updateTime.javaType();
+        sqlBuilder.append(Constant.SPACE);
         if (javaType == LocalDateTime.class) {
-            context.appendParam(ParamValue.build(updateTime, LocalDateTime.now()));
+            sqlBuilder.append(dialect.literal(updateTime, LocalDateTime.now()));
         } else if (javaType == OffsetDateTime.class) {
-            final ZoneOffset zoneOffset = this.environment.zoneOffset();
-            context.appendParam(ParamValue.build(updateTime, OffsetDateTime.now(zoneOffset)));
+            sqlBuilder.append(dialect.literal(updateTime, OffsetDateTime.now(this.environment.zoneOffset())));
         } else if (javaType == ZonedDateTime.class) {
-            final ZoneOffset zoneOffset = this.environment.zoneOffset();
-            context.appendParam(ParamValue.build(updateTime, ZonedDateTime.now(zoneOffset)));
+            sqlBuilder.append(dialect.literal(updateTime, ZonedDateTime.now(this.environment.zoneOffset())));
         } else {
             String m = String.format("%s don't support java type[%s]", updateTime, javaType);
             throw new MetaException(m);

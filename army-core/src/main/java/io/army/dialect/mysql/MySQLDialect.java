@@ -82,8 +82,9 @@ abstract class MySQLDialect extends _AbstractDialect {
     }
 
     @Override
-    public boolean setClauseTableAlias() {
-        return false;
+    public final boolean setClauseTableAlias() {
+        // MySQL support table alias in set clause.
+        return true;
     }
 
     @Override

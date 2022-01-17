@@ -1,12 +1,18 @@
 package io.army.criteria.impl;
 
+import io.army.DialectMode;
 import io.army.beans.ReadWrapper;
 import io.army.criteria.Statement;
 import io.army.criteria.Update;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._SingleUpdate;
+import io.army.dialect._MockDialects;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.stmt.BatchStmt;
+import io.army.stmt.SimpleStmt;
+import io.army.stmt.Stmt;
 import io.army.util.CollectionUtils;
 import io.army.util._Exceptions;
 
@@ -20,7 +26,6 @@ import java.util.function.Supplier;
  * This class representing standard single domain update statement.
  * </p>
  *
- * @param <T> domain java type
  * @param <C> criteria java type used to dynamic update and sub query
  */
 abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA, SR>
@@ -41,6 +46,7 @@ abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA,
 
     private StandardUpdate(@Nullable C criteria) {
         super(CriteriaUtils.primaryContext(criteria));
+        CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 
     @Override
@@ -58,11 +64,9 @@ abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA,
         if (this.table == null || this.tableAlias == null) {
             throw _Exceptions.castCriteriaApi();
         }
-
         if (this instanceof BatchUpdate && CollectionUtils.isEmpty(((BatchUpdate<C>) this).wrapperList)) {
             throw _Exceptions.castCriteriaApi();
         }
-
     }
 
     @Override
@@ -84,6 +88,43 @@ abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA,
         return this.tableAlias;
     }
 
+    @Override
+    public String toString() {
+        final String s;
+        if (this.isPrepared()) {
+            s = this.mockAsString(DialectMode.MySQL57);
+        } else {
+            s = super.toString();
+        }
+        return s;
+    }
+
+    @Override
+    public final void mock(DialectMode mode) {
+        System.out.println(this.mockAsString(mode));
+    }
+
+    @Override
+    public final String mockAsString(DialectMode mode) {
+        final Stmt stmt;
+        stmt = this.mockAsStmt(mode);
+        final StringBuilder builder = new StringBuilder();
+        if (stmt instanceof SimpleStmt) {
+            builder.append("update sql:\n")
+                    .append(((SimpleStmt) stmt).sql());
+        } else if (stmt instanceof BatchStmt) {
+            builder.append("batch update sql:\n")
+                    .append(((BatchStmt) stmt).sql());
+        } else {
+            throw new IllegalStateException("stmt error.");
+        }
+        return builder.toString();
+    }
+
+    @Override
+    public final Stmt mockAsStmt(DialectMode mode) {
+        return _MockDialects.from(mode).update(this, Visible.ONLY_VISIBLE);
+    }
 
     private static final class SimpleUpdate<C> extends StandardUpdate<
             C,

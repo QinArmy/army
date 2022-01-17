@@ -27,7 +27,7 @@ public abstract class _CriteriaCounselor {
 
 
     public static void assertStandardUpdate(Update update) {
-        if (update instanceof StandardUpdate) {
+        if (!(update instanceof StandardUpdate)) {
             String m = String.format("%s isn't instance of %s"
                     , update.getClass().getName(), StandardUpdate.class.getName());
             throw new CriteriaException(m);

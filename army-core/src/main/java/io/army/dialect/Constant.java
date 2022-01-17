@@ -63,6 +63,8 @@ public interface Constant {
 
     String ONLY = "ONLY";
 
+    String SPACE_COMMA = " ,";
+
     char LEFT_BRACKET = '(';
 
     char RIGHT_BRACKET = ')';

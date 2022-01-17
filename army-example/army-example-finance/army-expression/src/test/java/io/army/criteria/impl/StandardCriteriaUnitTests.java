@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Insert;
+import io.army.criteria.Update;
 import io.army.example.finance.domain.Person;
 import io.army.example.finance.domain.Person_;
 import io.army.example.finance.domain.User;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +43,19 @@ public class StandardCriteriaUnitTests {
                 .asInsert();
         System.out.println(insert);
         // LOG.debug("{}", insert);
+    }
+
+    @Test
+    public void updateParent() {
+        final Update update;
+        update = SQLs.standardUpdate()
+                .update(User_.T, "u")
+                .set(User_.nickName, "code zoro")
+                .where(User_.id.equal(1))
+                .and(User_.updateTime.equal(LocalDateTime.now()))
+                .asUpdate();
+
+        System.out.println(update);
     }
 
     private List<User> createUserList() {

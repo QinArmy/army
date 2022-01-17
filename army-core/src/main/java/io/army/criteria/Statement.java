@@ -25,6 +25,10 @@ public interface Statement {
      */
     void prepared();
 
+    default boolean isPrepared() {
+        throw new UnsupportedOperationException();
+    }
+
 
     default void mock(DialectMode mode) {
 
@@ -158,7 +162,7 @@ public interface Statement {
 
         WR where(Supplier<List<IPredicate>> supplier);
 
-        WA where(IPredicate predicate);
+        WA where(@Nullable IPredicate predicate);
     }
 
 

@@ -40,15 +40,15 @@ abstract class SQLUtils {
 
     public static <E> Expression<E> param(E value) {
         Objects.requireNonNull(value);
-        return ParamExpressions.optimizing(_MappingFactory.getMapping(value.getClass()), value);
+        return ParamExpression.optimizing(_MappingFactory.getMapping(value.getClass()), value);
     }
 
     public static <E> Expression<E> param(MappingType mappingType, @Nullable E value) {
-        return ParamExpressions.optimizing(mappingType, value);
+        return ParamExpression.optimizing(mappingType, value);
     }
 
     public static <E> Expression<E> param(final Expression<?> type, @Nullable E value) {
-        return ParamExpressions.optimizing(type.paramMeta(), value);
+        return ParamExpression.optimizing(type.paramMeta(), value);
     }
 
     /**
@@ -68,17 +68,17 @@ abstract class SQLUtils {
             resultExpression = (Expression<?>) ((Supplier<?>) value).get();
         } else {
             // use optimizing param expression
-            resultExpression = ParamExpressions.optimizing(type.paramMeta(), value);
+            resultExpression = ParamExpression.optimizing(type.paramMeta(), value);
         }
         return resultExpression;
     }
 
     public static <E> Expression<E> strictParam(final MappingType type, final @Nullable E value) {
-        return ParamExpressions.strict(type, value);
+        return ParamExpression.strict(type, value);
     }
 
     public static <E> Expression<E> strictParam(final Expression<?> type, final @Nullable E value) {
-        return ParamExpressions.strict(type.paramMeta(), value);
+        return ParamExpression.strict(type.paramMeta(), value);
     }
 
 

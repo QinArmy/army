@@ -8,6 +8,8 @@ import java.util.List;
 
 public abstract class _BaseSqlContext implements _StmtContext {
 
+    private static final char[] PLACEHOLDER = new char[]{' ', '?'};
+
     protected final _Dialect dialect;
 
     protected final Visible visible;
@@ -44,8 +46,7 @@ public abstract class _BaseSqlContext implements _StmtContext {
 
     @Override
     public final void appendParam(ParamValue paramValue) {
-        this.sqlBuilder.append(Constant.SPACE)
-                .append(Constant.PLACEHOLDER);
+        this.sqlBuilder.append(PLACEHOLDER);
         this.paramList.add(paramValue);
     }
 

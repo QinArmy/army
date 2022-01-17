@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Expression;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
@@ -17,7 +16,7 @@ import java.util.function.Function;
 /**
  * this class is base class of most implementation of {@link Expression}
  */
-abstract class OperationExpression<E> implements _Expression<E> {
+abstract class OperationExpression<E> implements ArmyExpression<E> {
 
     OperationExpression() {
     }

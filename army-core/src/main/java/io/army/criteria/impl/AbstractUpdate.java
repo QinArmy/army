@@ -14,6 +14,7 @@ import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -62,6 +63,17 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
     }
 
     @Override
+    public final SR setValues(Map<FieldMeta<?, ?>, Expression<?>> fieldValues) {
+        if (fieldValues.size() == 0) {
+            throw new CriteriaException("fieldList must not empty.");
+        }
+        for (Map.Entry<FieldMeta<?, ?>, Expression<?>> e : fieldValues.entrySet()) {
+            this.set(e.getKey(), e.getValue());
+        }
+        return (SR) this;
+    }
+
+    @Override
     public final SR set(FieldMeta<?, ?> field, @Nullable Object value) {
         if (value != null) {
             this.set(field, SQLs.paramWithExp(field, value));
@@ -71,11 +83,14 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
 
     @Override
     public final SR set(FieldMeta<?, ?> field, Expression<?> value) {
+        if (!(value instanceof ArmyExpression)) {
+            throw CriteriaUtils.nonArmyExpression(value);
+        }
         if (field.updateMode() == UpdateMode.IMMUTABLE) {
             throw _Exceptions.immutableField(field);
         }
         final String fieldName = field.fieldName();
-        if (fieldName.equals(_MetaBridge.UPDATE_TIME) || fieldName.equals(_MetaBridge.VERSION)) {
+        if (_MetaBridge.UPDATE_TIME.equals(fieldName) || _MetaBridge.VERSION.equals(fieldName)) {
             throw _Exceptions.armyManageField(field);
         }
         if (!field.nullable() && ((_Expression<?>) value).nullableExp()) {
@@ -170,6 +185,26 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
     public final SR ifSet(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList) {
         if (fieldList.size() > 0) {
             this.set(fieldList, valueList);
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSetValues(Function<C, Map<FieldMeta<?, ?>, Expression<?>>> function) {
+        final Map<FieldMeta<?, ?>, Expression<?>> map;
+        map = function.apply(this.criteria);
+        if (!CollectionUtils.isEmpty(map)) {
+            this.setValues(map);
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSetValues(Supplier<Map<FieldMeta<?, ?>, Expression<?>>> supplier) {
+        final Map<FieldMeta<?, ?>, Expression<?>> map;
+        map = supplier.get();
+        if (!CollectionUtils.isEmpty(map)) {
+            this.setValues(map);
         }
         return (SR) this;
     }
@@ -322,6 +357,11 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
     @Override
     public final void prepared() {
         _Assert.prepared(this.prepared);
+    }
+
+    @Override
+    public final boolean isPrepared() {
+        return this.prepared;
     }
 
     @Override

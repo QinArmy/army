@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Expression;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
@@ -18,13 +17,13 @@ import java.util.function.Function;
  *         <li>{@link SQLs.DefaultWord}</li>
  *         <li>{@link SQLs.NullWord}</li>
  *         <li>{@link CollectionParamExpression}</li>
- *         <li>{@link ParamExpressions.NullParamExpression}</li>
+ *         <li>{@link ParamExpression.NullParamExpression}</li>
  *     </ul>
  * </p>
  *
  * @param <E> java type of expression
  */
-abstract class NoNOperationExpression<E> implements _Expression<E> {
+abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
 
     final String ERROR_MSG = "Non Expression not support this method.";
 

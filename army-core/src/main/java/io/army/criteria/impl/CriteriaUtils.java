@@ -155,5 +155,10 @@ abstract class CriteriaUtils {
         return new CriteriaException(m);
     }
 
+    static CriteriaException nonArmyExpression(Expression<?> expression) {
+        String m = String.format("%s isn't army class", expression.getClass().getName());
+        return new CriteriaException(m);
+    }
+
 
 }

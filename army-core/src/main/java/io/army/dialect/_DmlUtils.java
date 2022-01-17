@@ -1,19 +1,20 @@
 package io.army.dialect;
 
-import io.army.ErrorCode;
 import io.army.beans.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Update;
 import io.army.criteria.impl.inner._ValuesInsert;
+import io.army.generator.PostFieldGenerator;
 import io.army.generator.PreFieldGenerator;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.stmt.*;
-import io.army.struct.CodeEnum;
+import io.army.stmt.ParamValue;
+import io.army.stmt.SimpleStmt;
+import io.army.stmt.Stmt;
+import io.army.stmt.Stmts;
 import io.army.util.ArrayUtils;
 import io.army.util.CollectionUtils;
 import io.army.util._Exceptions;
@@ -116,8 +117,7 @@ public abstract class _DmlUtils {
         //2.2 append values
         for (ReadWrapper domain : domainList) {
             if (batch > 0) {
-                builder.append(Constant.SPACE)
-                        .append(Constant.COMMA);
+                builder.append(Constant.SPACE_COMMA);
             }
             builder.append(Constant.SPACE)
                     .append(Constant.LEFT_BRACKET);
@@ -151,6 +151,8 @@ public abstract class _DmlUtils {
                     } else {
                         throw _Exceptions.nonNullField(field);
                     }
+                } else if (!PostFieldGenerator.class.isAssignableFrom(generatorMeta.type())) {
+                    throw _Exceptions.nonNullField(field);
                 }
                 index++;
             }
@@ -273,12 +275,6 @@ public abstract class _DmlUtils {
     }
 
 
-    static boolean hasVersionPredicate(List<_Predicate> predicateList) {
-
-        return false;
-    }
-
-
     static void appendInsertFields(final TableMeta<?> domainTable, final Set<FieldMeta<?, ?>> fieldSet) {
 
         fieldSet.addAll(domainTable.generatorChain());
@@ -302,223 +298,6 @@ public abstract class _DmlUtils {
         }
 
 
-    }
-
-    static void createValueInsertForSimple(TableMeta<?> physicalTable, TableMeta<?> logicalTable
-            , Collection<FieldMeta<?, ?>> fieldMetas, ReadWrapper domainWrapper
-            , StandardValueInsertContext context) {
-//
-//        final GenericSessionFactory sessionFactory = context.dialect.sessionFactory();
-//        final SQLBuilder fieldBuilder = context.fieldsBuilder().append("INSERT INTO");
-//        // append table name
-//        context.appendTable(physicalTable, null);
-//        context.fieldsBuilder().append(" (");
-//
-//        final SQLBuilder valueBuilder = context.sqlBuilder()
-//                .append(" VALUE (");
-//
-//        Object value;
-//        int count = 0;
-//        for (FieldMeta<?, ?> fieldMeta : fieldMetas) {
-//            if (!fieldMeta.insertable()) {
-//                continue;
-//            }
-//            value = domainWrapper.getPropertyValue(fieldMeta.fieldName());
-//            if (value == null && !fieldMeta.nullable()) {
-//                continue;
-//            }
-//            if (count > 0) {
-//                fieldBuilder.append(",");
-//                valueBuilder.append(",");
-//            }
-//            // field
-//            context.appendField(fieldMeta);
-//            if (value == null) {
-//                context.appendParam(ParamValue.build(fieldMeta.mappingMeta(), null));
-//            } else if (isConstant(fieldMeta)) {
-//                valueBuilder.append(createConstant(fieldMeta, logicalTable));
-//            } else {
-//                valueBuilder.append("?");
-//                if (sessionFactory.fieldCodec(fieldMeta) != null) {
-//                    context.appendParam(ParamValue.build(fieldMeta, value));
-//                } else {
-//                    context.appendParam(ParamValue.build(fieldMeta.mappingMeta(), value));
-//                }
-//
-//            }
-//            count++;
-//        }
-//
-//        fieldBuilder.append(" )");
-//        valueBuilder.append(" )");
-
-    }
-
-
-    static boolean isConstant(FieldMeta<?, ?> fieldMeta) {
-        return false;
-    }
-
-    static Object createConstant(FieldMeta<?, ?> fieldMeta, TableMeta<?> logicalTable) {
-//        Object value;
-//        if (_MetaBridge.VERSION.equals(fieldMeta.fieldName())) {
-//            value = 0;
-//        } else if (fieldMeta == logicalTable.discriminator()) {
-//            value = CodeEnum.resolve(fieldMeta.javaType(), logicalTable.discriminatorValue());
-//            if (value == null) {
-//                throw new MetaException("CodeEnum[%s] not found enum for code[%s]"
-//                        , fieldMeta.javaType().getName(), logicalTable.discriminatorValue());
-//            }
-//        } else {
-//            throw new IllegalArgumentException(String.format("Entity[%s] prop[%s] cannot create constant value"
-//                    , fieldMeta.tableMeta().javaType().getName()
-//                    , fieldMeta.fieldName()));
-//        }
-        return null;
-    }
-
-    static Stmt createBatchSQLWrapper(List<? extends ReadWrapper> namedParamList
-            , final Stmt stmt) {
-
-        List<List<ParamValue>> parentParamGroupList, childParamGroupList = new ArrayList<>(namedParamList.size());
-        SimpleStmt parentWrapper, childWrapper;
-        // extract parentWrapper,childWrapper
-        List<ParamValue> parentPlaceholderList;
-        if (stmt instanceof PairStmt) {
-            PairStmt childSQLWrapper = (PairStmt) stmt;
-            parentWrapper = childSQLWrapper.parentStmt();
-            parentPlaceholderList = parentWrapper.paramGroup();
-            childWrapper = childSQLWrapper.childStmt();
-            parentParamGroupList = new ArrayList<>(namedParamList.size());
-        } else if (stmt instanceof SimpleStmt) {
-            parentWrapper = null;
-            parentPlaceholderList = Collections.emptyList();
-            parentParamGroupList = Collections.emptyList();
-            childWrapper = (SimpleStmt) stmt;
-        } else {
-            throw new IllegalArgumentException(String.format("SQLWrapper[%s] supported", stmt));
-        }
-
-        final List<ParamValue> childPlaceholderList = childWrapper.paramGroup();
-        final int size = namedParamList.size();
-        for (ReadWrapper readonlyWrapper : namedParamList) {
-            // 1. create access object
-            // 2. create param group list
-            if (stmt instanceof PairStmt) {
-                parentParamGroupList.add(
-                        // create paramWrapperList for parent
-                        createBatchNamedParamList(readonlyWrapper, parentPlaceholderList)
-                );
-            }
-            childParamGroupList.add(
-                    // create paramWrapperList for child
-                    createBatchNamedParamList(readonlyWrapper, childPlaceholderList)
-            );
-        }
-
-        // 3. create BatchSimpleSQLWrapper
-//        BatchSimpleStmt childBatchWrapper = BatchSimpleStmt.build(childWrapper.sql()
-//                , childParamGroupList, childWrapper.hasVersion());
-//        Stmt batchStmt;
-//        if (stmt instanceof PairStmt) {
-//            BatchSimpleStmt parentBatchWrapper = BatchSimpleStmt.build(
-//                    parentWrapper.sql(), parentParamGroupList, parentWrapper.hasVersion());
-//            batchStmt = PairBatchStmt.build(parentBatchWrapper, childBatchWrapper);
-//        } else {
-//            batchStmt = childBatchWrapper;
-//        }
-        return null;
-    }
-
-
-
-    /*################################## blow private method ##################################*/
-
-    /**
-     * @return a unmodifiable list
-     */
-    private static List<ParamValue> createBatchNamedParamList(ReadWrapper readonlyWrapper
-            , List<ParamValue> placeHolder) {
-
-        List<ParamValue> paramValueList = new ArrayList<>(placeHolder.size());
-        for (ParamValue paramValue : placeHolder) {
-            if (paramValue instanceof NamedParam) {
-                Object value = readonlyWrapper.get(((NamedParam<?>) paramValue).name());
-                paramValueList.add(ParamValue.build(paramValue.paramMeta(), value));
-            } else {
-                paramValueList.add(paramValue);
-            }
-        }
-        return Collections.unmodifiableList(paramValueList);
-    }
-
-    /**
-     * @return a unmodifiable list
-     */
-    private static List<ParamValue> createBatchInsertParamList(ReadWrapper beanWrapper
-            , List<ParamValue> placeHolderList) {
-
-        List<ParamValue> paramValueList = new ArrayList<>(placeHolderList.size());
-        for (ParamValue placeHolder : placeHolderList) {
-            if (placeHolder instanceof FieldParamValue) {
-                FieldMeta<?, ?> fieldMeta = ((FieldParamValue) placeHolder).paramMeta();
-                Object value = beanWrapper.get(fieldMeta.fieldName());
-                paramValueList.add(ParamValue.build(fieldMeta, value));
-            } else {
-                paramValueList.add(placeHolder);
-            }
-        }
-        return Collections.unmodifiableList(paramValueList);
-    }
-
-
-    private static void doExtractParentPredicatesForUpdate(List<_Predicate> predicateList
-            , Collection<FieldMeta<?, ?>> childUpdatedFields, List<_Predicate> newPredicates
-            , final boolean firstIsPrimary) {
-        for (_Predicate predicate : predicateList) {
-            if (predicate.containsField(childUpdatedFields)) {
-                if (!firstIsPrimary) {
-                    throw createNoPrimaryPredicateException(childUpdatedFields);
-                }
-            } else {
-                newPredicates.add(predicate);
-            }
-        }
-    }
-
-
-    private static CriteriaException createNoPrimaryPredicateException(Collection<FieldMeta<?, ?>> childFields) {
-        throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                , "detect ChildTableMeta set clause FieldMetas[%s] present where clause," +
-                "but first predicate isn't primary field predicate."
-                , childFields);
-    }
-
-    private static CriteriaException createNoPrimaryPredicateException(ChildTableMeta<?> childMeta) {
-        throw new CriteriaException(ErrorCode.CRITERIA_ERROR
-                , "detect ChildTableMeta[%s] but first predicate isn't primary field predicate."
-                , childMeta);
-    }
-
-
-    private static _Predicate createDiscriminatorPredicate(TableMeta<?> tableMeta) {
-//        FieldMeta<?, ? extends CodeEnum> fieldMeta = tableMeta.discriminator();
-//        Assert.notNull(fieldMeta, () -> String.format("TableMeta[%s] discriminator is null.", tableMeta));
-//        @SuppressWarnings("unchecked")
-//        FieldMeta<?, CodeEnum> enumFieldMeta = (FieldMeta<?, CodeEnum>) fieldMeta;
-//        CodeEnum codeEnum = CodeEnum.resolve(enumFieldMeta.javaType(), tableMeta.discriminatorValue());
-//
-//        if (codeEnum == null) {
-//            throw new MetaException("TableMeta[%s] discriminatorValue[%s] can't resolve CodeEnum."
-//                    , tableMeta, tableMeta.discriminatorValue());
-//        }
-        return null;
-    }
-
-    private static boolean hasDiscriminatorPredicate(List<_Predicate> predicateList
-            , FieldMeta<?, ? extends CodeEnum> discriminator) {
-
-        return false;
     }
 
 

@@ -7,6 +7,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -46,6 +47,7 @@ public interface Update extends Statement {
     }
 
 
+
     interface SetClause<C, SR> {
 
         SR set(FieldMeta<?, ?> field, Expression<?> value);
@@ -70,9 +72,11 @@ public interface Update extends Statement {
 
     interface SimpleSetClause<C, SR> extends SetClause<C, SR> {
 
+        SR set(FieldMeta<?, ?> field, @Nullable Object value);
+
         SR set(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList);
 
-        SR set(FieldMeta<?, ?> field, @Nullable Object value);
+        SR setValues(Map<FieldMeta<?, ?>, Expression<?>> fieldValues);
 
         <F extends Number> SR setPlus(FieldMeta<?, F> field, F value);
 
@@ -95,6 +99,10 @@ public interface Update extends Statement {
         <F extends Number> SR setMod(FieldMeta<?, F> field, Expression<F> value);
 
         SR ifSet(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList);
+
+        SR ifSetValues(Function<C, Map<FieldMeta<?, ?>, Expression<?>>> function);
+
+        SR ifSetValues(Supplier<Map<FieldMeta<?, ?>, Expression<?>>> supplier);
 
         <F> SR ifSet(FieldMeta<?, F> field, @Nullable F value);
 

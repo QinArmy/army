@@ -7,15 +7,15 @@ import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
 
-final class ParamExpressions<E> extends OperationExpression<E> implements ValueExpression<E>, ParamValue {
+final class ParamExpression<E> extends OperationExpression<E> implements ValueExpression<E>, ParamValue {
 
 
     static <E> ValueExpression<E> strict(final ParamMeta paramMeta, final @Nullable E value) {
         final ValueExpression<E> expression;
         if (value == null) {
-            expression = new NullParamExpression<>(paramMeta, false);
+            expression = new NullParamExpression<>(paramMeta);
         } else {
-            expression = new ParamExpressions<>(paramMeta, value, false);
+            expression = new ParamExpression<>(paramMeta, value, false);
         }
         return expression;
     }
@@ -24,9 +24,9 @@ final class ParamExpressions<E> extends OperationExpression<E> implements ValueE
     static <E> ValueExpression<E> optimizing(final ParamMeta paramMeta, final @Nullable E value) {
         final ValueExpression<E> expression;
         if (value == null) {
-            expression = new NullParamExpression<>(paramMeta, true);
+            expression = new NullParamExpression<>(paramMeta);
         } else {
-            expression = new ParamExpressions<>(paramMeta, value, true);
+            expression = new ParamExpression<>(paramMeta, value, true);
         }
         return expression;
     }
@@ -37,7 +37,7 @@ final class ParamExpressions<E> extends OperationExpression<E> implements ValueE
 
     private final boolean optimizing;
 
-    private ParamExpressions(ParamMeta paramMeta, E value, final boolean optimizing) {
+    private ParamExpression(ParamMeta paramMeta, E value, final boolean optimizing) {
         this.paramMeta = paramMeta;
         this.value = value;
         this.optimizing = optimizing && paramMeta.mappingType() instanceof _ArmyNoInjectionMapping;
@@ -82,11 +82,8 @@ final class ParamExpressions<E> extends OperationExpression<E> implements ValueE
 
         private final ParamMeta paramMeta;
 
-        private final boolean optimizing;
-
-        private NullParamExpression(ParamMeta paramMeta, boolean optimizing) {
+        private NullParamExpression(ParamMeta paramMeta) {
             this.paramMeta = paramMeta;
-            this.optimizing = optimizing;
         }
 
 
@@ -97,12 +94,8 @@ final class ParamExpressions<E> extends OperationExpression<E> implements ValueE
 
         @Override
         public void appendSql(final _SqlContext context) {
-            if (this.optimizing) {
-                context.sqlBuilder()
-                        .append(" NULL");
-            } else {
-                context.appendParam(this);
-            }
+            context.sqlBuilder()
+                    .append(" NULL");
         }
 
         @Override
