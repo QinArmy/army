@@ -17,7 +17,7 @@ public abstract class MySQLDialectFactory {
         switch (meta.major()) {
             case 5: {
                 if (meta.minor() >= 6) {
-                    dialect = MySQL57Dialect.create(environment);
+                    dialect = MySQL57.create(environment);
                 } else {
                     throw _Exceptions.notServerVersion(meta);
                 }

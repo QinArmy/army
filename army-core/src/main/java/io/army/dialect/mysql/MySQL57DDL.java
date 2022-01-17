@@ -13,7 +13,7 @@ import io.army.util._Assert;
 class MySQL57DDL extends AbstractDDL {
 
 
-    MySQL57DDL(MySQL57Dialect mysql) {
+    MySQL57DDL(MySQL57 mysql) {
         super(mysql);
         _Assert.notNull(mysql, "mysql required");
     }

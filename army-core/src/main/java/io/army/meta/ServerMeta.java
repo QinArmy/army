@@ -1,6 +1,7 @@
 package io.army.meta;
 
 import io.army.dialect.Database;
+import io.army.lang.Nullable;
 
 public interface ServerMeta {
 
@@ -15,6 +16,11 @@ public interface ServerMeta {
     int minor();
 
     boolean meetsMinimum(int major, int minor);
+
+    @Nullable
+    default String sessionVar(String name) {
+        throw new UnsupportedOperationException();
+    }
 
     @Deprecated
     default boolean supportSavePoint() {

@@ -74,7 +74,6 @@ final class MySqlStmtExecutor extends AbstractStmtExecutor {
             case DATE:
                 stmt.setDate(index, Date.valueOf((LocalDate) nonNull));
                 break;
-            case TIMESTAMP:
             case DATETIME:
                 stmt.setTimestamp(index, Timestamp.valueOf((LocalDateTime) nonNull));
                 break;

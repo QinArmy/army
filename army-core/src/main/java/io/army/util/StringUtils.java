@@ -28,6 +28,18 @@ public abstract class StringUtils extends org.springframework.util.StringUtils {
         return _MetaBridge.camelToLowerCase(camel);
     }
 
+    public static boolean isBinary(String text) {
+        final char[] array = text.toCharArray();
+        boolean match = array.length > 0;
+        for (char c : array) {
+            if (c != '0' && c != '1') {
+                match = false;
+                break;
+            }
+        }
+        return match;
+    }
+
 
 
     /*################################## private method #############################################*/

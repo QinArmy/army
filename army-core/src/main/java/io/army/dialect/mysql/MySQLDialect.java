@@ -3,20 +3,32 @@ package io.army.dialect.mysql;
 import io.army.DialectMode;
 import io.army.dialect.DialectEnvironment;
 import io.army.dialect._AbstractDialect;
+import io.army.mapping.MappingType;
+import io.army.mapping.mysql.MySqlSetType;
 import io.army.meta.ParamMeta;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
 import io.army.stmt.Stmt;
 import io.army.util._Exceptions;
 
-import java.util.Set;
-
 abstract class MySQLDialect extends _AbstractDialect {
+
+    protected static final String NO_BACKSLASH_ESCAPES = "NO_BACKSLASH_ESCAPES";
 
     MySQLDialect(DialectEnvironment environment) {
         super(environment);
     }
 
+
+    @Override
+    public final String safeTableName(String tableName) {
+        return this.quoteIfNeed(tableName);
+    }
+
+    @Override
+    public final String safeColumnName(String columnName) {
+        return this.quoteIfNeed(columnName);
+    }
 
     @Override
     public void clearForDDL() {
@@ -25,13 +37,21 @@ abstract class MySQLDialect extends _AbstractDialect {
 
 
     @Override
-    public boolean supportZone() {
+    public final boolean supportInsertReturning() {
+        // MySQL don't support insert returning.
         return false;
     }
 
     @Override
-    public boolean supportOnlyDefault() {
+    public final boolean supportZone() {
+        // MySQL don't support zone.
         return false;
+    }
+
+    @Override
+    public final boolean supportOnlyDefault() {
+        // MySQL support DEFAULT() function.
+        return true;
     }
 
 
@@ -81,20 +101,22 @@ abstract class MySQLDialect extends _AbstractDialect {
         return false;
     }
 
-    @Override
-    protected Set<String> createKeyWordSet() {
-        return null;
-    }
 
     @Override
-    protected String quoteIdentifier(String identifier) {
-        return null;
+    protected final String quoteIdentifier(String identifier) {
+        return '`' + identifier + '`';
     }
 
     @Override
     public final String literal(ParamMeta paramMeta, Object nonNull) {
         final SqlType sqlType;
-        sqlType = paramMeta.mappingType().sqlType(this.environment.serverMeta());
+        final MappingType mappingType;
+        if (paramMeta instanceof MappingType) {
+            mappingType = (MappingType) paramMeta;
+        } else {
+            mappingType = paramMeta.mappingType();
+        }
+        sqlType = mappingType.sqlType(this.environment.serverMeta());
         final String literal;
         switch ((MySqlType) sqlType) {
             case INT:
@@ -121,54 +143,92 @@ abstract class MySQLDialect extends _AbstractDialect {
             case YEAR:
                 literal = MySQLLiterals.year(sqlType, nonNull);
                 break;
+            case CHAR:
+            case VARCHAR:
+            case TINYTEXT:
+            case TEXT:
+            case MEDIUMTEXT:
+            case LONGTEXT: {
+                final boolean hexEscapes;
+                hexEscapes = this.environment.serverMeta().sessionVar(NO_BACKSLASH_ESCAPES) != null;
+                literal = MySQLLiterals.text(sqlType, hexEscapes, nonNull);
+            }
+            break;
+            case JSON: {
+                final String json;
+                json = this.environment.jsonCodec().encode(nonNull);
+                final boolean hexEscapes;
+                hexEscapes = this.environment.serverMeta().sessionVar(NO_BACKSLASH_ESCAPES) != null;
+                literal = MySQLLiterals.text(sqlType, hexEscapes, json);
+            }
+            break;
+            case BINARY:
+            case VARBINARY:
+            case TINYBLOB:
+            case BLOB:
+            case MEDIUMBLOB:
+            case LONGBLOB:
+                literal = MySQLLiterals.binary(sqlType, nonNull);
+                break;
+            case ENUM:
+                literal = MySQLLiterals.enumLiteral(sqlType, nonNull);
+                break;
+            case BIT:
+                literal = MySQLLiterals.bit(sqlType, nonNull);
+                break;
+            case DOUBLE:
+                literal = MySQLLiterals.doubleLiteral(sqlType, nonNull);
+                break;
+            case FLOAT:
+                literal = MySQLLiterals.floatLiteral(sqlType, nonNull);
+                break;
             case TINYINT:
                 literal = MySQLLiterals.tinyInt(sqlType, nonNull);
                 break;
             case SMALLINT:
                 literal = MySQLLiterals.smallInt(sqlType, nonNull);
                 break;
-            case FLOAT:
-                literal = MySQLLiterals.floatLiteral(sqlType, nonNull);
-                break;
-            case DOUBLE:
-                literal = MySQLLiterals.doubleLiteral(sqlType, nonNull);
-                break;
-            case CHAR:
-            case VARCHAR:
-            case VARBINARY:
-            case BINARY:
-            case TIMESTAMP:
-            case BIT:
-            case ENUM:
-            case LONGTEXT:
-            case BLOB:
-            case JSON:
-            case MEDIUMTEXT:
-            case TEXT:
-            case TINYTEXT:
-            case SET:
-            case DECIMAL_UNSIGNED:
-            case INT_UNSIGNED:
-            case MEDIUMINT_UNSIGNED:
             case MEDIUMINT:
+                literal = MySQLLiterals.mediumInt(sqlType, nonNull);
+                break;
+            case BIGINT_UNSIGNED:
+                literal = MySQLLiterals.unsignedLBigInt(sqlType, nonNull);
+                break;
+            case DECIMAL_UNSIGNED:
+                literal = MySQLLiterals.unsignedDecimal(sqlType, nonNull);
+                break;
+            case INT_UNSIGNED:
+                literal = MySQLLiterals.unsignedInt(sqlType, nonNull);
+                break;
+            case MEDIUMINT_UNSIGNED:
+                literal = MySQLLiterals.unsignedMediumInt(sqlType, nonNull);
+                break;
             case SMALLINT_UNSIGNED:
+                literal = MySQLLiterals.unsignedSmallInt(sqlType, nonNull);
+                break;
             case TINYINT_UNSIGNED:
+                literal = MySQLLiterals.unsignedTinyInt(sqlType, nonNull);
+                break;
+            case SET: {
+                try {
+                    literal = ((MySqlSetType) mappingType).literal(nonNull);
+                } catch (RuntimeException e) {
+                    throw _Exceptions.errorLiteralType(sqlType, nonNull);
+                }
+            }
+            break;
             case POINT:
-            case POLYGON:
-            case LONGBLOB:
-            case TINYBLOB:
             case LINESTRING:
-            case MEDIUMBLOB:
+            case POLYGON:
             case MULTIPOINT:
             case MULTIPOLYGON:
-            case BIGINT_UNSIGNED:
             case MULTILINESTRING:
             case GEOMETRYCOLLECTION:
-                break;
+                throw _Exceptions.errorLiteralType(sqlType, nonNull);
             default:
                 throw _Exceptions.unexpectedEnum((MySqlType) sqlType);
         }
-        return "";
+        return literal;
     }
 
 

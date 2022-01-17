@@ -42,16 +42,6 @@ final class QualifiedFieldImpl<T extends IDomain, F> extends OperationExpression
     }
 
     @Override
-    public boolean databaseRoute() {
-        return this.field.databaseRoute();
-    }
-
-    @Override
-    public boolean tableRoute() {
-        return this.field.tableRoute();
-    }
-
-    @Override
     public boolean nullable() {
         return this.field.nullable();
     }

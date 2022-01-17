@@ -41,7 +41,7 @@ public abstract class _AbstractFieldValuesGenerator implements FieldValuesGenera
             domain = table;
         }
 
-        final OffsetDateTime now = OffsetDateTime.now();
+        final OffsetDateTime now = OffsetDateTime.now(this.zoneOffset());
         createDateTimeValue(domain.getField(_MetaBridge.CREATE_TIME), now, wrapper);
         if (!domain.immutable()) {
             createDateTimeValue(domain.getField(_MetaBridge.UPDATE_TIME), now, wrapper);
@@ -97,7 +97,7 @@ public abstract class _AbstractFieldValuesGenerator implements FieldValuesGenera
         final CodeEnum codeEnum;
         codeEnum = CodeEnum.resolve(discriminator.javaType(), table.discriminatorValue());
         if (codeEnum == null) {
-            String m = String.format("%s code[%s] error.", discriminator.javaType().getName(), table.discriminatorValue());
+            String m = String.format("%s code[%s] no mapping.", discriminator.javaType().getName(), table.discriminatorValue());
             throw new MetaException(m);
         }
         wrapper.set(discriminator.fieldName(), codeEnum);

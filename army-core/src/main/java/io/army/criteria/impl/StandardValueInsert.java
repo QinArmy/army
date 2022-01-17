@@ -302,7 +302,7 @@ final class StandardValueInsert<T extends IDomain, C> implements Insert
         } else if (stmt instanceof PairStmt) {
             builder.append("parent insert sql:\n")
                     .append(((PairStmt) stmt).parentStmt().sql())
-                    .append("child insert sql:\n")
+                    .append("\n\nchild insert sql:\n")
                     .append(((PairStmt) stmt).childStmt().sql());
         } else {
             throw new IllegalStateException("Unknown stmt type.");

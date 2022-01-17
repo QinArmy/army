@@ -11,10 +11,13 @@ public interface GenericSimpleStmt extends Stmt {
 
     boolean hasVersion();
 
-    StatementType statementType();
+    @Deprecated
+    default StatementType statementType() {
+        throw new UnsupportedOperationException();
+    }
 
     @Nullable
-    default ObjectWrapper domainWrapper(){
+    default ObjectWrapper domainWrapper() {
         return null;
     }
 

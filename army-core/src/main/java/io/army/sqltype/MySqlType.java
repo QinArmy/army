@@ -28,7 +28,6 @@ public enum MySqlType implements SqlType {
     DATE,
     YEAR,
     DATETIME,
-    TIMESTAMP,
 
     CHAR,
     VARCHAR,

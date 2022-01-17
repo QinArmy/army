@@ -7,9 +7,7 @@ import java.util.List;
 
 public interface _InsertBlock {
 
-    default _SqlContext getContext() {
-        throw new UnsupportedOperationException();
-    }
+    _SqlContext getContext();
 
     TableMeta<?> table();
 

@@ -6,6 +6,7 @@ import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.meta.*;
 import io.army.stmt.ParamValue;
+import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
 import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
@@ -72,6 +73,10 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
 
     }
 
+    @Override
+    public _SqlContext getContext() {
+        return this;
+    }
 
     @Override
     public List<FieldMeta<?, ?>> fieldLis() {
@@ -103,21 +108,22 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
 
     @Override
     public Stmt build() {
-        final Stmt stmt, parentStmt;
+
         final PrimaryFieldMeta<?, ?> returnId = this.returnId;
+        final SimpleStmt parentStmt;
         if (returnId == null) {
             parentStmt = Stmts.simple(this.sqlBuilder.toString(), this.paramList);
         } else {
             parentStmt = Stmts.simple(this.sqlBuilder.toString(), this.paramList, returnId);
         }
-
         final ChildBlock childBlock = this.childBlock;
+        final Stmt stmt;
         if (childBlock == null) {
             stmt = parentStmt;
         } else {
-            final Stmt childStmt;
+            final SimpleStmt childStmt;
             childStmt = Stmts.simple(childBlock.sqlBuilder.toString(), childBlock.paramList);
-            stmt = Stmts.group(parentStmt, childStmt);
+            stmt = Stmts.pair(parentStmt, childStmt);
         }
         return stmt;
     }
@@ -153,7 +159,7 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
     }
 
 
-    private static final class ChildBlock implements _InsertBlock {
+    private static final class ChildBlock implements _InsertBlock, _SqlContext {
 
         private final ChildTableMeta<?> table;
 
@@ -169,6 +175,11 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
             this.table = table;
             this.fieldList = fieldList;
             this.parentContext = parentContext;
+        }
+
+        @Override
+        public _SqlContext getContext() {
+            return this;
         }
 
         @Override

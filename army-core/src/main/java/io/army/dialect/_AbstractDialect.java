@@ -28,7 +28,7 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements _Dia
 
     protected static final char[] UPDATE = new char[]{'U', 'P', 'D', 'A', 'T', 'E'};
 
-    protected static final char[] INSERT_INTO = new char[]{'I', 'S', 'E', 'R', 'T', 'E', ' ', 'I', 'N', 'T', 'O'};
+    protected static final char[] INSERT_INTO = new char[]{'I', 'N', 'S', 'E', 'R', 'T', ' ', 'I', 'N', 'T', 'O'};
 
     private static final Collection<String> FORBID_SET_FIELD = ArrayUtils.asUnmodifiableList(
             _MetaBridge.UPDATE_TIME, _MetaBridge.VERSION);
@@ -38,7 +38,7 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements _Dia
 
     protected _AbstractDialect(DialectEnvironment environment) {
         super(environment);
-        this.keyWordSet = createKeyWordSet();
+        this.keyWordSet = Collections.unmodifiableSet(createKeyWordSet());
     }
 
     /*################################## blow DML batchInsert method ##################################*/

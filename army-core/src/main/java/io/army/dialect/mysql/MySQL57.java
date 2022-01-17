@@ -9,18 +9,19 @@ import io.army.modelgen._MetaBridge;
 import io.army.stmt.SimpleStmt;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * this class is a  {@link _Dialect} implementation then abstract base class of all MySQL 5.7 Dialect
  */
-class MySQL57Dialect extends MySQLDialect {
+abstract class MySQL57 extends MySQLDialect {
 
-    static MySQL57Dialect create(DialectEnvironment environment) {
-        return new MySQL57Dialect(environment);
+    static MySQL57 create(DialectEnvironment environment) {
+        return new MySQL57StandardDialect(environment);
     }
 
 
-    MySQL57Dialect(DialectEnvironment environment) {
+    MySQL57(DialectEnvironment environment) {
         super(environment);
 
     }
@@ -28,17 +29,6 @@ class MySQL57Dialect extends MySQLDialect {
     /*################################## blow interfaces method ##################################*/
 
 
-
-    @Override
-    public final boolean supportSavePoint() {
-        // always true
-        return true;
-    }
-
-    @Override
-    public final boolean supportZone() {
-        return false;
-    }
 
     @Override
     public final boolean tableAliasAfterAs() {
@@ -58,8 +48,8 @@ class MySQL57Dialect extends MySQLDialect {
     /*####################################### below AbstractDialect template  method #################################*/
 
     @Override
-    public boolean supportInsertReturning() {
-        return false;
+    protected final Set<String> createKeyWordSet() {
+        return MySQLDialectUtils.create57KeywordsSet();
     }
 
 
@@ -145,6 +135,15 @@ class MySQL57Dialect extends MySQLDialect {
             this.conditionUpdate(safeParentTableAlias, parentConditionFields, context);
         }
         return context.build();
+    }
+
+
+    private static final class MySQL57StandardDialect extends MySQL57 {
+
+        private MySQL57StandardDialect(DialectEnvironment environment) {
+            super(environment);
+        }
+
     }
 
 

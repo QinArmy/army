@@ -117,7 +117,7 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationExpressio
 
     private static void assertNotParentFiled(TableMeta<?> table, Field field) {
         if ((table instanceof ChildTableMeta) && !_MetaBridge.ID.equals(field.getName())) {
-            ChildTableMeta<?> childMeta = (ChildTableMeta<?>) table;
+            final ChildTableMeta<?> childMeta = (ChildTableMeta<?>) table;
             if (childMeta.parentMeta().containField(field.getName())) {
                 String m = String.format("mapping field belong to ParentTableMeta[%s]"
                         , childMeta.parentMeta());
@@ -161,7 +161,6 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationExpressio
         Objects.requireNonNull(field);
 
         _Assert.isAssignable(field.getDeclaringClass(), table.javaType());
-        assertNotParentFiled(table, field);
 
         this.table = table;
         this.fieldName = field.getName();
@@ -300,16 +299,6 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationExpressio
     @Override
     public final GeneratorMeta generator() {
         return this.generatorMeta;
-    }
-
-    @Override
-    public final boolean databaseRoute() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public final boolean tableRoute() {
-        throw new UnsupportedOperationException();
     }
 
     @Override

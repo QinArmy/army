@@ -28,7 +28,7 @@ public abstract class _DmlUtils {
 
 
     static final Collection<String> FORBID_INSERT_FIELDS = ArrayUtils.asUnmodifiableList(
-            _MetaBridge.CREATE_TIME, _MetaBridge.UPDATE_TIME, _MetaBridge.VERSION
+            _MetaBridge.ID, _MetaBridge.CREATE_TIME, _MetaBridge.UPDATE_TIME, _MetaBridge.VERSION
     );
 
 
@@ -55,20 +55,9 @@ public abstract class _DmlUtils {
         if (FORBID_INSERT_FIELDS.contains(field.fieldName())) {
             throw _Exceptions.armyManageField(field);
         }
-        if (field.databaseRoute() || field.tableRoute()) {
-            throw _Exceptions.insertExpDontSupportField(field);
-        }
         if (field.generator() != null) {
             throw _Exceptions.insertExpDontSupportField(field);
         }
-    }
-
-
-    @Deprecated
-    public static _SetBlock createSetClause(TableMeta<?> table, String tableAlias
-            , String safeTableAlias, boolean selfJoin
-            , List<? extends SetTargetPart> targetParts, List<? extends SetValuePart> valueParts) {
-        throw new UnsupportedOperationException();
     }
 
 
@@ -89,25 +78,30 @@ public abstract class _DmlUtils {
         final TableMeta<?> table = block.table();
 
         // 1. INSERT INTO clause
-        builder.append(_AbstractDialect.INSERT_INTO)
+        builder.append(Constant.INSERT_INTO)
                 .append(Constant.SPACE);
         //append table name
         builder.append(dialect.safeTableName(table.tableName()));
         final List<FieldMeta<?, ?>> fieldList = block.fieldLis();
         // 1.1 append table fields
-        builder.append(AbstractSql.LEFT_BRACKET);
+        builder.append(Constant.SPACE)
+                .append(Constant.LEFT_BRACKET);
         int index = 0;
         for (FieldMeta<?, ?> field : fieldList) {
             if (index > 0) {
-                builder.append(AbstractSql.COMMA);
+                builder.append(Constant.SPACE)
+                        .append(Constant.COMMA);
             }
-            builder.append(dialect.safeColumnName(field.columnName()));
+            builder.append(Constant.SPACE)
+                    .append(dialect.safeColumnName(field.columnName()));
             index++;
         }
-        builder.append(AbstractSql.RIGHT_BRACKET);
+        builder.append(Constant.SPACE)
+                .append(Constant.RIGHT_BRACKET);
 
         // 2. values clause
-        builder.append(AbstractSql.VALUES_WORD);
+        builder.append(Constant.SPACE)
+                .append(Constant.VALUES);
 
         final List<? extends ReadWrapper> domainList = context.domainList();
         //2.1 get domainTable and discriminator
@@ -122,13 +116,16 @@ public abstract class _DmlUtils {
         //2.2 append values
         for (ReadWrapper domain : domainList) {
             if (batch > 0) {
-                builder.append(AbstractSql.COMMA);
+                builder.append(Constant.SPACE)
+                        .append(Constant.COMMA);
             }
-            builder.append(AbstractSql.LEFT_BRACKET);
+            builder.append(Constant.SPACE)
+                    .append(Constant.LEFT_BRACKET);
             index = 0;
             for (FieldMeta<?, ?> field : fieldList) {
                 if (index > 0) {
-                    builder.append(AbstractSql.COMMA);
+                    builder.append(Constant.SPACE)
+                            .append(Constant.COMMA);
                 }
                 if (field == discriminator) {
                     assert field != null;
@@ -157,7 +154,8 @@ public abstract class _DmlUtils {
                 }
                 index++;
             }
-            builder.append(AbstractSql.RIGHT_BRACKET);
+            builder.append(Constant.SPACE)
+                    .append(Constant.RIGHT_BRACKET);
             batch++;
         }
 

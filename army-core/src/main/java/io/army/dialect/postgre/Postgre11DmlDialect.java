@@ -1,9 +1,9 @@
 package io.army.dialect.postgre;
 
 import io.army.DialectMode;
-import io.army.dialect.Database;
 import io.army.dialect.DialectEnvironment;
 import io.army.dialect._AbstractDialect;
+import io.army.meta.ParamMeta;
 import io.army.stmt.Stmt;
 
 import java.util.Set;
@@ -25,6 +25,11 @@ class Postgre11DmlDialect extends _AbstractDialect {
     }
 
     @Override
+    public String literal(ParamMeta paramMeta, Object nonNull) {
+        return null;
+    }
+
+    @Override
     public boolean supportInsertReturning() {
         return false;
     }
@@ -32,11 +37,6 @@ class Postgre11DmlDialect extends _AbstractDialect {
     @Override
     public boolean supportZone() {
         return false;
-    }
-
-    @Override
-    public Database database() {
-        return null;
     }
 
     @Override

@@ -4,6 +4,7 @@ import io.army.struct.CodeEnum;
 
 public enum UserType implements CodeEnum {
 
+    NONE(Constant.NONE),
     PERSON(Constant.PERSON),
     ENTERPRISE(Constant.ENTERPRISE),
     PARTNER(Constant.PARTNER),
@@ -20,12 +21,13 @@ public enum UserType implements CodeEnum {
         return this.code;
     }
 
-   public interface Constant {
-       byte PERSON = 10;
-       byte ENTERPRISE = 20;
-       byte PARTNER = 30;
-       byte SELF = 40;
-   }
+    public interface Constant {
+        byte NONE = 0;
+        byte PERSON = 10;
+        byte ENTERPRISE = 20;
+        byte PARTNER = 30;
+        byte SELF = 40;
+    }
 
 
 }

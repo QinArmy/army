@@ -23,13 +23,13 @@ public abstract class _Assert extends org.springframework.util.Assert {
     }
 
     public static void prepared(boolean prepared) {
-        if (prepared) {
-            throw new IllegalStateException(String.format("%s is non-prepared state.", Statement.class.getName()));
+        if (!prepared) {
+            throw new CriteriaException(String.format("%s is non-prepared state.", Statement.class.getName()));
         }
     }
 
     public static void nonPrepared(boolean prepared) {
-        if (!prepared) {
+        if (prepared) {
             throw new IllegalStateException(String.format("%s is prepared state.", Statement.class.getName()));
         }
     }
@@ -45,7 +45,6 @@ public abstract class _Assert extends org.springframework.util.Assert {
             throw new CriteriaException("Criteria must has table.");
         }
     }
-
 
 
     public static byte databaseRoute(final TableMeta<?> table, final int databaseIndex) {

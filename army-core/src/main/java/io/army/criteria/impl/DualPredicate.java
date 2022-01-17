@@ -41,17 +41,7 @@ class DualPredicate extends AbstractPredicate {
         switch (operator) {
             case IN:
             case NOT_IN: {
-                if (!(left instanceof GenericField
-                        && right instanceof CollectionParamExpression)) {
-                    predicate = new DualPredicate(left, operator, right);
-                } else {
-                    final GenericField<?, ?> field = (GenericField<?, ?>) left;
-                    if (field.tableRoute() || field.databaseRoute()) {
-                        predicate = new RouteFieldCollectionPredicateImpl(left, operator, right);
-                    } else {
-                        predicate = new DualPredicate(left, operator, right);
-                    }
-                }
+                predicate = new DualPredicate(left, operator, right);
             }
             break;
             default:
