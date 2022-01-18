@@ -6,7 +6,6 @@ import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.util.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,11 +15,7 @@ import java.util.List;
 final class OrPredicate extends OperationPredicate {
 
     static _Predicate create(_Predicate left, IPredicate right) {
-        return new OrPredicate(left, Collections.singletonList((_Predicate) right));
-    }
-
-    static _Predicate create(_Predicate left, IPredicate right1, IPredicate right2) {
-        return new OrPredicate(left, ArrayUtils.asUnmodifiableList((_Predicate) right1, (_Predicate) right2));
+        return new OrPredicate(left, Collections.singletonList((OperationPredicate) right));
     }
 
 
@@ -32,12 +27,12 @@ final class OrPredicate extends OperationPredicate {
                 result = left;
                 break;
             case 1:
-                result = new OrPredicate(left, Collections.singletonList((_Predicate) rights.get(0)));
+                result = new OrPredicate(left, Collections.singletonList((OperationPredicate) rights.get(0)));
                 break;
             default: {
-                final List<_Predicate> predicateList = new ArrayList<>(size);
+                final List<OperationPredicate> predicateList = new ArrayList<>(size);
                 for (IPredicate right : rights) {
-                    predicateList.add((_Predicate) right);
+                    predicateList.add((OperationPredicate) right);
                 }
                 result = new OrPredicate(left, predicateList);
             }
@@ -46,12 +41,12 @@ final class OrPredicate extends OperationPredicate {
     }
 
 
-    private final _Predicate left;
+    private final OperationPredicate left;
 
-    private final List<_Predicate> rights;
+    private final List<OperationPredicate> rights;
 
-    private OrPredicate(_Predicate left, List<_Predicate> predicateList) {
-        this.left = left;
+    private OrPredicate(_Predicate left, List<OperationPredicate> predicateList) {
+        this.left = (OperationPredicate) left;
         this.rights = predicateList;
     }
 
@@ -59,62 +54,54 @@ final class OrPredicate extends OperationPredicate {
     @Override
     public void appendSql(final _SqlContext context) {
         final StringBuilder builder = context.sqlBuilder()
-                .append(Constant.SPACE)
-                .append(Constant.LEFT_BRACKET);
+                .append(Constant.SPACE_LEFT_BRACKET);
 
         this.left.appendSql(context);
 
         builder.append(" OR");
 
-        final List<_Predicate> rights = this.rights;
+        final List<OperationPredicate> rights = this.rights;
         final int size = rights.size();
         if (size == 1) {
             rights.get(0).appendSql(context);
         } else {
-            builder.append(Constant.SPACE)
-                    .append(Constant.LEFT_BRACKET);
+            builder.append(Constant.SPACE_LEFT_BRACKET);
             for (int i = 0; i < size; i++) {
                 if (i > 0) {
-                    builder.append(" AND");
+                    builder.append(Constant.SPACE_AND);
                 }
                 rights.get(i).appendSql(context);
             }
-            builder.append(Constant.SPACE)
-                    .append(Constant.RIGHT_BRACKET);
+            builder.append(Constant.SPACE_RIGHT_BRACKET);
         }
 
-        builder.append(Constant.SPACE)
-                .append(Constant.RIGHT_BRACKET);
+        builder.append(Constant.SPACE_RIGHT_BRACKET);
     }
 
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder(128)
-                .append(Constant.SPACE)
-                .append(Constant.LEFT_BRACKET);
+                .append(Constant.SPACE_LEFT_BRACKET);
 
         builder.append(this.left)
                 .append(" OR");
 
-        final List<_Predicate> rights = this.rights;
+        final List<OperationPredicate> rights = this.rights;
         final int size = rights.size();
         if (size == 1) {
             builder.append(rights.get(0));
         } else {
-            builder.append(Constant.SPACE)
-                    .append(Constant.LEFT_BRACKET);
+            builder.append(Constant.SPACE_LEFT_BRACKET);
             for (int i = 0; i < size; i++) {
                 if (i > 0) {
-                    builder.append(" AND");
+                    builder.append(Constant.SPACE_AND);
                 }
                 builder.append(rights.get(i));
             }
-            builder.append(Constant.SPACE)
-                    .append(Constant.RIGHT_BRACKET);
+            builder.append(Constant.SPACE_RIGHT_BRACKET);
         }
 
-        builder.append(Constant.SPACE)
-                .append(Constant.RIGHT_BRACKET);
+        builder.append(Constant.SPACE_RIGHT_BRACKET);
 
         return builder.toString();
     }
