@@ -21,13 +21,13 @@ final class SetterMethodMatcherPointcut extends StaticMethodMatcherPointcut
 
         if (tableMeta instanceof ChildTableMeta) {
             ChildTableMeta<?> childMeta = (ChildTableMeta<?>) tableMeta;
-            for (FieldMeta<?, ?> fieldMeta : childMeta.parentMeta().fieldCollection()) {
+            for (FieldMeta<?, ?> fieldMeta : childMeta.parentMeta().fields()) {
                 setterFieldMap.put(ReflectionUtils.findSetterMethod(fieldMeta), fieldMeta);
             }
         }
 
         final FieldMeta<?, ?> idMeta = tableMeta.id();
-        for (FieldMeta<?, ?> fieldMeta : tableMeta.fieldCollection()) {
+        for (FieldMeta<?, ?> fieldMeta : tableMeta.fields()) {
             Method method = ReflectionUtils.findSetterMethod(fieldMeta);
             if (fieldMeta == idMeta) {
                 setterFieldMap.putIfAbsent(method, fieldMeta);

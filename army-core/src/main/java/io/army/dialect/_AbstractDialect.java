@@ -22,20 +22,20 @@ import java.util.*;
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
  */
-public abstract class _AbstractDialect extends AbstractDmlAndDql implements _Dialect {
+public abstract class _AbstractDialect implements _Dialect {
 
     protected static final char[] UPDATE = new char[]{'U', 'P', 'D', 'A', 'T', 'E'};
 
-    protected static final char[] INSERT_INTO = new char[]{'I', 'N', 'S', 'E', 'R', 'T', ' ', 'I', 'N', 'T', 'O'};
 
     private static final Collection<String> FORBID_SET_FIELD = ArrayUtils.asUnmodifiableList(
             _MetaBridge.UPDATE_TIME, _MetaBridge.VERSION);
 
+    protected final DialectEnvironment environment;
 
     protected final Set<String> keyWordSet;
 
     protected _AbstractDialect(DialectEnvironment environment) {
-        super(environment);
+        this.environment = environment;
         this.keyWordSet = Collections.unmodifiableSet(createKeyWordSet());
     }
 
@@ -173,7 +173,7 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements _Dia
 
     protected abstract String quoteIdentifier(String identifier);
 
-
+    protected abstract boolean supportTableOnly();
 
 
     /*################################## blow update template method ##################################*/
@@ -264,8 +264,7 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements _Dia
         }
 
         final StringBuilder builder = context.sqlBuilder()
-                .append(Constant.SPACE)
-                .append(Constant.FROM);
+                .append(Constant.SPACE_FROM);
         final _Dialect dialect = context.dialect();
 
         final boolean supportTableOnly = this.supportTableOnly();
@@ -278,8 +277,7 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements _Dia
             final TablePart tablePart = block.table();
             if (tablePart instanceof TableMeta) {
                 if (supportTableOnly) {
-                    builder.append(Constant.SPACE)
-                            .append(Constant.ONLY);
+                    builder.append(Constant.SPACE_ONLY);
                 }
                 builder.append(Constant.SPACE)
                         .append(dialect.quoteIfNeed(((TableMeta<?>) tablePart).tableName()));
@@ -297,8 +295,7 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements _Dia
             index = 0;// reset to 0
             for (_Predicate predicate : block.predicates()) {
                 if (index > 0) {
-                    builder.append(Constant.SPACE)
-                            .append(Constant.AND);
+                    builder.append(Constant.SPACE_AND);
                 }
                 predicate.appendSql(context);
                 index++;
@@ -315,12 +312,10 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements _Dia
             return;
         }
         final StringBuilder builder = context.sqlBuilder()
-                .append(Constant.SPACE)
-                .append(Constant.WHERE);
+                .append(Constant.SPACE_WHERE);
         for (int i = 0; i < size; i++) {
             if (i > 0) {
-                builder.append(Constant.SPACE)
-                        .append(Constant.AND);
+                builder.append(Constant.SPACE_AND);
             }
             predicateList.get(i).appendSql(context);
         }
@@ -333,12 +328,10 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements _Dia
             throw new IllegalArgumentException("groupByList is empty");
         }
         final StringBuilder builder = context.sqlBuilder()
-                .append(Constant.SPACE)
-                .append(Constant.GROUP_BY);
+                .append(Constant.SPACE_GROUP_BY);
         for (int i = 0; i < size; i++) {
             if (i > 0) {
-                builder.append(Constant.SPACE)
-                        .append(Constant.COMMA);
+                builder.append(Constant.SPACE_COMMA);
             }
             ((_SelfDescribed) groupByList.get(i)).appendSql(context);
         }
@@ -351,12 +344,10 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements _Dia
             return;
         }
         final StringBuilder builder = context.sqlBuilder()
-                .append(Constant.SPACE)
-                .append(Constant.HAVING);
+                .append(Constant.SPACE_HAVING);
         for (int i = 0; i < size; i++) {
             if (i > 0) {
-                builder.append(Constant.SPACE)
-                        .append(Constant.AND);
+                builder.append(Constant.SPACE_AND);
             }
             havingList.get(i).appendSql(context);
         }
@@ -369,15 +360,129 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements _Dia
             return;
         }
         final StringBuilder builder = context.sqlBuilder()
-                .append(Constant.SPACE)
-                .append(Constant.ORDER_BY);
+                .append(Constant.SPACE_ORDER_BY);
 
         for (int i = 0; i < size; i++) {
             if (i > 0) {
-                builder.append(Constant.SPACE)
-                        .append(Constant.COMMA);
+                builder.append(Constant.SPACE_COMMA);
             }
             ((_SelfDescribed) orderByList.get(i)).appendSql(context);
+        }
+
+    }
+
+
+    protected final void discriminator(TableMeta<?> table, String safeTableAlias, _StmtContext context) {
+        final FieldMeta<?, ?> field;
+        if (table instanceof ChildTableMeta) {
+            field = ((ChildTableMeta<?>) table).discriminator();
+        } else if (table instanceof ParentTableMeta) {
+            field = ((ParentTableMeta<?>) table).discriminator();
+        } else {
+            throw new IllegalArgumentException("table error");
+        }
+        final _Dialect dialect = context.dialect();
+        context.sqlBuilder()
+                .append(Constant.SPACE_AND)
+                .append(Constant.SPACE)
+                .append(safeTableAlias)
+                .append(Constant.POINT)
+                .append(dialect.quoteIfNeed(field.columnName()))
+                .append(Constant.SPACE_EQUAL)
+                .append(Constant.SPACE)
+                .append(table.discriminatorValue());
+    }
+
+    protected final void visiblePredicate(SingleTableMeta<?> table, final String safeTableAlias
+            , final _StmtContext context) {
+
+        final FieldMeta<?, ?> field = table.getField(_MetaBridge.VISIBLE);
+        final Boolean visibleValue;
+        switch (context.visible()) {
+            case ONLY_VISIBLE:
+                visibleValue = Boolean.TRUE;
+                break;
+            case ONLY_NON_VISIBLE:
+                visibleValue = Boolean.FALSE;
+                break;
+            case BOTH:
+                visibleValue = null;
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(context.visible());
+        }
+        if (visibleValue != null) {
+            final _Dialect dialect = context.dialect();
+            final StringBuilder sqlBuilder = context.sqlBuilder();
+
+            sqlBuilder.append(Constant.SPACE_AND)
+                    .append(Constant.SPACE)
+                    .append(safeTableAlias)
+                    .append(Constant.POINT)
+                    .append(dialect.quoteIfNeed(field.columnName()))
+                    .append(Constant.SPACE_EQUAL)
+                    .append(Constant.SPACE)
+                    .append(dialect.literal(field.mappingType(), visibleValue));
+        }
+
+    }
+
+
+    protected final void conditionUpdate(String safeTableAlias, List<GenericField<?, ?>> conditionFields
+            , _StmtContext context) {
+
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+        final _Dialect dialect = context.dialect();
+        final boolean supportOnlyDefault = dialect.supportOnlyDefault();
+        for (GenericField<?, ?> field : conditionFields) {
+            final char[] safeColumnAlias = dialect.safeColumnName(field.columnName()).toCharArray();
+            sqlBuilder
+                    .append(Constant.SPACE_AND)
+                    .append(Constant.SPACE)
+                    .append(safeTableAlias)
+                    .append(Constant.POINT)
+                    .append(safeColumnAlias);
+
+            switch (field.updateMode()) {
+                case ONLY_NULL:
+                    sqlBuilder.append(Constant.SPACE_IS_NULL);
+                    break;
+                case ONLY_DEFAULT: {
+                    if (!supportOnlyDefault) {
+                        throw _Exceptions.dontSupportOnlyDefault(dialect);
+                    }
+                    sqlBuilder.append(Constant.SPACE_EQUAL)
+                            .append(Constant.SPACE)
+                            .append(dialect.defaultFuncName())
+                            .append(Constant.SPACE_LEFT_BRACKET)
+                            .append(safeTableAlias)
+                            .append(Constant.POINT)
+                            .append(safeColumnAlias)
+                            .append(Constant.SPACE_RIGHT_BRACKET);
+                }
+                break;
+                default:
+                    throw _Exceptions.unexpectedEnum(field.updateMode());
+            }
+
+        }
+
+    }
+
+
+    protected final void dmlWhereClause(_DmlContext context) {
+        final List<_Predicate> predicateList = context.predicates();
+        final int predicateCount = predicateList.size();
+        if (predicateCount == 0) {
+            throw _Exceptions.noWhereClause(context);
+        }
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+        sqlBuilder.append(Constant.SPACE_WHERE);
+        for (int i = 0; i < predicateCount; i++) {
+            if (i > 0) {
+                sqlBuilder.append(Constant.SPACE_AND);
+            }
+            predicateList.get(i).appendSql(context);
         }
 
     }
@@ -394,13 +499,13 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements _Dia
         final boolean supportOnlyDefault = dialect.supportOnlyDefault();
         final StringBuilder sqlBuilder = context.sqlBuilder();
 
-        sqlBuilder.append(SET_WORD);
+        sqlBuilder.append(Constant.SPACE_SET);
         final boolean supportTableAlias = dialect.setClauseTableAlias();
         final boolean hasSelfJoin = clause.hasSelfJoint();
         final List<GenericField<?, ?>> conditionFields = new ArrayList<>();
         for (int i = 0; i < targetCount; i++) {
             if (i > 0) {
-                sqlBuilder.append(COMMA);
+                sqlBuilder.append(Constant.SPACE_COMMA);
             }
             final SetTargetPart targetPart = targetPartList.get(i);
             final SetValuePart valuePart = valuePartList.get(i);
@@ -409,7 +514,7 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements _Dia
                     throw _Exceptions.setTargetAndValuePartNotMatch(targetPart, valuePart);
                 }
                 this.appendRowTarget(clause, (Row<?>) targetPart, conditionFields, context);
-                sqlBuilder.append(EQUAL);
+                sqlBuilder.append(Constant.SPACE_EQUAL);
                 dialect.subQuery((SubQuery) targetPart, context);
                 continue;
             } else if (!(targetPart instanceof GenericField)) {
@@ -452,7 +557,7 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements _Dia
                         .append(Constant.POINT);
             }
             sqlBuilder.append(dialect.safeColumnName(field.columnName()))
-                    .append(EQUAL);
+                    .append(Constant.SPACE_EQUAL);
 
             if (!field.nullable() && ((_Expression<?>) valuePart).nullableExp()) {
                 throw _Exceptions.nonNullField(field.fieldMeta());
@@ -478,11 +583,11 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements _Dia
         final TableMeta<?> table = clause.table();
         final String tableAlias = clause.tableAlias(), safeTableAlias = clause.safeTableAlias();
         final boolean hasSelfJoin = clause.hasSelfJoint(), supportTableAlias = dialect.setClauseTableAlias();
-        sqlBuilder.append(LEFT_BRACKET);
+        sqlBuilder.append(Constant.SPACE_LEFT_BRACKET);
         int index = 0;
         for (GenericField<?, ?> field : row.columnList()) {
             if (index > 0) {
-                sqlBuilder.append(COMMA);
+                sqlBuilder.append(Constant.SPACE_COMMA);
             }
             switch (field.updateMode()) {
                 case UPDATABLE:
@@ -528,7 +633,7 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements _Dia
             sqlBuilder.append(dialect.quoteIfNeed(field.columnName()));
             index++;
         }
-        sqlBuilder.append(RIGHT_BRACKET);
+        sqlBuilder.append(Constant.SPACE_RIGHT_BRACKET);
     }
 
 
@@ -541,13 +646,16 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements _Dia
         final StringBuilder sqlBuilder = context.sqlBuilder();
         final _Dialect dialect = context.dialect();
         final FieldMeta<?, ?> updateTime = table.getField(_MetaBridge.UPDATE_TIME);
+        final boolean supportTableAlias = dialect.setClauseTableAlias();
+        sqlBuilder.append(Constant.SPACE_COMMA)
+                .append(Constant.SPACE);
 
-        sqlBuilder.append(COMMA)
-                .append(Constant.SPACE)
-                .append(safeTableAlias)
-                .append(Constant.POINT)
-                .append(dialect.safeColumnName(updateTime.columnName()))
-                .append(EQUAL);
+        if (supportTableAlias) {
+            sqlBuilder.append(safeTableAlias)
+                    .append(Constant.POINT);
+        }
+        sqlBuilder.append(dialect.safeColumnName(updateTime.columnName()))
+                .append(Constant.SPACE_EQUAL);
 
         final Class<?> javaType = updateTime.javaType();
         sqlBuilder.append(Constant.SPACE);
@@ -565,12 +673,16 @@ public abstract class _AbstractDialect extends AbstractDmlAndDql implements _Dia
         if (table.containField(_MetaBridge.VERSION)) {
             final FieldMeta<?, ?> version = table.getField(_MetaBridge.VERSION);
             final String versionColumnName = dialect.quoteIfNeed(version.columnName());
-            sqlBuilder.append(COMMA)
-                    .append(Constant.SPACE)
-                    .append(safeTableAlias)
-                    .append(Constant.POINT)
-                    .append(versionColumnName)
-                    .append(EQUAL)
+            sqlBuilder.append(Constant.SPACE_COMMA)
+                    .append(Constant.SPACE);
+
+            if (supportTableAlias) {
+                sqlBuilder.append(safeTableAlias)
+                        .append(Constant.POINT);
+            }
+
+            sqlBuilder.append(versionColumnName)
+                    .append(Constant.SPACE_EQUAL)
                     .append(Constant.SPACE)
                     .append(safeTableAlias)
                     .append(Constant.POINT)

@@ -9,56 +9,56 @@ enum DualOperator {
     PLUS {
         @Override
         public String rendered() {
-            return "+";
+            return " +";
         }
     }, MINUS {
         @Override
         public String rendered() {
-            return "-";
+            return " -";
         }
     }, MOD {
         @Override
         public String rendered() {
-            return "%";
+            return " %";
         }
     }, MULTIPLY {
         @Override
         public String rendered() {
-            return "*";
+            return " *";
         }
     }, DIVIDE {
         @Override
         public String rendered() {
-            return "/";
+            return " /";
         }
     }, AND {
         @Override
         public String rendered() {
-            return "&";
+            return " &";
         }
 
     }, OR {
         @Override
         public String rendered() {
-            return "|";
+            return " |";
         }
 
     }, XOR {
         @Override
         public String rendered() {
-            return "^";
+            return " ^";
         }
 
     }, LEFT_SHIFT {
         @Override
         public String rendered() {
-            return "<<";
+            return " <<";
         }
 
     }, RIGHT_SHIFT {
         @Override
         public String rendered() {
-            return ">>";
+            return " >>";
         }
 
     },
@@ -68,68 +68,71 @@ enum DualOperator {
         @Override
         public String rendered() {
 
-            return "=";
+            return " =";
         }
 
     },
     NOT_EQ {
         @Override
         public String rendered() {
-            return "!=";
+            return " !=";
         }
     },
     LT {
         @Override
         public String rendered() {
-            return "<";
+            return " <";
         }
     },
     LE {
         @Override
         public String rendered() {
-            return "<=";
+            return " <=";
         }
 
     },
     GE {
         @Override
         public String rendered() {
-            return ">=";
+            return " >=";
         }
 
     },
     GT {
         @Override
         public String rendered() {
-            return ">";
+            return " >";
         }
 
     }, IN {
         @Override
         public String rendered() {
-            return "IN";
+            return " IN";
         }
     },
     NOT_IN {
         @Override
         public String rendered() {
-            return "NOT IN";
+            return " NOT IN";
         }
     },
     LIKE {
         @Override
         public String rendered() {
-            return "LIKE";
+            return " LIKE";
         }
     },
     NOT_LIKE {
         @Override
         public String rendered() {
-            return "NOT LIKE";
+            return " NOT LIKE";
         }
     };
 
 
+    /**
+     * @return one space char and operator
+     */
     abstract String rendered();
 
 

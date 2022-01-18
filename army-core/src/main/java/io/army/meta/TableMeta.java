@@ -38,9 +38,9 @@ public interface TableMeta<T extends IDomain> extends TablePart, Meta {
     /**
      * contain primary key
      */
-    Collection<IndexMeta<T>> indexCollection();
+    Collection<IndexMeta<T>> indexes();
 
-    Collection<FieldMeta<T, ?>> fieldCollection();
+    Collection<FieldMeta<T, ?>> fields();
 
     String charset();
 

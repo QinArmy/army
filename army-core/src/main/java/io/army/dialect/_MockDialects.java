@@ -121,6 +121,21 @@ public abstract class _MockDialects {
         }
 
         @Override
+        public String sessionVar(final String name) {
+            final String value;
+            switch (name) {
+                case "ANSI_QUOTES":
+                case "NO_BACKSLASH_ESCAPES":
+                    value = null;
+                    break;
+                default:
+                    throw new UnsupportedOperationException();
+
+            }
+            return value;
+        }
+
+        @Override
         public String toString() {
             final StringBuilder sb = new StringBuilder("MockServerMeta{");
             sb.append("name='").append(name).append('\'');

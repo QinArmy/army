@@ -9,7 +9,7 @@ import io.army.meta.TableMeta;
 
 import java.util.Collection;
 
-final class RowPredicate extends AbstractPredicate {
+final class RowPredicate extends OperationPredicate {
 
     private final ExpressionRow<?> row;
 

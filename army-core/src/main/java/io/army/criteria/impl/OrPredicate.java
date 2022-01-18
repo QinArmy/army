@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-final class OrPredicate extends AbstractPredicate {
+final class OrPredicate extends OperationPredicate {
 
     static _Predicate create(_Predicate left, IPredicate right) {
         return new OrPredicate(left, Collections.singletonList((_Predicate) right));
@@ -23,9 +23,6 @@ final class OrPredicate extends AbstractPredicate {
         return new OrPredicate(left, ArrayUtils.asUnmodifiableList((_Predicate) right1, (_Predicate) right2));
     }
 
-    static _Predicate create(_Predicate left, IPredicate right1, IPredicate right2, IPredicate right3) {
-        return new OrPredicate(left, ArrayUtils.asUnmodifiableList((_Predicate) right1, (_Predicate) right2, (_Predicate) right3));
-    }
 
     static _Predicate create(final _Predicate left, final List<IPredicate> rights) {
         final int size = rights.size();

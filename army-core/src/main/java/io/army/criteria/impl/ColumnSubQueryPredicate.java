@@ -14,7 +14,7 @@ import io.army.util._Exceptions;
 import java.util.Collection;
 import java.util.function.Function;
 
-class ColumnSubQueryPredicate extends AbstractPredicate {
+class ColumnSubQueryPredicate extends OperationPredicate {
 
     static <C> ColumnSubQueryPredicate create(
             Expression<?> operand, DualOperator operator

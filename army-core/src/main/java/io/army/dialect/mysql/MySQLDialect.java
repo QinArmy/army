@@ -31,6 +31,12 @@ abstract class MySQLDialect extends _AbstractDialect {
     }
 
     @Override
+    protected final boolean supportTableOnly() {
+        // MySQL don't support only before table name.
+        return false;
+    }
+
+    @Override
     public void clearForDDL() {
 
     }
@@ -56,8 +62,9 @@ abstract class MySQLDialect extends _AbstractDialect {
 
 
     @Override
-    public boolean tableAliasAfterAs() {
-        return false;
+    public final boolean tableAliasAfterAs() {
+        // MySQL support table alias after 'AS' key word.
+        return true;
     }
 
     @Override

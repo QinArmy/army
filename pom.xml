@@ -22,11 +22,12 @@
         <module>army-mysql</module>
         <module>army-sync</module>
         <module>army-reactive</module>
-        <module>army-sharding</module>
         <module>army-oracle</module>
         <module>army-jdbc</module>
         <module>army-jdbd</module>
         <module>army-annotation</module>
+        <module>army-example-domain</module>
+        <module>army-example</module>
     </modules>
 
     <properties>
@@ -102,12 +103,12 @@
             </dependency>
             <dependency>
                 <groupId>io.army</groupId>
-                <artifactId>army-sharding</artifactId>
+                <artifactId>army-spring</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.army</groupId>
-                <artifactId>army-spring</artifactId>
+                <artifactId>army-example-domain</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <!-- 模块 end  -->
@@ -120,7 +121,11 @@
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-slf4j-impl</artifactId>
-                <scope>test</scope>
+                <version>${log4j2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
                 <version>${log4j2.version}</version>
             </dependency>
             <dependency>
@@ -172,11 +177,13 @@
                 <groupId>com.microsoft.sqlserver</groupId>
                 <artifactId>mssql-jdbc</artifactId>
                 <version>${mssql-jdbc.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>com.ibm.db2</groupId>
                 <artifactId>jcc</artifactId>
                 <version>${db2-jdbc.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>io.r2dbc</groupId>

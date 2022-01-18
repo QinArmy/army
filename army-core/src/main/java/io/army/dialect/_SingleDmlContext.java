@@ -246,7 +246,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
                 .append(dialect.safeColumnName(childField.columnName()))
 
                 .append(Constant.SPACE)
-                .append(Constant.FROM)
+                .append(Constant.SPACE_FROM)
                 .append(Constant.SPACE)
                 .append(dialect.safeTableName(childTable.tableName()));
 
@@ -258,7 +258,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
                 .append(childSafeTableAlias);
 
         sqlBuilder.append(Constant.SPACE)
-                .append(Constant.WHERE)
+                .append(Constant.SPACE_WHERE)
                 .append(Constant.SPACE)
 
                 .append(childSafeTableAlias)
@@ -302,7 +302,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
                 .append(dialect.safeColumnName(parentField.columnName()))
 
                 .append(Constant.SPACE)
-                .append(Constant.FROM)
+                .append(Constant.SPACE_FROM)
                 .append(Constant.SPACE)
                 .append(dialect.safeTableName(parentTable.tableName()));
 
@@ -318,7 +318,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
 
         sqlBuilder.append(Constant.SPACE)
                 //below where clause
-                .append(Constant.WHERE)
+                .append(Constant.SPACE_WHERE)
                 .append(Constant.SPACE)
 
                 .append(parentSafeTable)
@@ -334,8 +334,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
                 .append(Constant.POINT)
                 .append(_MetaBridge.ID)
 
-                .append(Constant.SPACE)
-                .append(Constant.AND)
+                .append(Constant.SPACE_AND)
                 .append(Constant.SPACE)
 
                 //below parent table discriminator

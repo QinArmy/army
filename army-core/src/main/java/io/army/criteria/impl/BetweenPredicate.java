@@ -4,7 +4,7 @@ import io.army.criteria.Expression;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect._SqlContext;
 
-class BetweenPredicate extends AbstractPredicate {
+class BetweenPredicate extends OperationPredicate {
 
     static BetweenPredicate between(Expression<?> left, Expression<?> center, Expression<?> right) {
         return new BetweenPredicate(left, center, right);

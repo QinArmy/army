@@ -8,7 +8,7 @@ import io.army.dialect._SqlContext;
 /**
  * this interface representing a {@code not} expression
  */
-final class NotPredicate extends AbstractPredicate {
+final class NotPredicate extends OperationPredicate {
 
     static IPredicate not(final _Predicate predicate) {
         final _Predicate notPredicate;

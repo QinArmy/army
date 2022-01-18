@@ -72,13 +72,11 @@ final class DualExpression<E> extends OperationExpression<E> {
                 outerBracket = true;
                 leftInnerBracket = !(left instanceof ValueExpression
                         || left instanceof GenericField
-                        || left instanceof BracketsExpression
-                        || left instanceof UnaryExpression);
+                        || left instanceof BracketsExpression);
 
                 rightInnerBracket = !(right instanceof ValueExpression
                         || right instanceof GenericField
-                        || right instanceof BracketsExpression
-                        || right instanceof UnaryExpression);
+                        || right instanceof BracketsExpression);
             }
             break;
             default:
@@ -88,42 +86,35 @@ final class DualExpression<E> extends OperationExpression<E> {
         final StringBuilder builder = context.sqlBuilder();
 
         if (outerBracket) {
-            builder.append(Constant.SPACE)
-                    .append(Constant.LEFT_BRACKET);
+            builder.append(Constant.SPACE_LEFT_BRACKET);
         }
 
         if (leftInnerBracket) {
-            builder.append(Constant.SPACE)
-                    .append(Constant.LEFT_BRACKET);
+            builder.append(Constant.SPACE_LEFT_BRACKET);
         }
         //1. append left expression
         left.appendSql(context);
 
         if (leftInnerBracket) {
-            builder.append(Constant.SPACE)
-                    .append(Constant.RIGHT_BRACKET);
+            builder.append(Constant.SPACE_RIGHT_BRACKET);
         }
 
         //2. append operator
-        builder.append(Constant.SPACE)
-                .append(this.operator.rendered());
+        builder.append(this.operator.rendered());
 
         if (rightInnerBracket) {
-            builder.append(Constant.SPACE)
-                    .append(Constant.LEFT_BRACKET);
+            builder.append(Constant.SPACE_LEFT_BRACKET);
         }
 
         //3. append right expression
         right.appendSql(context);
 
         if (rightInnerBracket) {
-            builder.append(Constant.SPACE)
-                    .append(Constant.RIGHT_BRACKET);
+            builder.append(Constant.SPACE_RIGHT_BRACKET);
         }
 
         if (outerBracket) {
-            builder.append(Constant.SPACE)
-                    .append(Constant.RIGHT_BRACKET);
+            builder.append(Constant.SPACE_RIGHT_BRACKET);
         }
 
 

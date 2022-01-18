@@ -15,11 +15,12 @@ abstract class MySQLLiterals extends _Literals {
 
 
     static String text(final SqlType sqlType, final boolean hexEscapes, final Object nonNull) {
-        if (!(nonNull instanceof String)) {
-            throw _Exceptions.errorLiteralType(sqlType, nonNull);
-        }
         final String literal;
-        if (hexEscapes) {
+        if (nonNull instanceof Boolean) {
+            literal = (Boolean) nonNull ? "'T'" : "'F'";
+        } else if (!(nonNull instanceof String)) {
+            throw _Exceptions.errorLiteralType(sqlType, nonNull);
+        } else if (hexEscapes) {
             final byte[] jsonBytes = ((String) nonNull).getBytes(StandardCharsets.UTF_8);
             final StringBuilder builder = new StringBuilder((jsonBytes.length << 1) + 10)
                     .append('X')

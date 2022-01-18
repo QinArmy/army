@@ -9,7 +9,5 @@ public interface Selection extends SelectPart, TypeInfer, SortPart {
 
     boolean nullable();
 
-    @Override
-    String toString();
 
 }

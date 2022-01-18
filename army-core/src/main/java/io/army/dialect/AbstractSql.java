@@ -17,18 +17,6 @@ public abstract class AbstractSql {
 
     protected static final char[] SET_WORD = new char[]{' ', 'S', 'E', 'T'};
 
-    protected static final char[] SELECT_WORD = new char[]{' ', 'S', 'E', 'L', 'E', 'C', 'T'};
-
-    protected static final char[] WHERE_WORD = new char[]{' ', 'W', 'H', 'E', 'R', 'E'};
-
-    protected static final char[] VALUES_WORD = new char[]{' ', 'V', 'A', 'L', 'U', 'E', 'S'};
-
-
-    protected static final char[] AS_WORD = new char[]{' ', 'A', 'S'};
-
-    protected static final char[] ON_WORD = new char[]{' ', 'O', 'N'};
-
-    protected static final char[] JOIN_WORD = new char[]{' ', 'J', 'O', 'I', 'N'};
 
 
     protected final DialectEnvironment environment;

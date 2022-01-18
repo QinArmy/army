@@ -6,6 +6,7 @@ public interface Constant {
 
     String FALSE = "FALSE";
 
+    String SPACE_NULL = " NULL";
 
     String FORBID_ALIAS = "_army_";
 
@@ -15,7 +16,7 @@ public interface Constant {
 
     String DELETE_FROM = "DELETE FROM";
 
-    String FROM = "FROM";
+    String SPACE_FROM = " FROM";
 
     String JOIN = "JOIN";
 
@@ -27,19 +28,21 @@ public interface Constant {
 
     String ON = "ON";
 
-    String WHERE = "WHERE";
+    String SPACE_WHERE = " WHERE";
 
-    String AND = "AND";
+    String SPACE_AND = " AND";
 
     String OR = "OR";
 
-    String GROUP_BY = "GROUP BY";
+    String SPACE_GROUP_BY = " GROUP BY";
 
-    String HAVING = "HAVING";
+    String SPACE_HAVING = " HAVING";
 
-    String ORDER_BY = "ORDER BY";
+    String SPACE_ORDER_BY = " ORDER BY";
 
     String EXISTS = "EXISTS";
+
+    String SPACE_EQUAL = " =";
 
     String AS = "AS";
 
@@ -47,23 +50,27 @@ public interface Constant {
 
     String VALUE = "VALUE";
 
-    String VALUES = "VALUES";
+    String SPACE_VALUES = " VALUES";
 
     String DEFAULT = "DEFAULT";
 
-    String SET = "SET";
+    String SPACE_SET = " SET";
 
     String LOCK = "LOCK";
 
     String LIMIT = "LIMIT";
 
-    String IS_NULL = "IS NULL";
+    String SPACE_IS_NULL = " IS NULL";
 
     String RETURNING = "RETURNING";
 
-    String ONLY = "ONLY";
+    String SPACE_ONLY = " ONLY";
 
     String SPACE_COMMA = " ,";
+
+    String SPACE_LEFT_BRACKET = " (";
+
+    String SPACE_RIGHT_BRACKET = " )";
 
     char LEFT_BRACKET = '(';
 

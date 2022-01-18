@@ -5,7 +5,6 @@ import io.army.criteria.GenericField;
 import io.army.criteria.IPredicate;
 import io.army.criteria.RouteFieldCollectionPredicate;
 import io.army.criteria.impl.inner._Expression;
-import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
@@ -18,7 +17,7 @@ import java.util.function.Function;
 /**
  *
  */
-class DualPredicate extends AbstractPredicate {
+class DualPredicate extends OperationPredicate {
 
     static <C, E, O> DualPredicate create(final Expression<E> left, DualOperator operator
             , Function<C, Expression<O>> expOrSubQuery) {
@@ -70,7 +69,6 @@ class DualPredicate extends AbstractPredicate {
     public final void appendSql(_SqlContext context) {
         this.left.appendSql(context);
         context.sqlBuilder()
-                .append(Constant.SPACE)
                 .append(this.operator.rendered());
         this.right.appendSql(context);
     }

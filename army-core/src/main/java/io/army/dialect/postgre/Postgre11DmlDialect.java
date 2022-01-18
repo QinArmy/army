@@ -25,6 +25,12 @@ class Postgre11DmlDialect extends _AbstractDialect {
     }
 
     @Override
+    protected final boolean supportTableOnly() {
+        //Postgre support 'ONLY' key word before table name.
+        return true;
+    }
+
+    @Override
     public String literal(ParamMeta paramMeta, Object nonNull) {
         return null;
     }

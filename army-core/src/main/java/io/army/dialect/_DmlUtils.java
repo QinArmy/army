@@ -85,24 +85,20 @@ public abstract class _DmlUtils {
         builder.append(dialect.safeTableName(table.tableName()));
         final List<FieldMeta<?, ?>> fieldList = block.fieldLis();
         // 1.1 append table fields
-        builder.append(Constant.SPACE)
-                .append(Constant.LEFT_BRACKET);
+        builder.append(Constant.SPACE_LEFT_BRACKET);
         int index = 0;
         for (FieldMeta<?, ?> field : fieldList) {
             if (index > 0) {
-                builder.append(Constant.SPACE)
-                        .append(Constant.COMMA);
+                builder.append(Constant.SPACE_COMMA);
             }
             builder.append(Constant.SPACE)
                     .append(dialect.safeColumnName(field.columnName()));
             index++;
         }
-        builder.append(Constant.SPACE)
-                .append(Constant.RIGHT_BRACKET);
+        builder.append(Constant.SPACE_RIGHT_BRACKET);
 
         // 2. values clause
-        builder.append(Constant.SPACE)
-                .append(Constant.VALUES);
+        builder.append(Constant.SPACE_VALUES);
 
         final List<? extends ReadWrapper> domainList = context.domainList();
         //2.1 get domainTable and discriminator
@@ -119,13 +115,11 @@ public abstract class _DmlUtils {
             if (batch > 0) {
                 builder.append(Constant.SPACE_COMMA);
             }
-            builder.append(Constant.SPACE)
-                    .append(Constant.LEFT_BRACKET);
+            builder.append(Constant.SPACE_LEFT_BRACKET);
             index = 0;
             for (FieldMeta<?, ?> field : fieldList) {
                 if (index > 0) {
-                    builder.append(Constant.SPACE)
-                            .append(Constant.COMMA);
+                    builder.append(Constant.SPACE_COMMA);
                 }
                 if (field == discriminator) {
                     assert field != null;
@@ -142,12 +136,12 @@ public abstract class _DmlUtils {
                         blockContext.appendParam(ParamValue.build(field, value)); // parameter append block context
                     }
                 } else if (field.nullable()) {
-                    builder.append(" NULL");
+                    builder.append(Constant.SPACE_NULL);
                 } else if ((generatorMeta = field.generator()) == null) {
                     throw _Exceptions.nonNullField(field);
                 } else if (PreFieldGenerator.class.isAssignableFrom(generatorMeta.type())) {
                     if (mockEnvironment) {
-                        builder.append(" NULL");
+                        builder.append(Constant.SPACE_NULL);
                     } else {
                         throw _Exceptions.nonNullField(field);
                     }
@@ -156,8 +150,7 @@ public abstract class _DmlUtils {
                 }
                 index++;
             }
-            builder.append(Constant.SPACE)
-                    .append(Constant.RIGHT_BRACKET);
+            builder.append(Constant.SPACE_RIGHT_BRACKET);
             batch++;
         }
 
@@ -209,7 +202,7 @@ public abstract class _DmlUtils {
         }
         final List<FieldMeta<?, ?>> mergeFieldList;
         if (fieldList.isEmpty()) {
-            final Collection<?> fieldCollection = table.fieldCollection();
+            final Collection<?> fieldCollection = table.fields();
             mergeFieldList = new ArrayList<>(fieldCollection.size());
             @SuppressWarnings("unchecked")
             Collection<FieldMeta<?, ?>> tableFields = (Collection<FieldMeta<?, ?>>) fieldCollection;

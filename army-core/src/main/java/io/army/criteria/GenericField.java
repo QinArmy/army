@@ -39,4 +39,6 @@ public interface GenericField<T extends IDomain, F> extends Expression<F>, Field
     boolean codec();
 
     boolean nullable();
+
+
 }

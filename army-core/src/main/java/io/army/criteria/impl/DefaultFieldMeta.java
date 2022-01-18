@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @since 1.0
  */
-abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationExpression<F>
+abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, F>
         implements FieldMeta<T, F>, Selection {
 
     private static final String ID = _MetaBridge.ID;

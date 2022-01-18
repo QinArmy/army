@@ -85,7 +85,7 @@ public abstract class DDLUtils {
      * @return a unmodifiable list
      */
     static List<FieldMeta<?, ?>> sortFieldMetaCollection(TableMeta<?> tableMeta) {
-        Set<FieldMeta<?, ?>> fieldMetas = new HashSet<>(tableMeta.fieldCollection());
+        Set<FieldMeta<?, ?>> fieldMetas = new HashSet<>(tableMeta.fields());
 
         List<FieldMeta<?, ?>> fieldMetaList = new ArrayList<>(fieldMetas.size());
 
@@ -117,7 +117,7 @@ public abstract class DDLUtils {
      * @return a unmodifiable list without primary key
      */
     static List<IndexMeta<?>> sortIndexMetaCollection(TableMeta<?> tableMeta) {
-        Set<IndexMeta<?>> indexMetas = new HashSet<>(tableMeta.indexCollection());
+        Set<IndexMeta<?>> indexMetas = new HashSet<>(tableMeta.indexes());
 
         List<IndexMeta<?>> indexMetaList = new ArrayList<>(indexMetas.size());
         for (IndexMeta<?> indexMeta : indexMetas) {

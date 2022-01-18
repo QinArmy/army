@@ -14,7 +14,7 @@ import io.army.util._Assert;
 import java.util.Collection;
 
 
-final class QualifiedFieldImpl<T extends IDomain, F> extends OperationExpression<F>
+final class QualifiedFieldImpl<T extends IDomain, F> extends OperationField<T, F>
         implements QualifiedField<T, F> {
 
 
@@ -122,7 +122,6 @@ final class QualifiedFieldImpl<T extends IDomain, F> extends OperationExpression
     public boolean containsSubQuery() {
         return false;
     }
-
 
 
 }

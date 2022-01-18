@@ -332,12 +332,12 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
 
     @Override
-    public final List<IndexMeta<T>> indexCollection() {
+    public final List<IndexMeta<T>> indexes() {
         return this.indexMetaList;
     }
 
     @Override
-    public final Collection<FieldMeta<T, ?>> fieldCollection() {
+    public final Collection<FieldMeta<T, ?>> fields() {
         return this.fieldToFieldMeta.values();
     }
 

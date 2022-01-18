@@ -29,7 +29,7 @@ abstract class DmlWhereClause<C, WR, WA> implements Statement, Statement.WhereCl
     public final WR where(List<IPredicate> predicateList) {
         final List<_Predicate> predicates = this.predicateList;
         for (IPredicate predicate : predicateList) {
-            if (!(predicate instanceof AbstractPredicate)) {
+            if (!(predicate instanceof OperationPredicate)) {
                 throw CriteriaUtils.nonArmyExpression(predicate);
             }
             predicates.add((_Predicate) predicate);
@@ -50,7 +50,7 @@ abstract class DmlWhereClause<C, WR, WA> implements Statement, Statement.WhereCl
     @Override
     public final WA where(final @Nullable IPredicate predicate) {
         if (predicate != null) {
-            if (!(predicate instanceof AbstractPredicate)) {
+            if (!(predicate instanceof OperationPredicate)) {
                 throw CriteriaUtils.nonArmyExpression(predicate);
             }
             this.predicateList.add((_Predicate) predicate);
@@ -60,7 +60,7 @@ abstract class DmlWhereClause<C, WR, WA> implements Statement, Statement.WhereCl
 
     @Override
     public final WA and(IPredicate predicate) {
-        if (!(predicate instanceof AbstractPredicate)) {
+        if (!(predicate instanceof OperationPredicate)) {
             throw CriteriaUtils.nonArmyExpression(predicate);
         }
         this.predicateList.add((_Predicate) predicate);
@@ -80,7 +80,7 @@ abstract class DmlWhereClause<C, WR, WA> implements Statement, Statement.WhereCl
     @Override
     public final WA ifAnd(@Nullable IPredicate predicate) {
         if (predicate != null) {
-            if (!(predicate instanceof AbstractPredicate)) {
+            if (!(predicate instanceof OperationPredicate)) {
                 throw CriteriaUtils.nonArmyExpression(predicate);
             }
             this.predicateList.add((_Predicate) predicate);

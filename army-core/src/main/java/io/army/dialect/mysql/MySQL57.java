@@ -29,12 +29,6 @@ abstract class MySQL57 extends MySQLDialect {
     /*################################## blow interfaces method ##################################*/
 
 
-
-    @Override
-    public final boolean tableAliasAfterAs() {
-        return true;
-    }
-
     @Override
     public final boolean singleDeleteHasTableAlias() {
         return false;
@@ -105,7 +99,7 @@ abstract class MySQL57 extends MySQLDialect {
                 .append(safeChildTableAlias)
                 .append(Constant.POINT)
                 .append(_MetaBridge.ID)
-                .append(EQUAL)
+                .append(Constant.SPACE_EQUAL)
                 .append(Constant.SPACE)
                 .append(safeParentTableAlias)
                 .append(Constant.POINT)

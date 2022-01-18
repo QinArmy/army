@@ -4,7 +4,7 @@ import io.army.criteria.impl.SQLs;
 import io.army.meta.TableMeta;
 
 /**
- * @see SQLs#standardValueInsert(TableMeta)
+ * @see SQLs#standardInsert(TableMeta)
  */
 @Deprecated
 public interface _StandardInsert extends _ValuesInsert {

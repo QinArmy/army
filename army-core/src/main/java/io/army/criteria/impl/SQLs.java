@@ -27,7 +27,7 @@ public abstract class SQLs extends SQLUtils {
     }
 
 
-    public static <T extends IDomain> Insert.InsertOptionSpec<T, Void> standardValueInsert(TableMeta<T> targetTable) {
+    public static <T extends IDomain> Insert.InsertOptionSpec<T, Void> standardInsert(TableMeta<T> targetTable) {
         return StandardValueInsert.create(targetTable, null);
     }
 
@@ -51,7 +51,7 @@ public abstract class SQLs extends SQLUtils {
      * @param targetTable will insert to table meta
      * @return a standard insert api object.
      */
-    public static <T extends IDomain, C> Insert.InsertOptionSpec<T, C> standardValueInsert(TableMeta<T> targetTable, C criteria) {
+    public static <T extends IDomain, C> Insert.InsertOptionSpec<T, C> standardInsert(TableMeta<T> targetTable, C criteria) {
         Objects.requireNonNull(criteria);
         return StandardValueInsert.create(targetTable, criteria);
     }

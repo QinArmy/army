@@ -11,7 +11,7 @@ import io.army.util._Exceptions;
 
 import java.util.Objects;
 
-final class UnaryPredicate extends AbstractPredicate {
+final class UnaryPredicate extends OperationPredicate {
 
     static UnaryPredicate create(UnaryOperator operator, SubQuery subQuery) {
         Objects.requireNonNull(subQuery);

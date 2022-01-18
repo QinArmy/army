@@ -1,6 +1,8 @@
 package io.army.criteria;
 
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * can'field {@code then}
@@ -26,18 +28,14 @@ public interface IPredicate extends Expression<Boolean> {
     /**
      * Logical OR
      * <p>
-     * This method representing expression (this OR ( predicate1 AND predicate2 AND predicate3) )
-     * </p>
-     */
-    IPredicate or(IPredicate predicate1, IPredicate predicate2, IPredicate predicate3);
-
-    /**
-     * Logical OR
-     * <p>
      * This method representing expression (this OR  (predicates))
      * </p>
      */
     IPredicate or(List<IPredicate> predicates);
+
+    <C> IPredicate orMulti(Function<C, List<IPredicate>> function);
+
+    IPredicate orMulti(Supplier<List<IPredicate>> supplier);
 
 
     /**

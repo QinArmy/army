@@ -81,11 +81,11 @@ abstract class SelectionGroups implements _SelectionGroup {
 
         private TableFieldGroup(TableMeta<T> table, String tableAlias) {
             this.tableAlias = tableAlias;
-            this.fieldList = Collections.unmodifiableList(new ArrayList<>(table.fieldCollection()));
+            this.fieldList = Collections.unmodifiableList(new ArrayList<>(table.fields()));
         }
 
         private TableFieldGroup(String tableAlias, ParentTableMeta<T> parent) {
-            Collection<FieldMeta<T, ?>> parentFields = parent.fieldCollection();
+            Collection<FieldMeta<T, ?>> parentFields = parent.fields();
             final List<FieldMeta<T, ?>> fieldList = new ArrayList<>(parentFields.size());
             for (FieldMeta<T, ?> field : parentFields) {
                 if (field instanceof PrimaryFieldMeta) {
