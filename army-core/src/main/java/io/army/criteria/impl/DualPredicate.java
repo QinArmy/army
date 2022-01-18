@@ -2,22 +2,16 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.GenericField;
-import io.army.criteria.IPredicate;
-import io.army.criteria.RouteFieldCollectionPredicate;
-import io.army.criteria.impl.inner._Expression;
 import io.army.dialect._SqlContext;
-import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
-import io.army.sharding.Route;
 import io.army.util._Exceptions;
 
-import java.util.Map;
 import java.util.function.Function;
 
 /**
  *
  */
-class DualPredicate extends OperationPredicate {
+final class DualPredicate extends OperationPredicate {
 
     static <C, E, O> DualPredicate create(final Expression<E> left, DualOperator operator
             , Function<C, Expression<O>> expOrSubQuery) {
@@ -38,13 +32,20 @@ class DualPredicate extends OperationPredicate {
 
         final DualPredicate predicate;
         switch (operator) {
+            case NOT_EQ:
+            case LT:
+            case LE:
+            case GT:
+            case GE:
+            case EQ:
+            case LIKE:
+            case NOT_LIKE:
             case IN:
-            case NOT_IN: {
+            case NOT_IN:
                 predicate = new DualPredicate(left, operator, right);
-            }
-            break;
+                break;
             default:
-                predicate = new DualPredicate(left, operator, right);
+                throw _Exceptions.unexpectedEnum(operator);
 
         }
         return predicate;
@@ -53,20 +54,20 @@ class DualPredicate extends OperationPredicate {
 
     /*################################## blow instance member ##################################*/
 
-    final _Expression<?> left;
+    final ArmyExpression<?> left;
 
     final DualOperator operator;
 
-    final _Expression<?> right;
+    final ArmyExpression<?> right;
 
     private DualPredicate(Expression<?> left, DualOperator operator, Expression<?> right) {
-        this.left = (_Expression<?>) left;
+        this.left = (ArmyExpression<?>) left;
         this.operator = operator;
-        this.right = (_Expression<?>) right;
+        this.right = (ArmyExpression<?>) right;
     }
 
     @Override
-    public final void appendSql(_SqlContext context) {
+    public void appendSql(_SqlContext context) {
         this.left.appendSql(context);
         context.sqlBuilder()
                 .append(this.operator.rendered());
@@ -75,33 +76,14 @@ class DualPredicate extends OperationPredicate {
 
 
     @Override
-    public final boolean containsSubQuery() {
+    public boolean containsSubQuery() {
         return this.left.containsSubQuery() || this.right.containsSubQuery();
     }
 
 
     @Override
-    public final String toString() {
+    public String toString() {
         return String.format("%s %s%s", this.left, this.operator, this.right);
-    }
-
-
-    private static final class RouteFieldCollectionPredicateImpl extends DualPredicate
-            implements RouteFieldCollectionPredicate {
-
-        private RouteFieldCollectionPredicateImpl(Expression<?> left, DualOperator operator, Expression<?> right) {
-            super(left, operator, right);
-        }
-
-        @Override
-        public Map<Byte, IPredicate> tableSplit(Function<TableMeta<?>, Route> function) {
-            return null;
-        }
-
-        @Override
-        public Map<Byte, IPredicate> databaseSplit(Function<TableMeta<?>, Route> function) {
-            return null;
-        }
     }
 
 

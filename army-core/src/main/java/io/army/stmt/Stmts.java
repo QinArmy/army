@@ -25,6 +25,11 @@ public abstract class Stmts {
         return new MinSimpleStmt(sql, paramList);
     }
 
+    public static SimpleStmt dml(String sql, List<ParamValue> paramList, boolean hasOptimistic) {
+        return new MinDmlStmt(sql, paramList, hasOptimistic);
+    }
+
+
     public static SimpleStmt selectStmt(String sql, List<ParamValue> paramList, List<Selection> selectionList) {
 
 
@@ -101,6 +106,43 @@ public abstract class Stmts {
         }
 
     }
+
+
+    private static final class MinDmlStmt implements SimpleStmt {
+
+        private final String sql;
+
+        private final List<ParamValue> paramGroup;
+
+        private final boolean hasOptimistic;
+
+        private MinDmlStmt(String sql, List<ParamValue> paramGroup, boolean hasOptimistic) {
+            this.sql = sql;
+            this.paramGroup = CollectionUtils.unmodifiableList(paramGroup);
+            this.hasOptimistic = hasOptimistic;
+        }
+
+        @Override
+        public String sql() {
+            return this.sql;
+        }
+
+        @Override
+        public boolean hasVersion() {
+            return this.hasOptimistic;
+        }
+
+        @Override
+        public List<ParamValue> paramGroup() {
+            return this.paramGroup;
+        }
+
+        @Override
+        public List<Selection> selectionList() {
+            return Collections.emptyList();
+        }
+
+    }//MinDml
 
 
 }

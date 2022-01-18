@@ -19,7 +19,7 @@ import io.army.util._Exceptions;
  */
 final class UnaryExpression<E> extends OperationExpression<E> {
 
-    static <E> UnaryExpression<E> create(_Expression<E> expression, UnaryOperator operator) {
+    static <E> UnaryExpression<E> create(ArmyExpression<E> expression, UnaryOperator operator) {
         switch (operator) {
             case INVERT:
             case NEGATED:
@@ -30,11 +30,11 @@ final class UnaryExpression<E> extends OperationExpression<E> {
         }
     }
 
-    final _Expression<E> expression;
+    final ArmyExpression<E> expression;
 
     private final UnaryOperator operator;
 
-    private UnaryExpression(_Expression<E> expression, UnaryOperator operator) {
+    private UnaryExpression(ArmyExpression<E> expression, UnaryOperator operator) {
         this.expression = expression;
         this.operator = operator;
     }

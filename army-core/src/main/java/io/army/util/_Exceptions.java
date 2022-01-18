@@ -147,6 +147,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("%s is non-null.", field));
     }
 
+    public static CriteriaException nonNullExpression(FieldMeta<?, ?> field) {
+        return new CriteriaException(String.format("Value expression must be non-null for %s", field));
+    }
+
+
     public static CriteriaException nonNullNamedParam(NonNullNamedParam<?> param) {
         String m = String.format("%s[%s] must be non-null.", NonNullNamedParam.class.getName(), param.name());
         return new CriteriaException(m);

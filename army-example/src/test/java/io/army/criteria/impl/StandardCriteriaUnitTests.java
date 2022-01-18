@@ -66,6 +66,30 @@ public class StandardCriteriaUnitTests {
     }
 
     @Test
+    public void updateChild() {
+        final BigDecimal addGdp = new BigDecimal("888.8");
+        final Update update;
+        update = SQLs.standardUpdate()
+                .update(ChinaProvince_.T, "p")
+                .set(ChinaProvince_.name, "武侠江湖")
+                .setPlus(ChinaProvince_.regionGdp, addGdp)
+                .set(ChinaProvince_.provincialCapital, "光明顶")
+                .set(ChinaProvince_.governor, "张无忌")
+                .where(ChinaProvince_.id.equal(1))
+                .and(ChinaProvince_.name.equal("江湖"))
+                .and(ChinaProvince_.regionGdp.plus(addGdp).greatEqual(BigDecimal.ZERO))
+                .and(ChinaProvince_.governor.equal("阳顶天").or(ChinaProvince_.governor.equal("石教主")))
+                .asUpdate();
+
+        for (DialectMode mode : DialectMode.values()) {
+            LOG.debug("{} {}", mode.name(), update.mockAsString(mode));
+        }
+    }
+
+    /**
+     * @see io.army.annotation.UpdateMode
+     */
+    @Test
     public void updateParentWithOnlyNullMode() {
         final Update update;
         update = SQLs.standardUpdate()
@@ -81,6 +105,7 @@ public class StandardCriteriaUnitTests {
             LOG.debug("{} {}", mode.name(), update.mockAsString(mode));
         }
     }
+
 
     private List<ChinaRegion> createRegionList() {
         List<ChinaRegion> domainList = new ArrayList<>();

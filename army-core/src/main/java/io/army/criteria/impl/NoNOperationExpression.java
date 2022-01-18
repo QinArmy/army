@@ -6,6 +6,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.stmt.ParamValue;
 
 import java.util.Collection;
 import java.util.function.Function;
@@ -17,7 +18,7 @@ import java.util.function.Function;
  *         <li>{@link SQLs.DefaultWord}</li>
  *         <li>{@link SQLs.NullWord}</li>
  *         <li>{@link CollectionParamExpression}</li>
- *         <li>{@link ParamExpression.NullParamExpression}</li>
+ *         <li>{@link ParamExpression.OptimizingNullExpression}</li>
  *     </ul>
  * </p>
  *
@@ -30,10 +31,18 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     NoNOperationExpression() {
     }
 
+    @Override
+    public final boolean isVersion() {
+        // always false
+        return false;
+    }
 
     @Override
     public final Selection as(String alias) {
-        throw unsupportedOperation();
+        if (!(this instanceof ParamValue)) {
+            throw unsupportedOperation();
+        }
+        return new ExpressionSelection(this, alias);
     }
 
     @Override

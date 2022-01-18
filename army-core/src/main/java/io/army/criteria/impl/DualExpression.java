@@ -32,17 +32,17 @@ final class DualExpression<E> extends OperationExpression<E> {
         return new DualExpression<>(left, operator, right);
     }
 
-    private final _Expression<?> left;
+    private final ArmyExpression<?> left;
 
     private final DualOperator operator;
 
-    private final _Expression<?> right;
+    private final ArmyExpression<?> right;
 
 
     private DualExpression(Expression<?> left, DualOperator operator, Expression<?> right) {
-        this.left = (_Expression<?>) left;
+        this.left = (ArmyExpression<?>) left;
         this.operator = operator;
-        this.right = (_Expression<?>) right;
+        this.right = (ArmyExpression<?>) right;
     }
 
 

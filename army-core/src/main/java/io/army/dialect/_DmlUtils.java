@@ -3,6 +3,7 @@ package io.army.dialect;
 import io.army.beans.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Update;
 import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.generator.PostFieldGenerator;
@@ -31,6 +32,18 @@ public abstract class _DmlUtils {
     static final Collection<String> FORBID_INSERT_FIELDS = ArrayUtils.asUnmodifiableList(
             _MetaBridge.ID, _MetaBridge.CREATE_TIME, _MetaBridge.UPDATE_TIME, _MetaBridge.VERSION
     );
+
+
+    public static boolean hasOptimistic(List<_Predicate> predicateList) {
+        boolean match = false;
+        for (_Predicate predicate : predicateList) {
+            if (predicate.isOptimistic()) {
+                match = true;
+                break;
+            }
+        }
+        return match;
+    }
 
 
     public static void checkInsertExpField(final TableMeta<?> table, final FieldMeta<?, ?> field

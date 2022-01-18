@@ -20,14 +20,6 @@ public interface IPredicate extends Expression<Boolean> {
     /**
      * Logical OR
      * <p>
-     * This method representing expression (this OR ( predicate1 AND predicate2 ) )
-     * </p>
-     */
-    IPredicate or(IPredicate predicate1, IPredicate predicate2);
-
-    /**
-     * Logical OR
-     * <p>
      * This method representing expression (this OR  (predicates))
      * </p>
      */

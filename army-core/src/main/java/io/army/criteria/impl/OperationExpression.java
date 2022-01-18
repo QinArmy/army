@@ -8,6 +8,7 @@ import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.modelgen._MetaBridge;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -32,6 +33,12 @@ abstract class OperationExpression<E> implements ArmyExpression<E> {
             selection = new ExpressionSelection(this, alias);
         }
         return selection;
+    }
+
+    @Override
+    public final boolean isVersion() {
+        return this instanceof GenericField
+                && _MetaBridge.VERSION.equals(((GenericField<?, ?>) this).fieldName());
     }
 
     @Override

@@ -132,8 +132,8 @@ abstract class CriteriaContextStack {
         @Override
         public CriteriaContext peek() {
             final LinkedList<CriteriaContext> list = this.list;
-            if (list.size() < 2) {
-                throw new CriteriaException("Not found any sub context.");
+            if (list.size() == 0) {
+                throw new CriteriaException("Not found any context.");
             }
             return list.peek();
         }

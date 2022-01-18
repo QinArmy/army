@@ -6,6 +6,7 @@ import io.army.criteria.impl._CriteriaCounselor;
 import io.army.criteria.impl.inner.*;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
+import io.army.stmt.ParamValue;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
 import io.army.util.ArrayUtils;
@@ -14,6 +15,7 @@ import io.army.util._Exceptions;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
+import java.time.temporal.Temporal;
 import java.util.*;
 
 
@@ -488,7 +490,7 @@ public abstract class _AbstractDialect implements _Dialect {
     }
 
 
-    protected final List<GenericField<?, ?>> setClause(final _SetBlock clause, final _UpdateContext context) {
+    protected final List<GenericField<?, ?>> setClause(final boolean first, final _SetBlock clause, final _UpdateContext context) {
 
         final List<? extends SetTargetPart> targetPartList = clause.targetParts();
         final List<? extends SetValuePart> valuePartList = clause.valueParts();
@@ -499,7 +501,11 @@ public abstract class _AbstractDialect implements _Dialect {
         final boolean supportOnlyDefault = dialect.supportOnlyDefault();
         final StringBuilder sqlBuilder = context.sqlBuilder();
 
-        sqlBuilder.append(Constant.SPACE_SET);
+        if (first) {
+            sqlBuilder.append(Constant.SPACE_SET);
+        } else {
+            sqlBuilder.append(Constant.SPACE_COMMA);
+        }
         final boolean supportTableAlias = dialect.setClauseTableAlias();
         final boolean hasSelfJoin = clause.hasSelfJoint();
         final List<GenericField<?, ?>> conditionFields = new ArrayList<>();
@@ -572,7 +578,7 @@ public abstract class _AbstractDialect implements _Dialect {
     }
 
     /**
-     * @see #setClause(_SetBlock, _UpdateContext)
+     * @see #setClause(boolean, _SetBlock, _UpdateContext)
      */
     private void appendRowTarget(final _SetBlock clause, final Row<?> row
             , List<GenericField<?, ?>> conditionFields, final _UpdateContext context) {
@@ -638,7 +644,7 @@ public abstract class _AbstractDialect implements _Dialect {
 
 
     /**
-     * @see #setClause(_SetBlock, _UpdateContext)
+     * @see #setClause(boolean, _SetBlock, _UpdateContext)
      */
     private void appendArmyManageFieldsToSetClause(final SingleTableMeta<?> table, final String safeTableAlias
             , final _UpdateContext context) {
@@ -659,15 +665,22 @@ public abstract class _AbstractDialect implements _Dialect {
 
         final Class<?> javaType = updateTime.javaType();
         sqlBuilder.append(Constant.SPACE);
+        final Temporal updateTimeValue;
         if (javaType == LocalDateTime.class) {
-            sqlBuilder.append(dialect.literal(updateTime, LocalDateTime.now()));
+            updateTimeValue = LocalDateTime.now();
         } else if (javaType == OffsetDateTime.class) {
-            sqlBuilder.append(dialect.literal(updateTime, OffsetDateTime.now(this.environment.zoneOffset())));
+            updateTimeValue = OffsetDateTime.now(this.environment.zoneOffset());
         } else if (javaType == ZonedDateTime.class) {
-            sqlBuilder.append(dialect.literal(updateTime, ZonedDateTime.now(this.environment.zoneOffset())));
+            updateTimeValue = ZonedDateTime.now(this.environment.zoneOffset());
         } else {
             String m = String.format("%s don't support java type[%s]", updateTime, javaType);
             throw new MetaException(m);
+        }
+        if (context.supportOptimizingParam()) {
+            sqlBuilder.append(Constant.SPACE)
+                    .append(this.literal(updateTime, updateTimeValue));
+        } else {
+            context.appendParam(ParamValue.build(updateTime, updateTimeValue));
         }
 
         if (table.containField(_MetaBridge.VERSION)) {
@@ -817,20 +830,19 @@ public abstract class _AbstractDialect implements _Dialect {
         final SingleTableMeta<?> table = context.table;
         final StringBuilder sqlBuilder = context.sqlBuilder;
         // 1. UPDATE clause
-        sqlBuilder.append(Constant.UPDATE)
+        sqlBuilder.append(Constant.UPDATE_SPACE)
                 .append(Constant.SPACE)
                 .append(dialect.safeTableName(table.tableName()));
 
         if (dialect.tableAliasAfterAs()) {
-            sqlBuilder.append(Constant.SPACE)
-                    .append(Constant.AS);
+            sqlBuilder.append(Constant.SPACE_AS_SPACE);
         }
         sqlBuilder.append(Constant.SPACE)
                 .append(context.safeTableAlias);
 
         final List<GenericField<?, ?>> conditionFields;
         //2. set clause
-        conditionFields = this.setClause(context, context);
+        conditionFields = this.setClause(true, context, context);
         //3. where clause
         this.dmlWhereClause(context);
 
@@ -872,7 +884,7 @@ public abstract class _AbstractDialect implements _Dialect {
 
         if (dialect.tableAliasAfterAs()) {
             sqlBuilder.append(Constant.SPACE)
-                    .append(Constant.AS);
+                    .append(Constant.SPACE_AS_SPACE);
         }
         sqlBuilder.append(Constant.SPACE)
                 .append(context.safeTableAlias);

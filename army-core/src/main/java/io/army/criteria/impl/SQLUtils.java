@@ -73,6 +73,11 @@ abstract class SQLUtils {
         return resultExpression;
     }
 
+    public static <E> Expression<E> strictParam(final E value) {
+        Objects.requireNonNull(value);
+        return ParamExpression.strict(_MappingFactory.getMapping(value.getClass()), value);
+    }
+
     public static <E> Expression<E> strictParam(final MappingType type, final @Nullable E value) {
         return ParamExpression.strict(type, value);
     }

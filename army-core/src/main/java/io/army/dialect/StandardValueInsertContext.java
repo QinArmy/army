@@ -147,7 +147,7 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
                     .append(Constant.SPACE)
                     .append(returnId.columnName())
                     .append(Constant.SPACE)
-                    .append(Constant.AS)
+                    .append(Constant.SPACE_AS_SPACE)
                     .append(Constant.SPACE)
                     .append(this.dialect.quoteIfNeed(returnId.fieldName()));
         }

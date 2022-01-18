@@ -1,5 +1,6 @@
 package io.army.dialect;
 
+import io.army.criteria.CriteriaException;
 import io.army.criteria.SetTargetPart;
 import io.army.criteria.SetValuePart;
 import io.army.criteria.Visible;
@@ -77,7 +78,7 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
         for (int i = 0; i < fieldCount; i++) {
             part = fieldList.get(i);
             if (!(part instanceof FieldMeta)) {
-                continue;
+                throw new CriteriaException("Standard update don't support Row.");
             }
             field = (FieldMeta<?, ?>) part;
             belongOf = field.tableMeta();

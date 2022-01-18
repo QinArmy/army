@@ -83,8 +83,8 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
 
     @Override
     public final SR set(FieldMeta<?, ?> field, Expression<?> value) {
-        if (!(value instanceof ArmyExpression)) {
-            throw CriteriaUtils.nonArmyExpression(value);
+        if (!(field instanceof ArmyExpression)) {
+            throw CriteriaUtils.nonArmyExpression(field);
         }
         if (field.updateMode() == UpdateMode.IMMUTABLE) {
             throw _Exceptions.immutableField(field);
@@ -97,7 +97,7 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
             throw _Exceptions.nonNullField(field);
         }
         this.fieldList.add(field);
-        this.valueExpList.add((_Expression<?>) value);
+        this.valueExpList.add((ArmyExpression<?>) value);
         return (SR) this;
     }
 
@@ -129,7 +129,9 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
 
     @Override
     public final <F extends Number> SR setPlus(FieldMeta<?, F> field, Expression<F> value) {
-        Objects.requireNonNull(value);
+        if (((ArmyExpression<F>) value).nullableExp()) {
+            throw _Exceptions.nonNullExpression(field);
+        }
         return this.set(field, field.plus(value));
     }
 
@@ -141,7 +143,9 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
 
     @Override
     public final <F extends Number> SR setMinus(FieldMeta<?, F> field, Expression<F> value) {
-        Objects.requireNonNull(value);
+        if (((ArmyExpression<F>) value).nullableExp()) {
+            throw _Exceptions.nonNullExpression(field);
+        }
         return this.set(field, field.minus(value));
     }
 
@@ -153,7 +157,9 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
 
     @Override
     public final <F extends Number> SR setMultiply(FieldMeta<?, F> field, Expression<F> value) {
-        Objects.requireNonNull(value);
+        if (((ArmyExpression<F>) value).nullableExp()) {
+            throw _Exceptions.nonNullExpression(field);
+        }
         return this.set(field, field.multiply(value));
     }
 
@@ -165,7 +171,9 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
 
     @Override
     public final <F extends Number> SR setDivide(FieldMeta<?, F> field, Expression<F> value) {
-        Objects.requireNonNull(value);
+        if (((ArmyExpression<F>) value).nullableExp()) {
+            throw _Exceptions.nonNullExpression(field);
+        }
         return this.set(field, field.divide(value));
     }
 
@@ -177,7 +185,9 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
 
     @Override
     public final <F extends Number> SR setMod(FieldMeta<?, F> field, Expression<F> value) {
-        Objects.requireNonNull(value);
+        if (((ArmyExpression<F>) value).nullableExp()) {
+            throw _Exceptions.nonNullExpression(field);
+        }
         return this.set(field, field.mod(value));
     }
 

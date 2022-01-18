@@ -39,14 +39,12 @@ public abstract class _DialectUtils {
     );
 
 
-
     public static String quoteIfNeed(MappingType mappingType, String textValue) {
         if (TEXT_JDBC_TYPE.contains(mappingType.jdbcType())) {
             return StringUtils.quote(textValue);
         }
         return textValue;
     }
-
 
 
     public static CriteriaException createTableFiledNoMatchException(TableMeta<?> tableMeta
@@ -75,7 +73,6 @@ public abstract class _DialectUtils {
     }
 
 
-
     public static CriteriaException createUnKnownFieldException(FieldMeta<?, ?> fieldMeta) {
         throw new CriteriaException(ErrorCode.CRITERIA_ERROR
                 , "unknown logical table for FieldMeta[%s] in current context,please check criteria code.", fieldMeta);
@@ -96,7 +93,7 @@ public abstract class _DialectUtils {
     }
 
     public static String parentAlias(final String tableAlias) {
-        return Constant.FORBID_ALIAS + "p_of_" + tableAlias;
+        return "p_of_" + tableAlias;
     }
 
     public static String childAlias(final String tableAlias) {

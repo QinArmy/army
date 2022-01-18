@@ -12,13 +12,13 @@ public interface Constant {
 
     String SELECT = "SELECT";
 
-    String UPDATE = "UPDATE";
+    String UPDATE_SPACE = "UPDATE ";
 
     String DELETE_FROM = "DELETE FROM";
 
     String SPACE_FROM = " FROM";
 
-    String JOIN = "JOIN";
+    String SPACE_JOIN_SPACE = " JOIN ";
 
     String LEFT_JOIN = "LEFT JOIN";
 
@@ -26,7 +26,7 @@ public interface Constant {
 
     String FULL_JOIN = "FULL JOIN";
 
-    String ON = "ON";
+    String SPACE_ON_SPACE = " ON ";
 
     String SPACE_WHERE = " WHERE";
 
@@ -44,7 +44,7 @@ public interface Constant {
 
     String SPACE_EQUAL = " =";
 
-    String AS = "AS";
+    String SPACE_AS_SPACE = " AS ";
 
     String INSERT_INTO = "INSERT INTO";
 

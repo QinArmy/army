@@ -1,6 +1,7 @@
 package io.army.dialect;
 
 import io.army.criteria.Visible;
+import io.army.criteria.impl._StrictParam;
 import io.army.stmt.ParamValue;
 
 import java.util.ArrayList;
@@ -32,6 +33,18 @@ public abstract class _BaseSqlContext implements _StmtContext {
         this.paramList = outerContext.paramList;
     }
 
+
+    @Override
+    public final boolean supportOptimizingParam() {
+        boolean support = false;
+        for (ParamValue paramValue : this.paramList) {
+            if (!(paramValue instanceof _StrictParam)) {
+                support = true;
+                break;
+            }
+        }
+        return support;
+    }
 
     @Override
     public final _Dialect dialect() {

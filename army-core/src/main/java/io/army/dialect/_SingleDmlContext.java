@@ -108,8 +108,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
 
     @Override
     public final SimpleStmt build() {
-        //TODO version
-        return Stmts.simple(this.sqlBuilder.toString(), this.paramList);
+        return Stmts.dml(this.sqlBuilder.toString(), this.paramList, _DmlUtils.hasOptimistic(this.predicateList));
     }
 
     @Nullable
@@ -132,6 +131,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
             this.safeTableAlias = parentContext.dialect.quoteIfNeed(tableAlias);
             this.parentContext = parentContext;
         }
+
 
         @Override
         public final ChildTableMeta<?> table() {
@@ -252,7 +252,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
 
         if (dialect.tableAliasAfterAs()) {
             sqlBuilder.append(Constant.SPACE)
-                    .append(Constant.AS);
+                    .append(Constant.SPACE_AS_SPACE);
         }
         sqlBuilder.append(Constant.SPACE)
                 .append(childSafeTableAlias);
@@ -309,7 +309,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
 
         if (dialect.tableAliasAfterAs()) {
             sqlBuilder.append(Constant.SPACE)
-                    .append(Constant.AS);
+                    .append(Constant.SPACE_AS_SPACE);
         }
         sqlBuilder.append(Constant.SPACE)
                 .append(parentSafeTable);
