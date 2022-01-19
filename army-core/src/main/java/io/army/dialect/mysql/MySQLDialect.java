@@ -259,50 +259,29 @@ abstract class MySQLDialect extends _AbstractDialect {
     protected final SimpleStmt standardChildUpdate(final _SingleUpdateContext context) {
         assert context.multiTableUpdateChild();
 
-        final _SetBlock childSetClause = context.childBlock();
-        assert childSetClause != null;
-
-        final _Dialect dialect = context.dialect();
-        final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childSetClause.table();
-        final ParentTableMeta<?> parentTable = (ParentTableMeta<?>) context.table();
-        final String safeParentTableAlias = context.safeTableAlias();
-        final String safeChildTableAlias = childSetClause.safeTableAlias();
+        final _SetBlock childBlock = context.childBlock();
+        assert childBlock != null;
 
         final StringBuilder sqlBuilder = context.sqlBuilder();
 
         // 1. UPDATE clause
-        sqlBuilder.append(Constant.UPDATE_SPACE)
-                // append child table name
-                .append(dialect.quoteIfNeed(childTable.tableName()));
+        sqlBuilder.append(Constant.UPDATE_SPACE);
 
-        sqlBuilder.append(Constant.SPACE_AS_SPACE)
-                .append(safeChildTableAlias);
-
-        //2. join clause
-        sqlBuilder.append(Constant.SPACE_JOIN_SPACE)
-                // append parent table name
-                .append(dialect.quoteIfNeed(parentTable.tableName()))
-                .append(Constant.SPACE_AS_SPACE)
-                .append(safeParentTableAlias);
-
-        //2.1 on clause
-        sqlBuilder.append(Constant.SPACE_ON_SPACE)
-                .append(safeChildTableAlias)
-                .append(Constant.POINT)
-                .append(_MetaBridge.ID)
-                .append(Constant.SPACE_EQUAL)
-                .append(Constant.SPACE)
-                .append(safeParentTableAlias)
-                .append(Constant.POINT)
-                .append(_MetaBridge.ID);
+        //2. child join parent
+        this.appendChildJoinParent(childBlock, context);
 
         final List<GenericField<?, ?>> childConditionFields, parentConditionFields;
         //3. set clause
         parentConditionFields = this.setClause(true, context, context);
-        childConditionFields = this.setClause(false, childSetClause, context);
+        childConditionFields = this.setClause(false, childBlock, context);
 
         //4. where clause
         this.dmlWhereClause(context);
+
+        final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childBlock.table();
+        final ParentTableMeta<?> parentTable = (ParentTableMeta<?>) context.table();
+        final String safeParentTableAlias = context.safeTableAlias();
+        final String safeChildTableAlias = childBlock.safeTableAlias();
 
         //4.1 append discriminator for child
         this.discriminator(childTable, safeParentTableAlias, context);
@@ -318,6 +297,43 @@ abstract class MySQLDialect extends _AbstractDialect {
         //4.4 append parent condition update fields
         if (parentConditionFields.size() > 0) {
             this.conditionUpdate(safeParentTableAlias, parentConditionFields, context);
+        }
+        return context.build();
+    }
+
+    @Override
+    protected final SimpleStmt standardChildDelete(final _SingleDeleteContext context) {
+        assert context.multiTableUpdateChild();
+        final _Block childBlock = context.childBlock();
+        assert childBlock != null;
+
+        final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childBlock.table();
+        final ParentTableMeta<?> parentTable = (ParentTableMeta<?>) context.table();
+
+        // 1. delete clause
+        final StringBuilder builder = context.sqlBuilder()
+                .append(Constant.DELETE_SPACE);
+
+        builder.append(this.quoteIfNeed(childTable.tableName()))// child table name
+                .append(Constant.SPACE_COMMA)
+                .append(Constant.SPACE)
+                .append(this.quoteIfNeed(parentTable.tableName()))// parent table name
+                .append(Constant.SPACE_FROM);
+
+        //2. child join parent
+        this.appendChildJoinParent(childBlock, context);
+
+        //3. where clause
+        this.dmlWhereClause(context);
+
+        final String safeParentTableAlias = context.safeTableAlias();
+
+        //3.2 append discriminator for child
+        this.discriminator(childTable, safeParentTableAlias, context);
+
+        //3.3 append visible
+        if (parentTable.containField(_MetaBridge.VISIBLE)) {
+            this.visiblePredicate(parentTable, safeParentTableAlias, context);
         }
         return context.build();
     }

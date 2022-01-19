@@ -36,14 +36,12 @@ final class NotPredicate extends OperationPredicate {
         final boolean noBracket = !(predicate instanceof OrPredicate);
 
         if (noBracket) {
-            builder.append(Constant.SPACE)
-                    .append(Constant.LEFT_BRACKET);
+            builder.append(Constant.SPACE_LEFT_BRACKET);
         }
         predicate.appendSql(context);
 
         if (noBracket) {
-            builder.append(Constant.SPACE)
-                    .append(Constant.RIGHT_BRACKET);
+            builder.append(Constant.SPACE_RIGHT_BRACKET);
         }
 
     }

@@ -39,7 +39,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
     /**
      * relational operate with {@code =}
      * <p>
-     * Operand will be wrapped with {@link SQLs#param(Object)}.
+     * Operand will be wrapped with optimizing param
      * </p>
      *
      * @param parameter right operand of {@code =},operand is weak weakly instance, because sql is weakly typed.
@@ -49,7 +49,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
     /**
      * relational operate with {@code =}
      * <p>
-     * If operand non-null than operand will be wrapped with {@link SQLs#param(Expression, Object)}.
+     * If operand non-null than operand will be wrapped with optimizing param.
      * </p>
      *
      * @param parameter right operand of {@code =},operand is weak weakly instance, because sql is weakly typed.

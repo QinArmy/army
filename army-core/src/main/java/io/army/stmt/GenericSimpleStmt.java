@@ -9,7 +9,7 @@ public interface GenericSimpleStmt extends Stmt {
 
     String sql();
 
-    boolean hasVersion();
+    boolean hasOptimistic();
 
     @Deprecated
     default StatementType statementType() {

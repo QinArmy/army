@@ -1,12 +1,19 @@
 package io.army.criteria.impl;
 
+import io.army.DialectMode;
 import io.army.beans.ReadWrapper;
 import io.army.criteria.Delete;
 import io.army.criteria.Statement;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._BatchDml;
+import io.army.dialect._MockDialects;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.stmt.BatchStmt;
+import io.army.stmt.SimpleStmt;
+import io.army.stmt.Stmt;
+import io.army.util._Assert;
 import io.army.util._Exceptions;
 
 import java.util.List;
@@ -39,6 +46,7 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
 
     private StandardDelete(@Nullable C criteria) {
         super(CriteriaUtils.primaryContext(criteria));
+        CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 
     @Override
@@ -78,6 +86,48 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
     @Override
     public final String tableAlias() {
         return this.tableAlias;
+    }
+
+
+    @Override
+    public String toString() {
+        final String s;
+        if (this.isPrepared()) {
+            s = this.mockAsString(DialectMode.MySQL57);
+        } else {
+            s = super.toString();
+        }
+        return s;
+    }
+
+    @Override
+    public final void mock(DialectMode mode) {
+        System.out.println(this.mockAsString(mode));
+    }
+
+    @Override
+    public final String mockAsString(DialectMode mode) {
+        final Stmt stmt;
+        stmt = this.mockAsStmt(mode);
+        final StringBuilder builder = new StringBuilder();
+        if (stmt instanceof SimpleStmt) {
+            final SimpleStmt simpleStmt = (SimpleStmt) stmt;
+            _Assert.noNamedParam(simpleStmt.paramGroup());
+            builder.append("delete sql:\n")
+                    .append(simpleStmt.sql());
+
+        } else if (stmt instanceof BatchStmt) {
+            builder.append("batch delete sql:\n")
+                    .append(((BatchStmt) stmt).sql());
+        } else {
+            throw new IllegalStateException("stmt error.");
+        }
+        return builder.toString();
+    }
+
+    @Override
+    public final Stmt mockAsStmt(DialectMode mode) {
+        return _MockDialects.from(mode).delete(this, Visible.ONLY_VISIBLE);
     }
 
 

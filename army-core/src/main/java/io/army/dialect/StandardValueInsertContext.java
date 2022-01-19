@@ -143,7 +143,7 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
         if (returnId != null) {
             this.sqlBuilder
                     .append(Constant.SPACE)
-                    .append(Constant.RETURNING)
+                    .append(Constant.SPACE_RETURNING)
                     .append(Constant.SPACE)
                     .append(returnId.columnName())
                     .append(Constant.SPACE)

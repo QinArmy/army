@@ -66,7 +66,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
             int[] batchResult;
             batchResult = st.executeBatch();
             List<Integer> resultList = new ArrayList<>(batchResult.length);
-            final boolean hasVersion = sqlWrapper.hasVersion();
+            final boolean hasVersion = sqlWrapper.hasOptimistic();
             final boolean insertStatement = sqlWrapper.statementType().insertStatement();
             for (int row : batchResult) {
                 if (hasVersion && row < 1) {
@@ -88,7 +88,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
             long[] batchResult;
             batchResult = st.executeLargeBatch();
             List<Long> resultList = new ArrayList<>(batchResult.length);
-            final boolean hasVersion = sqlWrapper.hasVersion();
+            final boolean hasVersion = sqlWrapper.hasOptimistic();
             for (long row : batchResult) {
                 if (hasVersion && row < 1L) {
                     throw createOptimisticLockException(sqlWrapper.sql());
@@ -128,7 +128,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
             N updateRows;
             //4. execute update
             updateRows = executeFunction.apply(st, sqlWrapper);
-            if (updateRows.longValue() < 1L && sqlWrapper.hasVersion()) {
+            if (updateRows.longValue() < 1L && sqlWrapper.hasOptimistic()) {
                 // 5. check optimistic lock
                 throw createOptimisticLockException(sqlWrapper.sql());
             }
@@ -194,7 +194,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
                     resultList = extractRowResultList(session, resultSet, sqlWrapper, resultClass);
                 }
                 //5.check Optimistic Lock
-                if (sqlWrapper.hasVersion() && resultList.isEmpty()) {
+                if (sqlWrapper.hasOptimistic() && resultList.isEmpty()) {
                     throw createOptimisticLockException(sqlWrapper.sql());
                 }
                 return resultList;

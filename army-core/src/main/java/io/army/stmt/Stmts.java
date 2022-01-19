@@ -78,7 +78,7 @@ public abstract class Stmts {
         if (namedParam == null) {
             throw new CriteriaException("Not found any named parameter in batch statement.");
         }
-        return new MinBatchDmlStmt(stmt.sql(), groupList, stmt.hasVersion());
+        return new MinBatchDmlStmt(stmt.sql(), groupList, stmt.hasOptimistic());
     }
 
 
@@ -99,7 +99,7 @@ public abstract class Stmts {
         }
 
         @Override
-        public boolean hasVersion() {
+        public boolean hasOptimistic() {
             return false;
         }
 
@@ -161,7 +161,7 @@ public abstract class Stmts {
         }
 
         @Override
-        public boolean hasVersion() {
+        public boolean hasOptimistic() {
             return this.hasOptimistic;
         }
 
@@ -202,7 +202,7 @@ public abstract class Stmts {
         }
 
         @Override
-        public boolean hasVersion() {
+        public boolean hasOptimistic() {
             return this.hasOptimistic;
         }
 

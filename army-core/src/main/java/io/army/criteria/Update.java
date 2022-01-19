@@ -8,6 +8,7 @@ import io.army.meta.TableMeta;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -45,7 +46,6 @@ public interface Update extends Statement {
     interface StandardWhereAndSpec<C> extends Statement.WhereAndClause<C, StandardWhereAndSpec<C>>, Update.UpdateSpec {
 
     }
-
 
 
     interface SetClause<C, SR> {
@@ -150,6 +150,18 @@ public interface Update extends Statement {
 
         SR set(List<FieldMeta<?, ?>> fieldList);
 
+        SR set(Consumer<List<FieldMeta<?, ?>>> consumer);
+
+        SR setNullable(Consumer<List<FieldMeta<?, ?>>> consumer);
+
+        SR set(Function<C, List<FieldMeta<?, ?>>> function);
+
+        SR setNullable(Function<C, List<FieldMeta<?, ?>>> function);
+
+        SR set(Supplier<List<FieldMeta<?, ?>>> supplier);
+
+        SR setNullable(Supplier<List<FieldMeta<?, ?>>> supplier);
+
         /**
          * @see SQLs#nullableNamedParam(GenericField)
          */
@@ -184,7 +196,11 @@ public interface Update extends Statement {
 
         SR ifSet(Function<C, List<FieldMeta<?, ?>>> function);
 
-        <F> SR ifSet(Predicate<C> test, FieldMeta<?, F> field);
+        SR ifSetNullable(Function<C, List<FieldMeta<?, ?>>> function);
+
+        SR ifSet(Predicate<C> test, FieldMeta<?, ?> field);
+
+        SR ifSetNullable(Predicate<C> test, FieldMeta<?, ?> field);
 
     }
 

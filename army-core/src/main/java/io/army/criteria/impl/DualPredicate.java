@@ -2,8 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.GenericField;
-import io.army.criteria.NamedParam;
-import io.army.criteria.NonNullNamedParam;
 import io.army.dialect._SqlContext;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Exceptions;
@@ -45,8 +43,7 @@ final class DualPredicate extends OperationPredicate {
             case IN:
             case NOT_IN: {
                 final ArmyExpression<?> rightExp = (ArmyExpression<?>) right;
-                if (rightExp.nullableExp()
-                        || (rightExp instanceof NamedParam && !(rightExp instanceof NonNullNamedParam))) {
+                if (rightExp.nullableExp()) {
                     throw _Exceptions.operatorRightIsNullable(operator);
                 }
                 predicate = new DualPredicate(left, operator, rightExp);

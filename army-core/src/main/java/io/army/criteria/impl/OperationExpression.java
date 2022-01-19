@@ -51,7 +51,7 @@ abstract class OperationExpression<E> implements ArmyExpression<E> {
         } else if (this instanceof ScalarSubQuery) {
             nullable = ((ScalarSubQuery<?>) this).selection().nullable();
         } else {
-            nullable = false;
+            nullable = !(this instanceof NonNullNamedParam);
         }
         return nullable;
     }

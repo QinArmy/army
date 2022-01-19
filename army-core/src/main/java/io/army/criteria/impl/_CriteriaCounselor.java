@@ -36,8 +36,8 @@ public abstract class _CriteriaCounselor {
     }
 
     public static void assertStandardDelete(Delete delete) {
-        if (delete instanceof StandardDelete) {
-            throw new CriteriaException(String.format("%s isn't instance of %s", delete
+        if (!(delete instanceof StandardDelete)) {
+            throw new CriteriaException(String.format("%s isn't instance of %s", delete.getClass().getName()
                     , StandardDelete.class.getName()));
         }
     }

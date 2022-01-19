@@ -2,8 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.GenericField;
-import io.army.criteria.NamedParam;
-import io.army.criteria.NonNullNamedParam;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
@@ -44,8 +42,7 @@ final class DualExpression<E> extends OperationExpression<E> {
             case XOR:
             case RIGHT_SHIFT:
             case LEFT_SHIFT: {
-                if (rightExp.nullableExp()
-                        || (rightExp instanceof NamedParam && !(rightExp instanceof NonNullNamedParam))) {
+                if (rightExp.nullableExp()) {
                     throw _Exceptions.operatorRightIsNullable(operator);
                 }
             }

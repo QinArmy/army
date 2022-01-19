@@ -1,10 +1,13 @@
 package io.army.criteria.impl;
 
 import io.army.DialectMode;
+import io.army.criteria.Delete;
 import io.army.criteria.Insert;
 import io.army.criteria.Update;
 import io.army.example.domain.*;
 import io.army.example.struct.IdentityType;
+import io.army.stmt.BatchStmt;
+import io.army.stmt.SimpleStmt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -12,6 +15,8 @@ import org.testng.annotations.Test;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.testng.Assert.assertTrue;
 
 public class StandardCriteriaUnitTests {
 
@@ -91,7 +96,7 @@ public class StandardCriteriaUnitTests {
     }
 
     @Test
-    private void batchUpdateParent() {
+    public void batchUpdateParent() {
         final Update update;
         update = SQLs.standardBatchUpdate()
                 .update(ChinaProvince_.T, "p")
@@ -104,11 +109,14 @@ public class StandardCriteriaUnitTests {
                 .asUpdate();
 
         for (DialectMode mode : DialectMode.values()) {
-            LOG.debug("batchUpdateParent\n{} {}", mode.name(), update.mockAsString(mode));
+            BatchStmt stmt;
+            stmt = (BatchStmt) update.mockAsStmt(mode);
+            assertTrue(stmt.hasOptimistic(), "optimistic lock");
+            LOG.debug("batchUpdateParent\n{}\n{}", mode.name(), stmt.sql());
         }
 
-
     }
+
 
     /**
      * @see io.army.annotation.UpdateMode
@@ -127,6 +135,64 @@ public class StandardCriteriaUnitTests {
 
         for (DialectMode mode : DialectMode.values()) {
             LOG.debug("{} {}", mode.name(), update.mockAsString(mode));
+        }
+    }
+
+    @Test
+    public void deleteParent() {
+        final Delete delete;
+        delete = SQLs.standardDelete()
+                .deleteFrom(ChinaRegion_.T, "r")
+                .where(ChinaRegion_.id.equal(1))
+                .and(ChinaRegion_.name.equal("马鱼腮角"))
+                .and(ChinaProvince_.version.equal(2))
+                .asDelete();
+
+        for (DialectMode mode : DialectMode.values()) {
+            SimpleStmt stmt;
+            stmt = (SimpleStmt) delete.mockAsStmt(mode);
+            assertTrue(stmt.hasOptimistic(), "optimistic lock");
+            LOG.debug("deleteParent\n{}\n{}", mode.name(), stmt.sql());
+        }
+
+    }
+
+    @Test
+    public void deleteChild() {
+        final Delete delete;
+        delete = SQLs.standardDelete()
+                .deleteFrom(ChinaProvince_.T, "p")
+                .where(ChinaProvince_.id.equal(1))
+                .and(ChinaProvince_.name.equal("江南省"))
+                .and(ChinaProvince_.governor.equal("无名"))
+                .and(ChinaProvince_.version.equal(2))
+                .asDelete();
+
+        for (DialectMode mode : DialectMode.values()) {
+            SimpleStmt stmt;
+            stmt = (SimpleStmt) delete.mockAsStmt(mode);
+            assertTrue(stmt.hasOptimistic(), "optimistic lock");
+            LOG.debug("deleteChild\n{}\n{}", mode.name(), stmt.sql());
+        }
+    }
+
+    @Test
+    public void batchDeleteChild() {
+        final Delete delete;
+        delete = SQLs.standardBatchDelete()
+                .deleteFrom(ChinaProvince_.T, "p")
+                .where(ChinaProvince_.id.equalNamed())
+                .and(ChinaProvince_.name.equalNamed())
+                .and(ChinaProvince_.governor.equalNamed())
+                .and(ChinaProvince_.version.equal(2))
+                .paramBeans(this.createProvinceList())
+                .asDelete();
+
+        for (DialectMode mode : DialectMode.values()) {
+            BatchStmt stmt;
+            stmt = (BatchStmt) delete.mockAsStmt(mode);
+            assertTrue(stmt.hasOptimistic(), "optimistic lock");
+            LOG.debug("batchDeleteChild\n{}\n{}", mode.name(), stmt.sql());
         }
     }
 

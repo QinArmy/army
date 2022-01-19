@@ -243,7 +243,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
     private <N extends Number> Mono<N> assertOptimisticLock(N updatedRows, GenericSimpleStmt sqlWrapper) {
 
         Mono<N> mono;
-        if (sqlWrapper.hasVersion() && updatedRows.longValue() < 1L) {
+        if (sqlWrapper.hasOptimistic() && updatedRows.longValue() < 1L) {
             mono = Mono.error(createOptimisticLockException(sqlWrapper.sql()));
         } else {
             mono = Mono.just(updatedRows);

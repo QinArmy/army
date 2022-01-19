@@ -4,7 +4,6 @@ import io.army.criteria.GenericField;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._SelfDescribed;
-import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Exceptions;
@@ -20,8 +19,7 @@ final class UnaryPredicate extends OperationPredicate {
             case EXISTS:
                 return new UnaryPredicate(operator, (_SelfDescribed) subQuery);
             default:
-                throw new IllegalArgumentException(
-                        String.format("operator[%s] not in [EXISTS,NOT_EXISTS]", operator));
+                throw _Exceptions.unexpectedEnum(operator);
         }
 
     }
@@ -39,7 +37,7 @@ final class UnaryPredicate extends OperationPredicate {
             case IS_NOT_NULL:
                 return new UnaryPredicate(operator, expression);
             default:
-                throw new IllegalArgumentException("operator error");
+                throw _Exceptions.unexpectedEnum(operator);
         }
     }
 
@@ -59,14 +57,12 @@ final class UnaryPredicate extends OperationPredicate {
             case IS_NULL: {
                 this.expressionOrSubQuery.appendSql(context);
                 context.sqlBuilder()
-                        .append(Constant.SPACE)
                         .append(this.operator.rendered());
             }
             break;
             case EXISTS:
             case NOT_EXISTS: {
                 context.sqlBuilder()
-                        .append(Constant.SPACE)
                         .append(this.operator.rendered());
                 this.expressionOrSubQuery.appendSql(context);
             }
@@ -85,14 +81,12 @@ final class UnaryPredicate extends OperationPredicate {
             case IS_NOT_NULL:
             case IS_NULL: {
                 builder.append(this.expressionOrSubQuery)
-                        .append(Constant.SPACE)
                         .append(this.operator.rendered());
             }
             break;
             case EXISTS:
             case NOT_EXISTS: {
-                builder.append(Constant.SPACE)
-                        .append(this.operator.rendered())
+                builder.append(this.operator.rendered())
                         .append(this.expressionOrSubQuery);
             }
             break;

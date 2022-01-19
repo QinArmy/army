@@ -1,11 +1,17 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.dialect.Constant;
+import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
+import io.army.mapping._MappingFactory;
 import io.army.meta.*;
 import io.army.tx.Isolation;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -17,7 +23,7 @@ import java.util.function.Supplier;
  * </p>
  */
 @SuppressWarnings({"unused"})
-public abstract class SQLs extends SQLUtils {
+public abstract class SQLs extends StandardFunctions {
 
     /**
      * protected constructor, application developer can extend this util class.
@@ -166,6 +172,168 @@ public abstract class SQLs extends SQLUtils {
     }
 
 
+    /**
+     * package method
+     */
+    @SuppressWarnings("unchecked")
+    static Expression<?> paramWithExp(final Expression<?> type, final @Nullable Object value) {
+        final Expression<?> resultExpression;
+        if (value instanceof Expression) {
+            //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
+            resultExpression = (Expression<?>) value;
+        } else if (value instanceof Function) {
+            //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
+            resultExpression = ((Function<Object, Expression<?>>) value).apply(CriteriaContextStack.getCriteria());
+        } else if (value instanceof Supplier) {
+            //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
+            resultExpression = (Expression<?>) ((Supplier<?>) value).get();
+        } else {
+            // use optimizing param expression
+            resultExpression = ParamExpression.optimizing(type.paramMeta(), value);
+        }
+        return resultExpression;
+    }
+
+    /**
+     * <p>
+     * Create strict param expression
+     * </p>
+     */
+    public static <E> Expression<E> param(final E value) {
+        Objects.requireNonNull(value);
+        return ParamExpression.strict(_MappingFactory.getMapping(value.getClass()), value);
+    }
+
+    /**
+     * <p>
+     * Create strict param expression
+     * </p>
+     */
+    public static <E> Expression<E> param(final MappingType type, final @Nullable E value) {
+        return ParamExpression.strict(type, value);
+    }
+
+    /**
+     * <p>
+     * Create strict param expression
+     * </p>
+     */
+    public static <E> Expression<E> param(final Expression<?> type, final @Nullable E value) {
+        return ParamExpression.strict(type.paramMeta(), value);
+    }
+
+    /**
+     * package method
+     */
+    static <E> Expression<Collection<E>> collectionParam(Expression<?> type, Collection<E> value) {
+        return CollectionParamExpression.optimizing(type, value);
+    }
+
+    /**
+     * <p>
+     * Create strict collection param expression
+     * </p>
+     */
+    public static <E> Expression<Collection<E>> params(Expression<?> type, Collection<E> value) {
+        return CollectionParamExpression.strict(type, value);
+    }
+
+    /**
+     * <p>
+     * Create strict collection param expression
+     * </p>
+     */
+    public static <E> Expression<Collection<E>> params(Expression<?> type, Supplier<Collection<E>> supplier) {
+        return CollectionParamExpression.strict(type, supplier.get());
+    }
+
+    /**
+     * <p>
+     * Create strict collection param expression
+     * </p>
+     */
+    public static <C, E> Expression<Collection<E>> params(Expression<?> type, Function<C, Collection<E>> function) {
+        return CollectionParamExpression.strict(type, function.apply(CriteriaContextStack.getCriteria()));
+    }
+
+
+    /**
+     * <p>
+     * Create nullable named parameter expression for batch update(or delete)
+     * </p>
+     *
+     * @see io.army.criteria.Update.BatchSetClause
+     */
+    public static <E> NamedParam<E> nullableNamedParam(String name, ParamMeta paramMeta) {
+        return NamedParamImpl.nullable(name, paramMeta);
+    }
+
+    /**
+     * <p>
+     * Create nullable named parameter expression for batch update(or delete)
+     * </p>
+     *
+     * @see io.army.criteria.Update.BatchSetClause
+     */
+    public static <E> NamedParam<E> nullableNamedParam(GenericField<?, ?> field) {
+        return NamedParamImpl.nullable(field.fieldName(), field);
+    }
+
+
+    /**
+     * <p>
+     * Create non-null named parameter expression for batch update(or delete)
+     * </p>
+     *
+     * @see SQLs#standardBatchUpdate()
+     * @see SQLs#standardBatchUpdate(Object)
+     * @see SQLs#standardBatchDelete()
+     * @see SQLs#standardBatchDelete(Object)
+     */
+    public static <E> NamedParam<E> namedParam(String name, ParamMeta paramMeta) {
+        return NamedParamImpl.nonNull(name, paramMeta);
+    }
+
+    /**
+     * <p>
+     * Create non-null named parameter expression for batch update(or delete)
+     * </p>
+     *
+     * @see SQLs#standardBatchUpdate()
+     * @see SQLs#standardBatchUpdate(Object)
+     * @see SQLs#standardBatchDelete()
+     * @see SQLs#standardBatchDelete(Object)
+     */
+    public static <E> NamedParam<E> namedParam(GenericField<?, ?> field) {
+        return NamedParamImpl.nonNull(field.fieldName(), field);
+    }
+
+    public static <E> Expression<E> literal(E value) {
+        Objects.requireNonNull(value);
+        return LiteralExpression.literal(_MappingFactory.getMapping(value.getClass()), value);
+    }
+
+    public static <E> Expression<E> literal(ParamMeta paramMeta, E value) {
+        return LiteralExpression.literal(paramMeta, value);
+    }
+
+    /**
+     * Only used to update set clause.
+     */
+    @SuppressWarnings("unchecked")
+    public static <E> Expression<E> defaultWord() {
+        return (Expression<E>) SQLs.DefaultWord.INSTANCE;
+    }
+
+    /**
+     * Only used to update set clause.
+     */
+    @SuppressWarnings("unchecked")
+    public static <E> Expression<E> nullWord() {
+        return (Expression<E>) SQLs.NullWord.INSTANCE;
+    }
+
+
     /*################################## blow sql reference method ##################################*/
 
     /**
@@ -248,6 +416,73 @@ public abstract class SQLs extends SQLUtils {
         ));*/
         return null;
     }
+
+
+    /**
+     * <p>
+     * This class representing sql {@code DEFAULT} key word.
+     * </p>
+     *
+     * @param <E> The java type The expression thant reference kwy word {@code DEFAULT}
+     */
+    static final class DefaultWord<E> extends NoNOperationExpression<E> {
+
+        private static final DefaultWord<?> INSTANCE = new DefaultWord<>();
+
+        private DefaultWord() {
+        }
+
+
+        @Override
+        public ParamMeta paramMeta() {
+            throw unsupportedOperation();
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            context.sqlBuilder().append(" DEFAULT");
+        }
+
+        @Override
+        public String toString() {
+            return " DEFAULT";
+        }
+
+    }// DefaultWord
+
+
+    /**
+     * <p>
+     * This class representing sql {@code NULL} key word.
+     * </p>
+     *
+     * @param <E> The java type The expression thant reference kwy word {@code NULL}
+     */
+    static final class NullWord<E> extends NoNOperationExpression<E> {
+
+        private static final NullWord<?> INSTANCE = new NullWord<>();
+
+
+        private NullWord() {
+        }
+
+        @Override
+        public void appendSql(_SqlContext context) {
+            context.sqlBuilder().append(Constant.SPACE_NULL);
+        }
+
+        @Override
+        public ParamMeta paramMeta() {
+            throw unsupportedOperation();
+        }
+
+        @Override
+        public String toString() {
+            return Constant.SPACE_NULL;
+        }
+
+
+    }// NullWord
 
 
 }

@@ -51,7 +51,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
         if (this instanceof ValueExpression) {
             nullable = ((ValueExpression<?>) this).value() == null;
         } else {
-            nullable = this instanceof SQLUtils.NullWord;
+            nullable = this instanceof SQLs.NullWord;
         }
         return nullable;
     }

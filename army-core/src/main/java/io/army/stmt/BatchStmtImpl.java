@@ -41,7 +41,7 @@ final class BatchStmtImpl implements BatchStmt {
     }
 
     @Override
-    public final boolean hasVersion() {
+    public final boolean hasOptimistic() {
         return this.hasVersion;
     }
 

@@ -14,7 +14,9 @@ public interface Constant {
 
     String UPDATE_SPACE = "UPDATE ";
 
-    String DELETE_FROM = "DELETE FROM";
+    String DELETE_SPACE = "DELETE ";
+
+    String DELETE_FROM_SPACE = "DELETE FROM ";
 
     String SPACE_FROM = " FROM";
 
@@ -40,7 +42,7 @@ public interface Constant {
 
     String SPACE_ORDER_BY = " ORDER BY";
 
-    String EXISTS = "EXISTS";
+    String SPACE_EXISTS = " EXISTS";
 
     String SPACE_EQUAL = " =";
 
@@ -56,13 +58,11 @@ public interface Constant {
 
     String SPACE_SET = " SET";
 
-    String LOCK = "LOCK";
-
     String LIMIT = "LIMIT";
 
     String SPACE_IS_NULL = " IS NULL";
 
-    String RETURNING = "RETURNING";
+    String SPACE_RETURNING = " RETURNING";
 
     String SPACE_ONLY = " ONLY";
 

@@ -15,7 +15,7 @@ import io.army.meta.ParamMeta;
 class NamedParamImpl<E> extends OperationExpression<E>
         implements NamedParam<E> {
 
-    static <E> NamedParam<E> named(String name, ParamMeta paramMeta) {
+    static <E> NamedParam<E> nullable(String name, ParamMeta paramMeta) {
         return new NamedParamImpl<>(name, paramMeta);
     }
 
@@ -44,7 +44,7 @@ class NamedParamImpl<E> extends OperationExpression<E>
 
     @Override
     public final Object value() {
-        throw new UnsupportedOperationException("Couldn't specify %s in non batch update (or batch delete) statement.");
+        throw new UnsupportedOperationException("Named parameter no value in non batch update (or batch delete) statement.");
     }
 
     @Override
@@ -54,7 +54,7 @@ class NamedParamImpl<E> extends OperationExpression<E>
 
     @Override
     public final String toString() {
-        return " ?";
+        return " ?:" + this.name;
     }
 
     @Override

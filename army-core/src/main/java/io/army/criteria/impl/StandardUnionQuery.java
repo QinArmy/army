@@ -116,13 +116,11 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
         @Override
         public void appendSql(final _SqlContext context) {
             final StringBuilder builder = context.sqlBuilder()
-                    .append(Constant.SPACE)
-                    .append(Constant.LEFT_BRACKET);
+                    .append(Constant.SPACE_LEFT_BRACKET);
 
             context.dialect().select(this.left, context);
 
-            builder.append(Constant.SPACE)
-                    .append(Constant.RIGHT_BRACKET);
+            builder.append(Constant.SPACE_RIGHT_BRACKET);
 
         }
     }//BracketSelect
@@ -136,13 +134,11 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
         @Override
         public final void appendSql(final _SqlContext context) {
             final StringBuilder builder = context.sqlBuilder()
-                    .append(Constant.SPACE)
-                    .append(Constant.LEFT_BRACKET);
+                    .append(Constant.SPACE_LEFT_BRACKET);
 
             context.dialect().subQuery(this.left, context);
 
-            builder.append(Constant.SPACE)
-                    .append(Constant.RIGHT_BRACKET);
+            builder.append(Constant.SPACE_RIGHT_BRACKET);
         }
 
 

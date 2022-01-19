@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.GenericField;
+import io.army.criteria.NonNullNamedParam;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
@@ -22,8 +23,12 @@ final class UnaryExpression<E> extends OperationExpression<E> {
     static <E> UnaryExpression<E> create(ArmyExpression<E> expression, UnaryOperator operator) {
         switch (operator) {
             case INVERT:
-            case NEGATED:
-                return new UnaryExpression<>(expression, operator);
+            case NEGATED: {
+                if (expression.nullableExp()) {
+                    throw _Exceptions.operatorRightIsNullable(operator);
+                }
+            }
+            return new UnaryExpression<>(expression, operator);
             default:
                 throw _Exceptions.unexpectedEnum(operator);
 
@@ -46,82 +51,89 @@ final class UnaryExpression<E> extends OperationExpression<E> {
 
     @Override
     public void appendSql(final _SqlContext context) {
-        // unary expression always out outer bracket.
-        final StringBuilder builder = context.sqlBuilder()
-                .append(Constant.SPACE)
-                .append(Constant.LEFT_BRACKET);
-
+        final boolean outerBracket;
         switch (this.operator) {
+            case NEGATED:
+                outerBracket = false;
+                break;
             case INVERT:
-            case NEGATED: {
-                builder.append(Constant.SPACE)
-                        .append(this.operator.rendered());
-
-                final _Expression<E> expression = this.expression;
-                final boolean innerBracket = !(expression instanceof ValueExpression
-                        || expression instanceof GenericField
-                        || expression instanceof UnaryExpression
-                        || expression instanceof BracketsExpression);
-
-                if (innerBracket) {
-                    builder.append(Constant.SPACE)
-                            .append(Constant.LEFT_BRACKET);
-                }
-                // append expression
-                expression.appendSql(context);
-
-                if (innerBracket) {
-                    builder.append(Constant.SPACE)
-                            .append(Constant.RIGHT_BRACKET);
-                }
-
-            }
-            break;
+                outerBracket = true;
+                break;
             default:
                 throw _Exceptions.unexpectedEnum(this.operator);
+        }
+        final StringBuilder builder = context.sqlBuilder();
 
+        if (outerBracket) {
+            builder.append(Constant.SPACE_LEFT_BRACKET);
         }
 
-        // unary expression always out outer bracket.
-        builder.append(Constant.SPACE)
-                .append(Constant.RIGHT_BRACKET);
+        builder.append(this.operator.rendered());
+
+        final _Expression<E> expression = this.expression;
+        final boolean innerBracket = !(expression instanceof ValueExpression
+                || expression instanceof GenericField
+                || expression instanceof NonNullNamedParam
+                || expression instanceof BracketsExpression);
+
+        if (innerBracket) {
+            builder.append(Constant.SPACE_LEFT_BRACKET);
+        }
+        // append expression
+        expression.appendSql(context);
+
+        if (innerBracket) {
+            builder.append(Constant.SPACE_RIGHT_BRACKET);
+        }
+
+        if (outerBracket) {
+            builder.append(Constant.SPACE_RIGHT_BRACKET);
+        }
+
     }
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder()
-                .append(Constant.SPACE)
-                .append(Constant.LEFT_BRACKET);
+        final boolean outerBracket;
         switch (this.operator) {
+            case NEGATED:
+                outerBracket = false;
+                break;
             case INVERT:
-            case NEGATED: {
-                builder.append(Constant.SPACE)
-                        .append(this.operator.rendered());
-
-                final _Expression<E> expression = this.expression;
-                final boolean needBracket = !(expression instanceof ValueExpression
-                        || expression instanceof BracketsExpression);
-
-                if (needBracket) {
-                    builder.append(Constant.SPACE)
-                            .append(Constant.LEFT_BRACKET);
-                }
-                // append expression
-                builder.append(expression);
-
-                if (needBracket) {
-                    builder.append(Constant.SPACE)
-                            .append(Constant.RIGHT_BRACKET);
-                }
-            }
-            break;
+                outerBracket = true;
+                break;
             default:
                 throw _Exceptions.unexpectedEnum(this.operator);
-
         }
-        return builder.append(Constant.SPACE)
-                .append(Constant.RIGHT_BRACKET)
-                .toString();
+
+        final StringBuilder builder = new StringBuilder();
+
+        if (outerBracket) {
+            builder.append(Constant.SPACE_LEFT_BRACKET);
+        }
+        builder.append(Constant.SPACE)
+                .append(this.operator.rendered());
+
+        final _Expression<E> expression = this.expression;
+        final boolean innerBracket = !(expression instanceof ValueExpression
+                || expression instanceof GenericField
+                || expression instanceof NonNullNamedParam
+                || expression instanceof BracketsExpression);
+
+        if (innerBracket) {
+            builder.append(Constant.SPACE_LEFT_BRACKET);
+        }
+        // append expression
+        builder.append(expression);
+
+        if (innerBracket) {
+            builder.append(Constant.SPACE_RIGHT_BRACKET);
+        }
+
+        if (outerBracket) {
+            builder.append(Constant.SPACE_RIGHT_BRACKET);
+        }
+        return builder.toString();
     }
 
 

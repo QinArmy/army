@@ -114,8 +114,8 @@ public abstract class _AbstractDialect implements _Dialect {
             _CriteriaCounselor.assertStandardDelete(delete);
             final SimpleStmt simpleStmt;
             simpleStmt = this.handleStandardDelete((_SingleDelete) delete, visible);
-            if (delete instanceof _BatchSingleDelete) {
-                stmt = Stmts.batchDml(simpleStmt, ((_BatchSingleDelete) delete).wrapperList());
+            if (delete instanceof _BatchDml) {
+                stmt = Stmts.batchDml(simpleStmt, ((_BatchDml) delete).wrapperList());
             } else {
                 stmt = simpleStmt;
             }
@@ -324,6 +324,37 @@ public abstract class _AbstractDialect implements _Dialect {
         }
     }
 
+
+    protected final void appendChildJoinParent(final _Block childBlock, final _Block parentBlock) {
+        final String safeChildTableAlias = childBlock.safeTableAlias();
+        final String safeParentTableAlias = parentBlock.safeTableAlias();
+        final StringBuilder builder = parentBlock.sqlBuilder();
+        final _Dialect dialect = parentBlock.dialect();
+
+        // 1. child table name
+        builder.append(Constant.SPACE)
+                .append(dialect.quoteIfNeed(childBlock.table().tableName()))
+                .append(Constant.SPACE_AS_SPACE)
+                .append(safeChildTableAlias);
+
+        //2. join clause
+        builder.append(Constant.SPACE_JOIN_SPACE)
+                // append parent table name
+                .append(dialect.quoteIfNeed(parentBlock.table().tableName()))
+                .append(Constant.SPACE_AS_SPACE)
+                .append(safeParentTableAlias);
+
+        //2.1 on clause
+        builder.append(Constant.SPACE_ON_SPACE)
+                .append(safeChildTableAlias)
+                .append(Constant.POINT)
+                .append(_MetaBridge.ID)
+                .append(Constant.SPACE_EQUAL)
+                .append(Constant.SPACE)
+                .append(safeParentTableAlias)
+                .append(Constant.POINT)
+                .append(_MetaBridge.ID);
+    }
 
     protected final void groupByClause(final List<SortPart> groupByList, final _SqlContext context) {
         final int size = groupByList.size();
@@ -879,13 +910,12 @@ public abstract class _AbstractDialect implements _Dialect {
         final StringBuilder sqlBuilder = context.sqlBuilder;
 
         // 1. DELETE clause
-        sqlBuilder.append(Constant.DELETE_FROM)
+        sqlBuilder.append(Constant.DELETE_FROM_SPACE)
                 .append(Constant.SPACE)
                 .append(dialect.safeTableName(table.tableName()));
 
         if (dialect.tableAliasAfterAs()) {
-            sqlBuilder.append(Constant.SPACE)
-                    .append(Constant.SPACE_AS_SPACE);
+            sqlBuilder.append(Constant.SPACE_AS_SPACE);
         }
         sqlBuilder.append(Constant.SPACE)
                 .append(context.safeTableAlias);
@@ -896,6 +926,10 @@ public abstract class _AbstractDialect implements _Dialect {
         //2.1 append discriminator predicate
         if (table instanceof ParentTableMeta) {
             this.discriminator(table, context.safeTableAlias, context);
+        }
+        //2.2 append visible
+        if (table.containField(_MetaBridge.VISIBLE)) {
+            this.visiblePredicate(table, context.safeTableAlias, context);
         }
         return context.build();
     }

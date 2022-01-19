@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -308,7 +309,7 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
     @Override
     public final SR setNullable(List<FieldMeta<?, ?>> fieldList) {
         if (fieldList.size() == 0) {
-            throw _Exceptions.selectListIsEmpty();
+            throw batchSetLisEmpty();
         }
         for (FieldMeta<?, ?> field : fieldList) {
             this.set(field, SQLs.nullableNamedParam(field));
@@ -319,12 +320,47 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
     @Override
     public final SR set(List<FieldMeta<?, ?>> fieldList) {
         if (fieldList.size() == 0) {
-            throw _Exceptions.selectListIsEmpty();
+            throw batchSetLisEmpty();
         }
         for (FieldMeta<?, ?> field : fieldList) {
             this.set(field, SQLs.namedParam(field));
         }
         return (SR) this;
+    }
+
+    @Override
+    public final SR set(Consumer<List<FieldMeta<?, ?>>> consumer) {
+        final List<FieldMeta<?, ?>> list = new ArrayList<>();
+        consumer.accept(list);
+        return this.set(list);
+    }
+
+
+    @Override
+    public final SR setNullable(Consumer<List<FieldMeta<?, ?>>> consumer) {
+        final List<FieldMeta<?, ?>> list = new ArrayList<>();
+        consumer.accept(list);
+        return this.setNullable(list);
+    }
+
+    @Override
+    public final SR set(Function<C, List<FieldMeta<?, ?>>> function) {
+        return this.set(function.apply(this.criteria));
+    }
+
+    @Override
+    public final SR setNullable(Function<C, List<FieldMeta<?, ?>>> function) {
+        return this.setNullable(function.apply(this.criteria));
+    }
+
+    @Override
+    public final SR set(Supplier<List<FieldMeta<?, ?>>> supplier) {
+        return this.set(supplier.get());
+    }
+
+    @Override
+    public final SR setNullable(Supplier<List<FieldMeta<?, ?>>> supplier) {
+        return this.setNullable(supplier.get());
     }
 
     @Override
@@ -367,13 +403,31 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
         final List<FieldMeta<?, ?>> fieldList;
         fieldList = function.apply(this.criteria);
         if (!CollectionUtils.isEmpty(fieldList)) {
+            this.set(fieldList);
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSetNullable(Function<C, List<FieldMeta<?, ?>>> function) {
+        final List<FieldMeta<?, ?>> fieldList;
+        fieldList = function.apply(this.criteria);
+        if (!CollectionUtils.isEmpty(fieldList)) {
             this.setNullable(fieldList);
         }
         return (SR) this;
     }
 
     @Override
-    public final <F> SR ifSet(Predicate<C> test, FieldMeta<?, F> field) {
+    public final SR ifSet(Predicate<C> test, FieldMeta<?, ?> field) {
+        if (test.test(this.criteria)) {
+            this.set(field, SQLs.namedParam(field));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSetNullable(Predicate<C> test, FieldMeta<?, ?> field) {
         if (test.test(this.criteria)) {
             this.set(field, SQLs.nullableNamedParam(field));
         }
@@ -453,6 +507,11 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
 
     void onClear() {
 
+    }
+
+
+    private static CriteriaException batchSetLisEmpty() {
+        return new CriteriaException("Batch set clause field list must non empty.");
     }
 
 

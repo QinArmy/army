@@ -9,7 +9,7 @@ enum UnaryOperator {
     EXISTS {
         @Override
         public String rendered() {
-            return "EXISTS";
+            return " EXISTS";
         }
 
     },
@@ -17,7 +17,7 @@ enum UnaryOperator {
 
         @Override
         public String rendered() {
-            return "NOT EXISTS";
+            return " NOT EXISTS";
         }
 
     },
@@ -25,7 +25,7 @@ enum UnaryOperator {
 
         @Override
         public String rendered() {
-            return "-";
+            return " -";
         }
 
     },
@@ -33,31 +33,34 @@ enum UnaryOperator {
 
         @Override
         public String rendered() {
-            return "+";
+            return " +";
         }
 
     },
     IS_NULL {
         @Override
         public String rendered() {
-            return "IS NULL";
+            return " IS NULL";
         }
 
     },
     IS_NOT_NULL {
         @Override
         public String rendered() {
-            return "IS NOT NULL";
+            return " IS NOT NULL";
         }
 
     }, INVERT {
         @Override
         public String rendered() {
-            return "~";
+            return " ~";
         }
 
     };
 
+    /**
+     * @return one space and operator
+     */
     abstract String rendered();
 
 

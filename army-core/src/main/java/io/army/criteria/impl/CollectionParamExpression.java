@@ -57,8 +57,7 @@ final class CollectionParamExpression<E> extends NoNOperationExpression<Collecti
     @Override
     public void appendSql(final _SqlContext context) {
         final StringBuilder builder = context.sqlBuilder()
-                .append(Constant.SPACE)
-                .append(Constant.LEFT_BRACKET);
+                .append(Constant.SPACE_LEFT_BRACKET);
 
         final ParamMeta paramMeta = this.paramMeta;
         final boolean optimizing = this.optimizing;
@@ -69,8 +68,7 @@ final class CollectionParamExpression<E> extends NoNOperationExpression<Collecti
                 throw new CriteriaException("Collection element must not null.");
             }
             if (index > 0) {
-                builder.append(Constant.SPACE)
-                        .append(Constant.COMMA);
+                builder.append(Constant.SPACE_COMMA);
             }
             if (optimizing) {
                 builder.append(Constant.SPACE)
@@ -80,8 +78,7 @@ final class CollectionParamExpression<E> extends NoNOperationExpression<Collecti
             }
             index++;
         }
-        builder.append(Constant.SPACE)
-                .append(Constant.RIGHT_BRACKET);
+        builder.append(Constant.SPACE_RIGHT_BRACKET);
     }
 
 

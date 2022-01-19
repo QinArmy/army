@@ -49,7 +49,7 @@ final class SimpleStmtImpl implements SimpleStmt {
     }
 
     @Override
-    public final boolean hasVersion() {
+    public final boolean hasOptimistic() {
         return this.hasVersion;
     }
 
