@@ -57,11 +57,11 @@ public interface Statement {
 
         BR paramMaps(Function<C, List<Map<String, Object>>> function);
 
-        BR paramBeans(List<Object> beanList);
+        BR paramBeans(List<?> beanList);
 
-        BR paramBeans(Supplier<List<Object>> supplier);
+        BR paramBeans(Supplier<List<?>> supplier);
 
-        BR paramBeans(Function<C, List<Object>> function);
+        BR paramBeans(Function<C, List<?>> function);
     }
 
 

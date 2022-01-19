@@ -70,7 +70,7 @@ public abstract class SQLs extends SQLUtils {
     }
 
     /**
-     * @see #namedParam(String, ParamMeta)
+     * @see #nullableNamedParam(String, ParamMeta)
      */
     public static Update.StandardBatchUpdateSpec<Void> standardBatchUpdate() {
         return StandardUpdate.batch(null);
@@ -79,7 +79,7 @@ public abstract class SQLs extends SQLUtils {
     /**
      * @param criteria a object instance, map or bean
      * @param <C>      criteria java type used to create dynamic batch update and sub query
-     * @see #namedParam(String, ParamMeta)
+     * @see #nullableNamedParam(String, ParamMeta)
      */
     public static <C> Update.StandardBatchUpdateSpec<C> standardBatchUpdate(C criteria) {
         Objects.requireNonNull(criteria);
@@ -96,14 +96,14 @@ public abstract class SQLs extends SQLUtils {
     }
 
     /**
-     * @see #namedParam(String, ParamMeta)
+     * @see #nullableNamedParam(String, ParamMeta)
      */
     public static Delete.StandardBatchDeleteSpec<Void> standardBatchDelete() {
         return StandardDelete.batch(null);
     }
 
     /**
-     * @see #namedParam(String, ParamMeta)
+     * @see #nullableNamedParam(String, ParamMeta)
      */
     public static <C> Delete.StandardBatchDeleteSpec<C> standardBatchDelete(C criteria) {
         Objects.requireNonNull(criteria);

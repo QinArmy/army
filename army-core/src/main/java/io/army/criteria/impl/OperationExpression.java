@@ -593,53 +593,53 @@ abstract class OperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final Expression<E> and(Expression<?> operand) {
-        return DualExpression.create(this, DualOperator.AND, operand);
+    public final Expression<E> bitwiseAnd(Expression<?> operand) {
+        return DualExpression.create(this, DualOperator.BITWISE_AND, operand);
     }
 
     @Override
-    public final Expression<E> and(Object parameter) {
-        return DualExpression.create(this, DualOperator.AND, SQLs.paramWithExp(this, parameter));
+    public final Expression<E> bitwiseAnd(Object parameter) {
+        return DualExpression.create(this, DualOperator.BITWISE_AND, SQLs.paramWithExp(this, parameter));
     }
 
     @Override
-    public final Expression<E> and(String subQueryAlias, String derivedFieldName) {
-        return DualExpression.create(this, DualOperator.AND, SQLs.ref(subQueryAlias, derivedFieldName));
+    public final Expression<E> bitwiseAnd(String subQueryAlias, String derivedFieldName) {
+        return DualExpression.create(this, DualOperator.BITWISE_AND, SQLs.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
-    public final Expression<E> and(String tableAlias, FieldMeta<?, ?> field) {
-        return DualExpression.create(this, DualOperator.AND, SQLs.field(tableAlias, field));
+    public final Expression<E> bitwiseAnd(String tableAlias, FieldMeta<?, ?> field) {
+        return DualExpression.create(this, DualOperator.BITWISE_AND, SQLs.field(tableAlias, field));
     }
 
     @Override
-    public final <C, O> Expression<E> and(Function<C, Expression<O>> function) {
-        return DualExpression.functionCreate(this, DualOperator.AND, function);
+    public final <C, O> Expression<E> bitwiseAnd(Function<C, Expression<O>> function) {
+        return DualExpression.functionCreate(this, DualOperator.BITWISE_AND, function);
     }
 
     @Override
-    public final Expression<E> or(Expression<?> operand) {
-        return DualExpression.create(this, DualOperator.OR, operand);
+    public final Expression<E> bitwiseOr(Expression<?> operand) {
+        return DualExpression.create(this, DualOperator.BITWISE_OR, operand);
     }
 
     @Override
-    public final Expression<E> or(Object operand) {
-        return DualExpression.create(this, DualOperator.OR, SQLs.paramWithExp(this, operand));
+    public final Expression<E> bitwiseOr(Object operand) {
+        return DualExpression.create(this, DualOperator.BITWISE_OR, SQLs.paramWithExp(this, operand));
     }
 
     @Override
-    public final Expression<E> or(String subQueryAlias, String derivedFieldName) {
-        return DualExpression.create(this, DualOperator.OR, SQLs.ref(subQueryAlias, derivedFieldName));
+    public final Expression<E> bitwiseOr(String subQueryAlias, String derivedFieldName) {
+        return DualExpression.create(this, DualOperator.BITWISE_OR, SQLs.ref(subQueryAlias, derivedFieldName));
     }
 
     @Override
-    public final Expression<E> or(String tableAlias, FieldMeta<?, ?> fieldMeta) {
-        return DualExpression.create(this, DualOperator.OR, SQLs.field(tableAlias, fieldMeta));
+    public final Expression<E> bitwiseOr(String tableAlias, FieldMeta<?, ?> fieldMeta) {
+        return DualExpression.create(this, DualOperator.BITWISE_OR, SQLs.field(tableAlias, fieldMeta));
     }
 
     @Override
-    public final <C, O> Expression<E> or(Function<C, Expression<O>> function) {
-        return DualExpression.functionCreate(this, DualOperator.OR, function);
+    public final <C, O> Expression<E> bitwiseOr(Function<C, Expression<O>> function) {
+        return DualExpression.functionCreate(this, DualOperator.BITWISE_OR, function);
     }
 
     @Override
@@ -737,7 +737,7 @@ abstract class OperationExpression<E> implements ArmyExpression<E> {
         return null;
     }
 
-    public final Expression<E> brackets() {
+    public final Expression<E> bracket() {
         return BracketsExpression.bracket(this);
     }
 

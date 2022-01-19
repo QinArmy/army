@@ -297,28 +297,28 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      *
      * @return {@link BigInteger} expression
      */
-    Expression<E> and(Expression<?> operand);
+    Expression<E> bitwiseAnd(Expression<?> operand);
 
     /**
      * Bitwise AND
      *
      * @return {@link BigInteger} expression
      */
-    Expression<E> and(Object parameter);
+    Expression<E> bitwiseAnd(Object parameter);
 
     /**
      * Bitwise AND
      *
      * @return {@link BigInteger} expression
      */
-    Expression<E> and(String subQueryAlias, String derivedFieldName);
+    Expression<E> bitwiseAnd(String subQueryAlias, String derivedFieldName);
 
     /**
      * Bitwise AND
      *
      * @return {@link BigInteger} expression
      */
-    Expression<E> and(String tableAlias, FieldMeta<?, ?> field);
+    Expression<E> bitwiseAnd(String tableAlias, FieldMeta<?, ?> field);
 
     /**
      * Bitwise AND
@@ -326,42 +326,42 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * @param <O> the type maybe different from this.
      * @return {@link BigInteger} expression
      */
-    <C, O> Expression<E> and(Function<C, Expression<O>> function);
+    <C, O> Expression<E> bitwiseAnd(Function<C, Expression<O>> function);
 
     /**
      * Bitwise OR
      *
      * @return {@link BigInteger} expression
      */
-    Expression<E> or(Expression<?> operand);
+    Expression<E> bitwiseOr(Expression<?> operand);
 
     /**
      * Bitwise OR
      *
      * @return {@link BigInteger} expression
      */
-    Expression<E> or(Object parameter);
+    Expression<E> bitwiseOr(Object parameter);
 
     /**
      * Bitwise OR
      *
      * @return {@link BigInteger} expression
      */
-    Expression<E> or(String subQueryAlias, String derivedFieldName);
+    Expression<E> bitwiseOr(String subQueryAlias, String derivedFieldName);
 
     /**
      * Bitwise OR
      *
      * @return {@link BigInteger} expression
      */
-    Expression<E> or(String tableAlias, FieldMeta<?, ?> field);
+    Expression<E> bitwiseOr(String tableAlias, FieldMeta<?, ?> field);
 
     /**
      * Bitwise OR
      *
      * @return {@link BigInteger} expression
      */
-    <C, O> Expression<E> or(Function<C, Expression<O>> function);
+    <C, O> Expression<E> bitwiseOr(Function<C, Expression<O>> function);
 
     /**
      * Bitwise XOR
@@ -483,7 +483,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
 
     <O> Expression<O> asType(Class<O> convertType, FieldMeta<?, O> longMapping);
 
-    Expression<E> brackets();
+    Expression<E> bracket();
 
     SortPart asc();
 

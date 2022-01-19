@@ -1,6 +1,7 @@
 package io.army.util;
 
 import io.army.criteria.CriteriaException;
+import io.army.criteria.NamedParam;
 import io.army.criteria.Statement;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._SingleDml;
@@ -8,6 +9,9 @@ import io.army.criteria.impl.inner._Statement;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.session.DialectSessionFactory;
+import io.army.stmt.ParamValue;
+
+import java.util.List;
 
 /**
  * @since 1.0
@@ -80,6 +84,16 @@ public abstract class _Assert extends org.springframework.util.Assert {
     public static void notBatchStmt(_SingleDml dml) {
         if (dml instanceof _BatchDml) {
             throw new IllegalArgumentException("update type error.");
+        }
+    }
+
+    public static void noNamedParam(List<ParamValue> paramGroup) {
+        for (ParamValue paramValue : paramGroup) {
+            if (paramValue instanceof NamedParam) {
+                String m = String.format("Couldn't exist named parameter[%s] in non-batch statement."
+                        , ((NamedParam<?>) paramValue).name());
+                throw new CriteriaException(m);
+            }
         }
     }
 

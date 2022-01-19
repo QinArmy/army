@@ -614,18 +614,18 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
         }
 
         @Override
-        public final UpdateSpec paramBeans(List<Object> beanList) {
+        public final UpdateSpec paramBeans(List<?> beanList) {
             this.wrapperList = CriteriaUtils.paramBeans(beanList);
             return this;
         }
 
         @Override
-        public final UpdateSpec paramBeans(Supplier<List<Object>> supplier) {
+        public final UpdateSpec paramBeans(Supplier<List<?>> supplier) {
             return this.paramBeans(supplier.get());
         }
 
         @Override
-        public final UpdateSpec paramBeans(Function<C, List<Object>> function) {
+        public final UpdateSpec paramBeans(Function<C, List<?>> function) {
             return this.paramBeans(function.apply(this.criteria));
         }
 

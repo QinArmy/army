@@ -2,6 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.GenericField;
+import io.army.criteria.NamedParam;
+import io.army.criteria.NonNullNamedParam;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
@@ -19,17 +21,39 @@ import java.util.function.Function;
  */
 final class DualExpression<E> extends OperationExpression<E> {
 
-    static <C, E, O> DualExpression<E> functionCreate(Expression<E> left, DualOperator operator
+    static <C, E, O> DualExpression<E> functionCreate(ArmyExpression<E> left, DualOperator operator
             , Function<C, Expression<O>> function) {
         final Expression<O> functionResult;
         functionResult = function.apply(CriteriaContextStack.getCriteria());
         assert functionResult != null;
-        return new DualExpression<>(left, operator, functionResult);
+        return create(left, operator, functionResult);
     }
 
 
-    static <E> DualExpression<E> create(Expression<E> left, DualOperator operator, Expression<?> right) {
-        return new DualExpression<>(left, operator, right);
+    @SuppressWarnings("unchecked")
+    static <E> DualExpression<E> create(ArmyExpression<E> left, final DualOperator operator, Expression<?> right) {
+        final ArmyExpression<E> rightExp = (ArmyExpression<E>) right;
+        switch (operator) {
+            case PLUS:
+            case MINUS:
+            case MULTIPLY:
+            case DIVIDE:
+            case MOD:
+            case BITWISE_AND:
+            case BITWISE_OR:
+            case XOR:
+            case RIGHT_SHIFT:
+            case LEFT_SHIFT: {
+                if (rightExp.nullableExp()
+                        || (rightExp instanceof NamedParam && !(rightExp instanceof NonNullNamedParam))) {
+                    throw _Exceptions.operatorRightIsNullable(operator);
+                }
+            }
+            break;
+            default:
+                throw _Exceptions.unexpectedEnum(operator);
+        }
+        return new DualExpression<>(left, operator, rightExp);
     }
 
     private final ArmyExpression<?> left;
@@ -39,10 +63,10 @@ final class DualExpression<E> extends OperationExpression<E> {
     private final ArmyExpression<?> right;
 
 
-    private DualExpression(Expression<?> left, DualOperator operator, Expression<?> right) {
-        this.left = (ArmyExpression<?>) left;
+    private DualExpression(ArmyExpression<?> left, DualOperator operator, ArmyExpression<?> right) {
+        this.left = left;
         this.operator = operator;
-        this.right = (ArmyExpression<?>) right;
+        this.right = right;
     }
 
 
@@ -66,8 +90,8 @@ final class DualExpression<E> extends OperationExpression<E> {
                 break;
             case LEFT_SHIFT:
             case RIGHT_SHIFT:
-            case AND:
-            case OR:
+            case BITWISE_AND:
+            case BITWISE_OR:
             case XOR: {
                 outerBracket = true;
                 leftInnerBracket = !(left instanceof ValueExpression

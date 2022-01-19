@@ -306,6 +306,17 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
     /*################################## blow batch set clause  method ##################################*/
 
     @Override
+    public final SR setNullable(List<FieldMeta<?, ?>> fieldList) {
+        if (fieldList.size() == 0) {
+            throw _Exceptions.selectListIsEmpty();
+        }
+        for (FieldMeta<?, ?> field : fieldList) {
+            this.set(field, SQLs.nullableNamedParam(field));
+        }
+        return (SR) this;
+    }
+
+    @Override
     public final SR set(List<FieldMeta<?, ?>> fieldList) {
         if (fieldList.size() == 0) {
             throw _Exceptions.selectListIsEmpty();
@@ -317,33 +328,38 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
     }
 
     @Override
-    public final <F> SR set(FieldMeta<?, F> field) {
+    public final <F> SR setNullable(FieldMeta<?, F> field) {
+        return this.set(field, SQLs.nullableNamedParam(field));
+    }
+
+    @Override
+    public <F> SR set(FieldMeta<?, F> field) {
         return this.set(field, SQLs.namedParam(field));
     }
 
     @Override
     public final <F extends Number> SR setPlus(FieldMeta<?, F> field) {
-        return this.set(field, field.plus(SQLs.nonNullNamedParam(field)));
+        return this.set(field, field.plus(SQLs.namedParam(field)));
     }
 
     @Override
     public final <F extends Number> SR setMinus(FieldMeta<?, F> field) {
-        return this.set(field, field.minus(SQLs.nonNullNamedParam(field)));
+        return this.set(field, field.minus(SQLs.namedParam(field)));
     }
 
     @Override
     public final <F extends Number> SR setMultiply(FieldMeta<?, F> field) {
-        return this.set(field, field.multiply(SQLs.nonNullNamedParam(field)));
+        return this.set(field, field.multiply(SQLs.namedParam(field)));
     }
 
     @Override
     public final <F extends Number> SR setDivide(FieldMeta<?, F> field) {
-        return this.set(field, field.divide(SQLs.nonNullNamedParam(field)));
+        return this.set(field, field.divide(SQLs.namedParam(field)));
     }
 
     @Override
     public final <F extends Number> SR setMod(FieldMeta<?, F> field) {
-        return this.set(field, field.mod(SQLs.nonNullNamedParam(field)));
+        return this.set(field, field.mod(SQLs.namedParam(field)));
     }
 
     @Override
@@ -351,7 +367,7 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
         final List<FieldMeta<?, ?>> fieldList;
         fieldList = function.apply(this.criteria);
         if (!CollectionUtils.isEmpty(fieldList)) {
-            this.set(fieldList);
+            this.setNullable(fieldList);
         }
         return (SR) this;
     }
@@ -359,7 +375,7 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
     @Override
     public final <F> SR ifSet(Predicate<C> test, FieldMeta<?, F> field) {
         if (test.test(this.criteria)) {
-            this.set(field, SQLs.namedParam(field));
+            this.set(field, SQLs.nullableNamedParam(field));
         }
         return (SR) this;
     }

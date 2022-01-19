@@ -131,18 +131,18 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
         }
 
         @Override
-        public DeleteSpec paramBeans(List<Object> beanList) {
+        public DeleteSpec paramBeans(List<?> beanList) {
             this.wrapperList = CriteriaUtils.paramBeans(beanList);
             return this;
         }
 
         @Override
-        public DeleteSpec paramBeans(Supplier<List<Object>> supplier) {
+        public DeleteSpec paramBeans(Supplier<List<?>> supplier) {
             return this.paramBeans(supplier.get());
         }
 
         @Override
-        public DeleteSpec paramBeans(Function<C, List<Object>> function) {
+        public DeleteSpec paramBeans(Function<C, List<?>> function) {
             return this.paramBeans(function.apply(this.criteria));
         }
 

@@ -120,7 +120,7 @@ abstract class CriteriaUtils {
         return Collections.unmodifiableList(wrapperList);
     }
 
-    static List<ReadWrapper> paramBeans(List<Object> beanList) {
+    static List<ReadWrapper> paramBeans(List<?> beanList) {
         final List<ReadWrapper> wrapperList = new ArrayList<>(beanList.size());
         for (Object bean : beanList) {
             wrapperList.add(ObjectAccessorFactory.forReadonlyAccess(bean));

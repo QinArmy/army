@@ -4,8 +4,11 @@ import io.army.criteria.IPredicate;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.mapping._MappingFactory;
 import io.army.meta.ParamMeta;
+import io.army.stmt.ParamValue;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -30,13 +33,20 @@ abstract class OperationPredicate extends OperationExpression<Boolean> implement
     }
 
     @Override
-    public final <C> IPredicate orMulti(Function<C, List<IPredicate>> function) {
-        return this.or(function.apply(CriteriaContextStack.getCriteria()));
+    public final <C> IPredicate or(Function<C, List<IPredicate>> function) {
+        return OrPredicate.create(this, function.apply(CriteriaContextStack.getCriteria()));
     }
 
     @Override
-    public final IPredicate orMulti(Supplier<List<IPredicate>> supplier) {
-        return this.or(supplier.get());
+    public final IPredicate or(Supplier<List<IPredicate>> supplier) {
+        return OrPredicate.create(this, supplier.get());
+    }
+
+    @Override
+    public final IPredicate or(Consumer<List<IPredicate>> consumer) {
+        List<IPredicate> list = new ArrayList<>();
+        consumer.accept(list);
+        return OrPredicate.create(this, list);
     }
 
     @Override
@@ -53,9 +63,12 @@ abstract class OperationPredicate extends OperationExpression<Boolean> implement
         } else if ((predicate = (DualPredicate) this).operator != DualOperator.EQ) {
             match = false;
         } else if (predicate.left.isVersion()) {
-            match = predicate.right instanceof ValueExpression;
+            match = predicate.right instanceof ValueExpression
+                    || predicate.right instanceof ParamValue; // named param
         } else if (predicate.right.isVersion()) {
-            match = predicate.left instanceof ValueExpression;
+            match = predicate.left instanceof ValueExpression
+                    || predicate.left instanceof ParamValue;// named param
+
         } else {
             match = false;
         }

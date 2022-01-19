@@ -41,51 +41,51 @@ public interface Dml extends Statement {
     interface BatchWhereAndSpec<C, D extends Dml> extends BatchParamSpec<C, D> {
 
         /**
-         * @see SQLs#nonNullNamedParam(GenericField)
-         * @see SQLs#nonNullNamedParam(String, ParamMeta)
          * @see SQLs#namedParam(GenericField)
          * @see SQLs#namedParam(String, ParamMeta)
+         * @see SQLs#nullableNamedParam(GenericField)
+         * @see SQLs#nullableNamedParam(String, ParamMeta)
          */
         BatchWhereAndSpec<C, D> and(IPredicate predicate);
 
         /**
-         * @see SQLs#nonNullNamedParam(GenericField)
-         * @see SQLs#nonNullNamedParam(String, ParamMeta)
          * @see SQLs#namedParam(GenericField)
          * @see SQLs#namedParam(String, ParamMeta)
+         * @see SQLs#nullableNamedParam(GenericField)
+         * @see SQLs#nullableNamedParam(String, ParamMeta)
          */
         BatchWhereAndSpec<C, D> and(Supplier<IPredicate> supplier);
 
         /**
-         * @see SQLs#nonNullNamedParam(GenericField)
-         * @see SQLs#nonNullNamedParam(String, ParamMeta)
          * @see SQLs#namedParam(GenericField)
          * @see SQLs#namedParam(String, ParamMeta)
+         * @see SQLs#nullableNamedParam(GenericField)
+         * @see SQLs#nullableNamedParam(String, ParamMeta)
          */
         BatchWhereAndSpec<C, D> and(Function<C, IPredicate> function);
 
         /**
-         * @see SQLs#nonNullNamedParam(GenericField)
-         * @see SQLs#nonNullNamedParam(String, ParamMeta)
          * @see SQLs#namedParam(GenericField)
          * @see SQLs#namedParam(String, ParamMeta)
+         * @see SQLs#nullableNamedParam(GenericField)
+         * @see SQLs#nullableNamedParam(String, ParamMeta)
          * @see Expression#ifEqual(Object)
          */
         BatchWhereAndSpec<C, D> ifAnd(@Nullable IPredicate predicate);
 
         /**
-         * @see SQLs#nonNullNamedParam(GenericField)
-         * @see SQLs#nonNullNamedParam(String, ParamMeta)
          * @see SQLs#namedParam(GenericField)
          * @see SQLs#namedParam(String, ParamMeta)
+         * @see SQLs#nullableNamedParam(GenericField)
+         * @see SQLs#nullableNamedParam(String, ParamMeta)
          */
         BatchWhereAndSpec<C, D> ifAnd(Supplier<IPredicate> supplier);
 
         /**
-         * @see SQLs#nonNullNamedParam(GenericField)
-         * @see SQLs#nonNullNamedParam(String, ParamMeta)
          * @see SQLs#namedParam(GenericField)
          * @see SQLs#namedParam(String, ParamMeta)
+         * @see SQLs#nullableNamedParam(GenericField)
+         * @see SQLs#nullableNamedParam(String, ParamMeta)
          */
         BatchWhereAndSpec<C, D> ifAnd(Function<C, IPredicate> function);
 

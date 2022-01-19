@@ -2,6 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.GenericField;
+import io.army.criteria.NamedParam;
+import io.army.criteria.NonNullNamedParam;
 import io.army.dialect._SqlContext;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Exceptions;
@@ -13,7 +15,7 @@ import java.util.function.Function;
  */
 final class DualPredicate extends OperationPredicate {
 
-    static <C, E, O> DualPredicate create(final Expression<E> left, DualOperator operator
+    static <C, E, O> DualPredicate create(final ArmyExpression<E> left, DualOperator operator
             , Function<C, Expression<O>> expOrSubQuery) {
         final Expression<O> functionResult;
         functionResult = expOrSubQuery.apply(CriteriaContextStack.getCriteria());
@@ -21,7 +23,7 @@ final class DualPredicate extends OperationPredicate {
         return create(left, operator, functionResult);
     }
 
-    static DualPredicate create(final Expression<?> left, final DualOperator operator, final Expression<?> right) {
+    static DualPredicate create(final ArmyExpression<?> left, final DualOperator operator, final Expression<?> right) {
         if (left instanceof GenericField
                 && _MetaBridge.VISIBLE.equals((((GenericField<?, ?>) left).fieldName()))) {
             throw _Exceptions.visibleFieldNoPredicate((GenericField<?, ?>) left);
@@ -41,9 +43,15 @@ final class DualPredicate extends OperationPredicate {
             case LIKE:
             case NOT_LIKE:
             case IN:
-            case NOT_IN:
-                predicate = new DualPredicate(left, operator, right);
-                break;
+            case NOT_IN: {
+                final ArmyExpression<?> rightExp = (ArmyExpression<?>) right;
+                if (rightExp.nullableExp()
+                        || (rightExp instanceof NamedParam && !(rightExp instanceof NonNullNamedParam))) {
+                    throw _Exceptions.operatorRightIsNullable(operator);
+                }
+                predicate = new DualPredicate(left, operator, rightExp);
+            }
+            break;
             default:
                 throw _Exceptions.unexpectedEnum(operator);
 
@@ -60,10 +68,10 @@ final class DualPredicate extends OperationPredicate {
 
     final ArmyExpression<?> right;
 
-    private DualPredicate(Expression<?> left, DualOperator operator, Expression<?> right) {
-        this.left = (ArmyExpression<?>) left;
+    private DualPredicate(ArmyExpression<?> left, DualOperator operator, ArmyExpression<?> right) {
+        this.left = left;
         this.operator = operator;
-        this.right = (ArmyExpression<?>) right;
+        this.right = right;
     }
 
     @Override

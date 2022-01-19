@@ -12,8 +12,8 @@ final class BracketsExpression<E> extends OperationExpression<E> {
     static <E> Expression<E> bracket(final Expression<E> expression) {
         final Expression<E> result;
         if (expression instanceof BracketsExpression
-                || expression instanceof UnaryExpression
-                || expression instanceof GenericField) {
+                || expression instanceof GenericField
+                || expression instanceof ValueExpression) {
             result = expression;
         } else {
             result = new BracketsExpression<>(expression);
@@ -30,13 +30,11 @@ final class BracketsExpression<E> extends OperationExpression<E> {
     @Override
     public void appendSql(final _SqlContext context) {
         final StringBuilder builder = context.sqlBuilder()
-                .append(Constant.SPACE)
-                .append(Constant.LEFT_BRACKET);
+                .append(Constant.SPACE_LEFT_BRACKET);
 
         this.expression.appendSql(context);
 
-        builder.append(Constant.SPACE)
-                .append(Constant.RIGHT_BRACKET);
+        builder.append(Constant.SPACE_RIGHT_BRACKET);
     }
 
 

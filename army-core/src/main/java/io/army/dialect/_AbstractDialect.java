@@ -9,6 +9,7 @@ import io.army.modelgen._MetaBridge;
 import io.army.stmt.ParamValue;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
+import io.army.stmt.Stmts;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 
@@ -75,7 +76,7 @@ public abstract class _AbstractDialect implements _Dialect {
             final SimpleStmt singleStmt;
             singleStmt = handleDialectUpdate(update, visible);
             if (update instanceof _BatchDml) {
-                stmt = _DmlUtils.createBatchStmt(singleStmt, ((_BatchDml) update).wrapperList());
+                stmt = Stmts.batchDml(singleStmt, ((_BatchDml) update).wrapperList());
             } else {
                 stmt = singleStmt;
             }
@@ -85,7 +86,7 @@ public abstract class _AbstractDialect implements _Dialect {
             final SimpleStmt singleStmt;
             singleStmt = handleStandardUpdate((_SingleUpdate) update, visible);
             if (update instanceof _BatchDml) {
-                stmt = _DmlUtils.createBatchStmt(singleStmt, ((_BatchDml) update).wrapperList());
+                stmt = Stmts.batchDml(singleStmt, ((_BatchDml) update).wrapperList());
             } else {
                 stmt = singleStmt;
             }
@@ -105,7 +106,7 @@ public abstract class _AbstractDialect implements _Dialect {
             final SimpleStmt singleStmt;
             singleStmt = handleDialectDelete(delete, visible);
             if (delete instanceof _BatchDml) {
-                stmt = _DmlUtils.createBatchStmt(singleStmt, ((_BatchDml) delete).wrapperList());
+                stmt = Stmts.batchDml(singleStmt, ((_BatchDml) delete).wrapperList());
             } else {
                 stmt = singleStmt;
             }
@@ -114,7 +115,7 @@ public abstract class _AbstractDialect implements _Dialect {
             final SimpleStmt simpleStmt;
             simpleStmt = this.handleStandardDelete((_SingleDelete) delete, visible);
             if (delete instanceof _BatchSingleDelete) {
-                stmt = _DmlUtils.createBatchStmt(simpleStmt, ((_BatchSingleDelete) delete).wrapperList());
+                stmt = Stmts.batchDml(simpleStmt, ((_BatchSingleDelete) delete).wrapperList());
             } else {
                 stmt = simpleStmt;
             }

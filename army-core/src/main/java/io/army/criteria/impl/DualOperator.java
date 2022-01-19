@@ -31,13 +31,13 @@ enum DualOperator {
         public String rendered() {
             return " /";
         }
-    }, AND {
+    }, BITWISE_AND {
         @Override
         public String rendered() {
             return " &";
         }
 
-    }, OR {
+    }, BITWISE_OR {
         @Override
         public String rendered() {
             return " |";

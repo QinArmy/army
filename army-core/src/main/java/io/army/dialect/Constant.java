@@ -32,7 +32,7 @@ public interface Constant {
 
     String SPACE_AND = " AND";
 
-    String OR = "OR";
+    String SPACE_OR = " OR";
 
     String SPACE_GROUP_BY = " GROUP BY";
 

@@ -1,8 +1,14 @@
 package io.army.stmt;
 
+import io.army.beans.ReadWrapper;
+import io.army.criteria.CriteriaException;
+import io.army.criteria.NamedParam;
+import io.army.criteria.NonNullNamedParam;
 import io.army.criteria.Selection;
 import io.army.util.CollectionUtils;
+import io.army.util._Exceptions;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -44,8 +50,35 @@ public abstract class Stmts {
         return new PairStmtImpl(parent, child);
     }
 
-    public static BatchStmt batch(SimpleStmt simpleStmt, List<List<ParamValue>> groupList) {
-        return null;
+    public static BatchStmt batchDml(SimpleStmt stmt, List<ReadWrapper> wrapperList) {
+        final List<ParamValue> paramGroup = stmt.paramGroup();
+        final int paramSize = paramGroup.size();
+        final List<List<ParamValue>> groupList = new ArrayList<>(wrapperList.size());
+
+        NamedParam<?> namedParam = null;
+        for (ReadWrapper wrapper : wrapperList) {
+            final List<ParamValue> group = new ArrayList<>(paramSize);
+
+            for (ParamValue param : paramGroup) {
+                if (!(param instanceof NamedParam)) {
+                    group.add(param);
+                    continue;
+                }
+                namedParam = ((NamedParam<?>) param);
+                final Object value = wrapper.get(namedParam.name());
+                if (value == null && param instanceof NonNullNamedParam) {
+                    throw _Exceptions.nonNullNamedParam((NonNullNamedParam<?>) param);
+                }
+                group.add(ParamValue.build(param.paramMeta(), value));
+            }
+
+            groupList.add(group);
+
+        }
+        if (namedParam == null) {
+            throw new CriteriaException("Not found any named parameter in batch statement.");
+        }
+        return new MinBatchDmlStmt(stmt.sql(), groupList, stmt.hasVersion());
     }
 
 
@@ -143,6 +176,37 @@ public abstract class Stmts {
         }
 
     }//MinDml
+
+    private static final class MinBatchDmlStmt implements BatchStmt {
+
+        private final String sql;
+
+        private final List<List<ParamValue>> paramGroupList;
+
+        private final boolean hasOptimistic;
+
+        private MinBatchDmlStmt(String sql, List<List<ParamValue>> paramGroupList, boolean hasOptimistic) {
+            this.sql = sql;
+            this.paramGroupList = Collections.unmodifiableList(paramGroupList);
+            this.hasOptimistic = hasOptimistic;
+        }
+
+        @Override
+        public List<List<ParamValue>> groupList() {
+            return this.paramGroupList;
+        }
+
+        @Override
+        public String sql() {
+            return this.sql;
+        }
+
+        @Override
+        public boolean hasVersion() {
+            return this.hasOptimistic;
+        }
+
+    }//MinBatchDmlStmt
 
 
 }

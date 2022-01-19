@@ -337,5 +337,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException operatorRightIsNullable(Enum<?> operator) {
+        String m = String.format("Right expression of operator[%s] must be non-null.", operator);
+        return new CriteriaException(m);
+    }
+
 
 }

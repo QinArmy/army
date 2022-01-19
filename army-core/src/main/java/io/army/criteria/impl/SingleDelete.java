@@ -28,6 +28,11 @@ abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, WR, WA>
     }
 
     @Override
+    public final boolean isPrepared() {
+        return this.prepared;
+    }
+
+    @Override
     public final Delete asDelete() {
         _Assert.nonPrepared(this.prepared);
 

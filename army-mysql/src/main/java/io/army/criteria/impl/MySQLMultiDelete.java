@@ -431,18 +431,18 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
         }
 
         @Override
-        public final DeleteSpec paramBeans(List<Object> beanList) {
+        public final DeleteSpec paramBeans(List<?> beanList) {
             this.wrapperList = CriteriaUtils.paramBeans(beanList);
             return this;
         }
 
         @Override
-        public final DeleteSpec paramBeans(Supplier<List<Object>> supplier) {
+        public final DeleteSpec paramBeans(Supplier<List<?>> supplier) {
             return this.paramBeans(supplier.get());
         }
 
         @Override
-        public final DeleteSpec paramBeans(Function<C, List<Object>> function) {
+        public final DeleteSpec paramBeans(Function<C, List<?>> function) {
             return this.paramBeans(function.apply(this.criteria));
         }
 

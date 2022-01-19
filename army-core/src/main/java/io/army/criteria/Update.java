@@ -146,35 +146,39 @@ public interface Update extends Statement {
 
     interface BatchSetClause<C, SR> extends SetClause<C, SR> {
 
+        SR setNullable(List<FieldMeta<?, ?>> fieldList);
+
         SR set(List<FieldMeta<?, ?>> fieldList);
+
+        /**
+         * @see SQLs#nullableNamedParam(GenericField)
+         */
+        <F> SR setNullable(FieldMeta<?, F> field);
+
+        <F> SR set(FieldMeta<?, F> field);
 
         /**
          * @see SQLs#namedParam(GenericField)
          */
-        <F> SR set(FieldMeta<?, F> field);
-
-        /**
-         * @see SQLs#nonNullNamedParam(GenericField)
-         */
         <F extends Number> SR setPlus(FieldMeta<?, F> field);
 
         /**
-         * @see SQLs#nonNullNamedParam(GenericField)
+         * @see SQLs#namedParam(GenericField)
          */
         <F extends Number> SR setMinus(FieldMeta<?, F> field);
 
         /**
-         * @see SQLs#nonNullNamedParam(GenericField)
+         * @see SQLs#namedParam(GenericField)
          */
         <F extends Number> SR setMultiply(FieldMeta<?, F> field);
 
         /**
-         * @see SQLs#nonNullNamedParam(GenericField)
+         * @see SQLs#namedParam(GenericField)
          */
         <F extends Number> SR setDivide(FieldMeta<?, F> field);
 
         /**
-         * @see SQLs#nonNullNamedParam(GenericField)
+         * @see SQLs#namedParam(GenericField)
          */
         <F extends Number> SR setMod(FieldMeta<?, F> field);
 

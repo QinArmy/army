@@ -78,12 +78,36 @@ public class StandardCriteriaUnitTests {
                 .where(ChinaProvince_.id.equal(1))
                 .and(ChinaProvince_.name.equal("江湖"))
                 .and(ChinaProvince_.regionGdp.plus(addGdp).greatEqual(BigDecimal.ZERO))
-                .and(ChinaProvince_.governor.equal("阳顶天").or(ChinaProvince_.governor.equal("石教主")))
+                .and(ChinaProvince_.governor.equal("阳顶天").or(list -> {
+                    list.add(ChinaProvince_.governor.equal("石教主"));
+                    list.add(ChinaProvince_.governor.equal("钟教主"));
+                    list.add(ChinaProvince_.governor.equal("方腊"));
+                }))
                 .asUpdate();
 
         for (DialectMode mode : DialectMode.values()) {
             LOG.debug("{} {}", mode.name(), update.mockAsString(mode));
         }
+    }
+
+    @Test
+    private void batchUpdateParent() {
+        final Update update;
+        update = SQLs.standardBatchUpdate()
+                .update(ChinaProvince_.T, "p")
+                .setPlus(ChinaProvince_.regionGdp)
+                .set(ChinaProvince_.governor)
+                .where(ChinaProvince_.id.equalNamed())
+                .and(ChinaProvince_.regionGdp.plusNamed().greatEqual(BigDecimal.ZERO))
+                .and(ChinaProvince_.version.equal(0))
+                .paramBeans(this::createProvinceList)
+                .asUpdate();
+
+        for (DialectMode mode : DialectMode.values()) {
+            LOG.debug("batchUpdateParent\n{} {}", mode.name(), update.mockAsString(mode));
+        }
+
+
     }
 
     /**
@@ -128,6 +152,7 @@ public class StandardCriteriaUnitTests {
             p.setId((long) i);
             p.setName("江湖" + i);
             p.setGovernor("盟主");
+            p.setRegionGdp(new BigDecimal("8888.88"));
             p.setProvincialCapital("总堂");
             domainList.add(p);
         }

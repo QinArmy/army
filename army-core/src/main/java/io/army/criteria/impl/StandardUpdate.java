@@ -14,6 +14,7 @@ import io.army.stmt.BatchStmt;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
 import io.army.util.CollectionUtils;
+import io.army.util._Assert;
 import io.army.util._Exceptions;
 
 import java.util.List;
@@ -110,8 +111,11 @@ abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA,
         stmt = this.mockAsStmt(mode);
         final StringBuilder builder = new StringBuilder();
         if (stmt instanceof SimpleStmt) {
+            final SimpleStmt simpleStmt = (SimpleStmt) stmt;
+            _Assert.noNamedParam(simpleStmt.paramGroup());
             builder.append("update sql:\n")
-                    .append(((SimpleStmt) stmt).sql());
+                    .append(simpleStmt.sql());
+
         } else if (stmt instanceof BatchStmt) {
             builder.append("batch update sql:\n")
                     .append(((BatchStmt) stmt).sql());
@@ -174,18 +178,18 @@ abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA,
         }
 
         @Override
-        public UpdateSpec paramBeans(List<Object> beanList) {
+        public UpdateSpec paramBeans(List<?> beanList) {
             this.wrapperList = CriteriaUtils.paramBeans(beanList);
             return this;
         }
 
         @Override
-        public UpdateSpec paramBeans(Supplier<List<Object>> supplier) {
+        public UpdateSpec paramBeans(Supplier<List<?>> supplier) {
             return this.paramBeans(supplier.get());
         }
 
         @Override
-        public UpdateSpec paramBeans(Function<C, List<Object>> function) {
+        public UpdateSpec paramBeans(Function<C, List<?>> function) {
             return this.paramBeans(function.apply(this.criteria));
         }
 

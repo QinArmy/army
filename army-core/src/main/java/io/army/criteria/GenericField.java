@@ -1,6 +1,7 @@
 package io.army.criteria;
 
 import io.army.annotation.UpdateMode;
+import io.army.criteria.impl.SQLs;
 import io.army.domain.IDomain;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
@@ -40,5 +41,44 @@ public interface GenericField<T extends IDomain, F> extends Expression<F>, Field
 
     boolean nullable();
 
+
+    /**
+     * relational operate with {@code =} {@link SQLs#nullableNamedParam(GenericField)}
+     */
+    IPredicate equalNamed();
+
+    IPredicate lessThanNamed();
+
+    IPredicate lessEqualNamed();
+
+    IPredicate greatThanNamed();
+
+    IPredicate greatEqualNamed();
+
+    IPredicate notEqualNamed();
+
+    Expression<F> modNamed();
+
+    Expression<F> plusNamed();
+
+    Expression<F> minusNamed();
+
+    Expression<F> multiplyNamed();
+
+    Expression<F> divideNamed();
+
+    Expression<F> bitwiseAndNamed();
+
+    Expression<F> bitwiseOrNamed();
+
+    Expression<F> xorNamed();
+
+    Expression<F> rightShiftNamed();
+
+    Expression<F> leftShiftNamed();
+
+    IPredicate likeNamed();
+
+    IPredicate notLikeNamed();
 
 }

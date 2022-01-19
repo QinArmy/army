@@ -13,9 +13,6 @@ import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.ParamValue;
-import io.army.stmt.SimpleStmt;
-import io.army.stmt.Stmt;
-import io.army.stmt.Stmts;
 import io.army.util.ArrayUtils;
 import io.army.util.CollectionUtils;
 import io.army.util._Exceptions;
@@ -167,33 +164,6 @@ public abstract class _DmlUtils {
             batch++;
         }
 
-    }
-
-
-    static Stmt createBatchStmt(final SimpleStmt simpleStmt, final List<ReadWrapper> wrapperList) {
-        final List<ParamValue> paramGroup = simpleStmt.paramGroup();
-        final int paramSize = paramGroup.size();
-        final List<List<ParamValue>> groupList = new ArrayList<>(wrapperList.size());
-
-        for (ReadWrapper wrapper : wrapperList) {
-            final List<ParamValue> group = new ArrayList<>(paramSize);
-
-            for (ParamValue param : paramGroup) {
-                if (!(param instanceof NamedParam)) {
-                    group.add(param);
-                    continue;
-                }
-                final Object value = wrapper.get(((NamedParam<?>) param).name());
-                if (value == null && param instanceof NonNullNamedParam) {
-                    throw _Exceptions.nonNullNamedParam((NonNullNamedParam<?>) param);
-                }
-                group.add(ParamValue.build(param.paramMeta(), value));
-            }
-
-            groupList.add(group);
-
-        }
-        return Stmts.batch(simpleStmt, groupList);
     }
 
 

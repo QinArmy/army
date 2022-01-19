@@ -1,6 +1,7 @@
 package io.army.criteria;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -20,14 +21,34 @@ public interface IPredicate extends Expression<Boolean> {
     /**
      * Logical OR
      * <p>
-     * This method representing expression (this OR  (predicates))
+     * This method representing expression (this OR  predicates[0] OR predicates[1] OR ... predicates[n])
      * </p>
      */
     IPredicate or(List<IPredicate> predicates);
 
-    <C> IPredicate orMulti(Function<C, List<IPredicate>> function);
+    /**
+     * Logical OR
+     * <p>
+     * This method representing expression (this OR  predicates[0] OR predicates[1] OR ... predicates[n])
+     * </p>
+     */
+    <C> IPredicate or(Function<C, List<IPredicate>> function);
 
-    IPredicate orMulti(Supplier<List<IPredicate>> supplier);
+    /**
+     * Logical OR
+     * <p>
+     * This method representing expression (this OR  predicates[0] OR predicates[1] OR ... predicates[n])
+     * </p>
+     */
+    IPredicate or(Supplier<List<IPredicate>> supplier);
+
+    /**
+     * Logical OR
+     * <p>
+     * This method representing expression (this OR  predicates[0] OR predicates[1] OR ... predicates[n])
+     * </p>
+     */
+    IPredicate or(Consumer<List<IPredicate>> consumer);
 
 
     /**

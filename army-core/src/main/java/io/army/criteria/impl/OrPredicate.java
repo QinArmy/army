@@ -14,12 +14,12 @@ import java.util.List;
 
 final class OrPredicate extends OperationPredicate {
 
-    static _Predicate create(_Predicate left, IPredicate right) {
+    static _Predicate create(OperationPredicate left, IPredicate right) {
         return new OrPredicate(left, Collections.singletonList((OperationPredicate) right));
     }
 
 
-    static _Predicate create(final _Predicate left, final List<IPredicate> rights) {
+    static _Predicate create(final OperationPredicate left, final List<IPredicate> rights) {
         final int size = rights.size();
         final _Predicate result;
         switch (size) {
@@ -45,8 +45,8 @@ final class OrPredicate extends OperationPredicate {
 
     private final List<OperationPredicate> rights;
 
-    private OrPredicate(_Predicate left, List<OperationPredicate> predicateList) {
-        this.left = (OperationPredicate) left;
+    private OrPredicate(OperationPredicate left, List<OperationPredicate> predicateList) {
+        this.left = left;
         this.rights = predicateList;
     }
 
@@ -58,21 +58,19 @@ final class OrPredicate extends OperationPredicate {
 
         this.left.appendSql(context);
 
-        builder.append(" OR");
+        builder.append(Constant.SPACE_OR);
 
         final List<OperationPredicate> rights = this.rights;
         final int size = rights.size();
         if (size == 1) {
             rights.get(0).appendSql(context);
         } else {
-            builder.append(Constant.SPACE_LEFT_BRACKET);
             for (int i = 0; i < size; i++) {
                 if (i > 0) {
-                    builder.append(Constant.SPACE_AND);
+                    builder.append(Constant.SPACE_OR);
                 }
                 rights.get(i).appendSql(context);
             }
-            builder.append(Constant.SPACE_RIGHT_BRACKET);
         }
 
         builder.append(Constant.SPACE_RIGHT_BRACKET);

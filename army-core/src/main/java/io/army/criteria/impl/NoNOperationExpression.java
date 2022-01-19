@@ -574,52 +574,52 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final Expression<E> and(Expression<?> operand) {
+    public final Expression<E> bitwiseAnd(Expression<?> operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression<E> and(Object parameter) {
+    public final Expression<E> bitwiseAnd(Object parameter) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression<E> and(String subQueryAlias, String derivedFieldName) {
+    public final Expression<E> bitwiseAnd(String subQueryAlias, String derivedFieldName) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression<E> and(String tableAlias, FieldMeta<?, ?> field) {
+    public final Expression<E> bitwiseAnd(String tableAlias, FieldMeta<?, ?> field) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C, O> Expression<E> and(Function<C, Expression<O>> function) {
+    public final <C, O> Expression<E> bitwiseAnd(Function<C, Expression<O>> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression<E> or(Expression<?> operand) {
+    public final Expression<E> bitwiseOr(Expression<?> operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression<E> or(Object parameter) {
+    public final Expression<E> bitwiseOr(Object parameter) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression<E> or(String subQueryAlias, String derivedFieldName) {
+    public final Expression<E> bitwiseOr(String subQueryAlias, String derivedFieldName) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression<E> or(String tableAlias, FieldMeta<?, ?> field) {
+    public final Expression<E> bitwiseOr(String tableAlias, FieldMeta<?, ?> field) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C, O> Expression<E> or(Function<C, Expression<O>> function) {
+    public final <C, O> Expression<E> bitwiseOr(Function<C, Expression<O>> function) {
         throw unsupportedOperation();
     }
 
@@ -719,7 +719,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final Expression<E> brackets() {
+    public final Expression<E> bracket() {
         throw unsupportedOperation();
     }
 
