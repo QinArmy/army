@@ -85,7 +85,7 @@ public class StandardCriteriaUnitTests {
                 .and(ChinaProvince_.regionGdp.plus(addGdp).greatEqual(BigDecimal.ZERO))
                 .and(ChinaProvince_.governor.equal("阳顶天").or(list -> {
                     list.add(ChinaProvince_.governor.equal("石教主"));
-                    list.add(ChinaProvince_.governor.equal("钟教主"));
+                    list.add(ChinaProvince_.governor.equal("钟教主").and(ChinaProvince_.governor.equal("老钟")));
                     list.add(ChinaProvince_.governor.equal("方腊"));
                 }))
                 .asUpdate();
@@ -184,6 +184,7 @@ public class StandardCriteriaUnitTests {
                 .where(ChinaProvince_.id.equalNamed())
                 .and(ChinaProvince_.name.equalNamed())
                 .and(ChinaProvince_.governor.equalNamed())
+                .and(ChinaProvince_.regionGdp.plusNamed().lessThan("6666.66"))
                 .and(ChinaProvince_.version.equal(2))
                 .paramBeans(this.createProvinceList())
                 .asDelete();

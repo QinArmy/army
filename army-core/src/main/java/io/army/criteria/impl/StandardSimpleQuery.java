@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.DialectMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._StandardQuery;
 import io.army.criteria.impl.inner._TableBlock;
@@ -210,6 +211,17 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         return new NoActionOnBlock<>(this);
     }
 
+
+    @Override
+    final DialectMode defaultDialect() {
+        return DialectMode.MySQL57;
+    }
+
+    @Override
+    final void validateDialect(DialectMode mode) {
+        // no-op
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     final Q onAsQuery(final boolean justAsQuery) {
@@ -251,6 +263,8 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     public final LockMode lockMode() {
         return this.lockMode;
     }
+
+
 
 
     /*################################## blow private inter class method ##################################*/

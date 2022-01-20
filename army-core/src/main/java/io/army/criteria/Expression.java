@@ -4,10 +4,12 @@ import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
+import io.army.meta.ParamMeta;
 
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Interface representing the sql expression, eg: column,function.
@@ -47,6 +49,21 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
     IPredicate equal(Object parameter);
 
     /**
+     * <p>
+     * Equivalence : this.equal({@link SQLs#param(Expression, Object)})
+     * </p>
+     */
+    IPredicate equalStrict(Object parameter);
+
+
+    /**
+     * <p>
+     * Equivalence : this.equal({@link SQLs#namedParam(String, ParamMeta)})
+     * </p>
+     */
+    IPredicate equalNamed(String paramName);
+
+    /**
      * relational operate with {@code =}
      * <p>
      * If operand non-null than operand will be wrapped with optimizing param.
@@ -60,27 +77,65 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
     IPredicate ifEqual(@Nullable Object parameter);
 
     /**
+     * <p>
+     * Equivalence : this.equal({@link SQLs#param(Expression, Object)})
+     * </p>
+     */
+    @Nullable
+    IPredicate ifEqualStrict(@Nullable Object parameter);
+
+
+    /**
      * relational operate with {@code =}
      */
-    <C, O> IPredicate equal(Function<C, Expression<O>> expOrSubQuery);
+    <C, O> IPredicate equal(Function<C, Expression<O>> function);
+
+    <O> IPredicate equal(Supplier<Expression<O>> supplier);
 
     /**
      * relational operate with {@code = ANY}
      */
-    <C> IPredicate equalAny(Function<C, ColumnSubQuery> subQuery);
+    <C> IPredicate equalAny(Function<C, ColumnSubQuery> supplier);
+
+    /**
+     * relational operate with {@code = ANY}
+     */
+    IPredicate equalAny(Supplier<ColumnSubQuery> supplier);
 
     /**
      * relational operate with {@code = SOME}
      */
-    <C> IPredicate equalSome(Function<C, ColumnSubQuery> subQuery);
+    <C> IPredicate equalSome(Function<C, ColumnSubQuery> function);
+
+    /**
+     * relational operate with {@code = SOME}
+     */
+    IPredicate equalSome(Supplier<ColumnSubQuery> subQuery);
 
 
     IPredicate lessThan(Expression<?> expression);
 
     IPredicate lessThan(Object parameter);
 
+    /**
+     * <p>
+     * Equivalence : this.lessThan({@link SQLs#param(Expression, Object)})
+     * </p>
+     */
+    IPredicate lessThanStrict(Object parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.lessThan({@link SQLs#namedParam(String, ParamMeta)})
+     * </p>
+     */
+    IPredicate lessThanNamed(String paramName);
+
     @Nullable
     IPredicate ifLessThan(@Nullable Object parameter);
+
+    @Nullable
+    IPredicate ifLessThanStrict(@Nullable Object parameter);
 
     IPredicate lessThan(String subQueryAlias, String fieldAlias);
 
@@ -88,18 +143,43 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
 
     <C, O> IPredicate lessThan(Function<C, Expression<O>> function);
 
-    <C, O> IPredicate lessThanAny(Function<C, ColumnSubQuery> function);
+    <O> IPredicate lessThan(Supplier<Expression<O>> supplier);
 
-    <C, O> IPredicate lessThanSome(Function<C, ColumnSubQuery> function);
+    <C> IPredicate lessThanAny(Function<C, ColumnSubQuery> function);
 
-    <C, O> IPredicate lessThanAll(Function<C, ColumnSubQuery> function);
+    IPredicate lessThanAny(Supplier<ColumnSubQuery> supplier);
+
+    <C> IPredicate lessThanSome(Function<C, ColumnSubQuery> function);
+
+    IPredicate lessThanSome(Supplier<ColumnSubQuery> supplier);
+
+    <C> IPredicate lessThanAll(Function<C, ColumnSubQuery> function);
+
+    IPredicate lessThanAll(Supplier<ColumnSubQuery> supplier);
 
     IPredicate lessEqual(Expression<?> operand);
 
     IPredicate lessEqual(Object parameter);
 
+    /**
+     * <p>
+     * Equivalence : this.lessEqual({@link SQLs#param(Expression, Object)})
+     * </p>
+     */
+    IPredicate lessEqualStrict(Object parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.lessEqual({@link SQLs#namedParam(String, ParamMeta)})
+     * </p>
+     */
+    IPredicate lessEqualNamed(String paramName);
+
     @Nullable
     IPredicate ifLessEqual(@Nullable Object parameter);
+
+    @Nullable
+    IPredicate ifLessEqualStrict(@Nullable Object parameter);
 
     IPredicate lessEqual(String subQueryAlias, String fieldAlias);
 
@@ -107,18 +187,43 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
 
     <C, O> IPredicate lessEqual(Function<C, Expression<O>> function);
 
-    <C, O> IPredicate lessEqualAny(Function<C, ColumnSubQuery> function);
+    <O> IPredicate lessEqual(Supplier<Expression<O>> supplier);
 
-    <C, O> IPredicate lessEqualSome(Function<C, ColumnSubQuery> function);
+    <C> IPredicate lessEqualAny(Function<C, ColumnSubQuery> function);
 
-    <C, O> IPredicate lessEqualAll(Function<C, ColumnSubQuery> function);
+    IPredicate lessEqualAny(Supplier<ColumnSubQuery> supplier);
+
+    <C> IPredicate lessEqualSome(Function<C, ColumnSubQuery> function);
+
+    IPredicate lessEqualSome(Supplier<ColumnSubQuery> supplier);
+
+    <C> IPredicate lessEqualAll(Function<C, ColumnSubQuery> function);
+
+    IPredicate lessEqualAll(Supplier<ColumnSubQuery> supplier);
 
     IPredicate greatThan(Expression<?> operand);
 
     IPredicate greatThan(Object parameter);
 
+    /**
+     * <p>
+     * Equivalence : this.greatThan({@link SQLs#param(Expression, Object)})
+     * </p>
+     */
+    IPredicate greatThanStrict(Object parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.greatThan({@link SQLs#namedParam(String, ParamMeta)})
+     * </p>
+     */
+    IPredicate greatThanNamed(String paramName);
+
     @Nullable
     IPredicate ifGreatThan(@Nullable Object parameter);
+
+    @Nullable
+    IPredicate ifGreatThanStrict(@Nullable Object parameter);
 
     IPredicate greatThan(String subQueryAlias, String fieldAlias);
 
@@ -126,18 +231,43 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
 
     <C, O> IPredicate greatThan(Function<C, Expression<O>> function);
 
-    <C, O> IPredicate greatThanAny(Function<C, ColumnSubQuery> function);
+    <O> IPredicate greatThan(Supplier<Expression<O>> supplier);
 
-    <C, O> IPredicate greatThanSome(Function<C, ColumnSubQuery> function);
+    <C> IPredicate greatThanAny(Function<C, ColumnSubQuery> function);
 
-    <C, O> IPredicate greatThanAll(Function<C, ColumnSubQuery> function);
+    IPredicate greatThanAny(Supplier<ColumnSubQuery> supplier);
+
+    <C> IPredicate greatThanSome(Function<C, ColumnSubQuery> function);
+
+    IPredicate greatThanSome(Supplier<ColumnSubQuery> supplier);
+
+    <C> IPredicate greatThanAll(Function<C, ColumnSubQuery> function);
+
+    IPredicate greatThanAll(Supplier<ColumnSubQuery> supplier);
 
     IPredicate greatEqual(Expression<?> operand);
 
     IPredicate greatEqual(Object parameter);
 
+    /**
+     * <p>
+     * Equivalence : this.greatEqual({@link SQLs#param(Expression, Object)})
+     * </p>
+     */
+    IPredicate greatEqualStrict(Object parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.greatEqual({@link SQLs#namedParam(String, ParamMeta)})
+     * </p>
+     */
+    IPredicate greatEqualNamed(String paramName);
+
     @Nullable
     IPredicate IfGreatEqual(@Nullable Object parameter);
+
+    @Nullable
+    IPredicate ifGreatEqualStrict(@Nullable Object parameter);
 
     IPredicate greatEqual(String subQueryAlias, String fieldAlias);
 
@@ -145,18 +275,43 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
 
     <C, O> IPredicate greatEqual(Function<C, Expression<O>> function);
 
+    <O> IPredicate greatEqual(Supplier<Expression<O>> supplier);
+
     <C> IPredicate greatEqualAny(Function<C, ColumnSubQuery> function);
+
+    IPredicate greatEqualAny(Supplier<ColumnSubQuery> supplier);
 
     <C> IPredicate greatEqualSome(Function<C, ColumnSubQuery> function);
 
+    IPredicate greatEqualSome(Supplier<ColumnSubQuery> supplier);
+
     <C> IPredicate greatEqualAll(Function<C, ColumnSubQuery> function);
+
+    IPredicate greatEqualAll(Supplier<ColumnSubQuery> supplier);
 
     IPredicate notEqual(Expression<?> expression);
 
     IPredicate notEqual(Object parameter);
 
+    /**
+     * <p>
+     * Equivalence : this.notEqual({@link SQLs#param(Expression, Object)})
+     * </p>
+     */
+    IPredicate notEqualStrict(Object parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.notEqual({@link SQLs#namedParam(String, ParamMeta)})
+     * </p>
+     */
+    IPredicate notEqualNamed(String paramName);
+
     @Nullable
     IPredicate ifNotEqual(@Nullable Object parameter);
+
+    @Nullable
+    IPredicate ifNotEqualStrict(@Nullable Object parameter);
 
     IPredicate notEqual(String subQueryAlias, String fieldAlias);
 
@@ -164,11 +319,19 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
 
     <C, O> IPredicate notEqual(Function<C, Expression<O>> function);
 
-    <C, O> IPredicate notEqualAny(Function<C, ColumnSubQuery> function);
+    <O> IPredicate notEqual(Supplier<Expression<O>> supplier);
 
-    <C, O> IPredicate notEqualSome(Function<C, ColumnSubQuery> function);
+    <C> IPredicate notEqualAny(Function<C, ColumnSubQuery> function);
 
-    <C, O> IPredicate notEqualAll(Function<C, ColumnSubQuery> function);
+    IPredicate notEqualAny(Supplier<ColumnSubQuery> supplier);
+
+    <C> IPredicate notEqualSome(Function<C, ColumnSubQuery> function);
+
+    IPredicate notEqualSome(Supplier<ColumnSubQuery> supplier);
+
+    <C> IPredicate notEqualAll(Function<C, ColumnSubQuery> function);
+
+    IPredicate notEqualAll(Supplier<ColumnSubQuery> supplier);
 
     IPredicate between(Expression<?> first, Expression<?> parameter);
 
@@ -195,7 +358,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
 
     /**
      * <p>
-     * Parameters will be wrapped with {@link SQLs#collectionParam(Expression, Collection)}.
+     * Parameters will be wrapped with {@link SQLs#optimizingParams(Expression, Collection)}.
      * </p>
      *
      * @param <O> java type of element of right operand of {@code in},the element is weak weakly instance, because sql is weakly typed.
@@ -204,7 +367,21 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
 
     /**
      * <p>
-     * If parameters non-null parameters will be wrapped with {@link SQLs#collectionParam(Expression, Collection)}.
+     * Equivalence : this.in({@link SQLs#params(Expression, Collection)})
+     * </p>
+     */
+    <O> IPredicate inStrict(Collection<O> parameters);
+
+    /**
+     * <p>
+     * Equivalence : this.in({@link SQLs#namedParam(String, ParamMeta)})
+     * </p>
+     */
+    IPredicate inNamed(String paramName);
+
+    /**
+     * <p>
+     * If parameters non-null parameters will be wrapped with {@link SQLs#optimizingParams(Expression, Collection)}.
      * </p>
      *
      * @param <O> java type of element of parameters,the element is weak weakly instance, because sql is weakly typed.
@@ -212,13 +389,18 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
     @Nullable
     <O> IPredicate ifIn(@Nullable Collection<O> parameters);
 
+    @Nullable
+    <O> IPredicate ifInStrict(@Nullable Collection<O> parameters);
+
     <O> IPredicate in(Expression<Collection<O>> parameters);
 
-    <C, O> IPredicate in(Function<C, ColumnSubQuery> function);
+    <C> IPredicate in(Function<C, ColumnSubQuery> function);
+
+    IPredicate in(Supplier<ColumnSubQuery> supplier);
 
     /**
      * <p>
-     * Parameters will be wrapped with {@link SQLs#collectionParam(Expression, Collection)}.
+     * Parameters will be wrapped with {@link SQLs#optimizingParams(Expression, Collection)}.
      * </p>
      *
      * @param <O> java type of element of right operand of {@code in},the element is weak weakly instance, because sql is weakly typed.
@@ -227,7 +409,21 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
 
     /**
      * <p>
-     * If parameters non-null,then parameters will be wrapped with {@link SQLs#collectionParam(Expression, Collection)}.
+     * Equivalence : this.notIn({@link SQLs#params(Expression, Collection)})
+     * </p>
+     */
+    <O> IPredicate notinStrict(Collection<O> parameters);
+
+    /**
+     * <p>
+     * Equivalence : this.notIn({@link SQLs#namedParam(String, ParamMeta)})
+     * </p>
+     */
+    IPredicate notInNamed(String paramName);
+
+    /**
+     * <p>
+     * If parameters non-null,then parameters will be wrapped with {@link SQLs#optimizingParams(Expression, Collection)}.
      * </p>
      *
      * @param <O> java type of element of parameters,the element is weak weakly instance, because sql is weakly typed.
@@ -235,13 +431,32 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
     @Nullable
     <O> IPredicate ifNotIn(@Nullable Collection<O> parameters);
 
+    @Nullable
+    <O> IPredicate ifNotInStrict(@Nullable Collection<O> parameters);
+
     <O> IPredicate notIn(Expression<Collection<O>> values);
 
-    <C, O> IPredicate notIn(Function<C, ColumnSubQuery> function);
+    <C> IPredicate notIn(Function<C, ColumnSubQuery> function);
+
+    IPredicate notIn(Supplier<ColumnSubQuery> supplier);
 
     Expression<E> mod(Expression<?> operator);
 
     Expression<E> mod(Object parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.mod({@link SQLs#param(Expression, Object)})
+     * </p>
+     */
+    Expression<E> modStrict(Object parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.mod({@link SQLs#namedParam(String, ParamMeta)})
+     * </p>
+     */
+    Expression<E> modNamed(String paramName);
 
     Expression<E> mod(String subQueryAlias, String derivedFieldName);
 
@@ -249,9 +464,25 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
 
     <C, O> Expression<E> mod(Function<C, Expression<O>> function);
 
+    <O> Expression<E> mod(Supplier<Expression<O>> supplier);
+
     Expression<E> multiply(Expression<?> multiplicand);
 
     Expression<E> multiply(Object parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.multiply({@link SQLs#param(Expression, Object)})
+     * </p>
+     */
+    Expression<E> multiplyStrict(Object parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.multiply({@link SQLs#namedParam(String, ParamMeta)})
+     * </p>
+     */
+    Expression<E> multiplyNamed(String paramName);
 
     Expression<E> multiply(String subQueryAlias, String derivedFieldName);
 
@@ -259,9 +490,25 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
 
     <C, O> Expression<E> multiply(Function<C, Expression<O>> function);
 
+    <O> Expression<E> multiply(Supplier<Expression<O>> supplier);
+
     Expression<E> plus(Expression<?> augend);
 
     Expression<E> plus(Object parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.plus({@link SQLs#param(Expression, Object)})
+     * </p>
+     */
+    Expression<E> plusStrict(Object parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.plus({@link SQLs#namedParam(String, ParamMeta)})
+     * </p>
+     */
+    Expression<E> plusNamed(String paramName);
 
     Expression<E> plus(String subQueryAlias, String derivedFieldName);
 
@@ -269,9 +516,25 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
 
     <C, O> Expression<E> plus(Function<C, Expression<O>> function);
 
+    <O> Expression<E> plus(Supplier<Expression<O>> supplier);
+
     Expression<E> minus(Expression<?> subtrahend);
 
     Expression<E> minus(Object parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.minus({@link SQLs#param(Expression, Object)})
+     * </p>
+     */
+    Expression<E> minusStrict(Object parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.minus({@link SQLs#namedParam(String, ParamMeta)})
+     * </p>
+     */
+    Expression<E> minusNamed(String paramName);
 
     Expression<E> minus(String subQueryAlias, String derivedFieldName);
 
@@ -279,16 +542,33 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
 
     <C, O> Expression<E> minus(Function<C, Expression<O>> function);
 
+    <O> Expression<E> minus(Supplier<Expression<O>> supplier);
+
     Expression<E> divide(Expression<?> divisor);
 
     Expression<E> divide(Object parameter);
 
+    /**
+     * <p>
+     * Equivalence : this.divide({@link SQLs#param(Expression, Object)})
+     * </p>
+     */
+    Expression<E> divideStrict(Object parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.divide({@link SQLs#namedParam(String, ParamMeta)})
+     * </p>
+     */
+    Expression<E> divideNamed(String paramName);
 
     Expression<E> divide(String subQueryAlias, String derivedFieldName);
 
     Expression<E> divide(String tableAlias, FieldMeta<?, ?> field);
 
     <C, O> Expression<E> divide(Function<C, Expression<O>> function);
+
+    <O> Expression<E> divide(Supplier<Expression<O>> supplier);
 
     Expression<E> negate();
 
@@ -305,6 +585,20 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * @return {@link BigInteger} expression
      */
     Expression<E> bitwiseAnd(Object parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.bitwiseAnd({@link SQLs#param(Expression, Object)})
+     * </p>
+     */
+    Expression<E> bitwiseAndStrict(Object parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.bitwiseAnd({@link SQLs#namedParam(String, ParamMeta)})
+     * </p>
+     */
+    Expression<E> bitwiseAndNamed(String paramName);
 
     /**
      * Bitwise AND
@@ -328,6 +622,8 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      */
     <C, O> Expression<E> bitwiseAnd(Function<C, Expression<O>> function);
 
+    <O> Expression<E> bitwiseAnd(Supplier<Expression<O>> supplier);
+
     /**
      * Bitwise OR
      *
@@ -341,6 +637,20 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * @return {@link BigInteger} expression
      */
     Expression<E> bitwiseOr(Object parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.bitwiseOr({@link SQLs#param(Expression, Object)})
+     * </p>
+     */
+    Expression<E> bitwiseOrStrict(Object parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.bitwiseOr({@link SQLs#namedParam(String, ParamMeta)})
+     * </p>
+     */
+    Expression<E> bitwiseOrNamed(String paramName);
 
     /**
      * Bitwise OR
@@ -363,6 +673,8 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      */
     <C, O> Expression<E> bitwiseOr(Function<C, Expression<O>> function);
 
+    <O> Expression<E> bitwiseOr(Supplier<Expression<O>> supplier);
+
     /**
      * Bitwise XOR
      *
@@ -376,6 +688,20 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * @return {@link BigInteger} expression
      */
     Expression<E> xor(Object parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.xor({@link SQLs#param(Expression, Object)})
+     * </p>
+     */
+    Expression<E> xorStrict(Object parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.xor({@link SQLs#namedParam(String, ParamMeta)})
+     * </p>
+     */
+    Expression<E> xorNamed(String paramName);
 
     /**
      * Bitwise XOR
@@ -398,6 +724,8 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      */
     <C, O> Expression<E> xor(Function<C, Expression<O>> function);
 
+    <O> Expression<E> xor(Supplier<Expression<O>> supplier);
+
     /**
      * Bitwise Inversion
      *
@@ -410,7 +738,21 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      *
      * @return {@link BigInteger} expression
      */
-    Expression<E> rightShift(Number bitNumberParameter);
+    Expression<E> rightShift(Number parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.rightShift({@link SQLs#param(Expression, Object)})
+     * </p>
+     */
+    Expression<E> rightShiftStrict(Number parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.rightShift({@link SQLs#namedParam(String, ParamMeta)})
+     * </p>
+     */
+    Expression<E> rightShiftNamed(String paramName);
 
     /**
      * Shifts a  number to the right.
@@ -441,12 +783,28 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      */
     <C, N extends Number> Expression<E> rightShift(Function<C, Expression<N>> function);
 
+    <N extends Number> Expression<E> rightShift(Supplier<Expression<N>> supplier);
+
     /**
      * Shifts a  number to the left.
      *
      * @return {@link BigInteger} expression
      */
-    Expression<E> leftShift(Number bitNumberParameter);
+    Expression<E> leftShift(Number parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.leftShift({@link SQLs#param(Expression, Object)})
+     * </p>
+     */
+    Expression<E> leftShiftStrict(Number parameter);
+
+    /**
+     * <p>
+     * Equivalence : this.leftShift({@link SQLs#namedParam(String, ParamMeta)})
+     * </p>
+     */
+    Expression<E> leftShiftNamed(String paramName);
 
     /**
      * Shifts a  number to the left.
@@ -477,6 +835,8 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      */
     <C, N extends Number> Expression<E> leftShift(Function<C, Expression<N>> function);
 
+    <N extends Number> Expression<E> leftShift(Supplier<Expression<N>> supplier);
+
     <O> Expression<O> asType(Class<O> convertType);
 
     <O> Expression<O> asType(Class<O> convertType, MappingType longMapping);
@@ -491,9 +851,31 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
 
     IPredicate like(String patternParameter);
 
+    @Nullable
+    IPredicate ifLike(@Nullable String patternParameter);
+
+    /**
+     * <p>
+     * Equivalence : this.like({@link SQLs#namedParam(String, ParamMeta)})
+     * </p>
+     */
+    IPredicate likeNamed(String paramName);
+
     <C> IPredicate like(Function<C, Expression<String>> function);
 
+    IPredicate like(Supplier<Expression<String>> supplier);
+
     IPredicate notLike(String patternParameter);
+
+    @Nullable
+    IPredicate ifNotLike(@Nullable String patternParameter);
+
+    /**
+     * <p>
+     * Equivalence : this.notLike({@link SQLs#namedParam(String, ParamMeta)})
+     * </p>
+     */
+    IPredicate notLikeNamed(String paramName);
 
     IPredicate like(Expression<String> pattern);
 
@@ -501,5 +883,6 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
 
     <C> IPredicate notLike(Function<C, Expression<String>> function);
 
+    IPredicate notLike(Supplier<Expression<String>> supplier);
 
 }

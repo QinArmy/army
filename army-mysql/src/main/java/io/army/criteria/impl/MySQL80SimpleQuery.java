@@ -1,11 +1,13 @@
 package io.army.criteria.impl;
 
+import io.army.DialectMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQL80Query;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
 import io.army.criteria.mysql.MySQL80Query;
+import io.army.dialect.Database;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
@@ -366,11 +368,10 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final OrderByWithRollup80Spec<C, Q> afterOrderBy() {
+    final void afterOrderBy() {
         if (this.groupByWithRollup == null) {
             this.groupByWithRollup = Boolean.FALSE;
         }
-        return this;
     }
 
     @Override
@@ -445,6 +446,18 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         return new NoActionPartitionOnBlock<>(this);
     }
 
+    @Override
+    final DialectMode defaultDialect() {
+        return DialectMode.MYSQL80;
+    }
+
+    @Override
+    final void validateDialect(DialectMode mode) {
+        if (mode.database() != Database.MySQL || mode.version() < 80) {
+            throw _Exceptions.stmtDontSupportDialect(mode);
+        }
+    }
+
 
     @Override
     public final boolean groupByWithRollUp() {
@@ -456,6 +469,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     public final boolean orderByWithRollup() {
         return this.orderByWithRollup;
     }
+
+
 
     /*################################## blow private method ##################################*/
 

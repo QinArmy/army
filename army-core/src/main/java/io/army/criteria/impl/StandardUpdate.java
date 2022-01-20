@@ -29,6 +29,7 @@ import java.util.function.Supplier;
  *
  * @param <C> criteria java type used to dynamic update and sub query
  */
+@SuppressWarnings("unchecked")
 abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA, SR>
         implements Update.StandardUpdateClause<UR>, _SingleUpdate, Update.UpdateSpec {
 
@@ -111,10 +112,8 @@ abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA,
         stmt = this.mockAsStmt(mode);
         final StringBuilder builder = new StringBuilder();
         if (stmt instanceof SimpleStmt) {
-            final SimpleStmt simpleStmt = (SimpleStmt) stmt;
-            _Assert.noNamedParam(simpleStmt.paramGroup());
             builder.append("update sql:\n")
-                    .append(simpleStmt.sql());
+                    .append(((SimpleStmt) stmt).sql());
 
         } else if (stmt instanceof BatchStmt) {
             builder.append("batch update sql:\n")
@@ -127,7 +126,12 @@ abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA,
 
     @Override
     public final Stmt mockAsStmt(DialectMode mode) {
-        return _MockDialects.from(mode).update(this, Visible.ONLY_VISIBLE);
+        final Stmt stmt;
+        stmt = _MockDialects.from(mode).update(this, Visible.ONLY_VISIBLE);
+        if (stmt instanceof SimpleStmt) {
+            _Assert.noNamedParam(((SimpleStmt) stmt).paramGroup());
+        }
+        return stmt;
     }
 
     private static final class SimpleUpdate<C> extends StandardUpdate<

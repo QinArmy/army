@@ -342,5 +342,14 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException namedParamInNonBatch(NamedParam<?> param) {
+        String m = String.format("Couldn't exist named parameter[%s] in non-batch statement.", param.name());
+        return new CriteriaException(m);
+    }
+
+    public static IllegalArgumentException stmtDontSupportDialect(DialectMode mode) {
+        return new IllegalArgumentException(String.format("Don't support dialect[%s]", mode));
+    }
+
 
 }

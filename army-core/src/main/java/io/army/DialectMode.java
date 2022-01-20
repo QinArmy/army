@@ -2,15 +2,34 @@ package io.army;
 
 import io.army.dialect.Database;
 
+
 public enum DialectMode {
 
-    MySQL57(Database.MySQL),
-    MYSQL80(Database.MySQL);
+    MySQL57((byte) 57) {
+        @Override
+        public Database database() {
+            return Database.MySQL;
+        }
+    },
+    MYSQL80((byte) 80) {
+        @Override
+        public Database database() {
+            return Database.MySQL;
+        }
+    };
 
-    public final Database database;
 
-    DialectMode(Database database) {
-        this.database = database;
+    private final byte version;
+
+    DialectMode(byte version) {
+        this.version = version;
+    }
+
+    public abstract Database database();
+
+
+    public final int version() {
+        return this.version;
     }
 
 

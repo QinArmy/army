@@ -20,9 +20,9 @@ public interface NamedParam<E> extends Expression<E>, ParamValue {
      * Actual parameter value store in bean or map.
      * </p>
      *
-     * @throws UnsupportedOperationException always throws.
+     * @throws CriteriaException always throws.
      */
     @Override
-    Object value() throws UnsupportedOperationException;
+    Object value() throws CriteriaException;
 
 }

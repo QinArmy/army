@@ -6,6 +6,7 @@ import io.army.criteria.TablePartGroup;
 import io.army.criteria.impl.inner._Query;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.meta.TableMeta;
+import io.army.util.CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.HashMap;
@@ -18,13 +19,13 @@ final class TableContext {
 
     final Map<TableMeta<?>, String> tableToSafeAlias;
 
-    TableContext(Map<String, TablePart> aliasToTable, Map<TableMeta<?>, String> tableToSafeAlias) {
-        this.aliasToTable = aliasToTable;
-        this.tableToSafeAlias = tableToSafeAlias;
+    private TableContext(Map<String, TablePart> aliasToTable, Map<TableMeta<?>, String> tableToSafeAlias) {
+        this.aliasToTable = CollectionUtils.unmodifiableMap(aliasToTable);
+        this.tableToSafeAlias = CollectionUtils.unmodifiableMap(tableToSafeAlias);
     }
 
 
-    static TableContext createMapPair(Query query, _Dialect dialect) {
+    static TableContext createContext(Query query, _Dialect dialect) {
         final List<? extends _TableBlock> blockList = ((_Query) query).tableBlockList();
         final Map<String, TablePart> aliasToTable = new HashMap<>((int) (blockList.size() / 0.75F));
         final Map<TableMeta<?>, String> tableToSafeAlias = new HashMap<>((int) (blockList.size() / 0.75F));

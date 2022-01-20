@@ -2,6 +2,7 @@ package io.army.dialect.mysql;
 
 import io.army.DialectMode;
 import io.army.criteria.GenericField;
+import io.army.criteria.LockMode;
 import io.army.dialect.*;
 import io.army.mapping.MappingType;
 import io.army.mapping.mysql.MySqlSetType;
@@ -338,6 +339,21 @@ abstract class MySQLDialect extends _AbstractDialect {
         return context.build();
     }
 
+    @Override
+    protected final void standardLockClause(final LockMode lockMode, final _SqlContext context) {
+        switch (lockMode) {
+            case PESSIMISTIC_READ:
+                context.sqlBuilder()
+                        .append(Constant.SPACE_LOCK_IN_SHARE_MODE);
+                break;
+            case PESSIMISTIC_WRITE:
+                context.sqlBuilder()
+                        .append(Constant.SPACE_FOR_UPDATE);
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(lockMode);
+        }
+    }
 
     /*################################## blow private method ##################################*/
 

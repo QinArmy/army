@@ -4,6 +4,9 @@ import io.army.criteria.NamedParam;
 import io.army.criteria.NonNullNamedParam;
 import io.army.dialect._SqlContext;
 import io.army.meta.ParamMeta;
+import io.army.util._Exceptions;
+
+import java.util.Objects;
 
 /**
  * <p>
@@ -16,10 +19,12 @@ class NamedParamImpl<E> extends OperationExpression<E>
         implements NamedParam<E> {
 
     static <E> NamedParam<E> nullable(String name, ParamMeta paramMeta) {
+        Objects.requireNonNull(name);
         return new NamedParamImpl<>(name, paramMeta);
     }
 
     static <E> NonNullNamedParam<E> nonNull(String name, ParamMeta paramMeta) {
+        Objects.requireNonNull(name);
         return new NonNullNamedParamImpl<>(name, paramMeta);
     }
 
@@ -44,7 +49,7 @@ class NamedParamImpl<E> extends OperationExpression<E>
 
     @Override
     public final Object value() {
-        throw new UnsupportedOperationException("Named parameter no value in non batch update (or batch delete) statement.");
+        throw _Exceptions.namedParamInNonBatch(this);
     }
 
     @Override

@@ -1,10 +1,12 @@
 package io.army.criteria.impl;
 
+import io.army.DialectMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._PartQuery;
 import io.army.criteria.impl.inner._UnionQuery;
 import io.army.criteria.mysql.MySQL57Query;
 import io.army.dialect.Constant;
+import io.army.dialect.Database;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
 import io.army.meta.ParamMeta;
@@ -104,6 +106,18 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
     @Override
     final void internalClear() {
         //no-op
+    }
+
+    @Override
+    final DialectMode defaultDialect() {
+        return DialectMode.MySQL57;
+    }
+
+    @Override
+    final void validateDialect(DialectMode mode) {
+        if (mode.database() != Database.MySQL) {
+            throw new IllegalArgumentException(String.format("Don't support dialect[%s]", mode));
+        }
     }
 
 

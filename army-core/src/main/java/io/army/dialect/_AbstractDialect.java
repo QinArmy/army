@@ -257,7 +257,7 @@ public abstract class _AbstractDialect implements _Dialect {
     }
 
     protected void standardLockClause(LockMode lockMode, _SqlContext context) {
-
+        throw new UnsupportedOperationException();
     }
 
     protected final void fromClause(final List<? extends _TableBlock> tableBlockList, final _SqlContext context) {
@@ -274,8 +274,7 @@ public abstract class _AbstractDialect implements _Dialect {
         for (int i = 0, index; i < size; i++) {
             final _TableBlock block = tableBlockList.get(i);
             if (i > 0) {
-                builder.append(Constant.SPACE)
-                        .append(block.jointType().render());
+                builder.append(block.jointType().render());
             }
             final TablePart tablePart = block.table();
             if (tablePart instanceof TableMeta) {
@@ -752,8 +751,7 @@ public abstract class _AbstractDialect implements _Dialect {
                     String m = String.format("Standard query api support only %s", Distinct.class.getName());
                     throw new CriteriaException(m);
                 }
-                builder.append(Constant.SPACE)
-                        .append(modifier.render());
+                builder.append(modifier.render());
             }
             break;
             default:
@@ -768,8 +766,7 @@ public abstract class _AbstractDialect implements _Dialect {
         final int size = selectPartList.size();
         for (int i = 0; i < size; i++) {
             if (i > 0) {
-                builder.append(Constant.SPACE)
-                        .append(Constant.COMMA);
+                builder.append(Constant.SPACE_COMMA);
             }
             ((_SelfDescribed) selectPartList.get(i)).appendSql(context);
         }
@@ -936,36 +933,40 @@ public abstract class _AbstractDialect implements _Dialect {
 
 
     private void standardQuery(_StandardQuery query, _SqlContext context) {
+        //1. select clause
         this.standardSelectClause(query.modifierList(), context);
+        //2. select list clause
         this.selectListClause(query.selectPartList(), context);
+        //3. from clause
         this.fromClause(query.tableBlockList(), context);
+        //4. where clause
         this.queryWhereClause(query.predicateList(), context);
-
+        //5. groupBy clause
         final List<SortPart> groupByList = query.groupPartList();
         if (groupByList.size() > 0) {
             this.groupByClause(groupByList, context);
             this.havingClause(query.havingList(), context);
         }
+        //6. orderBy clause
         this.orderByClause(query.orderByList(), context);
 
         final StringBuilder builder = context.sqlBuilder();
+
+        //7. limit clause
         final long offset, rowCount;
         offset = query.offset();
         rowCount = query.rowCount();
         if (offset >= 0 && rowCount >= 0) {
-            builder.append(Constant.SPACE)
-                    .append(Constant.LIMIT)
-                    .append(Constant.SPACE)
+            builder.append(Constant.SPACE_LIMIT_SPACE)
                     .append(offset)
                     .append(Constant.SPACE)
                     .append(rowCount);
         } else if (rowCount >= 0) {
-            builder.append(Constant.SPACE)
-                    .append(Constant.LIMIT)
+            builder.append(Constant.SPACE_LIMIT_SPACE)
                     .append(Constant.SPACE)
                     .append(rowCount);
         }
-
+        //8. lock clause
         final LockMode lock = query.lockMode();
         if (lock != null) {
             this.standardLockClause(lock, context);

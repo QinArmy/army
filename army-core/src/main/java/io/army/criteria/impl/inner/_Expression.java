@@ -7,7 +7,7 @@ import io.army.meta.TableMeta;
 
 import java.util.Collection;
 
-public interface _Expression<E> extends Expression<E>, _SortPart, SetValuePart, _SelfDescribed {
+public interface _Expression<E> extends Expression<E>, SetValuePart, _SelfDescribed {
 
     boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas);
 

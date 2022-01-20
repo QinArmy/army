@@ -34,7 +34,7 @@ final class OrPredicate extends OperationPredicate {
                 for (IPredicate right : rights) {
                     predicateList.add((OperationPredicate) right);
                 }
-                result = new OrPredicate(left, predicateList);
+                result = new OrPredicate(left, Collections.unmodifiableList(predicateList));
             }
         }
         return result;
@@ -58,21 +58,19 @@ final class OrPredicate extends OperationPredicate {
 
         this.left.appendSql(context);
 
-        builder.append(Constant.SPACE_OR);
+        for (OperationPredicate right : this.rights) {
+            builder.append(Constant.SPACE_OR);
 
-        final List<OperationPredicate> rights = this.rights;
-        final int size = rights.size();
-        if (size == 1) {
-            rights.get(0).appendSql(context);
-        } else {
-            for (int i = 0; i < size; i++) {
-                if (i > 0) {
-                    builder.append(Constant.SPACE_OR);
-                }
-                rights.get(i).appendSql(context);
+            if (right instanceof AndPredicate) {
+                builder.append(Constant.SPACE_LEFT_BRACKET); // inner left bracket
+            }
+
+            right.appendSql(context);
+
+            if (right instanceof AndPredicate) {
+                builder.append(Constant.SPACE_RIGHT_BRACKET);// inner right bracket
             }
         }
-
         builder.append(Constant.SPACE_RIGHT_BRACKET);
     }
 
@@ -81,27 +79,23 @@ final class OrPredicate extends OperationPredicate {
         final StringBuilder builder = new StringBuilder(128)
                 .append(Constant.SPACE_LEFT_BRACKET);
 
-        builder.append(this.left)
-                .append(" OR");
+        builder.append(this.left);
 
-        final List<OperationPredicate> rights = this.rights;
-        final int size = rights.size();
-        if (size == 1) {
-            builder.append(rights.get(0));
-        } else {
-            builder.append(Constant.SPACE_LEFT_BRACKET);
-            for (int i = 0; i < size; i++) {
-                if (i > 0) {
-                    builder.append(Constant.SPACE_AND);
-                }
-                builder.append(rights.get(i));
+        for (OperationPredicate right : this.rights) {
+            builder.append(Constant.SPACE_OR);
+
+            if (right instanceof AndPredicate) {
+                builder.append(Constant.SPACE_LEFT_BRACKET);
             }
-            builder.append(Constant.SPACE_RIGHT_BRACKET);
+            builder.append(right);
+
+            if (right instanceof AndPredicate) {
+                builder.append(Constant.SPACE_RIGHT_BRACKET);
+            }
         }
 
-        builder.append(Constant.SPACE_RIGHT_BRACKET);
-
-        return builder.toString();
+        return builder.append(Constant.SPACE_RIGHT_BRACKET)
+                .toString();
     }
 
     @Override

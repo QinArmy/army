@@ -11,6 +11,4 @@ import io.army.criteria.impl.inner._Expression;
 interface ArmyExpression<E> extends _Expression<E> {
 
 
-    boolean isVersion();
-
 }

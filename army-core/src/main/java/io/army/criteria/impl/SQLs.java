@@ -195,6 +195,28 @@ public abstract class SQLs extends StandardFunctions {
     }
 
     /**
+     * package method
+     */
+    @SuppressWarnings("unchecked")
+    static Expression<?> strictParamWithExp(final Expression<?> type, final @Nullable Object value) {
+        final Expression<?> resultExpression;
+        if (value instanceof Expression) {
+            //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
+            resultExpression = (Expression<?>) value;
+        } else if (value instanceof Function) {
+            //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
+            resultExpression = ((Function<Object, Expression<?>>) value).apply(CriteriaContextStack.getCriteria());
+        } else if (value instanceof Supplier) {
+            //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
+            resultExpression = (Expression<?>) ((Supplier<?>) value).get();
+        } else {
+            // use optimizing param expression
+            resultExpression = ParamExpression.strict(type.paramMeta(), value);
+        }
+        return resultExpression;
+    }
+
+    /**
      * <p>
      * Create strict param expression
      * </p>
@@ -223,9 +245,11 @@ public abstract class SQLs extends StandardFunctions {
     }
 
     /**
-     * package method
+     * <p>
+     * Create optimizing collection param expression
+     * </p>
      */
-    static <E> Expression<Collection<E>> collectionParam(Expression<?> type, Collection<E> value) {
+    public static <E> Expression<Collection<E>> optimizingParams(Expression<?> type, Collection<E> value) {
         return CollectionParamExpression.optimizing(type, value);
     }
 
@@ -264,7 +288,7 @@ public abstract class SQLs extends StandardFunctions {
      *
      * @see io.army.criteria.Update.BatchSetClause
      */
-    public static <E> NamedParam<E> nullableNamedParam(String name, ParamMeta paramMeta) {
+    public static <E> Expression<E> nullableNamedParam(String name, ParamMeta paramMeta) {
         return NamedParamImpl.nullable(name, paramMeta);
     }
 
@@ -275,7 +299,7 @@ public abstract class SQLs extends StandardFunctions {
      *
      * @see io.army.criteria.Update.BatchSetClause
      */
-    public static <E> NamedParam<E> nullableNamedParam(GenericField<?, ?> field) {
+    public static <E> Expression<E> nullableNamedParam(GenericField<?, ?> field) {
         return NamedParamImpl.nullable(field.fieldName(), field);
     }
 
@@ -290,7 +314,7 @@ public abstract class SQLs extends StandardFunctions {
      * @see SQLs#standardBatchDelete()
      * @see SQLs#standardBatchDelete(Object)
      */
-    public static <E> NamedParam<E> namedParam(String name, ParamMeta paramMeta) {
+    public static <E> Expression<E> namedParam(String name, ParamMeta paramMeta) {
         return NamedParamImpl.nonNull(name, paramMeta);
     }
 
@@ -304,7 +328,7 @@ public abstract class SQLs extends StandardFunctions {
      * @see SQLs#standardBatchDelete()
      * @see SQLs#standardBatchDelete(Object)
      */
-    public static <E> NamedParam<E> namedParam(GenericField<?, ?> field) {
+    public static <E> Expression<E> namedParam(GenericField<?, ?> field) {
         return NamedParamImpl.nonNull(field.fieldName(), field);
     }
 

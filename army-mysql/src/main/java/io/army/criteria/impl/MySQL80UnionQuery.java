@@ -1,10 +1,12 @@
 package io.army.criteria.impl;
 
+import io.army.DialectMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._PartQuery;
 import io.army.criteria.impl.inner._UnionQuery;
 import io.army.criteria.mysql.MySQL80Query;
 import io.army.dialect.Constant;
+import io.army.dialect.Database;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
 import io.army.meta.ParamMeta;
@@ -91,6 +93,18 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends PartQuery<
     @Override
     final void internalClear() {
         //no-op
+    }
+
+    @Override
+    final DialectMode defaultDialect() {
+        return DialectMode.MYSQL80;
+    }
+
+    @Override
+    final void validateDialect(DialectMode mode) {
+        if (mode.database() != Database.MySQL || mode.version() < 80) {
+            throw _Exceptions.stmtDontSupportDialect(mode);
+        }
     }
 
     @Override

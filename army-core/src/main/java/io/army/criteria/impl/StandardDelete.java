@@ -111,10 +111,8 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
         stmt = this.mockAsStmt(mode);
         final StringBuilder builder = new StringBuilder();
         if (stmt instanceof SimpleStmt) {
-            final SimpleStmt simpleStmt = (SimpleStmt) stmt;
-            _Assert.noNamedParam(simpleStmt.paramGroup());
             builder.append("delete sql:\n")
-                    .append(simpleStmt.sql());
+                    .append(((SimpleStmt) stmt).sql());
 
         } else if (stmt instanceof BatchStmt) {
             builder.append("batch delete sql:\n")
@@ -127,7 +125,12 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
 
     @Override
     public final Stmt mockAsStmt(DialectMode mode) {
-        return _MockDialects.from(mode).delete(this, Visible.ONLY_VISIBLE);
+        final Stmt stmt;
+        stmt = _MockDialects.from(mode).delete(this, Visible.ONLY_VISIBLE);
+        if (stmt instanceof SimpleStmt) {
+            _Assert.noNamedParam(((SimpleStmt) stmt).paramGroup());
+        }
+        return stmt;
     }
 
 

@@ -6,22 +6,25 @@ enum SubQueryOperator {
     ANY {
         @Override
         public String rendered() {
-            return "ANY";
+            return " ANY";
         }
     },
     SOME {
         @Override
         public String rendered() {
-            return "SOME";
+            return " SOME";
         }
     },
     ALL {
         @Override
         public String rendered() {
-            return "ALL";
+            return " ALL";
         }
     };
 
+    /**
+     * @return one space char and operator
+     */
     abstract String rendered();
 
 }

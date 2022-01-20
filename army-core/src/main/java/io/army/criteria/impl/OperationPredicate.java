@@ -1,10 +1,12 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.GenericField;
 import io.army.criteria.IPredicate;
+import io.army.criteria.NamedParam;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.mapping._MappingFactory;
 import io.army.meta.ParamMeta;
-import io.army.stmt.ParamValue;
+import io.army.modelgen._MetaBridge;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +52,16 @@ abstract class OperationPredicate extends OperationExpression<Boolean> implement
     }
 
     @Override
+    public final IPredicate and(IPredicate predicate) {
+        return AndPredicate.create(this, predicate);
+    }
+
+    @Override
+    public final IPredicate and(List<IPredicate> predicates) {
+        return AndPredicate.create(this, predicates);
+    }
+
+    @Override
     public final IPredicate not() {
         return NotPredicate.not(this);
     }
@@ -58,16 +70,17 @@ abstract class OperationPredicate extends OperationExpression<Boolean> implement
     public final boolean isOptimistic() {
         final boolean match;
         final DualPredicate predicate;
-        if (!(this instanceof DualPredicate)) {
+        if (!(this instanceof DualPredicate)
+                || (predicate = (DualPredicate) this).operator != DualOperator.EQ) {
             match = false;
-        } else if ((predicate = (DualPredicate) this).operator != DualOperator.EQ) {
-            match = false;
-        } else if (predicate.left.isVersion()) {
+        } else if (predicate.left instanceof GenericField
+                && _MetaBridge.VERSION.equals(((GenericField<?, ?>) predicate.left).fieldName())) {
             match = predicate.right instanceof ValueExpression
-                    || predicate.right instanceof ParamValue; // named param
-        } else if (predicate.right.isVersion()) {
+                    || predicate.right instanceof NamedParam;
+        } else if (predicate.right instanceof GenericField
+                && _MetaBridge.VERSION.equals(((GenericField<?, ?>) predicate.right).fieldName())) {
             match = predicate.left instanceof ValueExpression
-                    || predicate.left instanceof ParamValue;// named param
+                    || predicate.left instanceof NamedParam;
 
         } else {
             match = false;

@@ -10,7 +10,7 @@ import io.army.dialect._SqlContext;
  */
 final class NotPredicate extends OperationPredicate {
 
-    static IPredicate not(final _Predicate predicate) {
+    static IPredicate not(final OperationPredicate predicate) {
         final _Predicate notPredicate;
         if (predicate instanceof NotPredicate) {
             notPredicate = ((NotPredicate) predicate).predicate;
@@ -20,9 +20,9 @@ final class NotPredicate extends OperationPredicate {
         return notPredicate;
     }
 
-    private final _Predicate predicate;
+    private final OperationPredicate predicate;
 
-    private NotPredicate(_Predicate predicate) {
+    private NotPredicate(OperationPredicate predicate) {
         this.predicate = predicate;
 
     }

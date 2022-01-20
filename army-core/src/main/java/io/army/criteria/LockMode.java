@@ -15,9 +15,5 @@ public enum LockMode {
      */
     PESSIMISTIC_WRITE,
 
-    /**
-     * No lock.
-     */
-    NONE;
 
 }

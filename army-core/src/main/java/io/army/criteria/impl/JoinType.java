@@ -3,17 +3,18 @@ package io.army.criteria.impl;
 import io.army.criteria.SQLModifier;
 
 enum JoinType implements SQLModifier {
+
     NONE(""),
-    LEFT_JOIN("LEFT JOIN"),
-    JOIN("JOIN"),
-    RIGHT_JOIN("RIGHT JOIN"),
-    FULL_JOIN("FULL JOIN"),
-    CROSS_JOIN("CROSS JOIN"),
+    LEFT_JOIN(" LEFT JOIN"),
+    JOIN(" JOIN"),
+    RIGHT_JOIN(" RIGHT JOIN"),
+    FULL_JOIN(" FULL JOIN"),
+    CROSS_JOIN(" CROSS JOIN"),
 
     /**
      * MySQL
      */
-    STRAIGHT_JOIN("STRAIGHT_JOIN");
+    STRAIGHT_JOIN(" STRAIGHT_JOIN");
 
     public final String keyWords;
 
@@ -23,7 +24,8 @@ enum JoinType implements SQLModifier {
 
 
     @Override
-    public String render() {
+    public final String render() {
         return this.keyWords;
     }
+
 }

@@ -1,11 +1,13 @@
 package io.army.criteria.impl;
 
+import io.army.DialectMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQL57Query;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
 import io.army.criteria.mysql.MySQL57Query;
+import io.army.dialect.Database;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
@@ -241,6 +243,19 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     final PartitionJoin57Spec<C, Q> createFromBlockWithPartition(TableMeta<?> table
             , Function<MySQLFromTableBlock, IndexHintJoin57Spec<C, Q>> function) {
         return new PartitionJoinImpl<>(table, function, this.criteria);
+    }
+
+
+    @Override
+    final DialectMode defaultDialect() {
+        return DialectMode.MySQL57;
+    }
+
+    @Override
+    final void validateDialect(DialectMode mode) {
+        if (mode.database() != Database.MySQL) {
+            throw new IllegalArgumentException(String.format("Don't support dialect[%s]", mode));
+        }
     }
 
     /*################################## blow private method ##################################*/

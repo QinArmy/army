@@ -43,7 +43,7 @@ class ColumnSubQueryPredicate extends OperationPredicate {
         }
     }
 
-    static <C, O> ColumnSubQueryPredicate create(Expression<?> operand, DualOperator operator
+    static <C> ColumnSubQueryPredicate create(Expression<?> operand, DualOperator operator
             , Function<C, ColumnSubQuery> function) {
         final ColumnSubQuery functionResult;
         functionResult = function.apply(CriteriaContextStack.getCriteria());
@@ -79,16 +79,17 @@ class ColumnSubQueryPredicate extends OperationPredicate {
 
 
     @Override
-    public final void appendSql(_SqlContext context) {
-//        this.operand.appendSql(context);
-//        final StringBuilder builder = context.sqlBuilder()
-//                .append(Constant.SPACE)
-//                .append(this.operator.rendered());
-//        if (this instanceof RelationColumnSubQueryPredicate) {
-//            builder.append(Constant.SPACE)
-//                    .append(((RelationColumnSubQueryPredicate) this).subQueryOperator.rendered());
-//        }
-//        this.subQuery.appendSql(context);
+    public final void appendSql(final _SqlContext context) {
+
+        this.operand.appendSql(context);
+
+        final StringBuilder builder = context.sqlBuilder()
+                .append(this.operator.rendered());
+
+        if (this instanceof RelationColumnSubQueryPredicate) {
+            builder.append(((RelationColumnSubQueryPredicate) this).subQueryOperator.rendered());
+        }
+        context.dialect().subQuery(this.subQuery, context);
     }
 
     @SuppressWarnings("all")

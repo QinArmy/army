@@ -58,7 +58,7 @@ public interface Constant {
 
     String SPACE_SET = " SET";
 
-    String LIMIT = "LIMIT";
+    String SPACE_LIMIT_SPACE = " LIMIT ";
 
     String SPACE_IS_NULL = " IS NULL";
 
@@ -71,6 +71,10 @@ public interface Constant {
     String SPACE_LEFT_BRACKET = " (";
 
     String SPACE_RIGHT_BRACKET = " )";
+
+    String SPACE_FOR_UPDATE = " FOR UPDATE";
+
+    String SPACE_LOCK_IN_SHARE_MODE = " LOCK IN SHARE MODE";
 
     char LEFT_BRACKET = '(';
 

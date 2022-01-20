@@ -1,8 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._StandardComposeQuery;
-import io.army.criteria.impl.inner._StandardSubQuery;
 
 public abstract class _CriteriaCounselor {
 
@@ -10,18 +8,17 @@ public abstract class _CriteriaCounselor {
         throw new UnsupportedOperationException();
     }
 
-    public static void assertStandardComposeSelect(_StandardComposeQuery select) {
-
-    }
-
-    public static void assertStandardComposeSubQuery(_StandardComposeQuery composeQuery) {
-
-    }
 
     public static void assertStandardSelect(Select select) {
+        if (!(select instanceof StandardSimpleQuery) && !(select instanceof StandardUnionQuery)) {
+            String m = String.format("%s isn't instance of %s or %s"
+                    , select.getClass().getName(), StandardSimpleQuery.class.getName()
+                    , StandardUnionQuery.class.getName());
+            throw new CriteriaException(m);
+        }
     }
 
-    public static void assertStandardSubQuery(_StandardSubQuery subQuery) {
+    public static void assertStandardSubQuery(SubQuery subQuery) {
         //
     }
 

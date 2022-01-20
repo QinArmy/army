@@ -1,16 +1,15 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.CriteriaException;
-import io.army.criteria.LimitOption;
-import io.army.criteria.Query;
-import io.army.criteria.SortPart;
+import io.army.DialectMode;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._PartQuery;
+import io.army.dialect._MockDialects;
 import io.army.lang.Nullable;
+import io.army.stmt.SimpleStmt;
+import io.army.util.ArrayUtils;
 import io.army.util.CollectionUtils;
 import io.army.util._Assert;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -97,12 +96,15 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     @Override
     public final OR orderBy(SortPart sortPart) {
         this.orderByList = Collections.singletonList(sortPart);
-        return this.afterOrderBy();
+        this.afterOrderBy();
+        return (OR) this;
     }
 
     @Override
     public final OR orderBy(SortPart sortPart1, SortPart sortPart2) {
-        return this.orderBy(Arrays.asList(sortPart1, sortPart2));
+        this.orderByList = ArrayUtils.asUnmodifiableList(sortPart1, sortPart2);
+        this.afterOrderBy();
+        return (OR) this;
     }
 
     @Override
@@ -110,8 +112,9 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
         if (sortPartList.size() == 0) {
             throw new CriteriaException("sortPartList must not empty.");
         }
-        this.orderByList = new ArrayList<>(sortPartList);
-        return this.afterOrderBy();
+        this.orderByList = CollectionUtils.asUnmodifiableList(sortPartList);
+        this.afterOrderBy();
+        return (OR) this;
     }
 
     @Override
@@ -129,7 +132,8 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
         if (sortPart != null) {
             this.orderByList = Collections.singletonList(sortPart);
         }
-        return this.afterOrderBy();
+        this.afterOrderBy();
+        return (OR) this;
     }
 
     @Override
@@ -139,7 +143,8 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
         if (!CollectionUtils.isEmpty(supplierResult)) {
             this.orderBy(supplierResult);
         }
-        return this.afterOrderBy();
+        this.afterOrderBy();
+        return (OR) this;
     }
 
     @Override
@@ -149,7 +154,8 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
         if (!CollectionUtils.isEmpty(supplierResult)) {
             this.orderBy(supplierResult);
         }
-        return this.afterOrderBy();
+        this.afterOrderBy();
+        return (OR) this;
     }
 
     @Override
@@ -209,6 +215,11 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     }
 
     @Override
+    public final boolean isPrepared() {
+        return this.prepared;
+    }
+
+    @Override
     public final void prepared() {
         _Assert.prepared(this.prepared);
     }
@@ -248,6 +259,43 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
         this.internalClear();
     }
 
+    @Override
+    public final void mock(DialectMode mode) {
+        System.out.println(this.mockAsString(mode));
+    }
+
+    @Override
+    public final String mockAsString(DialectMode mode) {
+
+        final SimpleStmt stmt;
+        stmt = this.mockAsStmt(mode);
+        return "SELECT sql:\n" + stmt.sql();
+    }
+
+    @Override
+    public final SimpleStmt mockAsStmt(DialectMode mode) {
+        if (this instanceof SubQuery) {
+            throw new IllegalStateException("mockAsStmt(DialectMode) support only Select statement.");
+        }
+        this.validateDialect(mode);
+        final SimpleStmt stmt;
+        stmt = _MockDialects.from(mode).select((Select) this, Visible.ONLY_VISIBLE);
+        _Assert.noNamedParam(stmt.paramGroup());
+        return stmt;
+    }
+
+    @Override
+    public final String toString() {
+        final String s;
+        if (this.prepared && this instanceof Select) {
+            s = this.mockAsString(this.defaultDialect());
+        } else {
+            s = super.toString();
+        }
+        return s;
+    }
+
+
     final boolean hasOrderBy() {
         return !CollectionUtils.isEmpty(this.orderByList);
     }
@@ -256,10 +304,13 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
         return innerAsQuery(false);
     }
 
-    OR afterOrderBy() {
-        return (OR) this;
+    void afterOrderBy() {
+
     }
 
+    abstract DialectMode defaultDialect();
+
+    abstract void validateDialect(DialectMode mode);
 
     abstract Q internalAsQuery(boolean justAsQuery);
 
@@ -295,8 +346,6 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
         final List<SortPart> sortPartList = this.orderByList;
         if (sortPartList == null) {
             this.orderByList = Collections.emptyList();
-        } else {
-            this.orderByList = CollectionUtils.asUnmodifiableList(sortPartList);
         }
         final Q query;
         query = internalAsQuery(justAsQuery);

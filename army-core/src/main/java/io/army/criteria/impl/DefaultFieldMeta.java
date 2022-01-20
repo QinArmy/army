@@ -287,6 +287,7 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
 
     @Override
     public final ParamMeta paramMeta() {
+        // always this
         return this;
     }
 

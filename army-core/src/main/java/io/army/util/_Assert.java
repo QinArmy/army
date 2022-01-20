@@ -3,12 +3,7 @@ package io.army.util;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.NamedParam;
 import io.army.criteria.Statement;
-import io.army.criteria.impl.inner._BatchDml;
-import io.army.criteria.impl.inner._SingleDml;
-import io.army.criteria.impl.inner._Statement;
 import io.army.lang.Nullable;
-import io.army.meta.TableMeta;
-import io.army.session.DialectSessionFactory;
 import io.army.stmt.ParamValue;
 
 import java.util.List;
@@ -34,65 +29,15 @@ public abstract class _Assert extends org.springframework.util.Assert {
 
     public static void nonPrepared(boolean prepared) {
         if (prepared) {
-            throw new IllegalStateException(String.format("%s is prepared state.", Statement.class.getName()));
+            throw new CriteriaException(String.format("%s is prepared state.", Statement.class.getName()));
         }
     }
 
-    public static void identifierHasText(String identifier) {
-        if (!StringUtils.hasText(identifier)) {
-            throw new CriteriaException("Criteria identifier must has text.");
-        }
-    }
-
-    public static void hasTable(@Nullable TableMeta<?> table) {
-        if (table == null) {
-            throw new CriteriaException("Criteria must has table.");
-        }
-    }
-
-
-    public static byte databaseRoute(final TableMeta<?> table, final int databaseIndex) {
-//        if (table.databaseRouteFields().isEmpty()) {
-//            if (databaseIndex != -1) {
-//                throw _Exceptions.notSupportSharding(table);
-//            }
-//        } else if (databaseIndex > 99) {
-//            throw new CriteriaException(String.format("databaseIndex[%s] not in [0,99].", databaseIndex));
-//        }
-        return (byte) (databaseIndex < 0 ? -1 : databaseIndex);
-    }
-
-    public static byte tableRoute(final TableMeta<?> table, final int tableIndex) {
-//        final byte tableCount = table.tableCount();
-//        if (tableCount == 1) {
-//            if (tableIndex != -1) {
-//                throw _Exceptions.notSupportSharding(table);
-//            }
-//        } else if (tableIndex > 99) {
-//            throw new CriteriaException(String.format("%s tableIndex[%s] not in [0,%s].", table, tableIndex, tableCount));
-//        }
-        return (byte) (tableIndex < 0 ? -1 : tableIndex);
-    }
-
-    public static void databaseRoute(_Statement stmt, final int routeDatabase, DialectSessionFactory factory) {
-        if (routeDatabase >= 0 && routeDatabase != factory.databaseIndex()) {
-            throw _Exceptions.databaseRouteError(stmt, factory);
-        }
-    }
-
-
-    public static void notBatchStmt(_SingleDml dml) {
-        if (dml instanceof _BatchDml) {
-            throw new IllegalArgumentException("update type error.");
-        }
-    }
 
     public static void noNamedParam(List<ParamValue> paramGroup) {
         for (ParamValue paramValue : paramGroup) {
             if (paramValue instanceof NamedParam) {
-                String m = String.format("Couldn't exist named parameter[%s] in non-batch statement."
-                        , ((NamedParam<?>) paramValue).name());
-                throw new CriteriaException(m);
+                throw _Exceptions.namedParamInNonBatch((NamedParam<?>) paramValue);
             }
         }
     }

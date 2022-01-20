@@ -20,13 +20,13 @@ final class SimpleSelectContext extends _BaseSqlContext implements _SimpleQueryC
 
     static SimpleSelectContext create(Select select, _Dialect dialect, Visible visible) {
         final TableContext tableContext;
-        tableContext = TableContext.createMapPair(select, dialect);
+        tableContext = TableContext.createContext(select, dialect);
         return new SimpleSelectContext(select, tableContext, dialect, visible);
     }
 
     static SimpleSelectContext create(Select select, _SelectContext outerContext) {
         final TableContext tableContext;
-        tableContext = TableContext.createMapPair(select, outerContext.dialect());
+        tableContext = TableContext.createContext(select, outerContext.dialect());
         return new SimpleSelectContext(tableContext, outerContext);
     }
 
