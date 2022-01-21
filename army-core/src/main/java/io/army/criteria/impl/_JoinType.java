@@ -2,9 +2,10 @@ package io.army.criteria.impl;
 
 import io.army.criteria.SQLModifier;
 
-enum JoinType implements SQLModifier {
 
-    NONE(""),
+public enum _JoinType implements SQLModifier {
+
+    NONE(" "),
     LEFT_JOIN(" LEFT JOIN"),
     JOIN(" JOIN"),
     RIGHT_JOIN(" RIGHT JOIN"),
@@ -18,7 +19,7 @@ enum JoinType implements SQLModifier {
 
     public final String keyWords;
 
-    JoinType(String keyWords) {
+    _JoinType(String keyWords) {
         this.keyWords = keyWords;
     }
 

@@ -2,10 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.DialectMode;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQL80Query;
-import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
 import io.army.criteria.mysql.MySQL80Query;
 import io.army.dialect.Database;
 import io.army.lang.Nullable;
@@ -411,24 +408,24 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final PartitionOn80Spec<C, Q> createPartitionOnBlock(JoinType joinType, TableMeta<?> table) {
+    final PartitionOn80Spec<C, Q> createPartitionOnBlock(_JoinType joinType, TableMeta<?> table) {
         return new PartitionOnBlock<>(joinType, table, this);
     }
 
     @Override
-    final IndexHintOn80Spec<C, Q> createIndexHintOnBlock(JoinType joinType, TableMeta<?> table, String tableAlias) {
+    final IndexHintOn80Spec<C, Q> createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
         return new IndexHintOnBlock<>(joinType, table, tableAlias, this);
     }
 
     @Override
-    final On80Spec<C, Q> createOnBlock(JoinType joinType, TablePart tablePart, String alias) {
+    final On80Spec<C, Q> createOnBlock(_JoinType joinType, TablePart tablePart, String alias) {
+        Objects.requireNonNull(tablePart);
         return new OnBlock<>(joinType, tablePart, alias, this);
     }
 
     @Override
-    final PartitionJoin80Spec<C, Q> createFromBlockWithPartition(TableMeta<?> table
-            , Function<MySQLFromTableBlock, IndexHintJoin80Spec<C, Q>> function) {
-        return new PartitionJoinImpl<>(table, function, this.criteria);
+    final PartitionJoin80Spec<C, Q> createFirstPartitionBlock(TableMeta<?> table) {
+        return new PartitionJoinImpl<>(table, this);
     }
 
     @Override
@@ -622,13 +619,12 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
         private final TableMeta<?> table;
 
-        private final Function<MySQLFromTableBlock, IndexHintJoin80Spec<C, Q>> function;
+        private final MySQL80SimpleQuery<C, Q> query;
 
-        private PartitionJoinImpl(TableMeta<?> table
-                , Function<MySQLFromTableBlock, IndexHintJoin80Spec<C, Q>> function, @Nullable C criteria) {
-            super(criteria);
+        private PartitionJoinImpl(TableMeta<?> table, MySQL80SimpleQuery<C, Q> query) {
+            super(query.criteria);
             this.table = table;
-            this.function = function;
+            this.query = query;
         }
 
         @Override
@@ -638,7 +634,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             if (partitionList == null) {
                 partitionList = Collections.emptyList();
             }
-            return this.function.apply(new MySQLFromTableBlock(this.table, alias, partitionList));
+            this.query.criteriaContext.onFirstBlock(new MySQLFirstBlock<>(this.table, alias, partitionList, this.query));
+            return this.query;
         }
 
     }//PartitionJoinImpl
@@ -650,14 +647,14 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
         private final MySQL80SimpleQuery<C, Q> query;
 
-        private OnBlock(JoinType joinType, TablePart tablePart, String alias, MySQL80SimpleQuery<C, Q> query) {
+        private OnBlock(_JoinType joinType, TablePart tablePart, String alias, MySQL80SimpleQuery<C, Q> query) {
             super(joinType, tablePart, alias);
             this.query = query;
         }
 
         @Override
-        C getCriteria() {
-            return this.query.criteria;
+        CriteriaContext getCriteriaContext() {
+            return this.query.criteriaContext;
         }
 
         @Override
@@ -674,16 +671,26 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             MySQL80Query.Join80Spec<C, Q>> implements MySQL80Query.IndexHintOn80Spec<C, Q>
             , MySQL80Query.IndexPurposeOn80Spec<C, Q> {
 
+        private final List<String> partitionList;
+
         private final MySQL80SimpleQuery<C, Q> query;
 
-        private IndexHintOnBlock(JoinType joinType, TableMeta<?> table, String alias, MySQL80SimpleQuery<C, Q> query) {
+        private IndexHintOnBlock(_JoinType joinType, TableMeta<?> table, String alias, MySQL80SimpleQuery<C, Q> query) {
             super(joinType, table, alias);
             this.query = query;
+            this.partitionList = Collections.emptyList();
+        }
+
+        private IndexHintOnBlock(_JoinType joinType, TableMeta<?> table, String alias, List<String> partitionList
+                , MySQL80SimpleQuery<C, Q> query) {
+            super(joinType, table, alias);
+            this.query = query;
+            this.partitionList = CollectionUtils.unmodifiableList(partitionList);
         }
 
         @Override
-        C getCriteria() {
-            return this.query.criteria;
+        CriteriaContext getCriteriaContext() {
+            return this.query.criteriaContext;
         }
 
         @Override
@@ -691,23 +698,27 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             return this.query;
         }
 
+        @Override
+        public List<String> partitionList() {
+            return this.partitionList;
+        }
+
     }//IndexHintOnBlock
 
-
+    /**
+     * @see #createPartitionOnBlock(_JoinType, TableMeta)
+     */
     private static final class PartitionOnBlock<C, Q extends Query>
             extends MySQLPartitionClause<C, MySQL80Query.AsOn80Spec<C, Q>>
-            implements MySQL80Query.AsOn80Spec<C, Q>, MySQL80Query.PartitionOn80Spec<C, Q>, _MySQLTableBlock {
+            implements MySQL80Query.AsOn80Spec<C, Q>, MySQL80Query.PartitionOn80Spec<C, Q> {
 
-        private final JoinType joinType;
+        private final _JoinType joinType;
 
         private final TableMeta<?> table;
 
         private final MySQL80SimpleQuery<C, Q> query;
 
-        private IndexHintOnBlock<C, Q> hintOnBlock;
-
-        private PartitionOnBlock(JoinType joinType, TableMeta<?> table
-                , MySQL80SimpleQuery<C, Q> query) {
+        private PartitionOnBlock(_JoinType joinType, TableMeta<?> table, MySQL80SimpleQuery<C, Q> query) {
             super(query.criteria);
             this.joinType = joinType;
             this.table = table;
@@ -715,56 +726,19 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         }
 
         @Override
-        public IndexHintOn80Spec<C, Q> as(String alias) {
-            if (this.hintOnBlock != null) {
-                throw _Exceptions.castCriteriaApi();
-            }
+        public IndexHintOn80Spec<C, Q> as(final String alias) {
             Objects.requireNonNull(alias);
             final IndexHintOnBlock<C, Q> hintOnBlock;
-            hintOnBlock = new IndexHintOnBlock<>(this.joinType, this.table, alias, this.query);
-            this.hintOnBlock = hintOnBlock;
+            final List<String> partitionList = this.partitionList;
+            if (partitionList == null) {
+                hintOnBlock = new IndexHintOnBlock<>(this.joinType, this.table, alias, this.query);
+            } else {
+                hintOnBlock = new IndexHintOnBlock<>(this.joinType, this.table, alias, partitionList, this.query);
+            }
+            this.query.criteriaContext.onAddBlock(hintOnBlock);
             return hintOnBlock;
         }
 
-        @Override
-        public TablePart table() {
-            return this.table;
-        }
-
-        @Override
-        public String alias() {
-            final IndexHintOnBlock<C, Q> hintOnBlock = this.hintOnBlock;
-            assert hintOnBlock != null;
-            return hintOnBlock.alias;
-        }
-
-        @Override
-        public SQLModifier jointType() {
-            return this.joinType;
-        }
-
-        @Override
-        public List<_Predicate> predicates() {
-            final IndexHintOnBlock<C, Q> hintOnBlock = this.hintOnBlock;
-            assert hintOnBlock != null;
-            return hintOnBlock.predicates();
-        }
-
-        @Override
-        public List<String> partitionList() {
-            List<String> partitionList = this.partitionList;
-            if (partitionList == null) {
-                partitionList = Collections.emptyList();
-            }
-            return partitionList;
-        }
-
-        @Override
-        public List<? extends _IndexHint> indexHintList() {
-            final IndexHintOnBlock<C, Q> hintOnBlock = this.hintOnBlock;
-            assert hintOnBlock != null;
-            return hintOnBlock.indexHintList();
-        }
 
     }//PartitionOnBlock
 

@@ -2,21 +2,18 @@ package io.army.criteria.impl;
 
 import io.army.DialectMode;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQL57Query;
-import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
 import io.army.criteria.mysql.MySQL57Query;
 import io.army.dialect.Database;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
+import io.army.util.CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
@@ -209,17 +206,23 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final PartitionOn57Spec<C, Q> createPartitionOnBlock(JoinType joinType, TableMeta<?> table) {
+    final PartitionJoin57Spec<C, Q> createFirstPartitionBlock(TableMeta<?> table) {
+        return new PartitionJoinImpl<>(table, this);
+    }
+
+    @Override
+    final PartitionOn57Spec<C, Q> createPartitionOnBlock(_JoinType joinType, TableMeta<?> table) {
         return new PartitionOnBlock<>(joinType, table, this);
     }
 
     @Override
-    final IndexHintOn57Spec<C, Q> createIndexHintOnBlock(JoinType joinType, TableMeta<?> table, String tableAlias) {
+    final IndexHintOn57Spec<C, Q> createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
         return new IndexHintOnBlock<>(joinType, table, tableAlias, this);
     }
 
     @Override
-    final On57Spec<C, Q> createOnBlock(JoinType joinType, TablePart tablePart, String alias) {
+    final On57Spec<C, Q> createOnBlock(_JoinType joinType, TablePart tablePart, String alias) {
+        Objects.requireNonNull(tablePart);
         return new OnBlock<>(joinType, tablePart, alias, this);
     }
 
@@ -237,12 +240,6 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     @Override
     final PartitionOn57Spec<C, Q> createNoActionPartitionBlock() {
         return new NoActionPartitionOnBlock<>(this);
-    }
-
-    @Override
-    final PartitionJoin57Spec<C, Q> createFromBlockWithPartition(TableMeta<?> table
-            , Function<MySQLFromTableBlock, IndexHintJoin57Spec<C, Q>> function) {
-        return new PartitionJoinImpl<>(table, function, this.criteria);
     }
 
 
@@ -385,7 +382,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     /**
-     * @see MySQL57SimpleQuery#from(TableMeta)
+     * @see #createFirstPartitionBlock(TableMeta)
      */
     private static final class PartitionJoinImpl<C, Q extends Query>
             extends MySQLPartitionClause<C, MySQL57Query.As57JoinSpec<C, Q>>
@@ -393,23 +390,26 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
         private final TableMeta<?> table;
 
-        private final Function<MySQLFromTableBlock, IndexHintJoin57Spec<C, Q>> function;
+        private final MySQL57SimpleQuery<C, Q> query;
 
-        private PartitionJoinImpl(TableMeta<?> table, Function<MySQLFromTableBlock, IndexHintJoin57Spec<C, Q>> function
-                , @Nullable C criteria) {
-            super(criteria);
+        private PartitionJoinImpl(TableMeta<?> table, MySQL57SimpleQuery<C, Q> query) {
+            super(query.criteria);
             this.table = table;
-            this.function = function;
+            this.query = query;
         }
 
         @Override
         public IndexHintJoin57Spec<C, Q> as(String alias) {
             Objects.requireNonNull(alias);
-            List<String> partitionList = this.partitionList;
+            final List<String> partitionList = this.partitionList;
+            final MySQLFirstBlock<C, MySQL57SimpleQuery<C, Q>> block;
             if (partitionList == null) {
-                partitionList = Collections.emptyList();
+                block = new MySQLFirstBlock<>(this.table, alias, this.query);
+            } else {
+                block = new MySQLFirstBlock<>(this.table, alias, partitionList, this.query);
             }
-            return this.function.apply(new MySQLFromTableBlock(this.table, alias, partitionList));
+            this.query.criteriaContext.onFirstBlock(block);
+            return this.query;
         }
 
 
@@ -417,7 +417,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     /**
-     * @see #createOnBlock(JoinType, TablePart, String)
+     * @see #createOnBlock(_JoinType, TablePart, String)
      */
     private static class OnBlock<C, Q extends Query> extends OnClauseTableBlock<C, MySQL57Query.Join57Spec<C, Q>>
             implements MySQL57Query.On57Spec<C, Q> {
@@ -425,14 +425,14 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
         private final MySQL57SimpleQuery<C, Q> query;
 
-        private OnBlock(JoinType joinType, TablePart tablePart, String alias, MySQL57SimpleQuery<C, Q> query) {
+        private OnBlock(_JoinType joinType, TablePart tablePart, String alias, MySQL57SimpleQuery<C, Q> query) {
             super(joinType, tablePart, alias);
             this.query = query;
         }
 
         @Override
-        final C getCriteria() {
-            return this.query.criteria;
+        final CriteriaContext getCriteriaContext() {
+            return this.query.criteriaContext;
         }
 
         @Override
@@ -444,7 +444,8 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     /**
-     * @see #createIndexHintOnBlock(JoinType, TableMeta, String)
+     * @see #createTableBlock(_JoinType, TableMeta, String)
+     * @see PartitionOnBlock#as(String)
      */
     private static final class IndexHintOnBlock<C, Q extends Query> extends MySQLIndexHintOnBlock<
             C,
@@ -453,17 +454,26 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             MySQL57Query.Join57Spec<C, Q>>
             implements MySQL57Query.IndexPurposeOn57Spec<C, Q>, MySQL57Query.IndexHintOn57Spec<C, Q> {
 
+        private final List<String> partitionList;
+
         private final MySQL57SimpleQuery<C, Q> query;
 
-        private IndexHintOnBlock(JoinType joinType, TableMeta<?> table, String alias, MySQL57SimpleQuery<C, Q> query) {
+        private IndexHintOnBlock(_JoinType joinType, TableMeta<?> table, String alias, MySQL57SimpleQuery<C, Q> query) {
             super(joinType, table, alias);
             this.query = query;
+            this.partitionList = Collections.emptyList();
         }
 
+        private IndexHintOnBlock(_JoinType joinType, TableMeta<?> table, String alias
+                , List<String> partitionList, MySQL57SimpleQuery<C, Q> query) {
+            super(joinType, table, alias);
+            this.query = query;
+            this.partitionList = CollectionUtils.unmodifiableList(partitionList);
+        }
 
         @Override
-        C getCriteria() {
-            return this.query.criteria;
+        CriteriaContext getCriteriaContext() {
+            return this.query.criteriaContext;
         }
 
         @Override
@@ -471,25 +481,29 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             return this.query;
         }
 
+        @Override
+        public List<String> partitionList() {
+            return this.partitionList;
+        }
+
+
     }// IndexHintOnBlock
 
 
     /**
-     * @see #createPartitionOnBlock(JoinType, TableMeta)
+     * @see #createPartitionOnBlock(_JoinType, TableMeta)
      */
     private static final class PartitionOnBlock<C, Q extends Query>
             extends MySQLPartitionClause<C, MySQL57Query.As57OnSpec<C, Q>>
-            implements MySQL57Query.As57OnSpec<C, Q>, MySQL57Query.PartitionOn57Spec<C, Q>, _MySQLTableBlock {
+            implements MySQL57Query.As57OnSpec<C, Q>, MySQL57Query.PartitionOn57Spec<C, Q> {
 
-        private final JoinType joinType;
+        private final _JoinType joinType;
 
         private final TableMeta<?> table;
 
         private final MySQL57SimpleQuery<C, Q> query;
 
-        private IndexHintOnBlock<C, Q> hintOnBlock;
-
-        private PartitionOnBlock(JoinType joinType, TableMeta<?> table, MySQL57SimpleQuery<C, Q> query) {
+        private PartitionOnBlock(_JoinType joinType, TableMeta<?> table, MySQL57SimpleQuery<C, Q> query) {
             super(query.criteria);
             this.joinType = joinType;
             this.table = table;
@@ -498,54 +512,16 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
         @Override
         public IndexHintOn57Spec<C, Q> as(String alias) {
-            if (this.hintOnBlock != null) {
-                throw _Exceptions.castCriteriaApi();
-            }
             Objects.requireNonNull(alias);
+            final List<String> partitionList = this.partitionList;
             final IndexHintOnBlock<C, Q> hintOnBlock;
-            hintOnBlock = new IndexHintOnBlock<>(this.joinType, this.table, alias, this.query);
-            this.hintOnBlock = hintOnBlock;
-            return hintOnBlock;
-        }
-
-        @Override
-        public TablePart table() {
-            return this.table;
-        }
-
-        @Override
-        public String alias() {
-            final IndexHintOnBlock<C, Q> hintOnBlock = this.hintOnBlock;
-            assert hintOnBlock != null;
-            return hintOnBlock.alias;
-        }
-
-        @Override
-        public SQLModifier jointType() {
-            return this.joinType;
-        }
-
-        @Override
-        public List<_Predicate> predicates() {
-            final IndexHintOnBlock<C, Q> hintOnBlock = this.hintOnBlock;
-            assert hintOnBlock != null;
-            return hintOnBlock.predicates();
-        }
-
-        @Override
-        public List<String> partitionList() {
-            List<String> partitionList = this.partitionList;
             if (partitionList == null) {
-                partitionList = Collections.emptyList();
+                hintOnBlock = new IndexHintOnBlock<>(this.joinType, this.table, alias, this.query);
+            } else {
+                hintOnBlock = new IndexHintOnBlock<>(this.joinType, this.table, alias, partitionList, this.query);
             }
-            return partitionList;
-        }
-
-        @Override
-        public List<? extends _IndexHint> indexHintList() {
-            final IndexHintOnBlock<C, Q> hintOnBlock = this.hintOnBlock;
-            assert hintOnBlock != null;
-            return hintOnBlock.indexHintList();
+            this.query.criteriaContext.onAddBlock(hintOnBlock);
+            return hintOnBlock;
         }
 
 

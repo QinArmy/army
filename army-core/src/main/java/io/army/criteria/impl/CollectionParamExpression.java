@@ -9,9 +9,11 @@ import io.army.dialect._SqlContext;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
-import io.army.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 final class CollectionParamExpression<E> extends NoNOperationExpression<Collection<E>> {
 
@@ -25,7 +27,8 @@ final class CollectionParamExpression<E> extends NoNOperationExpression<Collecti
 
     private static <E> CollectionParamExpression<E> create(final Expression<?> type, final Collection<E> values
             , final boolean optimizing) {
-        if (values.size() == 0) {
+        final int size = values.size();
+        if (size == 0) {
             throw new CriteriaException("Collection parameter expression must not empty");
         }
         final ParamMeta paramMeta;
@@ -34,18 +37,26 @@ final class CollectionParamExpression<E> extends NoNOperationExpression<Collecti
         } else {
             paramMeta = type.paramMeta();
         }
-        return new CollectionParamExpression<>(paramMeta, values, optimizing);
+        final List<E> list = new ArrayList<>(size);
+        for (E v : values) {
+            if (v == null) {
+                throw elementIsNull();
+            }
+            list.add(v);
+        }
+        return new CollectionParamExpression<>(paramMeta, list, optimizing);
     }
+
 
     private final ParamMeta paramMeta;
 
-    private final Collection<E> value;
+    private final List<E> value;
 
     private final boolean optimizing;
 
-    private CollectionParamExpression(final ParamMeta paramMeta, final Collection<E> value, final boolean optimizing) {
+    private CollectionParamExpression(final ParamMeta paramMeta, final List<E> valueList, final boolean optimizing) {
         this.paramMeta = paramMeta;
-        this.value = CollectionUtils.asUnmodifiableList(value);
+        this.value = Collections.unmodifiableList(valueList);
         this.optimizing = optimizing && paramMeta.mappingType() instanceof _ArmyNoInjectionMapping;
     }
 
@@ -65,7 +76,7 @@ final class CollectionParamExpression<E> extends NoNOperationExpression<Collecti
         int index = 0;
         for (E v : this.value) {
             if (v == null) {
-                throw new CriteriaException("Collection element must not null.");
+                throw elementIsNull();
             }
             if (index > 0) {
                 builder.append(Constant.SPACE_COMMA);
@@ -79,6 +90,11 @@ final class CollectionParamExpression<E> extends NoNOperationExpression<Collecti
             index++;
         }
         builder.append(Constant.SPACE_RIGHT_BRACKET);
+    }
+
+
+    private static CriteriaException elementIsNull() {
+        return new CriteriaException("Collection element must not null.");
     }
 
 

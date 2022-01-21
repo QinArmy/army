@@ -1,10 +1,13 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._TableBlock;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+
+import java.util.List;
 
 interface CriteriaContext {
 
@@ -24,11 +27,24 @@ interface CriteriaContext {
         throw new UnsupportedOperationException();
     }
 
+    default void onAddBlock(_TableBlock block) {
+        throw new UnsupportedOperationException();
+    }
+
+    default void onFirstBlock(_TableBlock block) {
+        throw new UnsupportedOperationException();
+    }
+
+    default TableBlock firstBlock() {
+        throw new UnsupportedOperationException();
+    }
+
+
     <E> Expression<E> composeRef(String selectionAlias);
 
     @Nullable
     <C> C criteria();
 
-    void clear();
+    List<_TableBlock> clear();
 
 }

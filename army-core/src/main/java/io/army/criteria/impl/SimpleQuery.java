@@ -3,12 +3,18 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Query;
+import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.util.ArrayUtils;
 import io.army.util.CollectionUtils;
 import io.army.util._Exceptions;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -25,6 +31,8 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     private List<SQLModifier> modifierList;
 
     private List<SelectPart> selectPartList;
+
+    private List<_TableBlock> tableBlockList;
 
     private List<_Predicate> predicateList = new ArrayList<>();
 
@@ -135,201 +143,222 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
     @Override
     public final FT from(TableMeta<?> table, String tableAlias) {
-        final FT block;
-        block = this.addTableFromBlock(table, tableAlias);
-        return block;
+        return this.addFirstTableBlock(table, tableAlias);
     }
 
     @Override
     public final <T extends TablePart> FS from(Function<C, T> function, String alias) {
-        final T tablePart;
-        tablePart = function.apply(this.criteria);
-        Objects.requireNonNull(tablePart);
-        final FS block;
-        block = this.addTablePartFromBlock(tablePart, alias);
-        if (!(tablePart instanceof TableMeta)) {
-            this.criteriaContext.onAddTablePart(tablePart, alias);
-        }
-        return block;
+        return this.addFirstTablePartBlock(function.apply(this.criteria), alias);
     }
 
     @Override
     public final <T extends TablePart> FS from(Supplier<T> supplier, String alias) {
-        final T tablePart;
-        tablePart = supplier.get();
-        Objects.requireNonNull(tablePart);
-        final FS block;
-        block = this.addTablePartFromBlock(tablePart, alias);
-        if (!(tablePart instanceof TableMeta)) {
-            this.criteriaContext.onAddTablePart(tablePart, alias);
-        }
-        return block;
+        return this.addFirstTablePartBlock(supplier.get(), alias);
     }
-
-
-    abstract FT addTableFromBlock(TableMeta<?> table, String tableAlias);
-
-    abstract FS addTablePartFromBlock(TablePart tablePart, String alias);
 
 
     /*################################## blow JoinSpec method ##################################*/
 
     @Override
     public final JT leftJoin(TableMeta<?> table, String tableAlias) {
-        return this.doJoinTable(JoinType.LEFT_JOIN, table, tableAlias);
+        final JT block;
+        block = createTableBlock(_JoinType.LEFT_JOIN, table, tableAlias);
+        this.criteriaContext.onAddBlock((_TableBlock) block);
+        return block;
     }
 
     @Override
     public final <T extends TablePart> JS leftJoin(Supplier<T> supplier, String alias) {
-        return this.doJoinTablePart(JoinType.LEFT_JOIN, supplier.get(), alias);
+        final JS block;
+        block = createOnBlock(_JoinType.LEFT_JOIN, supplier.get(), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) block);
+        return block;
     }
 
     @Override
     public final <T extends TablePart> JS leftJoin(Function<C, T> function, String alias) {
-        return this.doJoinTablePart(JoinType.LEFT_JOIN, function.apply(this.criteria), alias);
+        final JS block;
+        block = createOnBlock(_JoinType.LEFT_JOIN, function.apply(this.criteria), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) block);
+        return block;
     }
 
     @Override
     public final JT ifLeftJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
-        return this.doIfJoinTable(predicate, JoinType.LEFT_JOIN, table, tableAlias);
+        return this.ifJoinTable(predicate, _JoinType.LEFT_JOIN, table, tableAlias);
     }
 
     @Override
     public final <T extends TablePart> JS ifLeftJoin(Supplier<T> supplier, String alias) {
-        return this.doIfJoinTablePart(JoinType.LEFT_JOIN, supplier, alias);
+        return this.ifJoinTablePart(_JoinType.LEFT_JOIN, supplier.get(), alias);
     }
 
     @Override
     public final <T extends TablePart> JS ifLeftJoin(Function<C, T> function, String alias) {
-        return this.doIfJoinTablePart(JoinType.LEFT_JOIN, function, alias);
+        return this.ifJoinTablePart(_JoinType.LEFT_JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
     public final JT join(TableMeta<?> table, String tableAlias) {
-        return this.doJoinTable(JoinType.JOIN, table, tableAlias);
+        final JT block;
+        block = createTableBlock(_JoinType.JOIN, table, tableAlias);
+        this.criteriaContext.onAddBlock((_TableBlock) block);
+        return block;
     }
 
     @Override
     public final <T extends TablePart> JS join(Supplier<T> supplier, String alias) {
-        return this.doJoinTablePart(JoinType.JOIN, supplier.get(), alias);
+        final JS block;
+        block = createOnBlock(_JoinType.JOIN, supplier.get(), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) block);
+        return block;
     }
 
     @Override
     public final <T extends TablePart> JS join(Function<C, T> function, String alias) {
-        return this.doJoinTablePart(JoinType.JOIN, function.apply(this.criteria), alias);
+        final JS block;
+        block = createOnBlock(_JoinType.JOIN, function.apply(this.criteria), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) block);
+        return block;
     }
 
     @Override
     public final JT ifJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
-        return this.doIfJoinTable(predicate, JoinType.JOIN, table, tableAlias);
+        return this.ifJoinTable(predicate, _JoinType.JOIN, table, tableAlias);
     }
 
     @Override
     public final <T extends TablePart> JS ifJoin(Supplier<T> supplier, String alias) {
-        return this.doIfJoinTablePart(JoinType.JOIN, supplier, alias);
+        return this.ifJoinTablePart(_JoinType.JOIN, supplier.get(), alias);
     }
 
     @Override
     public final <T extends TablePart> JS ifJoin(Function<C, T> function, String alias) {
-        return this.doIfJoinTablePart(JoinType.JOIN, function, alias);
+        return this.ifJoinTablePart(_JoinType.JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
     public final JT rightJoin(TableMeta<?> table, String tableAlias) {
-        return this.doJoinTable(JoinType.RIGHT_JOIN, table, tableAlias);
+        final JT block;
+        block = createTableBlock(_JoinType.RIGHT_JOIN, table, tableAlias);
+        this.criteriaContext.onAddBlock((_TableBlock) block);
+        return block;
     }
 
     @Override
     public final <T extends TablePart> JS rightJoin(Supplier<T> supplier, String alias) {
-        return this.doJoinTablePart(JoinType.RIGHT_JOIN, supplier.get(), alias);
+        final JS block;
+        block = createOnBlock(_JoinType.RIGHT_JOIN, supplier.get(), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) block);
+        return block;
     }
 
     @Override
     public final <T extends TablePart> JS rightJoin(Function<C, T> function, String alias) {
-        return this.doJoinTablePart(JoinType.RIGHT_JOIN, function.apply(this.criteria), alias);
+        final JS block;
+        block = createOnBlock(_JoinType.RIGHT_JOIN, function.apply(this.criteria), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) block);
+        return block;
     }
 
     @Override
     public final JT ifRightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
-        return this.doIfJoinTable(predicate, JoinType.RIGHT_JOIN, table, tableAlias);
+        return this.ifJoinTable(predicate, _JoinType.RIGHT_JOIN, table, tableAlias);
     }
 
     @Override
     public final <T extends TablePart> JS ifRightJoin(Supplier<T> supplier, String alias) {
-        return this.doIfJoinTablePart(JoinType.RIGHT_JOIN, supplier, alias);
+        return this.ifJoinTablePart(_JoinType.RIGHT_JOIN, supplier.get(), alias);
     }
 
     @Override
     public final <T extends TablePart> JS ifRightJoin(Function<C, T> function, String alias) {
-        return this.doIfJoinTablePart(JoinType.RIGHT_JOIN, function, alias);
+        return this.ifJoinTablePart(_JoinType.RIGHT_JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
     public final JT crossJoin(TableMeta<?> table, String tableAlias) {
-        return this.doJoinTable(JoinType.CROSS_JOIN, table, tableAlias);
+        final JT block;
+        block = createTableBlock(_JoinType.CROSS_JOIN, table, tableAlias);
+        this.criteriaContext.onAddBlock((_TableBlock) block);
+        return block;
     }
 
     @Override
     public final <T extends TablePart> JS crossJoin(Function<C, T> function, String alias) {
-        return this.doJoinTablePart(JoinType.CROSS_JOIN, function.apply(this.criteria), alias);
+        final JS block;
+        block = createOnBlock(_JoinType.CROSS_JOIN, function.apply(this.criteria), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) block);
+        return block;
     }
 
     @Override
     public final <T extends TablePart> JS crossJoin(Supplier<T> supplier, String alias) {
-        return this.doJoinTablePart(JoinType.CROSS_JOIN, supplier.get(), alias);
+        final JS block;
+        block = createOnBlock(_JoinType.CROSS_JOIN, supplier.get(), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) block);
+        return block;
     }
 
     @Override
     public final JT ifCrossJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
-        return this.doIfJoinTable(predicate, JoinType.CROSS_JOIN, table, tableAlias);
+        return this.ifJoinTable(predicate, _JoinType.CROSS_JOIN, table, tableAlias);
     }
 
     @Override
     public final <T extends TablePart> JS ifCrossJoin(Supplier<T> supplier, String alias) {
-        return this.doIfJoinTablePart(JoinType.CROSS_JOIN, supplier, alias);
+        return this.ifJoinTablePart(_JoinType.CROSS_JOIN, supplier.get(), alias);
     }
 
     @Override
     public final <T extends TablePart> JS ifCrossJoin(Function<C, T> function, String alias) {
-        return this.doIfJoinTablePart(JoinType.CROSS_JOIN, function, alias);
+        return this.ifJoinTablePart(_JoinType.CROSS_JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
     public final JT fullJoin(TableMeta<?> table, String tableAlias) {
-        return this.doJoinTable(JoinType.FULL_JOIN, table, tableAlias);
+        final JT block;
+        block = createTableBlock(_JoinType.FULL_JOIN, table, tableAlias);
+        this.criteriaContext.onAddBlock((_TableBlock) block);
+        return block;
     }
 
     @Override
     public final <T extends TablePart> JS fullJoin(Supplier<T> supplier, String alias) {
-        return this.doJoinTablePart(JoinType.FULL_JOIN, supplier.get(), alias);
+        final JS block;
+        block = createOnBlock(_JoinType.FULL_JOIN, supplier.get(), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) block);
+        return block;
     }
 
     @Override
     public final <T extends TablePart> JS fullJoin(Function<C, T> function, String alias) {
-        return this.doJoinTablePart(JoinType.FULL_JOIN, function.apply(this.criteria), alias);
+        final JS block;
+        block = createOnBlock(_JoinType.FULL_JOIN, function.apply(this.criteria), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) block);
+        return block;
     }
 
     @Override
     public final JT ifFullJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
-        return this.doIfJoinTable(predicate, JoinType.FULL_JOIN, table, tableAlias);
+        return this.ifJoinTable(predicate, _JoinType.FULL_JOIN, table, tableAlias);
     }
 
     @Override
     public final <T extends TablePart> JS ifFullJoin(Supplier<T> supplier, String alias) {
-        return this.doIfJoinTablePart(JoinType.FULL_JOIN, supplier, alias);
+        return this.ifJoinTablePart(_JoinType.FULL_JOIN, supplier.get(), alias);
     }
 
     @Override
     public final <T extends TablePart> JS ifFullJoin(Function<C, T> function, String alias) {
-        return this.doIfJoinTablePart(JoinType.FULL_JOIN, function, alias);
+        return this.ifJoinTablePart(_JoinType.FULL_JOIN, function.apply(this.criteria), alias);
     }
-
 
     @Override
     public final WR where(final List<IPredicate> predicateList) {
         final List<_Predicate> list = this.predicateList;
         for (IPredicate predicate : predicateList) {
-            list.add((_Predicate) predicate);
+            list.add((OperationPredicate) predicate);
         }
         return (WR) this;
     }
@@ -345,16 +374,23 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
+    public final WR where(Consumer<List<IPredicate>> consumer) {
+        final List<IPredicate> list = new ArrayList<>();
+        consumer.accept(list);
+        return this.where(list);
+    }
+
+    @Override
     public final AR where(@Nullable IPredicate predicate) {
         if (predicate != null) {
-            this.predicateList.add((_Predicate) predicate);
+            this.predicateList.add((OperationPredicate) predicate);
         }
         return (AR) this;
     }
 
     @Override
     public final AR and(IPredicate predicate) {
-        this.predicateList.add((_Predicate) predicate);
+        this.predicateList.add((OperationPredicate) predicate);
         return (AR) this;
     }
 
@@ -363,7 +399,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
         final IPredicate predicate;
         predicate = supplier.get();
         assert predicate != null;
-        this.predicateList.add((_Predicate) predicate);
+        this.predicateList.add((OperationPredicate) predicate);
         return (AR) this;
     }
 
@@ -372,14 +408,14 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
         final IPredicate predicate;
         predicate = function.apply(this.criteria);
         assert predicate != null;
-        this.predicateList.add((_Predicate) predicate);
+        this.predicateList.add((OperationPredicate) predicate);
         return (AR) this;
     }
 
     @Override
     public final AR ifAnd(@Nullable IPredicate predicate) {
         if (predicate != null) {
-            this.predicateList.add((_Predicate) predicate);
+            this.predicateList.add((OperationPredicate) predicate);
         }
         return (AR) this;
     }
@@ -389,7 +425,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
         final IPredicate predicate;
         predicate = supplier.get();
         if (predicate != null) {
-            this.predicateList.add((_Predicate) predicate);
+            this.predicateList.add((OperationPredicate) predicate);
         }
         return (AR) this;
     }
@@ -399,7 +435,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
         final IPredicate predicate;
         predicate = function.apply(this.criteria);
         if (predicate != null) {
-            this.predicateList.add((_Predicate) predicate);
+            this.predicateList.add((OperationPredicate) predicate);
         }
         return (AR) this;
     }
@@ -412,16 +448,23 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
     @Override
     public final GR groupBy(SortPart sortPart1, SortPart sortPart2) {
-        this.groupByList = Arrays.asList(sortPart1, sortPart2);
+        this.groupByList = ArrayUtils.asUnmodifiableList(sortPart1, sortPart2);
         return (GR) this;
     }
 
     @Override
     public final GR groupBy(List<SortPart> sortPartList) {
-        if (sortPartList.size() == 0) {
-            throw new CriteriaException("group by clause is empty.");
+        final int size = sortPartList.size();
+        switch (size) {
+            case 0:
+                throw new CriteriaException("sortPartList must be not empty.");
+            case 1:
+                this.groupByList = Collections.singletonList(sortPartList.get(0));
+                break;
+            default: {
+                this.groupByList = Collections.unmodifiableList(new ArrayList<>(sortPartList));
+            }
         }
-        this.groupByList = new ArrayList<>(sortPartList);
         return (GR) this;
     }
 
@@ -433,6 +476,13 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     @Override
     public final GR groupBy(Supplier<List<SortPart>> supplier) {
         return this.groupBy(supplier.get());
+    }
+
+    @Override
+    public final GR groupBy(Consumer<List<SortPart>> consumer) {
+        final List<SortPart> list = new ArrayList<>();
+        consumer.accept(list);
+        return this.groupBy(list);
     }
 
     @Override
@@ -448,7 +498,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
         final List<SortPart> list;
         list = supplier.get();
         if (!CollectionUtils.isEmpty(list)) {
-            this.groupByList = new ArrayList<>(list);
+            this.groupBy(list);
         }
         return (GR) this;
     }
@@ -458,7 +508,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
         final List<SortPart> list;
         list = function.apply(this.criteria);
         if (!CollectionUtils.isEmpty(list)) {
-            this.groupByList = new ArrayList<>(list);
+            this.groupBy(list);
         }
         return (GR) this;
     }
@@ -466,14 +516,21 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     @Override
     public final HR having(final List<IPredicate> predicateList) {
         if (!CollectionUtils.isEmpty(this.groupByList)) {
-            final List<_Predicate> list = new ArrayList<>(predicateList.size());
-            for (IPredicate predicate : predicateList) {
-                list.add((_Predicate) predicate);
+            final int size = predicateList.size();
+            switch (size) {
+                case 0:
+                    throw new CriteriaException("having predicate list must not empty.");
+                case 1:
+                    this.predicateList = Collections.singletonList((OperationPredicate) predicateList.get(0));
+                    break;
+                default: {
+                    final List<_Predicate> list = new ArrayList<>(size);
+                    for (IPredicate predicate : predicateList) {
+                        list.add((OperationPredicate) predicate);
+                    }
+                    this.havingList = Collections.unmodifiableList(list);
+                }
             }
-            if (list.size() == 0) {
-                throw new CriteriaException("having clause is empty.");
-            }
-            this.havingList = list;
         }
         return (HR) this;
     }
@@ -481,7 +538,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     @Override
     public final HR having(IPredicate predicate) {
         if (!CollectionUtils.isEmpty(this.groupByList)) {
-            this.havingList = Collections.singletonList((_Predicate) predicate);
+            this.havingList = Collections.singletonList((OperationPredicate) predicate);
         }
         return (HR) this;
     }
@@ -489,10 +546,8 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     @Override
     public final HR having(IPredicate predicate1, IPredicate predicate2) {
         if (!CollectionUtils.isEmpty(this.groupByList)) {
-            final List<_Predicate> list = new ArrayList<>(2);
-            list.add((_Predicate) predicate1);
-            list.add((_Predicate) predicate2);
-            this.havingList = list;
+            this.havingList = ArrayUtils.asUnmodifiableList((OperationPredicate) predicate1
+                    , (OperationPredicate) predicate2);
         }
         return (HR) this;
     }
@@ -516,7 +571,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     @Override
     public final HR ifHaving(@Nullable IPredicate predicate) {
         if (predicate != null && !CollectionUtils.isEmpty(this.groupByList)) {
-            this.havingList = Collections.singletonList((_Predicate) predicate);
+            this.havingList = Collections.singletonList((OperationPredicate) predicate);
         }
         return (HR) this;
     }
@@ -524,7 +579,8 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     @Override
     public final HR ifHaving(Supplier<List<IPredicate>> supplier) {
         if (!CollectionUtils.isEmpty(this.groupByList)) {
-            final List<IPredicate> list = supplier.get();
+            final List<IPredicate> list;
+            list = supplier.get();
             if (!CollectionUtils.isEmpty(list)) {
                 this.having(list);
             }
@@ -563,6 +619,12 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
+    public final List<? extends _TableBlock> tableBlockList() {
+        prepared();
+        return this.tableBlockList;
+    }
+
+    @Override
     public final List<_Predicate> predicateList() {
         prepared();
         return this.predicateList;
@@ -581,6 +643,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
     @Override
     protected final Q internalAsQuery(final boolean justAsQuery) {
+        this.tableBlockList = this.criteriaContext.clear();
         if (this instanceof SubQuery || this instanceof WithElement) {
             CriteriaContextStack.pop(this.criteriaContext);
         } else {
@@ -596,11 +659,8 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
         }
 
         // modifier list
-        final List<SQLModifier> modifierList = this.modifierList;
-        if (CollectionUtils.isEmpty(modifierList)) {
+        if (CollectionUtils.isEmpty(this.modifierList)) {
             this.modifierList = Collections.emptyList();
-        } else {
-            this.modifierList = CollectionUtils.unmodifiableList(modifierList);
         }
         // selection list
         final List<SelectPart> selectPartList = this.selectPartList;
@@ -611,19 +671,14 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
                 && (selectPartList.size() != 1 || !(selectPartList.get(0) instanceof Selection))) {
             throw _Exceptions.columnSubQuerySelectionError();
         }
-        this.selectPartList = Collections.unmodifiableList(selectPartList);
 
         // group by and having
         final List<SortPart> groupByList = this.groupByList;
         if (CollectionUtils.isEmpty(groupByList)) {
             this.groupByList = Collections.emptyList();
             this.hintList = Collections.emptyList();
-        } else {
-            this.groupByList = CollectionUtils.unmodifiableList(groupByList);
-            final List<_Predicate> havingList = this.havingList;
-            if (!CollectionUtils.isEmpty(havingList)) {
-                this.havingList = CollectionUtils.unmodifiableList(havingList);
-            }
+        } else if (CollectionUtils.isEmpty(this.havingList)) {
+            this.havingList = Collections.emptyList();
         }
         this.noActionTableBlock = null;
         this.noActionTablePartBlock = null;
@@ -636,11 +691,13 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
         this.hintList = null;
         this.modifierList = null;
         this.selectPartList = null;
-        this.predicateList = null;
+        this.tableBlockList = null;
 
+        this.predicateList = null;
         this.groupByList = null;
         this.havingList = null;
         this.noActionTableBlock = null;
+
         this.noActionTablePartBlock = null;
         this.onClear();
     }
@@ -655,9 +712,14 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     abstract void onClear();
 
 
-    abstract JT addTableBlock(JoinType joinType, TableMeta<?> table, String tableAlias);
+    abstract FT addFirstTableBlock(TableMeta<?> table, String tableAlias);
 
-    abstract JS addOnBlock(JoinType joinType, TablePart tablePart, String tableAlias);
+    abstract FS addFirstTablePartBlock(TablePart tablePart, String alias);
+
+
+    abstract JT createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias);
+
+    abstract JS createOnBlock(_JoinType joinType, TablePart tablePart, String alias);
 
     abstract JT createNoActionTableBlock();
 
@@ -672,7 +734,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
         return noActionTableBlock;
     }
 
-    private JS getNoActionTablePartBlock() {
+    private JS getNoActionOnBlock() {
         JS noActionTablePartBlock = this.noActionTablePartBlock;
         if (noActionTablePartBlock == null) {
             noActionTablePartBlock = createNoActionOnBlock();
@@ -682,52 +744,24 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
 
-    final JT doIfJoinTable(Predicate<C> predicate, JoinType joinType, TableMeta<?> table, String alias) {
+    final JT ifJoinTable(Predicate<C> predicate, _JoinType joinType, TableMeta<?> table, String alias) {
         final JT block;
         if (predicate.test(this.criteria)) {
-            block = this.doJoinTable(joinType, table, alias);
+            block = this.createTableBlock(joinType, table, alias);
+            this.criteriaContext.onAddBlock((_TableBlock) block);
         } else {
             block = getNoActionTableBlock();
         }
         return block;
     }
 
-    final <T extends TablePart> JS doIfJoinTablePart(JoinType joinType, Function<C, T> function, String alias) {
-        final T tablePart;
-        tablePart = function.apply(this.criteria);
+    final <T extends TablePart> JS ifJoinTablePart(_JoinType joinType, @Nullable TablePart tablePart, String alias) {
         final JS block;
         if (tablePart == null) {
-            block = this.getNoActionTablePartBlock();
+            block = this.getNoActionOnBlock();
         } else {
-            block = this.doJoinTablePart(joinType, tablePart, alias);
+            block = this.createOnBlock(joinType, tablePart, alias);
         }
-        return block;
-    }
-
-    final <T extends TablePart> JS doIfJoinTablePart(JoinType joinType, Supplier<T> supplier, String alias) {
-        final T tablePart;
-        tablePart = supplier.get();
-        final JS block;
-        if (tablePart == null) {
-            block = this.getNoActionTablePartBlock();
-        } else {
-            block = this.doJoinTablePart(joinType, tablePart, alias);
-        }
-        return block;
-    }
-
-    final JT doJoinTable(JoinType joinType, TableMeta<?> table, String alias) {
-        final JT block;
-        block = this.addTableBlock(joinType, table, alias);
-        this.criteriaContext.onAddTable(table, alias);
-        return block;
-    }
-
-    final JS doJoinTablePart(JoinType joinType, TablePart tablePart, String alias) {
-        Objects.requireNonNull(tablePart);
-        final JS block;
-        block = this.addOnBlock(joinType, tablePart, alias);
-        this.criteriaContext.onAddTablePart(tablePart, alias);
         return block;
     }
 

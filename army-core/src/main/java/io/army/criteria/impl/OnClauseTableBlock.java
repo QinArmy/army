@@ -5,11 +5,11 @@ import io.army.criteria.IPredicate;
 import io.army.criteria.Statement;
 import io.army.criteria.TablePart;
 import io.army.criteria.impl.inner._Predicate;
-import io.army.lang.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -19,7 +19,7 @@ abstract class OnClauseTableBlock<C, OR> extends TableBlock implements Statement
 
     private List<_Predicate> onPredicates;
 
-    OnClauseTableBlock(JoinType joinType, TablePart tablePart, String alias) {
+    OnClauseTableBlock(_JoinType joinType, TablePart tablePart, String alias) {
         super(joinType, tablePart);
         this.alias = alias;
     }
@@ -32,12 +32,12 @@ abstract class OnClauseTableBlock<C, OR> extends TableBlock implements Statement
             case 0:
                 throw new CriteriaException("on clause must not empty.");
             case 1:
-                onPredicates = Collections.singletonList((_Predicate) predicateList.get(0));
+                onPredicates = Collections.singletonList((OperationPredicate) predicateList.get(0));
                 break;
             default: {
                 final List<_Predicate> temp = new ArrayList<>(size);
                 for (IPredicate predicate : predicateList) {
-                    temp.add((_Predicate) predicate);
+                    temp.add((OperationPredicate) predicate);
                 }
                 onPredicates = Collections.unmodifiableList(temp);
             }
@@ -60,7 +60,7 @@ abstract class OnClauseTableBlock<C, OR> extends TableBlock implements Statement
 
     @Override
     public final OR on(Function<C, List<IPredicate>> function) {
-        return this.on(function.apply(this.getCriteria()));
+        return this.on(function.apply(this.getCriteriaContext().criteria()));
     }
 
     @Override
@@ -68,6 +68,12 @@ abstract class OnClauseTableBlock<C, OR> extends TableBlock implements Statement
         return this.on(supplier.get());
     }
 
+    @Override
+    public final OR on(Consumer<List<IPredicate>> consumer) {
+        final List<IPredicate> list = new ArrayList<>();
+        consumer.accept(list);
+        return this.on(list);
+    }
 
     @Override
     public final List<_Predicate> predicates() {
@@ -81,8 +87,7 @@ abstract class OnClauseTableBlock<C, OR> extends TableBlock implements Statement
         return this.alias;
     }
 
-    @Nullable
-    abstract C getCriteria();
+    abstract CriteriaContext getCriteriaContext();
 
     abstract OR endOnClause();
 

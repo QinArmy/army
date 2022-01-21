@@ -24,7 +24,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
 
     private MySQLIndexHint.Command indexHintCommand;
 
-    MySQLIndexHintOnBlock(JoinType joinType, TableMeta<?> table, String alias) {
+    MySQLIndexHintOnBlock(_JoinType joinType, TableMeta<?> table, String alias) {
         super(joinType, table, alias);
     }
 
@@ -48,7 +48,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
 
     @Override
     public final IR ifUseIndex(Predicate<C> predicate) {
-        if (predicate.test(this.getCriteria())) {
+        if (predicate.test(this.getCriteriaContext().criteria())) {
             this.useIndex();
         } else {
             this.indexHintCommand = null;
@@ -58,7 +58,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
 
     @Override
     public final IR ifIgnoreIndex(Predicate<C> predicate) {
-        if (predicate.test(this.getCriteria())) {
+        if (predicate.test(this.getCriteriaContext().criteria())) {
             this.ignoreIndex();
         } else {
             this.indexHintCommand = null;
@@ -68,7 +68,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
 
     @Override
     public final IR ifForceIndex(Predicate<C> predicate) {
-        if (predicate.test(this.getCriteria())) {
+        if (predicate.test(this.getCriteriaContext().criteria())) {
             this.forceIndex();
         } else {
             this.indexHintCommand = null;
@@ -97,7 +97,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
     @Override
     public final IC ifUseIndex(Function<C, List<String>> function) {
         final List<String> list;
-        list = function.apply(this.getCriteria());
+        list = function.apply(this.getCriteriaContext().criteria());
         if (!CollectionUtils.isEmpty(list)) {
             this.useIndex(list);
         }
@@ -107,7 +107,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
     @Override
     public final IC ifIgnoreIndex(Function<C, List<String>> function) {
         final List<String> list;
-        list = function.apply(this.getCriteria());
+        list = function.apply(this.getCriteriaContext().criteria());
         if (!CollectionUtils.isEmpty(list)) {
             this.ignoreIndex(list);
         }
@@ -117,7 +117,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
     @Override
     public final IC ifForceIndex(Function<C, List<String>> function) {
         final List<String> list;
-        list = function.apply(this.getCriteria());
+        list = function.apply(this.getCriteriaContext().criteria());
         if (!CollectionUtils.isEmpty(list)) {
             this.forceIndex(list);
         }
@@ -160,7 +160,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
     @Override
     public final IC forJoin(Function<C, List<String>> function) {
         if (this.indexHintCommand != null) {
-            this.forJoin(function.apply(this.getCriteria()));
+            this.forJoin(function.apply(this.getCriteriaContext().criteria()));
         }
         return (IC) this;
     }
@@ -168,7 +168,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
     @Override
     public final IC forOrderBy(Function<C, List<String>> function) {
         if (this.indexHintCommand != null) {
-            this.forOrderBy(function.apply(this.getCriteria()));
+            this.forOrderBy(function.apply(this.getCriteriaContext().criteria()));
         }
         return (IC) this;
     }
@@ -176,16 +176,12 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
     @Override
     public final IC forGroupBy(Function<C, List<String>> function) {
         if (this.indexHintCommand != null) {
-            this.forGroupBy(function.apply(this.getCriteria()));
+            this.forGroupBy(function.apply(this.getCriteriaContext().criteria()));
         }
         return (IC) this;
     }
 
 
-    @Override
-    public final List<String> partitionList() {
-        return Collections.emptyList();
-    }
 
     @Override
     public final List<? extends _IndexHint> indexHintList() {

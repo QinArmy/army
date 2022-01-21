@@ -7,6 +7,7 @@ import io.army.stmt.Stmt;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -86,6 +87,8 @@ public interface Statement {
 
         OR on(Supplier<List<IPredicate>> supplier);
 
+        OR on(Consumer<List<IPredicate>> consumer);
+
     }
 
 
@@ -161,6 +164,8 @@ public interface Statement {
         WR where(Function<C, List<IPredicate>> function);
 
         WR where(Supplier<List<IPredicate>> supplier);
+
+        WR where(Consumer<List<IPredicate>> consumer);
 
         WA where(@Nullable IPredicate predicate);
     }

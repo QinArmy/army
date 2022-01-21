@@ -89,7 +89,7 @@ abstract class MultiDelete<C, DR, JT, JS, WR, WA> extends AbstractDml<C, JT, JS,
     }
 
     @Override
-    final JT addTableBlock(JoinType joinType, TableMeta<?> table, String tableAlias) {
+    final JT addTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
         final JT block;
         block = createTableBlock(joinType, table, tableAlias);
         this.tableBlockList.add((_TableBlock) block);
@@ -97,7 +97,7 @@ abstract class MultiDelete<C, DR, JT, JS, WR, WA> extends AbstractDml<C, JT, JS,
     }
 
     @Override
-    final JS addOnBlock(JoinType joinType, TablePart tablePart, String alias) {
+    final JS addOnBlock(_JoinType joinType, TablePart tablePart, String alias) {
         final JS block;
         block = createOnBlock(joinType, tablePart, alias);
         this.tableBlockList.add((_TableBlock) block);
@@ -108,9 +108,9 @@ abstract class MultiDelete<C, DR, JT, JS, WR, WA> extends AbstractDml<C, JT, JS,
         this.tableBlockList.add(block);
     }
 
-    abstract JT createTableBlock(JoinType joinType, TableMeta<?> table, String tableAlias);
+    abstract JT createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias);
 
-    abstract JS createOnBlock(JoinType joinType, TablePart tablePart, String alias);
+    abstract JS createOnBlock(_JoinType joinType, TablePart tablePart, String alias);
 
     abstract void onAsDelete();
 

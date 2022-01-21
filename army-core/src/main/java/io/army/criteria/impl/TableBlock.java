@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.SQLModifier;
 import io.army.criteria.TablePart;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
@@ -13,15 +12,15 @@ abstract class TableBlock implements _TableBlock {
 
     final TablePart tablePart;
 
-    final JoinType joinType;
+    final _JoinType joinType;
 
     @Deprecated
-    TableBlock(TablePart tablePart, JoinType joinType) {
+    TableBlock(TablePart tablePart, _JoinType joinType) {
         this.tablePart = tablePart;
         this.joinType = joinType;
     }
 
-    TableBlock(JoinType joinType, TablePart tablePart) {
+    TableBlock(_JoinType joinType, TablePart tablePart) {
         this.joinType = joinType;
         this.tablePart = tablePart;
 
@@ -33,12 +32,12 @@ abstract class TableBlock implements _TableBlock {
     }
 
     @Override
-    public final SQLModifier jointType() {
+    public final _JoinType jointType() {
         return this.joinType;
     }
 
 
-    static TableBlock fromBlock(TablePart tablePart, String alias) {
+    static TableBlock firstBlock(TablePart tablePart, String alias) {
         Objects.requireNonNull(tablePart);
         return new SimpleTableBlock(tablePart, alias);
     }
@@ -49,7 +48,7 @@ abstract class TableBlock implements _TableBlock {
         private final String alias;
 
         SimpleTableBlock(TablePart tablePart, String alias) {
-            super(tablePart, JoinType.NONE);
+            super(tablePart, _JoinType.NONE);
             this.alias = alias;
         }
 

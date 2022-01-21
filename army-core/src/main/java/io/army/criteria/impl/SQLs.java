@@ -177,6 +177,9 @@ public abstract class SQLs extends StandardFunctions {
      */
     @SuppressWarnings("unchecked")
     static Expression<?> paramWithExp(final Expression<?> type, final @Nullable Object value) {
+        if (value == null) {
+            throw new CriteriaException("Operator right value must be not null.");
+        }
         final Expression<?> resultExpression;
         if (value instanceof Expression) {
             //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
@@ -199,6 +202,9 @@ public abstract class SQLs extends StandardFunctions {
      */
     @SuppressWarnings("unchecked")
     static Expression<?> strictParamWithExp(final Expression<?> type, final @Nullable Object value) {
+        if (value == null) {
+            throw new CriteriaException("Operator right value must be not null.");
+        }
         final Expression<?> resultExpression;
         if (value instanceof Expression) {
             //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression

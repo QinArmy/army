@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._TableBlock;
 import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
@@ -121,9 +122,9 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
     }
 
     @Override
-    public void clear() {
+    public List<_TableBlock> clear() {
         if (this.clearFinished) {
-            return;
+            return Collections.emptyList();
         }
         if (!this.onceChangeRefCache.isEmpty()) {
             throw new CriteriaException(ErrorCode.REF_EXP_ERROR, createReferenceErrorMsg());
@@ -142,6 +143,7 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
         this.composeRefSelectionMap = null;
         this.tableMetaMap = null;
         this.clearFinished = true;
+        return Collections.emptyList();
     }
 
 

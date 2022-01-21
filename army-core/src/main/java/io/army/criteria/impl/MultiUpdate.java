@@ -75,9 +75,9 @@ abstract class MultiUpdate<C, JT, JS, WR, WA, SR> extends AbstractUpdate<C, JT, 
     }
 
 
-    abstract JT createTableBlock(JoinType joinType, TableMeta<?> table, String tableAlias);
+    abstract JT createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias);
 
-    abstract JS createOnBlock(JoinType joinType, TablePart tablePart, String alias);
+    abstract JS createOnBlock(_JoinType joinType, TablePart tablePart, String alias);
 
 
     final void addOtherBlock(_TableBlock block) {
@@ -89,7 +89,7 @@ abstract class MultiUpdate<C, JT, JS, WR, WA, SR> extends AbstractUpdate<C, JT, 
     }
 
     @Override
-    final JT addTableBlock(JoinType joinType, TableMeta<?> table, String tableAlias) {
+    final JT addTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
         final JT block;
         block = createTableBlock(joinType, table, tableAlias);
         this.tableBlockList.add((_TableBlock) block);
@@ -97,7 +97,7 @@ abstract class MultiUpdate<C, JT, JS, WR, WA, SR> extends AbstractUpdate<C, JT, 
     }
 
     @Override
-    final JS addOnBlock(JoinType joinType, TablePart tablePart, String alias) {
+    final JS addOnBlock(_JoinType joinType, TablePart tablePart, String alias) {
         final JS block;
         block = createOnBlock(joinType, tablePart, alias);
         this.tableBlockList.add((_TableBlock) block);

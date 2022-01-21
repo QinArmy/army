@@ -56,23 +56,12 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final IPredicate equal(String subQueryAlias, String fieldAlias) {
-        throw unsupportedOperation();
-    }
-
-
-    @Override
-    public final IPredicate equal(String tableAlias, FieldMeta<?, ?> field) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final IPredicate equal(Object parameter) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate equalStrict(Object parameter) {
+    public final IPredicate equalParam(Object parameter) {
         throw unsupportedOperation();
     }
 
@@ -87,7 +76,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final IPredicate ifEqualStrict(@Nullable Object parameter) {
+    public final IPredicate ifEqualParam(@Nullable Object parameter) {
         throw unsupportedOperation();
     }
 
@@ -132,7 +121,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final IPredicate lessThanStrict(Object parameter) {
+    public final IPredicate lessThanParam(Object parameter) {
         throw unsupportedOperation();
     }
 
@@ -147,17 +136,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final IPredicate ifLessThanStrict(@Nullable Object parameter) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate lessThan(String subQueryAlias, String fieldAlias) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate lessThan(String tableAlias, FieldMeta<?, ?> field) {
+    public final IPredicate ifLessThanParam(@Nullable Object parameter) {
         throw unsupportedOperation();
     }
 
@@ -212,7 +191,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final IPredicate lessEqualStrict(Object parameter) {
+    public final IPredicate lessEqualParam(Object parameter) {
         throw unsupportedOperation();
     }
 
@@ -227,19 +206,10 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final IPredicate ifLessEqualStrict(@Nullable Object parameter) {
+    public final IPredicate ifLessEqualParam(@Nullable Object parameter) {
         throw unsupportedOperation();
     }
 
-    @Override
-    public final IPredicate lessEqual(String subQueryAlias, String fieldAlias) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate lessEqual(String tableAlias, FieldMeta<?, ?> field) {
-        throw unsupportedOperation();
-    }
 
     @Override
     public final <C, O> IPredicate lessEqual(Function<C, Expression<O>> function) {
@@ -293,7 +263,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final IPredicate greatThanStrict(Object parameter) {
+    public final IPredicate greatThanParam(Object parameter) {
         throw unsupportedOperation();
     }
 
@@ -309,17 +279,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final IPredicate ifGreatThanStrict(@Nullable Object parameter) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate greatThan(String subQueryAlias, String fieldAlias) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate greatThan(String tableAlias, FieldMeta<?, ?> field) {
+    public final IPredicate ifGreatThanParam(@Nullable Object parameter) {
         throw unsupportedOperation();
     }
 
@@ -374,7 +334,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final IPredicate greatEqualStrict(Object parameter) {
+    public final IPredicate greatEqualParam(Object parameter) {
         throw unsupportedOperation();
     }
 
@@ -389,17 +349,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final IPredicate ifGreatEqualStrict(@Nullable Object parameter) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate greatEqual(String subQueryAlias, String fieldAlias) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate greatEqual(String tableAlias, FieldMeta<?, ?> field) {
+    public final IPredicate ifGreatEqualParam(@Nullable Object parameter) {
         throw unsupportedOperation();
     }
 
@@ -454,7 +404,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final IPredicate notEqualStrict(Object parameter) {
+    public final IPredicate notEqualParam(Object parameter) {
         throw unsupportedOperation();
     }
 
@@ -469,17 +419,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final IPredicate ifNotEqualStrict(@Nullable Object parameter) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate notEqual(String subQueryAlias, String fieldAlias) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate notEqual(String tableAlias, FieldMeta<?, ?> field) {
+    public final IPredicate ifNotEqualParam(@Nullable Object parameter) {
         throw unsupportedOperation();
     }
 
@@ -579,7 +519,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final <O> IPredicate inStrict(Collection<O> parameters) {
+    public final <O> IPredicate inParam(Collection<O> parameters) {
         throw unsupportedOperation();
     }
 
@@ -594,7 +534,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final <O> IPredicate ifInStrict(@Nullable Collection<O> parameters) {
+    public final <O> IPredicate ifInParam(@Nullable Collection<O> parameters) {
         throw unsupportedOperation();
     }
 
@@ -624,7 +564,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final <O> IPredicate notinStrict(Collection<O> parameters) {
+    public final <O> IPredicate notInParam(Collection<O> parameters) {
         throw unsupportedOperation();
     }
 
@@ -639,7 +579,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final <O> IPredicate ifNotInStrict(@Nullable Collection<O> parameters) {
+    public final <O> IPredicate ifNotInParam(@Nullable Collection<O> parameters) {
         throw unsupportedOperation();
     }
 
@@ -724,7 +664,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final Expression<E> modStrict(Object parameter) {
+    public final Expression<E> modParam(Object parameter) {
         throw unsupportedOperation();
     }
 
@@ -764,7 +704,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final Expression<E> multiplyStrict(Object parameter) {
+    public final Expression<E> multiplyParam(Object parameter) {
         throw unsupportedOperation();
     }
 
@@ -804,7 +744,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final Expression<E> plusStrict(Object parameter) {
+    public final Expression<E> plusParam(Object parameter) {
         throw unsupportedOperation();
     }
 
@@ -844,7 +784,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final Expression<E> minusStrict(Object parameter) {
+    public final Expression<E> minusParam(Object parameter) {
         throw unsupportedOperation();
     }
 
@@ -884,7 +824,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final Expression<E> divideStrict(Object parameter) {
+    public final Expression<E> divideParam(Object parameter) {
         throw unsupportedOperation();
     }
 
@@ -929,22 +869,12 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final Expression<E> bitwiseAndStrict(Object parameter) {
+    public final Expression<E> bitwiseAndParam(Object parameter) {
         throw unsupportedOperation();
     }
 
     @Override
     public final Expression<E> bitwiseAndNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> bitwiseAnd(String subQueryAlias, String derivedFieldName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> bitwiseAnd(String tableAlias, FieldMeta<?, ?> field) {
         throw unsupportedOperation();
     }
 
@@ -969,22 +899,12 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final Expression<E> bitwiseOrStrict(Object parameter) {
+    public final Expression<E> bitwiseOrParam(Object parameter) {
         throw unsupportedOperation();
     }
 
     @Override
     public final Expression<E> bitwiseOrNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> bitwiseOr(String subQueryAlias, String derivedFieldName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> bitwiseOr(String tableAlias, FieldMeta<?, ?> field) {
         throw unsupportedOperation();
     }
 
@@ -1009,22 +929,12 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final Expression<E> xorStrict(Object parameter) {
+    public final Expression<E> xorParam(Object parameter) {
         throw unsupportedOperation();
     }
 
     @Override
     public final Expression<E> xorNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> xor(String subQueryAlias, String derivedFieldName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> xor(String tableAlias, FieldMeta<?, ?> field) {
         throw unsupportedOperation();
     }
 
@@ -1049,7 +959,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final Expression<E> rightShiftStrict(Number parameter) {
+    public final Expression<E> rightShiftParam(Number parameter) {
         throw unsupportedOperation();
     }
 
@@ -1060,16 +970,6 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
 
     @Override
     public final <N extends Number> Expression<E> rightShift(Expression<N> bitNumber) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final <N extends Number> Expression<E> rightShift(String tableAlias, FieldMeta<?, N> field) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> rightShift(String subQueryAlias, String derivedFieldName) {
         throw unsupportedOperation();
     }
 
@@ -1089,7 +989,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final Expression<E> leftShiftStrict(Number parameter) {
+    public final Expression<E> leftShiftParam(Number parameter) {
         throw unsupportedOperation();
     }
 
@@ -1100,16 +1000,6 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
 
     @Override
     public final <N extends Number> Expression<E> leftShift(Expression<N> bitNumber) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> leftShift(String subQueryAlias, String derivedFieldName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final <N extends Number> Expression<E> leftShift(String tableAlias, FieldMeta<?, N> field) {
         throw unsupportedOperation();
     }
 

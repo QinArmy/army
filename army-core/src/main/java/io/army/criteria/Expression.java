@@ -30,16 +30,6 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
 
     /**
      * relational operate with {@code =}
-     */
-    IPredicate equal(String subQueryAlias, String fieldAlias);
-
-    /**
-     * relational operate with {@code =}
-     */
-    IPredicate equal(String tableAlias, FieldMeta<?, ?> field);
-
-    /**
-     * relational operate with {@code =}
      * <p>
      * Operand will be wrapped with optimizing param
      * </p>
@@ -53,7 +43,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * Equivalence : this.equal({@link SQLs#param(Expression, Object)})
      * </p>
      */
-    IPredicate equalStrict(Object parameter);
+    IPredicate equalParam(Object parameter);
 
 
     /**
@@ -82,7 +72,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * </p>
      */
     @Nullable
-    IPredicate ifEqualStrict(@Nullable Object parameter);
+    IPredicate ifEqualParam(@Nullable Object parameter);
 
 
     /**
@@ -122,7 +112,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * Equivalence : this.lessThan({@link SQLs#param(Expression, Object)})
      * </p>
      */
-    IPredicate lessThanStrict(Object parameter);
+    IPredicate lessThanParam(Object parameter);
 
     /**
      * <p>
@@ -135,11 +125,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
     IPredicate ifLessThan(@Nullable Object parameter);
 
     @Nullable
-    IPredicate ifLessThanStrict(@Nullable Object parameter);
-
-    IPredicate lessThan(String subQueryAlias, String fieldAlias);
-
-    IPredicate lessThan(String tableAlias, FieldMeta<?, ?> field);
+    IPredicate ifLessThanParam(@Nullable Object parameter);
 
     <C, O> IPredicate lessThan(Function<C, Expression<O>> function);
 
@@ -166,7 +152,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * Equivalence : this.lessEqual({@link SQLs#param(Expression, Object)})
      * </p>
      */
-    IPredicate lessEqualStrict(Object parameter);
+    IPredicate lessEqualParam(Object parameter);
 
     /**
      * <p>
@@ -179,11 +165,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
     IPredicate ifLessEqual(@Nullable Object parameter);
 
     @Nullable
-    IPredicate ifLessEqualStrict(@Nullable Object parameter);
-
-    IPredicate lessEqual(String subQueryAlias, String fieldAlias);
-
-    IPredicate lessEqual(String tableAlias, FieldMeta<?, ?> field);
+    IPredicate ifLessEqualParam(@Nullable Object parameter);
 
     <C, O> IPredicate lessEqual(Function<C, Expression<O>> function);
 
@@ -210,7 +192,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * Equivalence : this.greatThan({@link SQLs#param(Expression, Object)})
      * </p>
      */
-    IPredicate greatThanStrict(Object parameter);
+    IPredicate greatThanParam(Object parameter);
 
     /**
      * <p>
@@ -223,11 +205,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
     IPredicate ifGreatThan(@Nullable Object parameter);
 
     @Nullable
-    IPredicate ifGreatThanStrict(@Nullable Object parameter);
-
-    IPredicate greatThan(String subQueryAlias, String fieldAlias);
-
-    IPredicate greatThan(String tableAlias, FieldMeta<?, ?> field);
+    IPredicate ifGreatThanParam(@Nullable Object parameter);
 
     <C, O> IPredicate greatThan(Function<C, Expression<O>> function);
 
@@ -254,7 +232,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * Equivalence : this.greatEqual({@link SQLs#param(Expression, Object)})
      * </p>
      */
-    IPredicate greatEqualStrict(Object parameter);
+    IPredicate greatEqualParam(Object parameter);
 
     /**
      * <p>
@@ -267,11 +245,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
     IPredicate IfGreatEqual(@Nullable Object parameter);
 
     @Nullable
-    IPredicate ifGreatEqualStrict(@Nullable Object parameter);
-
-    IPredicate greatEqual(String subQueryAlias, String fieldAlias);
-
-    IPredicate greatEqual(String tableAlias, FieldMeta<?, ?> field);
+    IPredicate ifGreatEqualParam(@Nullable Object parameter);
 
     <C, O> IPredicate greatEqual(Function<C, Expression<O>> function);
 
@@ -298,7 +272,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * Equivalence : this.notEqual({@link SQLs#param(Expression, Object)})
      * </p>
      */
-    IPredicate notEqualStrict(Object parameter);
+    IPredicate notEqualParam(Object parameter);
 
     /**
      * <p>
@@ -311,11 +285,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
     IPredicate ifNotEqual(@Nullable Object parameter);
 
     @Nullable
-    IPredicate ifNotEqualStrict(@Nullable Object parameter);
-
-    IPredicate notEqual(String subQueryAlias, String fieldAlias);
-
-    IPredicate notEqual(String tableAlias, FieldMeta<?, ?> field);
+    IPredicate ifNotEqualParam(@Nullable Object parameter);
 
     <C, O> IPredicate notEqual(Function<C, Expression<O>> function);
 
@@ -370,7 +340,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * Equivalence : this.in({@link SQLs#params(Expression, Collection)})
      * </p>
      */
-    <O> IPredicate inStrict(Collection<O> parameters);
+    <O> IPredicate inParam(Collection<O> parameters);
 
     /**
      * <p>
@@ -390,7 +360,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
     <O> IPredicate ifIn(@Nullable Collection<O> parameters);
 
     @Nullable
-    <O> IPredicate ifInStrict(@Nullable Collection<O> parameters);
+    <O> IPredicate ifInParam(@Nullable Collection<O> parameters);
 
     <O> IPredicate in(Expression<Collection<O>> parameters);
 
@@ -412,7 +382,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * Equivalence : this.notIn({@link SQLs#params(Expression, Collection)})
      * </p>
      */
-    <O> IPredicate notinStrict(Collection<O> parameters);
+    <O> IPredicate notInParam(Collection<O> parameters);
 
     /**
      * <p>
@@ -432,7 +402,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
     <O> IPredicate ifNotIn(@Nullable Collection<O> parameters);
 
     @Nullable
-    <O> IPredicate ifNotInStrict(@Nullable Collection<O> parameters);
+    <O> IPredicate ifNotInParam(@Nullable Collection<O> parameters);
 
     <O> IPredicate notIn(Expression<Collection<O>> values);
 
@@ -449,7 +419,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * Equivalence : this.mod({@link SQLs#param(Expression, Object)})
      * </p>
      */
-    Expression<E> modStrict(Object parameter);
+    Expression<E> modParam(Object parameter);
 
     /**
      * <p>
@@ -475,7 +445,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * Equivalence : this.multiply({@link SQLs#param(Expression, Object)})
      * </p>
      */
-    Expression<E> multiplyStrict(Object parameter);
+    Expression<E> multiplyParam(Object parameter);
 
     /**
      * <p>
@@ -501,7 +471,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * Equivalence : this.plus({@link SQLs#param(Expression, Object)})
      * </p>
      */
-    Expression<E> plusStrict(Object parameter);
+    Expression<E> plusParam(Object parameter);
 
     /**
      * <p>
@@ -527,7 +497,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * Equivalence : this.minus({@link SQLs#param(Expression, Object)})
      * </p>
      */
-    Expression<E> minusStrict(Object parameter);
+    Expression<E> minusParam(Object parameter);
 
     /**
      * <p>
@@ -553,7 +523,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * Equivalence : this.divide({@link SQLs#param(Expression, Object)})
      * </p>
      */
-    Expression<E> divideStrict(Object parameter);
+    Expression<E> divideParam(Object parameter);
 
     /**
      * <p>
@@ -591,7 +561,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * Equivalence : this.bitwiseAnd({@link SQLs#param(Expression, Object)})
      * </p>
      */
-    Expression<E> bitwiseAndStrict(Object parameter);
+    Expression<E> bitwiseAndParam(Object parameter);
 
     /**
      * <p>
@@ -599,20 +569,6 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * </p>
      */
     Expression<E> bitwiseAndNamed(String paramName);
-
-    /**
-     * Bitwise AND
-     *
-     * @return {@link BigInteger} expression
-     */
-    Expression<E> bitwiseAnd(String subQueryAlias, String derivedFieldName);
-
-    /**
-     * Bitwise AND
-     *
-     * @return {@link BigInteger} expression
-     */
-    Expression<E> bitwiseAnd(String tableAlias, FieldMeta<?, ?> field);
 
     /**
      * Bitwise AND
@@ -643,7 +599,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * Equivalence : this.bitwiseOr({@link SQLs#param(Expression, Object)})
      * </p>
      */
-    Expression<E> bitwiseOrStrict(Object parameter);
+    Expression<E> bitwiseOrParam(Object parameter);
 
     /**
      * <p>
@@ -651,20 +607,6 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * </p>
      */
     Expression<E> bitwiseOrNamed(String paramName);
-
-    /**
-     * Bitwise OR
-     *
-     * @return {@link BigInteger} expression
-     */
-    Expression<E> bitwiseOr(String subQueryAlias, String derivedFieldName);
-
-    /**
-     * Bitwise OR
-     *
-     * @return {@link BigInteger} expression
-     */
-    Expression<E> bitwiseOr(String tableAlias, FieldMeta<?, ?> field);
 
     /**
      * Bitwise OR
@@ -694,7 +636,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * Equivalence : this.xor({@link SQLs#param(Expression, Object)})
      * </p>
      */
-    Expression<E> xorStrict(Object parameter);
+    Expression<E> xorParam(Object parameter);
 
     /**
      * <p>
@@ -702,20 +644,6 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * </p>
      */
     Expression<E> xorNamed(String paramName);
-
-    /**
-     * Bitwise XOR
-     *
-     * @return {@link BigInteger} expression
-     */
-    Expression<E> xor(String subQueryAlias, String derivedFieldName);
-
-    /**
-     * Bitwise XOR
-     *
-     * @return {@link BigInteger} expression
-     */
-    Expression<E> xor(String tableAlias, FieldMeta<?, ?> field);
 
     /**
      * Bitwise XOR
@@ -745,7 +673,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * Equivalence : this.rightShift({@link SQLs#param(Expression, Object)})
      * </p>
      */
-    Expression<E> rightShiftStrict(Number parameter);
+    Expression<E> rightShiftParam(Number parameter);
 
     /**
      * <p>
@@ -760,20 +688,6 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * @return {@link BigInteger} expression
      */
     <N extends Number> Expression<E> rightShift(Expression<N> bitNumber);
-
-    /**
-     * Shifts a  number to the right.
-     *
-     * @return {@link BigInteger} expression
-     */
-    <N extends Number> Expression<E> rightShift(String tableAlias, FieldMeta<?, N> field);
-
-    /**
-     * Shifts a  number to the right.
-     *
-     * @return {@link BigInteger} expression
-     */
-    Expression<E> rightShift(String subQueryAlias, String derivedFieldName);
 
     /**
      * Shifts a  number to the right.
@@ -797,7 +711,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * Equivalence : this.leftShift({@link SQLs#param(Expression, Object)})
      * </p>
      */
-    Expression<E> leftShiftStrict(Number parameter);
+    Expression<E> leftShiftParam(Number parameter);
 
     /**
      * <p>
@@ -812,20 +726,6 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetTa
      * @return {@link BigInteger} expression
      */
     <N extends Number> Expression<E> leftShift(Expression<N> bitNumber);
-
-    /**
-     * Shifts a  number to the left.
-     *
-     * @return {@link BigInteger} expression
-     */
-    Expression<E> leftShift(String subQueryAlias, String derivedFieldName);
-
-    /**
-     * Shifts a  number to the left.
-     *
-     * @return {@link BigInteger} expression
-     */
-    <N extends Number> Expression<E> leftShift(String tableAlias, FieldMeta<?, N> field);
 
     /**
      * Shifts a  number to the left.

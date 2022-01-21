@@ -3,10 +3,10 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.lang.Nullable;
-import io.army.util.ArrayUtils;
 import io.army.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -31,7 +31,7 @@ abstract class MySQLPartitionClause<C, PR> implements MySQLQuery.PartitionClause
 
     @Override
     public final PR partition(String partitionName1, String partitionNam2) {
-        this.partitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2);
+        this.partitionList = Arrays.asList(partitionName1, partitionNam2);
         return (PR) this;
     }
 
@@ -40,7 +40,7 @@ abstract class MySQLPartitionClause<C, PR> implements MySQLQuery.PartitionClause
         if (partitionNameList.size() == 0) {
             throw new CriteriaException("partitionNameList must not empty.");
         }
-        this.partitionList = Collections.unmodifiableList(new ArrayList<>(partitionNameList));
+        this.partitionList = new ArrayList<>(partitionNameList);
         return (PR) this;
     }
 

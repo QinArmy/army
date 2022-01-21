@@ -4,6 +4,7 @@ package io.army.criteria;
 import io.army.lang.Nullable;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -83,6 +84,8 @@ public interface Query extends Statement {
         GR groupBy(Function<C, List<SortPart>> function);
 
         GR groupBy(Supplier<List<SortPart>> supplier);
+
+        GR groupBy(Consumer<List<SortPart>> consumer);
 
         GR ifGroupBy(@Nullable SortPart sortPart);
 

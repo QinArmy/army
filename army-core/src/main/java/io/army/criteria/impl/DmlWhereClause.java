@@ -8,6 +8,8 @@ import io.army.lang.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -32,7 +34,7 @@ abstract class DmlWhereClause<C, WR, WA> implements Statement, Statement.WhereCl
             if (!(predicate instanceof OperationPredicate)) {
                 throw CriteriaUtils.nonArmyExpression(predicate);
             }
-            predicates.add((_Predicate) predicate);
+            predicates.add((OperationPredicate) predicate);
         }
         return (WR) this;
     }
@@ -48,22 +50,24 @@ abstract class DmlWhereClause<C, WR, WA> implements Statement, Statement.WhereCl
     }
 
     @Override
+    public final WR where(Consumer<List<IPredicate>> consumer) {
+        final List<IPredicate> list = new ArrayList<>();
+        consumer.accept(list);
+        return this.where(list);
+    }
+
+    @Override
     public final WA where(final @Nullable IPredicate predicate) {
         if (predicate != null) {
-            if (!(predicate instanceof OperationPredicate)) {
-                throw CriteriaUtils.nonArmyExpression(predicate);
-            }
-            this.predicateList.add((_Predicate) predicate);
+            this.predicateList.add((OperationPredicate) predicate);
         }
         return (WA) this;
     }
 
     @Override
     public final WA and(IPredicate predicate) {
-        if (!(predicate instanceof OperationPredicate)) {
-            throw CriteriaUtils.nonArmyExpression(predicate);
-        }
-        this.predicateList.add((_Predicate) predicate);
+        Objects.requireNonNull(predicate);
+        this.predicateList.add((OperationPredicate) predicate);
         return (WA) this;
     }
 
@@ -80,10 +84,7 @@ abstract class DmlWhereClause<C, WR, WA> implements Statement, Statement.WhereCl
     @Override
     public final WA ifAnd(@Nullable IPredicate predicate) {
         if (predicate != null) {
-            if (!(predicate instanceof OperationPredicate)) {
-                throw CriteriaUtils.nonArmyExpression(predicate);
-            }
-            this.predicateList.add((_Predicate) predicate);
+            this.predicateList.add((OperationPredicate) predicate);
         }
         return (WA) this;
     }

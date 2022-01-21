@@ -13,12 +13,12 @@ abstract class SingleUpdate<C, WR, WA, SR> extends AbstractUpdate<C, Void, Void,
 
 
     @Override
-    final Void addTableBlock(JoinType joinType, TableMeta<?> table, String tableAlias) {
+    final Void addTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
         throw _Exceptions.castCriteriaApi();
     }
 
     @Override
-    final Void addOnBlock(JoinType joinType, TablePart tablePart, String alias) {
+    final Void addOnBlock(_JoinType joinType, TablePart tablePart, String alias) {
         throw _Exceptions.castCriteriaApi();
     }
 

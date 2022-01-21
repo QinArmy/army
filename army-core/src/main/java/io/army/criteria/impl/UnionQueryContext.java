@@ -1,10 +1,12 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._TableBlock;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
+import java.util.Collections;
 import java.util.List;
 
 final class UnionQueryContext implements CriteriaContext {
@@ -51,8 +53,8 @@ final class UnionQueryContext implements CriteriaContext {
     }
 
     @Override
-    public void clear() {
-
+    public List<_TableBlock> clear() {
+        return Collections.emptyList();
     }
 
 

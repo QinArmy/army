@@ -5,6 +5,7 @@ import io.army.criteria.IPredicate;
 import io.army.criteria.Statement;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -38,6 +39,11 @@ abstract class NoActionOnClause<C, OR> implements Statement.OnClause<C, OR> {
 
     @Override
     public final OR on(Supplier<List<IPredicate>> supplier) {
+        return this.stmt;
+    }
+
+    @Override
+    public final OR on(Consumer<List<IPredicate>> consumer) {
         return this.stmt;
     }
 

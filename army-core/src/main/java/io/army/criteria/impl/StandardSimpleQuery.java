@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.DialectMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._StandardQuery;
-import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
@@ -170,33 +169,33 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
 
     @Override
-    final StandardJoinSpec<C, Q> addTableFromBlock(TableMeta<?> table, String tableAlias) {
-        return this.addTablePartFromBlock(table, tableAlias);
+    final StandardJoinSpec<C, Q> addFirstTableBlock(TableMeta<?> table, String tableAlias) {
+        return this.addFirstTablePartBlock(table, tableAlias);
     }
 
     @Override
-    final StandardJoinSpec<C, Q> addTablePartFromBlock(TablePart tablePart, String alias) {
+    final StandardJoinSpec<C, Q> addFirstTablePartBlock(TablePart tablePart, String alias) {
         final List<TableBlock> tableBlockList = this.tableBlockList;
         if (tableBlockList == null || tableBlockList.size() > 0) {
             throw _Exceptions.castCriteriaApi();
         }
-        tableBlockList.add(TableBlock.fromBlock(tablePart, alias));
+        tableBlockList.add(TableBlock.firstBlock(tablePart, alias));
         return this;
     }
 
     @Override
-    final StandardOnSpec<C, Q> addTableBlock(JoinType joinType, TableMeta<?> table, String tableAlias) {
-        return this.addOnBlock(joinType, table, tableAlias);
+    final StandardOnSpec<C, Q> createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+        return this.createOnBlock(joinType, table, tableAlias);
     }
 
     @Override
-    final StandardOnSpec<C, Q> addOnBlock(JoinType joinType, TablePart tablePart, String tableAlias) {
+    final StandardOnSpec<C, Q> createOnBlock(_JoinType joinType, TablePart tablePart, String alias) {
         final List<TableBlock> tableBlockList = this.tableBlockList;
         if (tableBlockList == null) {
             throw _Exceptions.castCriteriaApi();
         }
         final OnBlock<C, Q> block;
-        block = new OnBlock<>(joinType, tablePart, tableAlias, this);
+        block = new OnBlock<>(joinType, tablePart, alias, this);
         tableBlockList.add(block);
         return block;
     }
@@ -253,11 +252,6 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         this.lockMode = null;
     }
 
-    @Override
-    public final List<? extends _TableBlock> tableBlockList() {
-        prepared();
-        return this.tableBlockList;
-    }
 
     @Override
     public final LockMode lockMode() {
@@ -284,14 +278,14 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
         private final StandardSimpleQuery<C, Q> query;
 
-        OnBlock(JoinType joinType, TablePart tablePart, String alias, StandardSimpleQuery<C, Q> query) {
+        OnBlock(_JoinType joinType, TablePart tablePart, String alias, StandardSimpleQuery<C, Q> query) {
             super(joinType, tablePart, alias);
             this.query = query;
         }
 
         @Override
-        C getCriteria() {
-            return this.query.criteria;
+        CriteriaContext getCriteriaContext() {
+            return this.query.criteriaContext;
         }
 
         @Override

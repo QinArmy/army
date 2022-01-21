@@ -10,7 +10,7 @@ import io.army.util.CollectionUtils;
 import java.util.Collections;
 import java.util.List;
 
-
+@Deprecated
 final class MySQLFromTableBlock extends TableBlock implements _MySQLTableBlock {
 
     private final String alias;
@@ -20,13 +20,13 @@ final class MySQLFromTableBlock extends TableBlock implements _MySQLTableBlock {
     List<MySQLIndexHint> indexHintList;
 
     MySQLFromTableBlock(TableMeta<?> table, String alias) {
-        super(JoinType.NONE, table);
+        super(_JoinType.NONE, table);
         this.alias = alias;
         this.partitionList = Collections.emptyList();
     }
 
     MySQLFromTableBlock(TablePart tablePart, String alias, List<String> partitionList) {
-        super(JoinType.NONE, tablePart);
+        super(_JoinType.NONE, tablePart);
         this.alias = alias;
         this.partitionList = partitionList;
     }

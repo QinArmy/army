@@ -107,8 +107,8 @@ abstract class CriteriaUtils {
 
     static List<_Predicate> onPredicates(IPredicate predicate1, IPredicate predicate2) {
         final List<_Predicate> list = new ArrayList<>(2);
-        list.add((_Predicate) predicate1);
-        list.add((_Predicate) predicate2);
+        list.add((OperationPredicate) predicate1);
+        list.add((OperationPredicate) predicate2);
         return Collections.unmodifiableList(list);
     }
 
