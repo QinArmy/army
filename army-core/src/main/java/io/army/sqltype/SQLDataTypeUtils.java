@@ -144,7 +144,7 @@ public abstract class SQLDataTypeUtils {
         } else if (javaClass == MonthDay.class) {
             builder.append("TO_DATE(('1970-' || TO_CHAR(CURRENT_DATE, 'MM-DD')),'YYYY-MM-DD')");
         } else {
-            throw createNotJavaTypeException(PostgreDataType.DATE, fieldMeta);
+            throw createNotJavaTypeException(PostgreType.DATE, fieldMeta);
         }
     }
 

@@ -16,7 +16,7 @@ public final class ZonedDateTimeType extends _ArmyNoInjectionMapping {
 
     public static ZonedDateTimeType build(Class<?> typeClass) {
         if (typeClass != ZonedDateTime.class) {
-            throw createNotSupportJavaTypeException(ZonedDateTimeType.class, typeClass);
+            throw errorJavaType(ZonedDateTimeType.class, typeClass);
         }
         return INSTANCE;
     }
@@ -36,17 +36,17 @@ public final class ZonedDateTimeType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
-        return OffsetDateTimeType.INSTANCE.sqlType(serverMeta);
+    public SqlType map(ServerMeta meta) throws NotSupportDialectException {
+        return OffsetDateTimeType.INSTANCE.map(meta);
     }
 
     @Override
-    public Object convertBeforeBind(SqlType sqlDataType, Object nonNull) {
-        return OffsetDateTimeType.INSTANCE.convertBeforeBind(sqlDataType, nonNull);
+    public Object beforeBind_(SqlType sqlType, Object nonNull) {
+        return OffsetDateTimeType.INSTANCE.beforeBind_(sqlType, nonNull);
     }
 
     @Override
-    public ZonedDateTime convertAfterGet(SqlType sqlDataType, final Object nonNull) {
+    public ZonedDateTime afterGet_(SqlType sqlType, final Object nonNull) {
         if (!(nonNull instanceof OffsetDateTime)) {
             throw notSupportConvertAfterGet(nonNull);
         }

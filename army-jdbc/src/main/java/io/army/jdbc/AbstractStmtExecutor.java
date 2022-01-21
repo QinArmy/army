@@ -325,8 +325,8 @@ abstract class AbstractStmtExecutor implements StmtExecutor {
                     value = encodeField(fieldMeta, value);
                 }
             }
-            sqlDataType = mappingType.sqlType(serverMeta);
-            value = mappingType.convertBeforeBind(sqlDataType, value);
+            sqlDataType = mappingType.map(serverMeta);
+            value = mappingType.beforeBind_(sqlDataType, value);
             bind(statement, i + 1, sqlDataType, value);
 
         }

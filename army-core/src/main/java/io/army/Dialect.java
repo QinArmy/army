@@ -3,7 +3,7 @@ package io.army;
 import io.army.dialect.Database;
 
 
-public enum DialectMode {
+public enum Dialect {
 
     MySQL57((byte) 57) {
         @Override
@@ -21,7 +21,7 @@ public enum DialectMode {
 
     private final byte version;
 
-    DialectMode(byte version) {
+    Dialect(byte version) {
         this.version = version;
     }
 

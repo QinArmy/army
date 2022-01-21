@@ -1,11 +1,10 @@
 package io.army.dialect.mysql;
 
-import io.army.DialectMode;
+import io.army.Dialect;
 import io.army.criteria.GenericField;
 import io.army.criteria.LockMode;
 import io.army.dialect.*;
 import io.army.mapping.MappingType;
-import io.army.mapping.mysql.MySqlSetType;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.ParentTableMeta;
@@ -102,7 +101,7 @@ abstract class MySQLDialect extends _AbstractDialect {
     }
 
     @Override
-    public DialectMode mode() {
+    public Dialect mode() {
         return null;
     }
 
@@ -132,7 +131,7 @@ abstract class MySQLDialect extends _AbstractDialect {
         } else {
             mappingType = paramMeta.mappingType();
         }
-        sqlType = mappingType.sqlType(this.environment.serverMeta());
+        sqlType = mappingType.map(this.environment.serverMeta());
         final String literal;
         switch ((MySqlType) sqlType) {
             case INT:
@@ -225,14 +224,9 @@ abstract class MySQLDialect extends _AbstractDialect {
             case TINYINT_UNSIGNED:
                 literal = MySQLLiterals.unsignedTinyInt(sqlType, nonNull);
                 break;
-            case SET: {
-                try {
-                    literal = ((MySqlSetType) mappingType).literal(nonNull);
-                } catch (RuntimeException e) {
-                    throw _Exceptions.errorLiteralType(sqlType, nonNull);
-                }
-            }
-            break;
+            case SET:
+                literal = MySQLLiterals.setType(sqlType, nonNull);
+                break;
             case POINT:
             case LINESTRING:
             case POLYGON:
@@ -240,7 +234,7 @@ abstract class MySQLDialect extends _AbstractDialect {
             case MULTIPOLYGON:
             case MULTILINESTRING:
             case GEOMETRYCOLLECTION:
-                throw _Exceptions.errorLiteralType(sqlType, nonNull);
+                throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
             default:
                 throw _Exceptions.unexpectedEnum((MySqlType) sqlType);
         }

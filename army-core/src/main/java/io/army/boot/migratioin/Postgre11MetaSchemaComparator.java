@@ -5,7 +5,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.schema.SchemaInfoException;
 import io.army.session.DialectSessionFactory;
-import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.PostgreType;
 
 import java.util.List;
 import java.util.Map;
@@ -13,15 +13,15 @@ import java.util.Set;
 
 class Postgre11MetaSchemaComparator extends AbstractMetaSchemaComparator {
 
-    static final Set<PostgreDataType> INTEGER_TYPE_SET = PostgreUtils.createIntegerSet();
+    static final Set<PostgreType> INTEGER_TYPE_SET = PostgreUtils.createIntegerSet();
 
-    static final Set<PostgreDataType> FLOAT_TYPE_SET = PostgreUtils.createFloatSet();
+    static final Set<PostgreType> FLOAT_TYPE_SET = PostgreUtils.createFloatSet();
 
-    static final Set<PostgreDataType> EXACT_NUMERIC_TYPE_SET = PostgreUtils.createExactNumericSet();
+    static final Set<PostgreType> EXACT_NUMERIC_TYPE_SET = PostgreUtils.createExactNumericSet();
 
-    static final Set<PostgreDataType> NUMERIC_TYPE_SET = PostgreUtils.createNumericSet();
+    static final Set<PostgreType> NUMERIC_TYPE_SET = PostgreUtils.createNumericSet();
 
-    static final Map<PostgreDataType, List<String>> SYNONYMS_MAP = PostgreUtils.createSynonymsMap();
+    static final Map<PostgreType, List<String>> SYNONYMS_MAP = PostgreUtils.createSynonymsMap();
 
     Postgre11MetaSchemaComparator(DialectSessionFactory sessionFactory) {
         super(sessionFactory);

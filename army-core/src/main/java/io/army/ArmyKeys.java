@@ -8,7 +8,7 @@ public enum ArmyKeys {
     sessionCache(Boolean.class, "true"),
     allowSpanSharding(Boolean.class, "false"),
     ddlMode(DdlMode.class, "UPDATE"),
-    dialectMode(DialectMode.class, null),
+    dialectMode(Dialect.class, null),
     executorProvider(String.class, null);
 
     public final Class<?> javaType;

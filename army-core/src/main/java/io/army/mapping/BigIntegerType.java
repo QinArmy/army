@@ -1,20 +1,18 @@
 package io.army.mapping;
 
-import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.JDBCType;
 
 public final class BigIntegerType extends _ArmyNoInjectionMapping {
 
     public static final BigIntegerType INSTANCE = new BigIntegerType();
 
-    public static BigIntegerType build(Class<?> typeClass) {
-        if (typeClass != BigDecimal.class) {
-            throw createNotSupportJavaTypeException(BigIntegerType.class, typeClass);
+    public static BigIntegerType create(Class<?> javaType) {
+        if (javaType != BigDecimal.class) {
+            throw errorJavaType(BigIntegerType.class, javaType);
         }
         return INSTANCE;
     }
@@ -29,33 +27,32 @@ public final class BigIntegerType extends _ArmyNoInjectionMapping {
         return BigInteger.class;
     }
 
+
     @Override
-    public JDBCType jdbcType() {
-        return JDBCType.DECIMAL;
+    public SqlType map(ServerMeta meta) {
+        return BigDecimalType.INSTANCE.map(meta);
     }
 
     @Override
-    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
-        return BigDecimalType.INSTANCE.sqlType(serverMeta);
-    }
-
-    @Override
-    public BigDecimal convertBeforeBind(SqlType sqlDataType, final Object nonNull) {
+    public BigDecimal beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
         final BigDecimal value;
-        value = BigDecimalType.INSTANCE.convertBeforeBind(sqlDataType, nonNull).stripTrailingZeros();
+        value = BigDecimalType.INSTANCE.beforeBind(sqlType, env, nonNull);
         if (value.scale() != 0) {
-            throw notSupportConvertBeforeBind(nonNull);
+            throw valueOutRange(sqlType, nonNull, null);
         }
         return value;
     }
 
     @Override
-    public BigInteger convertAfterGet(final SqlType sqlDataType, final Object nonNull) {
-        final BigDecimal v = ((BigDecimal) nonNull).stripTrailingZeros();
-        if (v.scale() != 0) {
-            throw notSupportConvertAfterGet(nonNull);
+    public BigInteger afterGet(final SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+        if (!(nonNull instanceof BigDecimal)) {
+            throw errorJavaTypeForSqlType(sqlType, nonNull);
         }
-        return v.toBigInteger();
+        final BigDecimal value = ((BigDecimal) nonNull).stripTrailingZeros();
+        if (value.scale() != 0) {
+            throw errorValueForSqlType(sqlType, nonNull, null);
+        }
+        return value.toBigInteger();
     }
 
 

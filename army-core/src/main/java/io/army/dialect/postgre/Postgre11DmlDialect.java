@@ -1,6 +1,6 @@
 package io.army.dialect.postgre;
 
-import io.army.DialectMode;
+import io.army.Dialect;
 import io.army.dialect.DialectEnvironment;
 import io.army.dialect._AbstractDialect;
 import io.army.meta.ParamMeta;
@@ -76,7 +76,7 @@ class Postgre11DmlDialect extends _AbstractDialect {
     }
 
     @Override
-    public DialectMode mode() {
+    public Dialect mode() {
         return null;
     }
 

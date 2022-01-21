@@ -1,24 +1,27 @@
 package io.army.mapping.optional;
 
-import io.army.dialect.NotSupportDialectException;
-import io.army.mapping.AbstractMappingType;
+import io.army.mapping.MappingEnvironment;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.OracleDataType;
-import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
+import io.army.util.TimeUtils;
 
-import java.sql.JDBCType;
+import java.time.DateTimeException;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 
+/**
+ * @see OffsetDateTime
+ */
 public final class OffsetDateTimeType extends _ArmyNoInjectionMapping {
 
     public static final OffsetDateTimeType INSTANCE = new OffsetDateTimeType();
 
-    public static OffsetDateTimeType build(Class<?> javaType) {
+    public static OffsetDateTimeType create(Class<?> javaType) {
         if (javaType != OffsetDateTime.class) {
-            throw AbstractMappingType.createNotSupportJavaTypeException(OffsetDateTimeType.class, javaType);
+            throw errorJavaType(OffsetDateTimeType.class, javaType);
         }
         return INSTANCE;
     }
@@ -33,47 +36,47 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public JDBCType jdbcType() {
-        return JDBCType.TIMESTAMP_WITH_TIMEZONE;
-    }
-
-
-    @Override
-    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
-        final SqlType sqlDataType;
-        switch (serverMeta.database()) {
+    public SqlType map(ServerMeta meta) {
+        final SqlType sqlType;
+        switch (meta.database()) {
             case PostgreSQL:
-                sqlDataType = PostgreDataType.TIMESTAMPTZ;
+                sqlType = PostgreType.TIMESTAMPTZ;
                 break;
             case Oracle:
-                sqlDataType = OracleDataType.TIMESTAMPTZ;
+                sqlType = OracleDataType.TIMESTAMPTZ;
                 break;
             default:
-                throw noMappingError(serverMeta);
+                throw noMappingError(meta);
 
         }
-        return sqlDataType;
+        return sqlType;
     }
 
     @Override
-    public Object convertBeforeBind(SqlType sqlDataType, final Object nonNull) {
+    public OffsetDateTime beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
         final OffsetDateTime value;
         if (nonNull instanceof OffsetDateTime) {
             value = (OffsetDateTime) nonNull;
         } else if (nonNull instanceof ZonedDateTime) {
             value = ((ZonedDateTime) nonNull).toOffsetDateTime();
+        } else if (nonNull instanceof String) {
+            try {
+                value = OffsetDateTime.parse((String) nonNull, TimeUtils.getDatetimeOffsetFormatter(6));
+            } catch (DateTimeException e) {
+                throw valueOutRange(sqlType, nonNull, e);
+            }
         } else {
-            throw notSupportConvertBeforeBind(nonNull);
+            throw outRangeOfSqlType(sqlType, nonNull);
         }
         return value;
     }
 
     @Override
-    public Object convertAfterGet(SqlType sqlDataType, final Object nonNull) {
+    public OffsetDateTime afterGet(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
         if (!(nonNull instanceof OffsetDateTime)) {
-            throw notSupportConvertAfterGet(nonNull);
+            throw errorJavaTypeForSqlType(sqlType, nonNull);
         }
-        return nonNull;
+        return (OffsetDateTime) nonNull;
     }
 
 

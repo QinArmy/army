@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.DialectMode;
+import io.army.Dialect;
 import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ObjectWrapper;
 import io.army.criteria.Expression;
@@ -279,7 +279,7 @@ final class StandardValueInsert<T extends IDomain, C> implements Insert
     public String toString() {
         final String s;
         if (this.prepared) {
-            s = this.mockAsString(DialectMode.MySQL57);
+            s = this.mockAsString(Dialect.MySQL57);
         } else {
             s = super.toString();
         }
@@ -287,12 +287,12 @@ final class StandardValueInsert<T extends IDomain, C> implements Insert
     }
 
     @Override
-    public void mock(DialectMode mode) {
+    public void mock(Dialect mode) {
         System.out.println(mockAsString(mode));
     }
 
     @Override
-    public String mockAsString(DialectMode mode) {
+    public String mockAsString(Dialect mode) {
         final Stmt stmt;
         stmt = mockAsStmt(mode);
         final StringBuilder builder = new StringBuilder();
@@ -311,7 +311,7 @@ final class StandardValueInsert<T extends IDomain, C> implements Insert
     }
 
     @Override
-    public Stmt mockAsStmt(DialectMode mode) {
+    public Stmt mockAsStmt(Dialect mode) {
         return _MockDialects.from(mode).insert(this, Visible.ONLY_VISIBLE);
     }
 

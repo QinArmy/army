@@ -153,17 +153,17 @@ abstract class RefSelectionImpl<E> extends OperationExpression<E> implements Ref
 
 
         @Override
-        public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
+        public SqlType map(ServerMeta meta) throws NotSupportDialectException {
             return null;
         }
 
         @Override
-        public Object convertBeforeBind(SqlType sqlDataType, Object nonNull) {
+        public Object beforeBind_(SqlType sqlType, Object nonNull) {
             return null;
         }
 
         @Override
-        public Object convertAfterGet(SqlType sqlDataType, Object nonNull) {
+        public Object afterGet_(SqlType sqlType, Object nonNull) {
             return null;
         }
 

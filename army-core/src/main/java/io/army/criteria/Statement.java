@@ -1,6 +1,6 @@
 package io.army.criteria;
 
-import io.army.DialectMode;
+import io.army.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.stmt.Stmt;
@@ -31,15 +31,15 @@ public interface Statement {
     }
 
 
-    default void mock(DialectMode mode) {
+    default void mock(Dialect mode) {
 
     }
 
-    default String mockAsString(DialectMode mode) {
+    default String mockAsString(Dialect mode) {
         throw new UnsupportedOperationException();
     }
 
-    default Stmt mockAsStmt(DialectMode mode) {
+    default Stmt mockAsStmt(Dialect mode) {
         throw new UnsupportedOperationException();
     }
 

@@ -1,20 +1,18 @@
 package io.army.mapping;
 
-import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.JDBCType;
 
 public final class BigDecimalType extends _ArmyNoInjectionMapping {
 
     public static final BigDecimalType INSTANCE = new BigDecimalType();
 
-    public static BigDecimalType build(Class<?> typeClass) {
-        if (typeClass != BigDecimal.class) {
-            throw AbstractMappingType.createNotSupportJavaTypeException(BigDecimalType.class, typeClass);
+    public static BigDecimalType create(Class<?> javaType) {
+        if (javaType != BigDecimal.class) {
+            throw errorJavaType(BigDecimalType.class, javaType);
         }
         return INSTANCE;
     }
@@ -29,20 +27,16 @@ public final class BigDecimalType extends _ArmyNoInjectionMapping {
         return BigDecimal.class;
     }
 
-    @Override
-    public JDBCType jdbcType() {
-        return JDBCType.DECIMAL;
-    }
 
     @Override
-    public SqlType sqlType(final ServerMeta serverMeta) throws NotSupportDialectException {
+    public SqlType map(final ServerMeta meta) {
         final SqlType sqlDataType;
-        switch (serverMeta.database()) {
+        switch (meta.database()) {
             case MySQL:
                 sqlDataType = MySqlType.DECIMAL;
                 break;
             case PostgreSQL:
-                sqlDataType = PostgreDataType.DECIMAL;
+                sqlDataType = PostgreType.DECIMAL;
                 break;
             case H2:
                 sqlDataType = H2DataType.DECIMAL;
@@ -51,19 +45,19 @@ public final class BigDecimalType extends _ArmyNoInjectionMapping {
                 sqlDataType = OracleDataType.NUMBER;
                 break;
             default:
-                throw noMappingError(serverMeta);
+                throw noMappingError(meta);
 
         }
         return sqlDataType;
     }
 
     @Override
-    public BigDecimal convertBeforeBind(SqlType sqlDataType, final Object nonNull) {
+    public BigDecimal beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
         final BigDecimal value;
         if (nonNull instanceof BigDecimal) {
             value = (BigDecimal) nonNull;
-        } else if (nonNull instanceof Long
-                || nonNull instanceof Integer
+        } else if (nonNull instanceof Integer
+                || nonNull instanceof Long
                 || nonNull instanceof Short
                 || nonNull instanceof Byte) {
             value = BigDecimal.valueOf(((Number) nonNull).longValue());
@@ -72,19 +66,23 @@ public final class BigDecimalType extends _ArmyNoInjectionMapping {
         } else if (nonNull instanceof Boolean) {
             value = (Boolean) nonNull ? BigDecimal.ONE : BigDecimal.ZERO;
         } else if (nonNull instanceof String) {
-            value = new BigDecimal((String) nonNull);
+            try {
+                value = new BigDecimal((String) nonNull);
+            } catch (NumberFormatException e) {
+                throw valueOutRange(sqlType, nonNull,e);
+            }
         } else {
-            throw notSupportConvertBeforeBind(nonNull);
+            throw outRangeOfSqlType(sqlType, nonNull);
         }
         return value;
     }
 
     @Override
-    public Object convertAfterGet(SqlType sqlDataType, final Object nonNull) {
+    public BigDecimal afterGet(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
         if (!(nonNull instanceof BigDecimal)) {
-            throw notSupportConvertAfterGet(nonNull);
+            throw errorJavaTypeForSqlType(sqlType, nonNull);
         }
-        return nonNull;
+        return (BigDecimal) nonNull;
     }
 
 

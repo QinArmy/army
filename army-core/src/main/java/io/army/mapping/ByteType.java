@@ -1,12 +1,23 @@
 package io.army.mapping;
 
-import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
+import io.army.sqltype.MySqlType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 public final class ByteType extends _ArmyNoInjectionMapping {
 
     public static final ByteType INSTANCE = new ByteType();
+
+    public static ByteType create(Class<?> javaType) {
+        if (javaType != Byte.class) {
+            throw errorJavaType(ByteType.class, javaType);
+        }
+        return INSTANCE;
+    }
 
     private ByteType() {
     }
@@ -17,17 +28,53 @@ public final class ByteType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
-        return null;
+    public SqlType map(ServerMeta meta) {
+        final SqlType sqlType;
+        switch (meta.database()) {
+            case MySQL:
+                sqlType = MySqlType.TINYINT;
+                break;
+            case PostgreSQL:
+                sqlType = PostgreType.SMALLINT;
+                break;
+            case Firebird:
+            case Oracle:
+            case H2:
+            default:
+                throw noMappingError(meta);
+        }
+        return sqlType;
     }
 
     @Override
-    public Object convertBeforeBind(SqlType sqlDataType, Object nonNull) {
-        return null;
+    public Byte beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+        return (byte) IntegerType.beforeBind(sqlType, nonNull, Byte.MIN_VALUE, Byte.MAX_VALUE);
     }
 
+
     @Override
-    public Object convertAfterGet(SqlType sqlDataType, Object nonNull) {
-        return null;
+    public Byte afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+        final byte value;
+        switch (sqlType.database()) {
+            case MySQL: {
+                if (!(nonNull instanceof Byte)) {
+                    throw errorJavaTypeForSqlType(sqlType, nonNull);
+                }
+                value = (Byte) nonNull;
+            }
+            break;
+            case PostgreSQL: {
+                if (!(nonNull instanceof Short)) {
+                    throw errorJavaTypeForSqlType(sqlType, nonNull);
+                }
+                value = ((Short) nonNull).byteValue();
+            }
+            break;
+            default:
+                throw errorJavaTypeForSqlType(sqlType, nonNull);
+        }
+        return value;
     }
+
+
 }

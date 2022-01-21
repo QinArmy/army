@@ -1,7 +1,5 @@
 package io.army.mapping;
 
-import io.army.dialect.DialectEnvironment;
-import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ParamMeta;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.SqlType;
@@ -18,21 +16,23 @@ public interface MappingType extends ParamMeta {
         throw new UnsupportedOperationException();
     }
 
-    SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException;
+    SqlType map(ServerMeta meta);
 
-    default Object convertBeforeBind(SqlType sqlDataType, DialectEnvironment env, Object nonNull) {
+    default Object beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull) {
         throw new UnsupportedOperationException();
     }
 
-    default Object convertAfterGet(SqlType sqlDataType, DialectEnvironment env, Object nonNull) {
+    default Object afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
         throw new UnsupportedOperationException();
     }
 
-    default Object convertBeforeBind(SqlType sqlDataType, Object nonNull) {
+    @Deprecated
+    default Object beforeBind_(SqlType sqlType, Object nonNull) {
         throw new UnsupportedOperationException();
     }
 
-    default Object convertAfterGet(SqlType sqlDataType, Object nonNull) {
+    @Deprecated
+    default Object afterGet_(SqlType sqlType, Object nonNull) {
         throw new UnsupportedOperationException();
     }
 

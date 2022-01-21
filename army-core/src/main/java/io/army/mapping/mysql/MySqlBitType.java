@@ -1,23 +1,24 @@
 package io.army.mapping.mysql;
 
 import io.army.dialect.Database;
-import io.army.dialect.NotSupportDialectException;
+import io.army.mapping.MappingEnvironment;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
 
-import java.sql.JDBCType;
-import java.time.OffsetTime;
 import java.util.BitSet;
 
+/**
+ * @see Long
+ */
 public final class MySqlBitType extends _ArmyNoInjectionMapping {
 
     public static final MySqlBitType INSTANCE = new MySqlBitType();
 
-    public static MySqlBitType build(Class<?> javaType) {
-        if (javaType != OffsetTime.class) {
-            throw createNotSupportJavaTypeException(MySqlBitType.class, javaType);
+    public static MySqlBitType create(Class<?> javaType) {
+        if (javaType != Long.class) {
+            throw errorJavaType(MySqlBitType.class, javaType);
         }
         return INSTANCE;
     }
@@ -32,20 +33,27 @@ public final class MySqlBitType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public JDBCType jdbcType() {
-        return JDBCType.BIT;
-    }
-
-    @Override
-    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
-        if (serverMeta.database() != Database.MySQL) {
-            throw noMappingError(serverMeta);
+    public SqlType map(ServerMeta meta) {
+        if (meta.database() != Database.MySQL) {
+            throw noMappingError(meta);
         }
         return MySqlType.BIT;
     }
 
     @Override
-    public Object convertBeforeBind(SqlType sqlDataType, final Object nonNull) {
+    public Long beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+        return beforeBind(sqlType, nonNull);
+    }
+
+    @Override
+    public Long afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+        if (!(nonNull instanceof Long)) {
+            throw errorJavaTypeForSqlType(sqlType, nonNull);
+        }
+        return (Long) nonNull;
+    }
+
+    public static long beforeBind(SqlType sqlType, final Object nonNull) {
         final long value;
         if (nonNull instanceof Long) {
             value = (Long) nonNull;
@@ -58,27 +66,19 @@ public final class MySqlBitType extends _ArmyNoInjectionMapping {
         } else if (nonNull instanceof BitSet) {
             final BitSet v = (BitSet) nonNull;
             if (v.length() > 64) {
-                throw outRangeOfType(nonNull, null);
+                throw valueOutRange(sqlType, nonNull, null);
             }
             value = v.toLongArray()[0];
         } else if (nonNull instanceof String) {
             try {
                 value = Long.parseUnsignedLong((String) nonNull, 2);
             } catch (NumberFormatException e) {
-                throw outRangeOfType(nonNull, e);
+                throw valueOutRange(sqlType, nonNull, e);
             }
         } else {
-            throw notSupportConvertBeforeBind(nonNull);
+            throw outRangeOfSqlType(sqlType, nonNull);
         }
         return value;
-    }
-
-    @Override
-    public Object convertAfterGet(SqlType sqlDataType, Object nonNull) {
-        if (!(nonNull instanceof Long)) {
-            throw notSupportConvertAfterGet(nonNull);
-        }
-        return nonNull;
     }
 
 

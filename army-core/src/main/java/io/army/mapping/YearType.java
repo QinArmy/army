@@ -1,21 +1,22 @@
 package io.army.mapping;
 
-import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySqlType;
-import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
-import java.sql.JDBCType;
 import java.time.Year;
 
+/**
+ * @see Year
+ */
 public final class YearType extends _ArmyNoInjectionMapping {
 
     public static final YearType INSTANCE = new YearType();
 
-    public static YearType build(Class<?> javaType) {
+    public static YearType create(Class<?> javaType) {
         if (javaType != Year.class) {
-            throw createNotSupportJavaTypeException(YearType.class, javaType);
+            throw errorJavaType(YearType.class, javaType);
         }
         return INSTANCE;
     }
@@ -29,62 +30,75 @@ public final class YearType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public JDBCType jdbcType() {
-        return JDBCType.INTEGER;
-    }
-
-    @Override
-    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
-        final SqlType sqlDataType;
-        switch (serverMeta.database()) {
+    public SqlType map(ServerMeta meta) {
+        final SqlType sqlType;
+        switch (meta.database()) {
             case MySQL:
-                sqlDataType = MySqlType.YEAR;
+                sqlType = MySqlType.YEAR;
                 break;
             case PostgreSQL:
-                sqlDataType = PostgreDataType.INTEGER;
+                sqlType = PostgreType.INTEGER;
                 break;
             default:
-                throw noMappingError(serverMeta);
+                throw noMappingError(meta);
 
         }
-        return sqlDataType;
+        return sqlType;
     }
 
     @Override
-    public Object convertBeforeBind(SqlType sqlDataType, final Object nonNull) {
-        final int value;
-        if (nonNull instanceof Year) {
-            value = ((Year) nonNull).getValue();
-        } else if (nonNull instanceof Integer || nonNull instanceof Short) {
-            value = ((Number) nonNull).intValue();
-        } else {
-            throw notSupportConvertBeforeBind(nonNull);
+    public Object beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+        final Object value;
+        switch (sqlType.database()) {
+            case MySQL: {
+                if (nonNull instanceof Year) {
+                    value = nonNull;
+                } else if (nonNull instanceof Integer || nonNull instanceof Short) {
+                    value = Year.of(((Number) nonNull).intValue());
+                } else {
+                    throw outRangeOfSqlType(sqlType, nonNull);
+                }
+            }
+            break;
+            case PostgreSQL: {
+                if (!(nonNull instanceof Integer)) {
+                    throw outRangeOfSqlType(sqlType, nonNull);
+                }
+                value = nonNull;
+            }
+            break;
+            case Firebird:
+            case Oracle:
+            case H2:
+            default:
+                throw outRangeOfSqlType(sqlType, nonNull);
+
         }
         return value;
     }
 
     @Override
-    public Object convertAfterGet(SqlType sqlDataType, Object nonNull) {
+    public Year afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
         final Year value;
-        switch (sqlDataType.database()) {
+        switch (sqlType.database()) {
             case MySQL: {
                 if (!(nonNull instanceof Year)) {
-                    throw notSupportConvertAfterGet(nonNull);
+                    throw errorJavaTypeForSqlType(sqlType, nonNull);
                 }
                 value = (Year) nonNull;
             }
             break;
-            case PostgreSQL:
-            case H2:
-            case Oracle: {
+            case PostgreSQL: {
                 if (!(nonNull instanceof Integer)) {
-                    throw notSupportConvertAfterGet(nonNull);
+                    throw errorJavaTypeForSqlType(sqlType, nonNull);
                 }
                 value = Year.of((Integer) nonNull);
             }
             break;
+            case H2:
+            case Oracle:
             default:
-                throw notSupportConvertAfterGet(nonNull);
+                throw errorJavaTypeForSqlType(sqlType, nonNull);
         }
         return value;
     }

@@ -1,22 +1,24 @@
 package io.army.mapping;
 
-import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySqlType;
-import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
-import java.sql.JDBCType;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 
+/**
+ * @see LocalDate
+ */
 public final class LocalDateType extends _ArmyNoInjectionMapping {
 
 
     public static final LocalDateType INSTANCE = new LocalDateType();
 
-    public static LocalDateType build(Class<?> javaType) {
+    public static LocalDateType create(Class<?> javaType) {
         if (javaType != LocalDate.class) {
-            throw createNotSupportJavaTypeException(LocalDateType.class, javaType);
+            throw errorJavaType(LocalDateType.class, javaType);
         }
         return INSTANCE;
     }
@@ -31,45 +33,46 @@ public final class LocalDateType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public JDBCType jdbcType() {
-        return JDBCType.DATE;
-    }
-
-    @Override
-    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
-        final SqlType sqlDataType;
-        switch (serverMeta.database()) {
+    public SqlType map(ServerMeta meta) {
+        final SqlType sqlType;
+        switch (meta.database()) {
             case MySQL:
-                sqlDataType = MySqlType.DATE;
+                sqlType = MySqlType.DATE;
                 break;
             case PostgreSQL:
-                sqlDataType = PostgreDataType.DATE;
+                sqlType = PostgreType.DATE;
                 break;
             default:
-                throw noMappingError(serverMeta);
+                throw noMappingError(meta);
 
         }
-        return sqlDataType;
+        return sqlType;
     }
 
     @Override
-    public Object convertBeforeBind(SqlType sqlDataType, Object nonNull) {
+    public LocalDate beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull) {
         final LocalDate value;
         if (nonNull instanceof LocalDate) {
             value = (LocalDate) nonNull;
+        } else if (nonNull instanceof String) {
+            try {
+                value = LocalDate.parse((String) nonNull);
+            } catch (DateTimeException e) {
+                throw valueOutRange(sqlType, nonNull, e);
+            }
         } else {
-            throw notSupportConvertBeforeBind(nonNull);
+            throw outRangeOfSqlType(sqlType, nonNull);
         }
         return value;
     }
 
     @Override
-    public Object convertAfterGet(SqlType sqlDataType, Object nonNull) {
+    public LocalDate afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
         if (!(nonNull instanceof LocalDate)) {
-            throw notSupportConvertAfterGet(nonNull);
+            throw errorJavaTypeForSqlType(sqlType, nonNull);
         }
-        return nonNull;
+        return (LocalDate) nonNull;
     }
-    
-    
+
+
 }

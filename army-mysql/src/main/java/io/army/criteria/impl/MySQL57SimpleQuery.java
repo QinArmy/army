@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.DialectMode;
+import io.army.Dialect;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.mysql._MySQL57Query;
 import io.army.criteria.mysql.MySQL57Query;
@@ -244,12 +244,12 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     @Override
-    final DialectMode defaultDialect() {
-        return DialectMode.MySQL57;
+    final Dialect defaultDialect() {
+        return Dialect.MySQL57;
     }
 
     @Override
-    final void validateDialect(DialectMode mode) {
+    final void validateDialect(Dialect mode) {
         if (mode.database() != Database.MySQL) {
             throw new IllegalArgumentException(String.format("Don't support dialect[%s]", mode));
         }

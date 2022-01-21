@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.DialectMode;
+import io.army.Dialect;
 import io.army.beans.ReadWrapper;
 import io.army.criteria.Statement;
 import io.army.criteria.Update;
@@ -94,7 +94,7 @@ abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA,
     public String toString() {
         final String s;
         if (this.isPrepared()) {
-            s = this.mockAsString(DialectMode.MySQL57);
+            s = this.mockAsString(Dialect.MySQL57);
         } else {
             s = super.toString();
         }
@@ -102,12 +102,12 @@ abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA,
     }
 
     @Override
-    public final void mock(DialectMode mode) {
+    public final void mock(Dialect mode) {
         System.out.println(this.mockAsString(mode));
     }
 
     @Override
-    public final String mockAsString(DialectMode mode) {
+    public final String mockAsString(Dialect mode) {
         final Stmt stmt;
         stmt = this.mockAsStmt(mode);
         final StringBuilder builder = new StringBuilder();
@@ -125,7 +125,7 @@ abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA,
     }
 
     @Override
-    public final Stmt mockAsStmt(DialectMode mode) {
+    public final Stmt mockAsStmt(Dialect mode) {
         final Stmt stmt;
         stmt = _MockDialects.from(mode).update(this, Visible.ONLY_VISIBLE);
         if (stmt instanceof SimpleStmt) {

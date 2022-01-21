@@ -4,17 +4,20 @@ import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.SqlType;
 
-import java.sql.JDBCType;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.YearMonth;
 
+/**
+ * @see {@link YearMonth}
+ */
 public final class YearMonthType extends _ArmyNoInjectionMapping {
 
     public static final YearMonthType INSTANCE = new YearMonthType();
 
-    public static YearMonthType build(Class<?> javaType) {
+    public static YearMonthType create(Class<?> javaType) {
         if (javaType != YearMonth.class) {
-            throw createNotSupportJavaTypeException(YearMonthType.class, javaType);
+            throw errorJavaType(YearMonthType.class, javaType);
         }
         return INSTANCE;
     }
@@ -29,27 +32,31 @@ public final class YearMonthType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public JDBCType jdbcType() {
-        return JDBCType.DATE;
+    public SqlType map(ServerMeta meta) throws NotSupportDialectException {
+        return LocalDateType.INSTANCE.map(meta);
     }
 
     @Override
-    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
-        return LocalDateType.INSTANCE.sqlType(serverMeta);
-    }
-
-    @Override
-    public Object convertBeforeBind(SqlType sqlDataType, Object nonNull) {
-        if (!(nonNull instanceof YearMonth)) {
-            throw notSupportConvertBeforeBind(nonNull);
+    public LocalDate beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+        final YearMonth value;
+        if (nonNull instanceof YearMonth) {
+            value = (YearMonth) nonNull;
+        } else if (nonNull instanceof String) {
+            try {
+                value = YearMonth.parse((String) nonNull);
+            } catch (DateTimeException e) {
+                throw valueOutRange(sqlType, nonNull, e);
+            }
+        } else {
+            throw outRangeOfSqlType(sqlType, nonNull);
         }
-        return nonNull;
+        return LocalDate.of(value.getYear(), value.getMonth(), 1);
     }
 
     @Override
-    public Object convertAfterGet(SqlType sqlDataType, Object nonNull) {
+    public YearMonth afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
         if (!(nonNull instanceof LocalDate)) {
-            throw notSupportConvertAfterGet(nonNull);
+            throw errorJavaTypeForSqlType(sqlType, nonNull);
         }
         final LocalDate v = (LocalDate) nonNull;
         return YearMonth.of(v.getYear(), v.getMonth());

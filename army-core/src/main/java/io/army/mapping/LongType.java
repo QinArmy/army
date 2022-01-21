@@ -1,23 +1,21 @@
 package io.army.mapping;
 
-import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySqlType;
-import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.JDBCType;
 
 public final class LongType extends _ArmyNoInjectionMapping {
 
     public static final LongType INSTANCE = new LongType();
 
 
-    public static LongType build(Class<?> javaType) {
+    public static LongType create(Class<?> javaType) {
         if (javaType != Long.class) {
-            throw createNotSupportJavaTypeException(LongType.class, javaType);
+            throw errorJavaType(LongType.class, javaType);
         }
         return INSTANCE;
     }
@@ -31,67 +29,73 @@ public final class LongType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public JDBCType jdbcType() {
-        return JDBCType.BIGINT;
-    }
-
-    @Override
-    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
-        final SqlType sqlDataType;
-        switch (serverMeta.database()) {
+    public SqlType map(ServerMeta meta) {
+        final SqlType sqlType;
+        switch (meta.database()) {
             case MySQL:
-                sqlDataType = MySqlType.BIGINT;
+                sqlType = MySqlType.BIGINT;
                 break;
             case PostgreSQL:
-                sqlDataType = PostgreDataType.BIGINT;
+                sqlType = PostgreType.BIGINT;
                 break;
             default:
-                throw noMappingError(serverMeta);
+                throw noMappingError(meta);
 
         }
-        return sqlDataType;
+        return sqlType;
     }
 
     @Override
-    public Object convertBeforeBind(SqlType sqlDataType, Object nonNull) {
+    public Long beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+        return beforeBind(sqlType, nonNull, Long.MIN_VALUE, Long.MAX_VALUE);
+    }
+
+    @Override
+    public Long afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+        if (!(nonNull instanceof Long)) {
+            throw errorJavaTypeForSqlType(sqlType, nonNull);
+        }
+        return (Long) nonNull;
+    }
+
+    public static long beforeBind(SqlType sqlType, final Object nonNull, final long min, final long max) {
         final long value;
         if (nonNull instanceof Long) {
             value = (Long) nonNull;
-        } else if (nonNull instanceof Integer || nonNull instanceof Short || nonNull instanceof Byte) {
+        } else if (nonNull instanceof Integer
+                || nonNull instanceof Short
+                || nonNull instanceof Byte) {
             value = ((Number) nonNull).longValue();
+            if (value < min || value > max) {
+                throw valueOutRange(sqlType, nonNull, null);
+            }
         } else if (nonNull instanceof BigDecimal) {
             final BigDecimal v = ((BigDecimal) nonNull).stripTrailingZeros();
             if (v.scale() != 0
-                    || v.compareTo(BigDecimal.valueOf(Long.MAX_VALUE)) > 0
-                    || v.compareTo(BigDecimal.valueOf(Long.MIN_VALUE)) < 0) {
-                throw outRangeOfType(nonNull, null);
+                    || v.compareTo(BigDecimal.valueOf(max)) > 0
+                    || v.compareTo(BigDecimal.valueOf(min)) < 0) {
+                throw valueOutRange(sqlType, nonNull, null);
             }
             value = v.longValue();
         } else if (nonNull instanceof BigInteger) {
             final BigInteger v = ((BigInteger) nonNull);
-            if (v.compareTo(BigInteger.valueOf(Long.MAX_VALUE)) > 0
-                    || v.compareTo(BigInteger.valueOf(Long.MIN_VALUE)) < 0) {
-                throw outRangeOfType(nonNull, null);
+            if (v.compareTo(BigInteger.valueOf(max)) > 0 || v.compareTo(BigInteger.valueOf(min)) < 0) {
+                throw valueOutRange(sqlType, nonNull, null);
             }
             value = v.longValue();
         } else if (nonNull instanceof String) {
             try {
                 value = Long.parseLong((String) nonNull);
             } catch (NumberFormatException e) {
-                throw outRangeOfType(nonNull, e);
+                throw valueOutRange(sqlType, nonNull, e);
+            }
+            if (value < min || value > max) {
+                throw valueOutRange(sqlType, nonNull, null);
             }
         } else {
-            throw notSupportConvertBeforeBind(nonNull);
+            throw outRangeOfSqlType(sqlType, nonNull);
         }
         return value;
-    }
-
-    @Override
-    public Object convertAfterGet(SqlType sqlDataType, Object nonNull) {
-        if (!(nonNull instanceof Integer)) {
-            throw notSupportConvertAfterGet(nonNull);
-        }
-        return nonNull;
     }
 
 

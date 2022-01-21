@@ -1,22 +1,32 @@
 package io.army.mapping;
 
-import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.OracleDataType;
-import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
+import io.army.type.LongString;
+import io.army.util.TimeUtils;
 
-import java.sql.JDBCType;
+import java.math.BigDecimal;
+import java.time.*;
+import java.time.temporal.Temporal;
 
+/**
+ * <p>
+ * This class representing the mapping from {@link String} to {@link SqlType}.
+ * </p>
+ *
+ * @see String
+ */
 public final class StringType extends AbstractMappingType {
 
 
     public static final StringType INSTANCE = new StringType();
 
-    public static StringType build(Class<?> javaType) {
+    public static StringType create(Class<?> javaType) {
         if (javaType != String.class) {
-            throw createNotSupportJavaTypeException(StringType.class, javaType);
+            throw errorJavaType(StringType.class, javaType);
         }
         return INSTANCE;
     }
@@ -30,47 +40,79 @@ public final class StringType extends AbstractMappingType {
     }
 
     @Override
-    public JDBCType jdbcType() {
-        return JDBCType.VARCHAR;
-    }
-
-    @Override
-    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
+    public SqlType map(ServerMeta meta) {
         final SqlType sqlDataType;
-        switch (serverMeta.database()) {
+        switch (meta.database()) {
             case MySQL:
                 sqlDataType = MySqlType.VARCHAR;
                 break;
             case PostgreSQL:
-                sqlDataType = PostgreDataType.VARCHAR;
+                sqlDataType = PostgreType.VARCHAR;
                 break;
             case Oracle:
                 sqlDataType = OracleDataType.VARCHAR2;
                 break;
+            case Firebird:
+            case H2:
             default:
-                throw noMappingError(serverMeta);
+                throw noMappingError(meta);
 
         }
         return sqlDataType;
     }
 
     @Override
-    public Object convertBeforeBind(SqlType sqlDataType, Object nonNull) {
+    public String beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+        return beforeBind(sqlType, nonNull);
+    }
+
+    @Override
+    public String afterGet(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
         final String value;
         if (nonNull instanceof String) {
             value = (String) nonNull;
+        } else if (nonNull instanceof LongString) {
+            final LongString v = (LongString) nonNull;
+            if (!(v.isString())) {
+                throw errorValueForSqlType(sqlType, nonNull, null);
+            }
+            value = v.asString();
         } else {
-            throw notSupportConvertBeforeBind(nonNull);
+            throw errorJavaTypeForSqlType(sqlType, nonNull);
         }
         return value;
     }
 
-    @Override
-    public Object convertAfterGet(SqlType sqlDataType, Object nonNull) {
-        if (!(nonNull instanceof String)) {
-            throw notSupportConvertAfterGet(nonNull);
+    public static String beforeBind(SqlType sqlType, final Object nonNull) {
+        final String value;
+        if (nonNull instanceof String) {
+            value = (String) nonNull;
+        } else if (nonNull instanceof BigDecimal) {
+            value = ((BigDecimal) nonNull).toPlainString();
+        } else if (nonNull instanceof Number) {
+            value = nonNull.toString();
+        } else if (nonNull instanceof Enum) {
+            value = ((Enum<?>) nonNull).name();
+        } else if (!(nonNull instanceof Temporal)) {
+            throw outRangeOfSqlType(sqlType, nonNull);
+        } else if (nonNull instanceof LocalDate) {
+            value = nonNull.toString();
+        } else if (nonNull instanceof LocalDateTime) {
+            value = ((LocalDateTime) nonNull).format(TimeUtils.getDatetimeFormatter(6));
+        } else if (nonNull instanceof LocalTime) {
+            value = ((LocalTime) nonNull).format(TimeUtils.getTimeFormatter(6));
+        } else if (nonNull instanceof OffsetDateTime) {
+            value = ((OffsetDateTime) nonNull).format(TimeUtils.getDatetimeOffsetFormatter(6));
+        } else if (nonNull instanceof ZonedDateTime) {
+            value = ((ZonedDateTime) nonNull).format(TimeUtils.getDatetimeOffsetFormatter(6));
+        } else if (nonNull instanceof OffsetTime) {
+            value = ((OffsetTime) nonNull).format(TimeUtils.getOffsetTimeFormatter(6));
+        } else if (nonNull instanceof YearMonth || nonNull instanceof Year) {
+            value = nonNull.toString();
+        } else {
+            throw outRangeOfSqlType(sqlType, nonNull);
         }
-        return nonNull;
+        return value;
     }
 
 

@@ -1,5 +1,6 @@
 package io.army.dialect.mysql;
 
+import io.army.dialect.Constant;
 import io.army.dialect._Literals;
 import io.army.sqltype.SqlType;
 import io.army.util.StringUtils;
@@ -10,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.DateTimeException;
 import java.time.Year;
 import java.util.BitSet;
+import java.util.Set;
 
 abstract class MySQLLiterals extends _Literals {
 
@@ -19,7 +21,7 @@ abstract class MySQLLiterals extends _Literals {
         if (nonNull instanceof Boolean) {
             literal = (Boolean) nonNull ? "'T'" : "'F'";
         } else if (!(nonNull instanceof String)) {
-            throw _Exceptions.errorLiteralType(sqlType, nonNull);
+            throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         } else if (hexEscapes) {
             final byte[] jsonBytes = ((String) nonNull).getBytes(StandardCharsets.UTF_8);
             final StringBuilder builder = new StringBuilder((jsonBytes.length << 1) + 10)
@@ -42,7 +44,7 @@ abstract class MySQLLiterals extends _Literals {
 
     static String binary(final SqlType sqlType, final Object nonNull) {
         if (!(nonNull instanceof byte[])) {
-            throw _Exceptions.errorLiteralType(sqlType, nonNull);
+            throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
         final byte[] array = (byte[]) nonNull;
         StringBuilder builder = new StringBuilder()
@@ -66,17 +68,17 @@ abstract class MySQLLiterals extends _Literals {
         } else if (nonNull instanceof BitSet) {
             final BitSet v = (BitSet) nonNull;
             if (v.length() > 64) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             value = bitSet(sqlType, nonNull, true);
         } else if (nonNull instanceof String) {
             final String v = (String) nonNull;
             if (!StringUtils.isBinary(v)) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             value = v;
         } else {
-            throw _Exceptions.errorLiteralType(sqlType, nonNull);
+            throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
         return "B'" + value + QUOTE_CHAR;
     }
@@ -92,14 +94,43 @@ abstract class MySQLLiterals extends _Literals {
             try {
                 Year.parse((String) nonNull);
             } catch (DateTimeException e) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = (String) nonNull;
         } else {
-            throw _Exceptions.errorLiteralType(sqlType, nonNull);
+            throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
         return literal;
 
+    }
+
+    static String setType(final SqlType sqlType, final Object nonNull) {
+        if (!(nonNull instanceof Set)) {
+            throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
+        }
+        final StringBuilder builder = new StringBuilder()
+                .append(QUOTE_CHAR);
+        Class<?> enumClass = null;
+        int index = 0;
+        for (Object e : (Set<?>) nonNull) {
+            if (!(e instanceof Enum)) {
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
+            }
+            if (enumClass == null) {
+                enumClass = e.getClass();
+            } else if (enumClass.isSynthetic()) {
+
+            } else if (!enumClass.isAssignableFrom(e.getClass())) {
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
+            }
+            if (index > 0) {
+                builder.append(Constant.COMMA);
+            }
+            builder.append(((Enum<?>) e).name());
+            index++;
+        }
+        return builder.append(QUOTE_CHAR)
+                .toString();
     }
 
 

@@ -1,18 +1,15 @@
 package io.army.mapping;
 
-import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.*;
-
-import java.sql.JDBCType;
 
 public final class ByteArrayType extends AbstractMappingType {
 
     public static final ByteArrayType INSTANCE = new ByteArrayType();
 
-    public static ByteArrayType build(Class<?> javaType) {
+    public static ByteArrayType create(Class<?> javaType) {
         if (javaType != byte[].class) {
-            throw createNotSupportJavaTypeException(ByteArrayType.class, javaType);
+            throw errorJavaType(ByteArrayType.class, javaType);
         }
         return INSTANCE;
     }
@@ -26,19 +23,14 @@ public final class ByteArrayType extends AbstractMappingType {
     }
 
     @Override
-    public JDBCType jdbcType() {
-        return JDBCType.VARBINARY;
-    }
-
-    @Override
-    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
+    public SqlType map(ServerMeta meta) {
         final SqlType sqlDataType;
-        switch (serverMeta.database()) {
+        switch (meta.database()) {
             case MySQL:
                 sqlDataType = MySqlType.VARBINARY;
                 break;
             case PostgreSQL:
-                sqlDataType = PostgreDataType.BYTEA;
+                sqlDataType = PostgreType.BYTEA;
                 break;
             case Oracle:
                 sqlDataType = OracleDataType.BLOB;
@@ -47,31 +39,28 @@ public final class ByteArrayType extends AbstractMappingType {
                 sqlDataType = H2DataType.VARBINARY;
                 break;
             default:
-                throw noMappingError(serverMeta);
+                throw noMappingError(meta);
 
         }
         return sqlDataType;
     }
 
     @Override
-    public Object convertBeforeBind(SqlType sqlDataType, final Object nonNull) {
-        final byte[] value;
-        if (nonNull instanceof byte[]) {
-            value = (byte[]) nonNull;
-        } else {
-            throw notSupportConvertBeforeBind(nonNull);
+    public byte[] beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+        if (!(nonNull instanceof byte[])) {
+            throw outRangeOfSqlType(sqlType, nonNull);
         }
-        return value;
+        return (byte[]) nonNull;
     }
 
     @Override
-    public Object convertAfterGet(SqlType sqlDataType, final Object nonNull) {
+    public byte[] afterGet(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
         final byte[] value;
-        switch (sqlDataType.database()) {
+        switch (sqlType.database()) {
             case MySQL:
             case H2: {
                 if (!(nonNull instanceof byte[])) {
-                    throw notSupportConvertAfterGet(nonNull);
+                    throw errorJavaTypeForSqlType(sqlType, nonNull);
                 }
                 value = (byte[]) nonNull;
             }
@@ -79,7 +68,7 @@ public final class ByteArrayType extends AbstractMappingType {
             case PostgreSQL://TODO
             case Oracle://TODO
             default:
-                throw notSupportConvertAfterGet(nonNull);
+                throw errorJavaTypeForSqlType(sqlType, nonNull);
         }
         return value;
     }

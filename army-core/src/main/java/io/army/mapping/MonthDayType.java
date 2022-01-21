@@ -1,20 +1,35 @@
 package io.army.mapping;
 
-import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.SqlType;
 
-import java.sql.JDBCType;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.MonthDay;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.util.Locale;
 
+import static java.time.temporal.ChronoField.DAY_OF_MONTH;
+import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
+
+/**
+ * @see MonthDay
+ */
 public final class MonthDayType extends _ArmyNoInjectionMapping {
 
     public static final MonthDayType INSTANCE = new MonthDayType();
 
-    public static MonthDayType build(Class<?> javaType) {
+    public static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder()
+            .appendValue(MONTH_OF_YEAR, 2)
+            .appendLiteral('-')
+            .appendValue(DAY_OF_MONTH, 2)
+            .toFormatter(Locale.ENGLISH);
+
+
+    public static MonthDayType create(Class<?> javaType) {
         if (javaType != MonthDay.class) {
-            throw createNotSupportJavaTypeException(YearMonthType.class, javaType);
+            throw errorJavaType(MonthDayType.class, javaType);
         }
         return INSTANCE;
     }
@@ -23,34 +38,42 @@ public final class MonthDayType extends _ArmyNoInjectionMapping {
     private MonthDayType() {
     }
 
-
     @Override
     public Class<?> javaType() {
         return MonthDay.class;
     }
 
     @Override
-    public JDBCType jdbcType() {
-        return JDBCType.DATE;
+    public SqlType map(ServerMeta meta) {
+        return LocalDateType.INSTANCE.map(meta);
     }
 
     @Override
-    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
-        return LocalDateType.INSTANCE.sqlType(serverMeta);
-    }
-
-    @Override
-    public Object convertBeforeBind(SqlType sqlDataType, Object nonNull) {
-        if (!(nonNull instanceof MonthDay)) {
-            throw notSupportConvertBeforeBind(nonNull);
+    public LocalDate beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+        final MonthDay value;
+        if (nonNull instanceof MonthDay) {
+            value = (MonthDay) nonNull;
+        } else if (nonNull instanceof String) {
+            try {
+                final String v = (String) nonNull;
+                if (v.startsWith("--")) {
+                    value = MonthDay.parse(v);
+                } else {
+                    value = MonthDay.parse(v, FORMATTER);
+                }
+            } catch (DateTimeException e) {
+                throw valueOutRange(sqlType, nonNull, e);
+            }
+        } else {
+            throw outRangeOfSqlType(sqlType, nonNull);
         }
-        return nonNull;
+        return LocalDate.of(1970, value.getMonth(), value.getDayOfMonth());
     }
 
     @Override
-    public Object convertAfterGet(SqlType sqlDataType, Object nonNull) {
+    public MonthDay afterGet(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
         if (!(nonNull instanceof LocalDate)) {
-            throw notSupportConvertAfterGet(nonNull);
+            throw errorJavaTypeForSqlType(sqlType, nonNull);
         }
         final LocalDate v = (LocalDate) nonNull;
         return MonthDay.of(v.getMonth(), v.getDayOfMonth());

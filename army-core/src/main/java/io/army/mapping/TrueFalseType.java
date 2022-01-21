@@ -1,16 +1,16 @@
 package io.army.mapping;
 
+import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
-import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.OracleDataType;
-import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
-import io.army.util._Exceptions;
 
-import java.sql.JDBCType;
-
+/**
+ * {@link Boolean}
+ */
 public final class TrueFalseType extends _ArmyNoInjectionMapping {
 
     public static final String T = "T";
@@ -19,9 +19,9 @@ public final class TrueFalseType extends _ArmyNoInjectionMapping {
 
     public static final TrueFalseType INSTANCE = new TrueFalseType();
 
-    public static TrueFalseType build(Class<?> typeClass) {
-        if (typeClass != Boolean.class) {
-            throw AbstractMappingType.createNotSupportJavaTypeException(TrueFalseType.class, typeClass);
+    public static TrueFalseType create(Class<?> javaType) {
+        if (javaType != Boolean.class) {
+            throw errorJavaType(TrueFalseType.class, javaType);
         }
         return INSTANCE;
     }
@@ -36,37 +36,33 @@ public final class TrueFalseType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public JDBCType jdbcType() {
-        return JDBCType.BOOLEAN;
-    }
-
-    @Override
-    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
-        final SqlType sqlDataType;
-        switch (serverMeta.database()) {
+    public SqlType map(ServerMeta meta) {
+        final SqlType sqlType;
+        switch (meta.database()) {
             case MySQL:
-                sqlDataType = MySqlType.CHAR;
+                sqlType = MySqlType.CHAR;
                 break;
             case PostgreSQL:
-                sqlDataType = PostgreDataType.BOOLEAN;
+                sqlType = PostgreType.BOOLEAN;
                 break;
             case Oracle:
-                sqlDataType = OracleDataType.CHAR;
+                sqlType = OracleDataType.CHAR;
                 break;
             default:
-                throw noMappingError(serverMeta);
+                throw noMappingError(meta);
 
         }
-        return sqlDataType;
+        return sqlType;
     }
 
     @Override
-    public Object convertBeforeBind(SqlType sqlDataType, final Object nonNull) {
+    public Object beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
         if (!(nonNull instanceof Boolean)) {
-            throw _Exceptions.javaTypeUnsupportedByMapping(this, nonNull);
+            String m = String.format("%s support only %s", TrueFalseType.class.getName(), Boolean.class.getName());
+            throw outRangeOfSqlType(sqlType, nonNull, new CriteriaException(m));
         }
         final Object value;
-        if (sqlDataType.database() == Database.PostgreSQL) {
+        if (sqlType.database() == Database.PostgreSQL) {
             value = nonNull;
         } else {
             value = ((Boolean) nonNull) ? T : F;
@@ -75,23 +71,23 @@ public final class TrueFalseType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Boolean convertAfterGet(SqlType sqlDataType, final Object nonNull) {
+    public Boolean afterGet(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
         final Boolean value;
-        if (sqlDataType.database() == Database.PostgreSQL) {
+        if (sqlType.database() == Database.PostgreSQL) {
             if (!(nonNull instanceof Boolean)) {
-                throw notSupportConvertAfterGet(nonNull);
+                throw errorJavaTypeForSqlType(sqlType, nonNull);
             }
             value = (Boolean) nonNull;
         } else {
             if (!(nonNull instanceof String)) {
-                throw notSupportConvertAfterGet(nonNull);
+                throw errorJavaTypeForSqlType(sqlType, nonNull);
             }
             if (T.equalsIgnoreCase((String) nonNull)) {
                 value = Boolean.TRUE;
             } else if (F.equalsIgnoreCase((String) nonNull)) {
                 value = Boolean.FALSE;
             } else {
-                throw outRangeOfType(nonNull, null);
+                throw errorJavaTypeForSqlType(sqlType, nonNull);
             }
         }
         return value;

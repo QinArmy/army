@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.DialectMode;
+import io.army.Dialect;
 import io.army.criteria.Delete;
 import io.army.criteria.Insert;
 import io.army.criteria.Update;
@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class StandardCriteriaUnitTests {
                 .values(this::createRegionList)
                 .asInsert();
 
-        for (DialectMode mode : DialectMode.values()) {
+        for (Dialect mode : Dialect.values()) {
             LOG.debug("{} {}", mode.name(), insert.mockAsString(mode));
         }
 
@@ -47,7 +48,7 @@ public class StandardCriteriaUnitTests {
                 .values(this::createProvinceList)
                 .asInsert();
 
-        for (DialectMode mode : DialectMode.values()) {
+        for (Dialect mode : Dialect.values()) {
             LOG.debug("{} {}", mode.name(), insert.mockAsString(mode));
         }
     }
@@ -65,7 +66,7 @@ public class StandardCriteriaUnitTests {
                 .and(ChinaRegion_.regionGdp.plus(addGdp).greatEqual(BigDecimal.ZERO))
                 .asUpdate();
 
-        for (DialectMode mode : DialectMode.values()) {
+        for (Dialect mode : Dialect.values()) {
             LOG.debug("{} {}", mode.name(), update.mockAsString(mode));
         }
     }
@@ -90,7 +91,7 @@ public class StandardCriteriaUnitTests {
                 }))
                 .asUpdate();
 
-        for (DialectMode mode : DialectMode.values()) {
+        for (Dialect mode : Dialect.values()) {
             LOG.debug("{} {}", mode.name(), update.mockAsString(mode));
         }
     }
@@ -108,7 +109,7 @@ public class StandardCriteriaUnitTests {
                 .paramBeans(this::createProvinceList)
                 .asUpdate();
 
-        for (DialectMode mode : DialectMode.values()) {
+        for (Dialect mode : Dialect.values()) {
             BatchStmt stmt;
             stmt = (BatchStmt) update.mockAsStmt(mode);
             assertTrue(stmt.hasOptimistic(), "optimistic lock");
@@ -133,7 +134,7 @@ public class StandardCriteriaUnitTests {
                 .and(User_.nickName.equal("zoro"))
                 .asUpdate();
 
-        for (DialectMode mode : DialectMode.values()) {
+        for (Dialect mode : Dialect.values()) {
             LOG.debug("{} {}", mode.name(), update.mockAsString(mode));
         }
     }
@@ -148,7 +149,7 @@ public class StandardCriteriaUnitTests {
                 .and(ChinaProvince_.version.equal(2))
                 .asDelete();
 
-        for (DialectMode mode : DialectMode.values()) {
+        for (Dialect mode : Dialect.values()) {
             SimpleStmt stmt;
             stmt = (SimpleStmt) delete.mockAsStmt(mode);
             assertTrue(stmt.hasOptimistic(), "optimistic lock");
@@ -168,7 +169,7 @@ public class StandardCriteriaUnitTests {
                 .and(ChinaProvince_.version.equal(2))
                 .asDelete();
 
-        for (DialectMode mode : DialectMode.values()) {
+        for (Dialect mode : Dialect.values()) {
             SimpleStmt stmt;
             stmt = (SimpleStmt) delete.mockAsStmt(mode);
             assertTrue(stmt.hasOptimistic(), "optimistic lock");
@@ -189,12 +190,23 @@ public class StandardCriteriaUnitTests {
                 .paramBeans(this.createProvinceList())
                 .asDelete();
 
-        for (DialectMode mode : DialectMode.values()) {
+        for (Dialect mode : Dialect.values()) {
             BatchStmt stmt;
             stmt = (BatchStmt) delete.mockAsStmt(mode);
             assertTrue(stmt.hasOptimistic(), "optimistic lock");
             LOG.debug("batchDeleteChild\n{}\n{}", mode.name(), stmt.sql());
         }
+    }
+
+    @Test
+    public void test2() {
+        System.out.println(Boolean.class.isLocalClass());
+        System.out.println(Boolean.class.isSynthetic());
+
+        System.out.println(LocalDate.class.isSynthetic());
+        System.out.println(User.class.isSynthetic());
+
+
     }
 
 

@@ -404,6 +404,16 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
 
     }
 
+    @Override
+    JT createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+        return null;
+    }
+
+    @Override
+    JS createOnBlock(_JoinType joinType, TablePart tablePart, String alias) {
+        return null;
+    }
+
     /*################################## blow private method ##################################*/
 
     private JP ifAddPartitionBlock(Predicate<C> predicate, _JoinType joinType, TableMeta<?> table) {
@@ -942,6 +952,10 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
         }
 
 
+        @Override
+        public List<String> partitionList() {
+            return null;
+        }
     }// SimpleIndexHintBlock
 
     /**
@@ -1077,7 +1091,10 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
             return this.update;
         }
 
-
+        @Override
+        public List<String> partitionList() {
+            return null;
+        }
     }//BatchIndexHintOnBlock
 
 

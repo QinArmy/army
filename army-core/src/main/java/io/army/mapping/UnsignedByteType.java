@@ -8,19 +8,21 @@ import io.army.sqltype.SqlType;
 /**
  * @see Short
  */
-public final class ShortType extends _ArmyNoInjectionMapping {
+public final class UnsignedByteType extends _ArmyNoInjectionMapping {
 
-    public static final ShortType INSTANCE = new ShortType();
+    public static final UnsignedByteType INSTANCE = new UnsignedByteType();
 
-    public static ShortType create(Class<?> javaType) {
+    public static UnsignedByteType create(Class<?> javaType) {
         if (javaType != Short.class) {
-            throw errorJavaType(ShortType.class, javaType);
+            throw errorJavaType(UnsignedByteType.class, javaType);
         }
         return INSTANCE;
     }
 
-    private ShortType() {
+
+    private UnsignedByteType() {
     }
+
 
     @Override
     public Class<?> javaType() {
@@ -32,7 +34,7 @@ public final class ShortType extends _ArmyNoInjectionMapping {
         final SqlType sqlType;
         switch (meta.database()) {
             case MySQL:
-                sqlType = MySqlType.SMALLINT;
+                sqlType = MySqlType.TINYINT_UNSIGNED;
                 break;
             case PostgreSQL:
                 sqlType = PostgreType.SMALLINT;
@@ -47,24 +49,29 @@ public final class ShortType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Short beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
-        return (short) IntegerType.beforeBind(sqlType, nonNull, Short.MIN_VALUE, Short.MAX_VALUE);
+    public Short beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+        return (short) IntegerType.beforeBind(sqlType, nonNull, 0, 0xFF);
     }
 
     @Override
     public Short afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
-        final short value;
         switch (sqlType.database()) {
             case MySQL:
             case PostgreSQL: {
                 if (!(nonNull instanceof Short)) {
                     throw errorJavaTypeForSqlType(sqlType, nonNull);
                 }
-                value = (Short) nonNull;
             }
             break;
+            case Firebird:
+            case Oracle:
+            case H2:
             default:
                 throw errorJavaTypeForSqlType(sqlType, nonNull);
+        }
+        final Short value = (Short) nonNull;
+        if (value < 0 || value > 0xFF) {
+            throw errorValueForSqlType(sqlType, nonNull, null);
         }
         return value;
     }

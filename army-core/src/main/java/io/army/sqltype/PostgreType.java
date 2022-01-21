@@ -6,14 +6,14 @@ import io.army.mapping.MappingType;
 /**
  * @see <a href="https://www.postgresql.org/docs/11/datatype.html">Postgre Data Types</a>
  */
-public enum PostgreDataType implements SqlType {
+public enum PostgreType implements SqlType {
 
 
     /**
      * <p>
      *     <ul>
-     *         <li>{@link MappingType#convertBeforeBind(SqlType, Object)} must return {@link Boolean}</li>
-     *         <li>{@link MappingType#convertAfterGet(SqlType, Object)} nonNull parameter must be {@link Boolean}</li>
+     *         <li>{@link MappingType#beforeBind_(SqlType, Object)} must return {@link Boolean}</li>
+     *         <li>{@link MappingType#afterGet_(SqlType, Object)} nonNull parameter must be {@link Boolean}</li>
      *     </ul>
      * </p>
      */

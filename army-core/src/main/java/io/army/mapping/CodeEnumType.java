@@ -1,11 +1,12 @@
 package io.army.mapping;
 
-import io.army.dialect.NotSupportDialectException;
+import io.army.meta.MetaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySqlType;
-import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.struct.CodeEnum;
+import io.army.struct.CodeEnumException;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -20,11 +21,10 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
 
 
     public static CodeEnumType create(Class<?> javaType) {
-        if (javaType.isEnum() && CodeEnum.class.isAssignableFrom(javaType)) {
-            return INSTANCE_MAP.computeIfAbsent(javaType, CodeEnumType::new);
-        } else {
-            throw createNotSupportJavaTypeException(CodeEnumType.class, javaType);
+        if (!javaType.isEnum() || !CodeEnum.class.isAssignableFrom(javaType)) {
+            throw errorJavaType(CodeEnumType.class, javaType);
         }
+        return INSTANCE_MAP.computeIfAbsent(javaType, CodeEnumType::new);
     }
 
     private final Class<?> enumClass;
@@ -32,7 +32,6 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
     private CodeEnumType(Class<?> enumClass) {
         this.enumClass = enumClass;
         checkCodeEnum(enumClass);
-
     }
 
     @Override
@@ -42,35 +41,40 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
 
 
     @Override
-    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
-        final SqlType sqlDataType;
-        switch (serverMeta.database()) {
+    public SqlType map(ServerMeta meta) {
+        final SqlType sqlType;
+        switch (meta.database()) {
             case MySQL:
-                sqlDataType = MySqlType.INT;
+                sqlType = MySqlType.INT;
                 break;
             case PostgreSQL:
-                sqlDataType = PostgreDataType.INTEGER;
+                sqlType = PostgreType.INTEGER;
                 break;
             default:
-                throw noMappingError(serverMeta);
+                throw noMappingError(meta);
         }
-        return sqlDataType;
+        return sqlType;
     }
 
     @Override
-    public Object convertBeforeBind(SqlType sqlDataType, Object nonNull) {
+    public Integer beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+        if (!(nonNull instanceof Enum && nonNull instanceof CodeEnum)) {
+            throw outRangeOfSqlType(sqlType, nonNull);
+        }
         return ((CodeEnum) nonNull).code();
     }
 
     @Override
-    public Object convertAfterGet(SqlType sqlDataType, Object nonNull) {
+    public CodeEnum afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
         if (!(nonNull instanceof Integer)) {
-            throw notSupportConvertAfterGet(nonNull);
+            throw errorJavaTypeForSqlType(sqlType, nonNull);
         }
-        final Object value;
+        final CodeEnum value;
         value = CodeEnum.resolve(this.enumClass, (Integer) nonNull);
         if (value == null) {
-            throw notSupportConvertAfterGet(nonNull);
+            String m = String.format("Not found enum instance for code[%s] in enum[%s]."
+                    , nonNull, this.enumClass.getName());
+            throw errorValueForSqlType(sqlType, nonNull, new MetaException(m));
         }
         return value;
     }
@@ -80,7 +84,11 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
 
     @SuppressWarnings("unchecked")
     public static <T extends Enum<T> & CodeEnum> void checkCodeEnum(Class<?> enumClass) {
-        CodeEnum.getCodeMap((Class<T>) enumClass);
+        try {
+            CodeEnum.getCodeMap((Class<T>) enumClass);
+        } catch (CodeEnumException e) {
+            throw new MetaException(e.getMessage(), e);
+        }
     }
 
 

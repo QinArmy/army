@@ -1,13 +1,12 @@
 package io.army.mapping;
 
-import io.army.dialect.NotSupportDialectException;
+import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.H2DataType;
 import io.army.sqltype.MySqlType;
-import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
-import java.sql.JDBCType;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -15,9 +14,9 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
 
     private static final ConcurrentMap<Class<?>, NameEnumType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
-    public static NameEnumType build(Class<?> javaType) {
+    public static NameEnumType create(Class<?> javaType) {
         if (!javaType.isEnum()) {
-            throw AbstractMappingType.createNotSupportJavaTypeException(NameEnumType.class, javaType);
+            throw errorJavaType(NameEnumType.class, javaType);
         }
         return INSTANCE_MAP.computeIfAbsent(javaType, NameEnumType::new);
     }
@@ -34,46 +33,48 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public JDBCType jdbcType() {
-        return JDBCType.VARCHAR;
-    }
-
-    @Override
-    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
-        final SqlType sqlDataType;
-        switch (serverMeta.database()) {
+    public SqlType map(ServerMeta meta) {
+        final SqlType sqlType;
+        switch (meta.database()) {
             case MySQL:
-                sqlDataType = MySqlType.ENUM;
+                sqlType = MySqlType.ENUM;
                 break;
             case PostgreSQL:
-                sqlDataType = PostgreDataType.VARCHAR;
+                sqlType = PostgreType.VARCHAR;
                 break;
             case H2:
-                sqlDataType = H2DataType.ENUM;
+                sqlType = H2DataType.ENUM;
                 break;
             default:
-                throw noMappingError(serverMeta);
+                throw noMappingError(meta);
         }
-        return sqlDataType;
+        return sqlType;
     }
 
     @Override
-    public Object convertBeforeBind(SqlType sqlDataType, Object nonNull) {
+    public String beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
         if (!this.enumClass.isInstance(nonNull)) {
-            throw notSupportConvertBeforeBind(nonNull);
+            String m = String.format("%s isn't %s type.", nonNull.getClass().getName(), this.enumClass.getName());
+            throw outRangeOfSqlType(sqlType, nonNull, new CriteriaException(m));
         }
         return ((Enum<?>) nonNull).name();
     }
 
     @Override
-    public Object convertAfterGet(SqlType sqlDataType, Object nonNull) {
-        return valueOf((String) nonNull);
+    public Enum<?> afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+        if (!(nonNull instanceof String)) {
+            throw errorJavaTypeForSqlType(sqlType, nonNull);
+        }
+        return valueOf(sqlType, (String) nonNull);
     }
 
-    private <T extends Enum<T>> T valueOf(String name) {
-        @SuppressWarnings("unchecked")
-        Class<T> clazz = (Class<T>) this.enumClass;
-        return Enum.valueOf(clazz, name);
+    @SuppressWarnings("unchecked")
+    private <T extends Enum<T>> T valueOf(SqlType sqlType, String name) {
+        try {
+            return Enum.valueOf((Class<T>) this.enumClass, name);
+        } catch (Exception e) {
+            throw errorValueForSqlType(sqlType, name, e);
+        }
     }
 
 

@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.DialectMode;
+import io.army.Dialect;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._PartQuery;
 import io.army.dialect._MockDialects;
@@ -260,12 +260,12 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     }
 
     @Override
-    public final void mock(DialectMode mode) {
+    public final void mock(Dialect mode) {
         System.out.println(this.mockAsString(mode));
     }
 
     @Override
-    public final String mockAsString(DialectMode mode) {
+    public final String mockAsString(Dialect mode) {
 
         final SimpleStmt stmt;
         stmt = this.mockAsStmt(mode);
@@ -273,7 +273,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     }
 
     @Override
-    public final SimpleStmt mockAsStmt(DialectMode mode) {
+    public final SimpleStmt mockAsStmt(Dialect mode) {
         if (this instanceof SubQuery) {
             throw new IllegalStateException("mockAsStmt(DialectMode) support only Select statement.");
         }
@@ -308,9 +308,9 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
 
     }
 
-    abstract DialectMode defaultDialect();
+    abstract Dialect defaultDialect();
 
-    abstract void validateDialect(DialectMode mode);
+    abstract void validateDialect(Dialect mode);
 
     abstract Q internalAsQuery(boolean justAsQuery);
 

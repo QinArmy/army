@@ -1,5 +1,6 @@
 package io.army.dialect;
 
+import io.army.mapping.BooleanType;
 import io.army.mapping.CodeEnumType;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
@@ -33,9 +34,9 @@ public abstract class _Literals {
 
     public static String booleanLiteral(final SqlType sqlType, final Object nonNull) {
         if (!(nonNull instanceof Boolean)) {
-            throw _Exceptions.errorLiteralType(sqlType, nonNull);
+            throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
-        return (Boolean) nonNull ? Constant.TRUE : Constant.FALSE;
+        return (Boolean) nonNull ? BooleanType.TRUE : BooleanType.FALSE;
     }
 
     public static String tinyInt(final SqlType sqlType, final Object nonNull) {
@@ -69,26 +70,26 @@ public abstract class _Literals {
                 || nonNull instanceof Byte) {
             final int v = ((Number) nonNull).intValue();
             if (v < minValue || v > maxValue) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = nonNull.toString();
         } else if (nonNull instanceof Long) {
             final long v = (Long) nonNull;
             if (v < minValue || v > maxValue) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = nonNull.toString();
         } else if (nonNull instanceof BigDecimal) {
             final BigDecimal v = ((BigDecimal) nonNull).stripTrailingZeros();
             if (v.scale() != 0 || v.compareTo(BigDecimal.valueOf(maxValue)) > 0
                     || v.compareTo(BigDecimal.valueOf(minValue)) < 0) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = v.toPlainString();
         } else if (nonNull instanceof BigInteger) {
             final BigInteger v = (BigInteger) nonNull;
             if (v.compareTo(BigInteger.valueOf(maxValue)) > 0 || v.compareTo(BigInteger.valueOf(minValue)) < 0) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = nonNull.toString();
         } else if (nonNull instanceof String) {
@@ -96,14 +97,14 @@ public abstract class _Literals {
             try {
                 final int value = Integer.parseInt(v);
                 if (value < minValue || value > maxValue) {
-                    throw _Exceptions.literalOutRange(sqlType, nonNull);
+                    throw _Exceptions.valueOutRange(sqlType, nonNull);
                 }
             } catch (NumberFormatException e) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = v;
         } else {
-            throw _Exceptions.errorLiteralType(sqlType, nonNull);
+            throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
         return literal;
     }
@@ -120,14 +121,14 @@ public abstract class _Literals {
             final BigDecimal v = ((BigDecimal) nonNull).stripTrailingZeros();
             if (v.scale() != 0 || v.compareTo(BigDecimal.valueOf(Long.MAX_VALUE)) > 0
                     || v.compareTo(BigDecimal.valueOf(Long.MIN_VALUE)) < 0) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = v.toPlainString();
         } else if (nonNull instanceof BigInteger) {
             final BigInteger v = (BigInteger) nonNull;
             if (v.compareTo(BigInteger.valueOf(Long.MAX_VALUE)) > 0
                     || v.compareTo(BigInteger.valueOf(Long.MIN_VALUE)) < 0) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = nonNull.toString();
         } else if (nonNull instanceof String) {
@@ -135,11 +136,11 @@ public abstract class _Literals {
             try {
                 Long.parseLong(v);
             } catch (NumberFormatException e) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = v;
         } else {
-            throw _Exceptions.errorLiteralType(sqlType, nonNull);
+            throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
         return literal;
     }
@@ -159,11 +160,11 @@ public abstract class _Literals {
             try {
                 new BigDecimal(v);
             } catch (NumberFormatException e) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = v;
         } else {
-            throw _Exceptions.errorLiteralType(sqlType, nonNull);
+            throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
         return literal;
     }
@@ -176,11 +177,11 @@ public abstract class _Literals {
             try {
                 Float.parseFloat((String) nonNull);
             } catch (NumberFormatException e) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = (String) nonNull;
         } else {
-            throw _Exceptions.errorLiteralType(sqlType, nonNull);
+            throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
         return literal;
     }
@@ -193,11 +194,11 @@ public abstract class _Literals {
             try {
                 Double.parseDouble((String) nonNull);
             } catch (NumberFormatException e) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = (String) nonNull;
         } else {
-            throw _Exceptions.errorLiteralType(sqlType, nonNull);
+            throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
         return literal;
     }
@@ -228,27 +229,27 @@ public abstract class _Literals {
         } else if (nonNull instanceof BigInteger) {
             final BigInteger v = (BigInteger) nonNull;
             if (v.compareTo(BigInteger.ZERO) < 0 || v.compareTo(Numbers.MAX_UNSIGNED_LONG) > 0) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = v.toString();
         } else if (nonNull instanceof BigDecimal) {
             final BigDecimal v = ((BigDecimal) nonNull).stripTrailingZeros();
             if (v.scale() != 0 || v.compareTo(new BigDecimal(Numbers.MAX_UNSIGNED_LONG)) > 0) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = v.toPlainString();
         } else if (nonNull instanceof String) {
             try {
                 final BigInteger v = new BigInteger((String) nonNull);
                 if (v.compareTo(BigInteger.ZERO) < 0 || v.compareTo(Numbers.MAX_UNSIGNED_LONG) > 0) {
-                    throw _Exceptions.literalOutRange(sqlType, nonNull);
+                    throw _Exceptions.valueOutRange(sqlType, nonNull);
                 }
             } catch (NumberFormatException e) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = (String) nonNull;
         } else {
-            throw _Exceptions.errorLiteralType(sqlType, nonNull);
+            throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
         return literal;
     }
@@ -258,7 +259,7 @@ public abstract class _Literals {
         if (nonNull instanceof BigDecimal) {
             final BigDecimal v = (BigDecimal) nonNull;
             if (v.compareTo(BigDecimal.ZERO) < 0) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = v.toPlainString();
         } else if (nonNull instanceof Long
@@ -268,7 +269,7 @@ public abstract class _Literals {
                 || nonNull instanceof Byte) {
             final long v = ((Number) nonNull).longValue();
             if (v < 0) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = nonNull.toString();
         } else if (nonNull instanceof String) {
@@ -276,14 +277,14 @@ public abstract class _Literals {
             try {
                 final BigDecimal decimal = new BigDecimal(v);
                 if (decimal.compareTo(BigDecimal.ZERO) < 0) {
-                    throw _Exceptions.literalOutRange(sqlType, nonNull);
+                    throw _Exceptions.valueOutRange(sqlType, nonNull);
                 }
             } catch (NumberFormatException e) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = v;
         } else {
-            throw _Exceptions.errorLiteralType(sqlType, nonNull);
+            throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
         return literal;
     }
@@ -296,11 +297,11 @@ public abstract class _Literals {
             try {
                 LocalTime.parse((String) nonNull, TimeUtils.getTimeFormatter(6));
             } catch (DateTimeException e) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             text = (String) nonNull;
         } else {
-            throw _Exceptions.errorLiteralType(sqlType, nonNull);
+            throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
         return QUOTE_CHAR + text + QUOTE_CHAR;
     }
@@ -313,11 +314,11 @@ public abstract class _Literals {
             try {
                 OffsetTime.parse((String) nonNull, TimeUtils.getOffsetTimeFormatter(6));
             } catch (DateTimeException e) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             text = (String) nonNull;
         } else {
-            throw _Exceptions.errorLiteralType(sqlType, nonNull);
+            throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
         return QUOTE_CHAR + text + QUOTE_CHAR;
     }
@@ -330,10 +331,10 @@ public abstract class _Literals {
             try {
                 v = LocalDate.parse((String) nonNull);
             } catch (Exception e) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
         } else {
-            throw _Exceptions.errorLiteralType(sqlType, nonNull);
+            throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
         return QUOTE_CHAR + v.toString() + QUOTE_CHAR;
     }
@@ -346,11 +347,11 @@ public abstract class _Literals {
             try {
                 LocalDateTime.parse((String) nonNull, TimeUtils.getDatetimeFormatter(6));
             } catch (DateTimeException e) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             text = (String) nonNull;
         } else {
-            throw _Exceptions.errorLiteralType(sqlType, nonNull);
+            throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
 
         return QUOTE_CHAR + text + QUOTE_CHAR;
@@ -367,18 +368,18 @@ public abstract class _Literals {
             try {
                 OffsetDateTime.parse((String) nonNull, TimeUtils.getDatetimeOffsetFormatter(6));
             } catch (DateTimeException e) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             text = (String) nonNull;
         } else {
-            throw _Exceptions.errorLiteralType(sqlType, nonNull);
+            throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
         return QUOTE_CHAR + text + QUOTE_CHAR;
     }
 
     public static String enumLiteral(final SqlType sqlType, final Object nonNull) {
         if (!(nonNull instanceof Enum)) {
-            throw _Exceptions.errorLiteralType(sqlType, nonNull);
+            throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
         return QUOTE_CHAR + ((Enum<?>) nonNull).name() + QUOTE_CHAR;
     }
@@ -391,42 +392,42 @@ public abstract class _Literals {
                 || nonNull instanceof Byte) {
             final long v = ((Number) nonNull).longValue();
             if (v < 0 || v > maxUnsigned) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = Long.toString(v);
         } else if (nonNull instanceof BigDecimal) {
             final BigDecimal v = ((BigDecimal) nonNull).stripTrailingZeros();
             if (v.scale() != 0 || v.compareTo(BigDecimal.ZERO) < 0
                     || v.compareTo(BigDecimal.valueOf(maxUnsigned)) > 0) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = v.toPlainString();
         } else if (nonNull instanceof BigInteger) {
             final BigInteger v = (BigInteger) nonNull;
             if (v.compareTo(BigInteger.ZERO) < 0
                     || v.compareTo(BigInteger.valueOf(maxUnsigned)) > 0) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = v.toString();
         } else if (nonNull instanceof String) {
             try {
                 final long v = Long.parseLong((String) nonNull);
                 if (v < 0 || v > maxUnsigned) {
-                    throw _Exceptions.literalOutRange(sqlType, nonNull);
+                    throw _Exceptions.valueOutRange(sqlType, nonNull);
                 }
             } catch (NumberFormatException e) {
-                throw _Exceptions.literalOutRange(sqlType, nonNull);
+                throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = (String) nonNull;
         } else {
-            throw _Exceptions.errorLiteralType(sqlType, nonNull);
+            throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
         return literal;
     }
 
     protected static String bitSet(final SqlType sqlType, final Object nonNull, final boolean bitEndian) {
         if (!(nonNull instanceof BitSet)) {
-            throw _Exceptions.errorLiteralType(sqlType, nonNull);
+            throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
         final BitSet bitSet = (BitSet) nonNull;
         final byte[] bitBytes = bitSet.toByteArray();

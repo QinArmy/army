@@ -1,53 +1,53 @@
 package io.army.boot.migratioin;
 
-import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.PostgreType;
 import io.army.util.ArrayUtils;
 
 import java.util.*;
 
 abstract class PostgreUtils extends ComparatorUtils {
 
-    static Set<PostgreDataType> createIntegerSet() {
+    static Set<PostgreType> createIntegerSet() {
         return EnumSet.of(
-                PostgreDataType.SMALLINT,
-                PostgreDataType.INTEGER,
-                PostgreDataType.BIGINT
+                PostgreType.SMALLINT,
+                PostgreType.INTEGER,
+                PostgreType.BIGINT
         );
     }
 
-    static Set<PostgreDataType> createFloatSet() {
+    static Set<PostgreType> createFloatSet() {
         return EnumSet.of(
-                PostgreDataType.REAL
+                PostgreType.REAL
                 //PostgreDataType.DOUBLE_PRECISION
         );
     }
 
-    static Set<PostgreDataType> createExactNumericSet() {
+    static Set<PostgreType> createExactNumericSet() {
         return EnumSet.of(
-                PostgreDataType.DECIMAL
+                PostgreType.DECIMAL
         );
     }
 
-    static Set<PostgreDataType> createNumericSet() {
-        List<PostgreDataType> list = new ArrayList<>();
+    static Set<PostgreType> createNumericSet() {
+        List<PostgreType> list = new ArrayList<>();
         list.addAll(Postgre11MetaSchemaComparator.INTEGER_TYPE_SET);
         list.addAll(Postgre11MetaSchemaComparator.FLOAT_TYPE_SET);
         list.addAll(Postgre11MetaSchemaComparator.EXACT_NUMERIC_TYPE_SET);
         return EnumSet.copyOf(list);
     }
 
-    static Map<PostgreDataType, List<String>> createSynonymsMap() {
-        Map<PostgreDataType, List<String>> map = new EnumMap<>(PostgreDataType.class);
+    static Map<PostgreType, List<String>> createSynonymsMap() {
+        Map<PostgreType, List<String>> map = new EnumMap<>(PostgreType.class);
 
-        map.put(PostgreDataType.SMALLINT, Collections.singletonList("INT2"));
-        map.put(PostgreDataType.INTEGER, ArrayUtils.asUnmodifiableList("INT", "INT4"));
-        map.put(PostgreDataType.BIGINT, Collections.singletonList("INT8"));
-        map.put(PostgreDataType.DECIMAL, Collections.singletonList("NUMERIC"));
+        map.put(PostgreType.SMALLINT, Collections.singletonList("INT2"));
+        map.put(PostgreType.INTEGER, ArrayUtils.asUnmodifiableList("INT", "INT4"));
+        map.put(PostgreType.BIGINT, Collections.singletonList("INT8"));
+        map.put(PostgreType.DECIMAL, Collections.singletonList("NUMERIC"));
 
-        map.put(PostgreDataType.REAL, Collections.singletonList("FLOAT"));
+        map.put(PostgreType.REAL, Collections.singletonList("FLOAT"));
         // map.put(PostgreDataType.DOUBLE_PRECISION, Collections.singletonList("FLOAT"));
-        map.put(PostgreDataType.CHAR, Collections.singletonList("CHARACTER"));
-        map.put(PostgreDataType.VARCHAR, Collections.singletonList("CHARACTER VARYING"));
+        map.put(PostgreType.CHAR, Collections.singletonList("CHARACTER"));
+        map.put(PostgreType.VARCHAR, Collections.singletonList("CHARACTER VARYING"));
 
         // map.put(PostgreDataType.TIME_WITHOUT_TIME_ZONE, Collections.singletonList("TIME"));
         // map.put(PostgreDataType.TIME_WITH_TIME_ZONE, Collections.singletonList("TIME"));

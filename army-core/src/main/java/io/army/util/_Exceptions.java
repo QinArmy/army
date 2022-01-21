@@ -1,7 +1,7 @@
 package io.army.util;
 
 import io.army.ArmyException;
-import io.army.DialectMode;
+import io.army.Dialect;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
@@ -45,9 +45,9 @@ public abstract class _Exceptions extends ExceptionUtils {
         throw new TimeoutException(m, overspend);
     }
 
-    public static ArmyException notSupportDialectMode(DialectMode dialectMode, ServerMeta serverMeta) {
+    public static ArmyException notSupportDialectMode(Dialect dialect, ServerMeta serverMeta) {
         String m;
-        m = String.format("%s isn't supported by %s", dialectMode, serverMeta);
+        m = String.format("%s isn't supported by %s", dialect, serverMeta);
         throw new ArmyException(m);
     }
 
@@ -326,15 +326,39 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new ArmyException(m);
     }
 
-    public static CriteriaException errorLiteralType(final SqlType sqlType, final Object nonNull) {
+    public static CriteriaException outRangeOfSqlType(final SqlType sqlType, final Object nonNull) {
         String m = String.format("%s[%s] literal don't support java type[%s]"
                 , sqlType.getClass().getName(), sqlType, nonNull.getClass().getName());
         return new CriteriaException(m);
     }
 
-    public static CriteriaException literalOutRange(final SqlType sqlType, final Object nonNull) {
-        String m = String.format("Value[%s] literal out of %s[%s].", nonNull, sqlType.getClass().getName(), sqlType);
-        return new CriteriaException(m);
+    public static CriteriaException outRangeOfSqlType(final SqlType sqlType, final Object nonNull
+            , @Nullable Throwable cause) {
+        String m = String.format("%s[%s] literal don't support java type[%s]"
+                , sqlType.getClass().getName(), sqlType, nonNull.getClass().getName());
+        final CriteriaException e;
+        if (cause == null) {
+            e = new CriteriaException(m);
+        } else {
+            e = new CriteriaException(m, cause);
+        }
+        return e;
+    }
+
+    public static CriteriaException valueOutRange(final SqlType sqlType, final Object nonNull) {
+        return valueOutRange(sqlType, nonNull, null);
+    }
+
+    public static CriteriaException valueOutRange(final SqlType sqlType, final Object nonNull
+            , @Nullable Throwable cause) {
+        String m = String.format("Value[%s] out of %s.%s.", nonNull, sqlType.getClass().getName(), sqlType.name());
+        final CriteriaException exception;
+        if (cause == null) {
+            exception = new CriteriaException(m);
+        } else {
+            exception = new CriteriaException(m, cause);
+        }
+        return exception;
     }
 
     public static CriteriaException operatorRightIsNullable(Enum<?> operator) {
@@ -347,7 +371,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static IllegalArgumentException stmtDontSupportDialect(DialectMode mode) {
+    public static IllegalArgumentException stmtDontSupportDialect(Dialect mode) {
         return new IllegalArgumentException(String.format("Don't support dialect[%s]", mode));
     }
 

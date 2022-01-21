@@ -1,7 +1,7 @@
 package io.army.dialect;
 
 
-import io.army.DialectMode;
+import io.army.Dialect;
 import io.army.beans.ObjectWrapper;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
@@ -16,13 +16,13 @@ import java.util.concurrent.ConcurrentMap;
 
 public abstract class _MockDialects {
 
-    private static final ConcurrentMap<DialectMode, _Dialect> DIALECT_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Dialect, _Dialect> DIALECT_MAP = new ConcurrentHashMap<>();
 
-    public static _Dialect from(final DialectMode mode) {
+    public static _Dialect from(final Dialect mode) {
         return DIALECT_MAP.computeIfAbsent(mode, _MockDialects::createDialect);
     }
 
-    private static _Dialect createDialect(final DialectMode mode) {
+    private static _Dialect createDialect(final Dialect mode) {
         final ServerMeta meta;
         switch (mode) {
             case MySQL57:

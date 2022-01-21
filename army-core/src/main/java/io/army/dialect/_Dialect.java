@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.DialectMode;
+import io.army.Dialect;
 import io.army.criteria.*;
 import io.army.meta.ParamMeta;
 import io.army.session.DialectSessionFactory;
@@ -91,7 +91,7 @@ public interface _Dialect {
 
     boolean setClauseTableAlias();
 
-    DialectMode mode();
+    Dialect mode();
 
     String defaultFuncName();
 

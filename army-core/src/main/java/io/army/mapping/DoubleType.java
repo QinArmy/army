@@ -1,21 +1,18 @@
 package io.army.mapping;
 
-import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySqlType;
-import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
-
-import java.sql.JDBCType;
 
 public final class DoubleType extends _ArmyNoInjectionMapping {
 
 
     public static final DoubleType INSTANCE = new DoubleType();
 
-    public static DoubleType build(Class<?> typeClass) {
-        if (typeClass != Double.class) {
-            throw AbstractMappingType.createNotSupportJavaTypeException(DoubleType.class, typeClass);
+    public static DoubleType create(Class<?> javaType) {
+        if (javaType != Double.class) {
+            throw errorJavaType(DoubleType.class, javaType);
         }
         return INSTANCE;
     }
@@ -29,43 +26,46 @@ public final class DoubleType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public JDBCType jdbcType() {
-        return JDBCType.DOUBLE;
-    }
-
-    @Override
-    public SqlType sqlType(ServerMeta serverMeta) throws NotSupportDialectException {
-        final SqlType sqlDataType;
-        switch (serverMeta.database()) {
+    public SqlType map(ServerMeta meta) {
+        final SqlType sqlType;
+        switch (meta.database()) {
             case MySQL:
-                sqlDataType = MySqlType.DOUBLE;
+                sqlType = MySqlType.DOUBLE;
                 break;
             case PostgreSQL:
-                sqlDataType = PostgreDataType.DOUBLE;
+                sqlType = PostgreType.DOUBLE;
                 break;
             default:
-                throw noMappingError(serverMeta);
+                throw noMappingError(meta);
         }
-        return sqlDataType;
+        return sqlType;
     }
 
     @Override
-    public Object convertBeforeBind(SqlType sqlDataType, Object nonNull) {
-        final Double value;
+    public Double beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+        final double value;
         if (nonNull instanceof Double) {
             value = (Double) nonNull;
+        } else if (nonNull instanceof Float) {
+            value = ((Float) nonNull).doubleValue();
+        } else if (nonNull instanceof String) {
+            try {
+                value = Double.parseDouble((String) nonNull);
+            } catch (NumberFormatException e) {
+                throw valueOutRange(sqlType, nonNull, null);
+            }
         } else {
-            throw notSupportConvertBeforeBind(nonNull);
+            throw outRangeOfSqlType(sqlType, nonNull);
         }
         return value;
     }
 
     @Override
-    public Object convertAfterGet(SqlType sqlDataType, Object nonNull) {
+    public Double afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
         if (!(nonNull instanceof Double)) {
-            throw notSupportConvertAfterGet(nonNull);
+            throw errorJavaTypeForSqlType(sqlType, nonNull);
         }
-        return nonNull;
+        return (Double) nonNull;
     }
 
 

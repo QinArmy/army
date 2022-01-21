@@ -3,7 +3,7 @@ package io.army.mapping;
 import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySqlType;
-import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
@@ -14,9 +14,9 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
 
     public static final BooleanType INSTANCE = new BooleanType();
 
-    public static BooleanType build(Class<?> typeClass) {
-        if (typeClass != Boolean.class) {
-            throw AbstractMappingType.createNotSupportJavaTypeException(BooleanType.class, typeClass);
+    public static BooleanType create(Class<?> javaType) {
+        if (javaType != Boolean.class) {
+            throw errorJavaType(BooleanType.class, javaType);
         }
         return INSTANCE;
     }
@@ -35,55 +35,57 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlType sqlType(final ServerMeta serverMeta) throws NotSupportDialectException {
+    public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
         final SqlType sqlType;
-        switch (serverMeta.database()) {
+        switch (meta.database()) {
             case MySQL:
                 sqlType = MySqlType.BOOLEAN;
                 break;
             case PostgreSQL:
-                sqlType = PostgreDataType.BOOLEAN;
+                sqlType = PostgreType.BOOLEAN;
                 break;
             default:
-                throw noMappingError(serverMeta);
+                throw noMappingError(meta);
         }
         return sqlType;
     }
 
 
     @Override
-    public Boolean convertBeforeBind(SqlType sqlDataType, final Object nonNull) {
-        final Boolean value;
+    public Boolean beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+        final boolean value;
         if (nonNull instanceof Boolean) {
             value = (Boolean) nonNull;
-        } else if (nonNull instanceof Integer) {
-            value = (Integer) nonNull == 0 ? Boolean.FALSE : Boolean.TRUE;
-        } else if (nonNull instanceof Long || nonNull instanceof Short || nonNull instanceof Byte) {
-            value = ((Number) nonNull).longValue() == 0 ? Boolean.FALSE : Boolean.TRUE;
+        } else if (nonNull instanceof Integer || nonNull instanceof Short || nonNull instanceof Byte) {
+            value = ((Number) nonNull).intValue() != 0;
+        } else if (nonNull instanceof Long) {
+            value = ((Number) nonNull).longValue() != 0L;
         } else if (nonNull instanceof String) {
             if (TRUE.equalsIgnoreCase((String) nonNull)) {
-                value = Boolean.TRUE;
+                value = true;
             } else if (FALSE.equalsIgnoreCase((String) nonNull)) {
-                value = Boolean.FALSE;
+                value = false;
             } else {
-                throw notSupportConvertBeforeBind(nonNull);
+                throw valueOutRange(sqlType, nonNull, null);
             }
         } else if (nonNull instanceof BigDecimal) {
-            value = BigDecimal.ZERO.compareTo((BigDecimal) nonNull) == 0 ? Boolean.FALSE : Boolean.TRUE;
+            value = BigDecimal.ZERO.compareTo((BigDecimal) nonNull) != 0;
         } else if (nonNull instanceof BigInteger) {
-            value = BigInteger.ZERO.compareTo((BigInteger) nonNull) == 0 ? Boolean.FALSE : Boolean.TRUE;
+            value = BigInteger.ZERO.compareTo((BigInteger) nonNull) != 0;
+        } else if (nonNull instanceof Double || nonNull instanceof Float) {
+            value = Double.compare(((Number) nonNull).doubleValue(), 0.0D) != 0;
         } else {
-            throw notSupportConvertBeforeBind(nonNull);
+            throw outRangeOfSqlType(sqlType, nonNull);
         }
         return value;
     }
 
     @Override
-    public Object convertAfterGet(SqlType sqlDataType, final Object nonNull) {
+    public Boolean afterGet(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
         if (!(nonNull instanceof Boolean)) {
-            throw notSupportConvertAfterGet(nonNull);
+            throw errorJavaTypeForSqlType(sqlType, nonNull);
         }
-        return nonNull;
+        return (Boolean) nonNull;
     }
 
 
