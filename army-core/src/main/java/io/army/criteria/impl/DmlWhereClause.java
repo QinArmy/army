@@ -17,13 +17,15 @@ import java.util.function.Supplier;
 abstract class DmlWhereClause<C, WR, WA> implements Statement, Statement.WhereClause<C, WR, WA>
         , Statement.WhereAndClause<C, WA>, _Statement {
 
+    final CriteriaContext criteriaContext;
 
     final C criteria;
 
     List<_Predicate> predicateList = new ArrayList<>();
 
-    DmlWhereClause(@Nullable C criteria) {
-        this.criteria = criteria;
+    DmlWhereClause(CriteriaContext criteriaContext) {
+        this.criteriaContext = criteriaContext;
+        this.criteria = criteriaContext.criteria();
     }
 
 

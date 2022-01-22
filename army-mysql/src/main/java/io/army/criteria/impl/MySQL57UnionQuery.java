@@ -1,12 +1,12 @@
 package io.army.criteria.impl;
 
-import io.army.Dialect;
+import io.army.Database;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._PartQuery;
 import io.army.criteria.impl.inner._UnionQuery;
 import io.army.criteria.mysql.MySQL57Query;
 import io.army.dialect.Constant;
-import io.army.dialect.Database;
+import io.army.dialect.Dialect;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
 import io.army.meta.ParamMeta;

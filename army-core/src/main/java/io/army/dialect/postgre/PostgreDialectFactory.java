@@ -1,6 +1,6 @@
 package io.army.dialect.postgre;
 
-import io.army.dialect.Database;
+import io.army.Database;
 import io.army.dialect._Dialect;
 import io.army.session.DialectSessionFactory;
 

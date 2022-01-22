@@ -2,9 +2,9 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 
-public abstract class _CriteriaCounselor {
+public abstract class _SQLCounselor {
 
-    _CriteriaCounselor() {
+    _SQLCounselor() {
         throw new UnsupportedOperationException();
     }
 

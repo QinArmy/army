@@ -13,7 +13,7 @@ public class MySQLsTests {
 
     public <P extends IDomain, T extends P> void update57(ChildDomain<P, T> domain) {
         FieldMeta<P, ?> field = null;
-        MySQLs57.singleUpdate()
+        MySQLs.singleUpdate()
                 .update(domain, "")
                 .set(field, 0)
                 .where(Collections.emptyList())
@@ -23,7 +23,7 @@ public class MySQLsTests {
     }
 
     public void multiUpdate57(TableMeta<?> table) {
-        MySQLs57.multiUpdate()
+        MySQLs.multiUpdate()
                 .update(table).partition("").as("")
                 .useIndex(Collections.emptyList())
                 .join(table, "")
@@ -37,7 +37,7 @@ public class MySQLsTests {
 
     public <T extends IDomain> void standardUpdate(TableMeta<T> table) {
         FieldMeta<T, ?> field = null;
-        SQLs.standardUpdate()
+        SQLs.singleUpdate()
                 .update(table, "t")
                 .set(field, 0)
                 .set(field, 3)

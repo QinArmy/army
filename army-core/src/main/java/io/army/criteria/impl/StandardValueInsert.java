@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.Dialect;
 import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ObjectWrapper;
 import io.army.criteria.Expression;
@@ -8,6 +7,7 @@ import io.army.criteria.Insert;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ValuesInsert;
+import io.army.dialect.Dialect;
 import io.army.dialect._DmlUtils;
 import io.army.dialect._MockDialects;
 import io.army.domain.IDomain;
@@ -287,14 +287,14 @@ final class StandardValueInsert<T extends IDomain, C> implements Insert
     }
 
     @Override
-    public void mock(Dialect mode) {
-        System.out.println(mockAsString(mode));
+    public void mock(Dialect dialect) {
+        System.out.println(mockAsString(dialect));
     }
 
     @Override
-    public String mockAsString(Dialect mode) {
+    public String mockAsString(Dialect dialect) {
         final Stmt stmt;
-        stmt = mockAsStmt(mode);
+        stmt = mockAsStmt(dialect);
         final StringBuilder builder = new StringBuilder();
         if (stmt instanceof SimpleStmt) {
             builder.append("insert sql:\n")
@@ -311,8 +311,8 @@ final class StandardValueInsert<T extends IDomain, C> implements Insert
     }
 
     @Override
-    public Stmt mockAsStmt(Dialect mode) {
-        return _MockDialects.from(mode).insert(this, Visible.ONLY_VISIBLE);
+    public Stmt mockAsStmt(Dialect dialect) {
+        return _MockDialects.from(dialect).insert(this, Visible.ONLY_VISIBLE);
     }
 
     /*################################## blow SQLStatement method ##################################*/

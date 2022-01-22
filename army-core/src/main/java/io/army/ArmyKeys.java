@@ -1,5 +1,6 @@
 package io.army;
 
+import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 
 public enum ArmyKeys {

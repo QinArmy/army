@@ -5,7 +5,7 @@ import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
 
-abstract class SingleUpdate<C, WR, WA, SR> extends AbstractUpdate<C, Void, Void, WR, WA, SR> implements _SingleUpdate {
+abstract class SingleUpdate<C, WR, WA, SR> extends JoinableUpdate<C, Void, Void, WR, WA, SR> implements _SingleUpdate {
 
     SingleUpdate(CriteriaContext criteriaContext) {
         super(criteriaContext);
@@ -13,12 +13,12 @@ abstract class SingleUpdate<C, WR, WA, SR> extends AbstractUpdate<C, Void, Void,
 
 
     @Override
-    final Void addTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+    final Void createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
         throw _Exceptions.castCriteriaApi();
     }
 
     @Override
-    final Void addOnBlock(_JoinType joinType, TablePart tablePart, String alias) {
+    final Void createOnBlock(_JoinType joinType, TablePart tablePart, String alias) {
         throw _Exceptions.castCriteriaApi();
     }
 

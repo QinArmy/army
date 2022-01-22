@@ -19,10 +19,10 @@ public abstract class AbstractSql {
 
 
 
-    protected final DialectEnvironment environment;
+    protected final _DialectEnvironment environment;
 
 
-    protected AbstractSql(DialectEnvironment environment) {
+    protected AbstractSql(_DialectEnvironment environment) {
         this.environment = environment;
 
     }

@@ -46,11 +46,11 @@ public interface MySQLQuery extends Query, DialectStatement {
 
         JT straightJoin(TableMeta<?> table, String tableAlias);
 
-        JT ifStraightJoin(Predicate<C> predicate, TableMeta<?> table, String alias);
-
         <T extends TablePart> JS straightJoin(Function<C, T> function, String alias);
 
         <T extends TablePart> JS straightJoin(Supplier<T> supplier, String alias);
+
+        JT ifStraightJoin(Predicate<C> predicate, TableMeta<?> table, String alias);
 
         <T extends TablePart> JS ifStraightJoin(Function<C, T> function, String alias);
 

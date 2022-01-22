@@ -1,9 +1,10 @@
 package io.army.criteria.impl;
 
-import io.army.Dialect;
 import io.army.criteria.Delete;
 import io.army.criteria.Insert;
+import io.army.criteria.Select;
 import io.army.criteria.Update;
+import io.army.dialect.Dialect;
 import io.army.example.domain.*;
 import io.army.example.struct.IdentityType;
 import io.army.stmt.BatchStmt;
@@ -13,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +27,7 @@ public class StandardCriteriaUnitTests {
     public void insertParent() {
 
         final Insert insert;
-        insert = SQLs.standardInsert(ChinaRegion_.T)
+        insert = SQLs.valueInsert(ChinaRegion_.T)
                 .insertInto(ChinaRegion_.T)
                 .set(ChinaRegion_.regionGdp, new BigDecimal("88888.88"))
                 .set(ChinaRegion_.visible, true)
@@ -43,7 +43,7 @@ public class StandardCriteriaUnitTests {
     @Test
     public void insertChild() {
         final Insert insert;
-        insert = SQLs.standardInsert(ChinaProvince_.T)
+        insert = SQLs.valueInsert(ChinaProvince_.T)
                 .insertInto(ChinaProvince_.T)
                 .values(this::createProvinceList)
                 .asInsert();
@@ -57,7 +57,7 @@ public class StandardCriteriaUnitTests {
     public void updateParent() {
         final BigDecimal addGdp = new BigDecimal("888.8");
         final Update update;
-        update = SQLs.standardUpdate()
+        update = SQLs.singleUpdate()
                 .update(ChinaRegion_.T, "c")
                 .set(ChinaRegion_.name, "武侠江湖")
                 .setPlus(ChinaRegion_.regionGdp, addGdp)
@@ -75,7 +75,7 @@ public class StandardCriteriaUnitTests {
     public void updateChild() {
         final BigDecimal addGdp = new BigDecimal("888.8");
         final Update update;
-        update = SQLs.standardUpdate()
+        update = SQLs.singleUpdate()
                 .update(ChinaProvince_.T, "p")
                 .set(ChinaProvince_.name, "武侠江湖")
                 .setPlus(ChinaProvince_.regionGdp, addGdp)
@@ -99,7 +99,7 @@ public class StandardCriteriaUnitTests {
     @Test
     public void batchUpdateParent() {
         final Update update;
-        update = SQLs.standardBatchUpdate()
+        update = SQLs.batchUpdate()
                 .update(ChinaProvince_.T, "p")
                 .setPlus(ChinaProvince_.regionGdp)
                 .set(ChinaProvince_.governor)
@@ -125,7 +125,7 @@ public class StandardCriteriaUnitTests {
     @Test
     public void updateParentWithOnlyNullMode() {
         final Update update;
-        update = SQLs.standardUpdate()
+        update = SQLs.singleUpdate()
                 .update(User_.T, "u")
                 .set(User_.identityType, IdentityType.PERSON)
                 .set(User_.identityId, 888)
@@ -142,7 +142,7 @@ public class StandardCriteriaUnitTests {
     @Test
     public void deleteParent() {
         final Delete delete;
-        delete = SQLs.standardDelete()
+        delete = SQLs.singleDelete()
                 .deleteFrom(ChinaRegion_.T, "r")
                 .where(ChinaRegion_.id.equal(1))
                 .and(ChinaRegion_.name.equal("马鱼腮角"))
@@ -161,7 +161,7 @@ public class StandardCriteriaUnitTests {
     @Test
     public void deleteChild() {
         final Delete delete;
-        delete = SQLs.standardDelete()
+        delete = SQLs.singleDelete()
                 .deleteFrom(ChinaProvince_.T, "p")
                 .where(ChinaProvince_.id.equal(1))
                 .and(ChinaProvince_.name.equal("江南省"))
@@ -180,7 +180,7 @@ public class StandardCriteriaUnitTests {
     @Test
     public void batchDeleteChild() {
         final Delete delete;
-        delete = SQLs.standardBatchDelete()
+        delete = SQLs.batchDelete()
                 .deleteFrom(ChinaProvince_.T, "p")
                 .where(ChinaProvince_.id.equalNamed())
                 .and(ChinaProvince_.name.equalNamed())
@@ -199,13 +199,16 @@ public class StandardCriteriaUnitTests {
     }
 
     @Test
-    public void test2() {
-        System.out.println(Boolean.class.isLocalClass());
-        System.out.println(Boolean.class.isSynthetic());
+    public void simpleSelect() {
+        final Select select;
+        select = SQLs.query()
+                .select(User_.nickName)
+                .from(User_.T, "u")
+                .asQuery();
 
-        System.out.println(LocalDate.class.isSynthetic());
-        System.out.println(User.class.isSynthetic());
-
+        for (Dialect dialect : Dialect.values()) {
+            LOG.debug("simpleSelect:\nselect sql:\n{}", select.mockAsString(dialect));
+        }
 
     }
 

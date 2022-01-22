@@ -1,12 +1,12 @@
 package io.army.criteria.impl;
 
-import io.army.Dialect;
 import io.army.beans.ReadWrapper;
 import io.army.criteria.Statement;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._SingleUpdate;
+import io.army.dialect.Dialect;
 import io.army.dialect._MockDialects;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -102,14 +102,14 @@ abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA,
     }
 
     @Override
-    public final void mock(Dialect mode) {
-        System.out.println(this.mockAsString(mode));
+    public final void mock(Dialect dialect) {
+        System.out.println(this.mockAsString(dialect));
     }
 
     @Override
-    public final String mockAsString(Dialect mode) {
+    public final String mockAsString(Dialect dialect) {
         final Stmt stmt;
-        stmt = this.mockAsStmt(mode);
+        stmt = this.mockAsStmt(dialect);
         final StringBuilder builder = new StringBuilder();
         if (stmt instanceof SimpleStmt) {
             builder.append("update sql:\n")
@@ -125,9 +125,9 @@ abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA,
     }
 
     @Override
-    public final Stmt mockAsStmt(Dialect mode) {
+    public final Stmt mockAsStmt(Dialect dialect) {
         final Stmt stmt;
-        stmt = _MockDialects.from(mode).update(this, Visible.ONLY_VISIBLE);
+        stmt = _MockDialects.from(dialect).update(this, Visible.ONLY_VISIBLE);
         if (stmt instanceof SimpleStmt) {
             _Assert.noNamedParam(((SimpleStmt) stmt).paramGroup());
         }

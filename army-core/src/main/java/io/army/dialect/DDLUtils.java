@@ -6,47 +6,17 @@ import io.army.meta.MetaException;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
-import io.army.util.StringUtils;
-import io.army.util.TimeUtils;
 
-import java.time.*;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.Temporal;
 import java.util.*;
 
 public abstract class DDLUtils {
 
     protected DDLUtils() {
         throw new UnsupportedOperationException();
-    }
-
-
-    public static String zeroForTimeType(FieldMeta<?, ?> fieldMeta) {
-        // TODO 验证 precision 大于 0 时 以 6 精度 是否能插入.
-        Class<?> javaType = fieldMeta.javaType();
-        String zeroValue;
-        if (javaType == Month.class) {
-            zeroValue = Month.JANUARY.name();
-        } else if (javaType == DayOfWeek.class) {
-            zeroValue = DayOfWeek.MONDAY.name();
-        } else {
-            int precision = fieldMeta.precision();
-            if (precision > 6) {
-                throw new MetaException("%s ,precision must in [0,6].", fieldMeta);
-            }
-            zeroValue = StringUtils.quote(
-                    TimeUtils.ZERO_DATE_TIME.format(formatterForTimeTypeDefaultValue(fieldMeta.javaType(), precision))
-            );
-        }
-        return zeroValue;
-    }
-
-    public static String constantForTimeType(Temporal temporal, int precision) {
-        return StringUtils.quote(
-                formatterForTimeTypeDefaultValue(temporal.getClass(), precision)
-                        .format(temporal)
-        );
-
     }
 
 

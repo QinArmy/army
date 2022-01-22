@@ -1,31 +1,26 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.DerivedField;
+import io.army.criteria.Expression;
+import io.army.criteria.QualifiedField;
+import io.army.criteria.SelectPart;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
 
 import java.util.List;
 
 interface CriteriaContext {
 
+    void selectList(List<SelectPart> selectPartList);
+
     <T extends IDomain, F> QualifiedField<T, F> qualifiedField(String tableAlias, FieldMeta<T, F> field);
 
     <E> DerivedField<E> ref(String subQueryAlias, String derivedFieldName);
 
-    <E> DerivedField<E> ref(String subQueryAlias, String derivedFieldName, Class<E> selectionType);
+    <E> Expression<E> ref(String selectionAlias);
 
-    @Deprecated
-    void onAddSubQuery(SubQuery subQuery, String subQueryAlias);
-
-    @Deprecated
-    void onAddTable(TableMeta<?> tableMeta, String tableAlias);
-
-    default void onAddTablePart(TablePart tablePart, String alias) {
-        throw new UnsupportedOperationException();
-    }
 
     default void onAddBlock(_TableBlock block) {
         throw new UnsupportedOperationException();
@@ -35,12 +30,9 @@ interface CriteriaContext {
         throw new UnsupportedOperationException();
     }
 
-    default TableBlock firstBlock() {
+    default _TableBlock firstBlock() {
         throw new UnsupportedOperationException();
     }
-
-
-    <E> Expression<E> composeRef(String selectionAlias);
 
     @Nullable
     <C> C criteria();

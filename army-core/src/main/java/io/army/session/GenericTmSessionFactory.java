@@ -1,7 +1,7 @@
 package io.army.session;
 
+import io.army.Database;
 import io.army.criteria.NotFoundRouteException;
-import io.army.dialect.Database;
 import io.army.meta.TableMeta;
 import io.army.sharding.DatabaseRoute;
 

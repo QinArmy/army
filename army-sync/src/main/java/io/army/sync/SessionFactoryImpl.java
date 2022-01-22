@@ -9,8 +9,8 @@ import io.army.cache.SessionCache;
 import io.army.cache.SessionCacheFactory;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.criteria.NotFoundRouteException;
-import io.army.dialect.DialectFactory;
 import io.army.dialect._Dialect;
+import io.army.dialect._DialectFactory;
 import io.army.lang.Nullable;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
@@ -52,7 +52,7 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
         super(builder);
 
         this.executorFactory = Objects.requireNonNull(builder.executorFactory);
-        this.dialect = DialectFactory.createDialect(null);//must after  this.executorFactory
+        this.dialect = _DialectFactory.createDialect(null);//must after  this.executorFactory
         this.domainAdviceMap = CollectionUtils.unmodifiableMap(builder.domainAdviceMap);
         this.currentSessionContext = builder.currentSessionContext;
 

@@ -1,7 +1,7 @@
 package io.army.dialect;
 
 
-import io.army.Dialect;
+import io.army.Database;
 import io.army.beans.ObjectWrapper;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
@@ -18,8 +18,8 @@ public abstract class _MockDialects {
 
     private static final ConcurrentMap<Dialect, _Dialect> DIALECT_MAP = new ConcurrentHashMap<>();
 
-    public static _Dialect from(final Dialect mode) {
-        return DIALECT_MAP.computeIfAbsent(mode, _MockDialects::createDialect);
+    public static _Dialect from(final Dialect dialect) {
+        return DIALECT_MAP.computeIfAbsent(dialect, _MockDialects::createDialect);
     }
 
     private static _Dialect createDialect(final Dialect mode) {
@@ -34,7 +34,7 @@ public abstract class _MockDialects {
             default:
                 throw _Exceptions.unexpectedEnum(mode);
         }
-        return DialectFactory.createDialect(new MockEnvironment(meta));
+        return _DialectFactory.createDialect(new MockEnvironment(meta));
     }
 
     final ServerMeta serverMeta;
@@ -45,7 +45,7 @@ public abstract class _MockDialects {
     }
 
 
-    private static final class MockEnvironment extends _MockDialects implements DialectEnvironment {
+    private static final class MockEnvironment extends _MockDialects implements _DialectEnvironment {
 
         private MockEnvironment(ServerMeta serverMeta) {
             super(serverMeta);

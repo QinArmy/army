@@ -1,6 +1,6 @@
 package io.army.sqltype;
 
-import io.army.dialect.Database;
+import io.army.Database;
 import io.army.mapping.MappingType;
 
 /**

@@ -1,10 +1,12 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.DerivedField;
+import io.army.criteria.Expression;
+import io.army.criteria.QualifiedField;
+import io.army.criteria.SortPart;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
 
 import java.util.Collections;
 import java.util.List;
@@ -27,23 +29,9 @@ final class UnionQueryContext implements CriteriaContext {
         return null;
     }
 
-    @Override
-    public <E> DerivedField<E> ref(String subQueryAlias, String derivedFieldName, Class<E> selectionType) {
-        return null;
-    }
 
     @Override
-    public void onAddSubQuery(SubQuery subQuery, String subQueryAlias) {
-
-    }
-
-    @Override
-    public void onAddTable(TableMeta<?> tableMeta, String tableAlias) {
-
-    }
-
-    @Override
-    public <E> Expression<E> composeRef(String selectionAlias) {
+    public <E> Expression<E> ref(String selectionAlias) {
         return null;
     }
 

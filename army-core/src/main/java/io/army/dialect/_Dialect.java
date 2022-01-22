@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.Dialect;
+import io.army.Database;
 import io.army.criteria.*;
 import io.army.meta.ParamMeta;
 import io.army.session.DialectSessionFactory;

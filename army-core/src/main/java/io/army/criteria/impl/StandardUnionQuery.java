@@ -1,10 +1,10 @@
 package io.army.criteria.impl;
 
-import io.army.Dialect;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._PartQuery;
 import io.army.criteria.impl.inner._UnionQuery;
 import io.army.dialect.Constant;
+import io.army.dialect.Dialect;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
 import io.army.meta.ParamMeta;

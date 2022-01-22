@@ -8,12 +8,12 @@ public enum LockMode {
     /**
      * Pessimistic read lock.
      */
-    PESSIMISTIC_READ,
+    READ,
 
     /**
      * Pessimistic write lock.
      */
-    PESSIMISTIC_WRITE,
+    WRITE,
 
 
 }

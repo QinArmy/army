@@ -1,17 +1,17 @@
 package io.army.dialect.mysql;
 
-import io.army.dialect.DialectEnvironment;
+import io.army.dialect._DialectEnvironment;
 
 import java.util.Set;
 
 class MySQL80Dialect extends MySQLDialect {
 
-    static MySQL80Dialect create(DialectEnvironment environment) {
+    static MySQL80Dialect create(_DialectEnvironment environment) {
         return new MySQL80Dialect(environment);
     }
 
 
-    MySQL80Dialect(DialectEnvironment environment) {
+    MySQL80Dialect(_DialectEnvironment environment) {
         super(environment);
     }
 

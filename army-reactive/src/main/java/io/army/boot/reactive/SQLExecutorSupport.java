@@ -1,10 +1,10 @@
 package io.army.boot.reactive;
 
+import io.army.Database;
 import io.army.beans.ObjectWrapper;
 import io.army.boot.GenericSQLExecutorSupport;
 import io.army.codec.StatementType;
 import io.army.criteria.Selection;
-import io.army.dialect.Database;
 import io.army.dialect.MappingContext;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;

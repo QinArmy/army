@@ -1,6 +1,6 @@
 package io.army.boot.migratioin;
 
-import io.army.dialect.Database;
+import io.army.Database;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.schema.SchemaInfoException;

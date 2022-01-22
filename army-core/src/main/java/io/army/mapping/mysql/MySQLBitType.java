@@ -1,6 +1,6 @@
 package io.army.mapping.mysql;
 
-import io.army.dialect.Database;
+import io.army.Database;
 import io.army.mapping.MappingEnvironment;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
@@ -12,18 +12,18 @@ import java.util.BitSet;
 /**
  * @see Long
  */
-public final class MySqlBitType extends _ArmyNoInjectionMapping {
+public final class MySQLBitType extends _ArmyNoInjectionMapping {
 
-    public static final MySqlBitType INSTANCE = new MySqlBitType();
+    public static final MySQLBitType INSTANCE = new MySQLBitType();
 
-    public static MySqlBitType create(Class<?> javaType) {
+    public static MySQLBitType create(Class<?> javaType) {
         if (javaType != Long.class) {
-            throw errorJavaType(MySqlBitType.class, javaType);
+            throw errorJavaType(MySQLBitType.class, javaType);
         }
         return INSTANCE;
     }
 
-    private MySqlBitType() {
+    private MySQLBitType() {
     }
 
 

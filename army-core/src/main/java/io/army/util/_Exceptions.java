@@ -1,10 +1,10 @@
 package io.army.util;
 
 import io.army.ArmyException;
-import io.army.Dialect;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
+import io.army.dialect.Dialect;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;

@@ -1,6 +1,5 @@
 package io.army.dialect.mysql;
 
-import io.army.Dialect;
 import io.army.criteria.GenericField;
 import io.army.criteria.LockMode;
 import io.army.dialect.*;
@@ -21,7 +20,7 @@ abstract class MySQLDialect extends _AbstractDialect {
 
     protected static final String NO_BACKSLASH_ESCAPES = "NO_BACKSLASH_ESCAPES";
 
-    MySQLDialect(DialectEnvironment environment) {
+    MySQLDialect(_DialectEnvironment environment) {
         super(environment);
     }
 
@@ -163,20 +162,12 @@ abstract class MySQLDialect extends _AbstractDialect {
             case TINYTEXT:
             case TEXT:
             case MEDIUMTEXT:
-            case LONGTEXT: {
-                final boolean hexEscapes;
-                hexEscapes = this.environment.serverMeta().sessionVar(NO_BACKSLASH_ESCAPES) != null;
-                literal = MySQLLiterals.text(sqlType, hexEscapes, nonNull);
-            }
-            break;
-            case JSON: {
-                final String json;
-                json = this.environment.jsonCodec().encode(nonNull);
-                final boolean hexEscapes;
-                hexEscapes = this.environment.serverMeta().sessionVar(NO_BACKSLASH_ESCAPES) != null;
-                literal = MySQLLiterals.text(sqlType, hexEscapes, json);
-            }
-            break;
+            case LONGTEXT:
+                literal = MySQLLiterals.text(sqlType, nonNull);
+                break;
+            case JSON:
+                literal = MySQLLiterals.text(sqlType, this.environment.jsonCodec().encode(nonNull));
+                break;
             case BINARY:
             case VARBINARY:
             case TINYBLOB:
@@ -336,11 +327,11 @@ abstract class MySQLDialect extends _AbstractDialect {
     @Override
     protected final void standardLockClause(final LockMode lockMode, final _SqlContext context) {
         switch (lockMode) {
-            case PESSIMISTIC_READ:
+            case READ:
                 context.sqlBuilder()
                         .append(Constant.SPACE_LOCK_IN_SHARE_MODE);
                 break;
-            case PESSIMISTIC_WRITE:
+            case WRITE:
                 context.sqlBuilder()
                         .append(Constant.SPACE_FOR_UPDATE);
                 break;

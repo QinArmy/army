@@ -33,7 +33,7 @@ public abstract class SQLs extends StandardFunctions {
     }
 
 
-    public static <T extends IDomain> Insert.InsertOptionSpec<T, Void> standardInsert(TableMeta<T> targetTable) {
+    public static <T extends IDomain> Insert.InsertOptionSpec<T, Void> valueInsert(TableMeta<T> targetTable) {
         return StandardValueInsert.create(targetTable, null);
     }
 
@@ -57,12 +57,12 @@ public abstract class SQLs extends StandardFunctions {
      * @param targetTable will insert to table meta
      * @return a standard insert api object.
      */
-    public static <T extends IDomain, C> Insert.InsertOptionSpec<T, C> standardInsert(TableMeta<T> targetTable, C criteria) {
+    public static <T extends IDomain, C> Insert.InsertOptionSpec<T, C> valueInsert(TableMeta<T> targetTable, C criteria) {
         Objects.requireNonNull(criteria);
         return StandardValueInsert.create(targetTable, criteria);
     }
 
-    public static Update.StandardUpdateSpec<Void> standardUpdate() {
+    public static Update.StandardUpdateSpec<Void> singleUpdate() {
         return StandardUpdate.simple(null);
     }
 
@@ -70,7 +70,7 @@ public abstract class SQLs extends StandardFunctions {
      * @param criteria a object instance, map or bean
      * @param <C>      criteria java type used to create dynamic update and sub query
      */
-    public static <C> Update.StandardUpdateSpec<C> standardUpdate(C criteria) {
+    public static <C> Update.StandardUpdateSpec<C> singleUpdate(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardUpdate.simple(criteria);
     }
@@ -78,7 +78,7 @@ public abstract class SQLs extends StandardFunctions {
     /**
      * @see #nullableNamedParam(String, ParamMeta)
      */
-    public static Update.StandardBatchUpdateSpec<Void> standardBatchUpdate() {
+    public static Update.StandardBatchUpdateSpec<Void> batchUpdate() {
         return StandardUpdate.batch(null);
     }
 
@@ -87,16 +87,16 @@ public abstract class SQLs extends StandardFunctions {
      * @param <C>      criteria java type used to create dynamic batch update and sub query
      * @see #nullableNamedParam(String, ParamMeta)
      */
-    public static <C> Update.StandardBatchUpdateSpec<C> standardBatchUpdate(C criteria) {
+    public static <C> Update.StandardBatchUpdateSpec<C> batchUpdate(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardUpdate.batch(criteria);
     }
 
-    public static Delete.StandardDeleteSpec<Void> standardDelete() {
+    public static Delete.StandardDeleteSpec<Void> singleDelete() {
         return StandardDelete.simple(null);
     }
 
-    public static <C> Delete.StandardDeleteSpec<C> standardDelete(C criteria) {
+    public static <C> Delete.StandardDeleteSpec<C> singleDelete(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardDelete.simple(criteria);
     }
@@ -104,69 +104,69 @@ public abstract class SQLs extends StandardFunctions {
     /**
      * @see #nullableNamedParam(String, ParamMeta)
      */
-    public static Delete.StandardBatchDeleteSpec<Void> standardBatchDelete() {
+    public static Delete.StandardBatchDeleteSpec<Void> batchDelete() {
         return StandardDelete.batch(null);
     }
 
     /**
      * @see #nullableNamedParam(String, ParamMeta)
      */
-    public static <C> Delete.StandardBatchDeleteSpec<C> standardBatchDelete(C criteria) {
+    public static <C> Delete.StandardBatchDeleteSpec<C> batchDelete(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardDelete.batch(criteria);
     }
 
-    public static StandardQuery.StandardSelectSpec<Void, Select> standardQuery() {
+    public static StandardQuery.StandardSelectSpec<Void, Select> query() {
         return StandardSimpleQuery.query(null);
     }
 
 
-    public static <C> StandardQuery.StandardSelectSpec<C, Select> standardQuery(C criteria) {
+    public static <C> StandardQuery.StandardSelectSpec<C, Select> query(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardSimpleQuery.query(criteria);
     }
 
-    public static StandardQuery.StandardSelectSpec<Void, SubQuery> standardSubQuery() {
+    public static StandardQuery.StandardSelectSpec<Void, SubQuery> subQuery() {
         return StandardSimpleQuery.subQuery(null);
     }
 
-    public static <C> StandardQuery.StandardSelectSpec<C, SubQuery> standardSubQuery(C criteria) {
+    public static <C> StandardQuery.StandardSelectSpec<C, SubQuery> subQuery(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardSimpleQuery.subQuery(criteria);
     }
 
-    public static StandardQuery.StandardSelectSpec<Void, RowSubQuery> standardRowSubQuery() {
+    public static StandardQuery.StandardSelectSpec<Void, RowSubQuery> rowSubQuery() {
         return StandardSimpleQuery.rowSubQuery(null);
     }
 
-    public static <C> StandardQuery.StandardSelectSpec<C, RowSubQuery> standardRowSubQuery(C criteria) {
+    public static <C> StandardQuery.StandardSelectSpec<C, RowSubQuery> rowSubQuery(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardSimpleQuery.rowSubQuery(criteria);
     }
 
-    public static StandardQuery.StandardSelectSpec<Void, ColumnSubQuery> standardColumnSubQuery() {
+    public static StandardQuery.StandardSelectSpec<Void, ColumnSubQuery> columnSubQuery() {
         return StandardSimpleQuery.columnSubQuery(null);
     }
 
-    public static <C, E> StandardQuery.StandardSelectSpec<C, ColumnSubQuery> standardColumnSubQuery(C criteria) {
+    public static <C, E> StandardQuery.StandardSelectSpec<C, ColumnSubQuery> columnSubQuery(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardSimpleQuery.columnSubQuery(criteria);
     }
 
-    public static <E> StandardQuery.StandardSelectSpec<Void, ScalarQueryExpression<E>> standardScalarSubQuery() {
+    public static <E> StandardQuery.StandardSelectSpec<Void, ScalarQueryExpression<E>> scalarSubQuery() {
         return StandardSimpleQuery.scalarSubQuery(null);
     }
 
-    public static <E> StandardQuery.StandardSelectSpec<Void, ScalarQueryExpression<E>> standardScalarSubQuery(Class<E> type) {
+    public static <E> StandardQuery.StandardSelectSpec<Void, ScalarQueryExpression<E>> scalarSubQuery(Class<E> type) {
         return StandardSimpleQuery.scalarSubQuery(null);
     }
 
-    public static <C, E> StandardQuery.StandardSelectSpec<C, ScalarQueryExpression<E>> standardScalarSubQuery(C criteria) {
+    public static <C, E> StandardQuery.StandardSelectSpec<C, ScalarQueryExpression<E>> scalarSubQuery(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardSimpleQuery.scalarSubQuery(criteria);
     }
 
-    public static <C, E> StandardQuery.StandardSelectSpec<C, ScalarQueryExpression<E>> standardScalarSubQuery(Class<E> type, C criteria) {
+    public static <C, E> StandardQuery.StandardSelectSpec<C, ScalarQueryExpression<E>> scalarSubQuery(Class<E> type, C criteria) {
         Objects.requireNonNull(criteria);
         return StandardSimpleQuery.scalarSubQuery(criteria);
     }
@@ -315,10 +315,10 @@ public abstract class SQLs extends StandardFunctions {
      * Create non-null named parameter expression for batch update(or delete)
      * </p>
      *
-     * @see SQLs#standardBatchUpdate()
-     * @see SQLs#standardBatchUpdate(Object)
-     * @see SQLs#standardBatchDelete()
-     * @see SQLs#standardBatchDelete(Object)
+     * @see SQLs#batchUpdate()
+     * @see SQLs#batchUpdate(Object)
+     * @see SQLs#batchDelete()
+     * @see SQLs#batchDelete(Object)
      */
     public static <E> Expression<E> namedParam(String name, ParamMeta paramMeta) {
         return NamedParamImpl.nonNull(name, paramMeta);
@@ -329,10 +329,10 @@ public abstract class SQLs extends StandardFunctions {
      * Create non-null named parameter expression for batch update(or delete)
      * </p>
      *
-     * @see SQLs#standardBatchUpdate()
-     * @see SQLs#standardBatchUpdate(Object)
-     * @see SQLs#standardBatchDelete()
-     * @see SQLs#standardBatchDelete(Object)
+     * @see SQLs#batchUpdate()
+     * @see SQLs#batchUpdate(Object)
+     * @see SQLs#batchDelete()
+     * @see SQLs#batchDelete(Object)
      */
     public static <E> Expression<E> namedParam(GenericField<?, ?> field) {
         return NamedParamImpl.nonNull(field.fieldName(), field);
@@ -379,14 +379,13 @@ public abstract class SQLs extends StandardFunctions {
         return CriteriaContextStack.peek().ref(subQueryAlias, derivedFieldName);
     }
 
+
     public static <E> DerivedField<E> ref(String subQueryAlias, String derivedFieldName, Class<E> selectionType) {
-        return CriteriaContextStack.peek()
-                .ref(subQueryAlias, derivedFieldName, selectionType);
+        return CriteriaContextStack.peek().ref(subQueryAlias, derivedFieldName);
     }
 
-    public static <E> Expression<E> composeRef(String selectionAlias) {
-        return CriteriaContextStack.peek()
-                .composeRef(selectionAlias);
+    public static <E> Expression<E> ref(String selectionAlias) {
+        return CriteriaContextStack.peek().ref(selectionAlias);
     }
 
     public static <T extends IDomain> SelectionGroup group(TableMeta<T> table, String alias) {

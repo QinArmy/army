@@ -78,14 +78,6 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
 
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public <E> DerivedField<E> ref(String subQueryAlias, String derivedFieldName, Class<E> selectionType) {
-        return (DerivedField<E>) refSelectionCache.computeIfAbsent(
-                subQueryAlias + derivedFieldName
-                , key -> createRefSelection(subQueryAlias, derivedFieldName, selectionType)
-        );
-    }
 
     @Override
     public void onAddSubQuery(SubQuery subQuery, String subQueryAlias) {
@@ -106,7 +98,7 @@ final class CriteriaContextImpl<C> implements CriteriaContext {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <E> Expression<E> composeRef(String selectionAlias) {
+    public <E> Expression<E> ref(String selectionAlias) {
         Selection selection = this.composeSelectMap.get(selectionAlias);
         if (selection == null) {
             throw new CriteriaException(ErrorCode.CRITERIA_ERROR, "not found compose selection[%s]", selectionAlias);

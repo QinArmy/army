@@ -31,7 +31,7 @@ import java.util.function.Supplier;
  * </p>
  */
 @SuppressWarnings("unchecked")
-abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, JS, WR, WA>
+abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, JS, WR, WA>
         implements Update, Update.UpdateSpec, Update.SimpleSetClause<C, SR>, Update.BatchSetClause<C, SR>, _Update {
 
     final CriteriaContext criteriaContext;
@@ -42,7 +42,7 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
 
     private boolean prepared;
 
-    AbstractUpdate(CriteriaContext criteriaContext) {
+    JoinableUpdate(CriteriaContext criteriaContext) {
         super(criteriaContext.criteria());
         this.criteriaContext = criteriaContext;
 
@@ -228,13 +228,6 @@ abstract class AbstractUpdate<C, JT, JS, WR, WA, SR> extends AbstractDml<C, JT, 
         return (SR) this;
     }
 
-    @Override
-    public final SR ifSetDefault(Predicate<C> predicate, FieldMeta<?, ?> field) {
-        if (predicate.test(this.criteria)) {
-            this.set(field, SQLs.defaultWord());
-        }
-        return (SR) this;
-    }
 
     @Override
     public final <F> SR ifSet(FieldMeta<?, F> field, @Nullable F value) {

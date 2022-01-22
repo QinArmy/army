@@ -52,7 +52,7 @@ public final class DoubleType extends _ArmyNoInjectionMapping {
             try {
                 value = Double.parseDouble((String) nonNull);
             } catch (NumberFormatException e) {
-                throw valueOutRange(sqlType, nonNull, null);
+                throw valueOutRange(sqlType, nonNull, e);
             }
         } else {
             throw outRangeOfSqlType(sqlType, nonNull);

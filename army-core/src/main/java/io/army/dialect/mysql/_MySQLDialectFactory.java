@@ -1,14 +1,14 @@
 package io.army.dialect.mysql;
 
-import io.army.dialect.Database;
-import io.army.dialect.DialectEnvironment;
+import io.army.Database;
 import io.army.dialect._Dialect;
+import io.army.dialect._DialectEnvironment;
 import io.army.meta.ServerMeta;
 import io.army.util._Exceptions;
 
-public abstract class MySQLDialectFactory {
+public abstract class _MySQLDialectFactory {
 
-    public static _Dialect createDialect(final DialectEnvironment environment) {
+    public static _Dialect createDialect(final _DialectEnvironment environment) {
         final ServerMeta meta = environment.serverMeta();
         if (meta.database() != Database.MySQL) {
             throw new IllegalArgumentException();

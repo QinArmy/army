@@ -1,4 +1,4 @@
-package io.army.dialect;
+package io.army;
 
 
 public enum Database {

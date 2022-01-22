@@ -7,8 +7,11 @@ import io.army.criteria.mysql.MySQLUpdate;
 
 import java.util.Objects;
 
-public abstract class MySQLs80 extends MySQLs {
+public abstract class MySQLs80 extends MySQLSyntax {
 
+    /**
+     * protected constructor, application developer can extend this util class.
+     */
     protected MySQLs80() {
     }
 

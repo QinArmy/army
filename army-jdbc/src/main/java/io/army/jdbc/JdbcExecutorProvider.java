@@ -1,6 +1,6 @@
 package io.army.jdbc;
 
-import io.army.dialect.Database;
+import io.army.Database;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.session.UnsupportedDataSourceTypeException;

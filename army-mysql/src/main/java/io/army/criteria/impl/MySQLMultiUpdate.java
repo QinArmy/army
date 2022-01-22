@@ -4,6 +4,7 @@ import io.army.beans.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLMultiUpdate;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
@@ -38,11 +39,11 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
         , _MySQLMultiUpdate {
 
 
-    static <C> MultiUpdateSpec<C> simple57(@Nullable C criteria) {
+    static <C> MultiUpdateSpec<C> simple(@Nullable C criteria) {
         return new SimpleUpdate<>(criteria);
     }
 
-    static <C> BatchMultiUpdateSpec<C> batch57(@Nullable C criteria) {
+    static <C> BatchMultiUpdateSpec<C> batch(@Nullable C criteria) {
         return new BatchUpdate<>(criteria);
     }
 
@@ -91,7 +92,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
 
     @Override
     public final UT update(TableMeta<? extends IDomain> table, String tableAlias) {
-        this.addFirstBlock(new FirstBlock(table, tableAlias));
+        this.criteriaContext.onFirstBlock(new FirstBlock(table, tableAlias));
         return (UT) this;
     }
 
@@ -100,13 +101,13 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
             , Supplier<T> supplier, String alias) {
         this.hintList = CollectionUtils.asUnmodifiableList(hints.get());
         this.modifierList = CollectionUtils.asUnmodifiableList(modifiers);
-        this.addFirstBlock(TableBlock.firstBlock(supplier.get(), alias));
+        this.criteriaContext.onFirstBlock(TableBlock.firstBlock(supplier.get(), alias));
         return (US) this;
     }
 
     @Override
     public final <T extends TablePart> US update(Supplier<T> supplier, String alias) {
-        this.addFirstBlock(TableBlock.firstBlock(supplier.get(), alias));
+        this.criteriaContext.onFirstBlock(TableBlock.firstBlock(supplier.get(), alias));
         return (US) this;
     }
 
@@ -115,13 +116,13 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
             , Function<C, T> function, String alias) {
         this.hintList = CollectionUtils.asUnmodifiableList(hints.get());
         this.modifierList = CollectionUtils.asUnmodifiableList(modifiers);
-        this.addFirstBlock(TableBlock.firstBlock(function.apply(this.criteria), alias));
+        this.criteriaContext.onFirstBlock(TableBlock.firstBlock(function.apply(this.criteria), alias));
         return (US) this;
     }
 
     @Override
     public final <T extends TablePart> US update(Function<C, T> function, String alias) {
-        this.addFirstBlock(TableBlock.firstBlock(function.apply(this.criteria), alias));
+        this.criteriaContext.onFirstBlock(TableBlock.firstBlock(function.apply(this.criteria), alias));
         return (US) this;
     }
 
@@ -249,13 +250,37 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
     }
 
     @Override
+    public final JP straightJoin(TableMeta<?> table) {
+        return this.createPartitionOnBlock(_JoinType.STRAIGHT_JOIN, table);
+    }
+
+    @Override
     public final JT straightJoin(TableMeta<?> table, String tableAlias) {
-        return this.addTableBlock(_JoinType.STRAIGHT_JOIN, table, tableAlias);
+        final JT block;
+        block = this.createTableBlock(_JoinType.STRAIGHT_JOIN, table, tableAlias);
+        this.criteriaContext.onAddBlock((_TableBlock) block);
+        return block;
+    }
+
+    @Override
+    public final <T extends TablePart> JS straightJoin(Function<C, T> function, String alias) {
+        final JS block;
+        block = this.createOnBlock(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) block);
+        return block;
     }
 
     @Override
     public final <T extends TablePart> JS straightJoin(Supplier<T> supplier, String alias) {
-        return this.addOnBlock(_JoinType.STRAIGHT_JOIN, supplier.get(), alias);
+        final JS block;
+        block = this.createOnBlock(_JoinType.STRAIGHT_JOIN, supplier.get(), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) block);
+        return block;
+    }
+
+    @Override
+    public final JP ifStraightJoin(Predicate<C> predicate, TableMeta<?> table) {
+        return this.ifCreatePartitionOnBlock(predicate, _JoinType.STRAIGHT_JOIN, table);
     }
 
     @Override
@@ -269,63 +294,49 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
     }
 
     @Override
-    public final <T extends TablePart> JS straightJoin(Function<C, T> function, String alias) {
-        return this.addOnBlock(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria), alias);
-    }
-
-    @Override
     public final <T extends TablePart> JS ifStraightJoin(Function<C, T> function, String alias) {
         return this.ifAddOnBlock(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
     public final JP leftJoin(TableMeta<?> table) {
-        return this.addPartitionBlock(_JoinType.LEFT_JOIN, table);
+        return this.createPartitionOnBlock(_JoinType.LEFT_JOIN, table);
     }
 
     @Override
     public final JP ifLeftJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifAddPartitionBlock(predicate, _JoinType.LEFT_JOIN, table);
+        return this.ifCreatePartitionOnBlock(predicate, _JoinType.LEFT_JOIN, table);
     }
 
     @Override
     public final JP join(TableMeta<?> table) {
-        return this.addPartitionBlock(_JoinType.JOIN, table);
+        return this.createPartitionOnBlock(_JoinType.JOIN, table);
     }
 
     @Override
     public final JP ifJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifAddPartitionBlock(predicate, _JoinType.JOIN, table);
+        return this.ifCreatePartitionOnBlock(predicate, _JoinType.JOIN, table);
     }
 
     @Override
     public final JP rightJoin(TableMeta<?> table) {
-        return this.addPartitionBlock(_JoinType.RIGHT_JOIN, table);
+        return this.createPartitionOnBlock(_JoinType.RIGHT_JOIN, table);
     }
 
     @Override
     public final JP ifRightJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifAddPartitionBlock(predicate, _JoinType.RIGHT_JOIN, table);
+        return this.ifCreatePartitionOnBlock(predicate, _JoinType.RIGHT_JOIN, table);
     }
 
-    @Override
-    public final JP straightJoin(TableMeta<?> table) {
-        return this.addPartitionBlock(_JoinType.STRAIGHT_JOIN, table);
-    }
-
-    @Override
-    public final JP ifStraightJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifAddPartitionBlock(predicate, _JoinType.STRAIGHT_JOIN, table);
-    }
 
     @Override
     public final JP fullJoin(TableMeta<?> table) {
-        return this.addPartitionBlock(_JoinType.FULL_JOIN, table);
+        return this.createPartitionOnBlock(_JoinType.FULL_JOIN, table);
     }
 
     @Override
     public final JP ifFullJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifAddPartitionBlock(predicate, _JoinType.FULL_JOIN, table);
+        return this.ifCreatePartitionOnBlock(predicate, _JoinType.FULL_JOIN, table);
     }
 
 
@@ -345,7 +356,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
 
     abstract JP createNoActionPartitionBlock();
 
-    abstract JP addPartitionBlock(_JoinType joinType, TableMeta<?> table);
+    abstract JP createPartitionOnBlock(_JoinType joinType, TableMeta<?> table);
 
     abstract UP createPartitionJoinBlock(TableMeta<?> table);
 
@@ -357,11 +368,6 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
         }
         if (CollectionUtils.isEmpty(this.modifierList)) {
             this.modifierList = Collections.emptyList();
-        }
-
-        final FirstBlock block = (FirstBlock) this.getFirstBlock();
-        if (CollectionUtils.isEmpty(block.indexHintList)) {
-            block.indexHintList = Collections.emptyList();
         }
 
         if (this instanceof BatchUpdate) {
@@ -404,22 +410,13 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
 
     }
 
-    @Override
-    JT createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
-        return null;
-    }
-
-    @Override
-    JS createOnBlock(_JoinType joinType, TablePart tablePart, String alias) {
-        return null;
-    }
 
     /*################################## blow private method ##################################*/
 
-    private JP ifAddPartitionBlock(Predicate<C> predicate, _JoinType joinType, TableMeta<?> table) {
+    private JP ifCreatePartitionOnBlock(Predicate<C> predicate, _JoinType joinType, TableMeta<?> table) {
         final JP block;
         if (predicate.test(this.criteria)) {
-            block = addPartitionBlock(joinType, table);
+            block = createPartitionOnBlock(joinType, table);
         } else {
             JP noActionPartitionBlock = this.noActionPartitionBlock;
             if (noActionPartitionBlock == null) {
@@ -432,18 +429,22 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
     }
 
 
-    private UT addIndexHint(final MySQLIndexHint.Command command, final boolean forJoin, final List<String> indexNames) {
-        if (this.blockSize() != 1) {
+    private UT addIndexHint(final MySQLIndexHint.Command command, final boolean forJoin
+            , final List<String> indexNames) {
+
+        if (CollectionUtils.isEmpty(indexNames)) {
+            throw new CriteriaException("index hint clause index name list must not empty.");
+        }
+        final _TableBlock block;
+        block = this.criteriaContext.firstBlock();
+        if (!(block instanceof FirstBlock)) {
             throw _Exceptions.castCriteriaApi();
         }
-        if (CollectionUtils.isEmpty(indexNames)) {
-            throw new CriteriaException("index hint clause index name list must not emtpy.");
-        }
-        final FirstBlock block = (FirstBlock) this.getFirstBlock();
-        List<MySQLIndexHint> indexHintList = block.indexHintList;
+        final FirstBlock firstBlock = (FirstBlock) block;
+        List<MySQLIndexHint> indexHintList = firstBlock.indexHintList;
         if (indexHintList == null) {
             indexHintList = new ArrayList<>();
-            block.indexHintList = indexHintList;
+            firstBlock.indexHintList = indexHintList;
         }
         final MySQLIndexHint.Purpose purpose;
         if (forJoin) {
@@ -477,7 +478,14 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
         private FirstBlock(TableMeta<?> table, String alias, List<String> partitionList) {
             super(_JoinType.NONE, table);
             this.alias = alias;
-            this.partitionList = CollectionUtils.unmodifiableList(partitionList);
+            switch (partitionList.size()) {
+                case 0:
+                case 1:
+                    this.partitionList = partitionList;
+                    break;
+                default:
+                    this.partitionList = CollectionUtils.unmodifiableList(partitionList);
+            }
         }
 
 
@@ -499,7 +507,11 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
         @Override
         public List<? extends _IndexHint> indexHintList() {
             List<MySQLIndexHint> indexHintList = this.indexHintList;
-            assert indexHintList != null;
+            if (indexHintList == null) {
+                indexHintList = Collections.emptyList();
+            } else {
+                indexHintList = Collections.unmodifiableList(indexHintList);
+            }
             return indexHintList;
         }
 
@@ -533,7 +545,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
 
         @Override
         final MultiPartitionJoinSpec<C> createPartitionJoinBlock(TableMeta<?> table) {
-            return new SimplePartitionJoinSpec<>(table, this::addFirstPartitionBlock, this.criteria);
+            return new SimplePartitionJoinSpec<>(table, this);
         }
 
         @Override
@@ -547,10 +559,8 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
         }
 
         @Override
-        final MultiPartitionOnSpec<C> addPartitionBlock(_JoinType joinType, TableMeta<?> table) {
-            final SimplePartitionOnBlock<C> block = new SimplePartitionOnBlock<>(joinType, table, this);
-            this.addOtherBlock(block);
-            return block;
+        final MultiPartitionOnSpec<C> createPartitionOnBlock(_JoinType joinType, TableMeta<?> table) {
+            return new SimplePartitionOnBlock<>(joinType, table, this);
         }
 
 
@@ -569,10 +579,6 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
             return new SimpleNoActionPartitionBlock<>(this);
         }
 
-        private IndexHintJoinSpec<C> addFirstPartitionBlock(FirstBlock block) {
-            this.addFirstBlock(block);
-            return this;
-        }
 
 
     }// SimpleMultiUpdate
@@ -582,7 +588,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
      * This class is the implementation of batch multi-table update api.
      * </p>
      *
-     * @see #batch57(Object)
+     * @see #batch(Object)
      */
     private static class BatchUpdate<C> extends MySQLMultiUpdate<
             C,
@@ -641,7 +647,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
 
         @Override
         final BatchMultiPartitionJoinSpec<C> createPartitionJoinBlock(TableMeta<?> table) {
-            return new BatchPartitionJoinSpec<>(table, this::addFirstPartitionBlock, this.criteria);
+            return new BatchPartitionJoinSpec<>(table, this);
         }
 
         @Override
@@ -655,10 +661,8 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
         }
 
         @Override
-        final BatchMultiPartitionOnSpec<C> addPartitionBlock(_JoinType joinType, TableMeta<?> table) {
-            final BatchPartitionOnBlock<C> block = new BatchPartitionOnBlock<>(joinType, table, this);
-            this.addOtherBlock(block);
-            return block;
+        final BatchMultiPartitionOnSpec<C> createPartitionOnBlock(_JoinType joinType, TableMeta<?> table) {
+            return new BatchPartitionOnBlock<>(joinType, table, this);
         }
 
         @Override
@@ -679,11 +683,6 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
         @Override
         public final List<ReadWrapper> wrapperList() {
             return this.wrapperList;
-        }
-
-        private BatchMultiIndexHintJoinSpec<C> addFirstPartitionBlock(FirstBlock block) {
-            this.addFirstBlock(block);
-            return this;
         }
 
 
@@ -846,13 +845,12 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
 
         private final TableMeta<?> table;
 
-        private final Function<FirstBlock, IndexHintJoinSpec<C>> function;
+        private final SimpleUpdate<C> update;
 
-        private SimplePartitionJoinSpec(TableMeta<?> table, Function<FirstBlock, IndexHintJoinSpec<C>> function
-                , @Nullable C criteria) {
-            super(criteria);
+        private SimplePartitionJoinSpec(TableMeta<?> table, SimpleUpdate<C> update) {
+            super(update.criteria);
             this.table = table;
-            this.function = function;
+            this.update = update;
         }
 
         @Override
@@ -862,7 +860,8 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
             if (partitionList == null) {
                 partitionList = Collections.emptyList();
             }
-            return this.function.apply(new FirstBlock(this.table, tableAlias, partitionList));
+            this.update.criteriaContext.onFirstBlock(new FirstBlock(table, tableAlias, partitionList));
+            return this.update;
         }
 
     }// SimplePartitionJoinSpec
@@ -876,29 +875,32 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
 
         private final TableMeta<?> table;
 
-        private final Function<FirstBlock, BatchMultiIndexHintJoinSpec<C>> function;
+        private final BatchUpdate<C> update;
 
-        private BatchPartitionJoinSpec(TableMeta<?> table
-                , Function<FirstBlock, BatchMultiIndexHintJoinSpec<C>> function, @Nullable C criteria) {
-            super(criteria);
+        private BatchPartitionJoinSpec(TableMeta<?> table, BatchUpdate<C> update) {
+            super(update.criteria);
             this.table = table;
-            this.function = function;
+            this.update = update;
         }
 
         @Override
         public BatchMultiIndexHintJoinSpec<C> as(String alias) {
             Objects.requireNonNull(alias);
-            List<String> partitionList = this.partitionList;
+            final List<String> partitionList = this.partitionList;
+            final FirstBlock block;
             if (partitionList == null) {
-                partitionList = Collections.emptyList();
+                block = new FirstBlock(this.table, alias);
+            } else {
+                block = new FirstBlock(this.table, alias, partitionList);
             }
-            return this.function.apply(new FirstBlock(this.table, alias, partitionList));
+            this.update.criteriaContext.onFirstBlock(block);
+            return this.update;
         }
     }// BatchPartitionJoinSpec
 
 
     /**
-     * @see SimpleUpdate#addOnBlock(_JoinType, TablePart, String)
+     * @see SimpleUpdate#createOnBlock(_JoinType, TablePart, String)
      */
     private static final class SimpleOnBlock<C> extends OnClauseTableBlock<C, MySQLUpdate.MultiJoinSpec<C>>
             implements MySQLUpdate.MultiOnSpec<C> {
@@ -924,9 +926,9 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
 
 
     /**
-     * @see SimpleUpdate#addTableBlock(_JoinType, TableMeta, String)
+     * @see SimpleUpdate#createTableBlock(_JoinType, TableMeta, String)
      */
-    private static final class SimpleIndexHintOnBlock<C> extends MySQLIndexHintOnBlock<
+    private static class SimpleIndexHintOnBlock<C> extends MySQLIndexHintOnBlock<
             C,
             MySQLUpdate.IndexJoinOnSpec<C>,
             MySQLUpdate.MultiIndexHintOnSpec<C>,
@@ -935,10 +937,27 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
 
         private final SimpleUpdate<C> update;
 
+        private final List<String> partitionList;
+
         private SimpleIndexHintOnBlock(_JoinType joinType, TableMeta<?> table
                 , String tableAlias, SimpleUpdate<C> update) {
             super(joinType, table, tableAlias);
             this.update = update;
+            this.partitionList = Collections.emptyList();
+        }
+
+        private SimpleIndexHintOnBlock(_JoinType joinType, TableMeta<?> table
+                , String tableAlias, SimpleUpdate<C> update, List<String> partitionList) {
+            super(joinType, table, tableAlias);
+            this.update = update;
+            switch (partitionList.size()) {
+                case 0:
+                case 1:
+                    this.partitionList = partitionList;
+                    break;
+                default:
+                    this.partitionList = Collections.unmodifiableList(partitionList);
+            }
         }
 
         @Override
@@ -954,25 +973,23 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
 
         @Override
         public List<String> partitionList() {
-            return null;
+            return this.partitionList;
         }
+
     }// SimpleIndexHintBlock
 
     /**
-     * @see SimpleUpdate#addPartitionBlock(_JoinType, TableMeta)
+     * @see SimpleUpdate#createPartitionOnBlock(_JoinType, TableMeta)
      */
     private static final class SimplePartitionOnBlock<C>
             extends MySQLPartitionClause<C, Statement.AsClause<MultiIndexHintOnSpec<C>>>
-            implements Statement.AsClause<MultiIndexHintOnSpec<C>>, MySQLUpdate.MultiPartitionOnSpec<C>
-            , _MySQLTableBlock {
+            implements Statement.AsClause<MultiIndexHintOnSpec<C>>, MySQLUpdate.MultiPartitionOnSpec<C> {
 
         private final _JoinType joinType;
 
         private final TableMeta<?> table;
 
         private final SimpleUpdate<C> update;
-
-        private SimpleIndexHintOnBlock<C> indexHintOnSpec;
 
         private SimplePartitionOnBlock(_JoinType joinType, TableMeta<?> table, SimpleUpdate<C> update) {
             super(update.criteria);
@@ -983,61 +1000,24 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
 
         @Override
         public MultiIndexHintOnSpec<C> as(final String alias) {
-            if (this.indexHintOnSpec != null) {
-                throw _Exceptions.castCriteriaApi();
-            }
             Objects.requireNonNull(alias);
+            final List<String> partitionList = this.partitionList;
             final SimpleIndexHintOnBlock<C> indexHintOnSpec;
-            indexHintOnSpec = new SimpleIndexHintOnBlock<>(this.joinType, this.table, alias, this.update);
-            this.indexHintOnSpec = indexHintOnSpec;
-            return indexHintOnSpec;
-        }
-
-        @Override
-        public TablePart table() {
-            return this.table;
-        }
-
-        @Override
-        public String alias() {
-            final SimpleIndexHintOnBlock<C> indexHintOnSpec = this.indexHintOnSpec;
-            assert indexHintOnSpec != null;
-            return indexHintOnSpec.alias;
-        }
-
-        @Override
-        public _JoinType jointType() {
-            return this.joinType;
-        }
-
-        @Override
-        public List<_Predicate> predicates() {
-            final SimpleIndexHintOnBlock<C> indexHintOnSpec = this.indexHintOnSpec;
-            assert indexHintOnSpec != null;
-            return indexHintOnSpec.predicates();
-        }
-
-        @Override
-        public List<String> partitionList() {
-            List<String> partitionList = this.partitionList;
             if (partitionList == null) {
-                partitionList = Collections.emptyList();
+                indexHintOnSpec = new SimpleIndexHintOnBlock<>(this.joinType, this.table, alias, this.update);
+            } else {
+                indexHintOnSpec = new SimpleIndexHintOnBlock<>(this.joinType, this.table, alias
+                        , this.update, partitionList);
             }
-            return partitionList;
-        }
-
-        @Override
-        public List<? extends _IndexHint> indexHintList() {
-            final SimpleIndexHintOnBlock<C> indexHintOnSpec = this.indexHintOnSpec;
-            assert indexHintOnSpec != null;
-            return indexHintOnSpec.indexHintList();
+            this.update.criteriaContext.onAddBlock(indexHintOnSpec);
+            return indexHintOnSpec;
         }
 
     }// SimplePartitionBlock
 
 
     /**
-     * @see BatchUpdate#addOnBlock(_JoinType, TablePart, String)
+     * @see BatchUpdate#createOnBlock(_JoinType, TablePart, String)
      */
     private static final class BatchOnBlock<C> extends OnClauseTableBlock<C, MySQLUpdate.BatchMultiJoinSpec<C>>
             implements BatchMultiOnSpec<C> {
@@ -1064,7 +1044,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
 
 
     /**
-     * @see BatchUpdate#addTableBlock(_JoinType, TableMeta, String)
+     * @see BatchUpdate#createTableBlock(_JoinType, TableMeta, String)
      */
     private static final class BatchIndexHintOnBlock<C> extends MySQLIndexHintOnBlock<
             C,
@@ -1075,10 +1055,27 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
 
         private final BatchUpdate<C> update;
 
+        private final List<String> partitionList;
+
         private BatchIndexHintOnBlock(_JoinType joinType, TableMeta<?> table
                 , String tableAlias, BatchUpdate<C> update) {
             super(joinType, table, tableAlias);
             this.update = update;
+            this.partitionList = Collections.emptyList();
+        }
+
+        private BatchIndexHintOnBlock(_JoinType joinType, TableMeta<?> table
+                , String tableAlias, BatchUpdate<C> update, List<String> partitionList) {
+            super(joinType, table, tableAlias);
+            this.update = update;
+            switch (partitionList.size()) {
+                case 0:
+                case 1:
+                    this.partitionList = partitionList;
+                    break;
+                default:
+                    this.partitionList = Collections.unmodifiableList(partitionList);
+            }
         }
 
         @Override
@@ -1093,26 +1090,25 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
 
         @Override
         public List<String> partitionList() {
-            return null;
+            return this.partitionList;
         }
+
     }//BatchIndexHintOnBlock
 
 
     /**
-     * @see BatchUpdate#addPartitionBlock(_JoinType, TableMeta)
+     * @see BatchUpdate#createPartitionOnBlock(_JoinType, TableMeta)
      */
     private static final class BatchPartitionOnBlock<C>
             extends MySQLPartitionClause<C, Statement.AsClause<MySQLUpdate.BatchMultiIndexHintOnSpec<C>>>
             implements Statement.AsClause<MySQLUpdate.BatchMultiIndexHintOnSpec<C>>
-            , MySQLUpdate.BatchMultiPartitionOnSpec<C>, _MySQLTableBlock {
+            , MySQLUpdate.BatchMultiPartitionOnSpec<C> {
 
         private final _JoinType joinType;
 
         private final TableMeta<?> table;
 
         private final BatchUpdate<C> update;
-
-        private BatchIndexHintOnBlock<C> indexHintBlock;
 
         private BatchPartitionOnBlock(_JoinType joinType, TableMeta<?> table, BatchUpdate<C> update) {
             super(update.criteria);
@@ -1123,56 +1119,19 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
 
         @Override
         public BatchMultiIndexHintOnSpec<C> as(final String tableAlias) {
-            if (this.indexHintBlock != null) {
-                throw _Exceptions.castCriteriaApi();
-            }
             Objects.requireNonNull(tableAlias);
+            final List<String> partitionList = this.partitionList;
             final BatchIndexHintOnBlock<C> indexHintBlock;
-            indexHintBlock = new BatchIndexHintOnBlock<>(this.joinType, this.table, tableAlias, this.update);
-            this.indexHintBlock = indexHintBlock;
+            if (partitionList == null) {
+                indexHintBlock = new BatchIndexHintOnBlock<>(this.joinType, this.table, tableAlias, this.update);
+            } else {
+                indexHintBlock = new BatchIndexHintOnBlock<>(this.joinType, this.table, tableAlias
+                        , this.update, partitionList);
+            }
+            this.update.criteriaContext.onAddBlock(indexHintBlock);
             return indexHintBlock;
         }
 
-        @Override
-        public TablePart table() {
-            return this.table;
-        }
-
-        @Override
-        public _JoinType jointType() {
-            return this.joinType;
-        }
-
-        @Override
-        public List<_Predicate> predicates() {
-            final BatchIndexHintOnBlock<C> indexHintBlock = this.indexHintBlock;
-            assert indexHintBlock != null;
-            return indexHintBlock.predicates();
-        }
-
-        @Override
-        public List<String> partitionList() {
-            List<String> partitionList = this.partitionList;
-            if (partitionList == null) {
-                partitionList = Collections.emptyList();
-            }
-            return partitionList;
-        }
-
-        @Override
-        public List<? extends _IndexHint> indexHintList() {
-            final BatchIndexHintOnBlock<C> indexHintBlock = this.indexHintBlock;
-            assert indexHintBlock != null;
-            return indexHintBlock.indexHintList();
-        }
-
-
-        @Override
-        public String alias() {
-            final BatchIndexHintOnBlock<C> indexHintBlock = this.indexHintBlock;
-            assert indexHintBlock != null;
-            return indexHintBlock.alias;
-        }
 
     }// BatchPartitionOnBlock
 

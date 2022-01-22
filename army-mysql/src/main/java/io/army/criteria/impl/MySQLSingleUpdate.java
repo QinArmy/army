@@ -520,7 +520,7 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
 
     private UR addIndexHint(MySQLIndexHint.Command command, final boolean orderBy, final List<String> indexNames) {
         if (indexNames.size() == 0) {
-            throw MySQLUtils.indexListIsEmpty();
+            throw MySQLSyntax.indexListIsEmpty();
         }
         List<MySQLIndexHint> indexHintList = this.indexHintList;
         if (indexHintList == null) {

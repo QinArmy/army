@@ -1,8 +1,9 @@
 package io.army.dialect;
 
+import io.army.Database;
 import io.army.beans.ObjectWrapper;
 import io.army.criteria.*;
-import io.army.criteria.impl._CriteriaCounselor;
+import io.army.criteria.impl._SQLCounselor;
 import io.army.criteria.impl.inner.*;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
@@ -33,11 +34,11 @@ public abstract class _AbstractDialect implements _Dialect {
     private static final Collection<String> FORBID_SET_FIELD = ArrayUtils.asUnmodifiableList(
             _MetaBridge.UPDATE_TIME, _MetaBridge.VERSION);
 
-    protected final DialectEnvironment environment;
+    protected final _DialectEnvironment environment;
 
     protected final Set<String> keyWordSet;
 
-    protected _AbstractDialect(DialectEnvironment environment) {
+    protected _AbstractDialect(_DialectEnvironment environment) {
         this.environment = environment;
         this.keyWordSet = Collections.unmodifiableSet(createKeyWordSet());
     }
@@ -56,7 +57,7 @@ public abstract class _AbstractDialect implements _Dialect {
             assertDialectInsert(insert);
             stmt = handleDialectInsert(insert, visible);
         } else {
-            _CriteriaCounselor.assertStandardInsert(insert);
+            _SQLCounselor.assertStandardInsert(insert);
             stmt = handleStandardValueInsert((_ValuesInsert) insert, visible);
         }
         return stmt;
@@ -82,7 +83,7 @@ public abstract class _AbstractDialect implements _Dialect {
             }
         } else if (update instanceof _SingleUpdate) {
             // assert implementation is standard implementation.
-            _CriteriaCounselor.assertStandardUpdate(update);
+            _SQLCounselor.assertStandardUpdate(update);
             final SimpleStmt singleStmt;
             singleStmt = handleStandardUpdate((_SingleUpdate) update, visible);
             if (update instanceof _BatchDml) {
@@ -111,7 +112,7 @@ public abstract class _AbstractDialect implements _Dialect {
                 stmt = singleStmt;
             }
         } else if (delete instanceof _SingleDelete) {
-            _CriteriaCounselor.assertStandardDelete(delete);
+            _SQLCounselor.assertStandardDelete(delete);
             final SimpleStmt simpleStmt;
             simpleStmt = this.handleStandardDelete((_SingleDelete) delete, visible);
             if (delete instanceof _BatchDml) {
@@ -130,7 +131,7 @@ public abstract class _AbstractDialect implements _Dialect {
         select.prepared();
         final SimpleStmt stmt;
         if (select instanceof StandardQuery) {
-            _CriteriaCounselor.assertStandardSelect(select);
+            _SQLCounselor.assertStandardSelect(select);
             stmt = this.handleStandardSelect(select, visible);
         } else {
             this.assertDialectSelect(select);

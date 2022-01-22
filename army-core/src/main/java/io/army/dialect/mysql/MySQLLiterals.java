@@ -16,28 +16,14 @@ import java.util.Set;
 abstract class MySQLLiterals extends _Literals {
 
 
-    static String text(final SqlType sqlType, final boolean hexEscapes, final Object nonNull) {
+    static String text(final SqlType sqlType, final Object nonNull) {
         final String literal;
         if (nonNull instanceof Boolean) {
             literal = (Boolean) nonNull ? "'T'" : "'F'";
-        } else if (!(nonNull instanceof String)) {
-            throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
-        } else if (hexEscapes) {
-            final byte[] jsonBytes = ((String) nonNull).getBytes(StandardCharsets.UTF_8);
-            final StringBuilder builder = new StringBuilder((jsonBytes.length << 1) + 10)
-                    .append('X')
-                    .append(QUOTE_CHAR)
-                    .append(BufferUtils.hexEscapesText(true, jsonBytes, jsonBytes.length));
-            literal = builder.append(QUOTE_CHAR)
-                    .toString();
+        } else if (nonNull instanceof String) {
+            literal = textEscapes((String) nonNull);
         } else {
-            final char[] jsonChars = ((String) nonNull).toCharArray();
-            final StringBuilder builder = new StringBuilder(jsonChars.length + 10)
-                    .append(QUOTE_CHAR);
-            textEscapes(builder, jsonChars, jsonChars.length);
-            literal = builder
-                    .append(QUOTE_CHAR)
-                    .toString();
+            throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
         return literal;
     }
@@ -47,7 +33,7 @@ abstract class MySQLLiterals extends _Literals {
             throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
         final byte[] array = (byte[]) nonNull;
-        StringBuilder builder = new StringBuilder()
+        final StringBuilder builder = new StringBuilder()
                 .append('X')
                 .append(QUOTE_CHAR)
                 .append(BufferUtils.hexEscapesText(true, array, array.length));
@@ -118,8 +104,9 @@ abstract class MySQLLiterals extends _Literals {
             }
             if (enumClass == null) {
                 enumClass = e.getClass();
-            } else if (enumClass.isSynthetic()) {
-
+                if (enumClass.isAnonymousClass()) {
+                    enumClass = enumClass.getSuperclass();
+                }
             } else if (!enumClass.isAssignableFrom(e.getClass())) {
                 throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
@@ -134,42 +121,51 @@ abstract class MySQLLiterals extends _Literals {
     }
 
 
-    static void textEscapes(StringBuilder builder, final char[] array, final int length) {
-        if (length < 0 || length > array.length) {
-            throw new IllegalArgumentException(String.format(
-                    "length[%s] and array.length[%s] not match.", length, array.length));
-        }
-
+    private static String textEscapes(final String value) {
+        final char[] array = value.toCharArray();
+        final StringBuilder builder = new StringBuilder(array.length + 5)
+                .append(QUOTE_CHAR);
         int lastWritten = 0;
         char ch;
-        for (int i = 0; i < length; i++) {
+        boolean hexEscapes = false;
+        outFor:
+        for (int i = 0; i < array.length; i++) {
             ch = array[i];
-            if (ch == EMPTY_CHAR) {
-                if (i > lastWritten) {
-                    builder.append(array, lastWritten, i - lastWritten);
+            switch (ch) {
+                case QUOTE_CHAR: {
+                    if (i > lastWritten) {
+                        builder.append(array, lastWritten, i - lastWritten);
+                    }
+                    builder.append(QUOTE_CHAR);
+                    lastWritten = i; // not i+1 as ch wasn't written.
                 }
-                builder.append(BACK_SLASH);
-                builder.append('0');
-                lastWritten = i + 1;
-            } else if (ch == '\032') {
-                if (i > lastWritten) {
-                    builder.append(array, lastWritten, i - lastWritten);
-                }
-                builder.append(BACK_SLASH);
-                builder.append('Z');
-                lastWritten = i + 1;
-            } else if (ch == BACK_SLASH || ch == QUOTE_CHAR || ch == DOUBLE_QUOTE) {
-                if (i > lastWritten) {
-                    builder.append(array, lastWritten, i - lastWritten);
-                }
-                builder.append(BACK_SLASH);
-                lastWritten = i; // not i+1 as ch wasn't written.
-            }
+                break;
+                case BACK_SLASH:
+                case EMPTY_CHAR:
+                case '\b':
+                case '\n':
+                case '\r':
+                case '\t':
+                case '\032':
+                    hexEscapes = true;
+                    break outFor;
 
+            }
         }
-        if (lastWritten < length) {
-            builder.append(array, lastWritten, length - lastWritten);
+        final String literal;
+        if (hexEscapes) {
+            final byte[] bytes;
+            bytes = value.getBytes(StandardCharsets.UTF_8);
+            literal = "X'" + BufferUtils.hexEscapesText(true, bytes, bytes.length) + QUOTE_CHAR;
+        } else {
+            if (lastWritten < array.length) {
+                builder.append(array, lastWritten, array.length - lastWritten);
+            }
+            literal = builder
+                    .append(QUOTE_CHAR)
+                    .toString();
         }
+        return literal;
     }
 
 

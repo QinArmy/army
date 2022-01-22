@@ -1,7 +1,7 @@
 package io.army.boot.migratioin;
 
+import io.army.Database;
 import io.army.dialect.DDLUtils;
-import io.army.dialect.Database;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;

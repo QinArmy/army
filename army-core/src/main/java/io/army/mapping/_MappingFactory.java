@@ -23,15 +23,7 @@ public abstract class _MappingFactory {
     }
 
 
-    private static final Map<Class<?>, Function<Class<?>, MappingType>> standardMap;
-
-    static {
-        final Map<Class<?>, Function<Class<?>, MappingType>> standardMappingMap;
-        standardMappingMap = createDefaultMappingMap();
-
-
-        standardMap = Collections.unmodifiableMap(standardMappingMap);
-    }
+    private static final Map<Class<?>, Function<Class<?>, MappingType>> defaultMappingMap = createDefaultMappingMap();
 
 
     public static MappingType getMapping(Class<?> javaType) throws MetaException {
@@ -46,7 +38,7 @@ public abstract class _MappingFactory {
             mappingType = NameEnumType.create(javaType);
         } else {
             final Function<Class<?>, MappingType> function;
-            function = standardMap.get(javaType);
+            function = defaultMappingMap.get(javaType);
             if (function == null) {
                 String m = String.format("Not found default mapping for %s .", javaType.getName());
                 throw new MetaException(m);
@@ -116,6 +108,7 @@ public abstract class _MappingFactory {
         map.put(Byte.class, ByteType::create);
         map.put(Short.class, ShortType::create);
         map.put(Integer.class, IntegerType::create);
+        map.put(Long.class, LongType::create);
         map.put(Double.class, DoubleType::create);
         map.put(BigDecimal.class, BigDecimalType::create);
         map.put(BigInteger.class, BigIntegerType::create);
@@ -129,7 +122,7 @@ public abstract class _MappingFactory {
         map.put(Year.class, YearType::create);
         map.put(OffsetDateTime.class, OffsetDateTimeType::create);
         map.put(OffsetTime.class, OffsetTimeType::create);
-        return map;
+        return Collections.unmodifiableMap(map);
     }
 
 }

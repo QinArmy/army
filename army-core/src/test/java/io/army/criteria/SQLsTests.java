@@ -15,7 +15,7 @@ public class SQLsTests {
     @Test
     public void standardSelect(SingleTableMeta<?> table) {
         final Select select;
-        select = SQLs.standardQuery()
+        select = SQLs.query()
                 .select(SQLs.group(table, "t"))
                 .from(table, "t")
                 .where(Collections.emptyList())
@@ -23,7 +23,7 @@ public class SQLsTests {
                 .having(Collections.emptyList())
                 .orderBy(Collections.emptyList())
                 .limit(1)
-                .lock(LockMode.PESSIMISTIC_READ)
+                .lock(LockMode.READ)
                 .union(this::createSelect)
                 .limit(1)
                 .asQuery();

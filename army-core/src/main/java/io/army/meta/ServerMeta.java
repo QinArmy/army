@@ -1,6 +1,6 @@
 package io.army.meta;
 
-import io.army.dialect.Database;
+import io.army.Database;
 import io.army.lang.Nullable;
 
 public interface ServerMeta {

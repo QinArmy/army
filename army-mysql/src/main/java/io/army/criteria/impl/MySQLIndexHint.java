@@ -44,9 +44,9 @@ final class MySQLIndexHint implements _IndexHint {
 
     enum Command implements SQLModifier {
 
-        USER_INDEX("USER INDEX"),
-        IGNORE_INDEX("IGNORE INDEX"),
-        FORCE_INDEX("FORCE INDEX");
+        USER_INDEX(" USER INDEX"),
+        IGNORE_INDEX(" IGNORE INDEX"),
+        FORCE_INDEX(" FORCE INDEX");
 
         private final String words;
 
@@ -64,9 +64,9 @@ final class MySQLIndexHint implements _IndexHint {
 
     enum Purpose implements SQLModifier {
 
-        FOR_ORDER_BY("FOR ORDER BY"),
-        FOR_GROUP_BY("FOR GROUP BY"),
-        FOR_JOIN("FOR JOIN");
+        FOR_ORDER_BY(" FOR ORDER BY"),
+        FOR_GROUP_BY(" FOR GROUP BY"),
+        FOR_JOIN(" FOR JOIN");
 
         private final String words;
 

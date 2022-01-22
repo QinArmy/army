@@ -2,11 +2,11 @@ package io.army.criteria.impl.inner;
 
 import java.util.List;
 
-public interface _MultiDml extends _Dml {
+public interface _Dml extends _Statement {
+
 
     /**
      * @return a unmodifiable list
      */
-    List<? extends _TableBlock> tableBlockList();
-
+    List<_Predicate> predicateList();
 }

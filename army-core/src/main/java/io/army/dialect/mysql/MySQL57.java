@@ -1,8 +1,8 @@
 package io.army.dialect.mysql;
 
 
-import io.army.dialect.DialectEnvironment;
 import io.army.dialect._Dialect;
+import io.army.dialect._DialectEnvironment;
 
 import java.util.Set;
 
@@ -11,12 +11,12 @@ import java.util.Set;
  */
 abstract class MySQL57 extends MySQLDialect {
 
-    static MySQL57 create(DialectEnvironment environment) {
+    static MySQL57 create(_DialectEnvironment environment) {
         return new MySQL57StandardDialect(environment);
     }
 
 
-    MySQL57(DialectEnvironment environment) {
+    MySQL57(_DialectEnvironment environment) {
         super(environment);
 
     }
@@ -46,7 +46,7 @@ abstract class MySQL57 extends MySQLDialect {
 
     private static final class MySQL57StandardDialect extends MySQL57 {
 
-        private MySQL57StandardDialect(DialectEnvironment environment) {
+        private MySQL57StandardDialect(_DialectEnvironment environment) {
             super(environment);
         }
 

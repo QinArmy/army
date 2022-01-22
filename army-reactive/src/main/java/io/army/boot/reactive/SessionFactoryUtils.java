@@ -1,8 +1,8 @@
 package io.army.boot.reactive;
 
+import io.army.Database;
 import io.army.SessionFactoryException;
 import io.army.advice.GenericDomainAdvice;
-import io.army.dialect.Database;
 import io.army.dialect._Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;

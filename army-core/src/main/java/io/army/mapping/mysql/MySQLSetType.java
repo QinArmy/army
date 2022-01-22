@@ -1,7 +1,7 @@
 package io.army.mapping.mysql;
 
+import io.army.Database;
 import io.army.dialect.Constant;
-import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
 import io.army.mapping.MappingEnvironment;
 import io.army.mapping._ArmyNoInjectionMapping;
@@ -14,21 +14,21 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public final class MySqlSetType extends _ArmyNoInjectionMapping {
+public final class MySQLSetType extends _ArmyNoInjectionMapping {
 
-    private static final ConcurrentMap<Class<?>, MySqlSetType> INSTANCE_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<?>, MySQLSetType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
-    public static MySqlSetType create(Class<?> elementJavaType) {
+    public static MySQLSetType create(Class<?> elementJavaType) {
         if (!elementJavaType.isEnum()) {
-            throw errorJavaType(MySqlSetType.class, elementJavaType);
+            throw errorJavaType(MySQLSetType.class, elementJavaType);
         }
-        return INSTANCE_MAP.computeIfAbsent(elementJavaType, MySqlSetType::new);
+        return INSTANCE_MAP.computeIfAbsent(elementJavaType, MySQLSetType::new);
     }
 
 
     private final Class<?> elementJavaType;
 
-    private MySqlSetType(Class<?> elementJavaType) {
+    private MySQLSetType(Class<?> elementJavaType) {
         this.elementJavaType = elementJavaType;
     }
 

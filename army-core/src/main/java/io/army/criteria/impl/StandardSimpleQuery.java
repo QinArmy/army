@@ -1,16 +1,13 @@
 package io.army.criteria.impl;
 
-import io.army.Dialect;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._StandardQuery;
+import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
-import io.army.util.CollectionUtils;
 import io.army.util._Exceptions;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -82,12 +79,10 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
 
-    private List<TableBlock> tableBlockList = new ArrayList<>();
-
     private LockMode lockMode;
 
     StandardSimpleQuery(@Nullable C criteria) {
-        super(CriteriaUtils.primaryContext(criteria));
+        super(CriteriaContexts.queryContext(criteria));
     }
 
     @Override
@@ -170,39 +165,29 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
     @Override
     final StandardJoinSpec<C, Q> addFirstTableBlock(TableMeta<?> table, String tableAlias) {
-        return this.addFirstTablePartBlock(table, tableAlias);
+        this.criteriaContext.onFirstBlock(TableBlock.firstBlock(table, tableAlias));
+        return this;
     }
 
     @Override
     final StandardJoinSpec<C, Q> addFirstTablePartBlock(TablePart tablePart, String alias) {
-        final List<TableBlock> tableBlockList = this.tableBlockList;
-        if (tableBlockList == null || tableBlockList.size() > 0) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        tableBlockList.add(TableBlock.firstBlock(tablePart, alias));
+        this.criteriaContext.onFirstBlock(TableBlock.firstBlock(tablePart, alias));
         return this;
     }
 
     @Override
     final StandardOnSpec<C, Q> createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
-        return this.createOnBlock(joinType, table, tableAlias);
+        return new OnBlock<>(joinType, table, tableAlias, this);
     }
 
     @Override
     final StandardOnSpec<C, Q> createOnBlock(_JoinType joinType, TablePart tablePart, String alias) {
-        final List<TableBlock> tableBlockList = this.tableBlockList;
-        if (tableBlockList == null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        final OnBlock<C, Q> block;
-        block = new OnBlock<>(joinType, tablePart, alias, this);
-        tableBlockList.add(block);
-        return block;
+        return new OnBlock<>(joinType, tablePart, alias, this);
     }
 
     @Override
     final StandardOnSpec<C, Q> createNoActionTableBlock() {
-        return this.createNoActionOnBlock();
+        return new NoActionOnBlock<>(this);
     }
 
     @Override
@@ -224,11 +209,6 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     @SuppressWarnings("unchecked")
     @Override
     final Q onAsQuery(final boolean justAsQuery) {
-        final List<TableBlock> tableBlockList = this.tableBlockList;
-        if (CollectionUtils.isEmpty(tableBlockList)) {
-            throw new CriteriaException("Table block list is empty.");
-        }
-        this.tableBlockList = CollectionUtils.unmodifiableList(tableBlockList);
         final Q thisQuery, resultQuery;
         if (this instanceof ScalarSubQuery) {
             thisQuery = (Q) ScalarSubQueryExpression.create((ScalarSubQuery<?>) this);
@@ -248,7 +228,6 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
     @Override
     final void onClear() {
-        this.tableBlockList = null;
         this.lockMode = null;
     }
 

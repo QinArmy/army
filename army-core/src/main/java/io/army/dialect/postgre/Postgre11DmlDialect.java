@@ -1,8 +1,8 @@
 package io.army.dialect.postgre;
 
-import io.army.Dialect;
-import io.army.dialect.DialectEnvironment;
+import io.army.dialect.Dialect;
 import io.army.dialect._AbstractDialect;
+import io.army.dialect._DialectEnvironment;
 import io.army.meta.ParamMeta;
 import io.army.stmt.Stmt;
 
@@ -10,7 +10,7 @@ import java.util.Set;
 
 class Postgre11DmlDialect extends _AbstractDialect {
 
-    Postgre11DmlDialect(DialectEnvironment environment) {
+    Postgre11DmlDialect(_DialectEnvironment environment) {
         super(environment);
     }
 

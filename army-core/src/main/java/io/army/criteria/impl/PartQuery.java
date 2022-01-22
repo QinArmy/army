@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
-import io.army.Dialect;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._PartQuery;
+import io.army.dialect.Dialect;
 import io.army.dialect._MockDialects;
 import io.army.lang.Nullable;
 import io.army.stmt.SimpleStmt;
@@ -260,26 +260,26 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     }
 
     @Override
-    public final void mock(Dialect mode) {
-        System.out.println(this.mockAsString(mode));
+    public final void mock(Dialect dialect) {
+        System.out.println(this.mockAsString(dialect));
     }
 
     @Override
-    public final String mockAsString(Dialect mode) {
+    public final String mockAsString(Dialect dialect) {
 
         final SimpleStmt stmt;
-        stmt = this.mockAsStmt(mode);
+        stmt = this.mockAsStmt(dialect);
         return "SELECT sql:\n" + stmt.sql();
     }
 
     @Override
-    public final SimpleStmt mockAsStmt(Dialect mode) {
+    public final SimpleStmt mockAsStmt(Dialect dialect) {
         if (this instanceof SubQuery) {
             throw new IllegalStateException("mockAsStmt(DialectMode) support only Select statement.");
         }
-        this.validateDialect(mode);
+        this.validateDialect(dialect);
         final SimpleStmt stmt;
-        stmt = _MockDialects.from(mode).select((Select) this, Visible.ONLY_VISIBLE);
+        stmt = _MockDialects.from(dialect).select((Select) this, Visible.ONLY_VISIBLE);
         _Assert.noNamedParam(stmt.paramGroup());
         return stmt;
     }

@@ -325,7 +325,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
         if (this.indexHintCommand != null) {
             throw _Exceptions.castCriteriaApi();
         }
-        final TableBlock block = this.criteriaContext.firstBlock();
+        final _TableBlock block = this.criteriaContext.firstBlock();
         if (!(block instanceof MySQLFirstBlock)) {
             throw _Exceptions.castCriteriaApi();
         }
@@ -346,7 +346,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
         if (this.indexHintCommand != null) {
             throw _Exceptions.castCriteriaApi();
         }
-        final TableBlock block = this.criteriaContext.firstBlock();
+        final _TableBlock block = this.criteriaContext.firstBlock();
         if (!(block instanceof MySQLFirstBlock)) {
             throw _Exceptions.castCriteriaApi();
         }

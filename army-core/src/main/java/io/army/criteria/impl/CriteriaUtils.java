@@ -24,6 +24,14 @@ abstract class CriteriaUtils {
         return new CriteriaContextImpl<>(criteria);
     }
 
+    static <C> CriteriaContext multiDeleteContext(@Nullable C criteria) {
+        return new CriteriaContextImpl<>(criteria);
+    }
+
+    static <C> CriteriaContext queryContext(@Nullable C criteria) {
+        return new CriteriaContextImpl<>(criteria);
+    }
+
     /**
      * invoke after {@code asSelect()}
      *

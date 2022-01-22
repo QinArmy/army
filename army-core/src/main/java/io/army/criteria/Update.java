@@ -62,8 +62,6 @@ public interface Update extends Statement {
 
         SR ifSetNull(Predicate<C> predicate, FieldMeta<?, ?> field);
 
-        SR ifSetDefault(Predicate<C> predicate, FieldMeta<?, ?> field);
-
         <F> SR ifSet(FieldMeta<?, F> field, Function<C, Expression<F>> function);
 
         <F> SR ifSet(FieldMeta<?, F> field, Supplier<Expression<F>> supplier);

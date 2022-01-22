@@ -9,13 +9,21 @@ import java.util.Collection;
 
 public interface _Expression<E> extends Expression<E>, SetValuePart, _SelfDescribed {
 
-    boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas);
+    default boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
+        throw new UnsupportedOperationException();
+    }
 
-    boolean containsFieldOf(TableMeta<?> tableMeta);
+    default boolean containsFieldOf(TableMeta<?> tableMeta) {
+        throw new UnsupportedOperationException();
+    }
 
-    int containsFieldCount(TableMeta<?> tableMeta);
+    default int containsFieldCount(TableMeta<?> tableMeta) {
+        throw new UnsupportedOperationException();
+    }
 
-    boolean containsSubQuery();
+    default boolean containsSubQuery() {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * design for non batch update

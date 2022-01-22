@@ -1,20 +1,21 @@
 package io.army.dialect;
 
-import io.army.dialect.mysql.MySQLDialectFactory;
+import io.army.Database;
+import io.army.dialect.mysql._MySQLDialectFactory;
 import io.army.util._Exceptions;
 
-public abstract class DialectFactory {
+public abstract class _DialectFactory {
 
-    private DialectFactory() {
+    private _DialectFactory() {
         throw new UnsupportedOperationException();
     }
 
-    public static _Dialect createDialect(DialectEnvironment environment) {
+    public static _Dialect createDialect(_DialectEnvironment environment) {
         final Database database = environment.serverMeta().database();
         final _Dialect dialect;
         switch (database) {
             case MySQL:
-                dialect = MySQLDialectFactory.createDialect(environment);
+                dialect = _MySQLDialectFactory.createDialect(environment);
                 break;
             case PostgreSQL:
             case Firebird:
