@@ -51,6 +51,14 @@ abstract class CriteriaContextStack {
         stack.push(subContext);
     }
 
+    static CriteriaContext root() {
+        final Stack stack = HOLDER.get();
+        if (stack == null) {
+            throw notContextStack();
+        }
+        return stack.rootContext();
+    }
+
     @Nullable
     static <C> C getCriteria() {
         final Stack stack = HOLDER.get();

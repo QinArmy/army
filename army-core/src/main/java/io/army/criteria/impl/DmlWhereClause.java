@@ -2,8 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.IPredicate;
 import io.army.criteria.Statement;
+import io.army.criteria.impl.inner._Dml;
 import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner._Statement;
 import io.army.lang.Nullable;
 
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
 abstract class DmlWhereClause<C, WR, WA> implements Statement, Statement.WhereClause<C, WR, WA>
-        , Statement.WhereAndClause<C, WA>, _Statement {
+        , Statement.WhereAndClause<C, WA>, _Dml {
 
     final CriteriaContext criteriaContext;
 
@@ -101,7 +101,7 @@ abstract class DmlWhereClause<C, WR, WA> implements Statement, Statement.WhereCl
         return this.ifAnd(function.apply(this.criteria));
     }
 
-
+    @Override
     public final List<_Predicate> predicateList() {
         prepared();
         return this.predicateList;

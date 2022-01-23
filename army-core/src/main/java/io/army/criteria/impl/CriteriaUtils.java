@@ -5,11 +5,7 @@ import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner._Query;
-import io.army.criteria.impl.inner._SortPart;
-import io.army.criteria.impl.inner._UnionQuery;
 import io.army.lang.Nullable;
-import io.army.util._Exceptions;
 
 import java.util.*;
 
@@ -19,18 +15,6 @@ abstract class CriteriaUtils {
         throw new UnsupportedOperationException();
     }
 
-
-    static <C> CriteriaContext primaryContext(@Nullable C criteria) {
-        return new CriteriaContextImpl<>(criteria);
-    }
-
-    static <C> CriteriaContext multiDeleteContext(@Nullable C criteria) {
-        return new CriteriaContextImpl<>(criteria);
-    }
-
-    static <C> CriteriaContext queryContext(@Nullable C criteria) {
-        return new CriteriaContextImpl<>(criteria);
-    }
 
     /**
      * invoke after {@code asSelect()}
@@ -107,11 +91,6 @@ abstract class CriteriaUtils {
         }
     }
 
-    static void addSortParts(List<SortPart> sortParts, List<_SortPart> sortPartList) {
-        for (SortPart sortPart : sortParts) {
-            sortPartList.add((_SortPart) sortPart);
-        }
-    }
 
     static List<_Predicate> onPredicates(IPredicate predicate1, IPredicate predicate2) {
         final List<_Predicate> list = new ArrayList<>(2);
@@ -134,21 +113,6 @@ abstract class CriteriaUtils {
             wrapperList.add(ObjectAccessorFactory.forReadonlyAccess(bean));
         }
         return Collections.unmodifiableList(wrapperList);
-    }
-
-    static CriteriaContext getUnionContext(final Query query) {
-        final CriteriaContext criteriaContext;
-        if (query instanceof SimpleQuery) {
-            criteriaContext = new CriteriaContextImpl<>(((_Query) query).selectPartList());
-        } else if (query instanceof _UnionQuery) {
-            criteriaContext = ((CriteriaContextSpec) query).getCriteriaContext();
-            if (!(criteriaContext instanceof UnionQueryContext)) {
-                throw CriteriaUtils.unknownCriteriaContext(criteriaContext);
-            }
-        } else {
-            throw _Exceptions.unknownQueryType(query);
-        }
-        return criteriaContext;
     }
 
     @SuppressWarnings("unchecked")

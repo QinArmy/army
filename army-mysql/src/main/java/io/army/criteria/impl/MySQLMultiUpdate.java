@@ -64,7 +64,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
     private MySQLIndexHint.Command command;
 
     private MySQLMultiUpdate(@Nullable C criteria) {
-        super(CriteriaUtils.primaryContext(criteria));
+        super(CriteriaContexts.primaryContext(criteria));
         CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 

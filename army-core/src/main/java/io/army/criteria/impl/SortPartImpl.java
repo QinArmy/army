@@ -2,10 +2,10 @@ package io.army.criteria.impl;
 
 import io.army.criteria.SortPart;
 import io.army.criteria.impl.inner._SelfDescribed;
-import io.army.criteria.impl.inner._SortPart;
+import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 
-final class SortPartImpl implements _SortPart {
+final class SortPartImpl implements _SelfDescribed, SortPart {
 
     private final SortPart sortPart;
 
@@ -16,28 +16,30 @@ final class SortPartImpl implements _SortPart {
         this.ascExp = ascExp;
     }
 
-
     @Override
-    public void appendSortPart(final _SqlContext context) {
+    public void appendSql(final _SqlContext context) {
         ((_SelfDescribed) this.sortPart).appendSql(context);
+
+        final StringBuilder builder = context.sqlBuilder()
+                .append(Constant.SPACE);
+
         if (this.ascExp) {
-            context.sqlBuilder()
-                    .append(" ASC");
+            builder.append(" ASC");
         } else {
-            context.sqlBuilder()
-                    .append(" DESC");
+            builder.append(" DESC");
         }
     }
 
     @Override
     public String toString() {
-        String text = sortPart.toString();
-        if (ascExp) {
-            text += " ASC";
+        final StringBuilder builder = new StringBuilder()
+                .append(this.sortPart);
+        if (this.ascExp) {
+            builder.append(" ASC");
         } else {
-            text += " DESC";
+            builder.append(" DESC");
         }
-        return text;
+        return builder.toString();
     }
 
 }

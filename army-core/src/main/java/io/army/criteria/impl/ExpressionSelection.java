@@ -1,15 +1,14 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.GenericField;
-import io.army.criteria.Selection;
 import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._SelfDescribed;
-import io.army.criteria.impl.inner._SortPart;
+import io.army.criteria.impl.inner._Selection;
+import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 import io.army.meta.ParamMeta;
 import io.army.util._Assert;
 
-final class ExpressionSelection implements Selection, _SelfDescribed, _SortPart {
+final class ExpressionSelection implements _Selection {
 
     private final _Expression<?> expression;
 
@@ -38,17 +37,13 @@ final class ExpressionSelection implements Selection, _SelfDescribed, _SortPart 
     }
 
     @Override
-    public void appendSql(final _SqlContext context) {
+    public void appendSelection(final _SqlContext context) {
         this.expression.appendSql(context);
         context.sqlBuilder()
-                .append(" AS ")
+                .append(Constant.SPACE_AS_SPACE)
                 .append(context.dialect().quoteIfNeed(this.alias));
     }
 
-    @Override
-    public void appendSortPart(_SqlContext context) {
-        throw new UnsupportedOperationException();
-    }
 
     @Override
     public boolean nullable() {
@@ -57,6 +52,6 @@ final class ExpressionSelection implements Selection, _SelfDescribed, _SortPart 
 
     @Override
     public String toString() {
-        return this.expression.toString() + " AS " + this.alias;
+        return String.format(" %s AS %s", this.expression, this.alias);
     }
 }

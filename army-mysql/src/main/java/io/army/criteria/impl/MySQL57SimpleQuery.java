@@ -87,7 +87,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     private SQLModifier lockModifier;
 
     private MySQL57SimpleQuery(@Nullable C criteria) {
-        super(CriteriaUtils.primaryContext(criteria));
+        super(CriteriaContexts.primaryContext(criteria));
         CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 

@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Selection;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.dialect.Constant;
 import io.army.dialect._Dialect;
@@ -18,9 +19,44 @@ import java.util.function.Function;
 
 abstract class CriteriaContexts {
 
+    private CriteriaContexts() {
+        throw new UnsupportedOperationException();
+    }
 
     static CriteriaContext queryContext(@Nullable Object criteria) {
         return new SimpleQueryContext(criteria);
+    }
+
+    static CriteriaContext valueInsertContext(@Nullable Object criteria) {
+        return new ValueInsertContext(criteria);
+    }
+
+    static <C> CriteriaContext primaryContext(@Nullable C criteria) {
+        throw new UnsupportedOperationException();
+    }
+
+    static <C> CriteriaContext multiDeleteContext(@Nullable C criteria) {
+        throw new UnsupportedOperationException();
+    }
+
+    static CriteriaContext unionContext(Query query) {
+        throw new UnsupportedOperationException();
+    }
+
+    static CriteriaContext getUnionContext(final Query query) {
+//        final CriteriaContext criteriaContext;
+//        if (query instanceof SimpleQuery) {
+//            criteriaContext = new CriteriaContextImpl<>(((_Query) query).selectPartList());
+//        } else if (query instanceof _UnionQuery) {
+//            criteriaContext = ((CriteriaContextSpec) query).getCriteriaContext();
+//            if (!(criteriaContext instanceof UnionQueryContext)) {
+//                throw CriteriaUtils.unknownCriteriaContext(criteriaContext);
+//            }
+//        } else {
+//            throw _Exceptions.unknownQueryType(query);
+//        }
+//        return criteriaContext;
+        throw new UnsupportedOperationException();
     }
 
 
@@ -33,6 +69,12 @@ abstract class CriteriaContexts {
         return new CriteriaException(m);
     }
 
+
+    private static CriteriaException valueInsertDontSupport() {
+        return new CriteriaException("Value insert statement context don't support this operation.");
+    }
+
+
     private static abstract class AbstractContext implements CriteriaContext {
 
         final Object criteria;
@@ -42,6 +84,16 @@ abstract class CriteriaContexts {
             this.criteria = criteria;
         }
 
+
+        @Override
+        public final <E> VarExpression<E> createVar(String name, ParamMeta paramMeta) throws CriteriaException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public final <E> VarExpression<E> var(String name) throws CriteriaException {
+            throw new UnsupportedOperationException();
+        }
 
         @SuppressWarnings("unchecked")
         @Override
@@ -66,7 +118,7 @@ abstract class CriteriaContexts {
 
         private Map<String, Map<FieldMeta<?, ?>, QualifiedField<?, ?>>> aliasToField;
 
-        Map<String, Map<String, DerivedFieldImpl<?>>> aliasToDerivedField;
+        Map<String, Map<String, RefSelection<?>>> aliasToDerivedField;
 
         private Map<String, Map<String, DerivedSelection<?>>> aliasToSelection;
 
@@ -194,16 +246,16 @@ abstract class CriteriaContexts {
         @Nullable
         @SuppressWarnings("unchecked")
         private <E> DerivedField<E> getField(final String subQueryAlias, final String fieldName, final boolean create) {
-            Map<String, Map<String, DerivedFieldImpl<?>>> aliasToDerivedField = this.aliasToDerivedField;
+            Map<String, Map<String, RefSelection<?>>> aliasToDerivedField = this.aliasToDerivedField;
             if (aliasToDerivedField == null) {
                 aliasToDerivedField = new HashMap<>();
                 this.aliasToDerivedField = aliasToDerivedField;
             }
-            final Map<String, DerivedFieldImpl<?>> fieldMap;
+            final Map<String, RefSelection<?>> fieldMap;
             final DerivedField<?> field;
             if (create) {
                 fieldMap = aliasToDerivedField.computeIfAbsent(subQueryAlias, k -> new HashMap<>());
-                field = fieldMap.computeIfAbsent(fieldName, k -> new DerivedFieldImpl<>(subQueryAlias, fieldName));
+                field = fieldMap.computeIfAbsent(fieldName, k -> new RefSelection<>(subQueryAlias, fieldName));
             } else {
                 fieldMap = aliasToDerivedField.get(subQueryAlias);
                 if (fieldMap == null) {
@@ -242,11 +294,48 @@ abstract class CriteriaContexts {
 
     }
 
+    /**
+     * @see #valueInsertContext(Object)
+     */
+    private static final class ValueInsertContext extends AbstractContext {
+
+        private ValueInsertContext(@Nullable Object criteria) {
+            super(criteria);
+        }
+
+        @Override
+        public void selectList(List<SelectPart> selectPartList) {
+            // here bug.
+            throw new UnsupportedOperationException("Value insert statement not support.");
+        }
+
+        @Override
+        public <T extends IDomain, F> QualifiedField<T, F> qualifiedField(String tableAlias, FieldMeta<T, F> field) {
+            throw valueInsertDontSupport();
+        }
+
+        @Override
+        public <E> DerivedField<E> ref(String subQueryAlias, String derivedFieldName) {
+            throw valueInsertDontSupport();
+        }
+
+        @Override
+        public <E> Expression<E> ref(String selectionAlias) {
+            throw valueInsertDontSupport();
+        }
+
+        @Override
+        public List<_TableBlock> clear() {
+            return Collections.emptyList();
+        }
+
+    }// ValueInsertContext
+
 
     private static final class SimpleQueryContext extends JoinableContext {
 
 
-        private List<DerivedSelectionGroup> groupList;
+        private List<DerivedGroup> groupList;
 
 
         private SimpleQueryContext(@Nullable Object criteria) {
@@ -258,15 +347,15 @@ abstract class CriteriaContexts {
             if (this.groupList != null || this.aliasToBlock.size() != 0) {
                 throw new IllegalStateException("error");
             }
-            List<DerivedSelectionGroup> selectionGroupList = null;
+            List<DerivedGroup> selectionGroupList = null;
             for (SelectPart selectPart : selectPartList) {
-                if (!(selectPart instanceof DerivedSelectionGroup)) {
+                if (!(selectPart instanceof DerivedGroup)) {
                     continue;
                 }
                 if (selectionGroupList == null) {
                     selectionGroupList = new LinkedList<>();
                 }
-                selectionGroupList.add((DerivedSelectionGroup) selectPart);
+                selectionGroupList.add((DerivedGroup) selectPart);
             }
             if (selectionGroupList == null) {
                 this.groupList = Collections.emptyList();
@@ -286,12 +375,12 @@ abstract class CriteriaContexts {
             final SubQuery subQuery = (SubQuery) tablePart;
             final String queryAlias = block.alias();
 
-            final Map<String, Map<String, DerivedFieldImpl<?>>> aliasToDerivedField = this.aliasToDerivedField;
+            final Map<String, Map<String, RefSelection<?>>> aliasToDerivedField = this.aliasToDerivedField;
             if (aliasToDerivedField != null) {
-                final Map<String, DerivedFieldImpl<?>> fieldMap;
+                final Map<String, RefSelection<?>> fieldMap;
                 fieldMap = aliasToDerivedField.get(queryAlias);
                 if (fieldMap != null) {
-                    for (DerivedFieldImpl<?> field : fieldMap.values()) {
+                    for (RefSelection<?> field : fieldMap.values()) {
                         Selection selection;
                         selection = subQuery.selection(field.fieldName);
                         if (selection == null) {
@@ -303,14 +392,14 @@ abstract class CriteriaContexts {
 
             }
 
-            final List<DerivedSelectionGroup> groupList = this.groupList;
+            final List<DerivedGroup> groupList = this.groupList;
             assert groupList != null;
             if (groupList.size() == 0) {
                 return;
             }
-            final Iterator<DerivedSelectionGroup> iterator = groupList.listIterator();
+            final Iterator<DerivedGroup> iterator = groupList.listIterator();
             while (iterator.hasNext()) {
-                final DerivedSelectionGroup group = iterator.next();
+                final DerivedGroup group = iterator.next();
                 if (queryAlias.equals(group.tableAlias())) {
                     group.finish(subQuery, queryAlias);
                     iterator.remove();
@@ -321,11 +410,11 @@ abstract class CriteriaContexts {
 
         @Override
         void onClear() {
-            final List<DerivedSelectionGroup> groupList = this.groupList;
+            final List<DerivedGroup> groupList = this.groupList;
             if (CollectionUtils.isEmpty(groupList)) {
                 return;
             }
-            for (DerivedSelectionGroup group : groupList) {
+            for (DerivedGroup group : groupList) {
                 String m = String.format("DerivedGroup[%s] is invalid.", group.tableAlias());
                 throw new CriteriaException(m);
             }
@@ -334,7 +423,8 @@ abstract class CriteriaContexts {
 
     }//SimpleQueryContext
 
-    private static final class DerivedSelection<E> extends OperationExpression<E> implements DerivedField<E> {
+    private static final class DerivedSelection<E> extends OperationExpression<E>
+            implements DerivedField<E>, _Selection {
 
         private final String tableName;
 
@@ -366,6 +456,21 @@ abstract class CriteriaContexts {
         }
 
         @Override
+        public void appendSelection(final _SqlContext context) {
+            final _Dialect dialect = context.dialect();
+
+            final String safeFieldName = dialect.quoteIfNeed(this.selection.alias());
+
+            context.sqlBuilder()
+                    .append(Constant.SPACE)
+                    .append(dialect.quoteIfNeed(this.tableName))
+                    .append(Constant.POINT)
+                    .append(safeFieldName)
+                    .append(Constant.SPACE_AS_SPACE)
+                    .append(safeFieldName);
+        }
+
+        @Override
         public void appendSql(final _SqlContext context) {
             final _Dialect dialect = context.dialect();
             context.sqlBuilder()
@@ -384,7 +489,7 @@ abstract class CriteriaContexts {
     }//DerivedSelection
 
 
-    private static final class DerivedFieldImpl<E> extends OperationExpression<E> implements DerivedField<E> {
+    private static final class RefSelection<E> extends OperationExpression<E> implements DerivedField<E>, _Selection {
 
         final String tableName;
 
@@ -392,7 +497,7 @@ abstract class CriteriaContexts {
 
         final DelayParamMeta paramMeta;
 
-        private DerivedFieldImpl(String tableName, String fieldName) {
+        private RefSelection(String tableName, String fieldName) {
             this.tableName = tableName;
             this.fieldName = fieldName;
             this.paramMeta = new DelayParamMeta();
@@ -418,6 +523,21 @@ abstract class CriteriaContexts {
             return this.paramMeta;
         }
 
+
+        @Override
+        public void appendSelection(final _SqlContext context) {
+            final _Dialect dialect = context.dialect();
+
+            final String safeFieldName = dialect.quoteIfNeed(this.fieldName);
+
+            context.sqlBuilder()
+                    .append(Constant.SPACE)
+                    .append(dialect.quoteIfNeed(this.tableName))
+                    .append(Constant.POINT)
+                    .append(safeFieldName)
+                    .append(Constant.SPACE_AS_SPACE)
+                    .append(safeFieldName);
+        }
 
         @Override
         public void appendSql(final _SqlContext context) {

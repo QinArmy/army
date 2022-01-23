@@ -66,7 +66,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
     final Q left;
 
     private StandardUnionQuery(Q left) {
-        super(CriteriaUtils.getUnionContext(left));
+        super(CriteriaContexts.getUnionContext(left));
         this.left = left;
     }
 

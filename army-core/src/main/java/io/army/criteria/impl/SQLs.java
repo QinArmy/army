@@ -388,6 +388,63 @@ public abstract class SQLs extends StandardFunctions {
         return CriteriaContextStack.peek().ref(selectionAlias);
     }
 
+    /**
+     * <p>
+     * Reference session variable.
+     * </p>
+     *
+     * @throws CriteriaException when var not exists
+     */
+    public static <E> VarExpression<E> var(String varName) {
+        return CriteriaContextStack.root().var(varName);
+    }
+
+    /**
+     * <p>
+     * Reference {@link Number} type session variable.
+     * </p>
+     *
+     * @throws CriteriaException when var not exists or var type isn't number type.
+     */
+    public static <N extends Number> VarExpression<N> numVar(String varName) {
+        final VarExpression<N> expression;
+        expression = CriteriaContextStack.root().var(varName);
+        if (!Number.class.isAssignableFrom(expression.paramMeta().mappingType().javaType())) {
+            String m = String.format("Session variable[%s] type isn't number.", varName);
+            throw new CriteriaException(m);
+        }
+        return expression;
+    }
+
+    /**
+     * <p>
+     * Create session variable.
+     * </p>
+     *
+     * @throws CriteriaException when var exists.
+     */
+    public static <E> VarExpression<E> createVar(String varName, ParamMeta paramMeta)
+            throws CriteriaException {
+        return CriteriaContextStack.root().createVar(varName, paramMeta);
+    }
+
+    /**
+     * <p>
+     * Create {@link Number} type session variable.
+     * </p>
+     *
+     * @param paramMeta number type {@link ParamMeta}.
+     * @throws CriteriaException when var exists.
+     */
+    public static <N extends Number> VarExpression<N> createNumVar(String varName, ParamMeta paramMeta)
+            throws CriteriaException {
+        if (!Number.class.isAssignableFrom(paramMeta.mappingType().javaType())) {
+            String m = String.format("Session variable[%s] type isn't number.", varName);
+            throw new CriteriaException(m);
+        }
+        return CriteriaContextStack.root().createVar(varName, paramMeta);
+    }
+
     public static <T extends IDomain> SelectionGroup group(TableMeta<T> table, String alias) {
         return SelectionGroups.singleGroup(table, alias);
     }

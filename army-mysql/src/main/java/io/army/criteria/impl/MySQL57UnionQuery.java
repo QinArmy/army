@@ -67,7 +67,7 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
     final Q left;
 
     MySQL57UnionQuery(Q left) {
-        super(CriteriaUtils.getUnionContext(left));
+        super(CriteriaContexts.getUnionContext(left));
         this.left = left;
     }
 

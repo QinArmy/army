@@ -62,7 +62,7 @@ final class StandardValueInsert<T extends IDomain, C> implements Insert
     private StandardValueInsert(final TableMeta<T> table, @Nullable C criteria) {
         this.table = table;
         this.criteria = criteria;
-        this.criteriaContext = new CriteriaContextImpl<>(criteria);
+        this.criteriaContext = CriteriaContexts.valueInsertContext(criteria);
         CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 

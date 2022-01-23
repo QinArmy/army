@@ -151,7 +151,7 @@ abstract class SelectionGroups implements _SelectionGroup {
 
     }//TableFieldGroup
 
-    private static class SubQuerySelectionGroupImpl implements DerivedSelectionGroup, _SelectionGroup {
+    private static class SubQuerySelectionGroupImpl implements DerivedGroup, _SelectionGroup {
 
         final String subQueryAlias;
 

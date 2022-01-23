@@ -2,32 +2,33 @@ package io.army.criteria.impl;
 
 import io.army.criteria.FieldSelection;
 import io.army.criteria.GenericField;
+import io.army.criteria.QualifiedField;
 import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner._Selection;
+import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
-import io.army.meta.TableMeta;
-
-import java.util.Collection;
 
 /**
  * @see DefaultFieldMeta
  * @see QualifiedFieldImpl
  */
-final class FieldSelectionImpl<E> extends OperationExpression<E> implements FieldSelection {
+final class FieldSelectionImpl implements FieldSelection, _Selection {
 
-    private final GenericField<?, E> field;
+    private final GenericField<?, ?> field;
 
     private final String alias;
 
-    FieldSelectionImpl(GenericField<?, E> field, String alias) {
+    FieldSelectionImpl(GenericField<?, ?> field, String alias) {
         this.field = field;
         this.alias = alias;
     }
 
     @Override
     public ParamMeta paramMeta() {
-        return this.field;
+        final GenericField<?, ?> field = this.field;
+        return field instanceof FieldMeta ? (FieldMeta<?, ?>) field : field.paramMeta();
     }
 
     @Override
@@ -41,17 +42,16 @@ final class FieldSelectionImpl<E> extends OperationExpression<E> implements Fiel
         return field instanceof FieldMeta ? (FieldMeta<?, ?>) field : field.fieldMeta();
     }
 
-
     @Override
-    public void appendSql(final _SqlContext context) {
-        final GenericField<?, E> field = this.field;
+    public void appendSelection(final _SqlContext context) {
+        final GenericField<?, ?> field = this.field;
         if (field instanceof FieldMeta) {
             context.appendField((FieldMeta<?, ?>) field);
         } else {
             ((_Expression<?>) field).appendSql(context);
         }
         context.sqlBuilder()
-                .append(" AS ")
+                .append(Constant.SPACE_AS_SPACE)
                 .append(context.dialect().quoteIfNeed(this.alias));
     }
 
@@ -62,27 +62,26 @@ final class FieldSelectionImpl<E> extends OperationExpression<E> implements Fiel
 
     @Override
     public String toString() {
-        return this.field.toString();
+        final StringBuilder builder = new StringBuilder()
+                .append(Constant.SPACE);
+
+        final GenericField<?, ?> field = this.field;
+
+        if (field instanceof FieldMeta) {
+            builder.append(field.columnName());
+        } else if (field instanceof QualifiedField) {
+            final QualifiedField<?, ?> qualifiedField = (QualifiedField<?, ?>) field;
+            builder.append(qualifiedField.tableAlias())
+                    .append(Constant.POINT)
+                    .append(field.columnName());
+        } else {
+            throw new IllegalStateException(String.format("field[%s] error", this.field));
+        }
+        return builder.append(Constant.SPACE_AS_SPACE)
+                .append(this.alias)
+                .toString();
+
     }
 
 
-    @Override
-    public boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
-        return ((_Expression<?>) this.field).containsField(fieldMetas);
-    }
-
-    @Override
-    public boolean containsFieldOf(TableMeta<?> tableMeta) {
-        return ((_Expression<?>) this.field).containsFieldOf(tableMeta);
-    }
-
-    @Override
-    public int containsFieldCount(TableMeta<?> tableMeta) {
-        return ((_Expression<?>) this.field).containsFieldCount(tableMeta);
-    }
-
-    @Override
-    public boolean containsSubQuery() {
-        return false;
-    }
 }

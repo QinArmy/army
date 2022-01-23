@@ -15,8 +15,7 @@ import java.util.Objects;
  *
  * @param <E> java type of named parameter
  */
-class NamedParamImpl<E> extends OperationExpression<E>
-        implements NamedParam<E> {
+class NamedParamImpl<E> extends OperationExpression<E> implements NamedParam<E> {
 
     static <E> NamedParam<E> nullable(String name, ParamMeta paramMeta) {
         Objects.requireNonNull(name);

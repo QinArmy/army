@@ -84,8 +84,11 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
 
     @Override
     public final SR set(FieldMeta<?, ?> field, Expression<?> value) {
-        if (!(field instanceof ArmyExpression)) {
+        if (!(field instanceof DefaultFieldMeta)) {
             throw CriteriaUtils.nonArmyExpression(field);
+        }
+        if (!(value instanceof ArmyExpression)) {
+            throw CriteriaUtils.nonArmyExpression(value);
         }
         if (field.updateMode() == UpdateMode.IMMUTABLE) {
             throw _Exceptions.immutableField(field);
@@ -98,7 +101,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
             throw _Exceptions.nonNullField(field);
         }
         this.fieldList.add(field);
-        this.valueExpList.add((ArmyExpression<?>) value);
+        this.valueExpList.add(value);
         return (SR) this;
     }
 

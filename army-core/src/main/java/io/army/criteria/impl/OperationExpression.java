@@ -21,12 +21,11 @@ abstract class OperationExpression<E> implements ArmyExpression<E> {
     OperationExpression() {
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public final Selection as(final String alias) {
         final Selection selection;
         if (this instanceof GenericField) {
-            selection = new FieldSelectionImpl<>((GenericField<?, E>) this, alias);
+            selection = new FieldSelectionImpl((GenericField<?, ?>) this, alias);
         } else {
             selection = new ExpressionSelection(this, alias);
         }

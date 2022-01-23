@@ -56,7 +56,7 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
     private IT noActionPartitionBlock;
 
     private MySQLMultiDelete(@Nullable C criteria) {
-        super(CriteriaUtils.multiDeleteContext(criteria));
+        super(CriteriaContexts.multiDeleteContext(criteria));
         CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 

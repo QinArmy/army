@@ -65,7 +65,7 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends PartQuery<
     final Q left;
 
     private MySQL80UnionQuery(final Q left) {
-        super(CriteriaUtils.getUnionContext(left));
+        super(CriteriaContexts.getUnionContext(left));
         this.left = left;
     }
 
